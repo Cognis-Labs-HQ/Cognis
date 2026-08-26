@@ -1,11 +1,15 @@
 {
     "id": "social-messages",
+    "uuid": "062a74f5-5699-52fb-98a3-63ec6538bdfc",
     "name": "Messages",
-    "version": "2.0.64",
+    "version": "2.0.72",
     "gateway": "social",
     "description": "Private messages with chatrooms (DM and group), per-room AES-GCM encryption, and notification dispatch.",
     "publisher": "Cognis Labs HQ",
-    "requires": ["social:profile", "auth:keyring"],
+    "requires": [
+        "4387fae9-26dd-5a37-ad74-d75eef0aa67c",
+        "28af0fb6-1ca0-52ef-b427-f89caa43ae8f"
+    ],
     "file_namespaces": [
         {
             "id": "chats",

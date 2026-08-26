@@ -8,8 +8,13 @@ export function createGatewayUiRegistryHooks(
         registerNavbarPlugin(
             scriptUrl: string,
             isEnabled?: () => boolean,
+            providesCapabilities?: string[],
         ): void {
-            uiRegistry?.registerNavbarPlugin({ scriptUrl, isEnabled });
+            uiRegistry?.registerNavbarPlugin({
+                scriptUrl,
+                isEnabled,
+                providesCapabilities,
+            });
         },
         registerSpaRoute(route: {
             id: string;

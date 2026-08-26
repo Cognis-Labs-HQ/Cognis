@@ -12,3 +12,7 @@ test("keyring settings use canonical section structure", () => {
     assert.match(source, /components-section-heading/);
     assert.match(source, /components-section-body/);
 });
+
+test("keyring event log pagination shows ten events per page", () => {
+    assert.match(source, /const eventPageSize = 10;/);
+});

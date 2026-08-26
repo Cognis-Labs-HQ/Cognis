@@ -19,6 +19,7 @@ function loadUiCtxForTests() {
     const context = {
         console,
         BROWSER_FLOW_CONTRACTS: {},
+        createReuseResources: () => Object.freeze({}),
         __testExports: {},
     };
     vm.runInNewContext(
@@ -41,6 +42,7 @@ test("uiCtx initializes built-in flows before hook modules can extend them", asy
     const { uiCtx } = await import("../ui-ctx.js");
     assert.equal(uiCtx.flowExists("authenticate-session"), true);
     assert.equal(uiCtx.flowExists("load-page"), true);
+    assert.equal(typeof uiCtx.capabilities.get("ui:reuse"), "object");
 });
 
 test("createFlowEngine — registering the same flow twice throws", () => {

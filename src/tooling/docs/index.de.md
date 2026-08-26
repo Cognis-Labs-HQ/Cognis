@@ -36,9 +36,9 @@ Eingebaute `cognisctl`-Befehle können antwortungsabhängige Terminalausgabe mit
 
 ## Konfiguration
 
-| Variable                   | Standard      | Beschreibung                                                              |
-| -------------------------- | ------------- | ------------------------------------------------------------------------- |
-| `COGNIS_CLI_TOKEN_PATH`    | —             | Pfad zur Datei mit dem API-Token für authentifizierte `cognisctl`-Befehle |
-| `COGNIS_MODULES_ROOT`      | `src/modules` | Zum Entdecken von Modul-Unterbefehlen                                     |
-| `COGNIS_GATEWAY_CLI_PATHS` | —             | Optionale Pfadliste für Gateway-Unterbefehle                              |
-| `COGNIS_ADAPTER_CLI_PATHS` | —             | Optionale Pfadliste für Adapter-Unterbefehle                              |
+| Variable                       | Standard           | Beschreibung                                                              |
+| ------------------------------ | ------------------ | ------------------------------------------------------------------------- |
+| `COGNIS_CLI_TOKEN_PATH`        | —                  | Pfad zur Datei mit dem API-Token für authentifizierte `cognisctl`-Befehle |
+| `COGNIS_EXTERNAL_MODULES_ROOT` | `external-modules` | Zum Entdecken von Modul-Unterbefehlen                                     |
+| `COGNIS_GATEWAY_CLI_PATHS`     | —                  | Optionale Pfadliste für Gateway-Unterbefehle                              |
+| `COGNIS_ADAPTER_CLI_PATHS`     | —                  | Optionale Pfadliste für Adapter-Unterbefehle                              |

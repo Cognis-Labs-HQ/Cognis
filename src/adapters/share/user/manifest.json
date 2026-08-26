@@ -1,10 +1,11 @@
 {
     "id": "user",
+    "uuid": "f2306482-7095-5690-aa52-6abeee26cb4f",
     "name": "User",
-    "version": "1.1.17",
+    "version": "1.1.19",
     "gateway": "share",
-    "required": true,
-    "locked": true,
+    "required": false,
+    "locked": false,
     "description": "Shares resources directly with Cognis users.",
     "publisher": "Cognis Labs HQ"
 }

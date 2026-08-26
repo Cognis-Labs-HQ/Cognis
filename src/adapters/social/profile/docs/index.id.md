@@ -43,3 +43,11 @@ Umpan balik tindakan pesan dimuat dari sumber bahasa milik profil sehingga peren
 ## Ketersediaan
 
 Menu profil menampilkan ketersediaan saat ini dan memungkinkan pengguna yang masuk memilih Luang, Sibuk, atau Tentatif. Lampu status avatar menampilkan status yang ditentukan sebagai keterangan saat penunjuk diarahkan. Komponen lain dapat meminta status pengguna yang mempertimbangkan kalender berdasarkan ID akun melalui kapabilitas ctx `social:getUserAvailability`.
+
+## Kapabilitas UI yang disediakan
+
+Plugin navbar profil menyediakan `ui:profileAvatarRenderer`. Modul yang merender avatar profil harus menyatakan ID ini dalam `requiresCapabilities`; Cognis kemudian memuat penyedia sebelum memasang rute SPA modul.
+
+### Kapabilitas klien browser
+
+`social:profileUiClient` dikontribusikan oleh penyedia Profil mandiri sebelum halaman yang bergantung dipasang dan menyediakan `getCurrentProfile()` agar modul browser memperoleh data profil melalui klien adaptor pemilik.

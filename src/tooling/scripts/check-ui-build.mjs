@@ -33,6 +33,15 @@ for (const [sourceUrl, emittedUrl] of Object.entries(manifest)) {
     ]);
 }
 const publicPages = await readdir(path.join(outputRoot, "public", "pages"));
+for (const publicAssetPath of await walk(
+    path.join(outputRoot, "public", "assets"),
+)) {
+    const relativeAssetPath = path.relative(
+        path.join(outputRoot, "public", "assets"),
+        publicAssetPath,
+    );
+    await access(path.join(outputRoot, "assets", relativeAssetPath));
+}
 for (const pageName of publicPages.filter((name) => name.endsWith(".html"))) {
     const html = await readFile(
         path.join(outputRoot, "public", "pages", pageName),

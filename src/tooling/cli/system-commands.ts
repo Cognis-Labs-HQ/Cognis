@@ -4,6 +4,19 @@ import { register } from "./registry.ts";
 
 export function registerSystemCommands(): void {
     register(
+        "system:capabilities",
+        async ({ apiBaseUrl, getApiToken }) =>
+            apiGet(
+                apiBaseUrl,
+                "/api/v1/system/capabilities",
+                await getApiToken(),
+            ),
+        {
+            usage: "cognisctl system:capabilities",
+            description: "List every registered runtime capability.",
+        },
+    );
+    register(
         "system:health",
         async ({ apiBaseUrl, getApiToken }) => {
             return apiGet(

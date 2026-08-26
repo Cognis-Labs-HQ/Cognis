@@ -1,0 +1,112 @@
+# Externe Module
+
+Externe Module erweitern Cognis um unabhängig installierbares Server- und Browserverhalten und bleiben dabei hinter Manifest-, Fähigkeits-, Ablauf-, Routen-, Integritäts- und Lebenszyklusverträgen isoliert.
+
+## Anwendungsbeispiele
+
+Ein Repository deklariert seine stabile Identität und seinen Bootstrap-Einstiegspunkt in `manifest.json`:
+
+<!-- prettier-ignore -->
+```json
+{
+  "uuid": "123e4567-e89b-42d3-a456-426614174000",
+  "id": "example-module",
+  "version": "1.0.0",
+  "entrypoints": { "bootstrap": "bootstrap.js" }
+}
+```
+
+Der Bootstrap stellt Verhalten ausschließlich über seinen begrenzten Kontext bereit und gibt eine Bereinigung für eigene Ressourcen zurück:
+
+<!-- prettier-ignore -->
+```js
+export async function bootstrapModule(ctx) {
+  const remove = ctx.flow.inject('construct-example-page', 'content', {
+    id: 'example-module.content',
+    handler: async () => ({ ready: true }),
+  });
+  return () => remove();
+}
+```
+
+Administratoren installieren das Repository unter **Module**, prüfen Integrität und Abhängigkeiten, aktivieren es ausdrücklich und können es später deaktivieren, um alle registrierten UI- und Backend-Funktionen ohne Cognis-Neustart zu entfernen.
+
+## Technische Spezifikation
+
+## Stabile Identität
+
+Jedes Modul verfügt über einen menschenlesbaren `id` und einen RFC 4122 `uuid`. Die ID kann umbenannt werden; Die UUID darf sich niemals ändern, zwischen Produkten wechseln oder wiederverwendet werden. Jeder `requires`-Eintrag ist eine Komponenten-UUID. Cognis verwendet UUIDs für Abhängigkeits- und Lebenszyklusentscheidungen und Namen nur für die Anzeige und URLs.
+
+### Repository-Vertrag
+
+Ein Git-Repository liefert ein Modul. Sein Stamm enthält `manifest.json`, `package.json`, `routes.json` und die optionalen Orchestrator-Einstiegspunkte `bootstrap.js`, `api/index.js`, `ui/index.js` und `cli/index.js`. `bootstrap.js` ist der einzige Systemintegrationseintrag und erhält `ctx`; Es kann jede beliebige Datei in seinem Repository importieren, darf jedoch nicht die internen Pfade von Cognis oder einer anderen Komponente importieren. Exportfunktionen und Flow-Stufen über `ctx`. Dieser enge Einstiegspunktvertrag ermöglicht es Autoren, interne Dateien frei zu reorganisieren, ohne Cognis an sie zu koppeln.
+
+`package.json` muss `"type": "module"` verwenden und seine Version muss genau mit `manifest.json` übereinstimmen. `routes.json` ist immer vorhanden und enthält ein Array, einschließlich eines leeren Arrays, wenn das Modul keine Routen beansprucht. Jeder deklarierte Einstiegspunkt muss innerhalb des Checkouts in eine reguläre Datei aufgelöst werden. Behalten Sie die Orchestrierung in den deklarierten Einstiegspunkten bei und platzieren Sie frei organisierten Implementierungscode dahinter; Cognis importiert keinen anderen Modulpfad.
+
+Jedes externe Modul deklariert `entrypoints.bootstrap`. Cognis importiert nur diese Datei und ruft `bootstrapModule(ctx)` auf, wenn das Modul aktiviert ist. Der bereichsbezogene Kontext bietet API-Routenregistrierung, statische Modulverzeichnisse, SPA-Routen, Navigation, Einstellungen und Seitenerweiterungen, Fähigkeitsbeiträge, Flow-Erstellung und Stufeninjektion. Platzieren Sie die lokalisierte Dokumentation unter `docs/` und die Versionshinweise für Module unter `docs/changelog/`. Beide werden aus installierten Repositorys ohne Registrierung des Kernpfads erkannt. Browser-Assets bleiben Eigentum des Moduls und werden nur über `ctx.registerStaticDir` verfügbar gemacht.
+
+`bootstrapModule` kann einen Entsorger zurückgeben und ein Modul kann zusätzlich `teardownModule(ctx)` exportieren. Bei der Deaktivierung oder Deinstallation ruft Cognis diese Hooks auf und entfernt dann alle Routen, statischen Verzeichnisse, UI-Beiträge, Funktionen, erstellten Flows und injizierten Flow-Stufen, die vom bereichsbezogenen Kontext aufgezeichnet wurden. Module dürfen keine Timer, Listener, Sockets oder andere Arbeiten behalten, nachdem ihr Entsorger abgeschlossen ist. Beiträge, die durch den Import von Kerninterna oder durch die Umgehung des bereitgestellten `ctx` erfolgen, können nicht nachverfolgt werden und werden nicht unterstützt.
+
+Das Manifest deklariert `uuid`, `id`, `name`, `version`, `publisher`, `class`, `coreApiVersion`, `summary`, `description`, `categories`, `recommended`, `license`, `homepage`, `repository`, `support`, `capabilities`, UUID-basierter `requires`, `entrypoints` und `assets`. Asset-Pfade sind Repository-bezogen. `assets.icon` identifiziert das quadratische Store-Symbol, `assets.banner` identifiziert den Detailhelden und `assets.screenshots` ist eine geordnete Galerie. Pfade müssen innerhalb des Repositorys bleiben.
+
+Lokalisierungsschlüssel müssen Punkte als Worttrenner verwenden: `module.example.canvas.label` statt `module.example.canvas_label` oder `module.example.canvas-label`. Durch Punkte getrennte Segmente gewährleisten vorhersehbare Eigentümerschaft, Auflösung, Validierung und Werkzeugunterstützung. Die registrierte Modul-ID ist die einzige beabsichtigte Ausnahme, wenn ihre unveränderliche ID bereits einen Bindestrich enthält.
+
+### Quellen und private Repositories
+
+Cognis schließt die `https://github.com/Cognis-Labs-HQ`-Organisation standardmäßig als unveränderliche vertrauenswürdige Quelle ein. Administratoren können weitere GitHub-Organisationen oder GitLab-Gruppen über „Module“ im Benutzermenü und dann über „Modulquellen“ hinzufügen. Cognis fragt die Anbieter-API ab, behandelt jedes Repository, das ein gültiges Root-Manifest enthält, als Modul und leitet den Katalog dynamisch ab. Eine Quelle kann auf eine optionale PAT verweisen, die im Schlüsselbund des angemeldeten Administrators gespeichert ist. Der Quelldatensatz speichert nur die Schlüsselbund-ID. Verwenden Sie ein schreibgeschütztes Token mit den geringsten Berechtigungen und Repository- und Metadatenzugriff. Token werden nur zur Erkennung und zum Klonen bereitgestellt und niemals in die Quellkonfiguration geschrieben. Private Repositories werden ausgeschlossen, sofern **Private Repositories durchsuchen** nicht aktiviert ist; bei Aktivierung ist das PAT verpflichtend.
+
+### GitHub-PAT-Berechtigungen für private Scans
+
+Bevorzugen Sie einen PAT mit differenzierten Berechtigungen und konfigurieren Sie ihn wie folgt:
+
+- **Ressourcenbesitzer:** Wählen Sie die GitHub-Organisation der Cognis-Modulquelle.
+- **Repository-Zugriff:** Wählen Sie **Alle Repositorys** oder jedes private Repository, das Cognis erkennen und installieren soll.
+- **Repository-Berechtigungen:** Setzen Sie **Metadata** und **Contents** auf **Read-only**. Metadata erlaubt die Repository-Auflistung; Contents erlaubt Manifest-Erkennung und authentifiziertes Klonen.
+- **Organisationsberechtigungen:** Keine ist erforderlich. Cognis benötigt weder **Administration**, **Members**, **Secrets** noch eine Copilot-Berechtigung.
+- **Genehmigung und SSO:** Schließen Sie bei entsprechender Organisationsrichtlinie die Genehmigung und SAML-SSO-Autorisierung ab.
+
+Gewähren Sie einem klassischen persönlichen Zugriffstoken den Umfang `repo` und autorisieren Sie es gegebenenfalls für das Organisations-SSO. Der Tokenbesitzer muss bereits auf jedes ausgewählte private Repository zugreifen dürfen. Cognis lehnt die Quelleinstellung ab, wenn das Token kein privates Repository auflisten und dessen Inhalte lesen kann.
+
+### Installation und Sicherheit
+
+Die Installation klont das ausgewählte HTTPS-Repository ohne interaktive Eingabeaufforderung für Anmeldeinformationen, validiert das heruntergeladene Root-Manifest und die unveränderliche UUID und verschiebt es atomar unter das Stammverzeichnis des externen Moduls. Vor dem Auschecken überprüft Cognis die Paket- und Manifestversionen, die Routendeklaration, die Einstiegspunkte, die erforderliche Grafik, sichere Repository-relative Pfade und jeden deklarierten SHA-256-Datei-Digest. Bei einer fehlgeschlagenen Prüfung wird das temporäre Auschecken entfernt und die installierte Version bleibt unberührt. Beim Aktualisieren wird dieser Vorgang für dieselbe UUID wiederholt. Durch die Deinstallation wird der Checkout dieser UUID entfernt. Die Aktivierung bleibt eine separate Lebenszyklusaktion, sodass Code nicht einfach durch Durchsuchen oder Installieren ausgeführt wird. Routen müssen in `routes.json` deklariert werden; Geschützte Kernpräfixe können nicht beansprucht werden.
+
+Repository-Besitzer sollten Releases signieren, Abhängigkeiten pinnen, Prüfsummen in `files` veröffentlichen, generierte Geheimnisse vermeiden und alle angeforderten Funktionen dokumentieren. Screenshots dürfen keine Anmeldeinformationen oder persönlichen Daten enthalten. Cognis-Administratoren bleiben dafür verantwortlich, den Code von Drittanbietern zu überprüfen, bevor sie ihn aktivieren.
+
+### Extraktionscheckliste
+
+Bevor Sie ein gebündeltes Modul in sein eigenes Repository verschieben, kopieren Sie das Modulverzeichnis, ohne seine UUID zu ändern, behalten Sie die lesbare ID bei und behalten Sie die Stammverzeichnisse `manifest.json`, `package.json` und `routes.json` bei. Stellen Sie sicher, dass die Repository-URL, die Homepage und die Support-Links auf das neue Projekt verweisen. Manifest- und Paketversionen synchron halten; Stellen Sie sicher, dass jeder deklarierte Einstiegspunkt und jedes Asset mit der exakten Groß-/Kleinschreibung des Dateinamens vorhanden ist. `files` SHA-256-Werte nach der letzten Änderung neu generieren; und führen Sie die Modultests aus, ohne auf monoreporelative Importe angewiesen zu sein. Die Laufzeitinteraktion mit Cognis und anderen Komponenten darf nur über die Bootstrap-`ctx`-Funktionen und -Abläufe erfolgen. Testen Sie die Aktivierungs-, Deaktivierungs- und Deinstallationszyklen, damit jeder Beitrag nachweislich entfernbar und wiederholbar ist.
+
+### Speichern Sie Assets und Tags
+
+Ein Modul kann `tags` neben seinem umfassenderen `categories` deklarieren. beide beteiligen sich an der Marktplatzfilterung. Speichern Sie Bildmaterial im Stammverzeichnis des Repositorys unter `assets/`: Geben Sie `assets/icon.svg` oder `assets/icon.png` für das Katalogsymbol und `assets/banner.svg`, `assets/banner.png` oder `assets/banner.jpg` für den Detailseiten-Helden an. Deklarieren Sie die gewählten Pfade als `assets.icon` und `assets.banner` in `manifest.json`. Optionale Galeriebilder sind in `assets.screenshots` aufgeführt. Halten Sie Kunstwerke frei von Geheimnissen und persönlichen Daten. Das Deaktivieren oder Neustarten eines Moduls muss diese gespeicherte Konfiguration erhalten; nur der Deinstallationsablauf darf sie löschen. Detailseiten installierter Module wählen für die aktive UI-Sprache `README.<locale>.md` und verwenden danach in dieser Reihenfolge `README.en.md`, `README.md` und die Katalogbeschreibung. Der optionale Kompatibilitätsalias `README.md` im Stammverzeichnis ist weder erforderlich noch wird seine Prüfsumme validiert; lokalisierte Dateien `README.<locale>.md` können weiterhin in das Integritätsinventar des Manifests aufgenommen werden.
+
+### Moduleinstellungen
+
+Ein Modul kann mit `ui.preferences` vom Administrator bearbeitbare Einstellungen bereitstellen. Jedes Feld deklariert einen stabilen `key`, einen lokalisierten `labelKey`, einen optionalen `descriptionKey`, einen `type` aus `boolean`, `string` oder `number` einen optionalen passenden `default`, einen `password`-Typ für verdeckte sensible Zeichenfolgen und `required: true`, wenn die Aktivierung blockiert werden muss, bis der moduleigene Konfigurationsendpunkt einen Wert zurückgibt; `ui.stringsBaseUrl` bezeichnet die moduleigenen Übersetzungen. Fehlt diese Angabe, erkennt Cognis automatisch das Standardpaket `ui/languages/<locale>/strings.xml`. Cognis rendert diesen Manifestvertrag in der Detailansicht des installierten Moduls, fragt `GET /api/v1/modules/<id>/config` ab und sendet Änderungen mit `PUT` an denselben moduleigenen Endpunkt. Das Modul validiert, übernimmt und speichert seine Betriebskonfiguration. Es darf weder eine zweite Einstellungsoberfläche anbieten noch Cognis-Benutzereinstellungen als Konfigurationsspeicher verwenden. Für jedes gespeicherte Passwort gibt die Konfigurationsantwort `<key>Configured: true` statt des Geheimnisses zurück; Cognis zeigt `****` an, betrachtet das Pflichtfeld als erfüllt und sendet bei unveränderter Maske einen leeren Wert, damit das Modul sein gespeichertes Passwort beibehält.
+
+### Protokollierung und Benutzerfeedback
+
+Serverseitiger Start- und Routencode schreibt strukturierte Anwendungsprotokolle über `ctx.log(level, message, meta)`. Cognis ordnet jeden Eintrag dem Modul zu, bevor er an das Logging-Gateway weitergegeben wird. Browsercode bezieht `ui:log`, `ui:showToast` und `ui:openErrorPopup` aus `uiCtx.capabilities`; `ui:log` leitet authentifizierte Einträge an das Serverprotokoll weiter, während die Feedback-Funktionen die thematisierte und barrierefreie Oberfläche des Hosts verwenden. Module müssen diese Prozesse nutzen, statt sich bei Betriebsfehlern auf die Browserkonsole zu verlassen oder eigene Benachrichtigungsoberflächen zu implementieren.
+
+### Veröffentlichungskanal-Aktualisierung und Browserclients
+
+Bei einem installierten Modul löst die Katalogaktualisierung zuerst den installierten Branch oder das Release auf und verwendet den Standardbranch des Repositorys nur, wenn kein Kanal gespeichert ist. Module beziehen Gateway-eigene Browserdaten über deklarierte `uiCtx.capabilities`-Clients; aktuelle Hostclients sind `social:profileUiClient`, `social:messagesUiClient`, `files:uiClient` und `share:uiClient`. Jede benötigte UI-Capability muss deklariert werden, damit Cognis ihren aktiven Anbieter vor dem Einhängen der Modulroute lädt.
+
+Module, die Konfiguration oder Inhalte außerhalb ihres Checkouts speichern, müssen `uninstallModule(ctx, { deleteContent })` aus dem deklarierten Bootstrap-Einstiegspunkt exportieren. Der Hook entfernt moduleigene Datensätze und Dateien nur, wenn `deleteContent` wahr ist. Cognis ruft ihn auf, während Fähigkeiten über `ctx.getCapability` verfügbar sind. Nach Erfolg löscht Cognis die gespeicherte Modulkonfiguration und den Checkout; bei einem Fehler bleiben beide für einen erneuten Versuch erhalten.
+
+### Eigentum am UI-Bereich
+
+Cognis besitzt die Dashboard-Oberfläche und jede von einer Host-Fähigkeit ausgegebene wiederverwendbare Komponente, einschließlich der strukturellen Avatar-Klassen `profile-capability-*`. Ein Modul besitzt nur Nachfahren, die es innerhalb des an `mount()` übergebenen Inhaltswurzelelements rendert. Jeder Modulselektor muss an einer modulnamensräumigen Klasse oder ID enden; ein Host-Themenselektor darf nur als Vorfahr dieses moduleigenen Ziels erscheinen. Module dürfen eigene Layoutklassen an Host-Renderer übergeben, aber keine Host-Stylesheets kopieren, Host-Fähigkeitsklassen neu definieren, Shell-Elemente auswählen oder `document.body` beziehungsweise `document.head` verändern. Anwendungsweites Verhalten gehört in deklarierte `uiCtx`-Fähigkeiten oder Flows mit entfernbaren Hooks.
+
+Browsermodule beziehen wiederverwendbare Host-Werkzeuge und gemeinsame CSS-Regeln über die Fähigkeit `ui:reuse`, statt Host-Interna zu importieren oder Stile zu kopieren. `importModule(path)` lädt jedes Produktionsmodul unter `src/ui/reuse/`; `loadStylesheet(path)` und `loadStylesheets(paths)` laden Dateien unter `src/ui/styles/reuse/`; `loadCommonStyles()` lädt den vollständigen unveränderlichen Katalog `stylesheets`. `moduleUrl(path)` und `stylesheetUrl(path)` stehen bereit, wenn eine andere Host-Fähigkeit eine URL erwartet. Pfade sind relativ, müssen die erwartete Endung verwenden und dürfen weder Verzeichnisse durchlaufen noch Testdateien auswählen.
+
+```js
+const reuse = uiCtx.capabilities.get("ui:reuse");
+const { createPageComposer } = await reuse.importModule(
+    "page-composer/index.js",
+);
+await reuse.loadStylesheets(["layout.css", "page-sections.css"]);
+```
+
+Module, die ein Laufzeitskript laden müssen, deklarieren `ui:resourceLoader` und rufen dessen validierte, referenzgezählte Methode `loadScript({ id, src, globalName })` auf. Sie müssen den zurückgegebenen Griff beim Aushängen bereinigen und dürfen Skripte nicht direkt an das Dokument anhängen.

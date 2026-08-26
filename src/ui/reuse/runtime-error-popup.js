@@ -174,6 +174,15 @@ function installConsoleCapture() {
 function buildResourceLoadError(event) {
     const eventTarget = event?.target;
     if (!eventTarget || eventTarget === window) return null;
+    if (
+        eventTarget instanceof HTMLImageElement &&
+        eventTarget.dataset.resourceFallback
+    ) {
+        const fallbackUrl = eventTarget.dataset.resourceFallback;
+        delete eventTarget.dataset.resourceFallback;
+        eventTarget.src = fallbackUrl;
+        return null;
+    }
     const resourceUrl =
         eventTarget instanceof HTMLScriptElement
             ? eventTarget.src

@@ -10,7 +10,7 @@ Geteilte Ressourcen werden unter `/share/:token` geöffnet. Die Seite verwendet 
 
 ## Gast-Sitzungen
 
-Beim Auflösen eines Share-Tokens stellt das Share-Gateway jetzt ein kurzlebiges Gast-Access-Token (`purpose: share`) bereit, das an genau diesen Share-Datensatz gebunden ist (`sub: share:<shareId>`). Die Share-Seite tauscht dieses Token temporär in `localStorage` ein, damit API-Aufrufe eingebetteter geteilter Seiten als anonyme Gast-Sitzung laufen, und stellt beim Verlassen das vorherige Token wieder her.
+Beim Auflösen eines Share-Tokens stellt das Share-Gateway jetzt ein kurzlebiges Gast-Access-Token (`purpose: share`) bereit, das an genau diesen Share-Datensatz gebunden ist (`sub: share:<shareId>`). Die Share-Seite tauscht dieses Token temporär in `localStorage` ein, damit API-Aufrufe eingebetteter geteilter Seiten als anonyme Gast-Sitzung laufen, und stellt beim Verlassen das vorherige Token wieder her. Nachdem das eingeschränkte Gast-Token aktiv ist, lädt die Freigabeseite die UI-Capability-Provider des Hosts, bevor der Ressourcen-Renderer importiert wird, sodass freigegebene Komponenten deklarierte Capabilities wie die Profilavatar-Darstellung verwenden können.
 
 Anonyme Gäste entsperren niemals einen Kontoschlüsselbund. Share aktiviert den zugestellten Gastschlüsselbund mit dem vom Server ausgegebenen Sitzungsmaterial, hält ihn während der Gastsitzung ohne Benutzerpasswort offen und löscht seinen ausschließlich sitzungsgebundenen verschlüsselten Tresor am Sitzungsende. Suche und Speicherung im Kontoschlüsselbund stehen nur Besuchern mit einer bestätigten Nicht-Gast-Kontositzung zur Verfügung, auch nach der Aktualisierung einer Gastseite.
 
@@ -24,7 +24,7 @@ Gast-Tokens sind auf genau einen Share-Datensatz begrenzt, laufen kurz aus (maxi
 
 ## Freigabesteuerung
 
-Freigabedatensätze enthalten jetzt vom Gateway verwaltete Zugriffskontrollen: Lese-/Schreibberechtigungen, typisierte Empfänger für In-App-Benutzer, Gruppen/Klassen und E-Mail-Empfänger, optionalen Passwortschutz und ein Wasserzeichen-Flag für schreibgeschützte Freigaben. Das Share-Gateway stellt generische Routen zum Erstellen und Aktualisieren von Tokens bereit, sodass Module Freigaben über `ctx` oder `/api/v1/share/tokens` anfordern und weder Empfängerzustellung noch Berechtigungsbearbeitung selbst besitzen. Schreibgeschützte Freigaben erhalten standardmäßig ein Wasserzeichen, während schreibbare Freigaben diese Vorgabe entfernen, sofern der Aufrufer sie nicht ausdrücklich beibehält.
+Freigabedatensätze enthalten jetzt vom Gateway verwaltete Zugriffskontrollen: Lese-/Schreibberechtigungen, typisierte Empfänger für In-App-Benutzer, Gruppen/Klassen und E-Mail-Empfänger, optionalen Passwortschutz und ein Wasserzeichen-Flag für schreibgeschützte Freigaben. Das Share-Gateway stellt generische Routen zum Erstellen und Aktualisieren von Tokens bereit, sodass Module Freigaben über `ctx` oder `/api/v1/share/tokens` anfordern und weder Empfängerzustellung noch Berechtigungsbearbeitung selbst besitzen. Schreibgeschützte Freigaben erhalten standardmäßig ein Wasserzeichen, während schreibbare Freigaben diese Vorgabe entfernen, sofern der Aufrufer sie nicht ausdrücklich beibehält. Der gatewayeigene Schaltflächen-Renderer kombiniert stets das kanonische Freigabesymbol mit der lokalisierten Bezeichnung „Teilen“.
 
 ## Adapter für Freigabemethoden
 

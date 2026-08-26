@@ -31,12 +31,8 @@
  */
 
 const _pending = new Map();
-const _initialPageStylesheets = new Set(
-    [...document.head.querySelectorAll('link[rel="stylesheet"][href]')].map(
-        (link) => new URL(link.href, window.location.origin).pathname,
-    ),
-);
-const _managedPageStylesheets = new Set(_initialPageStylesheets);
+// Styles present when the shell boots belong to Cognis and remain mounted.
+const _managedPageStylesheets = new Set();
 
 export function ensurePageStylesheet(href) {
     if (_pending.has(href)) return _pending.get(href);

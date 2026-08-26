@@ -27,6 +27,7 @@
  */
 
 import { BROWSER_FLOW_CONTRACTS } from "./flow-contracts.js";
+import { createReuseResources } from "./resources.js";
 
 function sortHooks(hooks) {
     return [...hooks].sort((left, right) => {
@@ -140,10 +141,14 @@ function createFlowEngine() {
     return { registerFlow, extendFlow, runFlow, flowExists, capabilities };
 }
 
-export const uiCtx = createFlowEngine();
+const UI_CTX_KEY = Symbol.for("cognis.uiCtx");
+export const uiCtx =
+    globalThis[UI_CTX_KEY] ?? (globalThis[UI_CTX_KEY] = createFlowEngine());
+
+uiCtx.capabilities.contribute("ui:reuse", createReuseResources());
 
 for (const [flowId, stages] of Object.entries(BROWSER_FLOW_CONTRACTS)) {
-    uiCtx.registerFlow(flowId, stages);
+    if (!uiCtx.flowExists(flowId)) uiCtx.registerFlow(flowId, stages);
 }
 
 export const { registerFlow, extendFlow, runFlow, flowExists } = uiCtx;

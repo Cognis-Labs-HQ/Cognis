@@ -97,3 +97,7 @@ Components should prefer `files:namespace` for routine ctx file operations: bind
 | Variable         | Default      | Description                                                                               |
 | ---------------- | ------------ | ----------------------------------------------------------------------------------------- |
 | `MEDIA_LOCATION` | `/app/media` | Root directory for media storage; uploads go to `$MEDIA_LOCATION/uploads/<namespace>/...` |
+
+### Browser client capability
+
+`files:uiClient` is contributed by the Files UI provider and exposes namespaced file URL resolution for browser modules.

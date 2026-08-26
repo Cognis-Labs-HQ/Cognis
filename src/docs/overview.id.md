@@ -47,7 +47,7 @@ Gateway ditemukan dengan memindai `src/gateways/` saat startup. Setiap direktori
 
 Adapter ditemukan oleh setiap gateway dengan memindai `src/adapters/<gateway-id>/` pada waktu bootstrap-nya sendiri. Baik core maupun server tidak memiliki pengetahuan tentang adapter mana yang diinstal.
 
-Modul ditemukan dari `src/modules/` (internal, tepercaya) dan `COGNIS_MODULES_ROOT/external` (arsip eksternal, memerlukan pengakuan pengaktifan eksplisit). Mekanisme file pointer (symlink nginx-style `<id>.load`) mengontrol modul mana yang aktif.
+Modul hanya ditemukan dari repositori terpasang di bawah `COGNIS_EXTERNAL_MODULES_ROOT`. Mekanisme file pointer (symlink nginx-style `<id>.load`) mengontrol modul mana yang aktif.
 
 ### Lokasi sumber utama
 
@@ -69,4 +69,4 @@ Cognis diperluas melalui tiga mekanisme:
 
 - **Gateway**: tambahkan direktori di bawah `src/gateways/` dengan `bootstrap.ts` dan `manifest.json`. Server akan mendeteksinya secara otomatis.
 - **Adapter**: tambahkan direktori di bawah `src/adapters/<gateway-id>/`. Gateway yang memilikinya akan menemukan dan memuatnya.
-- **Modul**: tempatkan direktori modul di bawah `src/modules/` (internal) atau arsip modul di bawah jalur eksternal yang dikonfigurasi. Aktifkan melalui UI admin atau `cognisctl`.
+- **Modul**: instal repositori melalui Marketplace Modul ke jalur modul eksternal yang dikonfigurasi. Aktifkan melalui UI admin atau `cognisctl`.

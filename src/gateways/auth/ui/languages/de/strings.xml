@@ -29,4 +29,22 @@
   <string name="gateway.auth.security.keyring_relock">Schlüsselbund automatisch sperren</string>
   <string name="gateway.auth.security.keyring_logout">Beim Abmelden</string>
   <string name="gateway.auth.security.keyring_minutes">Minuten</string>
+  <string name="gateway.auth.security.session_timeout_label">Zeitlimit der Anmeldesitzung</string>
+  <string name="gateway.auth.security.session_timeout_disabled">Das Sitzungszeitlimit wurde von deiner Administration deaktiviert.</string>
+  <string name="gateway.auth.security.session_timeout_reset">Standard-Zeitlimit für Anmeldesitzungen verwenden</string>
+  <string name="gateway.auth.security.session_timeout_never">Nie</string>
+  <string name="gateway.auth.security.session_timeout_reset_failed">Das Standard-Zeitlimit für Anmeldesitzungen konnte nicht geladen werden.</string>
+  <string name="gateway.auth.security.session_timeout_next_login">Ihr längeres Sitzungszeitlimit gilt bei Ihrer nächsten Anmeldung.</string>
+  <string name="gateway.auth.security.session_expires_in">Aktuelle Sitzung läuft in {countdown} ab</string>
+  <string name="gateway.auth.security.session_expired">Aktuelle Sitzung abgelaufen</string>
+  <string name="gateway.auth.security.countdown.weeks.one">{count} Woche</string>
+  <string name="gateway.auth.security.countdown.weeks.many">{count} Wochen</string>
+  <string name="gateway.auth.security.countdown.days.one">{count} Tag</string>
+  <string name="gateway.auth.security.countdown.days.many">{count} Tage</string>
+  <string name="gateway.auth.security.countdown.hours.one">{count} Stunde</string>
+  <string name="gateway.auth.security.countdown.hours.many">{count} Stunden</string>
+  <string name="gateway.auth.security.countdown.minutes.one">{count} Minute</string>
+  <string name="gateway.auth.security.countdown.minutes.many">{count} Minuten</string>
+  <string name="gateway.auth.security.countdown.seconds.one">{count} Sekunde</string>
+  <string name="gateway.auth.security.countdown.seconds.many">{count} Sekunden</string>
 </resources>

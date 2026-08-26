@@ -26,7 +26,6 @@
  *     );
  *     shareButton = shareButtonModule.mountShareButton({
  *       container: stageHeader,
- *       label: i18n.t("module.jitsi_meet.share.button"),
  *       onClick: () => openShareLinksPopup(...),
  *       signal,
  *     });
@@ -36,13 +35,21 @@
  *
  * @param {{
  *   container: Element,
- *   label: string,
  *   onClick: (event: MouseEvent) => void,
  *   id?: string,
  *   signal?: AbortSignal,
  * }} options
  * @returns {HTMLButtonElement | null}
  */
+
+import { createI18n } from "/static/reuse/i18n.js";
+import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
+
+await ensurePageStylesheet("/static/gateways/share/ui/share-button.css");
+
+const shareI18n = await createI18n({
+    componentStringBaseUrls: ["/static/gateways/share/languages"],
+});
 
 const GUEST_SESSION_ACTIVE_STORAGE_KEY = "cognis_share_guest_token_active";
 
@@ -66,11 +73,9 @@ export function isViewingAsGuest() {
 
 export function mountShareButton({
     container,
-    label,
     onClick,
     id = "share-gateway-share-btn",
     className = "btn-animated",
-    icon = "🔗",
     title = "",
     signal,
 } = {}) {
@@ -90,7 +95,13 @@ export function mountShareButton({
                 ),
         );
     button.className = [...classes, "btn-neutral"].join(" ");
-    button.textContent = `${icon ? `${icon} ` : ""}${label ?? ""}`;
+    const icon = document.createElement("span");
+    icon.className = "share-button-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = "🔗";
+    const label = document.createElement("span");
+    label.textContent = shareI18n.t("share.action");
+    button.append(icon, label);
     if (title) {
         button.title = title;
         button.setAttribute("aria-label", title);

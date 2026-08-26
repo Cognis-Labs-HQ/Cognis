@@ -1,11 +1,11 @@
 {
     "name": "@cognis/adapter-calendar-caldav",
-    "version": "1.0.11",
+    "version": "1.0.12",
     "description": "CalDAV export adapter for calendar feeds.",
     "type": "module",
     "main": "index.ts",
     "private": true,
     "dependencies": {
-        "@cognis/gateways": "<=0.1.6"
+        "@cognis/gateways": "<=0.1.9"
     }
 }

@@ -11,6 +11,10 @@ import {
     parsePasswordPolicy,
 } from "../../password-policy.js";
 import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
+import {
+    LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+    resolveLoginSessionTimeoutPreference,
+} from "../../session-timeout.js";
 
 export interface SecuritySubsection {
     id: string;
@@ -21,6 +25,7 @@ export interface SecuritySubsection {
 interface SecuritySettings {
     registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
+    loginSessionTimeoutMinutes: number;
 }
 
 interface SecurityRouteDependencies {
@@ -38,6 +43,40 @@ export function createSecurityRoutes({
     readSecuritySettings,
     log,
 }: SecurityRouteDependencies): AuthGatewayRouteHandler {
+    function revokeUserSessions(accountId: string): number {
+        return (
+            capabilities.get<(subject: string) => number>(
+                "auth:revokeAccessTokensForSubject",
+            )?.(accountId) ?? 0
+        );
+    }
+
+    async function readCurrentTimeoutMinutes(
+        preferenceStore: UserPreferenceStore,
+        accountId: string,
+        maximumMinutes: number,
+    ): Promise<number> {
+        const stored = await preferenceStore
+            .get(accountId, LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY)
+            .catch(() => null);
+        return resolveLoginSessionTimeoutPreference(stored, maximumMinutes)
+            .timeoutMinutes;
+    }
+
+    function applyTimeoutToSessions(
+        accountId: string,
+        currentTimeoutMinutes: number,
+        nextTimeoutMinutes: number,
+    ): { appliesOnNextLogin: boolean; revokedSessionCount: number } {
+        const appliesOnNextLogin = nextTimeoutMinutes > currentTimeoutMinutes;
+        return {
+            appliesOnNextLogin,
+            revokedSessionCount: appliesOnNextLogin
+                ? 0
+                : revokeUserSessions(accountId),
+        };
+    }
+
     return async (
         req,
         res,
@@ -103,6 +142,149 @@ export function createSecurityRoutes({
             log?.("debug", "Served password policy.", logMeta);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: policy }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/login-session-timeout" &&
+            req.method === "GET"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const { loginSessionTimeoutMinutes: maximumMinutes } =
+                await readSecuritySettings();
+            const preferenceStore =
+                capabilities.get<UserPreferenceStore>("preferences:store");
+            const stored = await preferenceStore
+                ?.get(claims.sub, LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY)
+                .catch(() => null);
+            const { timeoutMinutes, shouldPersist } =
+                resolveLoginSessionTimeoutPreference(stored, maximumMinutes);
+            if (shouldPersist && typeof preferenceStore?.set === "function") {
+                await preferenceStore
+                    .set(
+                        claims.sub,
+                        LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+                        String(timeoutMinutes),
+                    )
+                    .catch(() => undefined);
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        timeoutMinutes,
+                        maximumMinutes,
+                        usesDefault: false,
+                    },
+                }),
+            );
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/login-session-timeout" &&
+            req.method === "PUT"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const { loginSessionTimeoutMinutes: maximumMinutes } =
+                await readSecuritySettings();
+            const body = await readJson(req);
+            const preferenceStore =
+                capabilities.get<UserPreferenceStore>("preferences:store");
+            if (!preferenceStore) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "preferences_unavailable",
+                            message: "Preference storage is unavailable.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (body.useDefault === true) {
+                const currentTimeoutMinutes = await readCurrentTimeoutMinutes(
+                    preferenceStore,
+                    claims.sub,
+                    maximumMinutes,
+                );
+                await preferenceStore.set(
+                    claims.sub,
+                    LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+                    String(maximumMinutes),
+                );
+                const { appliesOnNextLogin, revokedSessionCount } =
+                    applyTimeoutToSessions(
+                        claims.sub,
+                        currentTimeoutMinutes,
+                        maximumMinutes,
+                    );
+                log?.("info", "Reset login session timeout preference.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    revokedSessionCount,
+                });
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        data: {
+                            timeoutMinutes: maximumMinutes,
+                            usesDefault: true,
+                            appliesOnNextLogin,
+                        },
+                    }),
+                );
+                return true;
+            }
+            const timeoutMinutes = body.timeoutMinutes;
+            if (
+                maximumMinutes === 0 ||
+                !Number.isInteger(timeoutMinutes) ||
+                Number(timeoutMinutes) < 1 ||
+                Number(timeoutMinutes) > maximumMinutes
+            ) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_session_timeout",
+                            message: `timeoutMinutes must be an integer from 1 to ${maximumMinutes}.`,
+                        },
+                    }),
+                );
+                return true;
+            }
+            const currentTimeoutMinutes = await readCurrentTimeoutMinutes(
+                preferenceStore,
+                claims.sub,
+                maximumMinutes,
+            );
+            await preferenceStore.set(
+                claims.sub,
+                LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+                String(timeoutMinutes),
+            );
+            const { appliesOnNextLogin, revokedSessionCount } =
+                applyTimeoutToSessions(
+                    claims.sub,
+                    currentTimeoutMinutes,
+                    timeoutMinutes,
+                );
+            log?.("info", "Updated login session timeout preference.", {
+                ...logMeta,
+                accountId: claims.sub,
+                timeoutMinutes,
+                revokedSessionCount,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: { timeoutMinutes, appliesOnNextLogin },
+                }),
+            );
             return true;
         }
 

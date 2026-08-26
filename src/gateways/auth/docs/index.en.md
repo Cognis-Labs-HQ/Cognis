@@ -12,7 +12,7 @@ The gateway discovers adapters by scanning `src/adapters/auth/` at bootstrap tim
 - Manage adapter enable/disable state persisted in `auth_adapter_configs`.
 - Verify credentials by delegating to the enabled adapter for the requested provider.
 - Issue access tokens after successful authentication via `issueAccessToken`.
-- Contribute `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, and `auth:registerPageScriptOrigins` to the capability store.
+- Contribute the documented capability set: `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, `auth:registerPageScriptOrigins`, `auth:issueAccessToken`, `auth:getAuthClaims`, `auth:requireAuth`, `auth:requireRoleAccess`, `auth:revokeAccessTokensForSubject`, `auth:revokeSetupPendingAccessTokens`, and `auth:routeContext`.
 - Register all auth API routes and adapter admin routes.
 
 Not responsible for: storing user profile data (the profile gateway), session management beyond token issuance, or any non-auth business logic.

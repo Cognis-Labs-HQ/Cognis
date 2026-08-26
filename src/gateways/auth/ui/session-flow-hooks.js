@@ -35,6 +35,7 @@ import { apiFetch } from "/static/reuse/api-client.js";
 const AUTH_SETUP_CACHE_TTL_MS = 5_000;
 let authSetupCacheExpiresAt = 0;
 let authSetupRequiredCached = false;
+let sessionExpiryNavigationPending = false;
 const accountInfoByAccount = new Map();
 
 function isGuestSession() {
@@ -72,6 +73,7 @@ function clearStoredSession() {
     localStorage.removeItem("cognis_display_name");
     localStorage.removeItem("cognis_role");
     localStorage.removeItem("cognis_is_founder");
+    localStorage.removeItem("cognis_session_expires_at");
     localStorage.removeItem("cognis_provider_id");
     localStorage.removeItem("cognis_user_validation_mode");
     document.cookie = "cognis_access_token=; Path=/; Max-Age=0";
@@ -101,6 +103,7 @@ uiCtx.extendFlow(
         try {
             const response = await apiFetch(
                 "/api/v1/users/" + encodeURIComponent(account) + "/info",
+                { suppressAccessDeniedEvent: true },
             );
             if (response.ok) {
                 const payload = await response.json().catch(() => null);
@@ -273,6 +276,37 @@ export function invalidateAuthSetupCache() {
 }
 
 const PUBLIC_AUTH_PATHNAMES = new Set(["/login", "/register"]);
+
+window.addEventListener("cognis:api-access-denied", async (event) => {
+    if (
+        event.detail?.status !== 401 ||
+        sessionExpiryNavigationPending ||
+        PUBLIC_AUTH_PATHNAMES.has(window.location.pathname) ||
+        isGuestSession() ||
+        !localStorage.getItem("cognis_access_token")
+    ) {
+        return;
+    }
+    sessionExpiryNavigationPending = true;
+    try {
+        const flowResult = await uiCtx.runFlow("authenticate-session", {});
+        const session = getFirstResult(
+            flowResult?.stageResults ?? {},
+            "resolve-session",
+        );
+        if (session?.authenticated === true) {
+            sessionExpiryNavigationPending = false;
+            return;
+        }
+        clearStoredSession();
+        window.location.replace(
+            session?.redirectTo ?? "/login?reason=session_expired",
+        );
+    } catch (error) {
+        console.error("[auth-gateway]:session-revalidation-failed", { error });
+        sessionExpiryNavigationPending = false;
+    }
+});
 
 uiCtx.extendFlow(
     "load-page",

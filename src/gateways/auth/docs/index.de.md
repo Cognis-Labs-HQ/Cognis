@@ -77,3 +77,7 @@ Das Authentifizierungs-Gateway lädt seinen erforderlichen Schlüsselbundadapter
 ## Weitergabe von Freigabefehlern
 
 Browser-Sitzungsergebnisse bewahren einen neutralen Fehlergrund der alternativen Authentifizierung, damit eine öffentliche Ressourcenseite eine fehlende Ressource von anderen Nicht-verfügbar-Zuständen unterscheiden kann, ohne Authentifizierungs-Interna zu importieren.
+
+## Bereitgestellte Capabilities
+
+Das Gateway stellt `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, `auth:registerPageScriptOrigins`, `auth:issueAccessToken`, `auth:getAuthClaims`, `auth:requireAuth`, `auth:requireRoleAccess`, `auth:revokeAccessTokensForSubject`, `auth:revokeSetupPendingAccessTokens` und `auth:routeContext` bereit.

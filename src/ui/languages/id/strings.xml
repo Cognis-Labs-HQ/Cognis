@@ -48,6 +48,7 @@
   <string name="ui.reuse.reset">Setel ulang</string>
   <string name="ui.reuse.reset_draft">Setel ulang draf</string>
   <string name="ui.reuse.refresh">Segarkan</string>
+  <string name="ui.reuse.update">Perbarui</string>
   <string name="ui.reuse.connection_lost_refresh_prompt">Koneksi terputus. Silakan segarkan halaman.</string>
   <string name="ui.reuse.loading">Memuat…</string>
   <string name="ui.reuse.loading_joke_1">Cognis seharusnya tidak selambat ini, ini sudah 2026 kan?</string>
@@ -62,6 +63,10 @@
   <string name="ui.reuse.discard">Batalkan</string>
   <string name="ui.reuse.done">Selesai</string>
   <string name="ui.reuse.add">Tambah</string>
+  <string name="ui.reuse.edit">Sunting</string>
+  <string name="ui.reuse.back">Kembali</string>
+  <string name="ui.reuse.previous">Sebelumnya</string>
+  <string name="ui.reuse.next">Berikutnya</string>
   <string name="ui.reuse.remove">Hapus</string>
   <string name="ui.reuse.dismiss">Tutup</string>
   <string name="ui.reuse.copy">Salin</string>
@@ -192,7 +197,7 @@
   <string name="ui.app.license.page_title">Lisensi</string>
   <string name="ui.app.license.page_subtitle">Ketentuan lisensi GNU AGPLv3.</string>
   <string name="ui.app.license.load_error">Teks lisensi tidak dapat dimuat.</string>
-  <string name="ui.app.admin.state.active">Aktif</string>
+  <string name="ui.app.admin.state.active">Diaktifkan</string>
   <string name="ui.app.admin.state.available">Tersedia</string>
   <string name="ui.app.admin.state.disabled">Nonaktif</string>
   <string name="ui.app.admin.publisher">Penerbit</string>
@@ -547,7 +552,6 @@
   <string name="ui.app.admin.notif.test_email_required">Alamat email penerima wajib diisi.</string>
   <string name="ui.app.admin.notif.field_env_conflict">Mengganti variabel lingkungan</string>
   <string name="ui.app.admin.notif.required_field">Nilai Wajib</string>
-  <string name="ui.app.admin.notif.enable_provider">Aktifkan Adaptor</string>
   <string name="ui.app.admin.notif.smtp_allow_self_signed">Izinkan Sertifikat Self-Signed</string>
   <string name="ui.app.admin.notif.smtp_auth_disabled">Nonaktifkan Autentikasi</string>
   <string name="ui.app.admin.notif.smtp_code_length">Panjang Kode</string>
@@ -674,4 +678,20 @@
   <string name="ui.reuse.core">Inti</string>
   <string name="ui.app.users.external_password_managed">Kata sandi pengguna eksternal dikelola oleh penyedia autentikasi mereka.</string>
   <string name="ui.app.admin.db_managed_by_docker">Dikelola oleh Docker</string>
+  <string name="ui.app.admin.security.login_session_timeout_label">Batas Waktu Sesi Login Bawaan</string>
+  <string name="ui.app.admin.security.login_session_timeout_hint">Sesi login terlama yang dapat dipilih pengguna.</string>
+  <string name="ui.app.admin.security.login_session_timeout_never">Tidak pernah</string>
+  <string name="ui.app.admin.security.login_session_timeout_never_warning">Menonaktifkan batas waktu sesi tidak disarankan di lingkungan produksi.</string>
+  <string name="ui.reuse.duration.minutes">Menit</string>
+  <string name="ui.reuse.duration.hours">Jam</string>
+  <string name="ui.reuse.duration.days">Hari</string>
+  <string name="ui.reuse.duration.weeks">Minggu</string>
+  <string name="ui.page.title.modules">Modul</string>
+  <string name="ui.reuse.license">Lisensi</string>
+  <string name="ui.reuse.install">Instal</string>
+  <string name="ui.reuse.installed">Terpasang</string>
+  <string name="ui.reuse.all">Semua</string>
+  <string name="ui.reuse.name">Nama</string>
+  <string name="ui.reuse.uninstall">Copot</string>
+  <string name="ui.reuse.toggle_secret_visibility">Alihkan visibilitas rahasia</string>
 </resources>

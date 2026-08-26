@@ -205,6 +205,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 adapterId,
                 absoluteDir,
             ),
+        registerCapabilityProvider: (provider) =>
+            ctx.uiRegistry?.registerCapabilityProvider(provider),
         registerAuthTypingMessage: (message) =>
             ctx.uiRegistry?.registerAuthTypingMessage(message),
         log: ctx.log,
@@ -232,7 +234,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "social",
         name: "Social Gateway",
-        version: "1.2.7",
+        version: "1.2.15",
         description: "Profiles, social graph, posts, and messaging.",
         publisher: "Cognis Labs HQ",
         hasAdapters: true,

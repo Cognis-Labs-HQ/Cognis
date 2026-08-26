@@ -75,6 +75,7 @@ test("guard allows auth security sections during TFA setup pending flow", () => 
         role: "user",
         providerId: "local",
         setupPending: true,
+        ttlSeconds: 60,
     });
 });
 

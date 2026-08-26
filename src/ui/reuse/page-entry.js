@@ -8,6 +8,10 @@
  *   mountWhenDirect(mount, options) — runs a page mount on direct URL loads
  *     while skipping SPA-router navigations and automatically updates the
  *     loading overlay state around the mount.
+ *   loadWithSpaImportGuard(load) — evaluates an SPA entry without its direct
+ *     mount and reference-counts concurrent entry imports.
+ *   ensureHostUiProviders() — waits for every active host UI provider before
+ *     mounting component code that consumes browser capabilities.
  *
  * Usage example:
  *   import { mountWhenDirect } from '/static/reuse/page-entry.js';
@@ -21,6 +25,9 @@ import {
     openRuntimeErrorPopup,
 } from "./runtime-error-popup.js";
 import { uiCtx } from "./ui-ctx.js";
+import "./feedback-capabilities.js";
+import "./floating-window.js";
+import { ensureUiProvidersLoaded } from "./ui-provider-loader.js";
 
 const activePageLoadingTokens = new Set();
 let nextPageLoadingToken = 0;
@@ -51,6 +58,10 @@ const FALLBACK_LOADING_MESSAGES = [
     "We promise this spinner is judging us too.",
 ];
 const log = (...messageParts) => console.warn("[page-entry]", ...messageParts);
+
+export async function ensureHostUiProviders() {
+    await ensureUiProvidersLoaded();
+}
 
 function createLoadingOverlayElement() {
     if (typeof document.createElement !== "function") return null;
@@ -307,17 +318,21 @@ export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
     let mountError = null;
     try {
         const root = document.querySelector(rootSelector);
+        const mountWithProviders = async (mountRoot) => {
+            await ensureHostUiProviders();
+            return mount(mountRoot);
+        };
         if (uiCtx.flowExists("load-page")) {
             const flowResult = await uiCtx.runFlow("load-page", {
-                mount,
+                mount: mountWithProviders,
                 root,
             });
             const mountResults = flowResult?.stageResults?.["mount-page"] ?? [];
             if (mountResults.length === 0) {
-                await mount(root);
+                await mountWithProviders(root);
             }
         } else {
-            await mount(root);
+            await mountWithProviders(root);
         }
     } catch (error) {
         console.error("[page-entry] Direct mount failed.", {
@@ -343,4 +358,25 @@ export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
         contextKey: "ui.reuse.runtime_error_context_route_mount",
         contextDetail,
     }).catch(() => {});
+}
+
+/**
+ * Loads an SPA entry module while suppressing its direct-load mount. Concurrent
+ * imports share a reference-counted guard so one completion cannot expose
+ * another entry that is still evaluating.
+ *
+ * @param {() => Promise<unknown>} load - Entry-module import operation.
+ * @returns {Promise<unknown>} The loaded entry module.
+ */
+export async function loadWithSpaImportGuard(load) {
+    globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
+    globalThis.__spaRouter = true;
+    try {
+        return await load();
+    } finally {
+        globalThis.__spaRouterCount--;
+        if (globalThis.__spaRouterCount === 0) {
+            globalThis.__spaRouter = false;
+        }
+    }
 }

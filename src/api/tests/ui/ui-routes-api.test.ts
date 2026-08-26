@@ -36,6 +36,72 @@ test("GET /api/v1/ui/navbar-plugins returns registered navbar plugins for authen
     );
 });
 
+test("GET /api/v1/ui/capability-providers returns navbar and standalone providers", async () => {
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerNavbarPlugin({
+        scriptUrl: "/static/gateways/files/provider.js",
+        providesCapabilities: ["files:uiClient"],
+    });
+    uiRegistry.registerNavbarPlugin({
+        scriptUrl: "/static/gateways/calendar/navbar.js",
+    });
+    uiRegistry.registerCapabilityProvider({
+        scriptUrl: "/static/reuse/feedback-capabilities.js",
+        providesCapabilities: ["ui:showToast"],
+    });
+    const route = createUiRoutes(undefined, uiRegistry);
+    const userToken = issueAccessToken("u1", "user", 60);
+    const recorder = createResponseRecorder();
+
+    const handled = await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${userToken}` },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/api/v1/ui/capability-providers"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    const payload = JSON.parse(recorder.body);
+    assert.deepEqual(
+        payload.data.map(
+            (provider: { scriptUrl: string }) => provider.scriptUrl,
+        ),
+        [
+            "/static/gateways/files/provider.js?v=development",
+            "/static/reuse/feedback-capabilities.js?v=development",
+        ],
+    );
+});
+
+test("GET /api/v1/ui/capability-providers accepts scoped share guests", async () => {
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerCapabilityProvider({
+        scriptUrl: "/static/profile-avatar.js",
+        providesCapabilities: ["ui:profileAvatarRenderer"],
+    });
+    const route = createUiRoutes(undefined, uiRegistry);
+    const guestToken = issueAccessToken("share:example:guest", "user", 60, {
+        providerId: "share",
+        purpose: "share",
+    });
+    const recorder = createResponseRecorder();
+
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${guestToken}` },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/api/v1/ui/capability-providers"),
+    );
+
+    assert.equal(recorder.status, 200);
+    assert.match(recorder.body, /profile-avatar/);
+});
+
 test("GET /api/v1/ui/page-extensions/:pageId filters extensions by access policy", async () => {
     const uiRegistry = new UIRegistry();
     uiRegistry.registerPageExtension("dashboard", {
@@ -215,6 +281,12 @@ test("GET /api/v1/ui/app-routes returns registered routes for authenticated user
         base: "/messages",
         scriptUrl: "/static/adapters/social/messages/app.js",
         stylesheets: ["/static/adapters/social/messages/messages.css"],
+        ownerUuid: "b7bf4a0a-a07a-483e-a736-21f97d703ce6",
+        componentPage: {
+            labelKey: "module.messages.page_label",
+            descriptionKey: "module.messages.page_description",
+            modes: ["overlay", "fullscreen"],
+        },
     });
     const route = createUiRoutes(undefined, uiRegistry);
 
@@ -237,6 +309,34 @@ test("GET /api/v1/ui/app-routes returns registered routes for authenticated user
     const payload = JSON.parse(recorder.body);
     assert.equal(payload.data.length, 1);
     assert.equal(payload.data[0].id, "messages-page");
+    assert.equal(
+        payload.data[0].ownerUuid,
+        "b7bf4a0a-a07a-483e-a736-21f97d703ce6",
+    );
+    assert.deepEqual(payload.data[0].componentPage.modes, [
+        "overlay",
+        "fullscreen",
+    ]);
+});
+
+test("component pages require a canonical owner UUID and localized metadata", () => {
+    const uiRegistry = new UIRegistry();
+    assert.throws(
+        () =>
+            uiRegistry.registerSpaRoute({
+                id: "unsafe-page",
+                pattern: "^/unsafe$",
+                base: "/unsafe",
+                scriptUrl: "/unsafe.js",
+                ownerUuid: "not-a-uuid",
+                componentPage: {
+                    labelKey: "Unsafe Label",
+                    descriptionKey: "unsafe.description",
+                    modes: ["fullscreen"],
+                },
+            }),
+        /invalid_component_page_declaration/,
+    );
 });
 
 test("GET registered SPA route serves the dashboard shell on refresh", async () => {
@@ -270,7 +370,7 @@ test("GET registered SPA route serves the dashboard shell on refresh", async () 
     assert.match(recorder.body, /<div id="app"/);
     assert.match(
         recorder.body,
-        /src="\/static\/gateways\/share\/ui\/app\/shares\/index\.js"/,
+        /"scriptUrl":"\/static\/gateways\/share\/ui\/app\/shares\/index\.js\?v=development"/,
     );
     assert.match(
         recorder.body,

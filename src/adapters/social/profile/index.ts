@@ -486,6 +486,14 @@ export async function bootstrapSocialAdapter(
         ],
         isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
     });
+    ctx.registerCapabilityProvider?.({
+        scriptUrl: "/static/adapters/social/profile/provider.js",
+        providesCapabilities: [
+            "ui:profileAvatarRenderer",
+            "social:profileUiClient",
+        ],
+        isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
+    });
     ctx.registerNavbarPlugin("/static/adapters/social/profile/navbar.js");
     ctx.registerAuthTypingMessage?.({
         id: "profile-social-space",

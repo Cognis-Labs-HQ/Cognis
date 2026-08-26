@@ -28,7 +28,7 @@ Komponen baru atau yang ditata ulang harus mengerucut ke nama concern tingkat at
 | Platform / lapisan inti | `src/`                         | `docs/`, `api/`, `ui/` | `src/docs/` menampung dokumentasi pengembang, `src/api/` kode HTTP/server, dan `src/ui/` aset browser. `src/core/` tetap menjadi lapisan kontrak dan layanan yang agnostik penyedia. |
 | Gateway                 | `src/gateways/<id>/`           | `docs/`, `api/`, `ui/` | Handler server, registrasi rute, dan helper bootstrap milik gateway ditempatkan di `api/`; aset admin/browser ditempatkan di `ui/`.                                                  |
 | Adapter                 | `src/adapters/<gateway>/<id>/` | `docs/`, `api/`, `ui/` | Gunakan `api/` untuk helper bootstrap atau server milik adapter dan `ui/` untuk aset browser milik adapter saat adapter mengeksposnya.                                               |
-| Modul                   | `src/modules/<id>/`            | `docs/`, `api/`, `ui/` | `docs/` dan `ui/` adalah rumah stabil untuk dokumentasi modul dan aset browser. `api/` adalah rumah stabil untuk kode server milik modul.                                            |
+| Modul                   | `<module-repository>/`         | `docs/`, `api/`, `ui/` | `docs/` dan `ui/` adalah rumah stabil untuk dokumentasi modul dan aset browser. `api/` adalah rumah stabil untuk kode server milik modul.                                            |
 
 Direktori pendukung seperti `tests/`, `languages/`, `sql/`, `templates/`, `bootstrap/`, `cli/`, `db/`, `content/`, dan `reuse/` boleh hidup berdampingan dengan root tersebut, tetapi hanya melengkapinya dan tidak boleh menggantikannya. Untuk komponen baru atau yang ditata ulang, utamakan `api/routes/` daripada direktori saudara `routes/` di level atas, dan gunakan `docs/index.<lang>.md` alih-alih nama entry dokumentasi khusus.
 
@@ -61,7 +61,7 @@ Berbagai jenis komponen membutuhkan kedalaman yang berbeda:
 | Platform / inti | Dokumen platform `src/docs/`   | Semua bagian sepenuhnya                                    |
 | Gateway         | `src/gateways/<id>/docs/`      | Arsitektur lebih ringan; sertakan Konfigurasi + Rute API   |
 | Adapter         | `src/adapters/<gw>/<id>/docs/` | Standar penuh (semua bagian yang berlaku)                  |
-| Modul           | `src/modules/<id>/docs/`       | Standar penuh; sertakan Rute API saat modul menyediakannya |
+| Modul           | `<module-repository>/docs/`    | Standar penuh; sertakan Rute API saat modul menyediakannya |
 
 ### Cuplikan kode
 
@@ -109,3 +109,7 @@ Semua empat bahasa (en, de, ja, id) diperlukan untuk string apapun yang terlihat
 Setiap nilai string dalam dokumen yang diterjemahkan harus ditulis dalam bahasa yang diwakili file tersebut. Satu-satunya pengecualian adalah nama merek (`Cognis`), akronim teknis universal (`LDAP`, `TLS`, `STARTTLS`), placeholder format, dan tagline Latin (`Disce. Loquere. Vive.`).
 
 Jika Anda mengubah dokumen Markdown yang memiliki varian terjemahan, perbarui file bahasa terkait dalam perubahan yang sama agar semua bahasa yang didukung tetap selaras.
+
+## Konvensi dokumentasi fungsi
+
+Templat kontribusi tersembunyi `.github/DOCUMENTATION_TEMPLATE.en.md` menentukan urutan pembuka wajib untuk setiap berkas dokumentasi nyata. Tepat setelah H1, awali dengan pernyataan informatif tentang apa yang dicapai fungsi atau permukaan yang didokumentasikan. H2 berikutnya berisi contoh penggunaan konkret untuk impor, pencarian kapabilitas, panggilan rute, konfigurasi, dan hasil yang diharapkan. H2 setelahnya memulai spesifikasi teknis lengkap; tempatkan seluruh input, output, perilaku siklus hidup, validasi, otorisasi, kesalahan, efek samping, persistensi, keamanan, pembersihan, dan detail ekstensi di sana atau pada subbagian H3. Pengujian arsitektur membandingkan tiga tingkat heading pertama setiap dokumen non-changelog dengan templat tersembunyi.

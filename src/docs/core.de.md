@@ -22,18 +22,18 @@ Nicht verantwortlich für: Authentifizierung implementieren, Daten speichern, Be
 
 ### Wichtige Quellpfade
 
-| Pfad                                    | Zweck                                                                  |
-| --------------------------------------- | ---------------------------------------------------------------------- |
-| `src/core/contracts/auth-account.ts`    | `AuthAccount`-, `ExternalIdentity`-, `AuthAccountStore`-Schnittstellen |
-| `src/core/contracts/module-manifest.ts` | `ModuleManifest`-Schnittstelle                                         |
-| `src/core/services/module-service.ts`   | `ModuleService`-Klasse                                                 |
-| `src/core/services/health-service.ts`   | `HealthService`-Klasse                                                 |
-| `src/core/services/gateway-service.ts`  | Gateway-Registry-Dienst                                                |
-| `src/core/index.ts`                     | Öffentliche Exporte für das `@cognis/core`-Paket                       |
+| Pfad                                                | Zweck                                                                  |
+| --------------------------------------------------- | ---------------------------------------------------------------------- |
+| `src/core/contracts/auth-account.ts`                | `AuthAccount`-, `ExternalIdentity`-, `AuthAccountStore`-Schnittstellen |
+| `src/core/contracts/module-manifest.ts`             | `ModuleManifest`-Schnittstelle                                         |
+| `src/core/services/module-loader/module-service.ts` | `ModuleService`-Klasse                                                 |
+| `src/core/services/health-service.ts`               | `HealthService`-Klasse                                                 |
+| `src/core/services/gateway-service.ts`              | Gateway-Registry-Dienst                                                |
+| `src/core/index.ts`                                 | Öffentliche Exporte für das `@cognis/core`-Paket                       |
 
 ### ModuleService
 
-`ModuleService` in `src/core/services/module-service.ts` regelt den vollständigen Modul-Lebenszyklus. Es operiert auf einer `ModuleRuntimeGateway`-Abstraktion und einem optionalen `ModulePathResolver`. Wenn ein Pfad-Resolver vorhanden ist, schreiben und entfernen Aktivierungs-/Deaktivierungsoperationen Zeigerdateien (nginx-Stil-`<id>.load`-Symlinks), die entweder auf ein vertrauenswürdiges internes Verzeichnis oder ein Laufzeit-Extraktionsverzeichnis für externe Archive zeigen.
+`ModuleService` in `src/core/services/module-loader/module-service.ts` regelt den vollständigen Modul-Lebenszyklus. Es operiert auf einer `ModuleRuntimeGateway`-Abstraktion und einem optionalen `ModulePathResolver`. Wenn ein Pfad-Resolver vorhanden ist, schreiben und entfernen Aktivierungs-/Deaktivierungsoperationen Zeigerdateien (nginx-Stil-`<id>.load`-Symlinks), die entweder auf ein vertrauenswürdiges internes Verzeichnis oder ein Laufzeit-Extraktionsverzeichnis für externe Archive zeigen.
 
 Vor der Aktivierung eines Moduls setzt `ModuleService` zwei Sicherheitsmaßnahmen durch:
 
@@ -43,7 +43,7 @@ Vor der Aktivierung eines Moduls setzt `ModuleService` zwei Sicherheitsmaßnahme
 Routensicherheit wird vor der Aktivierung eines Moduls überprüft: Wenn die `routes.json` des Moduls einen Pfad unter einem geschützten Präfix deklariert (`/api/v1/system`, `/api/v1/auth`, `/api/v1/users`, `/public`, `/ui`), wird die Aktivierung abgelehnt.
 
 ```ts
-// src/core/services/module-service.ts
+// src/core/services/module-loader/module-service.ts
 export class ModuleService {
     async enable(
         moduleId: string,

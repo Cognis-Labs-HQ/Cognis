@@ -3,12 +3,14 @@
  *
  * - loadUiPreferences()       — fetches the current account's ui-preferences from the API.
  *                               Returns the parsed prefs object or null on failure.
+ * - saveUiPreferences(patch)  — merges and persists account UI preferences.
  * - applyUiPreferences(prefs) — writes message-style + font CSS custom properties onto <html>
  *                               immediately (legacy rem values are converted to pt).
  *
  * Usage:
  *   const prefs = await loadUiPreferences();
  *   applyUiPreferences(prefs);
+ *   await saveUiPreferences({ font: 'system-ui' });
  */
 import { apiFetch } from "./api-client.js";
 import { normalizeMessageStyle } from "./message-style-options.js";
@@ -42,7 +44,7 @@ export async function saveUiPreferences(patch) {
     if (!account || !hasPreferenceApiContext()) return;
     const current = await loadUiPreferences();
     const merged = { ...(current || {}), ...patch };
-    await apiFetch(
+    const response = await apiFetch(
         `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
         {
             method: "PUT",
@@ -50,6 +52,9 @@ export async function saveUiPreferences(patch) {
             body: JSON.stringify({ layout: merged }),
         },
     );
+    if (!response.ok) {
+        throw new Error(`ui_preferences_save_failed:${response.status}`);
+    }
 }
 
 export function applyUiPreferences(prefs) {

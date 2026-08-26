@@ -114,7 +114,12 @@ for (const descriptorPath of resolvableFiles.filter(
 }
 const entrySourcePaths = sourceFiles.filter(
     (filePath) =>
-        forcedEntryPaths.has(filePath) || !importedSourcePaths.has(filePath),
+        forcedEntryPaths.has(filePath) ||
+        filePath.startsWith(path.join(repositoryRoot, "src/ui/reuse/")) ||
+        filePath.startsWith(
+            path.join(repositoryRoot, "src/ui/styles/reuse/"),
+        ) ||
+        !importedSourcePaths.has(filePath),
 );
 const entryPoints = Object.fromEntries(
     entrySourcePaths.map((filePath, index) => [`entry-${index}`, filePath]),
@@ -157,6 +162,11 @@ for (const [outputPath, metadata] of Object.entries(result.metafile.outputs)) {
 await cp(
     path.join(repositoryRoot, "src", "ui", "public"),
     path.join(outputRoot, "public"),
+    { recursive: true },
+);
+await cp(
+    path.join(repositoryRoot, "src", "ui", "public", "assets"),
+    assetRoot,
     { recursive: true },
 );
 await writeFile(

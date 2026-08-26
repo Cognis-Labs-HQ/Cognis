@@ -48,6 +48,7 @@
   <string name="ui.reuse.reset">リセット</string>
   <string name="ui.reuse.reset_draft">下書きをリセット</string>
   <string name="ui.reuse.refresh">更新</string>
+  <string name="ui.reuse.update">更新</string>
   <string name="ui.reuse.connection_lost_refresh_prompt">接続が中断されました。ページを更新してください。</string>
   <string name="ui.reuse.loading">読み込み中…</string>
   <string name="ui.reuse.loading_joke_1">Cognis がこんなに遅いはずないのに…もう 2026 年ですよね？</string>
@@ -62,6 +63,10 @@
   <string name="ui.reuse.discard">元に戻す</string>
   <string name="ui.reuse.done">完了</string>
   <string name="ui.reuse.add">追加</string>
+  <string name="ui.reuse.edit">編集</string>
+  <string name="ui.reuse.back">戻る</string>
+  <string name="ui.reuse.previous">前へ</string>
+  <string name="ui.reuse.next">次へ</string>
   <string name="ui.reuse.remove">削除</string>
   <string name="ui.reuse.dismiss">閉じる</string>
   <string name="ui.reuse.copy">コピー</string>
@@ -547,7 +552,6 @@
   <string name="ui.app.admin.notif.test_email_required">受信者のメールアドレスは必須です。</string>
   <string name="ui.app.admin.notif.field_env_conflict">環境変数を上書きしています</string>
   <string name="ui.app.admin.notif.required_field">必須の値</string>
-  <string name="ui.app.admin.notif.enable_provider">アダプターを有効にする</string>
   <string name="ui.app.admin.notif.smtp_allow_self_signed">自己署名証明書を許可する</string>
   <string name="ui.app.admin.notif.smtp_auth_disabled">認証を無効にする</string>
   <string name="ui.app.admin.notif.smtp_code_length">コード長</string>
@@ -674,4 +678,20 @@
   <string name="ui.reuse.core">コア</string>
   <string name="ui.app.users.external_password_managed">外部ユーザーのパスワードは認証プロバイダーによって管理されます。</string>
   <string name="ui.app.admin.db_managed_by_docker">Dockerによって管理</string>
+  <string name="ui.app.admin.security.login_session_timeout_label">デフォルトのログインセッション期限</string>
+  <string name="ui.app.admin.security.login_session_timeout_hint">ユーザーが選択できる最長のログインセッションです。</string>
+  <string name="ui.app.admin.security.login_session_timeout_never">なし</string>
+  <string name="ui.app.admin.security.login_session_timeout_never_warning">本番環境でセッション期限を無効にすることは推奨されません。</string>
+  <string name="ui.reuse.duration.minutes">分</string>
+  <string name="ui.reuse.duration.hours">時間</string>
+  <string name="ui.reuse.duration.days">日</string>
+  <string name="ui.reuse.duration.weeks">週間</string>
+  <string name="ui.page.title.modules">モジュール</string>
+  <string name="ui.reuse.license">ライセンス</string>
+  <string name="ui.reuse.install">インストール</string>
+  <string name="ui.reuse.installed">インストール済み</string>
+  <string name="ui.reuse.all">すべて</string>
+  <string name="ui.reuse.name">名前</string>
+  <string name="ui.reuse.uninstall">アンインストール</string>
+  <string name="ui.reuse.toggle_secret_visibility">シークレットの表示を切り替える</string>
 </resources>

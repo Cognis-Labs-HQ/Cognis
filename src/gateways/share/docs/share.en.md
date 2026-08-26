@@ -10,7 +10,7 @@ Shared resources open on `/share/:token`. The page uses the standard page compos
 
 ## Guest Sessions
 
-When a share token is resolved, the Share gateway now issues a short-lived guest access token (`purpose: share`) bound to that share record (`sub: share:<shareId>`). The share page temporarily swaps this token into `localStorage` so API calls made by mounted shared pages run as an anonymous guest session, then restores the previous token on unload.
+When a share token is resolved, the Share gateway now issues a short-lived guest access token (`purpose: share`) bound to that share record (`sub: share:<shareId>`). The share page temporarily swaps this token into `localStorage` so API calls made by mounted shared pages run as an anonymous guest session, then restores the previous token on unload. After the scoped guest token is active, the Share page loads host UI capability providers before importing the resource renderer, so shared components can consume declared capabilities such as profile-avatar rendering.
 
 Anonymous guests never unlock an account keyring. Share activates the delivered guest keyring with its server-issued session material, keeps it unlocked without a user password for the guest session, and deletes its session-only encrypted vault when that session ends. Account keyring lookup and persistence remain available only when the visitor entered with a validated non-guest account session, including after a guest page refresh.
 
@@ -24,7 +24,7 @@ Guest tokens are scoped to one share record, expire quickly (capped at four hour
 
 ## Share Controls
 
-Share records now carry gateway-owned access controls: read/write permissions, typed recipients for in-app users, groups/classes, and email recipients, optional password protection, and a readonly watermark flag. The Share gateway exposes generic token create/update routes so modules request a share through `ctx` or `/api/v1/share/tokens` and do not own recipient delivery or permission editing. Readonly shares default to watermarking, while write-enabled shares clear that default unless a caller explicitly keeps it.
+Share records now carry gateway-owned access controls: read/write permissions, typed recipients for in-app users, groups/classes, and email recipients, optional password protection, and a readonly watermark flag. The Share gateway exposes generic token create/update routes so modules request a share through `ctx` or `/api/v1/share/tokens` and do not own recipient delivery or permission editing. Readonly shares default to watermarking, while write-enabled shares clear that default unless a caller explicitly keeps it. The gateway-owned button renderer always pairs the canonical share icon with the localized Share label.
 
 ## Share Method Adapters
 

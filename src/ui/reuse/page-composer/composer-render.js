@@ -735,6 +735,11 @@ export function createComposerRenderer({
              </div>`
                     : "";
                 const editingClass = state.editing ? " composer-editing" : "";
+                const focusButton = element.focusControl
+                    ? `<button type="button" class="focus-control-trigger btn-neutral" data-focus-surface="${escapeHtml(element.focusControl.id)}" aria-label="${escapeHtml(i18n.t(element.focusControl.labelKey))}">
+                         <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5m13 5h5v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                       </button>`
+                    : "";
                 const isActive =
                     state.subPageNavigation &&
                     element.id === state.activeSubPageId;
@@ -747,7 +752,7 @@ export function createComposerRenderer({
                         : "";
                     return `<div class="content-section${activeClass}"${hiddenAttr} id="${element.id}">${headingHtml}<div class="sub-composer-inner"></div></div>`;
                 }
-                return `<div class="content-section${activeClass}"${hiddenAttr} id="${element.id}"><section class="widget-card${editingClass}" data-composer-element="${element.id}"${dragAttrs}>${dragHandle}${element.render()}</section></div>`;
+                return `<div class="content-section${activeClass}"${hiddenAttr} id="${element.id}"><section class="widget-card${editingClass}" data-composer-element="${element.id}"${dragAttrs}>${dragHandle}${focusButton}${element.render()}</section></div>`;
             })
             .join("");
     }

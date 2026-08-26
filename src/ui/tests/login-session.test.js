@@ -26,6 +26,7 @@ test("login session persistence records and clears authentication state", () => 
             providerId: "ldap",
             isFounder: true,
             userValidationMode: "smtp",
+            ttlSeconds: 3600,
         },
         storage,
     );
@@ -38,9 +39,26 @@ test("login session persistence records and clears authentication state", () => 
     assert.equal(storage.getItem("cognis_is_founder"), "true");
     assert.equal(storage.getItem("cognis_user_validation_mode"), "smtp");
     assert.match(storage.getItem("cognis_login_time"), /^\d{4}-\d{2}-\d{2}T/);
+    assert.ok(
+        Date.parse(storage.getItem("cognis_session_expires_at")) > Date.now(),
+    );
 
     clearLoginSession(storage);
     assert.equal(storage.getItem("cognis_access_token"), null);
     assert.equal(storage.getItem("cognis_account"), null);
     assert.equal(storage.getItem("cognis_user_validation_mode"), null);
+    assert.equal(storage.getItem("cognis_session_expires_at"), null);
+});
+
+test("non-expiring login sessions omit a stored expiry", () => {
+    const storage = createStorage();
+    persistLoginSession(
+        {
+            token: "access-token",
+            accountId: "account-id",
+            ttlSeconds: null,
+        },
+        storage,
+    );
+    assert.equal(storage.getItem("cognis_session_expires_at"), null);
 });

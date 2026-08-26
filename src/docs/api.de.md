@@ -71,7 +71,6 @@ Der Token-Ablauf wird durch `COGNIS_ACCESS_TOKEN_TTL_SECONDS` gesteuert (Standar
 | `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | Pfad für das CLI-Bootstrap-Token                    |
 | `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | Stammverzeichnis für Gateway-Erkennung              |
 | `COGNIS_ADAPTERS_ROOT`            | `src/adapters`                 | Stammverzeichnis für Adapter-Erkennung              |
-| `COGNIS_MODULES_ROOT`             | `src/modules`                  | Stammverzeichnis für Modul-Erkennung                |
 | `PORT`                            | `3000`                         | HTTP-Port                                           |
 | `LISTEN_HOST`                     | `0.0.0.0`                      | Bind-Adresse                                        |
 

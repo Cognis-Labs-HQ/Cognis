@@ -18,6 +18,7 @@ import {
 import { resolveQuickShareActions } from "./quick-share-actions.js";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import type { ShareAdapterConfigStoreContract } from "./adapter-config-store.js";
 
 export interface ShareMethodAdapter {
     id: string;
@@ -58,6 +59,7 @@ export interface ShareVariant {
 
 export class CoreShareGateway {
     private readonly adapters = new Map<string, ShareMethodAdapter>();
+    private readonly disabledAdapters = new Set<string>();
     constructor(
         private readonly store: ShareTokenStore,
         private readonly guestProfileStore: GuestProfileStore,
@@ -66,6 +68,10 @@ export class CoreShareGateway {
         private readonly resolveCapability: <T>(
             name: string,
         ) => T | undefined = () => undefined,
+        private readonly adapterConfigStore: ShareAdapterConfigStoreContract = {
+            list: async () => [],
+            save: async () => {},
+        },
     ) {}
 
     getCapability<T>(name: string): T | undefined {
@@ -127,10 +133,38 @@ export class CoreShareGateway {
         return this.adapters.get(adapterId) ?? null;
     }
 
+    isAdapterEnabled(adapterId: string): boolean {
+        return (
+            this.adapters.has(adapterId) &&
+            !this.disabledAdapters.has(adapterId)
+        );
+    }
+
+    async loadAdapterConfigs(): Promise<void> {
+        const configs = await this.adapterConfigStore.list();
+        for (const config of configs) {
+            if (!config.enabled) this.disabledAdapters.add(config.adapterId);
+        }
+    }
+
+    async setAdapterEnabled(
+        adapterId: string,
+        enabled: boolean,
+    ): Promise<boolean> {
+        if (!this.adapters.has(adapterId)) return false;
+        await this.adapterConfigStore.save(adapterId, enabled);
+        if (enabled) this.disabledAdapters.delete(adapterId);
+        else this.disabledAdapters.add(adapterId);
+        return true;
+    }
+
     resolveRecordAdapter(record: {
         metadata?: Record<string, string> | null;
     }): ShareMethodAdapter | null {
-        return this.getAdapter(String(record.metadata?.adapterId ?? ""));
+        const adapterId = String(record.metadata?.adapterId ?? "");
+        return this.isAdapterEnabled(adapterId)
+            ? (this.getAdapter(adapterId) ?? null)
+            : null;
     }
 
     prepareAdapterShare(
@@ -141,7 +175,9 @@ export class CoreShareGateway {
         },
     ): { accessControls: Record<string, unknown> } {
         const adapter = this.adapters.get(adapterId);
-        if (!adapter) throw new Error("share_method_not_found");
+        if (!adapter || !this.isAdapterEnabled(adapterId)) {
+            throw new Error("share_method_not_found");
+        }
         return adapter.prepare(input);
     }
 
@@ -449,6 +485,7 @@ export class CoreShareGateway {
             resourceId: input.resourceId,
         });
         for (const record of records) {
+            if (!this.resolveRecordAdapter(record)) continue;
             const recipientAuthorized =
                 !isExpired(record) &&
                 record.grantedCapabilities.includes(input.requiredCapability) &&
@@ -582,18 +619,21 @@ export class CoreShareGateway {
     }
 
     async getTokenById(shareId: string): Promise<ShareTokenRecord | null> {
-        return this.store.getById(shareId);
+        const record = await this.store.getById(shareId);
+        return record && this.resolveRecordAdapter(record) ? record : null;
     }
 
     async resolveToken(
         tokenValue: string,
         password?: string | null,
     ): Promise<ShareTokenRecord | null> {
-        return this.store.resolve(tokenValue, password);
+        const record = await this.store.resolve(tokenValue, password);
+        return record && this.resolveRecordAdapter(record) ? record : null;
     }
 
     async inspectToken(tokenValue: string): Promise<ShareTokenRecord | null> {
-        return this.store.inspect(tokenValue);
+        const record = await this.store.inspect(tokenValue);
+        return record && this.resolveRecordAdapter(record) ? record : null;
     }
 
     async createGuestProfile(input: {

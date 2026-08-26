@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    .background { fill: #e7ebf2; }
+    .border { fill: none; stroke: #637083; stroke-width: 2; }
+    .mark { fill: #334155; }
+    @media (prefers-color-scheme: dark) {
+      .background { fill: #253247; }
+      .border { stroke: #91a0b5; }
+      .mark { fill: #e5eaf2; }
+    }
+  </style>
+  <rect class="background" x="3" y="3" width="58" height="58" rx="14" />
+  <rect class="border" x="4" y="4" width="56" height="56" rx="13" />
+  <path class="mark" d="M31.8 16c-8.1 0-13.2 4.5-13.5 11.8h7.1c.2-3.4 2.6-5.5 6.3-5.5 3.5 0 5.8 1.9 5.8 4.8 0 2.4-1.2 3.8-4.6 5.9-4.2 2.5-5.8 5-5.5 9.3v1.5h6.8v-1.2c0-2.8.9-4.1 4.6-6.3 4.1-2.5 6.2-5.7 6.2-9.7C45 20.2 39.7 16 31.8 16Zm-.9 31.8a4.3 4.3 0 1 0 0 8.6 4.3 4.3 0 0 0 0-8.6Z" />
+</svg>

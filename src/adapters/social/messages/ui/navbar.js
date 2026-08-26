@@ -1,10 +1,13 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { registerSearchIndexing } from "./search/index.js";
 import "./chat-loading.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { messagesUiClient } from "./client.js";
 
-const messagesLink = document.querySelector("[data-messages-link]");
+uiCtx.capabilities.contribute("social:messagesUiClient", messagesUiClient);
 
 async function syncMessagesLink() {
+    const messagesLink = document.querySelector("[data-messages-link]");
     if (!messagesLink) return;
     try {
         const response = await apiFetch("/api/v1/social/messages/ping");

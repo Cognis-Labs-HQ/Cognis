@@ -645,3 +645,32 @@ test("system health labels component contributions as Components", () => {
     assert.match(output, /Components/);
     assert.doesNotMatch(output, /Component Contributions/);
 });
+
+test("system:capabilities requests the capability registry", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+        globalThis.fetch = async (input) => {
+            assert.equal(
+                String(input),
+                "http://localhost:3000/api/v1/system/capabilities",
+            );
+            return new Response(
+                JSON.stringify({ data: ["auth:requireAuth"] }),
+                {
+                    status: 200,
+                    headers: { "content-type": "application/json" },
+                },
+            );
+        };
+
+        assert.deepEqual(
+            await executeRegisteredCommand("system:capabilities", [], {
+                apiBaseUrl: "http://localhost:3000",
+                getApiToken: async () => "token",
+            }),
+            { data: ["auth:requireAuth"] },
+        );
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});

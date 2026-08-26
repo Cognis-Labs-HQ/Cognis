@@ -9,8 +9,20 @@ const SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/auth/ui/security-prefs/index.js"),
     "utf8",
 );
+const STYLES = readFileSync(
+    resolve(ROOT, "src/gateways/auth/ui/security-prefs/index.css"),
+    "utf8",
+);
 const PASSWORD_CHANGE_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/auth/ui/security-prefs/password-change.js"),
+    "utf8",
+);
+const PASSWORD_CONFIRMATION_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/auth/ui/reuse/password-confirmation.js"),
+    "utf8",
+);
+const SESSION_FLOW_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/auth/ui/session-flow-hooks.js"),
     "utf8",
 );
 const KEYRING_SETTINGS_SOURCE = readFileSync(
@@ -34,6 +46,75 @@ test("auth security preferences disable password reset for external users", () =
     assert.match(SOURCE, /unsupported = capability\.supported !== true/);
     assert.match(SOURCE, /unsupported \? " disabled"/);
     assert.match(SOURCE, /external_password_notice/);
+});
+
+test("auth security preferences present login timeout as a subsection", () => {
+    assert.match(
+        SOURCE,
+        /<h3 class="components-section-heading">\$\{escapeHtml\(i18n\.t\("gateway\.auth\.security\.session_timeout_label"\)\)\}<\/h3>/,
+    );
+    assert.match(SOURCE, /settings-login-session-timeout-unit/);
+    assert.match(SOURCE, /components-section settings-auth-password-reset/);
+});
+
+test("auth security preferences register timeout changes by dirty key", () => {
+    assert.match(SOURCE, /LOGIN_SESSION_TIMEOUT_DIRTY_KEY/);
+    assert.match(
+        SOURCE,
+        /markDirty\?\.\(\s*LOGIN_SESSION_TIMEOUT_DIRTY_KEY,\s*usesDefaultSessionTimeout !== originalUsesDefaultSessionTimeout \|\|\s*getTimeoutMinutes\(\) !== originalSessionTimeoutMinutes,/,
+    );
+    assert.match(SOURCE, /syncLoginSessionTimeoutDirtyState/);
+});
+
+test("auth security preferences can reset to the administration default", () => {
+    assert.match(SOURCE, /settings-login-session-timeout-reset/);
+    assert.match(SOURCE, /<svg viewBox="0 0 24 24"/);
+    assert.match(SOURCE, /usesDefaultSessionTimeout = true/);
+    assert.match(SOURCE, /\{ useDefault: true \}/);
+    assert.match(SOURCE, /latestTimeout\.maximumMinutes/);
+    assert.match(SOURCE, /resetLoginSessionTimeoutToGlobal/);
+    assert.match(
+        SOURCE,
+        /aria-label="\$\{escapeHtml\(i18n\.t\("gateway\.auth\.security\.session_timeout_reset"\)\)\}">/,
+    );
+});
+
+test("auth security preferences show a non-selectable Never default", () => {
+    assert.match(
+        SOURCE,
+        /<option value="never" selected disabled>.*session_timeout_never/,
+    );
+    assert.match(
+        SOURCE,
+        /input\.hidden = sessionTimeout\?\.maximumMinutes === 0/,
+    );
+});
+
+test("auth security preferences show the current session countdown", () => {
+    assert.match(SOURCE, /cognis_session_expires_at/);
+    assert.match(SOURCE, /getCountdownParts\(remaining\)/);
+    assert.match(SOURCE, /settings-login-session-timeout-countdown/);
+    assert.match(SOURCE, /!timeoutDisabled && hasSessionExpiry/);
+    assert.match(SOURCE, /cognis_login_time/);
+    assert.match(SOURCE, /syncCountdownUrgency\(countdown, remaining\)/);
+    assert.match(SOURCE, /window\.setInterval\(updateCountdown, 1000\)/);
+    assert.match(SOURCE, /getCountdownUrgency\(remaining, sessionDuration\)/);
+    assert.match(
+        STYLES,
+        /#settings-login-session-timeout-countdown\.session-expiry-countdown--warning/,
+    );
+    assert.match(
+        STYLES,
+        /#settings-login-session-timeout-countdown\.session-expiry-countdown--danger/,
+    );
+    assert.match(STYLES, /session-expiry-countdown--warning/);
+    assert.match(STYLES, /session-expiry-countdown--danger/);
+});
+
+test("longer session preferences defer until the next login", () => {
+    assert.match(SOURCE, /payload\.data\?\.appliesOnNextLogin === true/);
+    assert.match(SOURCE, /session_timeout_next_login/);
+    assert.match(SOURCE, /variant: "warning"/);
 });
 
 test("keyring settings unlock once before allowing secret changes", () => {
@@ -66,7 +147,7 @@ test("keyring settings unlock once before allowing secret changes", () => {
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-section/);
     assert.match(KEYRING_SETTINGS_SOURCE, /data-keyring-log-previous/);
     assert.match(KEYRING_SETTINGS_SOURCE, /data-keyring-log-next/);
-    assert.match(KEYRING_SETTINGS_SOURCE, /eventPageSize = 25/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /eventPageSize = 10/);
     assert.match(KEYRING_SETTINGS_SOURCE, /keyring:listEvents/);
     assert.match(KEYRING_SETTINGS_SOURCE, /keyring:changePassword/);
     assert.match(KEYRING_SETTINGS_SOURCE, /keyring:clear/);
@@ -103,5 +184,20 @@ test("password change popup revalidates confirm password reactively", () => {
     assert.match(
         PASSWORD_CHANGE_SOURCE,
         /messageKey:\s*"ui\.app\.register\.passwords_match"/,
+    );
+});
+
+test("expired API sessions redirect to login with expiry messaging", () => {
+    assert.match(SESSION_FLOW_SOURCE, /cognis:api-access-denied/);
+    assert.match(SESSION_FLOW_SOURCE, /event\.detail\?\.status !== 401/);
+    assert.match(
+        SESSION_FLOW_SOURCE,
+        /uiCtx\.runFlow\("authenticate-session", \{\}\)/,
+    );
+    assert.match(SESSION_FLOW_SOURCE, /session\?\.authenticated === true/);
+    assert.match(SESSION_FLOW_SOURCE, /suppressAccessDeniedEvent: true/);
+    assert.match(
+        PASSWORD_CONFIRMATION_SOURCE,
+        /suppressAccessDeniedEvent: true/,
     );
 });

@@ -23,19 +23,19 @@ Not responsible for: implementing authentication, storing data, sending notifica
 
 ### Key source locations
 
-| Path                                    | Purpose                                                          |
-| --------------------------------------- | ---------------------------------------------------------------- |
-| `src/core/contracts/auth-account.ts`    | `AuthAccount`, `ExternalIdentity`, `AuthAccountStore` interfaces |
-| `src/core/contracts/module-manifest.ts` | `ModuleManifest` interface                                       |
-| `src/core/services/module-service.ts`   | `ModuleService` class                                            |
-| `src/core/services/health-service.ts`   | `HealthService` class                                            |
-| `src/core/services/gateway-service.ts`  | Gateway registry service                                         |
-| `src/core/ctx/`                         | Ctx capability bus and staged flow orchestration primitives      |
-| `src/core/index.ts`                     | Public exports for the `@cognis/core` package                    |
+| Path                                                | Purpose                                                          |
+| --------------------------------------------------- | ---------------------------------------------------------------- |
+| `src/core/contracts/auth-account.ts`                | `AuthAccount`, `ExternalIdentity`, `AuthAccountStore` interfaces |
+| `src/core/contracts/module-manifest.ts`             | `ModuleManifest` interface                                       |
+| `src/core/services/module-loader/module-service.ts` | `ModuleService` class                                            |
+| `src/core/services/health-service.ts`               | `HealthService` class                                            |
+| `src/core/services/gateway-service.ts`              | Gateway registry service                                         |
+| `src/core/ctx/`                                     | Ctx capability bus and staged flow orchestration primitives      |
+| `src/core/index.ts`                                 | Public exports for the `@cognis/core` package                    |
 
 ### ModuleService
 
-`ModuleService` in `src/core/services/module-service.ts` governs the full module lifecycle. It operates on a `ModuleRuntimeGateway` abstraction and an optional `ModulePathResolver`. When a path resolver is present, enable/disable operations write and remove pointer files (nginx-style `<id>.load` symlinks) that point to either a trusted internal directory or a runtime extraction directory for external archives.
+`ModuleService` in `src/core/services/module-loader/module-service.ts` governs the full module lifecycle. It operates on a `ModuleRuntimeGateway` abstraction and an optional `ModulePathResolver`. When a path resolver is present, enable/disable operations write and remove pointer files (nginx-style `<id>.load` symlinks) that point to either a trusted internal directory or a runtime extraction directory for external archives.
 
 Before enabling any module, `ModuleService` enforces two guardrails:
 
@@ -45,7 +45,7 @@ Before enabling any module, `ModuleService` enforces two guardrails:
 Route safety is enforced before any module is activated: if the module's `routes.json` declares a path under a protected prefix (`/api/v1/system`, `/api/v1/auth`, `/api/v1/users`, `/public`, `/ui`), enablement is rejected.
 
 ```ts
-// src/core/services/module-service.ts
+// src/core/services/module-loader/module-service.ts
 export class ModuleService {
     async enable(
         moduleId: string,

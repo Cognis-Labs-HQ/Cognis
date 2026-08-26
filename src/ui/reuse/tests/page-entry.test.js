@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { beginPageLoading, mountWhenDirect } from "../page-entry.js";
+import {
+    beginPageLoading,
+    loadWithSpaImportGuard,
+    mountWhenDirect,
+} from "../page-entry.js";
+import { uiCtx } from "../ui-ctx.js";
 
 function createMockBody() {
     const children = [];
@@ -17,6 +22,13 @@ function createMockBody() {
         },
     };
 }
+
+test("page entry publishes floating windows before external pages mount", () => {
+    assert.equal(
+        typeof uiCtx.capabilities.get("ui:makeFloatingWindow"),
+        "function",
+    );
+});
 
 function createMockElement(tagName) {
     return {
@@ -188,6 +200,36 @@ test("mountWhenDirect skips direct mounting during SPA router loads", async () =
     assert.equal(mounted, false);
 
     globalThis.__spaRouter = originalRouterFlag;
+});
+
+test("SPA import guard remains active until every concurrent import settles", async () => {
+    const originalRouterFlag = globalThis.__spaRouter;
+    const originalRouterCount = globalThis.__spaRouterCount;
+    let releaseFirst;
+    let releaseSecond;
+    try {
+        globalThis.__spaRouter = false;
+        globalThis.__spaRouterCount = 0;
+        const first = loadWithSpaImportGuard(
+            () => new Promise((resolve) => (releaseFirst = resolve)),
+        );
+        const second = loadWithSpaImportGuard(
+            () => new Promise((resolve) => (releaseSecond = resolve)),
+        );
+        assert.equal(globalThis.__spaRouterCount, 2);
+        assert.equal(globalThis.__spaRouter, true);
+        releaseFirst("first");
+        assert.equal(await first, "first");
+        assert.equal(globalThis.__spaRouterCount, 1);
+        assert.equal(globalThis.__spaRouter, true);
+        releaseSecond("second");
+        assert.equal(await second, "second");
+        assert.equal(globalThis.__spaRouterCount, 0);
+        assert.equal(globalThis.__spaRouter, false);
+    } finally {
+        globalThis.__spaRouter = originalRouterFlag;
+        globalThis.__spaRouterCount = originalRouterCount;
+    }
 });
 
 test("mountWhenDirect pagehide listener marks the page as loading", async () => {

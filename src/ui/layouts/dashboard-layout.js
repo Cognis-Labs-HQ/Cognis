@@ -28,6 +28,13 @@ import { uiCtx } from "../reuse/ui-ctx.js";
 import { showToast } from "../reuse/toast.js";
 import { bindLanguageToggle } from "../reuse/language-toggle.js";
 import { getLoginReturnPath } from "../reuse/login-navigation.js";
+import { bindUserMenuIntegrity } from "./user-menu.js";
+import {
+    ensureNavbarPluginsLoaded as loadNavbarPlugins,
+    ensureUiProvidersLoaded,
+    invalidateNavbarPlugins,
+    invalidateUiProviders,
+} from "../reuse/ui-provider-loader.js";
 
 capturePwaInstallPrompt();
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
@@ -80,15 +87,56 @@ async function refreshDisplayNameFromProfile() {
 
 function applyActiveNavigation() {
     const currentPath = window.location.pathname;
-    document.querySelectorAll(".topnav a").forEach((link) => {
-        const isActive = isNavigationLinkActive(
-            currentPath,
-            link.getAttribute("href"),
+    document
+        .querySelectorAll(".topnav a, .nav-drawer-nav a")
+        .forEach((link) => {
+            const isActive = isNavigationLinkActive(
+                currentPath,
+                link.getAttribute("href"),
+            );
+            link.classList.toggle("active", isActive);
+            if (isActive) link.setAttribute("aria-current", "page");
+            else link.removeAttribute("aria-current");
+        });
+}
+
+function navigationEntryLabel(entry) {
+    return (
+        entry.textContent.trim() ||
+        entry.dataset.i18n ||
+        entry.getAttribute("href") ||
+        ""
+    );
+}
+
+function navigationEntryRank(entry) {
+    return entry.getAttribute("href") === "/dashboard" ? 0 : 1;
+}
+
+function sortNavigationEntries(topnav) {
+    const entries = Array.from(topnav.children).filter((entry) =>
+        entry.matches("a[href]"),
+    );
+    const collator = new Intl.Collator(
+        document.documentElement.lang || undefined,
+        {
+            numeric: true,
+            sensitivity: "base",
+        },
+    );
+    const sortedEntries = [...entries].sort((left, right) => {
+        const rankDifference =
+            navigationEntryRank(left) - navigationEntryRank(right);
+        return (
+            rankDifference ||
+            collator.compare(
+                navigationEntryLabel(left),
+                navigationEntryLabel(right),
+            )
         );
-        link.classList.toggle("active", isActive);
-        if (isActive) link.setAttribute("aria-current", "page");
-        else link.removeAttribute("aria-current");
     });
+    if (entries.every((entry, index) => entry === sortedEntries[index])) return;
+    topnav.append(...sortedEntries);
 }
 
 function isNavigationLinkActive(currentPath, href) {
@@ -142,6 +190,8 @@ function bindTopbarActions() {
     const dropdown = document.querySelector("#profile-dropdown");
     const logout = document.querySelector("#profile-logout");
     const nameEl = document.querySelector("#profile-name");
+
+    if (dropdown) bindUserMenuIntegrity(dropdown);
 
     if (nameEl) nameEl.textContent = getDisplayName();
     refreshDisplayNameFromProfile().catch(() => {});
@@ -293,35 +343,11 @@ export async function updateNavbarAvatar() {
     if (availabilityIndicator) avatarBtn.append(availabilityIndicator);
 }
 
-let navbarPluginsLoaded = false;
-let navbarPluginsLoadPromise = null;
 let releaseChangelogPopupChecked = false;
 
 export async function ensureNavbarPluginsLoaded() {
-    if (navbarPluginsLoaded) return;
-    if (navbarPluginsLoadPromise) return navbarPluginsLoadPromise;
-    if (!localStorage.getItem("cognis_access_token")) return;
-    navbarPluginsLoadPromise = (async () => {
-        try {
-            const res = await apiFetch("/api/v1/ui/navbar-plugins");
-            if (!res.ok) return;
-            const payload = await res.json();
-            const plugins = Array.isArray(payload.data) ? payload.data : [];
-            await Promise.all(
-                plugins.map((plugin) =>
-                    plugin?.scriptUrl
-                        ? import(plugin.scriptUrl).catch(() => {})
-                        : null,
-                ),
-            );
-            navbarPluginsLoaded = true;
-        } catch {
-            // navbar plugin loading is best-effort; layout continues without them
-        } finally {
-            navbarPluginsLoadPromise = null;
-        }
-    })();
-    return navbarPluginsLoadPromise;
+    await ensureUiProvidersLoaded();
+    return loadNavbarPlugins();
 }
 
 function completeDeferredLoginSetup() {
@@ -348,7 +374,8 @@ function scheduleDeferredLoginSetup(i18n) {
 }
 
 window.addEventListener("cognis:navbar-plugins-refresh", () => {
-    navbarPluginsLoaded = false;
+    invalidateUiProviders();
+    invalidateNavbarPlugins();
     ensureNavbarPluginsLoaded().catch(() => {});
 });
 
@@ -404,6 +431,15 @@ function applyCompactNav(root) {
 
     let drawerOpen = false;
 
+    function redrawNavigation() {
+        sortNavigationEntries(topnav);
+        if (drawerNav) {
+            drawerNav.innerHTML = topnav.innerHTML;
+            applyActiveNavigation();
+        }
+        syncCompactState();
+    }
+
     function syncCompactState() {
         const overflows = topnav.scrollWidth > topnav.clientWidth + 2;
         navrow.classList.toggle("global-navrow--compact", overflows);
@@ -414,18 +450,7 @@ function applyCompactNav(root) {
     function openDrawer() {
         if (drawerOpen) return;
         drawerOpen = true;
-        if (drawerNav) {
-            drawerNav.innerHTML = topnav.innerHTML;
-            drawerNav.querySelectorAll("a").forEach((link) => {
-                const isActive = isNavigationLinkActive(
-                    window.location.pathname,
-                    link.getAttribute("href"),
-                );
-                link.classList.toggle("active", isActive);
-                if (isActive) link.setAttribute("aria-current", "page");
-                else link.removeAttribute("aria-current");
-            });
-        }
+        redrawNavigation();
         drawer.classList.add("nav-drawer--open");
         drawer.setAttribute("aria-hidden", "false");
         compactToggle.setAttribute("aria-expanded", "true");
@@ -463,7 +488,9 @@ function applyCompactNav(root) {
     const resizeObserver = new ResizeObserver(syncCompactState);
     resizeObserver.observe(topnav);
     resizeObserver.observe(navrow);
-    syncCompactState();
+    const navigationObserver = new MutationObserver(redrawNavigation);
+    navigationObserver.observe(topnav, { childList: true });
+    redrawNavigation();
 }
 
 function syncHeaderScrollState(root) {
@@ -508,6 +535,19 @@ function shellMatchesConfig(root, showTopbar, showNavbar, showFooter) {
 }
 
 export async function renderDashboardLayout(root, slots = {}) {
+    const componentWindow = Boolean(root.closest?.(".component-page-window"));
+    if (componentWindow) {
+        slots = {
+            ...slots,
+            showTopbar: false,
+            showNavbar: false,
+            showThemeToggle: false,
+            showFooter: false,
+            usePreferenceApi: false,
+            requireAccountSession: false,
+            enableAccountEnhancements: false,
+        };
+    }
     const {
         showTopbar = true,
         showNavbar = true,
@@ -626,7 +666,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         if (
             enableAccountEnhancements &&
             (showTopbar || showNavbar) &&
-            !uiCtx.capabilities.get("session:isGuest")?.() === true
+            uiCtx.capabilities.get("session:isGuest")?.() !== true
         ) {
             updateNavbarAvatar().catch((error) => {
                 console.warn(
@@ -640,9 +680,11 @@ export async function renderDashboardLayout(root, slots = {}) {
             ensureReleaseChangelogPopupChecked(i18n);
         }
         bindHeaderScrollState(root);
-        bindThemeToggle({ usePreferenceApi });
-        bindLanguageToggle({ i18n, navigateTo, showToast });
-        bindSwitcherSettingsLinks(root);
+        if (!componentWindow) {
+            bindThemeToggle({ usePreferenceApi });
+            bindLanguageToggle({ i18n, navigateTo, showToast });
+            bindSwitcherSettingsLinks(root);
+        }
         return;
     }
 
@@ -682,7 +724,7 @@ export async function renderDashboardLayout(root, slots = {}) {
     if (
         enableAccountEnhancements &&
         (showTopbar || showNavbar) &&
-        !uiCtx.capabilities.get("session:isGuest")?.() === true
+        uiCtx.capabilities.get("session:isGuest")?.() !== true
     ) {
         bindTopbarActions();
         updateNavbarAvatar().catch((error) => {
@@ -708,9 +750,11 @@ export async function renderDashboardLayout(root, slots = {}) {
         ensureReleaseChangelogPopupChecked(i18n);
     }
     bindHeaderScrollState(root);
-    bindThemeToggle({ usePreferenceApi });
-    bindLanguageToggle({ i18n, navigateTo, showToast });
-    bindSwitcherSettingsLinks(root);
+    if (!componentWindow) {
+        bindThemeToggle({ usePreferenceApi });
+        bindLanguageToggle({ i18n, navigateTo, showToast });
+        bindSwitcherSettingsLinks(root);
+    }
     registerServiceWorker();
 }
 
@@ -790,8 +834,8 @@ function initSearchBar(i18n) {
                       },
                       {
                           id: "page-modules",
-                          label: `${i18n.t("ui.reuse.administration")} → ${i18n.t("ui.app.admin.components")} → ${i18n.t("ui.reuse.modules")}`,
-                          url: "/administration#components",
+                          label: `${i18n.t("ui.reuse.administration")} → ${i18n.t("ui.reuse.modules")}`,
+                          url: "/administration/modules",
                       },
                   ]
                 : []),

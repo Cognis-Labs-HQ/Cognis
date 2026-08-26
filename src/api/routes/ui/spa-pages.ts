@@ -37,6 +37,10 @@ export async function handleRegisteredSpaPage(
                 `<link rel="stylesheet" href="${stylesheetUrl}" />`,
         )
         .join("\n        ");
+    const routeBootstrapConfig = JSON.stringify({
+        capabilityScripts: input.route.capabilityScripts ?? [],
+        scriptUrl: input.route.scriptUrl,
+    }).replaceAll("<", "\\u003c");
     await serveHtmlPageWithReplacements(
         input.res,
         path.join(input.publicRoot, "pages", "index.html"),
@@ -45,7 +49,11 @@ export async function handleRegisteredSpaPage(
                 from: input.uiRegistry.resolveAssetUrl(
                     "/static/app/dashboard/index.js",
                 ),
-                to: input.route.scriptUrl,
+                to: "/static/reuse/spa-page-entry.js",
+            },
+            {
+                from: "</body>",
+                to: `    <script id="spa-page-entry-config" type="application/json">${routeBootstrapConfig}</script>\n</body>`,
             },
             ...(routeStylesheets
                 ? [

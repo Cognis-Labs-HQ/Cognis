@@ -41,6 +41,7 @@ Diese Komponente hat keine Laufzeit-Umgebungsvariablen.
 ## Erweiterungspunkte
 
 - Cross-Component-Capabilities über `ctx.contributeCapability(key, value)` beitragen.
+- Eigene Capabilities beim Rückbau mit `ctx.removeCapability(key)` entfernen; ein bereichsgebundener Modul-Bootstrap erledigt dies automatisch.
 - Neue Orchestrierungs-Pipelines über `ctx.registerFlow({ id, stages })` registrieren.
 - Flow-Verhalten über `ctx.addFlowStageHook(flowId, stageId, hook, handler)` injizieren.
 - Verhalten beim Deaktivieren einer Komponente über `ctx.removeFlowStageHook(...)` und `ctx.unregisterFlow(...)` entfernen.
@@ -72,3 +73,9 @@ if (ctx.flow.exists("construct-settings-ui")) {
     );
 }
 ```
+
+## Capability-Deklarationen für Module
+
+Module deklarieren verwendete Dienste im obersten Manifestfeld `requiresCapabilities`. Server-Capabilities verwenden ihre registrierten IDs, beispielsweise `auth:requireAuth`; Browser-Capabilities verwenden den Namensraum `ui:`, beispielsweise `ui:profileAvatarRenderer`. Cognis ordnet deklarierte UI-Anforderungen den SPA-Routen des Moduls zu und importiert vor dem Einhängen ausschließlich passende registrierte Anbieter-Skripte. Bei der Aktivierung werden Server-Capabilities über den Serverkontext und `ui:`-Capabilities über aktive Anbieter der UI-Registry aufgelöst; das SPA-Routing prüft Browseranbieter vor dem Einhängen erneut.
+
+Anbieter müssen die Capability-ID in ihrer Komponentendokumentation veröffentlichen und Browser-Anbieter über `providesCapabilities` registrieren. Betreiber können die aktive Registrierung als Owner mit `GET /api/v1/system/capabilities` oder mit `cognisctl system:capabilities` prüfen.

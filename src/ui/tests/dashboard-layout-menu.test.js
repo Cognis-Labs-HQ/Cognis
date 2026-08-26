@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { reconcileUserMenuEntries } from "../layouts/user-menu.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -102,6 +103,14 @@ test("dashboard resolves guest sessions through the auth capability", () => {
         "utf8",
     );
     assert.match(layoutSource, /capabilities\.get\("session:isGuest"\)/);
+    assert.match(
+        layoutSource,
+        /capabilities\.get\("session:isGuest"\)\?\.\(\) !== true/,
+    );
+    assert.doesNotMatch(
+        layoutSource,
+        /!uiCtx\.capabilities\.get\("session:isGuest"\)/,
+    );
     assert.doesNotMatch(layoutSource, /account-context/);
 });
 
@@ -191,6 +200,35 @@ test("dashboard layout re-shows theme toggle on shell reuse when enabled", () =>
     );
 });
 
+test("built-in dashboard pages expose UUID-owned component page metadata", () => {
+    const routerSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    for (const routeId of [
+        "core.dashboard",
+        "core.settings",
+        "core.users",
+        "core.invite",
+        "core.modules",
+        "core.administration",
+        "core.docs",
+        "core.changelogs",
+        "core.license",
+        "core.error",
+        "gateway.study",
+        "gateway.study.child",
+    ]) {
+        assert.match(
+            routerSource,
+            new RegExp(`id: "${routeId.replaceAll(".", "\\.")}"`),
+        );
+    }
+    assert.match(routerSource, /ownerUuid: CORE_COMPONENT_UUID/);
+    assert.match(routerSource, /componentPage: componentPage/);
+    assert.match(routerSource, /installComponentPageBroker\(\{/);
+});
+
 test("profile dropdown opens on hover or click and closes only on click away", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
@@ -216,5 +254,72 @@ test("user menu entries gain an outline on hover", () => {
     assert.match(
         styles,
         /\.dropdown-item:hover,[\s\S]+outline: 1px solid var\(--accent\);/,
+    );
+});
+
+test("dashboard navigation alphabetizes and redraws entries as plugins add them", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    assert.match(
+        layoutSource,
+        /function sortNavigationEntries\(topnav\)[\s\S]*new Intl\.Collator[\s\S]*topnav\.append\(\.\.\.sortedEntries\)/,
+    );
+    assert.match(
+        layoutSource,
+        /function redrawNavigation\(\)[\s\S]*sortNavigationEntries\(topnav\)[\s\S]*drawerNav\.innerHTML = topnav\.innerHTML/,
+    );
+    assert.match(
+        layoutSource,
+        /new MutationObserver\(redrawNavigation\)[\s\S]*observe\(topnav, \{ childList: true \}\)/,
+    );
+    assert.match(
+        layoutSource,
+        /function navigationEntryRank\(entry\)[\s\S]*href"\) === "\/dashboard" \? 0 : 1/,
+    );
+    assert.match(
+        layoutSource,
+        /navigationEntryRank\(left\) - navigationEntryRank\(right\)[\s\S]*rankDifference \|\|[\s\S]*collator\.compare/,
+    );
+});
+
+test("core reconciles duplicate provider entries in the user menu", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    const integritySource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/user-menu.js"),
+        "utf8",
+    );
+    const dropdown = { children: [] };
+    const entry = (href) => {
+        const item = {
+            querySelector: () => ({ getAttribute: () => href }),
+            remove: () => {
+                dropdown.children = dropdown.children.filter(
+                    (candidate) => candidate !== item,
+                );
+            },
+        };
+        return item;
+    };
+    dropdown.children = [
+        entry("/shares"),
+        entry("/settings"),
+        entry("/shares"),
+        entry("/shares"),
+    ];
+    assert.equal(reconcileUserMenuEntries(dropdown), 2);
+    assert.equal(dropdown.children.length, 2);
+    assert.match(
+        integritySource,
+        /function bindUserMenuIntegrity\(dropdown\)[\s\S]*new MutationObserver[\s\S]*observer\.observe\(dropdown, \{ childList: true \}\)/,
+    );
+    assert.match(layoutSource, /import \{ bindUserMenuIntegrity \}/);
+    assert.match(
+        layoutSource,
+        /if \(dropdown\) bindUserMenuIntegrity\(dropdown\)/,
     );
 });

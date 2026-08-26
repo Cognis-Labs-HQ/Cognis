@@ -41,6 +41,7 @@ This component has no runtime environment variable configuration.
 ## Extension Points
 
 - Contribute cross-component capabilities via `ctx.contributeCapability(key, value)`.
+- Remove owned capabilities during teardown via `ctx.removeCapability(key)`; scoped module bootstrap performs this automatically.
 - Register new orchestration pipelines via `ctx.registerFlow({ id, stages })`.
 - Inject flow behavior via `ctx.addFlowStageHook(flowId, stageId, hook, handler)`.
 - Remove behavior on component disable via `ctx.removeFlowStageHook(...)` and `ctx.unregisterFlow(...)`.
@@ -167,3 +168,9 @@ const flow =
 
 All `NULL_FLOW_API` methods are no-ops: `exists()` returns `false`, `extend()`
 returns `false`, and `run()` rejects immediately.
+
+## Module capability declarations
+
+Modules declare consumed services with the top-level manifest field `requiresCapabilities`. Server capabilities use their registered IDs (for example `auth:requireAuth`); browser capabilities use the `ui:` namespace (for example `ui:profileAvatarRenderer`). Cognis attaches declared UI requirements to the module's SPA routes and imports only matching registered provider scripts before mounting the route. Enablement resolves server capabilities through the server context and `ui:` capabilities through active UI registry providers; SPA routing rechecks browser providers before mounting.
+
+Providers must publish the capability ID in their component documentation and, for browser providers, register it through `providesCapabilities`. Operators can inspect the live registry with `GET /api/v1/system/capabilities` as an owner or `cognisctl system:capabilities`.

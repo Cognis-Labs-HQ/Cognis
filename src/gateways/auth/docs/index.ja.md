@@ -77,3 +77,7 @@ export class CoreAuthGateway {
 ## 共有失敗理由の伝達
 
 ブラウザーセッション結果は中立な代替認証失敗理由を保持するため、公開リソースページは認証内部を import せずに、存在しないリソースとその他の利用不可状態を区別できます。
+
+## 提供するケイパビリティ
+
+このゲートウェイは `auth:accountStore`、`auth:createLocalAdmin`、`auth:getLoginMethods`、`auth:registerPageScriptOrigins`、`auth:issueAccessToken`、`auth:getAuthClaims`、`auth:requireAuth`、`auth:requireRoleAccess`、`auth:revokeAccessTokensForSubject`、`auth:revokeSetupPendingAccessTokens`、`auth:routeContext` を提供します。

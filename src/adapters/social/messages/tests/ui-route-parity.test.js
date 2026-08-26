@@ -82,9 +82,6 @@ const CALLER_FILE_PATHS = [
     ...collectFilePathsRecursively(resolve(ROOT, "src/adapters")).filter(
         isUiSourceFile,
     ),
-    ...collectFilePathsRecursively(resolve(ROOT, "src/modules")).filter(
-        isUiSourceFile,
-    ),
 ];
 
 test("social messages UI callers only reference defined API routes", () => {

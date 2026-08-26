@@ -66,3 +66,7 @@ Peristiwa pada gateway DB juga memakai logger bersama, tetapi hanya mencatat met
 | `LOG_ROTATE_MAX_BYTES` | `10485760`          | Rotasi file log aktif saat ukuran mencapai batas ini (byte)                     |
 | `LOG_ROTATE_MAX_FILES` | `10`                | Jumlah arsip log hasil rotasi yang disimpan (`0` berarti tidak menyimpan arsip) |
 | `LOG_ROTATE_COMPRESS`  | `true`              | Jika `true`, log hasil rotasi dikompresi gzip (`.gz`)                           |
+
+### Penerimaan log browser
+
+Komponen browser terautentikasi mengirim entri terstruktur dengan `POST /api/v1/logging/entries` memakai `{ level, message, meta }`. Gateway memvalidasi tingkat dan pesan, menambahkan akun terautentikasi serta sumber browser, lalu menulis entri melalui `logging:log`.

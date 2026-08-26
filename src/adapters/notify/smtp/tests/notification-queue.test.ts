@@ -15,6 +15,13 @@ type MockSmtpServer = {
 
 const RATE_LIMIT_DELAY_MS = 250;
 
+function sleepWithoutKeepingProcessAlive(ms: number): Promise<void> {
+    return new Promise((resolve) => {
+        const timer = setTimeout(resolve, ms);
+        timer.unref();
+    });
+}
+
 function createMockSmtpServer(
     handleConnection: (conn: net.Socket) => void,
 ): Promise<MockSmtpServer> {
@@ -153,7 +160,7 @@ test("SmtpNotificationSender queue applies recipient rate-limit spacing", async 
                 greylistRetries: 0,
             },
             undefined,
-            undefined,
+            sleepWithoutKeepingProcessAlive,
             limiter,
         );
         const first = await sender.sendTracked({

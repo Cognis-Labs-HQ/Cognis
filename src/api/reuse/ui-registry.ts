@@ -23,6 +23,7 @@ export interface AdminSection {
      * and merge those strings into the i18n instance passed to this section.
      */
     stringsBaseUrl?: string | string[];
+    ownerId?: string;
 }
 
 /**
@@ -39,6 +40,7 @@ export interface PageElement {
     access?: RoleAccessPolicy;
     /** Optional runtime predicate used to hide extensions while their owner is disabled. */
     isEnabled?: () => boolean;
+    ownerId?: string;
 }
 
 /**
@@ -50,9 +52,18 @@ export interface PageElement {
 export interface NavbarPlugin {
     /** Browser-absolute URL of the ES module to dynamically import. */
     scriptUrl: string;
+    /** UI capabilities contributed when this plugin is imported. */
+    providesCapabilities?: string[];
     /** Optional role access policy for this plugin. */
     access?: RoleAccessPolicy;
     /** Optional runtime predicate used to hide plugins while their owner is disabled. */
+    isEnabled?: () => boolean;
+    ownerId?: string;
+}
+
+export interface UiCapabilityProvider {
+    scriptUrl: string;
+    providesCapabilities: string[];
     isEnabled?: () => boolean;
 }
 
@@ -72,10 +83,23 @@ export interface SpaRoute {
     scriptUrl: string;
     /** Optional stylesheet URLs to ensure before mount. */
     stylesheets?: string[];
+    /** UI capabilities that must be contributed before importing the route. */
+    requiredCapabilities?: string[];
+    /** Provider scripts selected by core for the required UI capabilities. */
+    capabilityScripts?: string[];
     /** Optional role access policy for this route. */
     access?: RoleAccessPolicy;
     /** Optional runtime predicate used to hide routes while owner is disabled. */
     isEnabled?: () => boolean;
+    ownerId?: string;
+    /** Immutable UUID of an owning external module. */
+    ownerUuid?: string;
+    /** Explicit opt-in allowing another component to embed this page. */
+    componentPage?: {
+        labelKey: string;
+        descriptionKey: string;
+        modes: Array<"overlay" | "fullscreen" | "pip">;
+    };
 }
 
 export interface AuthTypingMessage {
@@ -107,6 +131,7 @@ export interface SettingsSection {
     stringsBaseUrl?: string | string[];
     /** Optional runtime predicate used to hide sections while their owner is disabled. */
     isEnabled?: () => boolean;
+    ownerId?: string;
 }
 
 export class UIRegistry {
@@ -117,6 +142,7 @@ export class UIRegistry {
     private readonly moduleStaticDirs = new Map<string, string>();
     private readonly pageExtensions = new Map<string, PageElement[]>();
     private readonly navbarPlugins: NavbarPlugin[] = [];
+    private readonly capabilityProviders: UiCapabilityProvider[] = [];
     private readonly spaRoutes: SpaRoute[] = [];
     private readonly authTypingMessages: AuthTypingMessage[] = [];
     private readonly settingsSections: SettingsSection[] = [];
@@ -205,6 +231,23 @@ export class UIRegistry {
     }
 
     registerSpaRoute(route: SpaRoute): void {
+        if (route.componentPage) {
+            const { labelKey, descriptionKey, modes } = route.componentPage;
+            if (
+                !route.ownerUuid?.match(
+                    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+                ) ||
+                !/^[a-z0-9._-]+$/.test(labelKey) ||
+                !/^[a-z0-9._-]+$/.test(descriptionKey) ||
+                !Array.isArray(modes) ||
+                modes.length === 0 ||
+                modes.some(
+                    (mode) => !["overlay", "fullscreen", "pip"].includes(mode),
+                )
+            ) {
+                throw new TypeError("invalid_component_page_declaration");
+            }
+        }
         this.spaRoutes.push(route);
     }
 
@@ -239,6 +282,39 @@ export class UIRegistry {
      */
     registerModuleStaticDir(urlPrefix: string, absoluteDir: string): void {
         this.moduleStaticDirs.set(urlPrefix, absoluteDir);
+    }
+
+    unregisterModuleContributions(moduleId: string): void {
+        for (const [id, section] of this.sections) {
+            if (section.ownerId === moduleId) this.sections.delete(id);
+        }
+        for (const [pageId, extensions] of this.pageExtensions) {
+            const retained = extensions.filter(
+                (extension) => extension.ownerId !== moduleId,
+            );
+            if (retained.length) this.pageExtensions.set(pageId, retained);
+            else this.pageExtensions.delete(pageId);
+        }
+        this.removeOwned(this.navbarPlugins, moduleId);
+        this.removeOwned(this.spaRoutes, moduleId);
+        this.removeOwned(this.authTypingMessages, moduleId);
+        this.removeOwned(this.settingsSections, moduleId);
+        for (const prefix of this.moduleStaticDirs.keys()) {
+            if (prefix === moduleId || prefix.startsWith(`${moduleId}/`)) {
+                this.moduleStaticDirs.delete(prefix);
+            }
+        }
+    }
+
+    private removeOwned<T extends { ownerId?: string }>(
+        registrations: T[],
+        moduleId: string,
+    ): void {
+        for (let index = registrations.length - 1; index >= 0; index--) {
+            if (registrations[index].ownerId === moduleId) {
+                registrations.splice(index, 1);
+            }
+        }
     }
 
     /**
@@ -280,8 +356,52 @@ export class UIRegistry {
         return this.resolveDescriptor([...this.navbarPlugins]);
     }
 
+    listCapabilityProviders(): UiCapabilityProvider[] {
+        return this.resolveDescriptor(
+            this.listActiveCapabilityProviders().filter(
+                (provider) => provider.providesCapabilities?.length,
+            ),
+        );
+    }
+
+    registerCapabilityProvider(provider: UiCapabilityProvider): void {
+        this.capabilityProviders.push(provider);
+    }
+
+    private listActiveCapabilityProviders(): UiCapabilityProvider[] {
+        return [...this.navbarPlugins, ...this.capabilityProviders].filter(
+            (provider) => !provider.isEnabled || provider.isEnabled(),
+        );
+    }
+
+    hasActiveCapabilityProvider(capabilityId: string): boolean {
+        return this.listActiveCapabilityProviders().some((plugin) =>
+            plugin.providesCapabilities?.includes(capabilityId),
+        );
+    }
+
     listSpaRoutes(): SpaRoute[] {
-        return this.resolveDescriptor([...this.spaRoutes]);
+        const activeProviders = this.listActiveCapabilityProviders();
+        return this.resolveDescriptor(
+            this.spaRoutes.flatMap((route) => {
+                if (route.isEnabled && !route.isEnabled()) return [];
+                const providers = (route.requiredCapabilities ?? []).map(
+                    (capability) =>
+                        activeProviders.find((plugin) =>
+                            plugin.providesCapabilities?.includes(capability),
+                        ),
+                );
+                if (providers.some((provider) => !provider)) return [];
+                return [
+                    {
+                        ...route,
+                        capabilityScripts: providers.map(
+                            (provider) => provider!.scriptUrl,
+                        ),
+                    },
+                ];
+            }),
+        );
     }
 
     resolveSpaRoute(pathname: string): SpaRoute | undefined {

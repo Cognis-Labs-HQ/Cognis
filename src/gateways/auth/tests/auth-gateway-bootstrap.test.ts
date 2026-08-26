@@ -627,3 +627,22 @@ test("auth bootstrap contributes page script origin registration capability", as
         ["https://meetings.example.test"],
     );
 });
+
+test("auth bootstrap exposes route authentication capabilities to modules", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const dbExecutor = createDbExecutor();
+
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        ...makeBaseCtx(capabilities, dbExecutor),
+    });
+
+    assert.equal(typeof capabilities.get("auth:getAuthClaims"), "function");
+    assert.equal(typeof capabilities.get("auth:requireAuth"), "function");
+    assert.equal(typeof capabilities.get("auth:requireRoleAccess"), "function");
+});

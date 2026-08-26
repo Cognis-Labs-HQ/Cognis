@@ -39,6 +39,32 @@ function normalizePath(filePath) {
     return filePath.replace(/\\/g, "/");
 }
 
+const COMPONENT_UUID_PATTERN =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+test("component manifest dependencies use UUID references", () => {
+    const violations = walk(resolve(ROOT, "src"))
+        .filter((filePath) => filePath.endsWith("manifest.json"))
+        .flatMap((filePath) => {
+            const manifest = JSON.parse(readFileSync(filePath, "utf8"));
+            const requires = Array.isArray(manifest.requires)
+                ? manifest.requires
+                : [];
+            return requires
+                .filter(
+                    (reference) =>
+                        typeof reference !== "string" ||
+                        !COMPONENT_UUID_PATTERN.test(reference),
+                )
+                .map(
+                    (reference) =>
+                        `${normalizePath(relative(ROOT, filePath))}: ${String(reference)}`,
+                );
+        });
+
+    assert.deepEqual(violations, []);
+});
+
 function collectMissingIndexViolations({
     rootPath,
     indexFileName,
@@ -76,13 +102,6 @@ const LEGACY_FLAT_UI_APP_ENTRIES = new Set([
     "src/adapters/social/messages/ui/app.js",
     "src/adapters/social/profile/ui/app.js",
     "src/adapters/study/classes/ui/app.js",
-    "src/modules/jitsi-meet/ui/app.js",
-    "src/modules/study/languages/en/components/alphabet/ui/app.js",
-    "src/modules/study/languages/en/components/classroom/ui/app.js",
-    "src/modules/study/languages/en/components/library/ui/app.js",
-    "src/modules/study/languages/ja/components/classroom/ui/app.js",
-    "src/modules/study/languages/ja/components/hiragana-alphabet/ui/app.js",
-    "src/modules/study/languages/ja/components/library/ui/app.js",
 ]);
 
 function hasSourceExtension(filePath) {
@@ -226,10 +245,7 @@ test("api route handlers use domain/index.ts structure", () => {
 });
 
 test("module and adapter ui app entries use ui/app/index.js structure", () => {
-    const scanRoots = [
-        resolve(ROOT, "src/modules"),
-        resolve(ROOT, "src/adapters"),
-    ];
+    const scanRoots = [resolve(ROOT, "src/adapters")];
     const violations = [];
 
     for (const scanRoot of scanRoots) {
@@ -288,10 +304,7 @@ test("api and core avoid new direct gateway imports", () => {
 });
 
 test("route handlers and module routers avoid direct gateway or adapter imports", () => {
-    const scanRoots = [
-        resolve(ROOT, "src/api/routes"),
-        resolve(ROOT, "src/modules/routes"),
-    ];
+    const scanRoots = [resolve(ROOT, "src/api/routes")];
     const violations = [];
 
     for (const scanRoot of scanRoots) {
@@ -386,67 +399,6 @@ test("gateways with API routes claim canonical /api/v1/<gateway-id> prefixes", (
             "Gateway route prefixes must match their canonical /api/v1/<gateway-id> ownership.",
             ...violations,
         ].join("\n"),
-    );
-});
-
-const MODULE_STRUCTURE_EXEMPTIONS = new Set([
-    "docs",
-    "routes",
-    "analytics-invalid-policy",
-    "study",
-]);
-
-test("runtime extension modules follow a consistent directory contract", () => {
-    const modulesRoot = resolve(ROOT, "src/modules");
-    const violations = [];
-
-    for (const entryName of readdirSync(modulesRoot)) {
-        if (MODULE_STRUCTURE_EXEMPTIONS.has(entryName)) continue;
-        const modulePath = join(modulesRoot, entryName);
-        const moduleStats = statSync(modulePath);
-        if (!moduleStats.isDirectory()) continue;
-
-        const requiredEntries = ["manifest.json", "routes.json", "ui"];
-        for (const requiredEntry of requiredEntries) {
-            const requiredPath = join(modulePath, requiredEntry);
-            try {
-                statSync(requiredPath);
-            } catch {
-                violations.push(
-                    `module ${entryName} is missing ${requiredEntry} at src/modules/${entryName}/${requiredEntry}`,
-                );
-            }
-        }
-
-        const apiPath = join(modulePath, "api");
-        try {
-            if (!statSync(apiPath).isDirectory()) continue;
-        } catch {
-            continue;
-        }
-
-        const apiIndexPaths = [
-            join(apiPath, "index.js"),
-            join(apiPath, "index.ts"),
-        ];
-        const hasApiIndex = apiIndexPaths.some((apiIndexPath) => {
-            try {
-                return statSync(apiIndexPath).isFile();
-            } catch {
-                return false;
-            }
-        });
-        if (!hasApiIndex) {
-            violations.push(
-                `module ${entryName} api directory must include index.js or index.ts`,
-            );
-        }
-    }
-
-    assert.deepEqual(
-        violations,
-        [],
-        `Module structure violations found:\n${violations.join("\n")}`,
     );
 });
 

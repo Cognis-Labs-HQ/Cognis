@@ -57,6 +57,51 @@ test("administration adapters expose version metadata in details", () => {
     );
 });
 
+test("component dependencies resolve UUIDs across gateways, adapters, and external modules", () => {
+    const moduleUuid = "71567e48-480a-45a5-a853-8c96d6ab9973";
+    const gatewayUuid = "433cd9f3-5b80-5e7d-911b-1907b9348f26";
+    const adapterUuid = "5054e338-ef3b-5d84-9a99-74d54d30232a";
+    const html = renderComponentsContent(
+        [{ uuid: moduleUuid, name: "External Meetings" }],
+        [
+            {
+                id: "notify",
+                uuid: gatewayUuid,
+                name: "Notifications",
+                status: "active",
+                hasAdapters: true,
+                requires: [moduleUuid, adapterUuid],
+            },
+        ],
+        [
+            {
+                _gatewayId: "notify",
+                id: "smtp",
+                uuid: adapterUuid,
+                name: "SMTP Email",
+                active: true,
+                requires: [gatewayUuid],
+            },
+        ],
+        { i18n, escapeHtml, healthStatus: { contributions: [] } },
+    );
+
+    assert.match(
+        html,
+        new RegExp(
+            `href="/administration/modules/${moduleUuid}"[^>]*>External Meetings</a>`,
+        ),
+    );
+    assert.match(
+        html,
+        /href="#gateway-notify" data-scroll-to="gateway-notify">Notifications<\/a>/,
+    );
+    assert.match(
+        html,
+        /href="#adapter-notify:smtp" data-scroll-to="adapter-notify:smtp">SMTP Email<\/a>/,
+    );
+});
+
 test("database gateway heading explains that Docker manages its driver", () => {
     const html = renderComponentsContent(
         [],
@@ -93,8 +138,8 @@ test("active components use health lights and disabled adapters reserve the slot
             healthStatus: {
                 contributions: [
                     {
-                        componentType: "module",
-                        componentId: "active-module",
+                        componentType: "gateway",
+                        componentId: "notify",
                         status: "ok",
                     },
                     {
@@ -162,19 +207,14 @@ test("component detail arrows use an independent details hitbox", () => {
     assert.match(source, /adapter:\$\{adapterGatewayId\}:\$\{adapterId\}/);
 });
 
-test("configured adapter rows use the component click behavior even when locked", () => {
+test("adapter rows expand manifest details when no settings popup opens", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/administration/index.js"),
         "utf8",
     );
     assert.match(
         source,
-        /Array\.isArray\(adapter\?\.schema\) && adapter\.schema\.length > 0/,
-    );
-    assert.match(source, /if \(!adapterHasConfig\(adapter\)\) return/);
-    assert.doesNotMatch(
-        source,
-        /adapter\.locked \|\| !adapterHasConfig\(adapter\)/,
+        /const openedSettings = await openAdapterConfig\([\s\S]*if \(!openedSettings\) \{\s*row\.open = !row\.open;/,
     );
     assert.match(source, /e\.target\.closest\?\.\("\[data-details-toggle\]"\)/);
     assert.match(source, /row\.querySelector\("\.switch--inline"\)/);
@@ -192,4 +232,13 @@ test("adapter configuration popups load adapter-owned translations", () => {
         /extendI18n\(i18n, adapterOverride\?\.stringsBaseUrl\)/,
     );
     assert.match(source, /i18n: adapterI18n/);
+});
+
+test("user menu links administrators to the module marketplace", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/public/templates/dashboard-layout.html"),
+        "utf8",
+    );
+    assert.match(source, /href="\/administration\/modules"/);
+    assert.match(source, /data-i18n="ui\.reuse\.modules"/);
 });

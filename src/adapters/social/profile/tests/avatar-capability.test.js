@@ -36,6 +36,35 @@ test("Profile adapter owns the complete avatar UI capability", () => {
         source,
         /uiCtx\.capabilities\.contribute\("ui:profileAvatarRenderer"/,
     );
+    assert.match(
+        source,
+        /ensurePageStylesheet\(\s*"\/static\/adapters\/social\/profile\/availability\.css"/,
+    );
+    assert.match(source, /await availabilityStylesReady;/);
+    assert.match(source, /export async function ensureProfileAvatarStyles/);
+    assert.match(source, /profile-capability-avatar-image/);
+    assert.match(source, /availabilityIndicatorMarkup\(""\)/);
+    const styles = readFileSync(
+        resolve(
+            process.cwd(),
+            "src/adapters/social/profile/ui/availability.css",
+        ),
+        "utf8",
+    );
+    assert.match(styles, /\.profile-capability-avatar \{/);
+    assert.match(styles, /object-fit: cover/);
+});
+
+test("Profile standalone provider waits for avatar styles and contributes its client", () => {
+    const provider = readFileSync(
+        resolve(process.cwd(), "src/adapters/social/profile/ui/provider.js"),
+        "utf8",
+    );
+    assert.match(provider, /await ensureProfileAvatarStyles\(\)/);
+    assert.match(
+        provider,
+        /capabilities\.contribute\("social:profileUiClient", profileUiClient\)/,
+    );
 });
 
 test("UI callers use CTX without a profile abstraction in core reuse", () => {

@@ -7,6 +7,10 @@ import {
 } from "@cognis/core";
 import type { Ctx } from "@cognis/core";
 import { issueAccessToken, type AccessRole } from "../access-tokens.js";
+import {
+    LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+    resolveLoginSessionTimeoutPreference,
+} from "../session-timeout.js";
 import { resolveRole } from "./local-account.js";
 import type { AuthBootstrapHookContext } from "./index.js";
 
@@ -226,7 +230,7 @@ export async function registerAuthBootstrapHook(
                 role = "owner";
             }
 
-            const ttlSeconds =
+            const globalTtlSeconds =
                 context.authRouteBootstrapRuntime.getAccessTokenTtlSeconds();
             const localAdapter = context.authGateway.getLocalAdapter();
             if (localAdapter) {
@@ -264,7 +268,31 @@ export async function registerAuthBootstrapHook(
                 .catch(() => ({
                     registrationsEnabled: false,
                     userValidationMode: "none" as const,
+                    loginSessionTimeoutMinutes: globalTtlSeconds / 60,
                 }));
+            const preferenceStore =
+                capabilities.get<
+                    import("../../../api/reuse/preference-store.js").UserPreferenceStore
+                >("preferences:store");
+            const storedTimeout = await preferenceStore
+                ?.get(session.accountId, LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY)
+                .catch(() => null);
+            const { timeoutMinutes, shouldPersist } =
+                resolveLoginSessionTimeoutPreference(
+                    storedTimeout,
+                    securitySettings.loginSessionTimeoutMinutes,
+                );
+            if (shouldPersist && typeof preferenceStore?.set === "function") {
+                await preferenceStore
+                    .set(
+                        session.accountId,
+                        LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+                        String(timeoutMinutes),
+                    )
+                    .catch(() => undefined);
+            }
+            const ttlSeconds =
+                timeoutMinutes === 0 ? null : timeoutMinutes * 60;
             const listedEmails =
                 "emails" in session && Array.isArray(session.emails)
                     ? session.emails.map(String)

@@ -706,11 +706,38 @@ test("logging stream route returns false for non-matching pathname", async () =>
     const handled = await streamHandler(
         req as any,
         res as any,
-        new URL("/api/v1/logging/entries", "http://localhost"),
+        new URL("/api/v1/logging/unknown", "http://localhost"),
     );
 
     assert.equal(handled, false);
     assert.equal(res.statusCode, 0);
+});
+
+test("browser components can submit authenticated server log entries", async () => {
+    const ctx = await makeContext();
+    await bootstrap(ctx as any);
+    const handler = ctx.routeRegistry.getHandlers()[0];
+    const token = issueAccessToken("module-user", "user", 300);
+    const req = new RequestRecorder(
+        "POST",
+        token,
+        JSON.stringify({
+            level: "warn",
+            message: "Module UI operation failed.",
+            meta: { component: "module:example" },
+        }),
+    );
+    const res = new ResponseRecorder();
+
+    assert.equal(
+        await handler(
+            req as any,
+            res as any,
+            new URL("/api/v1/logging/entries", "http://localhost"),
+        ),
+        true,
+    );
+    assert.equal(res.statusCode, 204);
 });
 
 test("logging stream route returns false for non-GET method", async () => {

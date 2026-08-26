@@ -48,6 +48,7 @@
   <string name="ui.reuse.reset">Reset</string>
   <string name="ui.reuse.reset_draft">Reset Draft</string>
   <string name="ui.reuse.refresh">Refresh</string>
+  <string name="ui.reuse.update">Update</string>
   <string name="ui.reuse.connection_lost_refresh_prompt">Connection Interrupted. Please Refresh the Page.</string>
   <string name="ui.reuse.loading">Loading…</string>
   <string name="ui.reuse.loading_joke_1">Cognis shouldn't be this slow, isn't it 2026?</string>
@@ -62,6 +63,10 @@
   <string name="ui.reuse.discard">Discard</string>
   <string name="ui.reuse.done">Done</string>
   <string name="ui.reuse.add">Add</string>
+  <string name="ui.reuse.edit">Edit</string>
+  <string name="ui.reuse.back">Back</string>
+  <string name="ui.reuse.previous">Previous</string>
+  <string name="ui.reuse.next">Next</string>
   <string name="ui.reuse.remove">Remove</string>
   <string name="ui.reuse.dismiss">Dismiss</string>
   <string name="ui.reuse.copy">Copy</string>
@@ -192,7 +197,7 @@
   <string name="ui.app.license.page_title">License</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3 license terms.</string>
   <string name="ui.app.license.load_error">License text could not be loaded.</string>
-  <string name="ui.app.admin.state.active">Active</string>
+  <string name="ui.app.admin.state.active">Enabled</string>
   <string name="ui.app.admin.state.available">Available</string>
   <string name="ui.app.admin.state.disabled">Disabled</string>
   <string name="ui.app.admin.publisher">Publisher</string>
@@ -547,7 +552,6 @@
   <string name="ui.app.admin.notif.test_email_required">Recipient email address is required.</string>
   <string name="ui.app.admin.notif.field_env_conflict">Overriding env variable</string>
   <string name="ui.app.admin.notif.required_field">Required Value</string>
-  <string name="ui.app.admin.notif.enable_provider">Enable Adapter</string>
   <string name="ui.app.admin.notif.smtp_allow_self_signed">Allow Self-Signed Certificate</string>
   <string name="ui.app.admin.notif.smtp_auth_disabled">Disable Authentication</string>
   <string name="ui.app.admin.notif.smtp_code_length">Code Length</string>
@@ -674,4 +678,20 @@
   <string name="ui.reuse.core">Core</string>
   <string name="ui.app.users.external_password_managed">External users' passwords are managed by their authentication provider.</string>
   <string name="ui.app.admin.db_managed_by_docker">Managed by docker</string>
+  <string name="ui.app.admin.security.login_session_timeout_label">Default Login Session Timeout</string>
+  <string name="ui.app.admin.security.login_session_timeout_hint">The longest login session users may choose.</string>
+  <string name="ui.app.admin.security.login_session_timeout_never">Never</string>
+  <string name="ui.app.admin.security.login_session_timeout_never_warning">Disabling session timeouts is not recommended in production.</string>
+  <string name="ui.reuse.duration.minutes">Minutes</string>
+  <string name="ui.reuse.duration.hours">Hours</string>
+  <string name="ui.reuse.duration.days">Days</string>
+  <string name="ui.reuse.duration.weeks">Weeks</string>
+  <string name="ui.page.title.modules">Modules</string>
+  <string name="ui.reuse.license">License</string>
+  <string name="ui.reuse.install">Install</string>
+  <string name="ui.reuse.installed">Installed</string>
+  <string name="ui.reuse.all">All</string>
+  <string name="ui.reuse.name">Name</string>
+  <string name="ui.reuse.uninstall">Uninstall</string>
+  <string name="ui.reuse.toggle_secret_visibility">Toggle Secret Visibility</string>
 </resources>

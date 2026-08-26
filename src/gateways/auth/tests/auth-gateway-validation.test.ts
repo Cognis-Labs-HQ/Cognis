@@ -78,6 +78,9 @@ test("login userValidation fails open when SMTP validation is enabled but unavai
                 userValidationMode: "smtp",
             });
         },
+        async set() {
+            throw new Error("preference storage is read-only");
+        },
     });
     const db = new InMemoryTestExecutor();
     await bootstrapAuthGateway({

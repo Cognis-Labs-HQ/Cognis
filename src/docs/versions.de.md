@@ -32,74 +32,64 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente            | Pfad                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.17` |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.18` |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.8`  |
-| Dateikontingent       | `src/adapters/file/quota/`          | `1.0.6`  |
-| Local Auth            | `src/adapters/auth/local/`          | `0.3.6`  |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.34` |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.8`  |
-| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.6`  |
-| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.6`  |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.18` |
-| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.9`  |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.5`  |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.4`  |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.9`  |
-| Memory Database       | `src/adapters/db/memory/`           | `0.1.7`  |
-| Registration Invite   | `src/adapters/registration/invite/` | `0.1.8`  |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.7`  |
-| Public Registration   | `src/adapters/registration/public/` | `0.1.5`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.60` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.64` |
-| Link Share            | `src/adapters/share/link/`          | `1.1.32` |
-| User Share            | `src/adapters/share/user/`          | `1.1.17` |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.3.9`  |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.26` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.19` |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.16` |
+| Dateikontingent       | `src/adapters/file/quota/`          | `1.0.14` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.3.14` |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.36` |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.17` |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.14` |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.14` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.27` |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.17` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.13` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.12` |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.17` |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.15` |
+| Registration Invite   | `src/adapters/registration/invite/` | `0.1.16` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.15` |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.13` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.68` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.72` |
+| Link Share            | `src/adapters/share/link/`          | `1.1.34` |
+| User Share            | `src/adapters/share/user/`          | `1.1.19` |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
-| Console Logging       | `src/adapters/logging/console/`     | `1.1.3`  |
-| File Logging          | `src/adapters/logging/file/`        | `1.1.4`  |
+| Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
+| File Logging          | `src/adapters/logging/file/`        | `1.1.5`  |
 
 ## Gateways
 
 | Komponente            | Pfad                          | Version   |
 | --------------------- | ----------------------------- | --------- |
-| Database (db)         | `src/gateways/db/`            | `1.3.7`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.7.49`  |
-| Share                 | `src/gateways/share/`         | `1.7.23`  |
-| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.17`  |
+| Database (db)         | `src/gateways/db/`            | `1.3.8`   |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.11`  |
+| Share                 | `src/gateways/share/`         | `1.7.34`  |
+| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.19`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.5`   |
-| Social                | `src/gateways/social/`        | `1.2.13`  |
-| File Storage (files)  | `src/gateways/files/`         | `2.1.5`   |
-| Registration          | `src/gateways/registration/`  | `1.1.13`  |
-| Logging               | `src/gateways/logging/`       | `1.5.11`  |
-| Observability         | `src/gateways/observability/` | `1.0.5`   |
-| Study                 | `src/gateways/study/`         | `1.5.10`  |
-| Calendar              | `src/gateways/calendar/`      | `1.4.101` |
+| Social                | `src/gateways/social/`        | `1.2.15`  |
+| File Storage (files)  | `src/gateways/files/`         | `2.1.9`   |
+| Registration          | `src/gateways/registration/`  | `1.1.14`  |
+| Logging               | `src/gateways/logging/`       | `1.5.13`  |
+| Observability         | `src/gateways/observability/` | `1.0.6`   |
+| Study                 | `src/gateways/study/`         | `1.5.13`  |
+| Calendar              | `src/gateways/calendar/`      | `1.4.105` |
 
 ## Kernverträge
 
-| Komponente   | Pfad        | Version |
-| ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.3.9` |
+| Komponente   | Pfad        | Version  |
+| ------------ | ----------- | -------- |
+| Core Package | `src/core/` | `0.3.74` |
 
 ## API
 
-| Komponente | Pfad       | Version |
-| ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.3.7` |
+| Komponente | Pfad       | Version   |
+| ---------- | ---------- | --------- |
+| API Server | `src/api/` | `0.3.102` |
 
 ## Werkzeuge
 
 | Komponente | Pfad               | Version |
 | ---------- | ------------------ | ------- |
-| Cognis CLI | `src/tooling/cli/` | `0.2.3` |
-
-## Module
-
-| Komponente           | Pfad                                | Version  |
-| -------------------- | ----------------------------------- | -------- |
-| Analytics            | `src/modules/analytics/`            | `2.0.5`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.47` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.3.13` |
-| Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.7`  |
-| Cognis English       | `src/modules/study/languages/en/`   | `1.2.5`  |
+| Cognis CLI | `src/tooling/cli/` | `0.2.5` |

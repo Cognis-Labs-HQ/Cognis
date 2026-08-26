@@ -1,9 +1,13 @@
 {
     "id": "share",
+    "uuid": "0da92508-63fa-53ed-918c-e6f08692a382",
     "name": "Share Gateway",
-    "version": "1.7.23",
+    "version": "1.7.34",
     "required": false,
-    "requires": ["auth", "db"],
+    "requires": [
+        "a77dac5a-fe42-5bab-8036-54e319cf5313",
+        "5711a248-4ac9-5d44-98b5-b99bd4c6d722"
+    ],
     "description": "Gateway-owned public share token orchestration for Cognis resources.",
     "publisher": "Cognis Labs HQ",
     "entrypoints": {

@@ -22,12 +22,12 @@ import {
     navigateTo,
     invalidateStudyChildComponentCache,
 } from "/static/reuse/app-router.js";
-import { clearStudySubNavCache } from "/static/modules/study/languages/reuse/study-sub-navigation.js";
+import { clearStudySubNavCache } from "/static/gateways/study/ui/sub-navigation.js";
 import {
     resolveLanguageLabel,
     isAdminScope,
     buildLibraryUrl,
-} from "/static/modules/study/languages/reuse/language-utils.js";
+} from "/static/gateways/study/ui/language.js";
 import { openPopup } from "/static/reuse/popup.js";
 
 const SETTINGS_GEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

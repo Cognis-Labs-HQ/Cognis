@@ -14,18 +14,14 @@ test("search popup checked indicator stays centered in selectable rows", () => {
     assert.match(source, /transform: translate\(-50%, -58%\) rotate\(45deg\);/);
 });
 
-test("global search modules result points to Administration components", () => {
+test("global search modules result points to the module marketplace", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
         "utf8",
     );
     assert.match(source, /id: "page-modules"/);
-    assert.match(source, /url: "\/administration#components"/);
-    assert.match(
-        source,
-        /ui\.reuse\.administration[\s\S]*ui\.app\.admin\.components[\s\S]*ui\.reuse\.modules/,
-    );
-    assert.doesNotMatch(source, /url: "\/modules"/);
+    assert.match(source, /url: "\/administration\/modules"/);
+    assert.match(source, /ui\.reuse\.administration[\s\S]*ui\.reuse\.modules/);
 });
 
 test("global search exposes registered categories and match controls", () => {
@@ -235,42 +231,6 @@ test("docs search indexes navigation titles and document contents", () => {
     assert.match(source, /changelogItems/);
 });
 
-test("whiteboard search indexes board filenames and stored canvas contents", () => {
-    const source = ["index.js", "search-index.js"]
-        .map((fileName) =>
-            readFileSync(
-                resolve(
-                    ROOT,
-                    `src/modules/nextcloud-whiteboard/ui/app/${fileName}`,
-                ),
-                "utf8",
-            ),
-        )
-        .join("\n");
-    const navbarSource = readFileSync(
-        resolve(ROOT, "src/modules/nextcloud-whiteboard/ui/navbar.js"),
-        "utf8",
-    );
-    assert.match(source, /registerSearchIndex\("nextcloud-whiteboard"/);
-    assert.match(source, /collectWhiteboardSearchGroups/);
-    assert.match(source, /externalPath/);
-    assert.match(source, /resultClass: "page"/);
-    assert.match(source, /resultClass: "text"/);
-    assert.match(source, /showDescription: false/);
-    assert.match(source, /showMatchSnippet: false/);
-    assert.match(source, /JSON\.stringify\(getSavedElements\(\)/);
-    assert.match(
-        navbarSource,
-        /registerSearchIndex\(\s*"nextcloud-whiteboard-navbar"/,
-    );
-    assert.match(navbarSource, /collectWhiteboardNavbarSearchGroups/);
-    assert.match(navbarSource, /category: "Pages"/);
-    assert.match(navbarSource, /category: "Whiteboards"/);
-    assert.match(navbarSource, /showDescription: false/);
-    assert.match(navbarSource, /showMatchSnippet: false/);
-    assert.match(navbarSource, /fetchVisibleWhiteboards/);
-});
-
 test("visible search indexes messages without quick reactions and chat names", () => {
     const messageSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/message-render.js"),
@@ -296,11 +256,7 @@ test("visible search indexes messages without quick reactions and chat names", (
     );
 });
 
-test("visible search indexes meetings calendar notifications and posts", () => {
-    const meetingSource = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meetings.js"),
-        "utf8",
-    );
+test("visible search indexes calendar notifications and posts", () => {
     const calendarSource = readFileSync(
         resolve(ROOT, "src/gateways/calendar/ui/calendar-ui-helpers.js"),
         "utf8",
@@ -320,15 +276,6 @@ test("visible search indexes meetings calendar notifications and posts", () => {
     const profileSearchSource = readFileSync(
         resolve(ROOT, "src/adapters/social/profile/ui/search/index.js"),
         "utf8",
-    );
-    assert.match(meetingSource, /dataset\.searchCategory = "Meetings"/);
-    assert.match(
-        readFileSync(resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"), "utf8"),
-        /registerSearchIndex\("jitsi-meetings"/,
-    );
-    assert.match(
-        readFileSync(resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"), "utf8"),
-        /resultClass: "page"/,
     );
     const calendarNavbarSource = readFileSync(
         resolve(ROOT, "src/gateways/calendar/ui/navbar.js"),
@@ -381,10 +328,7 @@ test("study content and sub-navigation participate in global search", () => {
         "utf8",
     );
     const subNavigationSource = readFileSync(
-        resolve(
-            ROOT,
-            "src/modules/study/languages/reuse/study-sub-navigation.js",
-        ),
+        resolve(ROOT, "src/gateways/study/ui/sub-navigation.js"),
         "utf8",
     );
     const studyNavbarSource = readFileSync(

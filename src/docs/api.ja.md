@@ -71,7 +71,6 @@
 | `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | CLI ブートストラップトークンのパス                      |
 | `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | ゲートウェイ検出のルートディレクトリ                    |
 | `COGNIS_ADAPTERS_ROOT`            | `src/adapters`                 | アダプター検出のルートディレクトリ                      |
-| `COGNIS_MODULES_ROOT`             | `src/modules`                  | モジュール検出のルートディレクトリ                      |
 | `PORT`                            | `3000`                         | HTTP ポート                                             |
 | `LISTEN_HOST`                     | `0.0.0.0`                      | バインドアドレス                                        |
 

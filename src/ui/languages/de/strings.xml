@@ -48,6 +48,7 @@
   <string name="ui.reuse.reset">Zurücksetzen</string>
   <string name="ui.reuse.reset_draft">Entwurf zurücksetzen</string>
   <string name="ui.reuse.refresh">Aktualisieren</string>
+  <string name="ui.reuse.update">Aktualisieren</string>
   <string name="ui.reuse.connection_lost_refresh_prompt">Verbindung unterbrochen. Bitte die Seite aktualisieren.</string>
   <string name="ui.reuse.loading">Wird geladen…</string>
   <string name="ui.reuse.loading_joke_1">Cognis sollte nicht so langsam sein, wir haben doch 2026, oder?</string>
@@ -62,6 +63,10 @@
   <string name="ui.reuse.discard">Verwerfen</string>
   <string name="ui.reuse.done">Fertig</string>
   <string name="ui.reuse.add">Hinzufügen</string>
+  <string name="ui.reuse.edit">Bearbeiten</string>
+  <string name="ui.reuse.back">Zurück</string>
+  <string name="ui.reuse.previous">Zurück</string>
+  <string name="ui.reuse.next">Weiter</string>
   <string name="ui.reuse.remove">Entfernen</string>
   <string name="ui.reuse.dismiss">Schließen</string>
   <string name="ui.reuse.copy">Kopieren</string>
@@ -192,7 +197,7 @@
   <string name="ui.app.license.page_title">Lizenz</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3-Lizenzbedingungen.</string>
   <string name="ui.app.license.load_error">Der Lizenztext konnte nicht geladen werden.</string>
-  <string name="ui.app.admin.state.active">Aktiv</string>
+  <string name="ui.app.admin.state.active">Aktiviert</string>
   <string name="ui.app.admin.state.available">Verfügbar</string>
   <string name="ui.app.admin.state.disabled">Deaktiviert</string>
   <string name="ui.app.admin.publisher">Herausgeber</string>
@@ -547,7 +552,6 @@
   <string name="ui.app.admin.notif.test_email_required">Eine Empfänger-E-Mail-Adresse ist erforderlich.</string>
   <string name="ui.app.admin.notif.field_env_conflict">Umgebungsvariable wird überschrieben</string>
   <string name="ui.app.admin.notif.required_field">Erforderlicher Wert</string>
-  <string name="ui.app.admin.notif.enable_provider">Adapter aktivieren</string>
   <string name="ui.app.admin.notif.smtp_allow_self_signed">Selbstsigniertes Zertifikat erlauben</string>
   <string name="ui.app.admin.notif.smtp_auth_disabled">Authentifizierung deaktivieren</string>
   <string name="ui.app.admin.notif.smtp_code_length">Codelänge</string>
@@ -674,4 +678,20 @@
   <string name="ui.reuse.core">Kern</string>
   <string name="ui.app.users.external_password_managed">Passwörter externer Benutzer werden von ihrem Authentifizierungsanbieter verwaltet.</string>
   <string name="ui.app.admin.db_managed_by_docker">Von Docker verwaltet</string>
+  <string name="ui.app.admin.security.login_session_timeout_label">Standard-Zeitlimit für Anmeldesitzungen</string>
+  <string name="ui.app.admin.security.login_session_timeout_hint">Die längste Anmeldesitzung, die Benutzer auswählen dürfen.</string>
+  <string name="ui.app.admin.security.login_session_timeout_never">Nie</string>
+  <string name="ui.app.admin.security.login_session_timeout_never_warning">Das Deaktivieren von Sitzungszeitlimits wird für Produktionsumgebungen nicht empfohlen.</string>
+  <string name="ui.reuse.duration.minutes">Minuten</string>
+  <string name="ui.reuse.duration.hours">Stunden</string>
+  <string name="ui.reuse.duration.days">Tage</string>
+  <string name="ui.reuse.duration.weeks">Wochen</string>
+  <string name="ui.page.title.modules">Module</string>
+  <string name="ui.reuse.license">Lizenz</string>
+  <string name="ui.reuse.install">Installieren</string>
+  <string name="ui.reuse.installed">Installiert</string>
+  <string name="ui.reuse.all">Alle</string>
+  <string name="ui.reuse.name">Name</string>
+  <string name="ui.reuse.uninstall">Deinstallieren</string>
+  <string name="ui.reuse.toggle_secret_visibility">Sichtbarkeit des Geheimnisses umschalten</string>
 </resources>
