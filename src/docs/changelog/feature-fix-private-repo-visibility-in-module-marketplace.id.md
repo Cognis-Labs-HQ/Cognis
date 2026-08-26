@@ -11,3 +11,7 @@ Polling bursa otomatis hanya membaca PAT saat keyring sudah terbuka. Kegagalan a
 ## Setiap repositori privat yang dapat diakses dipertimbangkan
 
 Penemuan privat tidak lagi membatasi daftar repositori terautentikasi GitHub berdasarkan afiliasi karena pembatasan tersebut dapat menghilangkan repositori yang diberi akses PAT terperinci secara eksplisit. Log pemindaian kini membedakan hasil katalog dari modul terpasang dan mengidentifikasi repositori yang ditolak karena manifes tidak valid atau kegagalan pengayaan.
+
+## Pengaturan sumber memakai penyimpanan kontainer persisten
+
+Kontainer produksi kini menulis rekaman sumber bursa ke volume konfigurasi terpasang, bukan ke path di bawah build server yang dapat diganti. Rekaman tersebut mempertahankan sakelar pemindaian privat dan pengenal untuk mengambil PAT dari keyring pengguna yang terenkripsi dan tersinkron ke server setelah mulai ulang.

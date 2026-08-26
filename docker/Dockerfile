@@ -13,6 +13,7 @@ ENV NODE_ENV=production \
   COGNIS_ACCESS_TOKEN_TTL_SECONDS=43200 \
   MEDIA_LOCATION=/app/media \
   COGNIS_EXTERNAL_MODULES_ROOT=/app/external-modules \
+  COGNIS_MODULE_SOURCES_PATH=/app/config/module-sources.json \
   COGNIS_GATEWAYS_ROOT=/app/dist/server/src/gateways \
   COGNIS_ADAPTERS_ROOT=/app/dist/server/src/adapters \
   COGNIS_CLI_TOKEN_PATH=/app/config/cli-access.token

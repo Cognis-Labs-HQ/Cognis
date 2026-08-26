@@ -11,3 +11,7 @@ Automatic marketplace polling reads a PAT only when the keyring is already unloc
 ## Every accessible private repository is considered
 
 Private discovery no longer restricts GitHub's authenticated repository list by affiliation, which could omit explicitly granted fine-grained PAT repositories. Scan logs now distinguish catalog results from installed modules and identify repositories rejected because of invalid manifests or enrichment failures.
+
+## Source settings use persistent container storage
+
+Production containers now write marketplace source records to the mounted configuration volume instead of a path beneath the replaceable server build. The record retains the private-scan switch and the identifier that resolves the PAT from the user's encrypted, server-synchronized keyring after a restart.

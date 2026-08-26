@@ -69,6 +69,7 @@
 | `DATABASE_URL`                    | —                              | PostgreSQL または MariaDB の接続文字列                  |
 | `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | ベアラートークンの有効期限 (秒)                         |
 | `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | CLI ブートストラップトークンのパス                      |
+| `COGNIS_MODULE_SOURCES_PATH`      | `config/module-sources.json`   | モジュールマーケットプレイスのソース設定を永続化するパス |
 | `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | ゲートウェイ検出のルートディレクトリ                    |
 | `COGNIS_ADAPTERS_ROOT`            | `src/adapters`                 | アダプター検出のルートディレクトリ                      |
 | `PORT`                            | `3000`                         | HTTP ポート                                             |
