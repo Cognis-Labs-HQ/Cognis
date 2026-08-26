@@ -131,3 +131,11 @@ Module detail headers now show a hyperlink SVG followed by the module’s comple
 ## Adapt PiP resize handles to light and dark themes
 
 Both diagonal PiP resize SVGs now use explicit high-contrast colors for Cognis light and dark themes. Unconfigured pages also follow the browser’s dark color-scheme preference, while the SVG paths continue to inherit their handle color through `currentColor`.
+
+## Focus sessions behave consistently
+
+Focus surfaces may now use their optional default state, declared application routes resolve correctly, local dismissal no longer ends a shared session, and remotely ended sessions close without leaving stale content behind.
+
+## Composer code stays readable
+
+Grid sizing now lives in a focused, tested module, while the explanatory comments and spacing in page-composer initialization have been restored.

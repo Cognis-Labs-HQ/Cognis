@@ -131,3 +131,11 @@ Moduldetailköpfe zeigen nun direkt unter dem Titel ein Hyperlink-SVG gefolgt vo
 ## PiP-Größengriffe an helle und dunkle Designs anpassen
 
 Beide diagonalen PiP-Größen-SVGs verwenden nun ausdrücklich kontrastreiche Farben für das helle und das dunkle Cognis-Design. Seiten ohne festgelegtes Design folgen zusätzlich der dunklen Farbschemaeinstellung des Browsers, während die SVG-Pfade ihre Grifffarbe weiterhin über `currentColor` übernehmen.
+
+## Fokussitzungen verhalten sich konsistent
+
+Fokusflächen können jetzt ihren optionalen Standardzustand verwenden, deklarierte Anwendungsrouten werden korrekt aufgelöst, lokales Schließen beendet keine gemeinsame Sitzung mehr und entfernt beendete entfernte Sitzungen ohne veraltete Inhalte.
+
+## Composer-Code bleibt lesbar
+
+Die Größenberechnung des Rasters befindet sich jetzt in einem eigenen, getesteten Modul. Gleichzeitig wurden die erklärenden Kommentare und Abstände in der Initialisierung des Seiten-Composers wiederhergestellt.

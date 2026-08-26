@@ -131,3 +131,11 @@ Header detail modul kini menampilkan SVG hyperlink yang diikuti URL repositori s
 ## Sesuaikan pegangan ubah ukuran PiP dengan tema terang dan gelap
 
 Kedua SVG pengubah ukuran diagonal PiP kini menggunakan warna kontras tinggi yang eksplisit untuk tema Cognis terang dan gelap. Halaman tanpa tema yang ditetapkan juga mengikuti preferensi skema warna gelap browser, sementara path SVG tetap mewarisi warna pegangannya melalui `currentColor`.
+
+## Sesi fokus berperilaku konsisten
+
+Permukaan fokus kini dapat memakai status awal opsional, rute aplikasi yang dideklarasikan dapat diselesaikan dengan benar, penutupan lokal tidak lagi mengakhiri sesi bersama, dan sesi jarak jauh yang berakhir ditutup tanpa menyisakan konten usang.
+
+## Kode composer tetap mudah dibaca
+
+Penghitungan ukuran kisi kini berada dalam modul khusus yang telah diuji, sedangkan komentar penjelas dan jarak pada inisialisasi composer halaman telah dipulihkan.
