@@ -430,7 +430,7 @@ test("module marketplace does not resolve repository-relative avatars against th
     assert.equal(resolveModuleAssetUrl("/static/icon.svg"), "/static/icon.svg");
 });
 
-test("module marketplace renders safe source repository links below module titles", () => {
+test("module details render safe full source repository URLs below their titles", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
@@ -459,8 +459,18 @@ test("module marketplace renders safe source repository links below module title
     );
     assert.match(source, /function renderRepositoryLink\(module\)/);
     assert.match(source, /static\/assets\/reuse\/hyperlink\.svg/);
+    assert.match(
+        source,
+        /<div class="module-repository-link"><img[^`]+<a href=/,
+    );
     assert.match(source, /target="_blank" rel="noopener noreferrer"/);
     assert.match(source, /event\.target\.closest\("a"\)/);
+    assert.doesNotMatch(
+        source,
+        /module-store-card-heading[^`]+renderRepositoryLink/,
+    );
+    assert.match(marketplaceStyles, /module-repository-link a/);
+    assert.match(marketplaceStyles, /overflow-wrap: anywhere/);
 });
 
 test("module marketplace replaces unavailable icons with the unknown icon", () => {

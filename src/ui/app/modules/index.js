@@ -152,7 +152,6 @@ function renderCard(module) {
       ${avatar}
       <div class="module-store-card-copy">
         <div class="module-store-card-heading"><h3>${escapeHtml(presentation.name)}${renderRestartWarning(module)}</h3>${module.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}</div>
-        ${renderRepositoryLink(module)}
         <p>${escapeHtml(presentation.summary ?? presentation.description ?? "")}</p>
         <span class="module-store-publisher">${escapeHtml(module.publisher ?? "")} · ${escapeHtml(formatVersion(module.installed ? (module.installedVersion ?? module.version) : module.version))}</span>
         ${renderAvailableVersion(module)}
@@ -165,7 +164,7 @@ function renderRepositoryLink(module) {
     const repositoryUrl = resolveModuleRepositoryUrl(module);
     if (!repositoryUrl) return "";
     const escapedUrl = escapeHtml(repositoryUrl);
-    return `<a class="module-repository-link" href="${escapedUrl}" target="_blank" rel="noopener noreferrer"><img src="/static/assets/reuse/hyperlink.svg" alt="" aria-hidden="true"><span>${escapedUrl}</span></a>`;
+    return `<div class="module-repository-link"><img src="/static/assets/reuse/hyperlink.svg" alt="" aria-hidden="true"><a href="${escapedUrl}" target="_blank" rel="noopener noreferrer">${escapedUrl}</a></div>`;
 }
 
 function renderRestartWarning(module) {

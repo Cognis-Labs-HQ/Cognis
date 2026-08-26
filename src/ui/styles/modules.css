@@ -175,9 +175,8 @@ body[data-theme="dark"] .module-icon-settings {
     min-width: 0;
 }
 .module-repository-link {
-    display: inline-flex;
+    display: flex;
     min-width: 0;
-    width: fit-content;
     max-width: 100%;
     align-items: center;
     gap: 0.35rem;
@@ -189,10 +188,8 @@ body[data-theme="dark"] .module-icon-settings {
     height: 1rem;
     flex: 0 0 auto;
 }
-.module-repository-link span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.module-repository-link a {
+    overflow-wrap: anywhere;
 }
 .module-store-publisher {
     color: var(--muted-text-color);

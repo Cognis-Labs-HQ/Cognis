@@ -124,6 +124,6 @@ Browsermodule können nun jedes Produktionswerkzeug unter `src/ui/reuse/` und je
 
 Die API registriert `ui:reuse` nun im Katalog der Host-UI-Fähigkeitsanbieter. Module, die diese Fähigkeit deklarieren, bestehen damit die Aktivierungsprüfung, bevor derselbe Anbieter die Browser-ctx-Ressourcenoberfläche initialisiert.
 
-## Jedes Modul mit seinem Quell-Repository verlinken
+## Moduldetails mit ihren Quell-Repositorys verlinken
 
-Marketplace-Karten und Moduldetailköpfe zeigen nun direkt unter dem Titel ein Hyperlink-SVG gefolgt von der bereinigten URL des Quell-Repositorys. Repository-Links öffnen sich separat, ohne die umgebende Modulkarte zu aktivieren; unsichere URLs oder URLs mit Zugangsdaten werden nicht dargestellt.
+Moduldetailköpfe zeigen nun direkt unter dem Titel ein Hyperlink-SVG gefolgt von der vollständigen, bereinigten URL des Quell-Repositorys. Nur die sichtbare URL ist verlinkt; das SVG bleibt dekorativ. Unsichere URLs oder URLs mit Zugangsdaten werden nicht dargestellt. Marketplace-Karten bleiben kompakt und zeigen keine Repository-Links.
