@@ -39,6 +39,7 @@ test("module marketplace persists source metadata without PAT values", async () 
             namespace: "Cognis-Labs-HQ",
             baseUrl: "https://api.github.com",
             homepage: "https://github.com/Cognis-Labs-HQ",
+            scanPrivateRepos: false,
             trusted: true,
             credentialId: undefined,
         },
@@ -93,6 +94,26 @@ test("trusted source updates accept credentials without mutable metadata", async
         path.join(root, "modules"),
     ).listSources();
     assert.equal(restartedSource.credentialId, "module-source:trusted:pat");
+});
+
+test("trusted source private scanning survives a service restart", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const statePath = path.join(root, "sources.json");
+    const installRoot = path.join(root, "modules");
+    const service = new ModuleMarketplaceService(statePath, installRoot);
+    await service.saveSource({
+        ...DEFAULT_TRUSTED_MODULE_SOURCE,
+        credentialId: "module-source:trusted:pat",
+        scanPrivateRepos: true,
+    });
+
+    const stored = JSON.parse(await readFile(statePath, "utf8"));
+    assert.equal(stored[0].scanPrivateRepos, true);
+    const [restartedSource] = await new ModuleMarketplaceService(
+        statePath,
+        installRoot,
+    ).listSources();
+    assert.equal(restartedSource.scanPrivateRepos, true);
 });
 
 test("cached UUID collisions prefer the trusted Cognis source", async () => {

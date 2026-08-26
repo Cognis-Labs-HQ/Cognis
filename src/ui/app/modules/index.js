@@ -601,6 +601,8 @@ async function discoverConfiguredSources(
             (await resolveSourceToken(keyring, source, {
                 action: i18n.t("ui.app.modules.refresh_complete"),
                 process: source.namespace,
+            }, {
+                promptWhenLocked: forceRefresh,
             })) ?? "",
         ]),
     );

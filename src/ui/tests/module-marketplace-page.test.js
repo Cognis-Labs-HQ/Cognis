@@ -50,6 +50,10 @@ const sourceSettingsSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/source-settings.js"),
     "utf8",
 );
+const credentialsSource = readFileSync(
+    resolve(ROOT, "src/ui/app/modules/credentials.js"),
+    "utf8",
+);
 const marketplaceSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/index.js"),
     "utf8",
@@ -209,7 +213,7 @@ test("module marketplace content keeps a stable Modules heading", () => {
     );
 
     assert.match(
-        source,
+        marketplaceSource,
         /<h2>\$\{escapeHtml\(i18n\.t\("ui\.reuse\.modules"\)\)\}<\/h2>/,
     );
     assert.doesNotMatch(
@@ -317,6 +321,8 @@ test("module marketplace identifies immutable trusted sources", () => {
     assert.match(sourceSettingsSource, /scanPrivateRepos: privateScan/);
     assert.match(sourceSettingsSource, /if \(!validation\.valid\)/);
     assert.match(sourceSettingsSource, /scope\?\.resolve\(credentialId/);
+    assert.match(marketplaceSource, /promptWhenLocked:\s*forceRefresh/);
+    assert.match(credentialsSource, /keyring\?\.get\(source\.credentialId\)/);
 });
 
 test("recommended modules retain the published defaults", () => {
