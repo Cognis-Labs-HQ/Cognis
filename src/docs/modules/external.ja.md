@@ -99,4 +99,14 @@ classic personal access token では `repo` スコープを付与し、該当す
 
 Cognis はダッシュボードシェルと、ホスト機能が出力するすべての再利用可能コンポーネントを所有します。これには構造用の `profile-capability-*` アバタークラスも含まれます。モジュールが所有できるのは、`mount()` に渡されたコンテンツルート内に自身が描画した子孫だけです。すべてのモジュールセレクターは、モジュール固有の名前空間を持つクラスまたは ID を対象として終わる必要があります。ホストのテーマセレクターは、そのモジュール所有対象の祖先としてのみ使用できます。モジュールは独自のレイアウトクラスをホストレンダラーへ渡せますが、ホストのスタイルシートを複製したり、ホスト機能のクラスを再定義したり、シェル要素を選択したり、`document.body` や `document.head` を変更したりしてはいけません。アプリ全体の動作は、取り外し可能なフックを持つ宣言済みの `uiCtx` 機能またはフローに属します。
 
+ブラウザモジュールは、ホスト内部を直接インポートしたりスタイルを複製したりせず、`ui:reuse` 機能から再利用可能なホストユーティリティと共通 CSS を取得します。`importModule(path)` は `src/ui/reuse/` 配下の任意の本番モジュールを読み込み、`loadStylesheet(path)` と `loadStylesheets(paths)` は `src/ui/styles/reuse/` 配下のファイルを読み込みます。`loadCommonStyles()` は不変の `stylesheets` カタログ全体を読み込みます。別のホスト機能が URL を受け取る場合は、`moduleUrl(path)` と `stylesheetUrl(path)` を利用できます。パスは相対指定とし、想定された拡張子を使い、ディレクトリを遡ったりテストファイルを選択したりすることはできません。
+
+```js
+const reuse = uiCtx.capabilities.get("ui:reuse");
+const { createPageComposer } = await reuse.importModule(
+    "page-composer/index.js",
+);
+await reuse.loadStylesheets(["layout.css", "page-sections.css"]);
+```
+
 実行時スクリプトを読み込むモジュールは `ui:resourceLoader` を宣言し、検証と参照カウントを行う `loadScript({ id, src, globalName })` を呼び出します。アンマウント時に返されたハンドルを破棄し、ドキュメントへスクリプトを直接追加してはいけません。

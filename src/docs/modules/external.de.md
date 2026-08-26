@@ -99,4 +99,14 @@ Module, die Konfiguration oder Inhalte außerhalb ihres Checkouts speichern, mü
 
 Cognis besitzt die Dashboard-Oberfläche und jede von einer Host-Fähigkeit ausgegebene wiederverwendbare Komponente, einschließlich der strukturellen Avatar-Klassen `profile-capability-*`. Ein Modul besitzt nur Nachfahren, die es innerhalb des an `mount()` übergebenen Inhaltswurzelelements rendert. Jeder Modulselektor muss an einer modulnamensräumigen Klasse oder ID enden; ein Host-Themenselektor darf nur als Vorfahr dieses moduleigenen Ziels erscheinen. Module dürfen eigene Layoutklassen an Host-Renderer übergeben, aber keine Host-Stylesheets kopieren, Host-Fähigkeitsklassen neu definieren, Shell-Elemente auswählen oder `document.body` beziehungsweise `document.head` verändern. Anwendungsweites Verhalten gehört in deklarierte `uiCtx`-Fähigkeiten oder Flows mit entfernbaren Hooks.
 
+Browsermodule beziehen wiederverwendbare Host-Werkzeuge und gemeinsame CSS-Regeln über die Fähigkeit `ui:reuse`, statt Host-Interna zu importieren oder Stile zu kopieren. `importModule(path)` lädt jedes Produktionsmodul unter `src/ui/reuse/`; `loadStylesheet(path)` und `loadStylesheets(paths)` laden Dateien unter `src/ui/styles/reuse/`; `loadCommonStyles()` lädt den vollständigen unveränderlichen Katalog `stylesheets`. `moduleUrl(path)` und `stylesheetUrl(path)` stehen bereit, wenn eine andere Host-Fähigkeit eine URL erwartet. Pfade sind relativ, müssen die erwartete Endung verwenden und dürfen weder Verzeichnisse durchlaufen noch Testdateien auswählen.
+
+```js
+const reuse = uiCtx.capabilities.get("ui:reuse");
+const { createPageComposer } = await reuse.importModule(
+    "page-composer/index.js",
+);
+await reuse.loadStylesheets(["layout.css", "page-sections.css"]);
+```
+
 Module, die ein Laufzeitskript laden müssen, deklarieren `ui:resourceLoader` und rufen dessen validierte, referenzgezählte Methode `loadScript({ id, src, globalName })` auf. Sie müssen den zurückgegebenen Griff beim Aushängen bereinigen und dürfen Skripte nicht direkt an das Dokument anhängen.

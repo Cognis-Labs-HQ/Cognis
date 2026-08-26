@@ -115,3 +115,7 @@ Jendela PiP mengambang kini menyediakan pegangan ubah ukuran SVG di sudut kiri a
 ## Selaraskan kontrak tinggi rapat dan papan tulis
 
 Panggung komponen tanpa bingkai kini menyediakan kelas status dan kontrak tata letak mount yang eksplisit, menghapus jarak dari workspace app-shell bertingkat, serta merentangkan setiap lapisan composer hingga widget. Dokumentasi integrasi kini menetapkan tanggung jawab panggung Jitsi Meet dan composer/kanvas Nextcloud Whiteboard agar kanvas mencapai batas komponen tanpa pengguliran vertikal bertingkat.
+
+## Sediakan sumber daya UI yang dapat digunakan kembali melalui ctx
+
+Modul browser kini dapat memperoleh setiap utilitas produksi di bawah `src/ui/reuse/` dan setiap stylesheet umum di bawah `src/ui/styles/reuse/` melalui kapabilitas `ui:reuse`. Build produksi mempertahankan URL sumber daya logisnya, sementara validasi path relatif mencegah lintasan direktori, impor pengujian, dan ketidakcocokan ekstensi.

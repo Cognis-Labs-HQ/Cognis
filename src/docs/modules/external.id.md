@@ -99,4 +99,14 @@ Modul yang menyimpan konfigurasi atau konten di luar checkout harus mengekspor `
 
 Cognis memiliki shell dasbor dan setiap komponen pakai ulang yang dihasilkan kapabilitas host, termasuk kelas avatar struktural `profile-capability-*`. Modul hanya memiliki turunan yang direndernya di dalam akar konten yang diteruskan ke `mount()`. Setiap selektor modul harus berakhir pada kelas atau ID dengan namespace modul; selektor tema host hanya boleh muncul sebagai leluhur target milik modul tersebut. Modul boleh meneruskan kelas tata letaknya sendiri ke perender host, tetapi tidak boleh menyalin stylesheet host, mendefinisikan ulang kelas kapabilitas host, memilih elemen shell, atau mengubah `document.body` maupun `document.head`. Perilaku seluruh aplikasi harus berada dalam kapabilitas atau flow `uiCtx` yang dideklarasikan dengan hook yang dapat dilepas.
 
+Modul browser memperoleh utilitas host yang dapat digunakan kembali dan CSS umum melalui kapabilitas `ui:reuse`, bukan dengan mengimpor internal host atau menyalin gaya. `importModule(path)` memuat modul produksi apa pun di bawah `src/ui/reuse/`; `loadStylesheet(path)` dan `loadStylesheets(paths)` memuat berkas di bawah `src/ui/styles/reuse/`; sedangkan `loadCommonStyles()` memuat seluruh katalog `stylesheets` yang tidak dapat diubah. `moduleUrl(path)` dan `stylesheetUrl(path)` tersedia ketika kapabilitas host lain menerima URL. Path harus relatif, menggunakan ekstensi yang diharapkan, serta tidak boleh melintasi direktori atau memilih berkas pengujian.
+
+```js
+const reuse = uiCtx.capabilities.get("ui:reuse");
+const { createPageComposer } = await reuse.importModule(
+    "page-composer/index.js",
+);
+await reuse.loadStylesheets(["layout.css", "page-sections.css"]);
+```
+
 Modul yang harus memuat skrip runtime mendeklarasikan `ui:resourceLoader` dan memanggil metode tervalidasi serta terhitung referensi `loadScript({ id, src, globalName })`. Modul harus membuang pegangan yang dikembalikan saat dilepas dan tidak boleh menambahkan skrip langsung ke dokumen.

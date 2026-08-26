@@ -115,3 +115,7 @@ Floating PiP windows now provide SVG resize handles in both the upper-left and l
 ## Align the meeting-to-whiteboard height contract
 
 Borderless component stages now expose an explicit state class and mount layout contract, remove spacing from the nested app-shell workspace, and stretch every composer layer through the widget. The integration documentation now defines the corresponding Jitsi Meet stage and Nextcloud Whiteboard composer/canvas responsibilities so the canvas reaches the component border without nested vertical scrolling.
+
+## Expose reusable UI resources through ctx
+
+Browser modules can now obtain every production utility under `src/ui/reuse/` and every common stylesheet under `src/ui/styles/reuse/` through the `ui:reuse` capability. Production builds preserve their logical resource URLs, while validated relative paths prevent traversal, test imports, and extension mismatches.

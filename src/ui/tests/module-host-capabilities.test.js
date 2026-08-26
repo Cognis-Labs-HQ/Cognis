@@ -20,6 +20,16 @@ test("UI capabilities share one global context across asset bundles", () => {
     );
     assert.match(uiContext, /Symbol\.for\("cognis\.uiCtx"\)/);
     assert.match(uiContext, /globalThis\[UI_CTX_KEY\]/);
+    assert.match(uiContext, /"ui:reuse", createReuseResources\(\)/);
+});
+
+test("production builds expose every reusable module and stylesheet", () => {
+    const buildScript = readFileSync(
+        resolve(ROOT, "src/tooling/scripts/build-ui.mjs"),
+        "utf8",
+    );
+    assert.match(buildScript, /src\/ui\/reuse\//);
+    assert.match(buildScript, /src\/ui\/styles\/reuse\//);
 });
 
 for (const capability of [

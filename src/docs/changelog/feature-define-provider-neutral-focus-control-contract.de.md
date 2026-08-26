@@ -115,3 +115,7 @@ Schwebende PiP-Fenster bieten nun SVG-Größengriffe oben links und unten rechts
 ## Höhenvertrag zwischen Meeting und Whiteboard abstimmen
 
 Randlose Komponentenbühnen stellen nun eine eindeutige Zustandsklasse und einen Mount-Layout-Vertrag bereit, entfernen Abstände aus dem verschachtelten App-Shell-Workspace und strecken jede Composer-Ebene bis zum Widget. Die Integrationsdokumentation definiert die zugehörigen Zuständigkeiten der Jitsi-Meet-Bühne und des Nextcloud-Whiteboard-Composers beziehungsweise Canvas, damit die Zeichenfläche ohne verschachtelten vertikalen Bildlauf bis an den Komponentenrand reicht.
+
+## Wiederverwendbare UI-Ressourcen über ctx bereitstellen
+
+Browsermodule können nun jedes Produktionswerkzeug unter `src/ui/reuse/` und jedes gemeinsame Stylesheet unter `src/ui/styles/reuse/` über die Fähigkeit `ui:reuse` beziehen. Produktions-Builds bewahren deren logische Ressourcen-URLs, während validierte relative Pfade Verzeichnisdurchläufe, Testimporte und falsche Dateiendungen verhindern.
