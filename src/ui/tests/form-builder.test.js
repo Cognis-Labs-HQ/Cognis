@@ -44,6 +44,49 @@ test("form builder applies theme styling to every select control", () => {
     assert.match(builder.render(), /class="form-builder-input theme-select"/);
 });
 
+test("form builder keeps tooltip buttons outside field labels", () => {
+    const builder = createFormBuilder(
+        {
+            i18n: { t: (key) => key },
+            escapeHtml: (value) => String(value),
+            renderInfoTooltip: () =>
+                '<button type="button" class="info-tooltip__btn">i</button>',
+        },
+        {
+            formId: "tooltip-form",
+            submitLabelKey: "submit",
+            fields: [
+                {
+                    name: "privateRepos",
+                    labelKey: "private_repos",
+                    type: "checkbox",
+                    slider: true,
+                    infoTooltip: { text: "permissions" },
+                },
+            ],
+        },
+    );
+    const markup = builder.render();
+    assert.match(
+        markup,
+        /<span class="form-builder-label-text"><label for="form-builder-privateRepos">/,
+    );
+    assert.match(markup, /<\/label><button[^>]*info-tooltip__btn/);
+    assert.match(
+        markup,
+        /<label class="switch" for="form-builder-privateRepos"><input[\s\S]*<span class="slider"><\/span><\/label>/,
+    );
+});
+
+test("module source fields retain balanced popup grid sizing", () => {
+    const styles = read("src/ui/styles/modules.css");
+    assert.match(styles, /\.module-source-form \.form-builder-field \{/);
+    assert.match(
+        styles,
+        /\.module-source-form \.form-builder-field:nth-last-child\(-n \+ 2\) \{[\s\S]*grid-column: 1 \/ -1;/,
+    );
+});
+
 test("adapter config form updates required title markers when requirements change", () => {
     const source = read("src/ui/app/administration/adapter-config-popup.js");
     const styles = read("src/ui/styles/reuse/page-sections.css");

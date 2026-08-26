@@ -235,7 +235,10 @@ export function showToast(
             startDismissTimer();
         });
         toast.addEventListener("pointerdown", (event) => {
-            if (!event.isPrimary || (event.pointerType === "mouse" && event.button !== 0)) {
+            if (
+                !event.isPrimary ||
+                (event.pointerType === "mouse" && event.button !== 0)
+            ) {
                 return;
             }
             dragPointerId = event.pointerId;

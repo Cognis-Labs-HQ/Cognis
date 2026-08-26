@@ -63,6 +63,9 @@
   <string name="ui.app.modules.github_repo_scope_missing">プライベートリポジトリを読み込むには、この GitHub トークンに repo スコープが必要です。</string>
   <string name="ui.app.modules.source_access_failed">プロバイダーはこのトークンによるアクセスを確認できませんでした。</string>
   <string name="ui.app.modules.credential_validation_warning">PAT の検証に失敗しました。必要な権限はサーバーログで確認してください。</string>
+  <string name="ui.app.modules.private_repository_credential_missing">{{source}} の非公開リポジトリをスキャンするには、保存済みの PAT が必要です。</string>
+  <string name="ui.app.modules.private_repository_access_failed">PAT で {{source}} の非公開リポジトリを一覧取得できません。リポジトリアクセス、スコープ、組織の SSO 認証を確認してください。</string>
+  <string name="ui.app.modules.private_repository_contents_access_failed">PAT で {{source}} の非公開リポジトリは確認できますが、その内容を読み取れません。</string>
   <string name="ui.app.modules.preferences_title">モジュール設定</string>
   <string name="ui.app.modules.preferences_saved">モジュール設定を保存しました。</string>
   <string name="ui.app.modules.config_required">このモジュールを有効にする前に、必須のモジュール設定をすべて指定してください。</string>
@@ -78,4 +81,7 @@
   <string name="ui.app.modules.uninstall_warning">アンインストールすると、保存済みのモジュール設定は常に削除されます。再インストール後は再設定が必要です。</string>
   <string name="ui.app.modules.uninstall_delete_content">モジュールのデータも完全に削除する</string>
   <string name="ui.app.modules.scan_private_repos">非公開リポジトリをスキャン</string>
+  <string name="ui.app.modules.polling_failed">Marketplace のポーリングに失敗しました。</string>
+  <string name="ui.app.modules.scan_private_repos_hint">プライベートスキャンには PAT が必要で、トークンがアクセスできる非公開リポジトリだけが対象です。Cognis は保存前にリポジトリ一覧取得と内容読み取りを検証します。</string>
+  <string name="ui.app.modules.pat_permissions_hint">GitHub の fine-grained PAT では、設定した組織を Resource owner に選び、すべてのリポジトリまたは Cognis がスキャンする各非公開リポジトリへのアクセスを付与し、Repository permissions の Metadata と Contents を Read-only に設定します。GitHub の Organization permissions 一覧から選ぶ権限はありません。必要な場合は組織の承認を完了してください。classic PAT では repo スコープを付与し、該当する場合は組織 SSO を承認します。GitLab トークンには read_api と read_repository が必要です。</string>
 </resources>

@@ -46,7 +46,9 @@ class FakeElement {
 
     querySelector(selector) {
         const className = selector.slice(1);
-        return this.children.find((child) => child.className === className) ?? null;
+        return (
+            this.children.find((child) => child.className === className) ?? null
+        );
     }
 
     setAttribute() {}

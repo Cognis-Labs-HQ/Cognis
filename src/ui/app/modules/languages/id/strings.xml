@@ -63,6 +63,9 @@
   <string name="ui.app.modules.github_repo_scope_missing">Token GitHub ini memerlukan cakupan repo untuk memuat repositori privat.</string>
   <string name="ui.app.modules.source_access_failed">Penyedia tidak dapat memverifikasi akses dengan token ini.</string>
   <string name="ui.app.modules.credential_validation_warning">Validasi PAT gagal. Periksa log server untuk izin yang diperlukan.</string>
+  <string name="ui.app.modules.private_repository_credential_missing">Pemindaian repositori privat untuk {{source}} memerlukan PAT yang tersimpan.</string>
+  <string name="ui.app.modules.private_repository_access_failed">PAT tidak dapat mencantumkan repositori privat untuk {{source}}. Periksa akses repositori, cakupan, dan otorisasi SSO organisasi.</string>
+  <string name="ui.app.modules.private_repository_contents_access_failed">PAT dapat melihat repositori privat untuk {{source}}, tetapi tidak dapat membaca isinya.</string>
   <string name="ui.app.modules.preferences_title">Pengaturan modul</string>
   <string name="ui.app.modules.preferences_saved">Pengaturan modul disimpan.</string>
   <string name="ui.app.modules.config_required">Tetapkan semua pengaturan modul yang wajib sebelum mengaktifkan modul ini.</string>
@@ -78,4 +81,7 @@
   <string name="ui.app.modules.uninstall_warning">Pencopotan selalu menghapus konfigurasi modul yang tersimpan. Modul harus disiapkan kembali jika dipasang ulang.</string>
   <string name="ui.app.modules.uninstall_delete_content">Hapus juga data modul secara permanen</string>
   <string name="ui.app.modules.scan_private_repos">Pindai Repositori Privat</string>
+  <string name="ui.app.modules.polling_failed">Polling Marketplace gagal.</string>
+  <string name="ui.app.modules.scan_private_repos_hint">Pemindaian privat memerlukan PAT dan hanya mencakup repositori privat yang dapat diakses token. Cognis memvalidasi daftar repositori dan pembacaan konten sebelum menyimpan.</string>
+  <string name="ui.app.modules.pat_permissions_hint">PAT fine-grained GitHub: pilih organisasi yang dikonfigurasi sebagai Resource owner; berikan akses ke semua repositori atau setiap repositori privat yang harus dipindai Cognis; atur izin Repository Metadata ke Read-only dan Contents ke Read-only. Tidak diperlukan izin dari daftar Organization permissions GitHub. Selesaikan persetujuan organisasi jika diwajibkan. Untuk PAT klasik, berikan cakupan repo dan otorisasi untuk SSO organisasi bila berlaku. Token GitLab memerlukan read_api dan read_repository.</string>
 </resources>

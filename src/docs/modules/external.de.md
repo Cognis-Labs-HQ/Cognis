@@ -49,9 +49,23 @@ Jedes externe Modul deklariert `entrypoints.bootstrap`. Cognis importiert nur di
 
 Das Manifest deklariert `uuid`, `id`, `name`, `version`, `publisher`, `class`, `coreApiVersion`, `summary`, `description`, `categories`, `recommended`, `license`, `homepage`, `repository`, `support`, `capabilities`, UUID-basierter `requires`, `entrypoints` und `assets`. Asset-Pfade sind Repository-bezogen. `assets.icon` identifiziert das quadratische Store-Symbol, `assets.banner` identifiziert den Detailhelden und `assets.screenshots` ist eine geordnete Galerie. Pfade müssen innerhalb des Repositorys bleiben.
 
+Lokalisierungsschlüssel müssen Punkte als Worttrenner verwenden: `module.example.canvas.label` statt `module.example.canvas_label` oder `module.example.canvas-label`. Durch Punkte getrennte Segmente gewährleisten vorhersehbare Eigentümerschaft, Auflösung, Validierung und Werkzeugunterstützung. Die registrierte Modul-ID ist die einzige beabsichtigte Ausnahme, wenn ihre unveränderliche ID bereits einen Bindestrich enthält.
+
 ### Quellen und private Repositories
 
 Cognis schließt die `https://github.com/Cognis-Labs-HQ`-Organisation standardmäßig als unveränderliche vertrauenswürdige Quelle ein. Administratoren können weitere GitHub-Organisationen oder GitLab-Gruppen über „Module“ im Benutzermenü und dann über „Modulquellen“ hinzufügen. Cognis fragt die Anbieter-API ab, behandelt jedes Repository, das ein gültiges Root-Manifest enthält, als Modul und leitet den Katalog dynamisch ab. Eine Quelle kann auf eine optionale PAT verweisen, die im Schlüsselbund des angemeldeten Administrators gespeichert ist. Der Quelldatensatz speichert nur die Schlüsselbund-ID. Verwenden Sie ein schreibgeschütztes Token mit den geringsten Berechtigungen und Repository- und Metadatenzugriff. Token werden nur zur Erkennung und zum Klonen bereitgestellt und niemals in die Quellkonfiguration geschrieben. Private Repositories werden ausgeschlossen, sofern **Private Repositories durchsuchen** nicht aktiviert ist; bei Aktivierung ist das PAT verpflichtend.
+
+### GitHub-PAT-Berechtigungen für private Scans
+
+Bevorzugen Sie einen PAT mit differenzierten Berechtigungen und konfigurieren Sie ihn wie folgt:
+
+- **Ressourcenbesitzer:** Wählen Sie die GitHub-Organisation der Cognis-Modulquelle.
+- **Repository-Zugriff:** Wählen Sie **Alle Repositorys** oder jedes private Repository, das Cognis erkennen und installieren soll.
+- **Repository-Berechtigungen:** Setzen Sie **Metadata** und **Contents** auf **Read-only**. Metadata erlaubt die Repository-Auflistung; Contents erlaubt Manifest-Erkennung und authentifiziertes Klonen.
+- **Organisationsberechtigungen:** Keine ist erforderlich. Cognis benötigt weder **Administration**, **Members**, **Secrets** noch eine Copilot-Berechtigung.
+- **Genehmigung und SSO:** Schließen Sie bei entsprechender Organisationsrichtlinie die Genehmigung und SAML-SSO-Autorisierung ab.
+
+Gewähren Sie einem klassischen persönlichen Zugriffstoken den Umfang `repo` und autorisieren Sie es gegebenenfalls für das Organisations-SSO. Der Tokenbesitzer muss bereits auf jedes ausgewählte private Repository zugreifen dürfen. Cognis lehnt die Quelleinstellung ab, wenn das Token kein privates Repository auflisten und dessen Inhalte lesen kann.
 
 ### Installation und Sicherheit
 
@@ -84,5 +98,15 @@ Module, die Konfiguration oder Inhalte außerhalb ihres Checkouts speichern, mü
 ### Eigentum am UI-Bereich
 
 Cognis besitzt die Dashboard-Oberfläche und jede von einer Host-Fähigkeit ausgegebene wiederverwendbare Komponente, einschließlich der strukturellen Avatar-Klassen `profile-capability-*`. Ein Modul besitzt nur Nachfahren, die es innerhalb des an `mount()` übergebenen Inhaltswurzelelements rendert. Jeder Modulselektor muss an einer modulnamensräumigen Klasse oder ID enden; ein Host-Themenselektor darf nur als Vorfahr dieses moduleigenen Ziels erscheinen. Module dürfen eigene Layoutklassen an Host-Renderer übergeben, aber keine Host-Stylesheets kopieren, Host-Fähigkeitsklassen neu definieren, Shell-Elemente auswählen oder `document.body` beziehungsweise `document.head` verändern. Anwendungsweites Verhalten gehört in deklarierte `uiCtx`-Fähigkeiten oder Flows mit entfernbaren Hooks.
+
+Browsermodule beziehen wiederverwendbare Host-Werkzeuge und gemeinsame CSS-Regeln über die Fähigkeit `ui:reuse`, statt Host-Interna zu importieren oder Stile zu kopieren. `importModule(path)` lädt jedes Produktionsmodul unter `src/ui/reuse/`; `loadStylesheet(path)` und `loadStylesheets(paths)` laden Dateien unter `src/ui/styles/reuse/`; `loadCommonStyles()` lädt den vollständigen unveränderlichen Katalog `stylesheets`. `moduleUrl(path)` und `stylesheetUrl(path)` stehen bereit, wenn eine andere Host-Fähigkeit eine URL erwartet. Pfade sind relativ, müssen die erwartete Endung verwenden und dürfen weder Verzeichnisse durchlaufen noch Testdateien auswählen.
+
+```js
+const reuse = uiCtx.capabilities.get("ui:reuse");
+const { createPageComposer } = await reuse.importModule(
+    "page-composer/index.js",
+);
+await reuse.loadStylesheets(["layout.css", "page-sections.css"]);
+```
 
 Module, die ein Laufzeitskript laden müssen, deklarieren `ui:resourceLoader` und rufen dessen validierte, referenzgezählte Methode `loadScript({ id, src, globalName })` auf. Sie müssen den zurückgegebenen Griff beim Aushängen bereinigen und dürfen Skripte nicht direkt an das Dokument anhängen.

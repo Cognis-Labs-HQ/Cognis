@@ -15,6 +15,29 @@
  */
 
 export const BROWSER_FLOW_CONTRACTS = Object.freeze({
+    "declare-focus-surfaces": Object.freeze(["collect", "validate"]),
+    "authorize-focus-operation": Object.freeze(["resolve-scope", "authorize"]),
+    "start-focus": Object.freeze(["authorize", "create-session", "publish"]),
+    "load-focus-target": Object.freeze(["resolve-route", "load", "mount"]),
+    "publish-focus-state": Object.freeze(["validate", "persist", "broadcast"]),
+    "apply-focus-state": Object.freeze([
+        "deduplicate",
+        "validate-revision",
+        "apply",
+    ]),
+    "transfer-focus-control": Object.freeze([
+        "authorize",
+        "transfer",
+        "publish",
+    ]),
+    "end-focus": Object.freeze(["authorize", "end", "restore", "publish"]),
+    "request-component-page": Object.freeze(["validate", "resolve", "prepare"]),
+    "spawn-component-page": Object.freeze([
+        "validate",
+        "resolve",
+        "prepare",
+        "mount",
+    ]),
     "authenticate-session": Object.freeze([
         "validate-stored-token",
         "apply-alternate-auth",

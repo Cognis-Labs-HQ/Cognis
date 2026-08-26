@@ -224,6 +224,10 @@ uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/resource-loader.js",
     providesCapabilities: ["ui:resourceLoader"],
 });
+uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/ui-ctx.js",
+    providesCapabilities: ["ui:reuse"],
+});
 const healthService = new HealthService();
 
 const gatewayService = new GatewayService(gatewayRegistry);

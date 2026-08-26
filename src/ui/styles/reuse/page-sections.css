@@ -2,6 +2,22 @@
     min-width: 0;
 }
 
+.widget-card:has(> .focus-control-trigger) {
+    position: relative;
+}
+
+.focus-control-trigger {
+    position: absolute;
+    z-index: 2;
+    top: 10px;
+    right: 10px;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+}
+
 .content-panel > .content-section {
     --composer-grid-inset: 28px;
     padding: var(--composer-grid-inset);
@@ -583,4 +599,189 @@ body:not([data-theme="light"]) .markdown-code-inline code {
         --composer-grid-inset: 14px;
         padding: var(--composer-grid-inset);
     }
+}
+.focus-control-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+}
+
+.focus-control-overlay {
+    position: fixed;
+    z-index: 1200;
+    inset: 5vh 5vw;
+    overflow: auto;
+    padding: 44px 12px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: var(--shadow-lg);
+}
+
+.focus-control-fullscreen {
+    inset: 0;
+    border: 0;
+    border-radius: 0;
+}
+
+.focus-control-pip {
+    inset: auto 18px 18px auto;
+    width: min(420px, calc(100vw - 36px));
+    height: min(300px, calc(100vh - 36px));
+}
+
+.focus-control-controls {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 6px;
+}
+
+.focus-control-target {
+    width: 100%;
+    height: 100%;
+}
+
+.component-page-stage {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 12rem;
+    overflow-x: hidden;
+    overflow-y: visible;
+    contain: layout style;
+    isolation: isolate;
+}
+
+.component-page-stage--borderless {
+    display: grid;
+    grid-template-rows: minmax(min-content, 1fr);
+    align-items: stretch;
+}
+
+.app-page__main--component-borderless {
+    margin: 0;
+}
+
+.component-page-window {
+    position: relative;
+    z-index: 1;
+    flex: 1 0 auto;
+    width: 100%;
+    min-height: 100%;
+    overflow: visible;
+    background: var(--surface-color);
+}
+
+.component-page-window > .app-shell {
+    min-height: 100%;
+}
+
+.component-page-window--borderless {
+    display: grid;
+    grid-template-rows: minmax(min-content, 1fr);
+    align-self: stretch;
+    width: 100%;
+    height: auto;
+    min-height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    box-sizing: border-box;
+    border: 0;
+    border-radius: 0;
+}
+
+.component-page-window--borderless > :first-child {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    border: 0;
+    border-radius: 0;
+}
+
+.component-page-window--borderless > .workspace,
+.component-page-window--borderless > .app-shell > .workspace {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    backdrop-filter: none;
+}
+
+.component-page-window--borderless > .workspace .composer-view-grid,
+.component-page-window--borderless
+    > .app-shell
+    > .workspace
+    .composer-view-grid {
+    height: 100%;
+    min-height: 100%;
+    grid-auto-rows: minmax(min-content, 1fr);
+    gap: 0;
+}
+
+.component-page-window--borderless
+    .workspace
+    > .composer-view-grid
+    > .widget-card {
+    height: 100%;
+    min-height: 100%;
+    overflow: visible;
+}
+
+.component-page-window--borderless
+    .workspace
+    :is(
+        .main-window,
+        .content-grid,
+        .content-panel,
+        .content-section,
+        .widget-card
+    ) {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+}
+
+.component-page-window--borderless .widget-card > :only-child {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+}
+
+.component-page-window--borderless
+    .workspace
+    :is(
+        .widget-card,
+        .content-section,
+        .content-panel,
+        .main-window,
+        .content-grid
+    ) {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.component-page-window--borderless > .workspace .content-panel {
+    min-height: 0;
 }

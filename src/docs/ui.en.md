@@ -91,7 +91,3 @@ Modules contribute CSS, HTML templates, and JavaScript via the `frontend` field 
 | `ui.layout.*`        | Layout shell text and ARIA labels                                |
 | `ui.page.title.*`    | Document `<title>` values                                        |
 | `module.<id>.*`      | Module-owned strings loaded on demand                            |
-
-## Navigation ordering
-
-Signed-in users can drag primary navigation links into their preferred order. Cognis stores the ordered route list in the account's `ui-preferences`, reapplies it when the shell starts, and places newly contributed links after known saved links until the user reorders them.

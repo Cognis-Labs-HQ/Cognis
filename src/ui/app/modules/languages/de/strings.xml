@@ -63,6 +63,9 @@
   <string name="ui.app.modules.github_repo_scope_missing">Dieses GitHub-Token benötigt den Bereich repo, um private Repositorys zu laden.</string>
   <string name="ui.app.modules.source_access_failed">Der Anbieter konnte den Zugriff mit diesem Token nicht bestätigen.</string>
   <string name="ui.app.modules.credential_validation_warning">Die PAT-Prüfung ist fehlgeschlagen. Die erforderlichen Berechtigungen stehen im Serverprotokoll.</string>
+  <string name="ui.app.modules.private_repository_credential_missing">Zum Durchsuchen privater Repositorys für {{source}} wird der gespeicherte PAT benötigt.</string>
+  <string name="ui.app.modules.private_repository_access_failed">Der PAT kann private Repositorys für {{source}} nicht auflisten. Prüfen Sie Repository-Zugriff, Berechtigungen und die SSO-Autorisierung der Organisation.</string>
+  <string name="ui.app.modules.private_repository_contents_access_failed">Der PAT kann ein privates Repository für {{source}} sehen, aber dessen Inhalte nicht lesen.</string>
   <string name="ui.app.modules.preferences_title">Moduleinstellungen</string>
   <string name="ui.app.modules.preferences_saved">Moduleinstellungen gespeichert.</string>
   <string name="ui.app.modules.config_required">Legen Sie vor der Aktivierung dieses Moduls alle erforderlichen Moduleinstellungen fest.</string>
@@ -78,4 +81,7 @@
   <string name="ui.app.modules.uninstall_warning">Bei der Deinstallation wird die gespeicherte Modulkonfiguration immer gelöscht. Nach einer erneuten Installation muss das Modul neu eingerichtet werden.</string>
   <string name="ui.app.modules.uninstall_delete_content">Zusätzlich die Daten des Moduls dauerhaft löschen</string>
   <string name="ui.app.modules.scan_private_repos">Private Repositorys durchsuchen</string>
+  <string name="ui.app.modules.polling_failed">Die Marketplace-Abfrage ist fehlgeschlagen.</string>
+  <string name="ui.app.modules.scan_private_repos_hint">Private Scans erfordern einen PAT und umfassen nur private Repositorys, auf die das Token zugreifen kann. Cognis prüft vor dem Speichern das Auflisten der Repositorys und das Lesen ihrer Inhalte.</string>
+  <string name="ui.app.modules.pat_permissions_hint">GitHub-PAT mit differenzierten Berechtigungen: Wählen Sie die konfigurierte Organisation als Ressourcenbesitzer, gewähren Sie Zugriff auf alle Repositorys oder jedes private Repository, das Cognis durchsuchen soll, und setzen Sie die Repository-Berechtigungen „Metadata“ und „Contents“ jeweils auf „Read-only“. Aus der Liste der GitHub-Organisationsberechtigungen ist keine Berechtigung erforderlich. Schließen Sie bei Bedarf die Genehmigung der Organisation ab. Gewähren Sie einem klassischen PAT den Umfang „repo“ und autorisieren Sie ihn gegebenenfalls für das Organisations-SSO. GitLab-Token benötigen „read_api“ und „read_repository“.</string>
 </resources>

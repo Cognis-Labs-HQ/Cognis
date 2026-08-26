@@ -23,12 +23,8 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                 headers["private-token"] = token;
             }
         }
-        const endpoint =
-            source.provider === "github"
-                ? `${source.baseUrl}/orgs/${encodeURIComponent(source.namespace)}/repos?per_page=100`
-                : `${source.baseUrl}/groups/${encodeURIComponent(source.namespace)}/projects?per_page=100&include_subgroups=true`;
         const repositories = (
-            await this.fetchPaginated(endpoint, headers)
+            await this.listSourceRepositories(source, headers)
         ).filter(
             (repository) =>
                 source.scanPrivateRepos === true ||
@@ -38,6 +34,10 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
         );
         const candidates = await Promise.all(
             repositories.map(async (repository) => {
+                const privateRepository =
+                    repository.private === true ||
+                    repository.visibility === "private" ||
+                    repository.visibility === "internal";
                 const cloneUrl = String(
                     repository.clone_url ?? repository.http_url_to_repo ?? "",
                 );
@@ -262,7 +262,19 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                                 : undefined,
                         } satisfies MarketplaceModule,
                     };
-                } catch {
+                } catch (error) {
+                    if (
+                        source.scanPrivateRepos === true &&
+                        privateRepository &&
+                        error instanceof Error &&
+                        /module_manifest_discovery_failed:(401|403)/.test(
+                            error.message,
+                        )
+                    ) {
+                        throw new Error(
+                            "private_repository_contents_access_failed",
+                        );
+                    }
                     return { cloneUrl, module: null };
                 }
             }),
@@ -280,6 +292,53 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
             inconclusiveCloneUrls.has(module.cloneUrl),
         );
         return [...fresh, ...retained];
+    }
+
+    private async listSourceRepositories(
+        source: ModuleSource,
+        headers: Record<string, string>,
+    ): Promise<Array<Record<string, unknown>>> {
+        const namespace = encodeURIComponent(source.namespace);
+        const sourceEndpoint =
+            source.provider === "github"
+                ? `${source.baseUrl}/orgs/${namespace}/repos?per_page=100&type=all`
+                : `${source.baseUrl}/groups/${namespace}/projects?per_page=100&include_subgroups=true`;
+        const repositories = await this.fetchPaginated(sourceEndpoint, headers);
+        if (source.provider !== "github" || source.scanPrivateRepos !== true) {
+            return repositories;
+        }
+
+        const accessiblePrivateRepositories = await this.fetchPaginated(
+            `${source.baseUrl}/user/repos?per_page=100&visibility=private&affiliation=owner,collaborator,organization_member`,
+            headers,
+        );
+        const normalizedNamespace = source.namespace.toLowerCase();
+        const matchingPrivateRepositories =
+            accessiblePrivateRepositories.filter((repository) => {
+                const owner = repository.owner as
+                    Record<string, unknown> | undefined;
+                const ownerLogin = String(owner?.login ?? "").toLowerCase();
+                const fullNameOwner = String(repository.full_name ?? "")
+                    .split("/", 1)[0]
+                    .toLowerCase();
+                return (
+                    ownerLogin === normalizedNamespace ||
+                    fullNameOwner === normalizedNamespace
+                );
+            });
+        const repositoriesByIdentity = new Map(
+            repositories.map((repository) => [
+                String(repository.id ?? repository.full_name ?? ""),
+                repository,
+            ]),
+        );
+        for (const repository of matchingPrivateRepositories) {
+            repositoriesByIdentity.set(
+                String(repository.id ?? repository.full_name ?? ""),
+                repository,
+            );
+        }
+        return [...repositoriesByIdentity.values()];
     }
 
     protected async hasRootLicenseFile(

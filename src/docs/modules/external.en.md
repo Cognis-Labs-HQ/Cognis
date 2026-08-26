@@ -49,9 +49,23 @@ Every external module declares `entrypoints.bootstrap`. Cognis imports only that
 
 The manifest declares `uuid`, `id`, `name`, `version`, `publisher`, `class`, `coreApiVersion`, `summary`, `description`, `categories`, `recommended`, `license`, `homepage`, `repository`, `support`, `capabilities`, UUID-based `requires`, `entrypoints`, and `assets`. Asset paths are repository-relative. `assets.icon` identifies the square store icon, `assets.banner` identifies the detail hero, and `assets.screenshots` is an ordered gallery. Paths must remain inside the repository.
 
+Localization keys must use periods as word separators: write `module.example.canvas.label`, not `module.example.canvas_label` or `module.example.canvas-label`. Period-delimited segments preserve predictable ownership, lookup, validation, and tooling behavior. The registered module ID remains the one intentional exception when its immutable ID already contains a hyphen.
+
 ### Sources and private repositories
 
 Cognis includes the `https://github.com/Cognis-Labs-HQ` organization as an immutable trusted source by default. Administrators can add further GitHub organizations or GitLab groups from Modules in the user menu, then Module Sources. Cognis queries the provider API, treats each repository containing a valid root manifest as a module, and derives the catalog dynamically. A source can reference an optional PAT stored in the signed-in administrator's keyring; the source record stores only the keyring identifier. Use a least-privilege, read-only token with repository and metadata access. Tokens are supplied only for discovery and cloning and are never written to source configuration. Private repositories are excluded unless **Scan Private Repositories** is enabled; enabling it makes the PAT mandatory.
+
+### GitHub PAT permissions for private scans
+
+Prefer a fine-grained PAT and configure it as follows:
+
+- **Resource owner:** select the GitHub organization configured as the Cognis module source.
+- **Repository access:** select **All repositories**, or every private repository Cognis must discover and install.
+- **Repository permissions:** set **Metadata** and **Contents** to **Read-only**. Metadata permits repository listing; Contents permits manifest discovery and authenticated Git cloning.
+- **Organization permissions:** none are required. Cognis does not require **Administration**, **Members**, **Secrets**, or any Copilot permission.
+- **Approval and SSO:** complete organization approval and SAML SSO authorization when required by organization policy.
+
+For a personal access token (classic), grant the `repo` scope and authorize it for organization SSO when applicable. The token owner must already be allowed to access every selected private repository. Cognis rejects the source setting when the token cannot list a private repository and read its contents.
 
 ### Installation and safety
 
@@ -84,5 +98,15 @@ Modules that persist configuration or content outside their checkout must export
 ### UI viewport ownership
 
 Cognis owns the dashboard shell and every reusable component emitted by a host capability, including the structural `profile-capability-*` avatar classes. A module owns only descendants it renders inside the content root passed to `mount()`. Every module selector must end at a module-namespaced class or ID; a host theme selector may appear only as an ancestor of that module-owned target. Modules may pass their own layout classes to host renderers, but must not copy host stylesheets, redefine host capability classes, select shell elements, or mutate `document.body` or `document.head`. Application-wide behavior belongs in declared `uiCtx` capabilities or flows with removable hooks.
+
+Browser modules obtain reusable host utilities and common CSS through the `ui:reuse` capability instead of importing host internals or copying styles. `importModule(path)` loads any production module below `src/ui/reuse/`; `loadStylesheet(path)` and `loadStylesheets(paths)` load files below `src/ui/styles/reuse/`; and `loadCommonStyles()` loads the complete immutable `stylesheets` catalog. `moduleUrl(path)` and `stylesheetUrl(path)` are available when another host capability accepts a URL. Paths are relative, must use the expected extension, and cannot traverse directories or select test files.
+
+```js
+const reuse = uiCtx.capabilities.get("ui:reuse");
+const { createPageComposer } = await reuse.importModule(
+    "page-composer/index.js",
+);
+await reuse.loadStylesheets(["layout.css", "page-sections.css"]);
+```
 
 Modules that must load a runtime script declare `ui:resourceLoader` and call its validated, reference-counted `loadScript({ id, src, globalName })` method. They must dispose the returned handle during unmount and must not append scripts directly to the document.

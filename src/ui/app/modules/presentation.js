@@ -48,6 +48,24 @@ export function formatVersion(version) {
     return normalized ? `v${normalized}` : "";
 }
 
+export function resolveModuleRepositoryUrl(module) {
+    const candidate = String(
+        module?.cloneUrl ?? module?.repository ?? "",
+    ).trim();
+    if (!candidate) return "";
+    try {
+        const url = new URL(candidate);
+        if (!["http:", "https:"].includes(url.protocol)) return "";
+        if (url.username || url.password) return "";
+        url.hash = "";
+        url.search = "";
+        url.pathname = url.pathname.replace(/\.git\/?$/, "").replace(/\/$/, "");
+        return url.toString().replace(/\/$/, "");
+    } catch {
+        return "";
+    }
+}
+
 export function detailModuleUuid(pathname = window.location.pathname) {
     const match = pathname.match(/^\/administration\/modules\/([^/]+)\/?$/);
     return match ? decodeURIComponent(match[1]) : null;

@@ -61,6 +61,7 @@ interface ModuleApiRouter {
 
 interface ModuleUiRegistrationContext {
     moduleId: string;
+    moduleUuid: string;
     moduleRoot: string;
     registerNavbarPlugin(
         plugin: { scriptUrl: string; access?: RoleAccessPolicy } | string,
@@ -73,6 +74,11 @@ interface ModuleUiRegistrationContext {
         stylesheets?: string[];
         access?: RoleAccessPolicy;
         requiredCapabilities?: string[];
+        componentPage?: {
+            labelKey: string;
+            descriptionKey: string;
+            modes: Array<"overlay" | "fullscreen" | "pip">;
+        };
     }): void;
     registerSettingsSection(section: {
         id: string;
@@ -250,7 +256,11 @@ export function createModuleExtensionRoutes(
     }
 
     function createModuleCtx(
-        manifest: { id: string; requiresCapabilities?: string[] },
+        manifest: {
+            id: string;
+            uuid: string;
+            requiresCapabilities?: string[];
+        },
         moduleRoot: string,
         nextHandlers: RouteHandler[],
         scope: {
@@ -365,6 +375,7 @@ export function createModuleExtensionRoutes(
 
         return {
             moduleId,
+            moduleUuid: manifest.uuid,
             moduleRoot,
             flow,
             log: moduleLog,
@@ -444,6 +455,7 @@ export function createModuleExtensionRoutes(
                             ),
                         ),
                     ownerId: moduleId,
+                    ownerUuid: manifest.uuid,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
             },

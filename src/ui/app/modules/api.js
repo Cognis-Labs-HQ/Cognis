@@ -105,13 +105,19 @@ export async function loadAvailableModules(
     sourceUuids,
     forceRefresh = false,
 ) {
-    return data(
-        await apiFetch("/api/v1/modules/catalog", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ tokens, sourceUuids, forceRefresh }),
-        }),
-    );
+    const response = await apiFetch("/api/v1/modules/catalog", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ tokens, sourceUuids, forceRefresh }),
+    });
+    if (!response.ok) await data(response);
+    const payload = await response.json();
+    return {
+        modules: Array.isArray(payload?.data) ? payload.data : [],
+        sourceFailures: Array.isArray(payload?.meta?.sourceFailures)
+            ? payload.meta.sourceFailures
+            : [],
+    };
 }
 
 export async function loadCachedModules() {

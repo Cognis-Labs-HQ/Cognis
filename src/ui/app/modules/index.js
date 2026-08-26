@@ -47,6 +47,7 @@ import {
     hasModuleUpdate,
     localizeModulePresentation,
     moduleChangeDirection,
+    resolveModuleRepositoryUrl,
     resolveLocalizedReadme,
 } from "./presentation.js";
 import { openModulePreferences } from "./preferences.js";
@@ -66,12 +67,67 @@ const filters = createModuleFilters();
 let selectedModule = null;
 let discoverySequence = 0;
 let marketplaceRefreshPending = false;
+let marketplacePollPending = false;
 let refreshScreenshotCarousels = () => {};
 let pageMountController = null;
 const selectedBranches = new Map();
 const pendingModuleActions = new Map();
 const screenshotIndexes = new Map();
 const MODULE_ICON_FALLBACK_URL = "/static/assets/reuse/module-icon-unknown.svg";
+const MARKETPLACE_POLL_INTERVAL_MS = 15_000;
+const PRIVATE_SOURCE_FAILURE_KEYS = new Set([
+    "private_repository_credential_missing",
+    "private_repository_access_failed",
+    "private_repository_contents_access_failed",
+]);
+
+function reportSourceFailures(sourceFailures) {
+    for (const failure of sourceFailures) {
+        if (!PRIVATE_SOURCE_FAILURE_KEYS.has(failure?.code)) continue;
+        showToast(
+            i18n
+                .t(`ui.app.modules.${failure.code}`)
+                .replace("{{source}}", String(failure.sourceName ?? "")),
+            { type: "warning" },
+        );
+    }
+}
+
+function startMarketplacePolling(signal) {
+    const poll = () => {
+        if (
+            signal.aborted ||
+            marketplaceRefreshPending ||
+            marketplacePollPending
+        )
+            return;
+        marketplacePollPending = true;
+        void loadKnownModules(false, signal)
+            .catch((error) => {
+                if (error?.name !== "AbortError") {
+                    uiCtx.capabilities.get("ui:log")?.(
+                        "error",
+                        i18n.t("ui.app.modules.polling_failed"),
+                        {
+                            component: "modules-page",
+                            operation: "poll-marketplace",
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                }
+            })
+            .finally(() => {
+                marketplacePollPending = false;
+            });
+    };
+    const interval = window.setInterval(poll, MARKETPLACE_POLL_INTERVAL_MS);
+    signal.addEventListener("abort", () => window.clearInterval(interval), {
+        once: true,
+    });
+}
 
 function renderAvailableVersion(module) {
     if (!module.installed) return "";
@@ -102,6 +158,13 @@ function renderCard(module) {
       </div>
       <div class="module-store-card-actions">${renderLifecycleActions(module)}</div>
     </article>`;
+}
+
+function renderRepositoryLink(module) {
+    const repositoryUrl = resolveModuleRepositoryUrl(module);
+    if (!repositoryUrl) return "";
+    const escapedUrl = escapeHtml(repositoryUrl);
+    return `<div class="module-repository-link"><img src="/static/assets/reuse/hyperlink.svg" alt="" aria-hidden="true"><a href="${escapedUrl}" target="_blank" rel="noopener noreferrer">${escapedUrl}</a></div>`;
 }
 
 function renderRestartWarning(module) {
@@ -223,7 +286,7 @@ function renderModuleDetails(module) {
         advanced || settings
             ? `<div class="module-detail-header-actions">${advanced}${settings}</div>`
             : "";
-    return `<article class="module-detail">${bannerUrl ? `<img class="module-detail-banner module-picture" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(presentation.name)}</h2><p>${escapeHtml(presentation.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}</div>${headerActions}</header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(resolveLocalizedReadme(module, i18n.locale))}</div></article>`;
+    return `<article class="module-detail">${bannerUrl ? `<img class="module-detail-banner module-picture" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(presentation.name)}</h2>${renderRepositoryLink(module)}<p>${escapeHtml(presentation.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}</div>${headerActions}</header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(resolveLocalizedReadme(module, i18n.locale))}</div></article>`;
 }
 
 function renderDetailActions(module) {
@@ -542,12 +605,13 @@ async function discoverConfiguredSources(
         ]),
     );
     const tokens = Object.fromEntries(resolvedTokens);
-    const discovered = await loadAvailableModules(
+    const { modules: discovered, sourceFailures } = await loadAvailableModules(
         tokens,
         sources.map((source) => source.uuid),
         forceRefresh,
     );
     if (sequence !== discoverySequence || signal?.aborted) return;
+    reportSourceFailures(sourceFailures);
     await loadAuthenticatedModuleAssets(discovered, { signal });
     if (signal?.aborted) return;
     {
@@ -604,7 +668,7 @@ function bindInteractions(root, signal) {
         (event) => {
             if (!["Enter", " "].includes(event.key)) return;
             const card = event.target.closest(".module-store-card");
-            if (!card || event.target.closest("button")) return;
+            if (!card || event.target.closest("a, button")) return;
             event.preventDefault();
             card.click();
         },
@@ -613,6 +677,7 @@ function bindInteractions(root, signal) {
     root.addEventListener(
         "click",
         async (event) => {
+            if (event.target.closest("a")) return;
             const target =
                 event.target.closest("button") ??
                 event.target.closest(".module-store-card");
@@ -836,6 +901,7 @@ export async function mount(root, { signal } = {}) {
         void loadKnownModules(true, mountSignal).catch((error) => {
             showToast(error.message, { type: "error" });
         });
+        startMarketplacePolling(mountSignal);
     } finally {
         finishPageLoading();
     }

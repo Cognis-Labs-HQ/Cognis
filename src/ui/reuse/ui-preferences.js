@@ -10,7 +10,7 @@
  * Usage:
  *   const prefs = await loadUiPreferences();
  *   applyUiPreferences(prefs);
- *   await saveUiPreferences({ navigationOrder: ['/dashboard', '/calendar'] });
+ *   await saveUiPreferences({ font: 'system-ui' });
  */
 import { apiFetch } from "./api-client.js";
 import { normalizeMessageStyle } from "./message-style-options.js";

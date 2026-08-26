@@ -92,6 +92,14 @@ export interface SpaRoute {
     /** Optional runtime predicate used to hide routes while owner is disabled. */
     isEnabled?: () => boolean;
     ownerId?: string;
+    /** Immutable UUID of an owning external module. */
+    ownerUuid?: string;
+    /** Explicit opt-in allowing another component to embed this page. */
+    componentPage?: {
+        labelKey: string;
+        descriptionKey: string;
+        modes: Array<"overlay" | "fullscreen" | "pip">;
+    };
 }
 
 export interface AuthTypingMessage {
@@ -223,6 +231,23 @@ export class UIRegistry {
     }
 
     registerSpaRoute(route: SpaRoute): void {
+        if (route.componentPage) {
+            const { labelKey, descriptionKey, modes } = route.componentPage;
+            if (
+                !route.ownerUuid?.match(
+                    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+                ) ||
+                !/^[a-z0-9._-]+$/.test(labelKey) ||
+                !/^[a-z0-9._-]+$/.test(descriptionKey) ||
+                !Array.isArray(modes) ||
+                modes.length === 0 ||
+                modes.some(
+                    (mode) => !["overlay", "fullscreen", "pip"].includes(mode),
+                )
+            ) {
+                throw new TypeError("invalid_component_page_declaration");
+            }
+        }
         this.spaRoutes.push(route);
     }
 

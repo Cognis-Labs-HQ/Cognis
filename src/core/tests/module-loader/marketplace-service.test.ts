@@ -49,6 +49,15 @@ test("module marketplace persists source metadata without PAT values", async () 
             trusted: false,
         },
     ]);
+    assert.equal(
+        (
+            await new ModuleMarketplaceService(
+                path.join(root, "sources.json"),
+                path.join(root, "modules"),
+            ).listSources()
+        )[1].scanPrivateRepos,
+        true,
+    );
 });
 
 test("module marketplace always provides an immutable trusted source", async () => {
@@ -225,19 +234,39 @@ test("GitHub credential validation requires private repository scope", async () 
         },
     );
     const originalFetch = globalThis.fetch;
+    let requests = 0;
     globalThis.fetch = async (_input, init) => {
+        requests += 1;
         assert.equal(
             new Headers(init?.headers).get("authorization"),
             "Bearer limited-token",
         );
-        return new Response("[]", {
-            headers: { "x-oauth-scopes": "read:org, public_repo" },
-        });
+        return requests === 1
+            ? new Response(
+                  JSON.stringify([
+                      {
+                          full_name: "Cognis-Labs-HQ/private-module",
+                          private: true,
+                      },
+                  ]),
+                  {
+                      headers: {
+                          "content-type": "application/json",
+                          "x-oauth-scopes": "read:org, public_repo",
+                      },
+                  },
+              )
+            : new Response("[]", {
+                  headers: { "content-type": "application/json" },
+              });
     };
     try {
         assert.deepEqual(
             await service.validateSourceCredential(
-                { ...DEFAULT_TRUSTED_MODULE_SOURCE },
+                {
+                    ...DEFAULT_TRUSTED_MODULE_SOURCE,
+                    scanPrivateRepos: true,
+                },
                 "limited-token",
             ),
             {
@@ -254,6 +283,153 @@ test("GitHub credential validation requires private repository scope", async () 
             ),
             /Metadata: read; Contents: read/,
         );
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test("private source scans report a missing stored credential", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        path.join(root, "modules"),
+    );
+    await service.saveSource({
+        ...source,
+        credentialId: "module-source:private:pat",
+        scanPrivateRepos: true,
+    });
+    const result = await service.discoverWithReport({}, [source.uuid], true);
+    assert.deepEqual(result.modules, []);
+    assert.deepEqual(result.sourceFailures, [
+        {
+            sourceUuid: source.uuid,
+            sourceName: source.name,
+            code: "private_repository_credential_missing",
+        },
+    ]);
+});
+
+test("private credential validation proves repository contents access", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        path.join(root, "modules"),
+    );
+    const originalFetch = globalThis.fetch;
+    let requests = 0;
+    globalThis.fetch = async () => {
+        requests += 1;
+        return requests === 1
+            ? new Response(
+                  JSON.stringify([
+                      {
+                          full_name: "example/private-module",
+                          private: true,
+                      },
+                  ]),
+                  { headers: { "content-type": "application/json" } },
+              )
+            : new Response("forbidden", { status: 403 });
+    };
+    try {
+        assert.deepEqual(
+            await service.validateSourceCredential(
+                { ...source, scanPrivateRepos: true },
+                "fine-grained-token",
+            ),
+            {
+                valid: false,
+                warnings: ["private_repository_contents_read_missing"],
+                scopes: [],
+            },
+        );
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test("private scans include organization repositories visible through the authenticated user", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        path.join(root, "modules"),
+    );
+    await service.saveSource({
+        ...DEFAULT_TRUSTED_MODULE_SOURCE,
+        credentialId: "module-source:trusted:pat",
+        scanPrivateRepos: true,
+    });
+    const originalFetch = globalThis.fetch;
+    const requestedUrls: string[] = [];
+    globalThis.fetch = async (input, init) => {
+        const url = String(input);
+        requestedUrls.push(url);
+        assert.equal(
+            new Headers(init?.headers).get("authorization"),
+            "Bearer private-token",
+        );
+        if (url.includes("/orgs/Cognis-Labs-HQ/repos?")) {
+            return Response.json([]);
+        }
+        if (url.includes("/user/repos?")) {
+            return Response.json([
+                {
+                    id: 179,
+                    clone_url:
+                        "https://github.com/Cognis-Labs-HQ/cognis-module-line-integration.git",
+                    default_branch: "main",
+                    full_name: "Cognis-Labs-HQ/cognis-module-line-integration",
+                    owner: { login: "Cognis-Labs-HQ" },
+                    private: true,
+                },
+            ]);
+        }
+        if (url.includes("/branches?") || url.includes("/tags?")) {
+            return Response.json([]);
+        }
+        if (url.includes("/contents/manifest.json?")) {
+            return Response.json({
+                content: Buffer.from(
+                    JSON.stringify({
+                        uuid: "f21c4552-9f0d-49ef-afc0-bf49eb890635",
+                        id: "line-integration",
+                        name: "LINE Integration",
+                        version: "1.0.0",
+                        publisher: "Cognis Labs HQ",
+                        class: "extension",
+                        coreApiVersion: "v1",
+                        summary: "LINE integration",
+                        description: "Connect Cognis with LINE.",
+                        categories: ["Communication"],
+                        tags: ["line"],
+                        license: "MIT",
+                        repository:
+                            "https://github.com/Cognis-Labs-HQ/cognis-module-line-integration",
+                        capabilities: [],
+                        entrypoints: { bootstrap: "./bootstrap.js" },
+                        assets: {
+                            icon: "assets/icon.svg",
+                            banner: "assets/banner.svg",
+                        },
+                    }),
+                ).toString("base64"),
+            });
+        }
+        return new Response("", { status: 404 });
+    };
+    try {
+        const result = await service.discoverWithReport(
+            { "module-source:trusted:pat": "private-token" },
+            [DEFAULT_TRUSTED_MODULE_SOURCE.uuid],
+            true,
+        );
+        assert.deepEqual(
+            result.modules.map((module) => module.id),
+            ["line-integration"],
+        );
+        assert.deepEqual(result.sourceFailures, []);
+        assert.ok(requestedUrls.some((url) => url.includes("/user/repos?")));
     } finally {
         globalThis.fetch = originalFetch;
     }

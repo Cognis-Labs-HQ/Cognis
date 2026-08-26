@@ -20,6 +20,16 @@ test("UI capabilities share one global context across asset bundles", () => {
     );
     assert.match(uiContext, /Symbol\.for\("cognis\.uiCtx"\)/);
     assert.match(uiContext, /globalThis\[UI_CTX_KEY\]/);
+    assert.match(uiContext, /"ui:reuse", createReuseResources\(\)/);
+});
+
+test("production builds expose every reusable module and stylesheet", () => {
+    const buildScript = readFileSync(
+        resolve(ROOT, "src/tooling/scripts/build-ui.mjs"),
+        "utf8",
+    );
+    assert.match(buildScript, /src\/ui\/reuse\//);
+    assert.match(buildScript, /src\/ui\/styles\/reuse\//);
 });
 
 for (const capability of [
@@ -32,6 +42,7 @@ for (const capability of [
     "ui:showToast",
     "ui:openErrorPopup",
     "ui:resourceLoader",
+    "ui:reuse",
 ]) {
     test(`host registers the module UI capability ${capability}`, () => {
         assert.match(
@@ -56,7 +67,7 @@ test("direct and routed module mounts await active UI providers", () => {
     );
     assert.match(
         router,
-        /await ensureHostUiProviders\(\);\s*mod = await route\.load/,
+        /await ensureHostUiProviders\(\);\s*mod = await loadWithSpaImportGuard\(\(\) => route\.load/,
     );
     assert.match(
         router,

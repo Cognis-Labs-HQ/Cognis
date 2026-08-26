@@ -49,9 +49,23 @@ export async function bootstrapModule(ctx) {
 
 マニフェストは、`uuid`、`id`、`name`、`version`、`publisher`、`class`、`coreApiVersion`、`summary`、`description`、`categories`、`recommended`、`license`、`homepage`、を宣言します。 `repository`、`support`、`capabilities`、UUID ベースの `requires`、`entrypoints`、および `assets`。アセット パスはリポジトリ相対です。 `assets.icon` は正方形のストア アイコンを示し、`assets.banner` は詳細ヒーローを示し、`assets.screenshots` は注文されたギャラリーを示します。パスはリポジトリ内に残す必要があります。
 
+ローカライズキーでは、単語の区切りにピリオドを使用してください。`module.example.canvas_label` や `module.example.canvas-label` ではなく、`module.example.canvas.label` と記述します。ピリオド区切りのセグメントにより、所有関係、検索、検証、ツールの動作が予測可能になります。登録済みモジュール ID 自体にハイフンが含まれる場合、その不変 ID だけが意図された例外です。
+
 ### ソースとプライベート リポジトリ
 
 Cognis には、デフォルトで、`https://github.com/Cognis-Labs-HQ` 組織が不変の信頼できるソースとして含まれています。管理者は、ユーザー メニューの [モジュール]、[モジュール ソース] から GitHub 組織または GitLab グループをさらに追加できます。 Cognis はプロバイダー API にクエリを実行し、有効なルート マニフェストを含む各リポジトリをモジュールとして処理し、カタログを動的に取得します。ソースは、サインインしている管理者のキーリングに保存されているオプションの PAT を参照できます。ソース レコードにはキーリング識別子のみが保存されます。リポジトリとメタデータへのアクセスには、最小権限の読み取り専用トークンを使用します。トークンは検出とクローン作成のためにのみ提供され、ソース構成に書き込まれることはありません。 **非公開リポジトリをスキャン** を有効にしない限り非公開リポジトリは除外され、有効にすると PAT が必須になります。
+
+### プライベートスキャンに必要な GitHub PAT 権限
+
+fine-grained PAT を推奨し、次のように設定します。
+
+- **Resource owner:** Cognis のモジュールソースに設定した GitHub 組織を選択します。
+- **Repository access:** **All repositories**、または Cognis が検出およびインストールする各非公開リポジトリを選択します。
+- **Repository permissions:** **Metadata** と **Contents** を **Read-only** にします。Metadata はリポジトリ一覧取得、Contents はマニフェスト検出と認証済みクローンに使用されます。
+- **Organization permissions:** どれも不要です。**Administration**、**Members**、**Secrets**、Copilot 関連権限は必要ありません。
+- **承認と SSO:** 組織ポリシーで必要な場合は、組織の承認と SAML SSO 承認を完了します。
+
+classic personal access token では `repo` スコープを付与し、該当する場合は組織 SSO 用に承認します。トークン所有者自身が選択した各非公開リポジトリへアクセスできる必要があります。トークンが非公開リポジトリを一覧取得して内容を読み取れない場合、Cognis はソース設定を拒否します。
 
 ### 設置と安全性
 
@@ -84,5 +98,15 @@ Cognis には、デフォルトで、`https://github.com/Cognis-Labs-HQ` 組織�
 ### UI 表示領域の所有権
 
 Cognis はダッシュボードシェルと、ホスト機能が出力するすべての再利用可能コンポーネントを所有します。これには構造用の `profile-capability-*` アバタークラスも含まれます。モジュールが所有できるのは、`mount()` に渡されたコンテンツルート内に自身が描画した子孫だけです。すべてのモジュールセレクターは、モジュール固有の名前空間を持つクラスまたは ID を対象として終わる必要があります。ホストのテーマセレクターは、そのモジュール所有対象の祖先としてのみ使用できます。モジュールは独自のレイアウトクラスをホストレンダラーへ渡せますが、ホストのスタイルシートを複製したり、ホスト機能のクラスを再定義したり、シェル要素を選択したり、`document.body` や `document.head` を変更したりしてはいけません。アプリ全体の動作は、取り外し可能なフックを持つ宣言済みの `uiCtx` 機能またはフローに属します。
+
+ブラウザモジュールは、ホスト内部を直接インポートしたりスタイルを複製したりせず、`ui:reuse` 機能から再利用可能なホストユーティリティと共通 CSS を取得します。`importModule(path)` は `src/ui/reuse/` 配下の任意の本番モジュールを読み込み、`loadStylesheet(path)` と `loadStylesheets(paths)` は `src/ui/styles/reuse/` 配下のファイルを読み込みます。`loadCommonStyles()` は不変の `stylesheets` カタログ全体を読み込みます。別のホスト機能が URL を受け取る場合は、`moduleUrl(path)` と `stylesheetUrl(path)` を利用できます。パスは相対指定とし、想定された拡張子を使い、ディレクトリを遡ったりテストファイルを選択したりすることはできません。
+
+```js
+const reuse = uiCtx.capabilities.get("ui:reuse");
+const { createPageComposer } = await reuse.importModule(
+    "page-composer/index.js",
+);
+await reuse.loadStylesheets(["layout.css", "page-sections.css"]);
+```
 
 実行時スクリプトを読み込むモジュールは `ui:resourceLoader` を宣言し、検証と参照カウントを行う `loadScript({ id, src, globalName })` を呼び出します。アンマウント時に返されたハンドルを破棄し、ドキュメントへスクリプトを直接追加してはいけません。

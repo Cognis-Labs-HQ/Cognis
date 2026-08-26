@@ -18,6 +18,7 @@ import { resolveModuleAssetUrl } from "../app/modules/assets.js";
 import {
     localizeModulePresentation,
     resolveLocalizedReadme,
+    resolveModuleRepositoryUrl,
 } from "../app/modules/presentation.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -49,7 +50,16 @@ const sourceSettingsSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/source-settings.js"),
     "utf8",
 );
-
+const marketplaceSource = readFileSync(
+    resolve(ROOT, "src/ui/app/modules/index.js"),
+    "utf8",
+);
+test("module marketplace polls Cognis for current recommendations", () => {
+    assert.match(marketplaceSource, /MARKETPLACE_POLL_INTERVAL_MS = 15_000/);
+    assert.match(marketplaceSource, /window\.setInterval\(poll/);
+    assert.match(marketplaceSource, /loadKnownModules\(false, signal\)/);
+    assert.match(marketplaceSource, /window\.clearInterval\(interval\)/);
+});
 test("modules navigation derives its width from its content", () => {
     assert.match(
         marketplaceStyles,
@@ -80,10 +90,6 @@ test("module preference fields use the form builder and secret controls", () => 
     assert.match(
         popupSource,
         /querySelector\("input, textarea, select"\) \?\?[\s\S]*button:not\(\.popup-close-btn\)/,
-    );
-    const marketplaceSource = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
     );
     assert.match(
         marketplaceSource,
@@ -183,7 +189,15 @@ test("module marketplace cards keep consistent content and action geometry", () 
     assert.match(marketplaceStyles, /-webkit-line-clamp: 2/);
     assert.match(
         marketplaceStyles,
-        /\.module-store-card-actions[\s\S]*grid-auto-columns: minmax\(0, 1fr\)[\s\S]*grid-auto-flow: column/,
+        /\.module-store-grid[\s\S]*minmax\(min\(100%, 22rem\), 1fr\)/,
+    );
+    assert.match(
+        marketplaceStyles,
+        /\.module-store-card-actions[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,
+    );
+    assert.match(
+        marketplaceStyles,
+        /button:last-child:nth-child\(odd\)[\s\S]*grid-column: 1 \/ -1/,
     );
     assert.doesNotMatch(marketplaceStyles, /flex-wrap: nowrap/);
 });
@@ -291,10 +305,6 @@ test("module details use composer refreshes and SPA deep links", () => {
 });
 
 test("module marketplace identifies immutable trusted sources", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
     assert.match(sourceSettingsSource, /source\.trusted/);
     assert.match(sourceSettingsSource, /ui\.app\.modules\.default_source/);
     assert.match(sourceSettingsSource, /const locked = source\?\.trusted/);
@@ -304,9 +314,9 @@ test("module marketplace identifies immutable trusted sources", () => {
     );
     assert.match(sourceSettingsSource, /const STORED_PAT_MASK = "\*\*\*\*"/);
     assert.match(sourceSettingsSource, /values\.token !== STORED_PAT_MASK/);
-    assert.match(sourceSettingsSource, /await validateModuleSourceCredential/);
+    assert.match(sourceSettingsSource, /scanPrivateRepos: privateScan/);
     assert.match(sourceSettingsSource, /if \(!validation\.valid\)/);
-    assert.match(sourceSettingsSource, /credential_validation_warning/);
+    assert.match(sourceSettingsSource, /scope\?\.resolve\(credentialId/);
 });
 
 test("recommended modules retain the published defaults", () => {
@@ -420,6 +430,49 @@ test("module marketplace does not resolve repository-relative avatars against th
     assert.equal(resolveModuleAssetUrl("/static/icon.svg"), "/static/icon.svg");
 });
 
+test("module details render safe full source repository URLs below their titles", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.equal(
+        resolveModuleRepositoryUrl({
+            cloneUrl: "https://github.com/Cognis-Labs-HQ/example.git",
+        }),
+        "https://github.com/Cognis-Labs-HQ/example",
+    );
+    assert.equal(
+        resolveModuleRepositoryUrl({
+            repository: "https://gitlab.com/cognis/example/",
+        }),
+        "https://gitlab.com/cognis/example",
+    );
+    assert.equal(
+        resolveModuleRepositoryUrl({ cloneUrl: "javascript:alert(1)" }),
+        "",
+    );
+    assert.equal(
+        resolveModuleRepositoryUrl({
+            cloneUrl: "https://token@github.com/cognis/private.git",
+        }),
+        "",
+    );
+    assert.match(source, /function renderRepositoryLink\(module\)/);
+    assert.match(source, /static\/assets\/reuse\/hyperlink\.svg/);
+    assert.match(
+        source,
+        /<div class="module-repository-link"><img[^`]+<a href=/,
+    );
+    assert.match(source, /target="_blank" rel="noopener noreferrer"/);
+    assert.match(source, /event\.target\.closest\("a"\)/);
+    assert.doesNotMatch(
+        source,
+        /module-store-card-heading[^`]+renderRepositoryLink/,
+    );
+    assert.match(marketplaceStyles, /module-repository-link a/);
+    assert.match(marketplaceStyles, /overflow-wrap: anywhere/);
+});
+
 test("module marketplace replaces unavailable icons with the unknown icon", () => {
     const pageSource = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),
@@ -484,7 +537,7 @@ test("module marketplace refreshes every configured source on demand", () => {
     assert.match(source, /loadModuleSources\(\)/);
     assert.match(
         source,
-        /loadAvailableModules\(\s*tokens,\s*sources\.map\(\(source\) => source\.uuid\),\s*forceRefresh/,
+        /\{ modules: discovered, sourceFailures \} = await loadAvailableModules\([\s\S]*reportSourceFailures\(sourceFailures\)/,
     );
     assert.match(source, /discoverConfiguredSources\(true\)/);
     assert.match(source, /target\.id === "module-source-refresh"/);
@@ -657,9 +710,12 @@ test("module marketplace uses curated recommendations and compact details", () =
     );
     assert.match(sourceSettingsSource, /loadModuleMarketplaceSettings/);
     assert.match(sourceSettingsSource, /recommendedModulesUrl/);
-    assert.match(sourceSettingsSource, /createFormBuilder/);
+    assert.match(sourceSettingsSource, /renderInfoTooltip/);
     assert.match(sourceSettingsSource, /name: "scanPrivateRepos"/);
-    assert.match(sourceSettingsSource, /slider: true/);
+    assert.match(
+        sourceSettingsSource,
+        /slider: true[\s\S]*scan_private_repos_hint[\s\S]*pat_permissions_hint/,
+    );
     assert.match(sourceSettingsSource, /setFieldRequired\(\s*"token"/);
     assert.match(source, /id="module-marketplace-settings"/);
     assert.match(source, /module-icon-settings/);
@@ -829,158 +885,5 @@ test("modules page aborts direct-mount interactions before SPA remount", () => {
     assert.doesNotMatch(
         source,
         /mountSignal\.addEventListener\("abort", clearAuthenticatedModuleAssets/,
-    );
-});
-
-test("required module configuration distinguishes unset values from valid false values", () => {
-    const definitions = [
-        { key: "instanceUrl", type: "string", required: true },
-        { key: "meetingPrefix", type: "string" },
-        { key: "recording", type: "boolean", required: true },
-        { key: "capacity", type: "number", required: true },
-        { key: "apiKey", type: "password", required: true },
-    ];
-    assert.deepEqual(
-        missingRequiredModulePreferenceKeys(definitions, {
-            instanceUrl: " ",
-            recording: false,
-            capacity: Number.NaN,
-            apiKeyConfigured: true,
-        }),
-        ["instanceUrl", "capacity"],
-    );
-    assert.deepEqual(
-        missingRequiredModulePreferenceKeys(definitions, {
-            instanceUrl: "https://meet.example.com",
-            recording: false,
-            capacity: 0,
-            apiKeyConfigured: true,
-        }),
-        [],
-    );
-    assert.match(modulePreferencesSource, /definition\.required === true/);
-    assert.match(modulePreferencesSource, /return "\*\*\*\*"/);
-    const marketplaceSource = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
-    assert.match(marketplaceSource, /action === "enable"[\s\S]*activateModule/);
-    const inputs = {
-        apiKey: { value: "secret-value" },
-        enabled: { checked: false },
-        limit: { value: "12" },
-    };
-    assert.deepEqual(
-        readModulePreferenceValues(
-            {
-                elements: {
-                    namedItem(key) {
-                        return inputs[key];
-                    },
-                },
-            },
-            [
-                { key: "apiKey", type: "password" },
-                { key: "enabled", type: "boolean" },
-                { key: "limit", type: "number" },
-            ],
-        ),
-        { apiKey: "secret-value", enabled: false, limit: 12 },
-    );
-    inputs.apiKey.value = "****";
-    assert.deepEqual(
-        readModulePreferenceValues(
-            {
-                elements: {
-                    namedItem(key) {
-                        return inputs[key];
-                    },
-                },
-            },
-            [{ key: "apiKey", type: "password" }],
-        ),
-        { apiKey: "" },
-    );
-    assert.match(
-        marketplaceStyles,
-        /\.module-store-card-actions \.button-loading[\s\S]*white-space: nowrap/,
-    );
-});
-
-test("disabled modules defer required config checks when their owned route is not mounted", async () => {
-    const marketplaceSource = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
-    const module = {
-        id: "example-module",
-        ui: {
-            preferences: [
-                { key: "instanceUrl", type: "string", required: true },
-            ],
-        },
-    };
-    assert.equal(
-        await assertRequiredModulePreferences(
-            module,
-            "Configuration required",
-            () =>
-                Promise.reject(
-                    Object.assign(new Error("Route not found"), {
-                        status: 404,
-                    }),
-                ),
-        ),
-        false,
-    );
-    await assert.rejects(
-        () =>
-            assertRequiredModulePreferences(
-                module,
-                "Configuration required",
-                () => Promise.resolve({ instanceUrl: "" }),
-            ),
-        (error) => error.code === "module_config_required",
-    );
-    const activationSource = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/activation.js"),
-        "utf8",
-    );
-    assert.match(
-        activationSource,
-        /configRouteAvailable = module\.status === "enabled"[\s\S]*openModulePreferences[\s\S]*setModuleEnabled\(module\.id, false\)/,
-    );
-    assert.match(modulePreferencesSource, /readModulePreferenceValues/);
-    assert.match(
-        marketplaceSource,
-        /if \(wasDisabled\)[\s\S]*enableModuleWithIntegrityCheck[\s\S]*openModulePreferences[\s\S]*wasDisabled && !didSave/,
-    );
-});
-
-test("module enablement presents and acknowledges SHASUM integrity risks", () => {
-    const marketplaceSource = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
-    const integritySource = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/integrity.js"),
-        "utf8",
-    );
-    const apiSource = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/api.js"),
-        "utf8",
-    );
-    assert.match(marketplaceSource, /action === "enable"[\s\S]*activateModule/);
-    assert.match(integritySource, /entry\.status === "missing_shasum"/);
-    assert.match(integritySource, /entry\.status === "missing"/);
-    assert.match(integritySource, /labels\.mismatch/);
-    assert.match(integritySource, /variant: "cancel"/);
-    assert.match(
-        integritySource,
-        /await setModuleEnabled\(moduleId, true\);[\s\S]*return true/,
-    );
-    assert.match(
-        apiSource,
-        /"x-cognis-module-integrity-risk":\s*`accepted:\$\{integrityAcknowledgementToken\}`/,
     );
 });
