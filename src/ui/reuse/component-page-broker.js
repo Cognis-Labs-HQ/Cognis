@@ -249,6 +249,7 @@ export function installComponentPageBroker({
                 windowElement.classList.add(
                     "component-page-window--borderless",
                 );
+                stage.classList.add("component-page-stage--borderless");
             }
             windowElement.dataset.componentPageOwner =
                 data.request.componentUuid;
@@ -295,7 +296,10 @@ export function installComponentPageBroker({
                     );
                     data.windowElement.remove();
                     if (!data.stage.querySelector?.(".component-page-window")) {
-                        data.stage.classList.remove("component-page-stage");
+                        data.stage.classList.remove(
+                            "component-page-stage",
+                            "component-page-stage--borderless",
+                        );
                     }
                     if (
                         activeWindows.get(data.request.elementId)?.discard ===
@@ -346,6 +350,11 @@ export function installComponentPageBroker({
                     focusState: data.request.context,
                     navigationAllowed: false,
                     borderless: data.request.borderless,
+                    layout: {
+                        borderless: data.request.borderless,
+                        fillParent: data.request.borderless,
+                        scrollOwner: "document",
+                    },
                 });
                 if (controller.signal.aborted) {
                     await releaseMountResult(mountResult);

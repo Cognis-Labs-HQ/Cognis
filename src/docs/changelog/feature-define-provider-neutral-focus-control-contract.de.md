@@ -111,3 +111,7 @@ Beim Einbinden einer randlosen Komponente wird nun der Außenabstand des umgeben
 ## PiP an beiden diagonalen Ecken skalieren
 
 Schwebende PiP-Fenster bieten nun SVG-Größengriffe oben links und unten rechts. Das Ziehen eines der beiden Griffe ändert die Größe innerhalb der sichtbaren Begrenzung, hält die gegenüberliegende Ecke fest und wahrt die konfigurierten Mindestmaße.
+
+## Höhenvertrag zwischen Meeting und Whiteboard abstimmen
+
+Randlose Komponentenbühnen stellen nun eine eindeutige Zustandsklasse und einen Mount-Layout-Vertrag bereit, entfernen Abstände aus dem verschachtelten App-Shell-Workspace und strecken jede Composer-Ebene bis zum Widget. Die Integrationsdokumentation definiert die zugehörigen Zuständigkeiten der Jitsi-Meet-Bühne und des Nextcloud-Whiteboard-Composers beziehungsweise Canvas, damit die Zeichenfläche ohne verschachtelten vertikalen Bildlauf bis an den Komponentenrand reicht.

@@ -58,6 +58,12 @@ Selama komponen tanpa bingkai terpasang, Cognis juga menghapus margin luar dari 
 
 Jendela komponen tidak membuat area gulir vertikal tersendiri. Panggung dan jendela tetap berada dalam tata letak flex normal serta tumbuh mengikuti konten tertanam, sementara masukan roda di atas komponen tetap menggulir halaman utama. Dengan demikian, posisi gulir tetap berada pada tingkat halaman di mana pun penunjuk berada.
 
+### Tanggung jawab integrasi tanpa bingkai
+
+- **Host Cognis:** menerapkan `component-page-stage--borderless`, merentangkan seluruh rantai `component-page-window → app-shell → workspace → composer grid → widget`, menghapus jarak workspace bertingkat, dan meneruskan `layout: { borderless: true, fillParent: true, scrollOwner: "document" }` ke mount penyedia.
+- **Pemanggil rapat (misalnya Jitsi Meet):** meminta `borderless: true`; selama handle aktif, panggung rapat harus mengganti tinggi isi tetap atau luapan terpotong dengan tata letak yang tumbuh otomatis dan menampilkan luapan. Menutup komponen harus membuang handle broker dan memulihkan tata letak video normal panggung rapat.
+- **Penyedia halaman (misalnya Nextcloud Whiteboard):** menghormati opsi mount `borderless` dan `layout` dengan membuat Page Composer memakai `frameless: true` dan `contentScrolling: false`. Pembungkus kanvas harus memenuhi widget composer dan panggung kanvas tidak boleh mendeklarasikan `overflow: auto`; pengguliran dokumen tetap dimiliki Cognis.
+
 ## Halaman komponen bawaan
 
 Halaman dasbor terautentikasi yang disertakan bersama Cognis menggunakan UUID Cognis Core `b4d49c4a-61d0-5db2-84fd-f89b80fd6398`; Study menggunakan UUID gateway `338b9237-a2c8-5bcf-9437-bccc9abd9a27`. ID rute stabilnya adalah `core.dashboard`, `core.settings`, `core.users`, `core.invite`, `core.modules`, `core.administration`, `core.docs`, `core.changelogs`, `core.license`, `core.error`, `gateway.study`, dan `gateway.study.child`. Semuanya menggunakan kontrak `component-pages:request` yang sama dengan modul eksternal dan mendukung penyematan overlay atau layar penuh. Entri login dan demonstrasi bukan halaman komponen shell dasbor sehingga tidak memenuhi syarat.

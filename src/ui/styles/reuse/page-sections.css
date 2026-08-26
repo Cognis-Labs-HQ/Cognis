@@ -656,6 +656,12 @@ body:not([data-theme="light"]) .markdown-code-inline code {
     isolation: isolate;
 }
 
+.component-page-stage--borderless {
+    display: grid;
+    grid-template-rows: minmax(min-content, 1fr);
+    align-items: stretch;
+}
+
 .app-page__main--component-borderless {
     margin: 0;
 }
@@ -675,6 +681,9 @@ body:not([data-theme="light"]) .markdown-code-inline code {
 }
 
 .component-page-window--borderless {
+    display: grid;
+    grid-template-rows: minmax(min-content, 1fr);
+    align-self: stretch;
     width: 100%;
     height: auto;
     min-height: 100%;
@@ -690,7 +699,7 @@ body:not([data-theme="light"]) .markdown-code-inline code {
 
 .component-page-window--borderless > :first-child {
     width: 100%;
-    height: auto;
+    height: 100%;
     min-height: 100%;
     min-width: 0;
     margin: 0;
@@ -700,29 +709,64 @@ body:not([data-theme="light"]) .markdown-code-inline code {
     border-radius: 0;
 }
 
-.component-page-window--borderless > .workspace {
+.component-page-window--borderless > .workspace,
+.component-page-window--borderless > .app-shell > .workspace {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
     background: transparent;
     backdrop-filter: none;
 }
 
-.component-page-window--borderless > .workspace .composer-view-grid {
-    height: auto;
+.component-page-window--borderless > .workspace .composer-view-grid,
+.component-page-window--borderless
+    > .app-shell
+    > .workspace
+    .composer-view-grid {
+    height: 100%;
     min-height: 100%;
-    grid-auto-rows: minmax(min-content, auto);
+    grid-auto-rows: minmax(min-content, 1fr);
     gap: 0;
 }
 
 .component-page-window--borderless
-    > .workspace
+    .workspace
     > .composer-view-grid
     > .widget-card {
-    height: auto;
+    height: 100%;
     min-height: 100%;
     overflow: visible;
 }
 
 .component-page-window--borderless
-    > .workspace
+    .workspace
+    :is(
+        .main-window,
+        .content-grid,
+        .content-panel,
+        .content-section,
+        .widget-card
+    ) {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+}
+
+.component-page-window--borderless .widget-card > :only-child {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+}
+
+.component-page-window--borderless
+    .workspace
     :is(
         .widget-card,
         .content-section,

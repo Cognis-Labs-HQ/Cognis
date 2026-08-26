@@ -67,6 +67,12 @@ While a borderless component is mounted, Cognis also removes the outer margin fr
 
 Component windows do not create an independent vertical scroll area. Their stage and window remain in normal flex layout and grow with the embedded content, while wheel input over the component continues scrolling the main page. This keeps a single page-level scroll position regardless of pointer location.
 
+### Borderless integration responsibilities
+
+- **Cognis host:** applies `component-page-stage--borderless`, stretches the complete `component-page-window → app-shell → workspace → composer grid → widget` chain, removes nested workspace spacing, and passes `layout: { borderless: true, fillParent: true, scrollOwner: "document" }` to the provider mount.
+- **Meeting caller (for example Jitsi Meet):** requests `borderless: true`; while the handle is active, its meeting stage must replace any fixed fill height or clipped overflow with an auto-growing, visible-overflow layout. Closing the component must discard the broker handle and restore the meeting stage's normal video layout.
+- **Page provider (for example Nextcloud Whiteboard):** honors `borderless` and `layout` mount options by constructing its page composer with `frameless: true` and `contentScrolling: false`. Its canvas wrapper must fill the composer widget, and its canvas stage must not declare `overflow: auto`; document scrolling remains owned by Cognis.
+
 ## Built-in component pages
 
 Authenticated dashboard pages shipped with Cognis use the Cognis Core UUID `b4d49c4a-61d0-5db2-84fd-f89b80fd6398`; Study uses its gateway UUID `338b9237-a2c8-5bcf-9437-bccc9abd9a27`. Their stable route IDs are `core.dashboard`, `core.settings`, `core.users`, `core.invite`, `core.modules`, `core.administration`, `core.docs`, `core.changelogs`, `core.license`, `core.error`, `gateway.study`, and `gateway.study.child`. They use the same `component-pages:request` contract as external modules and support overlay or fullscreen embedding. Login and demonstration entry points are not dashboard-shell component pages and are not eligible.

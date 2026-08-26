@@ -58,6 +58,12 @@ Solange eine randlose Komponente eingebunden ist, entfernt Cognis auch den Auße
 
 Komponentenfenster erzeugen keinen eigenen vertikalen Bildlaufbereich. Bühne und Fenster verbleiben im normalen Flex-Layout und wachsen mit dem eingebetteten Inhalt, während Radeingaben über der Komponente weiterhin die Hauptseite scrollen. Dadurch gibt es unabhängig von der Zeigerposition nur eine seitenweite Bildlaufposition.
 
+### Zuständigkeiten bei der randlosen Integration
+
+- **Cognis-Host:** setzt `component-page-stage--borderless`, streckt die vollständige Kette `component-page-window → app-shell → workspace → composer grid → widget`, entfernt verschachtelte Workspace-Abstände und übergibt `layout: { borderless: true, fillParent: true, scrollOwner: "document" }` an den Mount des Anbieters.
+- **Meeting-Aufrufer (beispielsweise Jitsi Meet):** fordert `borderless: true` an; solange das Handle aktiv ist, muss seine Meeting-Bühne feste Füllhöhen oder abgeschnittenen Überlauf durch ein automatisch wachsendes Layout mit sichtbarem Überlauf ersetzen. Beim Schließen wird das Broker-Handle verworfen und das normale Video-Layout der Meeting-Bühne wiederhergestellt.
+- **Seitenanbieter (beispielsweise Nextcloud Whiteboard):** berücksichtigt die Mount-Optionen `borderless` und `layout`, indem der Page Composer mit `frameless: true` und `contentScrolling: false` aufgebaut wird. Der Canvas-Wrapper füllt das Composer-Widget aus und die Canvas-Bühne darf kein `overflow: auto` deklarieren; Cognis behält die Kontrolle über den Dokumentbildlauf.
+
 ## Integrierte Komponentenseiten
 
 Mit Cognis ausgelieferte authentifizierte Dashboard-Seiten verwenden die Cognis-Core-UUID `b4d49c4a-61d0-5db2-84fd-f89b80fd6398`; Study verwendet seine Gateway-UUID `338b9237-a2c8-5bcf-9437-bccc9abd9a27`. Ihre stabilen Routen-IDs sind `core.dashboard`, `core.settings`, `core.users`, `core.invite`, `core.modules`, `core.administration`, `core.docs`, `core.changelogs`, `core.license`, `core.error`, `gateway.study` und `gateway.study.child`. Sie nutzen denselben Vertrag `component-pages:request` wie externe Module und unterstützen die Einbettung als Overlay oder Vollbild. Anmelde- und Demonstrationseinstiege sind keine Komponentenseiten der Dashboard-Shell und daher nicht freigegeben.

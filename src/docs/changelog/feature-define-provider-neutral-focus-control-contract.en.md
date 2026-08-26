@@ -111,3 +111,7 @@ Spawning a borderless component now removes the containing `app-page__main` marg
 ## Resize PiP from either diagonal corner
 
 Floating PiP windows now provide SVG resize handles in both the upper-left and lower-right corners. Dragging either handle resizes within the visible boundary while preserving the opposite corner and enforcing the configured minimum dimensions.
+
+## Align the meeting-to-whiteboard height contract
+
+Borderless component stages now expose an explicit state class and mount layout contract, remove spacing from the nested app-shell workspace, and stretch every composer layer through the widget. The integration documentation now defines the corresponding Jitsi Meet stage and Nextcloud Whiteboard composer/canvas responsibilities so the canvas reaches the component border without nested vertical scrolling.

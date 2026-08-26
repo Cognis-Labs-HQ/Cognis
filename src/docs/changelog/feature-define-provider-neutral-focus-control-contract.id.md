@@ -111,3 +111,7 @@ Memasang komponen tanpa bingkai kini menghapus margin `app-page__main` yang memu
 ## Ubah ukuran PiP dari kedua sudut diagonal
 
 Jendela PiP mengambang kini menyediakan pegangan ubah ukuran SVG di sudut kiri atas dan kanan bawah. Menyeret salah satu pegangan mengubah ukuran di dalam batas yang terlihat sambil mempertahankan sudut yang berlawanan dan ukuran minimum yang dikonfigurasi.
+
+## Selaraskan kontrak tinggi rapat dan papan tulis
+
+Panggung komponen tanpa bingkai kini menyediakan kelas status dan kontrak tata letak mount yang eksplisit, menghapus jarak dari workspace app-shell bertingkat, serta merentangkan setiap lapisan composer hingga widget. Dokumentasi integrasi kini menetapkan tanggung jawab panggung Jitsi Meet dan composer/kanvas Nextcloud Whiteboard agar kanvas mencapai batas komponen tanpa pengguliran vertikal bertingkat.

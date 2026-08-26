@@ -19,8 +19,10 @@ class FakeElement {
         this.listeners = new Map();
         this.classNames = new Set();
         this.classList = {
-            add: (name) => this.classNames.add(name),
-            remove: (name) => this.classNames.delete(name),
+            add: (...names) =>
+                names.forEach((name) => this.classNames.add(name)),
+            remove: (...names) =>
+                names.forEach((name) => this.classNames.delete(name)),
         };
     }
 
@@ -219,6 +221,10 @@ test("component windows stay disposable across activation and SPA navigation", a
     assert.equal(componentStage.children.length, 1);
     assert.equal(componentStage.classNames.has("component-page-stage"), true);
     assert.equal(
+        componentStage.classNames.has("component-page-stage--borderless"),
+        true,
+    );
+    assert.equal(
         appPageMain.classNames.has("app-page__main--component-borderless"),
         true,
     );
@@ -235,6 +241,11 @@ test("component windows stay disposable across activation and SPA navigation", a
     );
     assert.equal(mountedComponentPage?.options.navigationAllowed, false);
     assert.equal(mountedComponentPage?.options.borderless, true);
+    assert.deepEqual(mountedComponentPage?.options.layout, {
+        borderless: true,
+        fillParent: true,
+        scrollOwner: "document",
+    });
     assert.notEqual(
         mountedComponentPage?.options.signal,
         callerController.signal,
@@ -277,6 +288,10 @@ test("component windows stay disposable across activation and SPA navigation", a
     assert.equal(releasedMount, true);
     assert.equal(componentStage.children.length, 0);
     assert.equal(componentStage.classNames.has("component-page-stage"), false);
+    assert.equal(
+        componentStage.classNames.has("component-page-stage--borderless"),
+        false,
+    );
     assert.equal(
         appPageMain.classNames.has("app-page__main--component-borderless"),
         false,
@@ -356,27 +371,39 @@ test("component windows grow with content without nested vertical scrolling", ()
     );
     assert.match(
         pageSectionStyles,
+        /\.component-page-stage--borderless\s*{[^}]*display: grid;[^}]*grid-template-rows: minmax\(min-content, 1fr\);[^}]*align-items: stretch;/,
+    );
+    assert.match(
+        pageSectionStyles,
         /\.component-page-window\s*{[^}]*position: relative;[^}]*flex: 1 0 auto;[^}]*min-height: 100%;[^}]*overflow: visible;/,
     );
     assert.match(
         pageSectionStyles,
-        /\.component-page-window--borderless\s*{[^}]*width: 100%;[^}]*height: auto;[^}]*min-height: 100%;[^}]*margin: 0;[^}]*padding: 0;[^}]*overflow: visible;[^}]*border: 0;/,
+        /\.component-page-window--borderless\s*{[^}]*display: grid;[^}]*grid-template-rows: minmax\(min-content, 1fr\);[^}]*width: 100%;[^}]*height: auto;[^}]*min-height: 100%;[^}]*margin: 0;[^}]*padding: 0;[^}]*overflow: visible;[^}]*border: 0;/,
     );
     assert.match(
         pageSectionStyles,
-        /\.component-page-window--borderless > :first-child\s*{[^}]*width: 100%;[^}]*height: auto;[^}]*min-height: 100%;[^}]*margin: 0;[^}]*padding: 0;/,
+        /\.component-page-window--borderless > :first-child\s*{[^}]*width: 100%;[^}]*height: 100%;[^}]*min-height: 100%;[^}]*margin: 0;[^}]*padding: 0;/,
     );
     assert.match(
         pageSectionStyles,
-        /\.component-page-window--borderless > \.workspace\s*{[^}]*background: transparent;[^}]*backdrop-filter: none;/,
+        /\.component-page-window--borderless > \.workspace,[\s\S]*\.component-page-window--borderless > \.app-shell > \.workspace\s*{[^}]*height: 100%;[^}]*margin: 0;[^}]*padding: 0;[^}]*background: transparent;/,
     );
     assert.match(
         pageSectionStyles,
-        /\.component-page-window--borderless > \.workspace \.composer-view-grid\s*{[^}]*height: auto;[^}]*min-height: 100%;[^}]*grid-auto-rows: minmax\(min-content, auto\);[^}]*gap: 0;/,
+        /\.component-page-window--borderless > \.workspace \.composer-view-grid,[\s\S]*\.app-shell[\s\S]*\.composer-view-grid\s*{[^}]*height: 100%;[^}]*min-height: 100%;[^}]*grid-auto-rows: minmax\(min-content, 1fr\);[^}]*gap: 0;/,
     );
     assert.match(
         pageSectionStyles,
         /\.component-page-window--borderless[\s\S]*:is\([\s\S]*\.widget-card,[\s\S]*\.content-panel,[\s\S]*\.content-grid[\s\S]*\)[^{]*{[\s\S]*?margin: 0;[\s\S]*?padding: 0;[\s\S]*?border: 0;/,
+    );
+    assert.match(
+        pageSectionStyles,
+        /\.component-page-window--borderless[\s\S]*\.workspace[\s\S]*:is\([\s\S]*\.main-window,[\s\S]*\.content-grid,[\s\S]*\.content-panel,[\s\S]*\.content-section,[\s\S]*\.widget-card[\s\S]*\)\s*{[^}]*width: 100%;[^}]*height: 100%;[^}]*min-height: 0;/,
+    );
+    assert.match(
+        pageSectionStyles,
+        /\.component-page-window--borderless \.widget-card > :only-child\s*{[^}]*width: 100%;[^}]*height: 100%;[^}]*min-height: 0;/,
     );
 });
 
