@@ -42,6 +42,7 @@ for (const capability of [
     "ui:showToast",
     "ui:openErrorPopup",
     "ui:resourceLoader",
+    "ui:reuse",
 ]) {
     test(`host registers the module UI capability ${capability}`, () => {
         assert.match(

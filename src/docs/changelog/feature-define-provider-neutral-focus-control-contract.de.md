@@ -119,3 +119,7 @@ Randlose Komponentenbühnen stellen nun eine eindeutige Zustandsklasse und einen
 ## Wiederverwendbare UI-Ressourcen über ctx bereitstellen
 
 Browsermodule können nun jedes Produktionswerkzeug unter `src/ui/reuse/` und jedes gemeinsame Stylesheet unter `src/ui/styles/reuse/` über die Fähigkeit `ui:reuse` beziehen. Produktions-Builds bewahren deren logische Ressourcen-URLs, während validierte relative Pfade Verzeichnisdurchläufe, Testimporte und falsche Dateiendungen verhindern.
+
+## Wiederverwendungsfähigkeit bei der Modulaktivierung bekanntgeben
+
+Die API registriert `ui:reuse` nun im Katalog der Host-UI-Fähigkeitsanbieter. Module, die diese Fähigkeit deklarieren, bestehen damit die Aktivierungsprüfung, bevor derselbe Anbieter die Browser-ctx-Ressourcenoberfläche initialisiert.

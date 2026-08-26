@@ -119,3 +119,7 @@ Borderless component stages now expose an explicit state class and mount layout 
 ## Expose reusable UI resources through ctx
 
 Browser modules can now obtain every production utility under `src/ui/reuse/` and every common stylesheet under `src/ui/styles/reuse/` through the `ui:reuse` capability. Production builds preserve their logical resource URLs, while validated relative paths prevent traversal, test imports, and extension mismatches.
+
+## Advertise the reuse capability during module enablement
+
+The API now registers `ui:reuse` in the host UI capability-provider catalog. Modules that declare the capability can therefore pass enablement validation before the same provider initializes the browser ctx resource surface.

@@ -119,3 +119,7 @@ Panggung komponen tanpa bingkai kini menyediakan kelas status dan kontrak tata l
 ## Sediakan sumber daya UI yang dapat digunakan kembali melalui ctx
 
 Modul browser kini dapat memperoleh setiap utilitas produksi di bawah `src/ui/reuse/` dan setiap stylesheet umum di bawah `src/ui/styles/reuse/` melalui kapabilitas `ui:reuse`. Build produksi mempertahankan URL sumber daya logisnya, sementara validasi path relatif mencegah lintasan direktori, impor pengujian, dan ketidakcocokan ekstensi.
+
+## Umumkan kapabilitas penggunaan ulang saat mengaktifkan modul
+
+API kini mendaftarkan `ui:reuse` dalam katalog penyedia kapabilitas UI host. Modul yang mendeklarasikan kapabilitas tersebut dapat melewati validasi pengaktifan sebelum penyedia yang sama menginisialisasi permukaan sumber daya ctx browser.
