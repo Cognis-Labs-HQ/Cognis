@@ -139,3 +139,7 @@ Fokusflächen können jetzt ihren optionalen Standardzustand verwenden, deklarie
 ## Composer-Code bleibt lesbar
 
 Die Größenberechnung des Rasters befindet sich jetzt in einem eigenen, getesteten Modul. Gleichzeitig wurden die erklärenden Kommentare und Abstände in der Initialisierung des Seiten-Composers wiederhergestellt.
+
+## Dashboard an erster Stelle
+
+Das Dashboard bleibt nun der erste Eintrag der primären Navigation, während alle anderen Einträge weiterhin alphabetisch sortiert werden.

@@ -139,3 +139,7 @@ Permukaan fokus kini dapat memakai status awal opsional, rute aplikasi yang dide
 ## Kode composer tetap mudah dibaca
 
 Penghitungan ukuran kisi kini berada dalam modul khusus yang telah diuji, sedangkan komentar penjelas dan jarak pada inisialisasi composer halaman telah dipulihkan.
+
+## Pertahankan Dashboard di urutan pertama
+
+Dashboard kini tetap menjadi entri pertama navigasi utama, sementara semua entri lainnya tetap diurutkan menurut abjad.

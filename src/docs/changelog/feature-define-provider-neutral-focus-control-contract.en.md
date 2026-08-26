@@ -139,3 +139,7 @@ Focus surfaces may now use their optional default state, declared application ro
 ## Composer code stays readable
 
 Grid sizing now lives in a focused, tested module, while the explanatory comments and spacing in page-composer initialization have been restored.
+
+## Keep Dashboard first
+
+Dashboard now remains the first primary-navigation entry while every other entry continues to be sorted alphabetically.

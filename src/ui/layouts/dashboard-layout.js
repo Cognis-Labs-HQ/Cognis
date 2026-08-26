@@ -108,6 +108,10 @@ function navigationEntryLabel(entry) {
     );
 }
 
+function navigationEntryRank(entry) {
+    return entry.getAttribute("href") === "/dashboard" ? 0 : 1;
+}
+
 function sortNavigationEntries(topnav) {
     const entries = Array.from(topnav.children).filter((entry) =>
         entry.matches("a[href]"),
@@ -119,12 +123,17 @@ function sortNavigationEntries(topnav) {
             sensitivity: "base",
         },
     );
-    const sortedEntries = [...entries].sort((left, right) =>
-        collator.compare(
-            navigationEntryLabel(left),
-            navigationEntryLabel(right),
-        ),
-    );
+    const sortedEntries = [...entries].sort((left, right) => {
+        const rankDifference =
+            navigationEntryRank(left) - navigationEntryRank(right);
+        return (
+            rankDifference ||
+            collator.compare(
+                navigationEntryLabel(left),
+                navigationEntryLabel(right),
+            )
+        );
+    });
     if (entries.every((entry, index) => entry === sortedEntries[index])) return;
     topnav.append(...sortedEntries);
 }

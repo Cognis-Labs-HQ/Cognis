@@ -274,6 +274,14 @@ test("dashboard navigation alphabetizes and redraws entries as plugins add them"
         layoutSource,
         /new MutationObserver\(redrawNavigation\)[\s\S]*observe\(topnav, \{ childList: true \}\)/,
     );
+    assert.match(
+        layoutSource,
+        /function navigationEntryRank\(entry\)[\s\S]*href"\) === "\/dashboard" \? 0 : 1/,
+    );
+    assert.match(
+        layoutSource,
+        /navigationEntryRank\(left\) - navigationEntryRank\(right\)[\s\S]*rankDifference \|\|[\s\S]*collator\.compare/,
+    );
 });
 
 test("core reconciles duplicate provider entries in the user menu", () => {
