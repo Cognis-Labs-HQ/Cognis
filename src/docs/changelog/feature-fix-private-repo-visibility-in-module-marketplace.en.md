@@ -6,7 +6,7 @@ The Cognis Labs HQ marketplace source now persists its private-repository scan s
 
 ## Background scans no longer unlock the keyring
 
-Automatic marketplace polling reads a PAT only when the keyring is already unlocked. Provider authentication failures are reported without unexpectedly prompting for the account keyring password; an explicit refresh can still request access.
+Automatic marketplace polling now performs authenticated source discovery and reads a PAT only when the keyring is already unlocked. The keyring resolver still validates cached credentials and removes invalid values without unexpectedly prompting for the account keyring password; an explicit refresh can still request access.
 
 ## Every accessible private repository is considered
 

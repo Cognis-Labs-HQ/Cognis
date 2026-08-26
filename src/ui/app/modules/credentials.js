@@ -5,9 +5,9 @@ export async function resolveSourceToken(
     { promptWhenLocked = true } = {},
 ) {
     if (!source?.credentialId) return undefined;
-    if (!promptWhenLocked) return keyring?.get(source.credentialId) ?? undefined;
     return keyring?.resolve(source.credentialId, {
         request,
         validate: (value) => Boolean(value.trim()),
+        promptWhenLocked,
     });
 }

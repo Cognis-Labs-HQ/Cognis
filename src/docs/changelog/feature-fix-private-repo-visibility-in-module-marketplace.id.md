@@ -6,7 +6,7 @@ Sumber bursa Cognis Labs HQ kini menyimpan pengaturan pemindaian repositori priv
 
 ## Pemindaian latar belakang tidak lagi membuka keyring
 
-Polling bursa otomatis hanya membaca PAT saat keyring sudah terbuka. Kegagalan autentikasi penyedia dilaporkan tanpa meminta kata sandi keyring akun secara tak terduga; penyegaran eksplisit tetap dapat meminta akses.
+Polling bursa otomatis kini menjalankan penemuan sumber terautentikasi dan hanya membaca PAT saat keyring sudah terbuka. Resolver keyring tetap memvalidasi kredensial tersimpan dan menghapus nilai yang tidak valid tanpa meminta kata sandi keyring akun secara tak terduga; penyegaran eksplisit tetap dapat meminta akses.
 
 ## Setiap repositori privat yang dapat diakses dipertimbangkan
 

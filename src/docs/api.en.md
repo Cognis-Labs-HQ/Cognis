@@ -63,17 +63,17 @@ Token expiry is controlled by `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200
 
 ## Configuration
 
-| Variable                          | Default                        | Description                                 |
-| --------------------------------- | ------------------------------ | ------------------------------------------- |
-| `DB_TYPE`                         | `postgresql`                   | Database backend: `postgresql` or `mariadb` |
-| `DATABASE_URL`                    | —                              | Connection string for PostgreSQL or MariaDB |
-| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | Bearer token lifetime in seconds            |
-| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | Path for the CLI bootstrap token            |
+| Variable                          | Default                        | Description                                             |
+| --------------------------------- | ------------------------------ | ------------------------------------------------------- |
+| `DB_TYPE`                         | `postgresql`                   | Database backend: `postgresql` or `mariadb`             |
+| `DATABASE_URL`                    | —                              | Connection string for PostgreSQL or MariaDB             |
+| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | Bearer token lifetime in seconds                        |
+| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | Path for the CLI bootstrap token                        |
 | `COGNIS_MODULE_SOURCES_PATH`      | `config/module-sources.json`   | Persistent module marketplace source configuration path |
-| `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | Root directory for gateway discovery        |
-| `COGNIS_ADAPTERS_ROOT`            | `src/adapters`                 | Root directory for adapter discovery        |
-| `PORT`                            | `3000`                         | HTTP port                                   |
-| `LISTEN_HOST`                     | `0.0.0.0`                      | Bind address                                |
+| `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | Root directory for gateway discovery                    |
+| `COGNIS_ADAPTERS_ROOT`            | `src/adapters`                 | Root directory for adapter discovery                    |
+| `PORT`                            | `3000`                         | HTTP port                                               |
+| `LISTEN_HOST`                     | `0.0.0.0`                      | Bind address                                            |
 
 ## API Routes
 

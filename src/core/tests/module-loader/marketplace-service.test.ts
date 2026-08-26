@@ -451,9 +451,7 @@ test("private scans include organization repositories visible through the authen
         );
         assert.deepEqual(result.sourceFailures, []);
         assert.ok(requestedUrls.some((url) => url.includes("/user/repos?")));
-        assert.ok(
-            requestedUrls.every((url) => !url.includes("affiliation=")),
-        );
+        assert.ok(requestedUrls.every((url) => !url.includes("affiliation=")));
     } finally {
         globalThis.fetch = originalFetch;
     }

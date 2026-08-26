@@ -239,6 +239,34 @@ test("unlock requests require component, action, and process context", async () 
     );
 });
 
+test("non-prompt resolution validates unlocked secrets without unlocking a locked keyring", async () => {
+    const keyring = await import("../ui/keyring.js");
+    assert.equal(await keyring.unlockKeyring("account-password"), true);
+    await keyring.setKeyringValue("marketplace:token", "   ");
+
+    assert.equal(
+        await keyring.resolveKeyringValue("marketplace:token", {
+            request: testUnlockRequest,
+            promptWhenLocked: false,
+            validate: (value) => Boolean(value.trim()),
+        }),
+        null,
+    );
+    assert.equal(keyring.getKeyringValue("marketplace:token"), null);
+
+    await keyring.lockKeyring();
+    unlockPromptCount = 0;
+    assert.equal(
+        await keyring.resolveKeyringValue("share:token-1", {
+            request: testUnlockRequest,
+            promptWhenLocked: false,
+            passwordPrompt: testPasswordPrompt,
+        }),
+        null,
+    );
+    assert.equal(unlockPromptCount, 0);
+});
+
 test("component scopes attribute direct unlock requests to their owner", async () => {
     const keyring = await import("../ui/keyring.js");
     const messagesKeyring = keyring.createKeyringScope("Social Messages");

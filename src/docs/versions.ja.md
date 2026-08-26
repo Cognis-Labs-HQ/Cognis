@@ -37,7 +37,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.16`   |
 | ファイル容量制限      | `src/adapters/file/quota/`          | `1.0.14`   |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.14`   |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.36`   |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.37`   |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.17`   |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.14`   |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.14`   |

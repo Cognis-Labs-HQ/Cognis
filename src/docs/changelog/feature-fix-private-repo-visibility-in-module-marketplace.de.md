@@ -6,7 +6,7 @@ Die Marktplatzquelle Cognis Labs HQ speichert ihre Einstellung zum Durchsuchen p
 
 ## Hintergrundprüfungen entsperren den Schlüsselbund nicht mehr
 
-Die automatische Marktplatzabfrage liest ein PAT nur, wenn der Schlüsselbund bereits entsperrt ist. Authentifizierungsfehler des Anbieters werden gemeldet, ohne unerwartet nach dem Schlüsselbundpasswort zu fragen; eine ausdrücklich ausgelöste Aktualisierung kann weiterhin Zugriff anfordern.
+Die automatische Marktplatzabfrage führt jetzt eine authentifizierte Quellensuche durch und liest ein PAT nur, wenn der Schlüsselbund bereits entsperrt ist. Der Schlüsselbund-Resolver prüft zwischengespeicherte Zugangsdaten weiterhin und entfernt ungültige Werte, ohne unerwartet nach dem Schlüsselbundpasswort zu fragen; eine ausdrücklich ausgelöste Aktualisierung kann weiterhin Zugriff anfordern.
 
 ## Jedes zugängliche private Repository wird berücksichtigt
 

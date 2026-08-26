@@ -63,17 +63,17 @@ Der Token-Ablauf wird durch `COGNIS_ACCESS_TOKEN_TTL_SECONDS` gesteuert (Standar
 
 ## Konfiguration
 
-| Variable                          | Standard                       | Beschreibung                                        |
-| --------------------------------- | ------------------------------ | --------------------------------------------------- |
-| `DB_TYPE`                         | `postgresql`                   | Datenbank-Backend: `postgresql` oder `mariadb`      |
-| `DATABASE_URL`                    | —                              | Verbindungszeichenfolge für PostgreSQL oder MariaDB |
-| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | Bearer-Token-Lebensdauer in Sekunden                |
-| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | Pfad für das CLI-Bootstrap-Token                    |
+| Variable                          | Standard                       | Beschreibung                                                          |
+| --------------------------------- | ------------------------------ | --------------------------------------------------------------------- |
+| `DB_TYPE`                         | `postgresql`                   | Datenbank-Backend: `postgresql` oder `mariadb`                        |
+| `DATABASE_URL`                    | —                              | Verbindungszeichenfolge für PostgreSQL oder MariaDB                   |
+| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | Bearer-Token-Lebensdauer in Sekunden                                  |
+| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | Pfad für das CLI-Bootstrap-Token                                      |
 | `COGNIS_MODULE_SOURCES_PATH`      | `config/module-sources.json`   | Persistenter Pfad für die Quellenkonfiguration des Modul-Marktplatzes |
-| `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | Stammverzeichnis für Gateway-Erkennung              |
-| `COGNIS_ADAPTERS_ROOT`            | `src/adapters`                 | Stammverzeichnis für Adapter-Erkennung              |
-| `PORT`                            | `3000`                         | HTTP-Port                                           |
-| `LISTEN_HOST`                     | `0.0.0.0`                      | Bind-Adresse                                        |
+| `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | Stammverzeichnis für Gateway-Erkennung                                |
+| `COGNIS_ADAPTERS_ROOT`            | `src/adapters`                 | Stammverzeichnis für Adapter-Erkennung                                |
+| `PORT`                            | `3000`                         | HTTP-Port                                                             |
+| `LISTEN_HOST`                     | `0.0.0.0`                      | Bind-Adresse                                                          |
 
 ## API-Routen
 
