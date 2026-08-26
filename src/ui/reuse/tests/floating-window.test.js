@@ -238,6 +238,18 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         );
         assert.match(
             floatingWindowStyles,
+            /body\[data-theme="light"\] \.floating-window-resize-handle\s*{[\s\S]*?--floating-window-resize-color: #24344d;/,
+        );
+        assert.match(
+            floatingWindowStyles,
+            /body\[data-theme="dark"\] \.floating-window-resize-handle\s*{[\s\S]*?--floating-window-resize-color: #dbeafe;/,
+        );
+        assert.match(
+            floatingWindowStyles,
+            /prefers-color-scheme: dark[\s\S]*?body:not\(\[data-theme\]\) \.floating-window-resize-handle/,
+        );
+        assert.match(
+            floatingWindowStyles,
             /\.floating-window-resize-handle\s*{[\s\S]*?background: transparent;/,
         );
         assert.match(

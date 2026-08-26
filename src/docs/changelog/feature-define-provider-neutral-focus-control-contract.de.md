@@ -127,3 +127,7 @@ Die API registriert `ui:reuse` nun im Katalog der Host-UI-Fähigkeitsanbieter. M
 ## Moduldetails mit ihren Quell-Repositorys verlinken
 
 Moduldetailköpfe zeigen nun direkt unter dem Titel ein Hyperlink-SVG gefolgt von der vollständigen, bereinigten URL des Quell-Repositorys. Nur die sichtbare URL ist verlinkt; das SVG bleibt dekorativ. Unsichere URLs oder URLs mit Zugangsdaten werden nicht dargestellt. Marketplace-Karten bleiben kompakt und zeigen keine Repository-Links.
+
+## PiP-Größengriffe an helle und dunkle Designs anpassen
+
+Beide diagonalen PiP-Größen-SVGs verwenden nun ausdrücklich kontrastreiche Farben für das helle und das dunkle Cognis-Design. Seiten ohne festgelegtes Design folgen zusätzlich der dunklen Farbschemaeinstellung des Browsers, während die SVG-Pfade ihre Grifffarbe weiterhin über `currentColor` übernehmen.

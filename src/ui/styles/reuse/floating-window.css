@@ -59,11 +59,28 @@
     place-items: end;
     width: 1.5rem;
     height: 1.5rem;
-    color: var(--text-color, var(--color-text));
+    color: var(
+        --floating-window-resize-color,
+        var(--text-color, var(--color-text, #24344d))
+    );
     background: transparent;
     cursor: nwse-resize;
     touch-action: none;
     user-select: none;
+}
+
+body[data-theme="light"] .floating-window-resize-handle {
+    --floating-window-resize-color: #24344d;
+}
+
+body[data-theme="dark"] .floating-window-resize-handle {
+    --floating-window-resize-color: #dbeafe;
+}
+
+@media (prefers-color-scheme: dark) {
+    body:not([data-theme]) .floating-window-resize-handle {
+        --floating-window-resize-color: #dbeafe;
+    }
 }
 
 .floating-window-resize-handle--top-left {

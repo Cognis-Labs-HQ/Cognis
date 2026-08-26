@@ -127,3 +127,7 @@ API kini mendaftarkan `ui:reuse` dalam katalog penyedia kapabilitas UI host. Mod
 ## Tautkan detail modul ke repositori sumbernya
 
 Header detail modul kini menampilkan SVG hyperlink yang diikuti URL repositori sumber modul yang lengkap dan telah disanitasi tepat di bawah judul. Hanya URL yang terlihat yang menjadi tautan, sedangkan SVG tetap dekoratif. URL yang tidak aman atau memuat kredensial tidak pernah dirender. Kartu marketplace tetap ringkas dan tidak menampilkan tautan repositori.
+
+## Sesuaikan pegangan ubah ukuran PiP dengan tema terang dan gelap
+
+Kedua SVG pengubah ukuran diagonal PiP kini menggunakan warna kontras tinggi yang eksplisit untuk tema Cognis terang dan gelap. Halaman tanpa tema yang ditetapkan juga mengikuti preferensi skema warna gelap browser, sementara path SVG tetap mewarisi warna pegangannya melalui `currentColor`.
