@@ -30,6 +30,7 @@ import { serveProviders } from "./capability-providers.js";
 import {
     resolveModuleRoot,
     serveDeclaredModuleStrings,
+    serveEnabledModuleAsset,
     uiStaticPath as staticPath,
 } from "./module-string-assets.js";
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
@@ -903,6 +904,18 @@ export function createUiRoutes(
                 );
                 return true;
             }
+            if (
+                await serveEnabledModuleAsset(
+                    req,
+                    res,
+                    url,
+                    urlPath,
+                    runtime,
+                    isModuleEnabled,
+                    ctx,
+                )
+            )
+                return true;
             if (
                 await serveDeclaredModuleStrings(
                     req,

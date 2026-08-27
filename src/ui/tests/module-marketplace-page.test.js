@@ -61,7 +61,10 @@ const marketplaceSource = readFileSync(
 test("module marketplace polls Cognis for current recommendations", () => {
     assert.match(marketplaceSource, /MARKETPLACE_POLL_INTERVAL_MS = 15_000/);
     assert.match(marketplaceSource, /window\.setInterval\(poll/);
-    assert.match(marketplaceSource, /loadKnownModules\(false, signal\)/);
+    assert.match(
+        marketplaceSource,
+        /loadKnownModules\(false, signal, false\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
+    );
     assert.match(marketplaceSource, /window\.clearInterval\(interval\)/);
 });
 test("modules navigation derives its width from its content", () => {
@@ -411,6 +414,25 @@ test("module presentation discovers conventional strings and preserves unresolve
     assert.equal(module.localizedPresentation.summary, "Literal summary");
 });
 
+test("module presentation respects catalog suppression of unavailable strings", async () => {
+    const module = {
+        id: "incomplete",
+        name: "module.incomplete.name",
+        ui: {},
+    };
+    let requestedStringsBaseUrl = "not-called";
+    await localizeModulePresentation(
+        module,
+        { locale: "en", t: (key) => key },
+        async (baseI18n, stringsBaseUrl) => {
+            requestedStringsBaseUrl = stringsBaseUrl;
+            return baseI18n;
+        },
+    );
+    assert.equal(requestedStringsBaseUrl, undefined);
+    assert.equal(module.localizedPresentation.name, "module.incomplete.name");
+});
+
 test("module marketplace does not resolve repository-relative avatars against the page URL", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),
@@ -554,7 +576,7 @@ test("module marketplace refreshes every configured source on demand", () => {
     assert.match(source, /await refreshMarketplaceData\(\)/);
     assert.match(
         source,
-        /loadKnownModules\(false, signal\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
+        /loadKnownModules\(false, signal, false\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
     );
 });
 
