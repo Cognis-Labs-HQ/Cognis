@@ -219,6 +219,24 @@ export class CoreAuthGateway {
         }
     }
 
+    unregisterAdapter(
+        adapterId: string,
+        expectedAdapter?: AuthProviderAdapter,
+    ): boolean {
+        const registeredAdapter = this.adapters.get(adapterId);
+        if (
+            !registeredAdapter ||
+            adapterId === "local" ||
+            (expectedAdapter && registeredAdapter !== expectedAdapter)
+        ) {
+            return false;
+        }
+        this.adapters.delete(adapterId);
+        this.enabledAdapters.delete(adapterId);
+        this.adapterRequires.delete(adapterId);
+        return true;
+    }
+
     setLocalAdapter(
         adapter: AuthProviderAdapter & {
             register(

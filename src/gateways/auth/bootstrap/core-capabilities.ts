@@ -4,6 +4,7 @@ import {
     revokeAccessTokensForSubject,
     revokeSetupPendingAccessTokens,
 } from "../access-tokens.js";
+import type { AuthProviderAdapter } from "../gateway.js";
 import type { AuthBootstrapHookContext } from "./index.js";
 
 export async function registerAuthBootstrapHook({
@@ -13,6 +14,35 @@ export async function registerAuthBootstrapHook({
     routeContext,
 }: AuthBootstrapHookContext): Promise<void> {
     ctx.capabilities.contribute("auth:accountStore", accountStore);
+    ctx.capabilities.contribute(
+        "auth:registerProvider",
+        (provider: AuthProviderAdapter, requires?: string[]) => {
+            authGateway.registerAdapter(provider, requires);
+            ctx.log?.(
+                "info",
+                "Registered an external authentication provider.",
+                {
+                    component: "auth-gateway",
+                    operation: "register_external_provider",
+                    providerId: provider.id,
+                },
+            );
+            return () => {
+                if (!authGateway.unregisterAdapter(provider.id, provider)) {
+                    return;
+                }
+                ctx.log?.(
+                    "info",
+                    "Unregistered an external authentication provider.",
+                    {
+                        component: "auth-gateway",
+                        operation: "unregister_external_provider",
+                        providerId: provider.id,
+                    },
+                );
+            };
+        },
+    );
     ctx.capabilities.contribute(
         "auth:registerPageScriptOrigins",
         registerPageScriptOrigins,

@@ -12,7 +12,7 @@
 - `auth_adapter_configs` に永続化されたアダプターの有効・無効状態を管理する。
 - 要求されたプロバイダーの有効なアダプターに委譲して認証情報を検証する。
 - 認証成功後に `issueAccessToken` でアクセストークンを発行する。
-- `auth:accountStore`、`auth:createLocalAdmin`、`auth:getLoginMethods`、`auth:registerPageScriptOrigins` をケイパビリティストアに提供する。
+- `auth:accountStore`、`auth:createLocalAdmin`、`auth:getLoginMethods`、`auth:registerProvider`、`auth:registerPageScriptOrigins` をケイパビリティストアに提供する。
 - すべての認証APIルートとアダプター管理ルートを登録する。
 
 責務外: ユーザープロフィールデータの保存（プロフィールゲートウェイの責務）、トークン発行を超えたセッション管理、非認証ビジネスロジック。
@@ -54,6 +54,7 @@ export class CoreAuthGateway {
 | `auth:accountStore`              | `LocalAccountStore`                            | ローカルアダプターが使用するローカルアカウントストア                            |
 | `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | 存在しない場合に管理者アカウントを作成                                          |
 | `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | すべての有効なプロバイダーのメタデータを返す                                    |
+| `auth:registerProvider`          | `(provider, requires?) => dispose`             | モジュール認証プロバイダーを登録し、そのクリーンアップ関数を返す                |
 | `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | ページのCSPヘッダーで1つの所有者の信頼済みhttp(s)スクリプトオリジンを置き換える |
 
 ## APIルート
@@ -80,4 +81,4 @@ export class CoreAuthGateway {
 
 ## 提供するケイパビリティ
 
-このゲートウェイは `auth:accountStore`、`auth:createLocalAdmin`、`auth:getLoginMethods`、`auth:registerPageScriptOrigins`、`auth:issueAccessToken`、`auth:getAuthClaims`、`auth:requireAuth`、`auth:requireRoleAccess`、`auth:revokeAccessTokensForSubject`、`auth:revokeSetupPendingAccessTokens`、`auth:routeContext` を提供します。
+このゲートウェイは `auth:accountStore`、`auth:createLocalAdmin`、`auth:getLoginMethods`、`auth:registerProvider`、`auth:registerPageScriptOrigins`、`auth:issueAccessToken`、`auth:getAuthClaims`、`auth:requireAuth`、`auth:requireRoleAccess`、`auth:revokeAccessTokensForSubject`、`auth:revokeSetupPendingAccessTokens`、`auth:routeContext` を提供します。
