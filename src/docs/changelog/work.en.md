@@ -9,3 +9,5 @@ After a verified server is added, activating the adapter saves the pending serve
 Saving from the user verification step, including by pressing Enter, now runs the authentication test automatically when needed. A failed authentication test returns the administrator to the LDAP bind fields for correction.
 
 Deleting the final LDAP server now requires confirmation and disables the adapter. LDAP test failures can highlight every configuration field that may have caused the failure, including server URLs, directory DNs, bind credentials, and search filters.
+
+All LDAP setup copy is now supplied by the adapter's localized language resources. Success toasts confirm user authentication and LDAP server creation or updates.

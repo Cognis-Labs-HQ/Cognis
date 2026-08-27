@@ -9,3 +9,5 @@ Setelah server terverifikasi ditambahkan, aktivasi adaptor akan menyimpan konfig
 Menyimpan dari tahap verifikasi pengguna, termasuk dengan menekan Enter, kini menjalankan uji autentikasi secara otomatis bila diperlukan. Jika uji autentikasi gagal, administrator dikembalikan ke kolom bind LDAP untuk melakukan perbaikan.
 
 Penghapusan server LDAP terakhir kini memerlukan konfirmasi dan menonaktifkan adaptor. Kegagalan uji LDAP dapat menyoroti setiap kolom konfigurasi yang mungkin menyebabkan kegagalan, termasuk URL server, DN direktori, kredensial bind, dan filter pencarian.
+
+Semua teks penyiapan LDAP kini berasal dari sumber daya bahasa lokal milik adaptor. Toast keberhasilan mengonfirmasi autentikasi pengguna serta pembuatan atau pembaruan server LDAP.

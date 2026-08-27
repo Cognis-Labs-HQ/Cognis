@@ -52,7 +52,7 @@ test("LDAP setup composes and validates required connection fields", () => {
     );
     assert.match(popupSource, /requestClose: \(\) => dismiss\(null\)/);
     assert.match(ldapPopupSource, /configuredSecretFields/);
-    assert.match(ldapPopupSource, /Leave blank to keep the saved password/);
+    assert.match(ldapPopupSource, /adapter\.auth\.ldap\.keep_password/);
 });
 
 test("LDAP setup manages named, reorderable servers and unified login", () => {
@@ -119,6 +119,16 @@ test("LDAP setup flags every server field identified by the API", () => {
         ldapPopupSource,
         /markPopupFieldInvalid\(overlay, fieldName, message\)/,
     );
+});
+
+test("LDAP setup localizes copy and confirms successful operations", () => {
+    assert.match(
+        ldapPopupSource,
+        /adapter\.auth\.ldap\.authentication_succeeded/,
+    );
+    assert.match(ldapPopupSource, /adapter\.auth\.ldap\.server_created/);
+    assert.match(ldapPopupSource, /adapter\.auth\.ldap\.server_updated/);
+    assert.match(ldapPopupSource, /showToast\([\s\S]*variant: "success"/);
 });
 
 test("LDAP setup requires a successful user bind before completion", () => {

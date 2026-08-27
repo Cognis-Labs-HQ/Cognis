@@ -53,3 +53,5 @@ Nach Abschluss der Benutzerverifizierung wird der Server zur ausstehenden Konfig
 Wird vor dem manuellen Test der Benutzerauthentifizierung „Einstellungen speichern“ gewählt, auch mit der Eingabetaste, wird derselbe Authentifizierungstest automatisch ausgeführt. Schlägt die Authentifizierung fehl, kehrt die Einrichtung zum Verbindungsschritt zurück, damit die Bindungsfelder korrigiert werden können.
 
 Beim Löschen des letzten konfigurierten Servers wird eine Warnung zur Bestätigung angezeigt und der LDAP-Adapter nach der Bestätigung deaktiviert. Verbindungstests liefern feldbezogene Diagnosen für jede anhand der LDAP-Antwort erkannte mögliche Ursache. Das Einrichtungsformular hebt alle gemeldeten Felder hervor, statt einen Fehler mit mehreren Feldern, wie abgelehnte Bindungszugangsdaten, auf eine Eingabe zu reduzieren.
+
+Die Einrichtungserweiterung bezieht ihre sichtbaren Texte aus den Sprachressourcen des Adapters. Eine erfolgreiche Benutzerauthentifizierung sowie das Erstellen oder Aktualisieren eines Servers werden mit Erfolgsmeldungen bestätigt.

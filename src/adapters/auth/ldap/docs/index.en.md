@@ -66,3 +66,5 @@ Completing user verification adds the server to the pending configuration and im
 Selecting Save Settings, including by pressing Enter, before manually testing user authentication runs the same authentication test automatically. If authentication fails, setup returns to the connection step so the bind fields can be corrected.
 
 Deleting the final configured server opens a confirmation warning and disables the LDAP adapter when confirmed. Connection tests return field-specific diagnostics for every plausible cause identified from the LDAP response. The setup form highlights all reported fields rather than reducing a multi-field failure, such as rejected bind credentials, to one input.
+
+The setup extension sources its user-facing copy from the adapter language resources. Successful user authentication and server creation or update actions display success toasts.
