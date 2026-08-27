@@ -143,7 +143,7 @@ test("keyring lifecycle uses distinct destroyed and created notifications", () =
     assert.match(source, /if \(unlocked && !stored\)/);
 });
 
-test("server keyring state overrides local data while offline data remains available", async () => {
+test("server keyring state preserves unsynced local data but rejects reused accounts", async () => {
     const { selectKeyringEnvelope } = await import("../ui/keyring.js");
     const localEnvelope = {
         accountInstanceId: "account-instance-one",
@@ -162,6 +162,14 @@ test("server keyring state overrides local data while offline data remains avail
             resolved: true,
             envelope: null,
             accountInstanceId: "account-instance-one",
+        }),
+        localEnvelope,
+    );
+    assert.equal(
+        selectKeyringEnvelope(localEnvelope, {
+            resolved: true,
+            envelope: null,
+            accountInstanceId: "account-instance-two",
         }),
         null,
     );
@@ -562,13 +570,23 @@ test("account password setup reuses the authenticated credential", () => {
         keyringSource,
         /result === "use-account-password"\) return accountPassword/,
     );
-    assert.doesNotMatch(keyringSource, /setup_account_password_message/);
+    assert.match(
+        keyringSource,
+        /id: "use-account-password"[\s\S]*?variant: "confirm"/,
+    );
     assert.match(
         readFileSync(
             resolve(import.meta.dirname, "../ui/languages/en/strings.xml"),
             "utf8",
         ),
         />Use User Password</,
+    );
+});
+
+test("cancelled keyring creation remains available", () => {
+    assert.match(
+        settingsSource,
+        /#settings-keyring-create"\)\s*\?\.addEventListener\("click", async \(\) => \{\s*if \(await createKeyring\(\)\) rerender\(\);\s*\}\);/,
     );
 });
 
@@ -648,7 +666,7 @@ test("server-side deletion invalidates the browser keyring copy on login", async
     const browserEnvelope = JSON.parse(
         values.get("cognis_secure_keyring:deleted-ldap-user"),
     );
-    browserEnvelope.accountInstanceId = "reused-instance";
+    browserEnvelope.accountInstanceId = "deleted-instance";
     values.set(
         "cognis_secure_keyring:deleted-ldap-user",
         JSON.stringify(browserEnvelope),

@@ -10,6 +10,7 @@ import {
     bindSecretVisibilityToggles,
     renderSecretVisibilityField,
 } from "/static/reuse/secret-visibility-toggle.js";
+import { KEYRING_RELOCK_OPTIONS } from "./relock-options.js";
 export function createSettingsSection({ i18n, root }) {
     const eventPageSize = 10;
     const settingsRoot = root ?? document;
@@ -117,22 +118,10 @@ export function createSettingsSection({ i18n, root }) {
           <div class="components-section-body">
             <label class="settings-keyring-timeout">
               <select id="settings-keyring-relock" class="theme-select">
-                <option value="0"${timeout === 0 ? " selected" : ""}>${escapeHtml(i18n.t("gateway.auth.keyring.logout"))}</option>
-                ${[
-                    [5, "5_minutes"],
-                    [15, "15_minutes"],
-                    [30, "30_minutes"],
-                    [60, "1_hour"],
-                    [360, "6_hours"],
-                    [720, "12_hours"],
-                    [1440, "1_day"],
-                    [10080, "1_week"],
-                ]
-                    .map(
-                        ([minutes, label]) =>
-                            `<option value="${minutes}"${timeout === minutes ? " selected" : ""}>${escapeHtml(i18n.t(`gateway.auth.keyring.timeout_${label}`))}</option>`,
-                    )
-                    .join("")}
+                ${KEYRING_RELOCK_OPTIONS.map(
+                    ([minutes, labelKey]) =>
+                        `<option value="${minutes}"${timeout === minutes ? " selected" : ""}>${escapeHtml(i18n.t(labelKey))}</option>`,
+                ).join("")}
               </select>
             </label>
           </div>
@@ -361,13 +350,9 @@ export function createSettingsSection({ i18n, root }) {
         });
         settingsRoot
             .querySelector("#settings-keyring-create")
-            ?.addEventListener(
-                "click",
-                async () => {
-                    if (await createKeyring()) rerender();
-                },
-                { once: true },
-            );
+            ?.addEventListener("click", async () => {
+                if (await createKeyring()) rerender();
+            });
         settingsRoot
             .querySelector('[data-keyring-section="keys"]')
             ?.addEventListener("toggle", (event) => {

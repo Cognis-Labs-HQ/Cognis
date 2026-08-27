@@ -3,6 +3,7 @@ import {
     showKeyringLifecycleToast,
 } from "./lifecycle-notifications.js";
 import { createSessionUnlockStore } from "./session-unlock-store.js";
+import { KEYRING_RELOCK_OPTIONS } from "./relock-options.js";
 
 const keyringApiModule = await import(
     typeof window === "undefined"
@@ -237,7 +238,6 @@ export function selectKeyringEnvelope(localEnvelope, remoteState) {
     ) {
         return null;
     }
-    if (remoteState.resolved && !remoteState.envelope) return null;
     if (!remoteState.resolved) return localEnvelope;
     return envelopeTimestamp(remoteState.envelope) >
         envelopeTimestamp(localEnvelope)
@@ -680,17 +680,6 @@ async function requestKeyringSetup(accountPassword) {
             import("/static/reuse/form-builder.js"),
         ]);
     const i18n = await loadKeyringI18n();
-    const timeoutOptions = [
-        [0, "gateway.auth.keyring.logout"],
-        [5, "gateway.auth.keyring.timeout_5_minutes"],
-        [15, "gateway.auth.keyring.timeout_15_minutes"],
-        [30, "gateway.auth.keyring.timeout_30_minutes"],
-        [60, "gateway.auth.keyring.timeout_1_hour"],
-        [360, "gateway.auth.keyring.timeout_6_hours"],
-        [720, "gateway.auth.keyring.timeout_12_hours"],
-        [1440, "gateway.auth.keyring.timeout_1_day"],
-        [10080, "gateway.auth.keyring.timeout_1_week"],
-    ];
     const formBuilder = createFormBuilder(
         { i18n, escapeHtml },
         {
@@ -727,10 +716,12 @@ async function requestKeyringSetup(accountPassword) {
                     labelKey: "gateway.auth.keyring.relock",
                     type: "select",
                     value: String(getKeyringRelockMinutes()),
-                    options: timeoutOptions.map(([minutes, labelKey]) => ({
-                        value: String(minutes),
-                        label: i18n.t(labelKey),
-                    })),
+                    options: KEYRING_RELOCK_OPTIONS.map(
+                        ([minutes, labelKey]) => ({
+                            value: String(minutes),
+                            label: i18n.t(labelKey),
+                        }),
+                    ),
                 },
             ],
         },
@@ -752,7 +743,7 @@ async function requestKeyringSetup(accountPassword) {
                           label: i18n.t(
                               "adapter.auth.keyring.setup_use_account_password",
                           ),
-                          variant: "neutral",
+                          variant: "confirm",
                       },
                   ]
                 : []),

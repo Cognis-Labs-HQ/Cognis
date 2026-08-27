@@ -10,4 +10,8 @@ Every keyring password popup now uses the shared form composer, clearly marks re
 
 ## Reset deleted users' keyrings
 
-Deleting a user now makes the server's empty keyring state authoritative, so reusing the username starts with the first-time keyring setup instead of a browser's old encrypted copy. Browser keyring state is now erased when account deletion invalidates the active session. Access-denied handling returns through the server session resolver so deleted users see “Account Deleted” instead of the generic session-expired notice.
+Account-instance identities distinguish deleted and recreated users from vaults that have not synchronized yet. Reusing a username starts with first-time keyring setup, while a temporary failed upload cannot erase the only encrypted local copy. Browser keyring state is erased when account deletion invalidates the active session. Access-denied handling returns through the server session resolver so deleted users see “Account Deleted” instead of the generic session-expired notice.
+
+## Reliable setup actions
+
+Cancelling keyring creation no longer leaves its Settings action unresponsive. Automatic-lock choices now share one definition across setup and Settings, and account-password creation uses the visual treatment for a creative action.

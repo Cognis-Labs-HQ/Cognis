@@ -10,4 +10,8 @@ Alle Schlüsselbund-Passwortdialoge verwenden jetzt den gemeinsamen Formularkomp
 
 ## Schlüsselbunde gelöschter Benutzer zurücksetzen
 
-Nach dem Löschen eines Benutzers ist der leere Schlüsselbundzustand des Servers maßgeblich. Wird der Benutzername erneut verwendet, erscheint die Ersteinrichtung statt einer alten verschlüsselten Browserkopie. Der Schlüsselbundzustand im Browser wird jetzt gelöscht, wenn die Kontolöschung die aktive Sitzung ungültig macht. Die Behandlung verweigerten Zugriffs nutzt erneut die serverseitige Sitzungsauflösung, damit gelöschte Benutzer „Konto gelöscht“ statt des allgemeinen Hinweises zum Sitzungsablauf sehen.
+Kontoinstanz-Identitäten unterscheiden gelöschte und neu erstellte Benutzer von noch nicht synchronisierten Schlüsselbunden. Bei Wiederverwendung eines Benutzernamens erscheint die Ersteinrichtung, während ein vorübergehend fehlgeschlagener Upload nicht die einzige verschlüsselte lokale Kopie löschen kann. Der Schlüsselbundzustand im Browser wird gelöscht, wenn die Kontolöschung die aktive Sitzung ungültig macht. Die Behandlung verweigerten Zugriffs nutzt erneut die serverseitige Sitzungsauflösung, damit gelöschte Benutzer „Konto gelöscht“ statt des allgemeinen Hinweises zum Sitzungsablauf sehen.
+
+## Zuverlässige Einrichtungsaktionen
+
+Nach einem Abbruch bleibt die Schlüsselbunderstellung in den Einstellungen bedienbar. Die Auswahlwerte für die automatische Sperre stammen bei Einrichtung und Einstellungen aus derselben Definition, und die Erstellung mit dem Benutzerpasswort verwendet die Darstellung für eine erstellende Aktion.

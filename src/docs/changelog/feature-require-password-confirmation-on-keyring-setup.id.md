@@ -10,4 +10,8 @@ Semua popup kata sandi keyring kini menggunakan penyusun formulir bersama, menan
 
 ## Atur ulang keyring pengguna yang dihapus
 
-Setelah pengguna dihapus, keadaan keyring kosong dari server menjadi acuan. Jika nama pengguna dipakai kembali, penyiapan pertama akan muncul alih-alih salinan terenkripsi lama dari browser. Keadaan keyring di browser kini dihapus ketika penghapusan akun membatalkan sesi aktif. Penanganan akses ditolak kembali melalui pemecah sesi server agar pengguna yang dihapus melihat “Akun Dihapus”, bukan pemberitahuan sesi berakhir yang umum.
+Identitas instans akun membedakan pengguna yang dihapus dan dibuat ulang dari keyring yang belum tersinkronisasi. Penggunaan ulang nama pengguna memulai penyiapan pertama, sedangkan kegagalan unggah sementara tidak dapat menghapus satu-satunya salinan lokal terenkripsi. Keadaan keyring di browser dihapus ketika penghapusan akun membatalkan sesi aktif. Penanganan akses ditolak kembali melalui pemecah sesi server agar pengguna yang dihapus melihat “Akun Dihapus”, bukan pemberitahuan sesi berakhir yang umum.
+
+## Tindakan penyiapan yang andal
+
+Membatalkan pembuatan keyring tidak lagi membuat tindakan di Pengaturan berhenti merespons. Pilihan waktu penguncian otomatis menggunakan satu definisi yang sama pada penyiapan dan Pengaturan, sedangkan pembuatan dengan kata sandi pengguna memakai tampilan untuk tindakan kreatif.
