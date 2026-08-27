@@ -67,7 +67,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Authentication (auth) | `src/gateways/auth/`          | `1.9.17`   |
 | Share                 | `src/gateways/share/`         | `1.7.34`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.18`   |
-| Notification (notify) | `src/gateways/notify/`        | `1.5.5`    |
+| Notification (notify) | `src/gateways/notify/`        | `1.5.6`    |
 | Social                | `src/gateways/social/`        | `1.2.15`   |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.9`    |
 | Registration          | `src/gateways/registration/`  | `1.1.14`   |
