@@ -294,6 +294,32 @@ export async function openAdapterConfig({
         return true;
     }
 
+    async function verifyUserAuthentication(values) {
+        const testResponse = await apiFetch(
+            configUrl.replace(/\/config$/, "/test"),
+            {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    ...connectionValues,
+                    ...values,
+                }),
+            },
+        );
+        const testPayload = await testResponse.json().catch(() => ({}));
+        if (!testResponse.ok || !testPayload.data?.credentialTest) {
+            credentialTestResult = null;
+            showToast(
+                testPayload?.error?.message ??
+                    "LDAP user credential test failed",
+                { variant: "error" },
+            );
+            return false;
+        }
+        credentialTestResult = testPayload.data.credentialTest;
+        return true;
+    }
+
     await openPopup({
         title: "LDAP setup",
         maxWidth: "760px",
@@ -587,36 +613,23 @@ export async function openAdapterConfig({
             const form = overlay.querySelector(".provider-popup-form");
             if (!(form instanceof HTMLElement)) return false;
             const values = buildConfigPayload(form);
-            if (action === "verify-user") {
+            const requiresUserAuthentication =
+                action === "verify-user" ||
+                (action === "complete" && !credentialTestResult);
+            if (requiresUserAuthentication) {
                 if (!credentialFormController?.validateAll(true)) {
                     form.querySelector(".form-builder-input--invalid")?.focus();
                     return false;
                 }
-                const testResponse = await apiFetch(
-                    configUrl.replace(/\/config$/, "/test"),
-                    {
-                        method: "POST",
-                        headers: { "content-type": "application/json" },
-                        body: JSON.stringify({
-                            ...connectionValues,
-                            ...values,
-                        }),
-                    },
-                );
-                const testPayload = await testResponse.json().catch(() => ({}));
-                if (!testResponse.ok || !testPayload.data?.credentialTest) {
-                    credentialTestResult = null;
-                    showToast(
-                        testPayload?.error?.message ??
-                            "LDAP user credential test failed",
-                        { variant: "error" },
-                    );
+                if (!(await verifyUserAuthentication(values))) {
+                    api.setPage("connect");
                     return false;
                 }
-                credentialTestResult = testPayload.data.credentialTest;
                 api.markDirty();
-                api.setPage("credentials");
-                return false;
+                if (action === "verify-user") {
+                    api.setPage("credentials");
+                    return false;
+                }
             }
             if (action === "test") {
                 if (!connectionFormController?.validateAll(true)) {
@@ -660,12 +673,6 @@ export async function openAdapterConfig({
                 return false;
             }
             if (action !== "complete") return true;
-            if (!credentialTestResult) {
-                showToast("Test LDAP user credentials before saving.", {
-                    variant: "error",
-                });
-                return false;
-            }
             const duplicateIdentifier = servers.some(
                 (server, index) =>
                     index !== selectedServerIndex &&

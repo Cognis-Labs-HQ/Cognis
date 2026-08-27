@@ -113,6 +113,14 @@ test("LDAP setup requires a successful user bind before completion", () => {
     assert.match(ldapPopupSource, /testPassword/);
     assert.match(ldapPopupSource, /credentialTestResult/);
     assert.match(ldapPopupSource, /action !== "complete"/);
+    assert.match(
+        ldapPopupSource,
+        /action === "complete" && !credentialTestResult/,
+    );
+    assert.match(
+        ldapPopupSource,
+        /if \(!\(await verifyUserAuthentication\(values\)\)\) \{\s*api\.setPage\("connect"\)/,
+    );
 });
 
 test("adapter setup checks honor adapter-reported configuration state", () => {

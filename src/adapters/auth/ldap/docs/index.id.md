@@ -42,3 +42,5 @@ Adapter LDAP tersimpan siap diaktifkan jika setiap server bernama memiliki URL s
 Penggeser aktivasi di Administrasi tetap dinonaktifkan hingga setidaknya satu server LDAP dikonfigurasi.
 
 Setelah verifikasi pengguna selesai, server ditambahkan ke konfigurasi tertunda dan aktivasi langsung tersedia. Aktivasi pada tahap tersebut menyimpan daftar server tertunda sebelum mengaktifkan adaptor. Menekan Enter pada formulir verifikasi pengguna menjalankan uji autentikasi. Menutup penyiapan setelah memulai server yang belum disimpan memerlukan konfirmasi pembuangan perubahan.
+
+Memilih Simpan Pengaturan sebelum menguji autentikasi pengguna secara manual akan menjalankan uji autentikasi yang sama secara otomatis. Jika autentikasi gagal, penyiapan kembali ke tahap koneksi agar kolom bind dapat diperbaiki.

@@ -62,3 +62,5 @@ A saved LDAP adapter is ready to enable when every named server has a server URL
 The Administration activation slider remains disabled until at least one LDAP server has been configured.
 
 Completing user verification adds the server to the pending configuration and immediately unlocks activation. Activating at that point saves the pending server list before enabling the adapter. Pressing Enter in the user verification form runs the authentication test. Closing setup after starting an unsaved server requires discard confirmation.
+
+Selecting Save Settings before manually testing user authentication runs the same authentication test automatically. If authentication fails, setup returns to the connection step so the bind fields can be corrected.
