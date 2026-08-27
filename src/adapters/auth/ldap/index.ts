@@ -210,7 +210,8 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     readonly name = "LDAP";
     readonly configPopupScriptUrl =
         "/static/adapters/auth/ldap/config-popup.js";
-    readonly version = "0.5.23";
+    readonly stringsBaseUrl = "/static/adapters/auth/ldap/languages";
+    readonly version = "0.5.24";
 
     private client: LdapClient = new StandardLdapClient();
     private adminGroups = new Set(["cognis-admins"]);

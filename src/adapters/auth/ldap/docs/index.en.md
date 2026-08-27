@@ -68,3 +68,5 @@ Selecting Save Settings, including by pressing Enter, before manually testing us
 Deleting the final configured server opens a confirmation warning and disables the LDAP adapter when confirmed. Connection tests return field-specific diagnostics for every plausible cause identified from the LDAP response. The setup form highlights all reported fields rather than reducing a multi-field failure, such as rejected bind credentials, to one input.
 
 The setup extension sources its user-facing copy from the adapter language resources. Successful user authentication and server creation or update actions display success toasts.
+
+The adapter declares `/static/adapters/auth/ldap/languages` as its language-resource base. Administration receives that URL in adapter metadata and extends its i18n instance before importing the setup popup.

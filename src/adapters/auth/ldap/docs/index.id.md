@@ -48,3 +48,5 @@ Memilih Simpan Pengaturan, termasuk dengan menekan Enter, sebelum menguji autent
 Menghapus server terakhir yang dikonfigurasi akan membuka peringatan konfirmasi dan menonaktifkan adaptor LDAP setelah dikonfirmasi. Uji koneksi mengembalikan diagnosis khusus kolom untuk setiap kemungkinan penyebab yang dikenali dari respons LDAP. Formulir penyiapan menyoroti semua kolom yang dilaporkan alih-alih mengurangi kegagalan multikolom, seperti kredensial bind yang ditolak, menjadi satu masukan.
 
 Ekstensi penyiapan mengambil semua teks yang terlihat oleh pengguna dari sumber daya bahasa adaptor. Autentikasi pengguna serta pembuatan atau pembaruan server yang berhasil dikonfirmasi melalui toast keberhasilan.
+
+Adaptor mendeklarasikan `/static/adapters/auth/ldap/languages` sebagai basis sumber daya bahasanya. Administrasi menerima URL tersebut dalam metadata adaptor dan memperluas instans i18n sebelum mengimpor popup penyiapan.

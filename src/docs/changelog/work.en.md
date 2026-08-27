@@ -11,3 +11,5 @@ Saving from the user verification step, including by pressing Enter, now runs th
 Deleting the final LDAP server now requires confirmation and disables the adapter. LDAP test failures can highlight every configuration field that may have caused the failure, including server URLs, directory DNs, bind credentials, and search filters.
 
 All LDAP setup copy is now supplied by the adapter's localized language resources. Success toasts confirm user authentication and LDAP server creation or updates.
+
+The Authentication gateway now advertises each adapter's language-resource URL, and the LDAP language packs are served from its registered static UI directory so Administration loads them before opening setup.

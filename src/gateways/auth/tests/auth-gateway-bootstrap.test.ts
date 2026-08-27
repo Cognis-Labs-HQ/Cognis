@@ -395,6 +395,9 @@ test("auth gateway registers adapter-owned UI directories", async () => {
     const ldapUiDirectory = uiRegistry.getAdapterStaticDir("auth", "ldap");
     assert.ok(ldapUiDirectory);
     await assert.doesNotReject(access(`${ldapUiDirectory}/config-popup.js`));
+    await assert.doesNotReject(
+        access(`${ldapUiDirectory}/languages/en/strings.xml`),
+    );
 
     const keyringUiDirectory = uiRegistry.getAdapterStaticDir(
         "auth",
@@ -510,12 +513,17 @@ test("CoreAuthGateway lists adapter publisher metadata", async () => {
         id: "oidc",
         name: "OIDC",
         publisher: "Cognis Labs HQ",
+        stringsBaseUrl: "/static/adapters/auth/oidc/languages",
         authenticate: async () => null,
         getConfigSchema: () => [],
         configure: () => undefined,
     });
 
     assert.equal(gateway.listAdapters()[0]?.publisher, "Cognis Labs HQ");
+    assert.equal(
+        gateway.listAdapters()[0]?.stringsBaseUrl,
+        "/static/adapters/auth/oidc/languages",
+    );
 });
 
 test("CoreAuthGateway lists a locked keyring without treating it as a login provider", async () => {

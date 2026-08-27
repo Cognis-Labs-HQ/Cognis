@@ -11,3 +11,5 @@ Beim Speichern im Schritt zur Benutzerverifizierung, auch mit der Eingabetaste, 
 Das Löschen des letzten LDAP-Servers muss nun bestätigt werden und deaktiviert den Adapter. LDAP-Testfehler können alle Konfigurationsfelder hervorheben, die den Fehler verursacht haben könnten, einschließlich Server-URLs, Verzeichnis-DNs, Bindungszugangsdaten und Suchfiltern.
 
 Alle Texte der LDAP-Einrichtung stammen nun aus den lokalisierten Sprachressourcen des Adapters. Erfolgsmeldungen bestätigen die Benutzerauthentifizierung sowie das Erstellen oder Aktualisieren eines LDAP-Servers.
+
+Das Authentifizierungs-Gateway veröffentlicht nun die URL der Sprachressourcen jedes Adapters. Die LDAP-Sprachpakete werden aus dem registrierten statischen UI-Verzeichnis bereitgestellt, damit die Administration sie vor dem Öffnen der Einrichtung lädt.

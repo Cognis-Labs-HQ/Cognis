@@ -105,6 +105,7 @@ export function createAdapterAdminRoutes(
                         configured: authGateway.isAdapterConfigured(adapterId),
                         configPopupScriptUrl:
                             configContract.configPopupScriptUrl,
+                        stringsBaseUrl: configContract.stringsBaseUrl,
                     }),
                 );
                 return true;

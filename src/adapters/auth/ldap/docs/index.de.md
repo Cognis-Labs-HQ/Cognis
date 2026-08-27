@@ -55,3 +55,5 @@ Wird vor dem manuellen Test der Benutzerauthentifizierung „Einstellungen speic
 Beim Löschen des letzten konfigurierten Servers wird eine Warnung zur Bestätigung angezeigt und der LDAP-Adapter nach der Bestätigung deaktiviert. Verbindungstests liefern feldbezogene Diagnosen für jede anhand der LDAP-Antwort erkannte mögliche Ursache. Das Einrichtungsformular hebt alle gemeldeten Felder hervor, statt einen Fehler mit mehreren Feldern, wie abgelehnte Bindungszugangsdaten, auf eine Eingabe zu reduzieren.
 
 Die Einrichtungserweiterung bezieht ihre sichtbaren Texte aus den Sprachressourcen des Adapters. Eine erfolgreiche Benutzerauthentifizierung sowie das Erstellen oder Aktualisieren eines Servers werden mit Erfolgsmeldungen bestätigt.
+
+Der Adapter deklariert `/static/adapters/auth/ldap/languages` als Basis seiner Sprachressourcen. Die Administration erhält diese URL in den Adaptermetadaten und erweitert ihre i18n-Instanz vor dem Import des Einrichtungsdialogs.

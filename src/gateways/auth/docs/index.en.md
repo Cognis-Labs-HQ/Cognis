@@ -76,6 +76,8 @@ Capabilities contributed:
 
 Adapter test failures may include an `error.fieldErrors` object mapping any number of configuration field IDs to safe diagnostic messages.
 
+Adapter listings and configuration contracts include `stringsBaseUrl` when an adapter owns localized Administration resources.
+
 ## Browser keyring bootstrap
 
 The Authentication gateway loads its required keyring adapter before registering browser session-flow hooks. Every direct page load and refresh can therefore restore the current tab's non-extractable session key automatically; when restoration is unavailable, the first protected-content resolver opens the contextual keyring unlock prompt.

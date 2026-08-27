@@ -314,6 +314,10 @@ test("ldap adapter config schema has required fields", () => {
         adapter.configPopupScriptUrl,
         "/static/adapters/auth/ldap/config-popup.js",
     );
+    assert.equal(
+        adapter.stringsBaseUrl,
+        "/static/adapters/auth/ldap/languages",
+    );
     const schema = adapter.getConfigSchema();
     const keys = schema.map((f) => f.key);
     assert.ok(keys.includes("host"));

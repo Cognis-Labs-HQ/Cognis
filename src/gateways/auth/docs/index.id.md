@@ -76,6 +76,8 @@ Capability yang disediakan:
 
 Kegagalan uji adapter dapat menyertakan objek `error.fieldErrors` yang memetakan sejumlah ID kolom konfigurasi ke pesan diagnosis yang aman.
 
+Daftar adaptor dan kontrak konfigurasi menyertakan `stringsBaseUrl` ketika adaptor memiliki sumber daya Administrasi yang dilokalkan.
+
 ## Bootstrap keyring peramban
 
 Gateway Autentikasi memuat adapter keyring wajib sebelum mendaftarkan hook alur sesi peramban. Karena itu, setiap pemuatan halaman langsung dan penyegaran dapat memulihkan kunci sesi tab saat ini yang tidak dapat diekstrak secara otomatis. Jika pemulihan tidak tersedia, penyelesai konten terlindungi pertama membuka dialog buka kunci keyring kontekstual.
