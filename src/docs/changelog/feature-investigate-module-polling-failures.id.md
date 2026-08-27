@@ -6,6 +6,10 @@ Katalog modul kini hanya mengumumkan sumber daya pelokalan setelah memastikan as
 
 Antarmuka lokapasar kini juga mempertahankan pencegahan tersebut, alih-alih membentuk ulang alamat statis konvensional untuk entri katalog yang aset pelokalannya tidak tersedia.
 
+## Segarkan sumber modul saat mulai
+
+Cognis kini melakukan satu pemindaian paksa terhadap sumber modul saat API dimulai. Langkah ini menyegarkan aset pelokalan yang tersimpan di cache sebelum polling lokapasar dimulai, sehingga modul dengan berkas teks yang valid dapat menampilkan nama dan ringkasan terjemahan setelah dimulai ulang.
+
 ## Diagnosis cache modul tidak lengkap
 
 API mencatat peringatan terstruktur beserta modul, bahasa, dan pengenal aset ketika modul mendeklarasikan pelokalan tetapi sumber daya bahasa Inggris tidak tersedia di cache. Pemindaian ulang sumber dapat mengisi kembali cache, sedangkan pembuat modul tetap harus menyediakan `ui/languages/en/strings.xml` dan terjemahan lain yang didukung.

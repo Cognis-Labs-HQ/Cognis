@@ -105,6 +105,27 @@ export interface ApiDependencies {
         ): void;
     };
     discoverModulesOnStartup?: boolean;
+    moduleMarketplaceService?: ModuleMarketplaceService;
+}
+
+export async function discoverModuleSourcesOnStartup(
+    marketplace: Pick<ModuleMarketplaceService, "discover">,
+    log: BootstrapLog,
+): Promise<void> {
+    try {
+        const modules = await marketplace.discover({}, undefined, true);
+        log("info", "Initial module marketplace discovery completed.", {
+            component: "api-modules",
+            operation: "startup-source-discovery",
+            catalogModulesFound: modules.length,
+        });
+    } catch (error) {
+        log("warn", "Initial module marketplace discovery failed.", {
+            component: "api-modules",
+            operation: "startup-source-discovery",
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
 }
 
 export interface CoreComponentDependency {
@@ -286,19 +307,16 @@ export function buildServer(deps: ApiDependencies) {
             process.env.COGNIS_ENABLED_MODULES_ROOT ??
             path.resolve(process.cwd(), "config", "enabled-modules"),
     });
-    const moduleMarketplaceService = new ModuleMarketplaceService(
-        process.env.COGNIS_MODULE_SOURCES_PATH ??
-            path.resolve(process.cwd(), "config", "module-sources.json"),
-        externalModulesRoot,
-        (level, message, meta) => log(level, message, meta),
-    );
+    const moduleMarketplaceService =
+        deps.moduleMarketplaceService ??
+        new ModuleMarketplaceService(
+            process.env.COGNIS_MODULE_SOURCES_PATH ??
+                path.resolve(process.cwd(), "config", "module-sources.json"),
+            externalModulesRoot,
+            (level, message, meta) => log(level, message, meta),
+        );
     if (deps.discoverModulesOnStartup) {
-        void moduleMarketplaceService.discover().catch((error) => {
-            log("warn", "Initial module marketplace discovery failed.", {
-                component: "api-modules",
-                error: error instanceof Error ? error.message : String(error),
-            });
-        });
+        void discoverModuleSourcesOnStartup(moduleMarketplaceService, log);
     }
     const moduleTestService = new ModuleTestService([externalModulesRoot]);
     const healthService = deps.healthService ?? new HealthService();

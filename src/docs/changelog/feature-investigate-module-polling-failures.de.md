@@ -6,6 +6,10 @@ Der Modulkatalog gibt Lokalisierungsressourcen nur noch bekannt, nachdem die erf
 
 Die Marktplatzoberfläche behält diese Unterdrückung nun ebenfalls bei, statt für Katalogeinträge mit fehlender Lokalisierungsressource eine konventionelle statische Adresse zu rekonstruieren.
 
+## Modulquellen beim Start aktualisieren
+
+Cognis führt nun beim Start der API einmalig eine erzwungene Suche der Modulquellen durch. Dadurch werden zwischengespeicherte Lokalisierungsressourcen vor Beginn der Marktplatzabfragen aktualisiert, sodass Module mit gültigen Textdateien nach einem Neustart ihre übersetzten Namen und Zusammenfassungen auflösen.
+
 ## Unvollständige Modulcaches erkennen
 
 Die API protokolliert eine strukturierte Warnung mit Modul, Sprache und Ressourcenkennung, wenn ein Modul Lokalisierung deklariert, aber die englische Ressource im Cache fehlt. Eine erneute Quellensuche kann den Cache auffüllen; Modulautoren müssen weiterhin `ui/languages/en/strings.xml` und die übrigen unterstützten Übersetzungen bereitstellen.

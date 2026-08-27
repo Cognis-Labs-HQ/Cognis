@@ -1,4 +1,4 @@
-import { buildServer } from "./server.js";
+import { buildServer, discoverModuleSourcesOnStartup } from "./server.js";
 import type {
     ModuleManifest,
     ModuleRuntimeGateway,
@@ -11,6 +11,7 @@ import {
     GatewayRegistry,
     CapabilityStore,
     HealthService,
+    ModuleMarketplaceService,
     type BootstrapLog,
 } from "@cognis/core";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
@@ -481,8 +482,17 @@ const profileLifecycle = capabilities.get<{
     ) => Promise<void>;
 }>("social:profileLifecycle");
 
+const moduleMarketplaceService = new ModuleMarketplaceService(
+    process.env.COGNIS_MODULE_SOURCES_PATH ??
+        path.resolve(process.cwd(), "config", "module-sources.json"),
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
+        path.resolve(process.cwd(), "external-modules"),
+    (level, message, meta) => log(level, message, meta),
+);
+await discoverModuleSourcesOnStartup(moduleMarketplaceService, log);
+
 const server = buildServer({
-    discoverModulesOnStartup: false,
+    moduleMarketplaceService,
     moduleRuntimeGateway: runtime,
     accountStore,
     preferenceStore,
