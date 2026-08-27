@@ -11,9 +11,7 @@
   <string name="adapter.auth.keyring.setup_password">Schlüsselbundpasswort</string>
   <string name="adapter.auth.keyring.setup_confirm_password">Schlüsselbundpasswort bestätigen</string>
   <string name="adapter.auth.keyring.setup_password_mismatch">Die Schlüsselbundpasswörter stimmen nicht überein.</string>
-  <string name="adapter.auth.keyring.setup_account_password_message">Geben Sie Ihr Kontopasswort ein, um es zum Schutz des Schlüsselbunds zu verwenden.</string>
-  <string name="adapter.auth.keyring.setup_placeholder">Schlüsselbundpasswort (optional)</string>
-  <string name="adapter.auth.keyring.setup_hint">Leer lassen, um dein Kontopasswort zu verwenden.</string>
+  <string name="adapter.auth.keyring.setup_use_account_password">Kontopasswort verwenden</string>
   <string name="adapter.auth.keyring.setup_action">Schlüsselbund einrichten</string>
   <string name="adapter.auth.keyring.created">Schlüsselbund erstellt.</string>
   <string name="adapter.auth.keyring.destroyed">Schlüsselbund zerstört. Seine Geheimnisse können nicht mehr automatisch wiederhergestellt werden.</string>

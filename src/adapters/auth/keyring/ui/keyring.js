@@ -629,58 +629,81 @@ async function requestKeyringPassword({ i18n, message, prompt = "" }) {
 }
 
 async function requestKeyringSetup(accountPassword) {
-    const [{ openPopup }, { escapeHtml }] = await Promise.all([
-        import("/static/reuse/popup.js"),
-        import("/static/reuse/escape-html.js"),
-    ]);
+    const [{ openPopup }, { escapeHtml }, { createFormBuilder }] =
+        await Promise.all([
+            import("/static/reuse/popup.js"),
+            import("/static/reuse/escape-html.js"),
+            import("/static/reuse/form-builder.js"),
+        ]);
     const i18n = await loadKeyringI18n();
-    let passwordInput = null;
-    let confirmationInput = null;
+    const formBuilder = createFormBuilder(
+        { i18n, escapeHtml },
+        {
+            formId: "keyring-setup-form",
+            includeSubmitButton: false,
+            fields: [
+                {
+                    name: "password",
+                    labelKey: "adapter.auth.keyring.setup_password",
+                    type: "password",
+                    required: true,
+                    attributes: { autocomplete: "new-password" },
+                },
+                {
+                    name: "confirmation",
+                    labelKey: "adapter.auth.keyring.setup_confirm_password",
+                    type: "password",
+                    required: true,
+                    attributes: { autocomplete: "new-password" },
+                    criteria: [
+                        {
+                            id: "keyring-password-match",
+                            type: "custom",
+                            test: (value, values) => value === values.password,
+                            messageKey:
+                                "adapter.auth.keyring.setup_password_mismatch",
+                            mode: "submit",
+                        },
+                    ],
+                },
+            ],
+        },
+    );
+    let formController = null;
     const result = await openPopup({
         title: i18n.t("adapter.auth.keyring.setup_title"),
-        body: `<div class="stack"><p>${escapeHtml(i18n.t("adapter.auth.keyring.setup_message"))}</p><label><span>${escapeHtml(i18n.t("adapter.auth.keyring.setup_password"))}</span><input id="keyring-setup-password" type="password" autocomplete="new-password" placeholder="${escapeHtml(i18n.t("adapter.auth.keyring.setup_placeholder"))}" /></label><label><span>${escapeHtml(i18n.t("adapter.auth.keyring.setup_confirm_password"))}</span><input id="keyring-setup-confirm-password" type="password" autocomplete="new-password" /></label><p class="muted">${escapeHtml(i18n.t("adapter.auth.keyring.setup_hint"))}</p></div>`,
+        body: `<div class="stack"><p>${escapeHtml(i18n.t("adapter.auth.keyring.setup_message"))}</p>${formBuilder.render()}</div>`,
         actions: [
             {
                 id: "setup",
                 label: i18n.t("adapter.auth.keyring.setup_action"),
                 variant: "confirm",
             },
+            ...(accountPassword
+                ? [
+                      {
+                          id: "use-account-password",
+                          label: i18n.t(
+                              "adapter.auth.keyring.setup_use_account_password",
+                          ),
+                          variant: "neutral",
+                      },
+                  ]
+                : []),
         ],
         onOpen(overlay) {
-            passwordInput = overlay.querySelector("#keyring-setup-password");
-            confirmationInput = overlay.querySelector(
-                "#keyring-setup-confirm-password",
-            );
-            const clearConfirmationError = () =>
-                confirmationInput?.setCustomValidity("");
-            passwordInput?.addEventListener("input", clearConfirmationError);
-            confirmationInput?.addEventListener(
-                "input",
-                clearConfirmationError,
-            );
-            passwordInput?.focus();
+            const formElement = overlay.querySelector("#keyring-setup-form");
+            if (formElement instanceof HTMLFormElement) {
+                formController = formBuilder.attach(formElement);
+                formElement.elements.namedItem("password")?.focus();
+            }
         },
-        onAction: () => {
-            const matches = passwordInput?.value === confirmationInput?.value;
-            confirmationInput?.setCustomValidity(
-                matches
-                    ? ""
-                    : i18n.t("adapter.auth.keyring.setup_password_mismatch"),
-            );
-            if (!matches) confirmationInput?.reportValidity();
-            return matches;
-        },
+        onAction: (actionId) =>
+            actionId !== "setup" || Boolean(formController?.validateAll(true)),
     });
-    if (result !== "setup") return "";
-    const selectedPassword = resolveKeyringSetupPassword(
-        passwordInput?.value,
-        accountPassword,
-    );
-    if (selectedPassword) return selectedPassword;
-    return requestKeyringPassword({
-        i18n,
-        message: i18n.t("adapter.auth.keyring.setup_account_password_message"),
-    });
+    if (result === "use-account-password") return accountPassword;
+    if (result !== "setup" || !formController) return "";
+    return String(formController.getValues().password ?? "");
 }
 
 export function resolveKeyringSetupPassword(enteredPassword, accountPassword) {

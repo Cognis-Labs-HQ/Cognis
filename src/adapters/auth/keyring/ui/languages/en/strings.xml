@@ -11,9 +11,7 @@
   <string name="adapter.auth.keyring.setup_password">Keyring password</string>
   <string name="adapter.auth.keyring.setup_confirm_password">Confirm keyring password</string>
   <string name="adapter.auth.keyring.setup_password_mismatch">Keyring passwords do not match.</string>
-  <string name="adapter.auth.keyring.setup_account_password_message">Enter your account password to use it for keyring protection.</string>
-  <string name="adapter.auth.keyring.setup_placeholder">Keyring password (optional)</string>
-  <string name="adapter.auth.keyring.setup_hint">Leave this empty to use your account password.</string>
+  <string name="adapter.auth.keyring.setup_use_account_password">Use account password</string>
   <string name="adapter.auth.keyring.setup_action">Set up keyring</string>
   <string name="adapter.auth.keyring.created">Keyring created.</string>
   <string name="adapter.auth.keyring.destroyed">Keyring destroyed. Its secrets can no longer be recovered automatically.</string>

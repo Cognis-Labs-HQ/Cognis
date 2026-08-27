@@ -539,13 +539,20 @@ test("first login sets up a new keyring with the selected encryption password", 
     localStorage.removeItem("cognis_account");
 });
 
-test("first login and recreation require keyring password confirmation", () => {
-    assert.match(keyringSource, /keyring-setup-confirm-password/);
+test("first login and recreation use the form composer for setup", () => {
+    assert.match(keyringSource, /createFormBuilder/);
+    assert.match(keyringSource, /name: "password"[\s\S]*required: true/);
+    assert.match(keyringSource, /name: "confirmation"[\s\S]*required: true/);
+    assert.match(keyringSource, /setup_password_mismatch/);
+});
+
+test("account password setup reuses the authenticated credential", () => {
+    assert.match(keyringSource, /id: "use-account-password"/);
     assert.match(
         keyringSource,
-        /passwordInput\?\.value === confirmationInput\?\.value/,
+        /result === "use-account-password"\) return accountPassword/,
     );
-    assert.match(keyringSource, /setup_password_mismatch/);
+    assert.doesNotMatch(keyringSource, /setup_account_password_message/);
 });
 
 test("login silently leaves the keyring locked when its password differs", async () => {

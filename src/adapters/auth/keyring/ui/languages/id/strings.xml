@@ -11,9 +11,7 @@
   <string name="adapter.auth.keyring.setup_password">Kata sandi keyring</string>
   <string name="adapter.auth.keyring.setup_confirm_password">Konfirmasi kata sandi keyring</string>
   <string name="adapter.auth.keyring.setup_password_mismatch">Kata sandi keyring tidak cocok.</string>
-  <string name="adapter.auth.keyring.setup_account_password_message">Masukkan kata sandi akun untuk menggunakannya sebagai perlindungan keyring.</string>
-  <string name="adapter.auth.keyring.setup_placeholder">Kata sandi keyring (opsional)</string>
-  <string name="adapter.auth.keyring.setup_hint">Biarkan kosong untuk menggunakan kata sandi akun Anda.</string>
+  <string name="adapter.auth.keyring.setup_use_account_password">Gunakan kata sandi akun</string>
   <string name="adapter.auth.keyring.setup_action">Siapkan keyring</string>
   <string name="adapter.auth.keyring.created">Keyring dibuat.</string>
   <string name="adapter.auth.keyring.destroyed">Keyring dihancurkan. Rahasianya tidak dapat lagi dipulihkan secara otomatis.</string>
