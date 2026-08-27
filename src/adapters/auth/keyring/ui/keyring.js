@@ -37,6 +37,7 @@ let unlockRequestPromise = null;
 let keyringAccessSuppressed = false;
 let keyringI18nPromise = null;
 let persistenceQueue = Promise.resolve();
+let keyringStateVersion = 0;
 const pendingValues = new Map();
 
 function loadKeyringI18n() {
@@ -263,7 +264,8 @@ async function syncEnvelope(envelope) {
     }
 }
 
-async function persistVaultSnapshot() {
+async function persistVaultSnapshot(expectedStateVersion) {
+    if (expectedStateVersion !== keyringStateVersion) return;
     if (!vaultKey || !vaultData || !vaultSalt)
         throw new Error("keyring_locked");
     const initializationVector = crypto.getRandomValues(new Uint8Array(12));
@@ -281,13 +283,17 @@ async function persistVaultSnapshot() {
         cipher: encodeBytes(new Uint8Array(cipher)),
         updatedAt: new Date().toISOString(),
     };
+    if (expectedStateVersion !== keyringStateVersion) return;
     keyringStorage().setItem(keyringStorageKey(), JSON.stringify(envelope));
     lastVaultEnvelope = envelope;
     await syncEnvelope(envelope);
 }
 
 function persistVault() {
-    const persistence = persistenceQueue.then(() => persistVaultSnapshot());
+    const expectedStateVersion = keyringStateVersion;
+    const persistence = persistenceQueue.then(() =>
+        persistVaultSnapshot(expectedStateVersion),
+    );
     persistenceQueue = persistence.catch(() => undefined);
     return persistence;
 }
@@ -904,6 +910,15 @@ export async function destroyKeyring({
     return recreated;
 }
 
+export async function clearKeyringAccountState() {
+    keyringStateVersion += 1;
+    clearVault(true);
+    removeLocalEnvelope();
+    localStorage.removeItem(relockStorageKey());
+    sessionStorage.removeItem(DEFERRED_SETUP_KEY);
+    await clearSessionUnlockKey();
+}
+
 export async function changeKeyringPassword(password) {
     const normalizedPassword = String(password ?? "");
     if (!vaultData || !normalizedPassword) return false;
@@ -977,6 +992,10 @@ uiCtx.capabilities.contribute("keyring:list", listKeyringEntries);
 uiCtx.capabilities.contribute("keyring:listEvents", listKeyringEvents);
 uiCtx.capabilities.contribute("keyring:clear", clearKeyringValues);
 uiCtx.capabilities.contribute("keyring:destroy", destroyKeyring);
+uiCtx.capabilities.contribute(
+    "keyring:clearAccountState",
+    clearKeyringAccountState,
+);
 uiCtx.capabilities.contribute("keyring:changePassword", changeKeyringPassword);
 uiCtx.capabilities.contribute("keyring:resolve", resolveKeyringValue);
 uiCtx.capabilities.contribute("keyring:lock", lockKeyring);

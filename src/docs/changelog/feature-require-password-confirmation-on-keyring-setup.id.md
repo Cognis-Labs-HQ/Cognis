@@ -10,4 +10,4 @@ Semua popup kata sandi keyring kini menggunakan penyusun formulir bersama, menan
 
 ## Atur ulang keyring pengguna yang dihapus
 
-Setelah pengguna dihapus, keadaan keyring kosong dari server menjadi acuan. Jika nama pengguna dipakai kembali, penyiapan pertama akan muncul alih-alih salinan terenkripsi lama dari browser.
+Setelah pengguna dihapus, keadaan keyring kosong dari server menjadi acuan. Jika nama pengguna dipakai kembali, penyiapan pertama akan muncul alih-alih salinan terenkripsi lama dari browser. Keadaan keyring di browser kini dihapus ketika penghapusan akun membatalkan sesi aktif. Penanganan akses ditolak kembali melalui pemecah sesi server agar pengguna yang dihapus melihat “Akun Dihapus”, bukan pemberitahuan sesi berakhir yang umum.

@@ -696,6 +696,25 @@ test("server-side deletion invalidates the browser keyring copy on login", async
     }
 });
 
+test("account deletion clears the browser keyring before username reuse", async () => {
+    const keyring = await import("../ui/keyring.js");
+    values.clear();
+    sessionValues.clear();
+    localStorage.setItem("cognis_account", "deleted-browser-user");
+    assert.equal(await keyring.unlockKeyring("old-password"), true);
+    await keyring.setKeyringValue("test:deleted-browser-secret", "old-secret");
+
+    await keyring.clearKeyringAccountState();
+
+    assert.equal(keyring.isKeyringUnlocked(), false);
+    assert.equal(keyring.getKeyringValue("test:deleted-browser-secret"), null);
+    assert.equal(
+        values.has("cognis_secure_keyring:deleted-browser-user"),
+        false,
+    );
+    localStorage.removeItem("cognis_account");
+});
+
 test("empty keyring setup password falls back to the account password", async () => {
     const keyring = await import("../ui/keyring.js");
     assert.equal(

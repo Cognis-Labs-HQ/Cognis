@@ -10,4 +10,4 @@ Every keyring password popup now uses the shared form composer, clearly marks re
 
 ## Reset deleted users' keyrings
 
-Deleting a user now makes the server's empty keyring state authoritative, so reusing the username starts with the first-time keyring setup instead of a browser's old encrypted copy.
+Deleting a user now makes the server's empty keyring state authoritative, so reusing the username starts with the first-time keyring setup instead of a browser's old encrypted copy. Browser keyring state is now erased when account deletion invalidates the active session. Access-denied handling returns through the server session resolver so deleted users see “Account Deleted” instead of the generic session-expired notice.

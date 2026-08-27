@@ -37,7 +37,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.16` |
 | Dateikontingent       | `src/adapters/file/quota/`          | `1.0.14` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.16` |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.43` |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.44` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.28` |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.14` |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.14` |
@@ -51,7 +51,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.15` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.13` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.68` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.78` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.79` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10` |
@@ -64,7 +64,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                          | Version   |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.8`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.15`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.16`  |
 | Share                 | `src/gateways/share/`         | `1.7.34`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.18`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.5`   |
