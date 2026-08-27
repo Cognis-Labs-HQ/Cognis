@@ -76,6 +76,36 @@ test("LDAP setup exposes and updates the adapter power control", () => {
     assert.match(ldapPopupSource, /apiFetch\(controlUrl, \{\s*method: "POST"/);
 });
 
+test("LDAP setup disables adapter activation until a server is configured", () => {
+    assert.match(
+        ldapPopupSource,
+        /!enabled && servers\.length === 0 \? " disabled" : ""/,
+    );
+    assert.match(
+        ldapPopupSource,
+        /if \(nextEnabled && servers\.length === 0\)/,
+    );
+    assert.match(
+        ldapPopupSource,
+        /if \(nextEnabled && !\(await persistServers\(\)\)\)/,
+    );
+});
+
+test("LDAP setup directs Enter to user authentication verification", () => {
+    assert.match(ldapPopupSource, /label: "Test user authentication"/);
+    assert.match(
+        ldapPopupSource,
+        /form\.addEventListener\("keydown"[\s\S]*event\.key !== "Enter"[\s\S]*data-popup-action="verify-user"/,
+    );
+});
+
+test("starting a new LDAP server enables abandonment confirmation", () => {
+    assert.match(
+        ldapPopupSource,
+        /querySelector\("\.ldap-add-server"\)[\s\S]*api\.markDirty\(\);[\s\S]*api\.setPage\("connect"\)/,
+    );
+});
+
 test("LDAP setup requires a successful user bind before completion", () => {
     assert.match(ldapPopupSource, /id: "credentials"/);
     assert.match(ldapPopupSource, /id: "verify-user"/);

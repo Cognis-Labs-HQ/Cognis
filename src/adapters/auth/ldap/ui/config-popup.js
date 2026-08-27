@@ -132,7 +132,7 @@ export async function openAdapterConfig({
           <div class="provider-option-row">
             <span class="provider-option-label" data-adapter-state>${i18n.t(enabled ? "ui.app.admin.state.active" : "ui.app.admin.state.disabled")}</span>
             <label class="switch" title="${escapeHtml(i18n.t("ui.app.admin.toggle_adapter"))}">
-              <input name="adapterEnabled" type="checkbox"${enabled ? " checked" : ""} />
+              <input name="adapterEnabled" type="checkbox"${enabled ? " checked" : ""}${!enabled && servers.length === 0 ? " disabled" : ""} />
               <span class="slider"></span>
             </label>
           </div>
@@ -278,6 +278,22 @@ export async function openAdapterConfig({
     let sample = null;
     let credentialTestResult = null;
     let discoverySequence = 0;
+
+    async function persistServers() {
+        const saveResponse = await apiFetch(configUrl, {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ unify, servers }),
+        });
+        if (!saveResponse.ok) {
+            showToast(i18n.t("ui.reuse.save_failed"), {
+                variant: "error",
+            });
+            return false;
+        }
+        return true;
+    }
+
     await openPopup({
         title: "LDAP setup",
         maxWidth: "760px",
@@ -343,7 +359,7 @@ export async function openAdapterConfig({
                     { id: "back", label: "Back", variant: "neutral" },
                     {
                         id: "verify-user",
-                        label: "Test user credentials",
+                        label: "Test user authentication",
                         variant: "neutral",
                     },
                     {
@@ -366,12 +382,21 @@ export async function openAdapterConfig({
                 );
                 enabledInput?.addEventListener("change", async () => {
                     const nextEnabled = enabledInput.checked;
+                    if (nextEnabled && servers.length === 0) {
+                        enabledInput.checked = enabled;
+                        return;
+                    }
                     const controlUrl = nextEnabled ? enableUrl : disableUrl;
                     if (!controlUrl) {
                         enabledInput.checked = enabled;
                         return;
                     }
                     enabledInput.disabled = true;
+                    if (nextEnabled && !(await persistServers())) {
+                        enabledInput.checked = enabled;
+                        enabledInput.disabled = false;
+                        return;
+                    }
                     const response = await apiFetch(controlUrl, {
                         method: "POST",
                     });
@@ -407,6 +432,7 @@ export async function openAdapterConfig({
                         selectedServerIndex = null;
                         connectionValues = {};
                         sample = null;
+                        api.markDirty();
                         api.setPage("connect");
                     });
                 overlay
@@ -481,6 +507,19 @@ export async function openAdapterConfig({
                         },
                     );
                     credentialFormController = builder.attach(form);
+                    form.addEventListener("keydown", (event) => {
+                        if (
+                            event.key !== "Enter" ||
+                            event.target instanceof HTMLTextAreaElement
+                        ) {
+                            return;
+                        }
+                        event.preventDefault();
+                        event.stopPropagation();
+                        overlay
+                            .querySelector('[data-popup-action="verify-user"]')
+                            ?.click();
+                    });
                 }
                 return;
             }
@@ -538,17 +577,7 @@ export async function openAdapterConfig({
                 return false;
             }
             if (action === "save-home") {
-                const saveResponse = await apiFetch(configUrl, {
-                    method: "PUT",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ unify, servers }),
-                });
-                if (!saveResponse.ok) {
-                    showToast(i18n.t("ui.reuse.save_failed"), {
-                        variant: "error",
-                    });
-                    return false;
-                }
+                if (!(await persistServers())) return false;
                 await onSaved?.();
                 showToast(i18n.t("ui.app.admin.settings_saved"), {
                     variant: "success",

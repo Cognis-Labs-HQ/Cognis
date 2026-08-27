@@ -38,3 +38,7 @@ Konfigurasi melalui `PUT /api/v1/gateways/auth/adapters/ldap/config` (hanya admi
 Endpoint uji adapter memvalidasi bind akun layanan yang dikonfigurasi sebelum penemuan direktori. Kredensial LDAP yang tidak valid dilaporkan sebagai penolakan DN bind atau kata sandi; kegagalan transportasi dan sertifikat memakai diagnosis aman yang terpisah. Galat penyedia terperinci hanya dicatat di log server.
 
 Adapter LDAP tersimpan siap diaktifkan jika setiap server bernama memiliki URL server, DN dasar, DN bind, kata sandi bind, atribut nama pengguna, dan filter pengguna. Kesiapan dinilai oleh adapter agar konfigurasi multi-server bertingkat dan kata sandi yang disamarkan ditangani dengan benar.
+
+Penggeser aktivasi di Administrasi tetap dinonaktifkan hingga setidaknya satu server LDAP dikonfigurasi.
+
+Setelah verifikasi pengguna selesai, server ditambahkan ke konfigurasi tertunda dan aktivasi langsung tersedia. Aktivasi pada tahap tersebut menyimpan daftar server tertunda sebelum mengaktifkan adaptor. Menekan Enter pada formulir verifikasi pengguna menjalankan uji autentikasi. Menutup penyiapan setelah memulai server yang belum disimpan memerlukan konfirmasi pembuangan perubahan.

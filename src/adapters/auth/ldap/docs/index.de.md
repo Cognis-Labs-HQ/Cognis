@@ -45,3 +45,7 @@ Konfiguration über `PUT /api/v1/gateways/auth/adapters/ldap/config` (nur Admin)
 Der Adapter-Testendpunkt prüft die Bindung des konfigurierten Dienstkontos vor der Verzeichnissuche. Ungültige LDAP-Zugangsdaten werden als Ablehnung von Bind-DN oder Passwort gemeldet; Transport- und Zertifikatsfehler erhalten getrennte sichere Diagnosen. Genaue Anbieterfehler werden nur im Serverprotokoll erfasst.
 
 Ein gespeicherter LDAP-Adapter kann aktiviert werden, wenn jeder benannte Server über Server-URL, Basis-DN, Bind-DN, Bind-Passwort, Benutzernamenattribut und Benutzerfilter verfügt. Der Adapter bewertet die Bereitschaft selbst, damit verschachtelte Mehrserverkonfigurationen und ausgeblendete Passwörter korrekt behandelt werden.
+
+Der Aktivierungsregler in der Administration bleibt deaktiviert, bis mindestens ein LDAP-Server konfiguriert wurde.
+
+Nach Abschluss der Benutzerverifizierung wird der Server zur ausstehenden Konfiguration hinzugefügt und die Aktivierung sofort freigeschaltet. Eine anschließende Aktivierung speichert zuerst die ausstehende Serverliste und aktiviert danach den Adapter. Die Eingabetaste im Formular zur Benutzerverifizierung startet den Authentifizierungstest. Beim Schließen der Einrichtung nach Beginn einer noch nicht gespeicherten Serverkonfiguration muss das Verwerfen bestätigt werden.

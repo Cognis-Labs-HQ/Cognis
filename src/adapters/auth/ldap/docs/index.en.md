@@ -58,3 +58,7 @@ Configure via `PUT /api/v1/gateways/auth/adapters/ldap/config` (admin only).
 The adapter test endpoint validates the configured service-account bind before directory discovery. Invalid LDAP credentials are reported as a bind DN or password rejection; transport and certificate failures use separate safe diagnostics. Detailed provider errors are recorded only in server logs.
 
 A saved LDAP adapter is ready to enable when every named server has a server URL, base DN, bind DN, bind password, username attribute, and user filter. Readiness is evaluated by the adapter so nested multi-server configuration and redacted passwords are handled correctly.
+
+The Administration activation slider remains disabled until at least one LDAP server has been configured.
+
+Completing user verification adds the server to the pending configuration and immediately unlocks activation. Activating at that point saves the pending server list before enabling the adapter. Pressing Enter in the user verification form runs the authentication test. Closing setup after starting an unsaved server requires discard confirmation.
