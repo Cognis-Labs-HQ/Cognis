@@ -14,6 +14,10 @@ Cognis kini melakukan satu pemindaian paksa terhadap sumber modul saat API dimul
 
 Pemeriksaan lokapasar berkala kini mempertahankan kartu modul yang sedang ditampilkan sampai data cache dan sumber siap, sehingga teks tidak berkedip pada tahap perantara. Aset modul yang aktif juga tetap dapat diakses langsung ketika kontribusi UI diperbarui, sehingga kesalahan sementara pada dependensi navigasi setelah pengaktifan dapat dicegah.
 
+## Muat setiap terjemahan modul
+
+Teks modul GitHub publik kini menggunakan endpoint konten mentah repositori, selaras dengan cara Nextcloud Whiteboard menyerahkan berkas bahasa kepada Cognis sekaligus menghindari batas permintaan API selama penemuan paralel. Metadata Jitsi Meet, Nextcloud Whiteboard, dan modul bahasa Study kini dapat diterjemahkan secara konsisten tanpa bergantung pada permintaan bahasa yang selesai sebelum batas tercapai.
+
 ## Diagnosis cache modul tidak lengkap
 
 API mencatat peringatan terstruktur beserta modul, bahasa, dan pengenal aset ketika modul mendeklarasikan pelokalan tetapi sumber daya bahasa Inggris tidak tersedia di cache. Pemindaian ulang sumber dapat mengisi kembali cache, sedangkan pembuat modul tetap harus menyediakan `ui/languages/en/strings.xml` dan terjemahan lain yang didukung.

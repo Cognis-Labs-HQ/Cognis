@@ -14,6 +14,10 @@ Cognis führt nun beim Start der API einmalig eine erzwungene Suche der Modulque
 
 Regelmäßige Marktplatzprüfungen lassen die aktuell dargestellten Modulkarten nun sichtbar, bis sowohl Cache- als auch Quelldaten bereitstehen, wodurch zwischenzeitliches Aufblitzen von Text vermieden wird. Ressourcen aktivierter Module bleiben außerdem während der Aktualisierung ihrer UI-Beiträge direkt erreichbar, sodass nach der Aktivierung keine vorübergehenden Fehler bei Navigationsabhängigkeiten auftreten.
 
+## Alle Modulübersetzungen laden
+
+Texte öffentlicher GitHub-Module verwenden nun den Rohdaten-Endpunkt des Repositorys. Dies entspricht der Übergabe der Sprachdateien durch Nextcloud Whiteboard an Cognis und vermeidet API-Anfragelimits bei paralleler Erkennung. Metadaten von Jitsi Meet, Nextcloud Whiteboard und den Study-Sprachmodulen werden dadurch zuverlässig aufgelöst, statt davon abzuhängen, welche Sprachanfragen vor Erreichen des Limits abgeschlossen wurden.
+
 ## Unvollständige Modulcaches erkennen
 
 Die API protokolliert eine strukturierte Warnung mit Modul, Sprache und Ressourcenkennung, wenn ein Modul Lokalisierung deklariert, aber die englische Ressource im Cache fehlt. Eine erneute Quellensuche kann den Cache auffüllen; Modulautoren müssen weiterhin `ui/languages/en/strings.xml` und die übrigen unterstützten Übersetzungen bereitstellen.

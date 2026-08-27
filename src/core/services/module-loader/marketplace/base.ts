@@ -220,7 +220,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                                                     MARKETPLACE_STRING_LOCALES.map(
                                                         async (locale) => {
                                                             const id =
-                                                                await this.cacheRepositoryAsset(
+                                                                await this.cacheRepositoryStringAsset(
                                                                     source,
                                                                     projectPath,
                                                                     catalogRef,
