@@ -91,14 +91,6 @@ test("LDAP setup disables adapter activation until a server is configured", () =
     );
 });
 
-test("LDAP setup directs Enter to user authentication verification", () => {
-    assert.match(ldapPopupSource, /label: "Test user authentication"/);
-    assert.match(
-        ldapPopupSource,
-        /form\.addEventListener\("keydown"[\s\S]*event\.key !== "Enter"[\s\S]*data-popup-action="verify-user"/,
-    );
-});
-
 test("starting a new LDAP server enables abandonment confirmation", () => {
     assert.match(
         ldapPopupSource,
@@ -112,6 +104,10 @@ test("LDAP setup requires a successful user bind before completion", () => {
     assert.match(ldapPopupSource, /testUsername/);
     assert.match(ldapPopupSource, /testPassword/);
     assert.match(ldapPopupSource, /credentialTestResult/);
+    assert.match(
+        ldapPopupSource,
+        /id: "complete"[\s\S]*label: i18n\.t\("ui\.app\.admin\.notif\.save_settings"\)[\s\S]*variant: "confirm"/,
+    );
     assert.match(ldapPopupSource, /action !== "complete"/);
     assert.match(
         ldapPopupSource,

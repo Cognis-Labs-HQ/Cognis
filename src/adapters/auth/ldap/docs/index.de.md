@@ -48,6 +48,6 @@ Ein gespeicherter LDAP-Adapter kann aktiviert werden, wenn jeder benannte Server
 
 Der Aktivierungsregler in der Administration bleibt deaktiviert, bis mindestens ein LDAP-Server konfiguriert wurde.
 
-Nach Abschluss der Benutzerverifizierung wird der Server zur ausstehenden Konfiguration hinzugefügt und die Aktivierung sofort freigeschaltet. Eine anschließende Aktivierung speichert zuerst die ausstehende Serverliste und aktiviert danach den Adapter. Die Eingabetaste im Formular zur Benutzerverifizierung startet den Authentifizierungstest. Beim Schließen der Einrichtung nach Beginn einer noch nicht gespeicherten Serverkonfiguration muss das Verwerfen bestätigt werden.
+Nach Abschluss der Benutzerverifizierung wird der Server zur ausstehenden Konfiguration hinzugefügt und die Aktivierung sofort freigeschaltet. Eine anschließende Aktivierung speichert zuerst die ausstehende Serverliste und aktiviert danach den Adapter. Beim Schließen der Einrichtung nach Beginn einer noch nicht gespeicherten Serverkonfiguration muss das Verwerfen bestätigt werden.
 
-Wird vor dem manuellen Test der Benutzerauthentifizierung „Einstellungen speichern“ gewählt, wird derselbe Authentifizierungstest automatisch ausgeführt. Schlägt die Authentifizierung fehl, kehrt die Einrichtung zum Verbindungsschritt zurück, damit die Bindungsfelder korrigiert werden können.
+Wird vor dem manuellen Test der Benutzerauthentifizierung „Einstellungen speichern“ gewählt, auch mit der Eingabetaste, wird derselbe Authentifizierungstest automatisch ausgeführt. Schlägt die Authentifizierung fehl, kehrt die Einrichtung zum Verbindungsschritt zurück, damit die Bindungsfelder korrigiert werden können.

@@ -533,19 +533,6 @@ export async function openAdapterConfig({
                         },
                     );
                     credentialFormController = builder.attach(form);
-                    form.addEventListener("keydown", (event) => {
-                        if (
-                            event.key !== "Enter" ||
-                            event.target instanceof HTMLTextAreaElement
-                        ) {
-                            return;
-                        }
-                        event.preventDefault();
-                        event.stopPropagation();
-                        overlay
-                            .querySelector('[data-popup-action="verify-user"]')
-                            ?.click();
-                    });
                 }
                 return;
             }
