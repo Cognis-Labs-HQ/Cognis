@@ -69,3 +69,42 @@ export async function serveDeclaredModuleStrings(
     );
     return true;
 }
+
+export async function serveEnabledModuleAsset(
+    req: IncomingMessage,
+    res: ServerResponse,
+    url: URL,
+    urlPath: string,
+    runtime?: ModuleRuntimeGateway,
+    isModuleEnabled?: (moduleId: string) => boolean,
+    routeContext?: RouteContext,
+): Promise<boolean> {
+    const [moduleId, ...assetSegments] = urlPath.split("/");
+    if (!moduleId || !assetSegments.length || !isModuleEnabled?.(moduleId)) {
+        return false;
+    }
+    const manifest = (await runtime?.listManifests())?.find(
+        (entry) => entry.id === moduleId,
+    );
+    if (!manifest) return false;
+    const moduleRoot = await resolveModuleRoot(manifest);
+    const uiRoot = path.resolve(
+        moduleRoot,
+        path.dirname(manifest.entrypoints.ui ?? "ui/index.js"),
+    );
+    const assetPath = path.resolve(uiRoot, assetSegments.join("/"));
+    if (!assetPath.startsWith(`${uiRoot}${path.sep}`)) return false;
+    routeContext?.setPageSecurityHeaders(res);
+    await serveStaticAsset(
+        req,
+        res,
+        assetPath,
+        resolveContentType(assetPath),
+        undefined,
+        undefined,
+        url.searchParams.get("v") === ASSET_VERSION
+            ? "public, max-age=31536000, immutable"
+            : "public, max-age=0, must-revalidate",
+    );
+    return true;
+}

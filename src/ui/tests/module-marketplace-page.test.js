@@ -61,7 +61,10 @@ const marketplaceSource = readFileSync(
 test("module marketplace polls Cognis for current recommendations", () => {
     assert.match(marketplaceSource, /MARKETPLACE_POLL_INTERVAL_MS = 15_000/);
     assert.match(marketplaceSource, /window\.setInterval\(poll/);
-    assert.match(marketplaceSource, /loadKnownModules\(false, signal\)/);
+    assert.match(
+        marketplaceSource,
+        /loadKnownModules\(false, signal, false\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
+    );
     assert.match(marketplaceSource, /window\.clearInterval\(interval\)/);
 });
 test("modules navigation derives its width from its content", () => {
@@ -573,7 +576,7 @@ test("module marketplace refreshes every configured source on demand", () => {
     assert.match(source, /await refreshMarketplaceData\(\)/);
     assert.match(
         source,
-        /loadKnownModules\(false, signal\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
+        /loadKnownModules\(false, signal, false\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
     );
 });
 

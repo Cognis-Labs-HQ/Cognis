@@ -10,6 +10,10 @@ The marketplace UI now also preserves that suppression instead of reconstructing
 
 Cognis now performs one forced module-source scan when the API starts. This refreshes cached localization assets before marketplace polling begins, so modules with valid string files resolve their translated names and summaries after a restart.
 
+## Keep module refreshes stable
+
+Periodic marketplace checks now keep the currently rendered module cards visible until both cached and source data are ready, avoiding intermediate text flashes. Enabled module assets also remain directly resolvable while their UI contributions refresh, preventing transient navbar dependency errors after activation.
+
 ## Diagnose incomplete module caches
 
 The API records a structured warning with the module, locale, and asset identifier when a module declares localization but its cached English resource is unavailable. A refreshed source scan can repopulate the cache, while module authors must continue to ship `ui/languages/en/strings.xml` and the other supported translations.

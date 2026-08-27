@@ -356,6 +356,47 @@ test("GET /static/modules/unknown/file.js returns 404 for unregistered module pr
     assert.equal(recorder.status, 404);
 });
 
+test("enabled module assets remain available while UI contributions refresh", async () => {
+    const uuid = "b5475ca1-6895-4aa3-a87f-2ed6d7698d02";
+    const moduleRoot = path.resolve("external-modules", uuid);
+    const resourcePath = path.join(moduleRoot, "ui/reuse/resources.js");
+    await mkdir(path.dirname(resourcePath), { recursive: true });
+    await writeFile(resourcePath, "export const ready = true;");
+    const route = createUiRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "meetings",
+                    uuid,
+                    entrypoints: { ui: "./ui/index.html" },
+                },
+            ],
+        } as any,
+        new UIRegistry(),
+        undefined,
+        undefined,
+        (moduleId) => moduleId === "meetings",
+    );
+    const recorder = createResponseRecorder();
+
+    try {
+        assert.equal(
+            await route(
+                { headers: {} } as any,
+                recorder.res as any,
+                new URL(
+                    "http://localhost/static/modules/meetings/reuse/resources.js",
+                ),
+            ),
+            true,
+        );
+        assert.equal(recorder.status, 200);
+        assert.match(recorder.body, /ready = true/);
+    } finally {
+        await rm(moduleRoot, { recursive: true, force: true });
+    }
+});
+
 test("installed module string bundles are served before module bootstrap", async () => {
     const uuid = "f055f2e5-227a-5fb4-b934-5397ec32cf2d";
     const moduleRoot = path.resolve("external-modules", uuid);
