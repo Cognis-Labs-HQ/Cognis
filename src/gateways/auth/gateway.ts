@@ -211,12 +211,22 @@ export class CoreAuthGateway {
         });
     }
 
-    registerAdapter(adapter: AuthProviderAdapter, requires?: string[]): void {
+    registerAdapter(
+        adapter: AuthProviderAdapter,
+        requires?: string[],
+    ): () => boolean {
         this.adapters.set(adapter.id, adapter);
         if (adapter.locked) this.enabledAdapters.add(adapter.id);
         if (requires && requires.length > 0) {
             this.adapterRequires.set(adapter.id, requires);
         }
+        return () => {
+            if (this.adapters.get(adapter.id) !== adapter) return false;
+            this.adapters.delete(adapter.id);
+            this.enabledAdapters.delete(adapter.id);
+            this.adapterRequires.delete(adapter.id);
+            return true;
+        };
     }
 
     setLocalAdapter(

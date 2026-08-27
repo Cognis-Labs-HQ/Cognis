@@ -181,6 +181,55 @@ test("auth gateway contributes account and token lifecycle capabilities", async 
     assert.equal(typeof getAccountInstanceId, "function");
 });
 
+test("auth gateway exposes provider registration to modules", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const dbExecutor = createDbExecutor();
+
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        ...makeBaseCtx(capabilities, dbExecutor),
+    });
+
+    const registerProvider = capabilities.require<
+        (provider: {
+            id: string;
+            name: string;
+            locked: boolean;
+            authenticate: () => Promise<null>;
+            configure: () => void;
+            getConfigSchema: () => [];
+        }) => () => void
+    >("auth:registerProvider");
+    const unregisterProvider = registerProvider({
+        id: "module-provider",
+        name: "Module Provider",
+        locked: true,
+        async authenticate() {
+            return null;
+        },
+        configure() {},
+        getConfigSchema() {
+            return [];
+        },
+    });
+
+    const getLoginMethods = capabilities.require<
+        () => Array<{ id: string; name: string }>
+    >("auth:getLoginMethods");
+    assert.ok(
+        getLoginMethods().some((method) => method.id === "module-provider"),
+    );
+    unregisterProvider();
+    assert.ok(
+        getLoginMethods().every((method) => method.id !== "module-provider"),
+    );
+});
+
 test("auth bootstrap registers canonical ctx flow skeletons", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
