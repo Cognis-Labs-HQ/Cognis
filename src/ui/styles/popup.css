@@ -262,6 +262,23 @@
     color: var(--text-muted);
 }
 
+.popup-summary-detail > :first-child {
+    margin-top: 4px;
+}
+
+.popup-summary-heading {
+    font-weight: 600;
+}
+
+.popup-summary-heading > :first-child,
+.popup-summary-heading > :last-child {
+    margin-block: 0;
+}
+
+.popup-summary-detail > :last-child {
+    margin-bottom: 8px;
+}
+
 .popup-summary-checkbox-row {
     display: inline-flex;
     align-items: center;

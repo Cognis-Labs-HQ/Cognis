@@ -41,10 +41,13 @@ function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
             const dotPoints = Array.isArray(entry.changes)
                 ? entry.changes
                       .slice(0, MAX_VISIBLE_RELEASE_NOTE_BULLETS)
-                      .map(
-                          (changeHeading) =>
-                              `<li>${renderMarkdown(changeHeading)}</li>`,
-                      )
+                      .map((changeHeading, index) => {
+                          const detail = String(entry.details?.[index] ?? "");
+                          const renderedDetail = detail
+                              ? `<div class="popup-summary-detail">${renderMarkdown(detail)}</div>`
+                              : "";
+                          return `<li><div class="popup-summary-heading">${renderMarkdown(changeHeading)}</div>${renderedDetail}</li>`;
+                      })
                       .join("")
                 : "";
             return `
