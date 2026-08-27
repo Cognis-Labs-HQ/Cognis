@@ -8,6 +8,10 @@ test("startup refreshes module sources once and reports discovered modules", asy
 
     await discoverModuleSourcesOnStartup(
         {
+            listSources: async () => [
+                { uuid: "public-source", scanPrivateRepos: false },
+                { uuid: "private-source", scanPrivateRepos: true },
+            ],
             discover: async (...args: unknown[]) => {
                 calls.push(args);
                 return [{ uuid: "module-uuid" }] as never;
@@ -16,7 +20,7 @@ test("startup refreshes module sources once and reports discovered modules", asy
         (level, message, meta) => logs.push({ level, message, ...meta }),
     );
 
-    assert.deepEqual(calls, [[{}, undefined, true]]);
+    assert.deepEqual(calls, [[{}, ["public-source"], true]]);
     assert.deepEqual(logs, [
         {
             level: "info",
@@ -33,6 +37,7 @@ test("startup reports module source refresh failures", async () => {
 
     await discoverModuleSourcesOnStartup(
         {
+            listSources: async () => [{ uuid: "public-source" }],
             discover: async () => {
                 throw new Error("source unavailable");
             },
@@ -49,4 +54,23 @@ test("startup reports module source refresh failures", async () => {
             error: "source unavailable",
         },
     ]);
+});
+
+test("startup leaves credentialed sources for authenticated polling", async () => {
+    let discoveryCalled = false;
+
+    await discoverModuleSourcesOnStartup(
+        {
+            listSources: async () => [
+                { uuid: "private-source", scanPrivateRepos: true },
+            ],
+            discover: async () => {
+                discoveryCalled = true;
+                return [];
+            },
+        },
+        () => undefined,
+    );
+
+    assert.equal(discoveryCalled, false);
 });

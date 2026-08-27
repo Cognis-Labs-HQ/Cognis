@@ -109,11 +109,16 @@ export interface ApiDependencies {
 }
 
 export async function discoverModuleSourcesOnStartup(
-    marketplace: Pick<ModuleMarketplaceService, "discover">,
+    marketplace: Pick<ModuleMarketplaceService, "discover" | "listSources">,
     log: BootstrapLog,
 ): Promise<void> {
     try {
-        const modules = await marketplace.discover({}, undefined, true);
+        const publicSourceUuids = (await marketplace.listSources())
+            .filter((source) => source.scanPrivateRepos !== true)
+            .map((source) => source.uuid);
+        const modules = publicSourceUuids.length
+            ? await marketplace.discover({}, publicSourceUuids, true)
+            : [];
         log("info", "Initial module marketplace discovery completed.", {
             component: "api-modules",
             operation: "startup-source-discovery",

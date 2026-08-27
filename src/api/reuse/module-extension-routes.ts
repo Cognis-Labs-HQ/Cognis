@@ -646,6 +646,13 @@ export function createModuleExtensionRoutes(
                 });
                 continue;
             }
+            if (!moduleEnabled) {
+                log?.("debug", "Skipping disabled module entrypoint.", {
+                    component: "module-extension-routes",
+                    moduleId: manifest.id,
+                });
+                continue;
+            }
             const moduleRoot = path.resolve(externalModulesRoot, manifest.uuid);
             const moduleRootEntry = await stat(moduleRoot).catch(() => null);
             if (!moduleRootEntry?.isDirectory()) {
@@ -656,12 +663,10 @@ export function createModuleExtensionRoutes(
                 });
                 continue;
             }
-            if (moduleEnabled) {
-                options?.uiRegistry?.registerModuleStaticDir(
-                    manifest.id,
-                    path.join(moduleRoot, "ui"),
-                );
-            }
+            options?.uiRegistry?.registerModuleStaticDir(
+                manifest.id,
+                path.join(moduleRoot, "ui"),
+            );
             const scope = {
                 active: true,
                 hooks: [],

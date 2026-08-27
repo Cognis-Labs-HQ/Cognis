@@ -97,7 +97,8 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
     await mkdir(moduleRoot);
     await writeFile(
         path.join(moduleRoot, "bootstrap.js"),
-        `export async function bootstrapModule(ctx) {
+        `globalThis.__cognisOwnedModuleImports = (globalThis.__cognisOwnedModuleImports ?? 0) + 1;
+        export async function bootstrapModule(ctx) {
             ctx.contributePublicCapability("owned-module:feature", true);
             ctx.flow.extend("host-flow", "extensions", { id: "owned-module:hook" }, () => "active");
             ctx.registerAdminSection({ id: "owned-module", label: "Owned", scriptUrl: "/static/modules/owned-module/admin.js" });
@@ -137,6 +138,14 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
     );
     try {
         await extensions.refresh();
+        assert.equal(
+            (
+                globalThis as typeof globalThis & {
+                    __cognisOwnedModuleImports?: number;
+                }
+            ).__cognisOwnedModuleImports,
+            1,
+        );
         assert.equal(systemCtx.hasCapability("owned-module:feature"), true);
         assert.equal(uiRegistry.listAdminSections().length, 1);
         assert.equal(uiRegistry.listNavbarPlugins().length, 1);
@@ -149,6 +158,14 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
 
         enabled = false;
         await extensions.refresh();
+        assert.equal(
+            (
+                globalThis as typeof globalThis & {
+                    __cognisOwnedModuleImports?: number;
+                }
+            ).__cognisOwnedModuleImports,
+            1,
+        );
         assert.equal(systemCtx.hasCapability("owned-module:feature"), false);
         assert.equal(uiRegistry.listNavbarPlugins().length, 0);
         assert.equal(uiRegistry.listSpaRoutes().length, 0);
@@ -165,22 +182,23 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
             ),
             false,
         );
-        let configStatus = 0;
         assert.equal(
             await extensions.handle(
                 { method: "GET" } as any,
                 {
-                    writeHead(code: number) {
-                        configStatus = code;
-                    },
+                    writeHead() {},
                     end() {},
                 } as any,
                 new URL("http://localhost/api/v1/modules/owned/config"),
             ),
-            true,
+            false,
         );
-        assert.equal(configStatus, 200);
     } finally {
+        delete (
+            globalThis as typeof globalThis & {
+                __cognisOwnedModuleImports?: number;
+            }
+        ).__cognisOwnedModuleImports;
         if (previousModulesRoot === undefined) {
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
         } else {
