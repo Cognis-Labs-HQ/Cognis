@@ -90,14 +90,15 @@ function changelogRouteSubpathToSlug(subpath) {
 function buildGroupedNav(i18n, items) {
     const groups = new Map();
     for (const item of items) {
-        const groupKey = CHANGELOG_GROUP_KEY;
+        const groupKey = item.sourceName || CHANGELOG_GROUP_KEY;
         if (!groups.has(groupKey)) groups.set(groupKey, []);
         groups.get(groupKey).push(item);
     }
 
     let html = "";
     for (const [group, groupItems] of groups) {
-        const label = groupLabel(i18n, group);
+        const label =
+            group === CHANGELOG_GROUP_KEY ? groupLabel(i18n, group) : group;
         const links = groupItems
             .map((item) => renderDocNavButton(item))
             .join("");

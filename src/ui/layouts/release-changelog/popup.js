@@ -38,6 +38,8 @@ function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
         .slice(0, MAX_VISIBLE_RELEASE_NOTES)
         .map((entry) => {
             const safeTitle = escapeHtml(entry.title ?? "");
+            const safePath = escapeHtml(entry.path ?? "/changelogs");
+            const safeSourceName = escapeHtml(entry.sourceName ?? "");
             const dotPoints = Array.isArray(entry.changes)
                 ? entry.changes
                       .slice(0, MAX_VISIBLE_RELEASE_NOTE_BULLETS)
@@ -52,7 +54,8 @@ function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
                 : "";
             return `
         <li class="popup-summary-item">
-          <strong>${safeTitle}</strong>
+          ${safeSourceName ? `<span class="popup-summary-source">${safeSourceName}</span>` : ""}
+          <strong><a href="${safePath}">${safeTitle}</a></strong>
           <ul class="popup-summary-sublist">${dotPoints}</ul>
         </li>
       `;

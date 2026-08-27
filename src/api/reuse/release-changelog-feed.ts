@@ -23,6 +23,7 @@ export type ChangelogEntrySummary = {
     changes: string[];
     details: string[];
     path: string;
+    sourceName: string;
 };
 
 let cachedReleaseVersion: string | null = null;
@@ -31,7 +32,25 @@ type ChangelogFileVariant = {
     filePath: string;
     language: string | null;
     mtimeMs: number;
+    sourceName: string;
 };
+
+async function externalModuleName(moduleRoot: string, fallback: string) {
+    for (const manifestName of ["package.json", "manifest.json"]) {
+        try {
+            const manifest = JSON.parse(
+                await readFile(join(moduleRoot, manifestName), "utf8"),
+            );
+            const name = String(
+                manifest.displayName ?? manifest.name ?? "",
+            ).trim();
+            if (name) return name;
+        } catch {
+            // Try the next manifest in the loop above.
+        }
+    }
+    return fallback;
+}
 
 function collapseWhitespace(value: string): string {
     return value.replace(/\s+/g, " ").trim();
@@ -173,6 +192,7 @@ export async function loadReleaseChangelogEntries(
         directory: string,
         slugPrefix = "",
         discoveryRoot = directory,
+        sourceName = "Cognis Core",
     ): Promise<void> {
         let directoryEntries;
         try {
@@ -193,12 +213,20 @@ export async function loadReleaseChangelogEntries(
                     filePath,
                 ).replaceAll(sep, "/");
                 const modulePrefix = relativeDirectory.split("/")[0] ?? "";
+                const nextSourceName =
+                    entry.name === "changelog" && modulePrefix
+                        ? await externalModuleName(
+                              join(discoveryRoot, modulePrefix),
+                              modulePrefix,
+                          )
+                        : sourceName;
                 await collectChangelogFiles(
                     filePath,
                     entry.name === "changelog" && modulePrefix
                         ? modulePrefix
                         : slugPrefix,
                     discoveryRoot,
+                    nextSourceName,
                 );
                 continue;
             }
@@ -221,6 +249,7 @@ export async function loadReleaseChangelogEntries(
                 filePath,
                 language: parsed.language,
                 mtimeMs: metadata.mtimeMs,
+                sourceName,
             });
             variantsBySlug.set(slug, variants);
         }
@@ -257,6 +286,7 @@ export async function loadReleaseChangelogEntries(
                     changes: extractChangeHeadings(markdown),
                     details: extractChangeDetails(markdown),
                     path: `/changelogs/${slug}`,
+                    sourceName: selectedVariant.sourceName,
                     mtimeMs: latestMtimeMs,
                 };
             } catch {

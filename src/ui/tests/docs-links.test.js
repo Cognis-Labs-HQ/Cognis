@@ -209,6 +209,10 @@ test("changelogs module keeps changelog-only navigation data", () => {
         source.includes("changelog-content-panel"),
         "changelogs page should scope content-list styling to the reader panel",
     );
+    assert.ok(
+        source.includes("item.sourceName || CHANGELOG_GROUP_KEY"),
+        "changelog navigation should group external module entries by module name",
+    );
 
     const styles = readFileSync(join(ROOT, "src/ui/styles/docs.css"), "utf8");
     assert.ok(

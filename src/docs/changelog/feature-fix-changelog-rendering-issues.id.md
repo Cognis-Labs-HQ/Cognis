@@ -7,3 +7,7 @@ Notifikasi rilis kini menampilkan isi penjelasan di bawah setiap heading perubah
 ## Sertakan modul eksternal yang terpasang
 
 Umpan rilis kini menemukan file changelog terlokalisasi dari modul eksternal yang terpasang dan menautkan setiap entri ke halaman changelog modulnya.
+
+## Changelog tertaut dan terkelompok
+
+Heading pada popup rilis kini tertaut langsung ke changelog Cognis Core yang lengkap. Changelog modul eksternal menampilkan modulnya secara terpisah dan disertakan dalam indeks Changelog lengkap.

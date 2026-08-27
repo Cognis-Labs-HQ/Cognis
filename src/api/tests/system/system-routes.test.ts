@@ -234,6 +234,10 @@ test("release changelog feed includes section details and installed module entri
     await mkdir(coreChangelogRoot, { recursive: true });
     await mkdir(moduleChangelogRoot, { recursive: true });
     await writeFile(
+        join(externalRoot, "weather-module", "package.json"),
+        JSON.stringify({ name: "Weather Module" }),
+    );
+    await writeFile(
         join(coreChangelogRoot, "core-change.en.md"),
         "# Core change\n\n## Useful summary\n\nThe detail users need to read.\n",
     );
@@ -254,6 +258,8 @@ test("release changelog feed includes section details and installed module entri
         assert.equal(coreEntry?.changes[0], "Useful summary");
         assert.equal(coreEntry?.details[0], "The detail users need to read.");
         assert.equal(moduleEntry?.title, "Weather module");
+        assert.equal(coreEntry?.sourceName, "Cognis Core");
+        assert.equal(moduleEntry?.sourceName, "Weather Module");
         assert.equal(moduleEntry?.path, "/changelogs/weather-module/2.0.0");
         assert.equal(moduleEntry?.details[0], "Adds hourly forecasts.");
     } finally {

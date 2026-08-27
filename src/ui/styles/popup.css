@@ -253,7 +253,18 @@
 }
 
 .popup-summary-item {
-    display: block;
+    display: grid;
+    gap: 3px;
+}
+
+.popup-summary-item > strong > a {
+    color: inherit;
+}
+
+.popup-summary-source {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 650;
 }
 
 .popup-summary-sublist {

@@ -141,7 +141,7 @@ test("docs route discovers external module docs and changelogs", async () => {
     await writeFile(join(sourceRoot, "docs", "index.en.md"), "# Core\n");
     await writeFile(
         join(moduleRoot, "package.json"),
-        JSON.stringify({ version: "2.0.0" }),
+        JSON.stringify({ name: "Weather Module", version: "2.0.0" }),
     );
     await writeFile(
         join(moduleRoot, "docs", "standard.en.md"),
@@ -164,6 +164,11 @@ test("docs route discovers external module docs and changelogs", async () => {
         );
         assert.ok(slugs.includes("module-uuid/standard"));
         assert.ok(slugs.includes("changelog/module-uuid/2.0.0"));
+        const moduleChangelog = response.body.data.find(
+            (entry: { slug: string }) =>
+                entry.slug === "changelog/module-uuid/2.0.0",
+        );
+        assert.equal(moduleChangelog.sourceName, "Weather Module");
     } finally {
         await rm(fixtureRoot, { recursive: true, force: true });
     }
@@ -303,6 +308,7 @@ test("docs route indexes every changelog markdown stem and serves generated chan
     const changelogLanding = JSON.parse(body);
     assert.match(changelogLanding.data.markdown, /^# Changelogs/);
     assert.match(changelogLanding.data.markdown, /\/changelogs\//);
+    assert.match(changelogLanding.data.markdown, /## Cognis Core/);
 });
 
 test("docs route renders changelog feature branch from file slug", async () => {

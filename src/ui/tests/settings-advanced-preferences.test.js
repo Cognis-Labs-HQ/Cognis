@@ -44,6 +44,14 @@ test("release acknowledgement state is stored outside editable UI preferences", 
     assert.match(releasePopupSource, /saveReleaseChangelogState\(\{/);
 });
 
+test("release changelog headings link to their full changelog documents", () => {
+    assert.match(
+        releasePopupSource,
+        /<a href="\$\{safePath\}">\$\{safeTitle\}<\/a>/,
+    );
+    assert.match(releasePopupSource, /entry\.sourceName/);
+});
+
 test("release changelogs remain safe when editable preferences contain no seen slugs", () => {
     const releaseEntries = [{ slug: "first-release" }];
     const status = resolveReleaseChangelogStatus(releaseEntries, "1.0.0", null);

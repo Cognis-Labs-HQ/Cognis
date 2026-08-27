@@ -8,6 +8,7 @@ export interface StoredDoc {
     group: string;
     version: string;
     versions: string[];
+    sourceName: string;
 }
 
 interface SourceDoc extends Omit<StoredDoc, "version" | "versions"> {
@@ -90,6 +91,29 @@ async function titleFor(fileStem: string): Promise<string> {
     return "";
 }
 
+async function sourceNameFor(
+    slug: string,
+    componentRoot: string,
+): Promise<string> {
+    if (!slug.startsWith("changelog/") || slug.split("/").length === 2) {
+        return "Cognis Core";
+    }
+    for (const manifestName of ["package.json", "manifest.json"]) {
+        try {
+            const manifest = JSON.parse(
+                await readFile(join(componentRoot, manifestName), "utf8"),
+            );
+            const name = String(
+                manifest.displayName ?? manifest.name ?? "",
+            ).trim();
+            if (name) return name;
+        } catch {
+            // Try the next manifest in the loop above.
+        }
+    }
+    return slug.split("/")[1];
+}
+
 async function componentVersion(
     componentRoot: string,
     repositoryRoot: string,
@@ -152,6 +176,7 @@ async function sourceDocs(sourceRoot: string): Promise<SourceDoc[]> {
                 files: localizedFiles,
                 componentRoot: dirname(docsDirectory),
                 title: await titleFor(fileStem),
+                sourceName: await sourceNameFor(slug, dirname(docsDirectory)),
                 group: groupFor(
                     slug,
                     docsDirectory === join(sourceRoot, "docs"),
@@ -225,6 +250,10 @@ async function archivedDocs(
                 group: groupFor(slug, false),
                 version,
                 versions,
+                sourceName:
+                    slug.startsWith("changelog/") && slug.split("/").length > 2
+                        ? slug.split("/")[1]
+                        : "Cognis Core",
             },
         ];
     }
@@ -279,6 +308,7 @@ export async function initializeDocsStore(
                 group: doc.group,
                 version,
                 versions: await availableVersions(archiveRoot, doc.slug),
+                sourceName: doc.sourceName,
             });
         }
     }
