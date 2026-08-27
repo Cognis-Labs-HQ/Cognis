@@ -23,7 +23,7 @@ The central class is `CoreAuthGateway` in `src/gateways/auth/gateway.ts`. It hol
 
 ```ts
 export class CoreAuthGateway {
-  registerAdapter(adapter: AuthProviderAdapter, requires?: string[]): void;
+  registerAdapter(adapter: AuthProviderAdapter, requires?: string[]): () => boolean;
   setLocalAdapter(adapter: AuthProviderAdapter & { ... }): void;
   async discoverAdapters(authAdaptersRoot: string): Promise<void>;
   async loadPersistedConfigs(): Promise<void>;
@@ -36,6 +36,8 @@ export class CoreAuthGateway {
 ```
 
 `getEnabledAdapter(id)` returns a specific adapter by ID only if it is currently enabled. `getAdapter()` (no argument) returns the first enabled adapter, used when the login request does not specify a provider. Both return `null` if no suitable adapter is found.
+
+`registerAdapter()` returns the provider cleanup function used by module disposers. Calling it removes that exact provider registration, its enabled state, and its dependency metadata; if another provider has since replaced the same ID, cleanup leaves the replacement intact. This cleanup is necessary because disabling a module must remove every capability it contributed.
 
 Bootstrap in `src/gateways/auth/bootstrap.ts` and `src/gateways/auth/bootstrap/`:
 

@@ -23,7 +23,7 @@ Kelas utama adalah `CoreAuthGateway` di `src/gateways/auth/gateway.ts`. Kelas in
 
 ```ts
 export class CoreAuthGateway {
-  registerAdapter(adapter: AuthProviderAdapter, requires?: string[]): void;
+  registerAdapter(adapter: AuthProviderAdapter, requires?: string[]): () => boolean;
   setLocalAdapter(adapter: AuthProviderAdapter & { ... }): void;
   async discoverAdapters(authAdaptersRoot: string): Promise<void>;
   async loadPersistedConfigs(): Promise<void>;
@@ -36,6 +36,8 @@ export class CoreAuthGateway {
 ```
 
 `getEnabledAdapter(id)` mengembalikan adapter tertentu berdasarkan ID hanya jika saat ini diaktifkan. `getAdapter()` (tanpa argumen) mengembalikan adapter pertama yang diaktifkan. Keduanya mengembalikan `null` jika tidak ada adapter yang sesuai.
+
+`registerAdapter()` mengembalikan fungsi pembersihan penyedia yang digunakan oleh disposer modul. Pemanggilannya menghapus tepat satu pendaftaran penyedia tersebut beserta status aktif dan metadata dependensinya. Jika penyedia lain telah menggantikan ID yang sama, pembersihan tidak menghapus penggantinya. Pembersihan ini diperlukan karena penonaktifan modul harus menghapus setiap kapabilitas yang disumbangkannya.
 
 Bootstrap di `src/gateways/auth/bootstrap.ts` dan `src/gateways/auth/bootstrap/`:
 

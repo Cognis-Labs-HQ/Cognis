@@ -17,7 +17,10 @@ export async function registerAuthBootstrapHook({
     ctx.capabilities.contribute(
         "auth:registerProvider",
         (provider: AuthProviderAdapter, requires?: string[]) => {
-            authGateway.registerAdapter(provider, requires);
+            const unregisterProvider = authGateway.registerAdapter(
+                provider,
+                requires,
+            );
             ctx.log?.(
                 "info",
                 "Registered an external authentication provider.",
@@ -28,9 +31,7 @@ export async function registerAuthBootstrapHook({
                 },
             );
             return () => {
-                if (!authGateway.unregisterAdapter(provider.id, provider)) {
-                    return;
-                }
+                if (!unregisterProvider()) return;
                 ctx.log?.(
                     "info",
                     "Unregistered an external authentication provider.",

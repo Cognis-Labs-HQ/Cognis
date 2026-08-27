@@ -12,7 +12,7 @@
 - `auth_adapter_configs` に永続化されたアダプターの有効・無効状態を管理する。
 - 要求されたプロバイダーの有効なアダプターに委譲して認証情報を検証する。
 - 認証成功後に `issueAccessToken` でアクセストークンを発行する。
-- `auth:accountStore`、`auth:createLocalAdmin`、`auth:getLoginMethods`、`auth:registerProvider`、`auth:registerPageScriptOrigins` をケイパビリティストアに提供する。
+- 文書化されたケイパビリティ一式を提供する：`auth:accountStore`、`auth:createLocalAdmin`、`auth:getLoginMethods`、`auth:registerProvider`、`auth:registerPageScriptOrigins`、`auth:issueAccessToken`、`auth:getAuthClaims`、`auth:requireAuth`、`auth:requireRoleAccess`、`auth:revokeAccessTokensForSubject`、`auth:revokeSetupPendingAccessTokens`、`auth:routeContext`。
 - すべての認証APIルートとアダプター管理ルートを登録する。
 
 責務外: ユーザープロフィールデータの保存（プロフィールゲートウェイの責務）、トークン発行を超えたセッション管理、非認証ビジネスロジック。
@@ -23,7 +23,7 @@
 
 ```ts
 export class CoreAuthGateway {
-  registerAdapter(adapter: AuthProviderAdapter, requires?: string[]): void;
+  registerAdapter(adapter: AuthProviderAdapter, requires?: string[]): () => boolean;
   setLocalAdapter(adapter: AuthProviderAdapter & { ... }): void;
   async discoverAdapters(authAdaptersRoot: string): Promise<void>;
   async loadPersistedConfigs(): Promise<void>;
@@ -36,6 +36,8 @@ export class CoreAuthGateway {
 ```
 
 `getEnabledAdapter(id)` は特定のアダプターが現在有効な場合のみIDで返します。`getAdapter()` （引数なし）は最初の有効なアダプターを返します。適切なアダプターが見つからない場合は両方とも `null` を返します。
+
+`registerAdapter()` は、モジュールの破棄処理が使用するプロバイダーのクリーンアップ関数を返します。呼び出すと、そのプロバイダー登録、有効化状態、依存関係メタデータだけが削除されます。同じIDが別のプロバイダーに置き換えられている場合、置き換え後のプロバイダーは削除されません。モジュールを無効化すると、そのモジュールが提供したすべてのケイパビリティを取り除く必要があるため、このクリーンアップが必要です。
 
 `src/gateways/auth/bootstrap.ts` と `src/gateways/auth/bootstrap/` でのブートストラップ:
 
@@ -78,7 +80,3 @@ export class CoreAuthGateway {
 ## 共有失敗理由の伝達
 
 ブラウザーセッション結果は中立な代替認証失敗理由を保持するため、公開リソースページは認証内部を import せずに、存在しないリソースとその他の利用不可状態を区別できます。
-
-## 提供するケイパビリティ
-
-このゲートウェイは `auth:accountStore`、`auth:createLocalAdmin`、`auth:getLoginMethods`、`auth:registerProvider`、`auth:registerPageScriptOrigins`、`auth:issueAccessToken`、`auth:getAuthClaims`、`auth:requireAuth`、`auth:requireRoleAccess`、`auth:revokeAccessTokensForSubject`、`auth:revokeSetupPendingAccessTokens`、`auth:routeContext` を提供します。
