@@ -51,6 +51,12 @@ function loadKeyringI18n() {
     return keyringI18nPromise;
 }
 
+async function ensureKeyringFormStyles() {
+    const { ensurePageStylesheet } =
+        await import("/static/reuse/page-styles.js");
+    await ensurePageStylesheet("/static/styles/reuse/page-sections.css");
+}
+
 function keyringStorageKey() {
     const accountId = String(
         localStorage.getItem("cognis_account") ?? "",
@@ -598,6 +604,7 @@ async function renderManualUnlockButton() {
 }
 
 async function requestKeyringPassword({ i18n, message, prompt = "" }) {
+    await ensureKeyringFormStyles();
     const [{ openPopup }, { escapeHtml }, { createFormBuilder }] =
         await Promise.all([
             import("/static/reuse/popup.js"),
@@ -608,6 +615,7 @@ async function requestKeyringPassword({ i18n, message, prompt = "" }) {
         { i18n, escapeHtml },
         {
             formId: "keyring-unlock-form",
+            formClassName: "keyring-password-form",
             includeSubmitButton: false,
             fields: [
                 {
@@ -651,6 +659,7 @@ async function requestKeyringPassword({ i18n, message, prompt = "" }) {
 }
 
 async function requestKeyringSetup(accountPassword) {
+    await ensureKeyringFormStyles();
     const [{ openPopup }, { escapeHtml }, { createFormBuilder }] =
         await Promise.all([
             import("/static/reuse/popup.js"),
@@ -662,6 +671,7 @@ async function requestKeyringSetup(accountPassword) {
         { i18n, escapeHtml },
         {
             formId: "keyring-setup-form",
+            formClassName: "keyring-password-form",
             includeSubmitButton: false,
             fields: [
                 {

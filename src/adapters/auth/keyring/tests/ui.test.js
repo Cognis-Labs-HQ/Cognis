@@ -541,11 +541,15 @@ test("first login sets up a new keyring with the selected encryption password", 
 
 test("keyring password popups use the form composer with required fields", () => {
     assert.match(keyringSource, /createFormBuilder/);
+    assert.match(keyringSource, /ensureKeyringFormStyles/);
+    assert.match(keyringSource, /styles\/reuse\/page-sections\.css/);
     assert.match(keyringSource, /formId: "keyring-unlock-form"/);
+    assert.match(keyringSource, /formClassName: "keyring-password-form"/);
     assert.match(keyringSource, /name: "password"[\s\S]*required: true/);
     assert.match(keyringSource, /name: "confirmation"[\s\S]*required: true/);
     assert.match(keyringSource, /setup_password_match/);
     assert.match(settingsSource, /formId: "keyring-change-password-form"/);
+    assert.match(settingsSource, /styles\/reuse\/page-sections\.css/);
     assert.match(
         settingsSource,
         /name: "confirmation"[\s\S]*required: true[\s\S]*keyring-password-change-match/,

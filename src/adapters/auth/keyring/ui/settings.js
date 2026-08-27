@@ -278,6 +278,7 @@ export function createSettingsSection({ i18n, root }) {
             { i18n, escapeHtml },
             {
                 formId: "keyring-change-password-form",
+                formClassName: "keyring-password-form",
                 includeSubmitButton: false,
                 fields: [
                     {
@@ -504,9 +505,12 @@ export function createSettingsSection({ i18n, root }) {
         renderContent: () =>
             `<section class="settings-keyring-manager" id="settings-keyring-manager">${renderManager()}</section>`,
         async onRender() {
-            await ensurePageStylesheet(
-                "/static/adapters/auth/keyring/settings.css",
-            );
+            await Promise.all([
+                ensurePageStylesheet(
+                    "/static/adapters/auth/keyring/settings.css",
+                ),
+                ensurePageStylesheet("/static/styles/reuse/page-sections.css"),
+            ]);
             bindActions();
         },
         isDirty: () => false,
