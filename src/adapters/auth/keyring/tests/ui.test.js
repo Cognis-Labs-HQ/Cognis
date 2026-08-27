@@ -539,6 +539,15 @@ test("first login sets up a new keyring with the selected encryption password", 
     localStorage.removeItem("cognis_account");
 });
 
+test("first login and recreation require keyring password confirmation", () => {
+    assert.match(keyringSource, /keyring-setup-confirm-password/);
+    assert.match(
+        keyringSource,
+        /passwordInput\?\.value === confirmationInput\?\.value/,
+    );
+    assert.match(keyringSource, /setup_password_mismatch/);
+});
+
 test("login silently leaves the keyring locked when its password differs", async () => {
     const keyring = await import("../ui/keyring.js");
     values.clear();

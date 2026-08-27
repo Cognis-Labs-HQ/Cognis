@@ -8,6 +8,9 @@
   <string name="adapter.auth.keyring.cancel_action">Abbrechen</string>
   <string name="adapter.auth.keyring.setup_title">Schlüsselbundverschlüsselung einrichten</string>
   <string name="adapter.auth.keyring.setup_message">Ihr Schlüsselbund speichert Passwörter und Verschlüsselungsschlüssel für Cognis-Funktionen sicher. Wählen Sie ein Passwort, um ihn zu schützen.</string>
+  <string name="adapter.auth.keyring.setup_password">Schlüsselbundpasswort</string>
+  <string name="adapter.auth.keyring.setup_confirm_password">Schlüsselbundpasswort bestätigen</string>
+  <string name="adapter.auth.keyring.setup_password_mismatch">Die Schlüsselbundpasswörter stimmen nicht überein.</string>
   <string name="adapter.auth.keyring.setup_account_password_message">Geben Sie Ihr Kontopasswort ein, um es zum Schutz des Schlüsselbunds zu verwenden.</string>
   <string name="adapter.auth.keyring.setup_placeholder">Schlüsselbundpasswort (optional)</string>
   <string name="adapter.auth.keyring.setup_hint">Leer lassen, um dein Kontopasswort zu verwenden.</string>

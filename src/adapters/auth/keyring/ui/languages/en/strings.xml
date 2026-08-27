@@ -8,6 +8,9 @@
   <string name="adapter.auth.keyring.cancel_action">Cancel</string>
   <string name="adapter.auth.keyring.setup_title">Set up keyring encryption</string>
   <string name="adapter.auth.keyring.setup_message">Your keyring securely stores passwords and encryption keys used by Cognis features. Choose a password to protect it.</string>
+  <string name="adapter.auth.keyring.setup_password">Keyring password</string>
+  <string name="adapter.auth.keyring.setup_confirm_password">Confirm keyring password</string>
+  <string name="adapter.auth.keyring.setup_password_mismatch">Keyring passwords do not match.</string>
   <string name="adapter.auth.keyring.setup_account_password_message">Enter your account password to use it for keyring protection.</string>
   <string name="adapter.auth.keyring.setup_placeholder">Keyring password (optional)</string>
   <string name="adapter.auth.keyring.setup_hint">Leave this empty to use your account password.</string>
