@@ -12,7 +12,7 @@ The gateway discovers adapters by scanning `src/adapters/auth/` at bootstrap tim
 - Manage adapter enable/disable state persisted in `auth_adapter_configs`.
 - Verify credentials by delegating to the enabled adapter for the requested provider.
 - Issue access tokens after successful authentication via `issueAccessToken`.
-- Contribute the documented capability set: `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, `auth:registerPageScriptOrigins`, `auth:issueAccessToken`, `auth:getAuthClaims`, `auth:requireAuth`, `auth:requireRoleAccess`, `auth:revokeAccessTokensForSubject`, `auth:revokeSetupPendingAccessTokens`, and `auth:routeContext`.
+- Contribute the documented capability set: `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, `auth:registerProvider`, `auth:registerPageScriptOrigins`, `auth:issueAccessToken`, `auth:getAuthClaims`, `auth:requireAuth`, `auth:requireRoleAccess`, `auth:revokeAccessTokensForSubject`, `auth:revokeSetupPendingAccessTokens`, and `auth:routeContext`.
 - Register all auth API routes and adapter admin routes.
 
 Not responsible for: storing user profile data (the profile gateway), session management beyond token issuance, or any non-auth business logic.
@@ -23,7 +23,7 @@ The central class is `CoreAuthGateway` in `src/gateways/auth/gateway.ts`. It hol
 
 ```ts
 export class CoreAuthGateway {
-  registerAdapter(adapter: AuthProviderAdapter, requires?: string[]): void;
+  registerAdapter(adapter: AuthProviderAdapter, requires?: string[]): () => boolean;
   setLocalAdapter(adapter: AuthProviderAdapter & { ... }): void;
   async discoverAdapters(authAdaptersRoot: string): Promise<void>;
   async loadPersistedConfigs(): Promise<void>;
@@ -37,6 +37,8 @@ export class CoreAuthGateway {
 
 `getEnabledAdapter(id)` returns a specific adapter by ID only if it is currently enabled. `getAdapter()` (no argument) returns the first enabled adapter, used when the login request does not specify a provider. Both return `null` if no suitable adapter is found.
 
+`registerAdapter()` returns the provider cleanup function used by module disposers. Calling it removes that exact provider registration, its enabled state, and its dependency metadata; if another provider has since replaced the same ID, cleanup leaves the replacement intact. This cleanup is necessary because disabling a module must remove every capability it contributed.
+
 Bootstrap in `src/gateways/auth/bootstrap.ts` and `src/gateways/auth/bootstrap/`:
 
 1. Instantiates `DbLocalAccountStore` from `src/adapters/auth/local/store.ts`.
@@ -49,12 +51,13 @@ Bootstrap in `src/gateways/auth/bootstrap.ts` and `src/gateways/auth/bootstrap/`
 
 Capabilities contributed:
 
-| Capability                       | Type                                           | Description                                                               |
-| -------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------- |
-| `auth:accountStore`              | `LocalAccountStore`                            | Local account store used by the local adapter                             |
-| `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | Creates an admin account if it does not exist                             |
-| `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | Returns metadata for all enabled providers                                |
-| `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Replaces trusted http(s) script origins for one owner in page CSP headers |
+| Capability                       | Type                                           | Description                                                                 |
+| -------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------- |
+| `auth:accountStore`              | `LocalAccountStore`                            | Local account store used by the local adapter                               |
+| `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | Creates an admin account if it does not exist                               |
+| `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | Returns metadata for all enabled providers                                  |
+| `auth:registerProvider`          | `(provider, requires?) => dispose`             | Registers a module authentication provider and returns its cleanup function |
+| `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Replaces trusted http(s) script origins for one owner in page CSP headers   |
 
 ## API Routes
 

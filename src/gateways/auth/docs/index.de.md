@@ -12,7 +12,7 @@ Das Gateway entdeckt Adapter durch Scannen von `src/adapters/auth/` beim Bootstr
 - Adapter-Aktivierungsstatus in `auth_adapter_configs` verwalten und persistieren.
 - Anmeldedaten durch Delegierung an den aktivierten Adapter für den angeforderten Anbieter verifizieren.
 - Zugriffstoken nach erfolgreicher Authentifizierung über `issueAccessToken` ausstellen.
-- `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods` und `auth:registerPageScriptOrigins` zum Capability-Store beitragen.
+- Den dokumentierten Capability-Satz beitragen: `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, `auth:registerProvider`, `auth:registerPageScriptOrigins`, `auth:issueAccessToken`, `auth:getAuthClaims`, `auth:requireAuth`, `auth:requireRoleAccess`, `auth:revokeAccessTokensForSubject`, `auth:revokeSetupPendingAccessTokens` und `auth:routeContext`.
 - Alle Auth-API-Routen und Adapter-Admin-Routen registrieren.
 
 Nicht verantwortlich für: Benutzerprofile speichern (das ist das Profil-Gateway), Session-Management über die Token-Ausstellung hinaus, oder nicht-auth-bezogene Geschäftslogik.
@@ -23,7 +23,7 @@ Die zentrale Klasse ist `CoreAuthGateway` in `src/gateways/auth/gateway.ts`. Sie
 
 ```ts
 export class CoreAuthGateway {
-  registerAdapter(adapter: AuthProviderAdapter, requires?: string[]): void;
+  registerAdapter(adapter: AuthProviderAdapter, requires?: string[]): () => boolean;
   setLocalAdapter(adapter: AuthProviderAdapter & { ... }): void;
   async discoverAdapters(authAdaptersRoot: string): Promise<void>;
   async loadPersistedConfigs(): Promise<void>;
@@ -37,6 +37,8 @@ export class CoreAuthGateway {
 
 `getEnabledAdapter(id)` gibt einen bestimmten Adapter per ID nur zurück, wenn er aktuell aktiviert ist. `getAdapter()` (ohne Argument) gibt den ersten aktivierten Adapter zurück. Beide geben `null` zurück, wenn kein geeigneter Adapter gefunden wird.
 
+`registerAdapter()` gibt die Bereinigungsfunktion des Anbieters zurück, die von Modul-Disposern verwendet wird. Ihr Aufruf entfernt genau diese Anbieterregistrierung samt Aktivierungsstatus und Abhängigkeitsmetadaten. Wurde dieselbe ID inzwischen durch einen anderen Anbieter ersetzt, bleibt dieser erhalten. Diese Bereinigung ist erforderlich, da beim Deaktivieren eines Moduls alle von ihm beigetragenen Fähigkeiten entfernt werden müssen.
+
 Bootstrap in `src/gateways/auth/bootstrap.ts` und `src/gateways/auth/bootstrap/`:
 
 1. Instanziiert `DbLocalAccountStore` aus `src/adapters/auth/local/store.ts`.
@@ -49,12 +51,13 @@ Bootstrap in `src/gateways/auth/bootstrap.ts` und `src/gateways/auth/bootstrap/`
 
 Beigetragene Capabilities:
 
-| Capability                       | Typ                                            | Beschreibung                                                                               |
-| -------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `auth:accountStore`              | `LocalAccountStore`                            | Lokaler Account-Store, der vom lokalen Adapter verwendet wird                              |
-| `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | Erstellt einen Admin-Account, wenn er nicht existiert                                      |
-| `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | Gibt Metadaten für alle aktivierten Anbieter zurück                                        |
-| `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Ersetzt vertrauenswürdige http(s)-Skriptursprünge für einen Besitzer in Seiten-CSP-Headern |
+| Capability                       | Typ                                            | Beschreibung                                                                                  |
+| -------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `auth:accountStore`              | `LocalAccountStore`                            | Lokaler Account-Store, der vom lokalen Adapter verwendet wird                                 |
+| `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | Erstellt einen Admin-Account, wenn er nicht existiert                                         |
+| `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | Gibt Metadaten für alle aktivierten Anbieter zurück                                           |
+| `auth:registerProvider`          | `(provider, requires?) => dispose`             | Registriert einen Modul-Authentifizierungsanbieter und gibt seine Bereinigungsfunktion zurück |
+| `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Ersetzt vertrauenswürdige http(s)-Skriptursprünge für einen Besitzer in Seiten-CSP-Headern    |
 
 ## API-Routen
 
@@ -77,7 +80,3 @@ Das Authentifizierungs-Gateway lädt seinen erforderlichen Schlüsselbundadapter
 ## Weitergabe von Freigabefehlern
 
 Browser-Sitzungsergebnisse bewahren einen neutralen Fehlergrund der alternativen Authentifizierung, damit eine öffentliche Ressourcenseite eine fehlende Ressource von anderen Nicht-verfügbar-Zuständen unterscheiden kann, ohne Authentifizierungs-Interna zu importieren.
-
-## Bereitgestellte Capabilities
-
-Das Gateway stellt `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, `auth:registerPageScriptOrigins`, `auth:issueAccessToken`, `auth:getAuthClaims`, `auth:requireAuth`, `auth:requireRoleAccess`, `auth:revokeAccessTokensForSubject`, `auth:revokeSetupPendingAccessTokens` und `auth:routeContext` bereit.
