@@ -1,6 +1,6 @@
 {
     "name": "@cognis/adapter-social-messages",
-    "version": "2.0.76",
+    "version": "2.0.77",
     "description": "Private messaging and chatrooms.",
     "type": "module",
     "main": "index.ts",
@@ -8,6 +8,6 @@
     "dependencies": {
         "@cognis/adapter-social-profile": "<=1.1.68",
         "@cognis/gateways": "<=0.1.9",
-        "@cognis/adapter-auth-keyring": "<=1.0.41"
+        "@cognis/adapter-auth-keyring": "<=1.0.42"
     }
 }

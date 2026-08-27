@@ -559,6 +559,35 @@ test("account password setup reuses the authenticated credential", () => {
         /result === "use-account-password"\) return accountPassword/,
     );
     assert.doesNotMatch(keyringSource, /setup_account_password_message/);
+    assert.match(
+        readFileSync(
+            resolve(import.meta.dirname, "../ui/languages/en/strings.xml"),
+            "utf8",
+        ),
+        />Use User Password</,
+    );
+});
+
+test("user password setup auto-unlocks on the next password login", async () => {
+    const keyring = await import("../ui/keyring.js");
+    values.clear();
+    sessionValues.clear();
+    localStorage.setItem("cognis_account", "user-password-keyring-user");
+
+    assert.deepEqual(
+        await keyring.setupKeyringAfterLogin("user-password", {
+            requestSetupPassword: async (accountPassword) => accountPassword,
+        }),
+        { setup: true, unlocked: true },
+    );
+    await keyring.lockKeyring();
+    assert.deepEqual(await keyring.setupKeyringAfterLogin("user-password"), {
+        setup: false,
+        unlocked: true,
+    });
+
+    await keyring.lockKeyring();
+    localStorage.removeItem("cognis_account");
 });
 
 test("login silently leaves the keyring locked when its password differs", async () => {
@@ -707,9 +736,30 @@ test("destroying a locked keyring recreates an empty vault", async () => {
             true,
         );
         assert.equal(keyring.getKeyringValue("chatroom:destroy:key"), null);
+        assert.equal(sessionValues.has("cognis_keyring_setup_pending"), false);
     } finally {
         globalThis.fetch = originalFetch;
         await keyring.lockKeyring();
+    }
+});
+
+test("cancelled recreation leaves the destroyed keyring pending setup", async () => {
+    const keyring = await import("../ui/keyring.js");
+    sessionValues.clear();
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () => new Response(null, { status: 204 });
+    try {
+        assert.equal(
+            await keyring.destroyKeyring({
+                requestSetupPassword: async () => "",
+            }),
+            false,
+        );
+        assert.equal(keyring.isKeyringUnlocked(), false);
+        assert.equal(sessionValues.get("cognis_keyring_setup_pending"), "1");
+    } finally {
+        globalThis.fetch = originalFetch;
+        sessionValues.clear();
     }
 });
 

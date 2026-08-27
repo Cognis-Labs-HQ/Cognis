@@ -6,7 +6,7 @@ Bei der Ersteinrichtung nach der Anmeldung und bei neu erstellten Schlüsselbund
 
 ## Einheitliche Passwortformulare
 
-Alle Schlüsselbund-Passwortdialoge verwenden jetzt den gemeinsamen Formularkomponisten, kennzeichnen Pflichtfelder eindeutig und wenden einheitliche Validierung und Anordnung an. Das Bestätigungskriterium meldet übereinstimmende Passwörter, wenn das Erfolgszeichen erscheint.
+Alle Schlüsselbund-Passwortdialoge verwenden jetzt den gemeinsamen Formularkomponisten, kennzeichnen Pflichtfelder eindeutig und wenden einheitliche Validierung und Anordnung an. Das Bestätigungskriterium meldet übereinstimmende Passwörter, wenn das Erfolgszeichen erscheint. Die Aktion „Benutzerpasswort verwenden“ nutzt die bereits bei der Anmeldung bestätigten Zugangsdaten, sodass der Schlüsselbund bei späteren Passwortanmeldungen ohne weitere Abfrage automatisch entsperrt wird. Das Zerstören eines Schlüsselbunds wird vor der Neuerstellung wirksam; bei Abbruch bleibt die Einrichtung erforderlich.
 
 ## Schlüsselbunde gelöschter Benutzer zurücksetzen
 

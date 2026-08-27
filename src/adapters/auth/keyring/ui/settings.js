@@ -416,13 +416,15 @@ export function createSettingsSection({ i18n, root }) {
                 const completed = destroy
                     ? await destroyKeyring()
                     : await clearKeyringValues();
+                if (destroy) {
+                    rerender();
+                    return;
+                }
                 if (!completed) return;
                 rerender();
-                if (!destroy) {
-                    showToast(i18n.t("gateway.auth.keyring.cleared"), {
-                        variant: "success",
-                    });
-                }
+                showToast(i18n.t("gateway.auth.keyring.cleared"), {
+                    variant: "success",
+                });
             },
             { once: true },
         );

@@ -11,7 +11,7 @@
   <string name="adapter.auth.keyring.setup_password">キーリングパスワード</string>
   <string name="adapter.auth.keyring.setup_confirm_password">キーリングパスワードを確認</string>
   <string name="adapter.auth.keyring.setup_password_match">キーリングパスワードが一致します。</string>
-  <string name="adapter.auth.keyring.setup_use_account_password">アカウントパスワードを使用</string>
+  <string name="adapter.auth.keyring.setup_use_account_password">ユーザーパスワードを使用</string>
   <string name="adapter.auth.keyring.setup_action">キーリングを設定</string>
   <string name="adapter.auth.keyring.created">キーリングを作成しました。</string>
   <string name="adapter.auth.keyring.destroyed">キーリングを破棄しました。そのシークレットは自動的に復元できません。</string>

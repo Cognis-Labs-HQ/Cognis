@@ -350,7 +350,6 @@ export async function mount(root) {
         persistSession(data);
         await uiCtx.runFlow("complete-login", {
             accountPassword: password,
-            deferNewKeyringSetup: true,
         });
         const requiresUserValidation =
             data.requiredUserValidation === true &&
@@ -391,7 +390,6 @@ export async function mount(root) {
                 persistSession(data);
                 await uiCtx.runFlow("complete-login", {
                     accountPassword: password,
-                    deferNewKeyringSetup: true,
                 });
                 tfaLoginClient.handleSetupRequired(() => undefined, data);
             }

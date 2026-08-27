@@ -878,6 +878,7 @@ export async function destroyKeyring({
     clearVault(true);
     removeLocalEnvelope();
     await clearSessionUnlockKey();
+    sessionStorage.setItem(DEFERRED_SETUP_KEY, "1");
     dispatchKeyringEvent("destroy");
     await showKeyringLifecycleToast(
         "adapter.auth.keyring.destroyed",
@@ -886,7 +887,10 @@ export async function destroyKeyring({
     );
     const password = await requestSetupPassword("");
     const recreated = password ? await unlockKeyring(password) : false;
-    if (recreated) resumeKeyringAccess();
+    if (recreated) {
+        sessionStorage.removeItem(DEFERRED_SETUP_KEY);
+        resumeKeyringAccess();
+    }
     return recreated;
 }
 

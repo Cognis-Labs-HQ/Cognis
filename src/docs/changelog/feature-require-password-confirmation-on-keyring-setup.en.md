@@ -6,7 +6,7 @@ First-login and recreated-keyring setup now asks users to repeat a custom keyrin
 
 ## Consistent password forms
 
-Every keyring password popup now uses the shared form composer, clearly marks required fields, and applies consistent validation and layout. Password confirmation criteria say that passwords match when their success tick appears.
+Every keyring password popup now uses the shared form composer, clearly marks required fields, and applies consistent validation and layout. Password confirmation criteria say that passwords match when their success tick appears. The “Use User Password” action applies the credential already verified during login, allowing the keyring to unlock automatically on later password logins without another prompt. Destroying a keyring takes effect before recreation and keeps setup required when recreation is cancelled.
 
 ## Reset deleted users' keyrings
 

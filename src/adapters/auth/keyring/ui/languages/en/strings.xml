@@ -11,7 +11,7 @@
   <string name="adapter.auth.keyring.setup_password">Keyring password</string>
   <string name="adapter.auth.keyring.setup_confirm_password">Confirm keyring password</string>
   <string name="adapter.auth.keyring.setup_password_match">Keyring passwords match.</string>
-  <string name="adapter.auth.keyring.setup_use_account_password">Use account password</string>
+  <string name="adapter.auth.keyring.setup_use_account_password">Use User Password</string>
   <string name="adapter.auth.keyring.setup_action">Set up keyring</string>
   <string name="adapter.auth.keyring.created">Keyring created.</string>
   <string name="adapter.auth.keyring.destroyed">Keyring destroyed. Its secrets can no longer be recovered automatically.</string>
