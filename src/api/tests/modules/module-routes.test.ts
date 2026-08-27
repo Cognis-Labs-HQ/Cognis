@@ -286,17 +286,25 @@ test("module routes run enable tests before enabling modules", async () => {
     );
 
     const token = issueAccessToken("admin-user", "admin", 60);
-    await assert.rejects(
-        route(
-            {
-                method: "POST",
-                headers: { authorization: `Bearer ${token}` },
-            } as any,
-            { writeHead() {}, end() {} } as any,
-            new URL("http://localhost/api/v1/modules/example-module/enable"),
-        ),
-        /enable test failed/,
+    let status = 0;
+    let body = "";
+    await route(
+        {
+            method: "POST",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/modules/example-module/enable"),
     );
+    assert.equal(status, 409);
+    assert.equal(JSON.parse(body).error.code, "module_validation_failed");
     assert.equal(enableCalled, false);
     assert.deepEqual(errors, [
         { level: "error", message: "Module enable validation failed." },
@@ -855,76 +863,6 @@ test("module marketplace identifies GitHub connection timeouts in jobs and logs"
 
     assert.match(responseBody, /github_connection_timeout/);
     assert.equal(entries[0].meta?.knownCause, "container_network_mtu");
-});
-
-test("module updates defer dependency validation until enablement", async () => {
-    const token = issueAccessToken("admin-user", "admin", 60);
-    const moduleUuid = "94d6974b-d836-4653-af9b-8b68774f4458";
-    let dependencyValidations = 0;
-    let responseBody = "";
-    let status = 0;
-    const route = createModuleRoutes(
-        {
-            list: async () => [
-                { id: "meetings", uuid: moduleUuid, class: "extension" },
-            ],
-        } as any,
-        {
-            getStatus: () => "disabled",
-            validateInstallDependencies: async () => {
-                dependencyValidations += 1;
-                throw new Error("module_dependency_disabled");
-            },
-        },
-        undefined,
-        {
-            install: async (_module, _token, _branch, validateDependencies) => {
-                const manifest = {
-                    id: "meetings",
-                    uuid: moduleUuid,
-                    class: "extension",
-                    version: "1.0.0",
-                };
-                await validateDependencies?.(manifest as any);
-                return manifest;
-            },
-        } as any,
-    );
-    const response = {
-        writeHead(code: number) {
-            status = code;
-        },
-        end(payload: string) {
-            responseBody = payload;
-        },
-    } as any;
-    await route(
-        {
-            method: "POST",
-            headers: { authorization: `Bearer ${token}` },
-            async *[Symbol.asyncIterator]() {
-                yield Buffer.from(
-                    JSON.stringify({ module: { uuid: moduleUuid } }),
-                );
-            },
-        } as any,
-        response,
-        new URL("http://localhost/api/v1/modules/install"),
-    );
-    const jobId = JSON.parse(responseBody).data.jobId;
-    await new Promise((resolve) => setImmediate(resolve));
-    await route(
-        {
-            method: "GET",
-            headers: { authorization: `Bearer ${token}` },
-        } as any,
-        response,
-        new URL(`http://localhost/api/v1/modules/install/${jobId}`),
-    );
-
-    assert.equal(status, 200);
-    assert.equal(JSON.parse(responseBody).data.status, "succeeded");
-    assert.equal(dependencyValidations, 0);
 });
 
 test("module updates report that a container restart is required", async () => {

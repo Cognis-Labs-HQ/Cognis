@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
     hasModuleUpdate,
     moduleChangeDirection,
+    resolveSelectedBranch,
 } from "../app/modules/presentation.js";
 
 function installedModule(overrides = {}) {
@@ -37,4 +38,14 @@ test("unchanged installed channels do not offer updates", () => {
 
     assert.equal(hasModuleUpdate(module, "main"), false);
     assert.equal(moduleChangeDirection(module, "main"), "none");
+});
+
+test("deleted release channels fall back to the default branch", () => {
+    const module = installedModule({
+        installedBranch: "v1.0.0",
+        defaultBranch: "main",
+    });
+
+    assert.equal(resolveSelectedBranch(module, module.installedBranch), "main");
+    assert.equal(hasModuleUpdate(module, "main"), true);
 });

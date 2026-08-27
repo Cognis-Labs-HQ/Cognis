@@ -1,5 +1,9 @@
 # Reliable Module Updates
 
-## Updates defer dependency checks
+## Removed channels recover safely
 
-Module updates now replace the checkout while the module is disabled and defer dependency readiness checks to the normal enable flow. This prevents an installed module's temporary runtime state from causing a valid same-version commit update to fail with HTTP 422, while activation still requires every declared dependency.
+When an installed release channel has been deleted, a marketplace scan now moves the available update target to the repository's default branch instead of retaining an unusable cached channel. The module can then be updated normally.
+
+## Validation failures are clear
+
+Module enable validation failures now return a safe, structured API error. Administration shows a translated validation-failed toast and directs operators to the server log instead of displaying a generic request failure.

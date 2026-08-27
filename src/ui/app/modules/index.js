@@ -49,6 +49,7 @@ import {
     moduleChangeDirection,
     resolveModuleRepositoryUrl,
     resolveLocalizedReadme,
+    resolveSelectedBranch,
 } from "./presentation.js";
 import { openModulePreferences } from "./preferences.js";
 import { confirmModuleUninstall } from "./uninstall.js";
@@ -217,11 +218,11 @@ function renderLifecycleButton(module, action, consequence) {
 }
 
 function selectedBranch(module) {
-    return (
+    const selected =
         selectedBranches.get(module.uuid) ??
         module.installedBranch ??
-        module.defaultBranch
-    );
+        module.defaultBranch;
+    return resolveSelectedBranch(module, selected);
 }
 
 function releaseChannels(module) {
@@ -825,7 +826,9 @@ function bindInteractions(root, signal) {
                             ? i18n.t("ui.app.modules.github_timeout_warning")
                             : error.code === "module_install_timeout"
                               ? i18n.t("ui.app.modules.install_timeout")
-                              : error.message,
+                              : error.code === "module_validation_failed"
+                                ? i18n.t("ui.app.modules.validation_failed")
+                                : error.message,
                         { type: "error" },
                     );
                 } finally {

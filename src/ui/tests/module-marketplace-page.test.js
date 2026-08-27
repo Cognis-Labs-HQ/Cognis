@@ -807,6 +807,7 @@ test("module marketplace exposes releases and pending action feedback", () => {
         /\.module-release-channel-list[\s\S]*overflow-y: auto/,
     );
     assert.match(source, /module_lifecycle_action_failed/);
+    assert.match(source, /ui\.app\.modules\.validation_failed/);
     assert.match(source, /github_connection_timeout/);
     assert.match(source, /github_timeout_warning/);
     assert.match(loadingSource, /classList\.add\("button-loading"\)/);

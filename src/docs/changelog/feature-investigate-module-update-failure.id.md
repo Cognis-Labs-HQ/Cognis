@@ -1,5 +1,9 @@
 # Pembaruan Modul Andal
 
-## Pemeriksaan ditunda saat update
+## Kanal terhapus dipulihkan
 
-Pembaruan modul kini mengganti checkout saat modul dinonaktifkan dan menunda pemeriksaan kesiapan dependensi ke alur pengaktifan normal. Hal ini mencegah status runtime sementara modul terpasang membuat pembaruan commit berversi sama yang valid gagal dengan HTTP 422, sementara pengaktifan tetap memerlukan semua dependensi yang dideklarasikan.
+Ketika kanal rilis yang terpasang telah dihapus, pemindaian marketplace kini memindahkan target pembaruan yang tersedia ke cabang default repositori dan tidak mempertahankan kanal cache yang tidak dapat digunakan. Modul kemudian dapat diperbarui secara normal.
+
+## Kegagalan validasi lebih jelas
+
+Kegagalan validasi saat mengaktifkan modul kini menghasilkan kesalahan API terstruktur yang aman. Administrasi menampilkan toast kegagalan validasi yang diterjemahkan dan mengarahkan operator ke log server, bukan menampilkan kegagalan permintaan umum.

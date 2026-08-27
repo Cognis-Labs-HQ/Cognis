@@ -90,6 +90,13 @@ export function compareVersions(left, right) {
     return 0;
 }
 
+export function resolveSelectedBranch(module, selectedBranch) {
+    const channels = [...(module.branches ?? []), ...(module.releases ?? [])];
+    return channels.some((channel) => channel.name === selectedBranch)
+        ? selectedBranch
+        : module.defaultBranch;
+}
+
 function selectedChannel(module, branch) {
     return [...(module.branches ?? []), ...(module.releases ?? [])].find(
         (entry) => entry.name === branch,
