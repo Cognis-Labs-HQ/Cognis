@@ -38,7 +38,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | ファイル容量制限      | `src/adapters/file/quota/`          | `1.0.14`   |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.14`   |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.37`   |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.21`   |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.22`   |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.14`   |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.14`   |
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.27`   |
@@ -64,7 +64,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント        | パス                          | バージョン |
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.8`    |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.11`   |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.12`   |
 | Share                 | `src/gateways/share/`         | `1.7.34`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.18`   |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.5`    |

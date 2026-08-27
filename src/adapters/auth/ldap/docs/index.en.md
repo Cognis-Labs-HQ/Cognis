@@ -64,3 +64,5 @@ The Administration activation slider remains disabled until at least one LDAP se
 Completing user verification adds the server to the pending configuration and immediately unlocks activation. Activating at that point saves the pending server list before enabling the adapter. Closing setup after starting an unsaved server requires discard confirmation.
 
 Selecting Save Settings, including by pressing Enter, before manually testing user authentication runs the same authentication test automatically. If authentication fails, setup returns to the connection step so the bind fields can be corrected.
+
+Deleting the final configured server opens a confirmation warning and disables the LDAP adapter when confirmed. Connection tests return field-specific diagnostics for every plausible cause identified from the LDAP response. The setup form highlights all reported fields rather than reducing a multi-field failure, such as rejected bind credentials, to one input.

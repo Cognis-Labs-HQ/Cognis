@@ -1,0 +1,5 @@
+<resources>
+  <string name="adapter.auth.ldap.delete_last.title">Hapus Server LDAP Terakhir?</string>
+  <string name="adapter.auth.ldap.delete_last.body">Menghapus server LDAP terakhir akan menonaktifkan adaptor LDAP. Lanjutkan?</string>
+  <string name="adapter.auth.ldap.delete_last.action">Hapus dan nonaktifkan</string>
+</resources>

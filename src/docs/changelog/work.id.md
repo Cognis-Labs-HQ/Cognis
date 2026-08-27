@@ -7,3 +7,5 @@ Penggeser aktivasi adaptor LDAP kini tetap dinonaktifkan hingga setidaknya satu 
 Setelah server terverifikasi ditambahkan, aktivasi adaptor akan menyimpan konfigurasi server yang tertunda secara otomatis. Pembatalan server baru yang belum disimpan memerlukan konfirmasi.
 
 Menyimpan dari tahap verifikasi pengguna, termasuk dengan menekan Enter, kini menjalankan uji autentikasi secara otomatis bila diperlukan. Jika uji autentikasi gagal, administrator dikembalikan ke kolom bind LDAP untuk melakukan perbaikan.
+
+Penghapusan server LDAP terakhir kini memerlukan konfirmasi dan menonaktifkan adaptor. Kegagalan uji LDAP dapat menyoroti setiap kolom konfigurasi yang mungkin menyebabkan kegagalan, termasuk URL server, DN direktori, kredensial bind, dan filter pencarian.

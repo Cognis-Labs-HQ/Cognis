@@ -44,3 +44,5 @@ Penggeser aktivasi di Administrasi tetap dinonaktifkan hingga setidaknya satu se
 Setelah verifikasi pengguna selesai, server ditambahkan ke konfigurasi tertunda dan aktivasi langsung tersedia. Aktivasi pada tahap tersebut menyimpan daftar server tertunda sebelum mengaktifkan adaptor. Menutup penyiapan setelah memulai server yang belum disimpan memerlukan konfirmasi pembuangan perubahan.
 
 Memilih Simpan Pengaturan, termasuk dengan menekan Enter, sebelum menguji autentikasi pengguna secara manual akan menjalankan uji autentikasi yang sama secara otomatis. Jika autentikasi gagal, penyiapan kembali ke tahap koneksi agar kolom bind dapat diperbaiki.
+
+Menghapus server terakhir yang dikonfigurasi akan membuka peringatan konfirmasi dan menonaktifkan adaptor LDAP setelah dikonfirmasi. Uji koneksi mengembalikan diagnosis khusus kolom untuk setiap kemungkinan penyebab yang dikenali dari respons LDAP. Formulir penyiapan menyoroti semua kolom yang dilaporkan alih-alih mengurangi kegagalan multikolom, seperti kredensial bind yang ditolak, menjadi satu masukan.

@@ -1,0 +1,5 @@
+<resources>
+  <string name="adapter.auth.ldap.delete_last.title">Delete Last LDAP Server?</string>
+  <string name="adapter.auth.ldap.delete_last.body">Deleting the last LDAP server will disable the LDAP adapter. Continue?</string>
+  <string name="adapter.auth.ldap.delete_last.action">Delete and Disable</string>
+</resources>

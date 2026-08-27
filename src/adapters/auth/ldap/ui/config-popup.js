@@ -1,5 +1,6 @@
 /** Adapter-owned LDAP configuration popup extension. */
 import { createFormBuilder } from "/static/reuse/form-builder.js";
+import { markPopupFieldInvalid } from "/static/reuse/popup.js";
 
 export async function openAdapterConfig({
     configUrl,
@@ -28,6 +29,7 @@ export async function openAdapterConfig({
     }
     let connectionFormController = null;
     let credentialFormController = null;
+    let pendingConnectionFieldErrors = {};
 
     function renderLdapConnectionForm(values = {}) {
         const bindPasswordConfigured =
@@ -309,6 +311,8 @@ export async function openAdapterConfig({
         const testPayload = await testResponse.json().catch(() => ({}));
         if (!testResponse.ok || !testPayload.data?.credentialTest) {
             credentialTestResult = null;
+            pendingConnectionFieldErrors =
+                testPayload?.error?.fieldErrors ?? {};
             showToast(
                 testPayload?.error?.message ??
                     "LDAP user credential test failed",
@@ -317,7 +321,26 @@ export async function openAdapterConfig({
             return false;
         }
         credentialTestResult = testPayload.data.credentialTest;
+        pendingConnectionFieldErrors = {};
         return true;
+    }
+
+    function showConnectionFieldErrors(overlay) {
+        const remainingFieldErrors = {};
+        for (const [fieldName, message] of Object.entries(
+            pendingConnectionFieldErrors,
+        )) {
+            const field = overlay.querySelector(
+                `[name="${CSS.escape(fieldName)}"]`,
+            );
+            if (field instanceof HTMLElement && !field.id) {
+                field.id = fieldName;
+            }
+            if (!markPopupFieldInvalid(overlay, fieldName, message)) {
+                remainingFieldErrors[fieldName] = message;
+            }
+        }
+        pendingConnectionFieldErrors = remainingFieldErrors;
     }
 
     await openPopup({
@@ -402,6 +425,7 @@ export async function openAdapterConfig({
             },
         ],
         onOpen: (overlay, _close, api) => {
+            showConnectionFieldErrors(overlay);
             if (api.pageId === "servers") {
                 const enabledInput = overlay.querySelector(
                     '[name="adapterEnabled"]',
@@ -478,7 +502,46 @@ export async function openAdapterConfig({
                 overlay
                     .querySelectorAll("[data-delete-server]")
                     .forEach((button) =>
-                        button.addEventListener("click", () => {
+                        button.addEventListener("click", async () => {
+                            if (servers.length === 1) {
+                                const confirmed = await openPopup({
+                                    title: i18n.t(
+                                        "adapter.auth.ldap.delete_last.title",
+                                    ),
+                                    body: `<p>${escapeHtml(i18n.t("adapter.auth.ldap.delete_last.body"))}</p>`,
+                                    variant: "warning",
+                                    actions: [
+                                        {
+                                            id: "delete",
+                                            label: i18n.t(
+                                                "adapter.auth.ldap.delete_last.action",
+                                            ),
+                                            variant: "cancel",
+                                        },
+                                        {
+                                            id: "keep",
+                                            label: i18n.t("ui.reuse.cancel"),
+                                            variant: "neutral",
+                                        },
+                                    ],
+                                });
+                                if (confirmed !== "delete") return;
+                                if (enabled && disableUrl) {
+                                    const disableResponse = await apiFetch(
+                                        disableUrl,
+                                        { method: "POST" },
+                                    );
+                                    if (!disableResponse.ok) {
+                                        showToast(
+                                            i18n.t("ui.reuse.save_failed"),
+                                            { variant: "error" },
+                                        );
+                                        return;
+                                    }
+                                    enabled = false;
+                                    await onSaved?.();
+                                }
+                            }
                             servers.splice(
                                 Number(button.dataset.deleteServer),
                                 1,
@@ -637,12 +700,22 @@ export async function openAdapterConfig({
                 const testPayload = await testResponse.json().catch(() => ({}));
                 if (currentDiscovery !== discoverySequence) return false;
                 if (!testResponse.ok) {
+                    pendingConnectionFieldErrors =
+                        testPayload?.error?.fieldErrors ?? {};
                     showToast(
                         testPayload?.error?.message ?? "LDAP test failed",
                         { variant: "error" },
                     );
+                    const filterFields = new Set(["userFilter", "groupFilter"]);
+                    const errorPage = Object.keys(
+                        pendingConnectionFieldErrors,
+                    ).some((fieldName) => filterFields.has(fieldName))
+                        ? "filters"
+                        : "connect";
+                    api.setPage(errorPage);
                     return false;
                 }
+                pendingConnectionFieldErrors = {};
                 sample = testPayload.data;
                 api.markDirty();
                 api.setPage("filters");

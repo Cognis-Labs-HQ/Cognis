@@ -70,8 +70,11 @@ export class CoreAuthGateway {
 | `GET`    | `/api/v1/gateways/auth/adapters`             | 登録済み認証アダプターを一覧表示   | 管理者   |
 | `GET`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定スキーマを取得     | 管理者   |
 | `PUT`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定を更新             | 管理者   |
+| `POST`   | `/api/v1/gateways/auth/adapters/:id/test`    | アダプター設定をテスト             | 管理者   |
 | `POST`   | `/api/v1/gateways/auth/adapters/:id/enable`  | アダプターを有効化                 | 管理者   |
 | `POST`   | `/api/v1/gateways/auth/adapters/:id/disable` | アダプターを無効化                 | 管理者   |
+
+アダプターテストの失敗には、任意の数の設定項目 ID を安全な診断メッセージに対応付ける `error.fieldErrors` オブジェクトが含まれる場合があります。
 
 ## ブラウザーキーリング起動
 

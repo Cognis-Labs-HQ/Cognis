@@ -1,0 +1,5 @@
+<resources>
+  <string name="adapter.auth.ldap.delete_last.title">最後の LDAP サーバーを削除しますか？</string>
+  <string name="adapter.auth.ldap.delete_last.body">最後の LDAP サーバーを削除すると、LDAP アダプターが無効になります。続行しますか？</string>
+  <string name="adapter.auth.ldap.delete_last.action">削除して無効化</string>
+</resources>

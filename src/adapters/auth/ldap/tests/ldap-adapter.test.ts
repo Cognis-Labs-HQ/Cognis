@@ -420,7 +420,47 @@ test("ldap test configuration explains rejected bind credentials", async () => {
                 bindDn: "uid=service,dc=example,dc=org",
                 bindPassword: "incorrect",
             }),
-        /rejected the bind DN or bind password/,
+        (error: Error & { fieldErrors?: Record<string, string> }) => {
+            assert.match(
+                error.message,
+                /rejected the bind DN or bind password/,
+            );
+            assert.deepEqual(Object.keys(error.fieldErrors ?? {}).sort(), [
+                "bindDn",
+                "bindPassword",
+            ]);
+            return true;
+        },
+    );
+});
+
+test("ldap test configuration identifies every possible missing DN field", async () => {
+    const adapter = createAdapter() as {
+        setClient(client: { discover: () => Promise<never> }): void;
+        testConfiguration(config: Record<string, unknown>): Promise<unknown>;
+    };
+    adapter.setClient({
+        discover: async () => {
+            throw new Error("LDAP code 32: no such object");
+        },
+    });
+    await assert.rejects(
+        () =>
+            adapter.testConfiguration({
+                serverUrl: "ldaps://ldap.example.org",
+                baseDn: "dc=missing,dc=org",
+                bindDn: "uid=service,dc=missing,dc=org",
+                bindPassword: "secret",
+            }),
+        (error: Error & { fieldErrors?: Record<string, string> }) => {
+            assert.deepEqual(Object.keys(error.fieldErrors ?? {}).sort(), [
+                "baseDn",
+                "bindDn",
+                "groupDn",
+                "userDn",
+            ]);
+            return true;
+        },
     );
 });
 

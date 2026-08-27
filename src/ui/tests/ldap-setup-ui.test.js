@@ -98,6 +98,29 @@ test("starting a new LDAP server enables abandonment confirmation", () => {
     );
 });
 
+test("deleting the last LDAP server confirms and disables the adapter", () => {
+    assert.match(
+        ldapPopupSource,
+        /if \(servers\.length === 1\)[\s\S]*adapter\.auth\.ldap\.delete_last\.body/,
+    );
+    assert.match(
+        ldapPopupSource,
+        /if \(confirmed !== "delete"\) return;[\s\S]*apiFetch\(\s*disableUrl/,
+    );
+});
+
+test("LDAP setup flags every server field identified by the API", () => {
+    assert.match(ldapPopupSource, /import \{ markPopupFieldInvalid \}/);
+    assert.match(
+        ldapPopupSource,
+        /Object\.entries\(\s*pendingConnectionFieldErrors/,
+    );
+    assert.match(
+        ldapPopupSource,
+        /markPopupFieldInvalid\(overlay, fieldName, message\)/,
+    );
+});
+
 test("LDAP setup requires a successful user bind before completion", () => {
     assert.match(ldapPopupSource, /id: "credentials"/);
     assert.match(ldapPopupSource, /id: "verify-user"/);

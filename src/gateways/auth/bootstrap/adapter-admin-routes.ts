@@ -178,6 +178,13 @@ export function createAdapterAdminRoutes(
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data }));
             } catch (error) {
+                const fieldErrors =
+                    error instanceof Error &&
+                    "fieldErrors" in error &&
+                    error.fieldErrors &&
+                    typeof error.fieldErrors === "object"
+                        ? error.fieldErrors
+                        : undefined;
                 log?.("error", "Auth adapter configuration test failed.", {
                     ...logMeta,
                     adapterId,
@@ -198,6 +205,7 @@ export function createAdapterAdminRoutes(
                                 error instanceof Error
                                     ? error.message
                                     : "LDAP test failed",
+                            ...(fieldErrors ? { fieldErrors } : {}),
                         },
                     }),
                 );
