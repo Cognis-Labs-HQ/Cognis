@@ -361,7 +361,11 @@ test("module source mutations and scans emit lifecycle logs", async () => {
         { list: async () => [] } as any,
         {
             log: (level, message, meta) =>
-                logs.push({ level, message, count: meta?.modulesFound }),
+                logs.push({
+                    level,
+                    message,
+                    count: meta?.catalogModulesFound,
+                }),
         },
         undefined,
         {

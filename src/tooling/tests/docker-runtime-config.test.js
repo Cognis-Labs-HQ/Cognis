@@ -47,7 +47,20 @@ for (const profile of ["postgres", "mariadb"]) {
             configuration,
             /COGNIS_EXTERNAL_MODULES_ROOT: \/app\/external-modules/,
         );
+        assert.match(
+            configuration,
+            /COGNIS_MODULE_SOURCES_PATH: \/app\/config\/module-sources\.json/,
+        );
         assert.match(configuration, /appmodules:\/app\/external-modules/);
         assert.match(configuration, /^    appmodules:$/m);
     });
 }
+
+test("the production image stores module source configuration in the persistent config root", async () => {
+    const dockerfile = await readRepositoryFile("docker/Dockerfile");
+
+    assert.match(
+        dockerfile,
+        /COGNIS_MODULE_SOURCES_PATH=\/app\/config\/module-sources\.json/,
+    );
+});

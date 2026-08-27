@@ -49,6 +49,7 @@ export const DEFAULT_TRUSTED_MODULE_SOURCE: Readonly<ModuleSource> =
         namespace: "Cognis-Labs-HQ",
         baseUrl: "https://api.github.com",
         homepage: "https://github.com/Cognis-Labs-HQ",
+        scanPrivateRepos: false,
         trusted: true,
     });
 
@@ -180,9 +181,8 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                     credentialId:
                         trustedOverride?.credentialId ??
                         credentialBindings[DEFAULT_TRUSTED_MODULE_SOURCE.uuid],
-                    ...(trustedOverride?.scanPrivateRepos === true
-                        ? { scanPrivateRepos: true }
-                        : {}),
+                    scanPrivateRepos:
+                        trustedOverride?.scanPrivateRepos === true,
                 },
                 ...stored.filter(
                     (source) =>
@@ -471,7 +471,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             this.log("info", "Module source scan completed.", {
                 sourceUuid: source.uuid,
                 sourceName: source.name,
-                modulesFound: accepted.length,
+                catalogModulesFound: accepted.length,
             });
             discovered.push(...accepted);
         }

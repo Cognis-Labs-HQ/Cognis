@@ -74,7 +74,22 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                             manifestResponse,
                         );
                         manifest = this.parseManifest(manifestText);
-                    } catch {
+                    } catch (error) {
+                        this.log(
+                            "warn",
+                            "Repository manifest was excluded from marketplace discovery.",
+                            {
+                                sourceUuid: source.uuid,
+                                sourceName: source.name,
+                                repository: projectPath,
+                                privateRepository,
+                                error: "invalid_module_manifest",
+                                detail:
+                                    error instanceof Error
+                                        ? error.message
+                                        : String(error),
+                            },
+                        );
                         return { cloneUrl, module: null };
                     }
                     if (manifest.class === "core") {
@@ -275,6 +290,24 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                             "private_repository_contents_access_failed",
                         );
                     }
+                    this.log(
+                        "warn",
+                        "Module repository was excluded from marketplace discovery.",
+                        {
+                            sourceUuid: source.uuid,
+                            sourceName: source.name,
+                            repository: String(
+                                repository.full_name ??
+                                    repository.path_with_namespace ??
+                                    cloneUrl,
+                            ),
+                            privateRepository,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
                     return { cloneUrl, module: null };
                 }
             }),
@@ -309,7 +342,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
         }
 
         const accessiblePrivateRepositories = await this.fetchPaginated(
-            `${source.baseUrl}/user/repos?per_page=100&visibility=private&affiliation=owner,collaborator,organization_member`,
+            `${source.baseUrl}/user/repos?per_page=100&visibility=private`,
             headers,
         );
         const normalizedNamespace = source.namespace.toLowerCase();

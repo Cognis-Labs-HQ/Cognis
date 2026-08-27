@@ -838,6 +838,7 @@ export async function changeKeyringPassword(password) {
 }
 
 export async function resolveKeyringValue(id, options = {}) {
+    if (options.promptWhenLocked === false && !isKeyringUnlocked()) return null;
     if (
         !(await requestKeyringUnlock({
             request: options.request,

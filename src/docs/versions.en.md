@@ -37,7 +37,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.16` |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.14` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.14` |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.36` |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.37` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.17` |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.14` |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.14` |
@@ -80,13 +80,13 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component    | Path        | Version  |
 | ------------ | ----------- | -------- |
-| Core Package | `src/core/` | `0.3.74` |
+| Core Package | `src/core/` | `0.3.76` |
 
 ## API
 
 | Component  | Path       | Version   |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.3.102` |
+| API Server | `src/api/` | `0.3.104` |
 
 ## Tooling
 

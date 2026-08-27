@@ -376,7 +376,7 @@ export function createModuleRoutes(
                     ...logMeta,
                     accountId: claims.sub,
                     sourceUuids,
-                    modulesFound: modules.length,
+                    catalogModulesFound: modules.length,
                 },
             );
             const data = modules.map((module) =>

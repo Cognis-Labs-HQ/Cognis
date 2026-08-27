@@ -103,6 +103,7 @@ function startMarketplacePolling(signal) {
             return;
         marketplacePollPending = true;
         void loadKnownModules(false, signal)
+            .then(() => discoverConfiguredSources(false, signal))
             .catch((error) => {
                 if (error?.name !== "AbortError") {
                     uiCtx.capabilities.get("ui:log")?.(
@@ -598,10 +599,17 @@ async function discoverConfiguredSources(
     const resolvedTokens = await Promise.all(
         credentialSources.map(async (source) => [
             source.credentialId,
-            (await resolveSourceToken(keyring, source, {
-                action: i18n.t("ui.app.modules.refresh_complete"),
-                process: source.namespace,
-            })) ?? "",
+            (await resolveSourceToken(
+                keyring,
+                source,
+                {
+                    action: i18n.t("ui.app.modules.refresh_complete"),
+                    process: source.namespace,
+                },
+                {
+                    promptWhenLocked: forceRefresh,
+                },
+            )) ?? "",
         ]),
     );
     const tokens = Object.fromEntries(resolvedTokens);
