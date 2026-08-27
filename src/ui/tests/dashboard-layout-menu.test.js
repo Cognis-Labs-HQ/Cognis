@@ -268,6 +268,11 @@ test("dashboard navigation alphabetizes and redraws entries as plugins add them"
     );
     assert.match(
         layoutSource,
+        /Array\.from\(topnav\.children\)[\s\S]*entry\.matches\("a"\)/,
+    );
+    assert.doesNotMatch(layoutSource, /entry\.matches\("a\[href\]"\)/);
+    assert.match(
+        layoutSource,
         /function redrawNavigation\(\)[\s\S]*sortNavigationEntries\(topnav\)[\s\S]*drawerNav\.innerHTML = topnav\.innerHTML/,
     );
     assert.match(

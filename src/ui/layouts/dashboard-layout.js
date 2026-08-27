@@ -114,7 +114,7 @@ function navigationEntryRank(entry) {
 
 function sortNavigationEntries(topnav) {
     const entries = Array.from(topnav.children).filter((entry) =>
-        entry.matches("a[href]"),
+        entry.matches("a"),
     );
     const collator = new Intl.Collator(
         document.documentElement.lang || undefined,
