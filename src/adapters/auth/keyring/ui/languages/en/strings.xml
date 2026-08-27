@@ -44,6 +44,9 @@
   <string name="gateway.auth.keyring.minutes">minutes</string>
   <string name="gateway.auth.keyring.timeout_saved">Keyring lock timeout saved.</string>
   <string name="gateway.auth.keyring.empty">No secrets are stored.</string>
+  <string name="gateway.auth.keyring.not_found">No Keyring Found</string>
+  <string name="gateway.auth.keyring.not_found_message">Create a keyring before managing encrypted secrets.</string>
+  <string name="gateway.auth.keyring.create">Create</string>
   <string name="gateway.auth.keyring.add">Add Secret</string>
   <string name="gateway.auth.keyring.add_title">Add Secret</string>
   <string name="gateway.auth.keyring.edit_title">Edit Secret</string>

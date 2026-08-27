@@ -548,8 +548,15 @@ test("keyring password popups use the form composer with required fields", () =>
     assert.match(keyringSource, /name: "password"[\s\S]*required: true/);
     assert.match(keyringSource, /name: "confirmation"[\s\S]*required: true/);
     assert.match(keyringSource, /setup_password_match/);
+    assert.match(keyringSource, /name: "relockMinutes"/);
     assert.match(settingsSource, /formId: "keyring-change-password-form"/);
     assert.match(settingsSource, /styles\/reuse\/page-sections\.css/);
+    assert.match(settingsSource, /gateway\.auth\.keyring\.not_found/);
+    assert.match(settingsSource, /id="settings-keyring-create"/);
+    assert.match(
+        settingsSource,
+        /promptToUnlock\(\)[\s\S]*rerender\(\);[\s\S]*return;/,
+    );
     assert.match(
         settingsSource,
         /name: "confirmation"[\s\S]*required: true[\s\S]*keyring-password-change-match/,
@@ -730,7 +737,7 @@ test("empty keyring setup password falls back to the account password", async ()
     );
 });
 
-test("destroying a locked keyring recreates an empty vault", async () => {
+test("destroying a locked keyring leaves creation pending", async () => {
     const keyring = await import("../ui/keyring.js");
     assert.equal(await keyring.unlockKeyring("account-password"), true);
     await keyring.setKeyringValue("chatroom:destroy:key", "old-room-key");
@@ -752,28 +759,24 @@ test("destroying a locked keyring recreates an empty vault", async () => {
                   },
               );
     try {
-        assert.equal(
-            await keyring.destroyKeyring({
-                requestSetupPassword: async () => "replacement-password",
-            }),
-            true,
-        );
+        assert.equal(await keyring.destroyKeyring(), true);
         assert.equal(keyring.getKeyringValue("chatroom:destroy:key"), null);
-        assert.equal(sessionValues.has("cognis_keyring_setup_pending"), false);
+        assert.equal(sessionValues.get("cognis_keyring_setup_pending"), "1");
     } finally {
         globalThis.fetch = originalFetch;
         await keyring.lockKeyring();
     }
 });
 
-test("cancelled recreation leaves the destroyed keyring pending setup", async () => {
+test("cancelled creation leaves the destroyed keyring pending setup", async () => {
     const keyring = await import("../ui/keyring.js");
     sessionValues.clear();
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async () => new Response(null, { status: 204 });
     try {
+        assert.equal(await keyring.destroyKeyring(), true);
         assert.equal(
-            await keyring.destroyKeyring({
+            await keyring.createKeyring({
                 requestSetupPassword: async () => "",
             }),
             false,

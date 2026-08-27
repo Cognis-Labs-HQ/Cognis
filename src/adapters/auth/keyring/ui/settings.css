@@ -2,6 +2,22 @@
     min-width: 0;
 }
 
+.settings-keyring-missing {
+    display: grid;
+    justify-items: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    border: 1px solid var(--color-warning-outline-text);
+    border-radius: 0.75rem;
+    background: var(--color-warning-hover-bg);
+    text-align: center;
+}
+
+.settings-keyring-missing h3,
+.settings-keyring-missing p {
+    margin: 0;
+}
+
 .settings-keyring-toolbar {
     display: flex;
     flex-wrap: wrap;

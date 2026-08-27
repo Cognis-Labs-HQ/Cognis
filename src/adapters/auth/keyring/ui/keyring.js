@@ -38,6 +38,7 @@ let keyringAccessSuppressed = false;
 let keyringI18nPromise = null;
 let persistenceQueue = Promise.resolve();
 let keyringStateVersion = 0;
+let keyringExists = false;
 const pendingValues = new Map();
 
 function loadKeyringI18n() {
@@ -386,6 +387,7 @@ export async function unlockKeyring(password) {
         remoteState.accountInstanceId ||
         String(localEnvelope?.accountInstanceId ?? "");
     const stored = selectKeyringEnvelope(localEnvelope, remoteState);
+    keyringExists = Boolean(stored);
     if (remoteState.resolved && localEnvelope && !stored) {
         removeLocalEnvelope();
     }
@@ -406,6 +408,7 @@ export async function unlockKeyring(password) {
         iterations,
     );
     if (unlocked && !stored) {
+        keyringExists = true;
         await showKeyringLifecycleToast(
             "adapter.auth.keyring.created",
             "success",
@@ -673,6 +676,17 @@ async function requestKeyringSetup(accountPassword) {
             import("/static/reuse/form-builder.js"),
         ]);
     const i18n = await loadKeyringI18n();
+    const timeoutOptions = [
+        [0, "gateway.auth.keyring.logout"],
+        [5, "gateway.auth.keyring.timeout_5_minutes"],
+        [15, "gateway.auth.keyring.timeout_15_minutes"],
+        [30, "gateway.auth.keyring.timeout_30_minutes"],
+        [60, "gateway.auth.keyring.timeout_1_hour"],
+        [360, "gateway.auth.keyring.timeout_6_hours"],
+        [720, "gateway.auth.keyring.timeout_12_hours"],
+        [1440, "gateway.auth.keyring.timeout_1_day"],
+        [10080, "gateway.auth.keyring.timeout_1_week"],
+    ];
     const formBuilder = createFormBuilder(
         { i18n, escapeHtml },
         {
@@ -703,6 +717,16 @@ async function requestKeyringSetup(accountPassword) {
                             mode: "submit",
                         },
                     ],
+                },
+                {
+                    name: "relockMinutes",
+                    labelKey: "gateway.auth.keyring.relock",
+                    type: "select",
+                    value: String(getKeyringRelockMinutes()),
+                    options: timeoutOptions.map(([minutes, labelKey]) => ({
+                        value: String(minutes),
+                        label: i18n.t(labelKey),
+                    })),
                 },
             ],
         },
@@ -739,8 +763,12 @@ async function requestKeyringSetup(accountPassword) {
         onAction: (actionId) =>
             actionId !== "setup" || Boolean(formController?.validateAll(true)),
     });
+    if (!formController || !["setup", "use-account-password"].includes(result))
+        return "";
+    await setKeyringRelockMinutes(
+        Number(formController.getValues().relockMinutes ?? 0),
+    );
     if (result === "use-account-password") return accountPassword;
-    if (result !== "setup" || !formController) return "";
     return String(formController.getValues().password ?? "");
 }
 
@@ -760,6 +788,7 @@ export async function setupKeyringAfterLogin(
     clearVault(false);
     await clearSessionUnlockKey();
     const storedEnvelope = selectKeyringEnvelope(localEnvelope, remoteState);
+    keyringExists = Boolean(storedEnvelope);
     if (remoteState.resolved && localEnvelope && !storedEnvelope) {
         removeLocalEnvelope();
     }
@@ -885,13 +914,12 @@ export async function clearKeyringValues() {
     return true;
 }
 
-export async function destroyKeyring({
-    requestSetupPassword = requestKeyringSetup,
-} = {}) {
+export async function destroyKeyring() {
     await persistenceQueue;
     const response = await apiFetch(KEYRING_API, { method: "DELETE" });
     if (!response.ok) return false;
     clearVault(true);
+    keyringExists = false;
     removeLocalEnvelope();
     await clearSessionUnlockKey();
     sessionStorage.setItem(DEFERRED_SETUP_KEY, "1");
@@ -901,18 +929,26 @@ export async function destroyKeyring({
         "warning",
         loadKeyringI18n,
     );
+    return true;
+}
+
+export async function createKeyring({
+    requestSetupPassword = requestKeyringSetup,
+} = {}) {
+    if (keyringExists) return false;
     const password = await requestSetupPassword("");
-    const recreated = password ? await unlockKeyring(password) : false;
-    if (recreated) {
+    const created = password ? await unlockKeyring(password) : false;
+    if (created) {
         sessionStorage.removeItem(DEFERRED_SETUP_KEY);
         resumeKeyringAccess();
     }
-    return recreated;
+    return created;
 }
 
 export async function clearKeyringAccountState() {
     keyringStateVersion += 1;
     clearVault(true);
+    keyringExists = false;
     removeLocalEnvelope();
     localStorage.removeItem(relockStorageKey());
     sessionStorage.removeItem(DEFERRED_SETUP_KEY);
@@ -992,6 +1028,11 @@ uiCtx.capabilities.contribute("keyring:list", listKeyringEntries);
 uiCtx.capabilities.contribute("keyring:listEvents", listKeyringEvents);
 uiCtx.capabilities.contribute("keyring:clear", clearKeyringValues);
 uiCtx.capabilities.contribute("keyring:destroy", destroyKeyring);
+uiCtx.capabilities.contribute("keyring:create", createKeyring);
+uiCtx.capabilities.contribute(
+    "keyring:exists",
+    () => keyringExists || Boolean(loadLocalEnvelope()),
+);
 uiCtx.capabilities.contribute(
     "keyring:clearAccountState",
     clearKeyringAccountState,

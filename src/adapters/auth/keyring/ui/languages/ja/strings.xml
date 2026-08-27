@@ -44,6 +44,9 @@
   <string name="gateway.auth.keyring.minutes">分</string>
   <string name="gateway.auth.keyring.timeout_saved">キーリングのロック時間を保存しました。</string>
   <string name="gateway.auth.keyring.empty">保存されている秘密情報はありません。</string>
+  <string name="gateway.auth.keyring.not_found">キーリングが見つかりません</string>
+  <string name="gateway.auth.keyring.not_found_message">暗号化された秘密情報を管理する前にキーリングを作成してください。</string>
+  <string name="gateway.auth.keyring.create">作成</string>
   <string name="gateway.auth.keyring.add">秘密情報を追加</string>
   <string name="gateway.auth.keyring.add_title">秘密情報を追加</string>
   <string name="gateway.auth.keyring.edit_title">秘密情報を編集</string>

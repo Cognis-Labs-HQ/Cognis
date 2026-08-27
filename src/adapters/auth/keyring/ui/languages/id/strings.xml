@@ -44,6 +44,9 @@
   <string name="gateway.auth.keyring.minutes">menit</string>
   <string name="gateway.auth.keyring.timeout_saved">Batas waktu kunci keyring disimpan.</string>
   <string name="gateway.auth.keyring.empty">Tidak ada rahasia yang tersimpan.</string>
+  <string name="gateway.auth.keyring.not_found">Keyring tidak ditemukan</string>
+  <string name="gateway.auth.keyring.not_found_message">Buat keyring sebelum mengelola rahasia terenkripsi.</string>
+  <string name="gateway.auth.keyring.create">Buat</string>
   <string name="gateway.auth.keyring.add">Tambah Rahasia</string>
   <string name="gateway.auth.keyring.add_title">Tambah Rahasia</string>
   <string name="gateway.auth.keyring.edit_title">Edit Rahasia</string>

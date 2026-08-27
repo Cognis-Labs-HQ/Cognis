@@ -23,6 +23,8 @@ export function createSettingsSection({ i18n, root }) {
     const listKeyringEvents = uiCtx.capabilities.get("keyring:listEvents");
     const clearKeyringValues = uiCtx.capabilities.get("keyring:clear");
     const destroyKeyring = uiCtx.capabilities.get("keyring:destroy");
+    const createKeyring = uiCtx.capabilities.get("keyring:create");
+    const keyringExists = uiCtx.capabilities.get("keyring:exists");
     const changeKeyringPassword = uiCtx.capabilities.get(
         "keyring:changePassword",
     );
@@ -90,6 +92,13 @@ export function createSettingsSection({ i18n, root }) {
     }
 
     function renderManager() {
+        if (!keyringExists()) {
+            return `<section class="settings-keyring-missing" role="status">
+              <h3>${escapeHtml(i18n.t("gateway.auth.keyring.not_found"))}</h3>
+              <p>${escapeHtml(i18n.t("gateway.auth.keyring.not_found_message"))}</p>
+              <button id="settings-keyring-create" type="button" class="btn-confirm">${escapeHtml(i18n.t("gateway.auth.keyring.create"))}</button>
+            </section>`;
+        }
         const unlocked = isKeyringUnlocked();
         const timeout = getKeyringRelockMinutes();
         return `<div class="components-section-body settings-keyring-toolbar">
@@ -348,6 +357,15 @@ export function createSettingsSection({ i18n, root }) {
             root: settingsRoot.querySelector("#settings-keyring-manager"),
         });
         settingsRoot
+            .querySelector("#settings-keyring-create")
+            ?.addEventListener(
+                "click",
+                async () => {
+                    if (await createKeyring()) rerender();
+                },
+                { once: true },
+            );
+        settingsRoot
             .querySelector('[data-keyring-section="keys"]')
             ?.addEventListener("toggle", (event) => {
                 keysExpanded = event.currentTarget.open;
@@ -375,7 +393,10 @@ export function createSettingsSection({ i18n, root }) {
                 "click",
                 async () => {
                     if (isKeyringUnlocked()) await lockKeyring();
-                    else if (!(await promptToUnlock())) return;
+                    else if (!(await promptToUnlock())) {
+                        rerender();
+                        return;
+                    }
                     rerender();
                 },
                 { once: true },

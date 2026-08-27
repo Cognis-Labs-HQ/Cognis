@@ -44,6 +44,9 @@
   <string name="gateway.auth.keyring.minutes">Minuten</string>
   <string name="gateway.auth.keyring.timeout_saved">Sperrzeit des Schlüsselbunds gespeichert.</string>
   <string name="gateway.auth.keyring.empty">Keine Geheimnisse gespeichert.</string>
+  <string name="gateway.auth.keyring.not_found">Kein Schlüsselbund gefunden</string>
+  <string name="gateway.auth.keyring.not_found_message">Erstellen Sie einen Schlüsselbund, bevor Sie verschlüsselte Geheimnisse verwalten.</string>
+  <string name="gateway.auth.keyring.create">Erstellen</string>
   <string name="gateway.auth.keyring.add">Geheimnis hinzufügen</string>
   <string name="gateway.auth.keyring.add_title">Geheimnis hinzufügen</string>
   <string name="gateway.auth.keyring.edit_title">Geheimnis bearbeiten</string>
