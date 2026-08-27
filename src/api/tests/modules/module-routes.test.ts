@@ -857,29 +857,37 @@ test("module marketplace identifies GitHub connection timeouts in jobs and logs"
     assert.equal(entries[0].meta?.knownCause, "container_network_mtu");
 });
 
-test("module installs succeed after a runtime refresh failure", async () => {
+test("module updates defer dependency validation until enablement", async () => {
     const token = issueAccessToken("admin-user", "admin", 60);
     const moduleUuid = "94d6974b-d836-4653-af9b-8b68774f4458";
-    const entries: Array<{ message: string; meta?: Record<string, unknown> }> =
-        [];
+    let dependencyValidations = 0;
     let responseBody = "";
     let status = 0;
     const route = createModuleRoutes(
-        { list: async () => [] } as any,
         {
-            onImported: async () => {
-                throw new Error("runtime refresh failed");
+            list: async () => [
+                { id: "meetings", uuid: moduleUuid, class: "extension" },
+            ],
+        } as any,
+        {
+            getStatus: () => "disabled",
+            validateInstallDependencies: async () => {
+                dependencyValidations += 1;
+                throw new Error("module_dependency_disabled");
             },
-            log: (_level, message, meta) => entries.push({ message, meta }),
         },
         undefined,
         {
-            install: async () => ({
-                id: "meetings",
-                uuid: moduleUuid,
-                class: "extension",
-                version: "1.0.0",
-            }),
+            install: async (_module, _token, _branch, validateDependencies) => {
+                const manifest = {
+                    id: "meetings",
+                    uuid: moduleUuid,
+                    class: "extension",
+                    version: "1.0.0",
+                };
+                await validateDependencies?.(manifest as any);
+                return manifest;
+            },
         } as any,
     );
     const response = {
@@ -916,12 +924,7 @@ test("module installs succeed after a runtime refresh failure", async () => {
 
     assert.equal(status, 200);
     assert.equal(JSON.parse(responseBody).data.status, "succeeded");
-    assert.equal(
-        entries[0].message,
-        "Installed module runtime refresh failed.",
-    );
-    assert.equal(entries[0].meta?.error, "runtime refresh failed");
-    assert.equal(entries[1].message, "External module installed.");
+    assert.equal(dependencyValidations, 0);
 });
 
 test("module updates report that a container restart is required", async () => {

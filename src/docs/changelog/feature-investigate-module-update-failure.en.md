@@ -1,5 +1,5 @@
 # Reliable Module Updates
 
-## Completed installs stay successful
+## Updates defer dependency checks
 
-Module updates no longer report a completed checkout replacement as failed when the immediate runtime refresh encounters an error. Cognis records the refresh failure for operators, and the normal enable flow refreshes the runtime before activating the installed module.
+Module updates now replace the checkout while the module is disabled and defer dependency readiness checks to the normal enable flow. This prevents an installed module's temporary runtime state from causing a valid same-version commit update to fail with HTTP 422, while activation still requires every declared dependency.

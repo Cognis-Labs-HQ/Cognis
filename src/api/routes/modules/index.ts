@@ -449,29 +449,16 @@ export function createModuleRoutes(
                     requestedModule as never,
                     typeof body.token === "string" ? body.token : undefined,
                     typeof body.branch === "string" ? body.branch : undefined,
-                    async (manifest) => {
-                        await hooks?.validateInstallDependencies?.(manifest);
-                    },
+                    installedModule
+                        ? undefined
+                        : async (manifest) => {
+                              await hooks?.validateInstallDependencies?.(
+                                  manifest,
+                              );
+                          },
                 )
                 .then(async (manifest) => {
-                    try {
-                        await hooks?.onImported?.(manifest.id);
-                    } catch (error) {
-                        hooks?.log?.(
-                            "error",
-                            "Installed module runtime refresh failed.",
-                            {
-                                ...logMeta,
-                                accountId: claims.sub,
-                                moduleId: manifest.id,
-                                moduleUuid: manifest.uuid,
-                                error:
-                                    error instanceof Error
-                                        ? error.message
-                                        : String(error),
-                            },
-                        );
-                    }
+                    await hooks?.onImported?.(manifest.id);
                     const restartRequired = Boolean(
                         installedModule && body.wasEnabled === true,
                     );

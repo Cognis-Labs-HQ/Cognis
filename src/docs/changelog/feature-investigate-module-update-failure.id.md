@@ -1,5 +1,5 @@
 # Pembaruan Modul Andal
 
-## Instalasi selesai tetap berhasil
+## Pemeriksaan ditunda saat update
 
-Pembaruan modul tidak lagi melaporkan penggantian checkout yang telah selesai sebagai gagal ketika penyegaran runtime langsung mengalami kesalahan. Cognis mencatat kegagalan penyegaran bagi operator, dan alur pengaktifan normal menyegarkan runtime sebelum mengaktifkan modul yang telah dipasang.
+Pembaruan modul kini mengganti checkout saat modul dinonaktifkan dan menunda pemeriksaan kesiapan dependensi ke alur pengaktifan normal. Hal ini mencegah status runtime sementara modul terpasang membuat pembaruan commit berversi sama yang valid gagal dengan HTTP 422, sementara pengaktifan tetap memerlukan semua dependensi yang dideklarasikan.

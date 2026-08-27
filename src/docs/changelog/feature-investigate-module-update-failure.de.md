@@ -1,5 +1,5 @@
 # Zuverlässige Modulupdates
 
-## Abgeschlossene Installationen bleiben erfolgreich
+## Updates verschieben Prüfungen
 
-Modulupdates melden einen abgeschlossenen Austausch des Checkouts nicht mehr als fehlgeschlagen, wenn die unmittelbare Laufzeitaktualisierung auf einen Fehler stößt. Cognis protokolliert den Aktualisierungsfehler für den Betrieb, und der normale Aktivierungsablauf aktualisiert die Laufzeit vor der Aktivierung des installierten Moduls.
+Modulupdates ersetzen nun den Checkout, während das Modul deaktiviert ist, und verschieben die Prüfung der Abhängigkeiten in den normalen Aktivierungsablauf. Dadurch führt der vorübergehende Laufzeitzustand eines installierten Moduls bei einem gültigen Commit-Update mit gleicher Version nicht mehr zu HTTP 422; für die Aktivierung bleiben dennoch alle deklarierten Abhängigkeiten erforderlich.
