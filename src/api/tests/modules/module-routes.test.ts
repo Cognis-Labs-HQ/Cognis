@@ -857,6 +857,73 @@ test("module marketplace identifies GitHub connection timeouts in jobs and logs"
     assert.equal(entries[0].meta?.knownCause, "container_network_mtu");
 });
 
+test("module installs succeed after a runtime refresh failure", async () => {
+    const token = issueAccessToken("admin-user", "admin", 60);
+    const moduleUuid = "94d6974b-d836-4653-af9b-8b68774f4458";
+    const entries: Array<{ message: string; meta?: Record<string, unknown> }> =
+        [];
+    let responseBody = "";
+    let status = 0;
+    const route = createModuleRoutes(
+        { list: async () => [] } as any,
+        {
+            onImported: async () => {
+                throw new Error("runtime refresh failed");
+            },
+            log: (_level, message, meta) => entries.push({ message, meta }),
+        },
+        undefined,
+        {
+            install: async () => ({
+                id: "meetings",
+                uuid: moduleUuid,
+                class: "extension",
+                version: "1.0.0",
+            }),
+        } as any,
+    );
+    const response = {
+        writeHead(code: number) {
+            status = code;
+        },
+        end(payload: string) {
+            responseBody = payload;
+        },
+    } as any;
+    await route(
+        {
+            method: "POST",
+            headers: { authorization: `Bearer ${token}` },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({ module: { uuid: moduleUuid } }),
+                );
+            },
+        } as any,
+        response,
+        new URL("http://localhost/api/v1/modules/install"),
+    );
+    const jobId = JSON.parse(responseBody).data.jobId;
+    await new Promise((resolve) => setImmediate(resolve));
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        response,
+        new URL(`http://localhost/api/v1/modules/install/${jobId}`),
+    );
+
+    assert.equal(status, 200);
+    assert.equal(JSON.parse(responseBody).data.status, "succeeded");
+    assert.equal(
+        entries[0].message,
+        "Installed module runtime refresh failed.",
+    );
+    assert.equal(entries[0].meta?.error, "runtime refresh failed");
+    assert.equal(entries[1].message, "External module installed.");
+});
+
 test("module updates report that a container restart is required", async () => {
     const token = issueAccessToken("admin-user", "admin", 60);
     const moduleUuid = "94d6974b-d836-4653-af9b-8b68774f4458";

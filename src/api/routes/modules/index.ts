@@ -454,7 +454,24 @@ export function createModuleRoutes(
                     },
                 )
                 .then(async (manifest) => {
-                    await hooks?.onImported?.(manifest.id);
+                    try {
+                        await hooks?.onImported?.(manifest.id);
+                    } catch (error) {
+                        hooks?.log?.(
+                            "error",
+                            "Installed module runtime refresh failed.",
+                            {
+                                ...logMeta,
+                                accountId: claims.sub,
+                                moduleId: manifest.id,
+                                moduleUuid: manifest.uuid,
+                                error:
+                                    error instanceof Error
+                                        ? error.message
+                                        : String(error),
+                            },
+                        );
+                    }
                     const restartRequired = Boolean(
                         installedModule && body.wasEnabled === true,
                     );
