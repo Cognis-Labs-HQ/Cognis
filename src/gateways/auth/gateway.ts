@@ -21,6 +21,7 @@ export interface AuthProviderAdapter {
     readonly version?: string;
     readonly publisher?: string;
     readonly configPopupScriptUrl?: string;
+    readonly stringsBaseUrl?: string;
     readonly locked?: boolean;
     readonly authenticationProvider?: boolean;
     authenticate(
@@ -68,6 +69,7 @@ export interface AdapterInfo {
     config: Record<string, unknown>;
     schema: AuthConfigField[];
     requires?: string[];
+    stringsBaseUrl?: string;
 }
 
 function mergeConfiguredSecrets(
@@ -420,6 +422,7 @@ export class CoreAuthGateway {
     getAdapterConfigContract(adapterId: string): {
         schema: AuthConfigField[];
         configPopupScriptUrl?: string;
+        stringsBaseUrl?: string;
         supportsTest: boolean;
     } | null {
         const adapter = this.adapters.get(adapterId);
@@ -427,6 +430,7 @@ export class CoreAuthGateway {
         return {
             schema: adapter.getConfigSchema(),
             configPopupScriptUrl: adapter.configPopupScriptUrl,
+            stringsBaseUrl: adapter.stringsBaseUrl,
             supportsTest: typeof adapter.testConfiguration === "function",
         };
     }
@@ -469,6 +473,9 @@ export class CoreAuthGateway {
                 name: adapter.name,
                 ...(adapter.version ? { version: adapter.version } : {}),
                 ...(adapter.publisher ? { publisher: adapter.publisher } : {}),
+                ...(adapter.stringsBaseUrl
+                    ? { stringsBaseUrl: adapter.stringsBaseUrl }
+                    : {}),
                 enabled: this.enabledAdapters.has(adapter.id),
                 locked: adapter.id === "local" || adapter.locked || undefined,
                 config: {},

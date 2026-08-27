@@ -90,6 +90,95 @@ interface LdapConfiguration {
     servers: LdapRuntimeOptions[];
 }
 
+interface LdapSourceReconcileRequest {
+    adapterId?: string;
+    previousConfig?: Record<string, unknown>;
+    nextConfig?: Record<string, unknown>;
+    disabled?: boolean;
+}
+
+export function bootstrapAuthAdapter(input: {
+    capabilities: {
+        contribute(id: string, value: unknown): void;
+        require<T>(id: string): T;
+    };
+    flow: {
+        run(flowId: string, input: Record<string, unknown>): Promise<unknown>;
+    };
+    log?: (
+        level: "info" | "warn" | "error",
+        message: string,
+        metadata?: Record<string, unknown>,
+    ) => void;
+}): void {
+    input.capabilities.contribute(
+        "auth:source-reconciler:ldap",
+        async (request: LdapSourceReconcileRequest) => {
+            const previousConfig = request.previousConfig ?? {};
+            const nextConfig = request.nextConfig ?? {};
+            const previousServers = Array.isArray(previousConfig.servers)
+                ? (previousConfig.servers as LdapRuntimeOptions[])
+                : [];
+            const nextIdentifiers = new Set(
+                (request.disabled || !Array.isArray(nextConfig.servers)
+                    ? []
+                    : (nextConfig.servers as LdapRuntimeOptions[])
+                ).map((server) => String(server.identifier ?? "")),
+            );
+            const removedIdentifiers = previousServers
+                .map((server) => String(server.identifier ?? ""))
+                .filter(
+                    (identifier) =>
+                        identifier && !nextIdentifiers.has(identifier),
+                );
+            const accountStore = input.capabilities.require<{
+                removeExternalIdentitiesByPrefix?(
+                    provider: string,
+                    externalUserIdPrefix: string,
+                ): Promise<string[]>;
+            }>("auth:accountStore");
+            const revokeTokens = input.capabilities.require<
+                (accountId: string) => number
+            >("auth:revokeAccessTokensForSubject");
+            const deleteAccounts = previousConfig.unify === false;
+            const affectedAccountIds = new Set<string>();
+            for (const identifier of removedIdentifiers) {
+                const sourcePrefix = `ldap:${encodeURIComponent(identifier)}:`;
+                const accountIds =
+                    (await accountStore.removeExternalIdentitiesByPrefix?.(
+                        "ldap",
+                        sourcePrefix,
+                    )) ?? [];
+                for (const accountId of accountIds) {
+                    affectedAccountIds.add(accountId);
+                    revokeTokens(accountId);
+                    if (deleteAccounts) {
+                        await input.flow.run("deprovision-user", {
+                            username: accountId,
+                            action: "delete",
+                            callerRole: "owner",
+                            targetRole: "user",
+                            targetIsFounder: false,
+                        });
+                    }
+                }
+            }
+            input.log?.("info", "Reconciled removed LDAP sources.", {
+                component: "auth-ldap-adapter",
+                operation: "reconcile_removed_sources",
+                removedIdentifiers,
+                affectedAccountCount: affectedAccountIds.size,
+                accountsDeleted: deleteAccounts,
+            });
+            return {
+                reconciled: true,
+                affectedAccountIds: [...affectedAccountIds],
+                accountsDeleted: deleteAccounts,
+            };
+        },
+    );
+}
+
 function splitList(value: unknown): string[] {
     if (Array.isArray(value))
         return value
@@ -118,29 +207,90 @@ function parseRoleMappings(value: unknown): Record<string, string> {
     return mappings;
 }
 
+class LdapConfigurationError extends Error {
+    readonly fieldErrors: Record<string, string>;
+
+    constructor(
+        message: string,
+        fieldErrors: Record<string, string>,
+        cause: unknown,
+    ) {
+        super(message, { cause });
+        this.fieldErrors = fieldErrors;
+    }
+}
+
 function describeLdapTestFailure(error: unknown): Error {
     const message = error instanceof Error ? error.message : String(error);
     if (/0x31|invalid credentials|code\s*49\b/i.test(message)) {
-        return new Error(
+        const fieldMessage =
+            "LDAP rejected this bind identity or its credentials.";
+        return new LdapConfigurationError(
             "LDAP rejected the bind DN or bind password. Verify the service account credentials and distinguished name.",
-            { cause: error },
+            { bindDn: fieldMessage, bindPassword: fieldMessage },
+            error,
+        );
+    }
+    if (/no such object|code\s*32\b/i.test(message)) {
+        const fieldMessage = "This LDAP directory DN does not exist.";
+        return new LdapConfigurationError(
+            "LDAP could not find one or more configured directory DNs.",
+            {
+                baseDn: fieldMessage,
+                userDn: fieldMessage,
+                groupDn: fieldMessage,
+                bindDn: fieldMessage,
+            },
+            error,
+        );
+    }
+    if (/invalid dn|invalid distinguished|code\s*34\b/i.test(message)) {
+        const fieldMessage = "Enter a valid LDAP distinguished name.";
+        return new LdapConfigurationError(
+            "LDAP rejected one or more distinguished names.",
+            {
+                baseDn: fieldMessage,
+                userDn: fieldMessage,
+                groupDn: fieldMessage,
+                bindDn: fieldMessage,
+            },
+            error,
         );
     }
     if (/ECONNREFUSED|connect.*refused/i.test(message)) {
-        return new Error(
+        return new LdapConfigurationError(
             "LDAP refused the connection. Verify the server URL, port, and TLS mode.",
-            { cause: error },
+            { serverUrl: "LDAP refused a connection to this server URL." },
+            error,
         );
     }
     if (/certificate|self[- ]signed|unable to verify/i.test(message)) {
-        return new Error(
+        return new LdapConfigurationError(
             "LDAP TLS certificate validation failed. Verify the server certificate and hostname.",
-            { cause: error },
+            {
+                serverUrl:
+                    "The LDAP certificate is not valid for this server URL.",
+            },
+            error,
         );
     }
-    return new Error(
+    if (/filter|bad search/i.test(message)) {
+        const fieldMessage = "LDAP rejected this directory search filter.";
+        return new LdapConfigurationError(
+            "LDAP rejected one or more directory filters.",
+            { userFilter: fieldMessage, groupFilter: fieldMessage },
+            error,
+        );
+    }
+    return new LdapConfigurationError(
         "LDAP connection test failed. Verify the server, search base, and directory filters.",
-        { cause: error },
+        {
+            serverUrl: "Verify this LDAP server URL.",
+            baseDn: "Verify this LDAP search base.",
+            userFilter: "Verify this LDAP user filter.",
+            groupFilter: "Verify this LDAP group filter.",
+        },
+        error,
     );
 }
 
@@ -149,7 +299,8 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     readonly name = "LDAP";
     readonly configPopupScriptUrl =
         "/static/adapters/auth/ldap/config-popup.js";
-    readonly version = "0.5.7";
+    readonly stringsBaseUrl = "/static/adapters/auth/ldap/languages";
+    readonly version = "0.5.28";
 
     private client: LdapClient = new StandardLdapClient();
     private adminGroups = new Set(["cognis-admins"]);
@@ -464,14 +615,24 @@ class LdapAuthAdapter implements AuthProviderAdapter {
                 configuredServer?.bindPassword ||
                 this.options.bindPassword,
         } as LdapRuntimeOptions;
-        if (
-            !merged.serverUrl ||
-            !merged.baseDn ||
-            !merged.bindDn ||
-            !merged.bindPassword
-        )
-            throw new Error(
+        const missingFields = Object.fromEntries(
+            ["serverUrl", "baseDn", "bindDn", "bindPassword"]
+                .filter(
+                    (fieldName) =>
+                        !String(
+                            merged[fieldName as keyof LdapRuntimeOptions] ?? "",
+                        ).trim(),
+                )
+                .map((fieldName) => [
+                    fieldName,
+                    "This LDAP connection field is required.",
+                ]),
+        );
+        if (Object.keys(missingFields).length > 0)
+            throw new LdapConfigurationError(
                 "LDAP server URL, base DN, and bind credentials are required.",
+                missingFields,
+                undefined,
             );
         const testUsername = String(config.testUsername ?? "").trim();
         const testPassword = String(config.testPassword ?? "");
@@ -490,11 +651,32 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             } catch (error) {
                 throw describeLdapTestFailure(error);
             }
-            if (!identity) throw new Error("LDAP user credential test failed.");
+            if (!identity)
+                throw new LdapConfigurationError(
+                    "LDAP user credential test failed.",
+                    {
+                        testUsername:
+                            "LDAP could not authenticate this username.",
+                        testPassword:
+                            "LDAP could not authenticate these credentials.",
+                    },
+                    undefined,
+                );
             const role = this.resolveRole(identity.groups ?? [], merged);
             if (!role)
-                throw new Error(
+                throw new LdapConfigurationError(
                     "The LDAP user is not eligible for a mapped Cognis role.",
+                    {
+                        "roleMapping.user":
+                            "Map a group assigned to this LDAP user.",
+                        "roleMapping.teacher":
+                            "Map a group assigned to this LDAP user.",
+                        "roleMapping.moderator":
+                            "Map a group assigned to this LDAP user.",
+                        "roleMapping.admin":
+                            "Map a group assigned to this LDAP user.",
+                    },
+                    undefined,
                 );
             return {
                 credentialTest: {

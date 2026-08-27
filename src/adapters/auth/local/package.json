@@ -1,6 +1,6 @@
 {
     "name": "@cognis/adapter-auth-local",
-    "version": "0.3.14",
+    "version": "0.3.16",
     "private": true,
     "type": "module",
     "main": "index.ts",
