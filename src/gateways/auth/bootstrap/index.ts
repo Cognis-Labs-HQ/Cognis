@@ -403,7 +403,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "auth",
     );
     ctx.routeRegistry.register(
-        createAdapterAdminRoutes("auth", authGateway, ctx.log),
+        createAdapterAdminRoutes("auth", authGateway, ctx.flow, ctx.log),
         "auth",
     );
     ctx.log?.("info", "Auth gateway routes registered.", {
@@ -414,7 +414,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.9.11",
+        version: "1.9.15",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs HQ",
         required: true,

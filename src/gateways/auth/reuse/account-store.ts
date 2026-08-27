@@ -16,6 +16,10 @@ export interface LocalAccountStore {
         displayName?: string;
         role?: string;
     }): Promise<void>;
+    removeExternalIdentitiesByPrefix?(
+        provider: string,
+        externalUserIdPrefix: string,
+    ): Promise<string[]>;
     register(
         username: string,
         password: string,
@@ -106,14 +110,25 @@ export function validateUsername(username: string): string | null {
  */
 export class VolatileLocalAccountStore implements LocalAccountStore {
     private readonly accounts = new Map<string, StoredAccount>();
+    private readonly externalIdentities = new Map<string, string>();
 
     async ensureExternalAccount(identity: {
         accountId: string;
         provider: string;
+        externalUserId: string;
         displayName?: string;
         role?: string;
     }): Promise<void> {
-        if (this.accounts.has(identity.accountId)) return;
+        this.externalIdentities.set(
+            `${identity.provider}:${identity.externalUserId}`,
+            identity.accountId,
+        );
+        const existingAccount = this.accounts.get(identity.accountId);
+        if (existingAccount) {
+            existingAccount.displayName =
+                identity.displayName?.trim() || existingAccount.displayName;
+            return;
+        }
         this.accounts.set(identity.accountId, {
             passwordHash: "external-account-no-local-password",
             passwordHistoryHashes: [],
@@ -129,6 +144,21 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
                     : "user",
             provider: identity.provider,
         });
+    }
+
+    async removeExternalIdentitiesByPrefix(
+        provider: string,
+        externalUserIdPrefix: string,
+    ): Promise<string[]> {
+        const accountIds = new Set<string>();
+        for (const [identityId, accountId] of this.externalIdentities) {
+            if (!identityId.startsWith(`${provider}:${externalUserIdPrefix}`)) {
+                continue;
+            }
+            this.externalIdentities.delete(identityId);
+            accountIds.add(accountId);
+        }
+        return [...accountIds];
     }
 
     async register(

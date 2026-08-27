@@ -87,7 +87,18 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     created_at: now,
                     updated_at: now,
                 },
-                conflict: { action: "ignore" },
+                conflict: {
+                    action: "update",
+                    target: ["id"],
+                    update: {
+                        email: identity.email ?? null,
+                        display_name:
+                            identity.displayName?.trim() || identity.accountId,
+                        is_admin: role === "admin",
+                        role,
+                        updated_at: now,
+                    },
+                },
             });
             await txDb.executeCommand({
                 option: "INSERT",
@@ -108,6 +119,48 @@ export class DbLocalAccountStore implements LocalAccountStore {
             accountId: identity.accountId,
             provider: identity.provider,
         });
+    }
+
+    async removeExternalIdentitiesByPrefix(
+        provider: string,
+        externalUserIdPrefix: string,
+    ): Promise<string[]> {
+        const escapedPrefix = externalUserIdPrefix.replace(
+            /[\\%_]/g,
+            (character) => `\\${character}`,
+        );
+        const where = [
+            { column: "provider", value: provider },
+            {
+                column: "external_user_id",
+                operator: "LIKE" as const,
+                value: `${escapedPrefix}%`,
+                escape: "\\",
+            },
+        ];
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "auth_identities",
+            columns: ["account_id"],
+            where,
+        });
+        const accountIds = [
+            ...new Set(
+                (result.rows ?? []).map((row) => String(row.account_id)),
+            ),
+        ];
+        await this.db.executeCommand({
+            option: "DELETE",
+            table: "auth_identities",
+            where,
+        });
+        this.writeLog("info", "Removed external identities by source.", {
+            component: "auth-local-store",
+            provider,
+            externalUserIdPrefix,
+            accountCount: accountIds.length,
+        });
+        return accountIds;
     }
 
     async ensureSchema() {

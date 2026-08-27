@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createAdapter } from "../index.js";
+import { bootstrapAuthAdapter, createAdapter } from "../index.js";
 import type { LdapRuntimeOptions } from "../index.js";
 import {
     isDirectoryGroupEntry,
@@ -29,6 +29,54 @@ test("LDAP discovery uses focused user and group bases with base DN fallback", (
             groups: "dc=example,dc=org",
         },
     );
+});
+
+test("removed LDAP sources revoke sessions and only delete separated accounts", async () => {
+    const contributed = new Map<string, unknown>();
+    const deletedAccountIds: string[] = [];
+    const revokedAccountIds: string[] = [];
+    const accountStore = {
+        removeExternalIdentitiesByPrefix: async () => ["alice"],
+    };
+    bootstrapAuthAdapter({
+        capabilities: {
+            contribute: (id, value) => contributed.set(id, value),
+            require: <T>(id: string) =>
+                (id === "auth:accountStore"
+                    ? accountStore
+                    : (accountId: string) => {
+                          revokedAccountIds.push(accountId);
+                          return 1;
+                      }) as T,
+        },
+        flow: {
+            run: async (_flowId, flowInput) => {
+                deletedAccountIds.push(String(flowInput.username));
+                return {};
+            },
+        },
+    });
+    const reconcile = contributed.get("auth:source-reconciler:ldap") as (
+        request: Record<string, unknown>,
+    ) => Promise<unknown>;
+    await reconcile({
+        previousConfig: {
+            unify: true,
+            servers: [{ identifier: "Primary" }],
+        },
+        nextConfig: { unify: true, servers: [] },
+    });
+    assert.deepEqual(revokedAccountIds, ["alice"]);
+    assert.deepEqual(deletedAccountIds, []);
+
+    await reconcile({
+        previousConfig: {
+            unify: false,
+            servers: [{ identifier: "Faculty" }],
+        },
+        nextConfig: { unify: false, servers: [] },
+    });
+    assert.deepEqual(deletedAccountIds, ["alice"]);
 });
 
 test("LDAP discovery excludes user objects from group results", () => {
@@ -314,6 +362,10 @@ test("ldap adapter config schema has required fields", () => {
         adapter.configPopupScriptUrl,
         "/static/adapters/auth/ldap/config-popup.js",
     );
+    assert.equal(
+        adapter.stringsBaseUrl,
+        "/static/adapters/auth/ldap/languages",
+    );
     const schema = adapter.getConfigSchema();
     const keys = schema.map((f) => f.key);
     assert.ok(keys.includes("host"));
@@ -420,7 +472,47 @@ test("ldap test configuration explains rejected bind credentials", async () => {
                 bindDn: "uid=service,dc=example,dc=org",
                 bindPassword: "incorrect",
             }),
-        /rejected the bind DN or bind password/,
+        (error: Error & { fieldErrors?: Record<string, string> }) => {
+            assert.match(
+                error.message,
+                /rejected the bind DN or bind password/,
+            );
+            assert.deepEqual(Object.keys(error.fieldErrors ?? {}).sort(), [
+                "bindDn",
+                "bindPassword",
+            ]);
+            return true;
+        },
+    );
+});
+
+test("ldap test configuration identifies every possible missing DN field", async () => {
+    const adapter = createAdapter() as {
+        setClient(client: { discover: () => Promise<never> }): void;
+        testConfiguration(config: Record<string, unknown>): Promise<unknown>;
+    };
+    adapter.setClient({
+        discover: async () => {
+            throw new Error("LDAP code 32: no such object");
+        },
+    });
+    await assert.rejects(
+        () =>
+            adapter.testConfiguration({
+                serverUrl: "ldaps://ldap.example.org",
+                baseDn: "dc=missing,dc=org",
+                bindDn: "uid=service,dc=missing,dc=org",
+                bindPassword: "secret",
+            }),
+        (error: Error & { fieldErrors?: Record<string, string> }) => {
+            assert.deepEqual(Object.keys(error.fieldErrors ?? {}).sort(), [
+                "baseDn",
+                "bindDn",
+                "groupDn",
+                "userDn",
+            ]);
+            return true;
+        },
     );
 });
 
