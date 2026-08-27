@@ -286,17 +286,25 @@ test("module routes run enable tests before enabling modules", async () => {
     );
 
     const token = issueAccessToken("admin-user", "admin", 60);
-    await assert.rejects(
-        route(
-            {
-                method: "POST",
-                headers: { authorization: `Bearer ${token}` },
-            } as any,
-            { writeHead() {}, end() {} } as any,
-            new URL("http://localhost/api/v1/modules/example-module/enable"),
-        ),
-        /enable test failed/,
+    let status = 0;
+    let body = "";
+    await route(
+        {
+            method: "POST",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/modules/example-module/enable"),
     );
+    assert.equal(status, 409);
+    assert.equal(JSON.parse(body).error.code, "module_validation_failed");
     assert.equal(enableCalled, false);
     assert.deepEqual(errors, [
         { level: "error", message: "Module enable validation failed." },

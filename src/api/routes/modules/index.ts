@@ -732,21 +732,25 @@ export function createModuleRoutes(
                     error:
                         error instanceof Error ? error.message : String(error),
                 });
-                if (error instanceof ModuleEnableValidationError) {
-                    res.writeHead(409, {
-                        "content-type": "application/json",
-                    });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: error.code,
-                                message: error.message,
-                            },
-                        }),
-                    );
-                    return true;
-                }
-                throw error;
+                const validationError =
+                    error instanceof ModuleEnableValidationError
+                        ? error
+                        : new ModuleEnableValidationError(
+                              "module_validation_failed",
+                              "Module validation failed.",
+                          );
+                res.writeHead(409, {
+                    "content-type": "application/json",
+                });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: validationError.code,
+                            message: validationError.message,
+                        },
+                    }),
+                );
+                return true;
             }
         }
 

@@ -84,4 +84,5 @@
   <string name="ui.app.modules.polling_failed">Marketplace polling failed.</string>
   <string name="ui.app.modules.scan_private_repos_hint">Private scans require a PAT and include only private repositories the token can access. Cognis validates repository listing and content reads before saving.</string>
   <string name="ui.app.modules.pat_permissions_hint">GitHub fine-grained PAT: choose the configured organization as Resource owner; grant access to all repositories or every private repository Cognis should scan; set Repository permissions Metadata to Read-only and Contents to Read-only. No Organization permission from GitHub’s Organization permissions list is required. Complete organization approval when required. For a classic PAT, grant the repo scope and authorize it for organization SSO when applicable. GitLab tokens require read_api and read_repository.</string>
+  <string name="ui.app.modules.validation_failed">Module validation failed. Check the server log for details.</string>
 </resources>
