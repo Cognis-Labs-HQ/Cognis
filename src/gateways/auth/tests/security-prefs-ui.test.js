@@ -133,11 +133,11 @@ test("keyring settings unlock once before allowing secret changes", () => {
     assert.match(KEYRING_SETTINGS_SOURCE, /\[10080, "1_week"\]/);
     assert.match(
         KEYRING_SETTINGS_SOURCE,
-        /id: "clear",[\s\S]*variant: destroy \? "cancel" : "neutral"/,
+        /id: "clear",[\s\S]*variant: "cancel"/,
     );
     assert.match(
         KEYRING_SETTINGS_SOURCE,
-        /id: "cancel",[\s\S]*variant: destroy \? "confirm" : "danger"/,
+        /id: "cancel",[\s\S]*variant: "neutral"/,
     );
     assert.match(KEYRING_SETTINGS_SOURCE, /lockKeyring/);
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-relock/);

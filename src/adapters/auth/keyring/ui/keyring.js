@@ -463,6 +463,10 @@ async function restoreCurrentSessionUnlock() {
     return stored ? restoreSessionUnlock(stored, remoteState) : false;
 }
 
+export async function restoreKeyringSession() {
+    return isKeyringUnlocked() || restoreCurrentSessionUnlock();
+}
+
 export async function lockKeyring() {
     if (temporaryKeyringAccountId) return Promise.resolve();
     clearVault(true);
@@ -1042,6 +1046,7 @@ uiCtx.capabilities.contribute("keyring:resolve", resolveKeyringValue);
 uiCtx.capabilities.contribute("keyring:lock", lockKeyring);
 uiCtx.capabilities.contribute("keyring:unlock", unlockKeyring);
 uiCtx.capabilities.contribute("keyring:requestUnlock", requestKeyringUnlock);
+uiCtx.capabilities.contribute("keyring:restoreSession", restoreKeyringSession);
 uiCtx.capabilities.contribute("keyring:isUnlocked", isKeyringUnlocked);
 uiCtx.capabilities.contribute(
     "keyring:isAccessSuppressed",

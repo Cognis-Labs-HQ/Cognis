@@ -306,19 +306,7 @@ test("a page reload restores the non-extractable session unlock without promptin
     const expiry = sessionValues.get(expiryKey);
 
     const reloadedKeyring = await import("../ui/keyring.js?session-restore");
-    let prompted = false;
-    assert.equal(
-        await reloadedKeyring.requestKeyringUnlock({
-            i18n: testI18n,
-            passwordPrompt: async () => {
-                prompted = true;
-                return "keyring-password";
-            },
-            request: testUnlockRequest,
-        }),
-        true,
-    );
-    assert.equal(prompted, false);
+    assert.equal(await reloadedKeyring.restoreKeyringSession(), true);
     assert.equal(sessionValues.get(expiryKey), expiry);
     assert.equal(
         reloadedKeyring.getKeyringValue("chatroom:session:key"),
@@ -553,6 +541,11 @@ test("keyring password popups use the form composer with required fields", () =>
     assert.match(settingsSource, /styles\/reuse\/page-sections\.css/);
     assert.match(settingsSource, /gateway\.auth\.keyring\.not_found/);
     assert.match(settingsSource, /id="settings-keyring-create"/);
+    assert.match(settingsSource, /variant: "cancel"/);
+    assert.match(
+        settingsSource,
+        /await restoreKeyringSession\(\)[\s\S]*rerender\(\)/,
+    );
     assert.match(
         settingsSource,
         /promptToUnlock\(\)[\s\S]*rerender\(\);[\s\S]*return;/,

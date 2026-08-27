@@ -32,6 +32,9 @@ export function createSettingsSection({ i18n, root }) {
     const requestKeyringUnlock = uiCtx.capabilities.get(
         "keyring:requestUnlock",
     );
+    const restoreKeyringSession = uiCtx.capabilities.get(
+        "keyring:restoreSession",
+    );
     const setKeyringRelockMinutes = uiCtx.capabilities.get(
         "keyring:setRelockMinutes",
     );
@@ -270,12 +273,12 @@ export function createSettingsSection({ i18n, root }) {
                     {
                         id: "clear",
                         label: i18n.t(actionKey),
-                        variant: destroy ? "cancel" : "neutral",
+                        variant: "cancel",
                     },
                     {
                         id: "cancel",
                         label: i18n.t("ui.reuse.cancel"),
-                        variant: destroy ? "confirm" : "danger",
+                        variant: "neutral",
                     },
                 ],
             })) === "clear"
@@ -532,7 +535,8 @@ export function createSettingsSection({ i18n, root }) {
                 ),
                 ensurePageStylesheet("/static/styles/reuse/page-sections.css"),
             ]);
-            bindActions();
+            if (await restoreKeyringSession()) rerender();
+            else bindActions();
         },
         isDirty: () => false,
         async save() {},
