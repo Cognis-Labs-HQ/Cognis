@@ -75,16 +75,20 @@ function publicInstallErrorCode(error: unknown): string | undefined {
     return PUBLIC_INSTALL_ERROR_CODES.has(message) ? message : undefined;
 }
 
-function withMarketplaceAssetUrls<T extends { assetIds?: unknown }>(
+async function withMarketplaceAssetUrls<T extends { assetIds?: unknown }>(
     module: T,
-): T & {
-    assets?: {
-        icon?: string;
-        banner?: string;
-        screenshots?: string[];
-        media?: Array<{ url: string; contentType: string }>;
-    };
-} {
+    marketplace: ModuleMarketplaceService,
+    log?: BootstrapLog,
+): Promise<
+    T & {
+        assets?: {
+            icon?: string;
+            banner?: string;
+            screenshots?: string[];
+            media?: Array<{ url: string; contentType: string }>;
+        };
+    }
+> {
     const assetIds = module.assetIds as
         | {
               icon?: string;
@@ -96,12 +100,32 @@ function withMarketplaceAssetUrls<T extends { assetIds?: unknown }>(
         | undefined;
     const assetUrl = (id: string) =>
         `/api/v1/modules/catalog/assets/${encodeURIComponent(id)}`;
+    const moduleUi =
+        (module as { ui?: Record<string, unknown> }).ui ?? undefined;
+    const declaresStrings =
+        typeof moduleUi?.stringsBaseUrl === "string" ||
+        Boolean(assetIds?.strings);
+    const englishStringsId = assetIds?.strings?.en;
+    const englishStrings = englishStringsId
+        ? await marketplace.getAsset(englishStringsId)
+        : undefined;
+    if (declaresStrings && !englishStrings) {
+        log?.("warn", "Module catalog strings were unavailable.", {
+            component: "api-modules",
+            operation: "resolve-marketplace-strings",
+            moduleUuid: String((module as { uuid?: unknown }).uuid ?? ""),
+            locale: "en",
+            assetId: englishStringsId,
+        });
+    }
     return {
         ...module,
-        ui: assetIds?.strings
+        ui: declaresStrings
             ? {
-                  ...((module as { ui?: Record<string, unknown> }).ui ?? {}),
-                  stringsBaseUrl: `/api/v1/modules/catalog/strings/${encodeURIComponent(String((module as { uuid?: unknown }).uuid ?? ""))}`,
+                  ...moduleUi,
+                  stringsBaseUrl: englishStrings
+                      ? `/api/v1/modules/catalog/strings/${encodeURIComponent(String((module as { uuid?: unknown }).uuid ?? ""))}`
+                      : undefined,
               }
             : (module as { ui?: Record<string, unknown> }).ui,
         assets: assetIds
@@ -379,12 +403,20 @@ export function createModuleRoutes(
                     catalogModulesFound: modules.length,
                 },
             );
-            const data = modules.map((module) =>
-                withMarketplaceAssetUrls({
-                    ...module,
-                    restartRequired: restartRequiredModules.has(module.uuid),
-                    recommended: recommended.has(module.uuid),
-                }),
+            const data = await Promise.all(
+                modules.map((module) =>
+                    withMarketplaceAssetUrls(
+                        {
+                            ...module,
+                            restartRequired: restartRequiredModules.has(
+                                module.uuid,
+                            ),
+                            recommended: recommended.has(module.uuid),
+                        },
+                        marketplace,
+                        hooks?.log,
+                    ),
+                ),
             );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data, meta: { sourceFailures } }));
