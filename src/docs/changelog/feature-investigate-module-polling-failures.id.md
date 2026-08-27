@@ -25,3 +25,11 @@ API mencatat peringatan terstruktur beserta modul, bahasa, dan pengenal aset ket
 ## Konfigurasikan modul sebelum validasi
 
 Rute yang secara tegas ditandai oleh modul agar tersedia saat dinonaktifkan kini didaftarkan melalui bootstrap konfigurasi terbatas. Rute lain, kontribusi UI, kapabilitas, dan kait alur tetap tidak aktif. Administrator dapat mengonfigurasi modul seperti Jitsi Meet sebelum validasi pengaktifan memeriksa konfigurasi tersebut.
+
+## Modul nonaktif tetap tidak dimuat
+
+Modul eksternal yang dinonaktifkan tidak lagi diimpor atau di-bootstrap saat rute diperbarui sehingga kode tingkat atas dan kode siklus hidupnya tidak dijalankan.
+
+## Pemindaian sumber privat menunggu kredensial
+
+Penemuan saat startup kini hanya memindai sumber modul publik. Sumber privat berkredensial tetap tersedia bagi polling marketplace terautentikasi tanpa percobaan tanpa kredensial yang menunda penyegaran berikutnya.

@@ -25,3 +25,11 @@ The API records a structured warning with the module, locale, and asset identifi
 ## Configure modules before validation
 
 Routes that a module explicitly marks as available while disabled are now registered in a restricted configuration bootstrap. Other routes, UI contributions, capabilities, and flow hooks remain inactive. Administrators can therefore configure modules such as Jitsi Meet before enablement validation checks that configuration.
+
+## Disabled modules remain unloaded
+
+Disabled external modules are no longer imported or bootstrapped during route refreshes, preventing their top-level and lifecycle code from running.
+
+## Private source scans wait for credentials
+
+Startup discovery now scans only public module sources. Credentialed private sources remain available for authenticated marketplace polling without a credentialless attempt delaying their next refresh.

@@ -25,3 +25,11 @@ Die API protokolliert eine strukturierte Warnung mit Modul, Sprache und Ressourc
 ## Module vor der Prüfung konfigurieren
 
 Routen, die ein Modul ausdrücklich als im deaktivierten Zustand verfügbar kennzeichnet, werden nun in einem eingeschränkten Konfigurationsstart registriert. Andere Routen, UI-Beiträge, Fähigkeiten und Ablauf-Hooks bleiben inaktiv. Administratoren können dadurch Module wie Jitsi Meet konfigurieren, bevor die Aktivierungsprüfung diese Konfiguration kontrolliert.
+
+## Deaktivierte Module bleiben ungeladen
+
+Deaktivierte externe Module werden bei Routenaktualisierungen nicht mehr importiert oder gestartet. Dadurch wird weder ihr Code auf oberster Ebene noch ihr Lebenszykluscode ausgeführt.
+
+## Scans privater Quellen warten auf Zugangsdaten
+
+Die Erkennung beim Start durchsucht jetzt nur öffentliche Modulquellen. Private Quellen mit Zugangsdaten bleiben für authentifizierte Marketplace-Abfragen verfügbar, ohne dass ein Versuch ohne Zugangsdaten ihre nächste Aktualisierung verzögert.
