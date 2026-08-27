@@ -57,3 +57,5 @@ Beim Löschen des letzten konfigurierten Servers wird eine Warnung zur Bestätig
 Die Einrichtungserweiterung bezieht ihre sichtbaren Texte aus den Sprachressourcen des Adapters. Eine erfolgreiche Benutzerauthentifizierung sowie das Erstellen oder Aktualisieren eines Servers werden mit Erfolgsmeldungen bestätigt.
 
 Der Adapter deklariert `/static/adapters/auth/ldap/languages` als Basis seiner Sprachressourcen. Die Administration erhält diese URL in den Adaptermetadaten und erweitert ihre i18n-Instanz vor dem Import des Einrichtungsdialogs.
+
+LDAP-Verbindungs- und Zugangsdatenformulare übergeben die Lokalisierungsschlüssel des Adapters direkt an den gemeinsamen Formularkompositor. Bei einem Authentifizierungsversuch ohne beide erforderlichen Zugangsdaten wird eine lokalisierte Fehlermeldung angezeigt und das erste ungültige Feld fokussiert.

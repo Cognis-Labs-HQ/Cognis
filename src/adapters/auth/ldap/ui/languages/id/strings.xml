@@ -48,4 +48,11 @@
   <string name="adapter.auth.ldap.verify_note">Verifikasi konfigurasi akhir dengan kredensial pengguna LDAP. Pengguna dan peran Cognis akan ditampilkan sebelum server disimpan.</string>
   <string name="adapter.auth.ldap.verify_title">Penyiapan LDAP: Verifikasi Pengguna</string>
   <string name="adapter.auth.ldap.writeback_base_dn">DN Dasar Penulisan Balik</string>
+  <string name="adapter.auth.ldap.authentication_fields_required">Masukkan nama pengguna dan kata sandi LDAP sebelum menguji autentikasi.</string>
+  <string name="adapter.auth.ldap.base_dn">DN Dasar</string>
+  <string name="adapter.auth.ldap.bind_dn">DN Bind</string>
+  <string name="adapter.auth.ldap.bind_password">Kata Sandi Bind</string>
+  <string name="adapter.auth.ldap.group_dn">DN Grup</string>
+  <string name="adapter.auth.ldap.server_url">URL Server LDAP</string>
+  <string name="adapter.auth.ldap.user_dn">DN Pengguna</string>
 </resources>

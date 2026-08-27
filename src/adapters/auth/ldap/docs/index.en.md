@@ -70,3 +70,5 @@ Deleting the final configured server opens a confirmation warning and disables t
 The setup extension sources its user-facing copy from the adapter language resources. Successful user authentication and server creation or update actions display success toasts.
 
 The adapter declares `/static/adapters/auth/ldap/languages` as its language-resource base. Administration receives that URL in adapter metadata and extends its i18n instance before importing the setup popup.
+
+LDAP connection and credential forms pass adapter localization keys directly to the shared form composer. Attempting user authentication without both required credentials shows a localized error toast and focuses the first invalid field.

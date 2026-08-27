@@ -48,4 +48,11 @@
   <string name="adapter.auth.ldap.verify_note">Verify the final configuration with the credentials of any LDAP user. The resolved user and Cognis role will be shown before this server can be saved.</string>
   <string name="adapter.auth.ldap.verify_title">LDAP Setup: Verify User</string>
   <string name="adapter.auth.ldap.writeback_base_dn">Writeback Base DN</string>
+  <string name="adapter.auth.ldap.authentication_fields_required">Enter an LDAP username and password before testing authentication.</string>
+  <string name="adapter.auth.ldap.base_dn">Base DN</string>
+  <string name="adapter.auth.ldap.bind_dn">Bind DN</string>
+  <string name="adapter.auth.ldap.bind_password">Bind Password</string>
+  <string name="adapter.auth.ldap.group_dn">Group DN</string>
+  <string name="adapter.auth.ldap.server_url">LDAP Server URL</string>
+  <string name="adapter.auth.ldap.user_dn">User DN</string>
 </resources>

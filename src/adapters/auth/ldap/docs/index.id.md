@@ -50,3 +50,5 @@ Menghapus server terakhir yang dikonfigurasi akan membuka peringatan konfirmasi 
 Ekstensi penyiapan mengambil semua teks yang terlihat oleh pengguna dari sumber daya bahasa adaptor. Autentikasi pengguna serta pembuatan atau pembaruan server yang berhasil dikonfirmasi melalui toast keberhasilan.
 
 Adaptor mendeklarasikan `/static/adapters/auth/ldap/languages` sebagai basis sumber daya bahasanya. Administrasi menerima URL tersebut dalam metadata adaptor dan memperluas instans i18n sebelum mengimpor popup penyiapan.
+
+Formulir koneksi dan kredensial LDAP meneruskan kunci pelokalan adaptor secara langsung ke penyusun formulir bersama. Upaya autentikasi tanpa kedua kredensial wajib menampilkan toast galat yang dilokalkan dan memfokuskan kolom tidak valid pertama.

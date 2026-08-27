@@ -13,3 +13,5 @@ Deleting the final LDAP server now requires confirmation and disables the adapte
 All LDAP setup copy is now supplied by the adapter's localized language resources. Success toasts confirm user authentication and LDAP server creation or updates.
 
 The Authentication gateway now advertises each adapter's language-resource URL, and the LDAP language packs are served from its registered static UI directory so Administration loads them before opening setup.
+
+Testing LDAP user authentication with an empty required credential field now shows a localized error toast. Every label key supplied to the LDAP form composer is now an adapter-owned localization key.

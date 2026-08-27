@@ -13,3 +13,5 @@ Penghapusan server LDAP terakhir kini memerlukan konfirmasi dan menonaktifkan ad
 Semua teks penyiapan LDAP kini berasal dari sumber daya bahasa lokal milik adaptor. Toast keberhasilan mengonfirmasi autentikasi pengguna serta pembuatan atau pembaruan server LDAP.
 
 Gateway Autentikasi kini mengumumkan URL sumber daya bahasa setiap adaptor. Paket bahasa LDAP disajikan dari direktori UI statis yang terdaftar agar Administrasi memuatnya sebelum membuka penyiapan.
+
+Pengujian autentikasi pengguna LDAP dengan kolom kredensial wajib yang kosong kini menampilkan toast galat yang dilokalkan. Setiap kunci label yang diberikan kepada penyusun formulir LDAP kini merupakan kunci pelokalan milik adaptor.

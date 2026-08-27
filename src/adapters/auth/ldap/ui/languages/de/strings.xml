@@ -48,4 +48,11 @@
   <string name="adapter.auth.ldap.verify_note">Prüfen Sie die endgültige Konfiguration mit den Anmeldedaten eines LDAP-Nutzers. Nutzer und Cognis-Rolle werden vor dem Speichern angezeigt.</string>
   <string name="adapter.auth.ldap.verify_title">LDAP-Einrichtung: Nutzer prüfen</string>
   <string name="adapter.auth.ldap.writeback_base_dn">Basis-DN für Rückschreiben</string>
+  <string name="adapter.auth.ldap.authentication_fields_required">Geben Sie vor dem Authentifizierungstest einen LDAP-Benutzernamen und ein Passwort ein.</string>
+  <string name="adapter.auth.ldap.base_dn">Basis-DN</string>
+  <string name="adapter.auth.ldap.bind_dn">Bind-DN</string>
+  <string name="adapter.auth.ldap.bind_password">Bind-Passwort</string>
+  <string name="adapter.auth.ldap.group_dn">Gruppen-DN</string>
+  <string name="adapter.auth.ldap.server_url">LDAP-Server-URL</string>
+  <string name="adapter.auth.ldap.user_dn">Benutzer-DN</string>
 </resources>

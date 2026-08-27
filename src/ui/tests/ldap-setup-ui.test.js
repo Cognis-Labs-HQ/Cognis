@@ -28,10 +28,9 @@ const popupSource = readFileSync(
 );
 
 test("LDAP setup collects focused user and group DNs", () => {
-    assert.match(
-        ldapPopupSource,
-        /"baseDn",\s*"userDn",\s*"groupDn",\s*"bindDn"/,
-    );
+    for (const fieldName of ["baseDn", "userDn", "groupDn", "bindDn"]) {
+        assert.match(ldapPopupSource, new RegExp(`name: "${fieldName}"`));
+    }
 });
 
 test("LDAP setup composes and validates required connection fields", () => {
@@ -53,6 +52,11 @@ test("LDAP setup composes and validates required connection fields", () => {
     assert.match(popupSource, /requestClose: \(\) => dismiss\(null\)/);
     assert.match(ldapPopupSource, /configuredSecretFields/);
     assert.match(ldapPopupSource, /adapter\.auth\.ldap\.keep_password/);
+    assert.match(
+        ldapPopupSource,
+        /labelKey: "adapter\.auth\.ldap\.server_url"/,
+    );
+    assert.match(ldapPopupSource, /labelKey: "adapter\.auth\.ldap\.bind_dn"/);
 });
 
 test("LDAP setup manages named, reorderable servers and unified login", () => {
@@ -129,6 +133,21 @@ test("LDAP setup localizes copy and confirms successful operations", () => {
     assert.match(ldapPopupSource, /adapter\.auth\.ldap\.server_created/);
     assert.match(ldapPopupSource, /adapter\.auth\.ldap\.server_updated/);
     assert.match(ldapPopupSource, /showToast\([\s\S]*variant: "success"/);
+});
+
+test("LDAP user authentication reports missing required credentials", () => {
+    assert.match(
+        ldapPopupSource,
+        /!credentialFormController\?\.validateAll\(true\)[\s\S]*adapter\.auth\.ldap\.authentication_fields_required[\s\S]*variant: "error"/,
+    );
+    assert.match(
+        ldapPopupSource,
+        /labelKey: "adapter\.auth\.ldap\.test_username"/,
+    );
+    assert.match(
+        ldapPopupSource,
+        /labelKey: "adapter\.auth\.ldap\.test_password"/,
+    );
 });
 
 test("LDAP setup requires a successful user bind before completion", () => {

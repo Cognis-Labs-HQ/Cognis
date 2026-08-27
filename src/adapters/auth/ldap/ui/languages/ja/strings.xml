@@ -48,4 +48,11 @@
   <string name="adapter.auth.ldap.verify_note">LDAP ユーザーの資格情報で最終設定を検証します。保存前に解決されたユーザーと Cognis ロールが表示されます。</string>
   <string name="adapter.auth.ldap.verify_title">LDAP セットアップ：ユーザー検証</string>
   <string name="adapter.auth.ldap.writeback_base_dn">書き戻しベース DN</string>
+  <string name="adapter.auth.ldap.authentication_fields_required">認証をテストする前に LDAP ユーザー名とパスワードを入力してください。</string>
+  <string name="adapter.auth.ldap.base_dn">ベース DN</string>
+  <string name="adapter.auth.ldap.bind_dn">バインド DN</string>
+  <string name="adapter.auth.ldap.bind_password">バインドパスワード</string>
+  <string name="adapter.auth.ldap.group_dn">グループ DN</string>
+  <string name="adapter.auth.ldap.server_url">LDAP サーバー URL</string>
+  <string name="adapter.auth.ldap.user_dn">ユーザー DN</string>
 </resources>

@@ -15,7 +15,6 @@ export async function openAdapterConfig({
     openPopup,
     showToast,
     buildConfigPayload,
-    fieldNameToLabel,
 }) {
     if (
         !document.querySelector(
@@ -31,89 +30,101 @@ export async function openAdapterConfig({
     let credentialFormController = null;
     let pendingConnectionFieldErrors = {};
 
-    function renderLdapConnectionForm(values = {}) {
+    function connectionFields(values = {}) {
         const bindPasswordConfigured =
             configuredSecretFields.includes("bindPassword") ||
             configuredBindPasswordIdentifiers.has(String(values.identifier));
-        const labels = {
-            identifier: i18n.t("adapter.auth.ldap.server_identifier"),
-            serverUrl: fieldNameToLabel("serverUrl"),
-            baseDn: fieldNameToLabel("baseDn"),
-            userDn: fieldNameToLabel("userDn"),
-            groupDn: fieldNameToLabel("groupDn"),
-            bindDn: fieldNameToLabel("bindDn"),
-            bindPassword: fieldNameToLabel("bindPassword"),
-            userAttribute: i18n.t("adapter.auth.ldap.username_attribute"),
-        };
+        return [
+            {
+                name: "identifier",
+                labelKey: "adapter.auth.ldap.server_identifier",
+                required: true,
+                attributes: {
+                    placeholder: i18n.t(
+                        "adapter.auth.ldap.identifier_placeholder",
+                    ),
+                },
+            },
+            {
+                name: "serverUrl",
+                labelKey: "adapter.auth.ldap.server_url",
+                required: true,
+            },
+            {
+                name: "baseDn",
+                labelKey: "adapter.auth.ldap.base_dn",
+                required: true,
+            },
+            {
+                name: "userDn",
+                labelKey: "adapter.auth.ldap.user_dn",
+                attributes: {
+                    placeholder: i18n.t("adapter.auth.ldap.optional_base_dn"),
+                },
+            },
+            {
+                name: "groupDn",
+                labelKey: "adapter.auth.ldap.group_dn",
+                attributes: {
+                    placeholder: i18n.t("adapter.auth.ldap.optional_base_dn"),
+                },
+            },
+            {
+                name: "bindDn",
+                labelKey: "adapter.auth.ldap.bind_dn",
+                required: true,
+            },
+            {
+                name: "bindPassword",
+                labelKey: "adapter.auth.ldap.bind_password",
+                type: "password",
+                required: !bindPasswordConfigured,
+                attributes: bindPasswordConfigured
+                    ? {
+                          placeholder: i18n.t(
+                              "adapter.auth.ldap.keep_password",
+                          ),
+                      }
+                    : {},
+            },
+            {
+                name: "userAttribute",
+                labelKey: "adapter.auth.ldap.username_attribute",
+                required: true,
+                attributes: { placeholder: "uid (OpenLDAP or FreeIPA)" },
+            },
+        ].map((field) => ({
+            ...field,
+            value:
+                values[field.name] ??
+                (field.name === "userAttribute" ? "uid" : ""),
+        }));
+    }
+
+    function credentialFields() {
+        return [
+            {
+                name: "testUsername",
+                labelKey: "adapter.auth.ldap.test_username",
+                required: true,
+            },
+            {
+                name: "testPassword",
+                labelKey: "adapter.auth.ldap.test_password",
+                type: "password",
+                required: true,
+            },
+        ];
+    }
+
+    function renderLdapConnectionForm(values = {}) {
         const formBuilder = createFormBuilder(
-            { i18n: { t: (key) => labels[key] ?? key }, escapeHtml },
+            { i18n, escapeHtml },
             {
                 formId: "ldap-connection-form",
                 formClassName: "provider-popup-form ldap-setup-popup",
                 includeSubmitButton: false,
-                fields: [
-                    {
-                        name: "identifier",
-                        labelKey: "identifier",
-                        required: true,
-                        attributes: {
-                            placeholder: i18n.t(
-                                "adapter.auth.ldap.identifier_placeholder",
-                            ),
-                        },
-                    },
-                    {
-                        name: "serverUrl",
-                        labelKey: "serverUrl",
-                        required: true,
-                    },
-                    { name: "baseDn", labelKey: "baseDn", required: true },
-                    {
-                        name: "userDn",
-                        labelKey: "userDn",
-                        attributes: {
-                            placeholder: i18n.t(
-                                "adapter.auth.ldap.optional_base_dn",
-                            ),
-                        },
-                    },
-                    {
-                        name: "groupDn",
-                        labelKey: "groupDn",
-                        attributes: {
-                            placeholder: i18n.t(
-                                "adapter.auth.ldap.optional_base_dn",
-                            ),
-                        },
-                    },
-                    { name: "bindDn", labelKey: "bindDn", required: true },
-                    {
-                        name: "bindPassword",
-                        labelKey: "bindPassword",
-                        type: "password",
-                        required: !bindPasswordConfigured,
-                        attributes: bindPasswordConfigured
-                            ? {
-                                  placeholder: i18n.t(
-                                      "adapter.auth.ldap.keep_password",
-                                  ),
-                              }
-                            : {},
-                    },
-                    {
-                        name: "userAttribute",
-                        labelKey: "userAttribute",
-                        required: true,
-                        attributes: {
-                            placeholder: "uid (OpenLDAP or FreeIPA)",
-                        },
-                    },
-                ].map((field) => ({
-                    ...field,
-                    value:
-                        values[field.name] ??
-                        (field.name === "userAttribute" ? "uid" : ""),
-                })),
+                fields: connectionFields(values),
             },
         );
         connectionFormController = null;
@@ -217,37 +228,12 @@ export async function openAdapterConfig({
 
     function renderCredentialTestForm(result) {
         const formBuilder = createFormBuilder(
-            {
-                i18n: {
-                    t: (key) =>
-                        ({
-                            testUsername: i18n.t(
-                                "adapter.auth.ldap.test_username",
-                            ),
-                            testPassword: i18n.t(
-                                "adapter.auth.ldap.test_password",
-                            ),
-                        })[key] ?? key,
-                },
-                escapeHtml,
-            },
+            { i18n, escapeHtml },
             {
                 formId: "ldap-credential-test-form",
                 formClassName: "provider-popup-form ldap-setup-popup",
                 includeSubmitButton: false,
-                fields: [
-                    {
-                        name: "testUsername",
-                        labelKey: "testUsername",
-                        required: true,
-                    },
-                    {
-                        name: "testPassword",
-                        labelKey: "testPassword",
-                        type: "password",
-                        required: true,
-                    },
-                ],
+                fields: credentialFields(),
             },
         );
         credentialFormController = null;
@@ -615,17 +601,11 @@ export async function openAdapterConfig({
                 );
                 if (form instanceof HTMLFormElement) {
                     const builder = createFormBuilder(
-                        { i18n: { t: (key) => key }, escapeHtml },
+                        { i18n, escapeHtml },
                         {
                             formId: "ldap-credential-test-form",
                             includeSubmitButton: false,
-                            fields: ["testUsername", "testPassword"].map(
-                                (name) => ({
-                                    name,
-                                    labelKey: name,
-                                    required: true,
-                                }),
-                            ),
+                            fields: credentialFields(),
                         },
                     );
                     credentialFormController = builder.attach(form);
@@ -635,36 +615,12 @@ export async function openAdapterConfig({
             if (api.pageId !== "connect") return;
             const form = overlay.querySelector("#ldap-connection-form");
             if (form instanceof HTMLFormElement) {
-                const fields = [
-                    "identifier",
-                    "serverUrl",
-                    "baseDn",
-                    "userDn",
-                    "groupDn",
-                    "bindDn",
-                    "bindPassword",
-                    "userAttribute",
-                ];
                 const builder = createFormBuilder(
-                    { i18n: { t: (key) => key }, escapeHtml },
+                    { i18n, escapeHtml },
                     {
                         formId: "ldap-connection-form",
                         includeSubmitButton: false,
-                        fields: fields.map((name) => ({
-                            name,
-                            labelKey: name,
-                            required:
-                                !["userDn", "groupDn"].includes(name) &&
-                                !(
-                                    name === "bindPassword" &&
-                                    (configuredSecretFields.includes(
-                                        "bindPassword",
-                                    ) ||
-                                        configuredBindPasswordIdentifiers.has(
-                                            String(connectionValues.identifier),
-                                        ))
-                                ),
-                        })),
+                        fields: connectionFields(connectionValues),
                     },
                 );
                 connectionFormController = builder.attach(form);
@@ -701,6 +657,12 @@ export async function openAdapterConfig({
                 (action === "complete" && !credentialTestResult);
             if (requiresUserAuthentication) {
                 if (!credentialFormController?.validateAll(true)) {
+                    showToast(
+                        i18n.t(
+                            "adapter.auth.ldap.authentication_fields_required",
+                        ),
+                        { variant: "error" },
+                    );
                     form.querySelector(".form-builder-input--invalid")?.focus();
                     return false;
                 }
