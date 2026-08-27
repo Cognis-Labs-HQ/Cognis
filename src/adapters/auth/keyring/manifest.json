@@ -2,7 +2,7 @@
     "id": "keyring",
     "uuid": "28af0fb6-1ca0-52ef-b427-f89caa43ae8f",
     "name": "User Keyring",
-    "version": "1.0.39",
+    "version": "1.0.40",
     "publisher": "Cognis Labs HQ",
     "gateway": "auth",
     "requires": ["5711a248-4ac9-5d44-98b5-b99bd4c6d722"],

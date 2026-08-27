@@ -229,7 +229,7 @@ export function selectKeyringEnvelope(localEnvelope, remoteState) {
     ) {
         return null;
     }
-    if (remoteState.resolved && !remoteState.envelope) return localEnvelope;
+    if (remoteState.resolved && !remoteState.envelope) return null;
     if (!remoteState.resolved) return localEnvelope;
     return envelopeTimestamp(remoteState.envelope) >
         envelopeTimestamp(localEnvelope)
@@ -598,14 +598,32 @@ async function renderManualUnlockButton() {
 }
 
 async function requestKeyringPassword({ i18n, message, prompt = "" }) {
-    const [{ openPopup }, { escapeHtml }] = await Promise.all([
-        import("/static/reuse/popup.js"),
-        import("/static/reuse/escape-html.js"),
-    ]);
-    let passwordInput = null;
+    const [{ openPopup }, { escapeHtml }, { createFormBuilder }] =
+        await Promise.all([
+            import("/static/reuse/popup.js"),
+            import("/static/reuse/escape-html.js"),
+            import("/static/reuse/form-builder.js"),
+        ]);
+    const formBuilder = createFormBuilder(
+        { i18n, escapeHtml },
+        {
+            formId: "keyring-unlock-form",
+            includeSubmitButton: false,
+            fields: [
+                {
+                    name: "password",
+                    label: prompt,
+                    type: "password",
+                    required: true,
+                    attributes: { autocomplete: "current-password" },
+                },
+            ],
+        },
+    );
+    let formController = null;
     const result = await openPopup({
         title: i18n.t("adapter.auth.keyring.unlock_title"),
-        body: `<label class="stack"><span>${escapeHtml(message)}</span><span>${escapeHtml(prompt)}</span><input id="keyring-unlock-password" type="password" autocomplete="current-password" required /></label>`,
+        body: `<div class="stack"><p>${escapeHtml(message)}</p>${formBuilder.render()}</div>`,
         actions: [
             {
                 id: "unlock",
@@ -619,13 +637,17 @@ async function requestKeyringPassword({ i18n, message, prompt = "" }) {
             },
         ],
         onOpen(overlay) {
-            passwordInput = overlay.querySelector("#keyring-unlock-password");
-            passwordInput?.focus();
+            const formElement = overlay.querySelector("#keyring-unlock-form");
+            if (formElement instanceof HTMLFormElement) {
+                formController = formBuilder.attach(formElement);
+                formElement.elements.namedItem("password")?.focus();
+            }
         },
         onAction: (actionId) =>
-            actionId !== "unlock" || Boolean(passwordInput?.value),
+            actionId !== "unlock" || Boolean(formController?.validateAll(true)),
     });
-    return result === "unlock" ? String(passwordInput?.value ?? "") : "";
+    if (result !== "unlock" || !formController) return "";
+    return String(formController.getValues().password ?? "");
 }
 
 async function requestKeyringSetup(accountPassword) {

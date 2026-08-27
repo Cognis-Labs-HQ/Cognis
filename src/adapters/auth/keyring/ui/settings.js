@@ -4,6 +4,7 @@ import { showToast } from "/static/reuse/toast.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
     bindSecretVisibilityToggles,
@@ -273,11 +274,44 @@ export function createSettingsSection({ i18n, root }) {
     }
 
     async function readNewKeyringPassword() {
-        let passwordInput = null;
-        let confirmationInput = null;
+        const formBuilder = createFormBuilder(
+            { i18n, escapeHtml },
+            {
+                formId: "keyring-change-password-form",
+                includeSubmitButton: false,
+                fields: [
+                    {
+                        name: "password",
+                        labelKey: "gateway.auth.keyring.new_password",
+                        type: "password",
+                        required: true,
+                        attributes: { autocomplete: "new-password" },
+                    },
+                    {
+                        name: "confirmation",
+                        labelKey: "gateway.auth.keyring.confirm_password",
+                        type: "password",
+                        required: true,
+                        attributes: { autocomplete: "new-password" },
+                        criteria: [
+                            {
+                                id: "keyring-password-change-match",
+                                type: "custom",
+                                test: (value, values) =>
+                                    value === values.password,
+                                messageKey:
+                                    "adapter.auth.keyring.setup_password_mismatch",
+                                mode: "submit",
+                            },
+                        ],
+                    },
+                ],
+            },
+        );
+        let formController = null;
         const result = await openPopup({
             title: i18n.t("gateway.auth.keyring.change_password_title"),
-            body: `<div class="stack"><label><span>${escapeHtml(i18n.t("gateway.auth.keyring.new_password"))}</span><input id="keyring-new-password" type="password" autocomplete="new-password" required /></label><label><span>${escapeHtml(i18n.t("gateway.auth.keyring.confirm_password"))}</span><input id="keyring-confirm-password" type="password" autocomplete="new-password" required /></label></div>`,
+            body: formBuilder.render(),
             actions: [
                 {
                     id: "change",
@@ -291,20 +325,20 @@ export function createSettingsSection({ i18n, root }) {
                 },
             ],
             onOpen(overlay) {
-                passwordInput = overlay.querySelector("#keyring-new-password");
-                confirmationInput = overlay.querySelector(
-                    "#keyring-confirm-password",
+                const formElement = overlay.querySelector(
+                    "#keyring-change-password-form",
                 );
-                passwordInput?.focus();
+                if (formElement instanceof HTMLFormElement) {
+                    formController = formBuilder.attach(formElement);
+                    formElement.elements.namedItem("password")?.focus();
+                }
             },
             onAction: (actionId) =>
                 actionId !== "change" ||
-                Boolean(
-                    passwordInput?.value &&
-                    passwordInput.value === confirmationInput?.value,
-                ),
+                Boolean(formController?.validateAll(true)),
         });
-        return result === "change" ? (passwordInput?.value ?? "") : "";
+        if (result !== "change" || !formController) return "";
+        return String(formController.getValues().password ?? "");
     }
 
     function bindActions() {

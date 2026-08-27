@@ -143,7 +143,7 @@ test("keyring lifecycle uses distinct destroyed and created notifications", () =
     assert.match(source, /if \(unlocked && !stored\)/);
 });
 
-test("keyring envelope selection preserves offline data unless the account instance changed", async () => {
+test("server keyring state overrides local data while offline data remains available", async () => {
     const { selectKeyringEnvelope } = await import("../ui/keyring.js");
     const localEnvelope = {
         accountInstanceId: "account-instance-one",
@@ -151,7 +151,7 @@ test("keyring envelope selection preserves offline data unless the account insta
     };
     assert.equal(
         selectKeyringEnvelope(localEnvelope, {
-            resolved: true,
+            resolved: false,
             envelope: null,
             accountInstanceId: "account-instance-one",
         }),
@@ -161,7 +161,7 @@ test("keyring envelope selection preserves offline data unless the account insta
         selectKeyringEnvelope(localEnvelope, {
             resolved: true,
             envelope: null,
-            accountInstanceId: "account-instance-two",
+            accountInstanceId: "account-instance-one",
         }),
         null,
     );
@@ -539,11 +539,17 @@ test("first login sets up a new keyring with the selected encryption password", 
     localStorage.removeItem("cognis_account");
 });
 
-test("first login and recreation use the form composer for setup", () => {
+test("keyring password popups use the form composer with required fields", () => {
     assert.match(keyringSource, /createFormBuilder/);
+    assert.match(keyringSource, /formId: "keyring-unlock-form"/);
     assert.match(keyringSource, /name: "password"[\s\S]*required: true/);
     assert.match(keyringSource, /name: "confirmation"[\s\S]*required: true/);
     assert.match(keyringSource, /setup_password_mismatch/);
+    assert.match(settingsSource, /formId: "keyring-change-password-form"/);
+    assert.match(
+        settingsSource,
+        /name: "confirmation"[\s\S]*required: true[\s\S]*keyring-password-change-match/,
+    );
 });
 
 test("account password setup reuses the authenticated credential", () => {
@@ -609,7 +615,7 @@ test("server-side deletion invalidates the browser keyring copy on login", async
     const browserEnvelope = JSON.parse(
         values.get("cognis_secure_keyring:deleted-ldap-user"),
     );
-    browserEnvelope.accountInstanceId = "original-instance";
+    browserEnvelope.accountInstanceId = "reused-instance";
     values.set(
         "cognis_secure_keyring:deleted-ldap-user",
         JSON.stringify(browserEnvelope),
@@ -623,7 +629,7 @@ test("server-side deletion invalidates the browser keyring copy on login", async
                 : JSON.stringify({
                       data: {
                           vault: null,
-                          accountInstanceId: "replacement-instance",
+                          accountInstanceId: "reused-instance",
                       },
                   }),
             {
@@ -648,7 +654,7 @@ test("server-side deletion invalidates the browser keyring copy on login", async
         assert.equal(
             JSON.parse(values.get("cognis_secure_keyring:deleted-ldap-user"))
                 .accountInstanceId,
-            "replacement-instance",
+            "reused-instance",
         );
     } finally {
         globalThis.fetch = originalFetch;
