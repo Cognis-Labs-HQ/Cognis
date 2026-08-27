@@ -97,13 +97,15 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
     await mkdir(moduleRoot);
     await writeFile(
         path.join(moduleRoot, "bootstrap.js"),
-        `export async function bootstrapModule(ctx) {
+        `globalThis.__cognisOwnedModuleImports = (globalThis.__cognisOwnedModuleImports ?? 0) + 1;
+        export async function bootstrapModule(ctx) {
             ctx.contributePublicCapability("owned-module:feature", true);
             ctx.flow.extend("host-flow", "extensions", { id: "owned-module:hook" }, () => "active");
             ctx.registerAdminSection({ id: "owned-module", label: "Owned", scriptUrl: "/static/modules/owned-module/admin.js" });
             ctx.registerNavbarPlugin({ scriptUrl: "/static/modules/owned-module/navbar.js" });
             ctx.registerSpaRoute({ id: "owned-module-page", pattern: "^/owned$", base: "/owned", scriptUrl: "/static/modules/owned-module/app.js", componentPage: { labelKey: "module.owned.page", descriptionKey: "module.owned.description", modes: ["fullscreen"] } });
             ctx.registerApiGet("/api/v1/modules/owned", (_req, res) => { res.writeHead(200); res.end("ok"); });
+            ctx.registerApiGet("/api/v1/modules/owned/config", (_req, res) => { res.writeHead(ctx.getCapability("system:ctx") ? 500 : 200); res.end("config"); }, { allowWhenDisabled: true });
             return () => { throw new Error("expected teardown failure"); };
         }`,
     );
@@ -136,6 +138,14 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
     );
     try {
         await extensions.refresh();
+        assert.equal(
+            (
+                globalThis as typeof globalThis & {
+                    __cognisOwnedModuleImports?: number;
+                }
+            ).__cognisOwnedModuleImports,
+            1,
+        );
         assert.equal(systemCtx.hasCapability("owned-module:feature"), true);
         assert.equal(uiRegistry.listAdminSections().length, 1);
         assert.equal(uiRegistry.listNavbarPlugins().length, 1);
@@ -148,6 +158,14 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
 
         enabled = false;
         await extensions.refresh();
+        assert.equal(
+            (
+                globalThis as typeof globalThis & {
+                    __cognisOwnedModuleImports?: number;
+                }
+            ).__cognisOwnedModuleImports,
+            1,
+        );
         assert.equal(systemCtx.hasCapability("owned-module:feature"), false);
         assert.equal(uiRegistry.listNavbarPlugins().length, 0);
         assert.equal(uiRegistry.listSpaRoutes().length, 0);
@@ -164,7 +182,23 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
             ),
             false,
         );
+        assert.equal(
+            await extensions.handle(
+                { method: "GET" } as any,
+                {
+                    writeHead() {},
+                    end() {},
+                } as any,
+                new URL("http://localhost/api/v1/modules/owned/config"),
+            ),
+            false,
+        );
     } finally {
+        delete (
+            globalThis as typeof globalThis & {
+                __cognisOwnedModuleImports?: number;
+            }
+        ).__cognisOwnedModuleImports;
         if (previousModulesRoot === undefined) {
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
         } else {

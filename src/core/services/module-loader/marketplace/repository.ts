@@ -96,6 +96,59 @@ export class MarketplaceRepository {
             : await this.readBoundedAsset(response);
         if (!body || body.length > MAX_MARKETPLACE_ASSET_BYTES)
             return undefined;
+        return this.writeCachedAsset(body, contentType);
+    }
+
+    protected async cacheRepositoryStringAsset(
+        source: ModuleSource,
+        projectPath: string,
+        defaultBranch: string,
+        assetPath: string,
+        headers: Record<string, string>,
+    ): Promise<string | undefined> {
+        if (
+            source.provider !== "github" ||
+            source.baseUrl !== "https://api.github.com" ||
+            source.scanPrivateRepos === true
+        ) {
+            return this.cacheRepositoryAsset(
+                source,
+                projectPath,
+                defaultBranch,
+                assetPath,
+                headers,
+            );
+        }
+        const normalizedPath = assetPath.replaceAll("\\", "/");
+        if (
+            normalizedPath.startsWith("/") ||
+            normalizedPath.split("/").includes("..")
+        ) {
+            throw new Error("invalid_module_asset_path");
+        }
+        const encodedProjectPath = projectPath
+            .split("/")
+            .map(encodeURIComponent)
+            .join("/");
+        const assetUrl = `https://raw.githubusercontent.com/${encodedProjectPath}/${encodeURIComponent(defaultBranch)}/${normalizedPath
+            .split("/")
+            .map(encodeURIComponent)
+            .join("/")}`;
+        const response = await fetch(assetUrl, { headers }).catch(
+            () => undefined,
+        );
+        if (!response?.ok) return undefined;
+        const body = await this.readBoundedAsset(response);
+        if (!body || body.length > MAX_MARKETPLACE_ASSET_BYTES) {
+            return undefined;
+        }
+        return this.writeCachedAsset(body, "application/xml");
+    }
+
+    private async writeCachedAsset(
+        body: Buffer,
+        contentType: string,
+    ): Promise<string> {
         const id = createHash("sha256").update(body).digest("hex");
         const assetRoot = this.assetCacheRoot;
         await mkdir(assetRoot, { recursive: true });

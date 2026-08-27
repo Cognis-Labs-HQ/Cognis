@@ -492,6 +492,13 @@ test("module catalog discovery accepts caller-selected sources", async () => {
         undefined,
         {
             listRecommendedModuleUuids: async () => ["notes-uuid"],
+            getAsset: async (id: string) =>
+                id === "b".repeat(64)
+                    ? {
+                          body: Buffer.from("<resources></resources>"),
+                          contentType: "application/xml",
+                      }
+                    : undefined,
             discoverWithReport: async (_tokens, sourceUuids, force) => {
                 selectedSources = sourceUuids;
                 forceRefresh = force;
@@ -555,6 +562,63 @@ test("module catalog discovery accepts caller-selected sources", async () => {
         /\/api\/v1\/modules\/catalog\/strings\/notes-uuid/,
     );
     assert.match(responseBody, /private_repository_access_failed/);
+});
+
+test("module catalog only advertises string assets available from cache", async () => {
+    const token = issueAccessToken("admin-user", "admin", 60);
+    const logEntries: Array<Record<string, unknown>> = [];
+    const route = createModuleRoutes(
+        { list: async () => [] } as any,
+        {
+            log: (level, message, meta) =>
+                logEntries.push({ level, message, ...meta }),
+        },
+        undefined,
+        {
+            listRecommendedModuleUuids: async () => [],
+            listCachedModules: async () => [
+                {
+                    id: "incomplete",
+                    uuid: "incomplete-uuid",
+                    ui: {
+                        stringsBaseUrl: "/static/modules/incomplete/languages",
+                    },
+                    assetIds: { strings: {} },
+                },
+            ],
+            getAsset: async () => undefined,
+        } as any,
+    );
+    let responseBody = "";
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        {
+            writeHead() {},
+            end(value: string) {
+                responseBody = value;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/modules/catalog"),
+    );
+    const payload = JSON.parse(responseBody);
+    assert.equal(payload.data[0].ui.stringsBaseUrl, undefined);
+    assert.deepEqual(
+        logEntries.find(
+            (entry) => entry.operation === "resolve-marketplace-strings",
+        ),
+        {
+            level: "warn",
+            message: "Module catalog strings were unavailable.",
+            component: "api-modules",
+            operation: "resolve-marketplace-strings",
+            moduleUuid: "incomplete-uuid",
+            locale: "en",
+            assetId: undefined,
+        },
+    );
 });
 
 test("cached module catalog retains current recommendations", async () => {
