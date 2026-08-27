@@ -74,3 +74,5 @@ The adapter declares `/static/adapters/auth/ldap/languages` as its language-reso
 LDAP connection and credential forms pass adapter localization keys directly to the shared form composer. Attempting user authentication without both required credentials shows a localized error toast and focuses the first invalid field.
 
 Source removal runs the `reconcile-auth-sources` flow. It revokes sessions for every account associated with the removed source. With source unification disabled, the user account is deprovisioned; with unification enabled, only the removed source identity is detached so another configured source can authenticate and refresh the retained account.
+
+Successful Test and Discover requests display a localized success toast before setup advances to filters and role mapping.

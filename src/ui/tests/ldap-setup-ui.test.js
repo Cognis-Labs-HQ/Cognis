@@ -132,6 +132,7 @@ test("LDAP setup localizes copy and confirms successful operations", () => {
     );
     assert.match(ldapPopupSource, /adapter\.auth\.ldap\.server_created/);
     assert.match(ldapPopupSource, /adapter\.auth\.ldap\.server_updated/);
+    assert.match(ldapPopupSource, /adapter\.auth\.ldap\.discovery_succeeded/);
     assert.match(ldapPopupSource, /showToast\([\s\S]*variant: "success"/);
 });
 

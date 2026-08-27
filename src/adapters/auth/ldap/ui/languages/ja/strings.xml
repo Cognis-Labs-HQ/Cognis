@@ -55,4 +55,5 @@
   <string name="adapter.auth.ldap.group_dn">グループ DN</string>
   <string name="adapter.auth.ldap.server_url">LDAP サーバー URL</string>
   <string name="adapter.auth.ldap.user_dn">ユーザー DN</string>
+  <string name="adapter.auth.ldap.discovery_succeeded">LDAP 接続に成功し、ディレクトリデータを検出しました。</string>
 </resources>

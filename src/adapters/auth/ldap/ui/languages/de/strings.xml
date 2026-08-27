@@ -55,4 +55,5 @@
   <string name="adapter.auth.ldap.group_dn">Gruppen-DN</string>
   <string name="adapter.auth.ldap.server_url">LDAP-Server-URL</string>
   <string name="adapter.auth.ldap.user_dn">Benutzer-DN</string>
+  <string name="adapter.auth.ldap.discovery_succeeded">Die LDAP-Verbindung war erfolgreich und Verzeichnisdaten wurden ermittelt.</string>
 </resources>

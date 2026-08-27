@@ -713,6 +713,9 @@ export async function openAdapterConfig({
                 }
                 pendingConnectionFieldErrors = {};
                 sample = testPayload.data;
+                showToast(i18n.t("adapter.auth.ldap.discovery_succeeded"), {
+                    variant: "success",
+                });
                 api.markDirty();
                 api.setPage("filters");
                 return false;

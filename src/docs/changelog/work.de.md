@@ -17,3 +17,5 @@ Das Authentifizierungs-Gateway veröffentlicht nun die URL der Sprachressourcen 
 Beim Testen der LDAP-Benutzerauthentifizierung mit einem leeren Pflichtfeld wird nun eine lokalisierte Fehlermeldung angezeigt. Jeder an den LDAP-Formularkompositor übergebene Beschriftungsschlüssel ist nun ein adaptereigener Lokalisierungsschlüssel.
 
 Das Deaktivieren von LDAP oder Entfernen einer Quelle widerruft nun alle Sitzungen der abhängigen Nutzer. Konten getrennter Quellen werden samt abhängigen Daten gelöscht, während vereinheitlichte Konten erhalten bleiben und bei der nächsten Anmeldung eine aktualisierte Identität einer anderen konfigurierten LDAP-Quelle erhalten können.
+
+Eine lokalisierte Erfolgsmeldung bestätigt nun, wenn „Testen und ermitteln“ erfolgreich eine Verbindung herstellt und LDAP-Verzeichnisdaten zurückgibt.

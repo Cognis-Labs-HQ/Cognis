@@ -54,3 +54,5 @@ Adaptor mendeklarasikan `/static/adapters/auth/ldap/languages` sebagai basis sum
 Formulir koneksi dan kredensial LDAP meneruskan kunci pelokalan adaptor secara langsung ke penyusun formulir bersama. Upaya autentikasi tanpa kedua kredensial wajib menampilkan toast galat yang dilokalkan dan memfokuskan kolom tidak valid pertama.
 
 Penghapusan sumber menjalankan alur `reconcile-auth-sources`. Alur ini mencabut sesi setiap akun yang terkait dengan sumber yang dihapus. Jika penyatuan sumber dinonaktifkan, akun pengguna dinonaktifkan sepenuhnya; jika diaktifkan, hanya identitas sumber yang dihapus dilepas agar sumber lain dapat mengautentikasi dan memperbarui akun yang dipertahankan.
+
+Permintaan Uji dan Temukan yang berhasil menampilkan toast keberhasilan yang dilokalkan sebelum penyiapan beralih ke filter dan pemetaan peran.
