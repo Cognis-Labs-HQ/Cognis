@@ -138,16 +138,16 @@ export function createAdapterAdminRoutes(
                 const body = await readJson(req);
                 const previousConfig =
                     await authGateway.getPersistedConfig(adapterId);
-                await authGateway.saveAdapterConfig(
-                    adapterId,
-                    body as Record<string, unknown>,
-                );
                 await flow.run("reconcile-auth-sources", {
                     adapterId,
                     previousConfig,
                     nextConfig: body,
                     disabled: false,
                 });
+                await authGateway.saveAdapterConfig(
+                    adapterId,
+                    body as Record<string, unknown>,
+                );
                 log?.("info", "Saved auth adapter config.", {
                     ...logMeta,
                     adapterId,

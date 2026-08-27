@@ -50,7 +50,6 @@ test("external account persistence creates the account before its identity", asy
             display_name: "Fire Hawk",
             is_admin: false,
             role: "teacher",
-            enabled: true,
             updated_at: (commands[0]?.values as Record<string, unknown>)
                 .updated_at,
         },

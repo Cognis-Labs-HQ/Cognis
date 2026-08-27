@@ -340,10 +340,10 @@ export async function openAdapterConfig({
             const field = overlay.querySelector(
                 `[name="${CSS.escape(fieldName)}"]`,
             );
-            if (field instanceof HTMLElement && !field.id) {
-                field.id = fieldName;
-            }
-            if (!markPopupFieldInvalid(overlay, fieldName, message)) {
+            if (
+                !(field instanceof HTMLElement) ||
+                !markPopupFieldInvalid(overlay, field.id, message)
+            ) {
                 remainingFieldErrors[fieldName] = message;
             }
         }
@@ -609,6 +609,19 @@ export async function openAdapterConfig({
                         },
                     );
                     credentialFormController = builder.attach(form);
+                    form.addEventListener("keydown", (event) => {
+                        if (
+                            event.key !== "Enter" ||
+                            event.target instanceof HTMLTextAreaElement
+                        ) {
+                            return;
+                        }
+                        event.preventDefault();
+                        event.stopPropagation();
+                        overlay
+                            .querySelector('[data-popup-action="verify-user"]')
+                            ?.click();
+                    });
                 }
                 return;
             }
@@ -667,11 +680,29 @@ export async function openAdapterConfig({
                     return false;
                 }
                 if (!(await verifyUserAuthentication(values))) {
-                    api.setPage("connect");
+                    const credentialFields = new Set([
+                        "testUsername",
+                        "testPassword",
+                    ]);
+                    const filterFields = new Set(["userFilter", "groupFilter"]);
+                    const errorFields = Object.keys(
+                        pendingConnectionFieldErrors,
+                    );
+                    api.setPage(
+                        errorFields.some((fieldName) =>
+                            credentialFields.has(fieldName),
+                        )
+                            ? "credentials"
+                            : errorFields.some((fieldName) =>
+                                    filterFields.has(fieldName),
+                                )
+                              ? "filters"
+                              : "connect",
+                    );
                     return false;
                 }
                 api.markDirty();
-                if (action === "verify-user") {
+                if (action === "verify-user" || api.pageId === "credentials") {
                     api.setPage("credentials");
                     return false;
                 }

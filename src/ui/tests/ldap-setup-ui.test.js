@@ -121,7 +121,7 @@ test("LDAP setup flags every server field identified by the API", () => {
     );
     assert.match(
         ldapPopupSource,
-        /markPopupFieldInvalid\(overlay, fieldName, message\)/,
+        /markPopupFieldInvalid\(overlay, field\.id, message\)/,
     );
 });
 
@@ -168,7 +168,18 @@ test("LDAP setup requires a successful user bind before completion", () => {
     );
     assert.match(
         ldapPopupSource,
-        /if \(!\(await verifyUserAuthentication\(values\)\)\) \{\s*api\.setPage\("connect"\)/,
+        /credentialFields\.has\(fieldName\)[\s\S]*\? "credentials"/,
+    );
+});
+
+test("LDAP credential Enter handling verifies without completing setup", () => {
+    assert.match(
+        ldapPopupSource,
+        /form\.addEventListener\("keydown"[\s\S]*event\.stopPropagation\(\)[\s\S]*data-popup-action="verify-user"/,
+    );
+    assert.match(
+        ldapPopupSource,
+        /action === "verify-user" \|\|\s*api\.pageId === "credentials"/,
     );
 });
 

@@ -96,7 +96,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
                             identity.displayName?.trim() || identity.accountId,
                         is_admin: role === "admin",
                         role,
-                        enabled: true,
                         updated_at: now,
                     },
                 },

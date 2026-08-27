@@ -414,7 +414,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.9.14",
+        version: "1.9.15",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs HQ",
         required: true,
