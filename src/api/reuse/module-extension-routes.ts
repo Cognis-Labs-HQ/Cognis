@@ -269,6 +269,7 @@ export function createModuleExtensionRoutes(
             capabilities: string[];
             flows: string[];
         },
+        moduleEnabled: boolean,
     ): ModuleBootstrapCtx {
         const moduleId = manifest.id;
         function requireActiveBootstrap() {
@@ -313,13 +314,27 @@ export function createModuleExtensionRoutes(
                     routeOptions?.access,
                 );
             }
+            const allowWhenDisabled = Boolean(routeOptions?.allowWhenDisabled);
+            if (!moduleEnabled && !allowWhenDisabled) return;
+            if (!moduleEnabled) {
+                log?.(
+                    "info",
+                    "Registered module route for disabled configuration.",
+                    {
+                        component: "module-extension-routes",
+                        moduleId,
+                        method,
+                        routePath,
+                    },
+                );
+            }
             nextHandlers.push({
                 method,
                 routePath,
                 moduleId,
                 access: parsedAccess.access,
                 invalidAccessPolicy: parsedAccess.invalid,
-                allowWhenDisabled: Boolean(routeOptions?.allowWhenDisabled),
+                allowWhenDisabled,
                 handler,
             });
         }
@@ -356,6 +371,7 @@ export function createModuleExtensionRoutes(
             run: baseFlow.run.bind(baseFlow),
             extend(flowId, stageId, hook, handler) {
                 requireActiveBootstrap();
+                if (!moduleEnabled) return false;
                 const registered = baseFlow.extend(
                     flowId,
                     stageId,
@@ -382,14 +398,26 @@ export function createModuleExtensionRoutes(
             capabilities: {
                 contribute(key, value) {
                     requireActiveBootstrap();
+                    if (!moduleEnabled) return;
                     systemCtx?.contributeCapability(key, value);
                     scope.capabilities.push(key);
                 },
-                get: options.routeContext.getCapability,
+                get(key) {
+                    if (!moduleEnabled && key === "system:ctx") {
+                        return undefined;
+                    }
+                    return options.routeContext.getCapability(key);
+                },
                 has(key) {
+                    if (!moduleEnabled && key === "system:ctx") return false;
                     return systemCtx?.hasCapability(key) ?? false;
                 },
                 require(key) {
+                    if (!moduleEnabled && key === "system:ctx") {
+                        throw new Error(
+                            'Required capability "system:ctx" is not available.',
+                        );
+                    }
                     if (!systemCtx) {
                         throw new Error(
                             `Required capability "${key}" is not available.`,
@@ -400,20 +428,28 @@ export function createModuleExtensionRoutes(
             },
             contributeCapability(key, value) {
                 requireActiveBootstrap();
+                if (!moduleEnabled) return;
                 systemCtx?.contributeCapability(key, value);
                 scope.capabilities.push(key);
             },
             contributePublicCapability(key, value) {
                 requireActiveBootstrap();
+                if (!moduleEnabled) return;
                 systemCtx?.contributePublicCapability(key, value);
                 scope.capabilities.push(key);
             },
             registerFlow(flowRegistration) {
                 requireActiveBootstrap();
+                if (!moduleEnabled) return;
                 systemCtx?.registerFlow(flowRegistration);
                 scope.flows.push(flowRegistration.id);
             },
-            getCapability: options.routeContext.getCapability,
+            getCapability(capabilityId) {
+                if (!moduleEnabled && capabilityId === "system:ctx") {
+                    return undefined;
+                }
+                return options.routeContext.getCapability(capabilityId);
+            },
             registerApiGet(routePath, handler, routeOptions) {
                 registerApiRoute("GET", routePath, handler, routeOptions);
             },
@@ -432,6 +468,7 @@ export function createModuleExtensionRoutes(
             router,
             registerNavbarPlugin(pluginDef) {
                 requireActiveBootstrap();
+                if (!moduleEnabled) return;
                 const pluginConfig =
                     typeof pluginDef === "string"
                         ? { scriptUrl: pluginDef }
@@ -445,6 +482,7 @@ export function createModuleExtensionRoutes(
             },
             registerSpaRoute(route) {
                 requireActiveBootstrap();
+                if (!moduleEnabled) return;
                 options?.uiRegistry?.registerSpaRoute({
                     ...route,
                     requiredCapabilities:
@@ -461,6 +499,7 @@ export function createModuleExtensionRoutes(
             },
             registerSettingsSection(section) {
                 requireActiveBootstrap();
+                if (!moduleEnabled) return;
                 options?.uiRegistry?.registerSettingsSection({
                     ...section,
                     ownerId: moduleId,
@@ -469,6 +508,7 @@ export function createModuleExtensionRoutes(
             },
             registerPageExtension(pageId, element) {
                 requireActiveBootstrap();
+                if (!moduleEnabled) return;
                 options?.uiRegistry?.registerPageExtension(pageId, {
                     ...element,
                     ownerId: moduleId,
@@ -477,6 +517,7 @@ export function createModuleExtensionRoutes(
             },
             registerAdminSection(section) {
                 requireActiveBootstrap();
+                if (!moduleEnabled) return;
                 options?.uiRegistry?.registerAdminSection({
                     ...section,
                     ownerId: moduleId,
@@ -485,6 +526,7 @@ export function createModuleExtensionRoutes(
             },
             registerStaticDir(urlPrefix, absoluteDir) {
                 requireActiveBootstrap();
+                if (!moduleEnabled) return;
                 const normalizedPrefix = String(urlPrefix ?? "")
                     .trim()
                     .replace(/^\/+|\/+$/g, "");
@@ -498,6 +540,7 @@ export function createModuleExtensionRoutes(
             },
             registerAuthTypingMessage(message) {
                 requireActiveBootstrap();
+                if (!moduleEnabled) return;
                 options?.uiRegistry?.registerAuthTypingMessage({
                     ...message,
                     ownerType: "module",
@@ -595,7 +638,7 @@ export function createModuleExtensionRoutes(
 
         for (const manifest of manifests) {
             if (manifest.class === "core") continue;
-            if (!isModuleEnabled(manifest.id)) continue;
+            const moduleEnabled = isModuleEnabled(manifest.id);
             if (!manifest.uuid) {
                 log?.("error", "External module is missing its UUID.", {
                     component: "module-extension-routes",
@@ -613,10 +656,12 @@ export function createModuleExtensionRoutes(
                 });
                 continue;
             }
-            options?.uiRegistry?.registerModuleStaticDir(
-                manifest.id,
-                path.join(moduleRoot, "ui"),
-            );
+            if (moduleEnabled) {
+                options?.uiRegistry?.registerModuleStaticDir(
+                    manifest.id,
+                    path.join(moduleRoot, "ui"),
+                );
+            }
             const scope = {
                 active: true,
                 hooks: [],
@@ -628,6 +673,7 @@ export function createModuleExtensionRoutes(
                 moduleRoot,
                 nextHandlers,
                 scope,
+                moduleEnabled,
             );
             const entrypoint = resolveModuleEntrypointPath(
                 moduleRoot,

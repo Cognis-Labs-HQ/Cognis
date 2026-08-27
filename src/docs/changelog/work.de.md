@@ -7,3 +7,7 @@ Der Modulkatalog gibt Lokalisierungsressourcen nur noch bekannt, nachdem die erf
 ## Unvollständige Modulcaches erkennen
 
 Die API protokolliert eine strukturierte Warnung mit Modul, Sprache und Ressourcenkennung, wenn ein Modul Lokalisierung deklariert, aber die englische Ressource im Cache fehlt. Eine erneute Quellensuche kann den Cache auffüllen; Modulautoren müssen weiterhin `ui/languages/en/strings.xml` und die übrigen unterstützten Übersetzungen bereitstellen.
+
+## Module vor der Prüfung konfigurieren
+
+Routen, die ein Modul ausdrücklich als im deaktivierten Zustand verfügbar kennzeichnet, werden nun in einem eingeschränkten Konfigurationsstart registriert. Andere Routen, UI-Beiträge, Fähigkeiten und Ablauf-Hooks bleiben inaktiv. Administratoren können dadurch Module wie Jitsi Meet konfigurieren, bevor die Aktivierungsprüfung diese Konfiguration kontrolliert.
