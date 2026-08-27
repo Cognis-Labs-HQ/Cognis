@@ -72,3 +72,5 @@ The setup extension sources its user-facing copy from the adapter language resou
 The adapter declares `/static/adapters/auth/ldap/languages` as its language-resource base. Administration receives that URL in adapter metadata and extends its i18n instance before importing the setup popup.
 
 LDAP connection and credential forms pass adapter localization keys directly to the shared form composer. Attempting user authentication without both required credentials shows a localized error toast and focuses the first invalid field.
+
+Source removal runs the `reconcile-auth-sources` flow. It revokes sessions for every account associated with the removed source. With source unification disabled, the user account is deprovisioned; with unification enabled, only the removed source identity is detached so another configured source can authenticate and refresh the retained account.

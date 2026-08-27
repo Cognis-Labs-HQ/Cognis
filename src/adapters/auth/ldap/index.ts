@@ -90,6 +90,95 @@ interface LdapConfiguration {
     servers: LdapRuntimeOptions[];
 }
 
+interface LdapSourceReconcileRequest {
+    adapterId?: string;
+    previousConfig?: Record<string, unknown>;
+    nextConfig?: Record<string, unknown>;
+    disabled?: boolean;
+}
+
+export function bootstrapAuthAdapter(input: {
+    capabilities: {
+        contribute(id: string, value: unknown): void;
+        require<T>(id: string): T;
+    };
+    flow: {
+        run(flowId: string, input: Record<string, unknown>): Promise<unknown>;
+    };
+    log?: (
+        level: "info" | "warn" | "error",
+        message: string,
+        metadata?: Record<string, unknown>,
+    ) => void;
+}): void {
+    input.capabilities.contribute(
+        "auth:source-reconciler:ldap",
+        async (request: LdapSourceReconcileRequest) => {
+            const previousConfig = request.previousConfig ?? {};
+            const nextConfig = request.nextConfig ?? {};
+            const previousServers = Array.isArray(previousConfig.servers)
+                ? (previousConfig.servers as LdapRuntimeOptions[])
+                : [];
+            const nextIdentifiers = new Set(
+                (request.disabled || !Array.isArray(nextConfig.servers)
+                    ? []
+                    : (nextConfig.servers as LdapRuntimeOptions[])
+                ).map((server) => String(server.identifier ?? "")),
+            );
+            const removedIdentifiers = previousServers
+                .map((server) => String(server.identifier ?? ""))
+                .filter(
+                    (identifier) =>
+                        identifier && !nextIdentifiers.has(identifier),
+                );
+            const accountStore = input.capabilities.require<{
+                removeExternalIdentitiesByPrefix?(
+                    provider: string,
+                    externalUserIdPrefix: string,
+                ): Promise<string[]>;
+            }>("auth:accountStore");
+            const revokeTokens = input.capabilities.require<
+                (accountId: string) => number
+            >("auth:revokeAccessTokensForSubject");
+            const deleteAccounts = previousConfig.unify === false;
+            const affectedAccountIds = new Set<string>();
+            for (const identifier of removedIdentifiers) {
+                const sourcePrefix = `ldap:${encodeURIComponent(identifier)}:`;
+                const accountIds =
+                    (await accountStore.removeExternalIdentitiesByPrefix?.(
+                        "ldap",
+                        sourcePrefix,
+                    )) ?? [];
+                for (const accountId of accountIds) {
+                    affectedAccountIds.add(accountId);
+                    revokeTokens(accountId);
+                    if (deleteAccounts) {
+                        await input.flow.run("deprovision-user", {
+                            username: accountId,
+                            action: "delete",
+                            callerRole: "owner",
+                            targetRole: "user",
+                            targetIsFounder: false,
+                        });
+                    }
+                }
+            }
+            input.log?.("info", "Reconciled removed LDAP sources.", {
+                component: "auth-ldap-adapter",
+                operation: "reconcile_removed_sources",
+                removedIdentifiers,
+                affectedAccountCount: affectedAccountIds.size,
+                accountsDeleted: deleteAccounts,
+            });
+            return {
+                reconciled: true,
+                affectedAccountIds: [...affectedAccountIds],
+                accountsDeleted: deleteAccounts,
+            };
+        },
+    );
+}
+
 function splitList(value: unknown): string[] {
     if (Array.isArray(value))
         return value
@@ -211,7 +300,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     readonly configPopupScriptUrl =
         "/static/adapters/auth/ldap/config-popup.js";
     readonly stringsBaseUrl = "/static/adapters/auth/ldap/languages";
-    readonly version = "0.5.25";
+    readonly version = "0.5.26";
 
     private client: LdapClient = new StandardLdapClient();
     private adminGroups = new Set(["cognis-admins"]);

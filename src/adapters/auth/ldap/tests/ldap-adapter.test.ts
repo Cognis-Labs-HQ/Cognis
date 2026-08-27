@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createAdapter } from "../index.js";
+import { bootstrapAuthAdapter, createAdapter } from "../index.js";
 import type { LdapRuntimeOptions } from "../index.js";
 import {
     isDirectoryGroupEntry,
@@ -29,6 +29,54 @@ test("LDAP discovery uses focused user and group bases with base DN fallback", (
             groups: "dc=example,dc=org",
         },
     );
+});
+
+test("removed LDAP sources revoke sessions and only delete separated accounts", async () => {
+    const contributed = new Map<string, unknown>();
+    const deletedAccountIds: string[] = [];
+    const revokedAccountIds: string[] = [];
+    const accountStore = {
+        removeExternalIdentitiesByPrefix: async () => ["alice"],
+    };
+    bootstrapAuthAdapter({
+        capabilities: {
+            contribute: (id, value) => contributed.set(id, value),
+            require: <T>(id: string) =>
+                (id === "auth:accountStore"
+                    ? accountStore
+                    : (accountId: string) => {
+                          revokedAccountIds.push(accountId);
+                          return 1;
+                      }) as T,
+        },
+        flow: {
+            run: async (_flowId, flowInput) => {
+                deletedAccountIds.push(String(flowInput.username));
+                return {};
+            },
+        },
+    });
+    const reconcile = contributed.get("auth:source-reconciler:ldap") as (
+        request: Record<string, unknown>,
+    ) => Promise<unknown>;
+    await reconcile({
+        previousConfig: {
+            unify: true,
+            servers: [{ identifier: "Primary" }],
+        },
+        nextConfig: { unify: true, servers: [] },
+    });
+    assert.deepEqual(revokedAccountIds, ["alice"]);
+    assert.deepEqual(deletedAccountIds, []);
+
+    await reconcile({
+        previousConfig: {
+            unify: false,
+            servers: [{ identifier: "Faculty" }],
+        },
+        nextConfig: { unify: false, servers: [] },
+    });
+    assert.deepEqual(deletedAccountIds, ["alice"]);
 });
 
 test("LDAP discovery excludes user objects from group results", () => {

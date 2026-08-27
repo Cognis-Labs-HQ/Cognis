@@ -85,3 +85,5 @@ The Authentication gateway loads its required keyring adapter before registering
 ## Share failure propagation
 
 Browser session results preserve a neutral alternate-authentication failure reason so a public resource page can distinguish a missing resource from other unavailable states without importing Authentication internals.
+
+Authentication source changes run the `reconcile-auth-sources` flow after persistence. Adapter hooks use its `reconcile-accounts` stage to invalidate sessions and reconcile source-owned identities without route-level provider branching.

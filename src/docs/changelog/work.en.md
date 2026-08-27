@@ -15,3 +15,5 @@ All LDAP setup copy is now supplied by the adapter's localized language resource
 The Authentication gateway now advertises each adapter's language-resource URL, and the LDAP language packs are served from its registered static UI directory so Administration loads them before opening setup.
 
 Testing LDAP user authentication with an empty required credential field now shows a localized error toast. Every label key supplied to the LDAP form composer is now an adapter-owned localization key.
+
+Disabling LDAP or removing a source now revokes every dependent user's sessions. Separate-source accounts are deleted with their dependent data, while unified accounts retain the account and can attach a refreshed identity from another configured LDAP source on their next login.

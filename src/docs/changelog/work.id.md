@@ -15,3 +15,5 @@ Semua teks penyiapan LDAP kini berasal dari sumber daya bahasa lokal milik adapt
 Gateway Autentikasi kini mengumumkan URL sumber daya bahasa setiap adaptor. Paket bahasa LDAP disajikan dari direktori UI statis yang terdaftar agar Administrasi memuatnya sebelum membuka penyiapan.
 
 Pengujian autentikasi pengguna LDAP dengan kolom kredensial wajib yang kosong kini menampilkan toast galat yang dilokalkan. Setiap kunci label yang diberikan kepada penyusun formulir LDAP kini merupakan kunci pelokalan milik adaptor.
+
+Menonaktifkan LDAP atau menghapus sumber kini mencabut semua sesi pengguna yang bergantung padanya. Akun sumber terpisah dihapus bersama data dependennya, sedangkan akun terpadu dipertahankan dan dapat mengaitkan identitas terbaru dari sumber LDAP lain saat login berikutnya.

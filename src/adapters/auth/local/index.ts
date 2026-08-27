@@ -19,7 +19,7 @@ export interface LocalAuthAdapter extends AuthProviderAdapter {
 class LocalAuthAdapterImpl implements LocalAuthAdapter {
     readonly id = "local";
     readonly name = "Local";
-    readonly version = "0.3.5";
+    readonly version = "0.3.15";
     readonly store: LocalAccountStore;
 
     constructor(store: LocalAccountStore) {

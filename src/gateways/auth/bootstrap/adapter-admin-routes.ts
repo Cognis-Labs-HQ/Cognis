@@ -7,10 +7,12 @@ import {
 } from "../../shared.js";
 import type { CoreAuthGateway } from "../gateway.js";
 import { buildGatewayAdapterAdminControls } from "../../../api/reuse/adapter-admin-controls.js";
+import type { FlowApi } from "@cognis/core";
 
 export function createAdapterAdminRoutes(
     gatewayId: string,
     authGateway: CoreAuthGateway,
+    flow: FlowApi,
     log?: GatewayBootstrapContext["log"],
 ) {
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
@@ -134,10 +136,18 @@ export function createAdapterAdminRoutes(
                     return true;
                 }
                 const body = await readJson(req);
+                const previousConfig =
+                    await authGateway.getPersistedConfig(adapterId);
                 await authGateway.saveAdapterConfig(
                     adapterId,
                     body as Record<string, unknown>,
                 );
+                await flow.run("reconcile-auth-sources", {
+                    adapterId,
+                    previousConfig,
+                    nextConfig: body,
+                    disabled: false,
+                });
                 log?.("info", "Saved auth adapter config.", {
                     ...logMeta,
                     adapterId,
@@ -283,7 +293,15 @@ export function createAdapterAdminRoutes(
                 }
                 await authGateway.enableAdapter(adapterId);
             } else {
+                const previousConfig =
+                    await authGateway.getPersistedConfig(adapterId);
                 await authGateway.disableAdapter(adapterId);
+                await flow.run("reconcile-auth-sources", {
+                    adapterId,
+                    previousConfig,
+                    nextConfig: previousConfig,
+                    disabled: true,
+                });
             }
             log?.("info", `Auth adapter ${action}d.`, {
                 ...logMeta,

@@ -59,3 +59,5 @@ Die Einrichtungserweiterung bezieht ihre sichtbaren Texte aus den Sprachressourc
 Der Adapter deklariert `/static/adapters/auth/ldap/languages` als Basis seiner Sprachressourcen. Die Administration erhält diese URL in den Adaptermetadaten und erweitert ihre i18n-Instanz vor dem Import des Einrichtungsdialogs.
 
 LDAP-Verbindungs- und Zugangsdatenformulare übergeben die Lokalisierungsschlüssel des Adapters direkt an den gemeinsamen Formularkompositor. Bei einem Authentifizierungsversuch ohne beide erforderlichen Zugangsdaten wird eine lokalisierte Fehlermeldung angezeigt und das erste ungültige Feld fokussiert.
+
+Das Entfernen einer Quelle führt den Ablauf `reconcile-auth-sources` aus. Er widerruft die Sitzungen aller mit der entfernten Quelle verbundenen Konten. Ohne Quellenvereinheitlichung wird das Nutzerkonto entfernt; mit Vereinheitlichung wird nur die entfernte Quellenidentität gelöst, sodass eine andere konfigurierte Quelle das erhaltene Konto authentifizieren und aktualisieren kann.

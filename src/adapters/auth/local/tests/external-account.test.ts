@@ -42,6 +42,49 @@ test("external account persistence creates the account before its identity", asy
         (commands[1]?.values as Record<string, unknown>).account_id,
         "firehawk",
     );
+    assert.deepEqual(commands[0]?.conflict, {
+        action: "update",
+        target: ["id"],
+        update: {
+            email: "firehawk@example.org",
+            display_name: "Fire Hawk",
+            is_admin: false,
+            role: "teacher",
+            enabled: true,
+            updated_at: (commands[0]?.values as Record<string, unknown>)
+                .updated_at,
+        },
+    });
+});
+
+test("external identity removal returns every account tied to a source", async () => {
+    const commands: Array<Record<string, unknown>> = [];
+    const executor = {
+        async executeCommand(command: Record<string, unknown>) {
+            commands.push(command);
+            return commands.length === 1
+                ? { rows: [{ account_id: "alice" }, { account_id: "alice" }] }
+                : { rows: [] };
+        },
+    };
+    const store = new DbLocalAccountStore(executor as never);
+
+    const accountIds = await store.removeExternalIdentitiesByPrefix(
+        "ldap",
+        "ldap:Faculty:",
+    );
+
+    assert.deepEqual(accountIds, ["alice"]);
+    assert.deepEqual(
+        commands.map((command) => command.option),
+        ["SELECT", "DELETE"],
+    );
+    assert.deepEqual((commands[0]?.where as unknown[])[1], {
+        column: "external_user_id",
+        operator: "LIKE",
+        value: "ldap:Faculty:%",
+        escape: "\\",
+    });
 });
 
 test("local auth schema provisions external identities", async () => {

@@ -85,3 +85,5 @@ Das Authentifizierungs-Gateway lädt seinen erforderlichen Schlüsselbundadapter
 ## Weitergabe von Freigabefehlern
 
 Browser-Sitzungsergebnisse bewahren einen neutralen Fehlergrund der alternativen Authentifizierung, damit eine öffentliche Ressourcenseite eine fehlende Ressource von anderen Nicht-verfügbar-Zuständen unterscheiden kann, ohne Authentifizierungs-Interna zu importieren.
+
+Änderungen an Authentifizierungsquellen führen nach der Speicherung den Ablauf `reconcile-auth-sources` aus. Adapter-Hooks nutzen dessen Stufe `reconcile-accounts`, um Sitzungen zu widerrufen und quelleneigene Identitäten ohne anbieterspezifische Routenverzweigungen abzugleichen.
