@@ -64,6 +64,31 @@ export async function registerAuthBootstrapHook(
         registerCanonicalFlow(systemCtx, flow);
     }
 
+    if (!context.ctx.flow.exists("reconcile-auth-sources")) {
+        systemCtx.registerFlow({
+            id: "reconcile-auth-sources",
+            description:
+                "Reconciles sessions and account identities after an authentication source changes.",
+            stages: ["reconcile-accounts"],
+        });
+    }
+
+    context.ctx.flow.extend(
+        "reconcile-auth-sources",
+        "reconcile-accounts",
+        { id: "auth-gateway:adapter-source-reconciler" },
+        async (stageCtx) => {
+            const input = stageCtx.input as { adapterId?: string };
+            const adapterId = String(input.adapterId ?? "");
+            const reconcile = context.ctx.capabilities.get<
+                (request: Record<string, unknown>) => Promise<unknown>
+            >(`auth:source-reconciler:${adapterId}`);
+            return reconcile
+                ? reconcile(stageCtx.input)
+                : { reconciled: false };
+        },
+    );
+
     context.ctx.flow.extend(
         "bootstrap-platform",
         "register-flows",

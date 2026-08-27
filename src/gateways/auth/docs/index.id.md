@@ -70,8 +70,13 @@ Capability yang disediakan:
 | `GET`  | `/api/v1/gateways/auth/adapters`             | Daftar semua adapter autentikasi terdaftar  | Admin            |
 | `GET`  | `/api/v1/gateways/auth/adapters/:id/config`  | Mendapatkan skema konfigurasi untuk adapter | Admin            |
 | `PUT`  | `/api/v1/gateways/auth/adapters/:id/config`  | Memperbarui konfigurasi untuk adapter       | Admin            |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/test`    | Menguji konfigurasi adapter                 | Admin            |
 | `POST` | `/api/v1/gateways/auth/adapters/:id/enable`  | Mengaktifkan adapter                        | Admin            |
 | `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Menonaktifkan adapter                       | Admin            |
+
+Kegagalan uji adapter dapat menyertakan objek `error.fieldErrors` yang memetakan sejumlah ID kolom konfigurasi ke pesan diagnosis yang aman.
+
+Daftar adaptor dan kontrak konfigurasi menyertakan `stringsBaseUrl` ketika adaptor memiliki sumber daya Administrasi yang dilokalkan.
 
 ## Bootstrap keyring peramban
 
@@ -80,3 +85,5 @@ Gateway Autentikasi memuat adapter keyring wajib sebelum mendaftarkan hook alur 
 ## Penerusan kegagalan berbagi
 
 Hasil sesi peramban mempertahankan alasan kegagalan autentikasi alternatif yang netral agar halaman sumber daya publik dapat membedakan sumber daya yang hilang dari status tidak tersedia lainnya tanpa mengimpor internal Autentikasi.
+
+Perubahan sumber autentikasi menjalankan alur `reconcile-auth-sources` setelah penyimpanan. Hook adaptor menggunakan tahap `reconcile-accounts` untuk mencabut sesi dan merekonsiliasi identitas milik sumber tanpa percabangan penyedia di route.

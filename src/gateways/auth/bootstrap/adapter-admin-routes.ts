@@ -7,10 +7,12 @@ import {
 } from "../../shared.js";
 import type { CoreAuthGateway } from "../gateway.js";
 import { buildGatewayAdapterAdminControls } from "../../../api/reuse/adapter-admin-controls.js";
+import type { FlowApi } from "@cognis/core";
 
 export function createAdapterAdminRoutes(
     gatewayId: string,
     authGateway: CoreAuthGateway,
+    flow: FlowApi,
     log?: GatewayBootstrapContext["log"],
 ) {
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
@@ -105,6 +107,7 @@ export function createAdapterAdminRoutes(
                         configured: authGateway.isAdapterConfigured(adapterId),
                         configPopupScriptUrl:
                             configContract.configPopupScriptUrl,
+                        stringsBaseUrl: configContract.stringsBaseUrl,
                     }),
                 );
                 return true;
@@ -133,6 +136,14 @@ export function createAdapterAdminRoutes(
                     return true;
                 }
                 const body = await readJson(req);
+                const previousConfig =
+                    await authGateway.getPersistedConfig(adapterId);
+                await flow.run("reconcile-auth-sources", {
+                    adapterId,
+                    previousConfig,
+                    nextConfig: body,
+                    disabled: false,
+                });
                 await authGateway.saveAdapterConfig(
                     adapterId,
                     body as Record<string, unknown>,
@@ -178,6 +189,13 @@ export function createAdapterAdminRoutes(
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data }));
             } catch (error) {
+                const fieldErrors =
+                    error instanceof Error &&
+                    "fieldErrors" in error &&
+                    error.fieldErrors &&
+                    typeof error.fieldErrors === "object"
+                        ? error.fieldErrors
+                        : undefined;
                 log?.("error", "Auth adapter configuration test failed.", {
                     ...logMeta,
                     adapterId,
@@ -198,6 +216,7 @@ export function createAdapterAdminRoutes(
                                 error instanceof Error
                                     ? error.message
                                     : "LDAP test failed",
+                            ...(fieldErrors ? { fieldErrors } : {}),
                         },
                     }),
                 );
@@ -274,7 +293,15 @@ export function createAdapterAdminRoutes(
                 }
                 await authGateway.enableAdapter(adapterId);
             } else {
+                const previousConfig =
+                    await authGateway.getPersistedConfig(adapterId);
                 await authGateway.disableAdapter(adapterId);
+                await flow.run("reconcile-auth-sources", {
+                    adapterId,
+                    previousConfig,
+                    nextConfig: previousConfig,
+                    disabled: true,
+                });
             }
             log?.("info", `Auth adapter ${action}d.`, {
                 ...logMeta,

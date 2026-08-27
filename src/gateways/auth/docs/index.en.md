@@ -70,8 +70,13 @@ Capabilities contributed:
 | `GET`  | `/api/v1/gateways/auth/adapters`             | List all registered auth adapters     | Admin |
 | `GET`  | `/api/v1/gateways/auth/adapters/:id/config`  | Get config schema for an adapter      | Admin |
 | `PUT`  | `/api/v1/gateways/auth/adapters/:id/config`  | Update config for an adapter          | Admin |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/test`    | Test an adapter configuration         | Admin |
 | `POST` | `/api/v1/gateways/auth/adapters/:id/enable`  | Enable an adapter                     | Admin |
 | `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Disable an adapter                    | Admin |
+
+Adapter test failures may include an `error.fieldErrors` object mapping any number of configuration field IDs to safe diagnostic messages.
+
+Adapter listings and configuration contracts include `stringsBaseUrl` when an adapter owns localized Administration resources.
 
 ## Browser keyring bootstrap
 
@@ -80,3 +85,5 @@ The Authentication gateway loads its required keyring adapter before registering
 ## Share failure propagation
 
 Browser session results preserve a neutral alternate-authentication failure reason so a public resource page can distinguish a missing resource from other unavailable states without importing Authentication internals.
+
+Authentication source changes run the `reconcile-auth-sources` flow after persistence. Adapter hooks use its `reconcile-accounts` stage to invalidate sessions and reconcile source-owned identities without route-level provider branching.

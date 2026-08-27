@@ -2,7 +2,7 @@
     "id": "local",
     "uuid": "40bb8d2e-5a2f-569d-8c38-21402f7aca50",
     "name": "Local Authentication",
-    "version": "0.3.14",
+    "version": "0.3.16",
     "publisher": "Cognis Labs HQ",
     "locked": true
 }
