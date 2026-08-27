@@ -8,9 +8,10 @@
   <string name="adapter.auth.keyring.cancel_action">Abbrechen</string>
   <string name="adapter.auth.keyring.setup_title">Schlüsselbundverschlüsselung einrichten</string>
   <string name="adapter.auth.keyring.setup_message">Ihr Schlüsselbund speichert Passwörter und Verschlüsselungsschlüssel für Cognis-Funktionen sicher. Wählen Sie ein Passwort, um ihn zu schützen.</string>
-  <string name="adapter.auth.keyring.setup_account_password_message">Geben Sie Ihr Kontopasswort ein, um es zum Schutz des Schlüsselbunds zu verwenden.</string>
-  <string name="adapter.auth.keyring.setup_placeholder">Schlüsselbundpasswort (optional)</string>
-  <string name="adapter.auth.keyring.setup_hint">Leer lassen, um dein Kontopasswort zu verwenden.</string>
+  <string name="adapter.auth.keyring.setup_password">Schlüsselbundpasswort</string>
+  <string name="adapter.auth.keyring.setup_confirm_password">Schlüsselbundpasswort bestätigen</string>
+  <string name="adapter.auth.keyring.setup_password_match">Die Schlüsselbundpasswörter stimmen überein.</string>
+  <string name="adapter.auth.keyring.setup_use_account_password">Benutzerpasswort verwenden</string>
   <string name="adapter.auth.keyring.setup_action">Schlüsselbund einrichten</string>
   <string name="adapter.auth.keyring.created">Schlüsselbund erstellt.</string>
   <string name="adapter.auth.keyring.destroyed">Schlüsselbund zerstört. Seine Geheimnisse können nicht mehr automatisch wiederhergestellt werden.</string>
@@ -43,6 +44,9 @@
   <string name="gateway.auth.keyring.minutes">Minuten</string>
   <string name="gateway.auth.keyring.timeout_saved">Sperrzeit des Schlüsselbunds gespeichert.</string>
   <string name="gateway.auth.keyring.empty">Keine Geheimnisse gespeichert.</string>
+  <string name="gateway.auth.keyring.not_found">Kein Schlüsselbund gefunden</string>
+  <string name="gateway.auth.keyring.not_found_message">Erstellen Sie einen Schlüsselbund, bevor Sie verschlüsselte Geheimnisse verwalten.</string>
+  <string name="gateway.auth.keyring.create">Erstellen</string>
   <string name="gateway.auth.keyring.add">Geheimnis hinzufügen</string>
   <string name="gateway.auth.keyring.add_title">Geheimnis hinzufügen</string>
   <string name="gateway.auth.keyring.edit_title">Geheimnis bearbeiten</string>

@@ -6,10 +6,17 @@ import { resolve } from "node:path";
 
 const loginSource = readFileSync(resolve("src/ui/app/login/index.js"), "utf8");
 
+test("deleted-account login clears the browser keyring before showing its reason", () => {
+    assert.match(
+        loginSource,
+        /loginReason === "account_deleted"[\s\S]*keyring:clearAccountState/,
+    );
+});
+
 test("login persists the authenticated identity before running account setup flows", () => {
     assert.match(
         loginSource,
-        /async function finalizeAuthenticatedSession\(data, password = ""\) \{\s*persistSession\(data\);\s*await uiCtx\.runFlow\("complete-login", \{\s*accountPassword: password,\s*deferNewKeyringSetup: true,\s*\}\);/,
+        /async function finalizeAuthenticatedSession\(data, password = ""\) \{\s*persistSession\(data\);\s*await uiCtx\.runFlow\("complete-login", \{\s*accountPassword: password,\s*\}\);/,
     );
     assert.doesNotMatch(loginSource, /unlockKeyring/);
 });
@@ -22,7 +29,7 @@ test("login retains the password until TFA authentication unlocks the keyring", 
     );
     assert.match(
         loginSource,
-        /persistSession\(data\);\s*await uiCtx\.runFlow\("complete-login", \{\s*accountPassword: password,\s*deferNewKeyringSetup: true,\s*\}\);\s*tfaLoginClient\.handleSetupRequired/,
+        /persistSession\(data\);\s*await uiCtx\.runFlow\("complete-login", \{\s*accountPassword: password,\s*\}\);\s*tfaLoginClient\.handleSetupRequired/,
     );
 });
 

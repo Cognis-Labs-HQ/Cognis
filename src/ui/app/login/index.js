@@ -50,6 +50,9 @@ export async function mount(root) {
     const loginReason = new URL(window.location.href).searchParams.get(
         "reason",
     );
+    if (loginReason === "account_deleted") {
+        await uiCtx.capabilities.get("keyring:clearAccountState")?.();
+    }
     let loginReasonToastShown = false;
 
     let publicRegistrationEnabled = false;
@@ -350,7 +353,6 @@ export async function mount(root) {
         persistSession(data);
         await uiCtx.runFlow("complete-login", {
             accountPassword: password,
-            deferNewKeyringSetup: true,
         });
         const requiresUserValidation =
             data.requiredUserValidation === true &&
@@ -391,7 +393,6 @@ export async function mount(root) {
                 persistSession(data);
                 await uiCtx.runFlow("complete-login", {
                     accountPassword: password,
-                    deferNewKeyringSetup: true,
                 });
                 tfaLoginClient.handleSetupRequired(() => undefined, data);
             }

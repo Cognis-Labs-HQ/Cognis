@@ -127,7 +127,7 @@ export async function bootstrapAuthAdapter(input: {
     input.flow?.extend(
         "deprovision-user",
         "cleanup-dependencies",
-        { id: "auth-keyring:purge-deleted-user" },
+        { id: "auth-keyring:purge-deleted-user", order: 1_000 },
         async (stageContext) => {
             const request = (stageContext.input ?? {}) as {
                 username?: string;

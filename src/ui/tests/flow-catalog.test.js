@@ -160,6 +160,12 @@ test("auth session-flow-hooks.js registers a validate-stored-token hook", () => 
     );
 });
 
+test("deleted-account session handling clears its keyring and preserves the server reason", () => {
+    const source = readFileSync(AUTH_HOOKS_PATH, "utf8");
+    assert.match(source, /clearStoredSession\(\{ clearKeyring: true \}\)/);
+    assert.match(source, /window\.location\.replace\("\/dashboard"\)/);
+});
+
 test("auth defers stored-account validation for alternate guest sessions", () => {
     const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
     assert.match(src, /capabilities\.get\("session:isGuest"\)/);

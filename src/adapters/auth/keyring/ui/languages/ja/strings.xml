@@ -8,9 +8,10 @@
   <string name="adapter.auth.keyring.cancel_action">キャンセル</string>
   <string name="adapter.auth.keyring.setup_title">キーリング暗号化の設定</string>
   <string name="adapter.auth.keyring.setup_message">キーリングは Cognis の機能で使うパスワードや暗号鍵を安全に保存します。保護するためのパスワードを選択してください。</string>
-  <string name="adapter.auth.keyring.setup_account_password_message">アカウントパスワードをキーリングの保護に使用するには、そのパスワードを入力してください。</string>
-  <string name="adapter.auth.keyring.setup_placeholder">キーリングパスワード（任意）</string>
-  <string name="adapter.auth.keyring.setup_hint">空欄にするとアカウントパスワードを使用します。</string>
+  <string name="adapter.auth.keyring.setup_password">キーリングパスワード</string>
+  <string name="adapter.auth.keyring.setup_confirm_password">キーリングパスワードを確認</string>
+  <string name="adapter.auth.keyring.setup_password_match">キーリングパスワードが一致します。</string>
+  <string name="adapter.auth.keyring.setup_use_account_password">ユーザーパスワードを使用</string>
   <string name="adapter.auth.keyring.setup_action">キーリングを設定</string>
   <string name="adapter.auth.keyring.created">キーリングを作成しました。</string>
   <string name="adapter.auth.keyring.destroyed">キーリングを破棄しました。そのシークレットは自動的に復元できません。</string>
@@ -43,6 +44,9 @@
   <string name="gateway.auth.keyring.minutes">分</string>
   <string name="gateway.auth.keyring.timeout_saved">キーリングのロック時間を保存しました。</string>
   <string name="gateway.auth.keyring.empty">保存されている秘密情報はありません。</string>
+  <string name="gateway.auth.keyring.not_found">キーリングが見つかりません</string>
+  <string name="gateway.auth.keyring.not_found_message">暗号化された秘密情報を管理する前にキーリングを作成してください。</string>
+  <string name="gateway.auth.keyring.create">作成</string>
   <string name="gateway.auth.keyring.add">秘密情報を追加</string>
   <string name="gateway.auth.keyring.add_title">秘密情報を追加</string>
   <string name="gateway.auth.keyring.edit_title">秘密情報を編集</string>

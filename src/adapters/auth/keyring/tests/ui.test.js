@@ -143,12 +143,20 @@ test("keyring lifecycle uses distinct destroyed and created notifications", () =
     assert.match(source, /if \(unlocked && !stored\)/);
 });
 
-test("keyring envelope selection preserves offline data unless the account instance changed", async () => {
+test("server keyring state preserves unsynced local data but rejects reused accounts", async () => {
     const { selectKeyringEnvelope } = await import("../ui/keyring.js");
     const localEnvelope = {
         accountInstanceId: "account-instance-one",
         updatedAt: "2026-01-01T00:00:00.000Z",
     };
+    assert.equal(
+        selectKeyringEnvelope(localEnvelope, {
+            resolved: false,
+            envelope: null,
+            accountInstanceId: "account-instance-one",
+        }),
+        localEnvelope,
+    );
     assert.equal(
         selectKeyringEnvelope(localEnvelope, {
             resolved: true,
@@ -306,19 +314,7 @@ test("a page reload restores the non-extractable session unlock without promptin
     const expiry = sessionValues.get(expiryKey);
 
     const reloadedKeyring = await import("../ui/keyring.js?session-restore");
-    let prompted = false;
-    assert.equal(
-        await reloadedKeyring.requestKeyringUnlock({
-            i18n: testI18n,
-            passwordPrompt: async () => {
-                prompted = true;
-                return "keyring-password";
-            },
-            request: testUnlockRequest,
-        }),
-        true,
-    );
-    assert.equal(prompted, false);
+    assert.equal(await reloadedKeyring.restoreKeyringSession(), true);
     assert.equal(sessionValues.get(expiryKey), expiry);
     assert.equal(
         reloadedKeyring.getKeyringValue("chatroom:session:key"),
@@ -539,6 +535,83 @@ test("first login sets up a new keyring with the selected encryption password", 
     localStorage.removeItem("cognis_account");
 });
 
+test("keyring password popups use the form composer with required fields", () => {
+    assert.match(keyringSource, /createFormBuilder/);
+    assert.match(keyringSource, /ensureKeyringFormStyles/);
+    assert.match(keyringSource, /styles\/reuse\/page-sections\.css/);
+    assert.match(keyringSource, /formId: "keyring-unlock-form"/);
+    assert.match(keyringSource, /formClassName: "keyring-password-form"/);
+    assert.match(keyringSource, /name: "password"[\s\S]*required: true/);
+    assert.match(keyringSource, /name: "confirmation"[\s\S]*required: true/);
+    assert.match(keyringSource, /setup_password_match/);
+    assert.match(keyringSource, /name: "relockMinutes"/);
+    assert.match(settingsSource, /formId: "keyring-change-password-form"/);
+    assert.match(settingsSource, /styles\/reuse\/page-sections\.css/);
+    assert.match(settingsSource, /gateway\.auth\.keyring\.not_found/);
+    assert.match(settingsSource, /id="settings-keyring-create"/);
+    assert.match(settingsSource, /variant: "cancel"/);
+    assert.match(
+        settingsSource,
+        /await restoreKeyringSession\(\)[\s\S]*rerender\(\)/,
+    );
+    assert.match(
+        settingsSource,
+        /promptToUnlock\(\)[\s\S]*rerender\(\);[\s\S]*return;/,
+    );
+    assert.match(
+        settingsSource,
+        /name: "confirmation"[\s\S]*required: true[\s\S]*keyring-password-change-match/,
+    );
+});
+
+test("account password setup reuses the authenticated credential", () => {
+    assert.match(keyringSource, /id: "use-account-password"/);
+    assert.match(
+        keyringSource,
+        /result === "use-account-password"\) return accountPassword/,
+    );
+    assert.match(
+        keyringSource,
+        /id: "use-account-password"[\s\S]*?variant: "confirm"/,
+    );
+    assert.match(
+        readFileSync(
+            resolve(import.meta.dirname, "../ui/languages/en/strings.xml"),
+            "utf8",
+        ),
+        />Use User Password</,
+    );
+});
+
+test("cancelled keyring creation remains available", () => {
+    assert.match(
+        settingsSource,
+        /#settings-keyring-create"\)\s*\?\.addEventListener\("click", async \(\) => \{\s*if \(await createKeyring\(\)\) rerender\(\);\s*\}\);/,
+    );
+});
+
+test("user password setup auto-unlocks on the next password login", async () => {
+    const keyring = await import("../ui/keyring.js");
+    values.clear();
+    sessionValues.clear();
+    localStorage.setItem("cognis_account", "user-password-keyring-user");
+
+    assert.deepEqual(
+        await keyring.setupKeyringAfterLogin("user-password", {
+            requestSetupPassword: async (accountPassword) => accountPassword,
+        }),
+        { setup: true, unlocked: true },
+    );
+    await keyring.lockKeyring();
+    assert.deepEqual(await keyring.setupKeyringAfterLogin("user-password"), {
+        setup: false,
+        unlocked: true,
+    });
+
+    await keyring.lockKeyring();
+    localStorage.removeItem("cognis_account");
+});
+
 test("login silently leaves the keyring locked when its password differs", async () => {
     const keyring = await import("../ui/keyring.js");
     values.clear();
@@ -593,7 +666,7 @@ test("server-side deletion invalidates the browser keyring copy on login", async
     const browserEnvelope = JSON.parse(
         values.get("cognis_secure_keyring:deleted-ldap-user"),
     );
-    browserEnvelope.accountInstanceId = "original-instance";
+    browserEnvelope.accountInstanceId = "deleted-instance";
     values.set(
         "cognis_secure_keyring:deleted-ldap-user",
         JSON.stringify(browserEnvelope),
@@ -607,7 +680,7 @@ test("server-side deletion invalidates the browser keyring copy on login", async
                 : JSON.stringify({
                       data: {
                           vault: null,
-                          accountInstanceId: "replacement-instance",
+                          accountInstanceId: "reused-instance",
                       },
                   }),
             {
@@ -632,13 +705,32 @@ test("server-side deletion invalidates the browser keyring copy on login", async
         assert.equal(
             JSON.parse(values.get("cognis_secure_keyring:deleted-ldap-user"))
                 .accountInstanceId,
-            "replacement-instance",
+            "reused-instance",
         );
     } finally {
         globalThis.fetch = originalFetch;
         await keyring.lockKeyring();
         localStorage.removeItem("cognis_account");
     }
+});
+
+test("account deletion clears the browser keyring before username reuse", async () => {
+    const keyring = await import("../ui/keyring.js");
+    values.clear();
+    sessionValues.clear();
+    localStorage.setItem("cognis_account", "deleted-browser-user");
+    assert.equal(await keyring.unlockKeyring("old-password"), true);
+    await keyring.setKeyringValue("test:deleted-browser-secret", "old-secret");
+
+    await keyring.clearKeyringAccountState();
+
+    assert.equal(keyring.isKeyringUnlocked(), false);
+    assert.equal(keyring.getKeyringValue("test:deleted-browser-secret"), null);
+    assert.equal(
+        values.has("cognis_secure_keyring:deleted-browser-user"),
+        false,
+    );
+    localStorage.removeItem("cognis_account");
 });
 
 test("empty keyring setup password falls back to the account password", async () => {
@@ -656,7 +748,7 @@ test("empty keyring setup password falls back to the account password", async ()
     );
 });
 
-test("destroying a locked keyring recreates an empty vault", async () => {
+test("destroying a locked keyring leaves creation pending", async () => {
     const keyring = await import("../ui/keyring.js");
     assert.equal(await keyring.unlockKeyring("account-password"), true);
     await keyring.setKeyringValue("chatroom:destroy:key", "old-room-key");
@@ -678,16 +770,33 @@ test("destroying a locked keyring recreates an empty vault", async () => {
                   },
               );
     try {
-        assert.equal(
-            await keyring.destroyKeyring({
-                requestSetupPassword: async () => "replacement-password",
-            }),
-            true,
-        );
+        assert.equal(await keyring.destroyKeyring(), true);
         assert.equal(keyring.getKeyringValue("chatroom:destroy:key"), null);
+        assert.equal(sessionValues.get("cognis_keyring_setup_pending"), "1");
     } finally {
         globalThis.fetch = originalFetch;
         await keyring.lockKeyring();
+    }
+});
+
+test("cancelled creation leaves the destroyed keyring pending setup", async () => {
+    const keyring = await import("../ui/keyring.js");
+    sessionValues.clear();
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () => new Response(null, { status: 204 });
+    try {
+        assert.equal(await keyring.destroyKeyring(), true);
+        assert.equal(
+            await keyring.createKeyring({
+                requestSetupPassword: async () => "",
+            }),
+            false,
+        );
+        assert.equal(keyring.isKeyringUnlocked(), false);
+        assert.equal(sessionValues.get("cognis_keyring_setup_pending"), "1");
+    } finally {
+        globalThis.fetch = originalFetch;
+        sessionValues.clear();
     }
 });
 
