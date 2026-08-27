@@ -683,7 +683,7 @@ async function requestKeyringSetup(accountPassword) {
                             type: "custom",
                             test: (value, values) => value === values.password,
                             messageKey:
-                                "adapter.auth.keyring.setup_password_mismatch",
+                                "adapter.auth.keyring.setup_password_match",
                             mode: "submit",
                         },
                     ],

@@ -544,7 +544,7 @@ test("keyring password popups use the form composer with required fields", () =>
     assert.match(keyringSource, /formId: "keyring-unlock-form"/);
     assert.match(keyringSource, /name: "password"[\s\S]*required: true/);
     assert.match(keyringSource, /name: "confirmation"[\s\S]*required: true/);
-    assert.match(keyringSource, /setup_password_mismatch/);
+    assert.match(keyringSource, /setup_password_match/);
     assert.match(settingsSource, /formId: "keyring-change-password-form"/);
     assert.match(
         settingsSource,

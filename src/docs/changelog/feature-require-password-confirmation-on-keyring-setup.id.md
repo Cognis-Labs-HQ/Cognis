@@ -6,7 +6,7 @@ Penyiapan pada login pertama dan pembuatan ulang keyring kini meminta pengguna m
 
 ## Formulir kata sandi yang konsisten
 
-Semua popup kata sandi keyring kini menggunakan penyusun formulir bersama, menandai kolom wajib dengan jelas, serta menerapkan validasi dan tata letak yang konsisten.
+Semua popup kata sandi keyring kini menggunakan penyusun formulir bersama, menandai kolom wajib dengan jelas, serta menerapkan validasi dan tata letak yang konsisten. Kriteria konfirmasi menyatakan bahwa kata sandi cocok saat tanda berhasil muncul.
 
 ## Atur ulang keyring pengguna yang dihapus
 

@@ -6,7 +6,7 @@ Bei der Ersteinrichtung nach der Anmeldung und bei neu erstellten Schlüsselbund
 
 ## Einheitliche Passwortformulare
 
-Alle Schlüsselbund-Passwortdialoge verwenden jetzt den gemeinsamen Formularkomponisten, kennzeichnen Pflichtfelder eindeutig und wenden einheitliche Validierung und Anordnung an.
+Alle Schlüsselbund-Passwortdialoge verwenden jetzt den gemeinsamen Formularkomponisten, kennzeichnen Pflichtfelder eindeutig und wenden einheitliche Validierung und Anordnung an. Das Bestätigungskriterium meldet übereinstimmende Passwörter, wenn das Erfolgszeichen erscheint.
 
 ## Schlüsselbunde gelöschter Benutzer zurücksetzen
 

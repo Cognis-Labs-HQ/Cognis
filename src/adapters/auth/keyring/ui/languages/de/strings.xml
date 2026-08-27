@@ -10,7 +10,7 @@
   <string name="adapter.auth.keyring.setup_message">Ihr Schlüsselbund speichert Passwörter und Verschlüsselungsschlüssel für Cognis-Funktionen sicher. Wählen Sie ein Passwort, um ihn zu schützen.</string>
   <string name="adapter.auth.keyring.setup_password">Schlüsselbundpasswort</string>
   <string name="adapter.auth.keyring.setup_confirm_password">Schlüsselbundpasswort bestätigen</string>
-  <string name="adapter.auth.keyring.setup_password_mismatch">Die Schlüsselbundpasswörter stimmen nicht überein.</string>
+  <string name="adapter.auth.keyring.setup_password_match">Die Schlüsselbundpasswörter stimmen überein.</string>
   <string name="adapter.auth.keyring.setup_use_account_password">Kontopasswort verwenden</string>
   <string name="adapter.auth.keyring.setup_action">Schlüsselbund einrichten</string>
   <string name="adapter.auth.keyring.created">Schlüsselbund erstellt.</string>

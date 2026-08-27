@@ -10,7 +10,7 @@
   <string name="adapter.auth.keyring.setup_message">キーリングは Cognis の機能で使うパスワードや暗号鍵を安全に保存します。保護するためのパスワードを選択してください。</string>
   <string name="adapter.auth.keyring.setup_password">キーリングパスワード</string>
   <string name="adapter.auth.keyring.setup_confirm_password">キーリングパスワードを確認</string>
-  <string name="adapter.auth.keyring.setup_password_mismatch">キーリングパスワードが一致しません。</string>
+  <string name="adapter.auth.keyring.setup_password_match">キーリングパスワードが一致します。</string>
   <string name="adapter.auth.keyring.setup_use_account_password">アカウントパスワードを使用</string>
   <string name="adapter.auth.keyring.setup_action">キーリングを設定</string>
   <string name="adapter.auth.keyring.created">キーリングを作成しました。</string>

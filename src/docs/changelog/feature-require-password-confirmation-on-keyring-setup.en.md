@@ -6,7 +6,7 @@ First-login and recreated-keyring setup now asks users to repeat a custom keyrin
 
 ## Consistent password forms
 
-Every keyring password popup now uses the shared form composer, clearly marks required fields, and applies consistent validation and layout.
+Every keyring password popup now uses the shared form composer, clearly marks required fields, and applies consistent validation and layout. Password confirmation criteria say that passwords match when their success tick appears.
 
 ## Reset deleted users' keyrings
 
