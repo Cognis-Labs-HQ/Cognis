@@ -66,8 +66,11 @@ function getFirstResult(stageResults, stageId) {
     return (stageResults[stageId] ?? [])[0] ?? null;
 }
 
-function clearStoredSession() {
-    void uiCtx.capabilities.get("keyring:lock")?.();
+function clearStoredSession({ clearKeyring = false } = {}) {
+    const keyringAction = clearKeyring
+        ? uiCtx.capabilities.get("keyring:clearAccountState")
+        : uiCtx.capabilities.get("keyring:lock");
+    void keyringAction?.();
     localStorage.removeItem("cognis_access_token");
     localStorage.removeItem("cognis_account");
     localStorage.removeItem("cognis_display_name");
@@ -122,7 +125,7 @@ uiCtx.extendFlow(
                 };
             }
             if (response.status === 404) {
-                clearStoredSession();
+                clearStoredSession({ clearKeyring: true });
                 return { valid: false, reason: "account_deleted" };
             }
             if (response.status === 401 || response.status === 403) {
@@ -298,10 +301,7 @@ window.addEventListener("cognis:api-access-denied", async (event) => {
             sessionExpiryNavigationPending = false;
             return;
         }
-        clearStoredSession();
-        window.location.replace(
-            session?.redirectTo ?? "/login?reason=session_expired",
-        );
+        window.location.replace("/dashboard");
     } catch (error) {
         console.error("[auth-gateway]:session-revalidation-failed", { error });
         sessionExpiryNavigationPending = false;

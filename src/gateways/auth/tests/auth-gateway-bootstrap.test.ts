@@ -26,7 +26,7 @@ test("keyring manifest declares the Authentication gateway as its parent", async
     assert.equal(manifest.name, "User Keyring");
 });
 
-test("keyring adapter purges a vault when user deletion persists", async () => {
+test("keyring adapter purges a vault after every persisted user deletion", async () => {
     const { bootstrapAuthAdapter } =
         await import("../../../adapters/auth/keyring/index.js");
     const commands: Array<Record<string, unknown>> = [];
@@ -55,22 +55,35 @@ test("keyring adapter purges a vault when user deletion persists", async () => {
         flow: systemCtx.flow,
     });
 
-    const result = await systemCtx.flow.run("deprovision-user", {
-        username: "LDAP.User",
-        action: "delete",
-    });
+    const results = [];
+    for (let deletionAttempt = 0; deletionAttempt < 3; deletionAttempt += 1) {
+        results.push(
+            await systemCtx.flow.run("deprovision-user", {
+                username: "LDAP.User",
+                action: "delete",
+            }),
+        );
+    }
 
-    assert.ok(
-        commands.some(
+    assert.equal(
+        commands.filter(
             (command) =>
                 command.option === "DELETE" &&
                 command.table === "auth_keyring_vaults" &&
                 JSON.stringify(command.where).includes("ldap.user"),
-        ),
+        ).length,
+        3,
     );
-    assert.deepEqual(result.stageResults["cleanup-dependencies"], [
-        { purged: true, accountId: "ldap.user" },
-    ]);
+    for (const result of results) {
+        assert.ok(
+            result.stageResults["cleanup-dependencies"].some(
+                (entry) =>
+                    (entry as { purged?: boolean; accountId?: string })
+                        .purged === true &&
+                    (entry as { accountId?: string }).accountId === "ldap.user",
+            ),
+        );
+    }
 });
 
 function createDbExecutor(): InMemoryDb {

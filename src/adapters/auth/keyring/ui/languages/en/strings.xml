@@ -8,9 +8,10 @@
   <string name="adapter.auth.keyring.cancel_action">Cancel</string>
   <string name="adapter.auth.keyring.setup_title">Set up keyring encryption</string>
   <string name="adapter.auth.keyring.setup_message">Your keyring securely stores passwords and encryption keys used by Cognis features. Choose a password to protect it.</string>
-  <string name="adapter.auth.keyring.setup_account_password_message">Enter your account password to use it for keyring protection.</string>
-  <string name="adapter.auth.keyring.setup_placeholder">Keyring password (optional)</string>
-  <string name="adapter.auth.keyring.setup_hint">Leave this empty to use your account password.</string>
+  <string name="adapter.auth.keyring.setup_password">Keyring password</string>
+  <string name="adapter.auth.keyring.setup_confirm_password">Confirm keyring password</string>
+  <string name="adapter.auth.keyring.setup_password_match">Keyring passwords match.</string>
+  <string name="adapter.auth.keyring.setup_use_account_password">Use User Password</string>
   <string name="adapter.auth.keyring.setup_action">Set up keyring</string>
   <string name="adapter.auth.keyring.created">Keyring created.</string>
   <string name="adapter.auth.keyring.destroyed">Keyring destroyed. Its secrets can no longer be recovered automatically.</string>
@@ -43,6 +44,9 @@
   <string name="gateway.auth.keyring.minutes">minutes</string>
   <string name="gateway.auth.keyring.timeout_saved">Keyring lock timeout saved.</string>
   <string name="gateway.auth.keyring.empty">No secrets are stored.</string>
+  <string name="gateway.auth.keyring.not_found">No Keyring Found</string>
+  <string name="gateway.auth.keyring.not_found_message">Create a keyring before managing encrypted secrets.</string>
+  <string name="gateway.auth.keyring.create">Create</string>
   <string name="gateway.auth.keyring.add">Add Secret</string>
   <string name="gateway.auth.keyring.add_title">Add Secret</string>
   <string name="gateway.auth.keyring.edit_title">Edit Secret</string>
