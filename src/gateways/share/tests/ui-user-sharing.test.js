@@ -109,6 +109,13 @@ test("public Share page loads host capability providers after guest authenticati
     );
 });
 
+test("share guests can receive synchronized component windows", () => {
+    assert.match(
+        sessionFlowSource,
+        /spawn-component-page[\s\S]*validate[\s\S]*isViewingAsGuest\(\)[\s\S]*data\.spawnAuthorized = true/,
+    );
+});
+
 test("share popup owns user recipient search and selection", () => {
     assert.match(popupSource, /share-links-user-search/);
     assert.match(popupSource, /data-share-user-id/);

@@ -64,6 +64,17 @@ let activeShareSession = null;
 let accessDeniedNavigationPending = false;
 let activeGuestKeyring = null;
 
+uiCtx.extendFlow(
+    "spawn-component-page",
+    "validate",
+    { id: "share-gateway:authorize-guest-component-page-spawn", order: 100 },
+    ({ data }) => {
+        if (data.requestValid && isViewingAsGuest()) {
+            data.spawnAuthorized = true;
+        }
+    },
+);
+
 function hasStoredAccountSession() {
     const token = String(localStorage.getItem(ACCESS_TOKEN_KEY) ?? "").trim();
     const accountId = String(localStorage.getItem(ACCOUNT_KEY) ?? "").trim();
