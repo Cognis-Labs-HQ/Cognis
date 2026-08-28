@@ -15,3 +15,7 @@ Die SHASUM-Prüfung von Modulen folgt nun Datei-Links, deren Ziel innerhalb des 
 ## Verifizierte Aliasse und Rückmeldung bei Abbruch
 
 Nicht deklarierte symbolische Aliasse lösen keine SHASUM-Warnung mehr aus, wenn sie auf eine bereits deklarierte und geprüfte Moduldatei verweisen. Beim Abbruch der Installation wird nun eine eindeutige Benachrichtigung angezeigt.
+
+## Abhängigkeitskarten für Installation und Aktivierung
+
+Die Abhängigkeitsbestätigung zeigt nun vollständige Modulkarten mit Kennzeichnungen für erforderliche, optionale und empfohlene Module sowie direkten Detaillinks. Die Prüfung erfolgt vor Installation und Aktivierung und wird übersprungen, wenn alle Abhängigkeiten bereits aktiviert sind.

@@ -155,22 +155,56 @@ body[data-theme="dark"] .module-icon-settings {
     gap: 0.75rem;
 }
 
-.module-dependency-row {
+.module-dependency-card {
     align-items: center;
+    background: var(--surface-color, var(--card-bg));
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
     display: flex;
     gap: 0.75rem;
-    justify-content: space-between;
+    padding: 0.875rem;
 }
 
-.module-dependency-row:has(input) {
-    cursor: pointer;
-    justify-content: flex-start;
+.module-dependency-card.is-satisfied {
+    opacity: 0.72;
 }
 
-.module-dependency-row input {
+.module-dependency-card input {
     accent-color: var(--color-primary, #4c7dff);
     block-size: 1.1rem;
+    flex: 0 0 auto;
     inline-size: 1.1rem;
+}
+
+.module-dependency-card-copy {
+    display: grid;
+    flex: 1;
+    gap: 0.45rem;
+    min-width: 0;
+}
+
+.module-dependency-card-copy h3 {
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.module-dependency-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.module-dependency-details {
+    align-items: center;
+    border-radius: 50%;
+    display: inline-flex;
+    flex: 0 0 2.25rem;
+    height: 2.25rem;
+    justify-content: center;
+    padding: 0;
+    text-decoration: none;
 }
 
 .module-dependency-warning {
@@ -540,4 +574,13 @@ body[data-theme="light"]:has(.module-detail) .global-topbar {
         transparent
     );
     color: var(--color-danger, #b42318);
+}
+
+.pill-optional {
+    background: color-mix(
+        in srgb,
+        var(--color-primary, #4c7dff) 14%,
+        transparent
+    );
+    color: var(--color-primary, #315eca);
 }

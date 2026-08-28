@@ -87,6 +87,8 @@
   <string name="ui.app.modules.pat_permissions_hint">GitHub の fine-grained PAT では、設定した組織を Resource owner に選び、すべてのリポジトリまたは Cognis がスキャンする各非公開リポジトリへのアクセスを付与し、Repository permissions の Metadata と Contents を Read-only に設定します。GitHub の Organization permissions 一覧から選ぶ権限はありません。必要な場合は組織の承認を完了してください。classic PAT では repo スコープを付与し、該当する場合は組織 SSO を承認します。GitLab トークンには read_api と read_repository が必要です。</string>
   <string name="ui.app.modules.validation_failed">モジュールの検証に失敗しました。詳細はサーバーログを確認してください。</string>
   <string name="ui.app.modules.required">必須</string>
-  <string name="ui.app.modules.dependencies_title">依存関係をインストール</string>
+  <string name="ui.app.modules.dependencies_title">モジュールの依存関係</string>
+  <string name="ui.app.modules.optional">任意</string>
+  <string name="ui.app.modules.dependencies_message">{{module}} モジュールには次の依存関係があります。すべての必須依存関係がインストールされるまで続行できません。任意の依存関係をインストールしない場合、ユーザー体験が低下する可能性があります。</string>
   <string name="ui.app.modules.hard_dependency_blocked">このモジュールをインストールする前に、必須の依存関係をインストールして有効にしてください。</string>
 </resources>

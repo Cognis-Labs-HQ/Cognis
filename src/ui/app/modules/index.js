@@ -60,7 +60,7 @@ import {
     resolveModuleAssetUrl,
 } from "./assets.js";
 import {
-    confirmDependencyInstall,
+    confirmModuleDependencies,
     isRequiredDependency,
     resolveInstallDependencies,
 } from "./dependencies.js";
@@ -385,11 +385,12 @@ async function selectReleaseChannel(module) {
 async function runLifecycleAction(module, action) {
     if (module.restartRequired) return false;
     let dependencySelection = null;
-    if (action === "install") {
-        dependencySelection = await confirmDependencyInstall(
+    if (["install", "enable"].includes(action)) {
+        dependencySelection = await confirmModuleDependencies(
             module,
             modules,
             i18n,
+            action,
         );
         if (!dependencySelection) return false;
         for (const dependency of resolveInstallDependencies(

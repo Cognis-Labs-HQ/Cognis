@@ -15,3 +15,7 @@ Validasi SHASUM modul kini mengikuti tautan simbolis berkas yang mengarah ke dal
 ## Alias terverifikasi dan pemberitahuan pembatalan
 
 Alias tautan simbolis yang tidak dideklarasikan tidak lagi memicu peringatan SHASUM ketika mengarah ke berkas modul yang sudah dideklarasikan dan diverifikasi. Pembatalan instalasi kini menampilkan pemberitahuan yang jelas.
+
+## Kartu dependensi untuk instalasi dan pengaktifan
+
+Konfirmasi dependensi kini menampilkan kartu modul lengkap dengan label wajib, opsional, dan direkomendasikan serta tautan langsung ke detail. Pemeriksaan dijalankan sebelum instalasi maupun pengaktifan dan dilewati ketika semua dependensi sudah aktif.

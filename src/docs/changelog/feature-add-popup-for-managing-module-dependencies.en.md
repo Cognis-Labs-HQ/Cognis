@@ -15,3 +15,7 @@ Module SHASUM validation now follows file symlinks that resolve inside the modul
 ## Verified aliases and cancellation feedback
 
 Undeclared symlink aliases no longer trigger a SHASUM warning when they resolve to an already declared and verified module file. Cancelling installation now displays a clear cancellation notification.
+
+## Dependency cards for install and enable
+
+Dependency confirmation now presents complete module cards with required, optional, and recommended labels plus direct detail links. The check runs before both installation and enablement and is skipped when every dependency is already enabled.

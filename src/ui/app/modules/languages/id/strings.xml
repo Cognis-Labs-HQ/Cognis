@@ -87,6 +87,8 @@
   <string name="ui.app.modules.pat_permissions_hint">PAT fine-grained GitHub: pilih organisasi yang dikonfigurasi sebagai Resource owner; berikan akses ke semua repositori atau setiap repositori privat yang harus dipindai Cognis; atur izin Repository Metadata ke Read-only dan Contents ke Read-only. Tidak diperlukan izin dari daftar Organization permissions GitHub. Selesaikan persetujuan organisasi jika diwajibkan. Untuk PAT klasik, berikan cakupan repo dan otorisasi untuk SSO organisasi bila berlaku. Token GitLab memerlukan read_api dan read_repository.</string>
   <string name="ui.app.modules.validation_failed">Validasi modul gagal. Periksa log server untuk detailnya.</string>
   <string name="ui.app.modules.required">Wajib</string>
-  <string name="ui.app.modules.dependencies_title">Pasang dependensi</string>
+  <string name="ui.app.modules.dependencies_title">Dependensi modul</string>
+  <string name="ui.app.modules.optional">Opsional</string>
+  <string name="ui.app.modules.dependencies_message">Modul {{module}} memiliki dependensi berikut. Instalasi tidak dapat dilanjutkan sampai semua dependensi wajib terpasang. Memilih untuk tidak memasang dependensi opsional dapat menurunkan pengalaman pengguna.</string>
   <string name="ui.app.modules.hard_dependency_blocked">Pasang dan aktifkan dependensi wajib sebelum memasang modul ini.</string>
 </resources>
