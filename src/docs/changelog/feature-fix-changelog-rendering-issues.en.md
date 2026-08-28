@@ -21,6 +21,7 @@ Historical commit links now point to the current Cognis-Labs-HQ/Cognis repositor
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/968c109885b2db1e168a7c62cc29b3c6be3d7b27
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/0a224676b04a06123eb6f4dd256051d6a2fc5933
 
 ## Complete changelog provenance
 
@@ -33,3 +34,7 @@ The Changelogs page now displays each commit link as its seven-character referen
 ## Short refs in release popups
 
 Release changelog popups now apply the same short-reference formatter as the full Changelogs page, keeping complete commit URLs as link targets.
+
+## Commit provenance workflow
+
+AI contribution instructions now require a final changelog-only bookkeeping commit, when requested before implementation, that records the immediately preceding implementation commit.
