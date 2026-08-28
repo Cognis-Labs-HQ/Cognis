@@ -352,7 +352,6 @@ export async function mount(root, { signal } = {}) {
             { i18n, escapeHtml },
             {
                 formId: "register-form",
-                formClassName: "auth-form",
                 submitButtonClassName: "btn-confirm btn-animated",
                 submitLabelKey: "ui.app.register.submit",
                 fields: registerFormFields,

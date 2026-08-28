@@ -16,10 +16,11 @@
 
 ## 必須フィールドの強調表示を維持
 
-「アカウントを作成」フォームでは、必須フィールドのアスタリスクがラベルと同じ行に表示され、ライトテーマとダークテーマのどちらでも共通の警告色が維持されます。
+「アカウントを作成」フォームでは、登録画面やログイン画面のスタイルを上書きせず、フィールドの表示を共有フォームコンポーザーに全面的に委ねるようになりました。これにより、ライトテーマとダークテーマのどちらでも必須フィールドのアスタリスクが一貫して表示されます。
 
 ## コミット
 
 - [74cb218](https://github.com/Cognis-Labs-HQ/Cognis/commit/74cb218dfafdfd93dcfef2ca2928ac6657ff5245)
 - [9cc4ed9](https://github.com/Cognis-Labs-HQ/Cognis/commit/9cc4ed9c285c77d2901d2ea4cadb35b66af6ddc6)
 - [1690cdb](https://github.com/Cognis-Labs-HQ/Cognis/commit/1690cdb58e8bcad63b60ef8beba367c3d0a03031)
+- [a057317](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0573172b0549e663be0058f77b3af5aecc12432)
