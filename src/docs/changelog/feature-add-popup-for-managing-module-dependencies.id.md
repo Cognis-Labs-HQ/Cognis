@@ -47,3 +47,21 @@ Kontrol unduh dan putar dependensi kini memakai ikon gelap pada permukaan terang
 ## Konfigurasikan dependensi sebelum aktivasi
 
 Dependensi yang memerlukan pengaturan awal kini membuka dialog konfigurasinya di atas pengelola dependensi sebelum aktivasi dicoba. Menyimpan pengaturan yang valid memungkinkan aktivasi berlanjut tanpa berakhir pada galat konfigurasi sisi server.
+
+## Pulihkan status modul
+
+Penonaktifan sementara untuk pembaruan, pembaruan paksa, dan perubahan kanal rilis kini mempertahankan status aktif modul yang diperbarui beserta semua modul aktif yang bergantung secara wajib. Modul bergantung kembali aktif setelah pembaruan dalam proses, sedangkan mulai ulang server yang diwajibkan memulihkan status yang sama saat proses awal.
+
+## Tipe manifes lengkap
+
+Kontrak manifes modul kanonis kini mendeklarasikan dependensi eksternal wajib dan opsional sehingga pembuat modul TypeScript dan pemakai inti dapat menggunakan metadata dependensi tanpa konversi tipe yang tidak aman.
+
+## Pemulihan dependensi tervalidasi
+
+Pemulihan saat proses awal dan setelah pembaruan kini membiarkan modul tetap nonaktif jika dependensi keras atau pemeriksaan pengaktifannya gagal. Kolom dependensi manifes eksternal menolak nilai yang tidak valid sebelum mencapai antarmuka Administrasi.
+
+## Komit
+
+**Cabang Fitur:** feature-add-popup-for-managing-module-dependencies
+
+- [Validasi pemulihan dependensi modul](https://github.com/Cognis-Labs-HQ/Cognis/commit/755fd2af)

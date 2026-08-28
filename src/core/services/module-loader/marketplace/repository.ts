@@ -452,6 +452,8 @@ export class MarketplaceRepository {
             manifest.categories.length === 0 ||
             !Array.isArray(manifest.tags) ||
             manifest.tags.length === 0 ||
+            !this.isDependencyList(manifest.hardDependencies) ||
+            !this.isDependencyList(manifest.softDependencies) ||
             !manifest.entrypoints?.bootstrap ||
             !manifest.assets?.icon ||
             !manifest.assets?.banner ||
@@ -461,6 +463,18 @@ export class MarketplaceRepository {
             throw new Error("invalid_module_manifest");
         }
         return manifest;
+    }
+
+    private isDependencyList(value: unknown): boolean {
+        return (
+            value === undefined ||
+            (Array.isArray(value) &&
+                value.every(
+                    (dependency) =>
+                        typeof dependency === "string" &&
+                        dependency.trim().length > 0,
+                ))
+        );
     }
 
     protected resolveRepositoryAssetUrl(

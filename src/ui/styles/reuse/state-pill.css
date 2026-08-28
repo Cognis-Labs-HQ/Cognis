@@ -24,3 +24,7 @@
 .pill-disabled {
     background: rgba(239, 68, 68, 0.24);
 }
+
+.pill-required {
+    background: rgba(239, 68, 68, 0.24);
+}

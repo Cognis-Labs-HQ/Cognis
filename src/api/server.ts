@@ -404,6 +404,48 @@ export function buildServer(deps: ApiDependencies) {
         },
     );
 
+    const validateModuleForEnable = async (moduleId: string): Promise<void> => {
+        await deps.moduleRuntimeGateway.refresh?.();
+        const manifests = await deps.moduleRuntimeGateway.listManifests();
+        const manifest = manifests.find((entry) => entry.id === moduleId);
+        assertModuleEnableDependencies(
+            moduleId,
+            manifest?.requires ?? [],
+            deps.gatewayRegistry,
+            await coreComponentDependencies,
+        );
+        assertExternalModuleDependencies(
+            moduleId,
+            manifest?.hardDependencies ?? [],
+            manifests,
+            (dependencyId) => enabledModules.has(dependencyId),
+        );
+        assertModuleCapabilityDependencies(
+            moduleId,
+            manifest?.requiresCapabilities ?? [],
+            (capabilityId) =>
+                routeContext.getCapability(capabilityId) !== undefined ||
+                (deps.uiRegistry?.hasActiveCapabilityProvider(capabilityId) ??
+                    false),
+        );
+        await (
+            deps.runModuleTests ?? moduleTestService.run.bind(moduleTestService)
+        )(moduleId);
+        await deps.validateModuleEnable?.(moduleId);
+    };
+
+    const assertModuleIntegrity = async (moduleId: string): Promise<void> => {
+        if (!deps.moduleIntegrityChecker) return;
+        const failures = (await deps.moduleIntegrityChecker()).filter(
+            (entry) => entry.moduleId === moduleId && entry.status !== "ok",
+        );
+        if (failures.length === 0) return;
+        throw new ModuleEnableValidationError(
+            "module_integrity_acknowledgement_required",
+            `Module ${moduleId} has unacknowledged integrity failures.`,
+        );
+    };
+
     const moduleRoutes = createModuleRoutes(
         moduleService,
         {
@@ -422,40 +464,7 @@ export function buildServer(deps: ApiDependencies) {
                     (dependencyId) => enabledModules.has(dependencyId),
                 );
             },
-            beforeEnable: async (moduleId) => {
-                await deps.moduleRuntimeGateway.refresh?.();
-                const manifest = (
-                    await deps.moduleRuntimeGateway.listManifests()
-                ).find((entry) => entry.id === moduleId);
-                assertModuleEnableDependencies(
-                    moduleId,
-                    manifest?.requires ?? [],
-                    deps.gatewayRegistry,
-                    await coreComponentDependencies,
-                );
-                assertExternalModuleDependencies(
-                    moduleId,
-                    manifest?.hardDependencies ?? [],
-                    await deps.moduleRuntimeGateway.listManifests(),
-                    (dependencyId) => enabledModules.has(dependencyId),
-                );
-                assertModuleCapabilityDependencies(
-                    moduleId,
-                    manifest?.requiresCapabilities ?? [],
-                    (capabilityId) =>
-                        routeContext.getCapability(capabilityId) !==
-                            undefined ||
-                        (deps.uiRegistry?.hasActiveCapabilityProvider(
-                            capabilityId,
-                        ) ??
-                            false),
-                );
-                await (
-                    deps.runModuleTests ??
-                    moduleTestService.run.bind(moduleTestService)
-                )(moduleId);
-                await deps.validateModuleEnable?.(moduleId);
-            },
+            beforeEnable: validateModuleForEnable,
             onEnabled: async (moduleId) => {
                 enabledModules.add(moduleId);
                 try {
@@ -466,6 +475,8 @@ export function buildServer(deps: ApiDependencies) {
                     for (const dependentModuleId of [
                         ...dependentModuleIds,
                     ].reverse()) {
+                        await validateModuleForEnable(dependentModuleId);
+                        await assertModuleIntegrity(dependentModuleId);
                         await moduleService.enable(dependentModuleId, {
                             acknowledgeExternalDisclaimer: true,
                         });
@@ -601,18 +612,53 @@ export function buildServer(deps: ApiDependencies) {
         deps.loadModuleStates?.() ?? Promise.resolve([]),
         deps.loadGatewayStates?.() ?? Promise.resolve([]),
     ])
-        .then(([manifests, savedStates, savedGatewayStates]) => {
+        .then(async ([manifests, savedStates, savedGatewayStates]) => {
             const saved = new Map(
                 savedStates.map((row) => [row.moduleId, row.enabled]),
             );
+            const pendingEnabledManifests = [];
             for (const manifest of manifests) {
                 const persisted = saved.get(manifest.id);
                 const isEnabled = resolveInitialModuleEnabledState(
                     manifest,
                     persisted,
                 );
-                if (isEnabled) enabledModules.add(manifest.id);
-                deps.onModuleStateChanged?.(manifest.id, isEnabled);
+                if (isEnabled) pendingEnabledManifests.push(manifest);
+                else await deps.onModuleStateChanged?.(manifest.id, false);
+            }
+            let restoredInPass = true;
+            while (pendingEnabledManifests.length && restoredInPass) {
+                restoredInPass = false;
+                for (let i = pendingEnabledManifests.length - 1; i >= 0; i--) {
+                    const manifest = pendingEnabledManifests[i];
+                    const dependenciesReady = (
+                        manifest.hardDependencies ?? []
+                    ).every((reference) => {
+                        const dependency = manifests.find(
+                            (candidate) =>
+                                candidate.id === reference ||
+                                candidate.uuid === reference,
+                        );
+                        return (
+                            dependency !== undefined &&
+                            enabledModules.has(dependency.id)
+                        );
+                    });
+                    if (!dependenciesReady) continue;
+                    enabledModules.add(manifest.id);
+                    await deps.onModuleStateChanged?.(manifest.id, true);
+                    pendingEnabledManifests.splice(i, 1);
+                    restoredInPass = true;
+                }
+            }
+            for (const manifest of pendingEnabledManifests) {
+                await deps.onModuleStateChanged?.(manifest.id, false);
+                log("error", "Persisted module state could not be restored.", {
+                    component: "api-server",
+                    operation: "restore-module-state",
+                    moduleId: manifest.id,
+                    hardDependencies: manifest.hardDependencies ?? [],
+                });
             }
             const savedGateways = new Map(
                 savedGatewayStates.map((row) => [row.gatewayId, row.enabled]),

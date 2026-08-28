@@ -47,3 +47,21 @@ Download- und Wiedergabesteuerungen für Abhängigkeiten verwenden nun dunkle Sy
 ## Abhängigkeiten vor der Aktivierung konfigurieren
 
 Abhängigkeiten, die eine Ersteinrichtung benötigen, öffnen ihren Konfigurationsdialog nun über der Abhängigkeitsverwaltung, bevor die Aktivierung versucht wird. Nach dem Speichern gültiger Einstellungen kann die Aktivierung fortgesetzt werden, ohne in einen serverseitigen Konfigurationsfehler zu münden.
+
+## Modulzustände wiederherstellen
+
+Vorübergehende Deaktivierungen für Aktualisierungen, erzwungene Aktualisierungen und Wechsel des Veröffentlichungskanals bewahren nun den aktivierten Zustand des aktualisierten Moduls und aller aktivierten zwingenden abhängigen Module. Abhängige Module werden nach einer Aktualisierung im laufenden Betrieb wieder aktiviert; bei einem erforderlichen Serverneustart werden dieselben Zustände beim Start wiederhergestellt.
+
+## Vollständige Manifesttypen
+
+Der kanonische Modulmanifestvertrag deklariert nun zwingende und optionale externe Abhängigkeiten, sodass TypeScript-Modulautoren und Kernkomponenten die Abhängigkeitsmetadaten ohne unsichere Typumwandlungen verwenden können.
+
+## Validierte Wiederherstellung
+
+Beim Start und nach Aktualisierungen bleiben Module nun deaktiviert, wenn ihre harten Abhängigkeiten oder Aktivierungsprüfungen fehlschlagen. Externe Manifest-Abhängigkeitsfelder weisen fehlerhafte Werte zurück, bevor sie die Administrationsoberfläche erreichen.
+
+## Änderungen
+
+**Feature-Zweig:** feature-add-popup-for-managing-module-dependencies
+
+- [Wiederherstellung von Modulabhängigkeiten validieren](https://github.com/Cognis-Labs-HQ/Cognis/commit/755fd2af)

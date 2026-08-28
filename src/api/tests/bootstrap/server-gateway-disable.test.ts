@@ -111,13 +111,13 @@ test("module enablement refreshes installed runtime state before validation", ()
         path.resolve(import.meta.dirname, "../../server.ts"),
         "utf8",
     );
-    const beforeEnable = source.slice(
-        source.indexOf("beforeEnable: async (moduleId)"),
-        source.indexOf("onEnabled: async (moduleId)"),
+    const enableValidation = source.slice(
+        source.indexOf("const validateModuleForEnable"),
+        source.indexOf("const assertModuleIntegrity"),
     );
     assert.ok(
-        beforeEnable.indexOf("moduleRuntimeGateway.refresh") <
-            beforeEnable.indexOf("moduleRuntimeGateway.listManifests"),
+        enableValidation.indexOf("moduleRuntimeGateway.refresh") <
+            enableValidation.indexOf("moduleRuntimeGateway.listManifests"),
         "runtime refresh must precede manifest validation",
     );
 });
