@@ -20,6 +20,7 @@ test("email verification uses the Cognis theme surface", () => {
     assert.match(html, /class="brandline verify-brand"/);
     assert.match(html, /\/static\/assets\/icons\/cognis-icon\.png/);
     assert.match(html, /class="verify-link btn-neutral btn-animated"/);
+    assert.match(html, /<body data-page-ready="true">/);
     assert.match(script, /applyTheme\(getStoredTheme\(\)\)/);
     assert.match(styles, /background: var\(--surface\)/);
     assert.match(styles, /color: var\(--text-muted\)/);
