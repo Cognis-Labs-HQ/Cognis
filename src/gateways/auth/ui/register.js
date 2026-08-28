@@ -392,7 +392,7 @@ export async function mount(root, { signal } = {}) {
             const emailValue = lockedEmail || "";
             const emailLocked = Boolean(lockedEmail);
             const countdownHtml = inviteData?.expiresAt
-                ? `<p id="register-countdown" class="auth-intro" style="font-size:1rem;margin-top:4px"></p>`
+                ? `<p id="register-countdown" class="auth-countdown-pill" aria-live="polite"></p>`
                 : "";
             const registerFormBuilder = createRegisterFormBuilder({
                 emailValue,

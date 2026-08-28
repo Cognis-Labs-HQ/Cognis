@@ -163,6 +163,21 @@ test("register page uses form builder instead of hardcoded maxlength for usernam
     );
 });
 
+test("register invite countdown uses a pill and auth cards size independently", () => {
+    const registerSource = read("src/gateways/auth/ui/register.js");
+    const authStyles = read("src/ui/styles/login.css");
+
+    assert.match(
+        registerSource,
+        /id="register-countdown" class="auth-countdown-pill" aria-live="polite"/,
+    );
+    assert.match(authStyles, /\.auth-layout \{[\s\S]*align-items: start;/m);
+    assert.match(
+        authStyles,
+        /\.auth-countdown-pill \{[\s\S]*border-radius: 999px;/m,
+    );
+});
+
 test("register password criteria use floating alert in form builder config", () => {
     const source = read("src/gateways/auth/ui/register.js");
     assert.match(source, /criteriaDisplay: "floating-alert"/);
