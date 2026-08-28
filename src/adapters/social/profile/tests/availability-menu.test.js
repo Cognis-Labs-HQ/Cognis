@@ -130,10 +130,10 @@ test("unauthenticated and guest sessions do not poll account availability", () =
     assert.match(availability, /pathname\.startsWith\("\/share\/"\)/);
     assert.match(availability, /accountId\.startsWith\("share:"\)/);
     assert.match(availability, /suppressAccessDeniedEvent:\s*true/);
-    assert.match(availability, /cognis_access_token/);
+    assert.doesNotMatch(availability, /cognis_access_token/);
     assert.match(
         availability,
-        /function canRequestAvailability[\s\S]*Boolean\(accessToken\) && !isGuestSession\(\)/,
+        /function canRequestAvailability[\s\S]*capabilities\.get\("session:isAuthenticated"\)/,
     );
     assert.match(
         availability,

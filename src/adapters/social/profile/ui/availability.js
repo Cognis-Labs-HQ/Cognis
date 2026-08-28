@@ -36,10 +36,10 @@ function isGuestSession() {
 }
 
 function canRequestAvailability() {
-    const accessToken = String(
-        localStorage.getItem("cognis_access_token") ?? "",
-    ).trim();
-    return Boolean(accessToken) && !isGuestSession();
+    return (
+        uiCtx.capabilities.get("session:isAuthenticated")?.() === true &&
+        !isGuestSession()
+    );
 }
 
 function notifyAvailabilitySubscribers(availability) {

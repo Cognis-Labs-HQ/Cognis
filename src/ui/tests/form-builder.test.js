@@ -169,7 +169,7 @@ test("register invite countdown uses a pill and auth cards size independently", 
 
     assert.match(
         registerSource,
-        /id="register-countdown" class="auth-countdown-pill" aria-live="polite"/,
+        /id="register-countdown" class="auth-countdown-pill" aria-live="off"/,
     );
     assert.match(authStyles, /\.auth-layout \{[\s\S]*align-items: start;/m);
     assert.match(
