@@ -1,5 +1,7 @@
 # Error Page
 
+**Feature Branch:** copilot/add-error-page-feature
+
 ## Navigable error page with animated gradient heading
 
 A dedicated `/error` page is now available. Navigate to it directly with a
@@ -15,3 +17,7 @@ When the user is signed in, the page renders inside the full dashboard shell
 with the navigation bar, topbar, and footer. When the user is not signed in, it
 is displayed as a full-screen message without shell chrome. The heading scales
 responsively so it remains legible on small screens.
+
+## Commits
+
+- [7a82d10](https://github.com/Cognis-Labs-HQ/Cognis/commit/7a82d1050c2453aaca2165271dbf75ae2f2c9876)

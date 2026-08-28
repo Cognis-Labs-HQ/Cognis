@@ -1,5 +1,7 @@
 # Pemuatan aset UI andal
 
+**Cabang Fitur:** feature-fix-mime-type-error-in-nginx-configuration
+
 ## Galat aset tidak lagi disimpan
 
 Proksi web dan API kini mencegah respons JavaScript dan CSS beridentitas versi yang tidak ditemukan agar tidak disimpan sebagai aset tetap. Klien dapat pulih dengan baik setelah tumpang tindih penerapan alih-alih mempertahankan respons JSON 404 untuk URL aset.
@@ -61,3 +63,7 @@ Compose kini mewajibkan kata sandi basis data dan kunci enkripsi data yang dikel
 ## Compose kini mewajibkan URL penerapan
 
 Image aplikasi tidak lagi menetapkan localhost sebagai host publik. Kedua profil basis data Compose mewajibkan `EXTERNAL_HOST`, sehingga tautan autentikasi, undangan, dan pemberitahuan tidak mengarah ke komputer lokal setiap penerima.
+
+## Komit
+
+- [ec75586](https://github.com/Cognis-Labs-HQ/Cognis/commit/ec75586e143b25792032eaa906ba8b177868a6ef)

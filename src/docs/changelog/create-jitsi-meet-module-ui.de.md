@@ -1,5 +1,7 @@
 # Jitsi-Meet-Modul-Grundlage
 
+**Feature-Zweig:** copilot/create-jitsi-meet-module-ui
+
 ## Zusammenfassung
 
 Ein neues Jitsi-Meet-Modul mit konfigurierbaren Instanz-Einstellungen, Meeting-Persistenz, teilnehmergebundenen Zugriffskontrollen, Meeting-Sitzungsstatus-APIs, eigener Meetings-Seite und Administrationsüberwachung wurde hinzugefügt.
@@ -66,7 +68,7 @@ Nachfolgende Verbesserungen:
 
 ## Commit-Links
 
-- https://github.com/le-firehawk/Cognis/commit/a1a90e53bc3366961181b3cbd4d09094179a463c
-- https://github.com/le-firehawk/Cognis/commit/224a1bfb594412391c5dea99962fb9dc8c432396
-- https://github.com/le-firehawk/Cognis/commit/65261ce6
-- https://github.com/le-firehawk/Cognis/commit/642ddf56
+- [a1a90e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/a1a90e53bc3366961181b3cbd4d09094179a463c)
+- [224a1bf](https://github.com/Cognis-Labs-HQ/Cognis/commit/224a1bfb594412391c5dea99962fb9dc8c432396)
+- [65261ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/65261ce6)
+- [642ddf5](https://github.com/Cognis-Labs-HQ/Cognis/commit/642ddf56)

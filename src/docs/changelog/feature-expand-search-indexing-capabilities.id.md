@@ -1,5 +1,7 @@
 # Opsi Pencarian
 
+**Cabang Fitur:** feature-expand-search-indexing-capabilities
+
 ## Indeks Pencarian Diperluas
 
 Popup pencarian global kini memiliki utilitas pendaftaran dinamis sehingga halaman, konten halaman yang terlihat, postingan, chat, pesan, dan permukaan UI milik komponen dapat menyumbangkan kategori hasil yang dapat dicari.
@@ -85,3 +87,7 @@ Operasi akun seperti mengarsipkan, menonaktifkan, dan menghapus akun kini diinde
 ## Konvensi utilitas pencarian didokumentasikan
 
 Kode pencarian bersama kini hanya berada di `src/ui/reuse/search-util/`. Integrasi milik komponen sebaiknya memakai file khusus `ui/search/index.js`, mengekspor `createSearchIndex` untuk provider konten, dan memanggil helper bersama `registerSearchIndex`. Utilitas menangani pencocokan, peringkat, sorotan, filter, rendering, serta pengabaian hasil async usang, sementara provider komponen menjaga fetch mahal tetap asinkron.
+
+## Komit
+
+- [e3b679b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e3b679bd480e8caef6e8301f410718570299fb26)

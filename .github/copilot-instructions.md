@@ -226,6 +226,8 @@ Changelog entry structure is mandatory:
 - `## ...` — one change point per heading (these are shown as dot-point summary items in release popups)
 - body content under each `##` — full details shown on the changelogs page only
 
+Every implementation commit whose work is described by the current pull request's changelog must ensure that the changelog's commit list links the immediately preceding implementation commit. When a user requests this provenance update immediately before implementation, finish the work with a dedicated final commit that changes only the localized changelog files to record the prior implementation commit; that bookkeeping commit must not add unrelated changes or link itself.
+
 Translate each file into the language it represents — do not copy English text into non-English files (the same exceptions listed under i18n apply: brand names, universal technical acronyms, and the Latin tagline are language-neutral).
 
 Do not append to or recreate a global monolithic changelog file. Existing changelog entry files in `src/docs/changelog/` are historical records and should remain immutable except for factual corrections.

@@ -1,5 +1,7 @@
 # Changelog PR
 
+**Cabang Fitur:** copilot/add-browser-language-detection
+
 ## Ringkasan
 
 Inisialisasi bahasa UI kini memprioritaskan preferensi bahasa dari browser pada
@@ -44,8 +46,8 @@ yang kosong.
 
 ## Commit
 
-- [0b39a0e](https://github.com/le-firehawk/Cognis/commit/0b39a0e)
-- [d9550aa2](https://github.com/le-firehawk/Cognis/commit/d9550aa2)
-- [a70d7e70](https://github.com/le-firehawk/Cognis/commit/a70d7e70)
-- [c8634d6e](https://github.com/le-firehawk/Cognis/commit/c8634d6e)
-- [61a470b9](https://github.com/le-firehawk/Cognis/commit/61a470b9)
+- [0b39a0e](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b39a0e)
+- [d9550aa](https://github.com/Cognis-Labs-HQ/Cognis/commit/d9550aa2)
+- [a70d7e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/a70d7e70)
+- [c8634d6](https://github.com/Cognis-Labs-HQ/Cognis/commit/c8634d6e)
+- [61a470b](https://github.com/Cognis-Labs-HQ/Cognis/commit/61a470b9)

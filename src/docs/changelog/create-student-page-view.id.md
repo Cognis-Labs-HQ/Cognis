@@ -1,5 +1,7 @@
 # Keanggotaan Kelas Siswa
 
+**Cabang Fitur:** copilot/create-student-page-view
+
 ## Ringkasan
 
 Menambahkan halaman Kelas Saya di `/my-classes` khusus siswa untuk melihat kelas yang diikuti, mengajukan permintaan bergabung ke kelas yang tersedia, dan meninggalkan kelas. Halaman kelas pengajar ditingkatkan dengan filter bahasa, manajemen siswa per kelas, pencarian siswa, serta kemampuan mengundang siswa dan menyetujui atau menolak permintaan bergabung.
@@ -74,3 +76,5 @@ Lihat branch `copilot/create-student-page-view` untuk riwayat commit.
 - Semua data bahasa Inggris telah dimigrasikan dari UI yang terkodifikasi keras ke dalam Perpustakaan: `data/characters/latin.json` dengan 26 huruf Latin (A–Z) telah ditambahkan. Halaman Alfabet kini mengambil karakter dari API Perpustakaan, bukan mengkodifikasinya secara keras. Pola `LanguageLibraryStore` generik dipindahkan ke `reuse/library-store.ts`; kedua modul bahasa (Inggris dan Jepang) kini menggunakan implementasi bersama ini. Fungsi bersama `mountStudyLibraryPage` di `reuse/library-page.js` menggantikan logika UI CRUD Perpustakaan yang terduplikasi. Kelas CSS yang terduplikasi dari berkas stylesheet spesifik komponen dihapus. Instruksi AI dan dokumentasi diperbarui untuk memperjelas bahwa Perpustakaan adalah satu-satunya penyimpanan data kanonik untuk semua konten modul bahasa.
 
 - Pembaruan kepatuhan dan real-time: z-index menu pengguna (dropdown profil) diperbaiki agar muncul di atas bilah sub-navigasi halaman; pemeriksaan `hasLibraryModule` dikoreksi untuk mencocokkan berdasarkan `id` komponen bukan URL yang terkodekan keras agar Library Inggris muncul dengan benar; `clearStudySubNavCache()` dari `study-sub-navigation.js` dan `invalidateStudyChildComponentCache()` dari `app-router.js` dipanggil saat preferensi bahasa disimpan; `classroom-page.js` dan `library-page.js` kini memuat string i18n gateway Study dengan benar; semua halaman Study kini memiliki bidang `subtitle` di `pageContext`; JSDoc ditambahkan ke `classroom-page.js` dan `library-store.ts`; pengujian komprehensif ditambahkan untuk `LanguageLibraryStore` dan `study-sub-navigation.js`; instruksi AI diperbarui untuk mewajibkan `subtitle` di `pageContext` untuk semua halaman baru.
+
+- [00faea1](https://github.com/Cognis-Labs-HQ/Cognis/commit/00faea1c4e08c65105ba917b42b5e6a069f2d9ef)

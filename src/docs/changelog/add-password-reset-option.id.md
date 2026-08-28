@@ -1,5 +1,7 @@
 # Reset Kata Sandi Auth
 
+**Cabang Fitur:** copilot/add-password-reset-option
+
 ## Summary
 
 Ditambahkan alur reset kata sandi berbasis provider di Pengaturan Pengguna → Keamanan, termasuk route server yang mengevaluasi dukungan reset dari provider aktif dan menjalankan logika reset milik adapter.
@@ -25,6 +27,6 @@ Pesan “Penyedia Autentikasi” di panel Keamanan dihapus, dan route kemampuan 
 
 ## Commit Links
 
-- https://github.com/le-firehawk/Cognis/commit/a33f0faa
-- https://github.com/le-firehawk/Cognis/commit/9490a011
-- https://github.com/le-firehawk/Cognis/commit/8ba1d8b2
+- [a33f0fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/a33f0faa)
+- [9490a01](https://github.com/Cognis-Labs-HQ/Cognis/commit/9490a011)
+- [8ba1d8b](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ba1d8b2)

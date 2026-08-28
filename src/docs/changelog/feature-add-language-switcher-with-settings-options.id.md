@@ -1,5 +1,7 @@
 # Pergantian Bahasa Cepat
 
+**Cabang Fitur:** feature-add-language-switcher-with-settings-options
+
 ## Pengalih bahasa di dasbor
 
 Telusuri bahasa pilihan melalui tombol bendera mengambang. Pilihan terakhir dipindahkan ke urutan teratas setelah lima detik dan diterapkan dengan memuat ulang halaman.
@@ -15,3 +17,7 @@ Menonaktifkan preferensi kini menandai Pengaturan sebagai berubah dan menyembuny
 ## Tombol halaman diperbarui saat navigasi
 
 Setiap halaman kini mempertahankan kendali edit Page Composer miliknya sendiri, sehingga perpindahan dari halaman yang tidak dapat diedit ke halaman yang dapat diedit langsung menampilkan semua aksi yang tersedia tanpa perlu memuat ulang.
+
+## Komit
+
+- [741230d](https://github.com/Cognis-Labs-HQ/Cognis/commit/741230d55d134bfb52a89d52831bedfdcc1c13f1)

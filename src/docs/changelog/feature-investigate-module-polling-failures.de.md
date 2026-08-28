@@ -1,5 +1,7 @@
 # Zuverlässige Modultexte
 
+**Feature-Zweig:** feature-investigate-module-polling-failures
+
 ## Keine Abfragen fehlender Texte
 
 Der Modulkatalog gibt Lokalisierungsressourcen nur noch bekannt, nachdem die erforderliche englische Textdatei im Servercache bestätigt wurde. Die regelmäßige Marktplatzabfrage wiederholt daher keine Anfragen an Textadressen mehr, die nur 404 zurückgeben können.
@@ -33,3 +35,7 @@ Deaktivierte externe Module werden bei Routenaktualisierungen nicht mehr importi
 ## Scans privater Quellen warten auf Zugangsdaten
 
 Die Erkennung beim Start durchsucht jetzt nur öffentliche Modulquellen. Private Quellen mit Zugangsdaten bleiben für authentifizierte Marketplace-Abfragen verfügbar, ohne dass ein Versuch ohne Zugangsdaten ihre nächste Aktualisierung verzögert.
+
+## Änderungen
+
+- [54375e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/54375e318faa1ddbb6fe950f2402957742102af9)

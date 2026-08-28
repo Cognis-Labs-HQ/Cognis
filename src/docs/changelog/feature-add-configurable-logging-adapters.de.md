@@ -1,5 +1,7 @@
 # Konfigurierbare Protokollausgaben
 
+**Feature-Zweig:** feature-add-configurable-logging-adapters
+
 ## Unabhängige Protokollstufen für Konsole und Datei
 
 Administratoren können nun getrennte Schweregradschwellen für die Konsolen- und Dateiprotokollierung aus den vom Logging-Gateway unterstützten Stufen auswählen.
@@ -43,3 +45,7 @@ Validierungsfehler zur Laufzeit werden nun übersetzt, jeder erkannte Logging-Ad
 ## Docker-Konsolenschwelle
 
 Die frühe Bootstrap-Protokollierung wendet `LOG_LEVEL` nun vor dem Start des Logging-Gateways an, sodass der Docker-Standardwert `info` Debug-Ausgaben während des gesamten Starts unterdrückt.
+
+## Änderungen
+
+- [1a843d6](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a843d6bcc3ff03b2c40d841f75d29d79da7dc6d)

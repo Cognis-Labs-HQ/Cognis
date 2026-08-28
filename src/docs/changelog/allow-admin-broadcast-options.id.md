@@ -1,5 +1,7 @@
 # Mode Pengiriman Siaran
 
+**Cabang Fitur:** copilot/allow-admin-broadcast-options
+
 ## Ringkasan
 
 Menambahkan sistem siaran baru yang dapat dikonfigurasi admin pada bagian Notifikasi dengan dua mode tampilan: bilah di bagian atas halaman dan popup. Admin dapat mengatur peran target, tanggal mulai dan selesai, kewajiban konfirmasi, perilaku pengalihan saat ditutup, serta status aktif/nonaktif.
@@ -20,4 +22,4 @@ Dashboard sekarang memuat plugin navbar siaran notify yang mengambil siaran akti
 
 ## Commit
 
-- https://github.com/le-firehawk/Cognis/commit/e14cbfc
+- [e14cbfc](https://github.com/Cognis-Labs-HQ/Cognis/commit/e14cbfc)

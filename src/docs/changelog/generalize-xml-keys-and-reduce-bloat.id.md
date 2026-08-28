@@ -1,5 +1,7 @@
 # Generalisasi String i18n
 
+**Cabang Fitur:** copilot/generalize-xml-keys-and-reduce-bloat
+
 ## Ringkasan
 
 Kunci i18n yang spesifik untuk komponen dipindahkan dari file bahasa inti ke direktori `languages/` milik masing-masing komponen. Lapisan i18n diperluas dengan `loadComponentStrings` dan `extendI18n` agar komponen dapat memuat string mereka sendiri tanpa mengotori namespace global. Sekitar 90 kunci yang sudah tidak digunakan dan salah tempat dihapus dari file string inti.
@@ -29,9 +31,9 @@ Kunci i18n yang spesifik untuk komponen dipindahkan dari file bahasa inti ke dir
 - `src/ui/app/users/index.js` — kunci save_failed diperbarui ke `ui.reuse.generic.save_failed`
 - `src/ui/languages/*/strings.xml` — ~90 kunci usang/dipindahkan dihapus, `ui.reuse.generic.save_failed` ditambahkan
 
-## Commits
+## Komit
 
-- https://github.com/le-firehawk/Cognis/commit/8e82369
-- https://github.com/le-firehawk/Cognis/commit/867e397
-- https://github.com/le-firehawk/Cognis/commit/8ef54f9
-- https://github.com/le-firehawk/Cognis/commit/f624f07
+- [8e82369](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e82369)
+- [867e397](https://github.com/Cognis-Labs-HQ/Cognis/commit/867e397)
+- [8ef54f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ef54f9)
+- [f624f07](https://github.com/Cognis-Labs-HQ/Cognis/commit/f624f07)

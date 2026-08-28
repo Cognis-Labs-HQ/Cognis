@@ -1,5 +1,7 @@
 # UI で長いドキュメントタイトルを短縮
 
+**機能ブランチ:** copilot/trim-document-titles
+
 ## 概要
 
 - 長いドキュメントタイトルが Docs ナビゲーション UI で省略表示されるようになりました。
@@ -15,4 +17,4 @@
 
 ## コミットリンク
 
-- https://github.com/le-firehawk/Cognis/commit/e8f614f1abf5a1453253da61913b2c38c07a897a
+- [e8f614f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8f614f1abf5a1453253da61913b2c38c07a897a)

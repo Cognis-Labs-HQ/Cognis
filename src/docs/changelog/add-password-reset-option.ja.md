@@ -1,5 +1,7 @@
 # 認証パスワードリセット
 
+**機能ブランチ:** copilot/add-password-reset-option
+
 ## Summary
 
 ユーザー設定 → セキュリティに、プロバイダー連動のパスワードリセットを追加しました。サーバールートは現在の認証プロバイダーの対応可否を評価し、アダプター所有のリセット処理を実行します。
@@ -25,6 +27,6 @@ Security パネルの「認証プロバイダー」表示を削除し、アク�
 
 ## Commit Links
 
-- https://github.com/le-firehawk/Cognis/commit/a33f0faa
-- https://github.com/le-firehawk/Cognis/commit/9490a011
-- https://github.com/le-firehawk/Cognis/commit/8ba1d8b2
+- [a33f0fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/a33f0faa)
+- [9490a01](https://github.com/Cognis-Labs-HQ/Cognis/commit/9490a011)
+- [8ba1d8b](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ba1d8b2)

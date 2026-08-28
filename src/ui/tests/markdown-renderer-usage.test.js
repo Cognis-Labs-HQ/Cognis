@@ -57,7 +57,7 @@ test("user and admin generated rich-text surfaces use the shared markdown render
             path: "src/ui/reuse/markdown-document.js",
             patterns: [
                 /import \{ renderMarkdown \}/,
-                /renderMarkdown\(payload\?\.data\?\.markdown \?\? ""\)/,
+                /renderMarkdown\(transformedMarkdown\)/,
             ],
         },
         {
@@ -65,7 +65,7 @@ test("user and admin generated rich-text surfaces use the shared markdown render
             path: "src/ui/layouts/release-changelog/popup.js",
             patterns: [
                 /import \{ renderMarkdown \}/,
-                /renderMarkdown\(changeHeading\)/,
+                /renderMarkdown\(linkShortCommitRefs\(changeHeading\)\)/,
             ],
         },
     ];

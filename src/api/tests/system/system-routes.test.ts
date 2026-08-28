@@ -1,8 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { createSystemRoutes } from "../../routes/system/index.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
+import { loadReleaseChangelogEntries } from "../../reuse/release-changelog-feed.js";
 
 const healthService = {
     status() {
@@ -214,6 +218,52 @@ test("system release changelog feed resolves localized entry summaries across su
             localizedEntry.changes[0],
             expectation.expectedFirstChange,
         );
+    }
+});
+
+test("release changelog feed includes section details and installed module entries", async () => {
+    const fixtureRoot = await mkdtemp(join(tmpdir(), "cognis-release-feed-"));
+    const coreChangelogRoot = join(fixtureRoot, "changelog");
+    const externalRoot = join(fixtureRoot, "external-modules");
+    const moduleChangelogRoot = join(
+        externalRoot,
+        "weather-module",
+        "docs",
+        "changelog",
+    );
+    await mkdir(coreChangelogRoot, { recursive: true });
+    await mkdir(moduleChangelogRoot, { recursive: true });
+    await writeFile(
+        join(externalRoot, "weather-module", "package.json"),
+        JSON.stringify({ name: "Weather Module" }),
+    );
+    await writeFile(
+        join(coreChangelogRoot, "core-change.en.md"),
+        "# Core change\n\n## Useful summary\n\nThe detail users need to read.\n",
+    );
+    await writeFile(
+        join(moduleChangelogRoot, "2.0.0.en.md"),
+        "# Weather module\n\n## Forecasts\n\nAdds hourly forecasts.\n",
+    );
+
+    try {
+        const entries = await loadReleaseChangelogEntries(
+            ["en"],
+            [coreChangelogRoot, externalRoot],
+        );
+        const coreEntry = entries.find((entry) => entry.slug === "core-change");
+        const moduleEntry = entries.find(
+            (entry) => entry.slug === "weather-module/2.0.0",
+        );
+        assert.equal(coreEntry?.changes[0], "Useful summary");
+        assert.equal(coreEntry?.details[0], "The detail users need to read.");
+        assert.equal(moduleEntry?.title, "Weather module");
+        assert.equal(coreEntry?.sourceName, "Cognis Core");
+        assert.equal(moduleEntry?.sourceName, "Weather Module");
+        assert.equal(moduleEntry?.path, "/changelogs/weather-module/2.0.0");
+        assert.equal(moduleEntry?.details[0], "Adds hourly forecasts.");
+    } finally {
+        await rm(fixtureRoot, { recursive: true, force: true });
     }
 });
 

@@ -1,5 +1,7 @@
 # API 接続断時にページ更新を促す常駐トースト
 
+**機能ブランチ:** copilot/add-perma-toast-refresh-notification
+
 ## 概要
 
 サーバー再起動やネットワーク断などで認証済み API 接続が失敗した場合（ネットワークエラー、または再試行対象の 5xx 応答）に、ページ更新を促す常駐の警告トーストを追加しました。
@@ -18,5 +20,5 @@
 
 ## コミット
 
-- https://github.com/le-firehawk/Cognis/commit/bbee24a
-- https://github.com/le-firehawk/Cognis/commit/3b7bded
+- [bbee24a](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbee24a)
+- [3b7bded](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b7bded)

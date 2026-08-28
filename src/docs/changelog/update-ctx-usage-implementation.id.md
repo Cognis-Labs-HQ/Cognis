@@ -1,5 +1,7 @@
 # Catatan Perubahan PR
 
+**Cabang Fitur:** copilot/update-ctx-usage-implementation
+
 ## Ringkasan
 
 Wiring rute API inti dan beberapa jalur bootstrap gateway/adaptor dipindahkan ke
@@ -67,10 +69,10 @@ diterbitkan setelah kapabilitas auth berhasil diambil dari ctx, sehingga
     - `src/docs/versions.en.md`
     - manifes `package.json` adaptor/modul yang kini menunjuk ke `@cognis/core@0.1.1` lokal
 
-## Commits
+## Komit
 
-- [feb1bbc](https://github.com/le-firehawk/Cognis/commit/feb1bbc)
-- [c6ba65b](https://github.com/le-firehawk/Cognis/commit/c6ba65b)
-- [acaded15](https://github.com/le-firehawk/Cognis/commit/acaded15)
-- [e7255fe0](https://github.com/le-firehawk/Cognis/commit/e7255fe0)
-- [a68ab2ab](https://github.com/le-firehawk/Cognis/commit/a68ab2ab)
+- [feb1bbc](https://github.com/Cognis-Labs-HQ/Cognis/commit/feb1bbc)
+- [c6ba65b](https://github.com/Cognis-Labs-HQ/Cognis/commit/c6ba65b)
+- [acaded1](https://github.com/Cognis-Labs-HQ/Cognis/commit/acaded15)
+- [e7255fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/e7255fe0)
+- [a68ab2a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a68ab2ab)

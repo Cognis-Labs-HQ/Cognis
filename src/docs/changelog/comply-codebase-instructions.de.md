@@ -1,5 +1,7 @@
 # Admin- und Compliance-Update
 
+**Feature-Zweig:** copilot/comply-codebase-instructions
+
 ## Sicherheitsbereich in Admin gebündelt
 
 Der separate Bereich Administration → Authentifizierung wurde entfernt, indem die Auth-Admin-Section nicht mehr registriert wird. Passwort-Richtlinien liegen jetzt direkt unter Administration → Sicherheit zusammen mit vertrauenswürdigen Domains, Registrierungssteuerung, Validierungsmethode und Lehrerfreigabe.
@@ -19,3 +21,7 @@ Server- und Modul-Extension-Routen nutzen jetzt injizierten Route-Auth-Kontext s
 ## AI-Instruktionsziele präzisiert
 
 Die AI-Instruktionen wurden explizit erweitert: LOC-Disziplin, keine Bewertung großer Diffs als Erfolgssignal, generische Benennung, echte Reuse-Grenzen, getrennte HTML- und JS/TS-Dateien sowie Aufteilung übergroßer Dateien in Verzeichnisstrukturen mit Einstiegspunkt.
+
+## Änderungen
+
+- [a267b4c](https://github.com/Cognis-Labs-HQ/Cognis/commit/a267b4cce59173b5060e5035a628583868afa39e)

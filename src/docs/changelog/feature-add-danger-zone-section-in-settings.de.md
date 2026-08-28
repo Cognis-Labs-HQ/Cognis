@@ -1,5 +1,7 @@
 # Kontosicherheit
 
+**Feature-Zweig:** feature-add-danger-zone-section-in-settings
+
 ## Gefahrenbereich in Einstellungen hinzugefügt
 
 Benutzer können ihr eigenes Konto jetzt in den allgemeinen Einstellungen archivieren, deaktivieren oder löschen, nachdem sie einen Warnhinweis mit ihrem Passwort bestätigt haben. Deaktivierte Profile werden bei der nächsten Anmeldung reaktiviert, archivierte Profile zeigen ein Warnbanner und blockieren Interaktionen, bis ein Administrator sie wiederherstellt, und gelöschte Konten werden dauerhaft entfernt.
@@ -23,3 +25,7 @@ Die Aktion Deaktivieren/Aktivieren in der Benutzerverwaltung archiviert oder rea
 ## Deaktivierung versetzt Konten in Ruhe
 
 Selbstdeaktivierung verbirgt Konten jetzt vor Interaktionen, während Benutzer den Zugriff durch erneutes Anmelden wiederherstellen können; außerdem nutzt das Gefahrenbereich-Popup eine neutrale Abbrechen-Schaltfläche.
+
+## Änderungen
+
+- [84934f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/84934f6b7a14135551c11da59c8fc51f014b7be4)

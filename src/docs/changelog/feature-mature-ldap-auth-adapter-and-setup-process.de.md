@@ -1,5 +1,7 @@
 # Zuverlässige LDAP-Verzeichniseinrichtung
 
+**Feature-Zweig:** feature-mature-ldap-auth-adapter-and-setup-process
+
 ## Live-Erkennung für OpenLDAP und FreeIPA
 
 Die LDAP-Einrichtung bindet sich jetzt an das konfigurierte Verzeichnis und liest echte Benutzer und Gruppen, bevor die Konfiguration fortgesetzt wird. Benutzername-Attribute, begrenzte seitenweise Suchen, verschachtelte Mitgliedschaften und sicherere Filter werden unterstützt.
@@ -63,3 +65,7 @@ Die öffentliche Anmeldekonfiguration behält nun die Metadaten der Zugangsdaten
 ## Geschützte LDAP-Bind-Passwörter
 
 Gespeicherte LDAP-Bind-Passwörter werden aus den Antworten der Administrations-API entfernt. Ein leeres Passwortfeld behält das vorhandene Geheimnis bei; ein neuer Wert ersetzt es sicher.
+
+## Änderungen
+
+- [88fe3b0](https://github.com/Cognis-Labs-HQ/Cognis/commit/88fe3b0bec731d1c090768792cd73cea7264106e)

@@ -1,5 +1,7 @@
 # Fix Meeting Shares
 
+**Feature Branch:** N/A
+
 ## Allow Participants to Manage Shares
 
 Current Jitsi Meet participants can now list, create, and revoke meeting share links, not just the meeting owner. Users who are not part of the meeting still receive a forbidden response.
@@ -11,3 +13,5 @@ Meeting share approval requests now target only participants with current presen
 ## Expire Shares When Meetings Restart
 
 Meeting share links now capture the active meeting instance. Restarting a meeting rotates that instance identifier so older links expire automatically instead of carrying over to a new session.
+
+## Commits

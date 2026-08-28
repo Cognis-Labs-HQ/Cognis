@@ -1,5 +1,7 @@
 # Filter Stream Log
 
+**Cabang Fitur:** copilot/add-log-failed-logins-and-rotation
+
 ## Ringkasan
 
 - Login gagal dan perubahan akun pengguna penting kini dicatat sebagai peringatan.
@@ -23,4 +25,6 @@
 
 ## Tautan Commit
 
-- https://github.com/le-firehawk/Cognis/commit/749469a351ca8fad839ef6cf3f3d4eed81717b3a
+- [749469a](https://github.com/Cognis-Labs-HQ/Cognis/commit/749469a351ca8fad839ef6cf3f3d4eed81717b3a)
+
+## Komit

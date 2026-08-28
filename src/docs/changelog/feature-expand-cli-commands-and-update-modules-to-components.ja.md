@@ -1,5 +1,7 @@
 # モジュールCLI対応
 
+**機能ブランチ:** feature-expand-cli-commands-and-update-modules-to-components
+
 ## モジュールAPIコマンドを追加
 
 これまで直接HTTP呼び出しが必要だったモジュールのバックエンドエンドポイント向けに、Analyticsのアクティビティ表示、Jitsi Meetの管理、Nextcloud Whiteboardの操作を含むCognisctlコマンドを追加しました。
@@ -55,3 +57,7 @@ Jitsi Meet のミーティング確認は `jitsi-meet:meetings` を使用する�
 ## 無効コンポーネントの CLI フィルター
 
 コンポーネント CLI プラグインは登録前にコンポーネントの利用可否を確認するようになり、API が無効と報告したモジュール、ゲートウェイ、アダプターのコマンドはヘルプやコマンド検索に表示されません。冗長な `social:users:search` コマンドを削除しました。
+
+## コミット
+
+- [555964b](https://github.com/Cognis-Labs-HQ/Cognis/commit/555964b626fd72acf48154ab588e2b016f8affdd)

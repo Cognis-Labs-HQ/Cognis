@@ -1,5 +1,7 @@
 # Module Marketplace
 
+**Feature Branch:** feature-remove-modules-from-administration-page
+
 ## Clear release-channel state
 
 Release-channel choices now use neutral controls with an unmistakable selected state. Module details show the installed channel and its actual manifest version together, while updated modules display a restart warning until the Cognis container restarts and activates every injected route.
@@ -537,3 +539,7 @@ Disabling a module now removes its navigation, UI contributions, routes, flows, 
 ## Make navigation reordering deliberate
 
 Each primary navigation entry now has a six-dot handle. Links keep their normal pointer and cannot be rearranged until their handle is clicked; displaced entries animate during the drag and the resulting order is saved on drop. External-module documentation now follows the contributor template and accurately describes atomic disablement and uninstall cleanup. The SMTP queue regression fixture now uses a non-blocking test timer so the complete test runner can terminate after its assertions.
+
+## Commits
+
+- [c685eda](https://github.com/Cognis-Labs-HQ/Cognis/commit/c685eda06183d56a3a250df8b66178db1e8553d6)

@@ -1,5 +1,7 @@
 # Zuverlässige Installation
 
+**Feature-Zweig:** N/A
+
 ## Arbeitsbereichsgrenzen angepasst
 
 Interne Abhängigkeitsgrenzen schließen nun die Komponentenversionen dieses Repositorys ein, sodass npm lokale Arbeitsbereiche verknüpft, anstatt private Cognis-Pakete aus der öffentlichen Registrierung anzufordern.
@@ -7,3 +9,5 @@ Interne Abhängigkeitsgrenzen schließen nun die Komponentenversionen dieses Rep
 ## Abweichungsprüfung ergänzt
 
 Architekturprüfungen melden nun interne Abhängigkeitsbereiche, die ihre entsprechenden lokalen Arbeitsbereichsversionen ausschließen.
+
+## Änderungen

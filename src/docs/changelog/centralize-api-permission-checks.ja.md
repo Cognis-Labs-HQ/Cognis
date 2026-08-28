@@ -1,5 +1,7 @@
 # PR変更履歴 — API権限チェックの一元化
 
+**機能ブランチ:** copilot/centralize-api-permission-checks
+
 ## 概要
 
 `owner`ロールのユーザースコープAPIにおける認可ギャップを修正し、
@@ -46,5 +48,5 @@ UIのロール表示も改善し、`owner` と `admin` を明確に区別し、
 
 ## コミット
 
-- [93e5f7f](https://github.com/le-firehawk/Cognis/commit/93e5f7f)
-- [411e267](https://github.com/le-firehawk/Cognis/commit/411e267)
+- [93e5f7f](https://github.com/Cognis-Labs-HQ/Cognis/commit/93e5f7f)
+- [411e267](https://github.com/Cognis-Labs-HQ/Cognis/commit/411e267)

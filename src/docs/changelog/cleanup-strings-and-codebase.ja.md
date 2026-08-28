@@ -1,5 +1,7 @@
 # PR 変更履歴 — Cleanup Strings
 
+**機能ブランチ:** copilot/cleanup-strings-and-codebase
+
 ## 要約
 
 変更履歴ファイル名ポリシーを、`copilot/` プレフィックスを除いたブランチ名
@@ -49,6 +51,6 @@
 
 ## コミット
 
-- [6ab293a](https://github.com/le-firehawk/Cognis/commit/6ab293a)
-- [8299d2b](https://github.com/le-firehawk/Cognis/commit/8299d2b)
-- [b93c948](https://github.com/le-firehawk/Cognis/commit/b93c948)
+- [6ab293a](https://github.com/Cognis-Labs-HQ/Cognis/commit/6ab293a)
+- [8299d2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/8299d2b)
+- [b93c948](https://github.com/Cognis-Labs-HQ/Cognis/commit/b93c948)

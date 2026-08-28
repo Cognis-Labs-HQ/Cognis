@@ -1,5 +1,7 @@
 # Keamanan Akun
 
+**Cabang Fitur:** feature-add-danger-zone-section-in-settings
+
 ## Menambahkan Zona Berbahaya di Pengaturan
 
 Pengguna kini dapat mengarsipkan, menonaktifkan, atau menghapus akun sendiri dari pengaturan Umum setelah mengonfirmasi dialog peringatan dengan kata sandi. Profil yang dinonaktifkan aktif kembali saat login berikutnya, profil yang diarsipkan menampilkan banner peringatan dan memblokir interaksi hingga administrator memulihkannya, dan akun yang dihapus dihapus secara permanen.
@@ -23,3 +25,7 @@ Kontrol Nonaktif/Aktif di Admin Pengguna kini mengarsipkan atau mengaktifkan kem
 ## Penonaktifan menghibernasi akun
 
 Penonaktifan mandiri kini menyembunyikan akun dari interaksi sambil memungkinkan pengguna memulihkan akses dengan masuk lagi, dan popup zona berbahaya memakai gaya tombol batal netral.
+
+## Komit
+
+- [84934f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/84934f6b7a14135551c11da59c8fc51f014b7be4)

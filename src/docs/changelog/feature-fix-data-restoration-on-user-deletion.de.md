@@ -1,5 +1,7 @@
 # Sichere Kontolöschung
 
+**Feature-Zweig:** feature-fix-data-restoration-on-user-deletion
+
 ## Gelöschte Konten behalten keine Aktivitäten
 
 Beim Löschen eines Benutzers werden jetzt Mitgliedschaften und Anwesenheiten in Nachrichten, soziale Beziehungen und Beiträge, Unterrichtsdaten, Kalenderdaten sowie Besprechungsteilnahmen dauerhaft entfernt. Die erneute Erstellung desselben Benutzernamens kann deshalb keine privaten Aktivitäten des gelöschten Kontos wiederherstellen.
@@ -19,3 +21,7 @@ Wiederholte Versuche, dieselbe ausstehende Unterhaltung zu beginnen, senden kein
 ## Abgelehnte Anfragen schließen sicher
 
 Beim Ablehnen einer Nachrichtenanfrage wird der Empfänger jetzt aus dem gerade verlassenen Raum weggeleitet, anstatt dessen Verschlüsselungsschlüssel zu laden. Der abgelehnte Raum folgt dem üblichen Chat-Lebenszyklus und wird für den verbleibenden Anfragenden archiviert oder gelöscht, wenn er leer ist.
+
+## Änderungen
+
+- [9735e00](https://github.com/Cognis-Labs-HQ/Cognis/commit/9735e00a2bb3ef7b3a1f10aa49494f81007dece2)

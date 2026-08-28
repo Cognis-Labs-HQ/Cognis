@@ -1,5 +1,7 @@
 # Reliable UI asset loading
 
+**Feature Branch:** feature-fix-mime-type-error-in-nginx-configuration
+
 ## Asset errors are no longer cached
 
 The web proxy and API now prevent missing fingerprinted JavaScript and CSS responses from being cached as immutable assets. Clients can recover cleanly after a deployment overlap instead of retaining a JSON 404 response for an asset URL.
@@ -61,3 +63,7 @@ Compose now requires deployment-managed database passwords and a data-encryption
 ## Compose now requires the deployment URL
 
 The application image no longer supplies localhost as its public host. Both database Compose profiles require `EXTERNAL_HOST`, preventing authentication, invitation, and notification links from pointing to each recipient's local machine.
+
+## Commits
+
+- [ec75586](https://github.com/Cognis-Labs-HQ/Cognis/commit/ec75586e143b25792032eaa906ba8b177868a6ef)

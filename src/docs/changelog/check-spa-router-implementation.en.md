@@ -1,5 +1,7 @@
 # PR Changelog — SPA Router
 
+**Feature Branch:** copilot/check-spa-router-implementation
+
 ## Summary
 
 Completed a SPA consistency pass on page entrypoints by adding router coverage
@@ -98,8 +100,8 @@ imported from anywhere.
 
 ## Commits
 
-- [5028bb9](https://github.com/le-firehawk/Cognis/commit/5028bb9)
-- [ad0f87b](https://github.com/le-firehawk/Cognis/commit/ad0f87b)
-- [903e3f3](https://github.com/le-firehawk/Cognis/commit/903e3f3)
-- [1f2451b](https://github.com/le-firehawk/Cognis/commit/1f2451b)
-- [18e5b71](https://github.com/le-firehawk/Cognis/commit/18e5b71)
+- [5028bb9](https://github.com/Cognis-Labs-HQ/Cognis/commit/5028bb9)
+- [ad0f87b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad0f87b)
+- [903e3f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/903e3f3)
+- [1f2451b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f2451b)
+- [18e5b71](https://github.com/Cognis-Labs-HQ/Cognis/commit/18e5b71)

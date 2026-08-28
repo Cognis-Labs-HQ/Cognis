@@ -1,5 +1,7 @@
 # Profilbilder in Nachrichten
 
+**Feature-Zweig:** feature-prioritize-profile-picture-over-initials
+
 ## Zusammenfassung
 
 Die Avatar-Darstellung im Messages-Adapter bevorzugt nun tatsächliche
@@ -30,5 +32,5 @@ wiederverwendet werden kann.
 
 ## Commit-Links
 
-- https://github.com/le-firehawk/Cognis/commit/9f78b06
-- https://github.com/le-firehawk/Cognis/commit/5399b86
+- [9f78b06](https://github.com/Cognis-Labs-HQ/Cognis/commit/9f78b06)
+- [5399b86](https://github.com/Cognis-Labs-HQ/Cognis/commit/5399b86)

@@ -1,5 +1,7 @@
 # 存在しないログアウトエンドポイントの修正
 
+**機能ブランチ:** copilot/fix-logout-endpoint
+
 ## 概要
 
 `POST /api/v1/auth/logout` エンドポイントがすべてのリクエストに対して 404 を
@@ -32,4 +34,4 @@
 
 ## コミットリンク
 
-- https://github.com/le-firehawk/Cognis/commit/79bc1e7242a82f3f6a3b15c0210cdf32ef752893
+- [79bc1e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/79bc1e7242a82f3f6a3b15c0210cdf32ef752893)

@@ -1,5 +1,7 @@
 # Produktions-UI-Build
 
+**Feature-Zweig:** feature-add-production-ui-build-stage
+
 ## Gehashte Produktionsdateien
 
 Das Produktions-Image stellt nun minimierte, inhaltsgehashte JavaScript- und CSS-Bundles über ein erzeugtes Manifest bereit, während die Entwicklung weiterhin Quellmodule ausliefert.
@@ -31,3 +33,7 @@ Die Aushandlung statischer Assets schließt nun mit Qualitätswert null abgelehn
 ## Komponentenregistrierung wird validiert
 
 Produktions-Builds prüfen nun jeden kompilierten Adapter-Einstiegspunkt. Datenbank- und lokale Dateimanifeste verweisen auf ihre tatsächlichen Einstiegsmodule, das Datei-Gateway löst Adapter aus dem konfigurierten kompilierten Stammverzeichnis auf und der Nachrichtenadapter lädt seinen Raum-Schlüsselbeitrag aus dem richtigen Speichermodul.
+
+## Änderungen
+
+- [d9af537](https://github.com/Cognis-Labs-HQ/Cognis/commit/d9af537d6fa92347026e779da4387d886f0e8238)

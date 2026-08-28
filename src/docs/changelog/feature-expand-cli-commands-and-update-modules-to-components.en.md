@@ -1,5 +1,7 @@
 # Module CLI Coverage
 
+**Feature Branch:** feature-expand-cli-commands-and-update-modules-to-components
+
 ## Module API commands added
 
 Added Cognisctl commands for module backend endpoints that previously required direct HTTP calls, including Analytics activity views, Jitsi Meet administration, and Nextcloud Whiteboard operations.
@@ -55,3 +57,7 @@ Jitsi Meet meeting inspection now uses `jitsi-meet:meetings`, and module-specifi
 ## Disabled Component CLI Filtering
 
 Component CLI plugins now consult component availability before registering commands, so disabled modules, gateways, and adapters do not appear in help or command lookup when the API reports them disabled. The redundant `social:users:search` command was removed.
+
+## Commits
+
+- [555964b](https://github.com/Cognis-Labs-HQ/Cognis/commit/555964b626fd72acf48154ab588e2b016f8affdd)

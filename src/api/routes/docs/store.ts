@@ -1,4 +1,12 @@
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import {
+    mkdir,
+    readFile,
+    readdir,
+    rename,
+    rm,
+    writeFile,
+} from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import { dirname, join, relative, resolve, sep } from "node:path";
 
 export interface StoredDoc {
@@ -8,6 +16,7 @@ export interface StoredDoc {
     group: string;
     version: string;
     versions: string[];
+    sourceName: string;
 }
 
 interface SourceDoc extends Omit<StoredDoc, "version" | "versions"> {
@@ -17,6 +26,25 @@ interface SourceDoc extends Omit<StoredDoc, "version" | "versions"> {
 
 const DEFAULT_LANG = "en";
 const SEMANTIC_VERSION = /^\d+\.\d+\.\d+$/;
+
+async function writeFileWhenChanged(
+    destination: string,
+    content: Buffer,
+): Promise<void> {
+    try {
+        if ((await readFile(destination)).equals(content)) return;
+    } catch {
+        // Continue to the atomic archive update below.
+    }
+
+    const temporaryPath = `${destination}.${process.pid}.${randomUUID()}.tmp`;
+    try {
+        await writeFile(temporaryPath, content);
+        await rename(temporaryPath, destination);
+    } finally {
+        await rm(temporaryPath, { force: true });
+    }
+}
 
 async function directoriesNamedDocs(
     directory: string,
@@ -90,6 +118,29 @@ async function titleFor(fileStem: string): Promise<string> {
     return "";
 }
 
+async function sourceNameFor(
+    slug: string,
+    componentRoot: string,
+): Promise<string> {
+    if (!slug.startsWith("changelog/") || slug.split("/").length === 2) {
+        return "Cognis Core";
+    }
+    for (const manifestName of ["package.json", "manifest.json"]) {
+        try {
+            const manifest = JSON.parse(
+                await readFile(join(componentRoot, manifestName), "utf8"),
+            );
+            const name = String(
+                manifest.displayName ?? manifest.name ?? "",
+            ).trim();
+            if (name) return name;
+        } catch {
+            // Try the next manifest in the loop above.
+        }
+    }
+    return slug.split("/")[1];
+}
+
 async function componentVersion(
     componentRoot: string,
     repositoryRoot: string,
@@ -152,6 +203,7 @@ async function sourceDocs(sourceRoot: string): Promise<SourceDoc[]> {
                 files: localizedFiles,
                 componentRoot: dirname(docsDirectory),
                 title: await titleFor(fileStem),
+                sourceName: await sourceNameFor(slug, dirname(docsDirectory)),
                 group: groupFor(
                     slug,
                     docsDirectory === join(sourceRoot, "docs"),
@@ -225,6 +277,10 @@ async function archivedDocs(
                 group: groupFor(slug, false),
                 version,
                 versions,
+                sourceName:
+                    slug.startsWith("changelog/") && slug.split("/").length > 2
+                        ? slug.split("/")[1]
+                        : "Cognis Core",
             },
         ];
     }
@@ -263,14 +319,10 @@ export async function initializeDocsStore(
                     versionDirectory,
                     `${languageFromPath(sourceFile)}.md`,
                 );
-                try {
-                    await writeFile(destination, await readFile(sourceFile), {
-                        flag: "wx",
-                    });
-                } catch (error) {
-                    if ((error as NodeJS.ErrnoException).code !== "EEXIST")
-                        throw error;
-                }
+                await writeFileWhenChanged(
+                    destination,
+                    await readFile(sourceFile),
+                );
             }
             storedDocs.set(doc.slug, {
                 fileStem: doc.fileStem,
@@ -279,6 +331,7 @@ export async function initializeDocsStore(
                 group: doc.group,
                 version,
                 versions: await availableVersions(archiveRoot, doc.slug),
+                sourceName: doc.sourceName,
             });
         }
     }

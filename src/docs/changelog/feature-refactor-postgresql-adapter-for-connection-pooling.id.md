@@ -1,5 +1,7 @@
 # Pool Koneksi PostgreSQL
 
+**Cabang Fitur:** feature-refactor-postgresql-adapter-for-connection-pooling
+
 ## PostgreSQL kini memakai pool koneksi terbatas
 
 Operasi database biasa dapat berjalan bersamaan melalui `pg.Pool`, sedangkan setiap transaksi tetap menggunakan satu klien hingga commit atau rollback. Pengaturan lingkungan membatasi ukuran pool serta batas waktu koneksi, menganggur, dan pernyataan opsional.
@@ -63,3 +65,7 @@ Entrypoint kontainer melakukan pengodean persen pada kredensial PostgreSQL dan M
 ## Jaga isolasi dan versi komponen basis data
 
 Validasi pengaturan pool kini dimiliki masing-masing adapter basis data, sedangkan versi workspace adapter dan gateway serta batas atas dependensinya telah diselaraskan.
+
+## Komit
+
+- [6c88739](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c887390888a10a8acbf3535860f4d85d9908cef)

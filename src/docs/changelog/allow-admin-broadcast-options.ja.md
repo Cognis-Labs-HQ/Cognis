@@ -1,5 +1,7 @@
 # 管理者向け一斉通知の配信モードと対象制御
 
+**機能ブランチ:** copilot/allow-admin-broadcast-options
+
 ## 概要
 
 通知セクションに、管理者が設定できる新しい一斉通知機能を追加しました。配信モードは「ページ上部バー」と「ポップアップ」の2種類です。管理者は対象ロール、開始日時・終了日時、確認必須設定、閉じる際のリダイレクト動作、有効/無効状態を設定できます。
@@ -20,4 +22,4 @@
 
 ## コミット
 
-- https://github.com/le-firehawk/Cognis/commit/e14cbfc
+- [e14cbfc](https://github.com/Cognis-Labs-HQ/Cognis/commit/e14cbfc)

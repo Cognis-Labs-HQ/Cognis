@@ -1,5 +1,7 @@
 # Produktionsleistung und Beobachtbarkeit
 
+**Feature-Zweig:** feature-configure-production-reverse-proxy-and-observability
+
 ## Sichere, cachebewusste Produktionskante
 
 Eine HTTP/2-TLS-Kante bietet Verbindungswiederverwendung, Brotli/gzip-Komprimierung, unveränderliche gehashte Assets, HTML-Revalidierung, vertrauenswürdige Weiterleitungsheader und private API-Antworten. `cognis-web` kann mit `COGNIS_WEB_TLS_MODE=deferred` nur über HTTP laufen, wenn TLS vorgelagert terminiert. Die Einrichtung schreibt Modus und konfigurierbare Zertifikatspfade in eine isolierte Web-Env-Datei; dadurch kann `cognis-web` weder Cognis-Verschlüsselungsschlüssel noch Datenbankzugangsdaten lesen. Compose wartet auf die Healthchecks der Datenbank und von Cognis. Aktualisierungen der Modulrouten initialisieren Nextcloud-Whiteboard-Runtime-Ressourcen nur einmal, Observability deklariert ausdrücklich, dass es keine Adapter besitzt, und gespeicherte Sicherheitseinstellungen bleiben während der Aktualisierung der Komponentenmetadaten sichtbar, statt kurz leere Standardwerte zu zeigen.
@@ -15,3 +17,7 @@ Browser-Leistungsdaten erfordern eine authentifizierte Sitzung, werden pro Konto
 ## Messbare Leistungsbudgets
 
 Gehostete Basiswerte für kalte, warme und SPA-Aufrufe sowie vor Redis zu prüfende Budgets sind dokumentiert.
+
+## Änderungen
+
+- [226e1ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/226e1ff10bbf99756a045f037c636181e130d318)

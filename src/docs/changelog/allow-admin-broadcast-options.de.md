@@ -1,5 +1,7 @@
 # Modi und Zielgruppensteuerung
 
+**Feature-Zweig:** copilot/allow-admin-broadcast-options
+
 ## Zusammenfassung
 
 Fügt im Benachrichtigungsbereich ein neues, durch Admins konfigurierbares Rundsendungssystem hinzu, das zwei Ausspielungsmodi unterstützt: eine Leiste am Seitenanfang und ein Popup. Admins können Zielrollen, Start- und Enddatum, Bestätigungspflicht, Weiterleitungsverhalten beim Schließen sowie den Aktivierungsstatus festlegen.
@@ -18,6 +20,6 @@ Das Dashboard lädt nun ein Notify-Broadcast-Navbar-Plugin, das aktive Rundsendu
 - `src/gateways/notify/manifest.json` und `src/docs/versions.en.md` — Version des Notification-Gateways auf `1.4.0` erhöht.
 - `src/gateways/notify/routes/tests/notification-routes.test.ts` — Routentests für die neuen Broadcast-Endpunkte hinzugefügt.
 
-## Commits
+## Änderungen
 
-- https://github.com/le-firehawk/Cognis/commit/e14cbfc
+- [e14cbfc](https://github.com/Cognis-Labs-HQ/Cognis/commit/e14cbfc)

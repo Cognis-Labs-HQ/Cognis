@@ -1,5 +1,7 @@
 # Trusted Domains List
 
+**Feature Branch:** copilot/implement-trusted-domains-list
+
 ## Summary
 
 Added shared trusted-domain validation so the Administration security list now drives both email-domain checks and trusted external HTTP(S) broadcast redirects/links.
@@ -17,4 +19,4 @@ Broadcast redirect validation now accepts same-origin URLs and trusted domains, 
 
 ## Commits
 
-- https://github.com/le-firehawk/Cognis/commit/85294ff
+- [85294ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/85294ff)

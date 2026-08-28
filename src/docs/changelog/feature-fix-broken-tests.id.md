@@ -1,5 +1,7 @@
 # Kalender Bersama Andal
 
+**Cabang Fitur:** feature-fix-broken-tests
+
 ## Undangan dan tanggapan berfungsi konsisten
 
 Acara yang dibuat melalui kalender bersama yang dapat ditulis kini menyertakan seluruh penerima, mengarahkan notifikasi ke kalender tiap penerima, dan memungkinkan penerima baca-saja menanggapi dari tampilan bersama.
@@ -39,3 +41,7 @@ Spasi sumber yang sudah ada pada komponen gantungan kunci, kalender, dan papan t
 ## Kunci ruang dan kata sandi rapat tetap dapat dipulihkan hingga tersimpan dengan aman
 
 Kunci ruang yang hilang dibuat untuk percakapan hasil migrasi, sedangkan kunci ruang dan kata sandi rapat yang dikirim tetap tersedia untuk dicoba kembali hingga klien mengonfirmasi penyimpanan yang berhasil di gantungan kunci.
+
+## Komit
+
+- [7a40010](https://github.com/Cognis-Labs-HQ/Cognis/commit/7a40010632a1bebcfe94544772ac2698c14cf2a1)

@@ -1,5 +1,7 @@
 # 本番パフォーマンスと可観測性
 
+**機能ブランチ:** feature-configure-production-reverse-proxy-and-observability
+
 ## 安全でキャッシュを考慮した本番エッジ
 
 HTTP/2 TLSエッジに接続再利用、Brotli/gzip圧縮、ハッシュ付きアセットのimmutableキャッシュ、HTML再検証、信頼済み転送ヘッダー、非公開API応答を追加しました。TLSを上流で終端する場合、`cognis-web` は `COGNIS_WEB_TLS_MODE=deferred` でHTTPのみとして実行できます。セットアップはモードと設定可能な証明書パスを隔離されたWeb Envファイルへ書き込むため、`cognis-web` はCognisの暗号化キーやデータベース認証情報を読み取れません。ComposeはデータベースとCognisのhealthcheckを待機します。 モジュールルートの更新時にNextcloud Whiteboardのランタイム資源を一度だけ初期化し、Observabilityがアダプターを持たないことを明示しました。保存済みのセキュリティ設定は、コンポーネントメタデータの更新中にも空の既定値へ戻らず表示を維持します。
@@ -15,3 +17,7 @@ ctx ベースでサーバー、データベース、キャッシュ、イベン�
 ## 測定可能なパフォーマンス予算
 
 コールド、ウォーム、SPA ナビゲーションのホスト環境ベースラインと、Redis 導入前に評価する予算を文書化しました。
+
+## コミット
+
+- [226e1ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/226e1ff10bbf99756a045f037c636181e130d318)

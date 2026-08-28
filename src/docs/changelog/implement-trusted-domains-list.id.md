@@ -1,5 +1,7 @@
 # Domain Tepercaya Broadcast
 
+**Cabang Fitur:** copilot/implement-trusted-domains-list
+
 ## Ringkasan
 
 Validasi domain tepercaya bersama ditambahkan sehingga daftar keamanan di Administration sekarang mengendalikan pemeriksaan domain email sekaligus pengalihan dan tautan broadcast HTTP(S) eksternal tepercaya.
@@ -17,4 +19,4 @@ Validasi pengalihan broadcast sekarang menerima URL dengan origin yang sama dan 
 
 ## Commit
 
-- https://github.com/le-firehawk/Cognis/commit/85294ff
+- [85294ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/85294ff)

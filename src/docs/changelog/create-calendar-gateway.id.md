@@ -1,5 +1,7 @@
 # Peningkatan Kalender
 
+**Cabang Fitur:** copilot/create-calendar-gateway
+
 ## Acara multi-kalender tetap terlihat
 
 Muat ulang halaman kalender kini tidak lagi menyembunyikan acara yang berada
@@ -116,3 +118,7 @@ tampilan bulan.
 Popup detail acara kini dengan benar mengikuti preferensi jam 12/24 jam dari
 Pengaturan. Sebelumnya waktu mulai dan akhir di popup selalu ditampilkan dalam
 format 12 jam, terlepas dari format waktu yang dipilih pengguna.
+
+## Komit
+
+- [b32a4af](https://github.com/Cognis-Labs-HQ/Cognis/commit/b32a4af54b95de949389be701a92fc829ad45325)

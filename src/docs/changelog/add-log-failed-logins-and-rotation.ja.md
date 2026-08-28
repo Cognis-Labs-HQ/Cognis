@@ -1,5 +1,7 @@
 # ログストリームフィルター、警告デフォルト、ローテーション
 
+**機能ブランチ:** copilot/add-log-failed-logins-and-rotation
+
 ## 概要
 
 - ログイン失敗と重要なユーザーアカウント変更を警告レベルで記録するように変更しました。
@@ -23,4 +25,4 @@
 
 ## コミットリンク
 
-- https://github.com/le-firehawk/Cognis/commit/749469a351ca8fad839ef6cf3f3d4eed81717b3a
+- [749469a](https://github.com/Cognis-Labs-HQ/Cognis/commit/749469a351ca8fad839ef6cf3f3d4eed81717b3a)
