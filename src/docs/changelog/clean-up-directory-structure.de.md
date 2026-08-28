@@ -65,8 +65,8 @@ und Studienpräferenzen.
 
 ## Commits
 
-- [e349311](https://github.com/le-firehawk/Cognis/commit/e349311)
-- [e81c254](https://github.com/le-firehawk/Cognis/commit/e81c254)
+- [e349311](https://github.com/Cognis-Labs-HQ/Cognis/commit/e349311)
+- [e81c254](https://github.com/Cognis-Labs-HQ/Cognis/commit/e81c254)
 
 ---
 
@@ -78,9 +78,9 @@ Weitere fehlerplatzierte Core-Dateien wurden an ihren kanonischen Eigentümerort
 
 ### Pass 2 Commits
 
-- [34fc21c](https://github.com/le-firehawk/Cognis/commit/34fc21c)
-- [47a2c1a](https://github.com/le-firehawk/Cognis/commit/47a2c1a)
-- [7916873](https://github.com/le-firehawk/Cognis/commit/7916873)
+- [34fc21c](https://github.com/Cognis-Labs-HQ/Cognis/commit/34fc21c)
+- [47a2c1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/47a2c1a)
+- [7916873](https://github.com/Cognis-Labs-HQ/Cognis/commit/7916873)
 
 ---
 
@@ -105,4 +105,4 @@ Die KI-Beitragsinstruktionen wurden gestärkt: Ein neuer Abschnitt „Sauberkeit
 
 ### Pass-3-Commits
 
-- [f4aa63b](https://github.com/le-firehawk/Cognis/commit/f4aa63b)
+- [f4aa63b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4aa63b)

@@ -17,4 +17,4 @@ Halaman Administration sekarang memakai kontrol adapter yang diumumkan tersebut 
 
 ## Commit
 
-- https://github.com/le-firehawk/Cognis/commit/6b706ae
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/6b706ae

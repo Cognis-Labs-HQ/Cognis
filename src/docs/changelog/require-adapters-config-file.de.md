@@ -17,4 +17,4 @@ Die Administrationsseite nutzt diese angekündigten Steuerungen jetzt direkt und
 
 ## Commits
 
-- https://github.com/le-firehawk/Cognis/commit/6b706ae
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/6b706ae

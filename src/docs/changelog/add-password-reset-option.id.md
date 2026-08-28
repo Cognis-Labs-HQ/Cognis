@@ -25,6 +25,6 @@ Pesan “Penyedia Autentikasi” di panel Keamanan dihapus, dan route kemampuan 
 
 ## Commit Links
 
-- https://github.com/le-firehawk/Cognis/commit/a33f0faa
-- https://github.com/le-firehawk/Cognis/commit/9490a011
-- https://github.com/le-firehawk/Cognis/commit/8ba1d8b2
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/a33f0faa
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/9490a011
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/8ba1d8b2

@@ -18,5 +18,5 @@ Page composer sekarang mengatur prompt penyegaran bersama yang sudah diterjemahk
 
 ## Commit
 
-- https://github.com/le-firehawk/Cognis/commit/bbee24a
-- https://github.com/le-firehawk/Cognis/commit/3b7bded
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/bbee24a
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/3b7bded

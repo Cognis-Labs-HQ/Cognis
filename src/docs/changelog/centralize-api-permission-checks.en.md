@@ -46,5 +46,5 @@ and moderator is treated as a first-class role in role-selection outputs.
 
 ## Commits
 
-- [93e5f7f](https://github.com/le-firehawk/Cognis/commit/93e5f7f)
-- [411e267](https://github.com/le-firehawk/Cognis/commit/411e267)
+- [93e5f7f](https://github.com/Cognis-Labs-HQ/Cognis/commit/93e5f7f)
+- [411e267](https://github.com/Cognis-Labs-HQ/Cognis/commit/411e267)

@@ -17,4 +17,4 @@
 
 ## Commits
 
-- https://github.com/le-firehawk/Cognis/commit/85294ff
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/85294ff

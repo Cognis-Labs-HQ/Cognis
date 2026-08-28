@@ -34,4 +34,4 @@ zuverlässig widerrufen werden.
 
 ## Commit-Links
 
-- https://github.com/le-firehawk/Cognis/commit/79bc1e7242a82f3f6a3b15c0210cdf32ef752893
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/79bc1e7242a82f3f6a3b15c0210cdf32ef752893

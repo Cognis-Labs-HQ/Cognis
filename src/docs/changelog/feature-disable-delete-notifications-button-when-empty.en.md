@@ -13,4 +13,4 @@ The internal notification inbox now disables the destructive clear-all button wh
 
 ## Commits
 
-- https://github.com/le-firehawk/Cognis/commit/96d6616
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/96d6616

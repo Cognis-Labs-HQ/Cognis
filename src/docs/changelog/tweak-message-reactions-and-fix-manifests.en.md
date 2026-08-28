@@ -25,7 +25,7 @@ All emoji names in the catalog are now localization keys resolved through the So
 
 ## Commit Links
 
-- https://github.com/le-firehawk/Cognis/commit/2a9c702
-- https://github.com/le-firehawk/Cognis/commit/295496e
-- https://github.com/le-firehawk/Cognis/commit/1e40511
-- https://github.com/le-firehawk/Cognis/commit/e19669d
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/2a9c702
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/295496e
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/1e40511
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e19669d

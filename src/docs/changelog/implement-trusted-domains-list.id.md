@@ -17,4 +17,4 @@ Validasi pengalihan broadcast sekarang menerima URL dengan origin yang sama dan 
 
 ## Commit
 
-- https://github.com/le-firehawk/Cognis/commit/85294ff
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/85294ff

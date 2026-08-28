@@ -15,4 +15,4 @@
 
 ## Tautan Commit
 
-- https://github.com/le-firehawk/Cognis/commit/e8f614f1abf5a1453253da61913b2c38c07a897a
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e8f614f1abf5a1453253da61913b2c38c07a897a

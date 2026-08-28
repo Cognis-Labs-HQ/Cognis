@@ -64,8 +64,8 @@ sections, removing hardcoded imports for notifications and study preferences.
 
 ## Commits
 
-- [e349311](https://github.com/le-firehawk/Cognis/commit/e349311)
-- [e81c254](https://github.com/le-firehawk/Cognis/commit/e81c254)
+- [e349311](https://github.com/Cognis-Labs-HQ/Cognis/commit/e349311)
+- [e81c254](https://github.com/Cognis-Labs-HQ/Cognis/commit/e81c254)
 
 ---
 
@@ -92,9 +92,9 @@ Continued co-location of misplaced core files. Auth token utilities (`access-tok
 
 ### Pass 2 Commits
 
-- [34fc21c](https://github.com/le-firehawk/Cognis/commit/34fc21c)
-- [47a2c1a](https://github.com/le-firehawk/Cognis/commit/47a2c1a)
-- [7916873](https://github.com/le-firehawk/Cognis/commit/7916873)
+- [34fc21c](https://github.com/Cognis-Labs-HQ/Cognis/commit/34fc21c)
+- [47a2c1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/47a2c1a)
+- [7916873](https://github.com/Cognis-Labs-HQ/Cognis/commit/7916873)
 
 ---
 
@@ -119,4 +119,4 @@ Strengthened the AI contributor instructions: a new "Codebase cleanliness is par
 
 ### Pass 3 Commits
 
-- [f4aa63b](https://github.com/le-firehawk/Cognis/commit/f4aa63b)
+- [f4aa63b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4aa63b)

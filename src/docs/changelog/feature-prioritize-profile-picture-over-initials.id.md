@@ -26,5 +26,5 @@ kembali di seluruh antarmuka UI adaptor sosial.
 
 ## Tautan Commit
 
-- https://github.com/le-firehawk/Cognis/commit/9f78b06
-- https://github.com/le-firehawk/Cognis/commit/5399b86
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/9f78b06
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/5399b86

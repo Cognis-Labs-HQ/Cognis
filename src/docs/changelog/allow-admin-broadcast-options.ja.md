@@ -20,4 +20,4 @@
 
 ## コミット
 
-- https://github.com/le-firehawk/Cognis/commit/e14cbfc
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e14cbfc

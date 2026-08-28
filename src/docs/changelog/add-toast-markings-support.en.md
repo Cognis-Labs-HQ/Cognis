@@ -11,4 +11,4 @@ Fixed toast notification icons (error ✕, success ✓, warning ⚠, info ℹ) b
 
 ## Commit Links
 
-- https://github.com/le-firehawk/Cognis/commit/1305bfc163422709964268baafe8b0036c7b5c10
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/1305bfc163422709964268baafe8b0036c7b5c10

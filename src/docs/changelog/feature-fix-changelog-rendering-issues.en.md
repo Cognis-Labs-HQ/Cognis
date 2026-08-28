@@ -11,3 +11,7 @@ The release feed now discovers localized changelog files supplied by installed e
 ## Linked and grouped changelogs
 
 Release popup headings now link directly to their complete Cognis Core changelog. External-module changelogs display their module separately and are included in the complete Changelogs index.
+
+## Updated repository references
+
+Historical commit links now point to the current Cognis-Labs-HQ/Cognis repository.

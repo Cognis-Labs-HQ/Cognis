@@ -17,4 +17,4 @@ Broadcast redirect validation now accepts same-origin URLs and trusted domains, 
 
 ## Commits
 
-- https://github.com/le-firehawk/Cognis/commit/85294ff
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/85294ff

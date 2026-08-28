@@ -11,3 +11,7 @@ Der Versionsfeed findet nun lokalisierte Changelog-Dateien installierter externe
 ## Verlinkte und gruppierte Changelogs
 
 Überschriften im Versionshinweis verlinken nun direkt auf den vollständigen Cognis-Core-Changelog. Changelogs externer Module zeigen ihr Modul separat an und werden in den vollständigen Changelog-Index aufgenommen.
+
+## Repository-Verweise aktualisiert
+
+Historische Commit-Links verweisen nun auf das aktuelle Cognis-Labs-HQ/Cognis-Repository.

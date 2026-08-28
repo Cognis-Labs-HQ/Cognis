@@ -53,9 +53,9 @@ Emoji reaction tooltips now show a single descriptive word ("Like", "Heart",
 
 ## Commits
 
-- [d4f7f6d](https://github.com/le-firehawk/Cognis/commit/d4f7f6d)
-- [fc3febe](https://github.com/le-firehawk/Cognis/commit/fc3febe)
-- [11eebfa](https://github.com/le-firehawk/Cognis/commit/11eebfa)
-- [2db27c2](https://github.com/le-firehawk/Cognis/commit/2db27c2)
-- [f08f248](https://github.com/le-firehawk/Cognis/commit/f08f248ea1b20fef4b7e5452e19a2857ed4b785e)
-- [5d28d03](https://github.com/le-firehawk/Cognis/commit/5d28d03)
+- [d4f7f6d](https://github.com/Cognis-Labs-HQ/Cognis/commit/d4f7f6d)
+- [fc3febe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc3febe)
+- [11eebfa](https://github.com/Cognis-Labs-HQ/Cognis/commit/11eebfa)
+- [2db27c2](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db27c2)
+- [f08f248](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08f248ea1b20fef4b7e5452e19a2857ed4b785e)
+- [5d28d03](https://github.com/Cognis-Labs-HQ/Cognis/commit/5d28d03)

@@ -13,4 +13,4 @@ Der interne Benachrichtigungs-Posteingang deaktiviert jetzt die destruktive „A
 
 ## Commits
 
-- https://github.com/le-firehawk/Cognis/commit/96d6616
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/96d6616

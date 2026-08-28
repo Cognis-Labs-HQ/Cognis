@@ -17,4 +17,4 @@ Administration ページは公開されたアダプター制御情報を使う�
 
 ## Commits
 
-- https://github.com/le-firehawk/Cognis/commit/6b706ae
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/6b706ae

@@ -31,7 +31,7 @@ Moved component-specific i18n keys out of the core language files and into per-c
 
 ## Commits
 
-- https://github.com/le-firehawk/Cognis/commit/8e82369
-- https://github.com/le-firehawk/Cognis/commit/867e397
-- https://github.com/le-firehawk/Cognis/commit/8ef54f9
-- https://github.com/le-firehawk/Cognis/commit/f624f07
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/8e82369
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/867e397
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/8ef54f9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f624f07
