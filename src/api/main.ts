@@ -35,6 +35,10 @@ import {
     resolveModuleIntegrityFile,
 } from "./reuse/module-integrity.js";
 import { requirePublicEnvironment } from "./reuse/environment.js";
+import {
+    generatePassphrase,
+    PASSPHRASE_CAPABILITY,
+} from "./reuse/passphrase.js";
 
 requirePublicEnvironment();
 
@@ -241,6 +245,8 @@ const gatewayService = new GatewayService(gatewayRegistry);
 // as ctx.flow — no capability unwrapping required.
 const systemCtx = createCtx();
 capabilities.contribute("system:ctx", systemCtx);
+capabilities.contribute(PASSPHRASE_CAPABILITY, generatePassphrase);
+systemCtx.contributeCapability(PASSPHRASE_CAPABILITY, generatePassphrase);
 const shutdownHandlers = new Set<() => Promise<void>>();
 let shutdownPromise: Promise<void> | undefined;
 const lifecycle = {

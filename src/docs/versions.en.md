@@ -84,9 +84,9 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 ## API
 
-| Component  | Path       | Version   |
-| ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.3.122` |
+| Component  | Path       | Version |
+| ---------- | ---------- | ------- |
+| API Server | `src/api/` | `0.4.0` |
 
 ## Tooling
 
