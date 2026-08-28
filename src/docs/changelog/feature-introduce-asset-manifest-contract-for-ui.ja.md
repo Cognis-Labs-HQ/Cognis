@@ -20,4 +20,4 @@ UI アセットにデプロイ改訂を付与し、変更可能な文書は再�
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/9545de212904420948eebc1b442bc6dd85bb5f79
+- [9545de2](https://github.com/Cognis-Labs-HQ/Cognis/commit/9545de212904420948eebc1b442bc6dd85bb5f79)

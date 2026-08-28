@@ -32,5 +32,5 @@ wiederverwendet werden kann.
 
 ## Commit-Links
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/9f78b06
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/5399b86
+- [9f78b06](https://github.com/Cognis-Labs-HQ/Cognis/commit/9f78b06)
+- [5399b86](https://github.com/Cognis-Labs-HQ/Cognis/commit/5399b86)

@@ -8,4 +8,4 @@ When an administrator disables a TFA adapter that users previously configured, l
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/5b67ac95fe2b594f8b76c38d73dfdf5adf945dbf
+- [5b67ac9](https://github.com/Cognis-Labs-HQ/Cognis/commit/5b67ac95fe2b594f8b76c38d73dfdf5adf945dbf)

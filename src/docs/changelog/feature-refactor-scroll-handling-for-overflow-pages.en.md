@@ -12,4 +12,4 @@ The License page now delegates the license text to the main page scroll instead 
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f3b64ca116345d58e4240401d000eb9d83fadcb8
+- [f3b64ca](https://github.com/Cognis-Labs-HQ/Cognis/commit/f3b64ca116345d58e4240401d000eb9d83fadcb8)

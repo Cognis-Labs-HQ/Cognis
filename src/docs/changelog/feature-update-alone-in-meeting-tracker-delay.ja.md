@@ -8,4 +8,4 @@ Jitsi Meet の会議内単独トラッカーは、通知を表示するまで 3 
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/23c908cbf419080a9cc4a39faeb8f3d6d0c55b51
+- [23c908c](https://github.com/Cognis-Labs-HQ/Cognis/commit/23c908cbf419080a9cc4a39faeb8f3d6d0c55b51)

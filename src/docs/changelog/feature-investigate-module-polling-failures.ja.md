@@ -38,4 +38,4 @@ Cognis は API の起動時に、モジュールソースを一度だけ強制�
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/54375e318faa1ddbb6fe950f2402957742102af9
+- [54375e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/54375e318faa1ddbb6fe950f2402957742102af9)

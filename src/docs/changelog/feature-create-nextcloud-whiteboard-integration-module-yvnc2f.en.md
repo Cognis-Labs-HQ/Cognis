@@ -32,4 +32,4 @@ Other modules and adapters can obtain a whiteboard's embed URL or metadata throu
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/3fba3a4ae030e1c17efc8f85e1245ceb69bc135d
+- [3fba3a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/3fba3a4ae030e1c17efc8f85e1245ceb69bc135d)

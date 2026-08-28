@@ -35,4 +35,4 @@ Tiga rute API yang diautentikasi admin menggantikan endpoint metrik stub sebelum
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/56958a72892cc2d963b827c84d50783e099d185e
+- [56958a7](https://github.com/Cognis-Labs-HQ/Cognis/commit/56958a72892cc2d963b827c84d50783e099d185e)

@@ -12,4 +12,4 @@ Der Bestätigungsverlauf der Versionshinweise wird nun getrennt von den relevant
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/0aa824eb9eac2155981034325d48e033282a8c43
+- [0aa824e](https://github.com/Cognis-Labs-HQ/Cognis/commit/0aa824eb9eac2155981034325d48e033282a8c43)

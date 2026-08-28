@@ -20,9 +20,9 @@ Historical commit links now point to the current Cognis-Labs-HQ/Cognis repositor
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/968c109885b2db1e168a7c62cc29b3c6be3d7b27
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/0a224676b04a06123eb6f4dd256051d6a2fc5933
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/4c60e8410ee4b50e01fea0248b521199757f48fc
+- [968c109](https://github.com/Cognis-Labs-HQ/Cognis/commit/968c109885b2db1e168a7c62cc29b3c6be3d7b27)
+- [0a22467](https://github.com/Cognis-Labs-HQ/Cognis/commit/0a224676b04a06123eb6f4dd256051d6a2fc5933)
+- [4c60e84](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c60e8410ee4b50e01fea0248b521199757f48fc)
 
 ## Complete changelog provenance
 
@@ -43,3 +43,15 @@ AI contribution instructions now require a final changelog-only bookkeeping comm
 ## Refresh generated documentation
 
 Documentation ingestion now refreshes the archive for the currently installed component version, so factual source corrections such as repository URL updates replace stale generated copies while older version snapshots remain available.
+
+## Safely refresh documentation archives
+
+Documentation ingestion now leaves unchanged archive files untouched and atomically replaces only content that changed, preventing repeated writes and partially read files during concurrent requests.
+
+## Escape external module names
+
+Changelog navigation now escapes module-provided names before inserting them into labels and attributes, preventing module metadata from creating active markup.
+
+## Consistent commit links
+
+Historical changelog commit lists now consistently use linked seven-character references while retaining complete canonical commit URLs.

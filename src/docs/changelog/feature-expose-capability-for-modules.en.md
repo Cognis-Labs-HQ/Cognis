@@ -8,4 +8,4 @@ The Authentication gateway now exposes `auth:registerProvider`, allowing lifecyc
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/2755fc99e248cf6a30c63bc692a9ec71251f8a25
+- [2755fc9](https://github.com/Cognis-Labs-HQ/Cognis/commit/2755fc99e248cf6a30c63bc692a9ec71251f8a25)

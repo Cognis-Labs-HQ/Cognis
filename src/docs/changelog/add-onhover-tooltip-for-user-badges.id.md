@@ -12,4 +12,4 @@ Lencana peran avatar kini kembali menerima hover pointer agar tooltip bawaan dap
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e045bfbbd26aa2fdc2565ea74cf2ad9ae1092bcd
+- [e045bfb](https://github.com/Cognis-Labs-HQ/Cognis/commit/e045bfbbd26aa2fdc2565ea74cf2ad9ae1092bcd)

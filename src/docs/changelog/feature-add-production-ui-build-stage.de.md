@@ -36,4 +36,4 @@ Produktions-Builds prüfen nun jeden kompilierten Adapter-Einstiegspunkt. Datenb
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/d9af537d6fa92347026e779da4387d886f0e8238
+- [d9af537](https://github.com/Cognis-Labs-HQ/Cognis/commit/d9af537d6fa92347026e779da4387d886f0e8238)

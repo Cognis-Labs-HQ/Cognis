@@ -12,4 +12,4 @@ page composer の編集オーバーレイは、通常モードと同じコンテ
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/fa6742a49a2e6f0284b44c84dec7ca4d7b503ac0
+- [fa6742a](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa6742a49a2e6f0284b44c84dec7ca4d7b503ac0)

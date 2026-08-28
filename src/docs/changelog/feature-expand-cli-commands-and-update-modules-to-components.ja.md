@@ -60,4 +60,4 @@ Jitsi Meet のミーティング確認は `jitsi-meet:meetings` を使用する�
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/555964b626fd72acf48154ab588e2b016f8affdd
+- [555964b](https://github.com/Cognis-Labs-HQ/Cognis/commit/555964b626fd72acf48154ab588e2b016f8affdd)

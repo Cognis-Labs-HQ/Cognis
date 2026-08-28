@@ -16,5 +16,5 @@ Admins und Owner verwalten Einladungen bereits über die Users-Seite, daher blei
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/041fdb8
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/d47ee73
+- [041fdb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/041fdb8)
+- [d47ee73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d47ee73)

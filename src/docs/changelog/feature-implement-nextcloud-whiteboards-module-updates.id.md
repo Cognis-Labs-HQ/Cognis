@@ -12,4 +12,4 @@ Bilah alat kini memiliki kunci alat, perilaku kursor pilih lebih jelas, avatar k
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/77888f1c590d852d356fac8a601cd11f6a203ee7
+- [77888f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/77888f1c590d852d356fac8a601cd11f6a203ee7)

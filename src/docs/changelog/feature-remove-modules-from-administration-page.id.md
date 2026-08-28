@@ -542,4 +542,4 @@ Setiap entri navigasi utama kini memiliki pegangan enam titik. Tautan mempertaha
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/c685eda06183d56a3a250df8b66178db1e8553d6
+- [c685eda](https://github.com/Cognis-Labs-HQ/Cognis/commit/c685eda06183d56a3a250df8b66178db1e8553d6)

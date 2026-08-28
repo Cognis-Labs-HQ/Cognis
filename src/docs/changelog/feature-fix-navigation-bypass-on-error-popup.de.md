@@ -8,4 +8,4 @@ Das Schließen des Laufzeitfehler-Popups führt nicht mehr von einer Seite weg, 
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/dfb83b1d6e8faa104500cf75a9856c8c7a210511
+- [dfb83b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfb83b1d6e8faa104500cf75a9856c8c7a210511)

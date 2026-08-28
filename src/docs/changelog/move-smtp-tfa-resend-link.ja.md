@@ -53,4 +53,4 @@ SMTP タブに再び切り替えてもコードは再送信されません。
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/460f399ae3701867d002e0006d3a71a7dbf9e3c8
+- [460f399](https://github.com/Cognis-Labs-HQ/Cognis/commit/460f399ae3701867d002e0006d3a71a7dbf9e3c8)

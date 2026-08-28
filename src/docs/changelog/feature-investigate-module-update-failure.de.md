@@ -12,4 +12,4 @@ Fehler bei der Modulvalidierung während der Aktivierung liefern nun einen siche
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/dd9dbd55d239ace38a65225c05d67b40c4c2f2fd
+- [dd9dbd5](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd9dbd55d239ace38a65225c05d67b40c4c2f2fd)

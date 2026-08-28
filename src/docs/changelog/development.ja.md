@@ -26,4 +26,4 @@ Module が無効な場合、その Module が登録したルートへのリク�
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/c2dd07a630b453a51f9793ab2855ab96150b058c
+- [c2dd07a](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2dd07a630b453a51f9793ab2855ab96150b058c)

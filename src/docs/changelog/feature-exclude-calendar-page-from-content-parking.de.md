@@ -8,4 +8,4 @@ Die Kalenderseite deaktiviert jetzt das Content-Parking des Page-Composers, soda
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/7fb2febaef7ef70015718991ca75414b5d0cf2df
+- [7fb2feb](https://github.com/Cognis-Labs-HQ/Cognis/commit/7fb2febaef7ef70015718991ca75414b5d0cf2df)

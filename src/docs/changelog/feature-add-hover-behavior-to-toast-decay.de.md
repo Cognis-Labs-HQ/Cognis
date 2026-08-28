@@ -10,4 +10,4 @@ Temporäre Toasts können außerdem ausgeblendet werden, indem sie mit der Maus 
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/9f860c0f2d5ebf90f5af70bc0a44daa414958713
+- [9f860c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/9f860c0f2d5ebf90f5af70bc0a44daa414958713)

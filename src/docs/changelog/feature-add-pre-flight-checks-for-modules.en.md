@@ -8,4 +8,4 @@ Jitsi Meet and Nextcloud Whiteboard now run their configured server liveness che
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/ca1df10a9747bc3a23ffe6096ea85fc75a779382
+- [ca1df10](https://github.com/Cognis-Labs-HQ/Cognis/commit/ca1df10a9747bc3a23ffe6096ea85fc75a779382)

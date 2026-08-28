@@ -20,4 +20,4 @@ Static directories are rejected before response headers are sent, and unversione
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/9545de212904420948eebc1b442bc6dd85bb5f79
+- [9545de2](https://github.com/Cognis-Labs-HQ/Cognis/commit/9545de212904420948eebc1b442bc6dd85bb5f79)

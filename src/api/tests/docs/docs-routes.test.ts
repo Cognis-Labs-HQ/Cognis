@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -118,10 +118,18 @@ test("docs refresh archived content for the installed version", async () => {
         JSON.stringify({ version: "1.0.0" }),
     );
     await writeFile(join(docsRoot, "index.en.md"), "# Example\n\nOld link");
-    await request(
-        createDocsRoutes({ sourceRoot, archiveRoot }),
-        "/api/v1/docs/latest/gateways/example",
+    const route = createDocsRoutes({ sourceRoot, archiveRoot });
+    await request(route, "/api/v1/docs/latest/gateways/example");
+    const archivedPath = join(
+        archiveRoot,
+        "gateways",
+        "example",
+        "1.0.0",
+        "en.md",
     );
+    const initialArchive = await stat(archivedPath);
+    await request(route, "/api/v1/docs/latest/gateways/example");
+    assert.equal((await stat(archivedPath)).ino, initialArchive.ino);
 
     await writeFile(
         join(docsRoot, "index.en.md"),

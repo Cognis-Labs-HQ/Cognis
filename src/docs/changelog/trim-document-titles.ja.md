@@ -17,4 +17,4 @@
 
 ## コミットリンク
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e8f614f1abf5a1453253da61913b2c38c07a897a
+- [e8f614f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8f614f1abf5a1453253da61913b2c38c07a897a)

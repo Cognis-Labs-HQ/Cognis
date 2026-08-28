@@ -24,4 +24,4 @@ Die AI-Instruktionen wurden explizit erweitert: LOC-Disziplin, keine Bewertung g
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a267b4cce59173b5060e5035a628583868afa39e
+- [a267b4c](https://github.com/Cognis-Labs-HQ/Cognis/commit/a267b4cce59173b5060e5035a628583868afa39e)

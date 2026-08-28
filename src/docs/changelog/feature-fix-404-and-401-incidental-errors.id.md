@@ -20,4 +20,4 @@ Impor klien API terautentikasi yang digunakan penyedia pencarian pesan global di
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/763fb5075a083b6e2410711d5da84e81cdab46dc
+- [763fb50](https://github.com/Cognis-Labs-HQ/Cognis/commit/763fb5075a083b6e2410711d5da84e81cdab46dc)

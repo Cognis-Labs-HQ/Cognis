@@ -77,4 +77,4 @@ Lihat branch `copilot/create-student-page-view` untuk riwayat commit.
 
 - Pembaruan kepatuhan dan real-time: z-index menu pengguna (dropdown profil) diperbaiki agar muncul di atas bilah sub-navigasi halaman; pemeriksaan `hasLibraryModule` dikoreksi untuk mencocokkan berdasarkan `id` komponen bukan URL yang terkodekan keras agar Library Inggris muncul dengan benar; `clearStudySubNavCache()` dari `study-sub-navigation.js` dan `invalidateStudyChildComponentCache()` dari `app-router.js` dipanggil saat preferensi bahasa disimpan; `classroom-page.js` dan `library-page.js` kini memuat string i18n gateway Study dengan benar; semua halaman Study kini memiliki bidang `subtitle` di `pageContext`; JSDoc ditambahkan ke `classroom-page.js` dan `library-store.ts`; pengujian komprehensif ditambahkan untuk `LanguageLibraryStore` dan `study-sub-navigation.js`; instruksi AI diperbarui untuk mewajibkan `subtitle` di `pageContext` untuk semua halaman baru.
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/00faea1c4e08c65105ba917b42b5e6a069f2d9ef
+- [00faea1](https://github.com/Cognis-Labs-HQ/Cognis/commit/00faea1c4e08c65105ba917b42b5e6a069f2d9ef)

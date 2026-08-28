@@ -20,4 +20,4 @@ Documented hosted cold, warm, and SPA baselines plus budgets that must be evalua
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/226e1ff10bbf99756a045f037c636181e130d318
+- [226e1ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/226e1ff10bbf99756a045f037c636181e130d318)

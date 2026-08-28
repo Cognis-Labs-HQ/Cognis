@@ -8,4 +8,4 @@ Cognis kini menyimpan stylesheet popup lengkap di Cache Storage sementara milik 
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/dc87c30f1621b82081ff176cf15f2df337df3f14
+- [dc87c30](https://github.com/Cognis-Labs-HQ/Cognis/commit/dc87c30f1621b82081ff176cf15f2df337df3f14)

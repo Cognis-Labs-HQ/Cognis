@@ -16,4 +16,4 @@ details directly into bug reports.
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e4c47c446cf5d1b5d2eceba77a5e1d796735d84d
+- [e4c47c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4c47c446cf5d1b5d2eceba77a5e1d796735d84d)

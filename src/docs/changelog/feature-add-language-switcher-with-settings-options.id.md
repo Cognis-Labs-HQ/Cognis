@@ -20,4 +20,4 @@ Setiap halaman kini mempertahankan kendali edit Page Composer miliknya sendiri, 
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/741230d55d134bfb52a89d52831bedfdcc1c13f1
+- [741230d](https://github.com/Cognis-Labs-HQ/Cognis/commit/741230d55d134bfb52a89d52831bedfdcc1c13f1)

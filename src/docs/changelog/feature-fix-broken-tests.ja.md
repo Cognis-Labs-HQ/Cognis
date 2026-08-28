@@ -44,4 +44,4 @@
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/7a40010632a1bebcfe94544772ac2698c14cf2a1
+- [7a40010](https://github.com/Cognis-Labs-HQ/Cognis/commit/7a40010632a1bebcfe94544772ac2698c14cf2a1)

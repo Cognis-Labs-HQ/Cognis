@@ -12,4 +12,4 @@ SMTP通知アダプターの設定では、認証を無効化がオフの場合�
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/8983ae1fe74eac032b99e894abf857606af7260c
+- [8983ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/8983ae1fe74eac032b99e894abf857606af7260c)

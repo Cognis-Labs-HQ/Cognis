@@ -13,4 +13,4 @@
 
 ## コミットリンク
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/1305bfc163422709964268baafe8b0036c7b5c10
+- [1305bfc](https://github.com/Cognis-Labs-HQ/Cognis/commit/1305bfc163422709964268baafe8b0036c7b5c10)

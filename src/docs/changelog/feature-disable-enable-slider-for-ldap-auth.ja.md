@@ -36,4 +36,4 @@ LDAP セットアップでは生成されたフィールドにサーバーエラ
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/96257fa81b49645e38ae015a12d7433008d903e0
+- [96257fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/96257fa81b49645e38ae015a12d7433008d903e0)

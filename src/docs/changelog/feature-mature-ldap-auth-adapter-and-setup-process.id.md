@@ -68,4 +68,4 @@ Kata sandi bind LDAP yang tersimpan dihapus dari respons API administrasi. Membi
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/88fe3b0bec731d1c090768792cd73cea7264106e
+- [88fe3b0](https://github.com/Cognis-Labs-HQ/Cognis/commit/88fe3b0bec731d1c090768792cd73cea7264106e)

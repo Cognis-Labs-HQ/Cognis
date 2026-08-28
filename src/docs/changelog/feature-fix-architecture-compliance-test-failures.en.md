@@ -8,4 +8,4 @@ The profile route test suite is now divided into focused profile and media files
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/bb01adf3d8465a46a54d1bfe046116af8689dfdb
+- [bb01adf](https://github.com/Cognis-Labs-HQ/Cognis/commit/bb01adf3d8465a46a54d1bfe046116af8689dfdb)

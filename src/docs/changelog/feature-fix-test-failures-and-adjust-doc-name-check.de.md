@@ -16,4 +16,4 @@ Passwortzurücksetzungen, Verknüpfungen der speicherinternen Datenbank, UI-Quel
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/7850b66d4241a1b0f4ca12a846f3e7d808875695
+- [7850b66](https://github.com/Cognis-Labs-HQ/Cognis/commit/7850b66d4241a1b0f4ca12a846f3e7d808875695)

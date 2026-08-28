@@ -8,4 +8,4 @@ Die Orbitron-Schriftart erschien zwar in der Schriftauswahl, wurde jedoch nicht 
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f5e3113eb90b58fc10f5ea1d5355b10358d6051e
+- [f5e3113](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5e3113eb90b58fc10f5ea1d5355b10358d6051e)

@@ -22,6 +22,6 @@
 
 ## Commit Links
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/9888e39
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/b42d6d9c
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/1cabb35b
+- [9888e39](https://github.com/Cognis-Labs-HQ/Cognis/commit/9888e39)
+- [b42d6d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/b42d6d9c)
+- [1cabb35](https://github.com/Cognis-Labs-HQ/Cognis/commit/1cabb35b)

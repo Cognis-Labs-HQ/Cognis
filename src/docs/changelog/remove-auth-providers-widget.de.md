@@ -80,4 +80,4 @@ Das Passwortabgleich-Kriterium bleibt nun neutral (weder erfüllt noch unerfüll
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a103596a317f506ede1967a31791b935db24f047
+- [a103596](https://github.com/Cognis-Labs-HQ/Cognis/commit/a103596a317f506ede1967a31791b935db24f047)

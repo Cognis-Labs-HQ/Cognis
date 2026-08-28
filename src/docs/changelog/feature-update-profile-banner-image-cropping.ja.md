@@ -12,4 +12,4 @@ GIF バナーのアップロード時は、選択中の全高または半分の�
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/aa10007a88121cfe4725bd656d581cac0ec298fd
+- [aa10007](https://github.com/Cognis-Labs-HQ/Cognis/commit/aa10007a88121cfe4725bd656d581cac0ec298fd)

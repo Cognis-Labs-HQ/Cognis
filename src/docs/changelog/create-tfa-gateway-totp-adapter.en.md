@@ -76,4 +76,4 @@ The TFA card inside Administration → Security now uses existing localized gate
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a4201c685f2803dc1fdb3ad9d203f7e262919b03
+- [a4201c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a4201c685f2803dc1fdb3ad9d203f7e262919b03)

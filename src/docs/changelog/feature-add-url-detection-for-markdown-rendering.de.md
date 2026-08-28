@@ -12,4 +12,4 @@ Nur HTTP- und HTTPS-Ziele werden als Links gerendert, damit Mail- und app-spezif
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/b69825ff2436e850fe55db64531d012ddda87b20
+- [b69825f](https://github.com/Cognis-Labs-HQ/Cognis/commit/b69825ff2436e850fe55db64531d012ddda87b20)

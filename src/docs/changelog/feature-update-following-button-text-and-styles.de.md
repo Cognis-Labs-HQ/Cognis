@@ -16,4 +16,4 @@ Initialen für Profil-Avatar-Fallbacks verwenden jetzt zuerst den Profilanzeigen
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e6c45656185cf32f63d69ebb49595ad530184d2e
+- [e6c4565](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6c45656185cf32f63d69ebb49595ad530184d2e)

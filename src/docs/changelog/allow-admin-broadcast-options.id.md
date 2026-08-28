@@ -22,4 +22,4 @@ Dashboard sekarang memuat plugin navbar siaran notify yang mengambil siaran akti
 
 ## Commit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e14cbfc
+- [e14cbfc](https://github.com/Cognis-Labs-HQ/Cognis/commit/e14cbfc)

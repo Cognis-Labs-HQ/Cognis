@@ -12,4 +12,4 @@ The password input inside the re-prompt guard popup is now wrapped in a `<form>`
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/805858123bc36713ef78b0f6ee038fdf3613782a
+- [8058581](https://github.com/Cognis-Labs-HQ/Cognis/commit/805858123bc36713ef78b0f6ee038fdf3613782a)

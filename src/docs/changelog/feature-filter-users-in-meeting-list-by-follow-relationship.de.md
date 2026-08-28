@@ -8,4 +8,4 @@ Die Teilnehmersuche für Besprechungen fragt nun die Social-Profile-Komponente n
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/4dcb330dd9c62b834c3fb76bf9e9258bb3254e45
+- [4dcb330](https://github.com/Cognis-Labs-HQ/Cognis/commit/4dcb330dd9c62b834c3fb76bf9e9258bb3254e45)

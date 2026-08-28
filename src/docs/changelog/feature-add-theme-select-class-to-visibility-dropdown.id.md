@@ -8,4 +8,4 @@ Postingan baru secara bawaan menggunakan visibilitas yang dikonfigurasi pada pro
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/ada391effcfe608d6ea54bba5b5a461f608ae498
+- [ada391e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ada391effcfe608d6ea54bba5b5a461f608ae498)

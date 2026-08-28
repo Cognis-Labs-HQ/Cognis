@@ -16,4 +16,4 @@ Jitsi Meet ウィンドウは、アプリのテーマが変更されるたびに
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/8344f54c3af4936f1812de28754555ba886a945c
+- [8344f54](https://github.com/Cognis-Labs-HQ/Cognis/commit/8344f54c3af4936f1812de28754555ba886a945c)

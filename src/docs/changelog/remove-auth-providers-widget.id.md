@@ -80,4 +80,4 @@ Kriteria kecocokan kata sandi kini tetap netral (bukan terpenuhi atau tidak terp
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a103596a317f506ede1967a31791b935db24f047
+- [a103596](https://github.com/Cognis-Labs-HQ/Cognis/commit/a103596a317f506ede1967a31791b935db24f047)

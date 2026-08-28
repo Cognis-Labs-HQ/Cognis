@@ -32,4 +32,4 @@ Die Komponenten-Versionsdokumente enthalten die Regeltexte jetzt konsistent übe
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/80305d183fd1fc1e89c960dfb5c6712c87f188f8
+- [80305d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/80305d183fd1fc1e89c960dfb5c6712c87f188f8)

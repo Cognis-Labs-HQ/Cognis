@@ -20,4 +20,4 @@ Router aplikasi kini memastikan akar dashboard sebelum memasang rute, sehingga n
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/af00b98a07aeab0866031d7c25e95c2914df3355
+- [af00b98](https://github.com/Cognis-Labs-HQ/Cognis/commit/af00b98a07aeab0866031d7c25e95c2914df3355)

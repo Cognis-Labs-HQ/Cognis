@@ -20,4 +20,4 @@ The aggregate Cognis gateways package and every dependent local component now de
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e92abbeda31ee1306beacce0bb7410129536cf00
+- [e92abbe](https://github.com/Cognis-Labs-HQ/Cognis/commit/e92abbeda31ee1306beacce0bb7410129536cf00)

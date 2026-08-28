@@ -124,4 +124,4 @@ Die Seitenleiste von Nachrichten, das Bild des aktiven Chats und Absender-Avatar
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/9ab0e629254a98caae0c359d1dfeb103d094d3e5
+- [9ab0e62](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ab0e629254a98caae0c359d1dfeb103d094d3e5)

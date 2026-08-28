@@ -8,4 +8,4 @@
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/92f2856698dacd9bf208f2ffa3d0b5e77c4971fa
+- [92f2856](https://github.com/Cognis-Labs-HQ/Cognis/commit/92f2856698dacd9bf208f2ffa3d0b5e77c4971fa)

@@ -8,4 +8,4 @@ Halaman dokumentasi dan catatan perubahan kini menggunakan pengguliran dokumen a
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/2b7d7908138abf90f6df26145eb435a65bb5ae48
+- [2b7d790](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b7d7908138abf90f6df26145eb435a65bb5ae48)

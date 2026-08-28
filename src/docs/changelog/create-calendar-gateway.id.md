@@ -121,4 +121,4 @@ format 12 jam, terlepas dari format waktu yang dipilih pengguna.
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/b32a4af54b95de949389be701a92fc829ad45325
+- [b32a4af](https://github.com/Cognis-Labs-HQ/Cognis/commit/b32a4af54b95de949389be701a92fc829ad45325)

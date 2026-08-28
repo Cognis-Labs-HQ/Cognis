@@ -32,4 +32,4 @@ Socket.IO 接続とエレメント同期は以前と同じように機能しま�
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/3fba3a4ae030e1c17efc8f85e1245ceb69bc135d
+- [3fba3a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/3fba3a4ae030e1c17efc8f85e1245ceb69bc135d)

@@ -20,4 +20,4 @@ Nextcloud Whiteboard は、データベースストレージが利用可能に�
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/0b0a8a9672abe9c37b3d298cd494e6504aed5489
+- [0b0a8a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b0a8a9672abe9c37b3d298cd494e6504aed5489)

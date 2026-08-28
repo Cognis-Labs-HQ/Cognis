@@ -20,4 +20,4 @@ Removed an unused direct import of the UI context singleton from the keyring tes
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/06711cd058d7db47c9041ed71c5e993e7b0eadf3
+- [06711cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/06711cd058d7db47c9041ed71c5e993e7b0eadf3)

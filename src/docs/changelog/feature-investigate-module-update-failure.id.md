@@ -12,4 +12,4 @@ Kegagalan validasi saat mengaktifkan modul kini menghasilkan kesalahan API terst
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/dd9dbd55d239ace38a65225c05d67b40c4c2f2fd
+- [dd9dbd5](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd9dbd55d239ace38a65225c05d67b40c4c2f2fd)

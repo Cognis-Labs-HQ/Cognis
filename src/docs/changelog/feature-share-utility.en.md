@@ -164,4 +164,4 @@ Share link rows now copy their URL from an explicit button instead of behaving l
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/22b2896eaf8f13d17c1161bfc12085036f2539c8
+- [22b2896](https://github.com/Cognis-Labs-HQ/Cognis/commit/22b2896eaf8f13d17c1161bfc12085036f2539c8)

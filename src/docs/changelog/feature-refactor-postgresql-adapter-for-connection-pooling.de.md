@@ -68,4 +68,4 @@ Die Validierung der Pool-Einstellungen gehört jetzt zum jeweiligen Datenbankada
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/6c887390888a10a8acbf3535860f4d85d9908cef
+- [6c88739](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c887390888a10a8acbf3535860f4d85d9908cef)

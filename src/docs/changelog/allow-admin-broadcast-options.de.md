@@ -22,4 +22,4 @@ Das Dashboard lädt nun ein Notify-Broadcast-Navbar-Plugin, das aktive Rundsendu
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e14cbfc
+- [e14cbfc](https://github.com/Cognis-Labs-HQ/Cognis/commit/e14cbfc)

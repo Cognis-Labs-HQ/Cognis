@@ -8,4 +8,4 @@ Permintaan aktifkan pada TFA gateway tidak lagi gagal ketika adaptor belum dikon
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/93e0a59123d977c14b058e65dab3d9d42ebd011b
+- [93e0a59](https://github.com/Cognis-Labs-HQ/Cognis/commit/93e0a59123d977c14b058e65dab3d9d42ebd011b)

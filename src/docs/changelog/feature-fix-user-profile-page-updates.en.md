@@ -40,4 +40,4 @@ Following a viewed profile now adds the current account to the optimistic follow
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/597aa63d6ef878eb2e40d6d8050a9956387fc0e8
+- [597aa63](https://github.com/Cognis-Labs-HQ/Cognis/commit/597aa63d6ef878eb2e40d6d8050a9956387fc0e8)

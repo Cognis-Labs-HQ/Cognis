@@ -12,4 +12,4 @@ Email-address confirmation codes now use the code length configured on the share
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/d164f428bb4f843efe7a875c172855182e7a4548
+- [d164f42](https://github.com/Cognis-Labs-HQ/Cognis/commit/d164f428bb4f843efe7a875c172855182e7a4548)

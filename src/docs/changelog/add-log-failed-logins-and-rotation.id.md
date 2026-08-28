@@ -25,6 +25,6 @@
 
 ## Tautan Commit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/749469a351ca8fad839ef6cf3f3d4eed81717b3a
+- [749469a](https://github.com/Cognis-Labs-HQ/Cognis/commit/749469a351ca8fad839ef6cf3f3d4eed81717b3a)
 
 ## Commits

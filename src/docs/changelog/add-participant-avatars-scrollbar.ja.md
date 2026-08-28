@@ -12,4 +12,4 @@ Meetings のチャットパネルでは、Meeting Chat タイトルの直下に�
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/93f41f6db4cc5bf2204d606e15d501112a51d6f1
+- [93f41f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/93f41f6db4cc5bf2204d606e15d501112a51d6f1)

@@ -8,4 +8,4 @@ Authenticationゲートウェイが`auth:registerProvider`を公開し、LINE連
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/2755fc99e248cf6a30c63bc692a9ec71251f8a25
+- [2755fc9](https://github.com/Cognis-Labs-HQ/Cognis/commit/2755fc99e248cf6a30c63bc692a9ec71251f8a25)

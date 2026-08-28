@@ -20,4 +20,4 @@ Indeks dokumentasi kini tetap memuat dokumen yang telah diarsipkan meskipun berk
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/ad5ede84f3181c47669ecc0e3655b4321fba8a34
+- [ad5ede8](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad5ede84f3181c47669ecc0e3655b4321fba8a34)

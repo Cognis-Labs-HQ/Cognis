@@ -1,4 +1,12 @@
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import {
+    mkdir,
+    readFile,
+    readdir,
+    rename,
+    rm,
+    writeFile,
+} from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import { dirname, join, relative, resolve, sep } from "node:path";
 
 export interface StoredDoc {
@@ -18,6 +26,25 @@ interface SourceDoc extends Omit<StoredDoc, "version" | "versions"> {
 
 const DEFAULT_LANG = "en";
 const SEMANTIC_VERSION = /^\d+\.\d+\.\d+$/;
+
+async function writeFileWhenChanged(
+    destination: string,
+    content: Buffer,
+): Promise<void> {
+    try {
+        if ((await readFile(destination)).equals(content)) return;
+    } catch {
+        // Continue to the atomic archive update below.
+    }
+
+    const temporaryPath = `${destination}.${process.pid}.${randomUUID()}.tmp`;
+    try {
+        await writeFile(temporaryPath, content);
+        await rename(temporaryPath, destination);
+    } finally {
+        await rm(temporaryPath, { force: true });
+    }
+}
 
 async function directoriesNamedDocs(
     directory: string,
@@ -292,7 +319,10 @@ export async function initializeDocsStore(
                     versionDirectory,
                     `${languageFromPath(sourceFile)}.md`,
                 );
-                await writeFile(destination, await readFile(sourceFile));
+                await writeFileWhenChanged(
+                    destination,
+                    await readFile(sourceFile),
+                );
             }
             storedDocs.set(doc.slug, {
                 fileStem: doc.fileStem,

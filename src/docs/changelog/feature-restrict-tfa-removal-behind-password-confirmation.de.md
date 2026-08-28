@@ -12,4 +12,4 @@ Die SMTP-Zwei-Faktor-Einrichtung zeigt jetzt eine Warnung an, dass eine bestäti
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f524f2f62820dbbf6ff80366a835aca0f31d3359
+- [f524f2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f524f2f62820dbbf6ff80366a835aca0f31d3359)

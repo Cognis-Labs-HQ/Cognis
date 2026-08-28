@@ -68,4 +68,4 @@ Das Jitsi-Meet-Modul deklariert jetzt die getestete lokale Version des Nachricht
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/70785d43ef6b76fb1d863dcc795ecb9bd3bcab7f
+- [70785d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/70785d43ef6b76fb1d863dcc795ecb9bd3bcab7f)

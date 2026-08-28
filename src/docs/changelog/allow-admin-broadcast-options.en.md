@@ -22,4 +22,4 @@ The dashboard now loads a notify broadcast navbar plugin that fetches active bro
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e14cbfc
+- [e14cbfc](https://github.com/Cognis-Labs-HQ/Cognis/commit/e14cbfc)

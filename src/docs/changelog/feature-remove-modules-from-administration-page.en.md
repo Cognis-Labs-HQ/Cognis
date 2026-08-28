@@ -542,4 +542,4 @@ Each primary navigation entry now has a six-dot handle. Links keep their normal 
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/c685eda06183d56a3a250df8b66178db1e8553d6
+- [c685eda](https://github.com/Cognis-Labs-HQ/Cognis/commit/c685eda06183d56a3a250df8b66178db1e8553d6)

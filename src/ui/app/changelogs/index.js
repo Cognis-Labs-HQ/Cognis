@@ -98,14 +98,16 @@ function buildGroupedNav(i18n, items) {
 
     let html = "";
     for (const [group, groupItems] of groups) {
-        const label =
-            group === CHANGELOG_GROUP_KEY ? groupLabel(i18n, group) : group;
+        const label = escapeHtml(
+            group === CHANGELOG_GROUP_KEY ? groupLabel(i18n, group) : group,
+        );
+        const safeGroup = escapeHtml(group);
         const links = groupItems
             .map((item) => renderDocNavButton(item))
             .join("");
         const storageKey = `changelogs-group-open:${group}`;
         const isOpen = localStorage.getItem(storageKey) !== "false";
-        html += `<details class="docs-nav-group" ${isOpen ? "open" : ""} data-nav-group="${group}">`;
+        html += `<details class="docs-nav-group" ${isOpen ? "open" : ""} data-nav-group="${safeGroup}">`;
         html += `<summary>${label}</summary>`;
         html += `<ul>${links}</ul>`;
         html += `</details>`;

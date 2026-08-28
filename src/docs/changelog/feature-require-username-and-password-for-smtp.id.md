@@ -12,4 +12,4 @@ Judul kolom wajib kini menampilkan tanda bintang dalam mode terang dan gelap. Pe
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/8983ae1fe74eac032b99e894abf857606af7260c
+- [8983ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/8983ae1fe74eac032b99e894abf857606af7260c)

@@ -20,4 +20,4 @@ Pendaftaran runtime autentikasi kini melaporkan versi yang sama dengan manifes k
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/9c6605ec002e029f3e9e655a352bd6acc109ce1b
+- [9c6605e](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c6605ec002e029f3e9e655a352bd6acc109ce1b)

@@ -8,4 +8,4 @@ Enable requests in the TFA gateway no longer fail when an adapter has not been e
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/93e0a59123d977c14b058e65dab3d9d42ebd011b
+- [93e0a59](https://github.com/Cognis-Labs-HQ/Cognis/commit/93e0a59123d977c14b058e65dab3d9d42ebd011b)

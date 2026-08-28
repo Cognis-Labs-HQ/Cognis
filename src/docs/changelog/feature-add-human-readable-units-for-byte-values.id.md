@@ -8,4 +8,4 @@ Administrator dapat mengedit kuota penyimpanan pengguna dengan nilai angka dan p
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/d69fc3fd7f38095aef44d6713bf0c02e7e1c4ac9
+- [d69fc3f](https://github.com/Cognis-Labs-HQ/Cognis/commit/d69fc3fd7f38095aef44d6713bf0c02e7e1c4ac9)

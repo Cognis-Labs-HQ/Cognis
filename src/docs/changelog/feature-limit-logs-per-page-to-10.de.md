@@ -8,4 +8,4 @@ Das Keyring-Protokoll zeigt jetzt zehn Ereignisse pro Seite an, damit aktuelle A
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/dee92080a1fc23b36fd82c47bdf9a6c0a5cea6d0
+- [dee9208](https://github.com/Cognis-Labs-HQ/Cognis/commit/dee92080a1fc23b36fd82c47bdf9a6c0a5cea6d0)

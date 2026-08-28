@@ -20,5 +20,5 @@ Der Page Composer setzt nun einen übersetzten gemeinsamen Aktualisierungshinwei
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/bbee24a
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/3b7bded
+- [bbee24a](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbee24a)
+- [3b7bded](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b7bded)

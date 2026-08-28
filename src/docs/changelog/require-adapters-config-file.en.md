@@ -19,4 +19,4 @@ The Administration page now consumes announced adapter controls and re-synchroni
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/6b706ae
+- [6b706ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/6b706ae)

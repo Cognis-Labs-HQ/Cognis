@@ -28,4 +28,4 @@ Self-deactivation now hides accounts from interaction while letting users restor
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/84934f6b7a14135551c11da59c8fc51f014b7be4
+- [84934f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/84934f6b7a14135551c11da59c8fc51f014b7be4)

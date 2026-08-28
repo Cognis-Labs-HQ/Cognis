@@ -68,4 +68,4 @@ LDAP 設定の最後に、実際のディレクトリユーザーの認証情報
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/88fe3b0bec731d1c090768792cd73cea7264106e
+- [88fe3b0](https://github.com/Cognis-Labs-HQ/Cognis/commit/88fe3b0bec731d1c090768792cd73cea7264106e)

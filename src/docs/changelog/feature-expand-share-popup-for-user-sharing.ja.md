@@ -536,4 +536,4 @@ Link Share ポップアップの回帰テストを、汎用 Share ゲートウ�
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/75e72e78973245fc561c51ac89e645bd016416a0
+- [75e72e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/75e72e78973245fc561c51ac89e645bd016416a0)

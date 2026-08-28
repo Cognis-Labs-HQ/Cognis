@@ -8,4 +8,4 @@ TOTP の設定ポップアップと方式管理ポップアップでは、手動
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e08a5ae1477094b24992669b9ad97914d16f12e2
+- [e08a5ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/e08a5ae1477094b24992669b9ad97914d16f12e2)

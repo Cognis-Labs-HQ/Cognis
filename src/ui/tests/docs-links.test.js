@@ -223,6 +223,19 @@ test("changelogs module keeps changelog-only navigation data", () => {
     );
 });
 
+test("changelog navigation escapes external module names", () => {
+    const source = readFileSync(
+        join(ROOT, "src/ui/app/changelogs/index.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /const label = escapeHtml\([\s\S]*?groupLabel\(i18n, group\) : group/,
+    );
+    assert.match(source, /const safeGroup = escapeHtml\(group\)/);
+    assert.match(source, /data-nav-group="\$\{safeGroup\}"/);
+});
+
 test("changelog commit links show short refs with complete hrefs", () => {
     const commitRef = "1234567890abcdef1234567890abcdef12345678";
     const url = `https://github.com/Cognis-Labs-HQ/Cognis/commit/${commitRef}`;

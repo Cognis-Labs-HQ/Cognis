@@ -12,4 +12,4 @@ Saat chat pribadi dibuka dari bilah avatar, tombol untuk kembali ke chat rapat a
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/93f41f6db4cc5bf2204d606e15d501112a51d6f1
+- [93f41f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/93f41f6db4cc5bf2204d606e15d501112a51d6f1)

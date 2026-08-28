@@ -400,4 +400,4 @@ Freigabe-Popups verwalten ihr Aktualisierungsintervall nun im Popup-Lebenszyklus
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/5ede8a9bd7324f23efc951337e5aa296a63acbd2
+- [5ede8a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ede8a9bd7324f23efc951337e5aa296a63acbd2)

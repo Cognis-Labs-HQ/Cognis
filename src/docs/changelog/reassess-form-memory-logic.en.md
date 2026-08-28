@@ -25,4 +25,4 @@ whenever the opened room has no persisted draft.
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f6e4f64c9468e5367096836d041488b2f2f6ae34
+- [f6e4f64](https://github.com/Cognis-Labs-HQ/Cognis/commit/f6e4f64c9468e5367096836d041488b2f2f6ae34)

@@ -72,6 +72,6 @@ startup-time `ReferenceError` in `src/api/main.ts`.
 
 - [feb1bbc](https://github.com/Cognis-Labs-HQ/Cognis/commit/feb1bbc)
 - [c6ba65b](https://github.com/Cognis-Labs-HQ/Cognis/commit/c6ba65b)
-- [acaded15](https://github.com/Cognis-Labs-HQ/Cognis/commit/acaded15)
-- [e7255fe0](https://github.com/Cognis-Labs-HQ/Cognis/commit/e7255fe0)
-- [a68ab2ab](https://github.com/Cognis-Labs-HQ/Cognis/commit/a68ab2ab)
+- [acaded1](https://github.com/Cognis-Labs-HQ/Cognis/commit/acaded15)
+- [e7255fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/e7255fe0)
+- [a68ab2a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a68ab2ab)

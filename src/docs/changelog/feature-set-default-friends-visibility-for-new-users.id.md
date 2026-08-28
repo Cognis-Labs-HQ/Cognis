@@ -8,4 +8,4 @@ Setiap profil baru kini dimulai dengan visibilitas Teman agar pengguna baru dapa
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/4183d3bfc2612181328cc06133356089b50fea7c
+- [4183d3b](https://github.com/Cognis-Labs-HQ/Cognis/commit/4183d3bfc2612181328cc06133356089b50fea7c)

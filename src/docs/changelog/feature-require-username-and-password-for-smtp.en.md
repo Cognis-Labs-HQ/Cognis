@@ -12,4 +12,4 @@ Required field titles now display an asterisk in light and dark modes. The marke
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/8983ae1fe74eac032b99e894abf857606af7260c
+- [8983ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/8983ae1fe74eac032b99e894abf857606af7260c)

@@ -16,5 +16,5 @@ Admins and owners already have invite management through the Users page, so the 
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/041fdb8
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/d47ee73
+- [041fdb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/041fdb8)
+- [d47ee73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d47ee73)

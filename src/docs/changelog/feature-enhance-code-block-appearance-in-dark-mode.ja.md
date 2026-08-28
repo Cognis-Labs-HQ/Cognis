@@ -12,4 +12,4 @@ Markdownのインラインコードとコードブロックに、ホバー時に
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/91d274f51346b9e7570120f2db52e2f5904f10e4
+- [91d274f](https://github.com/Cognis-Labs-HQ/Cognis/commit/91d274f51346b9e7570120f2db52e2f5904f10e4)

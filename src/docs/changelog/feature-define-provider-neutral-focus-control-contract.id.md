@@ -148,4 +148,4 @@ Dashboard kini tetap menjadi entri pertama navigasi utama, sementara semua entri
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/48395e7f07a41221e2e866d9892493df3e98b841
+- [48395e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/48395e7f07a41221e2e866d9892493df3e98b841)

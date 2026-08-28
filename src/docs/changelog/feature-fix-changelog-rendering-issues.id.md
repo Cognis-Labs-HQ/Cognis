@@ -20,9 +20,9 @@ Tautan commit historis kini mengarah ke repositori Cognis-Labs-HQ/Cognis saat in
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/968c109885b2db1e168a7c62cc29b3c6be3d7b27
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/0a224676b04a06123eb6f4dd256051d6a2fc5933
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/4c60e8410ee4b50e01fea0248b521199757f48fc
+- [968c109](https://github.com/Cognis-Labs-HQ/Cognis/commit/968c109885b2db1e168a7c62cc29b3c6be3d7b27)
+- [0a22467](https://github.com/Cognis-Labs-HQ/Cognis/commit/0a224676b04a06123eb6f4dd256051d6a2fc5933)
+- [4c60e84](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c60e8410ee4b50e01fea0248b521199757f48fc)
 
 ## Asal changelog yang lengkap
 
@@ -43,3 +43,15 @@ Instruksi kontribusi AI kini mewajibkan, jika diminta sebelum implementasi, comm
 ## Perbarui dokumentasi yang dihasilkan
 
 Proses penyerapan dokumentasi kini memperbarui arsip untuk versi komponen yang sedang terpasang. Dengan demikian, koreksi faktual pada sumber seperti pembaruan URL repositori menggantikan salinan lama yang dihasilkan, sementara cuplikan versi terdahulu tetap tersedia.
+
+## Perbarui arsip dokumentasi dengan aman
+
+Proses penyerapan dokumentasi kini membiarkan file arsip yang tidak berubah tetap utuh dan mengganti hanya isi yang berubah secara atomik, sehingga mencegah penulisan berulang dan pembacaan file yang belum lengkap saat permintaan berjalan bersamaan.
+
+## Escape nama modul eksternal
+
+Navigasi changelog kini melakukan escape pada nama yang disediakan modul sebelum memasukkannya ke label dan atribut, sehingga metadata modul tidak dapat membuat markup aktif.
+
+## Tautan commit yang konsisten
+
+Daftar commit changelog historis kini secara konsisten menggunakan referensi tujuh karakter tertaut sambil mempertahankan URL commit kanonis yang lengkap.

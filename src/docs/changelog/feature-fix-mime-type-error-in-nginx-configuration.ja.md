@@ -66,4 +66,4 @@ Compose はデプロイ環境で管理されたデータベースパスワード
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/ec75586e143b25792032eaa906ba8b177868a6ef
+- [ec75586](https://github.com/Cognis-Labs-HQ/Cognis/commit/ec75586e143b25792032eaa906ba8b177868a6ef)

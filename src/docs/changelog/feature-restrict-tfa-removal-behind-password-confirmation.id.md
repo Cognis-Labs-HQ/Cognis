@@ -12,4 +12,4 @@ Penyiapan autentikasi dua faktor SMTP kini menampilkan peringatan bahwa alamat e
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f524f2f62820dbbf6ff80366a835aca0f31d3359
+- [f524f2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f524f2f62820dbbf6ff80366a835aca0f31d3359)

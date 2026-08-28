@@ -8,4 +8,4 @@ Die Testsuite für Profilrouten ist nun in fokussierte Profil- und Mediendateien
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/bb01adf3d8465a46a54d1bfe046116af8689dfdb
+- [bb01adf](https://github.com/Cognis-Labs-HQ/Cognis/commit/bb01adf3d8465a46a54d1bfe046116af8689dfdb)

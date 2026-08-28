@@ -40,4 +40,4 @@ Saat mengikuti profil yang sedang dilihat, akun saat ini kini ditambahkan ke daf
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/597aa63d6ef878eb2e40d6d8050a9956387fc0e8
+- [597aa63](https://github.com/Cognis-Labs-HQ/Cognis/commit/597aa63d6ef878eb2e40d6d8050a9956387fc0e8)

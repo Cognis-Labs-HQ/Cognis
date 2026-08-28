@@ -8,4 +8,4 @@ Cognis legt nun das vollständige Dialog-Stylesheet im temporären Cache-Speiche
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/dc87c30f1621b82081ff176cf15f2df337df3f14
+- [dc87c30](https://github.com/Cognis-Labs-HQ/Cognis/commit/dc87c30f1621b82081ff176cf15f2df337df3f14)

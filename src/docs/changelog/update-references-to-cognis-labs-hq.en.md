@@ -12,4 +12,4 @@ UI language contributor manifests, and related documentation snippets.
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/bd4e9c54f1208ecd0dee27125d493c0d283216e6
+- [bd4e9c5](https://github.com/Cognis-Labs-HQ/Cognis/commit/bd4e9c54f1208ecd0dee27125d493c0d283216e6)

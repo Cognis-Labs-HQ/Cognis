@@ -35,4 +35,4 @@ Three admin-authenticated API routes replace the former stub metrics endpoint:
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/56958a72892cc2d963b827c84d50783e099d185e
+- [56958a7](https://github.com/Cognis-Labs-HQ/Cognis/commit/56958a72892cc2d963b827c84d50783e099d185e)

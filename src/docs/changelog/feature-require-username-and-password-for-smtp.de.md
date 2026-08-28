@@ -12,4 +12,4 @@ Titel von Pflichtfeldern zeigen jetzt im hellen und dunklen Modus ein Sternchen.
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/8983ae1fe74eac032b99e894abf857606af7260c
+- [8983ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/8983ae1fe74eac032b99e894abf857606af7260c)

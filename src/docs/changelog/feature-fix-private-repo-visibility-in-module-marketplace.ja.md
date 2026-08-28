@@ -20,4 +20,4 @@ Cognis Labs HQ マーケットプレイスソースは、非公開リポジト�
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/2d31b43565ee1b05d00301b9ed1faaf99a8a6f89
+- [2d31b43](https://github.com/Cognis-Labs-HQ/Cognis/commit/2d31b43565ee1b05d00301b9ed1faaf99a8a6f89)

@@ -8,4 +8,4 @@ Teacher, administrator, and owner profiles now default to Friends visibility, an
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/9761ae11900be16e5d5a715d0f6e6707d03315fb
+- [9761ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/9761ae11900be16e5d5a715d0f6e6707d03315fb)

@@ -124,4 +124,4 @@ Bilah samping Pesan, gambar percakapan aktif, dan avatar pengirim tidak lagi men
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/9ab0e629254a98caae0c359d1dfeb103d094d3e5
+- [9ab0e62](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ab0e629254a98caae0c359d1dfeb103d094d3e5)

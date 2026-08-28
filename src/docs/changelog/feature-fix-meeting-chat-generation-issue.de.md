@@ -12,4 +12,4 @@ Die Meeting-Teilnehmersuche behält die Folgeanforderung bei und schließt die a
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f4538f6775857d81af67d624d800e27ee8b09548
+- [f4538f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4538f6775857d81af67d624d800e27ee8b09548)

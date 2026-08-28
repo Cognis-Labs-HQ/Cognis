@@ -68,4 +68,4 @@ Validasi pengaturan pool kini dimiliki masing-masing adapter basis data, sedangk
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/6c887390888a10a8acbf3535860f4d85d9908cef
+- [6c88739](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c887390888a10a8acbf3535860f4d85d9908cef)

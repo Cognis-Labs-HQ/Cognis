@@ -68,4 +68,4 @@ Modul Jitsi Meet kini mendeklarasikan versi adaptor Pesan lokal yang telah diuji
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/70785d43ef6b76fb1d863dcc795ecb9bd3bcab7f
+- [70785d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/70785d43ef6b76fb1d863dcc795ecb9bd3bcab7f)

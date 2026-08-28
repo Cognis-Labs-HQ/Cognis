@@ -76,4 +76,4 @@ Kartu TFA di dalam Administration → Security kini memakai kunci string gateway
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a4201c685f2803dc1fdb3ad9d203f7e262919b03
+- [a4201c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a4201c685f2803dc1fdb3ad9d203f7e262919b03)

@@ -38,4 +38,4 @@ Startup discovery now scans only public module sources. Credentialed private sou
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/54375e318faa1ddbb6fe950f2402957742102af9
+- [54375e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/54375e318faa1ddbb6fe950f2402957742102af9)

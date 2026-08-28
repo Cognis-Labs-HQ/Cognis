@@ -542,4 +542,4 @@ Jeder primäre Navigationseintrag besitzt nun einen Griff mit sechs Punkten. Lin
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/c685eda06183d56a3a250df8b66178db1e8553d6
+- [c685eda](https://github.com/Cognis-Labs-HQ/Cognis/commit/c685eda06183d56a3a250df8b66178db1e8553d6)

@@ -8,4 +8,4 @@ Menghapus pengguna atau mengubah peran maupun status akun kini langsung memperba
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/981b4a566171316424ffe3cf7234d44d1ee0573a
+- [981b4a5](https://github.com/Cognis-Labs-HQ/Cognis/commit/981b4a566171316424ffe3cf7234d44d1ee0573a)

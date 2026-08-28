@@ -120,4 +120,4 @@ IRC-style message spacing has been increased so the floating reaction picker and
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/ae50b1649e1dc2ea87972a89dbbe6e735c3a3ad7
+- [ae50b16](https://github.com/Cognis-Labs-HQ/Cognis/commit/ae50b1649e1dc2ea87972a89dbbe6e735c3a3ad7)

@@ -24,4 +24,4 @@
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/9735e00a2bb3ef7b3a1f10aa49494f81007dece2
+- [9735e00](https://github.com/Cognis-Labs-HQ/Cognis/commit/9735e00a2bb3ef7b3a1f10aa49494f81007dece2)

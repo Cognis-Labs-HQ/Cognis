@@ -48,4 +48,4 @@ Pencatatan bootstrap awal kini menerapkan `LOG_LEVEL` sebelum gateway pencatatan
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/1a843d6bcc3ff03b2c40d841f75d29d79da7dc6d
+- [1a843d6](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a843d6bcc3ff03b2c40d841f75d29d79da7dc6d)

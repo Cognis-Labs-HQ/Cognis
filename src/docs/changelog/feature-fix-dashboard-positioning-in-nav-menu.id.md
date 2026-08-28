@@ -8,4 +8,4 @@ Entri navigasi nonaktif tanpa tautan kini tetap disertakan dalam pengurutan, seh
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f384a312fbeaa39243111f8311f253fc24aceb65
+- [f384a31](https://github.com/Cognis-Labs-HQ/Cognis/commit/f384a312fbeaa39243111f8311f253fc24aceb65)

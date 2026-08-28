@@ -8,4 +8,4 @@ Kotak centang “jangan tampilkan lagi” pada popup catatan perubahan rilis kin
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/75175bc137b826d4f611ff598fdb6c5186027603
+- [75175bc](https://github.com/Cognis-Labs-HQ/Cognis/commit/75175bc137b826d4f611ff598fdb6c5186027603)

@@ -8,4 +8,4 @@ Halaman profil kini menyegarkan jumlah pengikut dan mengikuti selama halaman tet
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a5cf4cc3fd3fd4f03933e8e6392f21a67a306e07
+- [a5cf4cc](https://github.com/Cognis-Labs-HQ/Cognis/commit/a5cf4cc3fd3fd4f03933e8e6392f21a67a306e07)

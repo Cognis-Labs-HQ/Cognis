@@ -12,4 +12,4 @@ Meeting access checks now reject sessions where a meeting organizer or participa
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/17431b6df2bdf6b47df8ddfbe98d64a997bb196f
+- [17431b6](https://github.com/Cognis-Labs-HQ/Cognis/commit/17431b6df2bdf6b47df8ddfbe98d64a997bb196f)

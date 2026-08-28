@@ -20,4 +20,4 @@ Current-password input now preserves surrounding whitespace during verification,
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/926f513f10cade5b1e5f9367c98276b2898b4bc2
+- [926f513](https://github.com/Cognis-Labs-HQ/Cognis/commit/926f513f10cade5b1e5f9367c98276b2898b4bc2)

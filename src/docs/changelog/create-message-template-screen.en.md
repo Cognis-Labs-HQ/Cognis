@@ -28,4 +28,4 @@ Unsent text typed in the message composer is no longer lost when the page recomp
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf607d2e31db00d07bdc6e7a247b2e1795857c2
+- [3cf607d](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf607d2e31db00d07bdc6e7a247b2e1795857c2)

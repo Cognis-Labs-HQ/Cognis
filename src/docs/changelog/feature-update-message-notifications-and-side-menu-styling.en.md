@@ -16,4 +16,4 @@ The Messages header now provides a clearly labelled Leave Room button, and room-
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/779de3d355f971af7374bee9128672f713b80a64
+- [779de3d](https://github.com/Cognis-Labs-HQ/Cognis/commit/779de3d355f971af7374bee9128672f713b80a64)

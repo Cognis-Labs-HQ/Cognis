@@ -114,4 +114,4 @@ Jitsi Meet 管理ページに「予定されたミーティング」という2�
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/b32a4af54b95de949389be701a92fc829ad45325
+- [b32a4af](https://github.com/Cognis-Labs-HQ/Cognis/commit/b32a4af54b95de949389be701a92fc829ad45325)

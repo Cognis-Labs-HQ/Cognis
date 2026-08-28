@@ -12,4 +12,4 @@ Profile edit, password change, adapter configuration, invite email, user input p
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/b943b359f0aff9872e9c4817e28c4b2381a16253
+- [b943b35](https://github.com/Cognis-Labs-HQ/Cognis/commit/b943b359f0aff9872e9c4817e28c4b2381a16253)

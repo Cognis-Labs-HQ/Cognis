@@ -8,4 +8,4 @@ Neue Kalender erhalten jetzt eine zufällig ausgewählte Farbe aus der Kalenderp
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/5bf3651be882d7f9ab3f04da2cbdd2a5c9292824
+- [5bf3651](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bf3651be882d7f9ab3f04da2cbdd2a5c9292824)

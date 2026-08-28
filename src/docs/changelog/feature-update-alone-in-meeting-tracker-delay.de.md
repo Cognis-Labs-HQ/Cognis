@@ -8,4 +8,4 @@ Der Allein-im-Meeting-Tracker von Jitsi Meet wartet jetzt drei Minuten, bevor de
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/23c908cbf419080a9cc4a39faeb8f3d6d0c55b51
+- [23c908c](https://github.com/Cognis-Labs-HQ/Cognis/commit/23c908cbf419080a9cc4a39faeb8f3d6d0c55b51)

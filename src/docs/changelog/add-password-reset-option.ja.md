@@ -27,6 +27,6 @@ Security パネルの「認証プロバイダー」表示を削除し、アク�
 
 ## Commit Links
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a33f0faa
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/9490a011
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/8ba1d8b2
+- [a33f0fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/a33f0faa)
+- [9490a01](https://github.com/Cognis-Labs-HQ/Cognis/commit/9490a011)
+- [8ba1d8b](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ba1d8b2)

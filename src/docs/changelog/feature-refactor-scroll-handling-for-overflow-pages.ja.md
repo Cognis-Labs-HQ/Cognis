@@ -12,4 +12,4 @@ page composer は、入れ子の縦スクロール領域を避けたい分割レ
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f3b64ca116345d58e4240401d000eb9d83fadcb8
+- [f3b64ca](https://github.com/Cognis-Labs-HQ/Cognis/commit/f3b64ca116345d58e4240401d000eb9d83fadcb8)

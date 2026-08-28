@@ -20,4 +20,4 @@ Cognisの統合Gatewayパッケージと、それに依存するすべてのロ�
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e92abbeda31ee1306beacce0bb7410129536cf00
+- [e92abbe](https://github.com/Cognis-Labs-HQ/Cognis/commit/e92abbeda31ee1306beacce0bb7410129536cf00)

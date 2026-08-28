@@ -12,4 +12,4 @@ The shared unsaved-changes utility can now track popup form fields in a quiet mo
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/88648cc411c93eaad6bba45e142bede90dbe5b0c
+- [88648cc](https://github.com/Cognis-Labs-HQ/Cognis/commit/88648cc411c93eaad6bba45e142bede90dbe5b0c)

@@ -12,4 +12,4 @@ Browser performance telemetry now resolves submission through the Observability 
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/55815c3e03a8498211a2619ef9e4ee61895461a5
+- [55815c3](https://github.com/Cognis-Labs-HQ/Cognis/commit/55815c3e03a8498211a2619ef9e4ee61895461a5)

@@ -12,4 +12,4 @@ The register submit label now uses Title Case as "Create Account" so it is consi
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/840031ede690e641a65bd6789c5b1d0ed3bdfbfb
+- [840031e](https://github.com/Cognis-Labs-HQ/Cognis/commit/840031ede690e641a65bd6789c5b1d0ed3bdfbfb)

@@ -8,4 +8,4 @@ Tabel preferensi bahasa di Pengaturan kini menentukan target pelepasan dari posi
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/d20024874c2667f0afa0bc1b8de1c03d926e2a45
+- [d200248](https://github.com/Cognis-Labs-HQ/Cognis/commit/d20024874c2667f0afa0bc1b8de1c03d926e2a45)

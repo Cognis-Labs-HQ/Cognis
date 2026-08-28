@@ -20,4 +20,4 @@
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/7a82d1050c2453aaca2165271dbf75ae2f2c9876
+- [7a82d10](https://github.com/Cognis-Labs-HQ/Cognis/commit/7a82d1050c2453aaca2165271dbf75ae2f2c9876)

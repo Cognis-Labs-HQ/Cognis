@@ -28,4 +28,4 @@ Teks yang diketik di komposer pesan yang belum dikirim tidak lagi hilang ketika 
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf607d2e31db00d07bdc6e7a247b2e1795857c2
+- [3cf607d](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf607d2e31db00d07bdc6e7a247b2e1795857c2)

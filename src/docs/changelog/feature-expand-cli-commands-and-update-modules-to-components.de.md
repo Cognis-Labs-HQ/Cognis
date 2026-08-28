@@ -60,4 +60,4 @@ Komponenten-CLI-Plugins prüfen nun die Komponentenverfügbarkeit vor der Regist
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/555964b626fd72acf48154ab588e2b016f8affdd
+- [555964b](https://github.com/Cognis-Labs-HQ/Cognis/commit/555964b626fd72acf48154ab588e2b016f8affdd)

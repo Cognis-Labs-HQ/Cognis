@@ -8,4 +8,4 @@ New posts default to the visibility configured on your profile, while the visibi
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/ada391effcfe608d6ea54bba5b5a461f608ae498
+- [ada391e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ada391effcfe608d6ea54bba5b5a461f608ae498)

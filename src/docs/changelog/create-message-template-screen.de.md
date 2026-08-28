@@ -28,4 +28,4 @@ Eingetippter, noch nicht gesendeter Text im Nachrichtenkompositor geht nicht meh
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf607d2e31db00d07bdc6e7a247b2e1795857c2
+- [3cf607d](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf607d2e31db00d07bdc6e7a247b2e1795857c2)

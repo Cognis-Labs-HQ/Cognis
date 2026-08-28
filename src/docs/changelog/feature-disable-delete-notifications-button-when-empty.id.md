@@ -15,4 +15,4 @@ Kotak masuk notifikasi internal kini menonaktifkan tombol hapus semua yang bersi
 
 ## Commit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/96d6616
+- [96d6616](https://github.com/Cognis-Labs-HQ/Cognis/commit/96d6616)

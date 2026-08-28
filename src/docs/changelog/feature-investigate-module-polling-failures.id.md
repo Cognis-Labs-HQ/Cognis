@@ -38,4 +38,4 @@ Penemuan saat startup kini hanya memindai sumber modul publik. Sumber privat ber
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/54375e318faa1ddbb6fe950f2402957742102af9
+- [54375e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/54375e318faa1ddbb6fe950f2402957742102af9)

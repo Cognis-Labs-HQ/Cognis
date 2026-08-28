@@ -77,4 +77,4 @@
 
 - コンプライアンスおよびリアルタイム更新パス: プロフィールドロップダウンが subnavigation バーより前面に表示されるよう z-index を修正；`hasLibraryModule` チェックをハードコードされた URL ではなくコンポーネント `id` で判断するよう修正し、英語 Library がサブナビに正しく表示されるように改善；`study-sub-navigation.js` の `clearStudySubNavCache()` および `app-router.js` の `invalidateStudyChildComponentCache()` を言語設定保存時に呼び出して、サブナビと SPA ルートが即座に更新されるようにした；`classroom-page.js` と `library-page.js` が Study gateway の i18n 文字列を正しく読み込むよう修正；すべての Study ページの `pageContext` に `subtitle` フィールドを追加；`classroom-page.js` と `library-store.ts` に JSDoc を追加；`LanguageLibraryStore` と `study-sub-navigation.js` の包括的なテストを追加；すべての新規ページで `pageContext` に `subtitle` が必須であることを AI 指示に追加。
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/00faea1c4e08c65105ba917b42b5e6a069f2d9ef
+- [00faea1](https://github.com/Cognis-Labs-HQ/Cognis/commit/00faea1c4e08c65105ba917b42b5e6a069f2d9ef)

@@ -24,4 +24,4 @@ Module settings validation errors now identify the invalid field, allowing the s
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e33bb93726bab2eb01bf3d24f3704d2b4127dda0
+- [e33bb93](https://github.com/Cognis-Labs-HQ/Cognis/commit/e33bb93726bab2eb01bf3d24f3704d2b4127dda0)

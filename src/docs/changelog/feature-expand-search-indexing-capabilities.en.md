@@ -90,4 +90,4 @@ Shared search code now lives only under `src/ui/reuse/search-util/`. Component-o
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e3b679bd480e8caef6e8301f410718570299fb26
+- [e3b679b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e3b679bd480e8caef6e8301f410718570299fb26)

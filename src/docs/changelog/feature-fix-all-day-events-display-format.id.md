@@ -8,4 +8,4 @@ Feed kalender kini mengekspor acara sehari penuh dengan nilai tanggal ICS meskip
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f2dd5c85307e0ccd39fa03cd3e53c31a610ece
+- [a0f2dd5](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f2dd5c85307e0ccd39fa03cd3e53c31a610ece)

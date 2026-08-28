@@ -12,4 +12,4 @@ Adapter undangan registrasi sekarang memastikan tabel tokennya ada sebelum menam
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e68cb5a51f989982b2cea69cb48496fffd9061ee
+- [e68cb5a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e68cb5a51f989982b2cea69cb48496fffd9061ee)

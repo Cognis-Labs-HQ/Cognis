@@ -8,4 +8,4 @@ The Meetings side panel now recovers missing room keys through the Social Messag
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/c84154f4b84a4d0ba97083cc95419c0db477dda5
+- [c84154f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c84154f4b84a4d0ba97083cc95419c0db477dda5)

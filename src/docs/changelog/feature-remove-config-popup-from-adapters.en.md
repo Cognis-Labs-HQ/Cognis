@@ -20,4 +20,4 @@ Disabled Share adapters now remain disabled after a server restart, and previous
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/bde0ea7a65b26aa85e467dc7954e6db3c652e701
+- [bde0ea7](https://github.com/Cognis-Labs-HQ/Cognis/commit/bde0ea7a65b26aa85e467dc7954e6db3c652e701)

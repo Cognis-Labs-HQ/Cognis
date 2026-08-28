@@ -12,4 +12,4 @@ Konfigurasi nginx bawaan tidak lagi menolak isi permintaan API berukuran besar s
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/da55ed2007f45ede24247703d8862de139091ca9
+- [da55ed2](https://github.com/Cognis-Labs-HQ/Cognis/commit/da55ed2007f45ede24247703d8862de139091ca9)

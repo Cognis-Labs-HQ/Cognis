@@ -76,4 +76,4 @@ Administration → Security 内の TFA カードは、既存のローカライ�
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a4201c685f2803dc1fdb3ad9d203f7e262919b03
+- [a4201c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a4201c685f2803dc1fdb3ad9d203f7e262919b03)

@@ -68,4 +68,4 @@ Gespeicherte LDAP-Bind-Passwörter werden aus den Antworten der Administrations-
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/88fe3b0bec731d1c090768792cd73cea7264106e
+- [88fe3b0](https://github.com/Cognis-Labs-HQ/Cognis/commit/88fe3b0bec731d1c090768792cd73cea7264106e)

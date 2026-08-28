@@ -48,4 +48,4 @@ Console Logging と File Logging の行は、無効化できない必須アダ�
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/1a843d6bcc3ff03b2c40d841f75d29d79da7dc6d
+- [1a843d6](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a843d6bcc3ff03b2c40d841f75d29d79da7dc6d)

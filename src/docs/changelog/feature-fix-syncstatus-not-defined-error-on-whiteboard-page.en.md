@@ -8,4 +8,4 @@ The whiteboard now reads synchronization state from its status controller, preve
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/50f142b2dd6c7085b4271f469f66aabd0e18706c
+- [50f142b](https://github.com/Cognis-Labs-HQ/Cognis/commit/50f142b2dd6c7085b4271f469f66aabd0e18706c)

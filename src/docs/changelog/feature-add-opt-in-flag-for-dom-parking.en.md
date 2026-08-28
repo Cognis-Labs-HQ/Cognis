@@ -12,4 +12,4 @@ The embedded Jitsi Meet page enables full DOM parking so its stateful iframe sur
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/44d57a98837df3d5ed38f8bd17413fa3e2a32904
+- [44d57a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/44d57a98837df3d5ed38f8bd17413fa3e2a32904)

@@ -24,4 +24,4 @@ Die Administration listet jetzt die Adapter für Dateispeicher, Datenbank und Pr
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a1669782a660f01000ed49047ee7cfc5cf9d20cf
+- [a166978](https://github.com/Cognis-Labs-HQ/Cognis/commit/a1669782a660f01000ed49047ee7cfc5cf9d20cf)

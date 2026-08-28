@@ -8,4 +8,4 @@ Wenn ein Administrator einen TFA-Adapter deaktiviert, den Nutzer zuvor eingerich
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/5b67ac95fe2b594f8b76c38d73dfdf5adf945dbf
+- [5b67ac9](https://github.com/Cognis-Labs-HQ/Cognis/commit/5b67ac95fe2b594f8b76c38d73dfdf5adf945dbf)

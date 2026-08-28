@@ -12,4 +12,4 @@ Kartu pendaftaran hanya ditampilkan saat autentikasi Lokal dipilih.
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/6ba5669501b4bf4a6e361c7ed617e9f96280dbf3
+- [6ba5669](https://github.com/Cognis-Labs-HQ/Cognis/commit/6ba5669501b4bf4a6e361c7ed617e9f96280dbf3)

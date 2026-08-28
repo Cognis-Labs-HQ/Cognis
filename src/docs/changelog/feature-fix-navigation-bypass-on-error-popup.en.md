@@ -8,4 +8,4 @@ Closing the runtime error popup no longer navigates away from a page that had al
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/dfb83b1d6e8faa104500cf75a9856c8c7a210511
+- [dfb83b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfb83b1d6e8faa104500cf75a9856c8c7a210511)

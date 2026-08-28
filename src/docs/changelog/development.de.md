@@ -26,4 +26,4 @@ Die zwei `catch(() => {})` in `installRuntimeErrorHandlers` protokollieren jetzt
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/c2dd07a630b453a51f9793ab2855ab96150b058c
+- [c2dd07a](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2dd07a630b453a51f9793ab2855ab96150b058c)

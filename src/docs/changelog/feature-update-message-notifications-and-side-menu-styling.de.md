@@ -16,4 +16,4 @@ Die Nachrichtenkopfzeile bietet nun eine klar beschriftete Schaltfläche „Raum
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/779de3d355f971af7374bee9128672f713b80a64
+- [779de3d](https://github.com/Cognis-Labs-HQ/Cognis/commit/779de3d355f971af7374bee9128672f713b80a64)

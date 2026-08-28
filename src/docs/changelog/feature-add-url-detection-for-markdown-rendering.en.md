@@ -12,4 +12,4 @@ Only HTTP and HTTPS destinations render as links, preventing mail and app-specif
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/b69825ff2436e850fe55db64531d012ddda87b20
+- [b69825f](https://github.com/Cognis-Labs-HQ/Cognis/commit/b69825ff2436e850fe55db64531d012ddda87b20)

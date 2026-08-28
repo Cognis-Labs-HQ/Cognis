@@ -24,4 +24,4 @@ warna halaman biru-putih terang.
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/ca2c1bc892e1236a186d35264745f40c369a8ed0
+- [ca2c1bc](https://github.com/Cognis-Labs-HQ/Cognis/commit/ca2c1bc892e1236a186d35264745f40c369a8ed0)

@@ -8,4 +8,4 @@ Notifikasi kalender kini memakai kata-kata yang lebih ramah untuk undangan, resp
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/6a045f1b3ab0cb3a200172780d9c597d283e5ed5
+- [6a045f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a045f1b3ab0cb3a200172780d9c597d283e5ed5)

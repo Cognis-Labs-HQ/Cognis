@@ -8,4 +8,4 @@ Ajakan mendaftar di halaman login kini memakai teks biru yang lebih gelap, warna
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/4b3bb8aea341139990a3b92b3bd7ce119a9b3daa
+- [4b3bb8a](https://github.com/Cognis-Labs-HQ/Cognis/commit/4b3bb8aea341139990a3b92b3bd7ce119a9b3daa)

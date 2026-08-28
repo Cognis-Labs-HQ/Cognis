@@ -8,4 +8,4 @@ Kalenderfeeds exportieren ganztägige Ereignisse jetzt auch dann als ICS-Datumsw
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f2dd5c85307e0ccd39fa03cd3e53c31a610ece
+- [a0f2dd5](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f2dd5c85307e0ccd39fa03cd3e53c31a610ece)

@@ -28,4 +28,4 @@ unterstützten Sprachen.
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/db722676f71a4fd6db477b42b735a7b0692da365
+- [db72267](https://github.com/Cognis-Labs-HQ/Cognis/commit/db722676f71a4fd6db477b42b735a7b0692da365)

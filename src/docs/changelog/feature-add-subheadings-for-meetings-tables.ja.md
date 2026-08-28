@@ -16,4 +16,4 @@ Administration → Meetings ビューでは、アクティブな Jitsi Meet と�
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/944f645f21aac7c511cd60646c76923a382f7e8a
+- [944f645](https://github.com/Cognis-Labs-HQ/Cognis/commit/944f645f21aac7c511cd60646c76923a382f7e8a)
