@@ -55,17 +55,17 @@ function renderDependencyCard(entry, i18n) {
             : "ui.app.modules.optional";
     const selector =
         entry.kind === "soft"
-            ? `<input class="app-radio" type="checkbox" value="${escapeHtml(entry.reference)}" data-soft-dependency${dependency ? "" : " disabled"} aria-label="${escapeHtml(name)}">`
+            ? `<input class="choice-checkbox" type="checkbox" value="${escapeHtml(entry.reference)}" data-soft-dependency${dependency ? "" : " disabled"} aria-label="${escapeHtml(name)}">`
             : "";
     const details = dependency
-        ? `<a class="btn-neutral module-dependency-details" href="/administration/modules/${encodeURIComponent(dependency.uuid)}" aria-label="${escapeHtml(`${i18n.t("ui.reuse.details")}: ${name}`)}">→</a>`
+        ? `<a class="btn-neutral module-dependency-details" href="/administration/modules/${encodeURIComponent(dependency.uuid)}" aria-label="${escapeHtml(`${i18n.t("ui.reuse.details")}: ${name}`)}"><span class="module-icon module-icon-forward" aria-hidden="true"></span></a>`
         : "";
     return `<article class="module-dependency-card${isSatisfied(entry) ? " is-satisfied" : ""}">
       ${selector}
       <div class="module-dependency-card-copy">
         <h3>${escapeHtml(name)}</h3>
         <div class="module-dependency-pills">
-          <span class="state-pill ${entry.kind === "hard" ? "pill-required" : "pill-optional"}">${escapeHtml(i18n.t(kindKey))}</span>
+          <span class="state-pill ${entry.kind === "hard" ? "pill-disabled" : "pill-available"}">${escapeHtml(i18n.t(kindKey))}</span>
           ${dependency?.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}
         </div>
       </div>

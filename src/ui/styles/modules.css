@@ -27,6 +27,10 @@
 .module-icon-back {
     background-image: url("/static/assets/reuse/arrow-back-light.svg");
 }
+.module-icon-forward {
+    background-image: url("/static/assets/reuse/arrow-back-light.svg");
+    transform: rotate(180deg);
+}
 .module-icon-refresh {
     background-image: url("/static/assets/reuse/refresh-light.svg");
 }
@@ -34,6 +38,9 @@
     background-image: url("/static/assets/reuse/settings-cog-light.svg");
 }
 body[data-theme="dark"] .module-icon-back {
+    background-image: url("/static/assets/reuse/arrow-back-dark.svg");
+}
+body[data-theme="dark"] .module-icon-forward {
     background-image: url("/static/assets/reuse/arrow-back-dark.svg");
 }
 body[data-theme="dark"] .module-icon-refresh {
@@ -157,23 +164,17 @@ body[data-theme="dark"] .module-icon-settings {
 
 .module-dependency-card {
     align-items: center;
-    background: var(--surface-color, var(--card-bg));
+    background: var(--surface-color);
     border: 1px solid var(--border-color);
-    border-radius: 0.75rem;
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.08);
     display: flex;
     gap: 0.75rem;
-    padding: 0.875rem;
+    padding: 1rem;
 }
 
 .module-dependency-card.is-satisfied {
     opacity: 0.72;
-}
-
-.module-dependency-card input {
-    accent-color: var(--color-primary, #4c7dff);
-    block-size: 1.1rem;
-    flex: 0 0 auto;
-    inline-size: 1.1rem;
 }
 
 .module-dependency-card-copy {
@@ -565,22 +566,4 @@ body[data-theme="light"]:has(.module-detail) .global-topbar {
     display: grid;
     gap: 0.125rem;
     overflow-wrap: anywhere;
-}
-
-.pill-required {
-    background: color-mix(
-        in srgb,
-        var(--color-danger, #b42318) 14%,
-        transparent
-    );
-    color: var(--color-danger, #b42318);
-}
-
-.pill-optional {
-    background: color-mix(
-        in srgb,
-        var(--color-primary, #4c7dff) 14%,
-        transparent
-    );
-    color: var(--color-primary, #315eca);
 }

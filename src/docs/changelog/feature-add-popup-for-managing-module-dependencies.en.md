@@ -19,3 +19,7 @@ Undeclared symlink aliases no longer trigger a SHASUM warning when they resolve 
 ## Dependency cards for install and enable
 
 Dependency confirmation now presents complete module cards with required, optional, and recommended labels plus direct detail links. The check runs before both installation and enablement and is skipped when every dependency is already enabled.
+
+## Consistent dependency controls
+
+Dependency cards now reuse the application’s established status-pill palette and shared custom checkbox control. Detail navigation uses the existing themed SVG chevron asset instead of a text arrow.

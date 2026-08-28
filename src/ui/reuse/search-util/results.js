@@ -346,7 +346,7 @@ export function renderFlatResults(
             listItem.dataset.searchResultClass = item.resultClass;
             const checkbox = document.createElement("input");
             checkbox.type = "checkbox";
-            checkbox.className = "search-popup-result-checkbox";
+            checkbox.className = "choice-checkbox";
             checkbox.checked = Boolean(isSelected);
             checkbox.dataset.key = uniqueItemKey;
             checkbox.setAttribute("aria-hidden", "true");

@@ -19,3 +19,7 @@ Nicht deklarierte symbolische Aliasse lösen keine SHASUM-Warnung mehr aus, wenn
 ## Abhängigkeitskarten für Installation und Aktivierung
 
 Die Abhängigkeitsbestätigung zeigt nun vollständige Modulkarten mit Kennzeichnungen für erforderliche, optionale und empfohlene Module sowie direkten Detaillinks. Die Prüfung erfolgt vor Installation und Aktivierung und wird übersprungen, wenn alle Abhängigkeiten bereits aktiviert sind.
+
+## Einheitliche Abhängigkeitssteuerung
+
+Abhängigkeitskarten verwenden nun die etablierte Status-Pill-Farbpalette und das gemeinsame benutzerdefinierte Kontrollkästchen der Anwendung. Die Detailnavigation nutzt statt eines Textpfeils das vorhandene themenfähige SVG-Chevron.

@@ -50,5 +50,9 @@ test("module dependency popup renders navigable cards and action-specific labels
     assert.match(source, /module-dependency-details/);
     assert.match(source, /ui\.app\.modules\.optional/);
     assert.match(source, /dependency\?\.recommended/);
+    assert.match(source, /choice-checkbox/);
+    assert.match(source, /pill-disabled/);
+    assert.match(source, /pill-available/);
+    assert.match(source, /module-icon-forward/);
     assert.match(source, /label: i18n\.t\(`ui\.reuse\.\$\{action\}`\)/);
 });

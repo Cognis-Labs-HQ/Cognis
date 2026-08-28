@@ -367,35 +367,6 @@ body[data-theme="light"] .slider::before {
     color: #f59e0b;
 }
 
-.state-pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 999px;
-    padding: 6px 14px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    min-height: 28px;
-    min-width: 100px;
-    align-self: center;
-}
-
-.pill-active {
-    background: rgba(16, 185, 129, 0.24);
-    color: #22c55e;
-}
-
-.pill-available {
-    background: rgba(245, 158, 11, 0.24);
-    color: #f59e0b;
-}
-
-.pill-disabled {
-    background: rgba(239, 68, 68, 0.24);
-    color: #ef4444;
-}
-
 @media (max-width: 640px) {
     .module-row summary,
     .module-row-summary {

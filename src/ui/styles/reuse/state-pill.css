@@ -1,0 +1,28 @@
+.state-pill {
+    align-items: center;
+    align-self: center;
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 13px;
+    font-weight: 700;
+    justify-content: center;
+    letter-spacing: 0.02em;
+    min-height: 28px;
+    min-width: 100px;
+    padding: 6px 14px;
+}
+
+.pill-active {
+    background: rgba(16, 185, 129, 0.24);
+    color: #22c55e;
+}
+
+.pill-available {
+    background: rgba(245, 158, 11, 0.24);
+    color: #f59e0b;
+}
+
+.pill-disabled {
+    background: rgba(239, 68, 68, 0.24);
+    color: #ef4444;
+}

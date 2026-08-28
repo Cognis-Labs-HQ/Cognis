@@ -428,9 +428,7 @@ export function openSearchPopup({
                 ".search-popup-result--selectable",
             );
             for (const item of allItems) {
-                const checkbox = item.querySelector(
-                    ".search-popup-result-checkbox",
-                );
+                const checkbox = item.querySelector(".choice-checkbox");
                 if (!(checkbox instanceof HTMLInputElement)) continue;
                 const key = checkbox.dataset.key ?? "";
                 const isChecked = multiSelectState.selected.has(key);

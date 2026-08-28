@@ -19,3 +19,7 @@ Alias tautan simbolis yang tidak dideklarasikan tidak lagi memicu peringatan SHA
 ## Kartu dependensi untuk instalasi dan pengaktifan
 
 Konfirmasi dependensi kini menampilkan kartu modul lengkap dengan label wajib, opsional, dan direkomendasikan serta tautan langsung ke detail. Pemeriksaan dijalankan sebelum instalasi maupun pengaktifan dan dilewati ketika semua dependensi sudah aktif.
+
+## Kontrol dependensi yang konsisten
+
+Kartu dependensi kini menggunakan kembali palet pil status aplikasi dan kontrol kotak centang khusus bersama. Navigasi detail memakai aset chevron SVG bertema yang sudah ada, bukan panah teks.
