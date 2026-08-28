@@ -22,6 +22,7 @@ Historical commit links now point to the current Cognis-Labs-HQ/Cognis repositor
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/968c109885b2db1e168a7c62cc29b3c6be3d7b27
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0a224676b04a06123eb6f4dd256051d6a2fc5933
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/4c60e8410ee4b50e01fea0248b521199757f48fc
 
 ## Complete changelog provenance
 
@@ -38,3 +39,7 @@ Release changelog popups now apply the same short-reference formatter as the ful
 ## Commit provenance workflow
 
 AI contribution instructions now require a final changelog-only bookkeeping commit, when requested before implementation, that records the immediately preceding implementation commit.
+
+## Refresh generated documentation
+
+Documentation ingestion now refreshes the archive for the currently installed component version, so factual source corrections such as repository URL updates replace stale generated copies while older version snapshots remain available.

@@ -22,6 +22,7 @@ Tautan commit historis kini mengarah ke repositori Cognis-Labs-HQ/Cognis saat in
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/968c109885b2db1e168a7c62cc29b3c6be3d7b27
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0a224676b04a06123eb6f4dd256051d6a2fc5933
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/4c60e8410ee4b50e01fea0248b521199757f48fc
 
 ## Asal changelog yang lengkap
 
@@ -38,3 +39,7 @@ Popup changelog rilis kini menerapkan pemformat referensi pendek yang sama seper
 ## Alur asal commit
 
 Instruksi kontribusi AI kini mewajibkan, jika diminta sebelum implementasi, commit pembukuan akhir yang hanya mengubah changelog dan mencatat commit implementasi tepat sebelumnya.
+
+## Perbarui dokumentasi yang dihasilkan
+
+Proses penyerapan dokumentasi kini memperbarui arsip untuk versi komponen yang sedang terpasang. Dengan demikian, koreksi faktual pada sumber seperti pembaruan URL repositori menggantikan salinan lama yang dihasilkan, sementara cuplikan versi terdahulu tetap tersedia.

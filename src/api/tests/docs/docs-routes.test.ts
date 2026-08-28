@@ -106,6 +106,37 @@ test("docs snapshots manifest versions across software starts", async () => {
     await rm(fixtureRoot, { recursive: true, force: true });
 });
 
+test("docs refresh archived content for the installed version", async () => {
+    const fixtureRoot = await mkdtemp(join(tmpdir(), "cognis-docs-refresh-"));
+    const sourceRoot = join(fixtureRoot, "src");
+    const componentRoot = join(sourceRoot, "gateways", "example");
+    const docsRoot = join(componentRoot, "docs");
+    const archiveRoot = join(fixtureRoot, "archive");
+    await mkdir(docsRoot, { recursive: true });
+    await writeFile(
+        join(componentRoot, "package.json"),
+        JSON.stringify({ version: "1.0.0" }),
+    );
+    await writeFile(join(docsRoot, "index.en.md"), "# Example\n\nOld link");
+    await request(
+        createDocsRoutes({ sourceRoot, archiveRoot }),
+        "/api/v1/docs/latest/gateways/example",
+    );
+
+    await writeFile(
+        join(docsRoot, "index.en.md"),
+        "# Example\n\nCorrected link",
+    );
+    const refreshed = await request(
+        createDocsRoutes({ sourceRoot, archiveRoot }),
+        "/api/v1/docs/latest/gateways/example",
+    );
+
+    assert.match(refreshed.body.data.markdown, /Corrected link/);
+    assert.doesNotMatch(refreshed.body.data.markdown, /Old link/);
+    await rm(fixtureRoot, { recursive: true, force: true });
+});
+
 test("docs route handles docs index with markdown slugs", async () => {
     const route = createDocsRoutes();
     let status = 0;

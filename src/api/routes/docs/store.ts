@@ -292,14 +292,7 @@ export async function initializeDocsStore(
                     versionDirectory,
                     `${languageFromPath(sourceFile)}.md`,
                 );
-                try {
-                    await writeFile(destination, await readFile(sourceFile), {
-                        flag: "wx",
-                    });
-                } catch (error) {
-                    if ((error as NodeJS.ErrnoException).code !== "EEXIST")
-                        throw error;
-                }
+                await writeFile(destination, await readFile(sourceFile));
             }
             storedDocs.set(doc.slug, {
                 fileStem: doc.fileStem,
