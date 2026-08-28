@@ -1,5 +1,7 @@
 # Nama Pengguna & Kata Sandi
 
+**Cabang Fitur:** copilot/make-usernames-case-insensitive
+
 ## Nama pengguna kini tidak peka huruf besar/kecil dan hanya ASCII
 
 Nama pengguna dinormalisasi ke huruf kecil saat pendaftaran dan login. Hanya karakter ASCII yang dapat dicetak yang diizinkan, dengan panjang maksimal 25 karakter. Nama pengguna yang tidak valid ditolak dengan kode kesalahan yang jelas.
@@ -15,3 +17,7 @@ Selama pendaftaran, kolom kata sandi menampilkan umpan balik langsung saat Anda 
 ## Modul pemeriksaan kriteria yang dapat digunakan kembali
 
 Fungsi baru `attachCriteriaCheck` di `src/ui/reuse/criteria-check.js` menyediakan validasi langsung yang fleksibel dan aksesibel untuk kolom formulir apa pun. Setiap kriteria dapat memiliki pesan kegagalan sendiri; pesan umum yang dapat dikonfigurasi digunakan sebagai cadangan.
+
+## Komit
+
+- [2c806b8](https://github.com/Cognis-Labs-HQ/Cognis/commit/2c806b81e4aef343918c7dfa36cdf6d7a2191802)

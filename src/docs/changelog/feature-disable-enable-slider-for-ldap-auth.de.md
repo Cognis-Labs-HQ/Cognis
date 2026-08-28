@@ -1,5 +1,7 @@
 # Sicherere LDAP-Aktivierung
 
+**Feature-Zweig:** feature-disable-enable-slider-for-ldap-auth
+
 ## Vor der Aktivierung Server konfigurieren
 
 Der Aktivierungsregler des LDAP-Adapters bleibt nun deaktiviert, bis mindestens ein LDAP-Server konfiguriert ist. Dadurch werden ungültige Aktivierungsanfragen verhindert.
@@ -31,3 +33,7 @@ Entfernte Authentifizierungsquellen werden abgeglichen, bevor die neue Konfigura
 ## Einrichtungsfehler und Tastaturaktionen bleiben im richtigen Kontext
 
 Die LDAP-Einrichtung zeigt Serverfehler an den erzeugten Feldern an, belässt Anmeldedatenfehler auf der Anmeldedatenseite und verwendet die Eingabetaste zur Prüfung, ohne den Server vorzeitig zu speichern.
+
+## Änderungen
+
+- [96257fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/96257fa81b49645e38ae015a12d7433008d903e0)

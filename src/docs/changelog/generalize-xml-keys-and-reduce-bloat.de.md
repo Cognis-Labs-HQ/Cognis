@@ -1,5 +1,7 @@
 # i18n-Strings vereinfachen
 
+**Feature-Zweig:** copilot/generalize-xml-keys-and-reduce-bloat
+
 ## Zusammenfassung
 
 Komponentenspezifische i18n-Schlüssel wurden aus den zentralen Sprachdateien in komponenteneigene `languages/`-Verzeichnisse ausgelagert. Die i18n-Schicht wurde um `loadComponentStrings` und `extendI18n` erweitert, damit Komponenten ihre eigenen Strings laden können, ohne den globalen Namensraum zu belasten. Etwa 90 veraltete und fehlplatzierten Schlüssel wurden aus den zentralen Strings-Dateien entfernt.
@@ -29,9 +31,9 @@ Komponentenspezifische i18n-Schlüssel wurden aus den zentralen Sprachdateien in
 - `src/ui/app/users/index.js` — save_failed-Schlüssel auf `ui.reuse.generic.save_failed` umgestellt
 - `src/ui/languages/*/strings.xml` — ~90 veraltete/verschobene Schlüssel entfernt, `ui.reuse.generic.save_failed` hinzugefügt
 
-## Commits
+## Änderungen
 
-- https://github.com/le-firehawk/Cognis/commit/8e82369
-- https://github.com/le-firehawk/Cognis/commit/867e397
-- https://github.com/le-firehawk/Cognis/commit/8ef54f9
-- https://github.com/le-firehawk/Cognis/commit/f624f07
+- [8e82369](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e82369)
+- [867e397](https://github.com/Cognis-Labs-HQ/Cognis/commit/867e397)
+- [8ef54f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ef54f9)
+- [f624f07](https://github.com/Cognis-Labs-HQ/Cognis/commit/f624f07)

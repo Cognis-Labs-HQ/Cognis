@@ -1,5 +1,7 @@
 # Pooled PostgreSQL Connections
 
+**Feature Branch:** feature-refactor-postgresql-adapter-for-connection-pooling
+
 ## PostgreSQL now uses a bounded connection pool
 
 Ordinary database operations can run concurrently through `pg.Pool`, while every transaction remains pinned to one client through commit or rollback. Environment settings bound pool size and connection, idle, and optional statement timeouts.
@@ -63,3 +65,7 @@ The container entrypoint percent-encodes PostgreSQL and MariaDB credentials befo
 ## Keep database components isolated and versioned
 
 Pool setting validation now belongs to each database adapter, and the adapter and gateway workspace versions and dependency ceilings are synchronized.
+
+## Commits
+
+- [6c88739](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c887390888a10a8acbf3535860f4d85d9908cef)

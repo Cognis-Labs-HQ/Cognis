@@ -1,5 +1,7 @@
 # Klassen & Studiehub
 
+**Feature-Zweig:** copilot/create-student-page-view
+
 ## Zusammenfassung
 
 Fügt eine schülerspezifische Seite „Meine Klassen" unter `/my-classes` hinzu, auf der Schüler ihre eingeschriebenen Klassen einsehen, Beitrittsanträge für verfügbare Klassen stellen und Klassen verlassen können. Die Lehrerseite wurde um eine Sprachfilterung, Schülerverwaltung pro Klasse, Schülersuche sowie die Möglichkeit erweitert, Schüler einzuladen und Beitrittsanträge zu genehmigen oder abzulehnen.
@@ -67,10 +69,12 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 
 - Nachbesserung: zusätzlichen Sprachselektor in der Bibliothek entfernt (Library nutzt jetzt den aktuell gewählten Study-Sprachkontext), fehlende Englisch-Option in der Study-Sprachnavigation korrigiert, Classroom ans Ende der Study-Subnavigation verschoben, schattierten "Keine Klassen verfügbar"-Leerzustand ergänzt und Abschneiden des Profil-Dropdowns unter der globalen Navbar behoben.
 
-## Commits
+## Änderungen
 
 Siehe Branch `copilot/create-student-page-view` für den Commit-Verlauf.
 
 - Alle englischen Sprachdaten wurden aus dem fest codierten UI in die Bibliothek migriert: `data/characters/latin.json` mit den 26 lateinischen Buchstaben (A–Z) wurde hinzugefügt. Die Alphabet-Seite lädt die Zeichen nun aus der Bibliotheks-API statt sie fest zu kodieren. Das generische `LanguageLibraryStore`-Muster wurde in `reuse/library-store.ts` verschoben; beide Sprachmodule (Englisch und Japanisch) nutzen diese gemeinsame Implementierung. Die gemeinsame Funktion `mountStudyLibraryPage` in `reuse/library-page.js` ersetzt duplizierte Bibliotheks-CRUD-UI-Logik. Duplizierte CSS-Klassen aus komponentenspezifischen Stylesheets wurden entfernt. Die KI-Anweisungen und die Dokumentation wurden aktualisiert, um klar zu machen, dass die Bibliothek der einzige kanonische Datenspeicher für alle Sprachmodulinhalt ist.
 
 - Konformitäts- und Echtzeit-Aktualisierungspass: Der z-Index des Benutzermenüs (Profil-Dropdown) wurde so korrigiert, dass es über der Seiten-Unternavigationsleiste erscheint; die `hasLibraryModule`-Prüfung wurde korrigiert, um nach Komponenten-`id` statt nach einer fest kodierten URL zu suchen, sodass die englische Bibliothek korrekt in der Unternavigation erscheint; `clearStudySubNavCache()` aus `study-sub-navigation.js` und `invalidateStudyChildComponentCache()` aus `app-router.js` werden beim Speichern von Spracheinstellungen aufgerufen, damit Unternavigation und SPA-Routen sofort aktualisiert werden; `classroom-page.js` und `library-page.js` laden nun korrekt die i18n-Strings des Study-Gateways; alle Study-Seiten haben jetzt ein `subtitle`-Feld in `pageContext`; JSDoc-Kommentare wurden zu `classroom-page.js` und `library-store.ts` hinzugefügt; umfangreiche Tests wurden für `LanguageLibraryStore` und `study-sub-navigation.js` hinzugefügt; die KI-Anweisungen wurden aktualisiert, um `subtitle` in `pageContext` für alle neuen Seiten zu verlangen.
+
+- [00faea1](https://github.com/Cognis-Labs-HQ/Cognis/commit/00faea1c4e08c65105ba917b42b5e6a069f2d9ef)

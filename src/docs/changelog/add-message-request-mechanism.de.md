@@ -1,5 +1,7 @@
 # PR-Changelog
 
+**Feature-Zweig:** copilot/add-message-request-mechanism
+
 ## Zusammenfassung
 
 Zusätzlich wurde ein mitgliedschaftsbewusstes Direktchat-Verhalten ergänzt: Verlässt ein Nutzer einen Zwei-Personen-Chat, wird dieser für den verbleibenden Nutzer archiviert, in einem eigenen Archivbereich angezeigt und das Senden darin gesperrt. Beim erneuten Kontakt wird ein neuer Direktchat erstellt. Außerdem wurden Avatare in Messages einheitlich auf Profilseiten verlinkt, sodass Hover-Profilvorschau und Klick-Navigation überall gleich funktionieren.
@@ -46,11 +48,11 @@ beschreibendes Wort („Like", „Heart", „Haha", „Celebrate").
 - Versionsindex:
     - `src/docs/versions.en.md`
 
-## Commits
+## Änderungen
 
-- [d4f7f6d](https://github.com/le-firehawk/Cognis/commit/d4f7f6d)
-- [fc3febe](https://github.com/le-firehawk/Cognis/commit/fc3febe)
-- [11eebfa](https://github.com/le-firehawk/Cognis/commit/11eebfa)
-- [2db27c2](https://github.com/le-firehawk/Cognis/commit/2db27c2)
-- [f08f248](https://github.com/le-firehawk/Cognis/commit/f08f248ea1b20fef4b7e5452e19a2857ed4b785e)
-- [5d28d03](https://github.com/le-firehawk/Cognis/commit/5d28d03)
+- [d4f7f6d](https://github.com/Cognis-Labs-HQ/Cognis/commit/d4f7f6d)
+- [fc3febe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc3febe)
+- [11eebfa](https://github.com/Cognis-Labs-HQ/Cognis/commit/11eebfa)
+- [2db27c2](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db27c2)
+- [f08f248](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08f248ea1b20fef4b7e5452e19a2857ed4b785e)
+- [5d28d03](https://github.com/Cognis-Labs-HQ/Cognis/commit/5d28d03)

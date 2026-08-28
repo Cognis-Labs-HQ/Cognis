@@ -1,5 +1,7 @@
 # Popup pengaturan modul selaras dengan adapter
 
+**Cabang Fitur:** feature-investigate-nextcloud-module-settings-loading-issue
+
 ## Baris modul kini membuka pengaturan terpadu
 
 Jitsi Meet dan Nextcloud Whiteboard kini membuka konfigurasi dari baris modul itu sendiri, bukan melalui ikon roda gigi terpisah, sehingga selaras dengan perilaku konfigurasi adapter.
@@ -19,3 +21,7 @@ Pengaturan Nextcloud Whiteboard kini menerima pembaruan URL server dan batas ung
 ## Validasi per kolom menjaga pengaturan tetap terbuka
 
 Kesalahan validasi pengaturan modul kini menyebutkan kolom yang tidak valid, sehingga popup konfigurasi bersama tetap terbuka dan menandai input tersebut alih-alih membuang perubahan admin yang valid.
+
+## Komit
+
+- [e33bb93](https://github.com/Cognis-Labs-HQ/Cognis/commit/e33bb93726bab2eb01bf3d24f3704d2b4127dda0)

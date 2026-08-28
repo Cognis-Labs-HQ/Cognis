@@ -1,5 +1,7 @@
 # Menonaktifkan Aksi Hapus
 
+**Cabang Fitur:** feature-disable-delete-notifications-button-when-empty
+
 ## Ringkasan
 
 Kotak masuk notifikasi internal kini menonaktifkan tombol hapus semua yang bersifat destruktif ketika tidak ada notifikasi. Perubahan ini mencegah popup konfirmasi yang tidak perlu dan menjaga status aksi tetap selaras dengan isi kotak masuk.
@@ -13,4 +15,4 @@ Kotak masuk notifikasi internal kini menonaktifkan tombol hapus semua yang bersi
 
 ## Commit
 
-- https://github.com/le-firehawk/Cognis/commit/96d6616
+- [96d6616](https://github.com/Cognis-Labs-HQ/Cognis/commit/96d6616)

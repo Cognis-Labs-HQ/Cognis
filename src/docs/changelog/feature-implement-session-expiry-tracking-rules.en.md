@@ -1,5 +1,7 @@
 # Respect personal session timeouts
 
+**Feature Branch:** feature-implement-session-expiry-tracking-rules
+
 ## Keep personal timeout choices within the global limit
 
 User session timeout preferences take precedence when they are shorter than the administration limit. Logging in or resetting adopts the current global timeout as a personal value instead of continuously following later increases. A shorter global limit lowers and stores the personal value, while a longer global limit leaves it unchanged. The duration controls offer only units that fit within the limit and cap each unit's number field at its greatest permitted whole value.
@@ -15,3 +17,7 @@ The global Never setting now overrides existing personal timeouts, and a tempora
 ## Propagate the gateway package version
 
 The aggregate Cognis gateways package and every dependent local component now declare the updated tested version, keeping workspace manifests and the lockfile aligned with the Authentication gateway change.
+
+## Commits
+
+- [e92abbe](https://github.com/Cognis-Labs-HQ/Cognis/commit/e92abbeda31ee1306beacce0bb7410129536cf00)

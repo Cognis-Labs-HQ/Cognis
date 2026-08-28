@@ -1,5 +1,7 @@
 # Kalenderfreigaben
 
+**Feature-Zweig:** copilot/fix-calendar-functionality
+
 ## Mehrere Links sind wieder da
 
 Das Kalender-Popup behält jetzt alle erzeugten Freigabelinks, statt nur das
@@ -64,3 +66,7 @@ der Liste, ohne auf die Netzwerkanfrage zu warten.
 Ausstehende Kalendereinladungen für Ereignisse, deren Endzeit bereits verstrichen
 ist, werden nicht mehr in der Einladungsliste angezeigt. Zuvor konnten vergangene
 Ereignisse mit ausstehender Antwort weiterhin im Bereich „Bevorstehend" erscheinen.
+
+## Änderungen
+
+- [4137bff](https://github.com/Cognis-Labs-HQ/Cognis/commit/4137bffbc99535676bf8d9a32060aa302556c333)

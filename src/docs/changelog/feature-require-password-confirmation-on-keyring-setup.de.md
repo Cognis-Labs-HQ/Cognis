@@ -1,5 +1,7 @@
 # Sicherere Schlüsselbundeinrichtung
 
+**Feature-Zweig:** feature-require-password-confirmation-on-keyring-setup
+
 ## Neue Schlüsselbundpasswörter bestätigen
 
 Bei der Ersteinrichtung nach der Anmeldung und bei neu erstellten Schlüsselbunden müssen Benutzer ein eigenes Schlüsselbundpasswort wiederholen. Bei abweichenden Eingaben wird die Erstellung verhindert.
@@ -15,3 +17,7 @@ Kontoinstanz-Identitäten unterscheiden gelöschte und neu erstellte Benutzer vo
 ## Zuverlässige Einrichtungsaktionen
 
 Nach einem Abbruch bleibt die Schlüsselbunderstellung in den Einstellungen bedienbar. Die Auswahlwerte für die automatische Sperre stammen bei Einrichtung und Einstellungen aus derselben Definition, und die Erstellung mit dem Benutzerpasswort verwendet die Darstellung für eine erstellende Aktion.
+
+## Änderungen
+
+- [77460b6](https://github.com/Cognis-Labs-HQ/Cognis/commit/77460b6c93444a0c0c8d467b879551c38dedcc41)

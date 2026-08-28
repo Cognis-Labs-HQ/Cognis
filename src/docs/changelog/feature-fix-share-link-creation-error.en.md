@@ -1,5 +1,7 @@
 # Share Popups Restored
 
+**Feature Branch:** feature-fix-share-link-creation-error
+
 ## Consistent share popup
 
 Whiteboards now open the Share gateway's drop-in popup with their resource identifier and capabilities, following the same gateway integration used by other components. The gateway remains responsible for share methods and token requests.
@@ -395,3 +397,7 @@ Share editing now preserves explicitly cleared labels, navigation ignores stale 
 ## Keep share popup refresh active
 
 Share popups now keep their refresh interval within the popup lifecycle module, preventing whiteboard sharing from failing when the popup opens.
+
+## Commits
+
+- [5ede8a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ede8a9bd7324f23efc951337e5aa296a63acbd2)

@@ -1,5 +1,7 @@
 # Student Class Membership
 
+**Feature Branch:** copilot/create-student-page-view
+
 ## Summary
 
 Adds a student-facing My Classes page at `/my-classes` for viewing enrolled classes, requesting to join available classes, and leaving classes. Enhances the teacher's Classes page with language filtering, per-class student management, student search, and the ability to invite students and approve or reject join requests.
@@ -74,3 +76,5 @@ Additionally, role labels in the Users page and Dashboard are now fully localise
 See branch `copilot/create-student-page-view` for commit history.
 
 - Migrated all English language data from hardcoded UI into the Library: added `data/characters/latin.json` with the 26 Latin letters (A–Z) for the English module; the Alphabet page now fetches characters from the Library API (`/api/v1/study/languages/en/library/characters`) instead of hardcoding them. Added English Library child component with admin CRUD UI, and created English Library API routes in `en/index.ts`. Promoted the generic language library store from `ja/library/reuse/library-store.ts` to `src/modules/study/languages/reuse/library-store.ts` as `LanguageLibraryStore`; both the English and Japanese modules now use this shared implementation. Created `src/modules/study/languages/reuse/library-page.js` with `mountStudyLibraryPage` — a shared function that replaces duplicated Library CRUD UI logic in both language modules' Library components. Removed duplicated Study sub-navigation CSS classes from component-specific stylesheet files (`alphabet.css`, `library.css`). Updated AI copilot instructions and `study-language-framework.en.md` to make clear that the Library is the single canonical data store for all language module content.
+
+- [00faea1](https://github.com/Cognis-Labs-HQ/Cognis/commit/00faea1c4e08c65105ba917b42b5e6a069f2d9ef)

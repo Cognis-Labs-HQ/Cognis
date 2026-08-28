@@ -1,5 +1,7 @@
 # i18n文字列の汎用化とコアの肥大化解消
 
+**機能ブランチ:** copilot/generalize-xml-keys-and-reduce-bloat
+
 ## 概要
 
 コンポーネント固有のi18nキーをコア言語ファイルから各コンポーネントの`languages/`ディレクトリに移動しました。コンポーネントがグローバル名前空間を汚染せずに独自の文字列を読み込めるよう、i18nレイヤーに`loadComponentStrings`と`extendI18n`を追加しました。コアの文字列ファイルから約90個の不使用・誤配置キーを削除しました。
@@ -29,9 +31,9 @@
 - `src/ui/app/users/index.js` — save_failedキーを`ui.reuse.generic.save_failed`に更新
 - `src/ui/languages/*/strings.xml` — 約90個の不使用/移動済みキーを削除、`ui.reuse.generic.save_failed`を追加
 
-## Commits
+## コミット
 
-- https://github.com/le-firehawk/Cognis/commit/8e82369
-- https://github.com/le-firehawk/Cognis/commit/867e397
-- https://github.com/le-firehawk/Cognis/commit/8ef54f9
-- https://github.com/le-firehawk/Cognis/commit/f624f07
+- [8e82369](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e82369)
+- [867e397](https://github.com/Cognis-Labs-HQ/Cognis/commit/867e397)
+- [8ef54f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ef54f9)
+- [f624f07](https://github.com/Cognis-Labs-HQ/Cognis/commit/f624f07)

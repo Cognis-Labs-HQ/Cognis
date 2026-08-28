@@ -1,5 +1,7 @@
 # PR変更履歴 — Ctxを機能連携の中核にする
 
+**機能ブランチ:** copilot/update-ctx-usage-implementation
+
 ## 概要
 
 コアAPIルート配線と複数のgateway/adapterブートストラップ経路を、
@@ -67,8 +69,8 @@ gateway 所有の UI/API ルートまで広げ、capability の提供箇所で�
 
 ## コミット
 
-- [feb1bbc](https://github.com/le-firehawk/Cognis/commit/feb1bbc)
-- [c6ba65b](https://github.com/le-firehawk/Cognis/commit/c6ba65b)
-- [acaded15](https://github.com/le-firehawk/Cognis/commit/acaded15)
-- [e7255fe0](https://github.com/le-firehawk/Cognis/commit/e7255fe0)
-- [a68ab2ab](https://github.com/le-firehawk/Cognis/commit/a68ab2ab)
+- [feb1bbc](https://github.com/Cognis-Labs-HQ/Cognis/commit/feb1bbc)
+- [c6ba65b](https://github.com/Cognis-Labs-HQ/Cognis/commit/c6ba65b)
+- [acaded1](https://github.com/Cognis-Labs-HQ/Cognis/commit/acaded15)
+- [e7255fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/e7255fe0)
+- [a68ab2a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a68ab2ab)

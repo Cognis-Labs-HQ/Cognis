@@ -1,5 +1,7 @@
 # Riwayat Docs yang Dapat Dijelajahi
 
+**Cabang Fitur:** feature-add-versioning-system-for-docs
+
 ## Snapshot dokumentasi berversi
 
 Cognis kini mengarsipkan dokumentasi setiap komponen saat aplikasi dimulai dengan versi yang dinyatakan dalam manifest komponen. URL dokumentasi menggunakan versi ajaib `latest` secara default, sementara snapshot lama tetap dapat diakses.
@@ -15,3 +17,7 @@ Pembaca dokumentasi kini menampilkan bilah versi horizontal yang dapat digulir d
 ## Dokumen yang dihapus tetap tersedia
 
 Indeks dokumentasi kini tetap memuat dokumen yang telah diarsipkan meskipun berkas sumbernya diganti nama atau dihapus, sehingga setiap versi yang tersimpan tetap dapat dijelajahi.
+
+## Komit
+
+- [ad5ede8](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad5ede84f3181c47669ecc0e3655b4321fba8a34)

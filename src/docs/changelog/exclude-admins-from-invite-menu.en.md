@@ -1,5 +1,7 @@
 # Exclude Admins from Invites
 
+**Feature Branch:** copilot/exclude-admins-from-invite-menu
+
 ## Summary
 
 Updated the registration navbar Invite-menu visibility rule so founder users with admin-equivalent access do not see the Invite entry.
@@ -14,5 +16,5 @@ Admins and owners already have invite management through the Users page, so the 
 
 ## Commits
 
-- https://github.com/le-firehawk/Cognis/commit/041fdb8
-- https://github.com/le-firehawk/Cognis/commit/d47ee73
+- [041fdb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/041fdb8)
+- [d47ee73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d47ee73)

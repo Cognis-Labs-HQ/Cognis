@@ -1,5 +1,7 @@
 # 変更履歴
 
+**機能ブランチ:** N/A
+
 ## 概要
 
 このディレクトリには、プルリクエストごとに 1 つの Markdown ファイルとして
@@ -21,3 +23,5 @@
 
 - [create-changelog-ingestion-system](/changelogs/create-changelog-ingestion-system)
 - [cleanup-strings-and-codebase](/changelogs/cleanup-strings-and-codebase)
+
+## コミット

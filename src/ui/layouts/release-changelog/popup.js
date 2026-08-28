@@ -15,6 +15,7 @@
  */
 import { apiFetch } from "../../reuse/api-client.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { linkShortCommitRefs } from "../../reuse/commit-links.js";
 import { renderMarkdown } from "../../reuse/markdown-renderer.js";
 import { readPreferredLanguages } from "../../reuse/i18n.js";
 import { openPopup } from "../../reuse/popup.js";
@@ -38,18 +39,24 @@ function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
         .slice(0, MAX_VISIBLE_RELEASE_NOTES)
         .map((entry) => {
             const safeTitle = escapeHtml(entry.title ?? "");
+            const safePath = escapeHtml(entry.path ?? "/changelogs");
+            const safeSourceName = escapeHtml(entry.sourceName ?? "");
             const dotPoints = Array.isArray(entry.changes)
                 ? entry.changes
                       .slice(0, MAX_VISIBLE_RELEASE_NOTE_BULLETS)
-                      .map(
-                          (changeHeading) =>
-                              `<li>${renderMarkdown(changeHeading)}</li>`,
-                      )
+                      .map((changeHeading, index) => {
+                          const detail = String(entry.details?.[index] ?? "");
+                          const renderedDetail = detail
+                              ? `<div class="popup-summary-detail">${renderMarkdown(linkShortCommitRefs(detail))}</div>`
+                              : "";
+                          return `<li><div class="popup-summary-heading">${renderMarkdown(linkShortCommitRefs(changeHeading))}</div>${renderedDetail}</li>`;
+                      })
                       .join("")
                 : "";
             return `
         <li class="popup-summary-item">
-          <strong>${safeTitle}</strong>
+          ${safeSourceName ? `<span class="popup-summary-source">${safeSourceName}</span>` : ""}
+          <strong><a href="${safePath}">${safeTitle}</a></strong>
           <ul class="popup-summary-sublist">${dotPoints}</ul>
         </li>
       `;

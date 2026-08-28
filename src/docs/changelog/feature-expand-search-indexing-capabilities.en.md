@@ -1,5 +1,7 @@
 # Search Options
 
+**Feature Branch:** feature-expand-search-indexing-capabilities
+
 ## Expanded Search Index
 
 The global search popup now includes a dynamic registration utility so pages, visible page content, posts, chats, messages, and component-owned UI surfaces can contribute searchable result categories.
@@ -85,3 +87,7 @@ Account operations such as archiving, deactivating, and deleting an account are 
 ## Search utility conventions documented
 
 Shared search code now lives only under `src/ui/reuse/search-util/`. Component-owned integrations should use a dedicated `ui/search/index.js`, export `createSearchIndex` for content providers, and call the shared `registerSearchIndex` helper. The utility owns matching, ranking, highlighting, filtering, rendering, and stale async result handling, while component providers keep expensive fetches asynchronous.
+
+## Commits
+
+- [e3b679b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e3b679bd480e8caef6e8301f410718570299fb26)

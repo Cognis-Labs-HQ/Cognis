@@ -1,5 +1,7 @@
 # Auth Password Reset
 
+**Feature Branch:** copilot/add-password-reset-option
+
 ## Summary
 
 Added a provider-aware password reset flow in User Settings → Security, including server routes that evaluate reset support from the authenticated provider and execute adapter-owned reset logic.
@@ -25,6 +27,6 @@ Removed the Authentication Provider message from the Security settings panel and
 
 ## Commit Links
 
-- https://github.com/le-firehawk/Cognis/commit/a33f0faa
-- https://github.com/le-firehawk/Cognis/commit/9490a011
-- https://github.com/le-firehawk/Cognis/commit/8ba1d8b2
+- [a33f0fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/a33f0faa)
+- [9490a01](https://github.com/Cognis-Labs-HQ/Cognis/commit/9490a011)
+- [8ba1d8b](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ba1d8b2)

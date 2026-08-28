@@ -1,5 +1,7 @@
 # Passwortrichtlinie und Auth
 
+**Feature-Zweig:** copilot/remove-auth-providers-widget
+
 ## Doppeltes Auth-Anbieter-Widget aus Administration entfernt
 
 Das Auth-Anbieter-Widget wurde aus dem Authentifizierungsbereich der Administration entfernt, da es bereits auf der Seite „Komponenten" erscheint. Der gesamte Authentifizierungsbereich der Administration wurde entfernt.
@@ -75,3 +77,7 @@ Die Kriterien zur Passwortbestätigung bei der Registrierung wurden korrigiert, 
 ## Neutraler Vorprüfungszustand
 
 Das Passwortabgleich-Kriterium bleibt nun neutral (weder erfüllt noch unerfüllt), bis im Passwortfeld eine Eingabe vorhanden ist, um verfrühtes „Übereinstimmung“-Feedback zu verhindern.
+
+## Änderungen
+
+- [a103596](https://github.com/Cognis-Labs-HQ/Cognis/commit/a103596a317f506ede1967a31791b935db24f047)

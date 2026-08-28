@@ -1,5 +1,7 @@
 # Keluaran pencatatan yang dapat dikonfigurasi
 
+**Cabang Fitur:** feature-add-configurable-logging-adapters
+
 ## Tingkat log konsol dan berkas yang independen
 
 Administrator kini dapat memilih ambang tingkat keparahan terpisah untuk pencatatan konsol dan berkas dari tingkat yang didukung gateway pencatatan.
@@ -43,3 +45,7 @@ Perubahan konfigurasi konsol kini memperbarui fungsi pencatatan waktu proses yan
 ## Ambang konsol Docker
 
 Pencatatan bootstrap awal kini menerapkan `LOG_LEVEL` sebelum gateway pencatatan dimulai, sehingga nilai bawaan Docker `info` menyembunyikan keluaran debug selama seluruh proses awal.
+
+## Komit
+
+- [1a843d6](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a843d6bcc3ff03b2c40d841f75d29d79da7dc6d)

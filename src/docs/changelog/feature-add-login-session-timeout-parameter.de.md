@@ -1,5 +1,7 @@
 # Konfigurierbare Laufzeiten für Anmeldesitzungen
 
+**Feature-Zweig:** feature-add-login-session-timeout-parameter
+
 ## Administratoren steuern die maximale Sitzungsdauer
 
 Unter Administration → Sicherheit kann jetzt das standardmäßige und maximale Zeitlimit für Anmeldesitzungen festgelegt werden.
@@ -63,3 +65,7 @@ Anmeldesitzungen behalten nun die von der Administration oder vom Benutzer gewä
 ## Interne Abhängigkeiten abgleichen
 
 Das Jitsi-Meet-Modul deklariert jetzt die getestete lokale Version des Nachrichtenadapters, damit die repositoryweiten Architekturprüfungen zuverlässig bleiben.
+
+## Änderungen
+
+- [70785d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/70785d43ef6b76fb1d863dcc795ecb9bd3bcab7f)

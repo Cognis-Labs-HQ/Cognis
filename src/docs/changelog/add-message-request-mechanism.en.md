@@ -1,5 +1,7 @@
 # PR Changelog — Msg Requests
 
+**Feature Branch:** copilot/add-message-request-mechanism
+
 ## Summary
 
 Added membership-aware direct-chat behavior: leaving a two-member chat archives it for the remaining user, archived chats are shown in a dedicated sidebar section, sending is blocked in archived/non-member states with explicit toasts, and starting a fresh conversation creates a new DM. Also made avatar interactions universal in Messages by linking avatars to profiles so the standard hover profile preview and click-through navigation work consistently.
@@ -53,9 +55,9 @@ Emoji reaction tooltips now show a single descriptive word ("Like", "Heart",
 
 ## Commits
 
-- [d4f7f6d](https://github.com/le-firehawk/Cognis/commit/d4f7f6d)
-- [fc3febe](https://github.com/le-firehawk/Cognis/commit/fc3febe)
-- [11eebfa](https://github.com/le-firehawk/Cognis/commit/11eebfa)
-- [2db27c2](https://github.com/le-firehawk/Cognis/commit/2db27c2)
-- [f08f248](https://github.com/le-firehawk/Cognis/commit/f08f248ea1b20fef4b7e5452e19a2857ed4b785e)
-- [5d28d03](https://github.com/le-firehawk/Cognis/commit/5d28d03)
+- [d4f7f6d](https://github.com/Cognis-Labs-HQ/Cognis/commit/d4f7f6d)
+- [fc3febe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc3febe)
+- [11eebfa](https://github.com/Cognis-Labs-HQ/Cognis/commit/11eebfa)
+- [2db27c2](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db27c2)
+- [f08f248](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08f248ea1b20fef4b7e5452e19a2857ed4b785e)
+- [5d28d03](https://github.com/Cognis-Labs-HQ/Cognis/commit/5d28d03)

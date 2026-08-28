@@ -1,5 +1,7 @@
 # PR変更履歴 — SPAルーター実装チェック
 
+**機能ブランチ:** copilot/check-spa-router-implementation
+
 ## 概要
 
 ページエントリーポイントのSPA整合性を見直し、招待ページのルーター
@@ -105,8 +107,8 @@ I/O 処理を並列化し、Node.js がブラウザリクエストを処理で�
 
 ## コミット
 
-- [5028bb9](https://github.com/le-firehawk/Cognis/commit/5028bb9)
-- [ad0f87b](https://github.com/le-firehawk/Cognis/commit/ad0f87b)
-- [903e3f3](https://github.com/le-firehawk/Cognis/commit/903e3f3)
-- [1f2451b](https://github.com/le-firehawk/Cognis/commit/1f2451b)
-- [18e5b71](https://github.com/le-firehawk/Cognis/commit/18e5b71)
+- [5028bb9](https://github.com/Cognis-Labs-HQ/Cognis/commit/5028bb9)
+- [ad0f87b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad0f87b)
+- [903e3f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/903e3f3)
+- [1f2451b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f2451b)
+- [18e5b71](https://github.com/Cognis-Labs-HQ/Cognis/commit/18e5b71)

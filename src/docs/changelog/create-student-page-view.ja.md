@@ -1,5 +1,7 @@
 # 生徒クラスメンバーシップ・教師クラス管理・学習ハブ
 
+**機能ブランチ:** copilot/create-student-page-view
+
 ## 概要
 
 生徒向けの「マイクラス」ページを `/my-classes` に追加しました。参加中のクラスの確認、利用可能なクラスへの参加申請、クラスからの退会ができます。また、教師向けクラスページを拡張し、言語フィルター、クラスごとの生徒管理、生徒検索、生徒の招待、参加申請の承認・却下機能を追加しました。
@@ -74,3 +76,5 @@
 - すべての英語言語データをハードコードされたUIからライブラリに移行しました。26のラテン文字（A〜Z）を含む `data/characters/latin.json` を追加し、アルファベットページはハードコードの代わりにライブラリAPI（`/api/v1/study/languages/en/library/characters`）から文字を取得するようになりました。汎用の `LanguageLibraryStore` パターンを `reuse/library-store.ts` に移動し、英語と日本語の両モジュールがこの共有実装を使用するようになりました。`reuse/library-page.js` の共有関数 `mountStudyLibraryPage` が、重複したライブラリCRUD UIロジックを置き換えます。コンポーネント固有のスタイルシートファイルから重複したCSSクラスを削除しました。AIの指示と `study-language-framework.en.md` ドキュメントを更新し、ライブラリがすべての言語モジュールコンテンツの唯一の正規データストアであることを明確にしました。
 
 - コンプライアンスおよびリアルタイム更新パス: プロフィールドロップダウンが subnavigation バーより前面に表示されるよう z-index を修正；`hasLibraryModule` チェックをハードコードされた URL ではなくコンポーネント `id` で判断するよう修正し、英語 Library がサブナビに正しく表示されるように改善；`study-sub-navigation.js` の `clearStudySubNavCache()` および `app-router.js` の `invalidateStudyChildComponentCache()` を言語設定保存時に呼び出して、サブナビと SPA ルートが即座に更新されるようにした；`classroom-page.js` と `library-page.js` が Study gateway の i18n 文字列を正しく読み込むよう修正；すべての Study ページの `pageContext` に `subtitle` フィールドを追加；`classroom-page.js` と `library-store.ts` に JSDoc を追加；`LanguageLibraryStore` と `study-sub-navigation.js` の包括的なテストを追加；すべての新規ページで `pageContext` に `subtitle` が必須であることを AI 指示に追加。
+
+- [00faea1](https://github.com/Cognis-Labs-HQ/Cognis/commit/00faea1c4e08c65105ba917b42b5e6a069f2d9ef)

@@ -1,5 +1,7 @@
 # Changelog PR
 
+**Cabang Fitur:** copilot/add-message-request-mechanism
+
 ## Ringkasan
 
 Perilaku chat langsung berbasis keanggotaan juga ditambahkan: ketika pengguna keluar dari chat dua orang, chat tersebut diarsipkan untuk pengguna yang tersisa, ditampilkan di bagian arsip khusus, dan pengiriman pesan di chat arsip/non-anggota diblokir dengan toast yang jelas. Saat salah satu pihak memulai lagi, sistem membuat DM baru. Selain itu avatar di Messages kini konsisten ditautkan ke profil sehingga pratinjau profil saat hover dan navigasi klik bekerja seragam.
@@ -46,9 +48,9 @@ menampilkan satu kata deskriptif ("Like", "Heart", "Haha", "Celebrate").
 
 ## Commit
 
-- [d4f7f6d](https://github.com/le-firehawk/Cognis/commit/d4f7f6d)
-- [fc3febe](https://github.com/le-firehawk/Cognis/commit/fc3febe)
-- [11eebfa](https://github.com/le-firehawk/Cognis/commit/11eebfa)
-- [2db27c2](https://github.com/le-firehawk/Cognis/commit/2db27c2)
-- [f08f248](https://github.com/le-firehawk/Cognis/commit/f08f248ea1b20fef4b7e5452e19a2857ed4b785e)
-- [5d28d03](https://github.com/le-firehawk/Cognis/commit/5d28d03)
+- [d4f7f6d](https://github.com/Cognis-Labs-HQ/Cognis/commit/d4f7f6d)
+- [fc3febe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc3febe)
+- [11eebfa](https://github.com/Cognis-Labs-HQ/Cognis/commit/11eebfa)
+- [2db27c2](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db27c2)
+- [f08f248](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08f248ea1b20fef4b7e5452e19a2857ed4b785e)
+- [5d28d03](https://github.com/Cognis-Labs-HQ/Cognis/commit/5d28d03)

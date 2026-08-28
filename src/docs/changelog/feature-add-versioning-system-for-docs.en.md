@@ -1,5 +1,7 @@
 # Browsable Docs History
 
+**Feature Branch:** feature-add-versioning-system-for-docs
+
 ## Versioned documentation snapshots
 
 Cognis now archives each component's documentation at startup using the version declared by that component's manifest. Documentation URLs default to the magic `latest` version while retaining access to earlier snapshots.
@@ -15,3 +17,7 @@ The documentation reader now shows a horizontally scrollable version bar above e
 ## Keep removed documents available
 
 The documentation index now includes archived documents even after their source file is renamed or removed, so every preserved version remains browsable.
+
+## Commits
+
+- [ad5ede8](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad5ede84f3181c47669ecc0e3655b4321fba8a34)

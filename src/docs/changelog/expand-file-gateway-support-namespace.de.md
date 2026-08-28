@@ -1,5 +1,7 @@
 # Namensräume & Kontingente
 
+**Feature-Zweig:** copilot/expand-file-gateway-support-namespace
+
 ## Das Datei-Gateway organisiert jetzt alle Inhalte in Namensräumen mit durchgesetzten ACLs und Kontingenten
 
 Jede Dateioperation ist jetzt auf einen Namensraum beschränkt — einen isolierten Inhaltsbereich, der einer bestimmten Komponente (`profile`, `chats`, `classes`) oder dem Kern (`default`, `user`) gehört. Namensräume deklarieren eine ACL-Obergrenze (`private-owner`, `private-group` oder `component-managed`), die begrenzt, was jedes darin gespeicherte Objekt offenlegen darf, und Berechtigungen pro Objekt (Besitzer, Mitarbeitergruppe oder öffentliches Lesen) können diese Obergrenze niemals überschreiten. Der komponentenübergreifende Zugriff auf einen Namensraum wird verweigert, es sei denn, der Namensraum lässt die aufrufende Komponente explizit zu (der Kern ist immer erlaubt).
@@ -27,3 +29,7 @@ Die Auflösung von Freigabe-Tokens prüft jetzt die Token-Empfänger, bevor Gast
 ## Versionsdokumente bleiben lokalisiert
 
 Die Komponenten-Versionsdokumente enthalten die Regeltexte jetzt konsistent übersetzt in allen unterstützten Sprachen.
+
+## Änderungen
+
+- [80305d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/80305d183fd1fc1e89c960dfb5c6712c87f188f8)

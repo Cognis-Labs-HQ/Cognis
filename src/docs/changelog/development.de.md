@@ -1,5 +1,7 @@
 # Entkoppelte Gateway-APIs
 
+**Feature-Zweig:** development
+
 ## Standardisierte Gateway-Präfixe
 
 Jedes Gateway besitzt seine API-Routen jetzt unter einem eigenen Präfix `/api/v1/<gateway-id>/`. Routen, die dieser Konvention nicht entsprachen, wurden umbenannt: Die Notify-Gateway-Routen wurden von `/api/v1/notifications/` nach `/api/v1/notify/` verschoben, und Social-Gateway-Routen wurden von `/api/v1/profile/`, `/api/v1/messages/` usw. nach `/api/v1/social/` verschoben.
@@ -21,3 +23,7 @@ Neue Testfälle prüfen, dass die Logging-Stream-Route bei nicht übereinstimmen
 ## Stille catch-Blöcke in Crash-Popup und Router beseitigt
 
 Die zwei `catch(() => {})` in `installRuntimeErrorHandlers` protokollieren jetzt eine Warnung, statt Fehler beim Öffnen des Popups zu schlucken. Der catch-Block in `readAuthSetupRequirement` im App-Router protokolliert jetzt den Netzwerkfehler. Der per-Sprache-Fetch-catch in `loadStudyChildComponents` protokolliert jetzt Sprachcode und Fehler vor dem Fallback. Der `startStream`-catch im Admin-Logs-Bereich protokolliert jetzt den Verbindungsfehler, und der fehlerhafte SSE-Ereignis-catch gibt Parse-Fehler aus, statt sie still zu verwerfen.
+
+## Änderungen
+
+- [c2dd07a](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2dd07a630b453a51f9793ab2855ab96150b058c)

@@ -1,5 +1,7 @@
 # Lange Doku-Titel kürzen
 
+**Feature-Zweig:** copilot/trim-document-titles
+
 ## Zusammenfassung
 
 - Lange Dokumentationstitel werden in der Docs-Navigation der UI gekürzt dargestellt.
@@ -15,4 +17,4 @@
 
 ## Commit-Links
 
-- https://github.com/le-firehawk/Cognis/commit/e8f614f1abf5a1453253da61913b2c38c07a897a
+- [e8f614f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8f614f1abf5a1453253da61913b2c38c07a897a)

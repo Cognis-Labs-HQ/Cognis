@@ -1,5 +1,7 @@
 # Direkte Profilupdates
 
+**Feature-Zweig:** feature-fix-user-profile-page-updates
+
 ## Sofortige Profildaten
 
 Gespeicherte Anzeigenamen und andere Profildaten erscheinen jetzt ohne Neuladen der Seite.
@@ -35,3 +37,7 @@ Gezielte Profilaktualisierungen laufen nun über den Seiten-Composer. Nicht betr
 ## Follower-Zahlen sofort aktuell
 
 Beim Folgen eines angezeigten Profils wird das aktuelle Konto nun vor dem Serverabgleich zur vorläufigen Follower-Liste hinzugefügt.
+
+## Änderungen
+
+- [597aa63](https://github.com/Cognis-Labs-HQ/Cognis/commit/597aa63d6ef878eb2e40d6d8050a9956387fc0e8)

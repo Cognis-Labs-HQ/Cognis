@@ -1,5 +1,7 @@
 # Toast Icons in Light Mode
 
+**Feature Branch:** copilot/add-toast-markings-support
+
 ## Summary
 
 Fixed toast notification icons (error ✕, success ✓, warning ⚠, info ℹ) being invisible in light mode. In light mode the `--color-danger-text` and `--color-success-text` variables resolve to `#fff` (white on white background), causing the markings to disappear. Light-mode overrides now use the outline-text colour tokens so icons remain clearly visible against the near-white toast surface.
@@ -11,4 +13,4 @@ Fixed toast notification icons (error ✕, success ✓, warning ⚠, info ℹ) b
 
 ## Commit Links
 
-- https://github.com/le-firehawk/Cognis/commit/1305bfc163422709964268baafe8b0036c7b5c10
+- [1305bfc](https://github.com/Cognis-Labs-HQ/Cognis/commit/1305bfc163422709964268baafe8b0036c7b5c10)

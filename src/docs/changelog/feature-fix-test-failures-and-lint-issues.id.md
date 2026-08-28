@@ -1,5 +1,7 @@
 # Pemeriksaan CI Andal
 
+**Cabang Fitur:** feature-fix-test-failures-and-lint-issues
+
 ## Berkas sumber tetap dalam batas ukuran
 
 Persistensi pembukaan kunci sesi, gaya detail kalender, elemen halaman rapat, pencarian dan status papan tulis, serta pemeliharaan DOM penyusun halaman dipisahkan ke modul pendamping yang terfokus agar setiap berkas sumber tetap berada dalam batas 1000 baris.
@@ -15,3 +17,7 @@ Pengujian surel tema bawaan kini memakai identitas penerima tersendiri agar pemb
 ## Pengujian keyring tetap terisolasi per komponen
 
 Impor langsung yang tidak digunakan terhadap singleton konteks UI dihapus dari penyiapan pengujian keyring sehingga pengujian adapter memeriksa permukaan keyring tanpa bergantung pada bentuk ekspor internal komponen lain.
+
+## Komit
+
+- [06711cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/06711cd058d7db47c9041ed71c5e993e7b0eadf3)

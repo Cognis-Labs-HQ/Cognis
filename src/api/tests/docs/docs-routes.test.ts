@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -106,6 +106,45 @@ test("docs snapshots manifest versions across software starts", async () => {
     await rm(fixtureRoot, { recursive: true, force: true });
 });
 
+test("docs refresh archived content for the installed version", async () => {
+    const fixtureRoot = await mkdtemp(join(tmpdir(), "cognis-docs-refresh-"));
+    const sourceRoot = join(fixtureRoot, "src");
+    const componentRoot = join(sourceRoot, "gateways", "example");
+    const docsRoot = join(componentRoot, "docs");
+    const archiveRoot = join(fixtureRoot, "archive");
+    await mkdir(docsRoot, { recursive: true });
+    await writeFile(
+        join(componentRoot, "package.json"),
+        JSON.stringify({ version: "1.0.0" }),
+    );
+    await writeFile(join(docsRoot, "index.en.md"), "# Example\n\nOld link");
+    const route = createDocsRoutes({ sourceRoot, archiveRoot });
+    await request(route, "/api/v1/docs/latest/gateways/example");
+    const archivedPath = join(
+        archiveRoot,
+        "gateways",
+        "example",
+        "1.0.0",
+        "en.md",
+    );
+    const initialArchive = await stat(archivedPath);
+    await request(route, "/api/v1/docs/latest/gateways/example");
+    assert.equal((await stat(archivedPath)).ino, initialArchive.ino);
+
+    await writeFile(
+        join(docsRoot, "index.en.md"),
+        "# Example\n\nCorrected link",
+    );
+    const refreshed = await request(
+        createDocsRoutes({ sourceRoot, archiveRoot }),
+        "/api/v1/docs/latest/gateways/example",
+    );
+
+    assert.match(refreshed.body.data.markdown, /Corrected link/);
+    assert.doesNotMatch(refreshed.body.data.markdown, /Old link/);
+    await rm(fixtureRoot, { recursive: true, force: true });
+});
+
 test("docs route handles docs index with markdown slugs", async () => {
     const route = createDocsRoutes();
     let status = 0;
@@ -141,7 +180,7 @@ test("docs route discovers external module docs and changelogs", async () => {
     await writeFile(join(sourceRoot, "docs", "index.en.md"), "# Core\n");
     await writeFile(
         join(moduleRoot, "package.json"),
-        JSON.stringify({ version: "2.0.0" }),
+        JSON.stringify({ name: "Weather Module", version: "2.0.0" }),
     );
     await writeFile(
         join(moduleRoot, "docs", "standard.en.md"),
@@ -164,6 +203,11 @@ test("docs route discovers external module docs and changelogs", async () => {
         );
         assert.ok(slugs.includes("module-uuid/standard"));
         assert.ok(slugs.includes("changelog/module-uuid/2.0.0"));
+        const moduleChangelog = response.body.data.find(
+            (entry: { slug: string }) =>
+                entry.slug === "changelog/module-uuid/2.0.0",
+        );
+        assert.equal(moduleChangelog.sourceName, "Weather Module");
     } finally {
         await rm(fixtureRoot, { recursive: true, force: true });
     }
@@ -303,6 +347,7 @@ test("docs route indexes every changelog markdown stem and serves generated chan
     const changelogLanding = JSON.parse(body);
     assert.match(changelogLanding.data.markdown, /^# Changelogs/);
     assert.match(changelogLanding.data.markdown, /\/changelogs\//);
+    assert.match(changelogLanding.data.markdown, /## Cognis Core/);
 });
 
 test("docs route renders changelog feature branch from file slug", async () => {
@@ -328,7 +373,11 @@ test("docs route renders changelog feature branch from file slug", async () => {
     const parsed = JSON.parse(body);
     assert.match(
         parsed.data.markdown,
-        /\*\*Feature Branch:\*\* create-changelog-ingestion-system/,
+        /\*\*Feature Branch:\*\* copilot\/create-changelog-ingestion-system/,
+    );
+    assert.equal(
+        parsed.data.markdown.match(/\*\*Feature Branch:\*\*/g)?.length,
+        1,
     );
 });
 

@@ -1,5 +1,7 @@
 # Prefer Profile Avatars
 
+**Feature Branch:** feature-prioritize-profile-picture-over-initials
+
 ## Summary
 
 Avatar rendering in the Messages adapter now prefers actual profile images over
@@ -26,5 +28,5 @@ adapter UI surfaces.
 
 ## Commit Links
 
-- https://github.com/le-firehawk/Cognis/commit/9f78b06
-- https://github.com/le-firehawk/Cognis/commit/5399b86
+- [9f78b06](https://github.com/Cognis-Labs-HQ/Cognis/commit/9f78b06)
+- [5399b86](https://github.com/Cognis-Labs-HQ/Cognis/commit/5399b86)
