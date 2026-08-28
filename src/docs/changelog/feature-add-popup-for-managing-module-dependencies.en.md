@@ -31,3 +31,7 @@ Each unmet dependency card now provides an immediate SVG download action with lo
 ## Dependency readiness before progress
 
 Install and Enable now perform the same full dependency-readiness gate before the lifecycle action enters its loading state. Cancelling the dependency popup exits immediately without leaving the module action spinner running.
+
+## Cascading hard-dependency shutdown
+
+Disabling a module now recursively disables every enabled module that declares it as a hard dependency, while soft dependents remain active. Dependency cards now use a dedicated download SVG with a tray instead of a generic down arrow.

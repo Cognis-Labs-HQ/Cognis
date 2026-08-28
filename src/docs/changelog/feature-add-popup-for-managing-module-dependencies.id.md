@@ -31,3 +31,7 @@ Setiap kartu dependensi yang belum terpenuhi kini menyediakan tindakan unduh SVG
 ## Kesiapan dependensi sebelum progres
 
 Instal dan Aktifkan kini menjalankan gerbang kesiapan dependensi penuh yang sama sebelum tindakan siklus hidup memasuki status pemuatan. Membatalkan popup dependensi segera menghentikan alur tanpa membiarkan indikator tindakan modul terus berputar.
+
+## Penonaktifan dependensi keras berantai
+
+Menonaktifkan modul kini secara rekursif menonaktifkan setiap modul aktif yang menyatakannya sebagai dependensi keras, sementara modul dengan dependensi lunak tetap aktif. Kartu dependensi kini memakai SVG unduhan khusus dengan baki, bukan panah turun umum.

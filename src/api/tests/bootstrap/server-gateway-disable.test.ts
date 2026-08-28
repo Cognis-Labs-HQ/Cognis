@@ -13,6 +13,7 @@ import {
 import {
     assertModuleInstallDependencies,
     assertExternalModuleDependencies,
+    resolveHardDependencyDisableOrder,
     assertModuleEnableDependencies,
     assertModuleCapabilityDependencies,
     buildServer,
@@ -45,6 +46,39 @@ test("external module dependencies must be installed and enabled", () => {
                 () => false,
             ),
         /requires disabled external module Calendar/,
+    );
+});
+
+test("hard dependency disable order cascades through enabled dependents", () => {
+    const manifests = [
+        { id: "calendar", uuid: "calendar-uuid" },
+        {
+            id: "classroom",
+            uuid: "classroom-uuid",
+            hardDependencies: ["calendar-uuid"],
+        },
+        {
+            id: "assignments",
+            uuid: "assignments-uuid",
+            hardDependencies: ["classroom"],
+        },
+        {
+            id: "optional-notes",
+            uuid: "notes-uuid",
+            softDependencies: ["calendar-uuid"],
+        },
+    ] as never;
+    assert.deepEqual(
+        resolveHardDependencyDisableOrder(
+            "calendar",
+            manifests,
+            (moduleId) => moduleId !== "optional-notes",
+        ),
+        ["assignments", "classroom"],
+    );
+    assert.deepEqual(
+        resolveHardDependencyDisableOrder("calendar", manifests, () => false),
+        [],
     );
 });
 

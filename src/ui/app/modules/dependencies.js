@@ -80,7 +80,7 @@ function renderDependencyCard(entry, i18n) {
         : "";
     const download =
         dependency && !isSatisfied(entry)
-            ? `<button class="btn-confirm module-dependency-download" type="button" data-install-dependency="${escapeHtml(entry.reference)}" aria-label="${escapeHtml(`${i18n.t(`ui.reuse.${dependencyLifecycleAction(dependency)}`)}: ${name}`)}"><img src="/static/assets/reuse/arrow-down.svg" alt="" aria-hidden="true"></button>`
+            ? `<button class="btn-confirm module-dependency-download" type="button" data-install-dependency="${escapeHtml(entry.reference)}" aria-label="${escapeHtml(`${i18n.t(`ui.reuse.${dependencyLifecycleAction(dependency)}`)}: ${name}`)}"><img src="/static/assets/reuse/download.svg" alt="" aria-hidden="true"></button>`
             : "";
     return `<article class="module-dependency-card${isSatisfied(entry) ? " is-satisfied" : ""}">
       <div class="module-dependency-card-copy">

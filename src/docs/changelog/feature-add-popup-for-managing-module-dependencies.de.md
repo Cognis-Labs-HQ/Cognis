@@ -31,3 +31,7 @@ Jede unerfüllte Abhängigkeitskarte bietet nun eine direkte SVG-Downloadaktion 
 ## Abhängigkeitsbereitschaft vor der Fortschrittsanzeige
 
 Installieren und Aktivieren führen nun dieselbe vollständige Bereitschaftsprüfung der Abhängigkeiten durch, bevor die Lebenszyklusaktion ihren Ladezustand beginnt. Beim Abbrechen des Abhängigkeitsdialogs wird sofort beendet, ohne dass der Aktionsspinner des Moduls weiterläuft.
+
+## Kaskadierendes Abschalten harter Abhängigkeiten
+
+Beim Deaktivieren eines Moduls werden nun rekursiv alle aktivierten Module deaktiviert, die es als harte Abhängigkeit deklarieren; weiche Abhängige bleiben aktiv. Abhängigkeitskarten verwenden nun ein eigenes Download-SVG mit Ablage statt eines allgemeinen Abwärtspfeils.
