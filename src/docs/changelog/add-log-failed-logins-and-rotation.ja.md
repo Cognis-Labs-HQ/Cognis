@@ -1,6 +1,6 @@
 # ログストリームフィルター、警告デフォルト、ローテーション
 
-**Feature Branch:** copilot/add-log-failed-logins-and-rotation
+**機能ブランチ:** copilot/add-log-failed-logins-and-rotation
 
 ## 概要
 

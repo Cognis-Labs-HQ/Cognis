@@ -1,6 +1,6 @@
 # Mode Pengiriman Siaran
 
-**Feature Branch:** copilot/allow-admin-broadcast-options
+**Cabang Fitur:** copilot/allow-admin-broadcast-options
 
 ## Ringkasan
 

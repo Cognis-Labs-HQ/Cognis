@@ -1,6 +1,6 @@
 # Stabiles Bearbeitungslayout im Seitenkomponisten
 
-**Feature Branch:** feature-fix-element-placement-in-edit-mode
+**Feature-Zweig:** feature-fix-element-placement-in-edit-mode
 
 ## Der Bearbeitungsmodus nutzt die Maße des Ansichtsmodus
 
@@ -10,6 +10,6 @@ Die Bearbeitungsüberlagerung des Seitenkomponisten misst ihre Spalten nun anhan
 
 Aktive Meetings verwenden weiterhin die Browser-Bestätigung beim tatsächlichen Aktualisieren oder Navigieren, aber Cognis ändert den gemeinsamen Ladezustand nicht mehr während `beforeunload`. Die Ladeüberlagerung wartet nun auf `pagehide`, sodass ein abgebrochener Browser-Aktualisierungsdialog die aktuelle Meetingseite und die eingebettete Sitzung sichtbar und bedienbar lässt.
 
-## Commits
+## Änderungen
 
 - [fa6742a](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa6742a49a2e6f0284b44c84dec7ca4d7b503ac0)

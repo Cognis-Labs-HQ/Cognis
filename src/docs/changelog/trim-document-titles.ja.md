@@ -1,6 +1,6 @@
 # UI で長いドキュメントタイトルを短縮
 
-**Feature Branch:** copilot/trim-document-titles
+**機能ブランチ:** copilot/trim-document-titles
 
 ## 概要
 

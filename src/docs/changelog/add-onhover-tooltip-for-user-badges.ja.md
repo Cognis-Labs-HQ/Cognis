@@ -1,6 +1,6 @@
 # ロールツールチップを復元
 
-**Feature Branch:** copilot/add-onhover-tooltip-for-user-badges
+**機能ブランチ:** copilot/add-onhover-tooltip-for-user-badges
 
 ## プロフィールバッジでホバー時のロール名を復元
 
@@ -10,6 +10,6 @@
 
 アバターのロールバッジはポインターホバーを再び受け付け、ネイティブツールチップを表示できるようにしつつ、スクリーンリーダー向けのアクセシビリティラベルも維持しています。
 
-## Commits
+## コミット
 
 - [e045bfb](https://github.com/Cognis-Labs-HQ/Cognis/commit/e045bfbbd26aa2fdc2565ea74cf2ad9ae1092bcd)

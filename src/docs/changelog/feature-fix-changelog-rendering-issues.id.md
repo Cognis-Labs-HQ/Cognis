@@ -1,6 +1,6 @@
 # Ringkasan changelog rilis yang lengkap
 
-**Feature Branch:** feature-fix-changelog-rendering-issues
+**Cabang Fitur:** feature-fix-changelog-rendering-issues
 
 ## Tampilkan detail changelog pada popup rilis
 
@@ -18,7 +18,7 @@ Heading pada popup rilis kini tertaut langsung ke changelog Cognis Core yang len
 
 Tautan commit historis kini mengarah ke repositori Cognis-Labs-HQ/Cognis saat ini.
 
-## Commits
+## Komit
 
 - [968c109](https://github.com/Cognis-Labs-HQ/Cognis/commit/968c109885b2db1e168a7c62cc29b3c6be3d7b27)
 - [0a22467](https://github.com/Cognis-Labs-HQ/Cognis/commit/0a224676b04a06123eb6f4dd256051d6a2fc5933)
@@ -55,3 +55,7 @@ Navigasi changelog kini melakukan escape pada nama yang disediakan modul sebelum
 ## Tautan commit yang konsisten
 
 Daftar commit changelog historis kini secara konsisten menggunakan referensi tujuh karakter tertaut sambil mempertahankan URL commit kanonis yang lengkap.
+
+## Label asal yang dilokalkan
+
+Heading cabang fitur dan komit kini menggunakan bahasa setiap changelog yang dilokalkan, bukan mempertahankan label bahasa Inggris dalam file terjemahan.

@@ -1,6 +1,6 @@
 # PR-Changelog — Cleanup
 
-**Feature Branch:** copilot/cleanup-strings-and-codebase
+**Feature-Zweig:** copilot/cleanup-strings-and-codebase
 
 ## Zusammenfassung
 
@@ -52,7 +52,7 @@ Längenangabe in Index- oder Schlüssel-Constraints ablehnt.
 - MariaDB-Adapter-Bugfix:
     - `src/adapters/db/mariadb/adapter.ts`
 
-## Commits
+## Änderungen
 
 - [6ab293a](https://github.com/Cognis-Labs-HQ/Cognis/commit/6ab293a)
 - [8299d2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/8299d2b)

@@ -1,6 +1,6 @@
 # Memperbaiki Endpoint
 
-**Feature Branch:** copilot/fix-logout-endpoint
+**Cabang Fitur:** copilot/fix-logout-endpoint
 
 ## Ringkasan
 
@@ -36,4 +36,4 @@ agar token aktif benar-benar dicabut di sisi server pada alur pengguna normal.
 
 - [79bc1e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/79bc1e7242a82f3f6a3b15c0210cdf32ef752893)
 
-## Commits
+## Komit

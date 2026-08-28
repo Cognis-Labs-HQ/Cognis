@@ -1,6 +1,6 @@
 # Tinjauan Dependensi
 
-**Feature Branch:** N/A
+**Cabang Fitur:** N/A
 
 ## Dependensi komponen fleksibel
 
@@ -10,4 +10,4 @@ Paket komponen Cognis kini menggunakan rentang batas atas yang telah diuji untuk
 
 Jitsi Meet kini menerima namespace file profil melalui kapabilitas komponen sebelum membuat URL file avatar.
 
-## Commits
+## Komit

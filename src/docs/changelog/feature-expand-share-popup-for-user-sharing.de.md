@@ -1,6 +1,6 @@
 # Mit Cognis-Benutzern teilen
 
-**Feature Branch:** feature-expand-share-popup-for-user-sharing
+**Feature-Zweig:** feature-expand-share-popup-for-user-sharing
 
 ## Das Teilen-Popup unterstützt jetzt Benutzer als Empfänger
 
@@ -534,6 +534,6 @@ Das Popup für Freigabelinks befindet sich nun beim Link-Share-Adapter, der die 
 
 Die Regressionstests für das Link-Share-Popup befinden sich nun zusammen mit dem Link-Share-Adapter und seiner UI-Implementierung statt in der allgemeinen Share-Gateway-Testsuite.
 
-## Commits
+## Änderungen
 
 - [75e72e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/75e72e78973245fc561c51ac89e645bd016416a0)

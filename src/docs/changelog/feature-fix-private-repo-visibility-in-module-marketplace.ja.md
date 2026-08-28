@@ -1,6 +1,6 @@
 # 非公開モジュールを確実に検出
 
-**Feature Branch:** feature-fix-private-repo-visibility-in-module-marketplace
+**機能ブランチ:** feature-fix-private-repo-visibility-in-module-marketplace
 
 ## 再起動後も非公開リポジトリのスキャン設定を維持
 
@@ -18,6 +18,6 @@ Cognis Labs HQ マーケットプレイスソースは、非公開リポジト�
 
 本番コンテナは、マーケットプレイスのソースレコードを置き換え可能なサーバービルド配下ではなく、マウント済みの設定ボリュームへ保存するようになりました。このレコードには非公開スキャンのスイッチと、再起動後に暗号化されサーバー同期されたユーザーキーリングから PAT を解決するための識別子が保持されます。
 
-## Commits
+## コミット
 
 - [2d31b43](https://github.com/Cognis-Labs-HQ/Cognis/commit/2d31b43565ee1b05d00301b9ed1faaf99a8a6f89)

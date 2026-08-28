@@ -1,6 +1,6 @@
 # Filter Stream Log
 
-**Feature Branch:** copilot/add-log-failed-logins-and-rotation
+**Cabang Fitur:** copilot/add-log-failed-logins-and-rotation
 
 ## Ringkasan
 
@@ -27,4 +27,4 @@
 
 - [749469a](https://github.com/Cognis-Labs-HQ/Cognis/commit/749469a351ca8fad839ef6cf3f3d4eed81717b3a)
 
-## Commits
+## Komit

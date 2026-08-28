@@ -1,6 +1,6 @@
 # PR変更履歴 — ブラウザー言語検出の追加
 
-**Feature Branch:** copilot/add-browser-language-detection
+**機能ブランチ:** copilot/add-browser-language-detection
 
 ## 概要
 

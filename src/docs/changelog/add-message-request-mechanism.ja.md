@@ -1,6 +1,6 @@
 # PR変更履歴 — メッセージリクエスト機構の追加
 
-**Feature Branch:** copilot/add-message-request-mechanism
+**機能ブランチ:** copilot/add-message-request-mechanism
 
 ## 概要
 

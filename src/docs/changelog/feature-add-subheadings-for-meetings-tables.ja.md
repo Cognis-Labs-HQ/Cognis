@@ -1,6 +1,6 @@
 # 管理画面のミーティング表見出し
 
-**Feature Branch:** feature-add-subheadings-for-meetings-tables
+**機能ブランチ:** feature-add-subheadings-for-meetings-tables
 
 ## アクティブと今後のミーティングを明確に区分
 
@@ -14,6 +14,6 @@ Administration → Meetings ビューでは、アクティブな Jitsi Meet と�
 
 ミーティング列はミーティング URL というラベルになり実際の URL を表示します。ID 列は必要な幅だけを使うようコンパクトに保ちます。
 
-## Commits
+## コミット
 
 - [944f645](https://github.com/Cognis-Labs-HQ/Cognis/commit/944f645f21aac7c511cd60646c76923a382f7e8a)

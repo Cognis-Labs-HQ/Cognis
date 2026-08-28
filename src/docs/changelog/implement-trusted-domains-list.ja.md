@@ -1,6 +1,6 @@
 # ブロードキャストリンクとメール確認のための信頼済みドメイン
 
-**Feature Branch:** copilot/implement-trusted-domains-list
+**機能ブランチ:** copilot/implement-trusted-domains-list
 
 ## 概要
 
@@ -17,6 +17,6 @@
 - `src/api/tests/security-settings.test.ts`、`src/gateways/notify/routes/tests/notification-routes.test.ts`、`src/ui/tests/trusted-domains.test.js` — 信頼済みドメイン正規化と URL 検証の挙動をテストで追加しました。
 - `src/api/package.json`、`src/gateways/notify/manifest.json`、`src/gateways/registration/manifest.json`、`src/docs/versions.en.md` — API、Notification ゲートウェイ、Registration ゲートウェイのコンポーネントバージョンを更新しました。
 
-## Commits
+## コミット
 
 - [85294ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/85294ff)

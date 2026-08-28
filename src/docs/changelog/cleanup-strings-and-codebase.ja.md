@@ -1,6 +1,6 @@
 # PR 変更履歴 — Cleanup Strings
 
-**Feature Branch:** copilot/cleanup-strings-and-codebase
+**機能ブランチ:** copilot/cleanup-strings-and-codebase
 
 ## 要約
 

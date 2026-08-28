@@ -1,6 +1,6 @@
 # Whiteboard im Dashboard
 
-**Feature Branch:** feature-create-nextcloud-whiteboard-integration-module-yvnc2f
+**Feature-Zweig:** feature-create-nextcloud-whiteboard-integration-module-yvnc2f
 
 ## Der Canvas ist jetzt direkt in das Dashboard-Layout eingebettet
 
@@ -30,6 +30,6 @@ Administratoren konfigurieren eine eigene **Whiteboard-Server-URL**, die auf den
 
 Andere Module und Adapter können über diese öffentlichen Fähigkeiten die Einbettungs-URL oder Metadaten eines Whiteboards abrufen und so zukünftige Classroom- und Meeting-Integrationen ermöglichen.
 
-## Commits
+## Änderungen
 
 - [3fba3a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/3fba3a4ae030e1c17efc8f85e1245ceb69bc135d)

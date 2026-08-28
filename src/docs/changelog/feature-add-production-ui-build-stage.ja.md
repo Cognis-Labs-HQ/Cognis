@@ -1,6 +1,6 @@
 # 本番 UI ビルド
 
-**Feature Branch:** feature-add-production-ui-build-stage
+**機能ブランチ:** feature-add-production-ui-build-stage
 
 ## ハッシュ付き本番アセット
 
@@ -34,6 +34,6 @@ Docker ビルドで TypeScript をコンパイルし、開発用の `tsx` ロー
 
 本番ビルドですべてのコンパイル済みアダプターエントリポイントを検証するようになりました。データベースとローカルファイルのマニフェストは実際のエントリモジュールを参照し、ファイルゲートウェイは設定されたコンパイル済みルートからアダプターを解決し、メッセージアダプターは正しいストアモジュールからルームキー提供処理を読み込みます。
 
-## Commits
+## コミット
 
 - [d9af537](https://github.com/Cognis-Labs-HQ/Cognis/commit/d9af537d6fa92347026e779da4387d886f0e8238)

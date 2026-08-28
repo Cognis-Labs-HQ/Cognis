@@ -1,6 +1,6 @@
 # 信頼できるモジュール更新
 
-**Feature Branch:** feature-investigate-module-update-failure
+**機能ブランチ:** feature-investigate-module-update-failure
 
 ## 削除されたチャンネルから復旧
 
@@ -10,6 +10,6 @@
 
 モジュール有効化時の検証エラーは、安全で構造化された API エラーを返すようになりました。管理画面では一般的なリクエストエラーの代わりに、翻訳された検証失敗トーストを表示し、運用者にサーバーログの確認を促します。
 
-## Commits
+## コミット
 
 - [dd9dbd5](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd9dbd55d239ace38a65225c05d67b40c4c2f2fd)

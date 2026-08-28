@@ -1,6 +1,6 @@
 # 大容量プロフィール画像
 
-**Feature Branch:** feature-fix-large-file-upload-failure
+**機能ブランチ:** feature-fix-large-file-upload-failure
 
 ## プロフィール画像に容量枠を適用
 
@@ -10,6 +10,6 @@
 
 同梱の nginx 設定は、Cognis がユーザーのストレージ容量枠を適用する前に大きな API リクエスト本文を拒否しなくなりました。バナーのアップロードでは、レイアウト設定の保存時にも切り抜き位置が保持されます。
 
-## Commits
+## コミット
 
 - [da55ed2](https://github.com/Cognis-Labs-HQ/Cognis/commit/da55ed2007f45ede24247703d8862de139091ca9)

@@ -1,6 +1,6 @@
 # Laufzeitfehler-Popup
 
-**Feature Branch:** copilot/catch-errors-and-show-popup
+**Feature-Zweig:** copilot/catch-errors-and-show-popup
 
 ## Routenladefehler Abfangen
 
@@ -15,6 +15,6 @@ Bei Laufzeitfehlern im Dashboard erscheint nun ein Gefahren-Popup mit
 Fehlerzusammenfassung, Stack-Trace, Seiten-URL und aktuellen Konsolenmeldungen,
 damit Nutzer die Details direkt in Fehlerberichte übernehmen können.
 
-## Commits
+## Änderungen
 
 - [e4c47c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4c47c446cf5d1b5d2eceba77a5e1d796735d84d)

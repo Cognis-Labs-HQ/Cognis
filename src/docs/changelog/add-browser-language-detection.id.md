@@ -1,6 +1,6 @@
 # Changelog PR
 
-**Feature Branch:** copilot/add-browser-language-detection
+**Cabang Fitur:** copilot/add-browser-language-detection
 
 ## Ringkasan
 

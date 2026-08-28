@@ -1,6 +1,6 @@
 # 在席状況ステータス
 
-**Feature Branch:** feature-add-availability-status-indicator
+**機能ブランチ:** feature-add-availability-status-indicator
 
 ## 在席状況をひと目で確認
 
@@ -122,6 +122,6 @@
 
 メッセージのサイドバー、開いているチャットの画像、送信者のアバターでは在席状況ライトを表示しないようにしました。プロフィールへのリンクは維持されます。
 
-## Commits
+## コミット
 
 - [9ab0e62](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ab0e629254a98caae0c359d1dfeb103d094d3e5)

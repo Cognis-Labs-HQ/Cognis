@@ -1,6 +1,6 @@
 # Klarere Adaptersteuerung
 
-**Feature Branch:** feature-remove-config-popup-from-adapters
+**Feature-Zweig:** feature-remove-config-popup-from-adapters
 
 ## Leere Einstellungsfenster entfernt
 
@@ -18,6 +18,6 @@ Die Administration bezeichnet aktive Komponenten jetzt einheitlich als Aktiviert
 
 Deaktivierte Share-Adapter bleiben nun auch nach einem Serverneustart deaktiviert. Bereits ausgestellte Freigaben werden nicht mehr aufgelöst, solange ihr Adapter deaktiviert ist.
 
-## Commits
+## Änderungen
 
 - [bde0ea7](https://github.com/Cognis-Labs-HQ/Cognis/commit/bde0ea7a65b26aa85e467dc7954e6db3c652e701)

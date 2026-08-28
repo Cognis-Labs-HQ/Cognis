@@ -1,6 +1,6 @@
 # 検索とミーティングにおけるブロック保護の強化
 
-**Feature Branch:** feature-restrict-blocked-user-interactions
+**機能ブランチ:** feature-restrict-blocked-user-interactions
 
 ## ブロックされたユーザーは検索でブロックした相手を見つけられなくなりました
 
@@ -10,6 +10,6 @@
 
 ミーティングのアクセス確認は、主催者または参加者がリクエストしたユーザーをブロックしている場合にセッションを拒否するようになりました。また、ブロックにより主催者の活動を表示すべきでない受信者には、ミーティング通知を送信しません。
 
-## Commits
+## コミット
 
 - [17431b6](https://github.com/Cognis-Labs-HQ/Cognis/commit/17431b6df2bdf6b47df8ddfbe98d64a997bb196f)

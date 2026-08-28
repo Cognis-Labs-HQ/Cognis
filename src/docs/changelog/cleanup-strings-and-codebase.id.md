@@ -1,6 +1,6 @@
 # Changelog PR — Cleanup
 
-**Feature Branch:** copilot/cleanup-strings-and-codebase
+**Cabang Fitur:** copilot/cleanup-strings-and-codebase
 
 ## Ringkasan
 

@@ -1,6 +1,6 @@
 # 高速なダッシュボード起動
 
-**Feature Branch:** feature-refactor-dashboard-initialization-and-api-flows
+**機能ブランチ:** feature-refactor-dashboard-initialization-and-api-flows
 
 ## ダッシュボードカードを独立して読み込み
 
@@ -18,6 +18,6 @@ Calendar Gateway のフローが、アクセス可能なカレンダーの予定
 
 認証のランタイム登録がコンポーネントマニフェストと同じバージョンを報告するようになりました。
 
-## Commits
+## コミット
 
 - [9c6605e](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c6605ec002e029f3e9e655a352bd6acc109ce1b)

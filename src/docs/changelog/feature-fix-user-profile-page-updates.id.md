@@ -1,6 +1,6 @@
 # Pembaruan Profil Langsung
 
-**Feature Branch:** feature-fix-user-profile-page-updates
+**Cabang Fitur:** feature-fix-user-profile-page-updates
 
 ## Informasi profil seketika
 
@@ -38,6 +38,6 @@ Pembaruan profil terarah kini dijalankan melalui penyusun halaman sehingga media
 
 Saat mengikuti profil yang sedang dilihat, akun saat ini kini ditambahkan ke daftar pengikut sementara sebelum penyelarasan server selesai.
 
-## Commits
+## Komit
 
 - [597aa63](https://github.com/Cognis-Labs-HQ/Cognis/commit/597aa63d6ef878eb2e40d6d8050a9956387fc0e8)

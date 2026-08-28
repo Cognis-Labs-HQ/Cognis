@@ -1,6 +1,6 @@
 # Markenname-Update
 
-**Feature Branch:** copilot/update-references-to-cognis-labs-hq
+**Feature-Zweig:** copilot/update-references-to-cognis-labs-hq
 
 ## Umbenennung zu Cognis Labs HQ
 
@@ -12,6 +12,6 @@ Dies umfasst Gateway- und Adapter-Manifeste, Bootstrap-Metadaten,
 API-Tests, UI-Sprach-Contributor-Manifeste sowie zugehörige
 Dokumentationsausschnitte.
 
-## Commits
+## Änderungen
 
 - [bd4e9c5](https://github.com/Cognis-Labs-HQ/Cognis/commit/bd4e9c54f1208ecd0dee27125d493c0d283216e6)

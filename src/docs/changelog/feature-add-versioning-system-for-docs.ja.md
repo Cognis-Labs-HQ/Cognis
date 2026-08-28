@@ -1,6 +1,6 @@
 # 閲覧可能な Docs 履歴
 
-**Feature Branch:** feature-add-versioning-system-for-docs
+**機能ブランチ:** feature-add-versioning-system-for-docs
 
 ## バージョン付きドキュメントのスナップショット
 
@@ -18,6 +18,6 @@ Cognis は起動時に、各コンポーネントの manifest に記載された
 
 ソースファイルが名前変更または削除された後も、アーカイブ済みの文書がドキュメント索引に表示され、保存されたすべてのバージョンを引き続き閲覧できます。
 
-## Commits
+## コミット
 
 - [ad5ede8](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad5ede84f3181c47669ecc0e3655b4321fba8a34)

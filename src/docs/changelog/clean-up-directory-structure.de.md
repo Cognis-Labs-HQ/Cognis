@@ -1,6 +1,6 @@
 # PR-Änderungsprotokoll
 
-**Feature Branch:** copilot/clean-up-directory-structure
+**Feature-Zweig:** copilot/clean-up-directory-structure
 
 ## Zusammenfassung
 
@@ -65,7 +65,7 @@ und Studienpräferenzen.
     - `src/ui/app/settings/index.js`
     - `src/ui/reuse/app-router.js`
 
-## Commits
+## Änderungen
 
 - [e349311](https://github.com/Cognis-Labs-HQ/Cognis/commit/e349311)
 - [e81c254](https://github.com/Cognis-Labs-HQ/Cognis/commit/e81c254)

@@ -1,6 +1,6 @@
 # Namespace & Kuota File
 
-**Feature Branch:** copilot/expand-file-gateway-support-namespace
+**Cabang Fitur:** copilot/expand-file-gateway-support-namespace
 
 ## Gateway file kini mengatur semua konten ke dalam namespace dengan ACL dan kuota yang ditegakkan
 
@@ -30,6 +30,6 @@ Resolusi token berbagi sekarang memeriksa penerima token sebelum menerbitkan aks
 
 Dokumen versi komponen sekarang memuat teks aturan yang diterjemahkan secara konsisten di semua bahasa yang didukung.
 
-## Commits
+## Komit
 
 - [80305d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/80305d183fd1fc1e89c960dfb5c6712c87f188f8)

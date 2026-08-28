@@ -1,6 +1,6 @@
 # Kinerja produksi dan observabilitas
 
-**Feature Branch:** feature-configure-production-reverse-proxy-and-observability
+**Cabang Fitur:** feature-configure-production-reverse-proxy-and-observability
 
 ## Web produksi aman dan sadar cache
 
@@ -18,6 +18,6 @@ Pengiriman kinerja peramban kini memerlukan sesi terautentikasi, menerapkan bata
 
 Baseline hosted untuk pemuatan dingin, hangat, dan navigasi SPA beserta anggaran yang harus dinilai sebelum Redis kini terdokumentasi.
 
-## Commits
+## Komit
 
 - [226e1ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/226e1ff10bbf99756a045f037c636181e130d318)

@@ -1,6 +1,6 @@
 # Runtime-Status behoben
 
-**Feature Branch:** feature-fix-missing-database-relations-error
+**Feature-Zweig:** feature-fix-missing-database-relations-error
 
 ## Gateway-Statuswerte haben jetzt eine Datenbanktabelle
 
@@ -10,6 +10,6 @@ Cognis erstellt die Tabelle für persistierte Gateway-Statuswerte nun während d
 
 Der Adapter für Registrierungseinladungen stellt seine Token-Tabellen jetzt vor dem Auflisten, Ausstellen oder Widerrufen von Einladungen sicher, damit Administrationsseiten für Einladungen auf einer frischen Datenbank keine Fehler wegen fehlender Tabellen auslösen.
 
-## Commits
+## Änderungen
 
 - [e68cb5a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e68cb5a51f989982b2cea69cb48496fffd9061ee)

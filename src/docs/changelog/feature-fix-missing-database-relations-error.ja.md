@@ -1,6 +1,6 @@
 # ランタイム状態修正
 
-**Feature Branch:** feature-fix-missing-database-relations-error
+**機能ブランチ:** feature-fix-missing-database-relations-error
 
 ## ゲートウェイ状態用のデータベーステーブルを追加
 
@@ -10,6 +10,6 @@ Cognis はデータベース初期化時に永続化されたゲートウェイ�
 
 登録招待アダプターは、招待の一覧表示、発行、取り消しの前にトークンテーブルの存在を保証するようになりました。新しいデータベースでも、管理画面の招待ページがテーブル不足エラーを起こさずに招待状態を読み取れます。
 
-## Commits
+## コミット
 
 - [e68cb5a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e68cb5a51f989982b2cea69cb48496fffd9061ee)

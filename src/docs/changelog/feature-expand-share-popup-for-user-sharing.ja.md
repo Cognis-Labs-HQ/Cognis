@@ -1,6 +1,6 @@
 # Cognis ユーザーとの共有
 
-**Feature Branch:** feature-expand-share-popup-for-user-sharing
+**機能ブランチ:** feature-expand-share-popup-for-user-sharing
 
 ## 共有ポップアップがユーザー受信者に対応
 
@@ -534,6 +534,6 @@ ShareゲートウェイはUI機能コンテキストを通じてポップアッ�
 
 Link Share ポップアップの回帰テストを、汎用 Share ゲートウェイのテストスイートではなく、Link Share アダプターとその UI 実装の配下へ移動しました。
 
-## Commits
+## コミット
 
 - [75e72e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/75e72e78973245fc561c51ac89e645bd016416a0)

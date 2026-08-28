@@ -1,6 +1,6 @@
 # Kontrol Adapter Lebih Rapi
 
-**Feature Branch:** feature-remove-config-popup-from-adapters
+**Cabang Fitur:** feature-remove-config-popup-from-adapters
 
 ## Popup Pengaturan Kosong Dihapus
 
@@ -18,6 +18,6 @@ Administrasi kini secara konsisten menyebut komponen aktif sebagai Diaktifkan, m
 
 Adapter Share yang dinonaktifkan kini tetap nonaktif setelah server dimulai ulang. Share yang telah diterbitkan tidak dapat diselesaikan selama adapternya dinonaktifkan.
 
-## Commits
+## Komit
 
 - [bde0ea7](https://github.com/Cognis-Labs-HQ/Cognis/commit/bde0ea7a65b26aa85e467dc7954e6db3c652e701)

@@ -1,6 +1,6 @@
 # 安定したCIチェック
 
-**Feature Branch:** feature-fix-test-failures-and-lint-issues
+**機能ブランチ:** feature-fix-test-failures-and-lint-issues
 
 ## ソースファイルをサイズ制限内に維持
 
@@ -18,6 +18,6 @@ Dockerプロファイルテストが対応する絶対パスからBashを検出�
 
 Keyringテスト設定から未使用のUIコンテキストシングルトンへの直接インポートを削除し、別コンポーネントの内部エクスポート形式に依存せずKeyringの公開面を検証するようにしました。
 
-## Commits
+## コミット
 
 - [06711cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/06711cd058d7db47c9041ed71c5e993e7b0eadf3)

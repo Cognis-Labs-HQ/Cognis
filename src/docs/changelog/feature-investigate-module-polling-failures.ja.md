@@ -1,6 +1,6 @@
 # 信頼できるモジュール文字列
 
-**Feature Branch:** feature-investigate-module-polling-failures
+**機能ブランチ:** feature-investigate-module-polling-failures
 
 ## 欠落文字列のポーリングを停止
 
@@ -36,6 +36,6 @@ Cognis は API の起動時に、モジュールソースを一度だけ強制�
 
 起動時の検出では公開モジュールソースのみをスキャンするようになりました。認証情報が必要な非公開ソースは、認証済みの Marketplace ポーリングで利用でき、認証情報のない試行によって次の更新が遅延することもありません。
 
-## Commits
+## コミット
 
 - [54375e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/54375e318faa1ddbb6fe950f2402957742102af9)

@@ -1,6 +1,6 @@
 # Revisionen für Assets
 
-**Feature Branch:** feature-introduce-asset-manifest-contract-for-ui
+**Feature-Zweig:** feature-introduce-asset-manifest-contract-for-ui
 
 ## Unveränderliche versionierte Assets
 
@@ -18,6 +18,6 @@ Produktions-Container enthalten nun die Git-Commit-Version in Asset-URLs, damit 
 
 Statische Verzeichnisse werden abgewiesen, bevor Antwort-Header gesendet werden, und unversionierte Anwendungsabhängigkeiten bleiben über den Service Worker ohne Netzwerk verfügbar.
 
-## Commits
+## Änderungen
 
 - [9545de2](https://github.com/Cognis-Labs-HQ/Cognis/commit/9545de212904420948eebc1b442bc6dd85bb5f79)

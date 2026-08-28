@@ -1,6 +1,6 @@
 # Pengaturan Auth SMTP
 
-**Feature Branch:** feature-require-username-and-password-for-smtp
+**Cabang Fitur:** feature-require-username-and-password-for-smtp
 
 ## Mewajibkan kredensial SMTP kecuali autentikasi dinonaktifkan
 
@@ -10,6 +10,6 @@ Pengaturan adapter notifikasi SMTP kini memperlakukan nama pengguna dan kata san
 
 Judul kolom wajib kini menampilkan tanda bintang dalam mode terang dan gelap. Penanda langsung diperbarui ketika perubahan formulir mengubah kolom SMTP yang wajib diisi.
 
-## Commits
+## Komit
 
 - [8983ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/8983ae1fe74eac032b99e894abf857606af7260c)

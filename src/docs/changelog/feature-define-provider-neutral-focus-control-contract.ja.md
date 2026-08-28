@@ -1,6 +1,6 @@
 # プロバイダー中立のフォーカス制御
 
-**Feature Branch:** feature-define-provider-neutral-focus-control-contract
+**機能ブランチ:** feature-define-provider-neutral-focus-control-contract
 
 ## 宣言済み共同作業画面をフォーカス
 
@@ -146,6 +146,6 @@ API は `ui:reuse` をホスト UI 機能プロバイダーカタログへ登録
 
 Dashboard は常にプライマリナビゲーションの先頭に表示され、それ以外の項目は引き続きアルファベット順に並びます。
 
-## Commits
+## コミット
 
 - [48395e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/48395e7f07a41221e2e866d9892493df3e98b841)

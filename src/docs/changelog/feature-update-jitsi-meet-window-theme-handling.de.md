@@ -1,6 +1,6 @@
 # Jitsi-Theme-Abgleich
 
-**Feature Branch:** feature-update-jitsi-meet-window-theme-handling
+**Feature-Zweig:** feature-update-jitsi-meet-window-theme-handling
 
 ## Sofortige Theme-Updates für Jitsi Meet
 
@@ -14,6 +14,6 @@ Das Meeting-Embed wendet die Cognis-Farben für Hell- und Dunkelmodus nun beim L
 
 Wenn sich das aktive Cognis-Theme während eines laufenden Meetings ändert, lädt das Embed das Jitsi-Fenster mit der neuen Interface-Konfiguration neu, damit auch Bereitstellungen, die Live-Aktualisierungen von `preferredTheme` ignorieren, das richtige Theme übernehmen.
 
-## Commits
+## Änderungen
 
 - [8344f54](https://github.com/Cognis-Labs-HQ/Cognis/commit/8344f54c3af4936f1812de28754555ba886a945c)

@@ -1,6 +1,6 @@
 # Popup pengaturan modul selaras dengan adapter
 
-**Feature Branch:** feature-investigate-nextcloud-module-settings-loading-issue
+**Cabang Fitur:** feature-investigate-nextcloud-module-settings-loading-issue
 
 ## Baris modul kini membuka pengaturan terpadu
 
@@ -22,6 +22,6 @@ Pengaturan Nextcloud Whiteboard kini menerima pembaruan URL server dan batas ung
 
 Kesalahan validasi pengaturan modul kini menyebutkan kolom yang tidak valid, sehingga popup konfigurasi bersama tetap terbuka dan menandai input tersebut alih-alih membuang perubahan admin yang valid.
 
-## Commits
+## Komit
 
 - [e33bb93](https://github.com/Cognis-Labs-HQ/Cognis/commit/e33bb93726bab2eb01bf3d24f3704d2b4127dda0)

@@ -1,6 +1,6 @@
 # Profilzugriff nach Sichtbarkeit
 
-**Feature Branch:** feature-redirect-profile-not-found-to-404
+**Feature-Zweig:** feature-redirect-profile-not-found-to-404
 
 ## Folgen erfordert sichtbare Anfragende
 
@@ -18,6 +18,6 @@ Die Fehlerseite und das Laufzeitfehler-Popup wenden jetzt das gespeicherte Thema
 
 Der App-Router löst jetzt die Dashboard-Wurzel vor dem Mounten einer Route auf, sodass die Navigation vom Profil zur 404-Seite auch funktioniert, wenn sie vor der Router-Initialisierung durch die Dashboard-Shell erfolgt.
 
-## Commits
+## Änderungen
 
 - [af00b98](https://github.com/Cognis-Labs-HQ/Cognis/commit/af00b98a07aeab0866031d7c25e95c2914df3355)

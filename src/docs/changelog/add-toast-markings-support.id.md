@@ -1,6 +1,6 @@
 # Visibilitas Ikon Toast Terang
 
-**Feature Branch:** copilot/add-toast-markings-support
+**Cabang Fitur:** copilot/add-toast-markings-support
 
 ## Ringkasan
 
@@ -15,4 +15,4 @@ Memperbaiki bug ikon notifikasi toast (error ✕, sukses ✓, peringatan ⚠, in
 
 - [1305bfc](https://github.com/Cognis-Labs-HQ/Cognis/commit/1305bfc163422709964268baafe8b0036c7b5c10)
 
-## Commits
+## Komit

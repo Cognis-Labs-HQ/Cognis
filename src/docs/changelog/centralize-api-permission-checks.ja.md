@@ -1,6 +1,6 @@
 # PR変更履歴 — API権限チェックの一元化
 
-**Feature Branch:** copilot/centralize-api-permission-checks
+**機能ブランチ:** copilot/centralize-api-permission-checks
 
 ## 概要
 

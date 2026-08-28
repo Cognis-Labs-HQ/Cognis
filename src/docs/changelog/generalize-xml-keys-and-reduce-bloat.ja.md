@@ -1,6 +1,6 @@
 # i18n文字列の汎用化とコアの肥大化解消
 
-**Feature Branch:** copilot/generalize-xml-keys-and-reduce-bloat
+**機能ブランチ:** copilot/generalize-xml-keys-and-reduce-bloat
 
 ## 概要
 
@@ -31,7 +31,7 @@
 - `src/ui/app/users/index.js` — save_failedキーを`ui.reuse.generic.save_failed`に更新
 - `src/ui/languages/*/strings.xml` — 約90個の不使用/移動済みキーを削除、`ui.reuse.generic.save_failed`を追加
 
-## Commits
+## コミット
 
 - [8e82369](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e82369)
 - [867e397](https://github.com/Cognis-Labs-HQ/Cognis/commit/867e397)

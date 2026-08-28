@@ -1,6 +1,6 @@
 # 表示範囲によるプロフィールアクセス
 
-**Feature Branch:** feature-redirect-profile-not-found-to-404
+**機能ブランチ:** feature-redirect-profile-not-found-to-404
 
 ## フォローには表示可能な申請者が必要
 
@@ -18,6 +18,6 @@
 
 アプリルーターはルートをマウントする前にダッシュボードのルート要素を解決するようになりました。これにより、ダッシュボードシェルがルーターを初期化する前でも、プロフィールから404ページへの遷移が機能します。
 
-## Commits
+## コミット
 
 - [af00b98](https://github.com/Cognis-Labs-HQ/Cognis/commit/af00b98a07aeab0866031d7c25e95c2914df3355)

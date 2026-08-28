@@ -1,6 +1,6 @@
 # 安全な設定編集
 
-**Feature Branch:** feature-add-warning-popup-for-preferences-editing
+**機能ブランチ:** feature-add-warning-popup-for-preferences-editing
 
 ## 設定 JSON 全体を編集
 
@@ -10,6 +10,6 @@
 
 リリースノートの確認履歴は、意味のある UI 設定とは別に保存されるようになりました。
 
-## Commits
+## コミット
 
 - [0aa824e](https://github.com/Cognis-Labs-HQ/Cognis/commit/0aa824eb9eac2155981034325d48e033282a8c43)

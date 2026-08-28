@@ -1,6 +1,6 @@
 # 変更履歴
 
-**Feature Branch:** N/A
+**機能ブランチ:** N/A
 
 ## 概要
 
@@ -24,4 +24,4 @@
 - [create-changelog-ingestion-system](/changelogs/create-changelog-ingestion-system)
 - [cleanup-strings-and-codebase](/changelogs/cleanup-strings-and-codebase)
 
-## Commits
+## コミット

@@ -1,6 +1,6 @@
 # i18n-Strings vereinfachen
 
-**Feature Branch:** copilot/generalize-xml-keys-and-reduce-bloat
+**Feature-Zweig:** copilot/generalize-xml-keys-and-reduce-bloat
 
 ## Zusammenfassung
 
@@ -31,7 +31,7 @@ Komponentenspezifische i18n-Schlüssel wurden aus den zentralen Sprachdateien in
 - `src/ui/app/users/index.js` — save_failed-Schlüssel auf `ui.reuse.generic.save_failed` umgestellt
 - `src/ui/languages/*/strings.xml` — ~90 veraltete/verschobene Schlüssel entfernt, `ui.reuse.generic.save_failed` hinzugefügt
 
-## Commits
+## Änderungen
 
 - [8e82369](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e82369)
 - [867e397](https://github.com/Cognis-Labs-HQ/Cognis/commit/867e397)

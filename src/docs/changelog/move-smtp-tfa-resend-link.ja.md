@@ -1,6 +1,6 @@
 # SMTP TFA 再送信と制限表示
 
-**Feature Branch:** copilot/move-smtp-tfa-resend-link
+**機能ブランチ:** copilot/move-smtp-tfa-resend-link
 
 ## 概要
 
@@ -51,6 +51,6 @@ SMTP タブに再び切り替えてもコードは再送信されません。
 - `src/adapters/tfa/smtp/tests/smtp-adapter.test.ts`
 - `src/docs/versions.en.md`
 
-## Commits
+## コミット
 
 - [460f399](https://github.com/Cognis-Labs-HQ/Cognis/commit/460f399ae3701867d002e0006d3a71a7dbf9e3c8)

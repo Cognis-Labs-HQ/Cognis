@@ -1,6 +1,6 @@
 # Keamanan Akun
 
-**Feature Branch:** feature-add-danger-zone-section-in-settings
+**Cabang Fitur:** feature-add-danger-zone-section-in-settings
 
 ## Menambahkan Zona Berbahaya di Pengaturan
 
@@ -26,6 +26,6 @@ Kontrol Nonaktif/Aktif di Admin Pengguna kini mengarsipkan atau mengaktifkan kem
 
 Penonaktifan mandiri kini menyembunyikan akun dari interaksi sambil memungkinkan pengguna memulihkan akses dengan masuk lagi, dan popup zona berbahaya memakai gaya tombol batal netral.
 
-## Commits
+## Komit
 
 - [84934f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/84934f6b7a14135551c11da59c8fc51f014b7be4)

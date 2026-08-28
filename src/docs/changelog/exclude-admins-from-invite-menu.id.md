@@ -1,6 +1,6 @@
 # Kecualikan Admin dari Invite
 
-**Feature Branch:** copilot/exclude-admins-from-invite-menu
+**Cabang Fitur:** copilot/exclude-admins-from-invite-menu
 
 ## Ringkasan
 

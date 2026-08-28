@@ -1,6 +1,6 @@
 # Cek Kotor Popup
 
-**Feature Branch:** copilot/add-dirty-tracker-check
+**Cabang Fitur:** copilot/add-dirty-tracker-check
 
 ## Prompt tutup hanya setelah edit
 
@@ -10,6 +10,6 @@ Popup formulir yang dilindungi sekarang memeriksa pelacak perubahan bersama sebe
 
 Utilitas perubahan belum disimpan bersama sekarang dapat melacak kolom formulir popup dalam mode senyap yang tetap menyembunyikan kontrol simpan/buang mengambang. Dengan begitu, perlindungan penutupan popup memakai logika status kotor yang sama tanpa UI tambahan.
 
-## Commits
+## Komit
 
 - [88648cc](https://github.com/Cognis-Labs-HQ/Cognis/commit/88648cc411c93eaad6bba45e142bede90dbe5b0c)

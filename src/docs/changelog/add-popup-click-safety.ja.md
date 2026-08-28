@@ -1,6 +1,6 @@
 # フォームポップアップの閉じる安全機能
 
-**Feature Branch:** copilot/add-popup-click-safety
+**機能ブランチ:** copilot/add-popup-click-safety
 
 ## 未保存の変更を破棄する前に確認ダイアログを表示
 
@@ -10,6 +10,6 @@
 
 プロフィール編集、パスワード変更、アダプター設定、招待メール、ユーザー入力、教師申請、生徒招待の各ポップアップがこの保護を受けます。`openPopup` API に新しい `closeProtection` オプションが追加され、i18n で解決された文字列を渡すことで任意のフォームポップアップに適用できます。
 
-## Commits
+## コミット
 
 - [b943b35](https://github.com/Cognis-Labs-HQ/Cognis/commit/b943b359f0aff9872e9c4817e28c4b2381a16253)

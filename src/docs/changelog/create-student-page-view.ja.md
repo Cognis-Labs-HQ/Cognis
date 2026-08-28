@@ -1,6 +1,6 @@
 # 生徒クラスメンバーシップ・教師クラス管理・学習ハブ
 
-**Feature Branch:** copilot/create-student-page-view
+**機能ブランチ:** copilot/create-student-page-view
 
 ## 概要
 

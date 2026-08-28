@@ -1,6 +1,6 @@
 # Zuverlässige UI-Ressourcen
 
-**Feature Branch:** feature-fix-mime-type-error-in-nginx-configuration
+**Feature-Zweig:** feature-fix-mime-type-error-in-nginx-configuration
 
 ## Ressourcenfehler werden nicht mehr zwischengespeichert
 
@@ -64,6 +64,6 @@ Compose verlangt nun bereitstellungsverwaltete Datenbankkennwörter und einen Da
 
 Das Anwendungsabbild gibt localhost nicht mehr als öffentlichen Host vor. Beide Datenbankprofile für Compose verlangen `EXTERNAL_HOST`, damit Authentifizierungs-, Einladungs- und Benachrichtigungslinks nicht auf den lokalen Rechner des jeweiligen Empfängers verweisen.
 
-## Commits
+## Änderungen
 
 - [ec75586](https://github.com/Cognis-Labs-HQ/Cognis/commit/ec75586e143b25792032eaa906ba8b177868a6ef)

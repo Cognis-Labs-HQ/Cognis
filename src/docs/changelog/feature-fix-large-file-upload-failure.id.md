@@ -1,6 +1,6 @@
 # Unggahan Profil Lebih Besar
 
-**Feature Branch:** feature-fix-large-file-upload-failure
+**Cabang Fitur:** feature-fix-large-file-upload-failure
 
 ## Media profil mengikuti kuota penyimpanan
 
@@ -10,6 +10,6 @@ Unggahan avatar dan banner tidak lagi memiliki batas ukuran terpisah per berkas.
 
 Konfigurasi nginx bawaan tidak lagi menolak isi permintaan API berukuran besar sebelum Cognis dapat menerapkan kuota penyimpanan pengguna. Unggahan banner juga mempertahankan posisi potong saat menyimpan preferensi tata letak.
 
-## Commits
+## Komit
 
 - [da55ed2](https://github.com/Cognis-Labs-HQ/Cognis/commit/da55ed2007f45ede24247703d8862de139091ca9)

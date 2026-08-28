@@ -1,6 +1,6 @@
 # TFA 削除の確認
 
-**Feature Branch:** feature-restrict-tfa-removal-behind-password-confirmation
+**機能ブランチ:** feature-restrict-tfa-removal-behind-password-confirmation
 
 ## パスワードで TFA 削除を保護
 
@@ -10,6 +10,6 @@
 
 SMTP二要素認証の設定時に、一般的な設定エラーではなく、確認済みのメインメールアドレスが必要であることを示す警告を表示するようになりました。
 
-## Commits
+## コミット
 
 - [f524f2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f524f2f62820dbbf6ff80366a835aca0f31d3359)

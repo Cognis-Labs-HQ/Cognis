@@ -1,6 +1,6 @@
 # Log-Stream-Filter
 
-**Feature Branch:** copilot/add-log-failed-logins-and-rotation
+**Feature-Zweig:** copilot/add-log-failed-logins-and-rotation
 
 ## Zusammenfassung
 

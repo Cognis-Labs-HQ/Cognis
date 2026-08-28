@@ -1,6 +1,6 @@
 # PostgreSQL-Verbindungspool
 
-**Feature Branch:** feature-refactor-postgresql-adapter-for-connection-pooling
+**Feature-Zweig:** feature-refactor-postgresql-adapter-for-connection-pooling
 
 ## PostgreSQL verwendet jetzt einen begrenzten Verbindungspool
 
@@ -66,6 +66,6 @@ Der Container-Einstiegspunkt kodiert PostgreSQL- und MariaDB-Zugangsdaten prozen
 
 Die Validierung der Pool-Einstellungen gehört jetzt zum jeweiligen Datenbankadapter; außerdem sind Adapter- und Gateway-Arbeitsbereichsversionen sowie Abhängigkeitsobergrenzen synchronisiert.
 
-## Commits
+## Änderungen
 
 - [6c88739](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c887390888a10a8acbf3535860f4d85d9908cef)

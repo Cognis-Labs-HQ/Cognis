@@ -1,6 +1,6 @@
 # カレンダー強化
 
-**Feature Branch:** copilot/create-calendar-gateway
+**機能ブランチ:** copilot/create-calendar-gateway
 
 ## 複数カレンダーの予定を常時表示
 
@@ -112,6 +112,6 @@ Jitsi Meet 管理ページに「予定されたミーティング」という2�
 するようになりました。以前は、ユーザーが選択した時刻形式に関わらず、ポップ
 アップ内の開始・終了時刻が常に12時間形式で表示されていました。
 
-## Commits
+## コミット
 
 - [b32a4af](https://github.com/Cognis-Labs-HQ/Cognis/commit/b32a4af54b95de949389be701a92fc829ad45325)

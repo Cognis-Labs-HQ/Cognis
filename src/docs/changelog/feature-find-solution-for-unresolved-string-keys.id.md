@@ -1,6 +1,6 @@
 # Penemuan Modul Terlokalisasi
 
-**Feature Branch:** feature-find-solution-for-unresolved-string-keys
+**Cabang Fitur:** feature-find-solution-for-unresolved-string-keys
 
 ## Nama modul langsung dimuat
 
@@ -14,6 +14,6 @@ Pemuat rute modul eksternal kini mengabaikan manifes inti sehingga tidak lagi me
 
 Pemuatan bursa kini berada dalam direktori khusus dengan penemuan katalog, akses repositori, dan layanan publik yang dipisahkan menjadi berkas lebih kecil dan jauh di bawah batas ukuran sumber.
 
-## Commits
+## Komit
 
 - [6f98263](https://github.com/Cognis-Labs-HQ/Cognis/commit/6f98263dd67dd20b8b86d4bed66c4ace97b3d296)

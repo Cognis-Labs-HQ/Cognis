@@ -1,6 +1,6 @@
 # Build UI Produksi
 
-**Feature Branch:** feature-add-production-ui-build-stage
+**Cabang Fitur:** feature-add-production-ui-build-stage
 
 ## Aset produksi berciri hash
 
@@ -34,6 +34,6 @@ Negosiasi aset statis kini mengecualikan pengodean yang ditolak dengan nilai kua
 
 Build produksi kini memverifikasi setiap titik masuk adapter terkompilasi. Manifes basis data dan file lokal mengarah ke modul masuk yang sebenarnya, gateway file menyelesaikan adapter dari lokasi terkompilasi yang dikonfigurasi, dan adapter Pesan memuat kontribusi kunci ruang dari modul penyimpanan yang benar.
 
-## Commits
+## Komit
 
 - [d9af537](https://github.com/Cognis-Labs-HQ/Cognis/commit/d9af537d6fa92347026e779da4387d886f0e8238)

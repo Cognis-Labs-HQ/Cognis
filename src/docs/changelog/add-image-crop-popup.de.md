@@ -1,6 +1,6 @@
 # Popup zum Zuschneiden
 
-**Feature Branch:** copilot/add-image-crop-popup
+**Feature-Zweig:** copilot/add-image-crop-popup
 
 ## Zuschneiden vor Upload
 
@@ -10,6 +10,6 @@ Beim Hochladen von Profilavatar oder Banner öffnet sich jetzt zuerst ein Popup,
 
 Das Zuschneide-Popup enthält jetzt ein erweiterbares Hilfsraster und eine Zoom-Steuerung, damit der Bildausschnitt vor dem Upload präziser gesetzt werden kann.
 
-## Commits
+## Änderungen
 
 - [c01015e](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01015e72abed690fa1e92a2659ee1f60e3f3630)

@@ -1,6 +1,6 @@
 # Teilen-Popups repariert
 
-**Feature Branch:** feature-fix-share-link-creation-error
+**Feature-Zweig:** feature-fix-share-link-creation-error
 
 ## Einheitliches Teilen-Popup
 
@@ -398,6 +398,6 @@ Beim Bearbeiten von Freigaben bleiben ausdrücklich entfernte Bezeichnungen erha
 
 Freigabe-Popups verwalten ihr Aktualisierungsintervall nun im Popup-Lebenszyklusmodul. Dadurch schlägt das Teilen von Whiteboards beim Öffnen des Popups nicht mehr fehl.
 
-## Commits
+## Änderungen
 
 - [5ede8a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ede8a9bd7324f23efc951337e5aa296a63acbd2)

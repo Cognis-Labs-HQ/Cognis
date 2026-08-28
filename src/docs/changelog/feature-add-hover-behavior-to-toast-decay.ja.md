@@ -1,6 +1,6 @@
 # 一時停止できるトースト
 
-**Feature Branch:** feature-add-hover-behavior-to-toast-decay
+**機能ブランチ:** feature-add-hover-behavior-to-toast-decay
 
 ## ホバー中はトーストを保持
 
@@ -8,6 +8,6 @@
 
 一時的なトーストは、マウスまたはタッチスクリーンで右にドラッグしてから離すと閉じることもできます。離す前にトーストを元に戻せば、操作を取り消して通常の動作を再開できます。常設トーストは、閉じる操作を行うまで表示され続けます。
 
-## Commits
+## コミット
 
 - [9f860c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/9f860c0f2d5ebf90f5af70bc0a44daa414958713)

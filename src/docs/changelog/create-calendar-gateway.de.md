@@ -1,6 +1,6 @@
 # Kalender-Upgrade
 
-**Feature Branch:** copilot/create-calendar-gateway
+**Feature-Zweig:** copilot/create-calendar-gateway
 
 ## Termine aus allen Kalendern sichtbar
 
@@ -121,6 +121,6 @@ Das Termin-Detailpopup berücksichtigt jetzt korrekt die 12/24-Stunden-Uhrzeitei
 aus den Einstellungen. Zuvor wurden Start- und Endzeiten im Popup immer im 12-Stunden-Format
 dargestellt, unabhängig vom gewählten Zeitformat.
 
-## Commits
+## Änderungen
 
 - [b32a4af](https://github.com/Cognis-Labs-HQ/Cognis/commit/b32a4af54b95de949389be701a92fc829ad45325)

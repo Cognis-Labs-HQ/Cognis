@@ -1,6 +1,6 @@
 # Produktions-UI-Build
 
-**Feature Branch:** feature-add-production-ui-build-stage
+**Feature-Zweig:** feature-add-production-ui-build-stage
 
 ## Gehashte Produktionsdateien
 
@@ -34,6 +34,6 @@ Die Aushandlung statischer Assets schließt nun mit Qualitätswert null abgelehn
 
 Produktions-Builds prüfen nun jeden kompilierten Adapter-Einstiegspunkt. Datenbank- und lokale Dateimanifeste verweisen auf ihre tatsächlichen Einstiegsmodule, das Datei-Gateway löst Adapter aus dem konfigurierten kompilierten Stammverzeichnis auf und der Nachrichtenadapter lädt seinen Raum-Schlüsselbeitrag aus dem richtigen Speichermodul.
 
-## Commits
+## Änderungen
 
 - [d9af537](https://github.com/Cognis-Labs-HQ/Cognis/commit/d9af537d6fa92347026e779da4387d886f0e8238)

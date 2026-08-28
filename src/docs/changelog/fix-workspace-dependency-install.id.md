@@ -1,6 +1,6 @@
 # Instalasi Dependensi Andal
 
-**Feature Branch:** N/A
+**Cabang Fitur:** N/A
 
 ## Batas ruang kerja diselaraskan
 
@@ -10,4 +10,4 @@ Batas dependensi internal kini mencakup versi komponen dalam repositori ini, seh
 
 Pemeriksaan arsitektur kini melaporkan rentang dependensi internal yang mengecualikan versi ruang kerja lokal terkait.
 
-## Commits
+## Komit

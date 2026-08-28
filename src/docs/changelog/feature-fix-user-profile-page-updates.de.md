@@ -1,6 +1,6 @@
 # Direkte Profilupdates
 
-**Feature Branch:** feature-fix-user-profile-page-updates
+**Feature-Zweig:** feature-fix-user-profile-page-updates
 
 ## Sofortige Profildaten
 
@@ -38,6 +38,6 @@ Gezielte Profilaktualisierungen laufen nun über den Seiten-Composer. Nicht betr
 
 Beim Folgen eines angezeigten Profils wird das aktuelle Konto nun vor dem Serverabgleich zur vorläufigen Follower-Liste hinzugefügt.
 
-## Commits
+## Änderungen
 
 - [597aa63](https://github.com/Cognis-Labs-HQ/Cognis/commit/597aa63d6ef878eb2e40d6d8050a9956387fc0e8)

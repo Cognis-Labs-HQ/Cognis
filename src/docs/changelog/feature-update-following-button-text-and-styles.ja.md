@@ -1,6 +1,6 @@
 # ソーシャルフォロー通知
 
-**Feature Branch:** feature-update-following-button-text-and-styles
+**機能ブランチ:** feature-update-following-button-text-and-styles
 
 ## フォロー中ボタンでフォロー解除操作をプレビュー
 
@@ -14,6 +14,6 @@
 
 プロフィールアバターのフォールバック用イニシャルは、ユーザー名よりプロフィール表示名を先に使い、1語の名前では1文字のイニシャルを表示できるようになりました。
 
-## Commits
+## コミット
 
 - [e6c4565](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6c45656185cf32f63d69ebb49595ad530184d2e)

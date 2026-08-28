@@ -1,6 +1,6 @@
 # より安全なキーリング設定
 
-**Feature Branch:** feature-require-password-confirmation-on-keyring-setup
+**機能ブランチ:** feature-require-password-confirmation-on-keyring-setup
 
 ## 新しいキーリングパスワードの確認
 
@@ -18,6 +18,6 @@
 
 キーリング作成を取り消した後も、設定画面の作成操作を再び実行できます。自動ロックの選択肢は設定ダイアログと設定画面で同じ定義を共有し、ユーザーパスワードによる作成には作成操作用の表示を使用します。
 
-## Commits
+## コミット
 
 - [77460b6](https://github.com/Cognis-Labs-HQ/Cognis/commit/77460b6c93444a0c0c8d467b879551c38dedcc41)

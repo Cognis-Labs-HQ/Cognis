@@ -1,6 +1,6 @@
 # Wajibkan Kontrak Kontrol Admin
 
-**Feature Branch:** copilot/require-adapters-config-file
+**Cabang Fitur:** copilot/require-adapters-config-file
 
 ## Ringkasan
 

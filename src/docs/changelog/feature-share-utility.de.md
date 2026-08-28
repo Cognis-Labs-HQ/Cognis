@@ -1,6 +1,6 @@
 # Share Utility
 
-**Feature Branch:** copilot/feature-share-utility
+**Feature-Zweig:** copilot/feature-share-utility
 
 ## Share-Gateway hinzufügen
 
@@ -157,6 +157,6 @@ Das Share-Links-Popup zeigte Links aus einer früheren Meeting-Instanz weiterhin
 
 Share-Link-Zeilen kopieren ihre URL jetzt über einen ausdrücklichen Button, statt sich wie Navigationslinks zu verhalten. Die Aktionen im Popup für eingeschränkten Zugriff verwenden neutrale Button-Stile, und eingebettete Share-Seiten können eine Page-Composer-Platzierung mit voller Breite und voller Höhe anfordern. Abgelaufene oder nicht verfügbare Share-Links zeigen ihren Status nun außerdem in der Seitenbeschreibung, statt den generischen Untertitel für geteilte Inhalte zu wiederholen.
 
-## Commits
+## Änderungen
 
 - [22b2896](https://github.com/Cognis-Labs-HQ/Cognis/commit/22b2896eaf8f13d17c1161bfc12085036f2539c8)

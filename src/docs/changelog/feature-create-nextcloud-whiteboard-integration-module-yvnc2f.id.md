@@ -1,6 +1,6 @@
 # Whiteboard di Dashboard
 
-**Feature Branch:** feature-create-nextcloud-whiteboard-integration-module-yvnc2f
+**Cabang Fitur:** feature-create-nextcloud-whiteboard-integration-module-yvnc2f
 
 ## Canvas kini tertanam langsung di dalam tata letak dashboard
 
@@ -30,6 +30,6 @@ Admin mengonfigurasi **URL Server Papan Tulis** khusus yang mengarah ke endpoint
 
 Modul dan adapter lain dapat memperoleh URL embed atau metadata papan tulis melalui kemampuan publik ini, memungkinkan integrasi kelas dan rapat di masa mendatang.
 
-## Commits
+## Komit
 
 - [3fba3a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/3fba3a4ae030e1c17efc8f85e1245ceb69bc135d)

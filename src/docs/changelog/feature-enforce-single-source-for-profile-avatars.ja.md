@@ -1,6 +1,6 @@
 # 一貫したプロフィールアバター
 
-**Feature Branch:** feature-enforce-single-source-for-profile-avatars
+**機能ブランチ:** feature-enforce-single-source-for-profile-avatars
 
 ## プロフィールが所有する単一のアバター情報源
 
@@ -22,6 +22,6 @@
 
 教室ページが UI コンテキストを実行可能なモジュールコードとしてインポートするようになり、教師や使用中の座席のイニシャルを未定義変数エラーなしで表示できます。
 
-## Commits
+## コミット
 
 - [fa7325e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa7325e7709ea2942c3ce560b033429297e5e8f7)

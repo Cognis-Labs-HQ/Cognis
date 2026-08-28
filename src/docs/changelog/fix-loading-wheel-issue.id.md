@@ -1,6 +1,6 @@
 # Perbaikan Animasi Loading
 
-**Feature Branch:** copilot/fix-loading-wheel-issue
+**Cabang Fitur:** copilot/fix-loading-wheel-issue
 
 ## Animasi loading tidak lagi muncul di atas popup konfirmasi kata sandi
 
@@ -10,6 +10,6 @@ Overlay pemuatan halaman kini disembunyikan saat popup sedang terbuka, sehingga 
 
 Input kata sandi di dalam popup konfirmasi ulang kini dibungkus dalam elemen `<form>`, menghilangkan peringatan browser tentang kolom kata sandi yang tidak terdapat dalam form.
 
-## Commits
+## Komit
 
 - [8058581](https://github.com/Cognis-Labs-HQ/Cognis/commit/805858123bc36713ef78b0f6ee038fdf3613782a)

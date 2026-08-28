@@ -1,6 +1,6 @@
 # 準拠と管理画面整理
 
-**Feature Branch:** copilot/comply-codebase-instructions
+**機能ブランチ:** copilot/comply-codebase-instructions
 
 ## 管理のセキュリティを統合
 
@@ -22,6 +22,6 @@ UI/app と API/routes のディレクトリ規約、1000 行超の新規ソー�
 
 AI 指示に、LOC 規律、大規模差分を成功指標にしない方針、汎用命名、真の reuse 境界、HTML と JS/TS の分離、1000 行超ファイルのディレクトリ分割を明示しました。
 
-## Commits
+## コミット
 
 - [a267b4c](https://github.com/Cognis-Labs-HQ/Cognis/commit/a267b4cce59173b5060e5035a628583868afa39e)

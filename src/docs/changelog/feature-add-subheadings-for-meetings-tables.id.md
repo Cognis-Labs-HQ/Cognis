@@ -1,6 +1,6 @@
 # Subjudul tabel rapat administrasi
 
-**Feature Branch:** feature-add-subheadings-for-meetings-tables
+**Cabang Fitur:** feature-add-subheadings-for-meetings-tables
 
 ## Bagian rapat aktif dan mendatang lebih jelas
 
@@ -14,6 +14,6 @@ Baris rapat mendatang kini menjaga kolom ID tetap ringkas sambil menyeimbangkan 
 
 Kolom rapat kini memakai label URL Rapat dan menampilkan URL sebenarnya, sementara kolom ID tetap ringkas agar hanya memakai lebar yang dibutuhkan.
 
-## Commits
+## Komit
 
 - [944f645](https://github.com/Cognis-Labs-HQ/Cognis/commit/944f645f21aac7c511cd60646c76923a382f7e8a)

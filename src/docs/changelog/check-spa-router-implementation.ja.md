@@ -1,6 +1,6 @@
 # PR変更履歴 — SPAルーター実装チェック
 
-**Feature Branch:** copilot/check-spa-router-implementation
+**機能ブランチ:** copilot/check-spa-router-implementation
 
 ## 概要
 

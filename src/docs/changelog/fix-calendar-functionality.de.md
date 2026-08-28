@@ -1,6 +1,6 @@
 # Kalenderfreigaben
 
-**Feature Branch:** copilot/fix-calendar-functionality
+**Feature-Zweig:** copilot/fix-calendar-functionality
 
 ## Mehrere Links sind wieder da
 
@@ -67,6 +67,6 @@ Ausstehende Kalendereinladungen für Ereignisse, deren Endzeit bereits verstrich
 ist, werden nicht mehr in der Einladungsliste angezeigt. Zuvor konnten vergangene
 Ereignisse mit ausstehender Antwort weiterhin im Bereich „Bevorstehend" erscheinen.
 
-## Commits
+## Änderungen
 
 - [4137bff](https://github.com/Cognis-Labs-HQ/Cognis/commit/4137bffbc99535676bf8d9a32060aa302556c333)

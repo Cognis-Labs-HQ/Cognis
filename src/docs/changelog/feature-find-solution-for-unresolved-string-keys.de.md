@@ -1,6 +1,6 @@
 # Lokalisierte Modulsuche
 
-**Feature Branch:** feature-find-solution-for-unresolved-string-keys
+**Feature-Zweig:** feature-find-solution-for-unresolved-string-keys
 
 ## Modulnamen erscheinen sofort
 
@@ -14,6 +14,6 @@ Der Routenlader für externe Module ignoriert nun Core-Manifeste und sucht Cogni
 
 Das Laden des Marktplatzes liegt nun in einem eigenen Verzeichnis. Katalogsuche, Repository-Zugriff und öffentlicher Dienst sind in kleinere Dateien aufgeteilt, die deutlich unter der Größenbegrenzung bleiben.
 
-## Commits
+## Änderungen
 
 - [6f98263](https://github.com/Cognis-Labs-HQ/Cognis/commit/6f98263dd67dd20b8b86d4bed66c4ace97b3d296)

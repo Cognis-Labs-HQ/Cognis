@@ -1,6 +1,6 @@
 # ダッシュボード内のホワイトボード
 
-**Feature Branch:** feature-create-nextcloud-whiteboard-integration-module-yvnc2f
+**機能ブランチ:** feature-create-nextcloud-whiteboard-integration-module-yvnc2f
 
 ## キャンバスがダッシュボードレイアウト内に直接埋め込まれるように
 
@@ -30,6 +30,6 @@ Socket.IO 接続とエレメント同期は以前と同じように機能しま�
 
 他のモジュールやアダプターがこれらの公開ケイパビリティを通じてホワイトボードの埋め込み URL やメタデータを取得でき、将来のクラスルームおよびミーティング統合が可能になります。
 
-## Commits
+## コミット
 
 - [3fba3a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/3fba3a4ae030e1c17efc8f85e1245ceb69bc135d)

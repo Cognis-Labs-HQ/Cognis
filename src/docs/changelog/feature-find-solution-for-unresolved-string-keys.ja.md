@@ -1,6 +1,6 @@
 # モジュール表示の現地語化
 
-**Feature Branch:** feature-find-solution-for-unresolved-string-keys
+**機能ブランチ:** feature-find-solution-for-unresolved-string-keys
 
 ## 初回から翻訳名を表示
 
@@ -14,6 +14,6 @@
 
 マーケットプレイスの読み込み処理を専用ディレクトリへ移し、カタログ検出、リポジトリアクセス、公開サービスを小さなファイルに分割して、ソースサイズ制限を十分に下回るようにしました。
 
-## Commits
+## コミット
 
 - [6f98263](https://github.com/Cognis-Labs-HQ/Cognis/commit/6f98263dd67dd20b8b86d4bed66c4ace97b3d296)

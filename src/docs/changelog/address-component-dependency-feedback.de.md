@@ -1,6 +1,6 @@
 # Abhängigkeitsprüfung
 
-**Feature Branch:** N/A
+**Feature-Zweig:** N/A
 
 ## Flexible Komponentenabhängigkeiten
 
@@ -10,4 +10,4 @@ Cognis-Komponentenpakete verwenden jetzt geprüfte Obergrenzen für Abhängigkei
 
 Jitsi Meet erhält den Datei-Namespace für Profile jetzt über Komponentenfähigkeiten, bevor Avatar-Datei-URLs erstellt werden.
 
-## Commits
+## Änderungen

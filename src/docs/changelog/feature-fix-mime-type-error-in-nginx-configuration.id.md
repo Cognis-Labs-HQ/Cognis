@@ -1,6 +1,6 @@
 # Pemuatan aset UI andal
 
-**Feature Branch:** feature-fix-mime-type-error-in-nginx-configuration
+**Cabang Fitur:** feature-fix-mime-type-error-in-nginx-configuration
 
 ## Galat aset tidak lagi disimpan
 
@@ -64,6 +64,6 @@ Compose kini mewajibkan kata sandi basis data dan kunci enkripsi data yang dikel
 
 Image aplikasi tidak lagi menetapkan localhost sebagai host publik. Kedua profil basis data Compose mewajibkan `EXTERNAL_HOST`, sehingga tautan autentikasi, undangan, dan pemberitahuan tidak mengarah ke komputer lokal setiap penerima.
 
-## Commits
+## Komit
 
 - [ec75586](https://github.com/Cognis-Labs-HQ/Cognis/commit/ec75586e143b25792032eaa906ba8b177868a6ef)

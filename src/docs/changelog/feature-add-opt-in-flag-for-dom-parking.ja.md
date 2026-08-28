@@ -1,6 +1,6 @@
 # より安全な DOM パーキング
 
-**Feature Branch:** feature-add-opt-in-flag-for-dom-parking
+**機能ブランチ:** feature-add-opt-in-flag-for-dom-parking
 
 ## DOM パーキングをオプトイン化
 
@@ -10,6 +10,6 @@ page composer は既定でページ内容を再構築するようになり、退
 
 埋め込み Jitsi Meet ページでは完全な DOM パーキングを有効にし、状態を持つ iframe が再接続せずに composer のレイアウト更新を乗り越えられるようにしました。
 
-## Commits
+## コミット
 
 - [44d57a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/44d57a98837df3d5ed38f8bd17413fa3e2a32904)

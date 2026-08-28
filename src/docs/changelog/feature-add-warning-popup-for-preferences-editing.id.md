@@ -1,6 +1,6 @@
 # Penyuntingan Preferensi Aman
 
-**Feature Branch:** feature-add-warning-popup-for-preferences-editing
+**Cabang Fitur:** feature-add-warning-popup-for-preferences-editing
 
 ## Sunting JSON preferensi lengkap
 
@@ -10,6 +10,6 @@ Preferensi Lanjutan kini memungkinkan pengguna berpengalaman menyunting seluruh 
 
 Riwayat pengakuan catatan rilis kini disimpan terpisah dari preferensi antarmuka yang bermakna.
 
-## Commits
+## Komit
 
 - [0aa824e](https://github.com/Cognis-Labs-HQ/Cognis/commit/0aa824eb9eac2155981034325d48e033282a8c43)

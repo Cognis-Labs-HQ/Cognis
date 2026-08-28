@@ -1,6 +1,6 @@
 # Sicherere Schlüsselbundeinrichtung
 
-**Feature Branch:** feature-require-password-confirmation-on-keyring-setup
+**Feature-Zweig:** feature-require-password-confirmation-on-keyring-setup
 
 ## Neue Schlüsselbundpasswörter bestätigen
 
@@ -18,6 +18,6 @@ Kontoinstanz-Identitäten unterscheiden gelöschte und neu erstellte Benutzer vo
 
 Nach einem Abbruch bleibt die Schlüsselbunderstellung in den Einstellungen bedienbar. Die Auswahlwerte für die automatische Sperre stammen bei Einrichtung und Einstellungen aus derselben Definition, und die Erstellung mit dem Benutzerpasswort verwendet die Darstellung für eine erstellende Aktion.
 
-## Commits
+## Änderungen
 
 - [77460b6](https://github.com/Cognis-Labs-HQ/Cognis/commit/77460b6c93444a0c0c8d467b879551c38dedcc41)

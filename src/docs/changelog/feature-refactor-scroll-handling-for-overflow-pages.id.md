@@ -1,6 +1,6 @@
 # Gulir Terbagi Stabil
 
-**Feature Branch:** feature-refactor-scroll-handling-for-overflow-pages
+**Cabang Fitur:** feature-refactor-scroll-handling-for-overflow-pages
 
 ## Mode gulir dokumen di page composer
 
@@ -10,6 +10,6 @@ Page composer kini mendukung mode gulir dokumen untuk tata letak terbagi yang pe
 
 Halaman Lisensi kini menyerahkan teks lisensi ke gulir utama halaman, bukan menumpuk scrollbar halaman, kartu, dan panel konten. Menu navigasinya tetap dapat digulir secara terpisah dan sticky, sehingga teks hukum panjang lebih mudah dibaca dan dinavigasi secara konsisten.
 
-## Commits
+## Komit
 
 - [f3b64ca](https://github.com/Cognis-Labs-HQ/Cognis/commit/f3b64ca116345d58e4240401d000eb9d83fadcb8)

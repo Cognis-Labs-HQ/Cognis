@@ -1,6 +1,6 @@
 # Kontrol Namespace File yang Lebih Matang
 
-**Feature Branch:** N/A
+**Cabang Fitur:** N/A
 
 ## Kontrak namespace diperketat
 
@@ -10,4 +10,4 @@ Gateway file kini memvalidasi pengenal namespace dan komponen saat pendaftaran, 
 
 Pembacaan file bernamespace tetap dapat dibagikan sesuai batas namespace masing-masing, tetapi penimpaan dan penghapusan dibatasi untuk pemilik atau aktor berhak istimewa. Pemeriksaan kuota kini menghitung penimpaan oleh pemilik yang sama berdasarkan selisih ukuran akhirnya saja.
 
-## Commits
+## Komit

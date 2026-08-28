@@ -1,6 +1,6 @@
 # API 接続断時にページ更新を促す常駐トースト
 
-**Feature Branch:** copilot/add-perma-toast-refresh-notification
+**機能ブランチ:** copilot/add-perma-toast-refresh-notification
 
 ## 概要
 

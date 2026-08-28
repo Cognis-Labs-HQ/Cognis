@@ -1,6 +1,6 @@
 # パスワード変更の強化
 
-**Feature Branch:** copilot/clean-up-password-change-popup
+**機能ブランチ:** copilot/clean-up-password-change-popup
 
 ## 現在のパスワード必須
 
@@ -18,6 +18,6 @@
 
 現在のパスワード検証では前後の空白を保持するようにし、移行済みアカウントは更新前に回転前ハッシュを履歴へ追加し、2 引数の既存認証アダプター互換を維持しつつ、DB と揮発ストアの履歴保持上限を一貫して適用するようにしました。
 
-## Commits
+## コミット
 
 - [926f513](https://github.com/Cognis-Labs-HQ/Cognis/commit/926f513f10cade5b1e5f9367c98276b2898b4bc2)

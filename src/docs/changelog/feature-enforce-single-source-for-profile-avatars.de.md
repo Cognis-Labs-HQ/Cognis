@@ -1,6 +1,6 @@
 # Einheitliche Profilavatare
 
-**Feature Branch:** feature-enforce-single-source-for-profile-avatars
+**Feature-Zweig:** feature-enforce-single-source-for-profile-avatars
 
 ## Eine profilverwaltete Avatarquelle
 
@@ -22,6 +22,6 @@ Direkt geladene Nachrichtenseiten warten nun auf registrierte Navigationsbeiträ
 
 Klassenraumseiten importieren den UI-Kontext nun als ausführbaren Modulcode, sodass Initialen von Lehrkräften und belegten Plätzen ohne Fehler durch eine fehlende Variable dargestellt werden.
 
-## Commits
+## Änderungen
 
 - [fa7325e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa7325e7709ea2942c3ce560b033429297e5e8f7)

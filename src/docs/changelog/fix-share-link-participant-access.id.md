@@ -1,6 +1,6 @@
 # Perbaiki Bagikan Rapat
 
-**Feature Branch:** N/A
+**Cabang Fitur:** N/A
 
 ## Peserta Kini Dapat Mengelola Bagikan
 
@@ -14,4 +14,4 @@ Permintaan persetujuan bagikan rapat sekarang hanya dikirim kepada peserta yang 
 
 Tautan bagikan rapat sekarang terikat pada instans rapat yang sedang aktif. Saat rapat dimulai ulang, pengenal instans itu diganti sehingga tautan lama otomatis kedaluwarsa dan tidak ikut terbawa ke sesi baru.
 
-## Commits
+## Komit

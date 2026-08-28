@@ -1,6 +1,6 @@
 # Changelog
 
-**Feature Branch:** N/A
+**Feature-Zweig:** N/A
 
 ## Überblick
 
@@ -25,4 +25,4 @@ modular und gut prüfbar bleibt.
 - [create-changelog-ingestion-system](/changelogs/create-changelog-ingestion-system)
 - [cleanup-strings-and-codebase](/changelogs/cleanup-strings-and-codebase)
 
-## Commits
+## Änderungen

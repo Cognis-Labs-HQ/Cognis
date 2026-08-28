@@ -1,6 +1,6 @@
 # 本番パフォーマンスと可観測性
 
-**Feature Branch:** feature-configure-production-reverse-proxy-and-observability
+**機能ブランチ:** feature-configure-production-reverse-proxy-and-observability
 
 ## 安全でキャッシュを考慮した本番エッジ
 
@@ -18,6 +18,6 @@ ctx ベースでサーバー、データベース、キャッシュ、イベン�
 
 コールド、ウォーム、SPA ナビゲーションのホスト環境ベースラインと、Redis 導入前に評価する予算を文書化しました。
 
-## Commits
+## コミット
 
 - [226e1ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/226e1ff10bbf99756a045f037c636181e130d318)

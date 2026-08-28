@@ -1,6 +1,6 @@
 # Fondasi Modul Jitsi Meet
 
-**Feature Branch:** copilot/create-jitsi-meet-module-ui
+**Cabang Fitur:** copilot/create-jitsi-meet-module-ui
 
 ## Ringkasan
 
@@ -73,4 +73,4 @@ Penyempurnaan lanjutan:
 - [65261ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/65261ce6)
 - [642ddf5](https://github.com/Cognis-Labs-HQ/Cognis/commit/642ddf56)
 
-## Commits
+## Komit

@@ -1,6 +1,6 @@
 # Pemisahan API Gateway
 
-**Feature Branch:** development
+**Cabang Fitur:** development
 
 ## Prefiks rute gateway distandardkan
 
@@ -24,6 +24,6 @@ Kasus uji baru mencakup rute stream logging yang mengembalikan false untuk jalur
 
 Dua handler `catch(() => {})` di `installRuntimeErrorHandlers` sekarang mencatat peringatan alih-alih menelan kesalahan yang terjadi saat membuka popup. Blok catch `readAuthSetupRequirement` di router aplikasi sekarang mencatat kesalahan jaringan yang tertangkap. Tangkapan fetch per-bahasa di `loadStudyChildComponents` sekarang mencatat kode bahasa dan kesalahan sebelum mengembalikan fallback kosong. Tangkapan `startStream` di bagian log admin sekarang mencatat kegagalan koneksi, dan tangkapan peristiwa SSE yang salah bentuk mencatat kesalahan parse alih-alih membuangnya secara diam.
 
-## Commits
+## Komit
 
 - [c2dd07a](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2dd07a630b453a51f9793ab2855ab96150b058c)

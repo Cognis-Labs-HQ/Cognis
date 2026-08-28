@@ -1,6 +1,6 @@
 # Tata letak edit page composer yang stabil
 
-**Feature Branch:** feature-fix-element-placement-in-edit-mode
+**Cabang Fitur:** feature-fix-element-placement-in-edit-mode
 
 ## Mode edit memakai dimensi mode normal
 
@@ -10,6 +10,6 @@ Overlay edit page composer kini mengukur kolomnya dari dimensi bagian konten yan
 
 Meeting aktif tetap memakai konfirmasi unload browser untuk upaya penyegaran atau navigasi yang sebenarnya, tetapi Cognis tidak lagi mengubah status pemuatan bersama selama `beforeunload`. Overlay pemuatan kini menunggu `pagehide`, sehingga membatalkan prompt penyegaran browser membuat halaman meeting dan sesi tertanam tetap terlihat serta interaktif.
 
-## Commits
+## Komit
 
 - [fa6742a](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa6742a49a2e6f0284b44c84dec7ca4d7b503ac0)

@@ -1,6 +1,6 @@
 # ページコンポーザーのフォーム下書きを保持して管理
 
-**Feature Branch:** copilot/ensure-form-inputs-preserved
+**機能ブランチ:** copilot/ensure-form-inputs-preserved
 
 ## 概要
 

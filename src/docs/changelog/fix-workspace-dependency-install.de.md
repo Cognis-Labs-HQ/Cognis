@@ -1,6 +1,6 @@
 # Zuverlässige Installation
 
-**Feature Branch:** N/A
+**Feature-Zweig:** N/A
 
 ## Arbeitsbereichsgrenzen angepasst
 
@@ -10,4 +10,4 @@ Interne Abhängigkeitsgrenzen schließen nun die Komponentenversionen dieses Rep
 
 Architekturprüfungen melden nun interne Abhängigkeitsbereiche, die ihre entsprechenden lokalen Arbeitsbereichsversionen ausschließen.
 
-## Commits
+## Änderungen

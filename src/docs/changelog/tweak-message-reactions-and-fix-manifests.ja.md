@@ -1,6 +1,6 @@
 # リアクション永続化と絵文字拡張
 
-**Feature Branch:** copilot/tweak-message-reactions-and-fix-manifests
+**機能ブランチ:** copilot/tweak-message-reactions-and-fix-manifests
 
 ## 概要
 

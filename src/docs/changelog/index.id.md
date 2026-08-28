@@ -1,6 +1,6 @@
 # Catatan Perubahan
 
-**Feature Branch:** N/A
+**Cabang Fitur:** N/A
 
 ## Ringkasan
 
@@ -25,4 +25,4 @@ tetap modular dan mudah diaudit.
 - [create-changelog-ingestion-system](/changelogs/create-changelog-ingestion-system)
 - [cleanup-strings-and-codebase](/changelogs/cleanup-strings-and-codebase)
 
-## Commits
+## Komit

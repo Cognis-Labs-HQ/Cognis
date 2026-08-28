@@ -1,6 +1,6 @@
 # 安定した共有カレンダー
 
-**Feature Branch:** feature-fix-broken-tests
+**機能ブランチ:** feature-fix-broken-tests
 
 ## 招待と回答が一貫して動作
 
@@ -42,6 +42,6 @@
 
 移行された会話にルームキーがない場合は新しく生成し、配信済みのルームキーと会議パスワードは、クライアントがキーリングへの保存成功を確認するまで再試行できます。
 
-## Commits
+## コミット
 
 - [7a40010](https://github.com/Cognis-Labs-HQ/Cognis/commit/7a40010632a1bebcfe94544772ac2698c14cf2a1)

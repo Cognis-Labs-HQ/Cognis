@@ -1,6 +1,6 @@
 # Konfirmasi Penghapusan TFA
 
-**Feature Branch:** feature-restrict-tfa-removal-behind-password-confirmation
+**Cabang Fitur:** feature-restrict-tfa-removal-behind-password-confirmation
 
 ## Kata sandi melindungi penghapusan TFA
 
@@ -10,6 +10,6 @@ Penghapusan metode autentikasi dua faktor yang aktif dari akun saat ini kini men
 
 Penyiapan autentikasi dua faktor SMTP kini menampilkan peringatan bahwa alamat email utama yang terverifikasi diperlukan, bukan kesalahan penyiapan umum.
 
-## Commits
+## Komit
 
 - [f524f2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f524f2f62820dbbf6ff80366a835aca0f31d3359)

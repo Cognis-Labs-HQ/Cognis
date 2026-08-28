@@ -1,6 +1,6 @@
 # Notifikasi aktivitas mengikuti sosial
 
-**Feature Branch:** feature-update-following-button-text-and-styles
+**Cabang Fitur:** feature-update-following-button-text-and-styles
 
 ## Tombol mengikuti menampilkan aksi berhenti mengikuti
 
@@ -14,6 +14,6 @@ Aksi mengikuti kini mendaftarkan dan mengirim lewat kategori notifikasi Social s
 
 Inisial untuk fallback avatar profil kini memakai nama tampilan profil sebelum nama pengguna dan dapat menampilkan satu huruf awal untuk nama satu kata.
 
-## Commits
+## Komit
 
 - [e6c4565](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6c45656185cf32f63d69ebb49595ad530184d2e)

@@ -1,6 +1,6 @@
 # Popup Berbagi Dipulihkan
 
-**Feature Branch:** feature-fix-share-link-creation-error
+**Cabang Fitur:** feature-fix-share-link-creation-error
 
 ## Popup berbagi yang konsisten
 
@@ -398,6 +398,6 @@ Pengeditan berbagi kini mempertahankan label yang dikosongkan secara eksplisit, 
 
 Popup berbagi kini menyimpan interval pembaruannya di dalam modul siklus hidup popup sehingga berbagi papan tulis tidak lagi gagal saat popup dibuka.
 
-## Commits
+## Komit
 
 - [5ede8a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ede8a9bd7324f23efc951337e5aa296a63acbd2)

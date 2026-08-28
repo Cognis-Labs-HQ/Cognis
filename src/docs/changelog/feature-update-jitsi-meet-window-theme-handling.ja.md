@@ -1,6 +1,6 @@
 # Jitsi テーマ同期
 
-**Feature Branch:** feature-update-jitsi-meet-window-theme-handling
+**機能ブランチ:** feature-update-jitsi-meet-window-theme-handling
 
 ## Jitsi Meet テーマの即時更新
 
@@ -14,6 +14,6 @@ Jitsi Meet ウィンドウは、アプリのテーマが変更されるたびに
 
 進行中のミーティングで有効なCognisテーマが変わると、埋め込みは新しいインターフェース設定でJitsiウィンドウを更新し、`preferredTheme` のライブ更新を無視する環境でも正しいテーマを反映します。
 
-## Commits
+## コミット
 
 - [8344f54](https://github.com/Cognis-Labs-HQ/Cognis/commit/8344f54c3af4936f1812de28754555ba886a945c)

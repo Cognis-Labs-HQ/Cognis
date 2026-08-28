@@ -1,6 +1,6 @@
 # Pemangkasan Banner
 
-**Feature Branch:** feature-update-profile-banner-image-cropping
+**Cabang Fitur:** feature-update-profile-banner-image-cropping
 
 ## Banner profil mengikuti pilihan tinggi
 
@@ -10,6 +10,6 @@ Unggahan banner GIF kini dimulai dengan area pangkas yang sesuai dengan tampilan
 
 Aksi hapus banner kini tampil sebagai tombol X tersendiri di sebelah menu banner, dan tetap hanya terlihat di profil sendiri saat banner tersedia.
 
-## Commits
+## Komit
 
 - [aa10007](https://github.com/Cognis-Labs-HQ/Cognis/commit/aa10007a88121cfe4725bd656d581cac0ec298fd)

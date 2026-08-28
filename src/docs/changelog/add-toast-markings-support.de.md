@@ -1,6 +1,6 @@
 # Toast-Symbole im Hellen Modus
 
-**Feature Branch:** copilot/add-toast-markings-support
+**Feature-Zweig:** copilot/add-toast-markings-support
 
 ## Zusammenfassung
 

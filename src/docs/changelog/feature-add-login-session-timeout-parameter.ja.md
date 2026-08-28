@@ -1,6 +1,6 @@
 # 設定可能なログインセッション有効期間
 
-**Feature Branch:** feature-add-login-session-timeout-parameter
+**機能ブランチ:** feature-add-login-session-timeout-parameter
 
 ## 管理者がセッションの上限を管理
 
@@ -66,6 +66,6 @@
 
 Jitsi Meet モジュールがテスト済みのローカルメッセージアダプターのバージョンを宣言するようになり、リポジトリ全体のアーキテクチャ検査を確実に保ちます。
 
-## Commits
+## コミット
 
 - [70785d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/70785d43ef6b76fb1d863dcc795ecb9bd3bcab7f)

@@ -1,6 +1,6 @@
 # Toast Permanen untuk Refresh
 
-**Feature Branch:** copilot/add-perma-toast-refresh-notification
+**Cabang Fitur:** copilot/add-perma-toast-refresh-notification
 
 ## Ringkasan
 

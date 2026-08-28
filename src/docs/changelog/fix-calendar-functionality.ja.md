@@ -1,6 +1,6 @@
 # 共有カレンダーリンク
 
-**Feature Branch:** copilot/fix-calendar-functionality
+**機能ブランチ:** copilot/fix-calendar-functionality
 
 ## 複数リンク表示が復活
 
@@ -62,6 +62,6 @@
 以前は、終了済みのイベントでも未回答のまま「今後の予定」として表示される場合が
 ありました。
 
-## Commits
+## コミット
 
 - [4137bff](https://github.com/Cognis-Labs-HQ/Cognis/commit/4137bffbc99535676bf8d9a32060aa302556c333)

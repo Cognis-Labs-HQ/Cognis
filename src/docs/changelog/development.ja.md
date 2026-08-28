@@ -1,6 +1,6 @@
 # Gateway と Module の API 分離
 
-**Feature Branch:** development
+**機能ブランチ:** development
 
 ## Gateway ルート接頭辞の統一
 
@@ -24,6 +24,6 @@ Module が無効な場合、その Module が登録したルートへのリク�
 
 `installRuntimeErrorHandlers` の 2 つの `catch(() => {})` ハンドラーは、ポップアップを開く際に発生したエラーを飲み込む代わりに警告を記録するようになりました。アプリルーターの `readAuthSetupRequirement` の catch ブロックは、捕捉したネットワークエラーを記録するようになりました。`loadStudyChildComponents` の言語別フェッチの catch は、空のフォールバックを返す前に言語コードとエラーを記録します。管理ログセクションの `startStream` の catch は接続エラーを記録し、不正な SSE イベントの catch はパースエラーを記録するようになり、無音で破棄されなくなりました。
 
-## Commits
+## コミット
 
 - [c2dd07a](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2dd07a630b453a51f9793ab2855ab96150b058c)

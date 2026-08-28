@@ -1,6 +1,6 @@
 # Catatan Perubahan PR
 
-**Feature Branch:** copilot/clean-up-directory-structure
+**Cabang Fitur:** copilot/clean-up-directory-structure
 
 ## Ringkasan
 

@@ -1,6 +1,6 @@
 # PR-Changelog — Ctx als Basis
 
-**Feature Branch:** copilot/update-ctx-usage-implementation
+**Feature-Zweig:** copilot/update-ctx-usage-implementation
 
 ## Zusammenfassung
 
@@ -69,7 +69,7 @@ aufgelöst wurde. Dadurch tritt der Startup-`ReferenceError` in
     - `src/docs/versions.en.md`
     - Adapter-/Modul-`package.json`-Manifeste mit lokalem `@cognis/core@0.1.1`
 
-## Commits
+## Änderungen
 
 - [feb1bbc](https://github.com/Cognis-Labs-HQ/Cognis/commit/feb1bbc)
 - [c6ba65b](https://github.com/Cognis-Labs-HQ/Cognis/commit/c6ba65b)

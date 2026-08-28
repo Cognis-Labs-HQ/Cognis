@@ -1,6 +1,6 @@
 # Reaktionen & Emoji-Erweiterung
 
-**Feature Branch:** copilot/tweak-message-reactions-and-fix-manifests
+**Feature-Zweig:** copilot/tweak-message-reactions-and-fix-manifests
 
 ## Zusammenfassung
 

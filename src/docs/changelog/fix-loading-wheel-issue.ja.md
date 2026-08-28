@@ -1,6 +1,6 @@
 # ローディングオーバーレイの修正
 
-**Feature Branch:** copilot/fix-loading-wheel-issue
+**機能ブランチ:** copilot/fix-loading-wheel-issue
 
 ## パスワード確認ポップアップの上にローディングが表示されなくなりました
 
@@ -10,6 +10,6 @@
 
 再確認ポップアップ内のパスワード入力欄が `<form>` 要素で囲まれ、フォームに含まれていないパスワードフィールドに関するブラウザ警告を解消しました。
 
-## Commits
+## コミット
 
 - [8058581](https://github.com/Cognis-Labs-HQ/Cognis/commit/805858123bc36713ef78b0f6ee038fdf3613782a)

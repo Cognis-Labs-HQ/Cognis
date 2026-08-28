@@ -1,6 +1,6 @@
 # Zuverlässige Modultexte
 
-**Feature Branch:** feature-investigate-module-polling-failures
+**Feature-Zweig:** feature-investigate-module-polling-failures
 
 ## Keine Abfragen fehlender Texte
 
@@ -36,6 +36,6 @@ Deaktivierte externe Module werden bei Routenaktualisierungen nicht mehr importi
 
 Die Erkennung beim Start durchsucht jetzt nur öffentliche Modulquellen. Private Quellen mit Zugangsdaten bleiben für authentifizierte Marketplace-Abfragen verfügbar, ohne dass ein Versuch ohne Zugangsdaten ihre nächste Aktualisierung verzögert.
 
-## Commits
+## Änderungen
 
 - [54375e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/54375e318faa1ddbb6fe950f2402957742102af9)

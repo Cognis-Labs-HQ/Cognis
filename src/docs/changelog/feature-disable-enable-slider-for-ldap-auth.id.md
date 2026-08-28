@@ -1,6 +1,6 @@
 # Aktivasi LDAP Lebih Aman
 
-**Feature Branch:** feature-disable-enable-slider-for-ldap-auth
+**Cabang Fitur:** feature-disable-enable-slider-for-ldap-auth
 
 ## Konfigurasikan server sebelum aktivasi
 
@@ -34,6 +34,6 @@ Sumber autentikasi yang dihapus direkonsiliasi sebelum konfigurasi penggantinya 
 
 Penyiapan LDAP menampilkan kesalahan server pada kolom yang dibuat, mempertahankan kegagalan kredensial di halaman kredensial, dan memakai Enter untuk memverifikasi tanpa menyimpan server terlalu dini.
 
-## Commits
+## Komit
 
 - [96257fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/96257fa81b49645e38ae015a12d7433008d903e0)

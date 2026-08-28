@@ -55,3 +55,7 @@ Changelog navigation now escapes module-provided names before inserting them int
 ## Consistent commit links
 
 Historical changelog commit lists now consistently use linked seven-character references while retaining complete canonical commit URLs.
+
+## Localized provenance labels
+
+Feature branch and commit headings now use the language of each localized changelog instead of retaining English labels in translated files.

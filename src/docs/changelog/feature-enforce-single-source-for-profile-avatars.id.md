@@ -1,6 +1,6 @@
 # Avatar profil yang konsisten
 
-**Feature Branch:** feature-enforce-single-source-for-profile-avatars
+**Cabang Fitur:** feature-enforce-single-source-for-profile-avatars
 
 ## Satu sumber avatar milik profil
 
@@ -22,6 +22,6 @@ Halaman Pesan yang dimuat langsung kini menunggu kontribusi navigasi terdaftar, 
 
 Halaman ruang kelas kini mengimpor konteks UI sebagai kode modul yang dapat dijalankan, sehingga inisial pengajar dan kursi yang terisi dirender tanpa galat variabel yang hilang.
 
-## Commits
+## Komit
 
 - [fa7325e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa7325e7709ea2942c3ce560b033429297e5e8f7)

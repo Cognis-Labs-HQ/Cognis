@@ -1,6 +1,6 @@
 # 認証とパスワードポリシーの更新
 
-**Feature Branch:** copilot/remove-auth-providers-widget
+**機能ブランチ:** copilot/remove-auth-providers-widget
 
 ## 管理画面から重複する認証プロバイダーウィジェットを削除
 
@@ -78,6 +78,6 @@
 
 パスワード一致基準は、パスワード欄に入力があるまで中立（達成/未達成のいずれでもない）を維持し、早すぎる「一致」表示を防ぎます。
 
-## Commits
+## コミット
 
 - [a103596](https://github.com/Cognis-Labs-HQ/Cognis/commit/a103596a317f506ede1967a31791b935db24f047)

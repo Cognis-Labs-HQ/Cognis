@@ -1,6 +1,6 @@
 # File namespace review cleanup
 
-**Feature Branch:** N/A
+**機能ブランチ:** N/A
 
 ## Namespace declarations are component-owned
 
@@ -14,4 +14,4 @@ The Share gateway now exports reusable client helpers for share-token callbacks 
 
 Removed unrelated work changelog files, synchronized the version index variants, and relaxed the memory database core dependency to a compatible semver range.
 
-## Commits
+## コミット

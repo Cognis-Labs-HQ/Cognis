@@ -1,6 +1,6 @@
 # Ladeanimation behoben
 
-**Feature Branch:** copilot/fix-loading-wheel-issue
+**Feature-Zweig:** copilot/fix-loading-wheel-issue
 
 ## Ladeanimation erscheint nicht mehr über Passwort-Bestätigungs-Popups
 
@@ -10,6 +10,6 @@ Das Seitenladeoverlay wird jetzt unterdrückt, wenn ein Popup geöffnet ist. Dad
 
 Das Passwortfeld im Neu-Bestätigungs-Popup ist jetzt in ein `<form>`-Element eingebettet und behebt die Browserwarnung über Passwortfelder, die nicht in einem Formular enthalten sind.
 
-## Commits
+## Änderungen
 
 - [8058581](https://github.com/Cognis-Labs-HQ/Cognis/commit/805858123bc36713ef78b0f6ee038fdf3613782a)

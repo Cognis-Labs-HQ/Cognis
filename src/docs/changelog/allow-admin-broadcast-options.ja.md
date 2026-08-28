@@ -1,6 +1,6 @@
 # 管理者向け一斉通知の配信モードと対象制御
 
-**Feature Branch:** copilot/allow-admin-broadcast-options
+**機能ブランチ:** copilot/allow-admin-broadcast-options
 
 ## 概要
 

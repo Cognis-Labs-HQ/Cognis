@@ -1,6 +1,6 @@
 # Anbieterneutrale Fokussteuerung
 
-**Feature Branch:** feature-define-provider-neutral-focus-control-contract
+**Feature-Zweig:** feature-define-provider-neutral-focus-control-contract
 
 ## Beliebige deklarierte Kollaborationsfläche fokussieren
 
@@ -146,6 +146,6 @@ Die Größenberechnung des Rasters befindet sich jetzt in einem eigenen, geteste
 
 Das Dashboard bleibt nun der erste Eintrag der primären Navigation, während alle anderen Einträge weiterhin alphabetisch sortiert werden.
 
-## Commits
+## Änderungen
 
 - [48395e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/48395e7f07a41221e2e866d9892493df3e98b841)

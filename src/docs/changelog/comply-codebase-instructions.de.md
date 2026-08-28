@@ -1,6 +1,6 @@
 # Admin- und Compliance-Update
 
-**Feature Branch:** copilot/comply-codebase-instructions
+**Feature-Zweig:** copilot/comply-codebase-instructions
 
 ## Sicherheitsbereich in Admin gebündelt
 
@@ -22,6 +22,6 @@ Server- und Modul-Extension-Routen nutzen jetzt injizierten Route-Auth-Kontext s
 
 Die AI-Instruktionen wurden explizit erweitert: LOC-Disziplin, keine Bewertung großer Diffs als Erfolgssignal, generische Benennung, echte Reuse-Grenzen, getrennte HTML- und JS/TS-Dateien sowie Aufteilung übergroßer Dateien in Verzeichnisstrukturen mit Einstiegspunkt.
 
-## Commits
+## Änderungen
 
 - [a267b4c](https://github.com/Cognis-Labs-HQ/Cognis/commit/a267b4cce59173b5060e5035a628583868afa39e)

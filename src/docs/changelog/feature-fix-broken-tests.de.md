@@ -1,6 +1,6 @@
 # Zuverlässige Kalenderfreigaben
 
-**Feature Branch:** feature-fix-broken-tests
+**Feature-Zweig:** feature-fix-broken-tests
 
 ## Einladungen und Antworten funktionieren zuverlässig
 
@@ -42,6 +42,6 @@ Bestehende Quellabstände in den Schlüsselbund-, Kalender- und Whiteboard-Kompo
 
 Fehlende Raumschlüssel werden für migrierte Unterhaltungen erzeugt. Übermittelte Raumschlüssel und Besprechungskennwörter bleiben für einen erneuten Versuch verfügbar, bis der Client die erfolgreiche Speicherung im Schlüsselbund bestätigt.
 
-## Commits
+## Änderungen
 
 - [7a40010](https://github.com/Cognis-Labs-HQ/Cognis/commit/7a40010632a1bebcfe94544772ac2698c14cf2a1)

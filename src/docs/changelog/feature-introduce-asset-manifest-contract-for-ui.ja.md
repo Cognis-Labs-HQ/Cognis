@@ -1,6 +1,6 @@
 # 本番アセットの改訂
 
-**Feature Branch:** feature-introduce-asset-manifest-contract-for-ui
+**機能ブランチ:** feature-introduce-asset-manifest-contract-for-ui
 
 ## 不変のバージョン付きアセット
 
@@ -18,6 +18,6 @@ UI アセットにデプロイ改訂を付与し、変更可能な文書は再�
 
 レスポンスヘッダーを送信する前に静的ディレクトリを拒否し、ネットワークが利用できない場合もバージョンなしのアプリケーション依存関係を service worker から利用できるようにしました。
 
-## Commits
+## コミット
 
 - [9545de2](https://github.com/Cognis-Labs-HQ/Cognis/commit/9545de212904420948eebc1b442bc6dd85bb5f79)

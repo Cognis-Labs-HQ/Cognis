@@ -1,6 +1,6 @@
 # Zuverlässige Testsuite
 
-**Feature Branch:** feature-fix-test-failures-and-adjust-doc-name-check
+**Feature-Zweig:** feature-fix-test-failures-and-adjust-doc-name-check
 
 ## Änderungsprotokolle ausgenommen
 
@@ -14,6 +14,6 @@ Passwortzurücksetzungen, Verknüpfungen der speicherinternen Datenbank, UI-Quel
 
 Übergroße Tests und Laufzeitmodule wurden in übersichtliche Dateien aufgeteilt und halten nun die Größenbegrenzung des Quelltexts ein.
 
-## Commits
+## Änderungen
 
 - [7850b66](https://github.com/Cognis-Labs-HQ/Cognis/commit/7850b66d4241a1b0f4ca12a846f3e7d808875695)

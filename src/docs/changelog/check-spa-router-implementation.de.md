@@ -1,6 +1,6 @@
 # PR-Änderungsprotokoll
 
-**Feature Branch:** copilot/check-spa-router-implementation
+**Feature-Zweig:** copilot/check-spa-router-implementation
 
 ## Zusammenfassung
 
@@ -105,7 +105,7 @@ ersetzt wurden und von nirgendwo importiert wurden.
     - `src/adapters/social/messages/index.ts`, `src/adapters/social/profile/index.ts`, `src/adapters/study/classes/index.ts` — Adapter registrieren ihre SPA-Routen selbst
     - `src/api/tests/ui/ui-registry.test.ts`, `src/api/tests/ui/ui-routes.test.ts`, `src/ui/tests/app-router.test.js` — Testabdeckung für modulare Routenregistrierung aktualisiert
 
-## Commits
+## Änderungen
 
 - [5028bb9](https://github.com/Cognis-Labs-HQ/Cognis/commit/5028bb9)
 - [ad0f87b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad0f87b)

@@ -1,6 +1,6 @@
 # Zuverlässiger Meeting-Chat
 
-**Feature Branch:** feature-fix-meeting-chat-generation-issue
+**Feature-Zweig:** feature-fix-meeting-chat-generation-issue
 
 ## Wiederverwendete Meetings verbinden
 
@@ -10,6 +10,6 @@ Wiederverwendete Meetings speichern nun den neu ermittelten Chatraum, sodass Tei
 
 Die Meeting-Teilnehmersuche behält die Folgeanforderung bei und schließt die aktuelle Person aus. Einladungen werden an das authentifizierte Konto zugestellt, und über LDAP bereitgestellte Teilnehmende bleiben über ihre stabile Kontoidentität berechtigt, wenn sich ihr sichtbarer Benutzername ändert.
 
-## Commits
+## Änderungen
 
 - [f4538f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4538f6775857d81af67d624d800e27ee8b09548)

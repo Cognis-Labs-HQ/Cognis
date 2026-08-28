@@ -1,6 +1,6 @@
 # TFAゲートウェイとTOTP
 
-**Feature Branch:** copilot/create-tfa-gateway-totp-adapter
+**機能ブランチ:** copilot/create-tfa-gateway-totp-adapter
 
 ## 新しいTFAゲートウェイ
 
@@ -74,6 +74,6 @@ Administration の TFA 設定は、独立した最上位セクションではな
 
 Administration → Security 内の TFA カードは、既存のローカライズ済み gateway/admin 文字列キーを使うようになり、セクション見出し、強制ラベル、説明文が再び正しく表示されます。
 
-## Commits
+## コミット
 
 - [a4201c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a4201c685f2803dc1fdb3ad9d203f7e262919b03)

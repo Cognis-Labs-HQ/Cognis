@@ -1,6 +1,6 @@
 # Anmelden statt Registrieren
 
-**Feature Branch:** copilot/add-sign-in-instead-button
+**Feature-Zweig:** copilot/add-sign-in-instead-button
 
 ## Direkte Aktion „Stattdessen anmelden" hinzugefügt
 
@@ -10,6 +10,6 @@ Die Registrierungsseite enthält jetzt eine eigene Schaltfläche „Stattdessen 
 
 Die Beschriftung des Registrierungs-Buttons verwendet nun die einheitliche Schreibweise „Create Account“, damit sie auf derselben Seite zur Stilführung von „Stattdessen anmelden“ passt.
 
-## Commits
+## Änderungen
 
 - [840031e](https://github.com/Cognis-Labs-HQ/Cognis/commit/840031ede690e641a65bd6789c5b1d0ed3bdfbfb)

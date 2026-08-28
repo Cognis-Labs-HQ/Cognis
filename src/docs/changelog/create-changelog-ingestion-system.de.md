@@ -1,6 +1,6 @@
 # Changelog-Struktur Update
 
-**Feature Branch:** copilot/create-changelog-ingestion-system
+**Feature-Zweig:** copilot/create-changelog-ingestion-system
 
 ## Changelog-Überschriften Parsen
 
@@ -26,6 +26,6 @@ Changelog-Struktur, bekräftigen das zentrale Verzeichnis
 `src/docs/changelog/` und verlangen pro PR eine Changelog-Datei in allen
 unterstützten Sprachen.
 
-## Commits
+## Änderungen
 
 - [db72267](https://github.com/Cognis-Labs-HQ/Cognis/commit/db722676f71a4fd6db477b42b735a7b0692da365)

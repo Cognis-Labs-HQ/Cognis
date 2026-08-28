@@ -1,6 +1,6 @@
 # 分割ページのスクロールを安定化
 
-**Feature Branch:** feature-refactor-scroll-handling-for-overflow-pages
+**機能ブランチ:** feature-refactor-scroll-handling-for-overflow-pages
 
 ## page composer のドキュメントスクロールモード
 
@@ -10,6 +10,6 @@ page composer は、入れ子の縦スクロール領域を避けたい分割レ
 
 ライセンスページでは、ページ、カード、コンテンツパネルのスクロールバーを重ねるのではなく、ライセンステキストをページ本体のスクロールに委ねるようになりました。ナビゲーションメニューは引き続き個別にスクロール可能で sticky のままなので、長い法的文書をより一貫して読み進め、移動できます。
 
-## Commits
+## コミット
 
 - [f3b64ca](https://github.com/Cognis-Labs-HQ/Cognis/commit/f3b64ca116345d58e4240401d000eb9d83fadcb8)

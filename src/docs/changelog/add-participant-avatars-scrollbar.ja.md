@@ -1,6 +1,6 @@
 # ミーティングチャットのアバター
 
-**Feature Branch:** copilot/add-participant-avatars-scrollbar
+**機能ブランチ:** copilot/add-participant-avatars-scrollbar
 
 ## 参加者アバターの横並び表示
 
@@ -10,6 +10,6 @@ Meetings のチャットパネルでは、Meeting Chat タイトルの直下に�
 
 アバターからプライベートチャットを開いた場合、ミーティングチャットへ戻るボタンが表示されます。最後に読み込んだミーティングチャットは、ユーザーがミーティングを離れた後もアクティブなまま維持されます。
 
-## Commits
+## コミット
 
 - [93f41f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/93f41f6db4cc5bf2204d606e15d501112a51d6f1)

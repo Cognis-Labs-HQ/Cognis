@@ -1,6 +1,6 @@
 # Opsi Pencarian
 
-**Feature Branch:** feature-expand-search-indexing-capabilities
+**Cabang Fitur:** feature-expand-search-indexing-capabilities
 
 ## Indeks Pencarian Diperluas
 
@@ -88,6 +88,6 @@ Operasi akun seperti mengarsipkan, menonaktifkan, dan menghapus akun kini diinde
 
 Kode pencarian bersama kini hanya berada di `src/ui/reuse/search-util/`. Integrasi milik komponen sebaiknya memakai file khusus `ui/search/index.js`, mengekspor `createSearchIndex` untuk provider konten, dan memanggil helper bersama `registerSearchIndex`. Utilitas menangani pencocokan, peringkat, sorotan, filter, rendering, serta pengabaian hasil async usang, sementara provider komponen menjaga fetch mahal tetap asinkron.
 
-## Commits
+## Komit
 
 - [e3b679b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e3b679bd480e8caef6e8301f410718570299fb26)

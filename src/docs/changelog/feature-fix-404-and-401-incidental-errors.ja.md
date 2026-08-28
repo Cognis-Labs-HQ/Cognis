@@ -1,6 +1,6 @@
 # 付随エラーの修正
 
-**Feature Branch:** feature-fix-404-and-401-incidental-errors
+**機能ブランチ:** feature-fix-404-and-401-incidental-errors
 
 ## 安定した言語リソース
 
@@ -18,6 +18,6 @@
 
 メッセージ全体検索プロバイダーが使用する認証済み API クライアントのインポートを復元し、プロバイダーの反復エラーを防止しました。
 
-## Commits
+## コミット
 
 - [763fb50](https://github.com/Cognis-Labs-HQ/Cognis/commit/763fb5075a083b6e2410711d5da84e81cdab46dc)

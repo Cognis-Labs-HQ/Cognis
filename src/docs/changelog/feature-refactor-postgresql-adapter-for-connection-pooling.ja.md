@@ -1,6 +1,6 @@
 # PostgreSQL接続プール
 
-**Feature Branch:** feature-refactor-postgresql-adapter-for-connection-pooling
+**機能ブランチ:** feature-refactor-postgresql-adapter-for-connection-pooling
 
 ## PostgreSQLが上限付き接続プールを使用
 
@@ -66,6 +66,6 @@ Docker イメージがビルド時に渡されたアセットバージョンを�
 
 プール設定の検証を各データベースアダプターに移し、アダプターとゲートウェイのワークスペースバージョンおよび依存関係の上限を同期しました。
 
-## Commits
+## コミット
 
 - [6c88739](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c887390888a10a8acbf3535860f4d85d9908cef)

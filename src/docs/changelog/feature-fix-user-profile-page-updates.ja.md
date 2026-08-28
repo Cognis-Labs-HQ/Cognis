@@ -1,6 +1,6 @@
 # プロフィール即時更新
 
-**Feature Branch:** feature-fix-user-profile-page-updates
+**機能ブランチ:** feature-fix-user-profile-page-updates
 
 ## プロフィール情報を即時反映
 
@@ -38,6 +38,6 @@ Page Composer の更新時に既存カードが既定で再レンダリングさ
 
 表示中のプロフィールをフォローすると、サーバーとの同期完了前に現在のアカウントを暫定フォロワー一覧へ追加します。
 
-## Commits
+## コミット
 
 - [597aa63](https://github.com/Cognis-Labs-HQ/Cognis/commit/597aa63d6ef878eb2e40d6d8050a9956387fc0e8)

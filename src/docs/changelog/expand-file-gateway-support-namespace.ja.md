@@ -1,6 +1,6 @@
 # ファイル名前空間とクォータ
 
-**Feature Branch:** copilot/expand-file-gateway-support-namespace
+**機能ブランチ:** copilot/expand-file-gateway-support-namespace
 
 ## ファイルゲートウェイがすべてのコンテンツを名前空間に整理し、ACLとクォータを実施
 
@@ -30,6 +30,6 @@ Files ゲートウェイは、名前空間オブジェクトの catch-all より
 
 コンポーネントのバージョンドキュメントは、サポートされるすべての言語で一貫して翻訳されたルール本文を持つようになりました。
 
-## Commits
+## コミット
 
 - [80305d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/80305d183fd1fc1e89c960dfb5c6712c87f188f8)

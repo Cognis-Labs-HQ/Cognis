@@ -1,6 +1,6 @@
 # Persönliche Sitzungszeitlimits berücksichtigen
 
-**Feature Branch:** feature-implement-session-expiry-tracking-rules
+**Feature-Zweig:** feature-implement-session-expiry-tracking-rules
 
 ## Persönliche Zeitlimit-Auswahl innerhalb der globalen Grenze beibehalten
 
@@ -18,6 +18,6 @@ Die globale Einstellung Nie überschreibt jetzt bestehende persönliche Zeitlimi
 
 Das zusammengefasste Cognis-Gateway-Paket und alle davon abhängigen lokalen Komponenten deklarieren jetzt die aktualisierte getestete Version. Dadurch bleiben Workspace-Manifeste und Sperrdatei mit der Änderung am Authentifizierungs-Gateway synchron.
 
-## Commits
+## Änderungen
 
 - [e92abbe](https://github.com/Cognis-Labs-HQ/Cognis/commit/e92abbeda31ee1306beacce0bb7410129536cf00)

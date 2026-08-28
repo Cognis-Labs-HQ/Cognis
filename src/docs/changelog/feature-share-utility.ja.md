@@ -1,6 +1,6 @@
 # Share Utility
 
-**Feature Branch:** copilot/feature-share-utility
+**機能ブランチ:** copilot/feature-share-utility
 
 ## Share ゲートウェイ追加
 
@@ -156,6 +156,6 @@ Jitsi Meet ページの参加者検索/アクティブな会議パネルは、�
 
 共有リンク行はナビゲーションリンクとして動作する代わりに、明示的なボタンで URL をコピーするようになりました。アクセス制限ポップアップのアクションは中立的なボタンスタイルを使い、マウントされた共有ページは page composer で幅と高さを最大にした配置を要求できます。期限切れまたは利用できない共有リンクでは、汎用的な共有コンテンツのサブタイトルを繰り返す代わりに、ページ説明にも状態を表示します。
 
-## Commits
+## コミット
 
 - [22b2896](https://github.com/Cognis-Labs-HQ/Cognis/commit/22b2896eaf8f13d17c1161bfc12085036f2539c8)

@@ -1,6 +1,6 @@
 # Berbagi dengan pengguna Cognis
 
-**Feature Branch:** feature-expand-share-popup-for-user-sharing
+**Cabang Fitur:** feature-expand-share-popup-for-user-sharing
 
 ## Popup berbagi kini mendukung penerima pengguna
 
@@ -534,6 +534,6 @@ Popup tautan berbagi kini berada di dalam adapter Link Share yang memiliki fungs
 
 Pengujian regresi popup Link Share kini berada bersama adapter Link Share dan implementasi UI-nya, bukan di rangkaian pengujian gateway Share generik.
 
-## Commits
+## Komit
 
 - [75e72e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/75e72e78973245fc561c51ac89e645bd016416a0)

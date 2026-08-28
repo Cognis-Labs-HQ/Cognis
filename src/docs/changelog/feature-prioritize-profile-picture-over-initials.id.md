@@ -1,6 +1,6 @@
 # Mengutamakan Avatar
 
-**Feature Branch:** feature-prioritize-profile-picture-over-initials
+**Cabang Fitur:** feature-prioritize-profile-picture-over-initials
 
 ## Ringkasan
 
@@ -31,4 +31,4 @@ kembali di seluruh antarmuka UI adaptor sosial.
 - [9f78b06](https://github.com/Cognis-Labs-HQ/Cognis/commit/9f78b06)
 - [5399b86](https://github.com/Cognis-Labs-HQ/Cognis/commit/5399b86)
 
-## Commits
+## Komit

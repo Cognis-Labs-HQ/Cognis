@@ -1,6 +1,6 @@
 # Verfügbarkeitsstatus
 
-**Feature Branch:** feature-add-availability-status-indicator
+**Feature-Zweig:** feature-add-availability-status-indicator
 
 ## Verfügbarkeit auf einen Blick
 
@@ -122,6 +122,6 @@ Die Verfügbarkeit berücksichtigt nun Profilsperren, bevor ein Live-Status ange
 
 Die Seitenleiste von Nachrichten, das Bild des aktiven Chats und Absender-Avatare zeigen keine Verfügbarkeitsanzeigen mehr. Profilverknüpfungen bleiben dabei erhalten.
 
-## Commits
+## Änderungen
 
 - [9ab0e62](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ab0e629254a98caae0c359d1dfeb103d094d3e5)

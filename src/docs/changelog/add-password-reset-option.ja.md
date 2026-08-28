@@ -1,6 +1,6 @@
 # 認証パスワードリセット
 
-**Feature Branch:** copilot/add-password-reset-option
+**機能ブランチ:** copilot/add-password-reset-option
 
 ## Summary
 

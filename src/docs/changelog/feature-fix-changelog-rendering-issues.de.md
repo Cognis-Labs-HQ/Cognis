@@ -1,6 +1,6 @@
 # Vollständige Zusammenfassungen der Versionsänderungen
 
-**Feature Branch:** feature-fix-changelog-rendering-issues
+**Feature-Zweig:** feature-fix-changelog-rendering-issues
 
 ## Details im Versionshinweis anzeigen
 
@@ -18,7 +18,7 @@ Der Versionsfeed findet nun lokalisierte Changelog-Dateien installierter externe
 
 Historische Commit-Links verweisen nun auf das aktuelle Cognis-Labs-HQ/Cognis-Repository.
 
-## Commits
+## Änderungen
 
 - [968c109](https://github.com/Cognis-Labs-HQ/Cognis/commit/968c109885b2db1e168a7c62cc29b3c6be3d7b27)
 - [0a22467](https://github.com/Cognis-Labs-HQ/Cognis/commit/0a224676b04a06123eb6f4dd256051d6a2fc5933)
@@ -55,3 +55,7 @@ Die Changelog-Navigation maskiert nun von Modulen bereitgestellte Namen, bevor s
 ## Einheitliche Commit-Links
 
 Historische Commit-Listen in Changelogs verwenden nun einheitlich verlinkte siebenstellige Referenzen, während die vollständigen kanonischen Commit-URLs erhalten bleiben.
+
+## Lokalisierte Herkunftsangaben
+
+Überschriften für Feature-Zweig und Änderungen verwenden nun die Sprache des jeweiligen lokalisierten Changelogs, anstatt englische Bezeichnungen in übersetzten Dateien beizubehalten.

@@ -1,6 +1,6 @@
 # アダプターのバージョン表示
 
-**Feature Branch:** feature-update-adapter-settings-ui-to-show-version-number
+**機能ブランチ:** feature-update-adapter-settings-ui-to-show-version-number
 
 ## アダプター設定にバージョンを表示
 
@@ -22,6 +22,6 @@ Administration のアダプター操作では、各アダプター名の横に�
 
 管理画面にファイルストレージ、データベース、ロギングの各アダプターが、バージョンおよびパブリッシャー情報とともに表示されるようになりました。
 
-## Commits
+## コミット
 
 - [a166978](https://github.com/Cognis-Labs-HQ/Cognis/commit/a1669782a660f01000ed49047ee7cfc5cf9d20cf)

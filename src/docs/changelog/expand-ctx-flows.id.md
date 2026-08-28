@@ -1,6 +1,6 @@
 # Changelog — Ekspansi flow ctx
 
-**Feature Branch:** N/A
+**Cabang Fitur:** N/A
 
 ## Ringkasan
 
@@ -48,4 +48,4 @@ kegagalan otorisasi (403).
 - `src/api/tests/users/user-routes.test.ts`
 - `src/adapters/social/messages/tests/routes-notifications.test.ts`
 
-## Commits
+## Komit

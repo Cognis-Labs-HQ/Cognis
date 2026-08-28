@@ -1,6 +1,6 @@
 # Dashboard Lebih Cepat
 
-**Feature Branch:** feature-refactor-dashboard-initialization-and-api-flows
+**Cabang Fitur:** feature-refactor-dashboard-initialization-and-api-flows
 
 ## Kartu dashboard dimuat secara independen
 
@@ -18,6 +18,6 @@ Dashboard menggunakan fungsi acara mendatang yang diekspor Gateway Kalender sehi
 
 Pendaftaran runtime autentikasi kini melaporkan versi yang sama dengan manifes komponennya.
 
-## Commits
+## Komit
 
 - [9c6605e](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c6605ec002e029f3e9e655a352bd6acc109ce1b)

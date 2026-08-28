@@ -1,6 +1,6 @@
 # 完全なリリース変更履歴の要約
 
-**Feature Branch:** feature-fix-changelog-rendering-issues
+**機能ブランチ:** feature-fix-changelog-rendering-issues
 
 ## リリースポップアップに詳細を表示
 
@@ -18,7 +18,7 @@
 
 過去のコミットリンクが現在の Cognis-Labs-HQ/Cognis リポジトリを参照するようになりました。
 
-## Commits
+## コミット
 
 - [968c109](https://github.com/Cognis-Labs-HQ/Cognis/commit/968c109885b2db1e168a7c62cc29b3c6be3d7b27)
 - [0a22467](https://github.com/Cognis-Labs-HQ/Cognis/commit/0a224676b04a06123eb6f4dd256051d6a2fc5933)
@@ -55,3 +55,7 @@ AI コントリビューション手順では、実装前に要求された場�
 ## 一貫したコミットリンク
 
 過去の変更履歴のコミット一覧を、完全な正規コミット URL を維持したまま、リンク付きの7文字参照へ統一しました。
+
+## 来歴ラベルをローカライズ
+
+機能ブランチとコミットの見出しは、翻訳ファイルに英語表記を残さず、各ローカライズ済み変更履歴の言語を使用するようになりました。

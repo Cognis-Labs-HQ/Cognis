@@ -1,6 +1,6 @@
 # Änderungsprotokoll — ctx flows
 
-**Feature Branch:** N/A
+**Feature-Zweig:** N/A
 
 ## Zusammenfassung
 
@@ -48,4 +48,4 @@ Stage-Ergebnis auf Autorisierungsfehler (403).
 - `src/api/tests/users/user-routes.test.ts`
 - `src/adapters/social/messages/tests/routes-notifications.test.ts`
 
-## Commits
+## Änderungen

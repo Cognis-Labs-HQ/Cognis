@@ -1,6 +1,6 @@
 # Status Ketersediaan
 
-**Feature Branch:** feature-add-availability-status-indicator
+**Cabang Fitur:** feature-add-availability-status-indicator
 
 ## Lihat ketersediaan sekilas
 
@@ -122,6 +122,6 @@ Ketersediaan kini menghormati pemblokiran profil sebelum menampilkan status lang
 
 Bilah samping Pesan, gambar percakapan aktif, dan avatar pengirim tidak lagi menampilkan lampu ketersediaan. Tautan profil tetap dipertahankan.
 
-## Commits
+## Komit
 
 - [9ab0e62](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ab0e629254a98caae0c359d1dfeb103d094d3e5)

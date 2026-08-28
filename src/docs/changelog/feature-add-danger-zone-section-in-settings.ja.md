@@ -1,6 +1,6 @@
 # アカウント保護
 
-**Feature Branch:** feature-add-danger-zone-section-in-settings
+**機能ブランチ:** feature-add-danger-zone-section-in-settings
 
 ## 設定に危険ゾーンを追加
 
@@ -26,6 +26,6 @@
 
 自己無効化はアカウントをやり取りから隠し、ユーザーが再度ログインするとアクセスを復元できるようにしました。また、危険ゾーンのポップアップは中立的なキャンセルボタンを使います。
 
-## Commits
+## コミット
 
 - [84934f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/84934f6b7a14135551c11da59c8fc51f014b7be4)

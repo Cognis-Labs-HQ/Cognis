@@ -1,6 +1,6 @@
 # Gaya Pesan di Semua Halaman
 
-**Feature Branch:** copilot/respect-user-preferences-message-style
+**Cabang Fitur:** copilot/respect-user-preferences-message-style
 
 ## Gaya gelembung ucapan dan IRC kini dihormati di obrolan Rapat
 
@@ -98,6 +98,6 @@ Header popup kini menampilkan strip avatar pembaca selain teks jumlah.
 
 Jarak antar pesan pada gaya IRC ditingkatkan agar pemilih reaksi melayang dan area tooltip tampil bersih di antara pesan.
 
-## Commits
+## Komit
 
 - [ae50b16](https://github.com/Cognis-Labs-HQ/Cognis/commit/ae50b1649e1dc2ea87972a89dbbe6e735c3a3ad7)

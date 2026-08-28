@@ -1,6 +1,6 @@
 # Auth Passwort Reset
 
-**Feature Branch:** copilot/add-password-reset-option
+**Feature-Zweig:** copilot/add-password-reset-option
 
 ## Summary
 

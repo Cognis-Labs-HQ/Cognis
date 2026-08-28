@@ -1,6 +1,6 @@
 # Teks Modul Andal
 
-**Feature Branch:** feature-investigate-module-polling-failures
+**Cabang Fitur:** feature-investigate-module-polling-failures
 
 ## Hentikan polling teks yang hilang
 
@@ -36,6 +36,6 @@ Modul eksternal yang dinonaktifkan tidak lagi diimpor atau di-bootstrap saat rut
 
 Penemuan saat startup kini hanya memindai sumber modul publik. Sumber privat berkredensial tetap tersedia bagi polling marketplace terautentikasi tanpa percobaan tanpa kredensial yang menunda penyegaran berikutnya.
 
-## Commits
+## Komit
 
 - [54375e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/54375e318faa1ddbb6fe950f2402957742102af9)

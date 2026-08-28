@@ -1,6 +1,6 @@
 # Konfigurasi Portabel
 
-**Feature Branch:** N/A
+**Cabang Fitur:** N/A
 
 ## Berjalan tanpa file env
 
@@ -10,4 +10,4 @@ Orkestrator container kini dapat menyuntikkan seluruh konfigurasi melalui variab
 
 Validasi entrypoint kini menjelaskan nilai lingkungan container yang hilang tanpa mewajibkan file hasil Compose atau perintah penyiapan.
 
-## Commits
+## Komit

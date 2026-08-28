@@ -1,6 +1,6 @@
 # Reaksi & Ekspansi Emoji
 
-**Feature Branch:** copilot/tweak-message-reactions-and-fix-manifests
+**Cabang Fitur:** copilot/tweak-message-reactions-and-fix-manifests
 
 ## Ringkasan
 
@@ -32,4 +32,4 @@ Semua nama emoji dalam katalog kini merupakan kunci lokalisasi yang diselesaikan
 - [1e40511](https://github.com/Cognis-Labs-HQ/Cognis/commit/1e40511)
 - [e19669d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e19669d)
 
-## Commits
+## Komit

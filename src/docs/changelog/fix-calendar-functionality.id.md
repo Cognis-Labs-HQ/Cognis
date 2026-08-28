@@ -1,6 +1,6 @@
 # Tautan Bagikan Kalender
 
-**Feature Branch:** copilot/fix-calendar-functionality
+**Cabang Fitur:** copilot/fix-calendar-functionality
 
 ## Banyak tautan kembali tersedia
 
@@ -65,6 +65,6 @@ Undangan kalender yang tertunda untuk acara yang waktu berakhirnya sudah lewat
 kini tidak lagi ditampilkan di daftar undangan. Sebelumnya, acara yang sudah
 berlalu dengan respons tertunda masih bisa muncul di bagian mendatang.
 
-## Commits
+## Komit
 
 - [4137bff](https://github.com/Cognis-Labs-HQ/Cognis/commit/4137bffbc99535676bf8d9a32060aa302556c333)

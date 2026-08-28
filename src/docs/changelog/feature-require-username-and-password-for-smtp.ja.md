@@ -1,6 +1,6 @@
 # SMTP認証設定
 
-**Feature Branch:** feature-require-username-and-password-for-smtp
+**機能ブランチ:** feature-require-username-and-password-for-smtp
 
 ## 認証を無効化しない限りSMTP認証情報を必須化
 
@@ -10,6 +10,6 @@ SMTP通知アダプターの設定では、認証を無効化がオフの場合�
 
 必須項目のタイトルに、ライトモードとダークモードの両方でアスタリスクが表示されるようになりました。フォームの変更によって必須となるSMTP項目が変わると、表示もすぐに更新されます。
 
-## Commits
+## コミット
 
 - [8983ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/8983ae1fe74eac032b99e894abf857606af7260c)

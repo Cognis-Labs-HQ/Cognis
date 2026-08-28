@@ -1,6 +1,6 @@
 # 共有ポップアップを復元
 
-**Feature Branch:** feature-fix-share-link-creation-error
+**機能ブランチ:** feature-fix-share-link-creation-error
 
 ## 一貫した共有ポップアップ
 
@@ -398,6 +398,6 @@ Meetings ページはすべての `meetingId` URL を直接解決し、ペイロ
 
 共有ポップアップの更新間隔をポップアップのライフサイクルモジュール内で管理するようにし、ポップアップを開いた際にホワイトボードの共有が失敗しないようにしました。
 
-## Commits
+## コミット
 
 - [5ede8a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ede8a9bd7324f23efc951337e5aa296a63acbd2)

@@ -1,6 +1,6 @@
 # ブランド名更新
 
-**Feature Branch:** copilot/update-references-to-cognis-labs-hq
+**機能ブランチ:** copilot/update-references-to-cognis-labs-hq
 
 ## Cognis Labs HQ へ改称
 
@@ -12,6 +12,6 @@
 ブートストラップのメタデータ、API テスト、UI 言語の
 contributor マニフェスト、および関連ドキュメントの記述が含まれます。
 
-## Commits
+## コミット
 
 - [bd4e9c5](https://github.com/Cognis-Labs-HQ/Cognis/commit/bd4e9c54f1208ecd0dee27125d493c0d283216e6)

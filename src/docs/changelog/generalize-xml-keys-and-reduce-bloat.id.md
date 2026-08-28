@@ -1,6 +1,6 @@
 # Generalisasi String i18n
 
-**Feature Branch:** copilot/generalize-xml-keys-and-reduce-bloat
+**Cabang Fitur:** copilot/generalize-xml-keys-and-reduce-bloat
 
 ## Ringkasan
 
@@ -31,7 +31,7 @@ Kunci i18n yang spesifik untuk komponen dipindahkan dari file bahasa inti ke dir
 - `src/ui/app/users/index.js` — kunci save_failed diperbarui ke `ui.reuse.generic.save_failed`
 - `src/ui/languages/*/strings.xml` — ~90 kunci usang/dipindahkan dihapus, `ui.reuse.generic.save_failed` ditambahkan
 
-## Commits
+## Komit
 
 - [8e82369](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e82369)
 - [867e397](https://github.com/Cognis-Labs-HQ/Cognis/commit/867e397)

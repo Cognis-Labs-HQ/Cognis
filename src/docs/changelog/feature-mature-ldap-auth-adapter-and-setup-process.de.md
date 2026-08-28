@@ -1,6 +1,6 @@
 # Zuverlässige LDAP-Verzeichniseinrichtung
 
-**Feature Branch:** feature-mature-ldap-auth-adapter-and-setup-process
+**Feature-Zweig:** feature-mature-ldap-auth-adapter-and-setup-process
 
 ## Live-Erkennung für OpenLDAP und FreeIPA
 
@@ -66,6 +66,6 @@ Die öffentliche Anmeldekonfiguration behält nun die Metadaten der Zugangsdaten
 
 Gespeicherte LDAP-Bind-Passwörter werden aus den Antworten der Administrations-API entfernt. Ein leeres Passwortfeld behält das vorhandene Geheimnis bei; ein neuer Wert ersetzt es sicher.
 
-## Commits
+## Änderungen
 
 - [88fe3b0](https://github.com/Cognis-Labs-HQ/Cognis/commit/88fe3b0bec731d1c090768792cd73cea7264106e)

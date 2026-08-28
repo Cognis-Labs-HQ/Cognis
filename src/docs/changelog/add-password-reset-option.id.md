@@ -1,6 +1,6 @@
 # Reset Kata Sandi Auth
 
-**Feature Branch:** copilot/add-password-reset-option
+**Cabang Fitur:** copilot/add-password-reset-option
 
 ## Summary
 

@@ -1,6 +1,6 @@
 # 変更履歴要約更新
 
-**Feature Branch:** copilot/create-changelog-ingestion-system
+**機能ブランチ:** copilot/create-changelog-ingestion-system
 
 ## 見出し解析を統一
 
@@ -26,6 +26,6 @@
 保存先を `src/docs/changelog/` に統一すること、
 対応言語すべてで PR ごとに新規ファイルを追加することを明記しました。
 
-## Commits
+## コミット
 
 - [db72267](https://github.com/Cognis-Labs-HQ/Cognis/commit/db722676f71a4fd6db477b42b735a7b0692da365)

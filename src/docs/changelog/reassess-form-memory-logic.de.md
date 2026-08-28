@@ -1,6 +1,6 @@
 # Formularspeicher-Korrekturen
 
-**Feature Branch:** copilot/reassess-form-memory-logic
+**Feature-Zweig:** copilot/reassess-form-memory-logic
 
 ## Rollen-Dropdowns von der Formular-Entwurfsspeicherung ausgenommen
 
@@ -18,6 +18,6 @@ Die persistente Formular-Entwurfsspeicherung des Seitenkomponisten wurde von ein
 
 Bisher blieb beim Wechsel von einem Raum mit ungesendetem Text zu einem Raum ohne gespeicherten Entwurf der Text des vorherigen Raums im Composer erhalten. Das danach ausgelöste synthetische Eingabeereignis speicherte diesen veralteten Text dann unter dem Entwurfsschlüssel des neu geöffneten Raums, was das versehentliche Senden der falschen Nachricht riskierte. Das Composer-Textfeld wird nun explizit geleert, bevor das Eingabeereignis ausgelöst wird, wenn der geöffnete Raum keinen gespeicherten Entwurf hat.
 
-## Commits
+## Änderungen
 
 - [f6e4f64](https://github.com/Cognis-Labs-HQ/Cognis/commit/f6e4f64c9468e5367096836d041488b2f2f6ae34)

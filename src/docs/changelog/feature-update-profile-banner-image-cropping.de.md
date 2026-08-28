@@ -1,6 +1,6 @@
 # Banner-Zuschnitt
 
-**Feature Branch:** feature-update-profile-banner-image-cropping
+**Feature-Zweig:** feature-update-profile-banner-image-cropping
 
 ## Profilbanner folgen der Höhenauswahl
 
@@ -10,6 +10,6 @@ GIF-Banner-Uploads starten nun mit einem Zuschnitt, der zur gewählten vollen od
 
 Die Aktion zum Entfernen des Banners erscheint jetzt als eigene X-Schaltfläche neben dem Bannermenü und bleibt nur im eigenen Profil sichtbar, wenn ein Banner vorhanden ist.
 
-## Commits
+## Änderungen
 
 - [aa10007](https://github.com/Cognis-Labs-HQ/Cognis/commit/aa10007a88121cfe4725bd656d581cac0ec298fd)

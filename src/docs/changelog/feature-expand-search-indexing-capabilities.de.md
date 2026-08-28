@@ -1,6 +1,6 @@
 # Suchoptionen
 
-**Feature Branch:** feature-expand-search-indexing-capabilities
+**Feature-Zweig:** feature-expand-search-indexing-capabilities
 
 ## Erweiterter Suchindex
 
@@ -88,6 +88,6 @@ Kontoaktionen wie Archivieren, Deaktivieren und Löschen werden nun als Aktionen
 
 Gemeinsamer Suchcode liegt jetzt ausschließlich unter `src/ui/reuse/search-util/`. Komponenteneigene Integrationen sollen eine dedizierte Datei `ui/search/index.js` nutzen, `createSearchIndex` für Inhalts-Provider exportieren und den gemeinsamen Helper `registerSearchIndex` aufrufen. Die Suchfunktion übernimmt Abgleich, Ranking, Hervorhebung, Filterung, Darstellung und das Verwerfen veralteter asynchroner Ergebnisse, während Komponenten teure Abrufe asynchron im Provider halten.
 
-## Commits
+## Änderungen
 
 - [e3b679b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e3b679bd480e8caef6e8301f410718570299fb26)

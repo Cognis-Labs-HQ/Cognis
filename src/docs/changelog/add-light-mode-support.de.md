@@ -1,6 +1,6 @@
 # Fehlerseite: Heller Modus
 
-**Feature Branch:** copilot/add-light-mode-support
+**Feature-Zweig:** copilot/add-light-mode-support
 
 ## Fehlerseite passt sich korrekt an den Light Mode an
 
@@ -22,6 +22,6 @@ Die Browser-Chrome-Designfarbe (Adressleiste auf Mobilgeräten) wird nun
 dynamisch aktualisiert, wenn der Benutzer das Thema wechselt – zwischen dem
 dunklen Marineblau und dem hellen blau-weißen Seitenfarbe.
 
-## Commits
+## Änderungen
 
 - [ca2c1bc](https://github.com/Cognis-Labs-HQ/Cognis/commit/ca2c1bc892e1236a186d35264745f40c369a8ed0)

@@ -1,6 +1,6 @@
 # TFA-Gateway & TOTP
 
-**Feature Branch:** copilot/create-tfa-gateway-totp-adapter
+**Feature-Zweig:** copilot/create-tfa-gateway-totp-adapter
 
 ## Neues TFA-Gateway
 
@@ -74,6 +74,6 @@ Die TFA-Einstellungen der Administration werden jetzt wieder innerhalb von Admin
 
 Die TFA-Karte innerhalb von Administration → Sicherheit verwendet jetzt vorhandene lokalisierte Gateway-/Admin-String-Schlüssel, sodass Abschnittstitel, Erzwingungsbeschriftung und Hinweistext wieder korrekt angezeigt werden.
 
-## Commits
+## Änderungen
 
 - [a4201c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a4201c685f2803dc1fdb3ad9d203f7e262919b03)

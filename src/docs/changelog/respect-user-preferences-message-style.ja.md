@@ -1,6 +1,6 @@
 # メッセージスタイルが全体に適用
 
-**Feature Branch:** copilot/respect-user-preferences-message-style
+**機能ブランチ:** copilot/respect-user-preferences-message-style
 
 ## スピーチバブルおよびIRCスタイルがミーティングチャットでも反映
 
@@ -98,6 +98,6 @@ IRCスタイルでは、自分のメッセージの絵文字リアクション�
 
 IRCスタイルでメッセージ間隔を広げ、フローティングのリアクションピッカーとツールチップ領域が重ならずに表示されるようにしました。
 
-## Commits
+## コミット
 
 - [ae50b16](https://github.com/Cognis-Labs-HQ/Cognis/commit/ae50b1649e1dc2ea87972a89dbbe6e735c3a3ad7)

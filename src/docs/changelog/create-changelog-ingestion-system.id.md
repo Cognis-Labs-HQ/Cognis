@@ -1,6 +1,6 @@
 # Update Ringkasan Changelog
 
-**Feature Branch:** copilot/create-changelog-ingestion-system
+**Cabang Fitur:** copilot/create-changelog-ingestion-system
 
 ## Parsing Heading Changelog
 
@@ -24,6 +24,6 @@ Instruksi kontribusi sekarang menetapkan struktur changelog wajib, menegaskan
 direktori tunggal `src/docs/changelog/`, dan mewajibkan file changelog baru
 untuk setiap PR di semua bahasa yang didukung.
 
-## Commits
+## Komit
 
 - [db72267](https://github.com/Cognis-Labs-HQ/Cognis/commit/db722676f71a4fd6db477b42b735a7b0692da365)

@@ -1,6 +1,6 @@
 # Durchsuchbarer Docs-Verlauf
 
-**Feature Branch:** feature-add-versioning-system-for-docs
+**Feature-Zweig:** feature-add-versioning-system-for-docs
 
 ## Versionierte Dokumentations-Snapshots
 
@@ -18,6 +18,6 @@ Die Dokumentationsansicht zeigt nun über jedem Dokumenttitel eine horizontal sc
 
 Der Dokumentationsindex enthält nun archivierte Dokumente auch dann, wenn ihre Quelldatei umbenannt oder entfernt wurde. Dadurch bleiben alle gespeicherten Versionen durchsuchbar.
 
-## Commits
+## Änderungen
 
 - [ad5ede8](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad5ede84f3181c47669ecc0e3655b4321fba8a34)

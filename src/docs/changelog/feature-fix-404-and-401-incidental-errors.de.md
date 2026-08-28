@@ -1,6 +1,6 @@
 # Behebung beiläufiger Fehler
 
-**Feature Branch:** feature-fix-404-and-401-incidental-errors
+**Feature-Zweig:** feature-fix-404-and-401-incidental-errors
 
 ## Zuverlässige Sprachressourcen
 
@@ -18,6 +18,6 @@ Browser-Leistungsdaten enthalten nun das aktive Bearer-Token und werden bei abge
 
 Der Import des authentifizierten API-Clients für die globale Nachrichtensuche wurde wiederhergestellt, sodass der Anbieter nicht mehr wiederholt fehlschlägt.
 
-## Commits
+## Änderungen
 
 - [763fb50](https://github.com/Cognis-Labs-HQ/Cognis/commit/763fb5075a083b6e2410711d5da84e81cdab46dc)

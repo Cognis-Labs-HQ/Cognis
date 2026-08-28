@@ -1,6 +1,6 @@
 # 信頼性の高い LDAP ディレクトリ設定
 
-**Feature Branch:** feature-mature-ldap-auth-adapter-and-setup-process
+**機能ブランチ:** feature-mature-ldap-auth-adapter-and-setup-process
 
 ## OpenLDAP と FreeIPA のライブ検出
 
@@ -66,6 +66,6 @@ LDAP 設定の最後に、実際のディレクトリユーザーの認証情報
 
 保存済みの LDAP バインドパスワードを管理 API の応答から除外します。パスワード欄を空のままにすると既存の秘密情報を維持し、新しい値を入力すると安全に置き換えます。
 
-## Commits
+## コミット
 
 - [88fe3b0](https://github.com/Cognis-Labs-HQ/Cognis/commit/88fe3b0bec731d1c090768792cd73cea7264106e)

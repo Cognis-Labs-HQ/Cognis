@@ -1,6 +1,6 @@
 # ポップアップの変更検知
 
-**Feature Branch:** copilot/add-dirty-tracker-check
+**機能ブランチ:** copilot/add-dirty-tracker-check
 
 ## 編集後だけ閉じる確認を表示
 
@@ -10,6 +10,6 @@
 
 共有の未保存変更ユーティリティーは、フローティングの保存／破棄コントロールを表示しない静音モードでポップアップのフォーム項目を追跡できるようになりました。これにより、余分な UI を出さずに同じ変更検知ロジックを再利用できます。
 
-## Commits
+## コミット
 
 - [88648cc](https://github.com/Cognis-Labs-HQ/Cognis/commit/88648cc411c93eaad6bba45e142bede90dbe5b0c)

@@ -1,6 +1,6 @@
 # 信頼できる会議チャット
 
-**Feature Branch:** feature-fix-meeting-chat-generation-issue
+**機能ブランチ:** feature-fix-meeting-chat-generation-issue
 
 ## 再利用会議を再接続
 
@@ -10,6 +10,6 @@
 
 会議参加者の検索ではフォロー要件を維持し、現在のユーザーを除外します。招待は招待者の認証済みアカウントに配信され、LDAPで提供された参加者は表示ハンドルが変更されても安定したアカウント識別子によって認証されます。
 
-## Commits
+## コミット
 
 - [f4538f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4538f6775857d81af67d624d800e27ee8b09548)

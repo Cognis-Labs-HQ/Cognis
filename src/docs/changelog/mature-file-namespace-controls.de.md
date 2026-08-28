@@ -1,6 +1,6 @@
 # Ausgereiftere Datei-Namensraum-Kontrollen
 
-**Feature Branch:** N/A
+**Feature-Zweig:** N/A
 
 ## Gehärtete Namensraum-Verträge
 
@@ -10,4 +10,4 @@ Das Datei-Gateway validiert jetzt Namensraum- und Komponentenkennungen bei der R
 
 Datei-Lesezugriffe bleiben entsprechend der Namensraum-Obergrenze teilbar, aber Überschreiben und Löschen sind auf Eigentümer oder privilegierte Akteure beschränkt. Kontingentprüfungen berücksichtigen Überschreibungen desselben Eigentümers nun nur mit der resultierenden Größenänderung.
 
-## Commits
+## Änderungen

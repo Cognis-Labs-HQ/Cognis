@@ -47,12 +47,13 @@ test("changelogs identify their feature branch and commits", () => {
     const violations = changelogFiles().flatMap((path) => {
         const markdown = readFileSync(path, "utf8");
         const branchMatches = [
-            ...markdown.matchAll(/^\*\*Feature Branch:\*\*\s+(.+)$/gm),
+            ...markdown.matchAll(
+                /^\*\*(?:Feature Branch|Feature-Zweig|Cabang Fitur|機能ブランチ):\*\*\s+(.+)$/gm,
+            ),
         ];
         const branch = branchMatches[0]?.[1]?.trim();
-        const hasCommitSection = /^## .*?(?:commits?|komit|コミット).*$/im.test(
-            markdown,
-        );
+        const hasCommitSection =
+            /^## .*?(?:commits?|änderungen|komit|コミット).*$/im.test(markdown);
         const commitUrls = [
             ...markdown.matchAll(
                 /https:\/\/github\.com\/Cognis-Labs-HQ\/Cognis\/commit\/[0-9a-f]+/gi,

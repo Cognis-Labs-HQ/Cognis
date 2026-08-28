@@ -1,6 +1,6 @@
 # Menghormati batas waktu sesi pribadi
 
-**Feature Branch:** feature-implement-session-expiry-tracking-rules
+**Cabang Fitur:** feature-implement-session-expiry-tracking-rules
 
 ## Mempertahankan pilihan batas waktu pribadi dalam batas global
 
@@ -18,6 +18,6 @@ Pengaturan global Tidak Pernah kini mengesampingkan batas waktu pribadi yang ada
 
 Paket gabungan gateway Cognis dan setiap komponen lokal yang bergantung padanya kini mendeklarasikan versi teruji terbaru, sehingga manifes workspace dan berkas kunci tetap selaras dengan perubahan gateway Autentikasi.
 
-## Commits
+## Komit
 
 - [e92abbe](https://github.com/Cognis-Labs-HQ/Cognis/commit/e92abbeda31ee1306beacce0bb7410129536cf00)

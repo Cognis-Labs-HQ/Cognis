@@ -1,6 +1,6 @@
 # Keanggotaan Kelas Siswa
 
-**Feature Branch:** copilot/create-student-page-view
+**Cabang Fitur:** copilot/create-student-page-view
 
 ## Ringkasan
 

@@ -1,6 +1,6 @@
 # Pool Koneksi PostgreSQL
 
-**Feature Branch:** feature-refactor-postgresql-adapter-for-connection-pooling
+**Cabang Fitur:** feature-refactor-postgresql-adapter-for-connection-pooling
 
 ## PostgreSQL kini memakai pool koneksi terbatas
 
@@ -66,6 +66,6 @@ Entrypoint kontainer melakukan pengodean persen pada kredensial PostgreSQL dan M
 
 Validasi pengaturan pool kini dimiliki masing-masing adapter basis data, sedangkan versi workspace adapter dan gateway serta batas atas dependensinya telah diselaraskan.
 
-## Commits
+## Komit
 
 - [6c88739](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c887390888a10a8acbf3535860f4d85d9908cef)

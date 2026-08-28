@@ -1,6 +1,6 @@
 # ログイン元を記憶
 
-**Feature Branch:** feature-remember-last-selected-auth-source
+**機能ブランチ:** feature-remember-last-selected-auth-source
 
 ## 優先認証元
 
@@ -10,6 +10,6 @@
 
 登録カードはローカル認証が選択されている場合にのみ表示されます。
 
-## Commits
+## コミット
 
 - [6ba5669](https://github.com/Cognis-Labs-HQ/Cognis/commit/6ba5669501b4bf4a6e361c7ed617e9f96280dbf3)

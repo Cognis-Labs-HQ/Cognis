@@ -1,6 +1,6 @@
 # Admin-Steuerverträge erzwingen
 
-**Feature Branch:** copilot/require-adapters-config-file
+**Feature-Zweig:** copilot/require-adapters-config-file
 
 ## Zusammenfassung
 
@@ -17,6 +17,6 @@ Die Administrationsseite nutzt diese angekündigten Steuerungen jetzt direkt und
 - `src/gateways/registration/tests/bootstrap.test.ts` und `src/gateways/study/tests/bootstrap.test.ts` — Regressionstests für angekündigte Steuerungen und die reparierten Adapter-Admin-Routen ergänzt.
 - `.github/copilot-instructions.md`, `src/gateways/{notify,registration,social,study}/manifest.json` und `src/docs/versions.en.md` — Die Anforderung an Adapter-Steuerungsverträge dokumentiert und die betroffenen Gateway-Versionen erhöht.
 
-## Commits
+## Änderungen
 
 - [6b706ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/6b706ae)

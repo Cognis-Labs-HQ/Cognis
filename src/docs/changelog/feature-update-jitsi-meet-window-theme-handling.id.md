@@ -1,6 +1,6 @@
 # Sinkronisasi Tema Jitsi
 
-**Feature Branch:** feature-update-jitsi-meet-window-theme-handling
+**Cabang Fitur:** feature-update-jitsi-meet-window-theme-handling
 
 ## Pembaruan tema Jitsi Meet langsung
 
@@ -14,6 +14,6 @@ Embed rapat sekarang menerapkan ulang warna terang dan gelap Cognis ke shell ifr
 
 Saat tema Cognis aktif berubah selama rapat berjalan, embed menyegarkan jendela Jitsi dengan konfigurasi antarmuka baru sehingga deployment yang mengabaikan pembaruan langsung `preferredTheme` tetap memakai tema yang benar.
 
-## Commits
+## Komit
 
 - [8344f54](https://github.com/Cognis-Labs-HQ/Cognis/commit/8344f54c3af4936f1812de28754555ba886a945c)

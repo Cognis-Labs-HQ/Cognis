@@ -1,6 +1,6 @@
 # Meeting-Freigaben
 
-**Feature Branch:** N/A
+**Feature-Zweig:** N/A
 
 ## Teilnehmende Dürfen Freigaben Verwalten
 
@@ -14,4 +14,4 @@ Freigabeanfragen für Meetings gehen jetzt nur noch an Teilnehmende mit aktuelle
 
 Meeting-Freigaben werden jetzt an die aktive Meeting-Instanz gebunden. Wenn ein Meeting neu gestartet wird, rotiert diese Instanzkennung, sodass ältere Links automatisch ablaufen und nicht in eine neue Sitzung übernommen werden.
 
-## Commits
+## Änderungen

@@ -1,6 +1,6 @@
 # Login-Quelle merken
 
-**Feature Branch:** feature-remember-last-selected-auth-source
+**Feature-Zweig:** feature-remember-last-selected-auth-source
 
 ## Bevorzugte Anmeldequelle
 
@@ -10,6 +10,6 @@ Die Anmeldeseite merkt sich nun die zuletzt ausgewählte Anmeldequelle und wähl
 
 Die Registrierungskarte wird nur angezeigt, wenn die lokale Anmeldung ausgewählt ist.
 
-## Commits
+## Änderungen
 
 - [6ba5669](https://github.com/Cognis-Labs-HQ/Cognis/commit/6ba5669501b4bf4a6e361c7ed617e9f96280dbf3)

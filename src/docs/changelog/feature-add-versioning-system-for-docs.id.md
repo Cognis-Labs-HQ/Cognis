@@ -1,6 +1,6 @@
 # Riwayat Docs yang Dapat Dijelajahi
 
-**Feature Branch:** feature-add-versioning-system-for-docs
+**Cabang Fitur:** feature-add-versioning-system-for-docs
 
 ## Snapshot dokumentasi berversi
 
@@ -18,6 +18,6 @@ Pembaca dokumentasi kini menampilkan bilah versi horizontal yang dapat digulir d
 
 Indeks dokumentasi kini tetap memuat dokumen yang telah diarsipkan meskipun berkas sumbernya diganti nama atau dihapus, sehingga setiap versi yang tersimpan tetap dapat dijelajahi.
 
-## Commits
+## Komit
 
 - [ad5ede8](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad5ede84f3181c47669ecc0e3655b4321fba8a34)

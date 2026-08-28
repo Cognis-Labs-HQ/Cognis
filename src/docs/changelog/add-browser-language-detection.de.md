@@ -1,6 +1,6 @@
 # PR-Änderungsprotokoll
 
-**Feature Branch:** copilot/add-browser-language-detection
+**Feature-Zweig:** copilot/add-browser-language-detection
 
 ## Zusammenfassung
 
@@ -45,7 +45,7 @@ korrekt angezeigt, wenn die erste Sprache zurück in eine leere Tabelle
 - `src/ui/tests/browser-language-detection.test.js`
 - `src/ui/languages/*/strings.xml`
 
-## Commits
+## Änderungen
 
 - [0b39a0e](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b39a0e)
 - [d9550aa](https://github.com/Cognis-Labs-HQ/Cognis/commit/d9550aa2)

@@ -1,6 +1,6 @@
 # PR変更履歴 — Ctxを機能連携の中核にする
 
-**Feature Branch:** copilot/update-ctx-usage-implementation
+**機能ブランチ:** copilot/update-ctx-usage-implementation
 
 ## 概要
 

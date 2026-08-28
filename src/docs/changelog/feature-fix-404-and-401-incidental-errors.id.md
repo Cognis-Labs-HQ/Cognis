@@ -1,6 +1,6 @@
 # Perbaikan galat insidental
 
-**Feature Branch:** feature-fix-404-and-401-incidental-errors
+**Cabang Fitur:** feature-fix-404-and-401-incidental-errors
 
 ## Sumber daya bahasa yang andal
 
@@ -18,6 +18,6 @@ Pengiriman data kinerja peramban kini menyertakan token bearer aktif dan dilewat
 
 Impor klien API terautentikasi yang digunakan penyedia pencarian pesan global dipulihkan sehingga kegagalan penyedia tidak lagi berulang.
 
-## Commits
+## Komit
 
 - [763fb50](https://github.com/Cognis-Labs-HQ/Cognis/commit/763fb5075a083b6e2410711d5da84e81cdab46dc)

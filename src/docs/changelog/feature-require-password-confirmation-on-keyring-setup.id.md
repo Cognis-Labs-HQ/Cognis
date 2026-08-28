@@ -1,6 +1,6 @@
 # Penyiapan keyring yang lebih aman
 
-**Feature Branch:** feature-require-password-confirmation-on-keyring-setup
+**Cabang Fitur:** feature-require-password-confirmation-on-keyring-setup
 
 ## Konfirmasi kata sandi keyring baru
 
@@ -18,6 +18,6 @@ Identitas instans akun membedakan pengguna yang dihapus dan dibuat ulang dari ke
 
 Membatalkan pembuatan keyring tidak lagi membuat tindakan di Pengaturan berhenti merespons. Pilihan waktu penguncian otomatis menggunakan satu definisi yang sama pada penyiapan dan Pengaturan, sedangkan pembuatan dengan kata sandi pengguna memakai tampilan untuk tindakan kreatif.
 
-## Commits
+## Komit
 
 - [77460b6](https://github.com/Cognis-Labs-HQ/Cognis/commit/77460b6c93444a0c0c8d467b879551c38dedcc41)

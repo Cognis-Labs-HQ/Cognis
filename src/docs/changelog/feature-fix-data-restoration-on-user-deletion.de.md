@@ -1,6 +1,6 @@
 # Sichere Kontolöschung
 
-**Feature Branch:** feature-fix-data-restoration-on-user-deletion
+**Feature-Zweig:** feature-fix-data-restoration-on-user-deletion
 
 ## Gelöschte Konten behalten keine Aktivitäten
 
@@ -22,6 +22,6 @@ Wiederholte Versuche, dieselbe ausstehende Unterhaltung zu beginnen, senden kein
 
 Beim Ablehnen einer Nachrichtenanfrage wird der Empfänger jetzt aus dem gerade verlassenen Raum weggeleitet, anstatt dessen Verschlüsselungsschlüssel zu laden. Der abgelehnte Raum folgt dem üblichen Chat-Lebenszyklus und wird für den verbleibenden Anfragenden archiviert oder gelöscht, wenn er leer ist.
 
-## Commits
+## Änderungen
 
 - [9735e00](https://github.com/Cognis-Labs-HQ/Cognis/commit/9735e00a2bb3ef7b3a1f10aa49494f81007dece2)

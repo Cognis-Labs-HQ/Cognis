@@ -1,6 +1,6 @@
 # PR変更履歴 — ディレクトリ構造の整理
 
-**Feature Branch:** copilot/clean-up-directory-structure
+**機能ブランチ:** copilot/clean-up-directory-structure
 
 ## 概要
 

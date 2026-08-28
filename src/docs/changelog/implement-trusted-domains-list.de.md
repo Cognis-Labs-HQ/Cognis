@@ -1,6 +1,6 @@
 # Vertrauenswürdige Domains
 
-**Feature Branch:** copilot/implement-trusted-domains-list
+**Feature-Zweig:** copilot/implement-trusted-domains-list
 
 ## Zusammenfassung
 
@@ -17,6 +17,6 @@ Die Prüfung von Broadcast-Weiterleitungen akzeptiert jetzt URLs derselben Origi
 - `src/api/tests/security-settings.test.ts`, `src/gateways/notify/routes/tests/notification-routes.test.ts` und `src/ui/tests/trusted-domains.test.js` — Testabdeckung für Domain-Normalisierung und URL-Prüfung ergänzt.
 - `src/api/package.json`, `src/gateways/notify/manifest.json`, `src/gateways/registration/manifest.json` und `src/docs/versions.en.md` — Komponenten-Versionen für API, Notification-Gateway und Registration-Gateway erhöht.
 
-## Commits
+## Änderungen
 
 - [85294ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/85294ff)

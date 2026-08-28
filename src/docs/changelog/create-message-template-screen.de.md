@@ -1,6 +1,6 @@
 # Nachrichten: Vorlagen-Sidebar
 
-**Feature Branch:** copilot/create-message-template-screen
+**Feature-Zweig:** copilot/create-message-template-screen
 
 ## Vorlagenverwaltung in die Seitenleiste verschoben
 
@@ -26,6 +26,6 @@ Gespeicherte Nachrichtenvorlagen sind nun auf das Konto beschränkt, das sie ers
 
 Eingetippter, noch nicht gesendeter Text im Nachrichtenkompositor geht nicht mehr verloren, wenn der Seitenkompositor das Layout-Raster neu aufbaut, etwa beim Überschreiten eines responsiven Spaltenumbruchpunkts.
 
-## Commits
+## Änderungen
 
 - [3cf607d](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf607d2e31db00d07bdc6e7a247b2e1795857c2)

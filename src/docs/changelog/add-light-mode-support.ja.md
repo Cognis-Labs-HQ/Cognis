@@ -1,6 +1,6 @@
 # エラーページへのライトモードサポート追加
 
-**Feature Branch:** copilot/add-light-mode-support
+**機能ブランチ:** copilot/add-light-mode-support
 
 ## エラーページがライトモードに正しく対応
 
@@ -21,6 +21,6 @@
 動的に更新されるようになり、ダークネイビーと明るい青白いページカラーの間で
 切り替わります。
 
-## Commits
+## コミット
 
 - [ca2c1bc](https://github.com/Cognis-Labs-HQ/Cognis/commit/ca2c1bc892e1236a186d35264745f40c369a8ed0)

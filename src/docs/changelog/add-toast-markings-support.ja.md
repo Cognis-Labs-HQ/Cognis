@@ -1,6 +1,6 @@
 # ライトモードでのトースト・アイコンの表示修正
 
-**Feature Branch:** copilot/add-toast-markings-support
+**機能ブランチ:** copilot/add-toast-markings-support
 
 ## 概要
 

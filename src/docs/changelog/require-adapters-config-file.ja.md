@@ -1,6 +1,6 @@
 # アダプター管理コントロール契約を必須化
 
-**Feature Branch:** copilot/require-adapters-config-file
+**機能ブランチ:** copilot/require-adapters-config-file
 
 ## 概要
 
@@ -17,6 +17,6 @@ Administration ページは公開されたアダプター制御情報を使う�
 - `src/gateways/registration/tests/bootstrap.test.ts` と `src/gateways/study/tests/bootstrap.test.ts` — 公開された制御情報と修正済みアダプター管理ルートを固定する回帰テストを追加しました。
 - `.github/copilot-instructions.md`、`src/gateways/{notify,registration,social,study}/manifest.json`、`src/docs/versions.en.md` — アダプター管理コントロール要件を文書化し、影響したゲートウェイのバージョンを更新しました。
 
-## Commits
+## コミット
 
 - [6b706ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/6b706ae)

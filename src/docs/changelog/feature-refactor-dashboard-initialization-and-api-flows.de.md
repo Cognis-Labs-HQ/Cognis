@@ -1,6 +1,6 @@
 # Schneller Dashboard-Start
 
-**Feature Branch:** feature-refactor-dashboard-initialization-and-api-flows
+**Feature-Zweig:** feature-refactor-dashboard-initialization-and-api-flows
 
 ## Dashboard-Karten werden unabhängig geladen
 
@@ -18,6 +18,6 @@ Das Dashboard verwendet die exportierte Funktion des Kalender-Gateways für bevo
 
 Die Laufzeitregistrierung der Authentifizierung meldet nun dieselbe Version wie ihr Komponentenmanifest.
 
-## Commits
+## Änderungen
 
 - [9c6605e](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c6605ec002e029f3e9e655a352bd6acc109ce1b)

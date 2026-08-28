@@ -1,6 +1,6 @@
 # Produktionsleistung und Beobachtbarkeit
 
-**Feature Branch:** feature-configure-production-reverse-proxy-and-observability
+**Feature-Zweig:** feature-configure-production-reverse-proxy-and-observability
 
 ## Sichere, cachebewusste Produktionskante
 
@@ -18,6 +18,6 @@ Browser-Leistungsdaten erfordern eine authentifizierte Sitzung, werden pro Konto
 
 Gehostete Basiswerte für kalte, warme und SPA-Aufrufe sowie vor Redis zu prüfende Budgets sind dokumentiert.
 
-## Commits
+## Änderungen
 
 - [226e1ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/226e1ff10bbf99756a045f037c636181e130d318)

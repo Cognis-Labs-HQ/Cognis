@@ -1,6 +1,6 @@
 # 未読ルームをより分かりやすく表示
 
-**Feature Branch:** feature-update-message-notifications-and-side-menu-styling
+**機能ブランチ:** feature-update-message-notifications-and-side-menu-styling
 
 ## ページに応じた通知
 
@@ -14,6 +14,6 @@
 
 メッセージのヘッダーに「ルームから退出」ボタンを表示し、ルーム関連の文言を「ルーム」に統一しました。
 
-## Commits
+## コミット
 
 - [779de3d](https://github.com/Cognis-Labs-HQ/Cognis/commit/779de3d355f971af7374bee9128672f713b80a64)

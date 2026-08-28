@@ -1,6 +1,6 @@
 # すばやい言語切替
 
-**Feature Branch:** feature-add-language-switcher-with-settings-options
+**機能ブランチ:** feature-add-language-switcher-with-settings-options
 
 ## ダッシュボードの言語切替
 
@@ -18,6 +18,6 @@
 
 各ページが固有の Page Composer 編集コントロールを保持するようになり、編集できないページから編集できるページへ移動した際に、再読み込みなしですべての利用可能な操作がすぐに表示されます。
 
-## Commits
+## コミット
 
 - [741230d](https://github.com/Cognis-Labs-HQ/Cognis/commit/741230d55d134bfb52a89d52831bedfdcc1c13f1)

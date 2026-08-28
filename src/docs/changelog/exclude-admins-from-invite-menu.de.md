@@ -1,6 +1,6 @@
 # Admins aus Invite-Menü raus
 
-**Feature Branch:** copilot/exclude-admins-from-invite-menu
+**Feature-Zweig:** copilot/exclude-admins-from-invite-menu
 
 ## Zusammenfassung
 
@@ -14,7 +14,7 @@ Admins und Owner verwalten Einladungen bereits über die Users-Seite, daher blei
 - `src/gateways/registration/tests/navbar.test.js` — Regressionstest ergänzt, der den Ausschluss admin-äquivalenter Gründer im Invite-Menü absichert.
 - `src/gateways/registration/bootstrap.ts`, `src/gateways/registration/manifest.json` und `src/docs/versions.en.md` — Version der Registration-Gateway-Komponente auf `1.1.7` erhöht.
 
-## Commits
+## Änderungen
 
 - [041fdb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/041fdb8)
 - [d47ee73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d47ee73)

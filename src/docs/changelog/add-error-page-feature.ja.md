@@ -1,6 +1,6 @@
 # エラーページ
 
-**Feature Branch:** copilot/add-error-page-feature
+**機能ブランチ:** copilot/add-error-page-feature
 
 ## アニメーショングラデーション見出し付きのエラーページ
 
@@ -18,6 +18,6 @@
 持たないフルスクリーンメッセージとして表示されます。見出しはレスポンシブに
 スケーリングされ、小さな画面でも読みやすくなっています。
 
-## Commits
+## コミット
 
 - [7a82d10](https://github.com/Cognis-Labs-HQ/Cognis/commit/7a82d1050c2453aaca2165271dbf75ae2f2c9876)

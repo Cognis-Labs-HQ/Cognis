@@ -1,6 +1,6 @@
 # 個人のセッションタイムアウトを尊重
 
-**Feature Branch:** feature-implement-session-expiry-tracking-rules
+**機能ブランチ:** feature-implement-session-expiry-tracking-rules
 
 ## グローバル上限内で個人のタイムアウト設定を維持
 
@@ -18,6 +18,6 @@
 
 Cognisの統合Gatewayパッケージと、それに依存するすべてのローカルコンポーネントが更新後のテスト済みバージョンを宣言し、Workspaceマニフェストとロックファイルを認証Gatewayの変更に合わせました。
 
-## Commits
+## コミット
 
 - [e92abbe](https://github.com/Cognis-Labs-HQ/Cognis/commit/e92abbeda31ee1306beacce0bb7410129536cf00)

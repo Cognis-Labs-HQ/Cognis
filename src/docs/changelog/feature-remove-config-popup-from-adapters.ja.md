@@ -1,6 +1,6 @@
 # アダプター操作の整理
 
-**Feature Branch:** feature-remove-config-popup-from-adapters
+**機能ブランチ:** feature-remove-config-popup-from-adapters
 
 ## 空の設定ポップアップを削除
 
@@ -18,6 +18,6 @@ LDAP 認証の設定ポップアップに電源コントロールを追加し、
 
 無効にしたShareアダプターはサーバー再起動後も無効のまま維持されます。アダプターが無効な間は、発行済みの共有も解決されません。
 
-## Commits
+## コミット
 
 - [bde0ea7](https://github.com/Cognis-Labs-HQ/Cognis/commit/bde0ea7a65b26aa85e467dc7954e6db3c652e701)

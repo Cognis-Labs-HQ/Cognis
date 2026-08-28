@@ -1,6 +1,6 @@
 # Formularentwürfe im Composer
 
-**Feature Branch:** copilot/ensure-form-inputs-preserved
+**Feature-Zweig:** copilot/ensure-form-inputs-preserved
 
 ## Zusammenfassung
 

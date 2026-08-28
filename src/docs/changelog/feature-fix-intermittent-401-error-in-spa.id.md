@@ -1,6 +1,6 @@
 # Telemetri SPA Andal
 
-**Feature Branch:** feature-fix-intermittent-401-error-in-spa
+**Cabang Fitur:** feature-fix-intermittent-401-error-in-spa
 
 ## Autentikasi mengikuti perubahan token
 
@@ -10,6 +10,6 @@ Telemetri performa peramban kini menggunakan klien gateway Observability dan men
 
 Telemetri kinerja browser kini menyelesaikan pengiriman melalui kapabilitas UI terdaftar milik gateway Observability, sehingga UI bersama tetap independen dari detail implementasi gateway.
 
-## Commits
+## Komit
 
 - [55815c3](https://github.com/Cognis-Labs-HQ/Cognis/commit/55815c3e03a8498211a2619ef9e4ee61895461a5)

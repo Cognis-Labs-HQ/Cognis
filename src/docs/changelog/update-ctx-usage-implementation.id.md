@@ -1,6 +1,6 @@
 # Catatan Perubahan PR
 
-**Feature Branch:** copilot/update-ctx-usage-implementation
+**Cabang Fitur:** copilot/update-ctx-usage-implementation
 
 ## Ringkasan
 
@@ -69,7 +69,7 @@ diterbitkan setelah kapabilitas auth berhasil diambil dari ctx, sehingga
     - `src/docs/versions.en.md`
     - manifes `package.json` adaptor/modul yang kini menunjuk ke `@cognis/core@0.1.1` lokal
 
-## Commits
+## Komit
 
 - [feb1bbc](https://github.com/Cognis-Labs-HQ/Cognis/commit/feb1bbc)
 - [c6ba65b](https://github.com/Cognis-Labs-HQ/Cognis/commit/c6ba65b)

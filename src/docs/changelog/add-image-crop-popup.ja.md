@@ -1,6 +1,6 @@
 # 画像切り抜きポップアップ
 
-**Feature Branch:** copilot/add-image-crop-popup
+**機能ブランチ:** copilot/add-image-crop-popup
 
 ## アップロード前に切り抜き
 
@@ -10,6 +10,6 @@
 
 切り抜きポップアップに拡張可能なガイドグリッドとズーム操作を追加し、アップロード前の構図調整をしやすくしました。
 
-## Commits
+## コミット
 
 - [c01015e](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01015e72abed690fa1e92a2659ee1f60e3f3630)

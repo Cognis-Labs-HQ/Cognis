@@ -1,11 +1,11 @@
 # より親しみやすいプロフィール初期設定
 
-**Feature Branch:** feature-set-default-friends-visibility-for-new-users
+**機能ブランチ:** feature-set-default-friends-visibility-for-new-users
 
 ## 新しいプロフィールの公開範囲を「友達」に設定
 
 新しいプロフィールはすべて「友達」の公開範囲で作成されるようになりました。コミュニティ全体には公開せず、つながりのあるユーザーから見つけやすくなります。一般ユーザーとモデレーターは、引き続きいつでも「非公開」または「非表示」を選択できます。
 
-## Commits
+## コミット
 
 - [4183d3b](https://github.com/Cognis-Labs-HQ/Cognis/commit/4183d3bfc2612181328cc06133356089b50fea7c)

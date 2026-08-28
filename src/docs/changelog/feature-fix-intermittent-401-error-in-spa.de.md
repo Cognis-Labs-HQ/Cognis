@@ -1,6 +1,6 @@
 # Zuverlässige SPA-Telemetrie
 
-**Feature Branch:** feature-fix-intermittent-401-error-in-spa
+**Feature-Zweig:** feature-fix-intermittent-401-error-in-spa
 
 ## Authentifizierung folgt Tokenwechseln
 
@@ -10,6 +10,6 @@ Die Browser-Leistungstelemetrie verwendet jetzt den Client des Observability-Gat
 
 Die Browser-Leistungstelemetrie löst Übermittlungen jetzt über die registrierte UI-Fähigkeit des Observability-Gateways auf, sodass die gemeinsame Benutzeroberfläche von Gateway-Implementierungsdetails unabhängig bleibt.
 
-## Commits
+## Änderungen
 
 - [55815c3](https://github.com/Cognis-Labs-HQ/Cognis/commit/55815c3e03a8498211a2619ef9e4ee61895461a5)

@@ -1,6 +1,6 @@
 # Lange Doku-Titel kürzen
 
-**Feature Branch:** copilot/trim-document-titles
+**Feature-Zweig:** copilot/trim-document-titles
 
 ## Zusammenfassung
 

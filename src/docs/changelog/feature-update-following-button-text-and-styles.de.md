@@ -1,6 +1,6 @@
 # Benachrichtigungen für soziales Folgen
 
-**Feature Branch:** feature-update-following-button-text-and-styles
+**Feature-Zweig:** feature-update-following-button-text-and-styles
 
 ## Folgen-Schaltflächen zeigen Entfolgen-Aktionen an
 
@@ -14,6 +14,6 @@ Folgeaktionen registrieren und senden jetzt über die Social-Benachrichtigungska
 
 Initialen für Profil-Avatar-Fallbacks verwenden jetzt zuerst den Profilanzeigenamen statt des Nutzernamens und können bei einteiligen Namen einen einzelnen Anfangsbuchstaben anzeigen.
 
-## Commits
+## Änderungen
 
 - [e6c4565](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6c45656185cf32f63d69ebb49595ad530184d2e)

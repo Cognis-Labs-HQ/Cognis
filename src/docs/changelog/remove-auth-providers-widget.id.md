@@ -1,6 +1,6 @@
 # Update Auth dan Kata Sandi
 
-**Feature Branch:** copilot/remove-auth-providers-widget
+**Cabang Fitur:** copilot/remove-auth-providers-widget
 
 ## Menghapus widget penyedia auth yang duplikat dari Administrasi
 
@@ -78,6 +78,6 @@ Kriteria konfirmasi kata sandi pada pendaftaran diperbaiki agar nilai konfirmasi
 
 Kriteria kecocokan kata sandi kini tetap netral (bukan terpenuhi atau tidak terpenuhi) sampai kolom kata sandi berisi, sehingga umpan balik “cocok” tidak muncul terlalu dini.
 
-## Commits
+## Komit
 
 - [a103596](https://github.com/Cognis-Labs-HQ/Cognis/commit/a103596a317f506ede1967a31791b935db24f047)

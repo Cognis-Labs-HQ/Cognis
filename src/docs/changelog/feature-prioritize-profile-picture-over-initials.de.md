@@ -1,6 +1,6 @@
 # Profilbilder in Nachrichten
 
-**Feature Branch:** feature-prioritize-profile-picture-over-initials
+**Feature-Zweig:** feature-prioritize-profile-picture-over-initials
 
 ## Zusammenfassung
 

@@ -1,6 +1,6 @@
 # メッセージでプロフィールアバターを優先する
 
-**Feature Branch:** feature-prioritize-profile-picture-over-initials
+**機能ブランチ:** feature-prioritize-profile-picture-over-initials
 
 ## 概要
 

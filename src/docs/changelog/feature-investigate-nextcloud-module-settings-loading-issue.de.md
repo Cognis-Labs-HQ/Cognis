@@ -1,6 +1,6 @@
 # Modul-Einstellungen wie bei Adaptern
 
-**Feature Branch:** feature-investigate-nextcloud-module-settings-loading-issue
+**Feature-Zweig:** feature-investigate-nextcloud-module-settings-loading-issue
 
 ## Modulzeilen öffnen jetzt einheitliche Einstellungen
 
@@ -22,6 +22,6 @@ Nextcloud-Whiteboard-Einstellungen akzeptieren jetzt Aktualisierungen von Server
 
 Validierungsfehler in Moduleinstellungen benennen jetzt das ungültige Feld. Dadurch kann das gemeinsame Konfigurations-Popup geöffnet bleiben und dieses Eingabefeld markieren, statt gültige Admin-Änderungen zu verwerfen.
 
-## Commits
+## Änderungen
 
 - [e33bb93](https://github.com/Cognis-Labs-HQ/Cognis/commit/e33bb93726bab2eb01bf3d24f3704d2b4127dda0)

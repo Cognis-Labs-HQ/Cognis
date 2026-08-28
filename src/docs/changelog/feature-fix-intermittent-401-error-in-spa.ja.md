@@ -1,6 +1,6 @@
 # 安定したSPAテレメトリー
 
-**Feature Branch:** feature-fix-intermittent-401-error-in-spa
+**機能ブランチ:** feature-fix-intermittent-401-error-in-spa
 
 ## トークン変更に追従する認証
 
@@ -10,6 +10,6 @@
 
 ブラウザーのパフォーマンステレメトリは、Observabilityゲートウェイが登録したUI機能を介して送信を解決するようになり、共通UIがゲートウェイの実装詳細に依存しなくなりました。
 
-## Commits
+## コミット
 
 - [55815c3](https://github.com/Cognis-Labs-HQ/Cognis/commit/55815c3e03a8498211a2619ef9e4ee61895461a5)

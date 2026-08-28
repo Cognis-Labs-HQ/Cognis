@@ -1,6 +1,6 @@
 # Changelog PR — Periksa
 
-**Feature Branch:** copilot/check-spa-router-implementation
+**Cabang Fitur:** copilot/check-spa-router-implementation
 
 ## Ringkasan
 

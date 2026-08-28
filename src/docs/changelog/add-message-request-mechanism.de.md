@@ -1,6 +1,6 @@
 # PR-Changelog
 
-**Feature Branch:** copilot/add-message-request-mechanism
+**Feature-Zweig:** copilot/add-message-request-mechanism
 
 ## Zusammenfassung
 
@@ -48,7 +48,7 @@ beschreibendes Wort („Like", „Heart", „Haha", „Celebrate").
 - Versionsindex:
     - `src/docs/versions.en.md`
 
-## Commits
+## Änderungen
 
 - [d4f7f6d](https://github.com/Cognis-Labs-HQ/Cognis/commit/d4f7f6d)
 - [fc3febe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc3febe)

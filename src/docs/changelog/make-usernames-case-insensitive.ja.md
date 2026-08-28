@@ -1,6 +1,6 @@
 # ユーザー名とパスワードポリシー更新
 
-**Feature Branch:** copilot/make-usernames-case-insensitive
+**機能ブランチ:** copilot/make-usernames-case-insensitive
 
 ## ユーザー名が大文字小文字を区別せず ASCII のみに
 
@@ -18,6 +18,6 @@
 
 `src/ui/reuse/criteria-check.js` の新しい `attachCriteriaCheck` 関数は、任意のフォームフィールドに柔軟でアクセシブルなリアルタイム検証を提供します。各条件に独自のエラーメッセージを設定でき、設定可能な汎用メッセージをフォールバックとして使用します。
 
-## Commits
+## コミット
 
 - [2c806b8](https://github.com/Cognis-Labs-HQ/Cognis/commit/2c806b81e4aef343918c7dfa36cdf6d7a2191802)

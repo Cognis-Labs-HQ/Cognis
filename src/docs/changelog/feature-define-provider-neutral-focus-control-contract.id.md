@@ -1,6 +1,6 @@
 # Kontrol Fokus netral penyedia
 
-**Feature Branch:** feature-define-provider-neutral-focus-control-contract
+**Cabang Fitur:** feature-define-provider-neutral-focus-control-contract
 
 ## Fokuskan permukaan kolaborasi yang dideklarasikan
 
@@ -146,6 +146,6 @@ Penghitungan ukuran kisi kini berada dalam modul khusus yang telah diuji, sedang
 
 Dashboard kini tetap menjadi entri pertama navigasi utama, sementara semua entri lainnya tetap diurutkan menurut abjad.
 
-## Commits
+## Komit
 
 - [48395e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/48395e7f07a41221e2e866d9892493df3e98b841)

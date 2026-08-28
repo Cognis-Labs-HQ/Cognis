@@ -1,6 +1,6 @@
 # Changelog PR
 
-**Feature Branch:** copilot/add-message-request-mechanism
+**Cabang Fitur:** copilot/add-message-request-mechanism
 
 ## Ringkasan
 

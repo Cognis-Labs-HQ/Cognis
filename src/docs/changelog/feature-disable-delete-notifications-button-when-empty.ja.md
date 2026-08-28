@@ -1,6 +1,6 @@
 # 通知ボックスが空のときに「すべて削除」操作を無効化
 
-**Feature Branch:** feature-disable-delete-notifications-button-when-empty
+**機能ブランチ:** feature-disable-delete-notifications-button-when-empty
 
 ## 概要
 

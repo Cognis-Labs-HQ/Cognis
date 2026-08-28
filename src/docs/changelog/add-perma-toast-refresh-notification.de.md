@@ -1,6 +1,6 @@
 # Permanenter Refresh-Toast
 
-**Feature Branch:** copilot/add-perma-toast-refresh-notification
+**Feature-Zweig:** copilot/add-perma-toast-refresh-notification
 
 ## Zusammenfassung
 
@@ -18,7 +18,7 @@ Der Page Composer setzt nun einen übersetzten gemeinsamen Aktualisierungshinwei
 - `src/ui/languages/ja/strings.xml`
 - `src/ui/reuse/tests/api-client.test.js` — Fügt Regressionstests für das permanente Aktualisieren-Toast-Verhalten hinzu.
 
-## Commits
+## Änderungen
 
 - [bbee24a](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbee24a)
 - [3b7bded](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b7bded)

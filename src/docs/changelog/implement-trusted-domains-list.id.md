@@ -1,6 +1,6 @@
 # Domain Tepercaya Broadcast
 
-**Feature Branch:** copilot/implement-trusted-domains-list
+**Cabang Fitur:** copilot/implement-trusted-domains-list
 
 ## Ringkasan
 

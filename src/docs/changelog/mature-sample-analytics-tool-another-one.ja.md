@@ -1,6 +1,6 @@
 # 管理画面への分析セクション追加
 
-**Feature Branch:** copilot/mature-sample-analytics-tool-another-one
+**機能ブランチ:** copilot/mature-sample-analytics-tool-another-one
 
 ## サンプル分析モジュールを管理画面の本格的な分析セクションに昇格
 
@@ -33,6 +33,6 @@
 `/api/v1/modules/analytics/series`（日別登録時系列）、
 `/api/v1/modules/analytics/activity-log`（最近のカスタムイベントログ）。
 
-## Commits
+## コミット
 
 - [56958a7](https://github.com/Cognis-Labs-HQ/Cognis/commit/56958a72892cc2d963b827c84d50783e099d185e)

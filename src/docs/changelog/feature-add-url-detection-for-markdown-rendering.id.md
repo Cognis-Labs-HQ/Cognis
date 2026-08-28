@@ -1,6 +1,6 @@
 # Rendering Tautan Aman
 
-**Feature Branch:** feature-add-url-detection-for-markdown-rendering
+**Cabang Fitur:** feature-add-url-detection-for-markdown-rendering
 
 ## URL HTTP menjadi tautan
 
@@ -10,6 +10,6 @@ Konten pengguna dan administrator yang dirender sebagai Markdown kini otomatis m
 
 Hanya tujuan HTTP dan HTTPS yang dirender sebagai tautan, sehingga skema URL email dan khusus aplikasi tidak dapat diklik dalam konten yang dibuat.
 
-## Commits
+## Komit
 
 - [b69825f](https://github.com/Cognis-Labs-HQ/Cognis/commit/b69825ff2436e850fe55db64531d012ddda87b20)

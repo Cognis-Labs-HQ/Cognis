@@ -1,6 +1,6 @@
 # Überschriften für Meeting-Tabellen in der Administration
 
-**Feature Branch:** feature-add-subheadings-for-meetings-tables
+**Feature-Zweig:** feature-add-subheadings-for-meetings-tables
 
 ## Klare Bereiche für aktive und bevorstehende Meetings
 
@@ -14,6 +14,6 @@ Zeilen für bevorstehende Meetings halten die ID-Spalte jetzt kompakt, während 
 
 Die Meeting-Spalten heißen jetzt Meeting-URL und zeigen die tatsächliche URL an, während die ID-Spalte kompakt bleibt und nur die nötige Breite verwendet.
 
-## Commits
+## Änderungen
 
 - [944f645](https://github.com/Cognis-Labs-HQ/Cognis/commit/944f645f21aac7c511cd60646c76923a382f7e8a)

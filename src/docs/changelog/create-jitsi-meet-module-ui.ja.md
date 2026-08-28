@@ -1,6 +1,6 @@
 # Jitsi Meet モジュール基盤
 
-**Feature Branch:** copilot/create-jitsi-meet-module-ui
+**機能ブランチ:** copilot/create-jitsi-meet-module-ui
 
 ## 概要
 

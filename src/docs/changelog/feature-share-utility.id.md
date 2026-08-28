@@ -1,6 +1,6 @@
 # Share Utility
 
-**Feature Branch:** copilot/feature-share-utility
+**Cabang Fitur:** copilot/feature-share-utility
 
 ## Tambah Gateway Share
 
@@ -157,6 +157,6 @@ Popup tautan berbagi menampilkan tautan dari instans rapat sebelumnya sebagai "A
 
 Baris tautan share kini menyalin URL melalui tombol eksplisit, bukan berperilaku seperti tautan navigasi. Aksi pada popup akses terbatas memakai gaya tombol netral, dan halaman share yang dimuat dapat meminta penempatan page composer dengan lebar dan tinggi penuh. Tautan share yang kedaluwarsa atau tidak tersedia kini juga menampilkan statusnya di deskripsi halaman, bukan mengulang subtitle konten bersama yang generik.
 
-## Commits
+## Komit
 
 - [22b2896](https://github.com/Cognis-Labs-HQ/Cognis/commit/22b2896eaf8f13d17c1161bfc12085036f2539c8)

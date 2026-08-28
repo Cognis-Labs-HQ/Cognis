@@ -1,6 +1,6 @@
 # Catatan Perubahan PR
 
-**Feature Branch:** copilot/centralize-api-permission-checks
+**Cabang Fitur:** copilot/centralize-api-permission-checks
 
 ## Ringkasan
 
@@ -46,7 +46,7 @@ serta `moderator` diperlakukan sebagai peran penuh.
 - Dokumentasi framework modul:
     - `src/modules/docs/index.en.md`
 
-## Commits
+## Komit
 
 - [93e5f7f](https://github.com/Cognis-Labs-HQ/Cognis/commit/93e5f7f)
 - [411e267](https://github.com/Cognis-Labs-HQ/Cognis/commit/411e267)

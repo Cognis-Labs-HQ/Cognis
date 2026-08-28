@@ -1,6 +1,6 @@
 # Klassen & Studiehub
 
-**Feature Branch:** copilot/create-student-page-view
+**Feature-Zweig:** copilot/create-student-page-view
 
 ## Zusammenfassung
 
@@ -69,7 +69,7 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 
 - Nachbesserung: zusätzlichen Sprachselektor in der Bibliothek entfernt (Library nutzt jetzt den aktuell gewählten Study-Sprachkontext), fehlende Englisch-Option in der Study-Sprachnavigation korrigiert, Classroom ans Ende der Study-Subnavigation verschoben, schattierten "Keine Klassen verfügbar"-Leerzustand ergänzt und Abschneiden des Profil-Dropdowns unter der globalen Navbar behoben.
 
-## Commits
+## Änderungen
 
 Siehe Branch `copilot/create-student-page-view` für den Commit-Verlauf.
 

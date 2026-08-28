@@ -1,6 +1,6 @@
 # Leere Inbox: Löschen gesperrt
 
-**Feature Branch:** feature-disable-delete-notifications-button-when-empty
+**Feature-Zweig:** feature-disable-delete-notifications-button-when-empty
 
 ## Zusammenfassung
 
@@ -13,6 +13,6 @@ Der interne Benachrichtigungs-Posteingang deaktiviert jetzt die destruktive „A
 - `src/ui/tests/notification-followups.test.js` — Ergänzt Laufzeitabdeckung, die einen leeren Posteingang rendert und verifiziert, dass der „Alle löschen“-Klickpfad kein Popup aufruft.
 - `src/adapters/notify/internal/package.json` und `src/docs/versions.en.md` — Erhöht die Version des Internal-Notification-Adapters auf `0.5.3`.
 
-## Commits
+## Änderungen
 
 - [96d6616](https://github.com/Cognis-Labs-HQ/Cognis/commit/96d6616)

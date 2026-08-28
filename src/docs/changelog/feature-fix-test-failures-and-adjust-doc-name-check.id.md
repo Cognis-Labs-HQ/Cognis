@@ -1,6 +1,6 @@
 # Rangkaian Pengujian Andal
 
-**Feature Branch:** feature-fix-test-failures-and-adjust-doc-name-check
+**Cabang Fitur:** feature-fix-test-failures-and-adjust-doc-name-check
 
 ## Catatan perubahan dikecualikan
 
@@ -14,6 +14,6 @@ Pengaturan ulang kata sandi, penggabungan basis data dalam memori, pemeriksaan s
 
 Pengujian dan modul waktu jalan yang terlalu besar dibagi menjadi berkas terfokus agar tetap memenuhi batas ukuran sumber repositori.
 
-## Commits
+## Komit
 
 - [7850b66](https://github.com/Cognis-Labs-HQ/Cognis/commit/7850b66d4241a1b0f4ca12a846f3e7d808875695)

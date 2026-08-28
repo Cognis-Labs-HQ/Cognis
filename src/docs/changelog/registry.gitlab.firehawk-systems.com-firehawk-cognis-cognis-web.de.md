@@ -1,6 +1,6 @@
 # Portable Umgebungskonfiguration
 
-**Feature Branch:** N/A
+**Feature-Zweig:** N/A
 
 ## Betrieb ohne Env-Dateien
 
@@ -10,4 +10,4 @@ Container-Orchestratoren können die Konfiguration jetzt vollständig über Umge
 
 Die Entrypoint-Validierung beschreibt nun fehlende Container-Umgebungswerte, ohne von Compose erzeugte Dateien oder Einrichtungsbefehle vorauszusetzen.
 
-## Commits
+## Änderungen

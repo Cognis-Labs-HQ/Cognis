@@ -1,6 +1,6 @@
 # Kepatuhan dan Rapikan Admin
 
-**Feature Branch:** copilot/comply-codebase-instructions
+**Cabang Fitur:** copilot/comply-codebase-instructions
 
 ## Satukan Keamanan di Administrasi
 
@@ -22,6 +22,6 @@ Setup route server dan module extension kini mengandalkan konteks auth route yan
 
 Instruksi AI diperbarui untuk menegaskan disiplin LOC, menolak anggapan diff besar sebagai indikator kualitas, mewajibkan penamaan generik, menegakkan batas reuse yang benar, memisahkan HTML dari JS/TS, dan memecah file besar ke struktur direktori dengan entrypoint.
 
-## Commits
+## Komit
 
 - [a267b4c](https://github.com/Cognis-Labs-HQ/Cognis/commit/a267b4cce59173b5060e5035a628583868afa39e)

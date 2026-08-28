@@ -1,6 +1,6 @@
 # Fehlenden Logout-Endpunkt
 
-**Feature Branch:** copilot/fix-logout-endpoint
+**Feature-Zweig:** copilot/fix-logout-endpoint
 
 ## Zusammenfassung
 

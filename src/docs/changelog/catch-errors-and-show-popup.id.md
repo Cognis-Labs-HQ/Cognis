@@ -1,6 +1,6 @@
 # Popup Kesalahan Runtime
 
-**Feature Branch:** copilot/catch-errors-and-show-popup
+**Cabang Fitur:** copilot/catch-errors-and-show-popup
 
 ## Tangkap Kegagalan Muat Rute
 
@@ -14,6 +14,6 @@ Kegagalan runtime pada dashboard kini membuka popup bahaya yang memuat ringkasan
 kesalahan, stack trace, URL halaman, dan keluaran konsol terbaru agar pengguna
 dapat langsung menyalin detail untuk laporan bug.
 
-## Commits
+## Komit
 
 - [e4c47c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4c47c446cf5d1b5d2eceba77a5e1d796735d84d)

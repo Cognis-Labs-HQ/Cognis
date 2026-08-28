@@ -1,6 +1,6 @@
 # page composer の編集レイアウト安定化
 
-**Feature Branch:** feature-fix-element-placement-in-edit-mode
+**機能ブランチ:** feature-fix-element-placement-in-edit-mode
 
 ## 編集モードが通常モードの寸法を使用
 
@@ -10,6 +10,6 @@ page composer の編集オーバーレイは、通常モードと同じコンテ
 
 進行中のミーティングでは実際の更新や移動に対して引き続きブラウザーのアンロード確認を使いますが、Cognis は `beforeunload` 中に共通の読み込み状態を変更しなくなりました。読み込みオーバーレイは `pagehide` を待つため、ブラウザーの更新確認をキャンセルしても現在のミーティングページと埋め込みセッションは表示され、操作可能なままです。
 
-## Commits
+## コミット
 
 - [fa6742a](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa6742a49a2e6f0284b44c84dec7ca4d7b503ac0)

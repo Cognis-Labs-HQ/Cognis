@@ -1,6 +1,6 @@
 # LDAP 有効化の安全性向上
 
-**Feature Branch:** feature-disable-enable-slider-for-ldap-auth
+**機能ブランチ:** feature-disable-enable-slider-for-ldap-auth
 
 ## 有効化前にサーバーを設定
 
@@ -34,6 +34,6 @@ LDAP プロファイルの更新時に既存アカウントの有効状態を維
 
 LDAP セットアップでは生成されたフィールドにサーバーエラーを表示し、認証情報のエラーを認証情報ページに留め、Enter キーでサーバーを早期保存せず検証します。
 
-## Commits
+## コミット
 
 - [96257fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/96257fa81b49645e38ae015a12d7433008d903e0)

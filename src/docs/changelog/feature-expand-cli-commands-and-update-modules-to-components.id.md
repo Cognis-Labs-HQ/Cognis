@@ -1,6 +1,6 @@
 # Cakupan CLI Modul
 
-**Feature Branch:** feature-expand-cli-commands-and-update-modules-to-components
+**Cabang Fitur:** feature-expand-cli-commands-and-update-modules-to-components
 
 ## Perintah API modul ditambahkan
 
@@ -58,6 +58,6 @@ Inspeksi rapat Jitsi Meet sekarang memakai `jitsi-meet:meetings`, dan perintah k
 
 Plugin CLI komponen sekarang memeriksa ketersediaan komponen sebelum mendaftarkan perintah, sehingga modul, gateway, dan adapter yang dinonaktifkan tidak muncul di bantuan atau pencarian perintah saat API melaporkannya nonaktif. Perintah redundan `social:users:search` telah dihapus.
 
-## Commits
+## Komit
 
 - [555964b](https://github.com/Cognis-Labs-HQ/Cognis/commit/555964b626fd72acf48154ab588e2b016f8affdd)

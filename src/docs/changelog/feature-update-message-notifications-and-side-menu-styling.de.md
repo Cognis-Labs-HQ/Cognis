@@ -1,6 +1,6 @@
 # Deutlichere ungelesene Räume
 
-**Feature Branch:** feature-update-message-notifications-and-side-menu-styling
+**Feature-Zweig:** feature-update-message-notifications-and-side-menu-styling
 
 ## Seitenabhängige Benachrichtigungen
 
@@ -14,6 +14,6 @@ Ungelesene Räume pulsieren nun mit einer leicht abgerundeten Kontur dezent im S
 
 Die Nachrichtenkopfzeile bietet nun eine klar beschriftete Schaltfläche „Raum verlassen“, und raumbezogene Texte verwenden einheitlich den Begriff „Raum“.
 
-## Commits
+## Änderungen
 
 - [779de3d](https://github.com/Cognis-Labs-HQ/Cognis/commit/779de3d355f971af7374bee9128672f713b80a64)

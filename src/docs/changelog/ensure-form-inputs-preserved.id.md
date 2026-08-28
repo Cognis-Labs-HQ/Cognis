@@ -1,6 +1,6 @@
 # Pertahankan dan Kelola
 
-**Feature Branch:** copilot/ensure-form-inputs-preserved
+**Cabang Fitur:** copilot/ensure-form-inputs-preserved
 
 ## Ringkasan
 
@@ -27,4 +27,4 @@
 - [b42d6d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/b42d6d9c)
 - [1cabb35](https://github.com/Cognis-Labs-HQ/Cognis/commit/1cabb35b)
 
-## Commits
+## Komit

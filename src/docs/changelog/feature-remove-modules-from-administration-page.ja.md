@@ -1,6 +1,6 @@
 # モジュールストア
 
-**Feature Branch:** feature-remove-modules-from-administration-page
+**機能ブランチ:** feature-remove-modules-from-administration-page
 
 ## 明確なリリースチャンネル状態
 

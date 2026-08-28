@@ -1,6 +1,6 @@
 # 存在しないログアウトエンドポイントの修正
 
-**Feature Branch:** copilot/fix-logout-endpoint
+**機能ブランチ:** copilot/fix-logout-endpoint
 
 ## 概要
 

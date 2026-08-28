@@ -1,6 +1,6 @@
 # SMTP TFA: Resend & Batas Kirim
 
-**Feature Branch:** copilot/move-smtp-tfa-resend-link
+**Cabang Fitur:** copilot/move-smtp-tfa-resend-link
 
 ## Ringkasan
 
@@ -54,6 +54,6 @@ aktif.
 - `src/adapters/tfa/smtp/tests/smtp-adapter.test.ts`
 - `src/docs/versions.en.md`
 
-## Commits
+## Komit
 
 - [460f399](https://github.com/Cognis-Labs-HQ/Cognis/commit/460f399ae3701867d002e0006d3a71a7dbf9e3c8)

@@ -1,6 +1,6 @@
 # メッセージ：テンプレートサイドバー
 
-**Feature Branch:** copilot/create-message-template-screen
+**機能ブランチ:** copilot/create-message-template-screen
 
 ## テンプレート管理をサイドバーに移動
 
@@ -26,6 +26,6 @@
 
 レスポンシブな列のブレークポイントを超えるなど、ページコンポジターがレイアウトグリッドを再構築する際に、メッセージコンポーザーで入力中の未送信テキストが失われなくなりました。
 
-## Commits
+## コミット
 
 - [3cf607d](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf607d2e31db00d07bdc6e7a247b2e1795857c2)

@@ -1,6 +1,6 @@
 # SMTP TFA: Resend & Ratenlimit
 
-**Feature Branch:** copilot/move-smtp-tfa-resend-link
+**Feature-Zweig:** copilot/move-smtp-tfa-resend-link
 
 ## Zusammenfassung
 
@@ -56,6 +56,6 @@ solange die bestehende Challenge noch aktiv ist.
 - `src/adapters/tfa/smtp/tests/smtp-adapter.test.ts`
 - `src/docs/versions.en.md`
 
-## Commits
+## Änderungen
 
 - [460f399](https://github.com/Cognis-Labs-HQ/Cognis/commit/460f399ae3701867d002e0006d3a71a7dbf9e3c8)

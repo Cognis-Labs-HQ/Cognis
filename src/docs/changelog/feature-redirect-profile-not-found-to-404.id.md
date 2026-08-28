@@ -1,6 +1,6 @@
 # Akses profil berdasarkan visibilitas
 
-**Feature Branch:** feature-redirect-profile-not-found-to-404
+**Cabang Fitur:** feature-redirect-profile-not-found-to-404
 
 ## Mengikuti memerlukan peminta yang terlihat
 
@@ -18,6 +18,6 @@ Halaman galat dan popup galat runtime kini menerapkan tema tersimpan sebelum dir
 
 Router aplikasi kini memastikan akar dashboard sebelum memasang rute, sehingga navigasi dari profil ke halaman 404 tetap berfungsi meski terjadi sebelum shell dashboard menginisialisasi router.
 
-## Commits
+## Komit
 
 - [af00b98](https://github.com/Cognis-Labs-HQ/Cognis/commit/af00b98a07aeab0866031d7c25e95c2914df3355)

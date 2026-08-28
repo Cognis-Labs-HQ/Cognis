@@ -1,6 +1,6 @@
 # Jitsi-Meet-Modul-Grundlage
 
-**Feature Branch:** copilot/create-jitsi-meet-module-ui
+**Feature-Zweig:** copilot/create-jitsi-meet-module-ui
 
 ## Zusammenfassung
 

@@ -1,6 +1,6 @@
 # Revisi Aset Produksi
 
-**Feature Branch:** feature-introduce-asset-manifest-contract-for-ui
+**Cabang Fitur:** feature-introduce-asset-manifest-contract-for-ui
 
 ## Aset berversi yang tetap
 
@@ -18,6 +18,6 @@ Build kontainer produksi kini menyematkan revisi commit Git pada URL aset sehing
 
 Direktori statis ditolak sebelum header respons dikirim, dan dependensi aplikasi tanpa versi tetap tersedia melalui service worker ketika jaringan tidak tersedia.
 
-## Commits
+## Komit
 
 - [9545de2](https://github.com/Cognis-Labs-HQ/Cognis/commit/9545de212904420948eebc1b442bc6dd85bb5f79)

@@ -1,6 +1,6 @@
 # Penghapusan Akun Aman
 
-**Feature Branch:** feature-fix-data-restoration-on-user-deletion
+**Cabang Fitur:** feature-fix-data-restoration-on-user-deletion
 
 ## Akun yang dihapus tidak menyimpan aktivitas
 
@@ -22,6 +22,6 @@ Upaya berulang untuk memulai percakapan tertunda yang sama tidak lagi mengirim n
 
 Saat permintaan pesan ditolak, penerima kini diarahkan keluar dari ruang yang baru ditinggalkan dan aplikasi tidak mencoba memuat kunci enkripsinya. Ruang yang ditolak mengikuti siklus hidup percakapan standar, yaitu diarsipkan untuk pemohon yang tersisa atau dihapus bila kosong.
 
-## Commits
+## Komit
 
 - [9735e00](https://github.com/Cognis-Labs-HQ/Cognis/commit/9735e00a2bb3ef7b3a1f10aa49494f81007dece2)

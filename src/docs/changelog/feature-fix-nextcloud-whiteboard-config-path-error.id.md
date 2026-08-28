@@ -1,6 +1,6 @@
 # Startup administrasi modul yang andal
 
-**Feature Branch:** feature-fix-nextcloud-whiteboard-config-path-error
+**Cabang Fitur:** feature-fix-nextcloud-whiteboard-config-path-error
 
 ## Melaporkan kesiapan modul dari status Whiteboard
 
@@ -18,6 +18,6 @@ Keandalan startup ditangani di dalam Nextcloud Whiteboard alih-alih menunda seti
 
 Nextcloud Whiteboard kini mendaftarkan endpoint konfigurasi dan pengaktifannya segera setelah penyimpanan basis data tersedia. Administrator dapat mengonfigurasi modul meskipun layanan profil terpisah yang diperlukan untuk kolaborasi whiteboard tidak tersedia.
 
-## Commits
+## Komit
 
 - [0b0a8a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b0a8a9672abe9c37b3d298cd494e6504aed5489)

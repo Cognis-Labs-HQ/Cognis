@@ -1,6 +1,6 @@
 # 安定した UI アセット読込
 
-**Feature Branch:** feature-fix-mime-type-error-in-nginx-configuration
+**機能ブランチ:** feature-fix-mime-type-error-in-nginx-configuration
 
 ## アセットエラーのキャッシュを防止
 
@@ -64,6 +64,6 @@ Compose はデプロイ環境で管理されたデータベースパスワード
 
 アプリケーションイメージは、公開ホストとして localhost を設定しなくなりました。両方のデータベース用 Compose プロファイルで `EXTERNAL_HOST` が必須となり、認証、招待、通知のリンクが受信者自身のローカルマシンを指すことを防ぎます。
 
-## Commits
+## コミット
 
 - [ec75586](https://github.com/Cognis-Labs-HQ/Cognis/commit/ec75586e143b25792032eaa906ba8b177868a6ef)

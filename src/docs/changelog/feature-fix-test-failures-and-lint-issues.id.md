@@ -1,6 +1,6 @@
 # Pemeriksaan CI Andal
 
-**Feature Branch:** feature-fix-test-failures-and-lint-issues
+**Cabang Fitur:** feature-fix-test-failures-and-lint-issues
 
 ## Berkas sumber tetap dalam batas ukuran
 
@@ -18,6 +18,6 @@ Pengujian surel tema bawaan kini memakai identitas penerima tersendiri agar pemb
 
 Impor langsung yang tidak digunakan terhadap singleton konteks UI dihapus dari penyiapan pengujian keyring sehingga pengujian adapter memeriksa permukaan keyring tanpa bergantung pada bentuk ekspor internal komponen lain.
 
-## Commits
+## Komit
 
 - [06711cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/06711cd058d7db47c9041ed71c5e993e7b0eadf3)

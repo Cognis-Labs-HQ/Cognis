@@ -1,6 +1,6 @@
 # Menonaktifkan Aksi Hapus
 
-**Feature Branch:** feature-disable-delete-notifications-button-when-empty
+**Cabang Fitur:** feature-disable-delete-notifications-button-when-empty
 
 ## Ringkasan
 

@@ -1,6 +1,6 @@
 # 安全なアカウント削除
 
-**Feature Branch:** feature-fix-data-restoration-on-user-deletion
+**機能ブランチ:** feature-fix-data-restoration-on-user-deletion
 
 ## 削除済みアカウントの活動を消去
 
@@ -22,6 +22,6 @@
 
 メッセージリクエストを拒否すると、退出したばかりのルームの暗号化キーを読み込まず、そのルームから別の画面へ移動するようになりました。拒否されたルームには通常のチャットライフサイクルが適用され、残ったリクエスト送信者向けにアーカイブされるか、空の場合は削除されます。
 
-## Commits
+## コミット
 
 - [9735e00](https://github.com/Cognis-Labs-HQ/Cognis/commit/9735e00a2bb3ef7b3a1f10aa49494f81007dece2)

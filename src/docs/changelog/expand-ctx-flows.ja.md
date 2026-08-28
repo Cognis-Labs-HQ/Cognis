@@ -1,6 +1,6 @@
 # PR変更履歴 — ctxフローの拡張
 
-**Feature Branch:** N/A
+**機能ブランチ:** N/A
 
 ## 概要
 
@@ -47,4 +47,4 @@ deprovision-userルートが`cleanup-dependencies`ステージ結果から
 - `src/api/tests/users/user-routes.test.ts`
 - `src/adapters/social/messages/tests/routes-notifications.test.ts`
 
-## Commits
+## コミット

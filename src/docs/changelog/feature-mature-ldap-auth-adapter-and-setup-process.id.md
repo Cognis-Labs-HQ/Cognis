@@ -1,6 +1,6 @@
 # Penyiapan direktori LDAP yang andal
 
-**Feature Branch:** feature-mature-ldap-auth-adapter-and-setup-process
+**Cabang Fitur:** feature-mature-ldap-auth-adapter-and-setup-process
 
 ## Penemuan langsung OpenLDAP dan FreeIPA
 
@@ -66,6 +66,6 @@ Konfigurasi masuk publik kini mempertahankan metadata sumber kredensial untuk se
 
 Kata sandi bind LDAP yang tersimpan dihapus dari respons API administrasi. Membiarkan kolom kata sandi kosong akan mempertahankan rahasia yang ada, sedangkan nilai baru akan menggantinya secara aman.
 
-## Commits
+## Komit
 
 - [88fe3b0](https://github.com/Cognis-Labs-HQ/Cognis/commit/88fe3b0bec731d1c090768792cd73cea7264106e)

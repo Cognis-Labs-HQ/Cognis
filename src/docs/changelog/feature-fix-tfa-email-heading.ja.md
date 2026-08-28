@@ -1,6 +1,6 @@
 # SMTP TFA メール連携
 
-**Feature Branch:** feature-fix-tfa-email-heading
+**機能ブランチ:** feature-fix-tfa-email-heading
 
 ## TFA メールコードは中立的な件名を使用
 
@@ -10,6 +10,6 @@
 
 メールアドレス確認コードは、共通の SMTP アダプター設定のコード長を使うようになり、管理者は SMTP 通知アダプターまたは SMTP TFA アダプターのどちらからでも SMTP 確認コードの長さを一か所で管理できます。SMTP TFA を有効にすると必要に応じて SMTP 通知送信者も有効になりますが、SMTP TFA は引き続き個別に無効化でき、SMTP 通知アダプターがメールを送信できない場合は利用不可のままです。
 
-## Commits
+## コミット
 
 - [d164f42](https://github.com/Cognis-Labs-HQ/Cognis/commit/d164f428bb4f843efe7a875c172855182e7a4548)

@@ -1,6 +1,6 @@
 # Halaman Kesalahan
 
-**Feature Branch:** copilot/add-error-page-feature
+**Cabang Fitur:** copilot/add-error-page-feature
 
 ## Halaman kesalahan yang dapat dinavigasi dengan judul gradien animasi
 
@@ -18,6 +18,6 @@ dengan bilah navigasi, topbar, dan footer. Saat pengguna belum masuk,
 ditampilkan sebagai pesan layar penuh tanpa chrome shell. Judul menyesuaikan
 skala secara responsif agar tetap mudah dibaca di layar kecil.
 
-## Commits
+## Komit
 
 - [7a82d10](https://github.com/Cognis-Labs-HQ/Cognis/commit/7a82d1050c2453aaca2165271dbf75ae2f2c9876)
