@@ -1,5 +1,7 @@
 # Reaktionen & Emoji-Erweiterung
 
+**Feature-Zweig:** copilot/tweak-message-reactions-and-fix-manifests
+
 ## Zusammenfassung
 
 Bestehende Nachrichtenreaktionen bleiben nun dauerhaft sichtbar, auch wenn die Maus nicht über der Nachricht schwebt. Die Schnellreaktion-Leiste zeigt jetzt fünf anpassbare Emojis, die sich an die am häufigsten genutzten Reaktionen des Benutzers anpassen. Eine neue Schaltfläche „···" öffnet eine durchsuchbare Emoji-Auswahl mit über 300 Emojis.
@@ -25,7 +27,7 @@ Alle Emoji-Namen im Katalog sind jetzt Lokalisierungsschlüssel, die über die S
 
 ## Commit-Links
 
-- https://github.com/le-firehawk/Cognis/commit/2a9c702
-- https://github.com/le-firehawk/Cognis/commit/295496e
-- https://github.com/le-firehawk/Cognis/commit/1e40511
-- https://github.com/le-firehawk/Cognis/commit/e19669d
+- [2a9c702](https://github.com/Cognis-Labs-HQ/Cognis/commit/2a9c702)
+- [295496e](https://github.com/Cognis-Labs-HQ/Cognis/commit/295496e)
+- [1e40511](https://github.com/Cognis-Labs-HQ/Cognis/commit/1e40511)
+- [e19669d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e19669d)

@@ -103,7 +103,7 @@ function startMarketplacePolling(signal) {
         )
             return;
         marketplacePollPending = true;
-        void loadKnownModules(false, signal)
+        void loadKnownModules(false, signal, false)
             .then(() => discoverConfiguredSources(false, signal))
             .catch((error) => {
                 if (error?.name !== "AbortError") {
@@ -543,6 +543,7 @@ function refreshDetailActions() {
 async function loadKnownModules(
     restoreDetailRoute = false,
     signal = pageMountController?.signal,
+    refreshWhenReady = true,
 ) {
     const selectedModuleUuid =
         selectedModule?.uuid ??
@@ -584,7 +585,7 @@ async function loadKnownModules(
                   isVisibleMarketplaceModule(module),
           ) ?? null)
         : null;
-    refreshMarketplace();
+    if (refreshWhenReady) refreshMarketplace();
 }
 
 async function discoverConfiguredSources(

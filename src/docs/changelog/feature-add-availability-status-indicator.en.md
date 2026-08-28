@@ -1,5 +1,7 @@
 # Availability Status
 
+**Feature Branch:** feature-add-availability-status-indicator
+
 ## See availability at a glance
 
 Avatars now show free, busy, or tentative status in the navigation toolbar, profile previews, messages, and meetings.
@@ -119,3 +121,7 @@ Availability now respects profile blocking before exposing live status. Calendar
 ## Cleaner Messages avatars
 
 The Messages sidebar, active chat picture, and sender avatars no longer display availability lights, keeping presence indicators out of conversation artwork while retaining profile links.
+
+## Commits
+
+- [9ab0e62](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ab0e629254a98caae0c359d1dfeb103d094d3e5)

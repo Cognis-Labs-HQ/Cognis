@@ -1,5 +1,7 @@
 # Profile visibility access
 
+**Feature Branch:** feature-redirect-profile-not-found-to-404
+
 ## Follow requires visible requester
 
 Users must now set their own profile visibility to at least private before they can follow another profile, preventing hidden profiles from creating new follow relationships.
@@ -15,3 +17,7 @@ The error page and runtime error popup now apply the stored theme before renderi
 ## Router protects error navigation roots
 
 The app router now resolves the dashboard root before mounting a route, so profile-to-404 navigation works even when it happens before the dashboard shell has initialized the router.
+
+## Commits
+
+- [af00b98](https://github.com/Cognis-Labs-HQ/Cognis/commit/af00b98a07aeab0866031d7c25e95c2914df3355)

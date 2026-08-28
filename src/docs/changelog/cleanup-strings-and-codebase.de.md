@@ -1,5 +1,7 @@
 # PR-Changelog — Cleanup
 
+**Feature-Zweig:** copilot/cleanup-strings-and-codebase
+
 ## Zusammenfassung
 
 Die Richtlinie für Changelog-Dateinamen wurde auf den Branch-Namen ohne
@@ -50,8 +52,8 @@ Längenangabe in Index- oder Schlüssel-Constraints ablehnt.
 - MariaDB-Adapter-Bugfix:
     - `src/adapters/db/mariadb/adapter.ts`
 
-## Commits
+## Änderungen
 
-- [6ab293a](https://github.com/le-firehawk/Cognis/commit/6ab293a)
-- [8299d2b](https://github.com/le-firehawk/Cognis/commit/8299d2b)
-- [b93c948](https://github.com/le-firehawk/Cognis/commit/b93c948)
+- [6ab293a](https://github.com/Cognis-Labs-HQ/Cognis/commit/6ab293a)
+- [8299d2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/8299d2b)
+- [b93c948](https://github.com/Cognis-Labs-HQ/Cognis/commit/b93c948)

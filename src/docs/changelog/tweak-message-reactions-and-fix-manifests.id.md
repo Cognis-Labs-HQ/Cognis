@@ -1,5 +1,7 @@
 # Reaksi & Ekspansi Emoji
 
+**Cabang Fitur:** copilot/tweak-message-reactions-and-fix-manifests
+
 ## Ringkasan
 
 Reaksi pesan yang sudah ada kini selalu terlihat meskipun kursor tidak melayang di atas pesan. Strip reaksi cepat kini menampilkan lima emoji yang dapat disesuaikan dan secara otomatis memprioritaskan emoji yang paling sering digunakan pengguna. Tombol "···" baru membuka pemilih emoji lengkap yang dapat dicari dari lebih dari 300 emoji.
@@ -25,7 +27,9 @@ Semua nama emoji dalam katalog kini merupakan kunci lokalisasi yang diselesaikan
 
 ## Tautan Commit
 
-- https://github.com/le-firehawk/Cognis/commit/2a9c702
-- https://github.com/le-firehawk/Cognis/commit/295496e
-- https://github.com/le-firehawk/Cognis/commit/1e40511
-- https://github.com/le-firehawk/Cognis/commit/e19669d
+- [2a9c702](https://github.com/Cognis-Labs-HQ/Cognis/commit/2a9c702)
+- [295496e](https://github.com/Cognis-Labs-HQ/Cognis/commit/295496e)
+- [1e40511](https://github.com/Cognis-Labs-HQ/Cognis/commit/1e40511)
+- [e19669d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e19669d)
+
+## Komit

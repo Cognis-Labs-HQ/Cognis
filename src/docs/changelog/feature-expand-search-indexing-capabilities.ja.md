@@ -1,5 +1,7 @@
 # 検索オプション
 
+**機能ブランチ:** feature-expand-search-indexing-capabilities
+
 ## 検索インデックスの拡張
 
 グローバル検索ポップアップに動的な登録ユーティリティを追加し、ページ、表示中のページ内容、投稿、チャット、メッセージ、コンポーネント所有の UI 領域が検索可能な結果カテゴリを提供できるようにしました。
@@ -85,3 +87,7 @@ Navigation の項目は Pages に表示されるようになり、Study のサ�
 ## 検索ユーティリティ規約を文書化
 
 共有検索コードは `src/ui/reuse/search-util/` のみに配置されます。コンポーネント所有の連携は専用の `ui/search/index.js` を使い、コンテンツ Provider として `createSearchIndex` をエクスポートし、共有の `registerSearchIndex` ヘルパーを呼び出します。照合、順位付け、強調表示、フィルタリング、描画、古い非同期結果の破棄はユーティリティが担い、重い取得処理はコンポーネント Provider 内で非同期に保ちます。
+
+## コミット
+
+- [e3b679b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e3b679bd480e8caef6e8301f410718570299fb26)

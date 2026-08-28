@@ -1,5 +1,7 @@
 # Compliance And Admin Cleanup
 
+**Feature Branch:** copilot/comply-codebase-instructions
+
 ## Consolidate Administration Security
 
 Removed the separate Administration → Authentication section by stopping auth admin section registration. Password policy controls now live directly in Administration → Security, together with trusted domains, registration control, validation mode, and teacher approval controls.
@@ -19,3 +21,7 @@ Updated server and module extension route setup to rely on injected route auth c
 ## Clarify AI Instruction Priorities
 
 Updated AI instructions to explicitly require LOC discipline, reject large diffs as a quality signal, require generic naming, enforce true reuse boundaries, keep HTML and JS/TS separate, and split oversized files into directory-based entry structures.
+
+## Commits
+
+- [a267b4c](https://github.com/Cognis-Labs-HQ/Cognis/commit/a267b4cce59173b5060e5035a628583868afa39e)

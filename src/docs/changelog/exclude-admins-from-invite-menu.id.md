@@ -1,5 +1,7 @@
 # Kecualikan Admin dari Invite
 
+**Cabang Fitur:** copilot/exclude-admins-from-invite-menu
+
 ## Ringkasan
 
 Aturan visibilitas entri Invite pada navbar Registration diperbarui agar pengguna pendiri dengan akses setara admin tidak lagi melihat entri Invite.
@@ -14,5 +16,5 @@ Admin dan owner sudah memiliki manajemen undangan lewat halaman Users, sehingga 
 
 ## Commit
 
-- https://github.com/le-firehawk/Cognis/commit/041fdb8
-- https://github.com/le-firehawk/Cognis/commit/d47ee73
+- [041fdb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/041fdb8)
+- [d47ee73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d47ee73)

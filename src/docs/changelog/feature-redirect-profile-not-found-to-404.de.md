@@ -1,5 +1,7 @@
 # Profilzugriff nach Sichtbarkeit
 
+**Feature-Zweig:** feature-redirect-profile-not-found-to-404
+
 ## Folgen erfordert sichtbare Anfragende
 
 Benutzer müssen ihre eigene Profilsichtbarkeit jetzt mindestens auf privat setzen, bevor sie einem anderen Profil folgen können. Verborgene Profile können dadurch keine neuen Folgebeziehungen erstellen.
@@ -15,3 +17,7 @@ Die Fehlerseite und das Laufzeitfehler-Popup wenden jetzt das gespeicherte Thema
 ## Router schützt Wurzeln bei Fehlernavigation
 
 Der App-Router löst jetzt die Dashboard-Wurzel vor dem Mounten einer Route auf, sodass die Navigation vom Profil zur 404-Seite auch funktioniert, wenn sie vor der Router-Initialisierung durch die Dashboard-Shell erfolgt.
+
+## Änderungen
+
+- [af00b98](https://github.com/Cognis-Labs-HQ/Cognis/commit/af00b98a07aeab0866031d7c25e95c2914df3355)

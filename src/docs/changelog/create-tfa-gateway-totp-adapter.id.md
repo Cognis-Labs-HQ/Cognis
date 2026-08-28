@@ -1,5 +1,7 @@
 # Gateway TFA & TOTP
 
+**Cabang Fitur:** copilot/create-tfa-gateway-totp-adapter
+
 ## Tambah Gateway TFA Baru
 
 Menambahkan gateway `tfa` khusus dengan penemuan adaptor di `src/adapters/tfa/*`, API metode pengguna, API siklus kode pemulihan, dan endpoint reset admin.
@@ -71,3 +73,7 @@ Pengaturan TFA di halaman Administrasi kini kembali dirender di dalam Administra
 ## String TFA Admin Diperbaiki
 
 Kartu TFA di dalam Administration → Security kini memakai kunci string gateway/admin terlokalisasi yang memang sudah ada, sehingga judul bagian, label penegakan, dan teks petunjuk kembali tampil dengan benar.
+
+## Komit
+
+- [a4201c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a4201c685f2803dc1fdb3ad9d203f7e262919b03)

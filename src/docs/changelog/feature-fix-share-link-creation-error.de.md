@@ -1,5 +1,7 @@
 # Teilen-Popups repariert
 
+**Feature-Zweig:** feature-fix-share-link-creation-error
+
 ## Einheitliches Teilen-Popup
 
 Whiteboards öffnen nun das direkt einsetzbare Popup des Teilen-Gateways mit ihrer Ressourcenkennung und ihren Fähigkeiten und folgen damit derselben Gateway-Integration wie andere Komponenten. Das Gateway bleibt für Teilen-Methoden und Token-Anfragen verantwortlich.
@@ -395,3 +397,7 @@ Beim Bearbeiten von Freigaben bleiben ausdrücklich entfernte Bezeichnungen erha
 ## Aktualisierung des Freigabe-Popups aktiv halten
 
 Freigabe-Popups verwalten ihr Aktualisierungsintervall nun im Popup-Lebenszyklusmodul. Dadurch schlägt das Teilen von Whiteboards beim Öffnen des Popups nicht mehr fehl.
+
+## Änderungen
+
+- [5ede8a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ede8a9bd7324f23efc951337e5aa296a63acbd2)

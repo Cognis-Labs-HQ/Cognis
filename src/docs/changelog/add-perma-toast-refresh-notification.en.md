@@ -1,5 +1,7 @@
 # Permanent Refresh Toast
 
+**Feature Branch:** copilot/add-perma-toast-refresh-notification
+
 ## Summary
 
 Added a permanent warning toast that prompts users to refresh the page when authenticated API connections fail due to server/network interruption patterns (network failures or retryable 5xx responses).
@@ -18,5 +20,5 @@ The page composer now configures a translated shared refresh prompt so the warni
 
 ## Commits
 
-- https://github.com/le-firehawk/Cognis/commit/bbee24a
-- https://github.com/le-firehawk/Cognis/commit/3b7bded
+- [bbee24a](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbee24a)
+- [3b7bded](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b7bded)

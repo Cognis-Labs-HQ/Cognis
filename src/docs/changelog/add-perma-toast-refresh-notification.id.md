@@ -1,5 +1,7 @@
 # Toast Permanen untuk Refresh
 
+**Cabang Fitur:** copilot/add-perma-toast-refresh-notification
+
 ## Ringkasan
 
 Ditambahkan toast peringatan permanen yang meminta pengguna menyegarkan halaman saat koneksi API terautentikasi gagal karena gangguan server/jaringan (kegagalan jaringan atau respons 5xx yang dapat dicoba ulang).
@@ -18,5 +20,5 @@ Page composer sekarang mengatur prompt penyegaran bersama yang sudah diterjemahk
 
 ## Commit
 
-- https://github.com/le-firehawk/Cognis/commit/bbee24a
-- https://github.com/le-firehawk/Cognis/commit/3b7bded
+- [bbee24a](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbee24a)
+- [3b7bded](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b7bded)

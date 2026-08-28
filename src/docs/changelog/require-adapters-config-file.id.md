@@ -1,5 +1,7 @@
 # Wajibkan Kontrak Kontrol Admin
 
+**Cabang Fitur:** copilot/require-adapters-config-file
+
 ## Ringkasan
 
 Kontrol adapter di halaman Administration kini disejajarkan agar gateway mengumumkan endpoint konfigurasi dan toggle adapter, adapter Registration menerima penyimpanan konfigurasi kosong, dan adapter Study menyediakan penanganan disable.
@@ -17,4 +19,4 @@ Halaman Administration sekarang memakai kontrol adapter yang diumumkan tersebut 
 
 ## Commit
 
-- https://github.com/le-firehawk/Cognis/commit/6b706ae
+- [6b706ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/6b706ae)

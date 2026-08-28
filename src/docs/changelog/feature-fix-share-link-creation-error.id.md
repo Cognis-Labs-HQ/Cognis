@@ -1,5 +1,7 @@
 # Popup Berbagi Dipulihkan
 
+**Cabang Fitur:** feature-fix-share-link-creation-error
+
 ## Popup berbagi yang konsisten
 
 Papan tulis kini membuka popup siap pakai milik gateway Berbagi dengan pengenal sumber daya dan kapabilitasnya, mengikuti integrasi gateway yang sama dengan komponen lain. Gateway tetap bertanggung jawab atas metode berbagi dan permintaan token.
@@ -395,3 +397,7 @@ Pengeditan berbagi kini mempertahankan label yang dikosongkan secara eksplisit, 
 ## Menjaga pembaruan popup berbagi tetap aktif
 
 Popup berbagi kini menyimpan interval pembaruannya di dalam modul siklus hidup popup sehingga berbagi papan tulis tidak lagi gagal saat popup dibuka.
+
+## Komit
+
+- [5ede8a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ede8a9bd7324f23efc951337e5aa296a63acbd2)

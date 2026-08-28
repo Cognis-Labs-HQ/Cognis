@@ -1,5 +1,7 @@
 # 創設者向け Invite メニュー項目から管理者を除外
 
+**機能ブランチ:** copilot/exclude-admins-from-invite-menu
+
 ## 概要
 
 Registration ナビゲーションバーの Invite 項目の表示条件を更新し、管理者相当の権限を持つ創設者ユーザーには Invite 項目を表示しないようにしました。
@@ -12,7 +14,7 @@ Registration ナビゲーションバーの Invite 項目の表示条件を更�
 - `src/gateways/registration/tests/navbar.test.js` — Invite メニューから管理者相当の創設者を除外する回帰テストを追加しました。
 - `src/gateways/registration/bootstrap.ts`、`src/gateways/registration/manifest.json`、`src/docs/versions.en.md` — Registration ゲートウェイのコンポーネントバージョンを `1.1.7` に更新しました。
 
-## Commits
+## コミット
 
-- https://github.com/le-firehawk/Cognis/commit/041fdb8
-- https://github.com/le-firehawk/Cognis/commit/d47ee73
+- [041fdb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/041fdb8)
+- [d47ee73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d47ee73)

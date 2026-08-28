@@ -1,5 +1,7 @@
 # Adapter Version Visibility
 
+**Feature Branch:** feature-update-adapter-settings-ui-to-show-version-number
+
 ## Adapter settings now show versions
 
 Administration adapter controls now display each adapter version alongside the adapter name, and adapter configuration dialogs include the same version in the heading when version metadata is available.
@@ -19,3 +21,7 @@ All discovered adapters and gateways now declare their publisher, including Loca
 ## Complete gateway adapter lists
 
 Administration now lists the File Storage, Database, and Logging adapters, including their version and publisher metadata.
+
+## Commits
+
+- [a166978](https://github.com/Cognis-Labs-HQ/Cognis/commit/a1669782a660f01000ed49047ee7cfc5cf9d20cf)

@@ -1,5 +1,7 @@
 # Require Admin Control Rules
 
+**Feature Branch:** copilot/require-adapters-config-file
+
 ## Summary
 
 Aligned Administration adapter controls so gateways announce adapter config and toggle endpoints, registration adapters accept empty config saves, and study adapters expose disable handling.
@@ -17,4 +19,4 @@ The Administration page now consumes announced adapter controls and re-synchroni
 
 ## Commits
 
-- https://github.com/le-firehawk/Cognis/commit/6b706ae
+- [6b706ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/6b706ae)

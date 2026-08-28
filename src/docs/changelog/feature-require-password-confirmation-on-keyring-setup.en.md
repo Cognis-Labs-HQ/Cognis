@@ -1,5 +1,7 @@
 # Safer keyring setup
 
+**Feature Branch:** feature-require-password-confirmation-on-keyring-setup
+
 ## Confirm new keyring passwords
 
 First-login and recreated-keyring setup now asks users to repeat a custom keyring password and prevents creation when the entries differ.
@@ -15,3 +17,7 @@ Account-instance identities distinguish deleted and recreated users from vaults 
 ## Reliable setup actions
 
 Cancelling keyring creation no longer leaves its Settings action unresponsive. Automatic-lock choices now share one definition across setup and Settings, and account-password creation uses the visual treatment for a creative action.
+
+## Commits
+
+- [77460b6](https://github.com/Cognis-Labs-HQ/Cognis/commit/77460b6c93444a0c0c8d467b879551c38dedcc41)

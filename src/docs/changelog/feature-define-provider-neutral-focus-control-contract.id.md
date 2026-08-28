@@ -1,5 +1,7 @@
 # Kontrol Fokus netral penyedia
 
+**Cabang Fitur:** feature-define-provider-neutral-focus-control-contract
+
 ## Fokuskan permukaan kolaborasi yang dideklarasikan
 
 Menambahkan kontrak manifes aman, alur bertahap, kontrol milik composer, dan siklus overlay tersinkron tanpa mengikat halaman ke penyedia.
@@ -143,3 +145,7 @@ Penghitungan ukuran kisi kini berada dalam modul khusus yang telah diuji, sedang
 ## Pertahankan Dashboard di urutan pertama
 
 Dashboard kini tetap menjadi entri pertama navigasi utama, sementara semua entri lainnya tetap diurutkan menurut abjad.
+
+## Komit
+
+- [48395e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/48395e7f07a41221e2e866d9892493df3e98b841)

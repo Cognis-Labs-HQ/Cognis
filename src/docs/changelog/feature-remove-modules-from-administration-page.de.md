@@ -1,5 +1,7 @@
 # Modul-Marktplatz
 
+**Feature-Zweig:** feature-remove-modules-from-administration-page
+
 ## Eindeutiger Veröffentlichungskanal
 
 Veröffentlichungskanäle verwenden nun neutrale Bedienelemente mit einer klar erkennbaren Auswahl. Die Moduldetails zeigen den installierten Kanal zusammen mit der tatsächlichen Manifestversion; aktualisierte Module tragen bis zum Neustart des Cognis-Containers und der Aktivierung aller eingebundenen Routen einen Neustarthinweis.
@@ -537,3 +539,7 @@ Beim Deaktivieren eines Moduls werden Navigation, UI-Beiträge, Routen, Abläufe
 ## Navigationssortierung bewusst aktivieren
 
 Jeder primäre Navigationseintrag besitzt nun einen Griff mit sechs Punkten. Links behalten ihren normalen Zeiger und können erst nach einem Klick auf ihren Griff verschoben werden; verdrängte Einträge werden während des Ziehens animiert und die Reihenfolge wird beim Ablegen gespeichert. Die Dokumentation externer Module folgt nun der Beitragsvorlage und beschreibt atomare Deaktivierung sowie Deinstallationsbereinigung korrekt. Die SMTP-Warteschlangen-Testvorrichtung verwendet nun einen nicht blockierenden Test-Timer, damit der vollständige Testlauf nach seinen Prüfungen beendet wird.
+
+## Änderungen
+
+- [c685eda](https://github.com/Cognis-Labs-HQ/Cognis/commit/c685eda06183d56a3a250df8b66178db1e8553d6)

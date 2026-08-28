@@ -31,6 +31,7 @@ interface DocEntry extends StoredDoc {
     group: string;
     title: string;
     generatedMarkdown?: string;
+    sourceName: string;
 }
 
 function changelogBranchFromSlug(slug: string): string {
@@ -39,6 +40,9 @@ function changelogBranchFromSlug(slug: string): string {
 
 function withChangelogBranch(markdown: string, slug: string): string {
     if (!slug.startsWith("changelog/") || slug === "changelog/index") {
+        return markdown;
+    }
+    if (/^\*\*Feature Branch:\*\*\s+.+$/m.test(markdown)) {
         return markdown;
     }
     const branch = changelogBranchFromSlug(slug);
@@ -50,16 +54,29 @@ function withChangelogBranch(markdown: string, slug: string): string {
 }
 
 function buildChangelogIndexMarkdown(entries: DocEntry[]): string {
-    const links = entries
+    const groupedEntries = new Map<string, DocEntry[]>();
+    for (const entry of entries
         .filter((entry) => entry.slug.startsWith("changelog/"))
-        .sort((first, second) => first.slug.localeCompare(second.slug))
-        .map((entry) => {
-            const branch = changelogBranchFromSlug(entry.slug);
-            const label = entry.title || branch;
-            return `- [${label}](/changelogs/${branch})`;
-        });
+        .sort((first, second) => first.slug.localeCompare(second.slug))) {
+        groupedEntries.set(entry.sourceName, [
+            ...(groupedEntries.get(entry.sourceName) ?? []),
+            entry,
+        ]);
+    }
+    const sections = [...groupedEntries.entries()].flatMap(
+        ([sourceName, sourceEntries]) => [
+            `## ${sourceName}`,
+            "",
+            ...sourceEntries.map((entry) => {
+                const branch = changelogBranchFromSlug(entry.slug);
+                const label = entry.title || branch;
+                return `- [${label}](/changelogs/${branch})`;
+            }),
+            "",
+        ],
+    );
 
-    return ["# Changelogs", "", ...links].join("\n");
+    return ["# Changelogs", "", ...sections].join("\n");
 }
 
 async function collectDocIndex(
@@ -71,6 +88,7 @@ async function collectDocIndex(
         bySlug.set(slug, {
             ...doc,
             path: `/api/v1/docs/latest/${slug}`,
+            sourceName: doc.sourceName,
         });
     }
 
@@ -87,6 +105,7 @@ async function collectDocIndex(
             version: "latest",
             versions: ["latest"],
             generatedMarkdown: buildChangelogIndexMarkdown(changelogEntries),
+            sourceName: "Cognis Core",
         });
     }
 
@@ -119,13 +138,22 @@ export function createDocsRoutes(
         if (url.pathname === "/api/v1/docs") {
             const index = await collectDocIndex(loadStoredDocs());
             const data = [...index.values()].map(
-                ({ slug, path, group, title, version, versions }) => ({
+                ({
                     slug,
                     path,
                     group,
                     title,
                     version,
                     versions,
+                    sourceName,
+                }) => ({
+                    slug,
+                    path,
+                    group,
+                    title,
+                    version,
+                    versions,
+                    sourceName,
                 }),
             );
             res.writeHead(200, { "content-type": "application/json" });

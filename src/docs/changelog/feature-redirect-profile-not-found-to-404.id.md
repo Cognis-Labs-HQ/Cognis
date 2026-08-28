@@ -1,5 +1,7 @@
 # Akses profil berdasarkan visibilitas
 
+**Cabang Fitur:** feature-redirect-profile-not-found-to-404
+
 ## Mengikuti memerlukan peminta yang terlihat
 
 Pengguna kini harus mengatur visibilitas profilnya sendiri setidaknya ke privat sebelum dapat mengikuti profil lain, sehingga profil tersembunyi tidak dapat membuat relasi mengikuti baru.
@@ -15,3 +17,7 @@ Halaman galat dan popup galat runtime kini menerapkan tema tersimpan sebelum dir
 ## Router melindungi akar navigasi galat
 
 Router aplikasi kini memastikan akar dashboard sebelum memasang rute, sehingga navigasi dari profil ke halaman 404 tetap berfungsi meski terjadi sebelum shell dashboard menginisialisasi router.
+
+## Komit
+
+- [af00b98](https://github.com/Cognis-Labs-HQ/Cognis/commit/af00b98a07aeab0866031d7c25e95c2914df3355)

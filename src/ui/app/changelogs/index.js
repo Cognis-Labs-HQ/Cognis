@@ -8,6 +8,7 @@ import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { navigateTo } from "../../reuse/app-router.js";
+import { linkShortCommitRefs } from "../../reuse/commit-links.js";
 
 const CHANGELOG_GROUP_KEY = "changelog";
 
@@ -90,20 +91,23 @@ function changelogRouteSubpathToSlug(subpath) {
 function buildGroupedNav(i18n, items) {
     const groups = new Map();
     for (const item of items) {
-        const groupKey = CHANGELOG_GROUP_KEY;
+        const groupKey = item.sourceName || CHANGELOG_GROUP_KEY;
         if (!groups.has(groupKey)) groups.set(groupKey, []);
         groups.get(groupKey).push(item);
     }
 
     let html = "";
     for (const [group, groupItems] of groups) {
-        const label = groupLabel(i18n, group);
+        const label = escapeHtml(
+            group === CHANGELOG_GROUP_KEY ? groupLabel(i18n, group) : group,
+        );
+        const safeGroup = escapeHtml(group);
         const links = groupItems
             .map((item) => renderDocNavButton(item))
             .join("");
         const storageKey = `changelogs-group-open:${group}`;
         const isOpen = localStorage.getItem(storageKey) !== "false";
-        html += `<details class="docs-nav-group" ${isOpen ? "open" : ""} data-nav-group="${group}">`;
+        html += `<details class="docs-nav-group" ${isOpen ? "open" : ""} data-nav-group="${safeGroup}">`;
         html += `<summary>${label}</summary>`;
         html += `<ul>${links}</ul>`;
         html += `</details>`;
@@ -128,6 +132,7 @@ export async function mount(root, { signal } = {}) {
         try {
             activeHtml = await loadMarkdownDocumentHtml(
                 `/api/v1/docs/${slug}?langs=${encodeURIComponent(langs)}`,
+                { transformMarkdown: linkShortCommitRefs },
             );
         } catch {
             return;

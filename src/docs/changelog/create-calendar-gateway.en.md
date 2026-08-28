@@ -1,5 +1,7 @@
 # Calendar Upgrade
 
+**Feature Branch:** copilot/create-calendar-gateway
+
 ## Multi-calendar events stay visible
 
 Refreshing the calendar page no longer hides events that belong to non-default
@@ -113,3 +115,7 @@ cards.
 The event detail popup now correctly honours the 12/24-hour clock preference from
 Settings. Previously the start and end times in the popup were always rendered in
 12-hour format regardless of the user's chosen time format.
+
+## Commits
+
+- [b32a4af](https://github.com/Cognis-Labs-HQ/Cognis/commit/b32a4af54b95de949389be701a92fc829ad45325)

@@ -1,5 +1,7 @@
 # Fix Logout Endpoint
 
+**Feature Branch:** copilot/fix-logout-endpoint
+
 ## Summary
 
 The `POST /api/v1/auth/logout` endpoint was returning 404 for all requests. The
@@ -30,4 +32,4 @@ properly revoked on the server in the normal user path.
 
 ## Commit Links
 
-- https://github.com/le-firehawk/Cognis/commit/79bc1e7242a82f3f6a3b15c0210cdf32ef752893
+- [79bc1e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/79bc1e7242a82f3f6a3b15c0210cdf32ef752893)

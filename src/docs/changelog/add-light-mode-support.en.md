@@ -1,5 +1,7 @@
 # Error Page Light Mode
 
+**Feature Branch:** copilot/add-light-mode-support
+
 ## Error page adapts cleanly to light mode
 
 The error page now renders correctly in both dark and light mode. The animated
@@ -18,3 +20,7 @@ making interactive elements appear flat.
 The browser chrome theme colour (address bar on mobile) now updates dynamically
 when the user toggles the theme, switching between the dark navy and the light
 blue-white page colour.
+
+## Commits
+
+- [ca2c1bc](https://github.com/Cognis-Labs-HQ/Cognis/commit/ca2c1bc892e1236a186d35264745f40c369a8ed0)

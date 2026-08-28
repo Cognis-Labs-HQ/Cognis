@@ -1,5 +1,7 @@
 # Gateway と Module の API 分離
 
+**機能ブランチ:** development
+
 ## Gateway ルート接頭辞の統一
 
 すべての Gateway は、専用の `/api/v1/<gateway-id>/` 接頭辞の下で API ルートを所有するようになりました。この規則に合っていなかったルートは改名され、notify Gateway のルートは `/api/v1/notifications/` から `/api/v1/notify/` へ、social Gateway のルートは `/api/v1/profile/` や `/api/v1/messages/` などから `/api/v1/social/` へ移動しました。
@@ -21,3 +23,7 @@ Module が無効な場合、その Module が登録したルートへのリク�
 ## クラッシュポップアップとルーターの無音 catch ブロックを排除
 
 `installRuntimeErrorHandlers` の 2 つの `catch(() => {})` ハンドラーは、ポップアップを開く際に発生したエラーを飲み込む代わりに警告を記録するようになりました。アプリルーターの `readAuthSetupRequirement` の catch ブロックは、捕捉したネットワークエラーを記録するようになりました。`loadStudyChildComponents` の言語別フェッチの catch は、空のフォールバックを返す前に言語コードとエラーを記録します。管理ログセクションの `startStream` の catch は接続エラーを記録し、不正な SSE イベントの catch はパースエラーを記録するようになり、無音で破棄されなくなりました。
+
+## コミット
+
+- [c2dd07a](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2dd07a630b453a51f9793ab2855ab96150b058c)

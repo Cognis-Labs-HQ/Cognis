@@ -1,5 +1,7 @@
 # Modul-CLI-Abdeckung
 
+**Feature-Zweig:** feature-expand-cli-commands-and-update-modules-to-components
+
 ## Modul-API-Befehle ergänzt
 
 Cognisctl-Befehle für Modul-Backend-Endpunkte ergänzt, die bisher direkte HTTP-Aufrufe erforderten, einschließlich Analytics-Aktivitätsansichten, Jitsi-Meet-Administration und Nextcloud-Whiteboard-Vorgängen.
@@ -55,3 +57,7 @@ Die Jitsi-Meet-Meetingprüfung nutzt jetzt `jitsi-meet:meetings`, und modulspezi
 ## CLI-Filter für deaktivierte Komponenten
 
 Komponenten-CLI-Plugins prüfen nun die Komponentenverfügbarkeit vor der Registrierung, sodass deaktivierte Module, Gateways und Adapter nicht in Hilfe oder Befehlsauflösung erscheinen, wenn die API sie als deaktiviert meldet. Der redundante Befehl `social:users:search` wurde entfernt.
+
+## Änderungen
+
+- [555964b](https://github.com/Cognis-Labs-HQ/Cognis/commit/555964b626fd72acf48154ab588e2b016f8affdd)

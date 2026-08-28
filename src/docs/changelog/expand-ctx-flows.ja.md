@@ -1,5 +1,7 @@
 # PR変更履歴 — ctxフローの拡張
 
+**機能ブランチ:** N/A
+
 ## 概要
 
 `ctx`フローシステムが、ユーザープロビジョニング・メッセージ配信・
@@ -44,3 +46,5 @@ deprovision-userルートが`cleanup-dependencies`ステージ結果から
 - `src/adapters/social/messages/routes/room-routes.ts`
 - `src/api/tests/users/user-routes.test.ts`
 - `src/adapters/social/messages/tests/routes-notifications.test.ts`
+
+## コミット

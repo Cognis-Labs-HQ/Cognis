@@ -1,5 +1,7 @@
 # Verfügbarkeitsstatus
 
+**Feature-Zweig:** feature-add-availability-status-indicator
+
 ## Verfügbarkeit auf einen Blick
 
 Avatare zeigen jetzt in der Navigationsleiste, in Profilvorschauen, Nachrichten und Besprechungen den Status frei, beschäftigt oder vorläufig an.
@@ -119,3 +121,7 @@ Die Verfügbarkeit berücksichtigt nun Profilsperren, bevor ein Live-Status ange
 ## Aufgeräumtere Avatare in Nachrichten
 
 Die Seitenleiste von Nachrichten, das Bild des aktiven Chats und Absender-Avatare zeigen keine Verfügbarkeitsanzeigen mehr. Profilverknüpfungen bleiben dabei erhalten.
+
+## Änderungen
+
+- [9ab0e62](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ab0e629254a98caae0c359d1dfeb103d094d3e5)

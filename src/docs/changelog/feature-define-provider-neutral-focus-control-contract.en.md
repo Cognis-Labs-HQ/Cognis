@@ -1,5 +1,7 @@
 # Provider-neutral Focus Control
 
+**Feature Branch:** feature-define-provider-neutral-focus-control-contract
+
 ## Focus any declared collaboration surface
 
 Added secure manifest contracts, staged flows, composer-owned controls, and synchronized overlay lifecycle support without coupling pages to providers.
@@ -143,3 +145,7 @@ Grid sizing now lives in a focused, tested module, while the explanatory comment
 ## Keep Dashboard first
 
 Dashboard now remains the first primary-navigation entry while every other entry continues to be sorted alphabetically.
+
+## Commits
+
+- [48395e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/48395e7f07a41221e2e866d9892493df3e98b841)
