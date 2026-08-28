@@ -22,4 +22,8 @@ Die Abhängigkeitsbestätigung zeigt nun vollständige Modulkarten mit Kennzeich
 
 ## Einheitliche Abhängigkeitssteuerung
 
-Abhängigkeitskarten verwenden nun die etablierte Status-Pill-Farbpalette und das gemeinsame benutzerdefinierte Kontrollkästchen der Anwendung. Die Detailnavigation nutzt statt eines Textpfeils das vorhandene themenfähige SVG-Chevron.
+Abhängigkeitskarten verwenden nun die etablierte Status-Pill-Farbpalette der Anwendung. Die Detailnavigation nutzt statt eines Textpfeils das vorhandene themenfähige SVG-Chevron.
+
+## Sofortige Aktivierung von Abhängigkeiten
+
+Jede unerfüllte Abhängigkeitskarte bietet nun eine direkte SVG-Downloadaktion mit Ladeanzeige, die die Abhängigkeit installiert und aktiviert. Die Hauptaktion zeigt Installieren oder Aktivieren, bleibt bei fehlenden erforderlichen Abhängigkeiten deaktiviert, nutzt bei verbleibenden optionalen Abhängigkeiten die neutrale App-Aktion und wechselt zum Bestätigungsstil, sobald alle Abhängigkeiten aktiviert sind.

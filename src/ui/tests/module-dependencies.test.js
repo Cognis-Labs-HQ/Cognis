@@ -3,7 +3,9 @@ import test from "node:test";
 
 import {
     areModuleDependenciesSatisfied,
+    dependencyLifecycleAction,
     isRequiredDependency,
+    moduleDependencyActionState,
     resolveInstallDependencies,
 } from "../app/modules/dependencies.js";
 
@@ -33,10 +35,36 @@ test("module dependencies resolve module IDs and UUIDs", () => {
 test("module dependencies are satisfied only when every dependency is enabled", () => {
     assert.equal(areModuleDependenciesSatisfied(requesting, modules), false);
     required.installed = true;
+    required.status = "disabled";
+    assert.equal(areModuleDependenciesSatisfied(requesting, modules), false);
     required.status = "enabled";
     optional.installed = true;
     optional.status = "enabled";
     assert.equal(areModuleDependenciesSatisfied(requesting, modules), true);
+});
+
+test("dependency popup actions follow the requested module state", () => {
+    assert.equal(dependencyLifecycleAction({ installed: false }), "install");
+    assert.equal(dependencyLifecycleAction({ installed: true }), "enable");
+});
+
+test("dependency action styling reflects missing required and optional modules", () => {
+    required.status = "disabled";
+    optional.status = "disabled";
+    assert.deepEqual(moduleDependencyActionState(requesting, modules), {
+        disabled: true,
+        variant: "neutral",
+    });
+    required.status = "enabled";
+    assert.deepEqual(moduleDependencyActionState(requesting, modules), {
+        disabled: false,
+        variant: "neutral",
+    });
+    optional.status = "enabled";
+    assert.deepEqual(moduleDependencyActionState(requesting, modules), {
+        disabled: false,
+        variant: "confirm",
+    });
 });
 
 test("module dependency popup renders navigable cards and action-specific labels", async () => {
@@ -50,9 +78,24 @@ test("module dependency popup renders navigable cards and action-specific labels
     assert.match(source, /module-dependency-details/);
     assert.match(source, /ui\.app\.modules\.optional/);
     assert.match(source, /dependency\?\.recommended/);
-    assert.match(source, /choice-checkbox/);
     assert.match(source, /pill-disabled/);
     assert.match(source, /pill-available/);
     assert.match(source, /module-icon-forward/);
+    assert.match(source, /arrow-down\.svg/);
+    assert.match(source, /beginButtonLoading/);
+    assert.match(source, /data-install-dependency/);
+    assert.match(source, /updateDependencyAction/);
     assert.match(source, /label: i18n\.t\(`ui\.reuse\.\$\{action\}`\)/);
+
+    const marketplaceSource = await import("node:fs/promises").then(
+        ({ readFile }) =>
+            readFile(
+                new URL("../app/modules/index.js", import.meta.url),
+                "utf8",
+            ),
+    );
+    assert.match(
+        marketplaceSource,
+        /installAndEnableDependency[\s\S]*runLifecycleAction\(dependency, "install"\)[\s\S]*runLifecycleAction\(dependency, "enable"\)/,
+    );
 });

@@ -22,4 +22,8 @@ Dependency confirmation now presents complete module cards with required, option
 
 ## Consistent dependency controls
 
-Dependency cards now reuse the application’s established status-pill palette and shared custom checkbox control. Detail navigation uses the existing themed SVG chevron asset instead of a text arrow.
+Dependency cards now reuse the application’s established status-pill palette. Detail navigation uses the existing themed SVG chevron asset instead of a text arrow.
+
+## Immediate dependency activation
+
+Each unmet dependency card now provides an immediate SVG download action with loading feedback that installs and enables that dependency. The primary action reflects Install or Enable, remains disabled for missing required dependencies, uses the neutral app action while optional dependencies remain, and becomes confirm-styled once every dependency is enabled.

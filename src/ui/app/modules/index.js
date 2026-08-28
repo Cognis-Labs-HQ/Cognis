@@ -390,7 +390,7 @@ async function runLifecycleAction(module, action) {
             module,
             modules,
             i18n,
-            action,
+            installAndEnableDependency,
         );
         if (!dependencySelection) return false;
         for (const dependency of resolveInstallDependencies(
@@ -525,6 +525,15 @@ async function runLifecycleAction(module, action) {
         showToast(error.message, { type: "error" });
     });
     return true;
+}
+
+async function installAndEnableDependency(dependency) {
+    if (!dependency.installed) {
+        const installed = await runLifecycleAction(dependency, "install");
+        if (!installed) return false;
+    }
+    if (dependency.status === "enabled") return true;
+    return runLifecycleAction(dependency, "enable");
 }
 
 function dispatchLifecycleRefresh(module, action) {

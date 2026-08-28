@@ -208,6 +208,29 @@ body[data-theme="dark"] .module-icon-settings {
     text-decoration: none;
 }
 
+.module-dependency-download {
+    align-items: center;
+    border-radius: 50%;
+    display: inline-flex;
+    flex: 0 0 2.25rem;
+    height: 2.25rem;
+    justify-content: center;
+    padding: 0;
+}
+
+.module-dependency-download img {
+    height: 1.25rem;
+    width: 1.25rem;
+}
+
+.module-dependency-download.button-loading img {
+    display: none;
+}
+
+.module-dependency-download.button-loading::after {
+    margin-inline-start: 0;
+}
+
 .module-dependency-warning {
     color: var(--color-danger, #b42318);
     margin: 0;

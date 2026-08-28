@@ -90,5 +90,5 @@
   <string name="ui.app.modules.dependencies_title">Dependensi modul</string>
   <string name="ui.app.modules.optional">Opsional</string>
   <string name="ui.app.modules.dependencies_message">Modul {{module}} memiliki dependensi berikut. Instalasi tidak dapat dilanjutkan sampai semua dependensi wajib terpasang. Memilih untuk tidak memasang dependensi opsional dapat menurunkan pengalaman pengguna.</string>
-  <string name="ui.app.modules.hard_dependency_blocked">Pasang dan aktifkan dependensi wajib sebelum memasang modul ini.</string>
+  <string name="ui.app.modules.hard_dependency_blocked">Pasang dan aktifkan setiap dependensi wajib sebelum melanjutkan.</string>
 </resources>

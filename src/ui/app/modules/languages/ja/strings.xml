@@ -90,5 +90,5 @@
   <string name="ui.app.modules.dependencies_title">モジュールの依存関係</string>
   <string name="ui.app.modules.optional">任意</string>
   <string name="ui.app.modules.dependencies_message">{{module}} モジュールには次の依存関係があります。すべての必須依存関係がインストールされるまで続行できません。任意の依存関係をインストールしない場合、ユーザー体験が低下する可能性があります。</string>
-  <string name="ui.app.modules.hard_dependency_blocked">このモジュールをインストールする前に、必須の依存関係をインストールして有効にしてください。</string>
+  <string name="ui.app.modules.hard_dependency_blocked">続行する前に、すべての必須依存関係をインストールして有効にしてください。</string>
 </resources>

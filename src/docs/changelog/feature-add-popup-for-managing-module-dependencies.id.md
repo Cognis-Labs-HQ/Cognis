@@ -22,4 +22,8 @@ Konfirmasi dependensi kini menampilkan kartu modul lengkap dengan label wajib, o
 
 ## Kontrol dependensi yang konsisten
 
-Kartu dependensi kini menggunakan kembali palet pil status aplikasi dan kontrol kotak centang khusus bersama. Navigasi detail memakai aset chevron SVG bertema yang sudah ada, bukan panah teks.
+Kartu dependensi kini menggunakan kembali palet pil status aplikasi. Navigasi detail memakai aset chevron SVG bertema yang sudah ada, bukan panah teks.
+
+## Pengaktifan dependensi langsung
+
+Setiap kartu dependensi yang belum terpenuhi kini menyediakan tindakan unduh SVG langsung dengan umpan balik pemuatan yang memasang dan mengaktifkan dependensi tersebut. Tindakan utama menampilkan Instal atau Aktifkan, tetap dinonaktifkan jika dependensi wajib belum terpenuhi, menggunakan tindakan netral aplikasi selama dependensi opsional tersisa, dan berubah ke gaya konfirmasi setelah semua dependensi aktif.
