@@ -52,6 +52,11 @@ test("release changelog headings link to their full changelog documents", () => 
     assert.match(releasePopupSource, /entry\.sourceName/);
 });
 
+test("release changelog summaries display short commit references", () => {
+    assert.match(releasePopupSource, /linkShortCommitRefs\(detail\)/);
+    assert.match(releasePopupSource, /linkShortCommitRefs\(changeHeading\)/);
+});
+
 test("release changelogs remain safe when editable preferences contain no seen slugs", () => {
     const releaseEntries = [{ slug: "first-release" }];
     const status = resolveReleaseChangelogStatus(releaseEntries, "1.0.0", null);

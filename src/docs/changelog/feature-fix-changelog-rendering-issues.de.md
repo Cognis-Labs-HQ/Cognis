@@ -29,3 +29,7 @@ Automatisierte Prüfungen verlangen nun, dass jeder lokalisierte Changelog seine
 ## Kurze Commit-Referenzen
 
 Die Changelog-Seite zeigt jeden Commit-Link nun als siebenstellige Referenz an, während die vollständige kanonische Commit-URL als Linkziel erhalten bleibt.
+
+## Kurze Referenzen in Hinweisen
+
+Versionshinweis-Popups verwenden nun denselben Formatter für kurze Referenzen wie die vollständige Changelog-Seite und behalten vollständige Commit-URLs als Linkziele bei.

@@ -29,3 +29,7 @@ Automated checks now require every localized changelog to identify its feature b
 ## Short commit references
 
 The Changelogs page now displays each commit link as its seven-character reference while preserving the complete canonical commit URL as the link destination.
+
+## Short refs in release popups
+
+Release changelog popups now apply the same short-reference formatter as the full Changelogs page, keeping complete commit URLs as link targets.

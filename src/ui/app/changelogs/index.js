@@ -8,7 +8,7 @@ import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { navigateTo } from "../../reuse/app-router.js";
-import { linkShortCommitRefs } from "./commit-links.js";
+import { linkShortCommitRefs } from "../../reuse/commit-links.js";
 
 const CHANGELOG_GROUP_KEY = "changelog";
 

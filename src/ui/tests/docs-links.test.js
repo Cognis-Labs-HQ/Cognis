@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { linkShortCommitRefs } from "../app/changelogs/commit-links.js";
+import { linkShortCommitRefs } from "../reuse/commit-links.js";
 
 const ROOT = resolve(fileURLToPath(import.meta.url), "../../../../");
 const OLD_DOC_FILE_URL_PATTERNS = [

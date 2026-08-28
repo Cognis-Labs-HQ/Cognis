@@ -29,3 +29,7 @@ Pemeriksaan otomatis kini mewajibkan setiap changelog terlokalisasi mencantumkan
 ## Referensi commit pendek
 
 Halaman Changelog kini menampilkan setiap tautan commit sebagai referensi tujuh karakter sambil mempertahankan URL commit kanonis lengkap sebagai tujuan tautan.
+
+## Referensi pendek di popup rilis
+
+Popup changelog rilis kini menerapkan pemformat referensi pendek yang sama seperti halaman Changelog lengkap dan mempertahankan URL commit lengkap sebagai tujuan tautan.
