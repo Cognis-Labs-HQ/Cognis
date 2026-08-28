@@ -65,3 +65,8 @@ Beim Start und nach Aktualisierungen bleiben Module nun deaktiviert, wenn ihre h
 **Feature-Zweig:** feature-add-popup-for-managing-module-dependencies
 
 - [Wiederherstellung von Modulabhängigkeiten validieren](https://github.com/Cognis-Labs-HQ/Cognis/commit/755fd2af)
+- [Übergroße Quellmodule aufteilen](https://github.com/Cognis-Labs-HQ/Cognis/commit/c8e75c62)
+
+## Fokussierte Quellmodule
+
+Die Schlüsselbundoberfläche, die zentralen UI-Routen und die Modulroutentests sind nun in fokussierte Nachbardateien aufgeteilt, sodass jede Quelldatei die Architekturgrenze von 1.000 Zeilen einhält.

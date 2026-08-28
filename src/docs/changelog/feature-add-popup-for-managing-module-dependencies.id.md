@@ -65,3 +65,8 @@ Pemulihan saat proses awal dan setelah pembaruan kini membiarkan modul tetap non
 **Cabang Fitur:** feature-add-popup-for-managing-module-dependencies
 
 - [Validasi pemulihan dependensi modul](https://github.com/Cognis-Labs-HQ/Cognis/commit/755fd2af)
+- [Pisahkan modul sumber yang terlalu besar](https://github.com/Cognis-Labs-HQ/Cognis/commit/c8e75c62)
+
+## Modul sumber terfokus
+
+Antarmuka keyring, rute UI inti, dan pengujian rute modul kini dibagi menjadi berkas pendamping yang terfokus sehingga setiap berkas sumber mematuhi batas arsitektur 1.000 baris.

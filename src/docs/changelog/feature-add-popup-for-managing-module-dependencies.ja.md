@@ -65,3 +65,8 @@
 **機能ブランチ:** feature-add-popup-for-managing-module-dependencies
 
 - [モジュール依存関係の復元を検証](https://github.com/Cognis-Labs-HQ/Cognis/commit/755fd2af)
+- [大規模なソースモジュールを分割](https://github.com/Cognis-Labs-HQ/Cognis/commit/c8e75c62)
+
+## 集約されたソースモジュール
+
+キーリング UI、コア UI ルート、モジュールルートテストを役割別の関連ファイルへ分割し、すべてのソースファイルがアーキテクチャ上の 1,000 行制限に準拠するようにしました。

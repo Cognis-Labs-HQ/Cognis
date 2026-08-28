@@ -65,3 +65,8 @@ Startup and post-update restoration now leave modules disabled when their hard d
 **Feature Branch:** feature-add-popup-for-managing-module-dependencies
 
 - [Validate module dependency restoration](https://github.com/Cognis-Labs-HQ/Cognis/commit/755fd2af)
+- [Split oversized source modules](https://github.com/Cognis-Labs-HQ/Cognis/commit/c8e75c62)
+
+## Focused source modules
+
+The keyring UI, core UI routes, and module-route tests are now split into focused sibling files so every source file complies with the 1,000-line architecture limit.
