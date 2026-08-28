@@ -8,7 +8,7 @@ Menambahkan generator frasa sandi berbasis kata yang acak secara kriptografis de
 
 ## Commit
 
-- [Menambahkan kapabilitas frasa sandi pakai ulang](https://github.com/Cognis-Labs-HQ/Cognis/commit/ff93a1df)
-- [Menyelaraskan judul dokumentasi frasa sandi](https://github.com/Cognis-Labs-HQ/Cognis/commit/b78a79d9)
-- [Mendokumentasikan penggunaan kapabilitas frasa sandi](https://github.com/Cognis-Labs-HQ/Cognis/commit/cca3201a)
-- [Memformat contoh dokumentasi frasa sandi](https://github.com/Cognis-Labs-HQ/Cognis/commit/10d19e66)
+- [ff93a1d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ff93a1df)
+- [b78a79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b78a79d9)
+- [cca3201](https://github.com/Cognis-Labs-HQ/Cognis/commit/cca3201a)
+- [10d19e6](https://github.com/Cognis-Labs-HQ/Cognis/commit/10d19e66)

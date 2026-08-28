@@ -8,7 +8,7 @@ Ein kryptografisch zufälliger Wort-Passphrasen-Generator mit vom Aufrufer besti
 
 ## Commits
 
-- [Wiederverwendbare Passphrasen-Capability hinzufügen](https://github.com/Cognis-Labs-HQ/Cognis/commit/ff93a1df)
-- [Überschriften der Passphrasen-Dokumentation angleichen](https://github.com/Cognis-Labs-HQ/Cognis/commit/b78a79d9)
-- [Nutzung der Passphrasen-Capability dokumentieren](https://github.com/Cognis-Labs-HQ/Cognis/commit/cca3201a)
-- [Beispiele der Passphrasen-Dokumentation formatieren](https://github.com/Cognis-Labs-HQ/Cognis/commit/10d19e66)
+- [ff93a1d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ff93a1df)
+- [b78a79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b78a79d9)
+- [cca3201](https://github.com/Cognis-Labs-HQ/Cognis/commit/cca3201a)
+- [10d19e6](https://github.com/Cognis-Labs-HQ/Cognis/commit/10d19e66)

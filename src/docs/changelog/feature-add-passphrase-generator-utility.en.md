@@ -8,7 +8,7 @@ Added a cryptographically random word-passphrase generator with caller-controlle
 
 ## Commits
 
-- [Add reusable passphrase capability](https://github.com/Cognis-Labs-HQ/Cognis/commit/ff93a1df)
-- [Align passphrase documentation headings](https://github.com/Cognis-Labs-HQ/Cognis/commit/b78a79d9)
-- [Document passphrase capability usage](https://github.com/Cognis-Labs-HQ/Cognis/commit/cca3201a)
-- [Format passphrase documentation examples](https://github.com/Cognis-Labs-HQ/Cognis/commit/10d19e66)
+- [ff93a1d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ff93a1df)
+- [b78a79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b78a79d9)
+- [cca3201](https://github.com/Cognis-Labs-HQ/Cognis/commit/cca3201a)
+- [10d19e6](https://github.com/Cognis-Labs-HQ/Cognis/commit/10d19e66)

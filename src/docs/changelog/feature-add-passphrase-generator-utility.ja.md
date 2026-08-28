@@ -8,7 +8,7 @@
 
 ## コミット
 
-- [再利用可能なパスフレーズ capability を追加](https://github.com/Cognis-Labs-HQ/Cognis/commit/ff93a1df)
-- [パスフレーズ文書の見出しを統一](https://github.com/Cognis-Labs-HQ/Cognis/commit/b78a79d9)
-- [パスフレーズ capability の使用方法を文書化](https://github.com/Cognis-Labs-HQ/Cognis/commit/cca3201a)
-- [パスフレーズ文書の例を整形](https://github.com/Cognis-Labs-HQ/Cognis/commit/10d19e66)
+- [ff93a1d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ff93a1df)
+- [b78a79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b78a79d9)
+- [cca3201](https://github.com/Cognis-Labs-HQ/Cognis/commit/cca3201a)
+- [10d19e6](https://github.com/Cognis-Labs-HQ/Cognis/commit/10d19e66)
