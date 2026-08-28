@@ -12,6 +12,8 @@ import {
 } from "@cognis/core";
 import {
     assertModuleInstallDependencies,
+    assertExternalModuleDependencies,
+    resolveHardDependencyDisableOrder,
     assertModuleEnableDependencies,
     assertModuleCapabilityDependencies,
     buildServer,
@@ -20,6 +22,65 @@ import {
 import { RouteRegistry } from "../../reuse/route-registry.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
+
+test("external module dependencies must be installed and enabled", () => {
+    const dependency = {
+        id: "calendar",
+        uuid: "calendar-uuid",
+        name: "Calendar",
+    } as never;
+    assert.doesNotThrow(() =>
+        assertExternalModuleDependencies(
+            "classroom",
+            [dependency.uuid],
+            [dependency],
+            (id) => id === dependency.id,
+        ),
+    );
+    assert.throws(
+        () =>
+            assertExternalModuleDependencies(
+                "classroom",
+                [dependency.uuid],
+                [dependency],
+                () => false,
+            ),
+        /requires disabled external module Calendar/,
+    );
+});
+
+test("hard dependency disable order cascades through enabled dependents", () => {
+    const manifests = [
+        { id: "calendar", uuid: "calendar-uuid" },
+        {
+            id: "classroom",
+            uuid: "classroom-uuid",
+            hardDependencies: ["calendar-uuid"],
+        },
+        {
+            id: "assignments",
+            uuid: "assignments-uuid",
+            hardDependencies: ["classroom"],
+        },
+        {
+            id: "optional-notes",
+            uuid: "notes-uuid",
+            softDependencies: ["calendar-uuid"],
+        },
+    ] as never;
+    assert.deepEqual(
+        resolveHardDependencyDisableOrder(
+            "calendar",
+            manifests,
+            (moduleId) => moduleId !== "optional-notes",
+        ),
+        ["assignments", "classroom"],
+    );
+    assert.deepEqual(
+        resolveHardDependencyDisableOrder("calendar", manifests, () => false),
+        [],
+    );
+});
 
 test("module enable validation resolves browser and server capabilities", () => {
     assert.doesNotThrow(() =>
@@ -50,13 +111,13 @@ test("module enablement refreshes installed runtime state before validation", ()
         path.resolve(import.meta.dirname, "../../server.ts"),
         "utf8",
     );
-    const beforeEnable = source.slice(
-        source.indexOf("beforeEnable: async (moduleId)"),
-        source.indexOf("onEnabled: async (moduleId)"),
+    const enableValidation = source.slice(
+        source.indexOf("const validateModuleForEnable"),
+        source.indexOf("const assertModuleIntegrity"),
     );
     assert.ok(
-        beforeEnable.indexOf("moduleRuntimeGateway.refresh") <
-            beforeEnable.indexOf("moduleRuntimeGateway.listManifests"),
+        enableValidation.indexOf("moduleRuntimeGateway.refresh") <
+            enableValidation.indexOf("moduleRuntimeGateway.listManifests"),
         "runtime refresh must precede manifest validation",
     );
 });

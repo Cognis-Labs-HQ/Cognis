@@ -29,6 +29,10 @@ const KEYRING_SETTINGS_SOURCE = readFileSync(
     resolve(ROOT, "src/adapters/auth/keyring/ui/settings.js"),
     "utf8",
 );
+const KEYRING_RELOCK_SOURCE = readFileSync(
+    resolve(ROOT, "src/adapters/auth/keyring/ui/relock-options.js"),
+    "utf8",
+);
 const KEYRING_SETTINGS_STYLES = readFileSync(
     resolve(ROOT, "src/adapters/auth/keyring/ui/settings.css"),
     "utf8",
@@ -140,8 +144,14 @@ test("keyring settings unlock once before allowing secret changes", () => {
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-table/);
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-info/);
     assert.match(KEYRING_SETTINGS_SOURCE, /renderInfoTooltip/);
-    assert.match(KEYRING_SETTINGS_SOURCE, /\[5, "5_minutes"\]/);
-    assert.match(KEYRING_SETTINGS_SOURCE, /\[10080, "1_week"\]/);
+    assert.match(
+        KEYRING_RELOCK_SOURCE,
+        /\[5, "gateway\.auth\.keyring\.timeout_5_minutes"\]/,
+    );
+    assert.match(
+        KEYRING_RELOCK_SOURCE,
+        /\[10080, "gateway\.auth\.keyring\.timeout_1_week"\]/,
+    );
     assert.match(
         KEYRING_SETTINGS_SOURCE,
         /id: "clear",[\s\S]*variant: "cancel"/,

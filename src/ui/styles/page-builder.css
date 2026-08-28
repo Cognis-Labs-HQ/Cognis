@@ -3,4 +3,6 @@
 @import url("/static/styles/reuse/in-page-callout.css");
 @import url("/static/styles/reuse/info-tooltip.css");
 @import url("/static/styles/reuse/button-loading.css");
+@import url("/static/styles/reuse/choice-checkbox.css");
+@import url("/static/styles/reuse/state-pill.css");
 @import url("/static/styles/page-builder/index.css");

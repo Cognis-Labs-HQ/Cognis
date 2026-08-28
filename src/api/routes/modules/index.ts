@@ -18,7 +18,10 @@ export interface ModuleRouteHooks {
     ) => Promise<void> | void;
     beforeEnable?: (moduleId: string) => Promise<void> | void;
     onEnabled?: (moduleId: string) => Promise<void> | void;
-    onDisabled?: (moduleId: string) => Promise<void> | void;
+    onDisabled?: (
+        moduleId: string,
+        options: { preserveEnabledState: boolean },
+    ) => Promise<void> | void;
     getStatus?: (moduleId: string) => "enabled" | "disabled" | "available";
     log?: BootstrapLog;
     getIntegrityReport?: () => Promise<
@@ -245,6 +248,33 @@ export function createModuleRoutes(
                 res.end(JSON.stringify({ data }));
                 return true;
             }
+        }
+        const channelMatch = url.pathname.match(
+            /^\/api\/v1\/modules\/catalog\/([^/]+)\/channel$/,
+        );
+        if (marketplace && channelMatch && req.method === "PUT") {
+            const claims = ctx.requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const body = await readJson(req);
+            if (typeof body.branch !== "string" || !body.branch.trim()) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_module_branch",
+                            message: "Select a valid module release channel.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            await marketplace.saveSelectedBranch(
+                decodeURIComponent(channelMatch[1]),
+                body.branch,
+            );
+            res.writeHead(204);
+            res.end();
+            return true;
         }
         const sourceDeleteMatch = url.pathname.match(
             /^\/api\/v1\/modules\/sources\/([^/]+)$/,
@@ -805,7 +835,13 @@ export function createModuleRoutes(
         }
 
         if (action === "enable") await hooks?.onEnabled?.(moduleId);
-        if (action === "disable") await hooks?.onDisabled?.(moduleId);
+        if (action === "disable") {
+            await hooks?.onDisabled?.(moduleId, {
+                preserveEnabledState:
+                    req.headers["x-cognis-module-lifecycle"] ===
+                    "temporary-update",
+            });
+        }
         hooks?.log?.(
             action === "disable" ? "warn" : "info",
             `Module ${action}d.`,

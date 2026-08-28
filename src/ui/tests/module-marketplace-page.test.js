@@ -58,6 +58,10 @@ const marketplaceSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/index.js"),
     "utf8",
 );
+const releaseChannelSource = readFileSync(
+    resolve(ROOT, "src/ui/app/modules/release-channels.js"),
+    "utf8",
+);
 test("module marketplace polls Cognis for current recommendations", () => {
     assert.match(marketplaceSource, /MARKETPLACE_POLL_INTERVAL_MS = 15_000/);
     assert.match(marketplaceSource, /window\.setInterval\(poll/);
@@ -280,7 +284,7 @@ test("module details preserve position and update enabled modules atomically", (
     );
     assert.match(
         source,
-        /await setModuleEnabled\(module\.id, false\)[\s\S]*await installModule[\s\S]*await enableModuleWithIntegrityCheck\(/,
+        /await setModuleEnabled\(module\.id, false, \{[\s\S]*preserveEnabledState: true[\s\S]*await installModule[\s\S]*await enableModuleWithIntegrityCheck\(/,
     );
     assert.doesNotMatch(source, /disable_before_update/);
     assert.doesNotMatch(
@@ -593,6 +597,17 @@ test("module installation failures stay local to the marketplace action", () => 
     assert.match(source, /error\.code = detail\?\.code/);
 });
 
+test("cancelled module installations notify the administrator", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /completed === false && action === "install"[\s\S]*ui\.app\.modules\.install_cancelled/,
+    );
+});
+
 test("module sources use an independent list and editor", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),
@@ -689,9 +704,9 @@ test("module marketplace opens repository readmes in a full detail view", () => 
         source,
         /id: "force-update"[\s\S]*variant: "danger"[\s\S]*id: "change-channel"/,
     );
-    assert.match(source, /async function selectReleaseChannel/);
-    assert.match(source, /class="module-release-channel-list"/);
-    assert.match(source, /data-release-channel/);
+    assert.match(releaseChannelSource, /function selectReleaseChannel/);
+    assert.match(releaseChannelSource, /class="module-release-channel-list"/);
+    assert.match(releaseChannelSource, /data-release-channel/);
     assert.match(source, /selectedBranches\.set\(module\.uuid, branch\)/);
     assert.match(
         source,
@@ -704,7 +719,7 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     );
     assert.match(
         source,
-        /setModuleEnabled\(module\.id, false\)[\s\S]*installModule\([\s\S]*module,[\s\S]*token,[\s\S]*branch,[\s\S]*\)[\s\S]*enableModuleWithIntegrityCheck\(/,
+        /setModuleEnabled\(module\.id, false, \{[\s\S]*preserveEnabledState: true[\s\S]*installModule\([\s\S]*module,[\s\S]*token,[\s\S]*branch,[\s\S]*\)[\s\S]*enableModuleWithIntegrityCheck\(/,
     );
     assert.doesNotMatch(source, /class="theme-select" data-module-branch/);
     assert.match(source, /function selectedBranch/);
@@ -817,11 +832,11 @@ test("module marketplace exposes releases and pending action feedback", () => {
     assert.match(source, /ui\.app\.modules\.upgrading/);
     assert.match(source, /ui\.app\.modules\.downgrading/);
     assert.match(source, /ui\.app\.modules\.changing_release_channel/);
-    assert.match(source, /variant: "confirm"/);
+    assert.match(releaseChannelSource, /variant: "confirm"/);
     assert.match(source, /module\.restartRequired/);
     assert.match(source, /ui\.app\.modules\.restart_required/);
     assert.match(source, /module-detail-release/);
-    assert.match(source, /module-release-channel-list/);
+    assert.match(releaseChannelSource, /module-release-channel-list/);
     assert.match(marketplaceStyles, /button\.is-active/);
     assert.match(source, /i18n\.t\("ui\.reuse\.installed"\)/);
     assert.match(

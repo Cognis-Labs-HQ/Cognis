@@ -8,7 +8,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 
 test("search popup checked indicator stays centered in selectable rows", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/styles/reuse/search-bar.css"),
+        resolve(ROOT, "src/ui/styles/reuse/choice-checkbox.css"),
         "utf8",
     );
     assert.match(source, /transform: translate\(-50%, -58%\) rotate\(45deg\);/);

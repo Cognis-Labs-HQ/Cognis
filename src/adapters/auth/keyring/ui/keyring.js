@@ -4,6 +4,19 @@ import {
 } from "./lifecycle-notifications.js";
 import { createSessionUnlockStore } from "./session-unlock-store.js";
 import { KEYRING_RELOCK_OPTIONS } from "./relock-options.js";
+import {
+    decodeBytes,
+    deriveKey,
+    encodeBytes,
+    normalizeEntry,
+    selectKeyringEnvelope,
+} from "./crypto.js";
+export { selectKeyringEnvelope } from "./crypto.js";
+import {
+    keyringStorageKey,
+    relockStorageKey,
+    STORAGE_KEY,
+} from "./storage-keys.js";
 
 const keyringApiModule = await import(
     typeof window === "undefined"
@@ -21,8 +34,6 @@ if (typeof window !== "undefined") {
     await import("/static/reuse/flow-registry.js");
 }
 
-const STORAGE_KEY = "cognis_secure_keyring";
-const RELOCK_STORAGE_KEY = "cognis_secure_keyring_relock_minutes";
 const KEYRING_API = "/api/v1/auth/keyring";
 const DEFAULT_ITERATIONS = 310_000;
 const DEFERRED_SETUP_KEY = "cognis_keyring_setup_pending";
@@ -60,41 +71,8 @@ async function ensureKeyringFormStyles() {
     await ensurePageStylesheet("/static/styles/reuse/page-sections.css");
 }
 
-function keyringStorageKey() {
-    const accountId = String(
-        localStorage.getItem("cognis_account") ?? "",
-    ).trim();
-    return accountId
-        ? `${STORAGE_KEY}:${encodeURIComponent(accountId)}`
-        : STORAGE_KEY;
-}
-
 function keyringStorage() {
     return temporaryKeyringAccountId ? sessionStorage : localStorage;
-}
-
-function relockStorageKey() {
-    const accountId = String(
-        localStorage.getItem("cognis_account") ?? "",
-    ).trim();
-    return accountId
-        ? `${RELOCK_STORAGE_KEY}:${encodeURIComponent(accountId)}`
-        : RELOCK_STORAGE_KEY;
-}
-
-function encodeBytes(bytes) {
-    const chunkSize = 32_768;
-    let binary = "";
-    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
-        binary += String.fromCharCode(
-            ...bytes.subarray(offset, offset + chunkSize),
-        );
-    }
-    return btoa(binary);
-}
-
-function decodeBytes(value) {
-    return Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
 }
 
 function sessionUnlockId() {
@@ -110,40 +88,6 @@ const clearSessionUnlockKey = sessionUnlockStore.clear;
 const readSessionUnlockKey = sessionUnlockStore.read;
 const sessionUnlockExpiryKey = sessionUnlockStore.expiryKey;
 const writeSessionUnlockKey = sessionUnlockStore.write;
-
-function normalizeEntry(value, id) {
-    if (value && typeof value === "object" && "value" in value) {
-        return {
-            value: String(value.value ?? ""),
-            label: String(value.label ?? id),
-            source: String(value.source ?? "user"),
-            updatedAt: String(value.updatedAt ?? new Date(0).toISOString()),
-        };
-    }
-    return {
-        value: String(value ?? ""),
-        label: String(id),
-        source: "legacy",
-        updatedAt: new Date(0).toISOString(),
-    };
-}
-
-async function deriveKey(password, salt, iterations) {
-    const material = await crypto.subtle.importKey(
-        "raw",
-        new TextEncoder().encode(password),
-        "PBKDF2",
-        false,
-        ["deriveKey"],
-    );
-    return crypto.subtle.deriveKey(
-        { name: "PBKDF2", hash: "SHA-256", salt, iterations },
-        material,
-        { name: "AES-GCM", length: 256 },
-        false,
-        ["encrypt", "decrypt"],
-    );
-}
 
 function scheduleRelock({ resetDeadline = false } = {}) {
     clearTimeout(relockTimer);
@@ -218,31 +162,6 @@ function loadLocalEnvelope() {
 function removeLocalEnvelope() {
     keyringStorage().removeItem(keyringStorageKey());
     if (!temporaryKeyringAccountId) localStorage.removeItem(STORAGE_KEY);
-}
-
-function envelopeTimestamp(envelope) {
-    const timestamp = Date.parse(String(envelope?.updatedAt ?? ""));
-    return Number.isFinite(timestamp) ? timestamp : 0;
-}
-
-export function selectKeyringEnvelope(localEnvelope, remoteState) {
-    const localAccountInstanceId = String(
-        localEnvelope?.accountInstanceId ?? "",
-    );
-    const remoteAccountInstanceId = String(remoteState.accountInstanceId ?? "");
-    if (
-        remoteState.resolved &&
-        localAccountInstanceId &&
-        remoteAccountInstanceId &&
-        localAccountInstanceId !== remoteAccountInstanceId
-    ) {
-        return null;
-    }
-    if (!remoteState.resolved) return localEnvelope;
-    return envelopeTimestamp(remoteState.envelope) >
-        envelopeTimestamp(localEnvelope)
-        ? remoteState.envelope
-        : localEnvelope;
 }
 
 async function syncEnvelope(envelope) {

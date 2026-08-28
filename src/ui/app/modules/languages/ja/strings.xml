@@ -53,6 +53,7 @@
   <string name="ui.app.modules.keyring_component">モジュールストア</string>
   <string name="ui.app.modules.back_to_modules">モジュールに戻る</string>
   <string name="ui.app.modules.install_complete">モジュールをインストールしました。準備ができたら有効化してください。</string>
+  <string name="ui.app.modules.install_cancelled">モジュールのインストールをキャンセルしました。</string>
   <string name="ui.app.modules.enable_complete">モジュールを有効化しました。</string>
   <string name="ui.app.modules.disable_complete">モジュールを無効化しました。アンインストールできます。</string>
   <string name="ui.app.modules.uninstall_complete">モジュールをアンインストールしました。</string>
@@ -85,4 +86,9 @@
   <string name="ui.app.modules.scan_private_repos_hint">プライベートスキャンには PAT が必要で、トークンがアクセスできる非公開リポジトリだけが対象です。Cognis は保存前にリポジトリ一覧取得と内容読み取りを検証します。</string>
   <string name="ui.app.modules.pat_permissions_hint">GitHub の fine-grained PAT では、設定した組織を Resource owner に選び、すべてのリポジトリまたは Cognis がスキャンする各非公開リポジトリへのアクセスを付与し、Repository permissions の Metadata と Contents を Read-only に設定します。GitHub の Organization permissions 一覧から選ぶ権限はありません。必要な場合は組織の承認を完了してください。classic PAT では repo スコープを付与し、該当する場合は組織 SSO を承認します。GitLab トークンには read_api と read_repository が必要です。</string>
   <string name="ui.app.modules.validation_failed">モジュールの検証に失敗しました。詳細はサーバーログを確認してください。</string>
+  <string name="ui.app.modules.required">必須</string>
+  <string name="ui.app.modules.dependencies_title">モジュールの依存関係</string>
+  <string name="ui.app.modules.optional">任意</string>
+  <string name="ui.app.modules.dependencies_message">{{module}} モジュールには次の依存関係があります。すべての必須依存関係がインストールされるまで続行できません。任意の依存関係をインストールしない場合、ユーザー体験が低下する可能性があります。</string>
+  <string name="ui.app.modules.hard_dependency_blocked">続行する前に、すべての必須依存関係をインストールして有効にしてください。</string>
 </resources>

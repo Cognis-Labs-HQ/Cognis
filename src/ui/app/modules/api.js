@@ -25,11 +25,11 @@ export async function loadInstalledModules() {
 }
 
 export async function loadModuleConfig(moduleId) {
-    const response = await apiFetch(
-        `/api/v1/modules/${encodeURIComponent(moduleId)}/config`,
+    return data(
+        await apiFetch(
+            `/api/v1/modules/${encodeURIComponent(moduleId)}/config`,
+        ),
     );
-    if (response.status === 404) return null;
-    return data(response);
 }
 
 export async function saveModuleConfig(moduleId, values) {
@@ -124,6 +124,19 @@ export async function loadCachedModules() {
     return data(await apiFetch("/api/v1/modules/catalog"));
 }
 
+export async function saveModuleReleaseChannel(moduleUuid, branch) {
+    return data(
+        await apiFetch(
+            `/api/v1/modules/catalog/${encodeURIComponent(moduleUuid)}/channel`,
+            {
+                method: "PUT",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ branch }),
+            },
+        ),
+    );
+}
+
 export async function loadModuleAsset(assetUrl, { signal } = {}) {
     let response;
     try {
@@ -172,7 +185,7 @@ export async function installModule(module, token, branch, wasEnabled) {
 export async function setModuleEnabled(
     moduleId,
     enabled,
-    { integrityAcknowledgementToken = "" } = {},
+    { integrityAcknowledgementToken = "", preserveEnabledState = false } = {},
 ) {
     return data(
         await apiFetch(
@@ -188,7 +201,9 @@ export async function setModuleEnabled(
                                 }
                               : {}),
                       }
-                    : undefined,
+                    : preserveEnabledState
+                      ? { "x-cognis-module-lifecycle": "temporary-update" }
+                      : undefined,
             },
         ),
     );

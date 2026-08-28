@@ -24,6 +24,7 @@ import {
     loadCachedModules,
     loadInstalledModules,
     loadModuleSources,
+    saveModuleReleaseChannel,
     setModuleEnabled,
     uninstallModule,
     deleteModuleConfig,
@@ -58,6 +59,12 @@ import {
     loadAuthenticatedModuleAssets,
     resolveModuleAssetUrl,
 } from "./assets.js";
+import {
+    confirmModuleDependencies,
+    isRequiredDependency,
+    resolveInstallDependencies,
+} from "./dependencies.js";
+import { releaseChannels, selectReleaseChannel } from "./release-channels.js";
 
 let i18n;
 let composer;
@@ -73,6 +80,7 @@ let refreshScreenshotCarousels = () => {};
 let pageMountController = null;
 const selectedBranches = new Map();
 const pendingModuleActions = new Map();
+const pendingDependencyChecks = new Set();
 const screenshotIndexes = new Map();
 const MODULE_ICON_FALLBACK_URL = "/static/assets/reuse/module-icon-unknown.svg";
 const MARKETPLACE_POLL_INTERVAL_MS = 15_000;
@@ -153,7 +161,7 @@ function renderCard(module) {
     return `<article class="module-store-card" data-module-uuid="${module.uuid}" tabindex="0">
       ${avatar}
       <div class="module-store-card-copy">
-        <div class="module-store-card-heading"><h3>${escapeHtml(presentation.name)}${renderRestartWarning(module)}</h3>${module.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}</div>
+        <div class="module-store-card-heading"><h3>${escapeHtml(presentation.name)}${renderRestartWarning(module)}</h3>${isRequiredDependency(module, modules) ? `<span class="state-pill pill-required">${escapeHtml(i18n.t("ui.app.modules.required"))}</span>` : ""}${module.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}</div>
         <p>${escapeHtml(presentation.summary ?? presentation.description ?? "")}</p>
         <span class="module-store-publisher">${escapeHtml(module.publisher ?? "")} · ${escapeHtml(formatVersion(module.installed ? (module.installedVersion ?? module.version) : module.version))}</span>
         ${renderAvailableVersion(module)}
@@ -220,16 +228,10 @@ function renderLifecycleButton(module, action, consequence) {
 function selectedBranch(module) {
     const selected =
         selectedBranches.get(module.uuid) ??
+        module.selectedBranch ??
         module.installedBranch ??
         module.defaultBranch;
     return resolveSelectedBranch(module, selected);
-}
-
-function releaseChannels(module) {
-    return [...(module.branches ?? []), ...(module.releases ?? [])].filter(
-        (channel, index, entries) =>
-            entries.findIndex((entry) => entry.name === channel.name) === index,
-    );
 }
 
 function renderModuleDetails(module) {
@@ -334,61 +336,60 @@ function renderStore() {
       </section>`;
 }
 
-async function selectReleaseChannel(module) {
-    const channels = releaseChannels(module);
-    let selectedChannel = module.installedBranch ?? selectedBranch(module);
-    const result = await openPopup({
-        title: i18n.t("ui.app.modules.change_release_channel"),
-        body: `<div class="module-release-channel-list" role="radiogroup" aria-label="${escapeHtml(i18n.t("ui.app.modules.release_channel"))}">${channels.map((channel) => `<button type="button" class="btn-neutral${channel.name === selectedChannel ? " is-active" : ""}" data-release-channel="${escapeHtml(channel.name)}" aria-pressed="${channel.name === selectedChannel}">${escapeHtml(channel.name)}${channel.version ? ` · ${escapeHtml(formatVersion(channel.version))}` : ""}</button>`).join("")}</div>`,
-        actions: [
-            {
-                id: "confirm",
-                label: i18n.t("ui.reuse.confirm"),
-                variant: "confirm",
-            },
-            {
-                id: "cancel",
-                label: i18n.t("ui.reuse.cancel"),
-                variant: "neutral",
-            },
-        ],
-        onOpen: (overlay) => {
-            overlay
-                .querySelectorAll("[data-release-channel]")
-                .forEach((button) =>
-                    button.addEventListener("click", () => {
-                        selectedChannel = button.dataset.releaseChannel;
-                        overlay
-                            .querySelectorAll("[data-release-channel]")
-                            .forEach((entry) => {
-                                const active = entry === button;
-                                entry.classList.toggle("is-active", active);
-                                entry.setAttribute(
-                                    "aria-pressed",
-                                    String(active),
-                                );
-                            });
-                    }),
-                );
-        },
-    });
-    return result === "confirm" ? selectedChannel : null;
+async function ensureModuleDependenciesReady(module) {
+    const dependencySelection = await confirmModuleDependencies(
+        module,
+        modules,
+        i18n,
+        installAndEnableDependency,
+    );
+    if (!dependencySelection) return false;
+    for (const dependency of resolveInstallDependencies(
+        module,
+        modules,
+        dependencySelection.soft,
+    )) {
+        if (!dependency.installed) {
+            const installed = await runLifecycleAction(dependency, "install");
+            if (!installed) return false;
+        }
+        if (dependency.status !== "enabled") {
+            const enabled = await runLifecycleAction(dependency, "enable");
+            if (!enabled) return false;
+        }
+    }
+    return true;
 }
 
-async function runLifecycleAction(module, action) {
-    if (module.restartRequired) return;
+async function runLifecycleAction(
+    module,
+    action,
+    { dependenciesReady = false } = {},
+) {
+    if (module.restartRequired) return false;
+    if (
+        ["install", "enable"].includes(action) &&
+        !dependenciesReady &&
+        !(await ensureModuleDependenciesReady(module))
+    ) {
+        return false;
+    }
     if (action === "enable") {
         const result = await activateModule(module, i18n);
-        if (!result) return;
+        if (!result) return false;
     }
     if (
         ["install", "update", "force-update", "change-channel"].includes(action)
     ) {
         let branch = selectedBranch(module);
         if (action === "change-channel") {
-            const releaseChannel = await selectReleaseChannel(module);
-            if (!releaseChannel) return;
-            if (releaseChannel === module.installedBranch) return;
+            const releaseChannel = await selectReleaseChannel(
+                module,
+                selectedBranch(module),
+                i18n,
+            );
+            if (!releaseChannel) return false;
+            if (releaseChannel === module.installedBranch) return false;
             branch = releaseChannel;
         }
         const restoreEnabledState =
@@ -413,7 +414,7 @@ async function runLifecycleAction(module, action) {
                     },
                 ],
             });
-            if (result !== "confirm") return;
+            if (result !== "confirm") return false;
         }
         const source = sources.find(
             (entry) => entry.uuid === module.sourceUuid,
@@ -426,7 +427,9 @@ async function runLifecycleAction(module, action) {
             process: module.name,
         });
         if (restoreEnabledState) {
-            await setModuleEnabled(module.id, false);
+            await setModuleEnabled(module.id, false, {
+                preserveEnabledState: true,
+            });
         }
         try {
             const installedManifest = await installModule(
@@ -470,7 +473,7 @@ async function runLifecycleAction(module, action) {
     }
     if (action === "uninstall") {
         const options = await confirmModuleUninstall(i18n);
-        if (!options) return;
+        if (!options) return false;
         await uninstallModule(module.uuid, options);
         await deleteModuleConfig(module.id);
         module.installed = false;
@@ -489,6 +492,16 @@ async function runLifecycleAction(module, action) {
     void loadKnownModules().catch((error) => {
         showToast(error.message, { type: "error" });
     });
+    return true;
+}
+
+async function installAndEnableDependency(dependency) {
+    if (!dependency.installed) {
+        const installed = await runLifecycleAction(dependency, "install");
+        if (!installed) return false;
+    }
+    if (dependency.status === "enabled") return true;
+    return runLifecycleAction(dependency, "enable");
 }
 
 function dispatchLifecycleRefresh(module, action) {
@@ -665,11 +678,22 @@ function bindInteractions(root, signal) {
     );
     root.addEventListener(
         "change",
-        (event) => {
+        async (event) => {
             const selector = event.target.closest("[data-module-branch]");
             if (!selector) return;
-            selectedBranches.set(selector.dataset.moduleBranch, selector.value);
-            refreshMarketplace();
+            try {
+                await saveModuleReleaseChannel(
+                    selector.dataset.moduleBranch,
+                    selector.value,
+                );
+                selectedBranches.set(
+                    selector.dataset.moduleBranch,
+                    selector.value,
+                );
+                refreshMarketplace();
+            } catch (error) {
+                showToast(error.message, { type: "error" });
+            }
         },
         { signal },
     );
@@ -807,14 +831,44 @@ function bindInteractions(root, signal) {
                 if (!action) return;
             }
             if (action && module) {
-                if (pendingModuleActions.has(module.uuid)) return;
+                if (
+                    pendingModuleActions.has(module.uuid) ||
+                    pendingDependencyChecks.has(module.uuid)
+                )
+                    return;
+                let dependenciesReady = false;
+                if (["install", "enable"].includes(action)) {
+                    pendingDependencyChecks.add(module.uuid);
+                    try {
+                        dependenciesReady =
+                            await ensureModuleDependenciesReady(module);
+                    } finally {
+                        pendingDependencyChecks.delete(module.uuid);
+                    }
+                    if (!dependenciesReady) {
+                        if (action === "install") {
+                            showToast(
+                                i18n.t("ui.app.modules.install_cancelled"),
+                                { type: "info" },
+                            );
+                        }
+                        return;
+                    }
+                }
                 pendingModuleActions.set(module.uuid, action);
                 const finishLoading = target.dataset.moduleMenu
                     ? null
                     : beginButtonLoading(target);
                 refreshDetailActions();
                 try {
-                    await runLifecycleAction(module, action);
+                    const completed = await runLifecycleAction(module, action, {
+                        dependenciesReady,
+                    });
+                    if (completed === false && action === "install") {
+                        showToast(i18n.t("ui.app.modules.install_cancelled"), {
+                            type: "info",
+                        });
+                    }
                 } catch (error) {
                     console.error("module_lifecycle_action_failed", {
                         action,

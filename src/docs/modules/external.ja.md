@@ -110,3 +110,7 @@ await reuse.loadStylesheets(["layout.css", "page-sections.css"]);
 ```
 
 実行時スクリプトを読み込むモジュールは `ui:resourceLoader` を宣言し、検証と参照カウントを行う `loadScript({ id, src, globalName })` を呼び出します。アンマウント時に返されたハンドルを破棄し、ドキュメントへスクリプトを直接追加してはいけません。
+
+## インストール依存関係
+
+外部マニフェストでは、モジュールの UUID または ID の配列として `hardDependencies` と `softDependencies` を宣言できます。ハード依存関係は、続行前に管理者がインストールして有効化する必要があるため非推奨です。ソフト依存関係はインストールダイアログで任意に選択できます。

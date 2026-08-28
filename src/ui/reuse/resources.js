@@ -22,6 +22,7 @@ import { ensurePageStylesheet } from "./page-styles.js";
 export const COMMON_STYLESHEETS = Object.freeze([
     "button-loading.css",
     "char-counter.css",
+    "choice-checkbox.css",
     "floating-window.css",
     "graph.css",
     "hamburger-menu.css",
@@ -32,6 +33,7 @@ export const COMMON_STYLESHEETS = Object.freeze([
     "presence.css",
     "search-bar.css",
     "secret-visibility-toggle.css",
+    "state-pill.css",
     "structured-content.css",
     "theme.css",
     "toast.css",

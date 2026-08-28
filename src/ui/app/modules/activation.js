@@ -32,29 +32,15 @@ export function enableModuleWithIntegrityCheck(moduleId, i18n) {
 
 export async function activateModule(module, i18n) {
     const requiredMessage = i18n.t("ui.app.modules.config_required");
-    let configRouteAvailable = module.status === "enabled";
-    if (configRouteAvailable) {
-        try {
-            configRouteAvailable = await assertRequiredModulePreferences(
-                module,
-                requiredMessage,
-            );
-        } catch (error) {
-            if (error.code !== "module_config_required") throw error;
-            const savedValues = await openModulePreferences(
-                module,
-                modulePreferenceLabels(i18n),
-            );
-            if (!savedValues) return null;
-            assertSavedRequiredPreferences(
-                module,
-                savedValues,
-                requiredMessage,
-            );
-        }
-    }
+    const configRouteAvailable = await prepareRequiredModulePreferences(
+        module,
+        i18n,
+        requiredMessage,
+    );
+    if (configRouteAvailable === null) return null;
     if (!configRouteAvailable) {
         const result = await enableModuleWithIntegrityCheck(module.id, i18n);
+        if (!result) return null;
         try {
             const configuredAfterEnable = await assertRequiredModulePreferences(
                 module,
@@ -88,6 +74,26 @@ export async function activateModule(module, i18n) {
         return result;
     }
     return enableModuleWithIntegrityCheck(module.id, i18n);
+}
+
+async function prepareRequiredModulePreferences(module, i18n, message) {
+    try {
+        const available = await assertRequiredModulePreferences(
+            module,
+            message,
+        );
+        if (!available) return false;
+        return true;
+    } catch (error) {
+        if (error.code !== "module_config_required") throw error;
+        const savedValues = await openModulePreferences(
+            module,
+            modulePreferenceLabels(i18n),
+        );
+        if (!savedValues) return null;
+        assertSavedRequiredPreferences(module, savedValues, message);
+        return true;
+    }
 }
 
 function assertSavedRequiredPreferences(module, values, message) {

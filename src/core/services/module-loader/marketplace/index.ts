@@ -63,6 +63,7 @@ export interface MarketplaceModule extends ModuleManifest {
     installedBranch?: string;
     installedCommit?: string;
     installedVersion?: string;
+    selectedBranch?: string;
     updateAvailable: boolean;
     assetIds?: {
         icon?: string;
@@ -122,6 +123,13 @@ interface ModuleInstallProvenance {
 
 export class ModuleMarketplaceService extends MarketplaceServiceBase {
     private readonly installationLocks = new Map<string, Promise<void>>();
+
+    async saveSelectedBranch(
+        moduleUuid: string,
+        branch: string,
+    ): Promise<void> {
+        await this.updateCachedSelectedBranch(moduleUuid, branch);
+    }
     async getSettings(): Promise<ModuleMarketplaceSettings> {
         try {
             return JSON.parse(
@@ -444,6 +452,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                     );
                 }
             }
+            modules = this.applyCachedSelectedBranches(modules, cachedModules);
             const accepted = modules.filter((module) => {
                 const claim = claimedUuids.get(module.uuid);
                 const claimed = claim?.module;

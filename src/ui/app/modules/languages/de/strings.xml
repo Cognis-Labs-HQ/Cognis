@@ -53,6 +53,7 @@
   <string name="ui.app.modules.keyring_component">Modul-Marktplatz</string>
   <string name="ui.app.modules.back_to_modules">Zurück zu Modulen</string>
   <string name="ui.app.modules.install_complete">Modul installiert. Aktivieren Sie es, wenn Sie bereit sind.</string>
+  <string name="ui.app.modules.install_cancelled">Modulinstallation abgebrochen.</string>
   <string name="ui.app.modules.enable_complete">Modul aktiviert.</string>
   <string name="ui.app.modules.disable_complete">Modul deaktiviert. Sie können es jetzt deinstallieren.</string>
   <string name="ui.app.modules.uninstall_complete">Modul deinstalliert.</string>
@@ -85,4 +86,9 @@
   <string name="ui.app.modules.scan_private_repos_hint">Private Scans erfordern einen PAT und umfassen nur private Repositorys, auf die das Token zugreifen kann. Cognis prüft vor dem Speichern das Auflisten der Repositorys und das Lesen ihrer Inhalte.</string>
   <string name="ui.app.modules.pat_permissions_hint">GitHub-PAT mit differenzierten Berechtigungen: Wählen Sie die konfigurierte Organisation als Ressourcenbesitzer, gewähren Sie Zugriff auf alle Repositorys oder jedes private Repository, das Cognis durchsuchen soll, und setzen Sie die Repository-Berechtigungen „Metadata“ und „Contents“ jeweils auf „Read-only“. Aus der Liste der GitHub-Organisationsberechtigungen ist keine Berechtigung erforderlich. Schließen Sie bei Bedarf die Genehmigung der Organisation ab. Gewähren Sie einem klassischen PAT den Umfang „repo“ und autorisieren Sie ihn gegebenenfalls für das Organisations-SSO. GitLab-Token benötigen „read_api“ und „read_repository“.</string>
   <string name="ui.app.modules.validation_failed">Die Modulvalidierung ist fehlgeschlagen. Weitere Informationen finden Sie im Serverprotokoll.</string>
+  <string name="ui.app.modules.required">Erforderlich</string>
+  <string name="ui.app.modules.dependencies_title">Modulabhängigkeiten</string>
+  <string name="ui.app.modules.optional">Optional</string>
+  <string name="ui.app.modules.dependencies_message">Das Modul {{module}} hat die folgenden Abhängigkeiten. Die Installation kann erst fortgesetzt werden, wenn alle erforderlichen Abhängigkeiten installiert sind. Wenn optionale Abhängigkeiten nicht installiert werden, kann die Benutzererfahrung beeinträchtigt werden.</string>
+  <string name="ui.app.modules.hard_dependency_blocked">Installieren und aktivieren Sie alle erforderlichen Abhängigkeiten, bevor Sie fortfahren.</string>
 </resources>
