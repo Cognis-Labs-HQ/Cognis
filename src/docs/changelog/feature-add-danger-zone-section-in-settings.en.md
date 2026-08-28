@@ -1,5 +1,7 @@
 # Account Safety
 
+**Feature Branch:** feature-add-danger-zone-section-in-settings
+
 ## Added Settings Danger Zone
 
 Users can now archive, deactivate, or delete their own account from General settings after confirming a warning dialog with their password. Deactivated profiles reactivate on next login, archived profiles show a warning banner and block interactions until an administrator restores them, and deleted accounts are removed permanently.
@@ -23,3 +25,7 @@ The Admin Users Disable/Enable control now archives or reactivates the target pr
 ## Deactivation hibernates accounts
 
 Self-deactivation now hides accounts from interaction while letting users restore access by logging in again, and the danger-zone popup uses neutral cancel styling.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/84934f6b7a14135551c11da59c8fc51f014b7be4

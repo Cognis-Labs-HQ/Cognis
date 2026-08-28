@@ -1,5 +1,7 @@
 # Cognis ユーザーとの共有
 
+**Feature Branch:** feature-expand-share-popup-for-user-sharing
+
 ## 共有ポップアップがユーザー受信者に対応
 
 共通のポップアップで Cognis ユーザーを検索し、読み取り権限で新しい共有に追加できます。既存の共有の受信者確認やアクセス削除もポップアップ内で完了し、すべての受信者検索と共有変更は Share ゲートウェイを経由します。
@@ -531,3 +533,7 @@ ShareゲートウェイはUI機能コンテキストを通じてポップアッ�
 ## Link アダプターのテスト所有権
 
 Link Share ポップアップの回帰テストを、汎用 Share ゲートウェイのテストスイートではなく、Link Share アダプターとその UI 実装の配下へ移動しました。
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/75e72e78973245fc561c51ac89e645bd016416a0

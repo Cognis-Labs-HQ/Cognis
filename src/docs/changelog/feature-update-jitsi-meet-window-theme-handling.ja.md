@@ -1,5 +1,7 @@
 # Jitsi テーマ同期
 
+**Feature Branch:** feature-update-jitsi-meet-window-theme-handling
+
 ## Jitsi Meet テーマの即時更新
 
 Jitsi Meet ウィンドウは、アプリのテーマが変更されるたびに現在のアプリテーマを直接受け取るようになりました。これにより、埋め込みミーティングは保存済みテーマ状態を待たずに、ライトモードとダークモードをすぐに切り替えます。
@@ -11,3 +13,7 @@ Jitsi Meet ウィンドウは、アプリのテーマが変更されるたびに
 ## テーマ変更で古い埋め込みを更新
 
 進行中のミーティングで有効なCognisテーマが変わると、埋め込みは新しいインターフェース設定でJitsiウィンドウを更新し、`preferredTheme` のライブ更新を無視する環境でも正しいテーマを反映します。
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/8344f54c3af4936f1812de28754555ba886a945c

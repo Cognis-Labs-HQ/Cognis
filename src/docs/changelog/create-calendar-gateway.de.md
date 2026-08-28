@@ -1,5 +1,7 @@
 # Kalender-Upgrade
 
+**Feature Branch:** copilot/create-calendar-gateway
+
 ## Termine aus allen Kalendern sichtbar
 
 Nach einem Neuladen der Kalenderseite verschwinden Termine aus nicht
@@ -118,3 +120,7 @@ Kalenderfarbe, auch bei kompakten Karten in der Monatsansicht.
 Das Termin-Detailpopup berücksichtigt jetzt korrekt die 12/24-Stunden-Uhrzeiteinstellung
 aus den Einstellungen. Zuvor wurden Start- und Endzeiten im Popup immer im 12-Stunden-Format
 dargestellt, unabhängig vom gewählten Zeitformat.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/b32a4af54b95de949389be701a92fc829ad45325

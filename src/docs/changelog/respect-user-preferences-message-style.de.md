@@ -1,5 +1,7 @@
 # Meeting-Chat Nachrichtenstil
 
+**Feature Branch:** copilot/respect-user-preferences-message-style
+
 ## Sprechblasen- und IRC-Stil werden jetzt im Meetings-Chat berücksichtigt
 
 Das Mini-Chat-Panel auf der Meetings-Seite liest nun die Nachrichten-Stileinstellung des Benutzers (Standard, Sprechblasen oder IRC) und wendet sie auf Chat-Nachrichten an – passend zum Verhalten der eigenständigen Nachrichten-Seite.
@@ -95,3 +97,7 @@ Der Kopfbereich des Popups enthält nun zusätzlich zur Anzahl einen Avatar-Stre
 ## IRC-Abstände für Reaktionssteuerung erhöht
 
 Die Abstände im IRC-Stil wurden erhöht, damit schwebender Reaktions-Picker und Tooltip-Bereich sauber zwischen Nachrichten erscheinen.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ae50b1649e1dc2ea87972a89dbbe6e735c3a3ad7

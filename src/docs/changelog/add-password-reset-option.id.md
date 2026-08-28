@@ -1,5 +1,7 @@
 # Reset Kata Sandi Auth
 
+**Feature Branch:** copilot/add-password-reset-option
+
 ## Summary
 
 Ditambahkan alur reset kata sandi berbasis provider di Pengaturan Pengguna → Keamanan, termasuk route server yang mengevaluasi dukungan reset dari provider aktif dan menjalankan logika reset milik adapter.

@@ -1,5 +1,7 @@
 # Reaction Persistence & Emojis
 
+**Feature Branch:** copilot/tweak-message-reactions-and-fix-manifests
+
 ## Summary
 
 Tweaked message reactions to always remain visible when a message has received reactions, while the quick reaction picker still disappears on hover-out. Dramatically expanded the available emoji set via a new raw emoji data file in the social gateway. The quick reaction strip now shows five emojis that adapt over time to the user's most-used picks, with a "···" overflow button that opens a searchable full emoji picker.

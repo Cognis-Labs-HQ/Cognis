@@ -1,5 +1,7 @@
 # PR 変更履歴 — Cleanup Strings
 
+**Feature Branch:** copilot/cleanup-strings-and-codebase
+
 ## 要約
 
 変更履歴ファイル名ポリシーを、`copilot/` プレフィックスを除いたブランチ名

@@ -1,5 +1,7 @@
 # PR Changelog — SPA Router
 
+**Feature Branch:** copilot/check-spa-router-implementation
+
 ## Summary
 
 Completed a SPA consistency pass on page entrypoints by adding router coverage

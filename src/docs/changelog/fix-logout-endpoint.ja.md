@@ -1,5 +1,7 @@
 # 存在しないログアウトエンドポイントの修正
 
+**Feature Branch:** copilot/fix-logout-endpoint
+
 ## 概要
 
 `POST /api/v1/auth/logout` エンドポイントがすべてのリクエストに対して 404 を

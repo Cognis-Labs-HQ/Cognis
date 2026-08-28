@@ -1,5 +1,7 @@
 # Modul-Einstellungen wie bei Adaptern
 
+**Feature Branch:** feature-investigate-nextcloud-module-settings-loading-issue
+
 ## Modulzeilen öffnen jetzt einheitliche Einstellungen
 
 Jitsi Meet und Nextcloud Whiteboard öffnen ihre Konfiguration nun direkt über die Modulzeile statt über ein separates Zahnrad und verhalten sich damit wie Adapter-Konfigurationen.
@@ -19,3 +21,7 @@ Nextcloud-Whiteboard-Einstellungen akzeptieren jetzt Aktualisierungen von Server
 ## Feldgenaue Validierung hält Einstellungen geöffnet
 
 Validierungsfehler in Moduleinstellungen benennen jetzt das ungültige Feld. Dadurch kann das gemeinsame Konfigurations-Popup geöffnet bleiben und dieses Eingabefeld markieren, statt gültige Admin-Änderungen zu verwerfen.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e33bb93726bab2eb01bf3d24f3704d2b4127dda0

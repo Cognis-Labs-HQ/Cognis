@@ -1,5 +1,7 @@
 # ページコンポーザーのフォーム下書きを保持して管理
 
+**Feature Branch:** copilot/ensure-form-inputs-preserved
+
 ## 概要
 
 - フォーム値はレスポンシブ再レンダリング時だけでなく、ページ全体の再読み込み後も

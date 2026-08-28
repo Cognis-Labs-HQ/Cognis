@@ -1,5 +1,7 @@
 # Admin-Steuerverträge erzwingen
 
+**Feature Branch:** copilot/require-adapters-config-file
+
 ## Zusammenfassung
 
 Die Adapter-Steuerungen in der Administration wurden vereinheitlicht, sodass Gateways ihre Adapter-Endpunkte für Konfiguration und Umschalten ankündigen, Registration-Adapter leere Konfigurationsspeicherungen akzeptieren und Study-Adapter einen Disable-Endpunkt bereitstellen.

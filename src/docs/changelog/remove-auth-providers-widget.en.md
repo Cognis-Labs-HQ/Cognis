@@ -1,5 +1,7 @@
 # Auth and Password Policy
 
+**Feature Branch:** copilot/remove-auth-providers-widget
+
 ## Removed duplicate auth providers widget from Administration
 
 The auth providers widget card has been removed from the Authentication section of Administration, since it already appears on the Components page. The Authentication admin section has been dropped entirely.
@@ -75,3 +77,7 @@ Fixed register password confirmation criteria so an empty confirmation value is 
 ## Neutral pre-check criterion state
 
 The password-match criterion now stays neutral (neither met nor unmet) until the password field has input, preventing premature “matched” feedback.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/a103596a317f506ede1967a31791b935db24f047

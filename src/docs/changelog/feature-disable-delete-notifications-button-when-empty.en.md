@@ -1,5 +1,7 @@
 # Disable Empty Inbox
 
+**Feature Branch:** feature-disable-delete-notifications-button-when-empty
+
 ## Summary
 
 The internal notification inbox now disables the destructive clear-all button when no notifications are present. This prevents unnecessary confirmation prompts and keeps the action state aligned with inbox content.

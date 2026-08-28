@@ -1,5 +1,7 @@
 # Anbieterneutrale Fokussteuerung
 
+**Feature Branch:** feature-define-provider-neutral-focus-control-contract
+
 ## Beliebige deklarierte Kollaborationsfläche fokussieren
 
 Sichere Manifestverträge, gestufte Abläufe, Composer-eigene Bedienelemente und synchronisierte Overlays wurden ohne Anbieterbindung ergänzt.
@@ -143,3 +145,7 @@ Die Größenberechnung des Rasters befindet sich jetzt in einem eigenen, geteste
 ## Dashboard an erster Stelle
 
 Das Dashboard bleibt nun der erste Eintrag der primären Navigation, während alle anderen Einträge weiterhin alphabetisch sortiert werden.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/48395e7f07a41221e2e866d9892493df3e98b841

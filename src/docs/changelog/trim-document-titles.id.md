@@ -1,5 +1,7 @@
 # Pangkas Judul Dokumen
 
+**Feature Branch:** copilot/trim-document-titles
+
 ## Ringkasan
 
 - Judul dokumentasi yang panjang kini ditampilkan secara terpotong di navigasi docs pada UI.
@@ -16,3 +18,5 @@
 ## Tautan Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e8f614f1abf5a1453253da61913b2c38c07a897a
+
+## Commits

@@ -1,5 +1,7 @@
 # Fondasi Modul Jitsi Meet
 
+**Feature Branch:** copilot/create-jitsi-meet-module-ui
+
 ## Ringkasan
 
 Menambahkan modul Jitsi Meet baru dengan pengaturan instans yang dapat dikonfigurasi, persistensi rapat, pemeriksaan akses berbasis peserta, API status sesi rapat, halaman Meetings khusus, dan pemantauan administrasi.
@@ -70,3 +72,5 @@ Penyempurnaan lanjutan:
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/224a1bfb594412391c5dea99962fb9dc8c432396
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/65261ce6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/642ddf56
+
+## Commits

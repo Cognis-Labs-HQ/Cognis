@@ -1,5 +1,7 @@
 # SMTP TFA: Resend & Batas Kirim
 
+**Feature Branch:** copilot/move-smtp-tfa-resend-link
+
 ## Ringkasan
 
 Tautan "Kirim ulang kode email" pada layar autentikasi dua faktor SMTP kini
@@ -51,3 +53,7 @@ aktif.
 - `src/adapters/notify/smtp/tests/smtp-notification-sender.test.ts`
 - `src/adapters/tfa/smtp/tests/smtp-adapter.test.ts`
 - `src/docs/versions.en.md`
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/460f399ae3701867d002e0006d3a71a7dbf9e3c8

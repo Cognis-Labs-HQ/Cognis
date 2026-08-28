@@ -1,5 +1,7 @@
 # 構成可能なログ出力
 
+**Feature Branch:** feature-add-configurable-logging-adapters
+
 ## コンソールとファイルで独立したログレベル
 
 管理者は、ロギングゲートウェイが定義する対応レベルから、コンソールログとファイルログに別々の重大度しきい値を選択できるようになりました。
@@ -43,3 +45,7 @@ Console Logging と File Logging の行は、無効化できない必須アダ�
 ## Docker コンソールしきい値
 
 初期ブートストラップログが Logging Gateway の起動前から `LOG_LEVEL` を適用するようになり、Docker の既定値 `info` で起動処理全体のデバッグ出力が抑制されます。
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/1a843d6bcc3ff03b2c40d841f75d29d79da7dc6d

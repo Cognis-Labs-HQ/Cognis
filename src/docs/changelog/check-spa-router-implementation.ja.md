@@ -1,5 +1,7 @@
 # PR変更履歴 — SPAルーター実装チェック
 
+**Feature Branch:** copilot/check-spa-router-implementation
+
 ## 概要
 
 ページエントリーポイントのSPA整合性を見直し、招待ページのルーター

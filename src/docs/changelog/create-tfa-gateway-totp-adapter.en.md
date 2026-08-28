@@ -1,5 +1,7 @@
 # TFA Gateway & TOTP
 
+**Feature Branch:** copilot/create-tfa-gateway-totp-adapter
+
 ## Add New TFA Gateway
 
 Added a dedicated `tfa` gateway with adapter discovery under `src/adapters/tfa/*`, user method APIs, recovery-code lifecycle APIs, and admin reset endpoints.
@@ -71,3 +73,7 @@ The Administration TFA settings are now rendered inside Administration → Secur
 ## Administration TFA Strings Fixed
 
 The TFA card inside Administration → Security now uses existing localized gateway/admin string keys, so its section title, enforcement label, and hint render correctly again.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/a4201c685f2803dc1fdb3ad9d203f7e262919b03

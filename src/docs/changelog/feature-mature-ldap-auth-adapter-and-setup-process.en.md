@@ -1,5 +1,7 @@
 # Reliable LDAP directory setup
 
+**Feature Branch:** feature-mature-ldap-auth-adapter-and-setup-process
+
 ## Live OpenLDAP and FreeIPA discovery
 
 LDAP setup now binds to the configured directory and reads real users and groups before configuration continues. Username attributes, bounded paged searches, nested membership, and safer filters are supported.
@@ -63,3 +65,7 @@ The public login configuration now preserves credential-source metadata for ever
 ## Protected LDAP bind secrets
 
 Saved LDAP bind passwords are removed from administration API responses. Leaving the password field blank keeps the existing secret, while entering a new value securely replaces it.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/88fe3b0bec731d1c090768792cd73cea7264106e

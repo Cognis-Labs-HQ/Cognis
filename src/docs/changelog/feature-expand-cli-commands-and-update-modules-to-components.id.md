@@ -1,5 +1,7 @@
 # Cakupan CLI Modul
 
+**Feature Branch:** feature-expand-cli-commands-and-update-modules-to-components
+
 ## Perintah API modul ditambahkan
 
 Menambahkan perintah Cognisctl untuk endpoint backend modul yang sebelumnya memerlukan panggilan HTTP langsung, termasuk tampilan aktivitas Analytics, administrasi Jitsi Meet, dan operasi Nextcloud Whiteboard.
@@ -55,3 +57,7 @@ Inspeksi rapat Jitsi Meet sekarang memakai `jitsi-meet:meetings`, dan perintah k
 ## Filter CLI Komponen Nonaktif
 
 Plugin CLI komponen sekarang memeriksa ketersediaan komponen sebelum mendaftarkan perintah, sehingga modul, gateway, dan adapter yang dinonaktifkan tidak muncul di bantuan atau pencarian perintah saat API melaporkannya nonaktif. Perintah redundan `social:users:search` telah dihapus.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/555964b626fd72acf48154ab588e2b016f8affdd

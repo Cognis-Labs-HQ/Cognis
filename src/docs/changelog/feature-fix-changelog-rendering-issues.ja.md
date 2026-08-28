@@ -1,5 +1,7 @@
 # 完全なリリース変更履歴の要約
 
+**Feature Branch:** feature-fix-changelog-rendering-issues
+
 ## リリースポップアップに詳細を表示
 
 リリース通知で見出しだけでなく、各変更見出しの下に説明内容も表示されるようになりました。
@@ -15,3 +17,11 @@
 ## リポジトリ参照を更新
 
 過去のコミットリンクが現在の Cognis-Labs-HQ/Cognis リポジトリを参照するようになりました。
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/968c109885b2db1e168a7c62cc29b3c6be3d7b27
+
+## 変更履歴の出所を完全化
+
+自動チェックにより、ローカライズされたすべての変更履歴に Feature Branch と正規のコミットリンクが必須になりました。過去のいずれのリポジトリにも対応付けられない項目には、空のコミット一覧とともに N/A を明記します。

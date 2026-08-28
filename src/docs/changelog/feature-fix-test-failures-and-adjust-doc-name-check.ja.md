@@ -1,5 +1,7 @@
 # 信頼できるテストスイート
 
+**Feature Branch:** feature-fix-test-failures-and-adjust-doc-name-check
+
 ## 変更履歴を対象外に変更
 
 文書タイトルの長さ検査で変更履歴を除外し、文書ナビゲーションのラベルより長いリリース要約タイトルを使用できるようにしました。
@@ -11,3 +13,7 @@
 ## 大きなファイルを分割
 
 肥大化したテストと実行時モジュールを目的別のファイルへ分割し、ソースサイズの上限を満たすようにしました。
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/7850b66d4241a1b0f4ca12a846f3e7d808875695

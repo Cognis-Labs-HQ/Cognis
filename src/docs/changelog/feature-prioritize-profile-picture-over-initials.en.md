@@ -1,5 +1,7 @@
 # Prefer Profile Avatars
 
+**Feature Branch:** feature-prioritize-profile-picture-over-initials
+
 ## Summary
 
 Avatar rendering in the Messages adapter now prefers actual profile images over

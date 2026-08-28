@@ -1,5 +1,7 @@
 # Mode Pengiriman Siaran
 
+**Feature Branch:** copilot/allow-admin-broadcast-options
+
 ## Ringkasan
 
 Menambahkan sistem siaran baru yang dapat dikonfigurasi admin pada bagian Notifikasi dengan dua mode tampilan: bilah di bagian atas halaman dan popup. Admin dapat mengatur peran target, tanggal mulai dan selesai, kewajiban konfirmasi, perilaku pengalihan saat ditutup, serta status aktif/nonaktif.

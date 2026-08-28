@@ -1,5 +1,7 @@
 # Changelog PR
 
+**Feature Branch:** copilot/add-browser-language-detection
+
 ## Ringkasan
 
 Inisialisasi bahasa UI kini memprioritaskan preferensi bahasa dari browser pada

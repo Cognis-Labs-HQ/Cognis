@@ -1,5 +1,7 @@
 # Live Profile Updates
 
+**Feature Branch:** feature-fix-user-profile-page-updates
+
 ## Immediate profile details
 
 Saved display names and other profile details now appear without refreshing the page.
@@ -35,3 +37,7 @@ Targeted profile updates now run through the page composer, preserving unrelated
 ## Follow totals update immediately
 
 Following a viewed profile now adds the current account to the optimistic follower list before the server reconciliation completes.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/597aa63d6ef878eb2e40d6d8050a9956387fc0e8

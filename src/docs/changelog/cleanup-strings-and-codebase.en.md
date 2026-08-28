@@ -1,5 +1,7 @@
 # PR Changelog — String Cleanup
 
+**Feature Branch:** copilot/cleanup-strings-and-codebase
+
 ## Summary
 
 Updated changelog filename policy to use the branch name without the

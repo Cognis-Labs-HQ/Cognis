@@ -1,5 +1,7 @@
 # PR-Änderungsprotokoll
 
+**Feature Branch:** copilot/clean-up-directory-structure
+
 ## Zusammenfassung
 
 Der veraltete japanische Study-Adapter unter

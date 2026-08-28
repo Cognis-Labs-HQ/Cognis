@@ -1,5 +1,7 @@
 # アダプター管理コントロール契約を必須化
 
+**Feature Branch:** copilot/require-adapters-config-file
+
 ## 概要
 
 Administration のアダプター操作を整理し、ゲートウェイがアダプターの設定・切り替えエンドポイントを明示し、Registration アダプターが空の設定保存を受け付け、Study アダプターが disable 処理を公開するようにしました。

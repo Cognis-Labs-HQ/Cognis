@@ -1,5 +1,7 @@
 # Complete release changelog summaries
 
+**Feature Branch:** feature-fix-changelog-rendering-issues
+
 ## Show changelog details in the release popup
 
 Release notifications now display the explanatory content beneath each change heading instead of presenting headings alone.
@@ -15,3 +17,11 @@ Release popup headings now link directly to their complete Cognis Core changelog
 ## Updated repository references
 
 Historical commit links now point to the current Cognis-Labs-HQ/Cognis repository.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/968c109885b2db1e168a7c62cc29b3c6be3d7b27
+
+## Complete changelog provenance
+
+Automated checks now require every localized changelog to identify its feature branch and include canonical commit links. Entries that cannot be matched to either historical repository explicitly use N/A with an empty commit list.

@@ -1,5 +1,7 @@
 # 信頼性の高いモジュール管理の起動
 
+**Feature Branch:** feature-fix-nextcloud-whiteboard-config-path-error
+
 ## Whiteboard の状態からモジュールの準備完了を報告
 
 Whiteboard の準備状態エンドポイントは、モジュールライフサイクルのプロフィール依存関係チェックを重複させず、データベースと設定の状態を反映するようになりました。初期化順序によって、稼働中のプロフィールアダプターが誤って不足と報告されることはありません。
@@ -15,3 +17,7 @@ Nextcloud Whiteboard は、プロフィールサービスが後から初期化�
 ## 設定をプロフィールサービスから独立
 
 Nextcloud Whiteboard は、データベースストレージが利用可能になり次第、設定と有効化のエンドポイントを登録するようになりました。ホワイトボード共同作業に必要な別のプロフィールサービスが利用できない場合でも、管理者はモジュールを設定できます。
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/0b0a8a9672abe9c37b3d298cd494e6504aed5489

@@ -1,5 +1,7 @@
 # Domain Tepercaya Broadcast
 
+**Feature Branch:** copilot/implement-trusted-domains-list
+
 ## Ringkasan
 
 Validasi domain tepercaya bersama ditambahkan sehingga daftar keamanan di Administration sekarang mengendalikan pemeriksaan domain email sekaligus pengalihan dan tautan broadcast HTTP(S) eksternal tepercaya.

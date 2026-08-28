@@ -1,5 +1,7 @@
 # Jitsi-Meet-Modul-Grundlage
 
+**Feature Branch:** copilot/create-jitsi-meet-module-ui
+
 ## Zusammenfassung
 
 Ein neues Jitsi-Meet-Modul mit konfigurierbaren Instanz-Einstellungen, Meeting-Persistenz, teilnehmergebundenen Zugriffskontrollen, Meeting-Sitzungsstatus-APIs, eigener Meetings-Seite und Administrationsüberwachung wurde hinzugefügt.

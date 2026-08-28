@@ -1,5 +1,7 @@
 # PR Changelog — Ctx Backbone
 
+**Feature Branch:** copilot/update-ctx-usage-implementation
+
 ## Summary
 
 Shifted core API route wiring and several gateway/adapter bootstrap paths toward

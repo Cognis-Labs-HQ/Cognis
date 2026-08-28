@@ -1,5 +1,7 @@
 # Reaktionen & Emoji-Erweiterung
 
+**Feature Branch:** copilot/tweak-message-reactions-and-fix-manifests
+
 ## Zusammenfassung
 
 Bestehende Nachrichtenreaktionen bleiben nun dauerhaft sichtbar, auch wenn die Maus nicht über der Nachricht schwebt. Die Schnellreaktion-Leiste zeigt jetzt fünf anpassbare Emojis, die sich an die am häufigsten genutzten Reaktionen des Benutzers anpassen. Eine neue Schaltfläche „···" öffnet eine durchsuchbare Emoji-Auswahl mit über 300 Emojis.

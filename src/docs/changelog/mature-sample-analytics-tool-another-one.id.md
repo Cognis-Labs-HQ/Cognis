@@ -1,5 +1,7 @@
 # Analitik di Administrasi
 
+**Feature Branch:** copilot/mature-sample-analytics-tool-another-one
+
 ## Modul Sample Analytics digantikan oleh bagian Analitik lengkap di Administrasi
 
 Modul Sample Analytics telah dikembangkan menjadi alat analitik aktivitas pengguna
@@ -30,3 +32,7 @@ Tiga rute API yang diautentikasi admin menggantikan endpoint metrik stub sebelum
 `/api/v1/modules/analytics/metrics` (ringkasan dan rincian peran),
 `/api/v1/modules/analytics/series` (deret pendaftaran harian), dan
 `/api/v1/modules/analytics/activity-log` (log acara kustom terbaru).
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/56958a72892cc2d963b827c84d50783e099d185e

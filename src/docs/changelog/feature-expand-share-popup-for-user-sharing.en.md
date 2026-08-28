@@ -1,5 +1,7 @@
 # Share with Cognis users
 
+**Feature Branch:** feature-expand-share-popup-for-user-sharing
+
 ## The share popup now supports user recipients
 
 Search for Cognis users in the shared popup, attach them to a new share with read access, review recipients on existing shares, and remove access without leaving the popup. All recipient searches and share changes are routed through the Share gateway.
@@ -531,3 +533,7 @@ The share-links popup now lives with the Link Share adapter that owns link shari
 ## Link adapter test ownership
 
 The Link Share popup regression tests now live with the Link Share adapter and its UI implementation rather than in the generic Share gateway test suite.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/75e72e78973245fc561c51ac89e645bd016416a0

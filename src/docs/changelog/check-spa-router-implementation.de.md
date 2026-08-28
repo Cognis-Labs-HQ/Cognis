@@ -1,5 +1,7 @@
 # PR-Änderungsprotokoll
 
+**Feature Branch:** copilot/check-spa-router-implementation
+
 ## Zusammenfassung
 
 Ein SPA-Konsistenzdurchlauf für Seiten-Einstiegspunkte wurde abgeschlossen:

@@ -1,5 +1,7 @@
 # Trim Long Docs Titles in UI
 
+**Feature Branch:** copilot/trim-document-titles
+
 ## Summary
 
 - Truncated long documentation titles in the docs navigation UI.

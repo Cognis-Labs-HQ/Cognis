@@ -1,5 +1,7 @@
 # Jitsi Meet モジュール基盤
 
+**Feature Branch:** copilot/create-jitsi-meet-module-ui
+
 ## 概要
 
 設定可能なインスタンス設定、ミーティング永続化、参加者制限アクセスチェック、ミーティングセッション状態 API、専用 Meetings ページ、管理監視を備えた新しい Jitsi Meet モジュールを追加しました。

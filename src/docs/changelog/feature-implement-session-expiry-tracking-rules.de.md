@@ -1,5 +1,7 @@
 # Persönliche Sitzungszeitlimits berücksichtigen
 
+**Feature Branch:** feature-implement-session-expiry-tracking-rules
+
 ## Persönliche Zeitlimit-Auswahl innerhalb der globalen Grenze beibehalten
 
 Persönliche Sitzungszeitlimits haben Vorrang, wenn sie kürzer als die Administrationsgrenze sind. Beim Anmelden oder Zurücksetzen wird das aktuelle globale Zeitlimit als persönlicher Wert übernommen, anstatt späteren Erhöhungen fortlaufend zu folgen. Eine kürzere globale Grenze senkt und speichert den persönlichen Wert; eine längere lässt ihn unverändert. Die Dauersteuerung bietet nur passende Einheiten an und begrenzt das Zahlenfeld jeder Einheit auf den größten zulässigen ganzzahligen Wert.
@@ -15,3 +17,7 @@ Die globale Einstellung Nie überschreibt jetzt bestehende persönliche Zeitlimi
 ## Version des Gateway-Pakets weitergeben
 
 Das zusammengefasste Cognis-Gateway-Paket und alle davon abhängigen lokalen Komponenten deklarieren jetzt die aktualisierte getestete Version. Dadurch bleiben Workspace-Manifeste und Sperrdatei mit der Änderung am Authentifizierungs-Gateway synchron.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e92abbeda31ee1306beacce0bb7410129536cf00

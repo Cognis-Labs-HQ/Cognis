@@ -1,5 +1,7 @@
 # PR変更履歴 — Ctxを機能連携の中核にする
 
+**Feature Branch:** copilot/update-ctx-usage-implementation
+
 ## 概要
 
 コアAPIルート配線と複数のgateway/adapterブートストラップ経路を、

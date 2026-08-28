@@ -1,5 +1,7 @@
 # 安定した UI アセット読込
 
+**Feature Branch:** feature-fix-mime-type-error-in-nginx-configuration
+
 ## アセットエラーのキャッシュを防止
 
 Web プロキシと API は、見つからないフィンガープリント付き JavaScript および CSS の応答が不変アセットとしてキャッシュされないようになりました。デプロイの切り替えが重なっても、アセット URL の JSON 404 応答を保持せず、クライアントが正常に復旧できます。
@@ -61,3 +63,7 @@ Compose はデプロイ環境で管理されたデータベースパスワード
 ## Compose でデプロイ URL を必須化
 
 アプリケーションイメージは、公開ホストとして localhost を設定しなくなりました。両方のデータベース用 Compose プロファイルで `EXTERNAL_HOST` が必須となり、認証、招待、通知のリンクが受信者自身のローカルマシンを指すことを防ぎます。
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ec75586e143b25792032eaa906ba8b177868a6ef

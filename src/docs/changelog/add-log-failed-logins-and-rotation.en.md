@@ -1,5 +1,7 @@
 # Logging Stream Filtering
 
+**Feature Branch:** copilot/add-log-failed-logins-and-rotation
+
 ## Summary
 
 - Raised failed-login and noteworthy user account mutation logs to warning level.

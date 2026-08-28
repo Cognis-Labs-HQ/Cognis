@@ -1,5 +1,7 @@
 # 創設者向け Invite メニュー項目から管理者を除外
 
+**Feature Branch:** copilot/exclude-admins-from-invite-menu
+
 ## 概要
 
 Registration ナビゲーションバーの Invite 項目の表示条件を更新し、管理者相当の権限を持つ創設者ユーザーには Invite 項目を表示しないようにしました。

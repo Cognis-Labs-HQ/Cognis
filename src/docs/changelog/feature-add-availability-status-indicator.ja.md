@@ -1,5 +1,7 @@
 # 在席状況ステータス
 
+**Feature Branch:** feature-add-availability-status-indicator
+
 ## 在席状況をひと目で確認
 
 ナビゲーションバー、プロフィールプレビュー、メッセージ、会議のアバターに、空き、予定あり、仮予定の状態が表示されます。
@@ -119,3 +121,7 @@
 ## メッセージのアバターを整理
 
 メッセージのサイドバー、開いているチャットの画像、送信者のアバターでは在席状況ライトを表示しないようにしました。プロフィールへのリンクは維持されます。
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/9ab0e629254a98caae0c359d1dfeb103d094d3e5

@@ -1,5 +1,7 @@
 # Faster Language Switching
 
+**Feature Branch:** feature-add-language-switcher-with-settings-options
+
 ## Language switcher in the dashboard
 
 Cycle through preferred languages from the floating flag button. The final choice is promoted after five seconds and applied with a page reload.
@@ -15,3 +17,7 @@ Turning the preference off marks Settings as changed and hides the floating cont
 ## Page buttons update during navigation
 
 Pages now retain ownership of their own Page Composer edit control, so navigating from a non-editable page to an editable page immediately shows every available action without requiring a refresh.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/741230d55d134bfb52a89d52831bedfdcc1c13f1

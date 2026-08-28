@@ -1,5 +1,7 @@
 # Formularentwürfe im Composer
 
+**Feature Branch:** copilot/ensure-form-inputs-preserved
+
 ## Zusammenfassung
 
 - Formularwerte bleiben nun nicht nur bei responsiven Neurenderings erhalten,

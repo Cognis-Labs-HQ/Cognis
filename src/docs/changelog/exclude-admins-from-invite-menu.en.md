@@ -1,5 +1,7 @@
 # Exclude Admins from Invites
 
+**Feature Branch:** copilot/exclude-admins-from-invite-menu
+
 ## Summary
 
 Updated the registration navbar Invite-menu visibility rule so founder users with admin-equivalent access do not see the Invite entry.

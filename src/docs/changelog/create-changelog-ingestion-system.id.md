@@ -1,5 +1,7 @@
 # Update Ringkasan Changelog
 
+**Feature Branch:** copilot/create-changelog-ingestion-system
+
 ## Parsing Heading Changelog
 
 Ingesti changelog rilis sekarang memakai heading `#` sebagai judul changelog
@@ -21,3 +23,7 @@ Perubahan” dengan tooltip informasi:
 Instruksi kontribusi sekarang menetapkan struktur changelog wajib, menegaskan
 direktori tunggal `src/docs/changelog/`, dan mewajibkan file changelog baru
 untuk setiap PR di semua bahasa yang didukung.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/db722676f71a4fd6db477b42b735a7b0692da365

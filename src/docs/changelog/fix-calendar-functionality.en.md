@@ -1,5 +1,7 @@
 # Calendar Share Links
 
+**Feature Branch:** copilot/fix-calendar-functionality
+
 ## Multiple links return to the popup
 
 Calendar edit popups now keep every generated share link instead of replacing the
@@ -70,3 +72,7 @@ complete.
 Pending calendar invitations for events whose end time has already passed are
 now excluded from the invitations list. Previously, past events with a pending
 response could still appear in the upcoming section even after they were over.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/4137bffbc99535676bf8d9a32060aa302556c333

@@ -1,5 +1,7 @@
 # Form Memory Fixes
 
+**Feature Branch:** copilot/reassess-form-memory-logic
+
 ## Role dropdowns excluded from form memory
 
 The Users page role selects are now excluded from the page composer's form draft memory. Previously, re-rendering the users table (e.g. after a role change failed and the composer refreshed) could restore stale role values from the draft store back into dropdowns, potentially masking the current server-side state.
@@ -20,3 +22,7 @@ fired immediately after the switch then persisted that stale text under the
 newly opened room's draft key, risking an accidental send of the wrong message.
 The composer textarea is now explicitly cleared before the input event fires
 whenever the opened room has no persisted draft.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f6e4f64c9468e5367096836d041488b2f2f6ae34

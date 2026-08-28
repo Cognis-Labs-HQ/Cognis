@@ -1,5 +1,7 @@
 # Message Style in Meeting Chat
 
+**Feature Branch:** copilot/respect-user-preferences-message-style
+
 ## Speech bubbles and IRC style now respected in Meetings chat
 
 The mini-chat panel on the Meetings page now reads the user's message style preference (Default, Speech Bubbles, or IRC) and applies it to chat messages, matching the behaviour of the standalone Messages page.
@@ -115,3 +117,7 @@ The "Seen by X people" popup header now includes the reader avatar strip in addi
 ## IRC spacing increased for reaction controls
 
 IRC-style message spacing has been increased so the floating reaction picker and reaction tooltip area render cleanly between messages.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ae50b1649e1dc2ea87972a89dbbe6e735c3a3ad7

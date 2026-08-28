@@ -1,5 +1,7 @@
 # Leere Inbox: Löschen gesperrt
 
+**Feature Branch:** feature-disable-delete-notifications-button-when-empty
+
 ## Zusammenfassung
 
 Der interne Benachrichtigungs-Posteingang deaktiviert jetzt die destruktive „Alle löschen“-Schaltfläche, wenn keine Benachrichtigungen vorhanden sind. Dadurch werden unnötige Bestätigungsdialoge verhindert und der Aktionszustand bleibt mit dem Posteingang synchron.

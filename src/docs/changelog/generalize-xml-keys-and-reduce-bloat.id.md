@@ -1,5 +1,7 @@
 # Generalisasi String i18n
 
+**Feature Branch:** copilot/generalize-xml-keys-and-reduce-bloat
+
 ## Ringkasan
 
 Kunci i18n yang spesifik untuk komponen dipindahkan dari file bahasa inti ke direktori `languages/` milik masing-masing komponen. Lapisan i18n diperluas dengan `loadComponentStrings` dan `extendI18n` agar komponen dapat memuat string mereka sendiri tanpa mengotori namespace global. Sekitar 90 kunci yang sudah tidak digunakan dan salah tempat dihapus dari file string inti.

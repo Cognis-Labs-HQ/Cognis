@@ -1,5 +1,7 @@
 # Einheitliche Profilavatare
 
+**Feature Branch:** feature-enforce-single-source-for-profile-avatars
+
 ## Eine profilverwaltete Avatarquelle
 
 Das Laden und die Ersatzdarstellung von Profilavataren sowie die Erzeugung von Initialen und deren Farben erfolgen jetzt über die UI-CTX-Fähigkeit des Profiladapters. UI-Aufrufer fragen diesen Adapterbeitrag direkt über CTX ab, statt eine Profilabstraktion im Core-Reuse einzuführen, sodass Namen überall denselben Avatar erzeugen.
@@ -19,3 +21,7 @@ Direkt geladene Nachrichtenseiten warten nun auf registrierte Navigationsbeiträ
 ## Study-Klassenräume binden den Profil-UI-Kontext korrekt ein
 
 Klassenraumseiten importieren den UI-Kontext nun als ausführbaren Modulcode, sodass Initialen von Lehrkräften und belegten Plätzen ohne Fehler durch eine fehlende Variable dargestellt werden.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/fa7325e7709ea2942c3ce560b033429297e5e8f7

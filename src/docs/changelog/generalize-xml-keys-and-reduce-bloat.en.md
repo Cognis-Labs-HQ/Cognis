@@ -1,5 +1,7 @@
 # Generalize i18n & Cut Bloat
 
+**Feature Branch:** copilot/generalize-xml-keys-and-reduce-bloat
+
 ## Summary
 
 Moved component-specific i18n keys out of the core language files and into per-component `languages/` directories. Added `loadComponentStrings` and `extendI18n` to the i18n layer so components can load their own strings without polluting the global namespace. Removed ~90 dead and misplaced keys from the core strings files.

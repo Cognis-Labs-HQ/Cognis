@@ -1,5 +1,7 @@
 # Changelog
 
+**Feature Branch:** N/A
+
 ## Überblick
 
 Dieses Verzeichnis enthält Changelog-Einträge als eine Markdown-Datei pro Pull
@@ -22,3 +24,5 @@ modular und gut prüfbar bleibt.
 
 - [create-changelog-ingestion-system](/changelogs/create-changelog-ingestion-system)
 - [cleanup-strings-and-codebase](/changelogs/cleanup-strings-and-codebase)
+
+## Commits

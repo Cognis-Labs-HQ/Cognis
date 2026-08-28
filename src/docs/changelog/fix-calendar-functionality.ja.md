@@ -1,5 +1,7 @@
 # 共有カレンダーリンク
 
+**Feature Branch:** copilot/fix-calendar-functionality
+
 ## 複数リンク表示が復活
 
 カレンダー編集ポップアップは、生成した共有リンクを最新の1件で上書きせず、
@@ -59,3 +61,7 @@
 終了時刻が過ぎたイベントへの保留中の招待は、招待リストに表示されなくなりました。
 以前は、終了済みのイベントでも未回答のまま「今後の予定」として表示される場合が
 ありました。
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/4137bffbc99535676bf8d9a32060aa302556c333

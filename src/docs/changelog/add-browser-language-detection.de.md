@@ -1,5 +1,7 @@
 # PR-Änderungsprotokoll
 
+**Feature Branch:** copilot/add-browser-language-detection
+
 ## Zusammenfassung
 
 Die Initialisierung der UI-Sprache priorisiert beim ersten Laden jetzt die

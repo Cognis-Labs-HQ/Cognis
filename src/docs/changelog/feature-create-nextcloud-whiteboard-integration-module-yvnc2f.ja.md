@@ -1,5 +1,7 @@
 # ダッシュボード内のホワイトボード
 
+**Feature Branch:** feature-create-nextcloud-whiteboard-integration-module-yvnc2f
+
 ## キャンバスがダッシュボードレイアウト内に直接埋め込まれるように
 
 ホワイトボードキャンバスはブラウザのポップアップとして開かれなくなりました。ボードリストからボードをクリックすると、フルの描画キャンバスがダッシュボード内にインラインで読み込まれ、すべてのコラボレーションを同じタブで維持します。
@@ -27,3 +29,7 @@ Socket.IO 接続とエレメント同期は以前と同じように機能しま�
 ## 新機能: `whiteboard:getEmbedUrl` と `whiteboard:fetchBoardData`
 
 他のモジュールやアダプターがこれらの公開ケイパビリティを通じてホワイトボードの埋め込み URL やメタデータを取得でき、将来のクラスルームおよびミーティング統合が可能になります。
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/3fba3a4ae030e1c17efc8f85e1245ceb69bc135d

@@ -1,5 +1,7 @@
 # Penemuan modul privat yang andal
 
+**Feature Branch:** feature-fix-private-repo-visibility-in-module-marketplace
+
 ## Pemindaian repositori privat tetap aktif setelah mulai ulang
 
 Sumber bursa Cognis Labs HQ kini menyimpan pengaturan pemindaian repositori privat di dalam rekaman sumber bawaan, sehingga modul privat yang dikonfigurasi tetap dapat ditemukan setelah server dimulai ulang.
@@ -15,3 +17,7 @@ Penemuan privat tidak lagi membatasi daftar repositori terautentikasi GitHub ber
 ## Pengaturan sumber memakai penyimpanan kontainer persisten
 
 Kontainer produksi kini menulis rekaman sumber bursa ke volume konfigurasi terpasang, bukan ke path di bawah build server yang dapat diganti. Rekaman tersebut mempertahankan sakelar pemindaian privat dan pengenal untuk mengambil PAT dari keyring pengguna yang terenkripsi dan tersinkron ke server setelah mulai ulang.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/2d31b43565ee1b05d00301b9ed1faaf99a8a6f89

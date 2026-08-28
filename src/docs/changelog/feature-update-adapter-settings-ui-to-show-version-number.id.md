@@ -1,5 +1,7 @@
 # Visibilitas Versi Adapter
 
+**Feature Branch:** feature-update-adapter-settings-ui-to-show-version-number
+
 ## Pengaturan adapter kini menampilkan versi
 
 Kontrol adapter di Administration kini menampilkan versi setiap adapter di samping nama adapter, dan dialog konfigurasi adapter menyertakan versi yang sama pada heading saat metadata versi tersedia.
@@ -19,3 +21,7 @@ Semua adaptor dan gateway yang ditemukan kini menyatakan penerbitnya, termasuk A
 ## Daftar adaptor gateway yang lengkap
 
 Administrasi kini mencantumkan adaptor Penyimpanan File, Database, dan Pencatatan, termasuk metadata versi dan penerbitnya.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/a1669782a660f01000ed49047ee7cfc5cf9d20cf

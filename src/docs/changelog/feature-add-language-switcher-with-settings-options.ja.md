@@ -1,5 +1,7 @@
 # すばやい言語切替
 
+**Feature Branch:** feature-add-language-switcher-with-settings-options
+
 ## ダッシュボードの言語切替
 
 フローティング表示された旗のボタンで優先言語を順番に切り替えられます。最後の選択は5秒後に最優先へ移動し、ページの再読み込みで適用されます。
@@ -15,3 +17,7 @@
 ## 画面遷移時にボタンを更新
 
 各ページが固有の Page Composer 編集コントロールを保持するようになり、編集できないページから編集できるページへ移動した際に、再読み込みなしですべての利用可能な操作がすぐに表示されます。
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/741230d55d134bfb52a89d52831bedfdcc1c13f1

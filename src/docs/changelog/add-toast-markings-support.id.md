@@ -1,5 +1,7 @@
 # Visibilitas Ikon Toast Terang
 
+**Feature Branch:** copilot/add-toast-markings-support
+
 ## Ringkasan
 
 Memperbaiki bug ikon notifikasi toast (error ✕, sukses ✓, peringatan ⚠, info ℹ) yang tidak terlihat di mode terang. Pada mode terang, variabel `--color-danger-text` dan `--color-success-text` menghasilkan nilai `#fff` (putih di atas latar putih), sehingga penanda menghilang. Aturan baru untuk mode terang kini menggunakan token warna teks garis batas agar ikon tetap terlihat jelas.
@@ -12,3 +14,5 @@ Memperbaiki bug ikon notifikasi toast (error ✕, sukses ✓, peringatan ⚠, in
 ## Tautan Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1305bfc163422709964268baafe8b0036c7b5c10
+
+## Commits

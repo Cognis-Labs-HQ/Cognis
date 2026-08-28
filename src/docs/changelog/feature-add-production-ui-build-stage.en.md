@@ -1,5 +1,7 @@
 # Production UI Build
 
+**Feature Branch:** feature-add-production-ui-build-stage
+
 ## Hashed production assets
 
 The production image now serves minified, content-hashed JavaScript and CSS bundles through a generated manifest while development continues to serve source modules.
@@ -31,3 +33,7 @@ Static asset negotiation now excludes encodings rejected with a zero quality val
 ## Component registration is validated
 
 Production builds now verify every compiled adapter entrypoint. Database and local-file manifests point to their actual entry modules, the files gateway resolves adapters from the configured compiled root, and the Messages adapter loads its room-key contribution from the correct store module.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/d9af537d6fa92347026e779da4387d886f0e8238

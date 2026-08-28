@@ -1,5 +1,7 @@
 # SMTP TFA Resend & Rate Limits
 
+**Feature Branch:** copilot/move-smtp-tfa-resend-link
+
 ## Summary
 
 The "Resend email code" link in the SMTP two-factor authentication screen now
@@ -51,3 +53,7 @@ active.
 - `src/adapters/notify/smtp/tests/smtp-notification-sender.test.ts`
 - `src/adapters/tfa/smtp/tests/smtp-adapter.test.ts`
 - `src/docs/versions.en.md`
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/460f399ae3701867d002e0006d3a71a7dbf9e3c8

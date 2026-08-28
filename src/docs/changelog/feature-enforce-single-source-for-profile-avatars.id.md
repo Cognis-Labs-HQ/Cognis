@@ -1,5 +1,7 @@
 # Avatar profil yang konsisten
 
+**Feature Branch:** feature-enforce-single-source-for-profile-avatars
+
 ## Satu sumber avatar milik profil
 
 Pemuatan avatar profil, tampilan cadangan, pembuatan inisial, dan warna inisial kini berasal dari kapabilitas CTX UI adaptor Profil. Pemanggil UI meminta kontribusi adaptor tersebut secara langsung melalui CTX tanpa memperkenalkan abstraksi profil di reuse inti, sehingga nama menghasilkan avatar yang sama di seluruh aplikasi.
@@ -19,3 +21,7 @@ Halaman Pesan yang dimuat langsung kini menunggu kontribusi navigasi terdaftar, 
 ## Ruang kelas Study mengikat konteks UI Profil dengan benar
 
 Halaman ruang kelas kini mengimpor konteks UI sebagai kode modul yang dapat dijalankan, sehingga inisial pengajar dan kursi yang terisi dirender tanpa galat variabel yang hilang.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/fa7325e7709ea2942c3ce560b033429297e5e8f7

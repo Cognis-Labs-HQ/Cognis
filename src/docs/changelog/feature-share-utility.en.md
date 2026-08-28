@@ -1,5 +1,7 @@
 # Share Utility
 
+**Feature Branch:** copilot/feature-share-utility
+
 ## Add a Share Gateway
 
 Cognis now includes a dedicated Share gateway that owns public share-token minting, listing, revocation, and resolution. The gateway registers canonical share flows, persists share tokens in the DB, and exposes a public `/share/:token` page backed by the standard page composer with a minimal shell.
@@ -159,3 +161,7 @@ The share links popup listed links from a prior meeting instance as "Active" eve
 ## Polish Share Page Actions
 
 Share link rows now copy their URL from an explicit button instead of behaving like navigation links, restricted-access popup actions use neutral button styling, and mounted shared pages can request full-width/full-height composer placement. Expired or unavailable share links now also show their status in the page descriptor instead of repeating the generic shared-content subtitle.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/22b2896eaf8f13d17c1161bfc12085036f2539c8

@@ -1,5 +1,7 @@
 # i18n-Strings vereinfachen
 
+**Feature Branch:** copilot/generalize-xml-keys-and-reduce-bloat
+
 ## Zusammenfassung
 
 Komponentenspezifische i18n-Schlüssel wurden aus den zentralen Sprachdateien in komponenteneigene `languages/`-Verzeichnisse ausgelagert. Die i18n-Schicht wurde um `loadComponentStrings` und `extendI18n` erweitert, damit Komponenten ihre eigenen Strings laden können, ohne den globalen Namensraum zu belasten. Etwa 90 veraltete und fehlplatzierten Schlüssel wurden aus den zentralen Strings-Dateien entfernt.

@@ -1,5 +1,7 @@
 # PR Changelog — API Checks
 
+**Feature Branch:** copilot/centralize-api-permission-checks
+
 ## Summary
 
 Fixed owner-role authorization gaps on user-scoped API endpoints and centralized

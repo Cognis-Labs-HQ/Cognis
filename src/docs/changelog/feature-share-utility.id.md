@@ -1,5 +1,7 @@
 # Share Utility
 
+**Feature Branch:** copilot/feature-share-utility
+
 ## Tambah Gateway Share
 
 Cognis sekarang memiliki gateway Share khusus yang menangani pembuatan, daftar, pencabutan, dan resolusi token share publik. Gateway ini mendaftarkan flow share kanonis, menyimpan token share di DB, dan menyediakan halaman publik `/share/:token` yang dibangun dengan page composer standar dalam shell minimal.
@@ -154,3 +156,7 @@ Popup tautan berbagi menampilkan tautan dari instans rapat sebelumnya sebagai "A
 ## Poles Aksi Halaman Share
 
 Baris tautan share kini menyalin URL melalui tombol eksplisit, bukan berperilaku seperti tautan navigasi. Aksi pada popup akses terbatas memakai gaya tombol netral, dan halaman share yang dimuat dapat meminta penempatan page composer dengan lebar dan tinggi penuh. Tautan share yang kedaluwarsa atau tidak tersedia kini juga menampilkan statusnya di deskripsi halaman, bukan mengulang subtitle konten bersama yang generik.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/22b2896eaf8f13d17c1161bfc12085036f2539c8

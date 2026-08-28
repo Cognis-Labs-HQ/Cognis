@@ -1,5 +1,7 @@
 # UI で長いドキュメントタイトルを短縮
 
+**Feature Branch:** copilot/trim-document-titles
+
 ## 概要
 
 - 長いドキュメントタイトルが Docs ナビゲーション UI で省略表示されるようになりました。

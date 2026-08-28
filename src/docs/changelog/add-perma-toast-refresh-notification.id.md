@@ -1,5 +1,7 @@
 # Toast Permanen untuk Refresh
 
+**Feature Branch:** copilot/add-perma-toast-refresh-notification
+
 ## Ringkasan
 
 Ditambahkan toast peringatan permanen yang meminta pengguna menyegarkan halaman saat koneksi API terautentikasi gagal karena gangguan server/jaringan (kegagalan jaringan atau respons 5xx yang dapat dicoba ulang).

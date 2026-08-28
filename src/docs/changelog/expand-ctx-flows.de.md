@@ -1,5 +1,7 @@
 # Änderungsprotokoll — ctx flows
 
+**Feature Branch:** N/A
+
 ## Zusammenfassung
 
 Das `ctx`-Flow-System ist jetzt der ausschließliche Weg für die
@@ -45,3 +47,5 @@ Stage-Ergebnis auf Autorisierungsfehler (403).
 - `src/adapters/social/messages/routes/room-routes.ts`
 - `src/api/tests/users/user-routes.test.ts`
 - `src/adapters/social/messages/tests/routes-notifications.test.ts`
+
+## Commits

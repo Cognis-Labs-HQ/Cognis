@@ -1,5 +1,7 @@
 # Passwortwechsel gehärtet
 
+**Feature Branch:** copilot/clean-up-password-change-popup
+
 ## Aktuelles Passwort Pflicht
 
 Passwortänderungen in den Benutzereinstellungen erfordern jetzt immer das aktuelle Passwort und prüfen es serverseitig, bevor ein neues Passwort akzeptiert wird.
@@ -15,3 +17,7 @@ In den Sicherheitseinstellungen wurde „Passwort Zurücksetzen“ in Abschnitt,
 ## Randfälle Bei Prüfung Behoben
 
 Die Eingabe des aktuellen Passworts behält nun führende und nachgestellte Leerzeichen bei, migrierte Konten schreiben den Hash vor der Rotation vor dem Update in den Verlauf, bestehende Auth-Adapter mit Zwei-Parameter-Signatur bleiben kompatibel, und die Verlaufsspeicherung bleibt in DB- und Volatile-Store konsistent begrenzt.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/926f513f10cade5b1e5f9367c98276b2898b4bc2

@@ -1,5 +1,7 @@
 # Admins aus Invite-Menü raus
 
+**Feature Branch:** copilot/exclude-admins-from-invite-menu
+
 ## Zusammenfassung
 
 Die Sichtbarkeitsregel für den Invite-Eintrag in der Registration-Navigationsleiste wurde angepasst, sodass Gründer mit admin-äquivalentem Zugriff den Invite-Eintrag nicht sehen.

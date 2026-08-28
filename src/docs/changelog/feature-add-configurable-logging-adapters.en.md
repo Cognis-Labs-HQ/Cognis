@@ -1,5 +1,7 @@
 # Configurable logging outputs
 
+**Feature Branch:** feature-add-configurable-logging-adapters
+
 ## Independent console and file log levels
 
 Administrators can now select separate severity thresholds for console and file logging from the supported levels defined by the logging gateway.
@@ -43,3 +45,7 @@ Console configuration changes now update the same runtime logging function used 
 ## Docker console threshold
 
 Early bootstrap logging now applies `LOG_LEVEL` before the logging gateway starts, so the Docker default of `info` suppresses debug output throughout startup.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/1a843d6bcc3ff03b2c40d841f75d29d79da7dc6d

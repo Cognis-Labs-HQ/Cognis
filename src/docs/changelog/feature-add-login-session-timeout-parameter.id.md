@@ -1,5 +1,7 @@
 # Masa berlaku sesi login yang dapat dikonfigurasi
 
+**Feature Branch:** feature-add-login-session-timeout-parameter
+
 ## Administrator mengendalikan durasi sesi maksimum
 
 Administrasi → Keamanan kini menyediakan batas waktu sesi login bawaan sekaligus maksimum.
@@ -63,3 +65,7 @@ Pembaruan batas waktu sesi kini mengembalikan galat ketersediaan tanpa mencabut 
 ## Selaraskan dependensi internal
 
 Modul Jitsi Meet kini mendeklarasikan versi adaptor Pesan lokal yang telah diuji agar pemeriksaan arsitektur di seluruh repositori tetap andal.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/70785d43ef6b76fb1d863dcc795ecb9bd3bcab7f

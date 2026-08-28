@@ -1,5 +1,7 @@
 # Pesan: Bilah Sisi Templat
 
+**Feature Branch:** copilot/create-message-template-screen
+
 ## Pengelolaan templat dipindahkan ke bilah sisi
 
 Templat pesan kini dikelola langsung dari bilah sisi. Sebuah tombol berlabel di bagian atas bagian templat membuka popup buat/ubah yang terfokus, dan setiap templat yang tersimpan ditampilkan di daftar di bawahnya dengan tindakan gunakan, ubah, dan hapus.
@@ -23,3 +25,7 @@ Templat pesan yang disimpan kini terisolasi untuk akun yang membuatnya. Di peran
 ## Teks komposer dipertahankan saat tata letak dibangun ulang
 
 Teks yang diketik di komposer pesan yang belum dikirim tidak lagi hilang ketika kompositor halaman membangun ulang kisi tata letak, seperti saat melewati titik putus kolom responsif.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf607d2e31db00d07bdc6e7a247b2e1795857c2

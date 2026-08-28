@@ -1,5 +1,7 @@
 # Mode Terang Halaman Kesalahan
 
+**Feature Branch:** copilot/add-light-mode-support
+
 ## Halaman kesalahan kini beradaptasi dengan baik di mode terang
 
 Halaman kesalahan kini ditampilkan dengan benar di mode gelap maupun mode
@@ -19,3 +21,7 @@ yang hampir tidak terlihat, membuat elemen interaktif tampak datar.
 Warna tema browser chrome (bilah alamat di perangkat mobile) kini diperbarui
 secara dinamis saat pengguna mengganti tema, beralih antara biru tua gelap dan
 warna halaman biru-putih terang.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ca2c1bc892e1236a186d35264745f40c369a8ed0

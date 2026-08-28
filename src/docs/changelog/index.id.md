@@ -1,5 +1,7 @@
 # Catatan Perubahan
 
+**Feature Branch:** N/A
+
 ## Ringkasan
 
 Direktori ini menyimpan entri changelog sebagai satu berkas Markdown untuk
@@ -22,3 +24,5 @@ tetap modular dan mudah diaudit.
 
 - [create-changelog-ingestion-system](/changelogs/create-changelog-ingestion-system)
 - [cleanup-strings-and-codebase](/changelogs/cleanup-strings-and-codebase)
+
+## Commits

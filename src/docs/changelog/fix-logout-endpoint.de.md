@@ -1,5 +1,7 @@
 # Fehlenden Logout-Endpunkt
 
+**Feature Branch:** copilot/fix-logout-endpoint
+
 ## Zusammenfassung
 
 Der Endpunkt `POST /api/v1/auth/logout` lieferte bei allen Anfragen eine

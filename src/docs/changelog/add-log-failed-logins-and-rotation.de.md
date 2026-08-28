@@ -1,5 +1,7 @@
 # Log-Stream-Filter
 
+**Feature Branch:** copilot/add-log-failed-logins-and-rotation
+
 ## Zusammenfassung
 
 - Fehlgeschlagene Logins und wichtige Änderungen an Benutzerkonten werden jetzt als Warnung protokolliert.

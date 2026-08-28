@@ -1,5 +1,7 @@
 # Memperbaiki Endpoint
 
+**Feature Branch:** copilot/fix-logout-endpoint
+
 ## Ringkasan
 
 Endpoint `POST /api/v1/auth/logout` mengembalikan 404 untuk semua permintaan.
@@ -33,3 +35,5 @@ agar token aktif benar-benar dicabut di sisi server pada alur pengguna normal.
 ## Tautan Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/79bc1e7242a82f3f6a3b15c0210cdf32ef752893
+
+## Commits

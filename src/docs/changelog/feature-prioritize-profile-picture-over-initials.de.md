@@ -1,5 +1,7 @@
 # Profilbilder in Nachrichten
 
+**Feature Branch:** feature-prioritize-profile-picture-over-initials
+
 ## Zusammenfassung
 
 Die Avatar-Darstellung im Messages-Adapter bevorzugt nun tatsächliche

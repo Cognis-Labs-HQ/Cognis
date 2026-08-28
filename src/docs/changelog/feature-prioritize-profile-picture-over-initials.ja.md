@@ -1,5 +1,7 @@
 # メッセージでプロフィールアバターを優先する
 
+**Feature Branch:** feature-prioritize-profile-picture-over-initials
+
 ## 概要
 
 メッセージアダプターのアバター表示が、イニシャルより実際のプロフィール画像を

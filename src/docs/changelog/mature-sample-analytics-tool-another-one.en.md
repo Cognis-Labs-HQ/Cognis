@@ -1,5 +1,7 @@
 # Analytics Admin Section
 
+**Feature Branch:** copilot/mature-sample-analytics-tool-another-one
+
 ## Sample Analytics module replaced by a full Analytics section in Administration
 
 The Sample Analytics module has been matured into a complete user activity analytics
@@ -30,3 +32,7 @@ Three admin-authenticated API routes replace the former stub metrics endpoint:
 `/api/v1/modules/analytics/metrics` (summary counts and role breakdown),
 `/api/v1/modules/analytics/series` (daily registration series), and
 `/api/v1/modules/analytics/activity-log` (recent custom events log).
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/56958a72892cc2d963b827c84d50783e099d185e

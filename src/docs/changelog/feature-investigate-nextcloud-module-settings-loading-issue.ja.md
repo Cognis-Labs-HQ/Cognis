@@ -1,5 +1,7 @@
 # モジュール設定ポップアップをアダプターに合わせました
 
+**Feature Branch:** feature-investigate-nextcloud-module-settings-loading-issue
+
 ## モジュール行から統一設定を開けるようになりました
 
 Jitsi Meet と Nextcloud Whiteboard は、個別の歯車ではなくモジュール行そのものから設定を開くようになり、アダプター設定と同じ操作感になりました。
@@ -19,3 +21,7 @@ Nextcloud Whiteboard 設定は、API キー欄を意図的に空のままにし�
 ## フィールド単位の検証で設定を開いたままにします
 
 モジュール設定の検証エラーは、無効なフィールドを示すようになりました。共有設定ポップアップは開いたまま該当入力をマークし、有効な管理者入力を失わないようにします。
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e33bb93726bab2eb01bf3d24f3704d2b4127dda0

@@ -1,5 +1,7 @@
 # ブロードキャストリンクとメール確認のための信頼済みドメイン
 
+**Feature Branch:** copilot/implement-trusted-domains-list
+
 ## 概要
 
 共通の信頼済みドメイン検証を追加し、Administration のセキュリティ一覧がメールドメイン確認と信頼済み外部 HTTP(S) ブロードキャストリダイレクト / リンクの両方を制御するようにしました。

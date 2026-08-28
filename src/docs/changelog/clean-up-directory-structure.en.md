@@ -1,5 +1,7 @@
 # PR Changelog — Dir Cleanup
 
+**Feature Branch:** copilot/clean-up-directory-structure
+
 ## Summary
 
 Removed the legacy Japanese Study adapter under `src/adapters/study/japanese/`

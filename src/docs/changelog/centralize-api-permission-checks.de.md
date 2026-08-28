@@ -1,5 +1,7 @@
 # PR-Changelog
 
+**Feature Branch:** copilot/centralize-api-permission-checks
+
 ## Zusammenfassung
 
 Autorisierungslücken für die Rolle `owner` bei benutzerbezogenen API-Endpunkten

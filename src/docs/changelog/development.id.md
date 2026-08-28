@@ -1,5 +1,7 @@
 # Pemisahan API Gateway
 
+**Feature Branch:** development
+
 ## Prefiks rute gateway distandardkan
 
 Setiap gateway kini memiliki rute API sendiri di bawah prefiks khusus `/api/v1/<gateway-id>/`. Rute yang sebelumnya tidak mengikuti konvensi ini telah diganti namanya: rute gateway notify dipindahkan dari `/api/v1/notifications/` ke `/api/v1/notify/`, dan rute gateway social dipindahkan dari `/api/v1/profile/`, `/api/v1/messages/`, dan seterusnya ke `/api/v1/social/`.
@@ -21,3 +23,7 @@ Kasus uji baru mencakup rute stream logging yang mengembalikan false untuk jalur
 ## Blok tangkapan diam dihapus dari popup crash dan router
 
 Dua handler `catch(() => {})` di `installRuntimeErrorHandlers` sekarang mencatat peringatan alih-alih menelan kesalahan yang terjadi saat membuka popup. Blok catch `readAuthSetupRequirement` di router aplikasi sekarang mencatat kesalahan jaringan yang tertangkap. Tangkapan fetch per-bahasa di `loadStudyChildComponents` sekarang mencatat kode bahasa dan kesalahan sebelum mengembalikan fallback kosong. Tangkapan `startStream` di bagian log admin sekarang mencatat kegagalan koneksi, dan tangkapan peristiwa SSE yang salah bentuk mencatat kesalahan parse alih-alih membuangnya secara diam.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/c2dd07a630b453a51f9793ab2855ab96150b058c

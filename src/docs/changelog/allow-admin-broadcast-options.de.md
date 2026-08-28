@@ -1,5 +1,7 @@
 # Modi und Zielgruppensteuerung
 
+**Feature Branch:** copilot/allow-admin-broadcast-options
+
 ## Zusammenfassung
 
 Fügt im Benachrichtigungsbereich ein neues, durch Admins konfigurierbares Rundsendungssystem hinzu, das zwei Ausspielungsmodi unterstützt: eine Leiste am Seitenanfang und ein Popup. Admins können Zielrollen, Start- und Enddatum, Bestätigungspflicht, Weiterleitungsverhalten beim Schließen sowie den Aktivierungsstatus festlegen.

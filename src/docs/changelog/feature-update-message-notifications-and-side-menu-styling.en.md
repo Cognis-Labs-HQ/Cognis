@@ -1,5 +1,7 @@
 # Clearer unread rooms
 
+**Feature Branch:** feature-update-message-notifications-and-side-menu-styling
+
 ## Page-aware notification alerts
 
 New notification popups are suppressed while the user is already viewing the page that owns them, including Messages and Calendar.
@@ -11,3 +13,7 @@ Unread rooms now pulse gently with a subtly rounded outline in the Messages side
 ## Explicit room exit controls
 
 The Messages header now provides a clearly labelled Leave Room button, and room-related text consistently uses room terminology.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/779de3d355f971af7374bee9128672f713b80a64

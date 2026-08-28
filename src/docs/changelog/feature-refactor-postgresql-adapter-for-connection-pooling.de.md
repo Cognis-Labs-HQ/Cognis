@@ -1,5 +1,7 @@
 # PostgreSQL-Verbindungspool
 
+**Feature Branch:** feature-refactor-postgresql-adapter-for-connection-pooling
+
 ## PostgreSQL verwendet jetzt einen begrenzten Verbindungspool
 
 Normale Datenbankoperationen können gleichzeitig über `pg.Pool` laufen, während jede Transaktion bis zum Commit oder Rollback an einen Client gebunden bleibt. Umgebungsvariablen begrenzen Poolgröße sowie Verbindungs-, Leerlauf- und optionale Anweisungszeitlimits.
@@ -63,3 +65,7 @@ Der Container-Einstiegspunkt kodiert PostgreSQL- und MariaDB-Zugangsdaten prozen
 ## Datenbankkomponenten isoliert und versioniert halten
 
 Die Validierung der Pool-Einstellungen gehört jetzt zum jeweiligen Datenbankadapter; außerdem sind Adapter- und Gateway-Arbeitsbereichsversionen sowie Abhängigkeitsobergrenzen synchronisiert.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/6c887390888a10a8acbf3535860f4d85d9908cef

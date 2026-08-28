@@ -1,5 +1,7 @@
 # Secure Account Deletion
 
+**Feature Branch:** feature-fix-data-restoration-on-user-deletion
+
 ## Deleted accounts no longer retain activity
 
 Deleting a user now permanently removes their messaging memberships and presence, social relationships and posts, classroom records, calendar data, and meeting participation. Recreating the same username therefore cannot recover the deleted account's private activity.
@@ -19,3 +21,7 @@ Repeated attempts to start the same pending conversation no longer send another 
 ## Declined requests close safely
 
 Declining a message request now moves the recipient away from the room they just left instead of attempting to load its encryption key. The rejected room follows the standard chat lifecycle, archiving for its remaining requester or being deleted when empty.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/9735e00a2bb3ef7b3a1f10aa49494f81007dece2

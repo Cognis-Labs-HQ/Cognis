@@ -1,5 +1,7 @@
 # Menonaktifkan Aksi Hapus
 
+**Feature Branch:** feature-disable-delete-notifications-button-when-empty
+
 ## Ringkasan
 
 Kotak masuk notifikasi internal kini menonaktifkan tombol hapus semua yang bersifat destruktif ketika tidak ada notifikasi. Perubahan ini mencegah popup konfirmasi yang tidak perlu dan menjaga status aksi tetap selaras dengan isi kotak masuk.

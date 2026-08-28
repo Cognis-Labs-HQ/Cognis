@@ -1,5 +1,7 @@
 # i18n文字列の汎用化とコアの肥大化解消
 
+**Feature Branch:** copilot/generalize-xml-keys-and-reduce-bloat
+
 ## 概要
 
 コンポーネント固有のi18nキーをコア言語ファイルから各コンポーネントの`languages/`ディレクトリに移動しました。コンポーネントがグローバル名前空間を汚染せずに独自の文字列を読み込めるよう、i18nレイヤーに`loadComponentStrings`と`extendI18n`を追加しました。コアの文字列ファイルから約90個の不使用・誤配置キーを削除しました。

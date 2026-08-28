@@ -1,5 +1,7 @@
 # Module Settings Popups Match Adapters
 
+**Feature Branch:** feature-investigate-nextcloud-module-settings-loading-issue
+
 ## Module rows now open unified settings
 
 Jitsi Meet and Nextcloud Whiteboard now open their configuration from the module row itself instead of a separate cog, matching adapter configuration behavior.
@@ -19,3 +21,7 @@ Nextcloud Whiteboard settings now accept server URL and upload-limit updates eve
 ## Field-level validation keeps settings open
 
 Module settings validation errors now identify the invalid field, allowing the shared config popup to stay open and mark that input instead of discarding valid administrator edits.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e33bb93726bab2eb01bf3d24f3704d2b4127dda0

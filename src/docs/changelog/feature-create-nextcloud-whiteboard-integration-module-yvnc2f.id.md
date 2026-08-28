@@ -1,5 +1,7 @@
 # Whiteboard di Dashboard
 
+**Feature Branch:** feature-create-nextcloud-whiteboard-integration-module-yvnc2f
+
 ## Canvas kini tertanam langsung di dalam tata letak dashboard
 
 Canvas papan tulis tidak lagi dibuka sebagai popup browser. Mengklik sebuah board dari daftar board memuat canvas gambar penuh secara inline di dalam dashboard, menjaga semua kolaborasi dalam satu tab.
@@ -27,3 +29,7 @@ Admin mengonfigurasi **URL Server Papan Tulis** khusus yang mengarah ke endpoint
 ## Kemampuan baru: `whiteboard:getEmbedUrl` dan `whiteboard:fetchBoardData`
 
 Modul dan adapter lain dapat memperoleh URL embed atau metadata papan tulis melalui kemampuan publik ini, memungkinkan integrasi kelas dan rapat di masa mendatang.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/3fba3a4ae030e1c17efc8f85e1245ceb69bc135d

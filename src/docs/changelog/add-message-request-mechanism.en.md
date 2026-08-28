@@ -1,5 +1,7 @@
 # PR Changelog — Msg Requests
 
+**Feature Branch:** copilot/add-message-request-mechanism
+
 ## Summary
 
 Added membership-aware direct-chat behavior: leaving a two-member chat archives it for the remaining user, archived chats are shown in a dedicated sidebar section, sending is blocked in archived/non-member states with explicit toasts, and starting a fresh conversation creates a new DM. Also made avatar interactions universal in Messages by linking avatars to profiles so the standard hover profile preview and click-through navigation work consistently.

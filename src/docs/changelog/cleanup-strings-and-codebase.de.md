@@ -1,5 +1,7 @@
 # PR-Changelog — Cleanup
 
+**Feature Branch:** copilot/cleanup-strings-and-codebase
+
 ## Zusammenfassung
 
 Die Richtlinie für Changelog-Dateinamen wurde auf den Branch-Namen ohne

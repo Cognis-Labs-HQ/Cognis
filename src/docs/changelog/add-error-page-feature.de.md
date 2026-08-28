@@ -1,5 +1,7 @@
 # Fehlerseite
 
+**Feature Branch:** copilot/add-error-page-feature
+
 ## Navigierbare Fehlerseite mit animiertem Farbverlauf-Titel
 
 Eine dedizierte `/error`-Seite ist jetzt verfügbar. Sie kann direkt über einen
@@ -15,3 +17,7 @@ Für angemeldete Benutzer wird die Seite mit vollem Dashboard-Shell
 (Navigationsleiste, Topbar und Fußzeile) gerendert. Nicht angemeldete Benutzer
 sehen eine Vollbild-Nachricht ohne Shell-Chrome. Der Titel passt sich
 responsive an, sodass er auch auf kleinen Bildschirmen gut lesbar bleibt.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/7a82d1050c2453aaca2165271dbf75ae2f2c9876

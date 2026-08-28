@@ -1,5 +1,7 @@
 # Build UI Produksi
 
+**Feature Branch:** feature-add-production-ui-build-stage
+
 ## Aset produksi berciri hash
 
 Image produksi kini menyajikan bundel JavaScript dan CSS yang diminifikasi serta diberi hash konten melalui manifes yang dihasilkan, sementara pengembangan tetap menyajikan modul sumber.
@@ -31,3 +33,7 @@ Negosiasi aset statis kini mengecualikan pengodean yang ditolak dengan nilai kua
 ## Registrasi komponen kini divalidasi
 
 Build produksi kini memverifikasi setiap titik masuk adapter terkompilasi. Manifes basis data dan file lokal mengarah ke modul masuk yang sebenarnya, gateway file menyelesaikan adapter dari lokasi terkompilasi yang dikonfigurasi, dan adapter Pesan memuat kontribusi kunci ruang dari modul penyimpanan yang benar.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/d9af537d6fa92347026e779da4387d886f0e8238

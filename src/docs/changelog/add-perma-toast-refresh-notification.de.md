@@ -1,5 +1,7 @@
 # Permanenter Refresh-Toast
 
+**Feature Branch:** copilot/add-perma-toast-refresh-notification
+
 ## Zusammenfassung
 
 Es wurde ein permanenter Warn-Toast hinzugefügt, der Benutzer zum Aktualisieren der Seite auffordert, wenn authentifizierte API-Verbindungen aufgrund von Server-/Netzwerkunterbrechungen ausfallen (Netzwerkfehler oder wiederholbare 5xx-Antworten).

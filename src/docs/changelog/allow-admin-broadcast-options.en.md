@@ -1,5 +1,7 @@
 # Admin Broadcast Delivery
 
+**Feature Branch:** copilot/allow-admin-broadcast-options
+
 ## Summary
 
 Adds a new admin-configurable broadcast system under Notifications that supports two delivery modes: a top-of-page bar and a popup. Admins can define target roles, start and end dates, acknowledgement requirements, redirect behavior on closure, and enabled/disabled status.

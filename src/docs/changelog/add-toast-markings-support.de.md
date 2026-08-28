@@ -1,5 +1,7 @@
 # Toast-Symbole im Hellen Modus
 
+**Feature Branch:** copilot/add-toast-markings-support
+
 ## Zusammenfassung
 
 Fehler behoben, bei dem Toast-Symbole (Fehler ✕, Erfolg ✓, Warnung ⚠, Info ℹ) im hellen Modus unsichtbar waren. Im hellen Modus lösen die Variablen `--color-danger-text` und `--color-success-text` zu `#fff` (Weiß auf weißem Hintergrund) auf, wodurch die Markierungen verschwinden. Neue Überschreibungsregeln für den hellen Modus verwenden die Outline-Text-Tokens, damit Symbole deutlich sichtbar bleiben.

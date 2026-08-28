@@ -1,5 +1,7 @@
 # Trusted Domains List
 
+**Feature Branch:** copilot/implement-trusted-domains-list
+
 ## Summary
 
 Added shared trusted-domain validation so the Administration security list now drives both email-domain checks and trusted external HTTP(S) broadcast redirects/links.

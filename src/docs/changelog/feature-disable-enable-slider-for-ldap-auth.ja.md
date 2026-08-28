@@ -1,5 +1,7 @@
 # LDAP 有効化の安全性向上
 
+**Feature Branch:** feature-disable-enable-slider-for-ldap-auth
+
 ## 有効化前にサーバーを設定
 
 LDAP サーバーが少なくとも 1 台設定されるまで、LDAP アダプターの有効化スライダーを無効にし、不正な有効化リクエストを防止します。
@@ -31,3 +33,7 @@ LDAP プロファイルの更新時に既存アカウントの有効状態を維
 ## セットアップのエラーとキーボード操作を適切な画面で処理
 
 LDAP セットアップでは生成されたフィールドにサーバーエラーを表示し、認証情報のエラーを認証情報ページに留め、Enter キーでサーバーを早期保存せず検証します。
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/96257fa81b49645e38ae015a12d7433008d903e0

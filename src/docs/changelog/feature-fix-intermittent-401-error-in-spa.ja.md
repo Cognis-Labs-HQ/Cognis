@@ -1,5 +1,7 @@
 # 安定したSPAテレメトリー
 
+**Feature Branch:** feature-fix-intermittent-401-error-in-spa
+
 ## トークン変更に追従する認証
 
 ブラウザーのパフォーマンステレメトリーがObservabilityゲートウェイクライアントを使用し、処理中のリクエストとアクセストークンの更新が重なった場合に一度だけ再試行するようになりました。これにより、SPAナビゲーション中の意図しない401レスポンスを防ぎます。
@@ -7,3 +9,7 @@
 ## UI機能経由のテレメトリ
 
 ブラウザーのパフォーマンステレメトリは、Observabilityゲートウェイが登録したUI機能を介して送信を解決するようになり、共通UIがゲートウェイの実装詳細に依存しなくなりました。
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/55815c3e03a8498211a2619ef9e4ee61895461a5

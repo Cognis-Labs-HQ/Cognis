@@ -1,5 +1,7 @@
 # PR Changelog — Lang Detect
 
+**Feature Branch:** copilot/add-browser-language-detection
+
 ## Summary
 
 The UI language bootstrap now prioritizes browser language preferences for first

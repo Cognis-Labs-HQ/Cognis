@@ -1,5 +1,7 @@
 # Pertahankan dan Kelola
 
+**Feature Branch:** copilot/ensure-form-inputs-preserved
+
 ## Ringkasan
 
 - Nilai formulir kini tetap tersimpan bukan hanya saat render ulang responsif,
@@ -24,3 +26,5 @@
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9888e39
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/b42d6d9c
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1cabb35b
+
+## Commits

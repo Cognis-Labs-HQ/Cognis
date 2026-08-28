@@ -1,5 +1,7 @@
 # Mengutamakan Avatar
 
+**Feature Branch:** feature-prioritize-profile-picture-over-initials
+
 ## Ringkasan
 
 Tampilan avatar di adaptor Pesan kini mengutamakan gambar profil asli daripada
@@ -28,3 +30,5 @@ kembali di seluruh antarmuka UI adaptor sosial.
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9f78b06
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/5399b86
+
+## Commits

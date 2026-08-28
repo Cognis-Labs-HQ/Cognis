@@ -1,5 +1,7 @@
 # Configurable login session lifetimes
 
+**Feature Branch:** feature-add-login-session-timeout-parameter
+
 ## Administrators control the maximum session duration
 
 Administration → Security now provides the default and maximum login-session timeout.
@@ -63,3 +65,7 @@ Session-timeout updates now return an availability error without revoking active
 ## Keep internal dependencies aligned
 
 The Jitsi Meet module now declares the tested local Messages adapter version so repository-wide architecture checks remain reliable.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/70785d43ef6b76fb1d863dcc795ecb9bd3bcab7f

@@ -1,5 +1,7 @@
 # Auth Passwort Reset
 
+**Feature Branch:** copilot/add-password-reset-option
+
 ## Summary
 
 Ein providerabhängiger Passwort-Reset-Flow wurde in Benutzer-Einstellungen → Sicherheit ergänzt, inklusive Serverrouten, die die Unterstützung des aktiven Anbieters prüfen und adaptereigene Reset-Logik ausführen.

@@ -1,5 +1,7 @@
 # PR変更履歴 — ディレクトリ構造の整理
 
+**Feature Branch:** copilot/clean-up-directory-structure
+
 ## 概要
 
 日本語学習コンテンツは言語モジュールで提供されるため、重複して混乱を招く

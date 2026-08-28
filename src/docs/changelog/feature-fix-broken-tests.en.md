@@ -1,5 +1,7 @@
 # Reliable Shared Calendars
 
+**Feature Branch:** feature-fix-broken-tests
+
 ## Shared calendar invitations and responses work consistently
 
 Events created through writable shared calendars now include the full shared audience, route notifications to each recipient's calendar, and allow read-only recipients to respond from the shared view.
@@ -39,3 +41,7 @@ Restored existing source spacing in the keyring, calendar, and whiteboard compon
 ## Room keys and meeting passwords remain recoverable until safely stored
 
 Missing room keys are generated for migrated conversations, and delivered room keys and meeting passwords remain available for retry until the client confirms successful keyring storage.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/7a40010632a1bebcfe94544772ac2698c14cf2a1

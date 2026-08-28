@@ -1,5 +1,7 @@
 # Lange Doku-Titel kürzen
 
+**Feature Branch:** copilot/trim-document-titles
+
 ## Zusammenfassung
 
 - Lange Dokumentationstitel werden in der Docs-Navigation der UI gekürzt dargestellt.

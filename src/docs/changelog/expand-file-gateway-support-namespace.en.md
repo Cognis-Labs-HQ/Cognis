@@ -1,5 +1,7 @@
 # File Namespaces & Quotas
 
+**Feature Branch:** copilot/expand-file-gateway-support-namespace
+
 ## Files gateway now organizes all content into namespaces with enforced ACLs and quotas
 
 Every file operation is now scoped to a namespace — an isolated content area owned by a specific component (`profile`, `chats`, `classes`) or by core (`default`, `user`). Namespaces declare an ACL ceiling (`private-owner`, `private-group`, or `component-managed`) that bounds what any object stored inside them may expose, and per-object grants (owner, collaborator group, or public-read) can never exceed that ceiling. Cross-component access to a namespace is denied unless the namespace explicitly allow-lists the calling component (core is always permitted).
@@ -27,3 +29,7 @@ Share token resolution now checks token recipients before issuing guest access o
 ## Version docs remain localized
 
 The component version documents now carry translated rule text consistently across supported languages.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/80305d183fd1fc1e89c960dfb5c6712c87f188f8

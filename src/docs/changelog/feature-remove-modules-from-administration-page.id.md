@@ -1,5 +1,7 @@
 # Bursa Modul
 
+**Feature Branch:** feature-remove-modules-from-administration-page
+
 ## Status kanal rilis yang jelas
 
 Pilihan kanal rilis kini memakai kontrol netral dengan status terpilih yang mudah dikenali. Detail modul menampilkan kanal terpasang beserta versi manifes sebenarnya, sedangkan modul yang diperbarui menampilkan peringatan mulai ulang hingga kontainer Cognis dimulai ulang dan semua rute yang disuntikkan diaktifkan.
@@ -537,3 +539,7 @@ Menonaktifkan modul kini menghapus navigasi, kontribusi UI, rute, alur, kait, da
 ## Aktifkan pengurutan navigasi secara sengaja
 
 Setiap entri navigasi utama kini memiliki pegangan enam titik. Tautan mempertahankan penunjuk normal dan tidak dapat diatur ulang sampai pegangannya diklik; entri yang bergeser dianimasikan selama penyeretan dan urutan disimpan saat dilepas. Dokumentasi modul eksternal kini mengikuti templat kontributor serta menjelaskan penonaktifan atomik dan pembersihan penghapusan secara akurat. Fixture regresi antrean SMTP kini menggunakan timer pengujian yang tidak menahan proses sehingga rangkaian pengujian lengkap dapat berakhir setelah pemeriksaan.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/c685eda06183d56a3a250df8b66178db1e8553d6

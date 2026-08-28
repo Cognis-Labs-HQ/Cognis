@@ -334,7 +334,11 @@ test("docs route renders changelog feature branch from file slug", async () => {
     const parsed = JSON.parse(body);
     assert.match(
         parsed.data.markdown,
-        /\*\*Feature Branch:\*\* create-changelog-ingestion-system/,
+        /\*\*Feature Branch:\*\* copilot\/create-changelog-ingestion-system/,
+    );
+    assert.equal(
+        parsed.data.markdown.match(/\*\*Feature Branch:\*\*/g)?.length,
+        1,
     );
 });
 

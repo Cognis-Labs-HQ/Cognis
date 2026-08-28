@@ -1,5 +1,7 @@
 # Reliable Module Strings
 
+**Feature Branch:** feature-investigate-module-polling-failures
+
 ## Stop polling unavailable strings
 
 The module catalog now advertises localization resources only after confirming that the required English string asset is present in the server cache. Periodic marketplace polling therefore no longer repeats requests to string URLs that can only return 404.
@@ -33,3 +35,7 @@ Disabled external modules are no longer imported or bootstrapped during route re
 ## Private source scans wait for credentials
 
 Startup discovery now scans only public module sources. Credentialed private sources remain available for authenticated marketplace polling without a credentialless attempt delaying their next refresh.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/54375e318faa1ddbb6fe950f2402957742102af9

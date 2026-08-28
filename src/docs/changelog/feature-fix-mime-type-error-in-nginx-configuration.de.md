@@ -1,5 +1,7 @@
 # Zuverlässige UI-Ressourcen
 
+**Feature Branch:** feature-fix-mime-type-error-in-nginx-configuration
+
 ## Ressourcenfehler werden nicht mehr zwischengespeichert
 
 Web-Proxy und API verhindern nun, dass Antworten für fehlende versionierte JavaScript- und CSS-Dateien als unveränderliche Ressourcen zwischengespeichert werden. Clients können sich nach einer Überschneidung bei der Bereitstellung wieder ordnungsgemäß verbinden, statt eine JSON-404-Antwort für eine Ressourcen-URL beizubehalten.
@@ -61,3 +63,7 @@ Compose verlangt nun bereitstellungsverwaltete Datenbankkennwörter und einen Da
 ## Compose verlangt die Bereitstellungs-URL
 
 Das Anwendungsabbild gibt localhost nicht mehr als öffentlichen Host vor. Beide Datenbankprofile für Compose verlangen `EXTERNAL_HOST`, damit Authentifizierungs-, Einladungs- und Benachrichtigungslinks nicht auf den lokalen Rechner des jeweiligen Empfängers verweisen.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ec75586e143b25792032eaa906ba8b177868a6ef

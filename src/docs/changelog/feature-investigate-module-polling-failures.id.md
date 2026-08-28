@@ -1,5 +1,7 @@
 # Teks Modul Andal
 
+**Feature Branch:** feature-investigate-module-polling-failures
+
 ## Hentikan polling teks yang hilang
 
 Katalog modul kini hanya mengumumkan sumber daya pelokalan setelah memastikan aset teks bahasa Inggris yang diwajibkan tersedia di cache server. Polling lokapasar berkala tidak lagi mengulangi permintaan ke alamat teks yang hanya dapat menghasilkan 404.
@@ -33,3 +35,7 @@ Modul eksternal yang dinonaktifkan tidak lagi diimpor atau di-bootstrap saat rut
 ## Pemindaian sumber privat menunggu kredensial
 
 Penemuan saat startup kini hanya memindai sumber modul publik. Sumber privat berkredensial tetap tersedia bagi polling marketplace terautentikasi tanpa percobaan tanpa kredensial yang menunda penyegaran berikutnya.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/54375e318faa1ddbb6fe950f2402957742102af9

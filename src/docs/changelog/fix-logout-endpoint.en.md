@@ -1,5 +1,7 @@
 # Fix Logout Endpoint
 
+**Feature Branch:** copilot/fix-logout-endpoint
+
 ## Summary
 
 The `POST /api/v1/auth/logout` endpoint was returning 404 for all requests. The

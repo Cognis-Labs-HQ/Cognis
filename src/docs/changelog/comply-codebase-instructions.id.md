@@ -1,5 +1,7 @@
 # Kepatuhan dan Rapikan Admin
 
+**Feature Branch:** copilot/comply-codebase-instructions
+
 ## Satukan Keamanan di Administrasi
 
 Bagian terpisah Administration → Authentication dihapus dengan menghentikan registrasi section admin auth. Kontrol kebijakan kata sandi sekarang berada langsung di Administration → Security bersama domain tepercaya, kontrol registrasi, metode validasi, dan persetujuan guru.
@@ -19,3 +21,7 @@ Setup route server dan module extension kini mengandalkan konteks auth route yan
 ## Perjelas Prioritas Instruksi AI
 
 Instruksi AI diperbarui untuk menegaskan disiplin LOC, menolak anggapan diff besar sebagai indikator kualitas, mewajibkan penamaan generik, menegakkan batas reuse yang benar, memisahkan HTML dari JS/TS, dan memecah file besar ke struktur direktori dengan entrypoint.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/a267b4cce59173b5060e5035a628583868afa39e

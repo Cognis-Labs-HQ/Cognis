@@ -1,5 +1,7 @@
 # Vollständige Zusammenfassungen der Versionsänderungen
 
+**Feature Branch:** feature-fix-changelog-rendering-issues
+
 ## Details im Versionshinweis anzeigen
 
 Versionshinweise zeigen nun den erklärenden Inhalt unter jeder Änderungsüberschrift an, anstatt nur die Überschriften darzustellen.
@@ -15,3 +17,11 @@ Der Versionsfeed findet nun lokalisierte Changelog-Dateien installierter externe
 ## Repository-Verweise aktualisiert
 
 Historische Commit-Links verweisen nun auf das aktuelle Cognis-Labs-HQ/Cognis-Repository.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/968c109885b2db1e168a7c62cc29b3c6be3d7b27
+
+## Vollständige Changelog-Herkunft
+
+Automatisierte Prüfungen verlangen nun, dass jeder lokalisierte Changelog seinen Feature-Branch und kanonische Commit-Links angibt. Einträge, die keinem der historischen Repositorys zugeordnet werden können, verwenden ausdrücklich N/A mit einer leeren Commit-Liste.

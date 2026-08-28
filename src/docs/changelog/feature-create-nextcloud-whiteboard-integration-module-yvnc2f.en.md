@@ -1,5 +1,7 @@
 # Whiteboard in Dashboard
 
+**Feature Branch:** feature-create-nextcloud-whiteboard-integration-module-yvnc2f
+
 ## Canvas is now embedded directly in the dashboard layout
 
 The whiteboard canvas no longer opens as a browser popup. Clicking a board from the board list loads the full drawing canvas inline within the dashboard, keeping all collaboration in one tab.
@@ -27,3 +29,7 @@ Admins configure a dedicated **Whiteboard Server URL** pointing to the standalon
 ## New capabilities: `whiteboard:getEmbedUrl` and `whiteboard:fetchBoardData`
 
 Other modules and adapters can obtain a whiteboard's embed URL or metadata through these public capabilities, enabling future classroom and meeting integrations.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/3fba3a4ae030e1c17efc8f85e1245ceb69bc135d

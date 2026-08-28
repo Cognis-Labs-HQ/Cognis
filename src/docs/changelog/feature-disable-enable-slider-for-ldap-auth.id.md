@@ -1,5 +1,7 @@
 # Aktivasi LDAP Lebih Aman
 
+**Feature Branch:** feature-disable-enable-slider-for-ldap-auth
+
 ## Konfigurasikan server sebelum aktivasi
 
 Penggeser aktivasi adaptor LDAP kini tetap dinonaktifkan hingga setidaknya satu server LDAP dikonfigurasi sehingga permintaan aktivasi yang tidak valid dapat dicegah.
@@ -31,3 +33,7 @@ Sumber autentikasi yang dihapus direkonsiliasi sebelum konfigurasi penggantinya 
 ## Kesalahan penyiapan dan tindakan papan ketik tetap sesuai konteks
 
 Penyiapan LDAP menampilkan kesalahan server pada kolom yang dibuat, mempertahankan kegagalan kredensial di halaman kredensial, dan memakai Enter untuk memverifikasi tanpa menyimpan server terlalu dini.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/96257fa81b49645e38ae015a12d7433008d903e0

@@ -1,5 +1,7 @@
 # Kecualikan Admin dari Invite
 
+**Feature Branch:** copilot/exclude-admins-from-invite-menu
+
 ## Ringkasan
 
 Aturan visibilitas entri Invite pada navbar Registration diperbarui agar pengguna pendiri dengan akses setara admin tidak lagi melihat entri Invite.

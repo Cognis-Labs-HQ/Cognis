@@ -1,5 +1,7 @@
 # Wajibkan Kontrak Kontrol Admin
 
+**Feature Branch:** copilot/require-adapters-config-file
+
 ## Ringkasan
 
 Kontrol adapter di halaman Administration kini disejajarkan agar gateway mengumumkan endpoint konfigurasi dan toggle adapter, adapter Registration menerima penyimpanan konfigurasi kosong, dan adapter Study menyediakan penanganan disable.

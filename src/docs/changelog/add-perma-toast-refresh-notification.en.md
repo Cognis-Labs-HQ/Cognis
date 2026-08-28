@@ -1,5 +1,7 @@
 # Permanent Refresh Toast
 
+**Feature Branch:** copilot/add-perma-toast-refresh-notification
+
 ## Summary
 
 Added a permanent warning toast that prompts users to refresh the page when authenticated API connections fail due to server/network interruption patterns (network failures or retryable 5xx responses).

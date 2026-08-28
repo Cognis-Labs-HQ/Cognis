@@ -1,5 +1,7 @@
 # Sichtbare Adapterversionen
 
+**Feature Branch:** feature-update-adapter-settings-ui-to-show-version-number
+
 ## Adaptereinstellungen zeigen jetzt Versionen
 
 Die Adaptersteuerung in der Administration zeigt die jeweilige Adapterversion nun neben dem Adapternamen an, und Adapter-Konfigurationsdialoge übernehmen diese Version in der Überschrift, wenn Versionsmetadaten verfügbar sind.
@@ -19,3 +21,7 @@ Alle erkannten Adapter und Gateways geben jetzt ihren Herausgeber an, einschlie�
 ## Vollständige Gateway-Adapterlisten
 
 Die Administration listet jetzt die Adapter für Dateispeicher, Datenbank und Protokollierung einschließlich ihrer Versions- und Herausgebermetadaten auf.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/a1669782a660f01000ed49047ee7cfc5cf9d20cf

@@ -1,5 +1,7 @@
 # Namespace & Kuota File
 
+**Feature Branch:** copilot/expand-file-gateway-support-namespace
+
 ## Gateway file kini mengatur semua konten ke dalam namespace dengan ACL dan kuota yang ditegakkan
 
 Setiap operasi file kini dibatasi pada satu namespace — area konten terisolasi yang dimiliki oleh komponen tertentu (`profile`, `chats`, `classes`) atau oleh inti (`default`, `user`). Namespace mendeklarasikan batas ACL (`private-owner`, `private-group`, atau `component-managed`) yang membatasi apa yang boleh diekspos oleh objek apa pun yang disimpan di dalamnya, dan izin per-objek (pemilik, grup kolaborator, atau baca publik) tidak akan pernah dapat melebihi batas tersebut. Akses lintas komponen ke namespace ditolak kecuali namespace tersebut secara eksplisit mengizinkan komponen pemanggil (inti selalu diizinkan).
@@ -27,3 +29,7 @@ Resolusi token berbagi sekarang memeriksa penerima token sebelum menerbitkan aks
 ## Dokumen versi tetap terlokalisasi
 
 Dokumen versi komponen sekarang memuat teks aturan yang diterjemahkan secara konsisten di semua bahasa yang didukung.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/80305d183fd1fc1e89c960dfb5c6712c87f188f8

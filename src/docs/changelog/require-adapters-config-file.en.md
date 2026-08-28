@@ -1,5 +1,7 @@
 # Require Admin Control Rules
 
+**Feature Branch:** copilot/require-adapters-config-file
+
 ## Summary
 
 Aligned Administration adapter controls so gateways announce adapter config and toggle endpoints, registration adapters accept empty config saves, and study adapters expose disable handling.

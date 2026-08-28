@@ -1,5 +1,7 @@
 # API Route Decoupling
 
+**Feature Branch:** development
+
 ## Standardised gateway route prefixes
 
 Every gateway now owns its API routes under a dedicated `/api/v1/<gateway-id>/` prefix. Routes that did not match this convention have been renamed: notify gateway routes moved from `/api/v1/notifications/` to `/api/v1/notify/`, and social gateway routes moved from `/api/v1/profile/`, `/api/v1/messages/`, etc. to `/api/v1/social/`.
@@ -34,3 +36,7 @@ language code and error before returning the empty fallback. The `startStream`
 catch in the admin logs section now logs the connection failure before setting
 the reconnect state, and the malformed SSE event catch logs parse errors
 instead of silently discarding them.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/c2dd07a630b453a51f9793ab2855ab96150b058c

@@ -1,5 +1,7 @@
 # Safer LDAP Activation
 
+**Feature Branch:** feature-disable-enable-slider-for-ldap-auth
+
 ## Configure a server before activation
 
 The LDAP adapter activation slider now remains disabled until at least one LDAP server is configured, preventing an invalid activation request.
@@ -31,3 +33,7 @@ Removed authentication sources are reconciled before their replacement configura
 ## Setup errors and keyboard actions stay in context
 
 LDAP setup displays server errors on their generated fields, keeps credential failures on the credential page, and uses Enter to verify without prematurely saving the server.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/96257fa81b49645e38ae015a12d7433008d903e0

@@ -1,5 +1,7 @@
 # Changelog PR — Cleanup
 
+**Feature Branch:** copilot/cleanup-strings-and-codebase
+
 ## Ringkasan
 
 Kebijakan nama berkas changelog diperbarui agar menggunakan nama branch tanpa

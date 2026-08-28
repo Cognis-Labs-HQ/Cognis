@@ -1,5 +1,7 @@
 # 安定したCIチェック
 
+**Feature Branch:** feature-fix-test-failures-and-lint-issues
+
 ## ソースファイルをサイズ制限内に維持
 
 セッションロック解除の永続化、カレンダー詳細スタイル、会議ページ要素、ホワイトボードの検索と状態管理、ページコンポーザーのDOM保持を、それぞれ責務の明確な隣接モジュールへ分割し、各ソースファイルを1000行以内に収めました。
@@ -15,3 +17,7 @@ Dockerプロファイルテストが対応する絶対パスからBashを検出�
 ## Keyringテストのコンポーネント分離
 
 Keyringテスト設定から未使用のUIコンテキストシングルトンへの直接インポートを削除し、別コンポーネントの内部エクスポート形式に依存せずKeyringの公開面を検証するようにしました。
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/06711cd058d7db47c9041ed71c5e993e7b0eadf3

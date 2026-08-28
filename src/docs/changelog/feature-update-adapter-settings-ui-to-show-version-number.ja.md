@@ -1,5 +1,7 @@
 # アダプターのバージョン表示
 
+**Feature Branch:** feature-update-adapter-settings-ui-to-show-version-number
+
 ## アダプター設定にバージョンを表示
 
 Administration のアダプター操作では、各アダプター名の横にアダプターのバージョンを表示するようになりました。バージョンメタデータが利用できる場合は、アダプター設定ダイアログの見出しにも同じバージョンを表示します。
@@ -19,3 +21,7 @@ Administration のアダプター操作では、各アダプター名の横に�
 ## 完全なゲートウェイアダプター一覧
 
 管理画面にファイルストレージ、データベース、ロギングの各アダプターが、バージョンおよびパブリッシャー情報とともに表示されるようになりました。
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/a1669782a660f01000ed49047ee7cfc5cf9d20cf

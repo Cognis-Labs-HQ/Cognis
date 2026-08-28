@@ -1,5 +1,7 @@
 # Vertrauenswürdige Domains
 
+**Feature Branch:** copilot/implement-trusted-domains-list
+
 ## Zusammenfassung
 
 Es wurde eine gemeinsame Prüfung für vertrauenswürdige Domains hinzugefügt, sodass die Sicherheitsliste in der Administration jetzt sowohl E-Mail-Domain-Prüfungen als auch vertrauenswürdige externe HTTP(S)-Broadcast-Weiterleitungen und -Links steuert.

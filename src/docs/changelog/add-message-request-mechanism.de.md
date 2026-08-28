@@ -1,5 +1,7 @@
 # PR-Changelog
 
+**Feature Branch:** copilot/add-message-request-mechanism
+
 ## Zusammenfassung
 
 Zusätzlich wurde ein mitgliedschaftsbewusstes Direktchat-Verhalten ergänzt: Verlässt ein Nutzer einen Zwei-Personen-Chat, wird dieser für den verbleibenden Nutzer archiviert, in einem eigenen Archivbereich angezeigt und das Senden darin gesperrt. Beim erneuten Kontakt wird ein neuer Direktchat erstellt. Außerdem wurden Avatare in Messages einheitlich auf Profilseiten verlinkt, sodass Hover-Profilvorschau und Klick-Navigation überall gleich funktionieren.

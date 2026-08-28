@@ -1,5 +1,7 @@
 # Reliable CI Checks
 
+**Feature Branch:** feature-fix-test-failures-and-lint-issues
+
 ## Source files remain within the size guardrail
 
 Split session-unlock persistence, calendar detail styling, meeting page elements, whiteboard search and status handling, and page-composer DOM preservation into focused sibling modules so each source file remains within the 1000-line limit.
@@ -15,3 +17,7 @@ The default-theme email test now uses its own recipient identity so recipient ra
 ## Keyring tests remain component-isolated
 
 Removed an unused direct import of the UI context singleton from the keyring test setup, so the adapter tests exercise the keyring surface without depending on another component's internal export shape.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/06711cd058d7db47c9041ed71c5e993e7b0eadf3

@@ -1,5 +1,7 @@
 # Catatan Perubahan PR
 
+**Feature Branch:** copilot/clean-up-directory-structure
+
 ## Ringkasan
 
 Adapter Study Jepang lama di `src/adapters/study/japanese/` dihapus untuk

@@ -42,6 +42,9 @@ function withChangelogBranch(markdown: string, slug: string): string {
     if (!slug.startsWith("changelog/") || slug === "changelog/index") {
         return markdown;
     }
+    if (/^\*\*Feature Branch:\*\*\s+.+$/m.test(markdown)) {
+        return markdown;
+    }
     const branch = changelogBranchFromSlug(slug);
     const branchLine = `\n\n**Feature Branch:** ${branch}\n`;
     if (markdown.match(/^#\s+.+$/m)) {

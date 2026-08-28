@@ -1,5 +1,7 @@
 # Auth Password Reset
 
+**Feature Branch:** copilot/add-password-reset-option
+
 ## Summary
 
 Added a provider-aware password reset flow in User Settings → Security, including server routes that evaluate reset support from the authenticated provider and execute adapter-owned reset logic.

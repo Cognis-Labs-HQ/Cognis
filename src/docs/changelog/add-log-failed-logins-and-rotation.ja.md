@@ -1,5 +1,7 @@
 # ログストリームフィルター、警告デフォルト、ローテーション
 
+**Feature Branch:** copilot/add-log-failed-logins-and-rotation
+
 ## 概要
 
 - ログイン失敗と重要なユーザーアカウント変更を警告レベルで記録するように変更しました。

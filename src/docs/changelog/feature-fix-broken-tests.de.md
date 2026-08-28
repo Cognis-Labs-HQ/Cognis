@@ -1,5 +1,7 @@
 # Zuverlässige Kalenderfreigaben
 
+**Feature Branch:** feature-fix-broken-tests
+
 ## Einladungen und Antworten funktionieren zuverlässig
 
 Über beschreibbare freigegebene Kalender erstellte Termine umfassen nun alle Freigabeempfänger, verknüpfen Benachrichtigungen mit deren Kalendern und erlauben Empfängern mit Lesezugriff, direkt in der freigegebenen Ansicht zu antworten.
@@ -39,3 +41,7 @@ Bestehende Quellabstände in den Schlüsselbund-, Kalender- und Whiteboard-Kompo
 ## Raumschlüssel und Besprechungskennwörter bleiben bis zur sicheren Speicherung wiederherstellbar
 
 Fehlende Raumschlüssel werden für migrierte Unterhaltungen erzeugt. Übermittelte Raumschlüssel und Besprechungskennwörter bleiben für einen erneuten Versuch verfügbar, bis der Client die erfolgreiche Speicherung im Schlüsselbund bestätigt.
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/7a40010632a1bebcfe94544772ac2698c14cf2a1

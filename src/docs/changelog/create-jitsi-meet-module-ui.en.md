@@ -1,5 +1,7 @@
 # Jitsi Meet Module Foundation
 
+**Feature Branch:** copilot/create-jitsi-meet-module-ui
+
 ## Summary
 
 Added a new Jitsi Meet module with configurable instance settings, meeting persistence, participant-gated access checks, meeting session state APIs, a dedicated meetings page, and administration monitoring.

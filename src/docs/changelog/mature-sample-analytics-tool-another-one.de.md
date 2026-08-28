@@ -1,5 +1,7 @@
 # Analytik in Administration
 
+**Feature Branch:** copilot/mature-sample-analytics-tool-another-one
+
 ## Sample-Analytics-Modul ersetzt durch vollständigen Analytik-Bereich
 
 Das Sample-Analytics-Modul wurde zu einem vollständigen Werkzeug für Benutzeraktivitätsanalysen
@@ -31,3 +33,7 @@ Drei admin-authentifizierte API-Routen ersetzen den bisherigen Stub-Endpunkt:
 `/api/v1/modules/analytics/metrics` (Zusammenfassung und Rollenverteilung),
 `/api/v1/modules/analytics/series` (tägliche Registrierungsreihe) und
 `/api/v1/modules/analytics/activity-log` (Protokoll benutzerdefinierter Ereignisse).
+
+## Commits
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/56958a72892cc2d963b827c84d50783e099d185e
