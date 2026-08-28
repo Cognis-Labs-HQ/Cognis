@@ -26,7 +26,7 @@
             rel="apple-touch-icon"
             href="/static/assets/icons/cognis-apple-touch-180.png"
         />
-        <link rel="stylesheet" href="/static/styles/reuse/theme.css" />
+        <link rel="stylesheet" href="/static/styles/page-builder.css" />
         <link
             rel="stylesheet"
             href="/static/gateways/notify/verify-email.css"
@@ -34,6 +34,14 @@
     </head>
     <body>
         <div class="verify-card" id="verify-card">
+            <div class="brandline verify-brand">
+                <img
+                    src="/static/assets/icons/cognis-icon.png"
+                    alt=""
+                    class="topbar-icon"
+                />
+                <strong data-i18n="ui.reuse.brand_name">Cognis</strong>
+            </div>
             <div class="verify-icon" id="verify-icon">⏳</div>
             <h1
                 class="verify-title"
@@ -45,7 +53,7 @@
             <p class="verify-body" id="verify-body"></p>
             <a
                 href="/dashboard"
-                class="verify-link"
+                class="verify-link btn-neutral btn-animated"
                 id="verify-link"
                 style="display: none"
                 data-i18n="ui.app.verify_email.return_link"

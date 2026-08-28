@@ -16,10 +16,23 @@ const styles = readFileSync(
 );
 
 test("email verification uses the Cognis theme surface", () => {
-    assert.match(html, /\/static\/styles\/reuse\/theme\.css/);
+    assert.match(html, /\/static\/styles\/page-builder\.css/);
+    assert.match(html, /class="brandline verify-brand"/);
+    assert.match(html, /\/static\/assets\/icons\/cognis-icon\.png/);
+    assert.match(html, /class="verify-link btn-neutral btn-animated"/);
     assert.match(script, /applyTheme\(getStoredTheme\(\)\)/);
     assert.match(styles, /background: var\(--surface\)/);
     assert.match(styles, /color: var\(--text-muted\)/);
+});
+
+test("invalid email verification animates the cross once", () => {
+    assert.match(script, /classList\.add\("verify-icon-invalid"\)/);
+    assert.match(styles, /\.verify-icon-invalid\s*{[\s\S]*animation:/);
+    assert.doesNotMatch(styles, /verify-cross-arrive[^;]*infinite/);
+    assert.match(
+        styles,
+        /\.verify-icon-success,\s*\.verify-icon-invalid\s*{\s*animation: none/,
+    );
 });
 
 test("successful email verification animates the tick once", () => {

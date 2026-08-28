@@ -27,6 +27,7 @@ function showResult(success) {
         bodyEl.textContent = i18n.t("ui.app.verify_email.success_body");
     } else {
         iconEl.textContent = "✗\uFE0E";
+        iconEl.classList.add("verify-icon-invalid");
         titleEl.textContent = i18n.t("ui.app.verify_email.invalid_title");
         bodyEl.textContent = i18n.t("ui.app.verify_email.invalid_body");
     }
