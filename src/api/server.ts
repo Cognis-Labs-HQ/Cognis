@@ -294,12 +294,7 @@ export function resolveHardDependencyDisableOrder(
         const dependency = manifestsById.get(dependencyId);
         if (!dependency) return;
         for (const candidate of manifests) {
-            const hardDependencies =
-                (
-                    candidate as ModuleManifest & {
-                        hardDependencies?: string[];
-                    }
-                ).hardDependencies ?? [];
+            const hardDependencies = candidate.hardDependencies ?? [];
             if (
                 visited.has(candidate.id) ||
                 !isEnabled(candidate.id) ||
@@ -391,6 +386,7 @@ export function buildServer(deps: ApiDependencies) {
     const moduleTestService = new ModuleTestService([externalModulesRoot]);
     const healthService = deps.healthService ?? new HealthService();
     const enabledModules = new Set<string>();
+    const temporarilyDisabledDependents = new Map<string, string[]>();
     const moduleExtensionRoutes = createModuleExtensionRoutes(
         deps.moduleRuntimeGateway,
         (moduleId) => enabledModules.has(moduleId),
@@ -412,9 +408,6 @@ export function buildServer(deps: ApiDependencies) {
         moduleService,
         {
             validateInstallDependencies: async (manifest) => {
-                const externalDependencies = manifest as ModuleManifest & {
-                    hardDependencies?: string[];
-                };
                 assertModuleInstallDependencies(
                     manifest.id,
                     manifest.requires ?? [],
@@ -424,7 +417,7 @@ export function buildServer(deps: ApiDependencies) {
                 await deps.moduleRuntimeGateway.refresh?.();
                 assertExternalModuleDependencies(
                     manifest.id,
-                    externalDependencies.hardDependencies ?? [],
+                    manifest.hardDependencies ?? [],
                     await deps.moduleRuntimeGateway.listManifests(),
                     (dependencyId) => enabledModules.has(dependencyId),
                 );
@@ -434,9 +427,6 @@ export function buildServer(deps: ApiDependencies) {
                 const manifest = (
                     await deps.moduleRuntimeGateway.listManifests()
                 ).find((entry) => entry.id === moduleId);
-                const externalDependencies = manifest as
-                    | (ModuleManifest & { hardDependencies?: string[] })
-                    | undefined;
                 assertModuleEnableDependencies(
                     moduleId,
                     manifest?.requires ?? [],
@@ -445,7 +435,7 @@ export function buildServer(deps: ApiDependencies) {
                 );
                 assertExternalModuleDependencies(
                     moduleId,
-                    externalDependencies?.hardDependencies ?? [],
+                    manifest?.hardDependencies ?? [],
                     await deps.moduleRuntimeGateway.listManifests(),
                     (dependencyId) => enabledModules.has(dependencyId),
                 );
@@ -471,6 +461,25 @@ export function buildServer(deps: ApiDependencies) {
                 try {
                     await deps.onModuleStateChanged?.(moduleId, true);
                     await deps.persistModuleState?.(moduleId, true);
+                    const dependentModuleIds =
+                        temporarilyDisabledDependents.get(moduleId) ?? [];
+                    for (const dependentModuleId of [
+                        ...dependentModuleIds,
+                    ].reverse()) {
+                        await moduleService.enable(dependentModuleId, {
+                            acknowledgeExternalDisclaimer: true,
+                        });
+                        enabledModules.add(dependentModuleId);
+                        await deps.onModuleStateChanged?.(
+                            dependentModuleId,
+                            true,
+                        );
+                        await deps.persistModuleState?.(
+                            dependentModuleId,
+                            true,
+                        );
+                    }
+                    temporarilyDisabledDependents.delete(moduleId);
                     await moduleExtensionRoutes.refresh({
                         throwOnFailure: true,
                     });
@@ -482,7 +491,7 @@ export function buildServer(deps: ApiDependencies) {
                     throw error;
                 }
             },
-            onDisabled: async (moduleId) => {
+            onDisabled: async (moduleId, { preserveEnabledState }) => {
                 await deps.moduleRuntimeGateway.refresh?.();
                 const manifests =
                     await deps.moduleRuntimeGateway.listManifests();
@@ -491,6 +500,12 @@ export function buildServer(deps: ApiDependencies) {
                     manifests,
                     (candidateId) => enabledModules.has(candidateId),
                 );
+                if (preserveEnabledState) {
+                    temporarilyDisabledDependents.set(
+                        moduleId,
+                        dependentModuleIds,
+                    );
+                }
                 for (const dependentModuleId of dependentModuleIds) {
                     await moduleService.disable(dependentModuleId);
                     enabledModules.delete(dependentModuleId);
@@ -498,7 +513,12 @@ export function buildServer(deps: ApiDependencies) {
                         dependentModuleId,
                     );
                     await deps.onModuleStateChanged?.(dependentModuleId, false);
-                    await deps.persistModuleState?.(dependentModuleId, false);
+                    if (!preserveEnabledState) {
+                        await deps.persistModuleState?.(
+                            dependentModuleId,
+                            false,
+                        );
+                    }
                     log(
                         "warn",
                         "Module disabled because its hard dependency was disabled.",
@@ -512,7 +532,9 @@ export function buildServer(deps: ApiDependencies) {
                 deps.uiRegistry?.unregisterModuleContributions(moduleId);
                 await moduleExtensionRoutes.refresh();
                 await deps.onModuleStateChanged?.(moduleId, false);
-                await deps.persistModuleState?.(moduleId, false);
+                if (!preserveEnabledState) {
+                    await deps.persistModuleState?.(moduleId, false);
+                }
             },
             onImported: async () => {
                 await deps.moduleRuntimeGateway.refresh?.();

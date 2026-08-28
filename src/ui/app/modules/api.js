@@ -185,7 +185,7 @@ export async function installModule(module, token, branch, wasEnabled) {
 export async function setModuleEnabled(
     moduleId,
     enabled,
-    { integrityAcknowledgementToken = "" } = {},
+    { integrityAcknowledgementToken = "", preserveEnabledState = false } = {},
 ) {
     return data(
         await apiFetch(
@@ -201,7 +201,9 @@ export async function setModuleEnabled(
                                 }
                               : {}),
                       }
-                    : undefined,
+                    : preserveEnabledState
+                      ? { "x-cognis-module-lifecycle": "temporary-update" }
+                      : undefined,
             },
         ),
     );

@@ -18,6 +18,10 @@ export interface ModuleManifest {
      * Every dependency must exist and be active before installation.
      */
     requires?: string[];
+    /** External modules that must be installed and enabled first. */
+    hardDependencies?: string[];
+    /** Optional external modules offered during installation. */
+    softDependencies?: string[];
     summary?: string;
     description?: string;
     categories?: string[];

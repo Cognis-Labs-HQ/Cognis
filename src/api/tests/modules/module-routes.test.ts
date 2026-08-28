@@ -217,6 +217,36 @@ test("module routes warn when modules are disabled", async () => {
     assert.deepEqual(entries, [{ level: "warn", message: "Module disabled." }]);
 });
 
+test("module routes identify temporary update disables", async () => {
+    let preserveEnabledState = false;
+    const route = createModuleRoutes(
+        {
+            list: async () => [],
+            disable: async () => ({ enabled: false }),
+        } as any,
+        {
+            onDisabled: async (_moduleId, options) => {
+                preserveEnabledState = options.preserveEnabledState;
+            },
+        },
+    );
+    const token = issueAccessToken("admin-user", "admin", 60);
+
+    await route(
+        {
+            method: "POST",
+            headers: {
+                authorization: `Bearer ${token}`,
+                "x-cognis-module-lifecycle": "temporary-update",
+            },
+        } as any,
+        { writeHead() {}, end() {} } as any,
+        new URL("http://localhost/api/v1/modules/example-module/disable"),
+    );
+
+    assert.equal(preserveEnabledState, true);
+});
+
 test("module routes support github imports", async () => {
     const route = createModuleRoutes({
         list: async () => [],

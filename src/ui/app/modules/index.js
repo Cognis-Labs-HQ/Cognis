@@ -470,7 +470,9 @@ async function runLifecycleAction(
             process: module.name,
         });
         if (restoreEnabledState) {
-            await setModuleEnabled(module.id, false);
+            await setModuleEnabled(module.id, false, {
+                preserveEnabledState: true,
+            });
         }
         try {
             const installedManifest = await installModule(

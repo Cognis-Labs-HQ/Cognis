@@ -18,7 +18,10 @@ export interface ModuleRouteHooks {
     ) => Promise<void> | void;
     beforeEnable?: (moduleId: string) => Promise<void> | void;
     onEnabled?: (moduleId: string) => Promise<void> | void;
-    onDisabled?: (moduleId: string) => Promise<void> | void;
+    onDisabled?: (
+        moduleId: string,
+        options: { preserveEnabledState: boolean },
+    ) => Promise<void> | void;
     getStatus?: (moduleId: string) => "enabled" | "disabled" | "available";
     log?: BootstrapLog;
     getIntegrityReport?: () => Promise<
@@ -832,7 +835,13 @@ export function createModuleRoutes(
         }
 
         if (action === "enable") await hooks?.onEnabled?.(moduleId);
-        if (action === "disable") await hooks?.onDisabled?.(moduleId);
+        if (action === "disable") {
+            await hooks?.onDisabled?.(moduleId, {
+                preserveEnabledState:
+                    req.headers["x-cognis-module-lifecycle"] ===
+                    "temporary-update",
+            });
+        }
         hooks?.log?.(
             action === "disable" ? "warn" : "info",
             `Module ${action}d.`,
