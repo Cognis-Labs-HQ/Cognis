@@ -27,3 +27,7 @@ Abhängigkeitskarten verwenden nun die etablierte Status-Pill-Farbpalette der An
 ## Sofortige Aktivierung von Abhängigkeiten
 
 Jede unerfüllte Abhängigkeitskarte bietet nun eine direkte SVG-Downloadaktion mit Ladeanzeige, die die Abhängigkeit installiert und aktiviert. Die Hauptaktion zeigt Installieren oder Aktivieren, bleibt bei fehlenden erforderlichen Abhängigkeiten deaktiviert, nutzt bei verbleibenden optionalen Abhängigkeiten die neutrale App-Aktion und wechselt zum Bestätigungsstil, sobald alle Abhängigkeiten aktiviert sind.
+
+## Abhängigkeitsbereitschaft vor der Fortschrittsanzeige
+
+Installieren und Aktivieren führen nun dieselbe vollständige Bereitschaftsprüfung der Abhängigkeiten durch, bevor die Lebenszyklusaktion ihren Ladezustand beginnt. Beim Abbrechen des Abhängigkeitsdialogs wird sofort beendet, ohne dass der Aktionsspinner des Moduls weiterläuft.

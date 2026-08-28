@@ -27,3 +27,7 @@ Dependency cards now reuse the application’s established status-pill palette. 
 ## Immediate dependency activation
 
 Each unmet dependency card now provides an immediate SVG download action with loading feedback that installs and enables that dependency. The primary action reflects Install or Enable, remains disabled for missing required dependencies, uses the neutral app action while optional dependencies remain, and becomes confirm-styled once every dependency is enabled.
+
+## Dependency readiness before progress
+
+Install and Enable now perform the same full dependency-readiness gate before the lifecycle action enters its loading state. Cancelling the dependency popup exits immediately without leaving the module action spinner running.

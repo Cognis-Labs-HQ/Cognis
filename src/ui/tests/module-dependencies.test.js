@@ -98,4 +98,12 @@ test("module dependency popup renders navigable cards and action-specific labels
         marketplaceSource,
         /installAndEnableDependency[\s\S]*runLifecycleAction\(dependency, "install"\)[\s\S]*runLifecycleAction\(dependency, "enable"\)/,
     );
+    assert.match(
+        marketplaceSource,
+        /ensureModuleDependenciesReady\(module\)[\s\S]*pendingModuleActions\.set\(module\.uuid, action\)[\s\S]*beginButtonLoading\(target\)/,
+    );
+    assert.match(
+        marketplaceSource,
+        /\["install", "enable"\]\.includes\(action\)[\s\S]*ensureModuleDependenciesReady\(module\)/,
+    );
 });

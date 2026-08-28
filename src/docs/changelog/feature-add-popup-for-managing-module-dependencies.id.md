@@ -27,3 +27,7 @@ Kartu dependensi kini menggunakan kembali palet pil status aplikasi. Navigasi de
 ## Pengaktifan dependensi langsung
 
 Setiap kartu dependensi yang belum terpenuhi kini menyediakan tindakan unduh SVG langsung dengan umpan balik pemuatan yang memasang dan mengaktifkan dependensi tersebut. Tindakan utama menampilkan Instal atau Aktifkan, tetap dinonaktifkan jika dependensi wajib belum terpenuhi, menggunakan tindakan netral aplikasi selama dependensi opsional tersisa, dan berubah ke gaya konfirmasi setelah semua dependensi aktif.
+
+## Kesiapan dependensi sebelum progres
+
+Instal dan Aktifkan kini menjalankan gerbang kesiapan dependensi penuh yang sama sebelum tindakan siklus hidup memasuki status pemuatan. Membatalkan popup dependensi segera menghentikan alur tanpa membiarkan indikator tindakan modul terus berputar.

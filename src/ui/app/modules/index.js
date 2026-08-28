@@ -79,6 +79,7 @@ let refreshScreenshotCarousels = () => {};
 let pageMountController = null;
 const selectedBranches = new Map();
 const pendingModuleActions = new Map();
+const pendingDependencyChecks = new Set();
 const screenshotIndexes = new Map();
 const MODULE_ICON_FALLBACK_URL = "/static/assets/reuse/module-icon-unknown.svg";
 const MARKETPLACE_POLL_INTERVAL_MS = 15_000;
@@ -382,35 +383,43 @@ async function selectReleaseChannel(module) {
     return result === "confirm" ? selectedChannel : null;
 }
 
-async function runLifecycleAction(module, action) {
-    if (module.restartRequired) return false;
-    let dependencySelection = null;
-    if (["install", "enable"].includes(action)) {
-        dependencySelection = await confirmModuleDependencies(
-            module,
-            modules,
-            i18n,
-            installAndEnableDependency,
-        );
-        if (!dependencySelection) return false;
-        for (const dependency of resolveInstallDependencies(
-            module,
-            modules,
-            dependencySelection.soft,
-        )) {
-            if (!dependency.installed) {
-                const installed = await runLifecycleAction(
-                    dependency,
-                    "install",
-                );
-                if (!installed) return false;
-            }
-            if (dependency.installed && dependency.status !== "enabled") {
-                const enabled = await activateModule(dependency, i18n);
-                if (!enabled) return false;
-                if (enabled) dependency.status = "enabled";
-            }
+async function ensureModuleDependenciesReady(module) {
+    const dependencySelection = await confirmModuleDependencies(
+        module,
+        modules,
+        i18n,
+        installAndEnableDependency,
+    );
+    if (!dependencySelection) return false;
+    for (const dependency of resolveInstallDependencies(
+        module,
+        modules,
+        dependencySelection.soft,
+    )) {
+        if (!dependency.installed) {
+            const installed = await runLifecycleAction(dependency, "install");
+            if (!installed) return false;
         }
+        if (dependency.status !== "enabled") {
+            const enabled = await runLifecycleAction(dependency, "enable");
+            if (!enabled) return false;
+        }
+    }
+    return true;
+}
+
+async function runLifecycleAction(
+    module,
+    action,
+    { dependenciesReady = false } = {},
+) {
+    if (module.restartRequired) return false;
+    if (
+        ["install", "enable"].includes(action) &&
+        !dependenciesReady &&
+        !(await ensureModuleDependenciesReady(module))
+    ) {
+        return false;
     }
     if (action === "enable") {
         const result = await activateModule(module, i18n);
@@ -863,14 +872,39 @@ function bindInteractions(root, signal) {
                 if (!action) return;
             }
             if (action && module) {
-                if (pendingModuleActions.has(module.uuid)) return;
+                if (
+                    pendingModuleActions.has(module.uuid) ||
+                    pendingDependencyChecks.has(module.uuid)
+                )
+                    return;
+                let dependenciesReady = false;
+                if (["install", "enable"].includes(action)) {
+                    pendingDependencyChecks.add(module.uuid);
+                    try {
+                        dependenciesReady =
+                            await ensureModuleDependenciesReady(module);
+                    } finally {
+                        pendingDependencyChecks.delete(module.uuid);
+                    }
+                    if (!dependenciesReady) {
+                        if (action === "install") {
+                            showToast(
+                                i18n.t("ui.app.modules.install_cancelled"),
+                                { type: "info" },
+                            );
+                        }
+                        return;
+                    }
+                }
                 pendingModuleActions.set(module.uuid, action);
                 const finishLoading = target.dataset.moduleMenu
                     ? null
                     : beginButtonLoading(target);
                 refreshDetailActions();
                 try {
-                    const completed = await runLifecycleAction(module, action);
+                    const completed = await runLifecycleAction(module, action, {
+                        dependenciesReady,
+                    });
                     if (completed === false && action === "install") {
                         showToast(i18n.t("ui.app.modules.install_cancelled"), {
                             type: "info",
