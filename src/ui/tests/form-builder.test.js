@@ -178,6 +178,24 @@ test("register invite countdown uses a pill and auth cards size independently", 
     );
 });
 
+test("register form retains shared required-field styling", () => {
+    const registerPage = read("src/ui/public/pages/register.html");
+    const authStyles = read("src/ui/styles/login.css");
+
+    assert.match(
+        registerPage,
+        /href="\/static\/styles\/reuse\/page-sections\.css"/,
+    );
+    assert.match(
+        authStyles,
+        /\.auth-form \.form-builder-label-text > label \{[\s\S]*display: inline;/,
+    );
+    assert.match(
+        authStyles,
+        /body\[data-theme="light"\] \.auth-form \.form-builder-required-flag \{[\s\S]*color: var\(--color-danger-outline-text\);/,
+    );
+});
+
 test("register password criteria use floating alert in form builder config", () => {
     const source = read("src/gateways/auth/ui/register.js");
     assert.match(source, /criteriaDisplay: "floating-alert"/);

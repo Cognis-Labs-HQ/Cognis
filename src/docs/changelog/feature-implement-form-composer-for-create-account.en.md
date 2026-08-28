@@ -10,7 +10,16 @@ The Create Account page now presents the full account creation form through the 
 
 Invitation expiry time now appears in a compact pill. The introduction and form cards also size themselves independently, so a long creation form no longer leaves an unnecessarily tall card on the left.
 
+## Keep public pages free of account requests
+
+Availability and presence reporting now waits for an authenticated account token, preventing public authentication pages from making account-only Social API requests.
+
+## Preserve required-field emphasis
+
+The Create Account form now keeps required-field asterisks inline with their labels and preserves the shared danger color in both light and dark themes.
+
 ## Commits
 
 - [74cb218](https://github.com/Cognis-Labs-HQ/Cognis/commit/74cb218dfafdfd93dcfef2ca2928ac6657ff5245)
 - [9cc4ed9](https://github.com/Cognis-Labs-HQ/Cognis/commit/9cc4ed9c285c77d2901d2ea4cadb35b66af6ddc6)
+- [1690cdb](https://github.com/Cognis-Labs-HQ/Cognis/commit/1690cdb58e8bcad63b60ef8beba367c3d0a03031)

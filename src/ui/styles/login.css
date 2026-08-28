@@ -102,6 +102,10 @@ p.auth-intro {
     font-weight: 700;
     font-size: 1.2rem;
 }
+
+.auth-form .form-builder-label-text > label {
+    display: inline;
+}
 .auth-form input,
 .auth-form button {
     padding: 12px 14px;
@@ -379,6 +383,10 @@ body[data-theme="light"] .auth-title,
 body[data-theme="light"] .auth-heading,
 body[data-theme="light"] .auth-form label span {
     color: #0f172a;
+}
+
+body[data-theme="light"] .auth-form .form-builder-required-flag {
+    color: var(--color-danger-outline-text);
 }
 
 body[data-theme="light"] p.auth-intro {

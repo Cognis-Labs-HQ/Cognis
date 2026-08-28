@@ -35,6 +35,13 @@ function isGuestSession() {
     );
 }
 
+function canRequestAvailability() {
+    const accessToken = String(
+        localStorage.getItem("cognis_access_token") ?? "",
+    ).trim();
+    return Boolean(accessToken) && !isGuestSession();
+}
+
 function notifyAvailabilitySubscribers(availability) {
     for (const subscriber of availabilitySubscribers) {
         subscriber(availability);
@@ -55,7 +62,7 @@ function getPresenceSessionId() {
 }
 
 function reportPresenceActivity(active, keepalive = false) {
-    if (isGuestSession()) return Promise.resolve(null);
+    if (!canRequestAvailability()) return Promise.resolve(null);
     if (!keepalive && presenceRequest) return presenceRequest;
     const request = apiFetch("/api/v1/social/availability/presence", {
         method: "PUT",
@@ -90,7 +97,7 @@ async function applyIndicatorStatus(indicator, status, i18n) {
 }
 
 export async function fetchAvailability(handle = "") {
-    if (isGuestSession()) return null;
+    if (!canRequestAvailability()) return null;
     const normalizedHandle = String(handle).replace(/^@/, "");
     const cacheKey = normalizedHandle || "self";
     if (availabilityCache.has(cacheKey)) return availabilityCache.get(cacheKey);
@@ -111,7 +118,7 @@ export function availabilityIndicatorMarkup(handle, label = "") {
 }
 
 export async function hydrateAvailabilityIndicators(container = document) {
-    if (isGuestSession()) return;
+    if (!canRequestAvailability()) return;
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/adapters/social/profile/languages"],
     });
@@ -133,7 +140,7 @@ export async function hydrateAvailabilityIndicators(container = document) {
 }
 
 export async function refreshAvailabilityIndicators(container = document) {
-    if (isGuestSession()) return null;
+    if (!canRequestAvailability()) return null;
     if (availabilityRefresh) return availabilityRefresh;
     availabilityRefresh = (async () => {
         availabilityCache.clear();
@@ -155,7 +162,9 @@ export async function refreshAvailabilityIndicators(container = document) {
 }
 
 export async function setManualAvailability(status) {
-    if (!STATUS_OPTIONS.includes(status)) return false;
+    if (!canRequestAvailability() || !STATUS_OPTIONS.includes(status)) {
+        return false;
+    }
     const response = await apiFetch("/api/v1/social/availability", {
         method: "PUT",
         headers: { "content-type": "application/json" },
