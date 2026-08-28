@@ -255,6 +255,31 @@ export function assertModuleInstallDependencies(
     }
 }
 
+export function assertExternalModuleDependencies(
+    moduleId: string,
+    references: readonly string[],
+    manifests: readonly ModuleManifest[],
+    isEnabled: (dependencyId: string) => boolean,
+): void {
+    for (const reference of references) {
+        const dependency = manifests.find(
+            (manifest) =>
+                manifest.id === reference || manifest.uuid === reference,
+        );
+        if (!dependency) {
+            throw new ModuleEnableValidationError(
+                "module_dependency_unavailable",
+                `Module ${moduleId} requires unavailable external module ${reference}`,
+            );
+        }
+        if (isEnabled(dependency.id)) continue;
+        throw new ModuleEnableValidationError(
+            "module_dependency_disabled",
+            `Module ${moduleId} requires disabled external module ${dependency.name}`,
+        );
+    }
+}
+
 export function assertModuleCapabilityDependencies(
     moduleId: string,
     requiresCapabilities: readonly string[],
@@ -347,11 +372,21 @@ export function buildServer(deps: ApiDependencies) {
         moduleService,
         {
             validateInstallDependencies: async (manifest) => {
+                const externalDependencies = manifest as ModuleManifest & {
+                    hardDependencies?: string[];
+                };
                 assertModuleInstallDependencies(
                     manifest.id,
                     manifest.requires ?? [],
                     deps.gatewayRegistry,
                     await coreComponentDependencies,
+                );
+                await deps.moduleRuntimeGateway.refresh?.();
+                assertExternalModuleDependencies(
+                    manifest.id,
+                    externalDependencies.hardDependencies ?? [],
+                    await deps.moduleRuntimeGateway.listManifests(),
+                    (dependencyId) => enabledModules.has(dependencyId),
                 );
             },
             beforeEnable: async (moduleId) => {
@@ -359,11 +394,20 @@ export function buildServer(deps: ApiDependencies) {
                 const manifest = (
                     await deps.moduleRuntimeGateway.listManifests()
                 ).find((entry) => entry.id === moduleId);
+                const externalDependencies = manifest as
+                    | (ModuleManifest & { hardDependencies?: string[] })
+                    | undefined;
                 assertModuleEnableDependencies(
                     moduleId,
                     manifest?.requires ?? [],
                     deps.gatewayRegistry,
                     await coreComponentDependencies,
+                );
+                assertExternalModuleDependencies(
+                    moduleId,
+                    externalDependencies?.hardDependencies ?? [],
+                    await deps.moduleRuntimeGateway.listManifests(),
+                    (dependencyId) => enabledModules.has(dependencyId),
                 );
                 assertModuleCapabilityDependencies(
                     moduleId,

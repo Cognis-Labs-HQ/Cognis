@@ -110,3 +110,7 @@ await reuse.loadStylesheets(["layout.css", "page-sections.css"]);
 ```
 
 Modules that must load a runtime script declare `ui:resourceLoader` and call its validated, reference-counted `loadScript({ id, src, globalName })` method. They must dispose the returned handle during unmount and must not append scripts directly to the document.
+
+## Installation dependencies
+
+External manifests may declare `hardDependencies` and `softDependencies` as arrays of module UUIDs or IDs. Hard dependencies are discouraged because administrators must install and enable them before installation can continue. Soft dependencies are optional selections in the installation dialog.

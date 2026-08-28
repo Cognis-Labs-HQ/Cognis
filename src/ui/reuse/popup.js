@@ -39,7 +39,7 @@
  *              function. Rendered as innerHTML; callers must escape dynamic values.
  *   variant  — visual style hint: 'info' | 'warning' | 'danger' | 'confirm'.
  *              Defaults to 'info'.
- *   actions  — Array<{ id: string, label: string, variant?: 'confirm' | 'cancel' | 'neutral' }>.
+ *   actions  — Array<{ id: string, label: string, variant?: 'confirm' | 'cancel' | 'neutral', disabled?: boolean }>.
  *              When omitted, a single green 'Done' (confirm) button is rendered.
  *   closeButtonVariant — Optional variant for the × header close button.
  *   maxWidth — CSS max-width value (e.g. '40%', '600px') applied to the dialog
@@ -74,7 +74,7 @@
  *   title: string,
  *   body: string | (() => string),
  *   variant?: 'info' | 'warning' | 'danger' | 'confirm',
- *   actions?: Array<{ id: string, label: string, variant?: string }>,
+ *   actions?: Array<{ id: string, label: string, variant?: string, disabled?: boolean }>,
  *   maxWidth?: string,
  *   onOpen?: (overlay: HTMLElement) => void,
  *   onAction?: (actionId: string | null, overlay: HTMLElement) => Promise<boolean | void> | boolean | void,
@@ -502,7 +502,7 @@ export async function openPopup({
                         : btnVariant === "cancel"
                           ? "btn-cancel btn-animated popup-action-btn"
                           : "popup-action-btn popup-action-btn--neutral btn-animated";
-                return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button">${escapeHtml(action.label)}</button>`;
+                return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${escapeHtml(action.label)}</button>`;
             })
             .join("");
 
@@ -554,7 +554,7 @@ export async function openPopup({
                                 : btnVariant === "cancel"
                                   ? "btn-cancel btn-animated popup-action-btn"
                                   : "popup-action-btn popup-action-btn--neutral btn-animated";
-                        return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button">${escapeHtml(action.label)}</button>`;
+                        return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${escapeHtml(action.label)}</button>`;
                     })
                     .join("");
                 bindActionButtons(footerEl);

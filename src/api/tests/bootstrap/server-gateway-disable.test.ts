@@ -12,6 +12,7 @@ import {
 } from "@cognis/core";
 import {
     assertModuleInstallDependencies,
+    assertExternalModuleDependencies,
     assertModuleEnableDependencies,
     assertModuleCapabilityDependencies,
     buildServer,
@@ -20,6 +21,32 @@ import {
 import { RouteRegistry } from "../../reuse/route-registry.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
+
+test("external module dependencies must be installed and enabled", () => {
+    const dependency = {
+        id: "calendar",
+        uuid: "calendar-uuid",
+        name: "Calendar",
+    } as never;
+    assert.doesNotThrow(() =>
+        assertExternalModuleDependencies(
+            "classroom",
+            [dependency.uuid],
+            [dependency],
+            (id) => id === dependency.id,
+        ),
+    );
+    assert.throws(
+        () =>
+            assertExternalModuleDependencies(
+                "classroom",
+                [dependency.uuid],
+                [dependency],
+                () => false,
+            ),
+        /requires disabled external module Calendar/,
+    );
+});
 
 test("module enable validation resolves browser and server capabilities", () => {
     assert.doesNotThrow(() =>

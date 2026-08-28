@@ -58,6 +58,11 @@ import {
     loadAuthenticatedModuleAssets,
     resolveModuleAssetUrl,
 } from "./assets.js";
+import {
+    confirmDependencyInstall,
+    isRequiredDependency,
+    resolveInstallDependencies,
+} from "./dependencies.js";
 
 let i18n;
 let composer;
@@ -153,7 +158,7 @@ function renderCard(module) {
     return `<article class="module-store-card" data-module-uuid="${module.uuid}" tabindex="0">
       ${avatar}
       <div class="module-store-card-copy">
-        <div class="module-store-card-heading"><h3>${escapeHtml(presentation.name)}${renderRestartWarning(module)}</h3>${module.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}</div>
+        <div class="module-store-card-heading"><h3>${escapeHtml(presentation.name)}${renderRestartWarning(module)}</h3>${isRequiredDependency(module, modules) ? `<span class="state-pill pill-required">${escapeHtml(i18n.t("ui.app.modules.required"))}</span>` : ""}${module.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}</div>
         <p>${escapeHtml(presentation.summary ?? presentation.description ?? "")}</p>
         <span class="module-store-publisher">${escapeHtml(module.publisher ?? "")} · ${escapeHtml(formatVersion(module.installed ? (module.installedVersion ?? module.version) : module.version))}</span>
         ${renderAvailableVersion(module)}
@@ -377,6 +382,31 @@ async function selectReleaseChannel(module) {
 
 async function runLifecycleAction(module, action) {
     if (module.restartRequired) return;
+    let dependencySelection = null;
+    if (action === "install") {
+        dependencySelection = await confirmDependencyInstall(
+            module,
+            modules,
+            i18n,
+        );
+        if (!dependencySelection) return;
+        for (const dependency of resolveInstallDependencies(
+            module,
+            modules,
+            dependencySelection.soft,
+        )) {
+            if (!dependency.installed) {
+                await runLifecycleAction(dependency, "install");
+            }
+            if (dependency.installed && dependency.status !== "enabled") {
+                const enabled = await enableModuleWithIntegrityCheck(
+                    dependency.id,
+                    i18n,
+                );
+                if (enabled) dependency.status = "enabled";
+            }
+        }
+    }
     if (action === "enable") {
         const result = await activateModule(module, i18n);
         if (!result) return;
