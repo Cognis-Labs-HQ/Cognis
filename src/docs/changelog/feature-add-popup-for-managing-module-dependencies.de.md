@@ -43,3 +43,7 @@ Download- und Wiedergabesteuerungen für Abhängigkeiten verwenden nun eigene he
 ## Korrekter Symbolkontrast in beiden Themen
 
 Download- und Wiedergabesteuerungen für Abhängigkeiten verwenden nun dunkle Symbole auf hellen Flächen und helle Symbole im dunklen Modus, sodass beide Aktionen in jedem Thema sichtbar bleiben.
+
+## Abhängigkeiten vor der Aktivierung konfigurieren
+
+Abhängigkeiten, die eine Ersteinrichtung benötigen, öffnen ihren Konfigurationsdialog nun über der Abhängigkeitsverwaltung, bevor die Aktivierung versucht wird. Nach dem Speichern gültiger Einstellungen kann die Aktivierung fortgesetzt werden, ohne in einen serverseitigen Konfigurationsfehler zu münden.

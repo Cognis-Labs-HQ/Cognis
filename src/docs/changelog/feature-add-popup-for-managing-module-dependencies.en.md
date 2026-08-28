@@ -43,3 +43,7 @@ Dependency download and play controls now use dedicated light/dark SVG assets. I
 ## Correct icon contrast in both themes
 
 Dependency download and play controls now use dark icon artwork on light surfaces and light icon artwork in dark mode, ensuring both actions remain visible in either theme.
+
+## Configure dependencies before activation
+
+Dependencies that require initial settings now open their configuration dialog above the dependency manager before activation is attempted. Saving valid settings lets activation continue without falling through to a server-side configuration error.

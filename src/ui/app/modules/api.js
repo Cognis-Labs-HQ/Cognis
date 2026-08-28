@@ -25,11 +25,11 @@ export async function loadInstalledModules() {
 }
 
 export async function loadModuleConfig(moduleId) {
-    const response = await apiFetch(
-        `/api/v1/modules/${encodeURIComponent(moduleId)}/config`,
+    return data(
+        await apiFetch(
+            `/api/v1/modules/${encodeURIComponent(moduleId)}/config`,
+        ),
     );
-    if (response.status === 404) return null;
-    return data(response);
 }
 
 export async function saveModuleConfig(moduleId, values) {

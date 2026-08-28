@@ -102,7 +102,7 @@ test("required module configuration distinguishes unset values from valid false 
     );
 });
 
-test("disabled modules defer required config checks when their owned route is not mounted", async () => {
+test("disabled modules configure required settings before enable when their route is mounted", async () => {
     const marketplaceSource = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
@@ -143,7 +143,11 @@ test("disabled modules defer required config checks when their owned route is no
     );
     assert.match(
         activationSource,
-        /configRouteAvailable = module\.status === "enabled"[\s\S]*openModulePreferences[\s\S]*setModuleEnabled\(module\.id, false\)/,
+        /prepareRequiredModulePreferences\([\s\S]*if \(configRouteAvailable === null\) return null;[\s\S]*enableModuleWithIntegrityCheck/,
+    );
+    assert.match(
+        activationSource,
+        /assertRequiredModulePreferences\([\s\S]*module,[\s\S]*message,[\s\S]*\)[\s\S]*openModulePreferences/,
     );
     assert.match(modulePreferencesSource, /readModulePreferenceValues/);
     assert.match(

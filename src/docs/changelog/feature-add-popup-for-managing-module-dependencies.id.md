@@ -43,3 +43,7 @@ Kontrol unduh dan putar dependensi kini memakai aset SVG terang dan gelap khusus
 ## Kontras ikon yang tepat pada kedua tema
 
 Kontrol unduh dan putar dependensi kini memakai ikon gelap pada permukaan terang dan ikon terang dalam mode gelap, sehingga kedua tindakan tetap terlihat pada tema mana pun.
+
+## Konfigurasikan dependensi sebelum aktivasi
+
+Dependensi yang memerlukan pengaturan awal kini membuka dialog konfigurasinya di atas pengelola dependensi sebelum aktivasi dicoba. Menyimpan pengaturan yang valid memungkinkan aktivasi berlanjut tanpa berakhir pada galat konfigurasi sisi server.
