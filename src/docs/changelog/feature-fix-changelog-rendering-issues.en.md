@@ -25,3 +25,7 @@ Historical commit links now point to the current Cognis-Labs-HQ/Cognis repositor
 ## Complete changelog provenance
 
 Automated checks now require every localized changelog to identify its feature branch and include canonical commit links. Entries that cannot be matched to either historical repository explicitly use N/A with an empty commit list.
+
+## Short commit references
+
+The Changelogs page now displays each commit link as its seven-character reference while preserving the complete canonical commit URL as the link destination.

@@ -25,3 +25,7 @@ Historische Commit-Links verweisen nun auf das aktuelle Cognis-Labs-HQ/Cognis-Re
 ## Vollständige Changelog-Herkunft
 
 Automatisierte Prüfungen verlangen nun, dass jeder lokalisierte Changelog seinen Feature-Branch und kanonische Commit-Links angibt. Einträge, die keinem der historischen Repositorys zugeordnet werden können, verwenden ausdrücklich N/A mit einer leeren Commit-Liste.
+
+## Kurze Commit-Referenzen
+
+Die Changelog-Seite zeigt jeden Commit-Link nun als siebenstellige Referenz an, während die vollständige kanonische Commit-URL als Linkziel erhalten bleibt.

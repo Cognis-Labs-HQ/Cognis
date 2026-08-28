@@ -25,3 +25,7 @@ Tautan commit historis kini mengarah ke repositori Cognis-Labs-HQ/Cognis saat in
 ## Asal changelog yang lengkap
 
 Pemeriksaan otomatis kini mewajibkan setiap changelog terlokalisasi mencantumkan feature branch dan tautan commit kanonis. Entri yang tidak dapat dicocokkan dengan salah satu repositori historis secara eksplisit menggunakan N/A dengan daftar commit kosong.
+
+## Referensi commit pendek
+
+Halaman Changelog kini menampilkan setiap tautan commit sebagai referensi tujuh karakter sambil mempertahankan URL commit kanonis lengkap sebagai tujuan tautan.

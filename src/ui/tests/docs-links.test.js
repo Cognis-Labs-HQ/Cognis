@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { linkShortCommitRefs } from "../app/changelogs/commit-links.js";
 
 const ROOT = resolve(fileURLToPath(import.meta.url), "../../../../");
 const OLD_DOC_FILE_URL_PATTERNS = [
@@ -213,11 +214,22 @@ test("changelogs module keeps changelog-only navigation data", () => {
         source.includes("item.sourceName || CHANGELOG_GROUP_KEY"),
         "changelog navigation should group external module entries by module name",
     );
+    assert.match(source, /transformMarkdown: linkShortCommitRefs/);
 
     const styles = readFileSync(join(ROOT, "src/ui/styles/docs.css"), "utf8");
     assert.ok(
         styles.includes(".changelog-content-panel > ul > li > a"),
         "changelog content links should render as styled cards instead of a plain list",
+    );
+});
+
+test("changelog commit links show short refs with complete hrefs", () => {
+    const commitRef = "1234567890abcdef1234567890abcdef12345678";
+    const url = `https://github.com/Cognis-Labs-HQ/Cognis/commit/${commitRef}`;
+    assert.equal(linkShortCommitRefs(url), `[1234567](${url})`);
+    assert.equal(
+        linkShortCommitRefs(`[complete commit reference](${url})`),
+        `[1234567](${url})`,
     );
 });
 
