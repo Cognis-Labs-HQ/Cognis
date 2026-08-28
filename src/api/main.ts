@@ -29,7 +29,10 @@ import type { UserPreferenceStore } from "./reuse/preference-store.js";
 import type { RouteContext } from "./reuse/route-context.js";
 import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
 import type { DbDialectHelper } from "../gateways/db/bootstrap.js";
-import { isExcludedModuleIntegrityFile } from "./reuse/module-integrity.js";
+import {
+    isExcludedModuleIntegrityFile,
+    resolveModuleIntegrityFile,
+} from "./reuse/module-integrity.js";
 import { requirePublicEnvironment } from "./reuse/environment.js";
 
 requirePublicEnvironment();
@@ -614,9 +617,13 @@ const server = buildServer({
                     ) {
                         continue;
                     }
-                    const actual = entry.isFile()
+                    const integrityFile = await resolveModuleIntegrityFile(
+                        moduleRoot,
+                        relativePath,
+                    );
+                    const actual = integrityFile
                         ? createHash("sha256")
-                              .update(await readFile(candidate))
+                              .update(await readFile(integrityFile))
                               .digest("hex")
                         : null;
                     report.push({
@@ -631,8 +638,12 @@ const server = buildServer({
             await visit(moduleRoot);
             for (const file of manifest.files ?? []) {
                 if (isExcludedModuleIntegrityFile(file.path)) continue;
-                const candidate = path.resolve(moduleRoot, file.path);
+                const candidate = await resolveModuleIntegrityFile(
+                    moduleRoot,
+                    file.path,
+                );
                 try {
+                    if (!candidate) throw new Error("missing_integrity_file");
                     const raw = await readFile(candidate);
                     const actual = createHash("sha256")
                         .update(raw)

@@ -91,6 +91,49 @@ test("module repository validator ignores the root README alias", async () => {
     }
 });
 
+test("module repository validator verifies an internal AGENTS.md symlink", async () => {
+    const fixture = await createRepository();
+    try {
+        await mkdir(path.join(fixture.root, ".github"));
+        const instructions = "# Module instructions\n";
+        await writeFile(
+            path.join(fixture.root, ".github/copilot-instructions.md"),
+            instructions,
+        );
+        await symlink(
+            ".github/copilot-instructions.md",
+            path.join(fixture.root, "AGENTS.md"),
+        );
+        fixture.manifest.files?.push({
+            path: "AGENTS.md",
+            sha256: createHash("sha256").update(instructions).digest("hex"),
+        });
+        await validateModuleRepository(fixture.root, fixture.manifest);
+    } finally {
+        await rm(fixture.root, { recursive: true, force: true });
+    }
+});
+
+test("module repository validator rejects symlinks outside the repository", async () => {
+    const fixture = await createRepository();
+    const externalFile = path.join(fixture.root, "../external-secret.txt");
+    try {
+        await writeFile(externalFile, "secret\n");
+        await symlink(externalFile, path.join(fixture.root, "AGENTS.md"));
+        fixture.manifest.files?.push({
+            path: "AGENTS.md",
+            sha256: createHash("sha256").update("secret\n").digest("hex"),
+        });
+        await assert.rejects(
+            validateModuleRepository(fixture.root, fixture.manifest),
+            /missing_module_repository_file:AGENTS\.md/,
+        );
+    } finally {
+        await rm(fixture.root, { recursive: true, force: true });
+        await rm(externalFile, { force: true });
+    }
+});
+
 test("module repository validator rejects mismatched packages and files", async () => {
     const fixture = await createRepository();
     try {

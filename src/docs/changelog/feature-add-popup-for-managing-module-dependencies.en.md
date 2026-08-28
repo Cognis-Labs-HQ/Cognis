@@ -7,3 +7,7 @@ External modules can declare discouraged hard dependencies and optional soft dep
 ## Reliable activation and release channels
 
 Cancelling a module integrity warning now stops dependency activation and required configuration flows. Selected release channels are stored by the server and survive restarts even before installation.
+
+## Safe symlink integrity verification
+
+Module SHASUM validation now follows file symlinks that resolve inside the module, including an `AGENTS.md` alias to `.github/copilot-instructions.md`, while rejecting broken links, directories, and targets outside the module.

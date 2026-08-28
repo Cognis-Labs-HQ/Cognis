@@ -7,3 +7,7 @@ Externe Module können nicht empfohlene harte und optionale weiche Abhängigkeit
 ## Zuverlässige Aktivierung und Veröffentlichungskanäle
 
 Das Abbrechen einer Integritätswarnung stoppt nun die Aktivierung von Abhängigkeiten und erforderliche Konfigurationsabläufe. Ausgewählte Veröffentlichungskanäle werden serverseitig gespeichert und bleiben auch vor der Installation nach Neustarts erhalten.
+
+## Sichere Integritätsprüfung von symbolischen Links
+
+Die SHASUM-Prüfung von Modulen folgt nun Datei-Links, deren Ziel innerhalb des Moduls liegt, einschließlich eines `AGENTS.md`-Alias für `.github/copilot-instructions.md`. Defekte Links, Verzeichnisse und Ziele außerhalb des Moduls werden weiterhin abgelehnt.

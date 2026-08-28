@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { lstat, readFile } from "node:fs/promises";
+import { lstat, readFile, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import type { ModuleManifest } from "../../contracts/module-manifest.js";
 
@@ -99,7 +99,27 @@ async function assertRepositoryFile(
         }
         throw error;
     }
-    if (fileStatus.isSymbolicLink() || !fileStatus.isFile()) {
+    if (fileStatus.isSymbolicLink()) {
+        const [repositoryRoot, resolvedTarget] = await Promise.all([
+            realpath(root),
+            realpath(absolutePath),
+        ]).catch(() => ["", ""] as const);
+        const targetRelative = path.relative(repositoryRoot, resolvedTarget);
+        if (
+            !repositoryRoot ||
+            !resolvedTarget ||
+            targetRelative.startsWith("..") ||
+            path.isAbsolute(targetRelative) ||
+            !(await stat(resolvedTarget).then(
+                (status) => status.isFile(),
+                () => false,
+            ))
+        ) {
+            throw new Error(`missing_module_repository_file:${normalized}`);
+        }
+        return resolvedTarget;
+    }
+    if (!fileStatus.isFile()) {
         throw new Error(`missing_module_repository_file:${normalized}`);
     }
     return absolutePath;
