@@ -770,6 +770,8 @@ test("module marketplace discovers repository manifests", async () => {
         assert.equal(modules[0].installedBranch, "main");
         assert.equal(modules[0].installedCommit, "older123");
         assert.equal(modules[0].updateAvailable, false);
+        await service.saveSelectedBranch(modules[0].uuid, "preview");
+        assert.equal((await service.discover())[0].selectedBranch, "preview");
 
         const originalIcon = modules[0].assetIds?.icon;
         moduleName = "Collaborative Notes";
@@ -784,6 +786,7 @@ test("module marketplace discovers repository manifests", async () => {
         assert.equal(forced[0].name, "Collaborative Notes");
         assert.equal(forced[0].description, "Updated shared notes.");
         assert.equal(forced[0].version, "1.1.0");
+        assert.equal(forced[0].selectedBranch, "preview");
         assert.equal(
             forced[0].branches.find((branch) => branch.name === "main")
                 ?.version,

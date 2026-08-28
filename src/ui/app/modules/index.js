@@ -24,6 +24,7 @@ import {
     loadCachedModules,
     loadInstalledModules,
     loadModuleSources,
+    saveModuleReleaseChannel,
     setModuleEnabled,
     uninstallModule,
     deleteModuleConfig,
@@ -225,6 +226,7 @@ function renderLifecycleButton(module, action, consequence) {
 function selectedBranch(module) {
     const selected =
         selectedBranches.get(module.uuid) ??
+        module.selectedBranch ??
         module.installedBranch ??
         module.defaultBranch;
     return resolveSelectedBranch(module, selected);
@@ -381,7 +383,7 @@ async function selectReleaseChannel(module) {
 }
 
 async function runLifecycleAction(module, action) {
-    if (module.restartRequired) return;
+    if (module.restartRequired) return false;
     let dependencySelection = null;
     if (action === "install") {
         dependencySelection = await confirmDependencyInstall(
@@ -389,27 +391,29 @@ async function runLifecycleAction(module, action) {
             modules,
             i18n,
         );
-        if (!dependencySelection) return;
+        if (!dependencySelection) return false;
         for (const dependency of resolveInstallDependencies(
             module,
             modules,
             dependencySelection.soft,
         )) {
             if (!dependency.installed) {
-                await runLifecycleAction(dependency, "install");
+                const installed = await runLifecycleAction(
+                    dependency,
+                    "install",
+                );
+                if (!installed) return false;
             }
             if (dependency.installed && dependency.status !== "enabled") {
-                const enabled = await enableModuleWithIntegrityCheck(
-                    dependency.id,
-                    i18n,
-                );
+                const enabled = await activateModule(dependency, i18n);
+                if (!enabled) return false;
                 if (enabled) dependency.status = "enabled";
             }
         }
     }
     if (action === "enable") {
         const result = await activateModule(module, i18n);
-        if (!result) return;
+        if (!result) return false;
     }
     if (
         ["install", "update", "force-update", "change-channel"].includes(action)
@@ -417,8 +421,8 @@ async function runLifecycleAction(module, action) {
         let branch = selectedBranch(module);
         if (action === "change-channel") {
             const releaseChannel = await selectReleaseChannel(module);
-            if (!releaseChannel) return;
-            if (releaseChannel === module.installedBranch) return;
+            if (!releaseChannel) return false;
+            if (releaseChannel === module.installedBranch) return false;
             branch = releaseChannel;
         }
         const restoreEnabledState =
@@ -443,7 +447,7 @@ async function runLifecycleAction(module, action) {
                     },
                 ],
             });
-            if (result !== "confirm") return;
+            if (result !== "confirm") return false;
         }
         const source = sources.find(
             (entry) => entry.uuid === module.sourceUuid,
@@ -500,7 +504,7 @@ async function runLifecycleAction(module, action) {
     }
     if (action === "uninstall") {
         const options = await confirmModuleUninstall(i18n);
-        if (!options) return;
+        if (!options) return false;
         await uninstallModule(module.uuid, options);
         await deleteModuleConfig(module.id);
         module.installed = false;
@@ -519,6 +523,7 @@ async function runLifecycleAction(module, action) {
     void loadKnownModules().catch((error) => {
         showToast(error.message, { type: "error" });
     });
+    return true;
 }
 
 function dispatchLifecycleRefresh(module, action) {
@@ -695,11 +700,22 @@ function bindInteractions(root, signal) {
     );
     root.addEventListener(
         "change",
-        (event) => {
+        async (event) => {
             const selector = event.target.closest("[data-module-branch]");
             if (!selector) return;
-            selectedBranches.set(selector.dataset.moduleBranch, selector.value);
-            refreshMarketplace();
+            try {
+                await saveModuleReleaseChannel(
+                    selector.dataset.moduleBranch,
+                    selector.value,
+                );
+                selectedBranches.set(
+                    selector.dataset.moduleBranch,
+                    selector.value,
+                );
+                refreshMarketplace();
+            } catch (error) {
+                showToast(error.message, { type: "error" });
+            }
         },
         { signal },
     );

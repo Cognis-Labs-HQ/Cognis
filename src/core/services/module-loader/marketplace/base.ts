@@ -8,6 +8,21 @@ const MARKETPLACE_STRING_LOCALES = ["de", "en", "id", "ja"];
 export class MarketplaceServiceBase extends MarketplaceRepository {
     protected catalogMutation: Promise<void> = Promise.resolve();
 
+    protected applyCachedSelectedBranches(
+        modules: MarketplaceModule[],
+        cached: MarketplaceModule[],
+    ): MarketplaceModule[] {
+        const selectedBranches = new Map(
+            cached.map((module) => [module.uuid, module.selectedBranch]),
+        );
+        return modules.map((module) => ({
+            ...module,
+            ...(selectedBranches.get(module.uuid)
+                ? { selectedBranch: selectedBranches.get(module.uuid) }
+                : {}),
+        }));
+    }
+
     protected async discoverSource(
         source: ModuleSource,
         token?: string,
@@ -507,7 +522,14 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
             await mkdir(this.cacheRoot, { recursive: true });
             await writeFile(
                 this.catalogPath,
-                JSON.stringify([...retained, ...modules], null, 2),
+                JSON.stringify(
+                    [
+                        ...retained,
+                        ...this.applyCachedSelectedBranches(modules, cached),
+                    ],
+                    null,
+                    2,
+                ),
                 { mode: 0o600 },
             );
         };
@@ -543,6 +565,35 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
         await this.catalogMutation;
     }
 
+    protected async updateCachedSelectedBranch(
+        uuid: string,
+        branch: string,
+    ): Promise<void> {
+        const update = async () => {
+            const cached = await this.readCachedCatalog();
+            const modules = cached.map((module) => {
+                if (module.uuid !== uuid) return module;
+                const available = [
+                    ...(module.branches ?? []),
+                    ...(module.releases ?? []),
+                ].some((entry) => entry.name === branch);
+                if (!available) throw new Error("invalid_module_branch");
+                return { ...module, selectedBranch: branch };
+            });
+            if (!modules.some((module) => module.uuid === uuid)) {
+                throw new Error("module_not_found");
+            }
+            await mkdir(this.cacheRoot, { recursive: true });
+            await writeFile(
+                this.catalogPath,
+                JSON.stringify(modules, null, 2),
+                { mode: 0o600 },
+            );
+        };
+        this.catalogMutation = this.catalogMutation.then(update, update);
+        await this.catalogMutation;
+    }
+
     protected async updateCachedInstallState(
         uuid: string,
         branch: string,
@@ -557,6 +608,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                           ...module,
                           installed: true,
                           installedBranch: branch,
+                          selectedBranch: branch,
                           installedCommit: commit,
                           installedVersion: version,
                           version,

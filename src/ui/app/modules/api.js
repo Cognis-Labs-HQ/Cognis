@@ -124,6 +124,19 @@ export async function loadCachedModules() {
     return data(await apiFetch("/api/v1/modules/catalog"));
 }
 
+export async function saveModuleReleaseChannel(moduleUuid, branch) {
+    return data(
+        await apiFetch(
+            `/api/v1/modules/catalog/${encodeURIComponent(moduleUuid)}/channel`,
+            {
+                method: "PUT",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ branch }),
+            },
+        ),
+    );
+}
+
 export async function loadModuleAsset(assetUrl, { signal } = {}) {
     let response;
     try {

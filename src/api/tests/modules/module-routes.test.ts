@@ -799,6 +799,43 @@ test("module marketplace install forwards the selected branch", async () => {
     ]);
 });
 
+test("module marketplace persists a selected release channel", async () => {
+    const token = issueAccessToken("admin-user", "admin", 60);
+    let selectedModuleUuid = "";
+    let selectedBranch = "";
+    const route = createModuleRoutes(
+        { list: async () => [] } as any,
+        {},
+        undefined,
+        {
+            saveSelectedBranch: async (moduleUuid: string, branch: string) => {
+                selectedModuleUuid = moduleUuid;
+                selectedBranch = branch;
+            },
+        } as any,
+    );
+    let status = 0;
+    await route(
+        {
+            method: "PUT",
+            headers: { authorization: `Bearer ${token}` },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(JSON.stringify({ branch: "preview" }));
+            },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/modules/catalog/module-uuid/channel"),
+    );
+    assert.equal(status, 204);
+    assert.equal(selectedModuleUuid, "module-uuid");
+    assert.equal(selectedBranch, "preview");
+});
+
 test("module marketplace reports and logs installation failures", async () => {
     const token = issueAccessToken("admin-user", "admin", 60);
     const entries: Array<{ message: string; meta?: Record<string, unknown> }> =

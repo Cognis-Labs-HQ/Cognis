@@ -55,6 +55,7 @@ export async function activateModule(module, i18n) {
     }
     if (!configRouteAvailable) {
         const result = await enableModuleWithIntegrityCheck(module.id, i18n);
+        if (!result) return null;
         try {
             const configuredAfterEnable = await assertRequiredModulePreferences(
                 module,

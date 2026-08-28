@@ -246,6 +246,33 @@ export function createModuleRoutes(
                 return true;
             }
         }
+        const channelMatch = url.pathname.match(
+            /^\/api\/v1\/modules\/catalog\/([^/]+)\/channel$/,
+        );
+        if (marketplace && channelMatch && req.method === "PUT") {
+            const claims = ctx.requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const body = await readJson(req);
+            if (typeof body.branch !== "string" || !body.branch.trim()) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_module_branch",
+                            message: "Select a valid module release channel.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            await marketplace.saveSelectedBranch(
+                decodeURIComponent(channelMatch[1]),
+                body.branch,
+            );
+            res.writeHead(204);
+            res.end();
+            return true;
+        }
         const sourceDeleteMatch = url.pathname.match(
             /^\/api\/v1\/modules\/sources\/([^/]+)$/,
         );

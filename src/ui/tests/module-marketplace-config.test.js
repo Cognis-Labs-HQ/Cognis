@@ -52,6 +52,14 @@ test("required module configuration distinguishes unset values from valid false 
         "utf8",
     );
     assert.match(marketplaceSource, /action === "enable"[\s\S]*activateModule/);
+    const activationSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/activation.js"),
+        "utf8",
+    );
+    assert.match(
+        activationSource,
+        /enableModuleWithIntegrityCheck\(module\.id, i18n\);[\s\S]*if \(!result\) return null;[\s\S]*openModulePreferences/,
+    );
     const inputs = {
         apiKey: { value: "secret-value" },
         enabled: { checked: false },
