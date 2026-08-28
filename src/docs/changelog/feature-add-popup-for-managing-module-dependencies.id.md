@@ -35,3 +35,7 @@ Instal dan Aktifkan kini menjalankan gerbang kesiapan dependensi penuh yang sama
 ## Penonaktifan dependensi keras berantai
 
 Menonaktifkan modul kini secara rekursif menonaktifkan setiap modul aktif yang menyatakannya sebagai dependensi keras, sementara modul dengan dependensi lunak tetap aktif. Kartu dependensi kini memakai SVG unduhan khusus dengan baki, bukan panah turun umum.
+
+## Tindakan dependensi sesuai tema
+
+Kontrol unduh dan putar dependensi kini memakai aset SVG terang dan gelap khusus. Dependensi yang terpasang tetapi dinonaktifkan menampilkan Putar alih-alih Unduh, dan teks pil status mengikuti tema aktif sambil mempertahankan latar status yang sudah ada.

@@ -218,12 +218,30 @@ body[data-theme="dark"] .module-icon-settings {
     padding: 0;
 }
 
-.module-dependency-download img {
+.module-dependency-action-icon {
+    background: center / contain no-repeat;
+    display: inline-block;
     height: 1.25rem;
     width: 1.25rem;
 }
 
-.module-dependency-download.button-loading img {
+.module-dependency-action-icon--download {
+    background-image: url("/static/assets/reuse/download-light.svg");
+}
+
+.module-dependency-action-icon--play {
+    background-image: url("/static/assets/reuse/play-light.svg");
+}
+
+body[data-theme="dark"] .module-dependency-action-icon--download {
+    background-image: url("/static/assets/reuse/download-dark.svg");
+}
+
+body[data-theme="dark"] .module-dependency-action-icon--play {
+    background-image: url("/static/assets/reuse/play-dark.svg");
+}
+
+.module-dependency-download.button-loading .module-dependency-action-icon {
     display: none;
 }
 

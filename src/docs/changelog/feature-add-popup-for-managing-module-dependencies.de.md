@@ -35,3 +35,7 @@ Installieren und Aktivieren führen nun dieselbe vollständige Bereitschaftsprü
 ## Kaskadierendes Abschalten harter Abhängigkeiten
 
 Beim Deaktivieren eines Moduls werden nun rekursiv alle aktivierten Module deaktiviert, die es als harte Abhängigkeit deklarieren; weiche Abhängige bleiben aktiv. Abhängigkeitskarten verwenden nun ein eigenes Download-SVG mit Ablage statt eines allgemeinen Abwärtspfeils.
+
+## Themenabhängige Abhängigkeitsaktionen
+
+Download- und Wiedergabesteuerungen für Abhängigkeiten verwenden nun eigene helle und dunkle SVG-Assets. Installierte, aber deaktivierte Abhängigkeiten zeigen Wiedergabe statt Download, und der Text der Status-Pills folgt dem aktiven Thema, während die etablierten Statushintergründe erhalten bleiben.

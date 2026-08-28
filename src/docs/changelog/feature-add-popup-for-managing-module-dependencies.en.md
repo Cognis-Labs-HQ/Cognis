@@ -35,3 +35,7 @@ Install and Enable now perform the same full dependency-readiness gate before th
 ## Cascading hard-dependency shutdown
 
 Disabling a module now recursively disables every enabled module that declares it as a hard dependency, while soft dependents remain active. Dependency cards now use a dedicated download SVG with a tray instead of a generic down arrow.
+
+## Theme-aware dependency actions
+
+Dependency download and play controls now use dedicated light/dark SVG assets. Installed but disabled dependencies show Play instead of Download, and status-pill text follows the active theme while retaining established state backgrounds.

@@ -81,7 +81,8 @@ test("module dependency popup renders navigable cards and action-specific labels
     assert.match(source, /pill-disabled/);
     assert.match(source, /pill-available/);
     assert.match(source, /module-icon-forward/);
-    assert.match(source, /download\.svg/);
+    assert.match(source, /module-dependency-action-icon--download/);
+    assert.match(source, /module-dependency-action-icon--play/);
     assert.match(source, /beginButtonLoading/);
     assert.match(source, /data-install-dependency/);
     assert.match(source, /updateDependencyAction/);
