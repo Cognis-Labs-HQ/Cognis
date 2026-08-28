@@ -860,7 +860,12 @@ function bindInteractions(root, signal) {
                     : beginButtonLoading(target);
                 refreshDetailActions();
                 try {
-                    await runLifecycleAction(module, action);
+                    const completed = await runLifecycleAction(module, action);
+                    if (completed === false && action === "install") {
+                        showToast(i18n.t("ui.app.modules.install_cancelled"), {
+                            type: "info",
+                        });
+                    }
                 } catch (error) {
                     console.error("module_lifecycle_action_failed", {
                         action,

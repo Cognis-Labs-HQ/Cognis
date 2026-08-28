@@ -31,6 +31,7 @@ import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
 import type { DbDialectHelper } from "../gateways/db/bootstrap.js";
 import {
     isExcludedModuleIntegrityFile,
+    isVerifiedModuleIntegrityAlias,
     resolveModuleIntegrityFile,
 } from "./reuse/module-integrity.js";
 import { requirePublicEnvironment } from "./reuse/environment.js";
@@ -598,6 +599,18 @@ const server = buildServer({
                             !isExcludedModuleIntegrityFile(relativePath),
                     ),
             );
+            const declaredIntegrityTargets = new Set(
+                (
+                    await Promise.all(
+                        [...declaredFiles].map((relativePath) =>
+                            resolveModuleIntegrityFile(
+                                moduleRoot,
+                                relativePath,
+                            ),
+                        ),
+                    )
+                ).filter((target): target is string => Boolean(target)),
+            );
             const visit = async (directory: string, prefix = "") => {
                 for (const entry of await readdir(directory, {
                     withFileTypes: true,
@@ -621,6 +634,15 @@ const server = buildServer({
                         moduleRoot,
                         relativePath,
                     );
+                    if (
+                        isVerifiedModuleIntegrityAlias(
+                            entry.isSymbolicLink(),
+                            integrityFile,
+                            declaredIntegrityTargets,
+                        )
+                    ) {
+                        continue;
+                    }
                     const actual = integrityFile
                         ? createHash("sha256")
                               .update(await readFile(integrityFile))

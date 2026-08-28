@@ -53,6 +53,7 @@
   <string name="ui.app.modules.keyring_component">モジュールストア</string>
   <string name="ui.app.modules.back_to_modules">モジュールに戻る</string>
   <string name="ui.app.modules.install_complete">モジュールをインストールしました。準備ができたら有効化してください。</string>
+  <string name="ui.app.modules.install_cancelled">モジュールのインストールをキャンセルしました。</string>
   <string name="ui.app.modules.enable_complete">モジュールを有効化しました。</string>
   <string name="ui.app.modules.disable_complete">モジュールを無効化しました。アンインストールできます。</string>
   <string name="ui.app.modules.uninstall_complete">モジュールをアンインストールしました。</string>

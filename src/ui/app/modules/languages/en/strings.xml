@@ -53,6 +53,7 @@
   <string name="ui.app.modules.keyring_component">Module Marketplace</string>
   <string name="ui.app.modules.back_to_modules">Back to Modules</string>
   <string name="ui.app.modules.install_complete">Module installed. Activate it when you are ready.</string>
+  <string name="ui.app.modules.install_cancelled">Module installation cancelled.</string>
   <string name="ui.app.modules.enable_complete">Module activated.</string>
   <string name="ui.app.modules.disable_complete">Module disabled. You can now uninstall it.</string>
   <string name="ui.app.modules.uninstall_complete">Module uninstalled.</string>

@@ -593,6 +593,17 @@ test("module installation failures stay local to the marketplace action", () => 
     assert.match(source, /error\.code = detail\?\.code/);
 });
 
+test("cancelled module installations notify the administrator", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /completed === false && action === "install"[\s\S]*ui\.app\.modules\.install_cancelled/,
+    );
+});
+
 test("module sources use an independent list and editor", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),

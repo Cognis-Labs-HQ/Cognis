@@ -45,3 +45,13 @@ export async function resolveModuleIntegrityFile(
         return null;
     }
 }
+
+export function isVerifiedModuleIntegrityAlias(
+    isSymbolicLink: boolean,
+    resolvedFile: string | null,
+    declaredTargets: ReadonlySet<string>,
+): boolean {
+    return Boolean(
+        isSymbolicLink && resolvedFile && declaredTargets.has(resolvedFile),
+    );
+}

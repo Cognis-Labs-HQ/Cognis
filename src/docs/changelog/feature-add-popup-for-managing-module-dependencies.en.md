@@ -11,3 +11,7 @@ Cancelling a module integrity warning now stops dependency activation and requir
 ## Safe symlink integrity verification
 
 Module SHASUM validation now follows file symlinks that resolve inside the module, including an `AGENTS.md` alias to `.github/copilot-instructions.md`, while rejecting broken links, directories, and targets outside the module.
+
+## Verified aliases and cancellation feedback
+
+Undeclared symlink aliases no longer trigger a SHASUM warning when they resolve to an already declared and verified module file. Cancelling installation now displays a clear cancellation notification.

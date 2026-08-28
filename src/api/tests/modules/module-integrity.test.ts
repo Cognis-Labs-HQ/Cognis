@@ -5,6 +5,7 @@ import path from "node:path";
 import test from "node:test";
 import {
     isExcludedModuleIntegrityFile,
+    isVerifiedModuleIntegrityAlias,
     resolveModuleIntegrityFile,
 } from "../../reuse/module-integrity.js";
 
@@ -38,6 +39,10 @@ test("module integrity resolves safe file symlinks within a module", async () =>
         assert.equal(
             await resolveModuleIntegrityFile(root, "AGENTS.md"),
             target,
+        );
+        assert.equal(
+            isVerifiedModuleIntegrityAlias(true, target, new Set([target])),
+            true,
         );
     } finally {
         await rm(root, { recursive: true, force: true });

@@ -11,3 +11,7 @@ Membatalkan peringatan integritas modul kini menghentikan aktivasi dependensi da
 ## Verifikasi integritas tautan simbolis yang aman
 
 Validasi SHASUM modul kini mengikuti tautan simbolis berkas yang mengarah ke dalam modul, termasuk alias `AGENTS.md` ke `.github/copilot-instructions.md`, sambil menolak tautan rusak, direktori, dan target di luar modul.
+
+## Alias terverifikasi dan pemberitahuan pembatalan
+
+Alias tautan simbolis yang tidak dideklarasikan tidak lagi memicu peringatan SHASUM ketika mengarah ke berkas modul yang sudah dideklarasikan dan diverifikasi. Pembatalan instalasi kini menampilkan pemberitahuan yang jelas.
