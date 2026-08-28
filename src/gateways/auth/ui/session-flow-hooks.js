@@ -56,6 +56,13 @@ function isGuestSession() {
 }
 
 uiCtx.capabilities.contribute("session:isGuest", isGuestSession);
+uiCtx.capabilities.contribute(
+    "session:isAuthenticated",
+    () =>
+        Boolean(localStorage.getItem("cognis_access_token")) &&
+        Boolean(localStorage.getItem("cognis_account")) &&
+        !isGuestSession(),
+);
 
 uiCtx.capabilities.contribute(
     "session:getAccountInfo",

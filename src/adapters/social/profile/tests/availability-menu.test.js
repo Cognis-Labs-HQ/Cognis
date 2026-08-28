@@ -117,7 +117,7 @@ test("visible statuses, including the signed-in user, are polled", () => {
     assert.match(availability, /if \(!keepalive && presenceRequest\) return/);
 });
 
-test("guest sessions do not poll account availability", () => {
+test("unauthenticated and guest sessions do not poll account availability", () => {
     const availability = readFileSync(
         resolve(PROFILE_ROOT, "ui/availability.js"),
         "utf8",
@@ -130,13 +130,18 @@ test("guest sessions do not poll account availability", () => {
     assert.match(availability, /pathname\.startsWith\("\/share\/"\)/);
     assert.match(availability, /accountId\.startsWith\("share:"\)/);
     assert.match(availability, /suppressAccessDeniedEvent:\s*true/);
+    assert.doesNotMatch(availability, /cognis_access_token/);
     assert.match(
         availability,
-        /function reportPresenceActivity[\s\S]*if \(isGuestSession\(\)\)/,
+        /function canRequestAvailability[\s\S]*capabilities\.get\("session:isAuthenticated"\)/,
     );
     assert.match(
         availability,
-        /function fetchAvailability[\s\S]*if \(isGuestSession\(\)\)/,
+        /function reportPresenceActivity[\s\S]*if \(!canRequestAvailability\(\)\)/,
+    );
+    assert.match(
+        availability,
+        /function fetchAvailability[\s\S]*if \(!canRequestAvailability\(\)\)/,
     );
 });
 

@@ -50,8 +50,8 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.16` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.15` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.13` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.68` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.82` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.70` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.83` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10` |
@@ -64,7 +64,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                          | Version   |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.8`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.17`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.20`  |
 | Share                 | `src/gateways/share/`         | `1.7.34`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.18`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.9`   |
@@ -74,7 +74,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Logging               | `src/gateways/logging/`       | `1.5.13`  |
 | Observability         | `src/gateways/observability/` | `1.0.6`   |
 | Study                 | `src/gateways/study/`         | `1.5.13`  |
-| Calendar              | `src/gateways/calendar/`      | `1.4.105` |
+| Calendar              | `src/gateways/calendar/`      | `1.4.106` |
 
 ## Kernverträge
 

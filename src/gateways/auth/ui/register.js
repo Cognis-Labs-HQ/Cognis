@@ -352,7 +352,6 @@ export async function mount(root, { signal } = {}) {
             { i18n, escapeHtml },
             {
                 formId: "register-form",
-                formClassName: "auth-form",
                 submitButtonClassName: "btn-confirm btn-animated",
                 submitLabelKey: "ui.app.register.submit",
                 fields: registerFormFields,
@@ -392,7 +391,7 @@ export async function mount(root, { signal } = {}) {
             const emailValue = lockedEmail || "";
             const emailLocked = Boolean(lockedEmail);
             const countdownHtml = inviteData?.expiresAt
-                ? `<p id="register-countdown" class="auth-intro" style="font-size:1rem;margin-top:4px"></p>`
+                ? `<p id="register-countdown" class="auth-countdown-pill" aria-live="off"></p>`
                 : "";
             const registerFormBuilder = createRegisterFormBuilder({
                 emailValue,

@@ -34,6 +34,17 @@ const KEYRING_SETTINGS_STYLES = readFileSync(
     "utf8",
 );
 
+test("auth gateway exposes authenticated session state through ui ctx", () => {
+    assert.match(
+        SESSION_FLOW_SOURCE,
+        /capabilities\.contribute\(\s*"session:isAuthenticated"/,
+    );
+    assert.match(
+        SESSION_FLOW_SOURCE,
+        /Boolean\(localStorage\.getItem\("cognis_access_token"\)\)[\s\S]*Boolean\(localStorage\.getItem\("cognis_account"\)\)[\s\S]*!isGuestSession\(\)/,
+    );
+});
+
 test("auth security preferences disable password reset for external users", () => {
     assert.match(SOURCE, /class="components-section"/);
     assert.match(SOURCE, /class="components-section-heading"/);
