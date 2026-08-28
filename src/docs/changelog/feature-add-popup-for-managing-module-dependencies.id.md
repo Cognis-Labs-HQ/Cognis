@@ -39,3 +39,7 @@ Menonaktifkan modul kini secara rekursif menonaktifkan setiap modul aktif yang m
 ## Tindakan dependensi sesuai tema
 
 Kontrol unduh dan putar dependensi kini memakai aset SVG terang dan gelap khusus. Dependensi yang terpasang tetapi dinonaktifkan menampilkan Putar alih-alih Unduh, dan teks pil status mengikuti tema aktif sambil mempertahankan latar status yang sudah ada.
+
+## Kontras ikon yang tepat pada kedua tema
+
+Kontrol unduh dan putar dependensi kini memakai ikon gelap pada permukaan terang dan ikon terang dalam mode gelap, sehingga kedua tindakan tetap terlihat pada tema mana pun.

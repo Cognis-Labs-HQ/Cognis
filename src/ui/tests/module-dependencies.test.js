@@ -88,6 +88,26 @@ test("module dependency popup renders navigable cards and action-specific labels
     assert.match(source, /updateDependencyAction/);
     assert.match(source, /label: i18n\.t\(`ui\.reuse\.\$\{action\}`\)/);
 
+    const styles = await import("node:fs/promises").then(({ readFile }) =>
+        readFile(new URL("../styles/modules.css", import.meta.url), "utf8"),
+    );
+    assert.match(
+        styles,
+        /module-dependency-action-icon--play[^{]*\{[^}]*play-dark\.svg/,
+    );
+    assert.match(
+        styles,
+        /body\[data-theme="dark"\] \.module-dependency-action-icon--play[^{]*\{[^}]*play-light\.svg/,
+    );
+    assert.match(
+        styles,
+        /module-dependency-action-icon--download[^{]*\{[^}]*download-dark\.svg/,
+    );
+    assert.match(
+        styles,
+        /body\[data-theme="dark"\] \.module-dependency-action-icon--download[^{]*\{[^}]*download-light\.svg/,
+    );
+
     const marketplaceSource = await import("node:fs/promises").then(
         ({ readFile }) =>
             readFile(

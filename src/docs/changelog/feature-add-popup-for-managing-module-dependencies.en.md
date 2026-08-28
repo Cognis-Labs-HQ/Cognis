@@ -39,3 +39,7 @@ Disabling a module now recursively disables every enabled module that declares i
 ## Theme-aware dependency actions
 
 Dependency download and play controls now use dedicated light/dark SVG assets. Installed but disabled dependencies show Play instead of Download, and status-pill text follows the active theme while retaining established state backgrounds.
+
+## Correct icon contrast in both themes
+
+Dependency download and play controls now use dark icon artwork on light surfaces and light icon artwork in dark mode, ensuring both actions remain visible in either theme.

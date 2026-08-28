@@ -39,3 +39,7 @@ Beim Deaktivieren eines Moduls werden nun rekursiv alle aktivierten Module deakt
 ## Themenabhängige Abhängigkeitsaktionen
 
 Download- und Wiedergabesteuerungen für Abhängigkeiten verwenden nun eigene helle und dunkle SVG-Assets. Installierte, aber deaktivierte Abhängigkeiten zeigen Wiedergabe statt Download, und der Text der Status-Pills folgt dem aktiven Thema, während die etablierten Statushintergründe erhalten bleiben.
+
+## Korrekter Symbolkontrast in beiden Themen
+
+Download- und Wiedergabesteuerungen für Abhängigkeiten verwenden nun dunkle Symbole auf hellen Flächen und helle Symbole im dunklen Modus, sodass beide Aktionen in jedem Thema sichtbar bleiben.

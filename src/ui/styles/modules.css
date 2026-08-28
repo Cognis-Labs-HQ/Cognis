@@ -226,19 +226,19 @@ body[data-theme="dark"] .module-icon-settings {
 }
 
 .module-dependency-action-icon--download {
-    background-image: url("/static/assets/reuse/download-light.svg");
-}
-
-.module-dependency-action-icon--play {
-    background-image: url("/static/assets/reuse/play-light.svg");
-}
-
-body[data-theme="dark"] .module-dependency-action-icon--download {
     background-image: url("/static/assets/reuse/download-dark.svg");
 }
 
-body[data-theme="dark"] .module-dependency-action-icon--play {
+.module-dependency-action-icon--play {
     background-image: url("/static/assets/reuse/play-dark.svg");
+}
+
+body[data-theme="dark"] .module-dependency-action-icon--download {
+    background-image: url("/static/assets/reuse/download-light.svg");
+}
+
+body[data-theme="dark"] .module-dependency-action-icon--play {
+    background-image: url("/static/assets/reuse/play-light.svg");
 }
 
 .module-dependency-download.button-loading .module-dependency-action-icon {
