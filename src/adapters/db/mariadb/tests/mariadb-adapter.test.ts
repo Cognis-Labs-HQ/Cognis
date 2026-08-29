@@ -4,6 +4,7 @@ import {
     MariaDbGateway,
     createDbExecutor,
     readMariaDbPoolSettings,
+    waitForMariaDb,
     type MariaDbClient,
     type MariaDbPool,
 } from "../index.js";
@@ -213,4 +214,259 @@ test("mariadb pool environment settings are bounded", () => {
 
 test("mariadb waiting queries have a bounded default queue", () => {
     assert.equal(readMariaDbPoolSettings().queueLimit, 100);
+});
+
+test("mariadb startup waits for a temporarily unavailable server", async () => {
+    let attempts = 0;
+    const delays: number[] = [];
+    await waitForMariaDb(
+        {
+            query: async () => {
+                attempts += 1;
+                if (attempts < 3) {
+                    throw Object.assign(new Error("not ready"), {
+                        code: "ECONNREFUSED",
+                    });
+                }
+                return [[], {}];
+            },
+        },
+        { timeout: 1_000, retryInterval: 25 },
+        undefined,
+        async (milliseconds) => {
+            delays.push(milliseconds);
+        },
+    );
+
+    assert.equal(attempts, 3);
+    assert.deepEqual(delays, [25, 25]);
+});
+
+test("mariadb startup does not hide configuration failures", async () => {
+    let delays = 0;
+    await assert.rejects(
+        waitForMariaDb(
+            {
+                query: async () => {
+                    throw Object.assign(new Error("access denied"), {
+                        code: "ER_ACCESS_DENIED_ERROR",
+                    });
+                },
+            },
+            { timeout: 1_000, retryInterval: 25 },
+            undefined,
+            async () => {
+                delays += 1;
+            },
+        ),
+        /access denied/,
+    );
+    assert.equal(delays, 0);
+});
+
+test("mariadb uses indexable types for foreign keys and heals constraints", async () => {
+    const statements: string[] = [];
+    const executor = await createDbExecutor({
+        databaseUrl: "mariadb://unused",
+        pool: createPool({
+            query: async (sql: string) => {
+                statements.push(sql);
+                return [[], {}];
+            },
+        }),
+    });
+
+    await executor.ensureTable({
+        name: "auth_identities",
+        columns: [
+            { name: "id", type: "text", primaryKey: true },
+            {
+                name: "account_id",
+                type: "text",
+                notNull: true,
+                references: {
+                    table: "accounts",
+                    column: "id",
+                    onDelete: "CASCADE",
+                },
+            },
+        ],
+        indexes: [{ columns: ["account_id"] }],
+    });
+
+    assert.match(
+        statements.find((sql) => sql.startsWith("CREATE TABLE")) ?? "",
+        /account_id VARCHAR\(255\) NOT NULL REFERENCES accounts\(id\) ON DELETE CASCADE/,
+    );
+    assert.match(
+        statements.find((sql) =>
+            sql.includes("ADD COLUMN IF NOT EXISTS account_id"),
+        ) ?? "",
+        /REFERENCES accounts\(id\) ON DELETE CASCADE/,
+    );
+});
+
+test("mariadb repairs text index columns before creating their indexes", async () => {
+    const statements: string[] = [];
+    const executor = await createDbExecutor({
+        databaseUrl: "mariadb://unused",
+        pool: createPool({
+            query: async (sql: string) => {
+                statements.push(sql);
+                if (sql.includes("information_schema.COLUMNS")) {
+                    return [
+                        [{ column_name: "account_id", data_type: "text" }],
+                        {},
+                    ];
+                }
+                return [[], {}];
+            },
+        }),
+    });
+
+    await executor.ensureTable({
+        name: "internal_notifications",
+        columns: [
+            { name: "account_id", type: "text", notNull: true },
+            { name: "created_at", type: "bigint", notNull: true },
+        ],
+        indexes: [
+            {
+                name: "idx_internal_notif_account",
+                columns: ["account_id", "created_at"],
+            },
+        ],
+    });
+
+    const repairIndex = statements.findIndex((sql) =>
+        sql.includes("MODIFY COLUMN account_id VARCHAR(255) NOT NULL"),
+    );
+    const createIndex = statements.findIndex((sql) =>
+        sql.startsWith("CREATE INDEX IF NOT EXISTS"),
+    );
+    assert.ok(repairIndex >= 0);
+    assert.ok(createIndex > repairIndex);
+});
+
+test("mariadb renames legacy columns without losing their values", async () => {
+    const statements: string[] = [];
+    const executor = await createDbExecutor({
+        databaseUrl: "mariadb://unused",
+        pool: createPool({
+            query: async (sql: string) => {
+                statements.push(sql);
+                if (sql.includes("information_schema.COLUMNS")) {
+                    return [[{ column_name: "read", data_type: "int" }], {}];
+                }
+                return [[], {}];
+            },
+        }),
+    });
+
+    await executor.ensureTable({
+        name: "internal_notifications",
+        columns: [
+            {
+                name: "is_read",
+                type: "integer",
+                notNull: true,
+                default: 0,
+                renamedFrom: "read",
+            },
+        ],
+    } as Parameters<typeof executor.ensureTable>[0]);
+
+    assert.ok(
+        statements.includes(
+            "ALTER TABLE internal_notifications CHANGE COLUMN `read` is_read INT NOT NULL DEFAULT 0",
+        ),
+    );
+});
+
+test("mariadb formats ISO values for declared timestamp columns", async () => {
+    const calls: Array<{ sql: string; params?: unknown[] }> = [];
+    const executor = await createDbExecutor({
+        databaseUrl: "mariadb://unused",
+        pool: createPool({
+            query: async (sql: string, params?: unknown[]) => {
+                calls.push({ sql, params });
+                return [[], {}];
+            },
+        }),
+    });
+    await executor.ensureTable({
+        name: "accounts",
+        columns: [
+            { name: "id", type: "text", primaryKey: true },
+            { name: "created_at", type: "timestamp", notNull: true },
+            { name: "display_name", type: "text", notNull: true },
+        ],
+    });
+
+    await executor.executeCommand({
+        option: "INSERT",
+        table: "accounts",
+        values: {
+            id: "admin",
+            created_at: "2026-08-29T12:59:23.488Z",
+            display_name: "2026-08-29T12:59:23.488Z",
+        },
+    });
+
+    const insert = calls.find((call) => call.sql.startsWith("INSERT INTO"));
+    assert.deepEqual(insert?.params, [
+        "admin",
+        "2026-08-29 12:59:23",
+        "2026-08-29T12:59:23.488Z",
+    ]);
+});
+
+test("mariadb retries raw-schema transactions with datetime values", async () => {
+    const calls: Array<{ sql: string; params?: unknown[] }> = [];
+    const transactionCalls: string[] = [];
+    const client = createClient(
+        async (sql: string, params?: unknown[]) => {
+            calls.push({ sql, params });
+            if (
+                sql.startsWith("INSERT INTO") &&
+                params?.[1] === "2026-08-29T13:07:49.408Z"
+            ) {
+                throw Object.assign(
+                    new Error(
+                        "Incorrect datetime value for column 'created_at' at row 1",
+                    ),
+                    { code: "ER_TRUNCATED_WRONG_VALUE" },
+                );
+            }
+            return [[], {}];
+        },
+        transactionCalls,
+        () => undefined,
+    );
+    const executor = await createDbExecutor({
+        databaseUrl: "mariadb://unused",
+        pool: createPool({ getConnection: async () => client }),
+    });
+
+    await executor.transaction((transaction) =>
+        transaction.executeCommand({
+            option: "INSERT",
+            table: "accounts",
+            values: {
+                id: "admin",
+                created_at: "2026-08-29T13:07:49.408Z",
+                display_name: "2026-08-29T13:07:49.408Z",
+            },
+        }),
+    );
+
+    const inserts = calls.filter((call) => call.sql.startsWith("INSERT INTO"));
+    assert.deepEqual(
+        inserts.map((call) => call.params),
+        [
+            ["admin", "2026-08-29T13:07:49.408Z", "2026-08-29T13:07:49.408Z"],
+            ["admin", "2026-08-29 13:07:49", "2026-08-29T13:07:49.408Z"],
+        ],
+    );
+    assert.deepEqual(transactionCalls, ["BEGIN", "COMMIT"]);
 });

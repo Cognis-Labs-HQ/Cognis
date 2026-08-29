@@ -113,3 +113,36 @@ test("direct adapter imports stay inside the owning gateway or adapter", () => {
         ].join("\n"),
     );
 });
+
+test("raw SQL execution stays inside the database gateway boundary", () => {
+    const violations = [];
+    const databaseGatewayRoot = `${normalizePath(resolve(GATEWAYS_ROOT, "db"))}/`;
+    const databaseAdaptersRoot = `${normalizePath(resolve(ADAPTERS_ROOT, "db"))}/`;
+
+    for (const filePath of walk(SRC_ROOT)) {
+        if (!hasSourceExtension(filePath)) continue;
+        const normalizedFilePath = normalizePath(filePath);
+        if (normalizedFilePath.includes("/tests/")) continue;
+        if (normalizedFilePath.startsWith(databaseGatewayRoot)) continue;
+        if (
+            normalizedFilePath.startsWith(databaseAdaptersRoot) &&
+            normalizedFilePath.endsWith("/index.ts")
+        ) {
+            continue;
+        }
+
+        const source = readFileSync(filePath, "utf8");
+        if (/\.execute\s*\(/.test(source)) {
+            violations.push(relative(ROOT, filePath).replace(/\\/g, "/"));
+        }
+    }
+
+    assert.deepEqual(
+        violations,
+        [],
+        [
+            "Raw SQL execution is restricted to the database gateway and owning adapter executors.",
+            "Consumers must use executeCommand(), ensureTable(), or transaction() from the DB gateway capability.",
+        ].join("\n"),
+    );
+});

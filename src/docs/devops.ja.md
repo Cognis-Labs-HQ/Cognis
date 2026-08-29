@@ -43,7 +43,7 @@ export DATA_ENCRYPTION_KEY='<64 文字の暗号化キー>'
 docker compose up --build
 ```
 
-MariaDB の場合は、代わりに `MARIADB_PASSWORD` と `MARIADB_ROOT_PASSWORD` を設定し、`docker-compose.mariadb.yaml` を起動します。Kubernetes などのオーケストレーターは標準の秘密情報管理機能を通じて値を注入するため、リポジトリのセットアップスクリプトは不要です。
+MariaDB の場合は、代わりに `MARIADB_PASSWORD` を設定し、`docker-compose.mariadb.yaml` を起動します。コンテナがランダムな root パスワードを生成してログに記録するため、`MARIADB_ROOT_PASSWORD` は不要であり、読み込まれません。Kubernetes などのオーケストレーターは標準の秘密情報管理機能を通じて値を注入するため、リポジトリのセットアップスクリプトは不要です。
 
 ## 設定
 

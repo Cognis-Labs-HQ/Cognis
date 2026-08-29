@@ -17,6 +17,8 @@ Not responsible for: managing the database schema or migrations (each gateway ru
 
 `PostgresDbGateway` in `src/adapters/db/postgres/index.ts` owns a `pg.Pool`. Ordinary queries use the pool directly. Transactions reserve one client for `BEGIN`, all callback statements, and `COMMIT` or `ROLLBACK`, then release it. The adapter registers pool drainage with the `system:lifecycle` ctx capability so termination stops accepting work before closing pooled connections.
 
+Schema self-healing preserves foreign-key clauses when adding missing columns and reports index or column repair failures instead of silently ignoring them.
+
 ### Placeholder syntax
 
 PostgreSQL uses numbered `$N` placeholders rather than `?`. All SQL passed to this adapter must use this syntax:
