@@ -33,7 +33,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.26` |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.19` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.20` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.16` |
 | Dateikontingent       | `src/adapters/file/quota/`          | `1.0.14` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.16` |
