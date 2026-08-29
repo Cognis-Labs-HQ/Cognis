@@ -10,6 +10,15 @@ const SEARCH_SOURCE = readFileSync(
     resolve(ROOT, "src/adapters/social/messages/ui/search/index.js"),
     "utf8",
 );
+const APP_SOURCE = readFileSync(
+    resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
+    "utf8",
+);
+
+test("messages leaves host provider and navbar loading to the shared page lifecycle", () => {
+    assert.doesNotMatch(APP_SOURCE, /ensureUiProvidersLoaded/);
+    assert.doesNotMatch(APP_SOURCE, /ensureNavbarPluginsLoaded/);
+});
 
 test("global message search imports its authenticated API client", () => {
     assert.match(
