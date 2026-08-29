@@ -7,3 +7,7 @@ Tamu berbagi kini dapat menerima jendela komponen yang diminta oleh halaman bers
 ## Batas integrasi diperjelas
 
 Otorisasi jendela komponen tidak memberikan akses ke API komponen anak. Jitsi Meet harus menerima tamu berbagi pada rute status whiteboard dan mengekspos hubungan rapat-ke-whiteboard, sedangkan Nextcloud Whiteboard harus menerima akses terdelegasi dari berbagi rapat yang telah divalidasi agar sinkronisasi dapat berfungsi sepenuhnya.
+
+## Penyelenggara dapat membuka komponen rapat tersinkron
+
+Penyelenggara yang sudah masuk dan peserta lain dengan akses langsung kini dapat menerima permintaan jendela komponen saat melihat sumber daya bersama yang aktif. Karena itu, membuka papan tulis rapat akan memasang jendela komponennya dan memungkinkan panel rapat beralih ke gambar-dalam-gambar meskipun sinkronisasi mengirim permintaan setelah interaksi browser awal.
