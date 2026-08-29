@@ -225,6 +225,10 @@ class MariaDbExecutor implements RawDbExecutor {
     constructor(
         private readonly pool: MariaDbPool,
         private readonly log?: BootstrapLog,
+        private readonly columnTypes = new Map<
+            string,
+            Map<string, StructuredDbTableDef["columns"][number]["type"]>
+        >(),
     ) {}
 
     async execute(sql: string, params: unknown[] = []) {
@@ -255,7 +259,9 @@ class MariaDbExecutor implements RawDbExecutor {
     async executeCommand(
         command: StructuredDbCommand,
     ): Promise<StructuredDbCommandResult> {
-        return new MariaDbGateway(this.pool, this.log).executeCommand(command);
+        return new MariaDbGateway(this.pool, this.log).executeCommand(
+            this.normalizeTemporalValues(command),
+        );
     }
 
     async transaction<T>(
@@ -269,6 +275,7 @@ class MariaDbExecutor implements RawDbExecutor {
                 end: async () => undefined,
             },
             this.log,
+            this.columnTypes,
         );
         try {
             await client.beginTransaction();
@@ -297,6 +304,10 @@ class MariaDbExecutor implements RawDbExecutor {
     }
 
     async ensureTable(def: StructuredDbTableDef): Promise<void> {
+        this.columnTypes.set(
+            def.name,
+            new Map(def.columns.map((column) => [column.name, column.type])),
+        );
         const compositePk = def.primaryKey ?? [];
         const keyColumns = new Set<string>([
             ...compositePk,
@@ -446,6 +457,56 @@ class MariaDbExecutor implements RawDbExecutor {
                 `CREATE INDEX IF NOT EXISTS ${indexName} ON ${def.name} (${index.columns.join(", ")})`,
             );
         }
+    }
+
+    private normalizeTemporalValues(
+        command: StructuredDbCommand,
+    ): StructuredDbCommand {
+        const tableColumns = this.columnTypes.get(command.table);
+        if (!tableColumns) return command;
+        const normalize = (column: string, value: unknown): unknown => {
+            if (
+                tableColumns.get(column) !== "timestamp" ||
+                typeof value !== "string" ||
+                !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(
+                    value,
+                )
+            ) {
+                return value;
+            }
+            return value.slice(0, 19).replace("T", " ");
+        };
+        const normalizeRecord = (record: Record<string, unknown>) =>
+            Object.fromEntries(
+                Object.entries(record).map(([column, value]) => [
+                    column,
+                    normalize(column, value),
+                ]),
+            );
+        const where = command.where?.map((clause) => ({
+            ...clause,
+            value: Array.isArray(clause.value)
+                ? clause.value.map((value) => normalize(clause.column, value))
+                : normalize(clause.column, clause.value),
+        }));
+        if (command.option === "INSERT") {
+            return {
+                ...command,
+                values: normalizeRecord(command.values),
+                conflict:
+                    command.conflict?.action === "update" &&
+                    command.conflict.update
+                        ? {
+                              ...command.conflict,
+                              update: normalizeRecord(command.conflict.update),
+                          }
+                        : command.conflict,
+            };
+        }
+        if (command.option === "UPDATE") {
+            return { ...command, set: normalizeRecord(command.set), where };
+        }
+        return { ...command, where };
     }
 }
 

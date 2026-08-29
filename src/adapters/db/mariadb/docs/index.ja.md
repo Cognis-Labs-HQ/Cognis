@@ -34,4 +34,4 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 | `MARIADB_POOL_IDLE_TIMEOUT_MS`       | `30000`    | アイドル接続のタイムアウト（ミリ秒、1,000～600,000）         |
 | `MARIADB_POOL_CONNECTION_TIMEOUT_MS` | `5000`     | 接続タイムアウト（ミリ秒、100～120,000）                     |
 | `MARIADB_STARTUP_TIMEOUT_MS`         | `60000`    | 起動準備を待機する最大時間（ミリ秒、1,000～600,000）         |
-| `MARIADB_STARTUP_RETRY_INTERVAL_MS`  | `1000`     | 準備確認を再試行する間隔（ミリ秒、100～30,000）              |
+| `MARIADB_STARTUP_RETRY_INTERVAL_MS`  | `1000`     | 準備確認を再試行する間隔（ミリ秒、100～30,000）              | 宣言されたタイムスタンプ列に渡されたISO 8601値はMariaDBの `DATETIME` 入力構文へ変換し、テキスト列に保存するISO形式の値は変更しません。 |

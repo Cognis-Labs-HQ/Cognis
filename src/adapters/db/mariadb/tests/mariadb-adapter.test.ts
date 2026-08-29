@@ -347,3 +347,41 @@ test("mariadb repairs text index columns before creating their indexes", async (
     assert.ok(repairIndex >= 0);
     assert.ok(createIndex > repairIndex);
 });
+
+test("mariadb formats ISO values for declared timestamp columns", async () => {
+    const calls: Array<{ sql: string; params?: unknown[] }> = [];
+    const executor = await createDbExecutor({
+        databaseUrl: "mariadb://unused",
+        pool: createPool({
+            query: async (sql: string, params?: unknown[]) => {
+                calls.push({ sql, params });
+                return [[], {}];
+            },
+        }),
+    });
+    await executor.ensureTable({
+        name: "accounts",
+        columns: [
+            { name: "id", type: "text", primaryKey: true },
+            { name: "created_at", type: "timestamp", notNull: true },
+            { name: "display_name", type: "text", notNull: true },
+        ],
+    });
+
+    await executor.executeCommand({
+        option: "INSERT",
+        table: "accounts",
+        values: {
+            id: "admin",
+            created_at: "2026-08-29T12:59:23.488Z",
+            display_name: "2026-08-29T12:59:23.488Z",
+        },
+    });
+
+    const insert = calls.find((call) => call.sql.startsWith("INSERT INTO"));
+    assert.deepEqual(insert?.params, [
+        "admin",
+        "2026-08-29 12:59:23",
+        "2026-08-29T12:59:23.488Z",
+    ]);
+});
