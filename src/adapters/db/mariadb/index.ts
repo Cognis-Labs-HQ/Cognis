@@ -259,9 +259,33 @@ class MariaDbExecutor implements RawDbExecutor {
     async executeCommand(
         command: StructuredDbCommand,
     ): Promise<StructuredDbCommandResult> {
-        return new MariaDbGateway(this.pool, this.log).executeCommand(
-            this.normalizeTemporalValues(command),
-        );
+        const gateway = new MariaDbGateway(this.pool, this.log);
+        const normalizedCommand = this.normalizeTemporalValues(command);
+        try {
+            return await gateway.executeCommand(normalizedCommand);
+        } catch (error) {
+            if (readErrorCode(error) !== "ER_TRUNCATED_WRONG_VALUE") {
+                throw error;
+            }
+            const fallbackCommand = this.normalizeTemporalValues(command, true);
+            if (
+                JSON.stringify(fallbackCommand) ===
+                JSON.stringify(normalizedCommand)
+            ) {
+                throw error;
+            }
+            writeDbLog(
+                this.log,
+                "warn",
+                "Retrying MariaDB command with normalized temporal values.",
+                {
+                    component: "db",
+                    provider: "mariadb",
+                    table: command.table,
+                },
+            );
+            return gateway.executeCommand(fallbackCommand);
+        }
     }
 
     async transaction<T>(
@@ -461,12 +485,14 @@ class MariaDbExecutor implements RawDbExecutor {
 
     private normalizeTemporalValues(
         command: StructuredDbCommand,
+        includeUndeclaredColumns = false,
     ): StructuredDbCommand {
         const tableColumns = this.columnTypes.get(command.table);
-        if (!tableColumns) return command;
+        if (!tableColumns && !includeUndeclaredColumns) return command;
         const normalize = (column: string, value: unknown): unknown => {
             if (
-                tableColumns.get(column) !== "timestamp" ||
+                (!includeUndeclaredColumns &&
+                    tableColumns?.get(column) !== "timestamp") ||
                 typeof value !== "string" ||
                 !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(
                     value,

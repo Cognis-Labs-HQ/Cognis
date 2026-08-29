@@ -2,6 +2,6 @@
     "id": "mariadb",
     "uuid": "a3496b91-e0a4-5fb8-a315-04dd071f95fc",
     "name": "MariaDB Database",
-    "version": "0.5.16",
+    "version": "0.5.17",
     "publisher": "Cognis Labs HQ"
 }

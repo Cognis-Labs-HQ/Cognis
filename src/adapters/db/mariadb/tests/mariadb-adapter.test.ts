@@ -385,3 +385,49 @@ test("mariadb formats ISO values for declared timestamp columns", async () => {
         "2026-08-29T12:59:23.488Z",
     ]);
 });
+
+test("mariadb retries raw-schema transactions with datetime values", async () => {
+    const calls: Array<{ sql: string; params?: unknown[] }> = [];
+    const transactionCalls: string[] = [];
+    const client = createClient(
+        async (sql: string, params?: unknown[]) => {
+            calls.push({ sql, params });
+            if (
+                sql.startsWith("INSERT INTO") &&
+                params?.includes("2026-08-29T13:07:49.408Z")
+            ) {
+                throw Object.assign(new Error("Incorrect datetime value"), {
+                    code: "ER_TRUNCATED_WRONG_VALUE",
+                });
+            }
+            return [[], {}];
+        },
+        transactionCalls,
+        () => undefined,
+    );
+    const executor = await createDbExecutor({
+        databaseUrl: "mariadb://unused",
+        pool: createPool({ getConnection: async () => client }),
+    });
+
+    await executor.transaction((transaction) =>
+        transaction.executeCommand({
+            option: "INSERT",
+            table: "accounts",
+            values: {
+                id: "admin",
+                created_at: "2026-08-29T13:07:49.408Z",
+            },
+        }),
+    );
+
+    const inserts = calls.filter((call) => call.sql.startsWith("INSERT INTO"));
+    assert.deepEqual(
+        inserts.map((call) => call.params),
+        [
+            ["admin", "2026-08-29T13:07:49.408Z"],
+            ["admin", "2026-08-29 13:07:49"],
+        ],
+    );
+    assert.deepEqual(transactionCalls, ["BEGIN", "COMMIT"]);
+});

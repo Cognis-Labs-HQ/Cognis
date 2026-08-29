@@ -32,4 +32,4 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 | `MARIADB_POOL_IDLE_TIMEOUT_MS`       | `30000` | Batas waktu koneksi menganggur dalam milidetik (1.000–600.000)    |
 | `MARIADB_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Batas waktu koneksi dalam milidetik (100–120.000)                 |
 | `MARIADB_STARTUP_TIMEOUT_MS`         | `60000` | Jendela maksimum kesiapan startup dalam milidetik (1.000–600.000) |
-| `MARIADB_STARTUP_RETRY_INTERVAL_MS`  | `1000`  | Jeda antarpercobaan kesiapan dalam milidetik (100–30.000)         | Nilai ISO 8601 untuk kolom stempel waktu yang dideklarasikan dikonversi ke sintaks masukan `DATETIME` MariaDB tanpa mengubah nilai mirip ISO yang disimpan dalam kolom teks. |
+| `MARIADB_STARTUP_RETRY_INTERVAL_MS`  | `1000`  | Jeda antarpercobaan kesiapan dalam milidetik (100–30.000)         | Nilai ISO 8601 untuk kolom stempel waktu yang dideklarasikan dikonversi ke sintaks masukan `DATETIME` MariaDB tanpa mengubah nilai mirip ISO yang disimpan dalam kolom teks. | Perintah terhadap tabel yang dibuat oleh SQL inisialisasi mentah juga pulih dari penolakan nilai waktu MariaDB dengan mencoba sekali lagi menggunakan parameter waktu MariaDB kanonis. |

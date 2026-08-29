@@ -21,6 +21,7 @@ The adapter checks database readiness before exposing its executor. Transient ne
 
 Schema self-healing preserves foreign-key clauses when adding missing columns and reports index or column repair failures instead of silently ignoring them. Explicitly indexed text columns use `VARCHAR(255)`; self-healing converts an existing `TEXT` column before creating its index.
 ISO 8601 values supplied for declared timestamp columns are converted to MariaDB `DATETIME` input syntax without changing ISO-like values stored in text columns.
+Commands against tables created by raw initialization SQL also recover from MariaDB datetime rejections by retrying once with canonical MariaDB temporal parameters.
 
 ### Placeholder syntax
 
