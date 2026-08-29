@@ -64,6 +64,33 @@ let activeShareSession = null;
 let accessDeniedNavigationPending = false;
 let activeGuestKeyring = null;
 
+uiCtx.extendFlow(
+    "spawn-component-page",
+    "validate",
+    { id: "share-gateway:authorize-shared-component-page-spawn", order: 100 },
+    ({ data }) => {
+        const sharedPageIsActive =
+            isActiveShareContentRoute(activeShareSession);
+        if (data.requestValid && (isViewingAsGuest() || sharedPageIsActive)) {
+            data.spawnAuthorized = true;
+        }
+    },
+);
+
+uiCtx.extendFlow(
+    "spawn-component-page",
+    "prepare",
+    { id: "share-gateway:provide-component-page-share-context", order: 100 },
+    ({ data }) => {
+        const shareContext = activeShareSession?.session?.shareContext ?? null;
+        if (!data.route || !shareContext || !isViewingAsGuest()) return;
+        data.mountOptions = {
+            ...data.mountOptions,
+            shareContext,
+        };
+    },
+);
+
 function hasStoredAccountSession() {
     const token = String(localStorage.getItem(ACCESS_TOKEN_KEY) ?? "").trim();
     const accountId = String(localStorage.getItem(ACCOUNT_KEY) ?? "").trim();

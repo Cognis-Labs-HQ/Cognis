@@ -177,6 +177,7 @@ export async function mount(
         return;
     }
 
+    uiCtx.capabilities.get("router:invalidateRoutes")?.();
     await uiCtx.capabilities.get("ui:ensureProvidersLoaded")?.({
         force: true,
     });

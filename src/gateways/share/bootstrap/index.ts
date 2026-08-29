@@ -16,6 +16,7 @@ import { registerShareBootstrapHooks } from "./flow-registrations.js";
 import { createShareRoutes } from "./routes.js";
 import {
     hasShareCapability,
+    resolveShareDelegatedAccess,
     resolveShareGuestAccess,
     resolveShareGuestId,
     resolveShareGuestSessionId,
@@ -222,6 +223,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ...options,
             getTokenById: gateway.getTokenById.bind(gateway),
             getGuestProfile: gateway.getGuestProfile.bind(gateway),
+        }),
+    );
+    ctx.capabilities.contribute("share:resolveDelegatedAccess", (options) =>
+        resolveShareDelegatedAccess({
+            ...options,
+            getTokenById: gateway.getTokenById.bind(gateway),
+            getGuestProfile: gateway.getGuestProfile.bind(gateway),
+            runDelegationFlow: (flowInput) =>
+                ctx.flow.run("resolve-share-delegated-access", flowInput),
         }),
     );
     ctx.capabilities.contribute(

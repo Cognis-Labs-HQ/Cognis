@@ -34,7 +34,9 @@ export async function confirmPassword(password = "") {
 }
 
 export async function invalidatePasswordConfirmation() {
-    if (uiCtx.capabilities.get("session:isGuest")?.() === true) return true;
+    if (uiCtx.capabilities.get("session:isAuthenticated")?.() !== true) {
+        return true;
+    }
     const response = await apiFetch("/api/v1/auth/verify", {
         method: "DELETE",
         suppressAccessDeniedEvent: true,

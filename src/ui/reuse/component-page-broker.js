@@ -218,11 +218,11 @@ export function installComponentPageBroker({
                 signal,
                 borderless: input?.borderless === true,
             };
-            data.valid =
+            data.requestValid =
                 ELEMENT_ID_PATTERN.test(elementId) &&
                 isAbortSignal(signal) &&
-                !signal?.aborted &&
-                authorizeSpawn();
+                !signal?.aborted;
+            data.spawnAuthorized = authorizeSpawn();
         },
     );
     uiCtx.extendFlow(
@@ -230,7 +230,7 @@ export function installComponentPageBroker({
         "resolve",
         { id: "core:resolve-component-page-spawn" },
         async ({ data }) => {
-            if (!data.valid) return;
+            if (!data.requestValid || !data.spawnAuthorized) return;
             data.route = await requestComponentPage(data.request);
         },
     );
@@ -346,6 +346,7 @@ export function installComponentPageBroker({
                     return;
                 }
                 mountResult = await module.mount(data.windowElement, {
+                    ...(data.mountOptions ?? {}),
                     signal: controller.signal,
                     focusState: data.request.context,
                     navigationAllowed: false,

@@ -93,6 +93,11 @@ test("router exports initRouter, navigateTo and getCurrentBase", () => {
         /export function getCurrentBase\(/,
         "app-router.js must export getCurrentBase",
     );
+    assert.match(
+        src,
+        /capabilities\.contribute\([\s\S]*"router:invalidateRoutes",[\s\S]*invalidateSpaRouteCache/,
+        "app-router.js must expose route invalidation through uiCtx",
+    );
 });
 
 test("router registers routes for all dashboard pages", () => {
@@ -126,6 +131,22 @@ test("router loads adapter-backed SPA routes from the UI app-routes API", () => 
             ).includes("/api/v1/ui/app-routes"),
         "router stack must fetch SPA route metadata from /api/v1/ui/app-routes",
     );
+});
+
+test("route invalidation prevents in-flight anonymous loads from restoring stale routes", () => {
+    const routerSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    const registrySource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/spa-route-registry.js"),
+        "utf8",
+    );
+
+    assert.match(routerSource, /loadGeneration === _routeCacheGeneration/);
+    assert.match(routerSource, /_routeCacheGeneration \+= 1/);
+    assert.match(registrySource, /loadGeneration === cacheGeneration/);
+    assert.match(registrySource, /cacheGeneration \+= 1/);
 });
 
 test("adapters self-register SPA route metadata for the app router", () => {

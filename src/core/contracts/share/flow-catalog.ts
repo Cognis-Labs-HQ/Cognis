@@ -162,4 +162,17 @@ export const SHARE_FLOW_CATALOG = Object.freeze([
             },
         ],
     }),
+    createFlowContract({
+        id: "resolve-share-delegated-access",
+        owner: "share",
+        description:
+            "Resolves whether a guest share for one resource delegates a capability to another resource.",
+        stages: [
+            {
+                id: "resolve-delegation",
+                description:
+                    "Allow resource owners to prove a source-to-target relationship and declare its delegated capabilities.",
+            },
+        ],
+    }),
 ]);

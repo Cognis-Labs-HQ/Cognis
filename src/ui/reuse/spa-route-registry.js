@@ -19,6 +19,7 @@ import { apiFetch } from "./api-client.js";
 
 let cachedSpaRoutes = null;
 let activeLoadPromise = null;
+let cacheGeneration = 0;
 
 function normalizeRoute(rawRoute) {
     const patternSource = String(rawRoute?.pattern ?? "").trim();
@@ -116,27 +117,37 @@ export async function loadSpaRoutes() {
     if (activeLoadPromise) {
         return activeLoadPromise;
     }
-    activeLoadPromise = (async () => {
+    const loadGeneration = cacheGeneration;
+    const loadPromise = (async () => {
         try {
             const response = await apiFetch("/api/v1/ui/app-routes");
             if (!response.ok) {
-                cachedSpaRoutes = [];
-                return cachedSpaRoutes;
+                if (loadGeneration === cacheGeneration) {
+                    cachedSpaRoutes = [];
+                }
+                return [];
             }
             const payload = await response.json();
             const normalizedRoutes = Array.isArray(payload?.data)
                 ? payload.data.map(normalizeRoute).filter(Boolean)
                 : [];
-            cachedSpaRoutes = normalizedRoutes;
+            if (loadGeneration === cacheGeneration) {
+                cachedSpaRoutes = normalizedRoutes;
+            }
             return normalizedRoutes;
         } catch {
-            cachedSpaRoutes = [];
-            return cachedSpaRoutes;
+            if (loadGeneration === cacheGeneration) {
+                cachedSpaRoutes = [];
+            }
+            return [];
         } finally {
-            activeLoadPromise = null;
+            if (activeLoadPromise === loadPromise) {
+                activeLoadPromise = null;
+            }
         }
     })();
-    return activeLoadPromise;
+    activeLoadPromise = loadPromise;
+    return loadPromise;
 }
 
 /**
@@ -146,6 +157,7 @@ export async function loadSpaRoutes() {
  * @returns {void}
  */
 export function clearSpaRouteCache() {
+    cacheGeneration += 1;
     cachedSpaRoutes = null;
     activeLoadPromise = null;
 }
