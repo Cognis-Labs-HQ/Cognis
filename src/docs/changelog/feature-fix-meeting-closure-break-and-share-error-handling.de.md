@@ -1,6 +1,6 @@
 # Freigabefehler auf der Freigabeseite anzeigen
 
-**Feature-Branch:** `feature-fix-meeting-closure-break-and-share-error-handling`
+**Feature-Zweig:** `feature-fix-meeting-closure-break-and-share-error-handling`
 
 ## Freigabezugriffsfehler statt Sitzungsablauf anzeigen
 
