@@ -341,6 +341,14 @@ class PostgresExecutor implements RawDbExecutor {
         );
         for (const col of def.columns) {
             if (existingCols.has(col.name)) continue;
+            const renamedFrom = readRenamedColumn(col);
+            if (renamedFrom && existingCols.has(renamedFrom)) {
+                await this.execute(
+                    `ALTER TABLE ${def.name} RENAME COLUMN ${renamedFrom} TO ${col.name}`,
+                );
+                existingCols.add(col.name);
+                continue;
+            }
             const defaultClause =
                 col.default !== undefined
                     ? `DEFAULT ${pgDefault(col.default)}`
@@ -363,6 +371,15 @@ class PostgresExecutor implements RawDbExecutor {
             );
         }
     }
+}
+
+function readRenamedColumn(
+    column: StructuredDbTableDef["columns"][number],
+): string | undefined {
+    if (!("renamedFrom" in column)) return undefined;
+    return typeof column.renamedFrom === "string"
+        ? column.renamedFrom
+        : undefined;
 }
 
 export function canHandleDbProvider(providerId: DbProviderId): boolean {

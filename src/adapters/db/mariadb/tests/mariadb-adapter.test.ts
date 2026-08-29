@@ -348,6 +348,41 @@ test("mariadb repairs text index columns before creating their indexes", async (
     assert.ok(createIndex > repairIndex);
 });
 
+test("mariadb renames legacy columns without losing their values", async () => {
+    const statements: string[] = [];
+    const executor = await createDbExecutor({
+        databaseUrl: "mariadb://unused",
+        pool: createPool({
+            query: async (sql: string) => {
+                statements.push(sql);
+                if (sql.includes("information_schema.COLUMNS")) {
+                    return [[{ column_name: "read", data_type: "int" }], {}];
+                }
+                return [[], {}];
+            },
+        }),
+    });
+
+    await executor.ensureTable({
+        name: "internal_notifications",
+        columns: [
+            {
+                name: "is_read",
+                type: "integer",
+                notNull: true,
+                default: 0,
+                renamedFrom: "read",
+            },
+        ],
+    } as Parameters<typeof executor.ensureTable>[0]);
+
+    assert.ok(
+        statements.includes(
+            "ALTER TABLE internal_notifications CHANGE COLUMN `read` is_read INT NOT NULL DEFAULT 0",
+        ),
+    );
+});
+
 test("mariadb formats ISO values for declared timestamp columns", async () => {
     const calls: Array<{ sql: string; params?: unknown[] }> = [];
     const executor = await createDbExecutor({
@@ -394,11 +429,14 @@ test("mariadb retries raw-schema transactions with datetime values", async () =>
             calls.push({ sql, params });
             if (
                 sql.startsWith("INSERT INTO") &&
-                params?.includes("2026-08-29T13:07:49.408Z")
+                params?.[1] === "2026-08-29T13:07:49.408Z"
             ) {
-                throw Object.assign(new Error("Incorrect datetime value"), {
-                    code: "ER_TRUNCATED_WRONG_VALUE",
-                });
+                throw Object.assign(
+                    new Error(
+                        "Incorrect datetime value for column 'created_at' at row 1",
+                    ),
+                    { code: "ER_TRUNCATED_WRONG_VALUE" },
+                );
             }
             return [[], {}];
         },
@@ -417,6 +455,7 @@ test("mariadb retries raw-schema transactions with datetime values", async () =>
             values: {
                 id: "admin",
                 created_at: "2026-08-29T13:07:49.408Z",
+                display_name: "2026-08-29T13:07:49.408Z",
             },
         }),
     );
@@ -425,8 +464,8 @@ test("mariadb retries raw-schema transactions with datetime values", async () =>
     assert.deepEqual(
         inserts.map((call) => call.params),
         [
-            ["admin", "2026-08-29T13:07:49.408Z"],
-            ["admin", "2026-08-29 13:07:49"],
+            ["admin", "2026-08-29T13:07:49.408Z", "2026-08-29T13:07:49.408Z"],
+            ["admin", "2026-08-29 13:07:49", "2026-08-29T13:07:49.408Z"],
         ],
     );
     assert.deepEqual(transactionCalls, ["BEGIN", "COMMIT"]);

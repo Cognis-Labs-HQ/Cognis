@@ -33,7 +33,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                               | Versi    |
 | --------------------- | ----------------------------------- | -------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.26` |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.20` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.21` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.16` |
 | Kuota Berkas          | `src/adapters/file/quota/`          | `1.0.14` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.16` |
@@ -43,8 +43,8 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.14` |
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.27` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.17` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.15` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.18` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.16` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.19` |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.18` |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.15` |
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.16` |

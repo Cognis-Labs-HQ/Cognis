@@ -13,6 +13,7 @@
  */
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
 import type { NotificationEnvelope } from "../../../gateways/notify/gateway.js";
 import type {
     InternalNotification,
@@ -48,7 +49,7 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
     ) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.ensureTable({
+        const definition = {
             name: "internal_notifications",
             columns: [
                 { name: "id", type: "text", notNull: true, primaryKey: true },
@@ -60,6 +61,7 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
                     type: "integer",
                     notNull: true,
                     default: 0,
+                    renamedFrom: "read",
                 },
                 { name: "created_at", type: "bigint", notNull: true },
             ],
@@ -69,7 +71,14 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
                     name: "idx_internal_notif_account",
                 },
             ],
-        });
+        } satisfies StructuredDbTableDef & {
+            columns: Array<
+                StructuredDbTableDef["columns"][number] & {
+                    renamedFrom?: string;
+                }
+            >;
+        };
+        await this.db.ensureTable(definition);
     }
 
     async add(envelope: NotificationEnvelope): Promise<void> {

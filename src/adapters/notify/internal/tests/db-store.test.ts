@@ -22,6 +22,7 @@ test("internal notification schema uses a portable read-state identifier", async
             type: "integer",
             notNull: true,
             default: 0,
+            renamedFrom: "read",
         },
     );
 });

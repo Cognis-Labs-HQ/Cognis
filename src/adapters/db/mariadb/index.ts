@@ -267,7 +267,13 @@ class MariaDbExecutor implements RawDbExecutor {
             if (readErrorCode(error) !== "ER_TRUNCATED_WRONG_VALUE") {
                 throw error;
             }
-            const fallbackCommand = this.normalizeTemporalValues(command, true);
+            const temporalColumn = readInvalidTemporalColumn(error);
+            const fallbackCommand = temporalColumn
+                ? this.normalizeTemporalValues(
+                      command,
+                      new Set([temporalColumn]),
+                  )
+                : normalizedCommand;
             if (
                 JSON.stringify(fallbackCommand) ===
                 JSON.stringify(normalizedCommand)
@@ -276,7 +282,7 @@ class MariaDbExecutor implements RawDbExecutor {
             }
             writeDbLog(
                 this.log,
-                "warn",
+                "error",
                 "Retrying MariaDB command with normalized temporal values.",
                 {
                     component: "db",
@@ -442,6 +448,19 @@ class MariaDbExecutor implements RawDbExecutor {
         );
         for (const col of def.columns) {
             if (existingCols.has(col.name)) continue;
+            const renamedFrom = readRenamedColumn(col);
+            if (renamedFrom && existingCols.has(renamedFrom)) {
+                const notNullClause = col.notNull ? " NOT NULL" : "";
+                const defaultClause =
+                    col.default !== undefined
+                        ? ` DEFAULT ${dbDefault(col.default)}`
+                        : "";
+                await this.execute(
+                    `ALTER TABLE ${def.name} CHANGE COLUMN \`${renamedFrom}\` ${col.name} ${dbType(col)}${notNullClause}${defaultClause}`,
+                );
+                existingCols.add(col.name);
+                continue;
+            }
             const defaultClause =
                 col.default !== undefined
                     ? `DEFAULT ${dbDefault(col.default)}`
@@ -485,14 +504,14 @@ class MariaDbExecutor implements RawDbExecutor {
 
     private normalizeTemporalValues(
         command: StructuredDbCommand,
-        includeUndeclaredColumns = false,
+        fallbackTemporalColumns = new Set<string>(),
     ): StructuredDbCommand {
         const tableColumns = this.columnTypes.get(command.table);
-        if (!tableColumns && !includeUndeclaredColumns) return command;
+        if (!tableColumns && fallbackTemporalColumns.size === 0) return command;
         const normalize = (column: string, value: unknown): unknown => {
             if (
-                (!includeUndeclaredColumns &&
-                    tableColumns?.get(column) !== "timestamp") ||
+                (tableColumns?.get(column) !== "timestamp" &&
+                    !fallbackTemporalColumns.has(column)) ||
                 typeof value !== "string" ||
                 !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(
                     value,
@@ -534,6 +553,15 @@ class MariaDbExecutor implements RawDbExecutor {
         }
         return { ...command, where };
     }
+}
+
+function readRenamedColumn(
+    column: StructuredDbTableDef["columns"][number],
+): string | undefined {
+    if (!("renamedFrom" in column)) return undefined;
+    return typeof column.renamedFrom === "string"
+        ? column.renamedFrom
+        : undefined;
 }
 
 export function canHandleDbProvider(providerId: DbProviderId): boolean {
@@ -587,6 +615,13 @@ function readErrorCode(error: unknown): string | undefined {
     return typeof error.code === "string" ? error.code : undefined;
 }
 
+function readInvalidTemporalColumn(error: unknown): string | undefined {
+    if (!(error instanceof Error)) return undefined;
+    return error.message.match(
+        /for column ['`](?:[^.'`]+\.)?([^'`]+)['`]/i,
+    )?.[1];
+}
+
 export async function waitForMariaDb(
     pool: Pick<MariaDbPool, "query">,
     settings: MariaDbStartupSettings,
@@ -615,7 +650,7 @@ export async function waitForMariaDb(
             if (!retryable || Date.now() >= deadline) {
                 throw error;
             }
-            writeDbLog(log, "warn", "MariaDB is not ready; retrying.", {
+            writeDbLog(log, "error", "MariaDB is not ready; retrying.", {
                 component: "db",
                 provider: "mariadb",
                 attempt,
