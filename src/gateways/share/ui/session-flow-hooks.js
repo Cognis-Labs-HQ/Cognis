@@ -77,6 +77,20 @@ uiCtx.extendFlow(
     },
 );
 
+uiCtx.extendFlow(
+    "spawn-component-page",
+    "prepare",
+    { id: "share-gateway:provide-component-page-share-context", order: 100 },
+    ({ data }) => {
+        const shareContext = activeShareSession?.session?.shareContext ?? null;
+        if (!data.route || !shareContext || !isViewingAsGuest()) return;
+        data.mountOptions = {
+            ...data.mountOptions,
+            shareContext,
+        };
+    },
+);
+
 function hasStoredAccountSession() {
     const token = String(localStorage.getItem(ACCESS_TOKEN_KEY) ?? "").trim();
     const accountId = String(localStorage.getItem(ACCOUNT_KEY) ?? "").trim();

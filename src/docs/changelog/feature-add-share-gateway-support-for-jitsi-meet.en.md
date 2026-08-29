@@ -15,3 +15,7 @@ Signed-in organizers and other direct-access participants can now receive compon
 ## Guest component routes load after authentication
 
 The Share page now refreshes SPA route discovery after guest authentication. Whiteboard component routes that were unavailable during the anonymous page bootstrap are therefore resolved with the active guest session, allowing the synchronized whiteboard window to mount inside the meeting.
+
+## Guest context reaches embedded whiteboards
+
+Cognis now carries the active Share context through the component-page flow into guest component mounts. The embedded whiteboard can recognize the delegated meeting share, retain guest authentication, and load the synchronized board instead of entering its account-only path.

@@ -12,6 +12,8 @@ While the resolved shared-content route remains active, both signed-in direct-ac
 
 After share authentication succeeds, the page invalidates any anonymous SPA-route discovery result before mounting the resource renderer. Component-window resolution therefore reloads the enabled component-page catalog with the active guest or account credentials instead of retaining an empty pre-authentication cache.
 
+Guest component windows also receive the active Share context as a provider mount option. Embedded components can therefore preserve the guest session and use its delegated resource scope instead of treating the mount as an ordinary account-only page.
+
 ## Guest Sessions
 
 When a share token is resolved, the Share gateway now issues a short-lived guest access token (`purpose: share`) bound to that share record (`sub: share:<shareId>`). The share page temporarily swaps this token into `localStorage` so API calls made by mounted shared pages run as an anonymous guest session, then restores the previous token on unload. After the scoped guest token is active, the Share page loads host UI capability providers before importing the resource renderer, so shared components can consume declared capabilities such as profile-avatar rendering.

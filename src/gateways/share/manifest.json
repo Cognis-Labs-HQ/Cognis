@@ -2,7 +2,7 @@
     "id": "share",
     "uuid": "0da92508-63fa-53ed-918c-e6f08692a382",
     "name": "Share Gateway",
-    "version": "1.7.37",
+    "version": "1.7.38",
     "required": false,
     "requires": [
         "a77dac5a-fe42-5bab-8036-54e319cf5313",

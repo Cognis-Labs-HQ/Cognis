@@ -171,6 +171,19 @@ test("component windows stay disposable across activation and SPA navigation", a
                 : null;
         },
     });
+    const shareContext = {
+        resourceType: "meeting",
+        guestAccessToken: "guest-token",
+    };
+    uiCtx.extendFlow(
+        "spawn-component-page",
+        "prepare",
+        { id: "test:provide-component-mount-options", order: 100 },
+        ({ data }) => {
+            if (!data.route) return;
+            data.mountOptions = { shareContext };
+        },
+    );
 
     const declaredRouteResolver = uiCtx.capabilities.get(
         "router:resolveDeclaredRoute",
@@ -257,6 +270,7 @@ test("component windows stay disposable across activation and SPA navigation", a
     );
     assert.equal(mountedComponentPage?.options.navigationAllowed, false);
     assert.equal(mountedComponentPage?.options.borderless, true);
+    assert.equal(mountedComponentPage?.options.shareContext, shareContext);
     assert.deepEqual(mountedComponentPage?.options.layout, {
         borderless: true,
         fillParent: true,

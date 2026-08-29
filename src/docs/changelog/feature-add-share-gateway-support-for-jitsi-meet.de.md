@@ -15,3 +15,7 @@ Angemeldete Organisatoren und andere Teilnehmende mit direktem Zugriff können n
 ## Komponentenrouten für Gäste laden nach der Authentifizierung
 
 Die Share-Seite aktualisiert nun die SPA-Routenermittlung nach der Gastauthentifizierung. Whiteboard-Komponentenrouten, die beim anonymen Seitenstart nicht verfügbar waren, werden dadurch mit der aktiven Gastsitzung aufgelöst, sodass das synchronisierte Whiteboard-Fenster innerhalb des Meetings eingebunden wird.
+
+## Gastkontext erreicht eingebettete Whiteboards
+
+Cognis überträgt den aktiven Share-Kontext nun über den Komponenten-Seiten-Flow in Komponenten-Einbindungen für Gäste. Das eingebettete Whiteboard kann die delegierte Meeting-Freigabe erkennen, die Gastauthentifizierung beibehalten und das synchronisierte Board laden, statt den Pfad nur für Konten zu verwenden.

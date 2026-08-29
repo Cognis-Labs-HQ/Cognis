@@ -116,6 +116,13 @@ test("active share sessions can receive synchronized component windows", () => {
     );
 });
 
+test("guest component windows receive the active share context", () => {
+    assert.match(
+        sessionFlowSource,
+        /spawn-component-page[\s\S]*prepare[\s\S]*activeShareSession\?\.session\?\.shareContext[\s\S]*isViewingAsGuest\(\)[\s\S]*data\.mountOptions[\s\S]*shareContext/,
+    );
+});
+
 test("share popup owns user recipient search and selection", () => {
     assert.match(popupSource, /share-links-user-search/);
     assert.match(popupSource, /data-share-user-id/);

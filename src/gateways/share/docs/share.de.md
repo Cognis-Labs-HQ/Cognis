@@ -12,6 +12,8 @@ Solange die aufgelöste Route für geteilte Inhalte aktiv ist, können sowohl an
 
 Nach erfolgreicher Freigabeauthentifizierung verwirft die Seite jedes anonyme Ergebnis der SPA-Routenermittlung, bevor der Ressourcen-Renderer eingebunden wird. Die Auflösung von Komponentenfenstern lädt dadurch den aktivierten Komponenten-Seiten-Katalog mit den aktiven Gast- oder Kontozugangsdaten neu, statt einen leeren Cache aus der Zeit vor der Authentifizierung beizubehalten.
 
+Komponentenfenster für Gäste erhalten außerdem den aktiven Share-Kontext als Mount-Option des Anbieters. Eingebettete Komponenten können dadurch die Gastsitzung beibehalten und deren delegierten Ressourcenbereich verwenden, statt die Einbindung als gewöhnliche Seite nur für Konten zu behandeln.
+
 ## Gast-Sitzungen
 
 Beim Auflösen eines Share-Tokens stellt das Share-Gateway jetzt ein kurzlebiges Gast-Access-Token (`purpose: share`) bereit, das an genau diesen Share-Datensatz gebunden ist (`sub: share:<shareId>`). Die Share-Seite tauscht dieses Token temporär in `localStorage` ein, damit API-Aufrufe eingebetteter geteilter Seiten als anonyme Gast-Sitzung laufen, und stellt beim Verlassen das vorherige Token wieder her. Nachdem das eingeschränkte Gast-Token aktiv ist, lädt die Freigabeseite die UI-Capability-Provider des Hosts, bevor der Ressourcen-Renderer importiert wird, sodass freigegebene Komponenten deklarierte Capabilities wie die Profilavatar-Darstellung verwenden können.

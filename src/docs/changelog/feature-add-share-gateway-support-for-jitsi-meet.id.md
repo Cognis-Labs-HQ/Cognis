@@ -15,3 +15,7 @@ Penyelenggara yang sudah masuk dan peserta lain dengan akses langsung kini dapat
 ## Rute komponen tamu dimuat setelah autentikasi
 
 Halaman Share kini menyegarkan penemuan rute SPA setelah autentikasi tamu. Rute komponen papan tulis yang tidak tersedia selama bootstrap halaman anonim kemudian diselesaikan dengan sesi tamu aktif sehingga jendela papan tulis tersinkron dapat dipasang di dalam rapat.
+
+## Konteks tamu mencapai papan tulis tersemat
+
+Cognis kini membawa konteks Share aktif melalui flow halaman komponen ke pemasangan komponen tamu. Papan tulis tersemat dapat mengenali berbagi rapat yang didelegasikan, mempertahankan autentikasi tamu, dan memuat papan tersinkron, bukan memasuki jalur khusus akun.

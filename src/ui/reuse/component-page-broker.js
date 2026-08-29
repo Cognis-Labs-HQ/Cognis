@@ -346,6 +346,7 @@ export function installComponentPageBroker({
                     return;
                 }
                 mountResult = await module.mount(data.windowElement, {
+                    ...(data.mountOptions ?? {}),
                     signal: controller.signal,
                     focusState: data.request.context,
                     navigationAllowed: false,
