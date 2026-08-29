@@ -22,10 +22,12 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 
 ## Konfigurasi
 
-| Variabel                             | Default | Keterangan                                                       |
-| ------------------------------------ | ------- | ---------------------------------------------------------------- |
-| `DB_TYPE`                            | —       | Harus `mariadb` untuk mengaktifkan adapter ini                   |
-| `DATABASE_URL`                       | —       | URL koneksi MariaDB, mis. `mariadb://user:pass@host:3306/cognis` |
-| `MARIADB_POOL_MAX`                   | `10`    | Ukuran maksimum pool (1–100)                                     |
-| `MARIADB_POOL_IDLE_TIMEOUT_MS`       | `30000` | Batas waktu koneksi menganggur dalam milidetik (1.000–600.000)   |
-| `MARIADB_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Batas waktu koneksi dalam milidetik (100–120.000)                |
+| Variabel                             | Default | Keterangan                                                        |
+| ------------------------------------ | ------- | ----------------------------------------------------------------- |
+| `DB_TYPE`                            | —       | Harus `mariadb` untuk mengaktifkan adapter ini                    |
+| `DATABASE_URL`                       | —       | URL koneksi MariaDB, mis. `mariadb://user:pass@host:3306/cognis`  |
+| `MARIADB_POOL_MAX`                   | `10`    | Ukuran maksimum pool (1–100)                                      |
+| `MARIADB_POOL_IDLE_TIMEOUT_MS`       | `30000` | Batas waktu koneksi menganggur dalam milidetik (1.000–600.000)    |
+| `MARIADB_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Batas waktu koneksi dalam milidetik (100–120.000)                 |
+| `MARIADB_STARTUP_TIMEOUT_MS`         | `60000` | Jendela maksimum kesiapan startup dalam milidetik (1.000–600.000) |
+| `MARIADB_STARTUP_RETRY_INTERVAL_MS`  | `1000`  | Jeda antarpercobaan kesiapan dalam milidetik (100–30.000)         |

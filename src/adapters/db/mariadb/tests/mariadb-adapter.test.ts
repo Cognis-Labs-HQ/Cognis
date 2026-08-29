@@ -4,6 +4,7 @@ import {
     MariaDbGateway,
     createDbExecutor,
     readMariaDbPoolSettings,
+    waitForMariaDb,
     type MariaDbClient,
     type MariaDbPool,
 } from "../index.js";
@@ -213,4 +214,52 @@ test("mariadb pool environment settings are bounded", () => {
 
 test("mariadb waiting queries have a bounded default queue", () => {
     assert.equal(readMariaDbPoolSettings().queueLimit, 100);
+});
+
+test("mariadb startup waits for a temporarily unavailable server", async () => {
+    let attempts = 0;
+    const delays: number[] = [];
+    await waitForMariaDb(
+        {
+            query: async () => {
+                attempts += 1;
+                if (attempts < 3) {
+                    throw Object.assign(new Error("not ready"), {
+                        code: "ECONNREFUSED",
+                    });
+                }
+                return [[], {}];
+            },
+        },
+        { timeout: 1_000, retryInterval: 25 },
+        undefined,
+        async (milliseconds) => {
+            delays.push(milliseconds);
+        },
+    );
+
+    assert.equal(attempts, 3);
+    assert.deepEqual(delays, [25, 25]);
+});
+
+test("mariadb startup does not hide configuration failures", async () => {
+    let delays = 0;
+    await assert.rejects(
+        waitForMariaDb(
+            {
+                query: async () => {
+                    throw Object.assign(new Error("access denied"), {
+                        code: "ER_ACCESS_DENIED_ERROR",
+                    });
+                },
+            },
+            { timeout: 1_000, retryInterval: 25 },
+            undefined,
+            async () => {
+                delays += 1;
+            },
+        ),
+        /access denied/,
+    );
+    assert.equal(delays, 0);
 });

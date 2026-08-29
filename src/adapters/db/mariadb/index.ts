@@ -40,6 +40,28 @@ export interface MariaDbPoolSettings {
     queueLimit: number;
 }
 
+export interface MariaDbStartupSettings {
+    timeout: number;
+    retryInterval: number;
+}
+
+export function readMariaDbStartupSettings(): MariaDbStartupSettings {
+    return {
+        timeout: readBoundedEnvironmentInteger(
+            "MARIADB_STARTUP_TIMEOUT_MS",
+            60_000,
+            1_000,
+            600_000,
+        ),
+        retryInterval: readBoundedEnvironmentInteger(
+            "MARIADB_STARTUP_RETRY_INTERVAL_MS",
+            1_000,
+            100,
+            30_000,
+        ),
+    };
+}
+
 export function readMariaDbPoolSettings(): MariaDbPoolSettings {
     const connectionLimit = readBoundedEnvironmentInteger(
         "MARIADB_POOL_MAX",
@@ -400,9 +422,22 @@ export async function createDbExecutor(args: {
     log?: BootstrapLog;
     lifecycle?: { registerShutdown(handler: () => Promise<void>): void };
     pool?: MariaDbPool;
+    startup?: MariaDbStartupSettings;
+    sleep?: (milliseconds: number) => Promise<void>;
 }): Promise<RawDbExecutor> {
     const pool =
         args.pool ?? (await createMariaDbPool(args.databaseUrl, args.log));
+    try {
+        await waitForMariaDb(
+            pool,
+            args.startup ?? readMariaDbStartupSettings(),
+            args.log,
+            args.sleep,
+        );
+    } catch (error) {
+        await pool.end();
+        throw error;
+    }
     args.lifecycle?.registerShutdown(async () => {
         await pool.end();
         writeDbLog(args.log, "info", "MariaDB connection pool drained.", {
@@ -411,6 +446,62 @@ export async function createDbExecutor(args: {
         });
     });
     return new MariaDbExecutor(pool, args.log);
+}
+
+const RETRYABLE_STARTUP_ERROR_CODES = new Set([
+    "ECONNREFUSED",
+    "ECONNRESET",
+    "EHOSTUNREACH",
+    "ENETUNREACH",
+    "ETIMEDOUT",
+    "PROTOCOL_CONNECTION_LOST",
+]);
+
+function readErrorCode(error: unknown): string | undefined {
+    if (typeof error !== "object" || error === null || !("code" in error)) {
+        return undefined;
+    }
+    return typeof error.code === "string" ? error.code : undefined;
+}
+
+export async function waitForMariaDb(
+    pool: Pick<MariaDbPool, "query">,
+    settings: MariaDbStartupSettings,
+    log?: BootstrapLog,
+    sleep: (milliseconds: number) => Promise<void> = (milliseconds) =>
+        new Promise((resolve) => setTimeout(resolve, milliseconds)),
+): Promise<void> {
+    const deadline = Date.now() + settings.timeout;
+    let attempt = 0;
+    while (true) {
+        attempt += 1;
+        try {
+            await pool.query("SELECT 1");
+            if (attempt > 1) {
+                writeDbLog(log, "info", "MariaDB became ready.", {
+                    component: "db",
+                    provider: "mariadb",
+                    attempts: attempt,
+                });
+            }
+            return;
+        } catch (error) {
+            const code = readErrorCode(error);
+            const retryable =
+                code !== undefined && RETRYABLE_STARTUP_ERROR_CODES.has(code);
+            if (!retryable || Date.now() >= deadline) {
+                throw error;
+            }
+            writeDbLog(log, "warn", "MariaDB is not ready; retrying.", {
+                component: "db",
+                provider: "mariadb",
+                attempt,
+                retryIntervalMs: settings.retryInterval,
+                ...buildDbErrorMeta(error),
+            });
+            await sleep(settings.retryInterval);
+        }
+    }
 }
 
 async function createMariaDbPool(
