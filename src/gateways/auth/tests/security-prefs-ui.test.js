@@ -217,6 +217,10 @@ test("password change popup revalidates confirm password reactively", () => {
 
 test("expired API sessions redirect to login with expiry messaging", () => {
     assert.match(SESSION_FLOW_SOURCE, /cognis:api-access-denied/);
+    assert.match(
+        SESSION_FLOW_SOURCE,
+        /await Promise\.resolve\(\);[\s\S]*event\.detail\?\.handled === true/,
+    );
     assert.match(SESSION_FLOW_SOURCE, /event\.detail\?\.status !== 401/);
     assert.match(
         SESSION_FLOW_SOURCE,
