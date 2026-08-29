@@ -330,13 +330,6 @@ class PostgresExecutor implements RawDbExecutor {
         await this.execute(
             `CREATE TABLE IF NOT EXISTS ${def.name} (${allDefs.join(", ")})`,
         );
-        for (const index of def.indexes ?? []) {
-            const indexName =
-                index.name ?? `idx_${def.name}_${index.columns.join("_")}`;
-            await this.execute(
-                `CREATE INDEX IF NOT EXISTS ${indexName} ON ${def.name} (${index.columns.join(", ")})`,
-            ).catch(() => undefined);
-        }
         const existingColsResult = await this.execute(
             `SELECT column_name FROM information_schema.columns WHERE table_name = $1 AND table_schema = current_schema()`,
             [def.name],
@@ -355,9 +348,19 @@ class PostgresExecutor implements RawDbExecutor {
                       ? `DEFAULT ${notNullFallback(col)}`
                       : "";
             const notNullClause = col.notNull ? " NOT NULL" : "";
+            const referenceClause = col.references
+                ? ` REFERENCES ${col.references.table}(${col.references.column})${col.references.onDelete ? ` ON DELETE ${col.references.onDelete}` : ""}`
+                : "";
             await this.execute(
-                `ALTER TABLE ${def.name} ADD COLUMN IF NOT EXISTS ${col.name} ${pgType(col)}${notNullClause}${defaultClause ? ` ${defaultClause}` : ""}`,
-            ).catch(() => undefined);
+                `ALTER TABLE ${def.name} ADD COLUMN IF NOT EXISTS ${col.name} ${pgType(col)}${notNullClause}${defaultClause ? ` ${defaultClause}` : ""}${referenceClause}`,
+            );
+        }
+        for (const index of def.indexes ?? []) {
+            const indexName =
+                index.name ?? `idx_${def.name}_${index.columns.join("_")}`;
+            await this.execute(
+                `CREATE INDEX IF NOT EXISTS ${indexName} ON ${def.name} (${index.columns.join(", ")})`,
+            );
         }
     }
 }
