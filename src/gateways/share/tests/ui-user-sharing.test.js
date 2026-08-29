@@ -105,7 +105,21 @@ test("public Share page disables page layout editing", () => {
 test("public Share page loads host capability providers after guest authentication", () => {
     assert.match(
         shareAppSource,
-        /if \(!session\?\.authenticated\)[\s\S]*ui:ensureProvidersLoaded[\s\S]*force: true[\s\S]*mountScriptUrl/,
+        /if \(!session\?\.authenticated\)[\s\S]*router:invalidateRoutes[\s\S]*ui:ensureProvidersLoaded[\s\S]*force: true[\s\S]*mountScriptUrl/,
+    );
+});
+
+test("active share sessions can receive synchronized component windows", () => {
+    assert.match(
+        sessionFlowSource,
+        /spawn-component-page[\s\S]*validate[\s\S]*isActiveShareContentRoute\([\s\S]*activeShareSession[\s\S]*isViewingAsGuest\(\) \|\| sharedPageIsActive[\s\S]*data\.spawnAuthorized = true/,
+    );
+});
+
+test("guest component windows receive the active share context", () => {
+    assert.match(
+        sessionFlowSource,
+        /spawn-component-page[\s\S]*prepare[\s\S]*activeShareSession\?\.session\?\.shareContext[\s\S]*isViewingAsGuest\(\)[\s\S]*data\.mountOptions[\s\S]*shareContext/,
     );
 });
 

@@ -87,3 +87,7 @@ Gateway Autentikasi memuat adapter keyring wajib sebelum mendaftarkan hook alur 
 Hasil sesi peramban mempertahankan alasan kegagalan autentikasi alternatif yang netral agar halaman sumber daya publik dapat membedakan sumber daya yang hilang dari status tidak tersedia lainnya tanpa mengimpor internal Autentikasi.
 
 Perubahan sumber autentikasi menjalankan alur `reconcile-auth-sources` setelah penyimpanan. Hook adaptor menggunakan tahap `reconcile-accounts` untuk mencabut sesi dan merekonsiliasi identitas milik sumber tanpa percabangan penyedia di route.
+
+## Batas sesi peramban
+
+Pembatalan konfirmasi kata sandi hanya berjalan untuk sesi akun penuh yang terautentikasi. Penyiapan halaman anonim dan tamu Share dapat mengunci atau mengganti status keyring tanpa mengirim permintaan khusus akun `DELETE /api/v1/auth/verify`.

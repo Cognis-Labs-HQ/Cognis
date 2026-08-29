@@ -87,3 +87,7 @@ The Authentication gateway loads its required keyring adapter before registering
 Browser session results preserve a neutral alternate-authentication failure reason so a public resource page can distinguish a missing resource from other unavailable states without importing Authentication internals.
 
 Authentication source changes run the `reconcile-auth-sources` flow after persistence. Adapter hooks use its `reconcile-accounts` stage to invalidate sessions and reconcile source-owned identities without route-level provider branching.
+
+## Browser session boundaries
+
+Password-confirmation invalidation runs only for an authenticated full-account session. Anonymous and Share guest page setup can lock or replace keyring state without sending an account-only `DELETE /api/v1/auth/verify` request.

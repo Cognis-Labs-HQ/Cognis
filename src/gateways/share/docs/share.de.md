@@ -8,6 +8,12 @@ Das Share-Gateway verwaltet öffentliche Freigabetokens für Cognis-Ressourcen. 
 
 Geteilte Ressourcen werden unter `/share/:token` geöffnet. Die Seite verwendet den Standard-Page-Composer mit einer reduzierten Shell, einer Cognis-Kopfzeile und einem Renderer, der von der besitzenden Komponente ausgewählt wird.
 
+Solange die aufgelöste Route für geteilte Inhalte aktiv ist, können sowohl angemeldete Teilnehmende mit direktem Zugriff als auch Gäste synchronisierte Komponentenfenster ohne erneute Browseraktivierung empfangen. Die Anfragen durchlaufen weiterhin die Prüfung des Komponenten-Seiten-Brokers für Host-Element und Lebenszyklus.
+
+Nach erfolgreicher Freigabeauthentifizierung verwirft die Seite jedes anonyme Ergebnis der SPA-Routenermittlung, bevor der Ressourcen-Renderer eingebunden wird. Die Auflösung von Komponentenfenstern lädt dadurch den aktivierten Komponenten-Seiten-Katalog mit den aktiven Gast- oder Kontozugangsdaten neu, statt einen leeren Cache aus der Zeit vor der Authentifizierung beizubehalten.
+
+Komponentenfenster für Gäste erhalten außerdem den aktiven Share-Kontext als Mount-Option des Anbieters. Eingebettete Komponenten können dadurch die Gastsitzung beibehalten und deren delegierten Ressourcenbereich verwenden, statt die Einbindung als gewöhnliche Seite nur für Konten zu behandeln.
+
 ## Gast-Sitzungen
 
 Beim Auflösen eines Share-Tokens stellt das Share-Gateway jetzt ein kurzlebiges Gast-Access-Token (`purpose: share`) bereit, das an genau diesen Share-Datensatz gebunden ist (`sub: share:<shareId>`). Die Share-Seite tauscht dieses Token temporär in `localStorage` ein, damit API-Aufrufe eingebetteter geteilter Seiten als anonyme Gast-Sitzung laufen, und stellt beim Verlassen das vorherige Token wieder her. Nachdem das eingeschränkte Gast-Token aktiv ist, lädt die Freigabeseite die UI-Capability-Provider des Hosts, bevor der Ressourcen-Renderer importiert wird, sodass freigegebene Komponenten deklarierte Capabilities wie die Profilavatar-Darstellung verwenden können.
@@ -41,3 +47,11 @@ Eine Freigabekomponente kann eine allgemeine Zustellungsrückmeldung mit Überse
 ## Auflösung und Widerrufsoberfläche
 
 Der Browser prüft die Tokenauflösung, ohne den Kontoschlüsselbund zu öffnen. Erst eine `401 password_required`-Anforderung erlaubt die Wiederherstellung des Kontoschlüsselbunds und einen Versuch mit dem gespeicherten Passwort; `404`-Antworten zeigen den lokalisierten Zustand für nicht mehr vorhandene Freigaben. Jeder Widerruf erfordert einen Bestätigungsdialog, bevor die Löschanfrage gesendet wird.
+
+## Grenze für Komponentenfenster
+
+Eine eingebundene Link-Freigabeseite darf eine ansonsten gültige Komponentenseite programmgesteuert öffnen. Diese Autorisierung gilt nur für den Browser-Fenstervorgang. Für API-Zugriff löst das Share-Gateway Delegierungen allgemein über den Flow `resolve-share-delegated-access` auf: Der Besitzer der Quellressource weist seine Beziehung zum angeforderten Ziel nach und deklariert die erlaubten Zielfähigkeiten, während Share prüft, dass das Gasttoken die erforderliche Quellfähigkeit gewährt, und das Ergebnis an beide Ressourcenkennungen bindet. Share codiert keine Ressourcenpaare fest und behandelt eine Ressourcenfreigabe niemals als eine andere.
+
+## Vertrag für delegierten Zugriff
+
+`share:resolveDelegatedAccess` akzeptiert Gast-Claims sowie `resourceType`, `resourceId` und `requiredCapability` des Ziels. Share löst die ursprüngliche Ressource des Tokens auf und führt `resolve-share-delegated-access` mit `{ source, target }` aus. Ein Hook der Quellressource darf nur autorisieren, indem er die exakten Quell- und Zielkennungen, eine nicht leere `sourceCapability` und `allowedCapabilities` zurückgibt. Share prüft unabhängig, dass das ursprüngliche Token `sourceCapability` gewährt; abweichende Kennungen oder Fähigkeiten werden sicher abgelehnt. Zielkomponenten importieren oder benennen den Quellanbieter niemals.

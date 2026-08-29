@@ -8,6 +8,12 @@ The Share gateway owns public share tokens for Cognis resources. It mints, lists
 
 Shared resources open on `/share/:token`. The page uses the standard page composer with a minimal shell, a Cognis-branded header, and a renderer chosen by the resource-owning component.
 
+While the resolved shared-content route remains active, both signed-in direct-access participants and guests may receive synchronized component windows without a new browser activation. Requests still pass the component-page broker's host-element and lifecycle validation.
+
+After share authentication succeeds, the page invalidates any anonymous SPA-route discovery result before mounting the resource renderer. Component-window resolution therefore reloads the enabled component-page catalog with the active guest or account credentials instead of retaining an empty pre-authentication cache.
+
+Guest component windows also receive the active Share context as a provider mount option. Embedded components can therefore preserve the guest session and use its delegated resource scope instead of treating the mount as an ordinary account-only page.
+
 ## Guest Sessions
 
 When a share token is resolved, the Share gateway now issues a short-lived guest access token (`purpose: share`) bound to that share record (`sub: share:<shareId>`). The share page temporarily swaps this token into `localStorage` so API calls made by mounted shared pages run as an anonymous guest session, then restores the previous token on unload. After the scoped guest token is active, the Share page loads host UI capability providers before importing the resource renderer, so shared components can consume declared capabilities such as profile-avatar rendering.
@@ -41,3 +47,11 @@ A share facilitator may return generic delivery feedback containing a translatio
 ## Resolution and revocation UX
 
 The browser probes token resolution without opening the account keyring. Only a `401 password_required` challenge permits account-keyring restoration and a saved-password retry; `404` responses display the localized no-longer-existing share state. Every share revocation requires a confirmation popup before the delete request is sent.
+
+## Component-window boundary
+
+A mounted link-share page may programmatically spawn an otherwise valid component page. This authorization covers only the browser window operation. For API access, the Share gateway resolves delegation generically through the `resolve-share-delegated-access` flow: the source-resource owner proves its relationship to the requested target and declares the allowed target capabilities, while Share verifies that the guest token grants the required source capability and keeps the result bound to both resource identifiers. Share never hardcodes resource pairings or treats one resource share as another.
+
+## Delegated access contract
+
+`share:resolveDelegatedAccess` accepts guest claims plus a target `resourceType`, `resourceId`, and `requiredCapability`. Share resolves the token's original resource and runs `resolve-share-delegated-access` with `{ source, target }`. A source-resource hook may authorize only by returning the exact source and target identifiers, a non-empty `sourceCapability`, and `allowedCapabilities`. Share independently verifies that the original token grants `sourceCapability`; mismatched identifiers or capabilities fail closed. Target components never import or name the source provider.
