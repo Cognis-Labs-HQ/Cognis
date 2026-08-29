@@ -27,3 +27,7 @@ Das Share-Gateway stellt nun `share:resolveDelegatedAccess` bereit und übernimm
 ## Anonyme Seiten vermeiden die Kontoprüfung
 
 Die Initialisierung anonymer Seiten und Share-Gastseiten sendet beim Vorbereiten des Schlüsselbundzustands nicht mehr die nur für Konten bestimmte Anfrage zur Ungültigmachung der Passwortbestätigung. Dadurch entfällt die nicht zugehörige `401`-Antwort beim Laden eines Meeting-Freigabelinks, ohne den Ablauf der Kontobestätigung abzuschwächen.
+
+## Gast-Routen ignorieren veraltete Anfragen
+
+Die Routenerkennung verwirft jetzt anonyme Antworten, die erst nach der Aktivierung einer Gastfreigabesitzung eintreffen. Dadurch werden synchronisierte Komponentenfenster über die autorisierten Routen des Gastes aufgelöst.

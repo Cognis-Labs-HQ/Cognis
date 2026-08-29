@@ -27,3 +27,7 @@ Gateway Share kini menyediakan `share:resolveDelegatedAccess` dan memiliki valid
 ## Halaman anonim menghindari verifikasi akun
 
 Inisialisasi halaman anonim dan tamu Share tidak lagi mengirim permintaan pembatalan konfirmasi kata sandi khusus akun ketika status keyring disiapkan. Hal ini menghapus respons `401` yang tidak terkait dari pemuatan tautan berbagi rapat tanpa melemahkan masa berlaku konfirmasi akun.
+
+## Rute tamu mengabaikan permintaan usang
+
+Penemuan rute kini membuang respons anonim yang selesai setelah sesi tamu berbagi aktif, sehingga jendela komponen tersinkronisasi diuraikan melalui rute tamu yang diizinkan.

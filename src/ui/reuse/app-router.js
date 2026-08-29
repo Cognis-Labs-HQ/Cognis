@@ -430,6 +430,7 @@ installComponentPageBroker({
 
 let _allRoutes = null;
 let _allRoutesPromise = null;
+let _routeCacheGeneration = 0;
 
 function findMatchingRoute(routes, path) {
     const pathWithoutQueryOrFragment = normalizePath(path);
@@ -441,15 +442,22 @@ function findMatchingRoute(routes, path) {
 async function loadAllRoutes() {
     if (_allRoutes) return _allRoutes;
     if (_allRoutesPromise) return _allRoutesPromise;
-    _allRoutesPromise = (async () => {
+    const loadGeneration = _routeCacheGeneration;
+    const loadPromise = (async () => {
         const dynamicRoutes = await loadSpaRoutes();
-        _allRoutes = [...STATIC_ROUTES, ...dynamicRoutes];
-        return _allRoutes;
+        const routes = [...STATIC_ROUTES, ...dynamicRoutes];
+        if (loadGeneration === _routeCacheGeneration) {
+            _allRoutes = routes;
+        }
+        return routes;
     })();
+    _allRoutesPromise = loadPromise;
     try {
-        return await _allRoutesPromise;
+        return await loadPromise;
     } finally {
-        _allRoutesPromise = null;
+        if (_allRoutesPromise === loadPromise) {
+            _allRoutesPromise = null;
+        }
     }
 }
 
@@ -653,8 +661,10 @@ export function invalidateStudyChildComponentCache() {
  * @returns {void}
  */
 export function invalidateSpaRouteCache() {
+    _routeCacheGeneration += 1;
     clearSpaRouteCache();
     _allRoutes = null;
+    _allRoutesPromise = null;
 }
 
 export function getCurrentBase() {

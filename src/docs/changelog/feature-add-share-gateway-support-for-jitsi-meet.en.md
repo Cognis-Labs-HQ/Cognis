@@ -27,3 +27,7 @@ The Share gateway now exposes `share:resolveDelegatedAccess` and owns validation
 ## Anonymous pages avoid account verification
 
 Anonymous and Share guest initialization no longer sends the account-only password-confirmation invalidation request while keyring state is being prepared. This removes the unrelated `401` response from meeting link-share loading without weakening account confirmation expiry.
+
+## Guest route refreshes ignore stale requests
+
+Route discovery now discards anonymous responses that finish after a share guest session becomes active, ensuring synchronized component windows resolve with the guest's authorized routes.

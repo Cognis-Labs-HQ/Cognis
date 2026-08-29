@@ -133,6 +133,22 @@ test("router loads adapter-backed SPA routes from the UI app-routes API", () => 
     );
 });
 
+test("route invalidation prevents in-flight anonymous loads from restoring stale routes", () => {
+    const routerSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    const registrySource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/spa-route-registry.js"),
+        "utf8",
+    );
+
+    assert.match(routerSource, /loadGeneration === _routeCacheGeneration/);
+    assert.match(routerSource, /_routeCacheGeneration \+= 1/);
+    assert.match(registrySource, /loadGeneration === cacheGeneration/);
+    assert.match(registrySource, /cacheGeneration \+= 1/);
+});
+
 test("adapters self-register SPA route metadata for the app router", () => {
     for (const route of ADAPTER_BACKED_SPA_ROUTES) {
         const src = readFileSync(resolve(ROOT, route.sourceFile), "utf8");
