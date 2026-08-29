@@ -6,13 +6,13 @@ import { DbInternalNotificationStore } from "../db-store.js";
 
 test("internal notification schema uses a portable read-state identifier", async () => {
     let tableDefinition: StructuredDbTableDef | undefined;
-    const db = {
+    const database = {
         async ensureTable(definition: StructuredDbTableDef) {
             tableDefinition = definition;
         },
     } as DbExecutor;
 
-    await new DbInternalNotificationStore(db, "unused").ensureSchema();
+    await new DbInternalNotificationStore(database, "unused").ensureSchema();
 
     assert.equal(tableDefinition?.name, "internal_notifications");
     assert.deepEqual(

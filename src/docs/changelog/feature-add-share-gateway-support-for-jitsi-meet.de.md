@@ -1,5 +1,7 @@
 # Geteilte Komponentenfenster für Gäste
 
+**Feature-Zweig:** feature-add-share-gateway-support-for-jitsi-meet
+
 ## Geteilte Seiten öffnen synchronisierte Komponentenfenster jetzt automatisch
 
 Freigabegäste können nun Komponentenfenster empfangen, die von eingebundenen geteilten Seiten ohne Aktivierungsgeste des Browsers angefordert werden. Dadurch öffnen sich Meeting-Whiteboards und ihr synchronisiertes Begleitverhalten für Gäste genauso wie für angemeldete Cognis-Teilnehmende, während der Komponentenfenster-Broker weiterhin das angeforderte Hostelement und das Lebenszyklussignal validiert.
@@ -31,3 +33,8 @@ Die Initialisierung anonymer Seiten und Share-Gastseiten sendet beim Vorbereiten
 ## Gast-Routen ignorieren veraltete Anfragen
 
 Die Routenerkennung verwirft jetzt anonyme Antworten, die erst nach der Aktivierung einer Gastfreigabesitzung eintreffen. Dadurch werden synchronisierte Komponentenfenster über die autorisierten Routen des Gastes aufgelöst.
+
+## Änderungen
+
+- [18e37476](https://github.com/Cognis-Labs-HQ/Cognis/commit/18e37476)
+- [689801d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/689801d5)

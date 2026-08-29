@@ -1,5 +1,7 @@
 # Jendela komponen bersama untuk tamu
 
+**Cabang Fitur:** feature-add-share-gateway-support-for-jitsi-meet
+
 ## Halaman bersama kini membuka jendela komponen tersinkron secara otomatis
 
 Tamu berbagi kini dapat menerima jendela komponen yang diminta oleh halaman bersama yang terpasang tanpa gestur aktivasi peramban. Dengan demikian, whiteboard rapat dan perilaku periferal tersinkronnya terbuka bagi tamu seperti bagi peserta Cognis yang masuk, sementara broker halaman komponen tetap memvalidasi elemen host dan sinyal siklus hidup yang diminta.
@@ -31,3 +33,8 @@ Inisialisasi halaman anonim dan tamu Share tidak lagi mengirim permintaan pembat
 ## Rute tamu mengabaikan permintaan usang
 
 Penemuan rute kini membuang respons anonim yang selesai setelah sesi tamu berbagi aktif, sehingga jendela komponen tersinkronisasi diuraikan melalui rute tamu yang diizinkan.
+
+## Komit
+
+- [18e37476](https://github.com/Cognis-Labs-HQ/Cognis/commit/18e37476)
+- [689801d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/689801d5)

@@ -1,5 +1,7 @@
 # Shared component windows for guests
 
+**Feature Branch:** feature-add-share-gateway-support-for-jitsi-meet
+
 ## Shared pages now auto-open synchronized component windows
 
 Share guests can now receive component windows requested by mounted shared pages without a browser activation gesture. This lets meeting whiteboards and their synchronized peripheral behavior open for guests just as they do for signed-in Cognis participants, while the component-page broker continues to validate the requested host element and lifecycle signal.
@@ -31,3 +33,8 @@ Anonymous and Share guest initialization no longer sends the account-only passwo
 ## Guest route refreshes ignore stale requests
 
 Route discovery now discards anonymous responses that finish after a share guest session becomes active, ensuring synchronized component windows resolve with the guest's authorized routes.
+
+## Commits
+
+- [18e37476](https://github.com/Cognis-Labs-HQ/Cognis/commit/18e37476)
+- [689801d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/689801d5)
