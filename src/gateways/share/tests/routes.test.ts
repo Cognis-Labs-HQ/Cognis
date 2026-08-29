@@ -260,6 +260,10 @@ test("share bootstrap registers gateway routes and serves share html", async () 
 
     assert.equal(gatewayRegistry.get("share")?.id, "share");
     assert.equal(
+        typeof capabilities.get("share:resolveDelegatedAccess"),
+        "function",
+    );
+    assert.equal(
         uiRegistry.getStaticDir("share")?.endsWith("src/gateways/share"),
         true,
     );

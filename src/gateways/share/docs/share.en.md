@@ -50,4 +50,8 @@ The browser probes token resolution without opening the account keyring. Only a 
 
 ## Component-window boundary
 
-A mounted link-share page may programmatically spawn an otherwise valid component page, which is required for synchronized meeting peripherals. This authorization covers only the browser window operation: the owning module must still expose guest-safe state routes and resolve the share guest against its parent resource, while a child component must explicitly accept delegated access to its resource. Share does not reinterpret a meeting share as a whiteboard share or bypass either component's API authorization.
+A mounted link-share page may programmatically spawn an otherwise valid component page. This authorization covers only the browser window operation. For API access, the Share gateway resolves delegation generically through the `resolve-share-delegated-access` flow: the source-resource owner proves its relationship to the requested target and declares the allowed target capabilities, while Share verifies that the guest token grants the required source capability and keeps the result bound to both resource identifiers. Share never hardcodes resource pairings or treats one resource share as another.
+
+## Delegated access contract
+
+`share:resolveDelegatedAccess` accepts guest claims plus a target `resourceType`, `resourceId`, and `requiredCapability`. Share resolves the token's original resource and runs `resolve-share-delegated-access` with `{ source, target }`. A source-resource hook may authorize only by returning the exact source and target identifiers, a non-empty `sourceCapability`, and `allowedCapabilities`. Share independently verifies that the original token grants `sourceCapability`; mismatched identifiers or capabilities fail closed. Target components never import or name the source provider.

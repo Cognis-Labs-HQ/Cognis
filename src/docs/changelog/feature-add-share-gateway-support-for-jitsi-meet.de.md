@@ -6,7 +6,7 @@ Freigabegäste können nun Komponentenfenster empfangen, die von eingebundenen g
 
 ## Integrationsgrenze klargestellt
 
-Die Autorisierung eines Komponentenfensters gewährt keinen Zugriff auf die APIs einer untergeordneten Komponente. Jitsi Meet muss Freigabegäste an seiner Whiteboard-Zustandsroute akzeptieren und die Zuordnung zwischen Meeting und Whiteboard bereitstellen. Nextcloud Whiteboard muss delegierten Zugriff aus dieser geprüften Meeting-Freigabe akzeptieren, bevor die Synchronisierung vollständig funktioniert.
+Die Autorisierung eines Komponentenfensters gewährt keinen Zugriff auf die APIs einer untergeordneten Komponente. Cognis löst delegierten Gastzugriff nun über einen ressourcenneutralen Share-Flow auf. Die Komponente der ursprünglich freigegebenen Ressource weist ihre Beziehung zum angeforderten Ziel nach und deklariert die erlaubten Zielfähigkeiten; die Zielkomponente verwendet nur die allgemeine Share-Fähigkeit.
 
 ## Organisatoren können synchronisierte Meeting-Komponenten öffnen
 
@@ -19,3 +19,7 @@ Die Share-Seite aktualisiert nun die SPA-Routenermittlung nach der Gastauthentif
 ## Gastkontext erreicht eingebettete Whiteboards
 
 Cognis überträgt den aktiven Share-Kontext nun über den Komponenten-Seiten-Flow in Komponenten-Einbindungen für Gäste. Das eingebettete Whiteboard kann die delegierte Meeting-Freigabe erkennen, die Gastauthentifizierung beibehalten und das synchronisierte Board laden, statt den Pfad nur für Konten zu verwenden.
+
+## Delegierter Zugriff ist ressourcenneutral
+
+Das Share-Gateway stellt nun `share:resolveDelegatedAccess` bereit und übernimmt die Prüfung des Quellbereichs eines Gasttokens. Ressourcenbesitzer erweitern den allgemeinen Delegierungs-Flow, um Beziehungen nachzuweisen, ohne Zielkomponenten an einen Meeting-Anbieter oder eine andere benannte Integration zu koppeln.

@@ -6,7 +6,7 @@ Share guests can now receive component windows requested by mounted shared pages
 
 ## Integration boundary clarified
 
-Component-window authorization does not grant access to a child component's APIs. Jitsi Meet must accept share guests on its whiteboard-state route and expose the meeting-to-whiteboard association, while Nextcloud Whiteboard must accept delegated access from that validated meeting share before synchronization can work end to end.
+Component-window authorization does not grant access to a child component's APIs. Cognis now resolves delegated guest access through a resource-neutral Share flow. The component that owns the original shared resource proves its relationship to the requested target and declares the allowed target capabilities; the target component consumes only the generic Share capability.
 
 ## Organizers can open synchronized meeting components
 
@@ -19,3 +19,7 @@ The Share page now refreshes SPA route discovery after guest authentication. Whi
 ## Guest context reaches embedded whiteboards
 
 Cognis now carries the active Share context through the component-page flow into guest component mounts. The embedded whiteboard can recognize the delegated meeting share, retain guest authentication, and load the synchronized board instead of entering its account-only path.
+
+## Delegated access is resource-neutral
+
+The Share gateway now exposes `share:resolveDelegatedAccess` and owns validation of a guest token’s source scope. Resource owners extend the generic delegation flow to prove relationships without coupling target components to a meeting provider or any other named integration.

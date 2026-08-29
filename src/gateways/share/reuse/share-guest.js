@@ -93,3 +93,83 @@ export async function resolveShareGuestAccess({
         displayName: displayName || `Guest ${guestSessionId || shareId}`,
     };
 }
+
+/**
+ * Resolves a target-resource capability delegated from a guest's original
+ * share without teaching the Share gateway about either resource type.
+ *
+ * @param {object} options
+ * @param {{ sub?: string } | undefined} options.claims
+ * @param {string} options.resourceType
+ * @param {string} options.resourceId
+ * @param {string} options.requiredCapability
+ * @param {(id: string) => Promise<object|null>} options.getTokenById
+ * @param {(id: string) => Promise<object|null>} [options.getGuestProfile]
+ * @param {(input: object) => Promise<object>} options.runDelegationFlow
+ * @returns {Promise<{ shareGuest: boolean, authorized: boolean, resourceType?: string, resourceId?: string, requiredCapability?: string, username?: string, displayName?: string }>}
+ */
+export async function resolveShareDelegatedAccess({
+    claims,
+    resourceType,
+    resourceId,
+    requiredCapability,
+    getTokenById,
+    getGuestProfile,
+    runDelegationFlow,
+} = {}) {
+    const shareId = resolveShareGuestId(claims);
+    if (!shareId) return { shareGuest: false, authorized: false };
+    const target = {
+        resourceType: String(resourceType ?? "").trim(),
+        resourceId: String(resourceId ?? "").trim(),
+        requiredCapability: String(requiredCapability ?? "").trim(),
+    };
+    if (
+        !target.resourceType ||
+        !target.resourceId ||
+        !target.requiredCapability ||
+        typeof getTokenById !== "function" ||
+        typeof runDelegationFlow !== "function"
+    ) {
+        return { shareGuest: true, authorized: false };
+    }
+    const token = await getTokenById(shareId);
+    const source = {
+        resourceType: String(token?.resourceType ?? "").trim(),
+        resourceId: String(token?.resourceId ?? "").trim(),
+        grantedCapabilities: Array.isArray(token?.grantedCapabilities)
+            ? token.grantedCapabilities
+            : [],
+    };
+    if (!source.resourceType || !source.resourceId) {
+        return { shareGuest: true, authorized: false };
+    }
+    const flowResult = await runDelegationFlow({ source, target });
+    const results = flowResult?.stageResults?.["resolve-delegation"] ?? [];
+    const delegation = results.find(
+        (result) =>
+            result?.authorized === true &&
+            result?.sourceResourceType === source.resourceType &&
+            result?.sourceResourceId === source.resourceId &&
+            result?.resourceType === target.resourceType &&
+            result?.resourceId === target.resourceId &&
+            Array.isArray(result?.allowedCapabilities) &&
+            result.allowedCapabilities.includes(target.requiredCapability) &&
+            String(result?.sourceCapability ?? "").trim() &&
+            hasShareCapability(token, String(result.sourceCapability).trim()),
+    );
+    if (!delegation) return { shareGuest: true, authorized: false };
+    const guestSessionId = resolveShareGuestSessionId(claims);
+    const guestProfile =
+        guestSessionId && typeof getGuestProfile === "function"
+            ? await getGuestProfile(guestSessionId).catch(() => null)
+            : null;
+    const displayName = String(guestProfile?.displayName ?? "").trim();
+    return {
+        shareGuest: true,
+        authorized: true,
+        ...target,
+        username: `guest:${guestSessionId || shareId}`,
+        displayName: displayName || `Guest ${guestSessionId || shareId}`,
+    };
+}

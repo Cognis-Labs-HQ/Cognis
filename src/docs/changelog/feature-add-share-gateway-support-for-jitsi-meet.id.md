@@ -6,7 +6,7 @@ Tamu berbagi kini dapat menerima jendela komponen yang diminta oleh halaman bers
 
 ## Batas integrasi diperjelas
 
-Otorisasi jendela komponen tidak memberikan akses ke API komponen anak. Jitsi Meet harus menerima tamu berbagi pada rute status whiteboard dan mengekspos hubungan rapat-ke-whiteboard, sedangkan Nextcloud Whiteboard harus menerima akses terdelegasi dari berbagi rapat yang telah divalidasi agar sinkronisasi dapat berfungsi sepenuhnya.
+Otorisasi jendela komponen tidak memberikan akses ke API komponen anak. Cognis kini menyelesaikan akses tamu terdelegasi melalui flow Share yang netral terhadap sumber daya. Komponen pemilik sumber daya asal yang dibagikan membuktikan hubungannya dengan target yang diminta dan menyatakan kapabilitas target yang diizinkan; komponen target hanya menggunakan kapabilitas Share generik.
 
 ## Penyelenggara dapat membuka komponen rapat tersinkron
 
@@ -19,3 +19,7 @@ Halaman Share kini menyegarkan penemuan rute SPA setelah autentikasi tamu. Rute 
 ## Konteks tamu mencapai papan tulis tersemat
 
 Cognis kini membawa konteks Share aktif melalui flow halaman komponen ke pemasangan komponen tamu. Papan tulis tersemat dapat mengenali berbagi rapat yang didelegasikan, mempertahankan autentikasi tamu, dan memuat papan tersinkron, bukan memasuki jalur khusus akun.
+
+## Akses terdelegasi netral terhadap sumber daya
+
+Gateway Share kini menyediakan `share:resolveDelegatedAccess` dan memiliki validasi cakupan asal token tamu. Pemilik sumber daya memperluas flow delegasi generik untuk membuktikan hubungan tanpa mengikat komponen target ke penyedia rapat atau integrasi bernama lainnya.
