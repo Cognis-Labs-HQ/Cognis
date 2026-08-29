@@ -14,7 +14,7 @@ Der MariaDB-Adapter verbindet Cognis mit einem MariaDB- (oder MySQL-) Datenbanks
 
 `MariaDbGateway` in `src/adapters/db/mariadb/index.ts` besitzt einen Promise-Pool von `mysql2`. Normale Abfragen laufen direkt über den Pool. Transaktionen reservieren eine Verbindung für den Callback, führen Commit oder Rollback auf dieser Verbindung aus und geben sie in einem `finally`-Block frei. Der Adapter registriert das Leeren des Pools über die ctx-Fähigkeit `system:lifecycle`.
 
-Die Schema-Selbstheilung erhält Fremdschlüsseldefinitionen beim Hinzufügen fehlender Spalten und meldet Fehler bei der Reparatur von Indizes oder Spalten, statt sie stillschweigend zu ignorieren.
+Die Schema-Selbstheilung erhält Fremdschlüsseldefinitionen beim Hinzufügen fehlender Spalten und meldet Fehler bei der Reparatur von Indizes oder Spalten, statt sie stillschweigend zu ignorieren. Ausdrücklich indexierte Textspalten verwenden `VARCHAR(255)`; die Selbstheilung konvertiert eine vorhandene `TEXT`-Spalte, bevor ihr Index angelegt wird.
 
 ### Platzhalter-Syntax
 

@@ -305,3 +305,45 @@ test("mariadb uses indexable types for foreign keys and heals constraints", asyn
         /REFERENCES accounts\(id\) ON DELETE CASCADE/,
     );
 });
+
+test("mariadb repairs text index columns before creating their indexes", async () => {
+    const statements: string[] = [];
+    const executor = await createDbExecutor({
+        databaseUrl: "mariadb://unused",
+        pool: createPool({
+            query: async (sql: string) => {
+                statements.push(sql);
+                if (sql.includes("information_schema.COLUMNS")) {
+                    return [
+                        [{ column_name: "account_id", data_type: "text" }],
+                        {},
+                    ];
+                }
+                return [[], {}];
+            },
+        }),
+    });
+
+    await executor.ensureTable({
+        name: "internal_notifications",
+        columns: [
+            { name: "account_id", type: "text", notNull: true },
+            { name: "created_at", type: "bigint", notNull: true },
+        ],
+        indexes: [
+            {
+                name: "idx_internal_notif_account",
+                columns: ["account_id", "created_at"],
+            },
+        ],
+    });
+
+    const repairIndex = statements.findIndex((sql) =>
+        sql.includes("MODIFY COLUMN account_id VARCHAR(255) NOT NULL"),
+    );
+    const createIndex = statements.findIndex((sql) =>
+        sql.startsWith("CREATE INDEX IF NOT EXISTS"),
+    );
+    assert.ok(repairIndex >= 0);
+    assert.ok(createIndex > repairIndex);
+});

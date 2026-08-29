@@ -301,18 +301,21 @@ class MariaDbExecutor implements RawDbExecutor {
         const keyColumns = new Set<string>([
             ...compositePk,
             ...(def.uniqueKeys ?? []).flat(),
+            ...(def.indexes ?? []).flatMap((index) => index.columns),
         ]);
+        const isKeyColumn = (
+            col: StructuredDbTableDef["columns"][number],
+        ): boolean =>
+            Boolean(col.primaryKey) ||
+            Boolean(col.unique) ||
+            col.references !== undefined ||
+            keyColumns.has(col.name);
         const dbType = (
             col: StructuredDbTableDef["columns"][number],
         ): string => {
-            const isKeyColumn =
-                col.primaryKey ||
-                col.unique ||
-                col.references !== undefined ||
-                keyColumns.has(col.name);
             switch (col.type) {
                 case "text":
-                    return isKeyColumn ? "VARCHAR(255)" : "TEXT";
+                    return isKeyColumn(col) ? "VARCHAR(255)" : "TEXT";
                 case "integer":
                     return "INT";
                 case "bigint":
@@ -385,13 +388,22 @@ class MariaDbExecutor implements RawDbExecutor {
             `CREATE TABLE IF NOT EXISTS ${def.name} (${allDefs.join(", ")})`,
         );
         const existingColsResult = await this.execute(
-            `SELECT column_name FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?`,
+            `SELECT column_name, data_type FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?`,
             [def.name],
         );
         const existingCols = new Set(
             (existingColsResult.rows ?? []).map((row) =>
                 String((row as Record<string, unknown>).column_name ?? ""),
             ),
+        );
+        const existingColumnTypes = new Map(
+            (existingColsResult.rows ?? []).map((row) => {
+                const column = row as Record<string, unknown>;
+                return [
+                    String(column.column_name ?? ""),
+                    String(column.data_type ?? "").toLowerCase(),
+                ];
+            }),
         );
         for (const col of def.columns) {
             if (existingCols.has(col.name)) continue;
@@ -407,6 +419,24 @@ class MariaDbExecutor implements RawDbExecutor {
                 : "";
             await this.execute(
                 `ALTER TABLE ${def.name} ADD COLUMN IF NOT EXISTS ${col.name} ${dbType(col)}${notNullClause}${defaultClause ? ` ${defaultClause}` : ""}${referenceClause}`,
+            );
+        }
+        for (const col of def.columns) {
+            if (
+                col.type !== "text" ||
+                !isKeyColumn(col) ||
+                existingColumnTypes.get(col.name) !== "text"
+            ) {
+                continue;
+            }
+            const notNullClause =
+                col.notNull || col.primaryKey ? " NOT NULL" : "";
+            const defaultClause =
+                col.default !== undefined
+                    ? ` DEFAULT ${dbDefault(col.default)}`
+                    : "";
+            await this.execute(
+                `ALTER TABLE ${def.name} MODIFY COLUMN ${col.name} ${dbType(col)}${notNullClause}${defaultClause}`,
             );
         }
         for (const index of def.indexes ?? []) {
