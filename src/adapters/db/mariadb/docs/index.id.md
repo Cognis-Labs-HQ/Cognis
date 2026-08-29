@@ -14,6 +14,8 @@ Adapter MariaDB menghubungkan Cognis ke server database MariaDB (atau MySQL), co
 
 `MariaDbGateway` di `src/adapters/db/mariadb/index.ts` memiliki promise pool `mysql2`. Kueri biasa dijalankan langsung melalui pool. Transaksi mencadangkan satu koneksi untuk callback, melakukan commit atau rollback pada koneksi tersebut, lalu melepaskannya dalam blok `finally`. Adapter mendaftarkan pengosongan pool melalui kapabilitas ctx `system:lifecycle`.
 
+Pemulihan mandiri skema mempertahankan klausa kunci asing saat menambahkan kolom yang hilang dan melaporkan kegagalan perbaikan indeks atau kolom alih-alih mengabaikannya.
+
 ### Sintaks Placeholder
 
 ```sql

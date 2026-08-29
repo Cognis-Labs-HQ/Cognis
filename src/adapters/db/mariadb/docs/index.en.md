@@ -19,6 +19,8 @@ Not responsible for: choosing the database or schema name (use the `DATABASE_URL
 
 The adapter checks database readiness before exposing its executor. Transient network failures are retried within a bounded startup window, while authentication and configuration failures fail immediately.
 
+Schema self-healing preserves foreign-key clauses when adding missing columns and reports index or column repair failures instead of silently ignoring them.
+
 ### Placeholder syntax
 
 Use `?` positional placeholders:

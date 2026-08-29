@@ -203,3 +203,45 @@ test("postgres pool environment settings are bounded", () => {
 test("postgres queries have a finite default statement timeout", () => {
     assert.equal(readPostgresPoolSettings().statement_timeout, 30_000);
 });
+
+test("postgres preserves foreign keys while healing missing columns", async () => {
+    const statements: string[] = [];
+    const executor = await createDbExecutor({
+        databaseUrl: "postgresql://unused",
+        pool: createPool({
+            query: async (sql: string) => {
+                statements.push(sql);
+                return { rows: [], rowCount: 0 };
+            },
+        }),
+    });
+
+    await executor.ensureTable({
+        name: "auth_identities",
+        columns: [
+            { name: "id", type: "text", primaryKey: true },
+            {
+                name: "account_id",
+                type: "text",
+                notNull: true,
+                references: {
+                    table: "accounts",
+                    column: "id",
+                    onDelete: "CASCADE",
+                },
+            },
+        ],
+        indexes: [{ columns: ["account_id"] }],
+    });
+
+    assert.match(
+        statements.find((sql) => sql.startsWith("CREATE TABLE")) ?? "",
+        /account_id TEXT NOT NULL REFERENCES accounts\(id\) ON DELETE CASCADE/,
+    );
+    assert.match(
+        statements.find((sql) =>
+            sql.includes("ADD COLUMN IF NOT EXISTS account_id"),
+        ) ?? "",
+        /REFERENCES accounts\(id\) ON DELETE CASCADE/,
+    );
+});

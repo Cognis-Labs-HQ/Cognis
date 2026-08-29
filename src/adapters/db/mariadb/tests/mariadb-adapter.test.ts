@@ -263,3 +263,45 @@ test("mariadb startup does not hide configuration failures", async () => {
     );
     assert.equal(delays, 0);
 });
+
+test("mariadb uses indexable types for foreign keys and heals constraints", async () => {
+    const statements: string[] = [];
+    const executor = await createDbExecutor({
+        databaseUrl: "mariadb://unused",
+        pool: createPool({
+            query: async (sql: string) => {
+                statements.push(sql);
+                return [[], {}];
+            },
+        }),
+    });
+
+    await executor.ensureTable({
+        name: "auth_identities",
+        columns: [
+            { name: "id", type: "text", primaryKey: true },
+            {
+                name: "account_id",
+                type: "text",
+                notNull: true,
+                references: {
+                    table: "accounts",
+                    column: "id",
+                    onDelete: "CASCADE",
+                },
+            },
+        ],
+        indexes: [{ columns: ["account_id"] }],
+    });
+
+    assert.match(
+        statements.find((sql) => sql.startsWith("CREATE TABLE")) ?? "",
+        /account_id VARCHAR\(255\) NOT NULL REFERENCES accounts\(id\) ON DELETE CASCADE/,
+    );
+    assert.match(
+        statements.find((sql) =>
+            sql.includes("ADD COLUMN IF NOT EXISTS account_id"),
+        ) ?? "",
+        /REFERENCES accounts\(id\) ON DELETE CASCADE/,
+    );
+});
