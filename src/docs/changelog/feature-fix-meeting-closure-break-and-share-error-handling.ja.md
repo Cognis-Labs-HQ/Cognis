@@ -1,6 +1,6 @@
 # 共有エラーを共有ページに表示
 
-**機能ブランチ:** `work`
+**機能ブランチ:** `feature-fix-meeting-closure-break-and-share-error-handling`
 
 ## セッション期限切れではなく共有アクセスエラーを表示
 
