@@ -13,6 +13,7 @@
  */
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
 import type { NotificationEnvelope } from "../../../gateways/notify/gateway.js";
 import type {
     InternalNotification,
@@ -48,14 +49,20 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
     ) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.ensureTable({
+        const definition = {
             name: "internal_notifications",
             columns: [
                 { name: "id", type: "text", notNull: true, primaryKey: true },
                 { name: "account_id", type: "text", notNull: true },
                 { name: "iv", type: "text", notNull: true },
                 { name: "payload_enc", type: "text", notNull: true },
-                { name: "read", type: "integer", notNull: true, default: 0 },
+                {
+                    name: "is_read",
+                    type: "integer",
+                    notNull: true,
+                    default: 0,
+                    renamedFrom: "read",
+                },
                 { name: "created_at", type: "bigint", notNull: true },
             ],
             indexes: [
@@ -64,7 +71,14 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
                     name: "idx_internal_notif_account",
                 },
             ],
-        });
+        } satisfies StructuredDbTableDef & {
+            columns: Array<
+                StructuredDbTableDef["columns"][number] & {
+                    renamedFrom?: string;
+                }
+            >;
+        };
+        await this.db.ensureTable(definition);
     }
 
     async add(envelope: NotificationEnvelope): Promise<void> {
@@ -94,7 +108,7 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
                 account_id: envelope.recipientUsername,
                 iv,
                 payload_enc: ciphertext,
-                read: 0,
+                is_read: 0,
                 created_at: now,
             },
         });
@@ -139,7 +153,7 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "internal_notifications",
-            columns: ["id", "iv", "payload_enc", "read", "created_at"],
+            columns: ["id", "iv", "payload_enc", "is_read", "created_at"],
             where: [{ column: "account_id", value: username }],
             orderBy: [{ column: "created_at", direction: "DESC" }],
         });
@@ -168,7 +182,7 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
                     category: payload.category,
                     senderName: payload.senderName,
                     actionUrl: payload.actionUrl,
-                    read: Boolean(row.read),
+                    read: Boolean(row.is_read),
                     createdAt: Number(row.created_at),
                 });
             } catch (err) {
@@ -194,7 +208,7 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
             count: true,
             where: [
                 { column: "account_id", value: username },
-                { column: "read", value: 0 },
+                { column: "is_read", value: 0 },
             ],
         });
         return Number((result.rows?.[0] as Record<string, unknown>)?.cnt ?? 0);
@@ -215,7 +229,7 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
         await this.db.executeCommand({
             option: "UPDATE",
             table: "internal_notifications",
-            set: { read: 1 },
+            set: { is_read: 1 },
             where: [
                 { column: "id", value: id },
                 { column: "account_id", value: username },
@@ -228,7 +242,7 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
         await this.db.executeCommand({
             option: "UPDATE",
             table: "internal_notifications",
-            set: { read: 1 },
+            set: { is_read: 1 },
             where: [{ column: "account_id", value: username }],
         });
     }

@@ -43,7 +43,7 @@ export DATA_ENCRYPTION_KEY='<kunci enkripsi 64 karakter>'
 docker compose up --build
 ```
 
-Untuk MariaDB, tetapkan `MARIADB_PASSWORD` dan `MARIADB_ROOT_PASSWORD`, lalu mulai `docker-compose.mariadb.yaml`. Orkestrator seperti Kubernetes harus memasukkan nilai tersebut melalui fasilitas pengelolaan rahasia native dan tidak memerlukan skrip penyiapan repositori.
+Untuk MariaDB, tetapkan `MARIADB_PASSWORD`, lalu mulai `docker-compose.mariadb.yaml`; container membuat dan mencatat kata sandi root acak sehingga `MARIADB_ROOT_PASSWORD` tidak diperlukan maupun dibaca. Orkestrator seperti Kubernetes harus memasukkan nilai tersebut melalui fasilitas pengelolaan rahasia native dan tidak memerlukan skrip penyiapan repositori.
 
 ## Konfigurasi
 

@@ -44,7 +44,7 @@ export DATA_ENCRYPTION_KEY='<64-stelliger Verschlüsselungsschlüssel>'
 docker compose up --build
 ```
 
-Für MariaDB sind stattdessen `MARIADB_PASSWORD` und `MARIADB_ROOT_PASSWORD` zu setzen und `docker-compose.mariadb.yaml` zu starten. Orchestratoren wie Kubernetes sollten diese Werte über ihre native Geheimnisverwaltung einbinden; sie benötigen kein Einrichtungsskript aus dem Repository.
+Für MariaDB ist stattdessen `MARIADB_PASSWORD` zu setzen und `docker-compose.mariadb.yaml` zu starten; der Container erzeugt und protokolliert ein zufälliges Root-Passwort, daher wird `MARIADB_ROOT_PASSWORD` weder benötigt noch gelesen. Orchestratoren wie Kubernetes sollten diese Werte über ihre native Geheimnisverwaltung einbinden; sie benötigen kein Einrichtungsskript aus dem Repository.
 
 ### GitHub Actions
 
