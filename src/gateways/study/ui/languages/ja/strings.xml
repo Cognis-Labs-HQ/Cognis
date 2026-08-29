@@ -43,4 +43,8 @@
   <string name="gateway.study.classroom_load_failed">教室データを読み込めませんでした。</string>
   <string name="gateway.study.classroom_save_success">教室の変更を保存しました。</string>
   <string name="gateway.study.classroom_save_failed">教室の変更を保存できませんでした。</string>
+  <string name="gateway.study.library_subtitle">学習教材を構成する追跡可能な要素を確認します。</string>
+  <string name="gateway.study.library_layers">ライブラリの階層</string>
+  <string name="gateway.study.library_empty">このライブラリにはまだ教材がありません。</string>
+  <string name="gateway.study.library_load_error">ライブラリを読み込めませんでした。</string>
   </resources>

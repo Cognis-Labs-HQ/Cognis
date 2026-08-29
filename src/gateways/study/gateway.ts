@@ -164,6 +164,20 @@ export interface StudyAdapterBootstrapCtx {
     ): void | Promise<void>;
 }
 
+/** Caller-neutral access check supplied by the Classes adapter. */
+export interface StudyClassAccessCapability {
+    canRead(
+        classId: string,
+        accountId: string,
+        role: AccessRole,
+    ): Promise<boolean>;
+    canWrite(
+        classId: string,
+        accountId: string,
+        role: AccessRole,
+    ): Promise<boolean>;
+}
+
 type StudyBootstrapBaseCtx = Omit<
     StudyAdapterBootstrapCtx,
     "adapterId" | "adapterRoot" | "isAdapterEnabled"

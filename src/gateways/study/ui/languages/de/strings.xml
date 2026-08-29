@@ -43,4 +43,8 @@
   <string name="gateway.study.classroom_load_failed">Klassenzimmerdaten konnten nicht geladen werden.</string>
   <string name="gateway.study.classroom_save_success">Klassenzimmeränderungen wurden gespeichert.</string>
   <string name="gateway.study.classroom_save_failed">Klassenzimmeränderungen konnten nicht gespeichert werden.</string>
+  <string name="gateway.study.library_subtitle">Nachverfolgbare Bausteine in deinen Lernmaterialien erkunden.</string>
+  <string name="gateway.study.library_layers">Bibliotheksebenen</string>
+  <string name="gateway.study.library_empty">Diese Bibliothek enthält noch keine Materialien.</string>
+  <string name="gateway.study.library_load_error">Die Bibliothek konnte nicht geladen werden.</string>
   </resources>

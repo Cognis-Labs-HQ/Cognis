@@ -43,4 +43,8 @@
   <string name="gateway.study.classroom_load_failed">Failed to load classroom data.</string>
   <string name="gateway.study.classroom_save_success">Classroom changes saved.</string>
   <string name="gateway.study.classroom_save_failed">Failed to save classroom changes.</string>
+  <string name="gateway.study.library_subtitle">Explore traceable building blocks across your learning materials.</string>
+  <string name="gateway.study.library_layers">Library Layers</string>
+  <string name="gateway.study.library_empty">This library has no materials yet.</string>
+  <string name="gateway.study.library_load_error">The library could not be loaded.</string>
 </resources>

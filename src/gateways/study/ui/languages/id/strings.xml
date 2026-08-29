@@ -43,4 +43,8 @@
   <string name="gateway.study.classroom_load_failed">Gagal memuat data kelas.</string>
   <string name="gateway.study.classroom_save_success">Perubahan kelas berhasil disimpan.</string>
   <string name="gateway.study.classroom_save_failed">Gagal menyimpan perubahan kelas.</string>
+  <string name="gateway.study.library_subtitle">Jelajahi unsur yang dapat dilacak dalam materi pembelajaran Anda.</string>
+  <string name="gateway.study.library_layers">Lapisan Pustaka</string>
+  <string name="gateway.study.library_empty">Pustaka ini belum memiliki materi.</string>
+  <string name="gateway.study.library_load_error">Pustaka tidak dapat dimuat.</string>
   </resources>

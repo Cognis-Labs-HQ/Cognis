@@ -1,0 +1,19 @@
+.library-browser {
+    display: grid;
+    gap: 1rem;
+}
+
+.library-layers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.library-layers a {
+    color: var(--color-primary);
+    text-transform: capitalize;
+}
+
+.library-browser h2 {
+    text-transform: capitalize;
+}
