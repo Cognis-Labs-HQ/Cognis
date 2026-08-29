@@ -8,6 +8,8 @@ The Share gateway owns public share tokens for Cognis resources. It mints, lists
 
 Shared resources open on `/share/:token`. The page uses the standard page composer with a minimal shell, a Cognis-branded header, and a renderer chosen by the resource-owning component.
 
+While the resolved shared-content route remains active, both signed-in direct-access participants and guests may receive synchronized component windows without a new browser activation. Requests still pass the component-page broker's host-element and lifecycle validation.
+
 ## Guest Sessions
 
 When a share token is resolved, the Share gateway now issues a short-lived guest access token (`purpose: share`) bound to that share record (`sub: share:<shareId>`). The share page temporarily swaps this token into `localStorage` so API calls made by mounted shared pages run as an anonymous guest session, then restores the previous token on unload. After the scoped guest token is active, the Share page loads host UI capability providers before importing the resource renderer, so shared components can consume declared capabilities such as profile-avatar rendering.

@@ -8,6 +8,8 @@ Gateway Share memiliki token bagikan publik untuk sumber daya Cognis. Gateway in
 
 Sumber daya bersama dibuka di `/share/:token`. Halaman ini memakai page composer standar dengan shell minimal, header bermerek Cognis, dan renderer yang dipilih oleh komponen pemilik.
 
+Selama rute konten bersama yang telah diselesaikan tetap aktif, peserta dengan akses langsung yang sudah masuk dan tamu dapat menerima jendela komponen tersinkron tanpa aktivasi browser baru. Permintaan tetap melewati validasi elemen host dan siklus hidup milik broker halaman komponen.
+
 ## Sesi Tamu
 
 Saat token share di-resolve, gateway Share sekarang menerbitkan token akses tamu berumur pendek (`purpose: share`) yang terikat ke record share tersebut (`sub: share:<shareId>`). Halaman share menukar token ini sementara ke `localStorage` agar panggilan API dari halaman bersama yang dipasang berjalan sebagai sesi tamu anonim, lalu memulihkan token sebelumnya saat halaman ditutup. Setelah token tamu terbatas aktif, halaman Bagikan memuat penyedia kapabilitas UI host sebelum mengimpor perender sumber daya sehingga komponen bersama dapat memakai kapabilitas yang dideklarasikan seperti perenderan avatar profil.

@@ -109,10 +109,10 @@ test("public Share page loads host capability providers after guest authenticati
     );
 });
 
-test("share guests can receive synchronized component windows", () => {
+test("active share sessions can receive synchronized component windows", () => {
     assert.match(
         sessionFlowSource,
-        /spawn-component-page[\s\S]*validate[\s\S]*isViewingAsGuest\(\)[\s\S]*data\.spawnAuthorized = true/,
+        /spawn-component-page[\s\S]*validate[\s\S]*isActiveShareContentRoute\([\s\S]*activeShareSession[\s\S]*isViewingAsGuest\(\) \|\| sharedPageIsActive[\s\S]*data\.spawnAuthorized = true/,
     );
 });
 

@@ -67,9 +67,11 @@ let activeGuestKeyring = null;
 uiCtx.extendFlow(
     "spawn-component-page",
     "validate",
-    { id: "share-gateway:authorize-guest-component-page-spawn", order: 100 },
+    { id: "share-gateway:authorize-shared-component-page-spawn", order: 100 },
     ({ data }) => {
-        if (data.requestValid && isViewingAsGuest()) {
+        const sharedPageIsActive =
+            isActiveShareContentRoute(activeShareSession);
+        if (data.requestValid && (isViewingAsGuest() || sharedPageIsActive)) {
             data.spawnAuthorized = true;
         }
     },
