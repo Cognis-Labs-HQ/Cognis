@@ -16,6 +16,7 @@
  *   navigateTo(path)    — navigate to an in-app route programmatically.
  *   getCurrentBase()    — returns the base path of the currently mounted page.
  *   invalidateSpaRouteCache() — clears cached dynamic SPA route descriptors.
+ *   `router:invalidateRoutes` — ctx capability for invalidating those routes.
  *   invalidateStudyChildComponentCache() — clears the cached Study child
  *                         component list; call after learning-language changes.
  *
@@ -628,6 +629,10 @@ export async function navigateTo(path) {
 }
 
 uiCtx.capabilities.contribute("ui:navigate", navigateTo);
+uiCtx.capabilities.contribute(
+    "router:invalidateRoutes",
+    invalidateSpaRouteCache,
+);
 
 /**
  * Invalidates the in-memory Study child component cache so the next navigation

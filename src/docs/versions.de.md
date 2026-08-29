@@ -65,7 +65,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.8`   |
 | Authentication (auth) | `src/gateways/auth/`          | `1.9.20`  |
-| Share                 | `src/gateways/share/`         | `1.7.36`  |
+| Share                 | `src/gateways/share/`         | `1.7.37`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.18`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.9`   |
 | Social                | `src/gateways/social/`        | `1.2.15`  |

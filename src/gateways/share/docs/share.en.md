@@ -10,6 +10,8 @@ Shared resources open on `/share/:token`. The page uses the standard page compos
 
 While the resolved shared-content route remains active, both signed-in direct-access participants and guests may receive synchronized component windows without a new browser activation. Requests still pass the component-page broker's host-element and lifecycle validation.
 
+After share authentication succeeds, the page invalidates any anonymous SPA-route discovery result before mounting the resource renderer. Component-window resolution therefore reloads the enabled component-page catalog with the active guest or account credentials instead of retaining an empty pre-authentication cache.
+
 ## Guest Sessions
 
 When a share token is resolved, the Share gateway now issues a short-lived guest access token (`purpose: share`) bound to that share record (`sub: share:<shareId>`). The share page temporarily swaps this token into `localStorage` so API calls made by mounted shared pages run as an anonymous guest session, then restores the previous token on unload. After the scoped guest token is active, the Share page loads host UI capability providers before importing the resource renderer, so shared components can consume declared capabilities such as profile-avatar rendering.

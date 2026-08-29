@@ -93,6 +93,11 @@ test("router exports initRouter, navigateTo and getCurrentBase", () => {
         /export function getCurrentBase\(/,
         "app-router.js must export getCurrentBase",
     );
+    assert.match(
+        src,
+        /capabilities\.contribute\([\s\S]*"router:invalidateRoutes",[\s\S]*invalidateSpaRouteCache/,
+        "app-router.js must expose route invalidation through uiCtx",
+    );
 });
 
 test("router registers routes for all dashboard pages", () => {

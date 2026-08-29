@@ -11,3 +11,7 @@ Otorisasi jendela komponen tidak memberikan akses ke API komponen anak. Jitsi Me
 ## Penyelenggara dapat membuka komponen rapat tersinkron
 
 Penyelenggara yang sudah masuk dan peserta lain dengan akses langsung kini dapat menerima permintaan jendela komponen saat melihat sumber daya bersama yang aktif. Karena itu, membuka papan tulis rapat akan memasang jendela komponennya dan memungkinkan panel rapat beralih ke gambar-dalam-gambar meskipun sinkronisasi mengirim permintaan setelah interaksi browser awal.
+
+## Rute komponen tamu dimuat setelah autentikasi
+
+Halaman Share kini menyegarkan penemuan rute SPA setelah autentikasi tamu. Rute komponen papan tulis yang tidak tersedia selama bootstrap halaman anonim kemudian diselesaikan dengan sesi tamu aktif sehingga jendela papan tulis tersinkron dapat dipasang di dalam rapat.

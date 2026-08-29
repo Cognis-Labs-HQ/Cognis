@@ -11,3 +11,7 @@ Component-window authorization does not grant access to a child component's APIs
 ## Organizers can open synchronized meeting components
 
 Signed-in organizers and other direct-access participants can now receive component-window requests while viewing an active shared resource. Opening a meeting whiteboard therefore mounts its component window and allows the meeting pane to transition to picture-in-picture even when synchronization makes the request after the original browser gesture.
+
+## Guest component routes load after authentication
+
+The Share page now refreshes SPA route discovery after guest authentication. Whiteboard component routes that were unavailable during the anonymous page bootstrap are therefore resolved with the active guest session, allowing the synchronized whiteboard window to mount inside the meeting.
