@@ -23,3 +23,7 @@ Cognis kini membawa konteks Share aktif melalui flow halaman komponen ke pemasan
 ## Akses terdelegasi netral terhadap sumber daya
 
 Gateway Share kini menyediakan `share:resolveDelegatedAccess` dan memiliki validasi cakupan asal token tamu. Pemilik sumber daya memperluas flow delegasi generik untuk membuktikan hubungan tanpa mengikat komponen target ke penyedia rapat atau integrasi bernama lainnya.
+
+## Halaman anonim menghindari verifikasi akun
+
+Inisialisasi halaman anonim dan tamu Share tidak lagi mengirim permintaan pembatalan konfirmasi kata sandi khusus akun ketika status keyring disiapkan. Hal ini menghapus respons `401` yang tidak terkait dari pemuatan tautan berbagi rapat tanpa melemahkan masa berlaku konfirmasi akun.

@@ -23,3 +23,7 @@ Cognis now carries the active Share context through the component-page flow into
 ## Delegated access is resource-neutral
 
 The Share gateway now exposes `share:resolveDelegatedAccess` and owns validation of a guest token’s source scope. Resource owners extend the generic delegation flow to prove relationships without coupling target components to a meeting provider or any other named integration.
+
+## Anonymous pages avoid account verification
+
+Anonymous and Share guest initialization no longer sends the account-only password-confirmation invalidation request while keyring state is being prepared. This removes the unrelated `401` response from meeting link-share loading without weakening account confirmation expiry.

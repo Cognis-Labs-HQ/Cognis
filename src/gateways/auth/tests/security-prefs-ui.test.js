@@ -21,6 +21,13 @@ const PASSWORD_CONFIRMATION_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/auth/ui/reuse/password-confirmation.js"),
     "utf8",
 );
+
+test("password confirmation invalidation requires an account session", () => {
+    assert.match(
+        PASSWORD_CONFIRMATION_SOURCE,
+        /session:isAuthenticated[\s\S]*!== true[\s\S]*return true[\s\S]*method: "DELETE"/,
+    );
+});
 const SESSION_FLOW_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/auth/ui/session-flow-hooks.js"),
     "utf8",

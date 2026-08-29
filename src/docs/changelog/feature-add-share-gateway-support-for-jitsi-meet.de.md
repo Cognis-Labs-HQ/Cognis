@@ -23,3 +23,7 @@ Cognis überträgt den aktiven Share-Kontext nun über den Komponenten-Seiten-Fl
 ## Delegierter Zugriff ist ressourcenneutral
 
 Das Share-Gateway stellt nun `share:resolveDelegatedAccess` bereit und übernimmt die Prüfung des Quellbereichs eines Gasttokens. Ressourcenbesitzer erweitern den allgemeinen Delegierungs-Flow, um Beziehungen nachzuweisen, ohne Zielkomponenten an einen Meeting-Anbieter oder eine andere benannte Integration zu koppeln.
+
+## Anonyme Seiten vermeiden die Kontoprüfung
+
+Die Initialisierung anonymer Seiten und Share-Gastseiten sendet beim Vorbereiten des Schlüsselbundzustands nicht mehr die nur für Konten bestimmte Anfrage zur Ungültigmachung der Passwortbestätigung. Dadurch entfällt die nicht zugehörige `401`-Antwort beim Laden eines Meeting-Freigabelinks, ohne den Ablauf der Kontobestätigung abzuschwächen.
