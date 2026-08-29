@@ -41,3 +41,7 @@ Fasilitator berbagi dapat mengembalikan umpan balik pengiriman generik yang beri
 ## Pengalaman resolusi dan pencabutan
 
 Peramban memeriksa resolusi token tanpa membuka keyring akun. Hanya tantangan `401 password_required` yang mengizinkan pemulihan keyring akun dan percobaan ulang dengan kata sandi tersimpan; respons `404` menampilkan status berbagi yang sudah tidak ada secara terlokalisasi. Setiap pencabutan berbagi memerlukan popup konfirmasi sebelum permintaan penghapusan dikirim.
+
+## Batas jendela komponen
+
+Halaman berbagi tautan yang terpasang dapat membuka halaman komponen yang valid secara terprogram, yang diperlukan untuk periferal rapat tersinkron. Otorisasi ini hanya mencakup operasi jendela peramban: modul pemilik tetap harus menyediakan rute status yang aman bagi tamu dan memvalidasi tamu berbagi terhadap sumber daya induknya, sedangkan komponen anak harus secara tegas menerima akses terdelegasi ke sumber dayanya. Share tidak menafsirkan berbagi rapat sebagai berbagi whiteboard dan tidak melewati otorisasi API kedua komponen.

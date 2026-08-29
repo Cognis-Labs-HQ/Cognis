@@ -41,3 +41,7 @@ Eine Freigabekomponente kann eine allgemeine Zustellungsrückmeldung mit Überse
 ## Auflösung und Widerrufsoberfläche
 
 Der Browser prüft die Tokenauflösung, ohne den Kontoschlüsselbund zu öffnen. Erst eine `401 password_required`-Anforderung erlaubt die Wiederherstellung des Kontoschlüsselbunds und einen Versuch mit dem gespeicherten Passwort; `404`-Antworten zeigen den lokalisierten Zustand für nicht mehr vorhandene Freigaben. Jeder Widerruf erfordert einen Bestätigungsdialog, bevor die Löschanfrage gesendet wird.
+
+## Grenze für Komponentenfenster
+
+Eine eingebundene Link-Freigabeseite darf eine ansonsten gültige Komponentenseite programmgesteuert öffnen, was für synchronisierte Meeting-Peripherie erforderlich ist. Diese Autorisierung gilt nur für den Browser-Fenstervorgang: Das besitzende Modul muss weiterhin gastgeeignete Zustandsrouten bereitstellen und den Freigabegast gegen seine übergeordnete Ressource prüfen; eine untergeordnete Komponente muss delegierten Zugriff auf ihre Ressource ausdrücklich akzeptieren. Share deutet eine Meeting-Freigabe nicht als Whiteboard-Freigabe um und umgeht keine API-Autorisierung der Komponenten.

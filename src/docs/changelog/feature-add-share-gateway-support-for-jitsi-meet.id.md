@@ -3,3 +3,7 @@
 ## Halaman bersama kini membuka jendela komponen tersinkron secara otomatis
 
 Tamu berbagi kini dapat menerima jendela komponen yang diminta oleh halaman bersama yang terpasang tanpa gestur aktivasi peramban. Dengan demikian, whiteboard rapat dan perilaku periferal tersinkronnya terbuka bagi tamu seperti bagi peserta Cognis yang masuk, sementara broker halaman komponen tetap memvalidasi elemen host dan sinyal siklus hidup yang diminta.
+
+## Batas integrasi diperjelas
+
+Otorisasi jendela komponen tidak memberikan akses ke API komponen anak. Jitsi Meet harus menerima tamu berbagi pada rute status whiteboard dan mengekspos hubungan rapat-ke-whiteboard, sedangkan Nextcloud Whiteboard harus menerima akses terdelegasi dari berbagi rapat yang telah divalidasi agar sinkronisasi dapat berfungsi sepenuhnya.

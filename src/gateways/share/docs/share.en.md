@@ -41,3 +41,7 @@ A share facilitator may return generic delivery feedback containing a translatio
 ## Resolution and revocation UX
 
 The browser probes token resolution without opening the account keyring. Only a `401 password_required` challenge permits account-keyring restoration and a saved-password retry; `404` responses display the localized no-longer-existing share state. Every share revocation requires a confirmation popup before the delete request is sent.
+
+## Component-window boundary
+
+A mounted link-share page may programmatically spawn an otherwise valid component page, which is required for synchronized meeting peripherals. This authorization covers only the browser window operation: the owning module must still expose guest-safe state routes and resolve the share guest against its parent resource, while a child component must explicitly accept delegated access to its resource. Share does not reinterpret a meeting share as a whiteboard share or bypass either component's API authorization.
