@@ -15,6 +15,7 @@ const DASHBOARD_PAGES = [
     "docs",
     "changelogs",
     "license",
+    "modules",
 ];
 
 const ADAPTER_BACKED_SPA_ROUTES = [
@@ -62,7 +63,7 @@ test("all dashboard pages call mount on direct browser load", () => {
         );
         assert.match(
             src,
-            /import\s+\{\s*mountWhenDirect\s*\}\s+from\s+["']\.\.\/\.\.\/reuse\/page-entry\.js["'];/,
+            /import\s+\{[^}]*\bmountWhenDirect\b[^}]*\}\s+from\s+["']\.\.\/\.\.\/reuse\/page-entry\.js["'];/,
             `${page}/index.js must import mountWhenDirect for direct URL access`,
         );
         assert.match(
