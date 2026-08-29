@@ -288,7 +288,11 @@ export function invalidateAuthSetupCache() {
 const PUBLIC_AUTH_PATHNAMES = new Set(["/login", "/register"]);
 
 window.addEventListener("cognis:api-access-denied", async (event) => {
+    // Let a component that owns the denied request claim it before the
+    // account-session fallback handles the event below.
+    await Promise.resolve();
     if (
+        event.detail?.handled === true ||
         event.detail?.status !== 401 ||
         sessionExpiryNavigationPending ||
         PUBLIC_AUTH_PATHNAMES.has(window.location.pathname) ||

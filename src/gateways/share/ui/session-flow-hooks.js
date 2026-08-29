@@ -118,7 +118,7 @@ function startShareStatusMonitor(shareId) {
     watchShareStatus(shareId, () => publishShareRevoked(shareId));
 }
 
-window.addEventListener("cognis:api-access-denied", () => {
+window.addEventListener("cognis:api-access-denied", (event) => {
     if (accessDeniedNavigationPending) return;
     const shareToken = activeShareSession?.shareToken;
     const contentUrl = activeShareSession?.session?.shareContext?.contentUrl;
@@ -130,6 +130,7 @@ window.addEventListener("cognis:api-access-denied", () => {
         activeUrl.search !== expectedUrl.search
     )
         return;
+    event.detail.handled = true;
     sessionStorage.setItem(ACCESS_DENIED_TOKEN_KEY, shareToken);
     accessDeniedNavigationPending = true;
     restoreGuestToken();
