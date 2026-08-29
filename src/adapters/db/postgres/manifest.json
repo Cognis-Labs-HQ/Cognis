@@ -2,6 +2,6 @@
     "id": "postgres",
     "uuid": "ebb4a1ee-79dd-5923-b697-c515c69f3862",
     "name": "PostgreSQL Database",
-    "version": "0.5.14",
+    "version": "0.5.15",
     "publisher": "Cognis Labs HQ"
 }
