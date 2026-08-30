@@ -11,3 +11,7 @@ Router dasbor kini mengenali gaya milik rute dari pemuatan halaman langsung dan 
 ## Kontrol navigasi tampil dengan gayanya
 
 Pesan kini memuat setiap lembar gaya percakapan sebelum pemasangan, bukan mengandalkan rangkaian impor CSS, sehingga avatar percakapan tidak berkedip dalam ukuran tanpa gaya. Plugin notifikasi juga menunggu lembar gayanya sebelum menyisipkan lonceng ke bilah navigasi.
+
+## Gaya akar rute tidak lagi bocor
+
+Router dasbor kini menghapus kelas milik rute dari akar aplikasi bersama sebelum memasang halaman berikutnya. Dengan demikian, gaya Rapat tidak dapat tetap aktif pada bilah sisi penyusun halaman meskipun modul meninggalkan kelas akarnya sebelum rapat dimulai.

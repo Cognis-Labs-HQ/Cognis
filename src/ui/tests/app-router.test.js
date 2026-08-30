@@ -209,6 +209,11 @@ test("router resets page actions and removes stale styles before mounting", () =
         src.indexOf("commitPageStylesheets()") < src.indexOf("await mod.mount"),
         "stale styles must not influence destination page layout calculations",
     );
+    assert.ok(
+        src.indexOf('routeRoot.removeAttribute("class")') <
+            src.indexOf("await mod.mount"),
+        "route-owned root classes must not survive into the destination page",
+    );
 });
 
 test("SPA route bundles match structured-content styles from direct loads", () => {
