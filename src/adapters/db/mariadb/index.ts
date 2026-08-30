@@ -617,9 +617,11 @@ function readErrorCode(error: unknown): string | undefined {
 
 function readInvalidTemporalColumn(error: unknown): string | undefined {
     if (!(error instanceof Error)) return undefined;
-    return error.message.match(
-        /for column ['`](?:[^.'`]+\.)?([^'`]+)['`]/i,
+    const columnReference = error.message.match(
+        /for column (.+?) at row/i,
     )?.[1];
+    if (!columnReference) return undefined;
+    return [...columnReference.matchAll(/['`]([^'`]+)['`]/g)].at(-1)?.[1];
 }
 
 export async function waitForMariaDb(
