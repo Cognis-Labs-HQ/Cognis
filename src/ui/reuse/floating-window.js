@@ -21,6 +21,7 @@
 import { uiCtx } from "./ui-ctx.js";
 
 const FLOATING_WINDOW_STYLESHEET = "/static/styles/reuse/floating-window.css";
+const ORIENTATION_HYSTERESIS = 0.1;
 const MANAGED_STYLE_PROPERTIES = [
     "position",
     "left",
@@ -112,6 +113,7 @@ export function makeFloatingWindow(
     const controller = new AbortController();
     let minWidth = initialMinWidth;
     let minHeight = initialMinHeight;
+    let minimumOrientation = "horizontal";
     let drag = null;
     let resizeDrag = null;
     let released = false;
@@ -221,6 +223,7 @@ export function makeFloatingWindow(
         const rect = element.getBoundingClientRect();
         minWidth = nextWidth;
         minHeight = nextHeight;
+        minimumOrientation = "horizontal";
         element.style.minWidth = `${minWidth}px`;
         element.style.minHeight = `${minHeight}px`;
         if (rect.width >= minWidth && rect.height >= minHeight) return true;
@@ -245,6 +248,27 @@ export function makeFloatingWindow(
         element.style.right = "auto";
         element.style.bottom = "auto";
         return true;
+    };
+    const applyResizeOrientation = (requestedWidth, requestedHeight) => {
+        const horizontalMinWidth =
+            minimumOrientation === "horizontal" ? minWidth : minHeight;
+        const horizontalMinHeight =
+            minimumOrientation === "horizontal" ? minHeight : minWidth;
+        const widthScale = requestedWidth / horizontalMinWidth;
+        const heightScale = requestedHeight / horizontalMinHeight;
+        const shouldUseVerticalMinimum =
+            minimumOrientation === "horizontal" &&
+            widthScale < heightScale * (1 - ORIENTATION_HYSTERESIS);
+        const shouldUseHorizontalMinimum =
+            minimumOrientation === "vertical" &&
+            widthScale > heightScale * (1 + ORIENTATION_HYSTERESIS);
+        if (!shouldUseVerticalMinimum && !shouldUseHorizontalMinimum) return;
+        [minWidth, minHeight] = [minHeight, minWidth];
+        minimumOrientation = shouldUseVerticalMinimum
+            ? "vertical"
+            : "horizontal";
+        element.style.minWidth = `${minWidth}px`;
+        element.style.minHeight = `${minHeight}px`;
     };
     const stopDragging = (event) => {
         if (
@@ -347,6 +371,13 @@ export function makeFloatingWindow(
                 const boundary = getBoundary();
                 const deltaX = event.clientX - resizeDrag.x;
                 const deltaY = event.clientY - resizeDrag.y;
+                const requestedWidth =
+                    resizeDrag.width +
+                    (resizeDrag.edge === "top-left" ? -deltaX : deltaX);
+                const requestedHeight =
+                    resizeDrag.height +
+                    (resizeDrag.edge === "top-left" ? -deltaY : deltaY);
+                applyResizeOrientation(requestedWidth, requestedHeight);
                 if (resizeDrag.edge === "top-left") {
                     const fixedRight = resizeDrag.left + resizeDrag.width;
                     const fixedBottom = resizeDrag.top + resizeDrag.height;
