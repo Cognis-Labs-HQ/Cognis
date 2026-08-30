@@ -198,7 +198,7 @@ test("router rechecks navigation freshness after authentication", () => {
     assert.ok(freshnessCheck < sessionProcessing);
 });
 
-test("router resets page actions and commits route styles after mounting", () => {
+test("router resets page actions and removes stale styles before mounting", () => {
     const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
@@ -206,8 +206,8 @@ test("router resets page actions and commits route styles after mounting", () =>
     assert.match(src, /capabilities\.get\("page:actions"\)\?\.reset/);
     assert.match(src, /preparePageStylesheets\(/);
     assert.ok(
-        src.indexOf("await mod.mount") < src.indexOf("commitPageStylesheets()"),
-        "stale styles must remain until the destination page has mounted",
+        src.indexOf("commitPageStylesheets()") < src.indexOf("await mod.mount"),
+        "stale styles must not influence destination page layout calculations",
     );
 });
 
