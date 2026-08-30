@@ -213,6 +213,44 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.style.height, "300px");
 
         panel.rect = { left: 450, top: 250, width: 400, height: 300 };
+        bottomRightResizeHandle.dispatch("pointerdown", {
+            button: 0,
+            pointerId: 7,
+            clientX: 850,
+            clientY: 550,
+            preventDefault() {},
+        });
+        bottomRightResizeHandle.dispatch("pointermove", {
+            pointerId: 7,
+            clientX: 700,
+            clientY: 650,
+            preventDefault() {},
+        });
+        assert.equal(panel.style.minWidth, "240px");
+        assert.equal(panel.style.minHeight, "320px");
+        assert.equal(panel.style.width, "250px");
+        assert.equal(panel.style.height, "400px");
+
+        panel.rect = { left: 450, top: 250, width: 250, height: 400 };
+        bottomRightResizeHandle.dispatch("pointerdown", {
+            button: 0,
+            pointerId: 8,
+            clientX: 700,
+            clientY: 650,
+            preventDefault() {},
+        });
+        bottomRightResizeHandle.dispatch("pointermove", {
+            pointerId: 8,
+            clientX: 850,
+            clientY: 500,
+            preventDefault() {},
+        });
+        assert.equal(panel.style.minWidth, "320px");
+        assert.equal(panel.style.minHeight, "240px");
+        assert.equal(panel.style.width, "400px");
+        assert.equal(panel.style.height, "250px");
+
+        panel.rect = { left: 450, top: 250, width: 400, height: 300 };
         topLeftResizeHandle.dispatch("pointerdown", {
             button: 0,
             pointerId: 6,
