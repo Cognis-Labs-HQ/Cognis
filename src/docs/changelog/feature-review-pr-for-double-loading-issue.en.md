@@ -15,3 +15,7 @@ Messages now loads each conversation stylesheet before mounting instead of relyi
 ## Route root styles no longer leak
 
 The dashboard router now clears route-owned classes from the shared app root before mounting the next page. Meetings styling therefore cannot remain active on page-composer sidebars even when a module leaves its root class behind before a meeting starts.
+
+## Shared capability styles persist
+
+Styles loaded by shared UI capabilities now remain available across route changes, while only explicitly route-owned styles are removed. Profile avatar presentation therefore remains complete when navigating from Profiles to Meetings. Automated lifecycle coverage now checks every core, gateway, and adapter SPA page entry.

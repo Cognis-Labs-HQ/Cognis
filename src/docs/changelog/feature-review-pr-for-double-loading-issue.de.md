@@ -15,3 +15,7 @@ Nachrichten lädt jetzt jedes Unterhaltungs-Stylesheet vor dem Einbinden, anstat
 ## Stile des Routenstamms bleiben nicht mehr bestehen
 
 Der Dashboard-Router entfernt jetzt routeneigene Klassen vom gemeinsam genutzten App-Stamm, bevor die nächste Seite eingebunden wird. Dadurch kann die Gestaltung von Meetings nicht auf Seitenleisten des Seiten-Composers aktiv bleiben, selbst wenn ein Modul seine Stammklasse bereits vor dem Start einer Besprechung zurücklässt.
+
+## Gemeinsame Funktionsstile bleiben erhalten
+
+Von gemeinsam genutzten UI-Funktionen geladene Stile bleiben jetzt bei Routenwechseln verfügbar, während nur ausdrücklich routeneigene Stile entfernt werden. Profilavatare bleiben dadurch beim Wechsel von Profile zu Meetings vollständig gestaltet. Die automatisierte Lebenszyklusprüfung umfasst jetzt jeden SPA-Seiteneinstieg von Kern, Gateways und Adaptern.

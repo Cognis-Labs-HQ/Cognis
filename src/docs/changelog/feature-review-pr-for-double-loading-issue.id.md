@@ -15,3 +15,7 @@ Pesan kini memuat setiap lembar gaya percakapan sebelum pemasangan, bukan mengan
 ## Gaya akar rute tidak lagi bocor
 
 Router dasbor kini menghapus kelas milik rute dari akar aplikasi bersama sebelum memasang halaman berikutnya. Dengan demikian, gaya Rapat tidak dapat tetap aktif pada bilah sisi penyusun halaman meskipun modul meninggalkan kelas akarnya sebelum rapat dimulai.
+
+## Gaya kapabilitas bersama tetap tersedia
+
+Gaya yang dimuat oleh kapabilitas UI bersama kini tetap tersedia saat rute berubah, sedangkan hanya gaya yang secara eksplisit dimiliki rute yang dihapus. Tampilan avatar profil tetap lengkap ketika bernavigasi dari Profil ke Rapat. Cakupan siklus hidup otomatis kini memeriksa setiap entri halaman SPA inti, gateway, dan adapter.

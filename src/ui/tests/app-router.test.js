@@ -41,6 +41,53 @@ const ADAPTER_BACKED_SPA_ROUTES = [
     },
 ];
 
+const SPA_PAGE_ENTRY_FILES = [
+    "src/adapters/social/messages/ui/app.js",
+    "src/adapters/social/profile/ui/app.js",
+    "src/adapters/study/classes/ui/app.js",
+    "src/adapters/study/classes/ui/my-classes.js",
+    "src/gateways/auth/ui/register.js",
+    "src/gateways/calendar/ui/app.js",
+    "src/gateways/share/ui/app/index.js",
+    "src/gateways/share/ui/app/account-share/index.js",
+    "src/gateways/share/ui/app/shares/index.js",
+    "src/gateways/study/ui/study.js",
+    ...[
+        "administration",
+        "changelogs",
+        "dashboard",
+        "docs",
+        "error",
+        "invite",
+        "license",
+        "login",
+        "modules",
+        "settings",
+        "users",
+    ].map((page) => `src/ui/app/${page}/index.js`),
+];
+
+test("every SPA page entry uses the shared direct-mount lifecycle", () => {
+    for (const entryFile of SPA_PAGE_ENTRY_FILES) {
+        const source = readFileSync(resolve(ROOT, entryFile), "utf8");
+        assert.match(
+            source,
+            /\bmountWhenDirect\b/,
+            `${entryFile} must import the shared direct-mount lifecycle`,
+        );
+        assert.match(
+            source,
+            /await mountWhenDirect\(mount\)/,
+            `${entryFile} must guard its direct browser mount`,
+        );
+        assert.doesNotMatch(
+            source,
+            /await mount\(document\.querySelector/,
+            `${entryFile} must not mount unconditionally at module evaluation`,
+        );
+    }
+});
+
 test("all dashboard pages export an async mount function", () => {
     for (const page of DASHBOARD_PAGES) {
         const src = readFileSync(
