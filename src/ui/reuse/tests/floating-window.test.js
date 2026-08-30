@@ -231,6 +231,15 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.style.width, "250px");
         assert.equal(panel.style.height, "400px");
 
+        bottomRightResizeHandle.dispatch("pointermove", {
+            pointerId: 7,
+            clientX: 770,
+            clientY: 490,
+            preventDefault() {},
+        });
+        assert.equal(panel.style.minWidth, "240px");
+        assert.equal(panel.style.minHeight, "320px");
+
         panel.rect = { left: 450, top: 250, width: 250, height: 400 };
         bottomRightResizeHandle.dispatch("pointerdown", {
             button: 0,

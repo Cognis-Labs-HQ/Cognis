@@ -4,11 +4,11 @@
 
 ## Switch PiP minimum dimensions while resizing
 
-Dragging a PiP window narrower than its minimum width while making it taller than its minimum height now switches the minimum dimensions from the default horizontal orientation to a vertical orientation. Reversing that gesture switches the dimensions back.
+PiP minimum dimensions now switch promptly according to the resize gesture's relative width and height. A hysteresis band keeps small pointer movements near the boundary from repeatedly oscillating between horizontal and vertical orientations.
 
 ## Keep page actions above PiP windows
 
-Page action buttons now use a higher stacking level than floating PiP windows so the actions remain accessible.
+PiP windows now remain in the document stacking context, where the page action dock's higher stacking level reliably keeps its buttons accessible.
 
 ## Commits
 

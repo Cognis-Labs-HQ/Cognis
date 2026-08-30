@@ -4,11 +4,11 @@
 
 ## Menukar dimensi minimum PiP saat mengubah ukuran
 
-Menyeret jendela PiP hingga lebih sempit dari lebar minimumnya sekaligus lebih tinggi dari tinggi minimumnya kini menukar dimensi minimum dari orientasi horizontal bawaan ke orientasi vertikal. Gerakan sebaliknya mengembalikan orientasi horizontal.
+Dimensi minimum PiP kini beralih dengan cepat mengikuti lebar dan tinggi relatif dari gerakan pengubahan ukuran. Rentang histeresis mencegah gerakan penunjuk kecil di dekat batas berulang kali berosilasi antara orientasi horizontal dan vertikal.
 
 ## Menjaga tindakan halaman di atas jendela PiP
 
-Tombol tindakan halaman kini menggunakan tingkat tumpukan yang lebih tinggi daripada jendela PiP mengambang sehingga tindakan tersebut tetap dapat diakses.
+Jendela PiP kini tetap berada dalam konteks tumpukan dokumen sehingga tingkat tumpukan dok tindakan halaman yang lebih tinggi dapat menjaga tombolnya tetap dapat diakses secara andal.
 
 ## Komit
 

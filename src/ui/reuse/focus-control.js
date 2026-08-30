@@ -77,7 +77,8 @@ export function normalizeFocusManifest(manifest, elements = []) {
                     ([surface.minSize?.width, surface.minSize?.height].every(
                         (dimension) =>
                             Number.isFinite(dimension) && dimension > 0,
-                    ) && surface.modes.includes("pip"))) &&
+                    ) &&
+                        surface.modes.includes("pip"))) &&
                 serializable(surface.initialState ?? null),
         );
 }
@@ -180,6 +181,7 @@ export function createFocusControlCoordinator({
                 minWidth: surface.minSize?.width,
                 minHeight: surface.minSize?.height,
                 signal,
+                topLayer: false,
             });
         }
         for (const alternative of surfaces.filter(

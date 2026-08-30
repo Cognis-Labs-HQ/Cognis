@@ -21,6 +21,7 @@
 import { uiCtx } from "./ui-ctx.js";
 
 const FLOATING_WINDOW_STYLESHEET = "/static/styles/reuse/floating-window.css";
+const ORIENTATION_HYSTERESIS = 0.1;
 const MANAGED_STYLE_PROPERTIES = [
     "position",
     "left",
@@ -249,14 +250,18 @@ export function makeFloatingWindow(
         return true;
     };
     const applyResizeOrientation = (requestedWidth, requestedHeight) => {
+        const horizontalMinWidth =
+            minimumOrientation === "horizontal" ? minWidth : minHeight;
+        const horizontalMinHeight =
+            minimumOrientation === "horizontal" ? minHeight : minWidth;
+        const widthScale = requestedWidth / horizontalMinWidth;
+        const heightScale = requestedHeight / horizontalMinHeight;
         const shouldUseVerticalMinimum =
             minimumOrientation === "horizontal" &&
-            requestedWidth < minWidth &&
-            requestedHeight > minHeight;
+            widthScale < heightScale * (1 - ORIENTATION_HYSTERESIS);
         const shouldUseHorizontalMinimum =
             minimumOrientation === "vertical" &&
-            requestedWidth > minWidth &&
-            requestedHeight < minHeight;
+            widthScale > heightScale * (1 + ORIENTATION_HYSTERESIS);
         if (!shouldUseVerticalMinimum && !shouldUseHorizontalMinimum) return;
         [minWidth, minHeight] = [minHeight, minWidth];
         minimumOrientation = shouldUseVerticalMinimum

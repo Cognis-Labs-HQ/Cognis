@@ -4,11 +4,11 @@
 
 ## PiP-Mindestmaße beim Skalieren wechseln
 
-Wird ein PiP-Fenster schmaler als seine Mindestbreite und zugleich höher als seine Mindesthöhe gezogen, wechseln die Mindestmaße nun von der standardmäßigen horizontalen in die vertikale Ausrichtung. Die umgekehrte Geste stellt die horizontale Ausrichtung wieder her.
+Die PiP-Mindestmaße wechseln nun zügig entsprechend der relativen Breite und Höhe der Skalierungsgeste. Ein Hysteresebereich verhindert, dass kleine Zeigerbewegungen nahe der Grenze wiederholt zwischen horizontaler und vertikaler Ausrichtung wechseln.
 
 ## Seitenaktionen über PiP-Fenstern halten
 
-Schaltflächen für Seitenaktionen verwenden nun eine höhere Stapelreihenfolge als schwebende PiP-Fenster und bleiben dadurch zugänglich.
+PiP-Fenster verbleiben nun im Stapelkontext des Dokuments, sodass die höhere Stapelreihenfolge der Seitenaktionsleiste deren Schaltflächen zuverlässig zugänglich hält.
 
 ## Änderungen
 
