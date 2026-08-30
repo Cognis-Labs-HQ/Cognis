@@ -33,7 +33,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                               | Versi    |
 | --------------------- | ----------------------------------- | -------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.26` |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.21` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.22` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.16` |
 | Kuota Berkas          | `src/adapters/file/quota/`          | `1.0.14` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.16` |
@@ -51,7 +51,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.15` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.13` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.70` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.85` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.86` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10` |

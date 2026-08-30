@@ -7,3 +7,7 @@ The Modules page now uses the shared direct-page mount guard. Loading it through
 ## Page styles are isolated during navigation
 
 The dashboard router now identifies route-owned styles from direct page loads and removes the previous page's styles before mounting the destination. Navigating from Meetings to Messages therefore cannot leave meeting-specific button rules behind to distort page-composer sidebars.
+
+## Navigation controls render with their styles
+
+Messages now loads each conversation stylesheet before mounting instead of relying on a chain of CSS imports, preventing conversation avatars from flashing at their unstyled size. The notification plugin also waits for its stylesheet before inserting the bell into the navigation bar.

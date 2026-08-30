@@ -19,6 +19,18 @@ test("mobile notification backdrop stays hidden until explicitly opened", () => 
     );
 });
 
+test("notification bell waits for its stylesheet before rendering", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/notify/internal/ui/navbar-plugin.js"),
+        "utf8",
+    );
+    assert.match(source, /function loadNotificationStyles\(\)/);
+    assert.ok(
+        source.indexOf("await loadNotificationStyles()") <
+            source.indexOf("const wrap = buildButton(i18n)"),
+    );
+});
+
 test("clear-all notifications button is disabled for empty inboxes", () => {
     const source = readFileSync(
         resolve(ROOT, "src/adapters/notify/internal/ui/navbar-plugin.js"),

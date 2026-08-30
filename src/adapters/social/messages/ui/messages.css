@@ -1,9 +1,3 @@
-@import url("./thread.css");
-
-@import url("/static/adapters/social/messages/messages-style-variants.css");
-@import url("/static/adapters/social/messages/messages-chat-shared.css");
-@import url("/static/adapters/social/messages/messages-template-composer.css");
-@import url("/static/adapters/social/messages/messages-sidebar.css");
 .messages-sidebar-content {
     display: flex;
     flex-direction: column;
