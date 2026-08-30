@@ -34,7 +34,7 @@ export async function handleRegisteredSpaPage(
     const routeStylesheets = (input.route.stylesheets ?? [])
         .map(
             (stylesheetUrl) =>
-                `<link rel="stylesheet" href="${stylesheetUrl}" />`,
+                `<link rel="stylesheet" href="${stylesheetUrl}" data-page-stylesheet="true" />`,
         )
         .join("\n        ");
     const routeBootstrapConfig = JSON.stringify({

@@ -38,3 +38,29 @@ test("direct SPA loads import declared providers before the route once", async (
         1,
     );
 });
+
+test("direct SPA loads identify route-owned stylesheets", async () => {
+    const recorder = createResponseRecorder();
+    await handleRegisteredSpaPage({
+        req: { method: "GET" } as any,
+        res: recorder.res as any,
+        route: {
+            id: "meetings",
+            pattern: "^/meetings$",
+            base: "/meetings",
+            scriptUrl: "/static/modules/jitsi-meet/app.js",
+            stylesheets: ["/static/modules/jitsi-meet/app.css"],
+        },
+        uiRegistry: new UIRegistry(),
+        publicRoot: path.resolve("src/ui/public"),
+        routeContext: createDefaultRouteContext(),
+        resolveLoginRedirect: async () => null,
+        redirect: () => true,
+        getSessionRole: () => "user",
+    });
+
+    assert.match(
+        recorder.body,
+        /<link rel="stylesheet" href="\/static\/modules\/jitsi-meet\/app\.css" data-page-stylesheet="true" \/>/,
+    );
+});
