@@ -540,6 +540,11 @@ export async function bootstrapSocialAdapter(
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",
             "/static/adapters/social/messages/messages.css",
+            "/static/adapters/social/messages/thread.css",
+            "/static/adapters/social/messages/messages-style-variants.css",
+            "/static/adapters/social/messages/messages-chat-shared.css",
+            "/static/adapters/social/messages/messages-template-composer.css",
+            "/static/adapters/social/messages/messages-sidebar.css",
         ],
         isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
     });

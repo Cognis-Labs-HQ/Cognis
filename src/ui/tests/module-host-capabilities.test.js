@@ -168,4 +168,9 @@ test("SPA route cleanup preserves shell-owned stylesheets", () => {
         pageStyles,
         /destinationStylesheets\.forEach\(\(href\) => _managedPageStylesheets\.add\(href\)\)/,
     );
+    assert.match(
+        pageStyles,
+        /link\[data-page-stylesheet=["']true["']\]\[href\]/,
+        "direct-load route styles must join SPA stylesheet cleanup",
+    );
 });
