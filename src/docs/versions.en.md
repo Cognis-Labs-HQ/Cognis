@@ -44,7 +44,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.27` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.17` |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.16` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.21` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.22` |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.18` |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.15` |
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.16` |

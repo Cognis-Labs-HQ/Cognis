@@ -616,26 +616,11 @@ function readErrorCode(error: unknown): string | undefined {
 }
 
 function readInvalidTemporalColumn(error: unknown): string | undefined {
-    if (!(error instanceof Error)) return undefined;
-    const lowerCaseMessage = error.message.toLowerCase();
-    const marker = "for column ";
-    const referenceStart = lowerCaseMessage.indexOf(marker);
-    if (referenceStart === -1) return undefined;
-    const columnStart = referenceStart + marker.length;
-    const referenceEnd = lowerCaseMessage.indexOf(" at row", columnStart);
-    if (referenceEnd === -1) return undefined;
-    const columnReference = error.message.slice(columnStart, referenceEnd);
-    const finalBacktick = columnReference.lastIndexOf("`");
-    const finalQuote = columnReference.lastIndexOf("'");
-    const closingDelimiter = Math.max(finalBacktick, finalQuote);
-    if (closingDelimiter <= 0) return undefined;
-    const delimiter = columnReference[closingDelimiter];
-    const openingDelimiter = columnReference.lastIndexOf(
-        delimiter,
-        closingDelimiter - 1,
-    );
-    if (openingDelimiter === -1) return undefined;
-    return columnReference.slice(openingDelimiter + 1, closingDelimiter);
+    return error instanceof Error
+        ? /for column (?:[`'][^`']+[`']\.)*[`']([^`']+)[`'] at row/i.exec(
+              error.message,
+          )?.[1]
+        : undefined;
 }
 
 export async function waitForMariaDb(
