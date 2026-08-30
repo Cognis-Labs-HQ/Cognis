@@ -149,6 +149,21 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.style.height, "min(32vh, 15rem)");
         assert.equal(panel.style.left, "700px");
         assert.equal(panel.style.top, "450px");
+        assert.equal(
+            release.updateMinimumSize({ width: 320, height: 240 }),
+            true,
+        );
+        assert.equal(panel.style.minWidth, "320px");
+        assert.equal(panel.style.minHeight, "240px");
+        assert.equal(panel.style.width, "320px");
+        assert.equal(panel.style.height, "240px");
+        assert.equal(panel.style.left, "680px");
+        assert.equal(panel.style.top, "450px");
+        assert.equal(
+            release.updateMinimumSize({ width: 0, height: 240 }),
+            false,
+        );
+        assert.equal(panel.style.minWidth, "320px");
         const toolbar = panel.children.find(
             (child) => child.className === "floating-window-toolbar",
         );
@@ -262,6 +277,10 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         );
 
         release();
+        assert.equal(
+            release.updateMinimumSize({ width: 400, height: 300 }),
+            false,
+        );
         assert.equal(resizeDisconnected, true);
         assert.equal(panel.classes.has("floating-window"), false);
         assert.equal(handle.classes.has("floating-window-handle"), false);

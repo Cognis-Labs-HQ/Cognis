@@ -73,6 +73,11 @@ export function normalizeFocusManifest(manifest, elements = []) {
                 surface.modes.every((mode) =>
                     ["overlay", "fullscreen", "pip"].includes(mode),
                 ) &&
+                (surface.minSize === undefined ||
+                    ([surface.minSize?.width, surface.minSize?.height].every(
+                        (dimension) =>
+                            Number.isFinite(dimension) && dimension > 0,
+                    ) && surface.modes.includes("pip"))) &&
                 serializable(surface.initialState ?? null),
         );
 }
@@ -172,6 +177,8 @@ export function createFocusControlCoordinator({
         if (session.mode === "pip") {
             releaseFloatingWindow = makeFloatingWindow(overlay, {
                 handle: overlay.querySelector(".focus-control-controls"),
+                minWidth: surface.minSize?.width,
+                minHeight: surface.minSize?.height,
                 signal,
             });
         }
