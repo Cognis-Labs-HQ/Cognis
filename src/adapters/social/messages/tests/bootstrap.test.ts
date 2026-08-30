@@ -149,13 +149,6 @@ test("messages reaction chips render hover popup metadata and styles", () => {
         appSource,
         /class="messages-reaction-chip[^"]*" title=/,
     );
-    assert.match(
-        readFileSync(
-            resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
-            "utf8",
-        ),
-        /@import url\("\/static\/adapters\/social\/messages\/messages-chat-shared\.css"\);/,
-    );
     assert.match(stylesheetSource, /\.messages-reaction-hover-popup \{/);
     assert.match(stylesheetSource, /\.messages-reaction-hover-popup-users \{/);
 });

@@ -149,6 +149,21 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.style.height, "min(32vh, 15rem)");
         assert.equal(panel.style.left, "700px");
         assert.equal(panel.style.top, "450px");
+        assert.equal(
+            release.updateMinimumSize({ width: 320, height: 240 }),
+            true,
+        );
+        assert.equal(panel.style.minWidth, "320px");
+        assert.equal(panel.style.minHeight, "240px");
+        assert.equal(panel.style.width, "320px");
+        assert.equal(panel.style.height, "240px");
+        assert.equal(panel.style.left, "680px");
+        assert.equal(panel.style.top, "450px");
+        assert.equal(
+            release.updateMinimumSize({ width: 0, height: 240 }),
+            false,
+        );
+        assert.equal(panel.style.minWidth, "320px");
         const toolbar = panel.children.find(
             (child) => child.className === "floating-window-toolbar",
         );
@@ -196,6 +211,53 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         });
         assert.equal(panel.style.width, "400px");
         assert.equal(panel.style.height, "300px");
+
+        panel.rect = { left: 450, top: 250, width: 400, height: 300 };
+        bottomRightResizeHandle.dispatch("pointerdown", {
+            button: 0,
+            pointerId: 7,
+            clientX: 850,
+            clientY: 550,
+            preventDefault() {},
+        });
+        bottomRightResizeHandle.dispatch("pointermove", {
+            pointerId: 7,
+            clientX: 700,
+            clientY: 650,
+            preventDefault() {},
+        });
+        assert.equal(panel.style.minWidth, "240px");
+        assert.equal(panel.style.minHeight, "320px");
+        assert.equal(panel.style.width, "250px");
+        assert.equal(panel.style.height, "400px");
+
+        bottomRightResizeHandle.dispatch("pointermove", {
+            pointerId: 7,
+            clientX: 770,
+            clientY: 490,
+            preventDefault() {},
+        });
+        assert.equal(panel.style.minWidth, "240px");
+        assert.equal(panel.style.minHeight, "320px");
+
+        panel.rect = { left: 450, top: 250, width: 250, height: 400 };
+        bottomRightResizeHandle.dispatch("pointerdown", {
+            button: 0,
+            pointerId: 8,
+            clientX: 700,
+            clientY: 650,
+            preventDefault() {},
+        });
+        bottomRightResizeHandle.dispatch("pointermove", {
+            pointerId: 8,
+            clientX: 850,
+            clientY: 500,
+            preventDefault() {},
+        });
+        assert.equal(panel.style.minWidth, "320px");
+        assert.equal(panel.style.minHeight, "240px");
+        assert.equal(panel.style.width, "400px");
+        assert.equal(panel.style.height, "250px");
 
         panel.rect = { left: 450, top: 250, width: 400, height: 300 };
         topLeftResizeHandle.dispatch("pointerdown", {
@@ -262,6 +324,10 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         );
 
         release();
+        assert.equal(
+            release.updateMinimumSize({ width: 400, height: 300 }),
+            false,
+        );
         assert.equal(resizeDisconnected, true);
         assert.equal(panel.classes.has("floating-window"), false);
         assert.equal(handle.classes.has("floating-window-handle"), false);

@@ -1,6 +1,6 @@
 {
     "name": "@cognis/adapter-db-mariadb",
-    "version": "0.5.19",
+    "version": "0.5.22",
     "private": true,
     "type": "module",
     "main": "index.ts",

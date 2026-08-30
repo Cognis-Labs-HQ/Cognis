@@ -39,4 +39,8 @@ test("hidden page action buttons cannot retain an empty visual presence", async 
         layoutStyles,
         /\.page-action-dock\s*>\s*\.page-action-button\[hidden\]\s*\{\s*display:\s*none;/,
     );
+    assert.match(
+        layoutStyles,
+        /\.page-action-dock\s*\{[\s\S]*?z-index:\s*1202;/,
+    );
 });
