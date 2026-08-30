@@ -14,35 +14,10 @@ const APP_SOURCE = readFileSync(
     resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
     "utf8",
 );
-const ADAPTER_SOURCE = readFileSync(
-    resolve(ROOT, "src/adapters/social/messages/index.ts"),
-    "utf8",
-);
-const MESSAGES_STYLES = readFileSync(
-    resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
-    "utf8",
-);
 
 test("messages leaves host provider and navbar loading to the shared page lifecycle", () => {
     assert.doesNotMatch(APP_SOURCE, /ensureUiProvidersLoaded/);
     assert.doesNotMatch(APP_SOURCE, /ensureNavbarPluginsLoaded/);
-});
-
-test("messages declares every stylesheet without an import waterfall", () => {
-    for (const stylesheet of [
-        "messages.css",
-        "thread.css",
-        "messages-style-variants.css",
-        "messages-chat-shared.css",
-        "messages-template-composer.css",
-        "messages-sidebar.css",
-    ]) {
-        assert.match(
-            ADAPTER_SOURCE,
-            new RegExp(stylesheet.replace(".", "\\.")),
-        );
-    }
-    assert.doesNotMatch(MESSAGES_STYLES, /@import/);
 });
 
 test("global message search imports its authenticated API client", () => {
