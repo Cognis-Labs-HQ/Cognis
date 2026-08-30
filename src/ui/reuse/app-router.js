@@ -589,11 +589,11 @@ async function loadRoute(path) {
         try {
             const routeRoot = resolveRouterRoot();
             if (!routeRoot) return false;
+            commitPageStylesheets();
             await mod.mount(routeRoot, {
                 signal,
                 shareContext: session?.shareContext ?? null,
             });
-            commitPageStylesheets();
             recordRouteMount(path, performance.now() - routeMountStartedAt);
         } catch (error) {
             if (!signal.aborted) {

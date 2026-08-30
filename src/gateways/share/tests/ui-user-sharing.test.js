@@ -424,7 +424,7 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
     );
     assert.match(
         sessionFlowSource,
-        /sessionStorage\.setItem\(ACCESS_DENIED_TOKEN_KEY, shareToken\);[\s\S]*restoreGuestToken\(\);[\s\S]*capabilities\.get\("ui:navigate"\)/,
+        /event\.detail\.handled = true;[\s\S]*sessionStorage\.setItem\(ACCESS_DENIED_TOKEN_KEY, shareToken\);[\s\S]*restoreGuestToken\(\);[\s\S]*capabilities\.get\("ui:navigate"\)/,
     );
     assert.doesNotMatch(
         sessionFlowSource,
@@ -610,6 +610,11 @@ test("guest sessions can re-assert their disposable keyring without prompting", 
 
 test("unavailable share links navigate to the native error page", () => {
     assert.match(sessionFlowSource, /response\.status === 404/);
+    assert.match(
+        sessionFlowSource,
+        /navigateToMissingShare\(\)[\s\S]*restoreGuestToken\(\)[\s\S]*"\/error\?code=404"[\s\S]*watchShareStatus\(shareId, \(response\)[\s\S]*response\.status === 404[\s\S]*navigateToMissingShare\(\)/,
+    );
+    assert.match(statusMonitorSource, /onUnavailable\(response\)/);
     assert.match(
         sharePageSource,
         /function navigateToShareError\(i18n, reason\)/,

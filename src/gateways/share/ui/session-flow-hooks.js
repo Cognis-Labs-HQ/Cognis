@@ -112,13 +112,33 @@ function stopShareStatusMonitor() {
     stopShareStatusWatch();
 }
 
+async function navigateToMissingShare() {
+    restoreGuestToken();
+    const errorPath = "/error?code=404";
+    const navigate = uiCtx.capabilities.get("ui:navigate");
+    try {
+        if (await navigate?.(errorPath)) return;
+    } catch (error) {
+        console.error("[share] failed to open missing-share error route", {
+            operation: "navigate_missing_share_error",
+            error,
+        });
+    }
+    window.location.assign(errorPath);
+}
+
 function startShareStatusMonitor(shareId) {
     stopShareStatusMonitor();
     if (!shareId) return;
-    watchShareStatus(shareId, () => publishShareRevoked(shareId));
+    watchShareStatus(shareId, (response) => {
+        if (response.status === 404) {
+            return navigateToMissingShare();
+        }
+        publishShareRevoked(shareId);
+    });
 }
 
-window.addEventListener("cognis:api-access-denied", () => {
+window.addEventListener("cognis:api-access-denied", (event) => {
     if (accessDeniedNavigationPending) return;
     const shareToken = activeShareSession?.shareToken;
     const contentUrl = activeShareSession?.session?.shareContext?.contentUrl;
@@ -130,6 +150,7 @@ window.addEventListener("cognis:api-access-denied", () => {
         activeUrl.search !== expectedUrl.search
     )
         return;
+    event.detail.handled = true;
     sessionStorage.setItem(ACCESS_DENIED_TOKEN_KEY, shareToken);
     accessDeniedNavigationPending = true;
     restoreGuestToken();

@@ -31,12 +31,33 @@ const RELATIVE_TIME_TICK_MS = 1000;
 const CSS_HREF = "/static/gateways/notify-internal/notifications.css";
 const notificationTextDecoder = new TextDecoder();
 
-function injectStyles() {
-    if (document.querySelector(`link[href="${CSS_HREF}"]`)) return;
+function waitForNotificationStyles(link) {
+    return new Promise((resolve) => {
+        link.addEventListener("load", resolve, { once: true });
+        link.addEventListener(
+            "error",
+            (error) => {
+                console.error(
+                    "[notify-internal] notification styles failed to load:",
+                    error,
+                );
+                resolve();
+            },
+            { once: true },
+        );
+    });
+}
+
+function loadNotificationStyles() {
+    const existing = document.querySelector(`link[href="${CSS_HREF}"]`);
+    if (existing?.sheet) return Promise.resolve();
+    if (existing) return waitForNotificationStyles(existing);
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = CSS_HREF;
+    const stylesReady = waitForNotificationStyles(link);
     document.head.appendChild(link);
+    return stylesReady;
 }
 
 function navigateNotif(actionUrl) {
@@ -756,7 +777,7 @@ async function showArrivalToast(notif, i18n) {
     if (!localStorage.getItem("cognis_access_token")) return;
 
     try {
-        injectStyles();
+        await loadNotificationStyles();
 
         const i18n = await createI18n({
             componentStringBaseUrls: [

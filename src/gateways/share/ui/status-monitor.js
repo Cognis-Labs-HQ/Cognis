@@ -23,7 +23,7 @@ async function pollShareStatus() {
     if (activeWatch !== watch) return;
     if (response && !response.ok) {
         activeWatch = null;
-        await watch.onRevoked();
+        await watch.onUnavailable(response);
         return;
     }
     schedulePoll();
@@ -41,13 +41,13 @@ export function stopShareStatusWatch() {
     activeWatch = null;
 }
 
-export function watchShareStatus(shareId, onRevoked) {
+export function watchShareStatus(shareId, onUnavailable) {
     stopShareStatusWatch();
     const normalizedShareId = String(shareId ?? "").trim();
-    if (!normalizedShareId || typeof onRevoked !== "function") return;
+    if (!normalizedShareId || typeof onUnavailable !== "function") return;
     activeWatch = {
         shareId: normalizedShareId,
-        onRevoked,
+        onUnavailable,
         pending: false,
         timer: null,
     };

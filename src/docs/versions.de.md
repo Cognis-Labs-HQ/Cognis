@@ -33,7 +33,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.26` |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.21` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.22` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.16` |
 | Dateikontingent       | `src/adapters/file/quota/`          | `1.0.14` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.16` |
@@ -51,7 +51,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.15` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.13` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.70` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.85` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.86` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.11` |
@@ -65,8 +65,8 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                          | Version   |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.8`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.21`  |
-| Share                 | `src/gateways/share/`         | `1.7.39`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.22`  |
+| Share                 | `src/gateways/share/`         | `1.7.41`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.18`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.9`   |
 | Social                | `src/gateways/social/`        | `1.2.15`  |
