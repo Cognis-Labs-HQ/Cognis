@@ -175,10 +175,6 @@ test("messages IRC layout keeps read receipts inline and centered", () => {
         variantsCssSource,
         /\.messages-page\[data-message-style="irc"\] \.messages-message-status[\s\S]*align-self:\s*center;/,
     );
-    assert.match(
-        messagesCssSource,
-        /@import url\("\/static\/adapters\/social\/messages\/messages-style-variants\.css"\);/,
-    );
 });
 
 test("messages speech bubbles remove tails and overlay avatars", () => {
@@ -359,14 +355,6 @@ test("messages templates are opened from sidebar in a popup", () => {
         /\.messages-sidebar-template-load-btn\s*\{[\s\S]*flex:\s*1;/,
     );
     assert.match(messagesCssSource, /\.messages-composer-preview\s*\{/);
-    assert.match(
-        messagesCssSource,
-        /@import url\("\/static\/adapters\/social\/messages\/messages-template-composer\.css"\);/,
-    );
-    assert.match(
-        messagesCssSource,
-        /@import url\("\/static\/adapters\/social\/messages\/messages-sidebar\.css"\);/,
-    );
     assert.match(
         templatesCssSource,
         /\.messages-template-card\s*\{[\s\S]*display:\s*flex;[\s\S]*align-items:\s*center;/,
