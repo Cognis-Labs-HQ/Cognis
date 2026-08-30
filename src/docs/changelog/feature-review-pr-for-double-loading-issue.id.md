@@ -6,4 +6,4 @@ Halaman Modul kini menggunakan pelindung pemasangan halaman langsung bersama. Me
 
 ## Gaya halaman diisolasi selama navigasi
 
-Router dasbor kini menghapus gaya halaman sebelumnya sebelum memasang halaman tujuan. Dengan demikian, navigasi dari Rapat ke Pesan tidak memungkinkan gaya khusus rapat mengubah tata letak Pesan saat sedang dibangun.
+Router dasbor kini mengenali gaya milik rute dari pemuatan halaman langsung dan menghapus gaya halaman sebelumnya sebelum memasang halaman tujuan. Dengan demikian, navigasi dari Rapat ke Pesan tidak meninggalkan aturan tombol khusus rapat yang mengubah bilah sisi penyusun halaman.

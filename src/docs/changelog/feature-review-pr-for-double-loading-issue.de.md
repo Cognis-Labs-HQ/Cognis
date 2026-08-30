@@ -6,4 +6,4 @@ Die Modulseite verwendet jetzt die gemeinsame Schutzfunktion für direkte Seiten
 
 ## Seitenstile werden bei der Navigation isoliert
 
-Der Dashboard-Router entfernt jetzt die Stile der vorherigen Seite, bevor die Zielseite eingebunden wird. Beim Wechsel von Meetings zu Nachrichten können meeting-spezifische Stile daher das Layout der Nachrichtenseite während des Aufbaus nicht mehr verzerren.
+Der Dashboard-Router erkennt jetzt seiteneigene Stile aus direkten Seitenaufrufen und entfernt die Stile der vorherigen Seite, bevor die Zielseite eingebunden wird. Beim Wechsel von Meetings zu Nachrichten bleiben dadurch keine meeting-spezifischen Schaltflächenregeln zurück, die Seitenleisten des Seiten-Composers verzerren.
