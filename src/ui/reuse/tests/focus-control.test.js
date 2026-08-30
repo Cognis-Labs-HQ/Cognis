@@ -69,11 +69,35 @@ test("rejects executable state, HTML state, invalid modes, and undeclared loader
 });
 
 test("accepts picture-in-picture presentation for persistent meeting panes", () => {
+    const [meeting] = normalizeFocusManifest({
+        focusControl: {
+            ...surface("meeting"),
+            modes: ["pip"],
+            minSize: { width: 320, height: 180 },
+        },
+    });
+    assert.deepEqual(meeting.minSize, { width: 320, height: 180 });
+});
+
+test("rejects invalid or non-PiP minimum size metadata", () => {
     assert.equal(
         normalizeFocusManifest({
-            focusControl: { ...surface("meeting"), modes: ["pip"] },
+            focusControl: {
+                ...surface("meeting"),
+                modes: ["pip"],
+                minSize: { width: 0, height: 180 },
+            },
         }).length,
-        1,
+        0,
+    );
+    assert.equal(
+        normalizeFocusManifest({
+            focusControl: {
+                ...surface("overlay"),
+                minSize: { width: 320, height: 180 },
+            },
+        }).length,
+        0,
     );
 });
 
