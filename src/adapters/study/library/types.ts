@@ -13,6 +13,22 @@ export const LIBRARY_LAYERS = [
 export type LibraryLayer = (typeof LIBRARY_LAYERS)[number];
 export type LibraryScope = "global" | "class" | "user";
 
+export interface LibraryLayerLink {
+    layer: LibraryLayer;
+    relation: string;
+    required?: boolean;
+}
+
+export interface LibraryLayerTemplate {
+    id: LibraryLayer;
+    links: readonly LibraryLayerLink[];
+}
+
+export interface LibraryTemplate {
+    id: string;
+    layers: readonly LibraryLayerTemplate[];
+}
+
 export interface LibraryReferenceInput {
     entryId: string;
     relation?: string;

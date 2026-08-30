@@ -2,11 +2,15 @@
 
 ## Purpose
 
-The Library adapter stores reusable, traceable learning and activity materials in the database. Every entry belongs to a fixed layer and to a global, class, or user scope. Empty layers are omitted by the UI, but the layer catalogue itself cannot be changed.
+The Library adapter stores reusable, traceable learning and activity materials in the database. Every entry belongs to a known layer and to a global, class, or user scope. Empty layers are omitted by the UI.
 
 ## Standard layers
 
 The ordered layers are `alphabet`, `alt_characters`, `definitions`, `words`, `sentences`, `exercises`, `workouts`, `routines`, and `collections`. Alphabet and definition entries are roots. Higher layers reference only meaningful lower building blocks: words use writing units and definitions; sentences use words and definitions; exercises use language material; workouts use exercises; routines use exercises or workouts; and collections can group any non-collection layer.
+
+## Consumer templates
+
+Consumers obtain the adapter through the `study:library` ctx capability and call `cloneTemplate` with the exact layers they need. A language can therefore request only `alphabet`, `alt_characters`, `definitions`, `words`, and `sentences`, without inheriting activity layers. The clone preserves canonical ordering, includes only links whose two ends were requested, rejects duplicate or unknown layers, and identifies required links. Word and sentence creation can infer links from normalized characters and whitespace-delimited words while explicit references remain authoritative.
 
 ## Access control
 

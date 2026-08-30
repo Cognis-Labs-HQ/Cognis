@@ -1,6 +1,7 @@
 import type { AccessRole } from "@cognis/core";
 import {
-    allowedReferenceLayers,
+    cloneLibraryTemplate,
+    inferReferenceLinks,
     isLibraryLayer,
     validateReferenceLayers,
 } from "./layers.js";
@@ -10,6 +11,8 @@ import type {
     LibraryEntryInput,
     LibraryLocation,
     LibraryPushRequest,
+    LibraryLayer,
+    LibraryTemplate,
 } from "./types.js";
 
 export interface LibraryActor {
@@ -32,6 +35,7 @@ export interface LibraryClassAccess {
 
 export interface LibraryCapability {
     readonly layers: readonly string[];
+    cloneTemplate(includedLayers: readonly LibraryLayer[]): LibraryTemplate;
     list(
         actor: LibraryActor,
         location: LibraryLocation,
@@ -94,6 +98,10 @@ export class LibraryService implements LibraryCapability {
         private readonly store: LibraryStore,
         private readonly classAccess?: LibraryClassAccess,
     ) {}
+
+    cloneTemplate(includedLayers: readonly LibraryLayer[]): LibraryTemplate {
+        return cloneLibraryTemplate(includedLayers);
+    }
 
     private async authorize(
         actor: LibraryActor,
@@ -193,7 +201,16 @@ export class LibraryService implements LibraryCapability {
             }
         }
         if (input.layer === "sentences" && references.length === 0) {
-            throw new Error("references_required");
+            const candidates = new Map<
+                LibraryLayer,
+                readonly { id: string; label: string }[]
+            >();
+            for (const layer of ["words", "definitions"] as const) {
+                candidates.set(layer, await this.store.list(location, layer));
+            }
+            references.push(
+                ...inferReferenceLinks(input.layer, input.label, candidates),
+            );
         }
         const referencedLayers = new Map();
         for (const reference of references) {

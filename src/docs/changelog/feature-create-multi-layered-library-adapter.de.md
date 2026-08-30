@@ -11,3 +11,7 @@ Globale, klassenbezogene und private Benutzerbereiche besitzen rollen- und mitgl
 ## Import, Export und Oberfläche
 
 Die Bibliothek ist über ctx und authentifizierte APIs verfügbar, einschließlich validiertem globalem JSON-Import, JSON- und Anki-Export, Unicode-Wortzerlegung, Tiefenverfolgung und einer Study-Seite für alle Benutzer.
+
+## Auswählbare Vorlagen
+
+Sprach- und Aktivitätsmodule können nur die benötigten Ebenen der kanonischen Vorlage kopieren. Ebenenbezogene Metadaten erhalten gültige Beziehungen, kennzeichnen Pflichtabhängigkeiten und leiten Verknüpfungen von Zeichen zu Wörtern sowie von Wörtern zu Sätzen ab.

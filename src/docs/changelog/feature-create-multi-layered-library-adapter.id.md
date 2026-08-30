@@ -11,3 +11,7 @@ Cakupan global, kelas, dan pengguna privat memiliki kontrol akses berdasarkan pe
 ## Impor, ekspor, dan UI
 
 Pustaka tersedia melalui ctx dan API terautentikasi, termasuk impor JSON global tervalidasi, ekspor JSON dan Anki, penguraian kata Unicode, penelusuran mendalam, serta halaman Study untuk semua pengguna.
+
+## Templat yang dapat dipilih
+
+Modul bahasa dan aktivitas dapat menyalin hanya lapisan templat baku yang diperlukan. Metadata tautan antarlapisan mempertahankan hubungan yang sah, menandai ketergantungan wajib, serta menyimpulkan tautan karakter ke kata dan kata ke kalimat.
