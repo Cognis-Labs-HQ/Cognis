@@ -173,14 +173,4 @@ test("SPA route cleanup preserves shell-owned stylesheets", () => {
         /link\[data-page-stylesheet=["']true["']\]\[href\]/,
         "direct-load route styles must join SPA stylesheet cleanup",
     );
-    assert.match(
-        pageStyles,
-        /ensurePageStylesheet\(href, \{ routeOwned = false \} = \{\}\)/,
-        "capability styles must remain mounted unless a route explicitly owns them",
-    );
-    assert.match(
-        pageStyles,
-        /ensurePageStylesheet\(href, \{ routeOwned: true \}\)/,
-        "route bundles must explicitly opt into navigation cleanup",
-    );
 });

@@ -590,7 +590,6 @@ async function loadRoute(path) {
             const routeRoot = resolveRouterRoot();
             if (!routeRoot) return false;
             commitPageStylesheets();
-            routeRoot.removeAttribute("class");
             await mod.mount(routeRoot, {
                 signal,
                 shareContext: session?.shareContext ?? null,

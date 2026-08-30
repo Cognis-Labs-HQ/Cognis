@@ -6,7 +6,7 @@
  * called. This module provides a single utility for that purpose.
  *
  * Public exports:
- *   ensurePageStylesheet(href, options) — injects a <link rel="stylesheet"> for
+ *   ensurePageStylesheet(href) — injects a <link rel="stylesheet"> for
  *                                href if not already present, and returns
  *                                a Promise that resolves once the sheet is
  *                                ready (load event) or has already loaded.
@@ -27,7 +27,6 @@
  *   ]);
  *
  * @param {string} href — absolute URL of the stylesheet to inject.
- * @param {{ routeOwned?: boolean }} [options] — whether SPA navigation owns and removes the stylesheet.
  * @returns {Promise<void>} resolves when the stylesheet is ready.
  */
 
@@ -47,12 +46,12 @@ function registerInitialPageStylesheets() {
     }
 }
 
-export function ensurePageStylesheet(href, { routeOwned = false } = {}) {
+export function ensurePageStylesheet(href) {
+    if (_pending.has(href)) return _pending.get(href);
+
     const existing = document.head.querySelector(
         `link[rel="stylesheet"][href="${href}"]`,
     );
-    if (routeOwned && existing) existing.dataset.pageStylesheet = "true";
-    if (_pending.has(href)) return _pending.get(href);
     if (existing) {
         const ready = existing.sheet
             ? Promise.resolve()
@@ -66,7 +65,7 @@ export function ensurePageStylesheet(href, { routeOwned = false } = {}) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = href;
-    if (routeOwned) link.dataset.pageStylesheet = "true";
+    link.dataset.pageStylesheet = "true";
     const ready = new Promise((resolve) => {
         link.addEventListener("load", resolve, { once: true });
         link.addEventListener("error", (err) => {
@@ -95,9 +94,7 @@ export async function preparePageStylesheets(hrefs) {
         hrefs.map((href) => new URL(href, window.location.origin).pathname),
     );
     destinationStylesheets.forEach((href) => _managedPageStylesheets.add(href));
-    await Promise.all(
-        hrefs.map((href) => ensurePageStylesheet(href, { routeOwned: true })),
-    );
+    await Promise.all(hrefs.map(ensurePageStylesheet));
     return () => {
         for (const staleStylesheet of _managedPageStylesheets) {
             if (destinationStylesheets.has(staleStylesheet)) continue;
