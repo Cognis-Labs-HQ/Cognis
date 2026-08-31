@@ -18,7 +18,16 @@ Die Profil-Verfügbarkeitsstile bleiben jetzt als Stile der Dashboard-Shell gela
 
 Die Größenänderungsgriffe schwebender Fenster starten nicht mehr gleichzeitig die darunterliegende Verschiebegeste. Der Größenänderungszustand wird außerdem bei Loslassen, Abbruch oder verlorenem Pointer-Capture beendet, sodass Mausbewegungen eine abgeschlossene Größenänderung nicht fortsetzen.
 
+## Kontext im Freigabe-Popup maskieren
+
+Werte für Antragsteller, Aktion und Ziel werden nun HTML-maskiert, bevor sie im Dashboard einer genehmigenden Person dargestellt werden.
+
+## Freigabe-Orchestrierung als Flow bereitstellen
+
+Die Share-Freigabefähigkeit führt nun einen benannten Flow mit expliziten Stufen für Zielauflösung, Antragserstellung, Warten auf Antworten und Entscheidung aus, sodass Komponenten entfernbare Hooks einfügen können.
+
 ## Implementierungsänderungen
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ebef6ab4
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/da3dc593
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/1452294f
