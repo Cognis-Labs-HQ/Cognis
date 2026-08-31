@@ -50,7 +50,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.16`   |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.15`   |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.13`   |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.70`   |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.71`   |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.0.88`   |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34`   |
 | User Share            | `src/adapters/share/user/`          | `1.1.19`   |
@@ -65,7 +65,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.8`    |
 | Authentication (auth) | `src/gateways/auth/`          | `1.9.22`   |
-| Share                 | `src/gateways/share/`         | `1.7.41`   |
+| Share                 | `src/gateways/share/`         | `1.7.45`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.18`   |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.9`    |
 | Social                | `src/gateways/social/`        | `1.2.15`   |

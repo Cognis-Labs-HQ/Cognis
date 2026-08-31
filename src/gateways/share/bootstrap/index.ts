@@ -13,6 +13,11 @@ import { ShareApprovalRequestStore } from "../gateway/approval-request-store.js"
 import { CoreShareGateway } from "../gateway/index.js";
 import { ShareAdapterConfigStore } from "../gateway/adapter-config-store.js";
 import { registerShareBootstrapHooks } from "./flow-registrations.js";
+import {
+    registerShareApprovalFlow,
+    requestShareApproval,
+    type ShareApprovalInput,
+} from "./approval.js";
 import { createShareRoutes } from "./routes.js";
 import {
     hasShareCapability,
@@ -238,6 +243,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "share:listPendingApprovalsForAccount",
         gateway.listPendingApprovalsForAccount.bind(gateway),
     );
+    registerShareApprovalFlow({ ctx, gateway });
+    ctx.capabilities.contribute(
+        "share:requestApproval",
+        (request: ShareApprovalInput) => requestShareApproval({ ctx, request }),
+    );
 
     await registerShareBootstrapHooks({ ctx, gateway });
 
@@ -317,7 +327,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.7.33",
+        version: "1.7.45",
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
     });

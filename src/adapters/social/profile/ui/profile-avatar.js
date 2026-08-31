@@ -53,7 +53,7 @@
 
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
+import { ensurePersistentStylesheet } from "/static/reuse/page-styles.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
     availabilityIndicatorMarkup,
@@ -62,7 +62,7 @@ import {
 
 const unavailableAvatarKeys = new Set();
 const avatarBlobUrlCache = new Map();
-const availabilityStylesReady = ensurePageStylesheet(
+const availabilityStylesReady = ensurePersistentStylesheet(
     "/static/adapters/social/profile/availability.css",
 );
 

@@ -280,6 +280,7 @@ export function makeFloatingWindow(
     };
     const startDragging = (event) => {
         if (event.button !== undefined && event.button !== 0) return;
+        if (event.target?.closest?.(".floating-window-resize-handle")) return;
         if (event.target?.closest?.("button, a, input, select, textarea"))
             return;
         const rect = element.getBoundingClientRect();
@@ -342,11 +343,24 @@ export function makeFloatingWindow(
             return;
         resizeDrag = null;
     };
+    window.addEventListener("pointerup", stopDragging, {
+        signal: controller.signal,
+    });
+    window.addEventListener("pointercancel", stopDragging, {
+        signal: controller.signal,
+    });
+    window.addEventListener("pointerup", stopResizing, {
+        signal: controller.signal,
+    });
+    window.addEventListener("pointercancel", stopResizing, {
+        signal: controller.signal,
+    });
     for (const resizeHandle of chrome.resizeHandles) {
         resizeHandle.addEventListener(
             "pointerdown",
             (event) => {
                 if (event.button !== undefined && event.button !== 0) return;
+                drag = null;
                 const rect = element.getBoundingClientRect();
                 resizeDrag = {
                     edge: resizeHandle.dataset.resizeEdge,
@@ -359,6 +373,7 @@ export function makeFloatingWindow(
                     height: rect.height,
                 };
                 resizeHandle.setPointerCapture?.(event.pointerId);
+                event.stopPropagation?.();
                 event.preventDefault?.();
             },
             { signal: controller.signal },
@@ -368,6 +383,7 @@ export function makeFloatingWindow(
             (event) => {
                 if (!resizeDrag || event.pointerId !== resizeDrag.pointerId)
                     return;
+                event.stopPropagation?.();
                 const boundary = getBoundary();
                 const deltaX = event.clientX - resizeDrag.x;
                 const deltaY = event.clientY - resizeDrag.y;
@@ -425,6 +441,9 @@ export function makeFloatingWindow(
             signal: controller.signal,
         });
         resizeHandle.addEventListener("pointercancel", stopResizing, {
+            signal: controller.signal,
+        });
+        resizeHandle.addEventListener("lostpointercapture", stopResizing, {
             signal: controller.signal,
         });
     }

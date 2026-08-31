@@ -12,7 +12,8 @@
   <string name="share.error.expired">この共有項目は現在利用できません。</string>
   <string name="share.error.renderer_missing">この共有項目は現在表示できません。</string>
   <string name="share.approval.title">共有リンクのリクエスト</string>
-  <string name="share.approval.message">%requester%さんが「%resource%」の共有リンク作成をリクエストしました。</string>
+  <string name="share.approval.message">%requester%さんが「%target%」に対する「%action%」をリクエストしました。</string>
+  <string name="share.approval.default_action">共有リンクを作成すること</string>
   <string name="share.approval.approve">承認</string>
   <string name="share.approval.decline">拒否</string>
   <string name="share.unlock.title">共有アイテムのロックを解除</string>

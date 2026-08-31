@@ -889,6 +889,8 @@ export function createShareRoutes(input: {
                     resourceType: request.resourceType,
                     resourceId: request.resourceId,
                     requesterDisplayName: request.requesterDisplayName,
+                    action: request.approvalAction,
+                    target: request.approvalTarget,
                     createdAt: request.createdAt,
                     expiresAt: request.expiresAt,
                 })),
