@@ -19,6 +19,7 @@ import {
 } from "./access-resolution.js";
 
 const MAX_GUEST_TOKEN_TTL_SECONDS = 4 * 60 * 60;
+import { requestShareApproval } from "./approval.js";
 
 export async function registerShareBootstrapHooks(input: {
     ctx: GatewayBootstrapContext;
@@ -94,9 +95,6 @@ export async function registerShareBootstrapHooks(input: {
         }),
     );
 
-    const APPROVAL_TIMEOUT_SECONDS = 60;
-    const APPROVAL_POLL_INTERVAL_MS = 1_000;
-
     input.ctx.flow.extend(
         "prepare-share-method",
         "prepare-method",
@@ -159,73 +157,15 @@ export async function registerShareBootstrapHooks(input: {
                 authorizeResult.ownerAccountId ??
                 resourceResult.ownerAccountId ??
                 "";
-            if (!stageCtx.ctx.flow.exists("resolve-share-approval-targets")) {
-                return { approved: true, requiresApproval: false };
-            }
-            const targetsResult = await stageCtx.ctx.flow.run(
-                "resolve-share-approval-targets",
-                {
-                    resourceType: resourceResult.resourceType,
-                    resourceId: resourceResult.resourceId,
+            return requestShareApproval({
+                ctx: input.ctx,
+                gateway: input.gateway,
+                request: {
+                    resourceType: String(resourceResult.resourceType ?? ""),
+                    resourceId: String(resourceResult.resourceId ?? ""),
                     requesterAccountId,
                 },
-            );
-            const resolvedTargets = (targetsResult.stageResults[
-                "resolve-targets"
-            ] ?? [])[0] as {
-                targetAccountIds?: string[];
-                requesterDisplayName?: string;
-            } | null;
-            const targetAccountIds = Array.from(
-                new Set(
-                    (resolvedTargets?.targetAccountIds ?? [])
-                        .map((accountId) => String(accountId ?? "").trim())
-                        .filter(
-                            (accountId) =>
-                                Boolean(accountId) &&
-                                accountId !== requesterAccountId,
-                        ),
-                ),
-            );
-            if (targetAccountIds.length === 0) {
-                return { approved: true, requiresApproval: false };
-            }
-            const { mintRequestId } =
-                await input.gateway.createApprovalRequestBatch({
-                    resourceType: resourceResult.resourceType ?? "",
-                    resourceId: resourceResult.resourceId ?? "",
-                    requesterAccountId,
-                    requesterDisplayName: String(
-                        resolvedTargets?.requesterDisplayName ??
-                            requesterAccountId,
-                    ),
-                    targetAccountIds,
-                    ttlSeconds: APPROVAL_TIMEOUT_SECONDS,
-                });
-            const deadline = Date.now() + APPROVAL_TIMEOUT_SECONDS * 1000;
-            let summary =
-                await input.gateway.resolveApprovalStatus(mintRequestId);
-            while (!summary.allResponded && Date.now() < deadline) {
-                await new Promise((resolve) =>
-                    setTimeout(resolve, APPROVAL_POLL_INTERVAL_MS),
-                );
-                summary =
-                    await input.gateway.resolveApprovalStatus(mintRequestId);
-            }
-            if (!summary.allResponded) {
-                // Timeout fallback block: resolveApprovalStatus auto-approves
-                // pending rows on its next call, so query once more.
-                summary =
-                    await input.gateway.resolveApprovalStatus(mintRequestId);
-            }
-            if (summary.anyDeclined) {
-                return {
-                    approved: false,
-                    requiresApproval: true,
-                    reason: "share_approval_declined",
-                };
-            }
-            return { approved: true, requiresApproval: true };
+            });
         },
     );
 

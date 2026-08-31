@@ -13,6 +13,7 @@ import { ShareApprovalRequestStore } from "../gateway/approval-request-store.js"
 import { CoreShareGateway } from "../gateway/index.js";
 import { ShareAdapterConfigStore } from "../gateway/adapter-config-store.js";
 import { registerShareBootstrapHooks } from "./flow-registrations.js";
+import { requestShareApproval, type ShareApprovalInput } from "./approval.js";
 import { createShareRoutes } from "./routes.js";
 import {
     hasShareCapability,
@@ -237,6 +238,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute(
         "share:listPendingApprovalsForAccount",
         gateway.listPendingApprovalsForAccount.bind(gateway),
+    );
+    ctx.capabilities.contribute(
+        "share:requestApproval",
+        (request: ShareApprovalInput) =>
+            requestShareApproval({ ctx, gateway, request }),
     );
 
     await registerShareBootstrapHooks({ ctx, gateway });
