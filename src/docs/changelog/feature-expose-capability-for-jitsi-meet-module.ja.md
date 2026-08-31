@@ -10,8 +10,13 @@ Share ゲートウェイは、承認リクエストのオーケストレーシ�
 
 Capability の呼び出し元は、名前付きミーティングへの参加者追加など、承認する操作と対象を指定できます。省略した場合は、従来どおり共有リンク作成を操作、リソース種別を対象として使用します。
 
+## 画面遷移後も在席表示を維持
+
+プロフィールの在席表示スタイルをルート所有ではなくダッシュボードシェルのスタイルとして保持するようにしました。Jitsi Meet から移動しても、ナビゲーションのアバターやほかのプロフィール画面から在席ランプが消えません。
+
 ## 実装コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/b7c97f73
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/48c243e6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/5e28efff
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/d1c9f348

@@ -10,8 +10,13 @@ Das Share-Gateway stellt seine Genehmigungsanfrage jetzt als Capability `share:r
 
 Capability-Aufrufer können eine Genehmigungsaktion und ein Ziel angeben, etwa das Hinzufügen eines Teilnehmenden zu einer benannten Besprechung. Ohne diese Angaben verwenden Dialoge weiterhin die bisherige Freigabelink-Aktion und den Ressourcentyp als Ziel.
 
+## Präsenzanzeigen bleiben beim Navigieren erhalten
+
+Die Profil-Verfügbarkeitsstile bleiben jetzt als Stile der Dashboard-Shell geladen statt einer Route zu gehören. Beim Verlassen von Jitsi Meet verschwinden Präsenzanzeigen daher nicht mehr aus Navigationsavataren oder anderen Profilbereichen.
+
 ## Implementierungsänderungen
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/b7c97f73
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/48c243e6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/5e28efff
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/d1c9f348

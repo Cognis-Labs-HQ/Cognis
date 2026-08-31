@@ -50,7 +50,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.16` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.15` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.13` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.70` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.71` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.0.88` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |

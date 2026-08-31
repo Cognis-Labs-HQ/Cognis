@@ -10,8 +10,13 @@ The Share gateway now exposes its approval request orchestration as the `share:r
 
 Capability callers can provide an approval action and target, such as adding a participant to a named meeting. When omitted, prompts retain the existing share-link action and resource-type target.
 
+## Presence lights survive navigation
+
+Profile availability styling is now retained as dashboard-shell styling instead of route-owned styling, so leaving Jitsi Meet no longer removes presence lights from navigation avatars or other profile surfaces.
+
 ## Implementation commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/b7c97f73
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/48c243e6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/5e28efff
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/d1c9f348
