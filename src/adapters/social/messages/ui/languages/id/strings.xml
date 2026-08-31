@@ -78,4 +78,5 @@
   <string name="adapter.social.messages.keyring_request_action_open">membuka</string>
   <string name="adapter.social.messages.keyring_request_action_save">menyimpan kunci enkripsi untuk</string>
   <string name="adapter.social.messages.keyring_request_process">chat {{roomId}}</string>
+  <string name="module.social.messages.start_video_call">Mulai panggilan video</string>
 </resources>

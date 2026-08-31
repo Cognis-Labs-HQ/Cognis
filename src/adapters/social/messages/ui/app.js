@@ -48,6 +48,7 @@ import { resolveMessageTemplateVariables } from "./message-templates.js";
 import { loadChatRoomKey, requireChatRoomKey } from "./chat-loading.js";
 import { createMessagesRoomState } from "./room-state.js";
 import { renderRoomList } from "./room-render.js";
+import { hasVoipProvider, startRoomCall } from "./voip.js";
 
 const profileAvatars = () => {
     const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
@@ -160,6 +161,8 @@ export async function mount(root, { signal } = {}) {
                 composerInputRef?.dispatchEvent(new Event("input"));
             }
         },
+        onStartCall: (room) => startRoomCall(room, currentAccountId),
+        showCallAction: hasVoipProvider(),
     });
 
     let pageReady = false;

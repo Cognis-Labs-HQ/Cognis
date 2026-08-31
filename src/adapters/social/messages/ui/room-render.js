@@ -179,7 +179,12 @@ function renderRoomAvatar(room, currentAccountId) {
     });
 }
 
-export function renderThreadHeader(room, currentAccountId, i18n) {
+export function renderThreadHeader(
+    room,
+    currentAccountId,
+    i18n,
+    { showCallAction = false } = {},
+) {
     if (!room) return "";
     const members = room.members ?? [];
     const currentMember = members.find(
@@ -199,6 +204,13 @@ export function renderThreadHeader(room, currentAccountId, i18n) {
         ${renderMemberCountControl(room, members, i18n)}
       </div>
       <div class="messages-thread-actions">
+        ${
+            showCallAction && ["dm", "group"].includes(room.kind)
+                ? `<button id="messages-room-call-btn" class="messages-room-call-btn btn-confirm" type="button" title="${escapeHtml(i18n.t("module.social.messages.start_video_call"))}" aria-label="${escapeHtml(i18n.t("module.social.messages.start_video_call"))}">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 8.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-2.5l5 3.5a1 1 0 0 0 1.57-.82V6.82A1 1 0 0 0 20 6l-5 3.5Z"/></svg>
+          </button>`
+                : ""
+        }
         ${canSetAvatar ? `<label class="messages-room-avatar-btn">${escapeHtml(i18n.t("module.social.messages.set_avatar"))}<input id="messages-room-avatar-input" type="file" accept="image/*" hidden /></label>` : ""}
         ${
             leaveHandle

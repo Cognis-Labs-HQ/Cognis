@@ -105,6 +105,19 @@
     white-space: nowrap;
 }
 
+.messages-room-call-btn {
+    align-items: center;
+    display: inline-flex;
+    justify-content: center;
+    padding: 0.45rem;
+}
+
+.messages-room-call-btn svg {
+    fill: currentColor;
+    height: 1.15rem;
+    width: 1.15rem;
+}
+
 .messages-member-summary-list {
     list-style: none;
     margin: 0;

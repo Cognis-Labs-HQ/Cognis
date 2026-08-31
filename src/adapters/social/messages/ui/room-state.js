@@ -40,6 +40,8 @@ export function createMessagesRoomState({
     requireRoomKey,
     resolveThreadRoomKey,
     onRoomOpened = async () => {},
+    onStartCall = async () => {},
+    showCallAction = false,
     lastOpenedRoomKey = "messages:last-opened-room",
     typingTtlSeconds = 8,
     typingIdleResetMs = 5000,
@@ -243,6 +245,7 @@ export function createMessagesRoomState({
                 room,
                 currentAccountId,
                 i18n,
+                { showCallAction },
             );
             void hydrateProfileAvatars(headerSlot);
             bindRoomHeaderEvents();
@@ -633,6 +636,12 @@ export function createMessagesRoomState({
     }
 
     function bindRoomHeaderEvents() {
+        const callButton = document.getElementById("messages-room-call-btn");
+        callButton?.addEventListener("click", async () => {
+            const selectedRoom = getSelectedRoom();
+            if (selectedRoom) await onStartCall(selectedRoom);
+        });
+
         const input = document.getElementById("messages-room-avatar-input");
         input?.addEventListener("change", async () => {
             const file = input.files?.[0];

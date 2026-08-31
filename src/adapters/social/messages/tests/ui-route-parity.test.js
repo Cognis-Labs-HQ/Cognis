@@ -126,3 +126,22 @@ test("social messages route definitions are referenced by UI callers", () => {
         `Unused social messages route definitions found:\n${unusedDefinitions.join("\n")}`,
     );
 });
+
+const ROOM_RENDER_SOURCE = readFileSync(
+    resolve(ROOT, "src/adapters/social/messages/ui/room-render.js"),
+    "utf8",
+);
+const VOIP_SOURCE = readFileSync(
+    resolve(ROOT, "src/adapters/social/messages/ui/voip.js"),
+    "utf8",
+);
+
+test("messages offers provider-neutral VoIP calling only when supplied", () => {
+    assert.match(VOIP_SOURCE, /VOIP_PROVIDER_CAPABILITY = "voip:startCall"/);
+    assert.match(VOIP_SOURCE, /uiCtx\.registerFlow\(FLOW_ID/);
+    assert.match(VOIP_SOURCE, /presentation: "pip"/);
+    assert.match(VOIP_SOURCE, /room\.members/);
+    assert.match(ROOM_RENDER_SOURCE, /showCallAction && \["dm", "group"\]/);
+    assert.match(ROOM_RENDER_SOURCE, /messages-room-call-btn btn-confirm/);
+    assert.match(ROOM_RENDER_SOURCE, /<svg viewBox="0 0 24 24"/);
+});
