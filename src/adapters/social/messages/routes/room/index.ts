@@ -9,9 +9,14 @@ import {
     summarizeRoomRequest,
     type MessagesRoutesDeps,
 } from "../shared.js";
+import { createChatroomMembershipCapability } from "../../membership.js";
 
 export function createRoomHandler(deps: MessagesRoutesDeps) {
     const { messagesStore, profileStore, dispatch, flow } = deps;
+    const membership = createChatroomMembershipCapability(
+        messagesStore,
+        profileStore,
+    );
     const ctx = resolveRouteContext(deps.routeContext);
 
     return async (
@@ -723,13 +728,10 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 );
                 return true;
             }
-            await messagesStore.addMemberWithEvent({
+            await membership.add({
                 roomId,
-                actorId: accountId,
-                accountId: target.accountId,
-                role: "member",
-                handle: target.handle,
-                displayName: target.displayName,
+                actorAccountId: accountId,
+                userAccountId: target.accountId,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));
@@ -764,12 +766,10 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 );
                 return true;
             }
-            await messagesStore.removeMemberWithEvent({
+            await membership.remove({
                 roomId,
-                actorId: accountId,
-                accountId: target.accountId,
-                handle: target.handle,
-                displayName: target.displayName,
+                actorAccountId: accountId,
+                userAccountId: target.accountId,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));

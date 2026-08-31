@@ -96,3 +96,14 @@ Profile が存在しない、または失敗した場合、Messages はその Ca
 | `GET`    | `/api/v1/gateways/social/adapters`             | 登録済みアダプター一覧 | Admin |
 | `POST`   | `/api/v1/gateways/social/adapters/:id/enable`  | アダプターを有効化     | Admin |
 | `POST`   | `/api/v1/gateways/social/adapters/:id/disable` | アダプターを無効化     | Admin |
+
+## メンバーシップ変更の標準
+
+ソーシャルコンポーネントのコレクション操作では、`POST` でユーザーを追加し、`DELETE` で削除します。HTTP 境界では複数形の名詞とハンドルを使い、`ctx` Capability 内では正規のアカウント ID を使います。両操作は冪等です。成功は `200`、不正入力は `400`、対象なしは `404`、権限拒否は `403` を返します。
+
+| 関係                   | 追加                                                                                   | 削除                                                           | `ctx` Capability                                                                                          |
+| ---------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| チャットルームメンバー | `{ "handle": "user" }` を指定する `POST /api/v1/social/messages/rooms/:roomId/members` | `DELETE /api/v1/social/messages/rooms/:roomId/members/:handle` | `social:messages:membership` の `add({ roomId, actorAccountId, userAccountId })` と対応する `remove(...)` |
+| プロフィールフォロワー | `POST /api/v1/social/users/:handle/followers`                                          | `DELETE /api/v1/social/users/:handle/followers`                | `social:profile:followers` の `add({ followerAccountId, followedAccountId })` と対応する `remove(...)`    |
+
+HTTP ルートは実行者を認証・認可します。Capability は信頼されたサーバー間インターフェースであり、呼び出し元は事前に権限を持ち、実行者を明示する必要があります。実装を直接 import せず `ctx.capabilities` から取得します。従来の単数形パス `/follow` は互換エイリアスとして維持されます。

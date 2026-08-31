@@ -7,6 +7,7 @@ import { DbUserPreferenceStore } from "./preference-store.js";
 import { createProfileRoutes } from "./routes/index.js";
 import { registerProfileMediaFlowHooks } from "./routes/media-flow-hooks.js";
 import { createSocialRoutes } from "./routes/social.js";
+import { createFollowersCapability } from "./followers.js";
 import { createPostRoutes } from "./routes/posts.js";
 import { createPreferencesRoutes } from "./routes/preferences.js";
 import {
@@ -238,6 +239,10 @@ export async function bootstrapSocialAdapter(
      * peer adapters and modules.
      */
     ctx.capabilities.contribute("social:profileStore", profileStore);
+    ctx.capabilities.contribute(
+        "social:profile:followers",
+        createFollowersCapability(profileStore),
+    );
     ctx.capabilities.contribute("social:getAvailabilityStatuses", () => [
         ...AVAILABILITY_STATUSES,
     ]);

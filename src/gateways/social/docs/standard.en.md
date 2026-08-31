@@ -94,3 +94,14 @@ Defined in `src/gateways/social/gateway.ts` and passed to every adapter:
 | `GET`  | `/api/v1/gateways/social/adapters`             | List registered adapters | Admin |
 | `POST` | `/api/v1/gateways/social/adapters/:id/enable`  | Mark adapter active      | Admin |
 | `POST` | `/api/v1/gateways/social/adapters/:id/disable` | Mark adapter inactive    | Admin |
+
+## Membership mutation standard
+
+Social components expose collection membership with the same two verbs: `POST` adds a user and `DELETE` removes a user. Use a plural collection noun, make both operations idempotent, identify users by handle at the HTTP boundary, and use canonical account IDs inside `ctx` capabilities. Successful mutations return `200`; malformed input, missing resources, and denied operations return `400`, `404`, and `403` respectively.
+
+| Relationship     | Add                                                                              | Remove                                                         | `ctx` capability                                                                                              |
+| ---------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Chatroom member  | `POST /api/v1/social/messages/rooms/:roomId/members` with `{ "handle": "user" }` | `DELETE /api/v1/social/messages/rooms/:roomId/members/:handle` | `social:messages:membership` with `add({ roomId, actorAccountId, userAccountId })` and matching `remove(...)` |
+| Profile follower | `POST /api/v1/social/users/:handle/followers`                                    | `DELETE /api/v1/social/users/:handle/followers`                | `social:profile:followers` with `add({ followerAccountId, followedAccountId })` and matching `remove(...)`    |
+
+HTTP routes authenticate and authorize the acting user. Capabilities are the trusted server-to-server surface: callers must already have authority to act, and must always supply the actor explicitly. Consumers obtain capabilities from `ctx.capabilities`; they never import an adapter store or implementation. The legacy singular profile path, `/follow`, remains a compatible alias.

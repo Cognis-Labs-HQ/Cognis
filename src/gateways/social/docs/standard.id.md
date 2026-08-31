@@ -98,3 +98,14 @@ adapter:
 | `GET`  | `/api/v1/gateways/social/adapters`             | Daftar adapter terdaftar | Admin |
 | `POST` | `/api/v1/gateways/social/adapters/:id/enable`  | Tandai adapter aktif     | Admin |
 | `POST` | `/api/v1/gateways/social/adapters/:id/disable` | Tandai adapter nonaktif  | Admin |
+
+## Standar perubahan keanggotaan
+
+Komponen sosial memakai dua verba yang sama untuk keanggotaan koleksi: `POST` menambahkan pengguna dan `DELETE` menghapusnya. Gunakan nomina koleksi jamak, handle pada batas HTTP, serta ID akun kanonis dalam kapabilitas `ctx`. Kedua operasi harus idempoten. Perubahan berhasil mengembalikan `200`, masukan salah `400`, sumber daya yang tidak ada `404`, dan penolakan `403`.
+
+| Relasi                | Tambah                                                                             | Hapus                                                          | Kapabilitas `ctx`                                                                                                   |
+| --------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Anggota ruang obrolan | `POST /api/v1/social/messages/rooms/:roomId/members` dengan `{ "handle": "user" }` | `DELETE /api/v1/social/messages/rooms/:roomId/members/:handle` | `social:messages:membership` dengan `add({ roomId, actorAccountId, userAccountId })` dan `remove(...)` yang sepadan |
+| Pengikut profil       | `POST /api/v1/social/users/:handle/followers`                                      | `DELETE /api/v1/social/users/:handle/followers`                | `social:profile:followers` dengan `add({ followerAccountId, followedAccountId })` dan `remove(...)` yang sepadan    |
+
+Rute HTTP mengautentikasi dan mengotorisasi pelaku. Kapabilitas merupakan permukaan antarpeladen tepercaya: pemanggil harus sudah berwenang dan selalu menyertakan pelaku secara eksplisit. Konsumen mendapatkannya hanya dari `ctx.capabilities`. Jalur tunggal lama `/follow` tetap tersedia sebagai alias.

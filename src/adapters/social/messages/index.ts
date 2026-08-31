@@ -19,6 +19,7 @@ import {
     registerCanonicalFlow,
 } from "@cognis/core";
 import type { Ctx } from "@cognis/core";
+import { createChatroomMembershipCapability } from "./membership.js";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -113,6 +114,11 @@ export async function bootstrapSocialAdapter(
 
     const messagesStore = new DbMessagesStore(dbExecutor);
     await messagesStore.ensureSchema();
+    const membership = createChatroomMembershipCapability(
+        messagesStore,
+        profileStore,
+    );
+    ctx.capabilities.contribute("social:messages:membership", membership);
 
     type ExternalRoomAuthorizer = (input: {
         claims: { sub: string; role: string };

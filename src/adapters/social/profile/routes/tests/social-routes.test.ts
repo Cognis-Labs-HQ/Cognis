@@ -96,6 +96,31 @@ test("social routes - follow and unfollow", async () => {
     }
 });
 
+test("social routes - plural followers path follows and unfollows", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const profileStore = await setupUsers(executor, "alice", "bob");
+        await profileStore.updateProfile("alice", { visibility: "community" });
+        await profileStore.updateProfile("bob", { visibility: "community" });
+        const route = createSocialRoutes(profileStore);
+        const token = issueAccessToken("alice", "user", 60);
+        const response = {
+            writeHead() {},
+            end() {},
+        } as any;
+        const url = new URL(
+            "http://localhost/api/v1/social/users/bob/followers",
+        );
+
+        await route(makeReq("POST", token), response, url);
+        assert.equal(await profileStore.isFollowing("alice", "bob"), true);
+        await route(makeReq("DELETE", token), response, url);
+        assert.equal(await profileStore.isFollowing("alice", "bob"), false);
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
+
 test("social routes - follow recreates a missing requester profile", async () => {
     const { dir, executor } = makeTempDb();
     try {
