@@ -14,9 +14,11 @@ Capability callers can provide an approval action and target, such as adding a p
 
 Profile availability styling is now retained as dashboard-shell styling instead of route-owned styling, so leaving Jitsi Meet no longer removes presence lights from navigation avatars or other profile surfaces.
 
+## PiP resizing remains responsive
+
+Floating-window resize handles no longer start the move gesture underneath them. Resize state is also cleared on pointer release, cancellation, or lost capture, preventing hover movement from continuing a finished resize.
+
 ## Implementation commit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/b7c97f73
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/48c243e6
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/5e28efff
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/d1c9f348
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ebef6ab4
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/da3dc593

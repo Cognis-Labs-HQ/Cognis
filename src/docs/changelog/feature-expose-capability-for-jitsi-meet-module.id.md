@@ -14,9 +14,11 @@ Pemanggil kapabilitas dapat menentukan tindakan persetujuan dan target, misalnya
 
 Gaya ketersediaan profil kini dipertahankan sebagai gaya shell dasbor, bukan gaya milik rute. Karena itu, meninggalkan Jitsi Meet tidak lagi menghapus lampu kehadiran dari avatar navigasi atau permukaan profil lainnya.
 
+## Pengubahan ukuran PiP tetap responsif
+
+Pegangan pengubahan ukuran jendela mengambang tidak lagi memulai gerakan pemindahan di bawahnya. Status pengubahan ukuran juga dibersihkan saat penunjuk dilepas, dibatalkan, atau kehilangan tangkapan sehingga gerakan hover tidak melanjutkan pengubahan ukuran yang telah selesai.
+
 ## Komit implementasi
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/b7c97f73
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/48c243e6
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/5e28efff
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/d1c9f348
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ebef6ab4
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/da3dc593

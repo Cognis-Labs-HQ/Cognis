@@ -14,9 +14,11 @@ Capability-Aufrufer können eine Genehmigungsaktion und ein Ziel angeben, etwa d
 
 Die Profil-Verfügbarkeitsstile bleiben jetzt als Stile der Dashboard-Shell geladen statt einer Route zu gehören. Beim Verlassen von Jitsi Meet verschwinden Präsenzanzeigen daher nicht mehr aus Navigationsavataren oder anderen Profilbereichen.
 
+## PiP-Größenänderung bleibt zuverlässig
+
+Die Größenänderungsgriffe schwebender Fenster starten nicht mehr gleichzeitig die darunterliegende Verschiebegeste. Der Größenänderungszustand wird außerdem bei Loslassen, Abbruch oder verlorenem Pointer-Capture beendet, sodass Mausbewegungen eine abgeschlossene Größenänderung nicht fortsetzen.
+
 ## Implementierungsänderungen
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/b7c97f73
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/48c243e6
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/5e28efff
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/d1c9f348
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ebef6ab4
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/da3dc593

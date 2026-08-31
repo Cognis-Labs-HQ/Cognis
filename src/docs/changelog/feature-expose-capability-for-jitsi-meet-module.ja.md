@@ -14,9 +14,11 @@ Capability の呼び出し元は、名前付きミーティングへの参加者
 
 プロフィールの在席表示スタイルをルート所有ではなくダッシュボードシェルのスタイルとして保持するようにしました。Jitsi Meet から移動しても、ナビゲーションのアバターやほかのプロフィール画面から在席ランプが消えません。
 
+## PiP のサイズ変更を安定化
+
+フローティングウィンドウのサイズ変更ハンドルが背後の移動操作を同時に開始しないようにしました。また、ポインターの解放、キャンセル、キャプチャ喪失時にサイズ変更状態を終了し、操作後のホバーでサイズ変更が続く問題を防ぎます。
+
 ## 実装コミット
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/b7c97f73
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/48c243e6
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/5e28efff
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/d1c9f348
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ebef6ab4
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/da3dc593
