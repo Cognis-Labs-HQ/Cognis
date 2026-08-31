@@ -159,7 +159,6 @@ export async function registerShareBootstrapHooks(input: {
                 "";
             return requestShareApproval({
                 ctx: input.ctx,
-                gateway: input.gateway,
                 request: {
                     resourceType: String(resourceResult.resourceType ?? ""),
                     resourceId: String(resourceResult.resourceId ?? ""),

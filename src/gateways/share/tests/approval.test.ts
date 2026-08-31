@@ -5,17 +5,26 @@ import {
     registerCanonicalFlow,
     SHARE_FLOW_CATALOG,
 } from "@cognis/core";
-import { requestShareApproval } from "../bootstrap/approval.js";
+import {
+    registerShareApprovalFlow,
+    requestShareApproval,
+} from "../bootstrap/approval.js";
 import type { GatewayBootstrapContext } from "../../shared.js";
 import type { CoreShareGateway } from "../gateway/index.js";
 
 test("share approval accepts the requester display name used by Jitsi Meet", async () => {
-    const ctx = createCtx();
+    const systemCtx = createCtx();
+    const ctx = {
+        flow: systemCtx.flow,
+        capabilities: {
+            get: (id: string) => (id === "system:ctx" ? systemCtx : undefined),
+        },
+    } as unknown as GatewayBootstrapContext;
     const approvalFlow = SHARE_FLOW_CATALOG.find(
         (flow) => flow.id === "resolve-share-approval-targets",
     );
     assert.ok(approvalFlow);
-    registerCanonicalFlow(ctx, approvalFlow);
+    registerCanonicalFlow(systemCtx, approvalFlow);
     ctx.flow.extend(
         "resolve-share-approval-targets",
         "resolve-targets",
@@ -33,9 +42,12 @@ test("share approval accepts the requester display name used by Jitsi Meet", asy
         },
     };
 
-    const result = await requestShareApproval({
-        ctx: ctx as unknown as GatewayBootstrapContext,
+    registerShareApprovalFlow({
+        ctx,
         gateway: gateway as unknown as CoreShareGateway,
+    });
+    const result = await requestShareApproval({
+        ctx,
         request: {
             resourceType: "meeting",
             resourceId: "meeting-1",
@@ -54,12 +66,18 @@ test("share approval accepts the requester display name used by Jitsi Meet", asy
 });
 
 test("share approval retains the share-link popup defaults", async () => {
-    const ctx = createCtx();
+    const systemCtx = createCtx();
+    const ctx = {
+        flow: systemCtx.flow,
+        capabilities: {
+            get: (id: string) => (id === "system:ctx" ? systemCtx : undefined),
+        },
+    } as unknown as GatewayBootstrapContext;
     const approvalFlow = SHARE_FLOW_CATALOG.find(
         (flow) => flow.id === "resolve-share-approval-targets",
     );
     assert.ok(approvalFlow);
-    registerCanonicalFlow(ctx, approvalFlow);
+    registerCanonicalFlow(systemCtx, approvalFlow);
     ctx.flow.extend(
         "resolve-share-approval-targets",
         "resolve-targets",
@@ -77,9 +95,12 @@ test("share approval retains the share-link popup defaults", async () => {
         },
     };
 
-    await requestShareApproval({
-        ctx: ctx as unknown as GatewayBootstrapContext,
+    registerShareApprovalFlow({
+        ctx,
         gateway: gateway as unknown as CoreShareGateway,
+    });
+    await requestShareApproval({
+        ctx,
         request: {
             resourceType: "meeting",
             resourceId: "meeting-1",

@@ -26,3 +26,15 @@ test("approval popup message uses localized defaults", () => {
         'Alice has requested to create a share link for "meeting".',
     );
 });
+
+test("approval popup message escapes contextual HTML", () => {
+    assert.equal(
+        formatApprovalMessage("%requester%: %action% %target%", {
+            requesterDisplayName: '<img src=x onerror="alert(1)">',
+            action: "share & invite",
+            target: "'Weekly' <meeting>",
+        }),
+        "&lt;img src=x onerror=&quot;alert(1)&quot;&gt;: " +
+            "share &amp; invite &#039;Weekly&#039; &lt;meeting&gt;",
+    );
+});
