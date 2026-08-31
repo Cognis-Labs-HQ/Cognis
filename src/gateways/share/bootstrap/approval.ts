@@ -9,6 +9,8 @@ export interface ShareApprovalInput {
     resourceId: string;
     requesterAccountId: string;
     requesterDisplayName?: string;
+    action?: string;
+    target?: string;
 }
 
 export interface ShareApprovalResult {
@@ -55,6 +57,10 @@ export async function requestShareApproval(input: {
                 input.request.requesterDisplayName ??
                 input.request.requesterAccountId,
         ),
+        approvalAction: String(input.request.action ?? "").trim(),
+        approvalTarget:
+            String(input.request.target ?? "").trim() ||
+            input.request.resourceType,
         targetAccountIds,
         ttlSeconds: APPROVAL_TIMEOUT_SECONDS,
     });

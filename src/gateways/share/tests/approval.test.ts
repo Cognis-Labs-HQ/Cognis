@@ -41,10 +41,52 @@ test("share approval accepts the requester display name used by Jitsi Meet", asy
             resourceId: "meeting-1",
             requesterAccountId: "alice-account",
             requesterDisplayName: "Alice",
+            action: "add a participant",
+            target: "Weekly meeting",
         },
     });
 
     assert.deepEqual(result, { approved: true, requiresApproval: true });
     assert.equal(approvalRequest?.requesterDisplayName, "Alice");
+    assert.equal(approvalRequest?.approvalAction, "add a participant");
+    assert.equal(approvalRequest?.approvalTarget, "Weekly meeting");
     assert.deepEqual(approvalRequest?.targetAccountIds, ["bob"]);
+});
+
+test("share approval retains the share-link popup defaults", async () => {
+    const ctx = createCtx();
+    const approvalFlow = SHARE_FLOW_CATALOG.find(
+        (flow) => flow.id === "resolve-share-approval-targets",
+    );
+    assert.ok(approvalFlow);
+    registerCanonicalFlow(ctx, approvalFlow);
+    ctx.flow.extend(
+        "resolve-share-approval-targets",
+        "resolve-targets",
+        { id: "test:default-copy-target" },
+        () => ({ targetAccountIds: ["bob"] }),
+    );
+    let approvalRequest: Record<string, unknown> | null = null;
+    const gateway = {
+        async createApprovalRequestBatch(input: Record<string, unknown>) {
+            approvalRequest = input;
+            return { mintRequestId: "approval-2", rows: [] };
+        },
+        async resolveApprovalStatus() {
+            return { allResponded: true, anyDeclined: false };
+        },
+    };
+
+    await requestShareApproval({
+        ctx: ctx as unknown as GatewayBootstrapContext,
+        gateway: gateway as unknown as CoreShareGateway,
+        request: {
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+            requesterAccountId: "alice-account",
+        },
+    });
+
+    assert.equal(approvalRequest?.approvalAction, "");
+    assert.equal(approvalRequest?.approvalTarget, "meeting");
 });

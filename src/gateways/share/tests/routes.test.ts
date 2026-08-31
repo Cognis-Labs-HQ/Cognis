@@ -269,6 +269,8 @@ test("share bootstrap registers gateway routes and serves share html", async () 
             resourceId: string;
             requesterAccountId: string;
             requesterDisplayName?: string;
+            action?: string;
+            target?: string;
         }) => Promise<{ approved: boolean; requiresApproval: boolean }>
     >("share:requestApproval");
     assert.equal(typeof requestApproval, "function");

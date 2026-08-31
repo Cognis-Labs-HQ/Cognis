@@ -12,7 +12,8 @@
   <string name="share.error.expired">This shared item is no longer available.</string>
   <string name="share.error.renderer_missing">This shared item cannot be displayed right now.</string>
   <string name="share.approval.title">Share Link Request</string>
-  <string name="share.approval.message">%requester% has requested to create a share link for "%resource%".</string>
+  <string name="share.approval.message">%requester% has requested to %action% for "%target%".</string>
+  <string name="share.approval.default_action">create a share link</string>
   <string name="share.approval.approve">Approve</string>
   <string name="share.approval.decline">Decline</string>
   <string name="share.unlock.title">Unlock Shared Item</string>

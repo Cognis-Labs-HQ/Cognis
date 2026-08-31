@@ -2,6 +2,7 @@ import { createI18n } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { isViewingAsGuest } from "./reuse/share-button.js";
+import { formatApprovalMessage } from "./approval-message.js";
 
 /**
  * Share gateway navbar plugin: polls for pending share-link creation
@@ -62,10 +63,14 @@ async function showApprovalPopup(approval, i18n) {
     isPopupOpen = true;
     shownApprovalIds.add(approval.id);
     try {
-        const message = i18n
-            .t("share.approval.message")
-            .replace("%requester%", approval.requesterDisplayName || "")
-            .replace("%resource%", approval.resourceType || "");
+        const message = formatApprovalMessage(
+            i18n.t("share.approval.message"),
+            approval,
+            {
+                action: i18n.t("share.approval.default_action"),
+                target: approval.resourceType || "",
+            },
+        );
         const result = await openPopup({
             title: i18n.t("share.approval.title"),
             body: message,
