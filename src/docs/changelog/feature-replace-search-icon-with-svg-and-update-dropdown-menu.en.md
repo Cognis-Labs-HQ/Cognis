@@ -10,7 +10,12 @@ The global search control now uses a larger, crisp SVG icon with dedicated light
 
 The account avatar button displays its active state while the user dropdown menu is open, and the menu persistently highlights the link for the current page.
 
+## Complete changelog guidance
+
+The contributor and AI instructions now explicitly require localized feature-branch metadata and a final commit-link section, matching the repository's enforced changelog format.
+
 ## Commits
 
 - [76d78c2](https://github.com/Cognis-Labs-HQ/Cognis/commit/76d78c25eccda985bf18c81e4c8c05e807d44c38)
 - [c3a06c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3a06c8624046512362c1a8341bd4639305506c0)
+- [18c3f6b](https://github.com/Cognis-Labs-HQ/Cognis/commit/18c3f6b5bec6c9885a098c610fa67eeba946addc)

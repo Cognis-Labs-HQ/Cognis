@@ -10,7 +10,12 @@
 
 ユーザーのドロップダウンメニューが開いている間はアカウントのアバターボタンにアクティブ状態が表示され、メニュー内では現在のページへのリンクが常に強調表示されるようになりました。
 
+## 完全な Changelog ガイダンス
+
+コントリビューターおよび AI 向けの指示に、ローカライズされた機能ブランチのメタデータと、最後のコミットリンク欄が必須であることを明記し、リポジトリで検証される Changelog 形式と一致させました。
+
 ## コミット
 
 - [76d78c2](https://github.com/Cognis-Labs-HQ/Cognis/commit/76d78c25eccda985bf18c81e4c8c05e807d44c38)
 - [c3a06c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3a06c8624046512362c1a8341bd4639305506c0)
+- [18c3f6b](https://github.com/Cognis-Labs-HQ/Cognis/commit/18c3f6b5bec6c9885a098c610fa67eeba946addc)

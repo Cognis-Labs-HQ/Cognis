@@ -70,3 +70,15 @@ test("changelogs identify their feature branch and commits", () => {
     });
     assert.deepEqual(violations, []);
 });
+
+test("AI instructions document the complete changelog structure", () => {
+    for (const path of [
+        resolve(ROOT, "AGENTS.md"),
+        resolve(ROOT, ".github/copilot-instructions.md"),
+    ]) {
+        const instructions = readFileSync(path, "utf8");
+        assert.match(instructions, /`\*\*Feature Branch:\*\* \.\.\.`/);
+        assert.match(instructions, /`## Commits`/);
+        assert.match(instructions, /bookkeeping metadata/);
+    }
+});
