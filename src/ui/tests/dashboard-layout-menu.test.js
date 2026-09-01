@@ -45,6 +45,31 @@ test("layout CSS restores [hidden] visibility inside .dropdown", () => {
     );
 });
 
+test("profile menu toggle is active while its dropdown is open", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+
+    assert.match(layoutSource, /toggle\?\.classList\.add\("active"\)/);
+    assert.match(layoutSource, /toggle\?\.classList\.remove\("active"\)/);
+});
+
+test("global search toggle uses theme-specific SVG assets", () => {
+    const popupSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
+        "utf8",
+    );
+    const searchCss = readFileSync(
+        resolve(ROOT, "src/ui/styles/reuse/search-bar.css"),
+        "utf8",
+    );
+
+    assert.match(popupSource, /search-bar-toggle-icon/);
+    assert.match(searchCss, /search-light\.svg/);
+    assert.match(searchCss, /search-dark\.svg/);
+});
+
 test("dashboard footer renders license and changelogs links", () => {
     const template = readFileSync(
         resolve(ROOT, "src/ui/public/templates/dashboard-layout.html"),

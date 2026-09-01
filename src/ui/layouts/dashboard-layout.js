@@ -240,12 +240,14 @@ function bindTopbarActions() {
     const openMenu = () => {
         dropdown?.classList.remove("hidden");
         profileMenu?.classList.add("open");
+        toggle?.classList.add("active");
         toggle?.setAttribute("aria-expanded", "true");
     };
 
     const closeMenu = () => {
         dropdown?.classList.add("hidden");
         profileMenu?.classList.remove("open");
+        toggle?.classList.remove("active");
         toggle?.setAttribute("aria-expanded", "false");
     };
 
