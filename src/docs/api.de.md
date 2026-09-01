@@ -141,11 +141,11 @@ Der Token-Ablauf wird durch `COGNIS_ACCESS_TOKEN_TTL_SECONDS` gesteuert (Standar
 
 | Methode  | Pfad                                     | Beschreibung                                      | Auth   |
 | -------- | ---------------------------------------- | ------------------------------------------------- | ------ |
-| `POST`   | `/api/v1/social/users/:handle/followers` | Benutzer folgen                                   | Bearer |
-| `DELETE` | `/api/v1/social/users/:handle/followers` | Entfolgen                                         | Bearer |
+| `POST`   | `/api/v1/social/users/:handle/follow`    | Benutzer folgen                                   | Bearer |
+| `DELETE` | `/api/v1/social/users/:handle/follow`    | Entfolgen                                         | Bearer |
 | `POST`   | `/api/v1/social/users/:handle/block`     | Benutzer blockieren                               | Bearer |
 | `DELETE` | `/api/v1/social/users/:handle/block`     | Blockierung aufheben                              | Bearer |
-| `GET`    | `/api/v1/social/users/:handle/followers` | Follower-Liste (durch Sichtbarkeit eingeschränkt) | Bearer |
+| `GET`    | `/api/v1/social/users/:handle/follow`    | Follower-Liste (durch Sichtbarkeit eingeschränkt) | Bearer |
 | `GET`    | `/api/v1/social/users/:handle/following` | Folge-Liste (durch Sichtbarkeit eingeschränkt)    | Bearer |
 
 ### Beiträge

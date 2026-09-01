@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createFollowersCapability } from "../followers.js";
+import { createFollowersCapability } from "../follow-membership.js";
 
 test("followers capability exposes matching add/remove operations", async () => {
     const calls: string[] = [];

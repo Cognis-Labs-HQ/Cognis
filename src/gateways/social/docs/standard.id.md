@@ -101,12 +101,12 @@ adapter:
 
 ## Standar perubahan keanggotaan
 
-Komponen sosial memakai dua verba yang sama untuk keanggotaan koleksi: `POST` menambahkan pengguna dan `DELETE` menghapusnya. Gunakan nomina koleksi jamak, handle pada batas HTTP, serta ID akun kanonis dalam kapabilitas `ctx`. Kedua operasi harus idempoten. Perubahan berhasil mengembalikan `200`, masukan salah `400`, sumber daya yang tidak ada `404`, dan penolakan `403`.
+Komponen sosial memakai dua verba yang sama untuk perubahan keanggotaan: `POST` menambahkan pengguna dan `DELETE` menghapusnya. Gunakan path kanonis yang terdokumentasi untuk setiap relasi, handle pada batas HTTP, serta ID akun kanonis dalam kapabilitas `ctx`. Kedua operasi harus idempoten. Perubahan berhasil mengembalikan `200`, masukan salah `400`, sumber daya yang tidak ada `404`, dan penolakan `403`.
 
 | Relasi                | Tambah                                                                             | Hapus                                                          | Kapabilitas `ctx`                                                                                                   |
 | --------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | Anggota ruang obrolan | `POST /api/v1/social/messages/rooms/:roomId/members` dengan `{ "handle": "user" }` | `DELETE /api/v1/social/messages/rooms/:roomId/members/:handle` | `social:messages:membership` dengan `add({ roomId, actorAccountId, userAccountId })` dan `remove(...)` yang sepadan |
-| Pengikut profil       | `POST /api/v1/social/users/:handle/followers`                                      | `DELETE /api/v1/social/users/:handle/followers`                | `social:profile:followers` dengan `add({ followerAccountId, followedAccountId })` dan `remove(...)` yang sepadan    |
+| Pengikut profil       | `POST /api/v1/social/users/:handle/follow`                                         | `DELETE /api/v1/social/users/:handle/follow`                   | `social:profile:followers` dengan `add({ followerAccountId, followedAccountId })` dan `remove(...)` yang sepadan    |
 
 `add` adalah operasi idempoten untuk memastikan keanggotaan aktif dan juga membatalkan pengarsipan keanggotaan. Integrasi rapat harus memanggilnya setiap kali peserta bergabung sebelum memuat obrolan, sehingga pengguna yang sengaja keluar dari obrolan dapat bergabung kembali bersama rapat. Keluar dari obrolan tidak menghapus peserta dari rapat.
 

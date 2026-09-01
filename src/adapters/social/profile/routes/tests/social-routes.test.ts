@@ -53,7 +53,7 @@ test("social routes - follow and unfollow", async () => {
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/social/users/bob/followers"),
+            new URL("http://localhost/api/v1/social/users/bob/follow"),
         );
         assert.equal(status, 200);
         assert.match(body, /true/);
@@ -87,36 +87,10 @@ test("social routes - follow and unfollow", async () => {
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/social/users/bob/followers"),
+            new URL("http://localhost/api/v1/social/users/bob/follow"),
         );
         assert.equal(status, 200);
         assert.ok(!(await profileStore.isFollowing("alice", "bob")));
-    } finally {
-        rmSync(dir, { recursive: true, force: true });
-    }
-});
-
-test("social routes - singular and plural follower paths follow and unfollow", async () => {
-    const { dir, executor } = makeTempDb();
-    try {
-        const profileStore = await setupUsers(executor, "alice", "bob");
-        await profileStore.updateProfile("alice", { visibility: "community" });
-        await profileStore.updateProfile("bob", { visibility: "community" });
-        const route = createSocialRoutes(profileStore);
-        const token = issueAccessToken("alice", "user", 60);
-        const response = {
-            writeHead() {},
-            end() {},
-        } as any;
-        for (const endpoint of ["follow", "followers"]) {
-            const url = new URL(
-                `http://localhost/api/v1/social/users/bob/${endpoint}`,
-            );
-            await route(makeReq("POST", token), response, url);
-            assert.equal(await profileStore.isFollowing("alice", "bob"), true);
-            await route(makeReq("DELETE", token), response, url);
-            assert.equal(await profileStore.isFollowing("alice", "bob"), false);
-        }
     } finally {
         rmSync(dir, { recursive: true, force: true });
     }
@@ -150,7 +124,7 @@ test("social routes - follow recreates a missing requester profile", async () =>
                 },
                 end() {},
             } as any,
-            new URL("http://localhost/api/v1/social/users/bob/followers"),
+            new URL("http://localhost/api/v1/social/users/bob/follow"),
         );
 
         assert.equal(status, 200);
@@ -186,7 +160,7 @@ test("social routes - can unfollow inactive profile", async () => {
                 },
                 end() {},
             } as any,
-            new URL("http://localhost/api/v1/social/users/bob/followers"),
+            new URL("http://localhost/api/v1/social/users/bob/follow"),
         );
 
         assert.equal(status, 200);
@@ -213,7 +187,7 @@ test("social routes - cannot follow hidden user", async () => {
                 },
                 end() {},
             } as any,
-            new URL("http://localhost/api/v1/social/users/hidden/followers"),
+            new URL("http://localhost/api/v1/social/users/hidden/follow"),
         );
         assert.equal(status, 404);
     } finally {
@@ -242,7 +216,7 @@ test("social routes - hidden requester cannot follow visible user", async () => 
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/social/users/bob/followers"),
+            new URL("http://localhost/api/v1/social/users/bob/follow"),
         );
 
         assert.equal(status, 403);
@@ -269,7 +243,7 @@ test("social routes - cannot follow yourself", async () => {
                 },
                 end() {},
             } as any,
-            new URL("http://localhost/api/v1/social/users/alice/followers"),
+            new URL("http://localhost/api/v1/social/users/alice/follow"),
         );
         assert.equal(status, 400);
     } finally {
@@ -294,7 +268,7 @@ test("social routes - unauthenticated follow request returns 401", async () => {
                 },
                 end() {},
             } as any,
-            new URL("http://localhost/api/v1/social/users/bob/followers"),
+            new URL("http://localhost/api/v1/social/users/bob/follow"),
         );
         assert.equal(status, 401);
     } finally {
@@ -336,7 +310,7 @@ test("social routes - block removes follow and returns 404 for blocked user", as
                 },
                 end() {},
             } as any,
-            new URL("http://localhost/api/v1/social/users/alice/followers"),
+            new URL("http://localhost/api/v1/social/users/alice/follow"),
         );
         assert.equal(status, 404);
     } finally {
@@ -437,7 +411,7 @@ test("social routes - unblock removes block", async () => {
                 },
                 end() {},
             } as any,
-            new URL("http://localhost/api/v1/social/users/alice/followers"),
+            new URL("http://localhost/api/v1/social/users/alice/follow"),
         );
         assert.equal(status, 200);
     } finally {
@@ -475,7 +449,7 @@ test("social routes - get followers and following", async () => {
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/social/users/alice/followers"),
+            new URL("http://localhost/api/v1/social/users/alice/follow"),
         );
         assert.equal(status, 200);
         const parsed = JSON.parse(body);
@@ -530,7 +504,7 @@ test("social routes - followers list is empty for friends-visibility account whe
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/social/users/alice/followers"),
+            new URL("http://localhost/api/v1/social/users/alice/follow"),
         );
         assert.equal(status, 200);
         const parsed = JSON.parse(body);

@@ -7,7 +7,7 @@ import { DbUserPreferenceStore } from "./preference-store.js";
 import { createProfileRoutes } from "./routes/index.js";
 import { registerProfileMediaFlowHooks } from "./routes/media-flow-hooks.js";
 import { createSocialRoutes } from "./routes/social.js";
-import { createFollowersCapability } from "./followers.js";
+import { createFollowersCapability } from "./follow-membership.js";
 import { createPostRoutes } from "./routes/posts.js";
 import { createPreferencesRoutes } from "./routes/preferences.js";
 import {

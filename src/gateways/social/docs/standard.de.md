@@ -101,12 +101,12 @@ Definiert in `src/gateways/social/gateway.ts` und an jeden Adapter übergeben:
 
 ## Standard für Mitgliedschaftsänderungen
 
-Soziale Komponenten verwenden für Sammlungsmitgliedschaften dieselben zwei Verben: `POST` fügt einen Benutzer hinzu und `DELETE` entfernt ihn. Der HTTP-Pfad verwendet ein Substantiv im Plural und Handles; `ctx`-Capabilities verwenden kanonische Konto-IDs. Beide Operationen sind idempotent. Erfolgreiche Änderungen liefern `200`, ungültige Eingaben `400`, fehlende Ressourcen `404` und verweigerte Änderungen `403`.
+Soziale Komponenten verwenden für Mitgliedschaftsänderungen dieselben zwei Verben: `POST` fügt einen Benutzer hinzu und `DELETE` entfernt ihn. Jede Beziehung verwendet ihren dokumentierten kanonischen Pfad und Handles; `ctx`-Capabilities verwenden kanonische Konto-IDs. Beide Operationen sind idempotent. Erfolgreiche Änderungen liefern `200`, ungültige Eingaben `400`, fehlende Ressourcen `404` und verweigerte Änderungen `403`.
 
 | Beziehung         | Hinzufügen                                                                      | Entfernen                                                      | `ctx`-Capability                                                                                                   |
 | ----------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | Chatraum-Mitglied | `POST /api/v1/social/messages/rooms/:roomId/members` mit `{ "handle": "user" }` | `DELETE /api/v1/social/messages/rooms/:roomId/members/:handle` | `social:messages:membership` mit `add({ roomId, actorAccountId, userAccountId })` und entsprechendem `remove(...)` |
-| Profil-Follower   | `POST /api/v1/social/users/:handle/followers`                                   | `DELETE /api/v1/social/users/:handle/followers`                | `social:profile:followers` mit `add({ followerAccountId, followedAccountId })` und entsprechendem `remove(...)`    |
+| Profil-Follower   | `POST /api/v1/social/users/:handle/follow`                                      | `DELETE /api/v1/social/users/:handle/follow`                   | `social:profile:followers` mit `add({ followerAccountId, followedAccountId })` und entsprechendem `remove(...)`    |
 
 `add` ist eine idempotente Sicherstellung einer aktiven Mitgliedschaft und hebt auch eine Archivierung auf. Meeting-Integrationen müssen die Operation bei jedem Beitritt eines Teilnehmers vor dem Laden des Chats aufrufen. So kann ein Benutzer, der den Chat verlassen hat, mit dem Meeting erneut beitreten. Das Verlassen des Chats entfernt den Teilnehmer nicht aus dem Meeting.
 

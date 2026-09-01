@@ -62,7 +62,7 @@ The same predicate is exposed via the social gateway's
 whether to open a room immediately or send a message request.
 
 Block enforcement covers every entry point that touches another user:
-profile fetch, posts fetch, follow/followers, relationship endpoint, the
+profile fetch, posts fetch, follow/follow, relationship endpoint, the
 lookup endpoint above, and chatroom creation.
 
 ## Threat Model

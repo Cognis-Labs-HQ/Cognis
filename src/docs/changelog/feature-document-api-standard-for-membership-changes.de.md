@@ -16,9 +16,10 @@ Das Hinzufügen eines Chatraum-Mitglieds stellt nun auch eine archivierte Mitgli
 
 ## Review-Rückmeldungen umgesetzt
 
-Der bisherige Singular-Endpunkt `/follow` bleibt neben `/followers` für schrittweise Bereitstellungen und zwischengespeicherte Clients verfügbar. Die Capability für Profil-Follower wird jetzt sowohl über den Gateway-Speicher als auch über den System-`ctx` veröffentlicht, und das Social-Gateway meldet die Version aus seinem Manifest.
+Die Profil-Follow-Mitgliedschaft verwendet ausschließlich den kanonischen Endpunkt `/follow`. Die Capability für Profil-Follower wird sowohl über den Gateway-Speicher als auch über den System-`ctx` veröffentlicht, und das Social-Gateway meldet die Version aus seinem Manifest.
 
 ## Commits
 
 - [c9a478c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c9a478cfe93519e006eeb6098bc4023d9883b01b)
 - [614b5c54](https://github.com/Cognis-Labs-HQ/Cognis/commit/614b5c54)
+- [4568d5aa](https://github.com/Cognis-Labs-HQ/Cognis/commit/4568d5aa)

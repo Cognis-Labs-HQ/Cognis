@@ -16,9 +16,10 @@ Adding a chatroom member now also restores an archived membership. Meeting integ
 
 ## Review feedback addressed
 
-The legacy singular `/follow` endpoint remains available alongside `/followers` for rolling deployments and cached clients. The profile followers capability is now published through both the gateway store and system `ctx`, and the Social gateway reports the version from its manifest.
+Profile follow membership now uses only the canonical `/follow` endpoint. The profile followers capability is published through both the gateway store and system `ctx`, and the Social gateway reports the version from its manifest.
 
 ## Commits
 
 - [c9a478c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c9a478cfe93519e006eeb6098bc4023d9883b01b)
 - [614b5c54](https://github.com/Cognis-Labs-HQ/Cognis/commit/614b5c54)
+- [4568d5aa](https://github.com/Cognis-Labs-HQ/Cognis/commit/4568d5aa)

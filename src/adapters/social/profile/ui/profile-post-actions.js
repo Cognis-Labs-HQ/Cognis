@@ -124,7 +124,7 @@ export function createProfilePostActions({
         }
         try {
             const response = await apiFetch(
-                `/api/v1/social/users/${encodeURIComponent(handle)}/followers`,
+                `/api/v1/social/users/${encodeURIComponent(handle)}/follow`,
                 { method: isFollowingTarget ? "DELETE" : "POST" },
             );
 

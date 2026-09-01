@@ -2,7 +2,7 @@
     "id": "social",
     "uuid": "e8732526-8976-54ef-828b-ed0dfe21bd9e",
     "name": "Social Gateway",
-    "version": "1.3.3",
+    "version": "1.3.4",
     "required": false,
     "requires": [
         "5711a248-4ac9-5d44-98b5-b99bd4c6d722",

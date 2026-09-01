@@ -97,12 +97,12 @@ Defined in `src/gateways/social/gateway.ts` and passed to every adapter:
 
 ## Membership mutation standard
 
-Social components expose collection membership with the same two verbs: `POST` adds a user and `DELETE` removes a user. Use a plural collection noun, make both operations idempotent, identify users by handle at the HTTP boundary, and use canonical account IDs inside `ctx` capabilities. Successful mutations return `200`; malformed input, missing resources, and denied operations return `400`, `404`, and `403` respectively.
+Social components expose membership changes with the same two verbs: `POST` adds a user and `DELETE` removes a user. Use the documented canonical path for each relationship, make both operations idempotent, identify users by handle at the HTTP boundary, and use canonical account IDs inside `ctx` capabilities. Successful mutations return `200`; malformed input, missing resources, and denied operations return `400`, `404`, and `403` respectively.
 
 | Relationship     | Add                                                                              | Remove                                                         | `ctx` capability                                                                                              |
 | ---------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | Chatroom member  | `POST /api/v1/social/messages/rooms/:roomId/members` with `{ "handle": "user" }` | `DELETE /api/v1/social/messages/rooms/:roomId/members/:handle` | `social:messages:membership` with `add({ roomId, actorAccountId, userAccountId })` and matching `remove(...)` |
-| Profile follower | `POST /api/v1/social/users/:handle/followers`                                    | `DELETE /api/v1/social/users/:handle/followers`                | `social:profile:followers` with `add({ followerAccountId, followedAccountId })` and matching `remove(...)`    |
+| Profile follower | `POST /api/v1/social/users/:handle/follow`                                       | `DELETE /api/v1/social/users/:handle/follow`                   | `social:profile:followers` with `add({ followerAccountId, followedAccountId })` and matching `remove(...)`    |
 
 `add` is an idempotent ensure-active operation: it also clears an archived membership. Meeting integrations must call it for every participant join before loading chat, so a user who intentionally left the chat can rejoin it with the meeting. Leaving chat does not remove the participant from the meeting.
 
