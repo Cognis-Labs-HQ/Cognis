@@ -20,7 +20,7 @@ Penyegaran katalog Modul kini menampilkan roda kemajuan berputar standar, menceg
 
 ## Status navigasi persisten yang tepat
 
-Menu pengguna kini hanya menggarisbawahi tautan halaman saat ini yang paling spesifik, sehingga halaman Modul tidak lagi menandai Administrasi sebagai halaman saat ini juga. Stylesheet ikon pencarian dipertahankan oleh kerangka dasbor agar ikon tetap terlihat setelah navigasi SPA.
+Menu pengguna kini hanya menggarisbawahi tautan halaman saat ini yang paling spesifik, sehingga halaman Modul tidak lagi menandai Administrasi sebagai halaman saat ini juga. Garis bawah aktif mengesampingkan pengaturan ulang kontrol dasbor untuk tautan dan tombol. Stylesheet ikon pencarian dipertahankan oleh kerangka dasbor agar ikon tetap terlihat setelah navigasi SPA.
 
 ## Komit
 
@@ -29,3 +29,4 @@ Menu pengguna kini hanya menggarisbawahi tautan halaman saat ini yang paling spe
 - [18c3f6b](https://github.com/Cognis-Labs-HQ/Cognis/commit/18c3f6b5bec6c9885a098c610fa67eeba946addc)
 - [fb6b6db](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb6b6db813aa143f4d7998657d0a98b25fc063f9)
 - [09d7628](https://github.com/Cognis-Labs-HQ/Cognis/commit/09d7628cd763f70ddf69b5d3ad472c52eafeb828)
+- [73748b2](https://github.com/Cognis-Labs-HQ/Cognis/commit/73748b2353bf3edce96e39d31cdf2acde753f264)

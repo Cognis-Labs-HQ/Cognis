@@ -20,7 +20,7 @@ Modules カタログの更新中は標準の回転する進捗ホイールを表
 
 ## 正確で永続的なナビゲーション状態
 
-ユーザーメニューでは現在のページに最も固有なリンクだけに下線を表示するため、Modules ページで Administration まで同時に現在地として表示されなくなりました。検索アイコンのスタイルシートはダッシュボードシェルに保持され、SPA ナビゲーション後もアイコンが表示されます。
+ユーザーメニューでは現在のページに最も固有なリンクだけに下線を表示するため、Modules ページで Administration まで同時に現在地として表示されなくなりました。アクティブな下線は、リンクとボタンに対するダッシュボードコントロールのリセットより優先されます。検索アイコンのスタイルシートはダッシュボードシェルに保持され、SPA ナビゲーション後もアイコンが表示されます。
 
 ## コミット
 
@@ -29,3 +29,4 @@ Modules カタログの更新中は標準の回転する進捗ホイールを表
 - [18c3f6b](https://github.com/Cognis-Labs-HQ/Cognis/commit/18c3f6b5bec6c9885a098c610fa67eeba946addc)
 - [fb6b6db](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb6b6db813aa143f4d7998657d0a98b25fc063f9)
 - [09d7628](https://github.com/Cognis-Labs-HQ/Cognis/commit/09d7628cd763f70ddf69b5d3ad472c52eafeb828)
+- [73748b2](https://github.com/Cognis-Labs-HQ/Cognis/commit/73748b2353bf3edce96e39d31cdf2acde753f264)

@@ -20,7 +20,7 @@ Die Aktualisierung des Modulkatalogs zeigt nun das standardmäßige drehende For
 
 ## Präzise dauerhafte Navigationszustände
 
-Das Benutzermenü unterstreicht nun nur den spezifischsten Link der aktuellen Seite. Dadurch markiert die Modulseite nicht mehr gleichzeitig die Administration als aktuell. Das Stylesheet des Suchsymbols bleibt im Dashboard bestehen, sodass das Symbol auch nach SPA-Navigation sichtbar bleibt.
+Das Benutzermenü unterstreicht nun nur den spezifischsten Link der aktuellen Seite. Dadurch markiert die Modulseite nicht mehr gleichzeitig die Administration als aktuell. Die aktive Unterstreichung überschreibt das Zurücksetzen der Dashboard-Steuerelemente für Links und Schaltflächen. Das Stylesheet des Suchsymbols bleibt im Dashboard bestehen, sodass das Symbol auch nach SPA-Navigation sichtbar bleibt.
 
 ## Änderungen
 
@@ -29,3 +29,4 @@ Das Benutzermenü unterstreicht nun nur den spezifischsten Link der aktuellen Se
 - [18c3f6b](https://github.com/Cognis-Labs-HQ/Cognis/commit/18c3f6b5bec6c9885a098c610fa67eeba946addc)
 - [fb6b6db](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb6b6db813aa143f4d7998657d0a98b25fc063f9)
 - [09d7628](https://github.com/Cognis-Labs-HQ/Cognis/commit/09d7628cd763f70ddf69b5d3ad472c52eafeb828)
+- [73748b2](https://github.com/Cognis-Labs-HQ/Cognis/commit/73748b2353bf3edce96e39d31cdf2acde753f264)

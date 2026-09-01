@@ -20,7 +20,7 @@ The Modules catalog refresh now shows the standard spinning progress wheel, prev
 
 ## Precise persistent navigation states
 
-The user menu now underlines only the most specific current-page link, so Modules no longer also marks Administration as current. The search icon stylesheet is retained by the dashboard shell and remains visible after SPA navigation.
+The user menu now underlines only the most specific current-page link, so Modules no longer also marks Administration as current. The active underline overrides the dashboard control reset for both links and buttons. The search icon stylesheet is retained by the dashboard shell and remains visible after SPA navigation.
 
 ## Commits
 
@@ -29,3 +29,4 @@ The user menu now underlines only the most specific current-page link, so Module
 - [18c3f6b](https://github.com/Cognis-Labs-HQ/Cognis/commit/18c3f6b5bec6c9885a098c610fa67eeba946addc)
 - [fb6b6db](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb6b6db813aa143f4d7998657d0a98b25fc063f9)
 - [09d7628](https://github.com/Cognis-Labs-HQ/Cognis/commit/09d7628cd763f70ddf69b5d3ad472c52eafeb828)
+- [73748b2](https://github.com/Cognis-Labs-HQ/Cognis/commit/73748b2353bf3edce96e39d31cdf2acde753f264)

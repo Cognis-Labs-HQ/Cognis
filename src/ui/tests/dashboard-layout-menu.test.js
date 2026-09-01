@@ -74,11 +74,16 @@ test("profile menu keeps the current page link active", () => {
     );
     assert.match(
         layoutCss,
-        /\.dropdown-item\.active\s*{[^}]*border-bottom: 2px solid var\(--accent-2\)/,
+        /\.app-shell \.dropdown-item\.active\s*{[^}]*border-bottom: 2px solid var\(--accent-2\)/,
     );
     assert.doesNotMatch(
         layoutCss,
         /\.dropdown-item:focus-visible,\s*\.dropdown-item\.active/,
+    );
+    assert.ok(
+        layoutCss.indexOf(".app-shell .dropdown-item.active") <
+            layoutCss.indexOf(".app-shell .dropdown-item {"),
+        "the more-specific active selector must override the later control reset",
     );
 });
 

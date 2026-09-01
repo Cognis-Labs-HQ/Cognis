@@ -427,7 +427,7 @@
 .dropdown-item:focus-visible {
     transform: translateX(3px);
 }
-.dropdown-item.active {
+.app-shell .dropdown-item.active {
     border-bottom: 2px solid var(--accent-2);
     border-radius: 0;
 }
