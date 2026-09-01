@@ -4,6 +4,10 @@
 
 Anggota ruang obrolan dan pengikut profil kini memakai konvensi koleksi `POST`/`DELETE` yang terdokumentasi serta kapabilitas `ctx` yang sepadan untuk integrasi komponen tepercaya.
 
+## Kapabilitas keanggotaan diekspor ke modul
+
+Adaptor Messages kini menerbitkan keanggotaan ruang obrolan melalui `ctx` sistem dan penyimpanan kapabilitas gateway, sehingga modul eksternal seperti Jitsi Meet dapat menemukannya saat pengaktifan dan bootstrap.
+
 ## Commit
 
-- [6ad0c1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/6ad0c1a568da4e3b55893762df4a4d26b31ff3cc)
+- [a8b044c](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8b044c024072a91dc63741698588d762418d0b3)

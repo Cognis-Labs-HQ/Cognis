@@ -102,6 +102,18 @@ test("messages adapter ensures send-message flow before hook registration", () =
     assert.match(source, /failed to register send-message fan-out hook/);
 });
 
+test("messages membership is exported through the system ctx", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/index.ts"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /systemCtx\?\.contributeCapability\(\s*"social:messages:membership",\s*membership,?\s*\)/,
+    );
+});
+
 test("messages avatars fall back after failed image loads", () => {
     const appSource = readMessagesUiBundle();
     const sharedSource = readFileSync(

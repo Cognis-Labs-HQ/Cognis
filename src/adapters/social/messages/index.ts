@@ -119,6 +119,8 @@ export async function bootstrapSocialAdapter(
         profileStore,
     );
     ctx.capabilities.contribute("social:messages:membership", membership);
+    const systemCtx = ctx.capabilities.get<Ctx>(CTX_CAPABILITY);
+    systemCtx?.contributeCapability("social:messages:membership", membership);
 
     type ExternalRoomAuthorizer = (input: {
         claims: { sub: string; role: string };
@@ -407,7 +409,6 @@ export async function bootstrapSocialAdapter(
     );
 
     if (!ctx.flow.exists("send-message")) {
-        const systemCtx = ctx.capabilities.get<Ctx>(CTX_CAPABILITY);
         const sendMessageFlow = MESSAGING_FLOW_CATALOG.find(
             (flow) => flow.id === "send-message",
         );
