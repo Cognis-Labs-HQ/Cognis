@@ -603,7 +603,10 @@ export function createSearchBar({
     toggleBtn.type = "button";
     toggleBtn.className = "search-bar-toggle";
     toggleBtn.setAttribute("aria-label", ariaLabel);
-    toggleBtn.innerHTML = "&#128269;";
+    const toggleIcon = document.createElement("span");
+    toggleIcon.className = "search-bar-toggle-icon";
+    toggleIcon.setAttribute("aria-hidden", "true");
+    toggleBtn.appendChild(toggleIcon);
     wrapper.appendChild(toggleBtn);
     setActiveSearchToggleButton(toggleBtn);
     bindSearchShortcut();
