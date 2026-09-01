@@ -105,7 +105,7 @@ registering routes or contributing capabilities.
 | `DELETE` | `/api/v1/social/users/:handle/follow`    | Unfollow                  | Bearer |
 | `POST`   | `/api/v1/social/users/:handle/block`     | Block a user              | Bearer |
 | `DELETE` | `/api/v1/social/users/:handle/block`     | Unblock                   | Bearer |
-| `GET`    | `/api/v1/social/users/:handle/followers` | Follower list             | Bearer |
+| `GET`    | `/api/v1/social/users/:handle/follow`    | Follower list             | Bearer |
 | `GET`    | `/api/v1/social/users/:handle/following` | Following list            | Bearer |
 | `POST`   | `/api/v1/social/posts`                   | Create post               | Bearer |
 | `GET`    | `/api/v1/social/posts`                   | List own posts            | Bearer |

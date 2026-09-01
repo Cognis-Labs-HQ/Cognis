@@ -38,7 +38,7 @@ export async function loadFollowers(handle) {
     if (!handle) return [];
     try {
         const response = await apiFetch(
-            `/api/v1/social/users/${encodeURIComponent(handle)}/followers`,
+            `/api/v1/social/users/${encodeURIComponent(handle)}/follow`,
         );
         if (!response.ok) return [];
         return (await response.json()).data ?? [];

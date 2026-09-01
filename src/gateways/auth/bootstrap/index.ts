@@ -1,3 +1,4 @@
+import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { AccountInstanceStore } from "../account-instance-store.js";
 import { existsSync } from "node:fs";
@@ -136,6 +137,10 @@ export async function runAuthRouteBootstrapHooks(
 }
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const manifestVersion = await readGatewayManifestVersion(
+        import.meta.url,
+        "../manifest.json",
+    );
     const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
 
     const accountStore = await loadLocalAccountStore(dbExecutor, ctx.log);
@@ -414,7 +419,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.9.15",
+        version: manifestVersion,
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs HQ",
         required: true,

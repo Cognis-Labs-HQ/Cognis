@@ -2,7 +2,7 @@
     "id": "calendar",
     "uuid": "fafd6775-0d0c-5e36-a317-8fd16c40201a",
     "name": "Calendar Gateway",
-    "version": "1.4.106",
+    "version": "1.4.107",
     "required": false,
     "requires": [
         "a77dac5a-fe42-5bab-8036-54e319cf5313",

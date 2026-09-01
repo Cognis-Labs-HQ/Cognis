@@ -98,3 +98,16 @@ Definiert in `src/gateways/social/gateway.ts` und an jeden Adapter übergeben:
 | `GET`   | `/api/v1/gateways/social/adapters`             | Registrierte Adapter auflisten | Admin |
 | `POST`  | `/api/v1/gateways/social/adapters/:id/enable`  | Adapter aktiv markieren        | Admin |
 | `POST`  | `/api/v1/gateways/social/adapters/:id/disable` | Adapter inaktiv markieren      | Admin |
+
+## Standard für Mitgliedschaftsänderungen
+
+Soziale Komponenten verwenden für Mitgliedschaftsänderungen dieselben zwei Verben: `POST` fügt einen Benutzer hinzu und `DELETE` entfernt ihn. Jede Beziehung verwendet ihren dokumentierten kanonischen Pfad und Handles; `ctx`-Capabilities verwenden kanonische Konto-IDs. Beide Operationen sind idempotent. Erfolgreiche Änderungen liefern `200`, ungültige Eingaben `400`, fehlende Ressourcen `404` und verweigerte Änderungen `403`.
+
+| Beziehung         | Hinzufügen                                                                      | Entfernen                                                      | `ctx`-Capability                                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Chatraum-Mitglied | `POST /api/v1/social/messages/rooms/:roomId/members` mit `{ "handle": "user" }` | `DELETE /api/v1/social/messages/rooms/:roomId/members/:handle` | `social:messages:membership` mit `add({ roomId, actorAccountId, userAccountId })` und entsprechendem `remove(...)` |
+| Profil-Follower   | `POST /api/v1/social/users/:handle/follow`                                      | `DELETE /api/v1/social/users/:handle/follow`                   | `social:profile:followers` mit `add({ followerAccountId, followedAccountId })` und entsprechendem `remove(...)`    |
+
+`add` ist eine idempotente Sicherstellung einer aktiven Mitgliedschaft und hebt auch eine Archivierung auf. Meeting-Integrationen müssen die Operation bei jedem Beitritt eines Teilnehmers vor dem Laden des Chats aufrufen. So kann ein Benutzer, der den Chat verlassen hat, mit dem Meeting erneut beitreten. Das Verlassen des Chats entfernt den Teilnehmer nicht aus dem Meeting.
+
+HTTP-Routen authentifizieren und autorisieren den Handelnden. Capabilities sind die vertrauenswürdige Server-zu-Server-Oberfläche; Aufrufer müssen bereits berechtigt sein und den Handelnden ausdrücklich angeben. Sie werden nur über `ctx.capabilities` bezogen.

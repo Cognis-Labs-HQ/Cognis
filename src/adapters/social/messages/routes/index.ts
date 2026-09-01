@@ -14,6 +14,7 @@ import {
     type DispatchEnvelope,
     type MessagesRoutesDeps,
 } from "./shared.js";
+import { createChatroomMembershipCapability } from "../membership.js";
 
 export type {
     Dispatch,
@@ -36,10 +37,16 @@ export {
 
 export function createMessagesRoutes(deps: MessagesRoutesDeps) {
     const { messagesStore, profileStore, isAdapterEnabled } = deps;
+    const routeDeps = {
+        ...deps,
+        membership:
+            deps.membership ??
+            createChatroomMembershipCapability(messagesStore, profileStore),
+    };
     const ctx = resolveRouteContext(deps.routeContext);
-    const roomListHandler = createRoomListHandler(deps);
-    const requestsHandler = createRequestsHandler(deps);
-    const roomHandler = createRoomHandler(deps);
+    const roomListHandler = createRoomListHandler(routeDeps);
+    const requestsHandler = createRequestsHandler(routeDeps);
+    const roomHandler = createRoomHandler(routeDeps);
 
     return async (
         req: IncomingMessage,

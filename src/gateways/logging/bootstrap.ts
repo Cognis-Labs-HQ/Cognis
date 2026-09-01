@@ -1,3 +1,4 @@
+import { readGatewayManifestVersion } from "../reuse/manifest-version.js";
 import { open, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -561,6 +562,10 @@ function createLoggingAdapterRoutes(
  * before logging bootstraps.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const manifestVersion = await readGatewayManifestVersion(
+        import.meta.url,
+        "./manifest.json",
+    );
     const log = ctx.log;
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
@@ -683,7 +688,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "logging",
         name: "Logging Gateway",
-        version: "1.5.11",
+        version: manifestVersion,
         required: true,
         description:
             "Structured application logging to stdout/stderr and file.",

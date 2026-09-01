@@ -1,3 +1,4 @@
+import { readGatewayManifestVersion } from "../reuse/manifest-version.js";
 import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -90,6 +91,10 @@ async function loadQuotaStore(
  * only (see the logging gateway).
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const manifestVersion = await readGatewayManifestVersion(
+        import.meta.url,
+        "./manifest.json",
+    );
     const mediaLocation = process.env.MEDIA_LOCATION ?? "/app/media";
     const fileStorePath = `${mediaLocation}/uploads`;
     const adaptersRoot =
@@ -203,7 +208,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "files",
         name: "File Storage Gateway",
-        version: "2.1.9",
+        version: manifestVersion,
         required: true,
         description:
             "Provides namespaced, ACL- and quota-enforced file storage for uploads, plus local file logging helpers.",
