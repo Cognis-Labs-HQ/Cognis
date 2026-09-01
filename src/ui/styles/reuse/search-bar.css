@@ -21,8 +21,8 @@
 
 .search-bar-toggle-icon {
     display: block;
-    width: 1.1rem;
-    height: 1.1rem;
+    width: 1.65rem;
+    height: 1.65rem;
     background: center / contain no-repeat
         url("/static/assets/reuse/search-light.svg");
 }

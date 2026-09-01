@@ -418,10 +418,14 @@
         transform 0.15s ease;
 }
 .dropdown-item:hover,
-.dropdown-item:focus-visible {
+.dropdown-item:focus-visible,
+.dropdown-item.active {
     background: var(--surface-soft);
     outline: 1px solid var(--accent);
     outline-offset: -1px;
+}
+.dropdown-item:hover,
+.dropdown-item:focus-visible {
     transform: translateX(3px);
 }
 .hidden {

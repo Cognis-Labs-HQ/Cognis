@@ -55,6 +55,20 @@ test("profile menu toggle is active while its dropdown is open", () => {
     assert.match(layoutSource, /toggle\?\.classList\.remove\("active"\)/);
 });
 
+test("profile menu keeps the current page link active", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    const layoutCss = readFileSync(
+        resolve(ROOT, "src/ui/styles/reuse/layout.css"),
+        "utf8",
+    );
+
+    assert.match(layoutSource, /\.user-dropdown-content a/);
+    assert.match(layoutCss, /\.dropdown-item\.active/);
+});
+
 test("global search toggle uses theme-specific SVG assets", () => {
     const popupSource = readFileSync(
         resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
@@ -68,6 +82,8 @@ test("global search toggle uses theme-specific SVG assets", () => {
     assert.match(popupSource, /search-bar-toggle-icon/);
     assert.match(searchCss, /search-light\.svg/);
     assert.match(searchCss, /search-dark\.svg/);
+    assert.match(searchCss, /width: 1\.65rem/);
+    assert.match(searchCss, /height: 1\.65rem/);
 });
 
 test("dashboard footer renders license and changelogs links", () => {
