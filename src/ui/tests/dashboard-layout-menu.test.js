@@ -67,6 +67,29 @@ test("profile menu keeps the current page link active", () => {
 
     assert.match(layoutSource, /\.user-dropdown-content a/);
     assert.match(layoutCss, /\.dropdown-item\.active/);
+    assert.match(layoutSource, /activeDropdownLink/);
+    assert.match(
+        layoutSource,
+        /right\.getAttribute\("href"\)\?\.length[\s\S]*left\.getAttribute\("href"\)\?\.length/,
+    );
+    assert.match(
+        layoutCss,
+        /\.dropdown-item\.active\s*{[^}]*border-bottom: 2px solid var\(--accent-2\)/,
+    );
+    assert.doesNotMatch(
+        layoutCss,
+        /\.dropdown-item:focus-visible,\s*\.dropdown-item\.active/,
+    );
+});
+
+test("dashboard keeps global search styles across SPA navigations", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+
+    assert.match(layoutSource, /import \{ ensurePersistentStylesheet \}/);
+    assert.match(layoutSource, /ensurePersistentStylesheet\(SEARCH_BAR_CSS\)/);
 });
 
 test("global search toggle uses theme-specific SVG assets", () => {
