@@ -106,4 +106,6 @@ Profile が存在しない、または失敗した場合、Messages はその Ca
 | チャットルームメンバー | `{ "handle": "user" }` を指定する `POST /api/v1/social/messages/rooms/:roomId/members` | `DELETE /api/v1/social/messages/rooms/:roomId/members/:handle` | `social:messages:membership` の `add({ roomId, actorAccountId, userAccountId })` と対応する `remove(...)` |
 | プロフィールフォロワー | `POST /api/v1/social/users/:handle/followers`                                          | `DELETE /api/v1/social/users/:handle/followers`                | `social:profile:followers` の `add({ followerAccountId, followedAccountId })` と対応する `remove(...)`    |
 
+`add` はアクティブなメンバーシップを保証する冪等操作であり、アーカイブ状態も解除します。ミーティング連携は、チャットを読み込む前に参加者が加わるたびにこの操作を呼び出す必要があります。これにより、チャットから退出したユーザーもミーティングへの再参加時にチャットへ戻れます。チャットからの退出だけではミーティングの参加者から削除されません。
+
 HTTP ルートは実行者を認証・認可します。Capability は信頼されたサーバー間インターフェースであり、呼び出し元は事前に権限を持ち、実行者を明示する必要があります。実装を直接 import せず `ctx.capabilities` から取得します。

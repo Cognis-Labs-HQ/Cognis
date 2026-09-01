@@ -108,4 +108,6 @@ Komponen sosial memakai dua verba yang sama untuk keanggotaan koleksi: `POST` me
 | Anggota ruang obrolan | `POST /api/v1/social/messages/rooms/:roomId/members` dengan `{ "handle": "user" }` | `DELETE /api/v1/social/messages/rooms/:roomId/members/:handle` | `social:messages:membership` dengan `add({ roomId, actorAccountId, userAccountId })` dan `remove(...)` yang sepadan |
 | Pengikut profil       | `POST /api/v1/social/users/:handle/followers`                                      | `DELETE /api/v1/social/users/:handle/followers`                | `social:profile:followers` dengan `add({ followerAccountId, followedAccountId })` dan `remove(...)` yang sepadan    |
 
+`add` adalah operasi idempoten untuk memastikan keanggotaan aktif dan juga membatalkan pengarsipan keanggotaan. Integrasi rapat harus memanggilnya setiap kali peserta bergabung sebelum memuat obrolan, sehingga pengguna yang sengaja keluar dari obrolan dapat bergabung kembali bersama rapat. Keluar dari obrolan tidak menghapus peserta dari rapat.
+
 Rute HTTP mengautentikasi dan mengotorisasi pelaku. Kapabilitas merupakan permukaan antarpeladen tepercaya: pemanggil harus sudah berwenang dan selalu menyertakan pelaku secara eksplisit. Konsumen mendapatkannya hanya dari `ctx.capabilities`.

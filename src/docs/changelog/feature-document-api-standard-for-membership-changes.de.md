@@ -10,6 +10,10 @@ Chatraum-Mitglieder und Profil-Follower verwenden nun eine dokumentierte `POST`-
 
 Der Messages-Adapter veröffentlicht die Chatraum-Mitgliedschaft jetzt sowohl über den System-`ctx` als auch über den Capability-Speicher des Gateways. Externe Module wie Jitsi Meet können sie dadurch beim Aktivieren und Starten auflösen.
 
+## Meeting-Chat-Mitgliedschaft beim erneuten Beitritt wiederhergestellt
+
+Das Hinzufügen eines Chatraum-Mitglieds stellt nun auch eine archivierte Mitgliedschaft wieder her. Meeting-Integrationen können die idempotente Mitgliedschaftsoperation `add` vor dem Laden des Chats bei jedem Beitritt sicher aufrufen. Dadurch werden wiederholte `403`-Antworten vermieden, nachdem ein Teilnehmer den Chat zuvor verlassen hat.
+
 ## Commits
 
-- [a8b044c](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8b044c024072a91dc63741698588d762418d0b3)
+- [c9a478c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c9a478cfe93519e006eeb6098bc4023d9883b01b)

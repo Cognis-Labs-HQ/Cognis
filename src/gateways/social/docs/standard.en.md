@@ -104,4 +104,6 @@ Social components expose collection membership with the same two verbs: `POST` a
 | Chatroom member  | `POST /api/v1/social/messages/rooms/:roomId/members` with `{ "handle": "user" }` | `DELETE /api/v1/social/messages/rooms/:roomId/members/:handle` | `social:messages:membership` with `add({ roomId, actorAccountId, userAccountId })` and matching `remove(...)` |
 | Profile follower | `POST /api/v1/social/users/:handle/followers`                                    | `DELETE /api/v1/social/users/:handle/followers`                | `social:profile:followers` with `add({ followerAccountId, followedAccountId })` and matching `remove(...)`    |
 
+`add` is an idempotent ensure-active operation: it also clears an archived membership. Meeting integrations must call it for every participant join before loading chat, so a user who intentionally left the chat can rejoin it with the meeting. Leaving chat does not remove the participant from the meeting.
+
 HTTP routes authenticate and authorize the acting user. Capabilities are the trusted server-to-server surface: callers must already have authority to act, and must always supply the actor explicitly. Consumers obtain capabilities from `ctx.capabilities`; they never import an adapter store or implementation.

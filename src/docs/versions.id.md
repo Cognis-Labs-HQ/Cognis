@@ -51,7 +51,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.15` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.13` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `2.0.0`  |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.1.2`  |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.1.3`  |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10` |
@@ -68,7 +68,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Share                 | `src/gateways/share/`         | `1.7.45`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.18`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.9`   |
-| Social                | `src/gateways/social/`        | `1.3.1`   |
+| Social                | `src/gateways/social/`        | `1.3.2`   |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.9`   |
 | Registration          | `src/gateways/registration/`  | `1.1.14`  |
 | Logging               | `src/gateways/logging/`       | `1.5.13`  |

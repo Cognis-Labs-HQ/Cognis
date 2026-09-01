@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createChatroomMembershipCapability } from "../membership.js";
 
-test("chatroom membership capability uses one add/remove contract", async () => {
+test("chatroom membership add reactivates a returning meeting participant", async () => {
     const calls: Array<Record<string, unknown>> = [];
     const messagesStore = {
         addMemberWithEvent: async (input: Record<string, unknown>) => {
@@ -10,6 +10,13 @@ test("chatroom membership capability uses one add/remove contract", async () => 
         },
         removeMemberWithEvent: async (input: Record<string, unknown>) => {
             calls.push({ operation: "remove", ...input });
+        },
+        setArchived: async (
+            roomId: string,
+            accountId: string,
+            archived: boolean,
+        ) => {
+            calls.push({ operation: "archive", roomId, accountId, archived });
         },
     };
     const profileStore = {
@@ -41,6 +48,12 @@ test("chatroom membership capability uses one add/remove contract", async () => 
             role: "member",
             handle: "bob",
             displayName: "Bob",
+        },
+        {
+            operation: "archive",
+            roomId: "room-1",
+            accountId: "bob",
+            archived: false,
         },
         {
             operation: "remove",

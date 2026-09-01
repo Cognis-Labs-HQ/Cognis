@@ -31,6 +31,11 @@ export function createChatroomMembershipCapability(
                 displayName:
                     input.userDisplayName ?? profile?.displayName ?? null,
             });
+            await messagesStore.setArchived(
+                input.roomId,
+                input.userAccountId,
+                false,
+            );
         },
         async remove(input) {
             const profile = await profileStore.getProfile(input.userAccountId);

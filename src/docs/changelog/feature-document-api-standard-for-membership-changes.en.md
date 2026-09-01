@@ -10,6 +10,10 @@ Chatroom members and profile followers now share a documented `POST`/`DELETE` co
 
 The Messages adapter now publishes chatroom membership through the system `ctx` as well as the gateway capability store, allowing external modules such as Jitsi Meet to resolve it during enablement and bootstrap.
 
+## Meeting chat membership restored on rejoin
+
+Adding a chatroom member now also restores an archived membership. Meeting integrations can safely call the idempotent membership `add` operation before loading chat whenever a participant joins, preventing repeated `403` responses after the participant previously left the chat.
+
 ## Commits
 
-- [a8b044c](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8b044c024072a91dc63741698588d762418d0b3)
+- [c9a478c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c9a478cfe93519e006eeb6098bc4023d9883b01b)
