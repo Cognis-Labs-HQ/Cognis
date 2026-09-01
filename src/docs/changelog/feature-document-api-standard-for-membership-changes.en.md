@@ -1,5 +1,7 @@
 # Consistent social membership changes
 
+**Feature Branch:** feature-document-api-standard-for-membership-changes
+
 ## Simple membership APIs and capabilities
 
 Chatroom members and profile followers now share a documented `POST`/`DELETE` collection convention and matching `ctx` capabilities for trusted component integrations.

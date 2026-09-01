@@ -1,5 +1,7 @@
 # 一貫したソーシャルメンバーシップ変更
 
+**機能ブランチ:** feature-document-api-standard-for-membership-changes
+
 ## シンプルなメンバーシップ API と Capability
 
 チャットルームメンバーとプロフィールフォロワーに、文書化された `POST`／`DELETE` コレクション規約と、信頼されたコンポーネント連携用の対応する `ctx` Capability を導入しました。

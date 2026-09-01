@@ -1,5 +1,7 @@
 # Einheitliche Änderungen sozialer Mitgliedschaften
 
+**Feature-Zweig:** feature-document-api-standard-for-membership-changes
+
 ## Einfache Mitgliedschafts-APIs und Capabilities
 
 Chatraum-Mitglieder und Profil-Follower verwenden nun eine dokumentierte `POST`-/`DELETE`-Konvention für Sammlungen sowie passende `ctx`-Capabilities für vertrauenswürdige Komponentenintegration.
