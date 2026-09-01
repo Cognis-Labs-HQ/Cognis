@@ -672,6 +672,8 @@ export class CoreShareGateway {
         resourceId: string;
         requesterAccountId: string;
         requesterDisplayName: string;
+        approvalAction: string;
+        approvalTarget: string;
         targetAccountIds: string[];
         ttlSeconds: number;
     }): Promise<{ mintRequestId: string }> {

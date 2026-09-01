@@ -38,7 +38,7 @@ test("Profile adapter owns the complete avatar UI capability", () => {
     );
     assert.match(
         source,
-        /ensurePageStylesheet\(\s*"\/static\/adapters\/social\/profile\/availability\.css"/,
+        /ensurePersistentStylesheet\(\s*"\/static\/adapters\/social\/profile\/availability\.css"/,
     );
     assert.match(source, /await availabilityStylesReady;/);
     assert.match(source, /export async function ensureProfileAvatarStyles/);

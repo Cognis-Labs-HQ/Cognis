@@ -1,3 +1,4 @@
+import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createCalendarAdapterRoutes } from "./adapter-routes.js";
@@ -12,6 +13,10 @@ export const GATEWAY_ROOT = path.resolve(
 );
 
 export async function finalizeCalendarBootstrap(input: any): Promise<void> {
+    const manifestVersion = await readGatewayManifestVersion(
+        import.meta.url,
+        "../manifest.json",
+    );
     const {
         ctx,
         gateway,
@@ -124,5 +129,5 @@ export async function finalizeCalendarBootstrap(input: any): Promise<void> {
     );
 
     registerCalendarUi(ctx, gatewayRoot);
-    registerCalendarComponent(ctx);
+    registerCalendarComponent(ctx, manifestVersion);
 }

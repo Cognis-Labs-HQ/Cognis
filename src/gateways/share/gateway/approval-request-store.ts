@@ -10,6 +10,8 @@ export interface ShareApprovalRequestRecord {
     resourceId: string;
     requesterAccountId: string;
     requesterDisplayName: string;
+    approvalAction: string;
+    approvalTarget: string;
     targetAccountId: string;
     status: ShareApprovalDecision;
     createdAt: string;
@@ -29,6 +31,8 @@ function parseRecord(
     const resourceType = String(row.resource_type ?? "").trim();
     const resourceId = String(row.resource_id ?? "").trim();
     const requesterAccountId = String(row.requester_account_id ?? "").trim();
+    const approvalAction = String(row.approval_action ?? "").trim();
+    const approvalTarget = String(row.approval_target ?? "").trim();
     const targetAccountId = String(row.target_account_id ?? "").trim();
     const createdAt = String(row.created_at ?? "").trim();
     const expiresAt = String(row.expires_at ?? "").trim();
@@ -39,6 +43,7 @@ function parseRecord(
         !resourceType ||
         !resourceId ||
         !requesterAccountId ||
+        !approvalTarget ||
         !targetAccountId ||
         !createdAt ||
         !expiresAt ||
@@ -54,6 +59,8 @@ function parseRecord(
         resourceId,
         requesterAccountId,
         requesterDisplayName: String(row.requester_display_name ?? "").trim(),
+        approvalAction,
+        approvalTarget,
         targetAccountId,
         status,
         createdAt,
@@ -88,6 +95,8 @@ export class ShareApprovalRequestStore {
                     notNull: true,
                 },
                 { name: "requester_display_name", type: "text" },
+                { name: "approval_action", type: "text", notNull: true },
+                { name: "approval_target", type: "text", notNull: true },
                 { name: "target_account_id", type: "text", notNull: true },
                 { name: "status", type: "text", notNull: true },
                 { name: "created_at", type: "text", notNull: true },
@@ -102,6 +111,8 @@ export class ShareApprovalRequestStore {
         resourceId: string;
         requesterAccountId: string;
         requesterDisplayName: string;
+        approvalAction: string;
+        approvalTarget: string;
         targetAccountIds: string[];
         ttlSeconds: number;
     }): Promise<{ mintRequestId: string; rows: ShareApprovalRequestRecord[] }> {
@@ -122,6 +133,8 @@ export class ShareApprovalRequestStore {
                 requesterDisplayName: String(
                     input.requesterDisplayName ?? "",
                 ).trim(),
+                approvalAction: String(input.approvalAction ?? "").trim(),
+                approvalTarget: String(input.approvalTarget ?? "").trim(),
                 targetAccountId,
                 status: "pending",
                 createdAt,
@@ -140,6 +153,8 @@ export class ShareApprovalRequestStore {
                     resource_id: row.resourceId,
                     requester_account_id: row.requesterAccountId,
                     requester_display_name: row.requesterDisplayName,
+                    approval_action: row.approvalAction,
+                    approval_target: row.approvalTarget,
                     target_account_id: row.targetAccountId,
                     status: row.status,
                     created_at: row.createdAt,

@@ -359,6 +359,57 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.style.left, "320px");
         assert.equal(panel.style.top, "180px");
         releaseFallback();
+
+        const conflictPanel = new FakeElement({
+            left: 400,
+            top: 250,
+            width: 320,
+            height: 240,
+        });
+        const releaseConflictPanel = makeFloatingWindow(conflictPanel);
+        const conflictResizeHandle = conflictPanel.children.find((child) =>
+            child.className?.includes("resize-handle--bottom-right"),
+        );
+        conflictResizeHandle.closest = (selector) =>
+            selector === ".floating-window-resize-handle"
+                ? conflictResizeHandle
+                : null;
+        let propagationStopped = false;
+        const resizePointerDown = {
+            button: 0,
+            pointerId: 12,
+            clientX: 720,
+            clientY: 490,
+            target: conflictResizeHandle,
+            preventDefault() {},
+            stopPropagation() {
+                propagationStopped = true;
+            },
+        };
+        conflictResizeHandle.dispatch("pointerdown", resizePointerDown);
+        conflictPanel.dispatch("pointerdown", resizePointerDown);
+        assert.equal(propagationStopped, true);
+        assert.equal(conflictPanel.capturedPointer, undefined);
+        conflictResizeHandle.dispatch("pointermove", {
+            pointerId: 12,
+            clientX: 800,
+            clientY: 550,
+            preventDefault() {},
+            stopPropagation() {},
+        });
+        assert.equal(conflictPanel.style.width, "400px");
+        assert.equal(conflictPanel.style.height, "300px");
+        windowListeners.get("pointerup")?.({ pointerId: 12 });
+        conflictResizeHandle.dispatch("pointermove", {
+            pointerId: 12,
+            clientX: 900,
+            clientY: 650,
+            preventDefault() {},
+            stopPropagation() {},
+        });
+        assert.equal(conflictPanel.style.width, "400px");
+        assert.equal(conflictPanel.style.height, "300px");
+        releaseConflictPanel();
     } finally {
         globalThis.window = originalWindow;
         globalThis.document = originalDocument;

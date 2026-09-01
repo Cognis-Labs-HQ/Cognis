@@ -6,6 +6,7 @@ import {
 } from "../../../../api/reuse/route-context.js";
 import type { DbProfileStore, AccountProfile } from "../store.js";
 import { visibilityRank } from "../store.js";
+import { createFollowersCapability } from "../follow-membership.js";
 
 const SEARCH_RESULTS_LIMIT = 10;
 const SOCIAL_NOTIFICATION_CATEGORY = "social";
@@ -107,6 +108,7 @@ export function createSocialRoutes(
     options: SocialRoutesOptions = {},
 ) {
     const ctx = resolveRouteContext(routeContext);
+    const followers = createFollowersCapability(profileStore);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -161,7 +163,7 @@ export function createSocialRoutes(
             );
             if (blockedBy) {
                 // Treat as not-found from the requester's perspective; the blocker
-                // must never appear to exist (mirrors follow/followers handlers below).
+                // must never appear to exist (mirrors follow operations below).
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -248,7 +250,7 @@ export function createSocialRoutes(
         const followMatch = url.pathname.match(
             /^\/api\/v1\/social\/users\/([^/]+)\/follow$/,
         );
-        if (followMatch) {
+        if (followMatch && (req.method === "POST" || req.method === "DELETE")) {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const handle = decodeURIComponent(followMatch[1]);
@@ -343,7 +345,10 @@ export function createSocialRoutes(
                     );
                     return true;
                 }
-                await profileStore.follow(claims.sub, target.accountId);
+                await followers.add({
+                    followerAccountId: claims.sub,
+                    followedAccountId: target.accountId,
+                });
                 if (options.dispatchNotification) {
                     const followerName =
                         requester?.displayName ??
@@ -371,7 +376,10 @@ export function createSocialRoutes(
                 return true;
             }
             if (req.method === "DELETE") {
-                await profileStore.unfollow(claims.sub, target.accountId);
+                await followers.remove({
+                    followerAccountId: claims.sub,
+                    followedAccountId: target.accountId,
+                });
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { following: false } }));
                 return true;
@@ -435,7 +443,7 @@ export function createSocialRoutes(
         }
 
         const followersMatch = url.pathname.match(
-            /^\/api\/v1\/social\/users\/([^/]+)\/followers$/,
+            /^\/api\/v1\/social\/users\/([^/]+)\/follow$/,
         );
         if (followersMatch && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "user");

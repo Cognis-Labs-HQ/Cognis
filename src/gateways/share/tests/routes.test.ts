@@ -263,6 +263,26 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         typeof capabilities.get("share:resolveDelegatedAccess"),
         "function",
     );
+    const requestApproval = capabilities.get<
+        (input: {
+            resourceType: string;
+            resourceId: string;
+            requesterAccountId: string;
+            requesterDisplayName?: string;
+            action?: string;
+            target?: string;
+        }) => Promise<{ approved: boolean; requiresApproval: boolean }>
+    >("share:requestApproval");
+    assert.equal(typeof requestApproval, "function");
+    assert.deepEqual(
+        await requestApproval?.({
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+            requesterAccountId: "alice",
+            requesterDisplayName: "Alice",
+        }),
+        { approved: true, requiresApproval: false },
+    );
     assert.equal(
         uiRegistry.getStaticDir("share")?.endsWith("src/gateways/share"),
         true,

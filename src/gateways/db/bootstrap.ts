@@ -1,3 +1,4 @@
+import { readGatewayManifestVersion } from "../reuse/manifest-version.js";
 import path from "node:path";
 import { createDbExecutor } from "./executor.js";
 import { initializeDatabaseSchema, resolveDbProviderDir } from "./init.js";
@@ -68,6 +69,10 @@ export function createDbDialectHelper(executor: DbExecutor): DbDialectHelper {
 }
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const manifestVersion = await readGatewayManifestVersion(
+        import.meta.url,
+        "./manifest.json",
+    );
     const dbType =
         (process.env.DB_TYPE as DbProviderId | undefined) ?? "postgresql";
     const adaptersRoot =
@@ -144,7 +149,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "db",
         name: "Database Gateway",
-        version: "1.3.6",
+        version: manifestVersion,
         required: true,
         description:
             "Core relational database layer for persistent application data.",

@@ -1,3 +1,4 @@
+import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { type GatewayBootstrapContext } from "../../shared.js";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
@@ -14,6 +15,10 @@ import { createRegistrationRoutes } from "./registration-routes.js";
 import { createGatewayAdapterRoutes } from "./adapter-admin-routes.js";
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const manifestVersion = await readGatewayManifestVersion(
+        import.meta.url,
+        "../manifest.json",
+    );
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
@@ -184,7 +189,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "registration",
         name: "Registration Gateway",
-        version: "1.1.10",
+        version: manifestVersion,
         description:
             "Registration workflows via pluggable invite/public adapters.",
         publisher: "Cognis Labs HQ",
