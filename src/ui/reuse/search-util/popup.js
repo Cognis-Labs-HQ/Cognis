@@ -34,6 +34,7 @@ import {
     filterApiGroupMatches,
     filterNavigableGroups,
     filterSearchGroupsForQuery,
+    filterSearchGroupsForType,
     filterVisibleSearchGroups,
     hasSelectableTarget,
     isSearchResultVisibleToUser,
@@ -134,11 +135,15 @@ async function runSearch({
         query,
         searchOptions,
         (matchedLocalGroups) => {
+            const typedLocalGroups = filterSearchGroupsForType(
+                matchedLocalGroups,
+                typeFilter,
+            );
             navigableLocalGroups = mergeSearchGroups([
                 ...navigableLocalGroups,
                 ...(isMultiSelect
-                    ? matchedLocalGroups
-                    : filterNavigableGroups(matchedLocalGroups)),
+                    ? typedLocalGroups
+                    : filterNavigableGroups(typedLocalGroups)),
             ]);
             renderAvailableResults();
         },
@@ -169,8 +174,11 @@ async function runSearch({
             const apiGroups = isGrouped
                 ? responseData.map(normalizeSearchGroup).filter(Boolean)
                 : [];
-            const matchedApiGroups = filterVisibleSearchGroups(
-                filterApiGroupMatches(apiGroups, query, searchOptions),
+            const matchedApiGroups = filterSearchGroupsForType(
+                filterVisibleSearchGroups(
+                    filterApiGroupMatches(apiGroups, query, searchOptions),
+                ),
+                typeFilter,
             );
             navigableApiGroups = isMultiSelect
                 ? matchedApiGroups
@@ -323,7 +331,10 @@ export function openSearchPopup({
     closeButton.type = "button";
     closeButton.className = "search-popup-close btn-cancel";
     closeButton.setAttribute("aria-label", "Close search");
-    closeButton.textContent = "×";
+    const closeIcon = document.createElement("span");
+    closeIcon.className = "search-popup-close-icon";
+    closeIcon.setAttribute("aria-hidden", "true");
+    closeButton.appendChild(closeIcon);
 
     const input = document.createElement("input");
     input.type = "search";
@@ -331,6 +342,15 @@ export function openSearchPopup({
     input.placeholder = resolvePopupPlaceholder(placeholder, category);
     input.setAttribute("aria-label", ariaLabel);
     input.setAttribute("autocomplete", "off");
+
+    const clearButton = document.createElement("button");
+    clearButton.type = "button";
+    clearButton.className = "search-popup-clear";
+    clearButton.setAttribute("aria-label", "Clear search");
+    const clearIcon = document.createElement("span");
+    clearIcon.className = "search-popup-clear-icon";
+    clearIcon.setAttribute("aria-hidden", "true");
+    clearButton.appendChild(clearIcon);
 
     const categoriesContainer = document.createElement("div");
     categoriesContainer.className = "search-popup-result-categories";
@@ -342,6 +362,7 @@ export function openSearchPopup({
     const inputWrap = document.createElement("div");
     inputWrap.className = "search-popup-input-wrap";
     inputWrap.appendChild(input);
+    inputWrap.appendChild(clearButton);
 
     const pageFindControls = document.createElement("div");
     pageFindControls.className = "search-popup-page-find-controls";
@@ -551,6 +572,14 @@ export function openSearchPopup({
         closeOverlay();
     });
 
+    clearButton.addEventListener("click", () => {
+        input.value = "";
+        currentQuery = "";
+        clearButton.classList.remove("search-popup-clear--visible");
+        runCurrentSearch();
+        input.focus();
+    });
+
     previousFindButton.addEventListener("click", () => {
         movePageFindMatch(pageFindState, pageFindCounter, -1);
         input.focus();
@@ -565,6 +594,10 @@ export function openSearchPopup({
         const query = input.value.trim();
         if (query === currentQuery) return;
         currentQuery = query;
+        clearButton.classList.toggle(
+            "search-popup-clear--visible",
+            query.length > 0,
+        );
         runCurrentSearch();
     });
 

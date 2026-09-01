@@ -13,8 +13,47 @@ test("search URL normalizes the singular user result filter", () => {
     );
     assert.match(
         source,
-        /rawTypeFilter\.toLowerCase\(\) === ["']user["'] \? ["']users["'] : rawTypeFilter/,
+        /const resolvedTypeFilter = normalizeResultType\(rawTypeFilter\)/,
     );
+    assert.match(source, /normalizedType === "user" \? "users"/);
+});
+
+test("search result types filter local and grouped API categories", () => {
+    const popupSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
+        "utf8",
+    );
+    const matchingSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-util/matching.js"),
+        "utf8",
+    );
+    assert.match(matchingSource, /filterSearchGroupsForType/);
+    assert.match(
+        popupSource,
+        /filterSearchGroupsForType\(\s*matchedLocalGroups,\s*typeFilter/,
+    );
+    assert.match(
+        popupSource,
+        /filterSearchGroupsForType\(\s*filterVisibleSearchGroups/,
+    );
+});
+
+test("search controls use theme-aware close icons", () => {
+    const popupSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
+        "utf8",
+    );
+    const styleSource = readFileSync(
+        resolve(ROOT, "src/ui/styles/reuse/search-bar.css"),
+        "utf8",
+    );
+    assert.match(popupSource, /search-popup-close-icon/);
+    assert.match(popupSource, /search-popup-clear-icon/);
+    assert.doesNotMatch(popupSource, /closeButton\.textContent = "×"/);
+    assert.match(styleSource, /close-light\.svg/);
+    assert.match(styleSource, /close-dark\.svg/);
+    assert.match(styleSource, /::-webkit-search-cancel-button/);
+    assert.match(styleSource, /\.search-popup-clear\s*\{[^}]*opacity: 0\.48/s);
 });
 
 test("search popup checked indicator stays centered in selectable rows", () => {

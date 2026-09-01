@@ -8,8 +8,13 @@ Eine Messages-Funktion wurde veröffentlicht, die einen Chatraum und seine abhä
 
 ## Korrekte Filterung der Benutzersuche
 
-Der von Modulsuchdialogen verwendete singuläre Benutzer-Ergebnisfilter wird nun normalisiert, sodass die Such-API Benutzer statt sämtlicher Ergebniskategorien zurückgibt.
+Der von Modulsuchdialogen verwendete singuläre Benutzer-Ergebnisfilter wird nun normalisiert und auf registrierte sowie gruppierte Ergebnisse angewendet. Dadurch erscheinen Benutzer ohne unpassende lokale oder API-Kategorien.
+
+## Themenfähige Suchsteuerung
+
+Die zeichenbasierte Schließen-Schaltfläche des Suchfensters und die browserseitige Eingabelöschung wurden durch einheitliche SVG-Symbole für helle und dunkle Designs ersetzt. Das Löschsymbol im Eingabefeld ist teilweise transparent und bleibt dadurch optisch dezent.
 
 ## Commits
 
 - [9f64c81](https://github.com/Cognis-Labs-HQ/Cognis/commit/9f64c81c94c94b711dc991451ed8d5a90ed1a189)
+- [21df334](https://github.com/Cognis-Labs-HQ/Cognis/commit/21df334147bba7036d9b2fa7f3fa41585b928a89)

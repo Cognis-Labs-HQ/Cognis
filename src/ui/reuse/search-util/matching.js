@@ -141,6 +141,28 @@ function normalizeResultClass(value) {
     return resultClass || "text";
 }
 
+function normalizeResultType(value) {
+    const normalizedType = normalizeResultClass(value);
+    return normalizedType === "user" ? "users" : normalizedType;
+}
+
+export function filterSearchGroupsForType(groups, typeFilter) {
+    const normalizedTypeFilter = normalizeResultType(typeFilter);
+    if (!typeFilter || normalizedTypeFilter === "text") return groups ?? [];
+    return (groups ?? [])
+        .map((group) => {
+            const categoryType = normalizeResultType(group?.category);
+            const items = (group?.items ?? []).filter(
+                (item) =>
+                    categoryType === normalizedTypeFilter ||
+                    normalizeResultType(item?.resultClass) ===
+                        normalizedTypeFilter,
+            );
+            return { ...group, items };
+        })
+        .filter((group) => group.items.length > 0);
+}
+
 export function normalizeSearchItem(item, category) {
     if (!item || typeof item !== "object") return null;
     const url = String(item.url ?? "").trim();
@@ -804,8 +826,7 @@ export function buildSearchUrl(
         typeof typeFilter === "string" && typeFilter.trim()
             ? typeFilter.trim()
             : "";
-    const resolvedTypeFilter =
-        rawTypeFilter.toLowerCase() === "user" ? "users" : rawTypeFilter;
+    const resolvedTypeFilter = normalizeResultType(rawTypeFilter);
     const connector = endpoint.includes("?") ? "&" : "?";
     const typeFilterParam = resolvedTypeFilter
         ? `&type=${encodeURIComponent(resolvedTypeFilter)}`
