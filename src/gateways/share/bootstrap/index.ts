@@ -1,3 +1,4 @@
+import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { GatewayBootstrapContext } from "../../shared.js";
@@ -36,6 +37,10 @@ const SHARE_ADAPTERS_ROOT = path.resolve(GATEWAY_ROOT, "../../adapters/share");
 const GUEST_PROFILE_CLEANUP_INTERVAL_MS = 15 * 60 * 1000;
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const manifestVersion = await readGatewayManifestVersion(
+        import.meta.url,
+        "../manifest.json",
+    );
     const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
     if (!dbExecutor) {
         return;
@@ -327,7 +332,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.7.45",
+        version: manifestVersion,
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
     });

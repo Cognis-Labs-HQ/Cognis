@@ -1,3 +1,4 @@
+import { readGatewayManifestVersion } from "../reuse/manifest-version.js";
 import { monitorEventLoopDelay } from "node:perf_hooks";
 import path from "node:path";
 import type { GatewayBootstrapContext } from "../shared.js";
@@ -40,6 +41,10 @@ function boundedLabels(labels: MetricLabels = {}): MetricLabels {
 }
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const manifestVersion = await readGatewayManifestVersion(
+        import.meta.url,
+        "./manifest.json",
+    );
     ctx.uiRegistry?.registerStaticDir(
         "observability",
         path.resolve(process.cwd(), "src", "gateways", "observability", "ui"),
@@ -151,7 +156,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "observability",
         name: "Observability Gateway",
-        version: "1.0.5",
+        version: manifestVersion,
         required: true,
         hasAdapters: false,
         description:

@@ -18,8 +18,13 @@ Messages アダプターがチャットルームメンバーシップをゲー�
 
 プロフィールのフォローメンバーシップは、標準の `/follow` エンドポイントのみを使用します。プロフィールのフォロワー Capability はゲートウェイストアとシステム `ctx` の両方で公開され、Social ゲートウェイはマニフェストのバージョンを報告します。
 
+## マニフェスト由来のバージョン
+
+すべてのゲートウェイが実行時の登録バージョンを自身のマニフェストから読み取るようになりました。重複するバージョンリテラルを排除し、Administration のメタデータをコンポーネントのリリースと一致させます。
+
 ## コミット
 
 - [c9a478c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c9a478cfe93519e006eeb6098bc4023d9883b01b)
 - [614b5c54](https://github.com/Cognis-Labs-HQ/Cognis/commit/614b5c54)
 - [4568d5aa](https://github.com/Cognis-Labs-HQ/Cognis/commit/4568d5aa)
+- [ef657f36](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef657f36)

@@ -1,3 +1,4 @@
+import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { readJson, type GatewayBootstrapContext } from "../../shared.js";
 import { CoreNotificationGateway } from "../gateway.js";
@@ -30,6 +31,10 @@ export { createUserEmailRoutes };
  * inside this module directly.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const manifestVersion = await readGatewayManifestVersion(
+        import.meta.url,
+        "../manifest.json",
+    );
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const { dbExecutor, notifStore, notificationPrefStore } =
@@ -220,7 +225,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.5.2",
+        version: manifestVersion,
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs HQ",
         required: true,

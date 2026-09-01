@@ -18,8 +18,13 @@ Menambahkan anggota ruang obrolan kini juga memulihkan keanggotaan yang diarsipk
 
 Keanggotaan mengikuti profil kini hanya menggunakan endpoint kanonis `/follow`. Kapabilitas pengikut profil diterbitkan melalui penyimpanan gateway dan `ctx` sistem, serta gateway Social melaporkan versi dari manifesnya.
 
+## Versi gateway dari manifes
+
+Setiap gateway kini membaca versi pendaftaran runtime dari manifesnya sendiri, menghapus literal versi duplikat dan menjaga metadata Administrasi tetap selaras dengan rilis komponen.
+
 ## Commit
 
 - [c9a478c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c9a478cfe93519e006eeb6098bc4023d9883b01b)
 - [614b5c54](https://github.com/Cognis-Labs-HQ/Cognis/commit/614b5c54)
 - [4568d5aa](https://github.com/Cognis-Labs-HQ/Cognis/commit/4568d5aa)
+- [ef657f36](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef657f36)
