@@ -111,3 +111,7 @@ Komponen sosial memakai dua verba yang sama untuk perubahan keanggotaan: `POST` 
 `add` adalah operasi idempoten untuk memastikan keanggotaan aktif dan juga membatalkan pengarsipan keanggotaan. Integrasi rapat harus memanggilnya setiap kali peserta bergabung sebelum memuat obrolan, sehingga pengguna yang sengaja keluar dari obrolan dapat bergabung kembali bersama rapat. Keluar dari obrolan tidak menghapus peserta dari rapat.
 
 Rute HTTP mengautentikasi dan mengotorisasi pelaku. Kapabilitas merupakan permukaan antarpeladen tepercaya: pemanggil harus sudah berwenang dan selalu menyertakan pelaku secara eksplisit. Konsumen mendapatkannya hanya dari `ctx.capabilities`.
+
+## Kapabilitas identitas profil
+
+Adapter Profile menerbitkan `social:profile:identity` untuk konsumen platform dan modul. Fungsi `normalizeHandleKey` dan `normalizeHandleKeys` menerapkan aturan normalisasi handle kanonis, sedangkan `resolveAccountHandle(accountId, fieldName?)` mengubah ID akun kanonis menjadi handle profil yang dinormalisasi dan menolak akun atau handle yang tidak ada. Orkestrator menggunakan kapabilitas ini alih-alih mengimpor adapter Profile atau menduplikasi logika normalisasi.
