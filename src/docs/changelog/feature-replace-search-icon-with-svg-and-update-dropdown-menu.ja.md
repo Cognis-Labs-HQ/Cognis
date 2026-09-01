@@ -1,5 +1,7 @@
 # より明確なナビゲーション操作
 
+**機能ブランチ:** feature-replace-search-icon-with-svg-and-update-dropdown-menu
+
 ## テーマ対応の検索アイコン
 
 グローバル検索の操作に、ライトテーマとダークテーマ専用の、より大きく鮮明な SVG アイコンを使用するようになりました。

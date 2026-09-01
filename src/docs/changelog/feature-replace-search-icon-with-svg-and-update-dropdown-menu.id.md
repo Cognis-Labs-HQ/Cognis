@@ -1,5 +1,7 @@
 # Kontrol Navigasi yang Lebih Jelas
 
+**Cabang Fitur:** feature-replace-search-icon-with-svg-and-update-dropdown-menu
+
 ## Ikon pencarian sesuai tema
 
 Kontrol pencarian global kini menggunakan ikon SVG yang lebih besar dan tajam dengan varian khusus untuk tema terang dan gelap.

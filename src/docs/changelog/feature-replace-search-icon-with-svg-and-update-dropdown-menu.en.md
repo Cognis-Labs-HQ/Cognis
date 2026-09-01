@@ -1,5 +1,7 @@
 # Clearer Navigation Controls
 
+**Feature Branch:** feature-replace-search-icon-with-svg-and-update-dropdown-menu
+
 ## Theme-aware search icon
 
 The global search control now uses a larger, crisp SVG icon with dedicated light and dark theme variants.

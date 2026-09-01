@@ -1,5 +1,7 @@
 # Klarere Navigationssteuerelemente
 
+**Feature-Zweig:** feature-replace-search-icon-with-svg-and-update-dropdown-menu
+
 ## Themeabhängiges Suchsymbol
 
 Die globale Suche verwendet nun ein größeres, scharfes SVG-Symbol mit eigenen Varianten für das helle und dunkle Theme.
