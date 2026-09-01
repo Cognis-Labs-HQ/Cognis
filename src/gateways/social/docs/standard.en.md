@@ -107,3 +107,7 @@ Social components expose membership changes with the same two verbs: `POST` adds
 `add` is an idempotent ensure-active operation: it also clears an archived membership. Meeting integrations must call it for every participant join before loading chat, so a user who intentionally left the chat can rejoin it with the meeting. Leaving chat does not remove the participant from the meeting.
 
 HTTP routes authenticate and authorize the acting user. Capabilities are the trusted server-to-server surface: callers must already have authority to act, and must always supply the actor explicitly. Consumers obtain capabilities from `ctx.capabilities`; they never import an adapter store or implementation.
+
+## Profile identity capability
+
+The Profile adapter publishes `social:profile:identity` to both platform and module consumers. Its `normalizeHandleKey` and `normalizeHandleKeys` functions apply the canonical handle normalization rules, while `resolveAccountHandle(accountId, fieldName?)` resolves a canonical account ID to its normalized profile handle and rejects missing accounts or handles. Orchestrators use this capability instead of importing the Profile adapter or duplicating normalization logic.

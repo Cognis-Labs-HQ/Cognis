@@ -111,3 +111,7 @@ Soziale Komponenten verwenden für Mitgliedschaftsänderungen dieselben zwei Ver
 `add` ist eine idempotente Sicherstellung einer aktiven Mitgliedschaft und hebt auch eine Archivierung auf. Meeting-Integrationen müssen die Operation bei jedem Beitritt eines Teilnehmers vor dem Laden des Chats aufrufen. So kann ein Benutzer, der den Chat verlassen hat, mit dem Meeting erneut beitreten. Das Verlassen des Chats entfernt den Teilnehmer nicht aus dem Meeting.
 
 HTTP-Routen authentifizieren und autorisieren den Handelnden. Capabilities sind die vertrauenswürdige Server-zu-Server-Oberfläche; Aufrufer müssen bereits berechtigt sein und den Handelnden ausdrücklich angeben. Sie werden nur über `ctx.capabilities` bezogen.
+
+## Capability für Profilidentitäten
+
+Der Profile-Adapter veröffentlicht `social:profile:identity` für Plattform- und Modul-Verbraucher. Die Funktionen `normalizeHandleKey` und `normalizeHandleKeys` wenden die kanonischen Regeln zur Normalisierung von Handles an. `resolveAccountHandle(accountId, fieldName?)` löst eine kanonische Konto-ID in den normalisierten Profil-Handle auf und weist fehlende Konten oder Handles zurück. Orchestratoren verwenden diese Capability, statt den Profile-Adapter zu importieren oder die Normalisierungslogik zu duplizieren.

@@ -8,6 +8,7 @@ import { createProfileRoutes } from "./routes/index.js";
 import { registerProfileMediaFlowHooks } from "./routes/media-flow-hooks.js";
 import { createSocialRoutes } from "./routes/social.js";
 import { createFollowersCapability } from "./follow-membership.js";
+import { createProfileIdentityCapability } from "./identity.js";
 import { createPostRoutes } from "./routes/posts.js";
 import { createPreferencesRoutes } from "./routes/preferences.js";
 import {
@@ -240,9 +241,15 @@ export async function bootstrapSocialAdapter(
      * peer adapters and modules.
      */
     ctx.capabilities.contribute("social:profileStore", profileStore);
+    const profileIdentity = createProfileIdentityCapability(profileStore);
+    ctx.capabilities.contribute("social:profile:identity", profileIdentity);
     const followers = createFollowersCapability(profileStore);
     ctx.capabilities.contribute("social:profile:followers", followers);
     const systemCtx = ctx.capabilities.get<Ctx>(CTX_CAPABILITY);
+    systemCtx?.contributePublicCapability(
+        "social:profile:identity",
+        profileIdentity,
+    );
     systemCtx?.contributeCapability("social:profile:followers", followers);
     ctx.capabilities.contribute("social:getAvailabilityStatuses", () => [
         ...AVAILABILITY_STATUSES,
