@@ -33,6 +33,7 @@ import {
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import { CTX_CAPABILITY, type Ctx } from "@cognis/core";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -239,10 +240,10 @@ export async function bootstrapSocialAdapter(
      * peer adapters and modules.
      */
     ctx.capabilities.contribute("social:profileStore", profileStore);
-    ctx.capabilities.contribute(
-        "social:profile:followers",
-        createFollowersCapability(profileStore),
-    );
+    const followers = createFollowersCapability(profileStore);
+    ctx.capabilities.contribute("social:profile:followers", followers);
+    const systemCtx = ctx.capabilities.get<Ctx>(CTX_CAPABILITY);
+    systemCtx?.contributeCapability("social:profile:followers", followers);
     ctx.capabilities.contribute("social:getAvailabilityStatuses", () => [
         ...AVAILABILITY_STATUSES,
     ]);

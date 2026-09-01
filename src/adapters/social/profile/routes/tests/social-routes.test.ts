@@ -96,7 +96,7 @@ test("social routes - follow and unfollow", async () => {
     }
 });
 
-test("social routes - plural followers path follows and unfollows", async () => {
+test("social routes - singular and plural follower paths follow and unfollow", async () => {
     const { dir, executor } = makeTempDb();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
@@ -108,14 +108,15 @@ test("social routes - plural followers path follows and unfollows", async () => 
             writeHead() {},
             end() {},
         } as any;
-        const url = new URL(
-            "http://localhost/api/v1/social/users/bob/followers",
-        );
-
-        await route(makeReq("POST", token), response, url);
-        assert.equal(await profileStore.isFollowing("alice", "bob"), true);
-        await route(makeReq("DELETE", token), response, url);
-        assert.equal(await profileStore.isFollowing("alice", "bob"), false);
+        for (const endpoint of ["follow", "followers"]) {
+            const url = new URL(
+                `http://localhost/api/v1/social/users/bob/${endpoint}`,
+            );
+            await route(makeReq("POST", token), response, url);
+            assert.equal(await profileStore.isFollowing("alice", "bob"), true);
+            await route(makeReq("DELETE", token), response, url);
+            assert.equal(await profileStore.isFollowing("alice", "bob"), false);
+        }
     } finally {
         rmSync(dir, { recursive: true, force: true });
     }

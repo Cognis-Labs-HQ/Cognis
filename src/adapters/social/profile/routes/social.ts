@@ -248,7 +248,7 @@ export function createSocialRoutes(
         }
 
         const followMatch = url.pathname.match(
-            /^\/api\/v1\/social\/users\/([^/]+)\/followers$/,
+            /^\/api\/v1\/social\/users\/([^/]+)\/follow(?:ers)?$/,
         );
         if (followMatch) {
             const claims = ctx.requireAuth(req, res, "user");

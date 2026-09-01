@@ -1,4 +1,5 @@
 import path from "node:path";
+import { readFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
@@ -174,6 +175,9 @@ function createSocialAdapterRoutes(
  * Standard gateway bootstrap entry point for the Social Gateway.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const manifest = JSON.parse(
+        await readFile(new URL("./manifest.json", import.meta.url), "utf8"),
+    ) as { version: string };
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
@@ -234,7 +238,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "social",
         name: "Social Gateway",
-        version: "1.2.15",
+        version: manifest.version,
         description: "Profiles, social graph, posts, and messaging.",
         publisher: "Cognis Labs HQ",
         hasAdapters: true,

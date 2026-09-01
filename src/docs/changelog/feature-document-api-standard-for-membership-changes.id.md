@@ -14,6 +14,11 @@ Adaptor Messages kini menerbitkan keanggotaan ruang obrolan melalui `ctx` sistem
 
 Menambahkan anggota ruang obrolan kini juga memulihkan keanggotaan yang diarsipkan. Integrasi rapat dapat memanggil operasi keanggotaan `add` yang idempoten dengan aman sebelum memuat obrolan setiap kali peserta bergabung, sehingga respons `403` berulang tidak terjadi setelah peserta sebelumnya keluar dari obrolan.
 
+## Umpan balik tinjauan ditangani
+
+Endpoint tunggal lama `/follow` tetap tersedia bersama `/followers` untuk penerapan bertahap dan klien dengan aset tembolok. Kapabilitas pengikut profil kini diterbitkan melalui penyimpanan gateway dan `ctx` sistem, serta gateway Social melaporkan versi dari manifesnya.
+
 ## Commit
 
 - [c9a478c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c9a478cfe93519e006eeb6098bc4023d9883b01b)
+- [614b5c54](https://github.com/Cognis-Labs-HQ/Cognis/commit/614b5c54)
