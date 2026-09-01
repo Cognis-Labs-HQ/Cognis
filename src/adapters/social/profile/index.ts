@@ -241,7 +241,9 @@ export async function bootstrapSocialAdapter(
      * peer adapters and modules.
      */
     ctx.capabilities.contribute("social:profileStore", profileStore);
-    const profileIdentity = createProfileIdentityCapability(profileStore);
+    const profileIdentity = createProfileIdentityCapability(profileStore, () =>
+        ctx.isAdapterEnabled("profile"),
+    );
     ctx.capabilities.contribute("social:profile:identity", profileIdentity);
     const followers = createFollowersCapability(profileStore);
     ctx.capabilities.contribute("social:profile:followers", followers);

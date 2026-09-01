@@ -1,7 +1,7 @@
 import {
     normalizeHandleKey,
     normalizeHandleKeys,
-} from "../../../gateways/social/reuse/profile-record.js";
+} from "../../../api/reuse/normalize-handle.js";
 import type { ProfileStore } from "./store-contract.js";
 
 export interface ProfileIdentityCapability {
@@ -15,11 +15,25 @@ export interface ProfileIdentityCapability {
 
 export function createProfileIdentityCapability(
     profileStore: Pick<ProfileStore, "getProfile">,
+    isEnabled: () => boolean = () => true,
 ): ProfileIdentityCapability {
+    const requireEnabled = () => {
+        if (!isEnabled()) {
+            throw new Error("The Social Profile adapter is disabled.");
+        }
+    };
+
     return {
-        normalizeHandleKey,
-        normalizeHandleKeys,
+        normalizeHandleKey(handle) {
+            requireEnabled();
+            return normalizeHandleKey(handle);
+        },
+        normalizeHandleKeys(values) {
+            requireEnabled();
+            return normalizeHandleKeys(values);
+        },
         async resolveAccountHandle(accountId, fieldName = "accountId") {
+            requireEnabled();
             const normalizedAccountId = String(accountId ?? "").trim();
             if (!normalizedAccountId) {
                 throw new Error(`${fieldName} is required.`);

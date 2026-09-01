@@ -8,4 +8,4 @@ The Social Profile adapter now exposes canonical single- and multi-handle normal
 
 ## Commits
 
-- [8ea9224](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ea92245deb6991252423448c9c983e5c664f109)
+- [6317e86](https://github.com/Cognis-Labs-HQ/Cognis/commit/6317e869bf5d3c421582578f0ec886ec5964a802)
