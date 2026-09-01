@@ -145,8 +145,8 @@ Token expiry is controlled by `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200
 
 | Method   | Path                                     | Description                          | Auth   |
 | -------- | ---------------------------------------- | ------------------------------------ | ------ |
-| `POST`   | `/api/v1/social/users/:handle/follow`    | Follow a user                        | Bearer |
-| `DELETE` | `/api/v1/social/users/:handle/follow`    | Unfollow                             | Bearer |
+| `POST`   | `/api/v1/social/users/:handle/followers` | Follow a user                        | Bearer |
+| `DELETE` | `/api/v1/social/users/:handle/followers` | Unfollow                             | Bearer |
 | `POST`   | `/api/v1/social/users/:handle/block`     | Block a user                         | Bearer |
 | `DELETE` | `/api/v1/social/users/:handle/block`     | Unblock                              | Bearer |
 | `GET`    | `/api/v1/social/users/:handle/followers` | Follower list (gated by visibility)  | Bearer |

@@ -9,14 +9,10 @@ import {
     summarizeRoomRequest,
     type MessagesRoutesDeps,
 } from "../shared.js";
-import { createChatroomMembershipCapability } from "../../membership.js";
 
 export function createRoomHandler(deps: MessagesRoutesDeps) {
     const { messagesStore, profileStore, dispatch, flow } = deps;
-    const membership = createChatroomMembershipCapability(
-        messagesStore,
-        profileStore,
-    );
+    const membership = deps.membership!;
     const ctx = resolveRouteContext(deps.routeContext);
 
     return async (

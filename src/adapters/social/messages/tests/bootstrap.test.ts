@@ -66,8 +66,8 @@ test("meeting-linked chats record every resolved participant joining", () => {
         )?.[0] ?? "";
 
     assert.match(groupChatCapability, /for \(const accountId of accountIds\)/);
-    assert.match(groupChatCapability, /addMemberWithEvent\(\{/);
-    assert.match(groupChatCapability, /actorId: ownerAccountId/);
+    assert.match(groupChatCapability, /membership\.add\(\{/);
+    assert.match(groupChatCapability, /actorAccountId: ownerAccountId/);
 });
 
 test("messages polling does not rerender for read timestamp churn", () => {

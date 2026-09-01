@@ -11,15 +11,6 @@ test("chatroom membership capability uses one add/remove contract", async () => 
         removeMemberWithEvent: async (input: Record<string, unknown>) => {
             calls.push({ operation: "remove", ...input });
         },
-        getMember: async () => ({
-            chatroomId: "room-1",
-            accountId: "bob",
-            role: "member",
-            muted: false,
-            archived: false,
-            joinedAt: "now",
-            keyDeliveredAt: null,
-        }),
     };
     const profileStore = {
         getProfile: async () => ({
@@ -38,10 +29,9 @@ test("chatroom membership capability uses one add/remove contract", async () => 
         userAccountId: "bob",
     };
 
-    const member = await membership.add(input);
+    await membership.add(input);
     await membership.remove(input);
 
-    assert.equal(member.accountId, "bob");
     assert.deepEqual(calls, [
         {
             operation: "add",

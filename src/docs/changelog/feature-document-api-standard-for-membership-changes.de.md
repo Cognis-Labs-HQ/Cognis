@@ -6,4 +6,4 @@ Chatraum-Mitglieder und Profil-Follower verwenden nun eine dokumentierte `POST`-
 
 ## Commits
 
-- [ba877d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba877d82722daeb78d4cd20724ecfefb2b444a98)
+- [6ad0c1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/6ad0c1a568da4e3b55893762df4a4d26b31ff3cc)

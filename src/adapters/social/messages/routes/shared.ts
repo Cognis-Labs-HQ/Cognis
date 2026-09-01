@@ -6,6 +6,7 @@ import type {
     SocialMessagesProfile,
     SocialMessagesProfileStore,
 } from "../profile-store-contract.js";
+import type { ChatroomMembershipCapability } from "../membership.js";
 
 export interface DispatchEnvelope {
     category: string;
@@ -139,6 +140,7 @@ export interface MessagesRoutesDeps {
     isAdapterEnabled: () => boolean;
     routeContext?: RouteContext;
     flow?: FlowApi;
+    membership?: ChatroomMembershipCapability;
 }
 
 export async function enrichMembersWithProfiles(

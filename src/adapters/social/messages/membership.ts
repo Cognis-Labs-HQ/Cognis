@@ -1,14 +1,17 @@
-import type { DbMessagesStore, MemberRow } from "./store.js";
+import type { DbMessagesStore } from "./store.js";
 import type { SocialMessagesProfileStore } from "./profile-store-contract.js";
 
 export interface ChatroomMembershipMutation {
     roomId: string;
     actorAccountId: string;
     userAccountId: string;
+    role?: "owner" | "admin" | "member";
+    userHandle?: string | null;
+    userDisplayName?: string | null;
 }
 
 export interface ChatroomMembershipCapability {
-    add(input: ChatroomMembershipMutation): Promise<MemberRow>;
+    add(input: ChatroomMembershipMutation): Promise<void>;
     remove(input: ChatroomMembershipMutation): Promise<void>;
 }
 
@@ -23,18 +26,11 @@ export function createChatroomMembershipCapability(
                 roomId: input.roomId,
                 actorId: input.actorAccountId,
                 accountId: input.userAccountId,
-                role: "member",
-                handle: profile?.handle ?? null,
-                displayName: profile?.displayName ?? null,
+                role: input.role ?? "member",
+                handle: input.userHandle ?? profile?.handle ?? null,
+                displayName:
+                    input.userDisplayName ?? profile?.displayName ?? null,
             });
-            const member = await messagesStore.getMember(
-                input.roomId,
-                input.userAccountId,
-            );
-            if (!member) {
-                throw new Error("Chatroom member was not persisted.");
-            }
-            return member;
         },
         async remove(input) {
             const profile = await profileStore.getProfile(input.userAccountId);
@@ -42,8 +38,9 @@ export function createChatroomMembershipCapability(
                 roomId: input.roomId,
                 actorId: input.actorAccountId,
                 accountId: input.userAccountId,
-                handle: profile?.handle ?? null,
-                displayName: profile?.displayName ?? null,
+                handle: input.userHandle ?? profile?.handle ?? null,
+                displayName:
+                    input.userDisplayName ?? profile?.displayName ?? null,
             });
         },
     };

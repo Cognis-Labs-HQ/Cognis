@@ -106,4 +106,4 @@ Profile が存在しない、または失敗した場合、Messages はその Ca
 | チャットルームメンバー | `{ "handle": "user" }` を指定する `POST /api/v1/social/messages/rooms/:roomId/members` | `DELETE /api/v1/social/messages/rooms/:roomId/members/:handle` | `social:messages:membership` の `add({ roomId, actorAccountId, userAccountId })` と対応する `remove(...)` |
 | プロフィールフォロワー | `POST /api/v1/social/users/:handle/followers`                                          | `DELETE /api/v1/social/users/:handle/followers`                | `social:profile:followers` の `add({ followerAccountId, followedAccountId })` と対応する `remove(...)`    |
 
-HTTP ルートは実行者を認証・認可します。Capability は信頼されたサーバー間インターフェースであり、呼び出し元は事前に権限を持ち、実行者を明示する必要があります。実装を直接 import せず `ctx.capabilities` から取得します。従来の単数形パス `/follow` は互換エイリアスとして維持されます。
+HTTP ルートは実行者を認証・認可します。Capability は信頼されたサーバー間インターフェースであり、呼び出し元は事前に権限を持ち、実行者を明示する必要があります。実装を直接 import せず `ctx.capabilities` から取得します。

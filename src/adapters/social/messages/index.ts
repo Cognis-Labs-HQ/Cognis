@@ -149,11 +149,11 @@ export async function bootstrapSocialAdapter(
     ) => {
         const rooms = await messagesStore.listRoomsForAccount(accountId);
         for (const room of rooms) {
-            await messagesStore.removeMemberWithEvent({
+            await membership.remove({
                 roomId: room.id,
-                actorId: accountId,
-                accountId,
-                handle: subjectHandle,
+                actorAccountId: accountId,
+                userAccountId: accountId,
+                userHandle: subjectHandle,
             });
         }
         await dbExecutor.transaction(async (transactionDb) => {
@@ -363,14 +363,11 @@ export async function bootstrapSocialAdapter(
             );
             await messagesStore.generateAndStoreRoomKey(room.id);
             for (const accountId of accountIds) {
-                const profile = await profileStore.getProfile(accountId);
-                await messagesStore.addMemberWithEvent({
+                await membership.add({
                     roomId: room.id,
-                    actorId: ownerAccountId,
-                    accountId,
+                    actorAccountId: ownerAccountId,
+                    userAccountId: accountId,
                     role: accountId === ownerAccountId ? "owner" : "member",
-                    handle: profile?.handle ?? null,
-                    displayName: profile?.displayName ?? null,
                 });
             }
             return {
@@ -404,6 +401,7 @@ export async function bootstrapSocialAdapter(
             isAdapterEnabled: () => ctx.isGatewayEnabled(),
             routeContext,
             flow: ctx.flow,
+            membership,
         }),
         "social",
     );
