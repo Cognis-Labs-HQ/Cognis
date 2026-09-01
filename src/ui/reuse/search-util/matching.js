@@ -800,10 +800,12 @@ export function buildSearchUrl(
     typeFilter,
     searchOptions = {},
 ) {
-    const resolvedTypeFilter =
+    const rawTypeFilter =
         typeof typeFilter === "string" && typeFilter.trim()
             ? typeFilter.trim()
             : "";
+    const resolvedTypeFilter =
+        rawTypeFilter.toLowerCase() === "user" ? "users" : rawTypeFilter;
     const connector = endpoint.includes("?") ? "&" : "?";
     const typeFilterParam = resolvedTypeFilter
         ? `&type=${encodeURIComponent(resolvedTypeFilter)}`

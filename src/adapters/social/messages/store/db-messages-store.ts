@@ -21,6 +21,7 @@ import {
     addMember,
     createDm,
     createRoom,
+    deleteRoom,
     findDmBetween,
     findGroupByExactMembers,
     getMember,
@@ -85,6 +86,10 @@ export class DbMessagesStore {
 
     async getRoom(id: string): Promise<RoomRow | null> {
         return getRoom(this.db, id);
+    }
+
+    async deleteRoom(id: string): Promise<void> {
+        await deleteRoom(this.db, id);
     }
 
     async updateRoomAvatar(

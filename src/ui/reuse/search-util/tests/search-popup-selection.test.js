@@ -6,6 +6,17 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 
+test("search URL normalizes the singular user result filter", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-util/matching.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /rawTypeFilter\.toLowerCase\(\) === ["']user["'] \? ["']users["'] : rawTypeFilter/,
+    );
+});
+
 test("search popup checked indicator stays centered in selectable rows", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/styles/reuse/choice-checkbox.css"),

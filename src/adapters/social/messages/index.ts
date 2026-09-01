@@ -20,6 +20,7 @@ import {
 } from "@cognis/core";
 import type { Ctx } from "@cognis/core";
 import { createChatroomMembershipCapability } from "./membership.js";
+import { createChatroomDeletionCapability } from "./chatroom-deletion.js";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -121,6 +122,18 @@ export async function bootstrapSocialAdapter(
     ctx.capabilities.contribute("social:messages:membership", membership);
     const systemCtx = ctx.capabilities.get<Ctx>(CTX_CAPABILITY);
     systemCtx?.contributeCapability("social:messages:membership", membership);
+    const deleteChatroom = createChatroomDeletionCapability(
+        messagesStore,
+        ctx.log,
+    );
+    ctx.capabilities.contribute(
+        "social:messages:deleteChatroom",
+        deleteChatroom,
+    );
+    systemCtx?.contributePublicCapability(
+        "social:messages:deleteChatroom",
+        deleteChatroom,
+    );
 
     type ExternalRoomAuthorizer = (input: {
         claims: { sub: string; role: string };

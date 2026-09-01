@@ -125,6 +125,14 @@ export async function removeMemberAndApplyLifecycle(
     }
     if (remainingMembers.length > 1) return "active";
 
+    await deleteRoom(db, roomId);
+    return "deleted";
+}
+
+export async function deleteRoom(
+    db: DbExecutor,
+    roomId: string,
+): Promise<void> {
     await db.transaction(async (transactionDb) => {
         for (const table of [
             "chatroom_typing",
@@ -150,7 +158,6 @@ export async function removeMemberAndApplyLifecycle(
             where: [{ column: "id", value: roomId }],
         });
     });
-    return "deleted";
 }
 
 export async function getMember(
