@@ -12,7 +12,8 @@
   <string name="share.error.expired">Item bersama ini sudah tidak tersedia.</string>
   <string name="share.error.renderer_missing">Item bersama ini belum bisa ditampilkan sekarang.</string>
   <string name="share.approval.title">Permintaan Tautan Berbagi</string>
-  <string name="share.approval.message">%requester% telah meminta untuk membuat tautan berbagi untuk "%resource%".</string>
+  <string name="share.approval.message">%requester% telah meminta untuk %action% bagi "%target%".</string>
+  <string name="share.approval.default_action">membuat tautan berbagi</string>
   <string name="share.approval.approve">Setujui</string>
   <string name="share.approval.decline">Tolak</string>
   <string name="share.unlock.title">Buka Item Bersama</string>

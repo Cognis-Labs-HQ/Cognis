@@ -12,14 +12,16 @@
  *     handle: panel.querySelector("[data-window-handle]"),
  *     signal,
  * });
+ * release.updateMinimumSize({ width: 320, height: 180 });
  *
  * @param {HTMLElement} element - Floating window to control.
  * @param {{handle?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number, width?: string, height?: string, right?: string, bottom?: string, zIndex?: number, portal?: boolean, topLayer?: boolean}} options
- * @returns {() => void} Idempotent listener and observer cleanup.
+ * @returns {(() => void) & {updateMinimumSize: (size: {width: number, height: number}) => boolean}} Idempotent cleanup with a minimum-size updater.
  */
 import { uiCtx } from "./ui-ctx.js";
 
 const FLOATING_WINDOW_STYLESHEET = "/static/styles/reuse/floating-window.css";
+const ORIENTATION_HYSTERESIS = 0.1;
 const MANAGED_STYLE_PROPERTIES = [
     "position",
     "left",
@@ -92,8 +94,8 @@ export function makeFloatingWindow(
     {
         handle = element,
         signal,
-        minWidth = 240,
-        minHeight = 160,
+        minWidth: initialMinWidth = 240,
+        minHeight: initialMinHeight = 160,
         width = "min(32vw, 24rem)",
         height = "min(32vh, 15rem)",
         right = "1rem",
@@ -103,8 +105,15 @@ export function makeFloatingWindow(
         topLayer = portal,
     } = {},
 ) {
-    if (!element || !handle) return () => {};
+    if (!element || !handle) {
+        const release = () => {};
+        release.updateMinimumSize = () => false;
+        return release;
+    }
     const controller = new AbortController();
+    let minWidth = initialMinWidth;
+    let minHeight = initialMinHeight;
+    let minimumOrientation = "horizontal";
     let drag = null;
     let resizeDrag = null;
     let released = false;
@@ -202,6 +211,65 @@ export function makeFloatingWindow(
         element.style.right = "auto";
         element.style.bottom = "auto";
     };
+    const updateMinimumSize = ({ width: nextWidth, height: nextHeight }) => {
+        if (
+            released ||
+            !Number.isFinite(nextWidth) ||
+            nextWidth <= 0 ||
+            !Number.isFinite(nextHeight) ||
+            nextHeight <= 0
+        )
+            return false;
+        const rect = element.getBoundingClientRect();
+        minWidth = nextWidth;
+        minHeight = nextHeight;
+        minimumOrientation = "horizontal";
+        element.style.minWidth = `${minWidth}px`;
+        element.style.minHeight = `${minHeight}px`;
+        if (rect.width >= minWidth && rect.height >= minHeight) return true;
+        const boundary = getBoundary();
+        const width = Math.min(Math.max(rect.width, minWidth), boundary.width);
+        const height = Math.min(
+            Math.max(rect.height, minHeight),
+            boundary.height,
+        );
+        const viewportLeft = Math.max(
+            boundary.left,
+            Math.min(rect.left, boundary.left + boundary.width - width),
+        );
+        const viewportTop = Math.max(
+            boundary.top,
+            Math.min(rect.top, boundary.top + boundary.height - height),
+        );
+        element.style.width = `${width}px`;
+        element.style.height = `${height}px`;
+        element.style.left = `${viewportLeft - boundary.left}px`;
+        element.style.top = `${viewportTop - boundary.top}px`;
+        element.style.right = "auto";
+        element.style.bottom = "auto";
+        return true;
+    };
+    const applyResizeOrientation = (requestedWidth, requestedHeight) => {
+        const horizontalMinWidth =
+            minimumOrientation === "horizontal" ? minWidth : minHeight;
+        const horizontalMinHeight =
+            minimumOrientation === "horizontal" ? minHeight : minWidth;
+        const widthScale = requestedWidth / horizontalMinWidth;
+        const heightScale = requestedHeight / horizontalMinHeight;
+        const shouldUseVerticalMinimum =
+            minimumOrientation === "horizontal" &&
+            widthScale < heightScale * (1 - ORIENTATION_HYSTERESIS);
+        const shouldUseHorizontalMinimum =
+            minimumOrientation === "vertical" &&
+            widthScale > heightScale * (1 + ORIENTATION_HYSTERESIS);
+        if (!shouldUseVerticalMinimum && !shouldUseHorizontalMinimum) return;
+        [minWidth, minHeight] = [minHeight, minWidth];
+        minimumOrientation = shouldUseVerticalMinimum
+            ? "vertical"
+            : "horizontal";
+        element.style.minWidth = `${minWidth}px`;
+        element.style.minHeight = `${minHeight}px`;
+    };
     const stopDragging = (event) => {
         if (
             event?.pointerId !== undefined &&
@@ -212,6 +280,7 @@ export function makeFloatingWindow(
     };
     const startDragging = (event) => {
         if (event.button !== undefined && event.button !== 0) return;
+        if (event.target?.closest?.(".floating-window-resize-handle")) return;
         if (event.target?.closest?.("button, a, input, select, textarea"))
             return;
         const rect = element.getBoundingClientRect();
@@ -274,11 +343,24 @@ export function makeFloatingWindow(
             return;
         resizeDrag = null;
     };
+    window.addEventListener("pointerup", stopDragging, {
+        signal: controller.signal,
+    });
+    window.addEventListener("pointercancel", stopDragging, {
+        signal: controller.signal,
+    });
+    window.addEventListener("pointerup", stopResizing, {
+        signal: controller.signal,
+    });
+    window.addEventListener("pointercancel", stopResizing, {
+        signal: controller.signal,
+    });
     for (const resizeHandle of chrome.resizeHandles) {
         resizeHandle.addEventListener(
             "pointerdown",
             (event) => {
                 if (event.button !== undefined && event.button !== 0) return;
+                drag = null;
                 const rect = element.getBoundingClientRect();
                 resizeDrag = {
                     edge: resizeHandle.dataset.resizeEdge,
@@ -291,6 +373,7 @@ export function makeFloatingWindow(
                     height: rect.height,
                 };
                 resizeHandle.setPointerCapture?.(event.pointerId);
+                event.stopPropagation?.();
                 event.preventDefault?.();
             },
             { signal: controller.signal },
@@ -300,9 +383,17 @@ export function makeFloatingWindow(
             (event) => {
                 if (!resizeDrag || event.pointerId !== resizeDrag.pointerId)
                     return;
+                event.stopPropagation?.();
                 const boundary = getBoundary();
                 const deltaX = event.clientX - resizeDrag.x;
                 const deltaY = event.clientY - resizeDrag.y;
+                const requestedWidth =
+                    resizeDrag.width +
+                    (resizeDrag.edge === "top-left" ? -deltaX : deltaX);
+                const requestedHeight =
+                    resizeDrag.height +
+                    (resizeDrag.edge === "top-left" ? -deltaY : deltaY);
+                applyResizeOrientation(requestedWidth, requestedHeight);
                 if (resizeDrag.edge === "top-left") {
                     const fixedRight = resizeDrag.left + resizeDrag.width;
                     const fixedBottom = resizeDrag.top + resizeDrag.height;
@@ -352,6 +443,9 @@ export function makeFloatingWindow(
         resizeHandle.addEventListener("pointercancel", stopResizing, {
             signal: controller.signal,
         });
+        resizeHandle.addEventListener("lostpointercapture", stopResizing, {
+            signal: controller.signal,
+        });
     }
     window.addEventListener("resize", constrain, { signal: controller.signal });
     const resizeObserver =
@@ -395,6 +489,7 @@ export function makeFloatingWindow(
             element.removeAttribute?.("popover");
         }
     };
+    release.updateMinimumSize = updateMinimumSize;
     signal?.addEventListener("abort", release, { once: true });
     if (signal?.aborted) release();
     return release;

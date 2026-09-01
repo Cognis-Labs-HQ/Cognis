@@ -449,7 +449,7 @@ test("social routes - get followers and following", async () => {
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/social/users/alice/followers"),
+            new URL("http://localhost/api/v1/social/users/alice/follow"),
         );
         assert.equal(status, 200);
         const parsed = JSON.parse(body);
@@ -504,7 +504,7 @@ test("social routes - followers list is empty for friends-visibility account whe
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/social/users/alice/followers"),
+            new URL("http://localhost/api/v1/social/users/alice/follow"),
         );
         assert.equal(status, 200);
         const parsed = JSON.parse(body);

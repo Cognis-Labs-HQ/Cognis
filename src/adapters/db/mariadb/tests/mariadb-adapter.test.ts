@@ -421,7 +421,7 @@ test("mariadb formats ISO values for declared timestamp columns", async () => {
     ]);
 });
 
-test("mariadb retries raw-schema transactions with datetime values", async () => {
+test("mariadb safely parses repeated datetime error text", async () => {
     const calls: Array<{ sql: string; params?: unknown[] }> = [];
     const transactionCalls: string[] = [];
     const client = createClient(
@@ -433,7 +433,7 @@ test("mariadb retries raw-schema transactions with datetime values", async () =>
             ) {
                 throw Object.assign(
                     new Error(
-                        "Incorrect datetime value for column 'created_at' at row 1",
+                        `${"for column a ".repeat(10_000)}Incorrect datetime value: '2026-08-29T13:07:49.408Z' for column \`cognis\`.\`accounts\`.\`created_at\` at row 1`,
                     ),
                     { code: "ER_TRUNCATED_WRONG_VALUE" },
                 );

@@ -9,7 +9,7 @@ import { openPopup } from "../../reuse/popup.js";
 import { showToast } from "../../reuse/toast.js";
 import { renderMarkdown } from "../../reuse/markdown-renderer.js";
 import { beginButtonLoading } from "../../reuse/button-loading.js";
-import { beginPageLoading } from "../../reuse/page-entry.js";
+import { beginPageLoading, mountWhenDirect } from "../../reuse/page-entry.js";
 import { replaceMountScope } from "../../reuse/mount-scope.js";
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
@@ -973,4 +973,4 @@ export async function mount(root, { signal } = {}) {
     }
 }
 
-await mount(document.querySelector("#app"));
+await mountWhenDirect(mount);

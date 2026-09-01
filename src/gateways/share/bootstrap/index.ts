@@ -1,3 +1,4 @@
+import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { GatewayBootstrapContext } from "../../shared.js";
@@ -13,6 +14,11 @@ import { ShareApprovalRequestStore } from "../gateway/approval-request-store.js"
 import { CoreShareGateway } from "../gateway/index.js";
 import { ShareAdapterConfigStore } from "../gateway/adapter-config-store.js";
 import { registerShareBootstrapHooks } from "./flow-registrations.js";
+import {
+    registerShareApprovalFlow,
+    requestShareApproval,
+    type ShareApprovalInput,
+} from "./approval.js";
 import { createShareRoutes } from "./routes.js";
 import {
     hasShareCapability,
@@ -31,6 +37,10 @@ const SHARE_ADAPTERS_ROOT = path.resolve(GATEWAY_ROOT, "../../adapters/share");
 const GUEST_PROFILE_CLEANUP_INTERVAL_MS = 15 * 60 * 1000;
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const manifestVersion = await readGatewayManifestVersion(
+        import.meta.url,
+        "../manifest.json",
+    );
     const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
     if (!dbExecutor) {
         return;
@@ -238,6 +248,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "share:listPendingApprovalsForAccount",
         gateway.listPendingApprovalsForAccount.bind(gateway),
     );
+    registerShareApprovalFlow({ ctx, gateway });
+    ctx.capabilities.contribute(
+        "share:requestApproval",
+        (request: ShareApprovalInput) => requestShareApproval({ ctx, request }),
+    );
 
     await registerShareBootstrapHooks({ ctx, gateway });
 
@@ -317,7 +332,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.7.33",
+        version: manifestVersion,
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
     });

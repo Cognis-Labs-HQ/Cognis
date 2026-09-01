@@ -96,3 +96,20 @@ Profile が存在しない、または失敗した場合、Messages はその Ca
 | `GET`    | `/api/v1/gateways/social/adapters`             | 登録済みアダプター一覧 | Admin |
 | `POST`   | `/api/v1/gateways/social/adapters/:id/enable`  | アダプターを有効化     | Admin |
 | `POST`   | `/api/v1/gateways/social/adapters/:id/disable` | アダプターを無効化     | Admin |
+
+## メンバーシップ変更の標準
+
+ソーシャルコンポーネントのメンバーシップ変更では、`POST` でユーザーを追加し、`DELETE` で削除します。各関係に文書化された標準パスとハンドルを HTTP 境界で使い、`ctx` Capability 内では正規のアカウント ID を使います。両操作は冪等です。成功は `200`、不正入力は `400`、対象なしは `404`、権限拒否は `403` を返します。
+
+| 関係                   | 追加                                                                                   | 削除                                                           | `ctx` Capability                                                                                          |
+| ---------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| チャットルームメンバー | `{ "handle": "user" }` を指定する `POST /api/v1/social/messages/rooms/:roomId/members` | `DELETE /api/v1/social/messages/rooms/:roomId/members/:handle` | `social:messages:membership` の `add({ roomId, actorAccountId, userAccountId })` と対応する `remove(...)` |
+| プロフィールフォロワー | `POST /api/v1/social/users/:handle/follow`                                             | `DELETE /api/v1/social/users/:handle/follow`                   | `social:profile:followers` の `add({ followerAccountId, followedAccountId })` と対応する `remove(...)`    |
+
+`add` はアクティブなメンバーシップを保証する冪等操作であり、アーカイブ状態も解除します。ミーティング連携は、チャットを読み込む前に参加者が加わるたびにこの操作を呼び出す必要があります。これにより、チャットから退出したユーザーもミーティングへの再参加時にチャットへ戻れます。チャットからの退出だけではミーティングの参加者から削除されません。
+
+HTTP ルートは実行者を認証・認可します。Capability は信頼されたサーバー間インターフェースであり、呼び出し元は事前に権限を持ち、実行者を明示する必要があります。実装を直接 import せず `ctx.capabilities` から取得します。
+
+## プロフィール識別 Capability
+
+Profile アダプターは、プラットフォームとモジュールの利用者に `social:profile:identity` を公開します。`normalizeHandleKey` と `normalizeHandleKeys` は正規のハンドル正規化規則を適用し、`resolveAccountHandle(accountId, fieldName?)` は正規のアカウント ID を正規化済みプロフィールハンドルへ解決して、存在しないアカウントやハンドルを拒否します。オーケストレーターは Profile アダプターをインポートしたり正規化ロジックを複製したりせず、この Capability を使用します。

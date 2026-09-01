@@ -2,7 +2,7 @@
     "id": "db",
     "uuid": "5711a248-4ac9-5d44-98b5-b99bd4c6d722",
     "name": "Database Gateway",
-    "version": "1.3.8",
+    "version": "1.3.9",
     "required": true,
     "description": "Core relational database layer for persistent application data.",
     "publisher": "Cognis Labs HQ",

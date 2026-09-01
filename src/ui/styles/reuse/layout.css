@@ -616,7 +616,7 @@ button.dropdown-item {
     gap: 10px;
     position: fixed;
     right: 18px;
-    z-index: 1000;
+    z-index: 1202;
 }
 .page-action-dock > .page-action-button {
     align-items: center;

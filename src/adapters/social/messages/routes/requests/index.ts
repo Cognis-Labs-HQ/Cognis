@@ -90,14 +90,10 @@ export function createRequestsHandler(deps: MessagesRoutesDeps) {
                     request.toAccountId,
                     request.fromAccountId,
                 ]) {
-                    const profile =
-                        await profileStore.getProfile(memberAccountId);
-                    await messagesStore.removeMemberWithEvent({
+                    await deps.membership!.remove({
                         roomId: request.roomId,
-                        actorId: request.toAccountId,
-                        accountId: memberAccountId,
-                        handle: profile?.handle ?? null,
-                        displayName: profile?.displayName ?? null,
+                        actorAccountId: request.toAccountId,
+                        userAccountId: memberAccountId,
                     });
                 }
             }
@@ -137,28 +133,18 @@ export function createRequestsHandler(deps: MessagesRoutesDeps) {
             (await messagesStore.createRoom("dm", null, request.fromAccountId));
         if (!existingRoom) {
             await messagesStore.generateAndStoreRoomKey(room.id);
-            const requesterProfile = await profileStore.getProfile(
-                request.fromAccountId,
-            );
-            await messagesStore.addMemberWithEvent({
+            await deps.membership!.add({
                 roomId: room.id,
-                actorId: request.fromAccountId,
-                accountId: request.fromAccountId,
+                actorAccountId: request.fromAccountId,
+                userAccountId: request.fromAccountId,
                 role: "owner",
-                handle: requesterProfile?.handle ?? null,
-                displayName: requesterProfile?.displayName ?? null,
             });
         }
-        const recipientProfile = await profileStore.getProfile(
-            request.toAccountId,
-        );
-        await messagesStore.addMemberWithEvent({
+        await deps.membership!.add({
             roomId: room.id,
-            actorId: request.toAccountId,
-            accountId: request.toAccountId,
+            actorAccountId: request.toAccountId,
+            userAccountId: request.toAccountId,
             role: "member",
-            handle: recipientProfile?.handle ?? null,
-            displayName: recipientProfile?.displayName ?? null,
         });
         await Promise.all([
             messagesStore.setArchived(room.id, request.fromAccountId, false),

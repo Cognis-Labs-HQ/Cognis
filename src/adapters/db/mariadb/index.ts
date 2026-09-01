@@ -616,10 +616,11 @@ function readErrorCode(error: unknown): string | undefined {
 }
 
 function readInvalidTemporalColumn(error: unknown): string | undefined {
-    if (!(error instanceof Error)) return undefined;
-    return error.message.match(
-        /for column ['`](?:[^.'`]+\.)?([^'`]+)['`]/i,
-    )?.[1];
+    return error instanceof Error
+        ? /for column (?:[`'][^`']+[`']\.)*[`']([^`']+)[`'] at row/i.exec(
+              error.message,
+          )?.[1]
+        : undefined;
 }
 
 export async function waitForMariaDb(

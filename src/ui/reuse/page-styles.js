@@ -15,6 +15,9 @@
  *                                than rejecting, so that a stylesheet failure
  *                                never prevents the page from mounting. The
  *                                error is logged to console.error.
+ *   ensurePersistentStylesheet(href) — ensures a stylesheet used by
+ *                                dashboard-shell UI remains loaded across
+ *                                page-route changes.
  *   preparePageStylesheets(hrefs) — loads a route's complete stylesheet set
  *                                and returns a commit callback that removes
  *                                prior-route styles after the new page mounts.
@@ -31,8 +34,21 @@
  */
 
 const _pending = new Map();
-// Styles present when the shell boots belong to Cognis and remain mounted.
 const _managedPageStylesheets = new Set();
+const _persistentStylesheets = new Set();
+let _initialPageStylesheetsRegistered = false;
+
+function registerInitialPageStylesheets() {
+    if (_initialPageStylesheetsRegistered) return;
+    _initialPageStylesheetsRegistered = true;
+    for (const link of document.head.querySelectorAll(
+        'link[data-page-stylesheet="true"][href]',
+    )) {
+        _managedPageStylesheets.add(
+            new URL(link.href, window.location.origin).pathname,
+        );
+    }
+}
 
 export function ensurePageStylesheet(href) {
     if (_pending.has(href)) return _pending.get(href);
@@ -53,6 +69,7 @@ export function ensurePageStylesheet(href) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = href;
+    link.dataset.pageStylesheet = "true";
     const ready = new Promise((resolve) => {
         link.addEventListener("load", resolve, { once: true });
         link.addEventListener("error", (err) => {
@@ -70,20 +87,47 @@ export function ensurePageStylesheet(href) {
 }
 
 /**
+ * Ensures a dashboard-shell stylesheet remains active across SPA navigation.
+ *
+ * @param {string} href - Absolute stylesheet URL to load and retain.
+ * @returns {Promise<void>} Resolves when the stylesheet is ready.
+ */
+export function ensurePersistentStylesheet(href) {
+    const pathname = new URL(href, window.location.origin).pathname;
+    _persistentStylesheets.add(pathname);
+    _managedPageStylesheets.delete(pathname);
+    for (const link of document.head.querySelectorAll(
+        'link[rel="stylesheet"][href]',
+    )) {
+        if (new URL(link.href, window.location.origin).pathname !== pathname) {
+            continue;
+        }
+        delete link.dataset.pageStylesheet;
+    }
+    return ensurePageStylesheet(href);
+}
+
+/**
  * Reconciles document styles with the destination route's declared bundle.
  *
  * @param {string[]} hrefs - Complete stylesheet URLs declared by the route.
  * @returns {Promise<() => void>} Resolves after destination styles load with a callback that removes stale route styles.
  */
 export async function preparePageStylesheets(hrefs) {
+    registerInitialPageStylesheets();
     const destinationStylesheets = new Set(
         hrefs.map((href) => new URL(href, window.location.origin).pathname),
     );
-    destinationStylesheets.forEach((href) => _managedPageStylesheets.add(href));
+    destinationStylesheets.forEach((href) => {
+        if (!_persistentStylesheets.has(href)) {
+            _managedPageStylesheets.add(href);
+        }
+    });
     await Promise.all(hrefs.map(ensurePageStylesheet));
     return () => {
         for (const staleStylesheet of _managedPageStylesheets) {
             if (destinationStylesheets.has(staleStylesheet)) continue;
+            if (_persistentStylesheets.has(staleStylesheet)) continue;
             for (const link of document.head.querySelectorAll(
                 'link[rel="stylesheet"][href]',
             )) {
@@ -95,6 +139,7 @@ export async function preparePageStylesheets(hrefs) {
                 }
             }
             _pending.delete(staleStylesheet);
+            _managedPageStylesheets.delete(staleStylesheet);
         }
     };
 }

@@ -2,7 +2,7 @@
     "id": "observability",
     "uuid": "0b9568ea-7323-518e-826d-4be28bed3b4c",
     "name": "Observability Gateway",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "hasAdapters": false,
     "required": true,
     "description": "Vendor-neutral runtime and browser performance telemetry.",

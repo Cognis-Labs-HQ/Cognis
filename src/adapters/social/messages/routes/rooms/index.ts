@@ -296,23 +296,18 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                           typeof body.title === "string" ? body.title : null,
                           accountId,
                       );
-            const creatorProfile = await profileStore.getProfile(accountId);
-            await messagesStore.addMemberWithEvent({
+            await deps.membership!.add({
                 roomId: room.id,
-                actorId: accountId,
-                accountId,
+                actorAccountId: accountId,
+                userAccountId: accountId,
                 role: "owner",
-                handle: creatorProfile?.handle ?? accountId,
-                displayName: creatorProfile?.displayName ?? accountId,
             });
             for (const target of targets) {
-                await messagesStore.addMemberWithEvent({
+                await deps.membership!.add({
                     roomId: room.id,
-                    actorId: accountId,
-                    accountId: target.accountId,
+                    actorAccountId: accountId,
+                    userAccountId: target.accountId,
                     role: "member",
-                    handle: target.handle,
-                    displayName: target.displayName,
                 });
             }
             await messagesStore.generateAndStoreRoomKey(room.id);

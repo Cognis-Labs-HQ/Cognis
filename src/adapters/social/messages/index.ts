@@ -19,6 +19,7 @@ import {
     registerCanonicalFlow,
 } from "@cognis/core";
 import type { Ctx } from "@cognis/core";
+import { createChatroomMembershipCapability } from "./membership.js";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -113,6 +114,13 @@ export async function bootstrapSocialAdapter(
 
     const messagesStore = new DbMessagesStore(dbExecutor);
     await messagesStore.ensureSchema();
+    const membership = createChatroomMembershipCapability(
+        messagesStore,
+        profileStore,
+    );
+    ctx.capabilities.contribute("social:messages:membership", membership);
+    const systemCtx = ctx.capabilities.get<Ctx>(CTX_CAPABILITY);
+    systemCtx?.contributeCapability("social:messages:membership", membership);
 
     type ExternalRoomAuthorizer = (input: {
         claims: { sub: string; role: string };
@@ -143,11 +151,11 @@ export async function bootstrapSocialAdapter(
     ) => {
         const rooms = await messagesStore.listRoomsForAccount(accountId);
         for (const room of rooms) {
-            await messagesStore.removeMemberWithEvent({
+            await membership.remove({
                 roomId: room.id,
-                actorId: accountId,
-                accountId,
-                handle: subjectHandle,
+                actorAccountId: accountId,
+                userAccountId: accountId,
+                userHandle: subjectHandle,
             });
         }
         await dbExecutor.transaction(async (transactionDb) => {
@@ -357,14 +365,11 @@ export async function bootstrapSocialAdapter(
             );
             await messagesStore.generateAndStoreRoomKey(room.id);
             for (const accountId of accountIds) {
-                const profile = await profileStore.getProfile(accountId);
-                await messagesStore.addMemberWithEvent({
+                await membership.add({
                     roomId: room.id,
-                    actorId: ownerAccountId,
-                    accountId,
+                    actorAccountId: ownerAccountId,
+                    userAccountId: accountId,
                     role: accountId === ownerAccountId ? "owner" : "member",
-                    handle: profile?.handle ?? null,
-                    displayName: profile?.displayName ?? null,
                 });
             }
             return {
@@ -398,12 +403,12 @@ export async function bootstrapSocialAdapter(
             isAdapterEnabled: () => ctx.isGatewayEnabled(),
             routeContext,
             flow: ctx.flow,
+            membership,
         }),
         "social",
     );
 
     if (!ctx.flow.exists("send-message")) {
-        const systemCtx = ctx.capabilities.get<Ctx>(CTX_CAPABILITY);
         const sendMessageFlow = MESSAGING_FLOW_CATALOG.find(
             (flow) => flow.id === "send-message",
         );
@@ -540,6 +545,11 @@ export async function bootstrapSocialAdapter(
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",
             "/static/adapters/social/messages/messages.css",
+            "/static/adapters/social/messages/thread.css",
+            "/static/adapters/social/messages/messages-style-variants.css",
+            "/static/adapters/social/messages/messages-chat-shared.css",
+            "/static/adapters/social/messages/messages-template-composer.css",
+            "/static/adapters/social/messages/messages-sidebar.css",
         ],
         isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
     });

@@ -94,3 +94,20 @@ Defined in `src/gateways/social/gateway.ts` and passed to every adapter:
 | `GET`  | `/api/v1/gateways/social/adapters`             | List registered adapters | Admin |
 | `POST` | `/api/v1/gateways/social/adapters/:id/enable`  | Mark adapter active      | Admin |
 | `POST` | `/api/v1/gateways/social/adapters/:id/disable` | Mark adapter inactive    | Admin |
+
+## Membership mutation standard
+
+Social components expose membership changes with the same two verbs: `POST` adds a user and `DELETE` removes a user. Use the documented canonical path for each relationship, make both operations idempotent, identify users by handle at the HTTP boundary, and use canonical account IDs inside `ctx` capabilities. Successful mutations return `200`; malformed input, missing resources, and denied operations return `400`, `404`, and `403` respectively.
+
+| Relationship     | Add                                                                              | Remove                                                         | `ctx` capability                                                                                              |
+| ---------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Chatroom member  | `POST /api/v1/social/messages/rooms/:roomId/members` with `{ "handle": "user" }` | `DELETE /api/v1/social/messages/rooms/:roomId/members/:handle` | `social:messages:membership` with `add({ roomId, actorAccountId, userAccountId })` and matching `remove(...)` |
+| Profile follower | `POST /api/v1/social/users/:handle/follow`                                       | `DELETE /api/v1/social/users/:handle/follow`                   | `social:profile:followers` with `add({ followerAccountId, followedAccountId })` and matching `remove(...)`    |
+
+`add` is an idempotent ensure-active operation: it also clears an archived membership. Meeting integrations must call it for every participant join before loading chat, so a user who intentionally left the chat can rejoin it with the meeting. Leaving chat does not remove the participant from the meeting.
+
+HTTP routes authenticate and authorize the acting user. Capabilities are the trusted server-to-server surface: callers must already have authority to act, and must always supply the actor explicitly. Consumers obtain capabilities from `ctx.capabilities`; they never import an adapter store or implementation.
+
+## Profile identity capability
+
+The Profile adapter publishes `social:profile:identity` to both platform and module consumers. Its `normalizeHandleKey` and `normalizeHandleKeys` functions apply the canonical handle normalization rules, while `resolveAccountHandle(accountId, fieldName?)` resolves a canonical account ID to its normalized profile handle and rejects missing accounts or handles. Orchestrators use this capability instead of importing the Profile adapter or duplicating normalization logic.

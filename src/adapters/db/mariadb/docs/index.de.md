@@ -16,6 +16,8 @@ Der MariaDB-Adapter verbindet Cognis mit einem MariaDB- (oder MySQL-) Datenbanks
 
 Die Schema-Selbstheilung erhält Fremdschlüsseldefinitionen beim Hinzufügen fehlender Spalten und meldet Fehler bei der Reparatur von Indizes oder Spalten, statt sie stillschweigend zu ignorieren. Ausdrücklich indexierte Textspalten verwenden `VARCHAR(255)`; die Selbstheilung konvertiert eine vorhandene `TEXT`-Spalte, bevor ihr Index angelegt wird.
 
+ISO-8601-Werte für deklarierte Zeitstempelspalten werden in die MariaDB-`DATETIME`-Eingabesyntax umgewandelt, ohne ISO-ähnliche Werte in Textspalten zu verändern. Befehle für Tabellen aus unstrukturiertem Initialisierungs-SQL erholen sich auch bei vollständig qualifizierten Spaltennamen in Serverfehlern, indem sie einmal mit kanonischen MariaDB-Zeitparametern wiederholt werden.
+
 ### Platzhalter-Syntax
 
 ```sql
@@ -32,4 +34,4 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 | `MARIADB_POOL_IDLE_TIMEOUT_MS`       | `30000`  | Leerlaufzeitlimit in Millisekunden (1.000–600.000)                               |
 | `MARIADB_POOL_CONNECTION_TIMEOUT_MS` | `5000`   | Verbindungszeitlimit in Millisekunden (100–120.000)                              |
 | `MARIADB_STARTUP_TIMEOUT_MS`         | `60000`  | Maximales Zeitfenster für die Startbereitschaft in Millisekunden (1.000–600.000) |
-| `MARIADB_STARTUP_RETRY_INTERVAL_MS`  | `1000`   | Pause zwischen Bereitschaftsversuchen in Millisekunden (100–30.000)              | ISO-8601-Werte für deklarierte Zeitstempelspalten werden in die MariaDB-`DATETIME`-Eingabesyntax umgewandelt, ohne ISO-ähnliche Werte in Textspalten zu verändern. | Befehle für Tabellen aus unstrukturiertem Initialisierungs-SQL erholen sich ebenfalls von MariaDB-Zeitwertfehlern, indem sie einmal mit kanonischen MariaDB-Zeitparametern wiederholt werden. |
+| `MARIADB_STARTUP_RETRY_INTERVAL_MS`  | `1000`   | Pause zwischen Bereitschaftsversuchen in Millisekunden (100–30.000)              |

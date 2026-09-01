@@ -1,4 +1,5 @@
-import { readdir } from "node:fs/promises";
+import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
+import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import {
     registerLimitedAuthPathAllowance,
@@ -23,6 +24,10 @@ type PendingLoginAttemptInput = {
 };
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const manifestVersion = await readGatewayManifestVersion(
+        import.meta.url,
+        "../manifest.json",
+    );
     const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
 
     const store = new DbTfaStore(dbExecutor);
@@ -135,7 +140,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "tfa",
         name: "Two-Factor Authentication Gateway",
-        version: "1.1.1",
+        version: manifestVersion,
         description:
             "Manages two-factor authentication methods and login checks.",
         publisher: "Cognis Labs HQ",

@@ -145,7 +145,7 @@
 | `DELETE` | `/api/v1/social/users/:handle/follow`    | フォロー解除                      | Bearer |
 | `POST`   | `/api/v1/social/users/:handle/block`     | ユーザーをブロック                | Bearer |
 | `DELETE` | `/api/v1/social/users/:handle/block`     | ブロック解除                      | Bearer |
-| `GET`    | `/api/v1/social/users/:handle/followers` | フォロワーリスト (可視性でゲート) | Bearer |
+| `GET`    | `/api/v1/social/users/:handle/follow`    | フォロワーリスト (可視性でゲート) | Bearer |
 | `GET`    | `/api/v1/social/users/:handle/following` | フォローリスト (可視性でゲート)   | Bearer |
 
 ### 投稿

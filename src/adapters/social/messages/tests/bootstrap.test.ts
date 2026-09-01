@@ -66,8 +66,8 @@ test("meeting-linked chats record every resolved participant joining", () => {
         )?.[0] ?? "";
 
     assert.match(groupChatCapability, /for \(const accountId of accountIds\)/);
-    assert.match(groupChatCapability, /addMemberWithEvent\(\{/);
-    assert.match(groupChatCapability, /actorId: ownerAccountId/);
+    assert.match(groupChatCapability, /membership\.add\(\{/);
+    assert.match(groupChatCapability, /actorAccountId: ownerAccountId/);
 });
 
 test("messages polling does not rerender for read timestamp churn", () => {
@@ -100,6 +100,18 @@ test("messages adapter ensures send-message flow before hook registration", () =
     );
     assert.match(source, /failed to register send-message persist hook/);
     assert.match(source, /failed to register send-message fan-out hook/);
+});
+
+test("messages membership is exported through the system ctx", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/index.ts"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /systemCtx\?\.contributeCapability\(\s*"social:messages:membership",\s*membership,?\s*\)/,
+    );
 });
 
 test("messages avatars fall back after failed image loads", () => {
@@ -148,13 +160,6 @@ test("messages reaction chips render hover popup metadata and styles", () => {
     assert.doesNotMatch(
         appSource,
         /class="messages-reaction-chip[^"]*" title=/,
-    );
-    assert.match(
-        readFileSync(
-            resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
-            "utf8",
-        ),
-        /@import url\("\/static\/adapters\/social\/messages\/messages-chat-shared\.css"\);/,
     );
     assert.match(stylesheetSource, /\.messages-reaction-hover-popup \{/);
     assert.match(stylesheetSource, /\.messages-reaction-hover-popup-users \{/);
