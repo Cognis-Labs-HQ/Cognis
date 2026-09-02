@@ -225,8 +225,14 @@ Every pull request change must add changelog files for that PR in every supporte
 Changelog entry structure is mandatory:
 
 - `# ...` — changelog title (release summary title)
+- `**Feature Branch:** ...` — the source branch, placed directly after the title; localize the label as `Feature-Zweig`, `Cabang Fitur`, or `機能ブランチ` in the corresponding language file
 - `## ...` — one change point per heading (these are shown as dot-point summary items in release popups)
 - body content under each `##` — full details shown on the changelogs page only
+- `## Commits` — the final section containing a Markdown list of full GitHub commit links; localize this heading in each language file
+
+Commit-list items must be contiguous: never place blank lines between commit links in a changelog's final commit section.
+
+The final commit section is bookkeeping metadata, not a release-summary change point. Do not omit the feature-branch line or commit section merely because the title, change headings, and bodies are already present. Use `N/A` as the branch and leave the commit list empty only for changelogs that do not belong to a feature branch.
 
 Every implementation commit whose work is described by the current pull request's changelog must ensure that the changelog's commit list links the immediately preceding implementation commit. When a user requests this provenance update immediately before implementation, finish the work with a dedicated final commit that changes only the localized changelog files to record the prior implementation commit; that bookkeeping commit must not add unrelated changes or link itself.
 

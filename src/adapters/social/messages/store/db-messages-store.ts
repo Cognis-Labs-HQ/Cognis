@@ -21,6 +21,8 @@ import {
     addMember,
     createDm,
     createRoom,
+    deleteRoom,
+    deleteRoomForActor,
     findDmBetween,
     findGroupByExactMembers,
     getMember,
@@ -85,6 +87,17 @@ export class DbMessagesStore {
 
     async getRoom(id: string): Promise<RoomRow | null> {
         return getRoom(this.db, id);
+    }
+
+    async deleteRoom(id: string): Promise<void> {
+        await deleteRoom(this.db, id);
+    }
+
+    async deleteRoomForActor(
+        roomId: string,
+        actorAccountId: string,
+    ): Promise<"deleted" | "forbidden" | "not_found"> {
+        return deleteRoomForActor(this.db, roomId, actorAccountId);
     }
 
     async updateRoomAvatar(

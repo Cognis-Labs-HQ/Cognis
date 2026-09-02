@@ -20,6 +20,7 @@ import {
 } from "@cognis/core";
 import type { Ctx } from "@cognis/core";
 import { createChatroomMembershipCapability } from "./membership.js";
+import { createChatroomDeletionCapability } from "./chatroom-deletion.js";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -121,6 +122,42 @@ export async function bootstrapSocialAdapter(
     ctx.capabilities.contribute("social:messages:membership", membership);
     const systemCtx = ctx.capabilities.get<Ctx>(CTX_CAPABILITY);
     systemCtx?.contributeCapability("social:messages:membership", membership);
+    const deleteChatroom = createChatroomDeletionCapability(
+        messagesStore,
+        ctx.log,
+    );
+    if (systemCtx && !systemCtx.hasFlow("delete-chatroom")) {
+        systemCtx.registerFlow({
+            id: "delete-chatroom",
+            description:
+                "Deletes a chatroom through staged validation, authorization, and cleanup.",
+            stages: [
+                "validate-request",
+                "authorize-and-delete",
+                "after-delete",
+            ],
+        });
+    }
+    ctx.flow.extend(
+        "delete-chatroom",
+        "authorize-and-delete",
+        { id: "social-messages-adapter:authorize-and-delete" },
+        async (stageCtx) => deleteChatroom(stageCtx.input as never),
+    );
+    const runDeleteChatroomFlow = async (input: {
+        roomId?: unknown;
+        actorAccountId?: unknown;
+    }) => {
+        await ctx.flow.run("delete-chatroom", input);
+    };
+    ctx.capabilities.contribute(
+        "social:messages:deleteChatroom",
+        runDeleteChatroomFlow,
+    );
+    systemCtx?.contributePublicCapability(
+        "social:messages:deleteChatroom",
+        runDeleteChatroomFlow,
+    );
 
     type ExternalRoomAuthorizer = (input: {
         claims: { sub: string; role: string };

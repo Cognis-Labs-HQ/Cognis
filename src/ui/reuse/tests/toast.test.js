@@ -57,6 +57,8 @@ class FakeElement {
         return false;
     }
 
+    remove() {}
+
     setPointerCapture() {}
 
     get offsetWidth() {
@@ -94,7 +96,17 @@ test("temporary toast hover and drag gestures control dismissal", async () => {
 
     try {
         const { showToast } = await import(`../toast.js?test=${Date.now()}`);
-        showToast("Saved", { duration: 2_500 });
+        let dismissedCount = 0;
+        let expiredCount = 0;
+        showToast("Saved", {
+            duration: 2_500,
+            onDismiss: () => {
+                dismissedCount += 1;
+            },
+            onExpire: () => {
+                expiredCount += 1;
+            },
+        });
         const toast = tray.children.at(-1);
 
         assert.equal(timers.size, 1);
@@ -147,6 +159,23 @@ test("temporary toast hover and drag gestures control dismissal", async () => {
             pointerType: "touch",
         });
         assert.equal(toast.classList.contains("toast--hiding"), true);
+        toast.dispatch("transitionend");
+        assert.equal(dismissedCount, 1);
+        assert.equal(expiredCount, 0);
+
+        showToast("Auto refresh", {
+            duration: 2_500,
+            onExpire: () => {
+                expiredCount += 1;
+            },
+        });
+        const expiringToast = tray.children.at(-1);
+        const expirationTimer = [...timers.values()].find(
+            ({ delay }) => delay === 2_500,
+        );
+        expirationTimer.callback();
+        expiringToast.dispatch("transitionend");
+        assert.equal(expiredCount, 1);
 
         showToast("Permanent", { permanent: true });
         const permanentToast = tray.children.at(-1);

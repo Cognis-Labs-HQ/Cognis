@@ -28,6 +28,7 @@ import { uiCtx } from "../reuse/ui-ctx.js";
 import { showToast } from "../reuse/toast.js";
 import { bindLanguageToggle } from "../reuse/language-toggle.js";
 import { bindUserMenuIntegrity } from "./user-menu.js";
+import { ensurePersistentStylesheet } from "../reuse/page-styles.js";
 import {
     ensureNavbarPluginsLoaded as loadNavbarPlugins,
     ensureUiProvidersLoaded,
@@ -97,6 +98,25 @@ function applyActiveNavigation() {
             if (isActive) link.setAttribute("aria-current", "page");
             else link.removeAttribute("aria-current");
         });
+
+    const dropdownLinks = Array.from(
+        document.querySelectorAll(".user-dropdown-content a"),
+    );
+    const activeDropdownLink = dropdownLinks
+        .filter((link) =>
+            isNavigationLinkActive(currentPath, link.getAttribute("href")),
+        )
+        .sort(
+            (left, right) =>
+                (right.getAttribute("href")?.length ?? 0) -
+                (left.getAttribute("href")?.length ?? 0),
+        )[0];
+    dropdownLinks.forEach((link) => {
+        const isActive = link === activeDropdownLink;
+        link.classList.toggle("active", isActive);
+        if (isActive) link.setAttribute("aria-current", "page");
+        else link.removeAttribute("aria-current");
+    });
 }
 
 function navigationEntryLabel(entry) {
@@ -240,12 +260,14 @@ function bindTopbarActions() {
     const openMenu = () => {
         dropdown?.classList.remove("hidden");
         profileMenu?.classList.add("open");
+        toggle?.classList.add("active");
         toggle?.setAttribute("aria-expanded", "true");
     };
 
     const closeMenu = () => {
         dropdown?.classList.add("hidden");
         profileMenu?.classList.remove("open");
+        toggle?.classList.remove("active");
         toggle?.setAttribute("aria-expanded", "false");
     };
 
@@ -752,11 +774,7 @@ export async function renderDashboardLayout(root, slots = {}) {
 const SEARCH_BAR_CSS = "/static/styles/reuse/search-bar.css";
 
 function injectSearchBarStyles() {
-    if (document.querySelector(`link[href="${SEARCH_BAR_CSS}"]`)) return;
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = SEARCH_BAR_CSS;
-    document.head.appendChild(link);
+    void ensurePersistentStylesheet(SEARCH_BAR_CSS);
 }
 
 function initSearchBar(i18n) {

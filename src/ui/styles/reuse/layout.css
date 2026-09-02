@@ -340,6 +340,10 @@
     overflow: visible;
     position: relative;
 }
+.avatar-button.active {
+    border-color: color-mix(in srgb, var(--accent-2) 35%, transparent);
+    background: color-mix(in srgb, var(--accent-2) 22%, transparent);
+}
 .avatar-image {
     width: 100%;
     height: 100%;
@@ -418,7 +422,14 @@
     background: var(--surface-soft);
     outline: 1px solid var(--accent);
     outline-offset: -1px;
+}
+.dropdown-item:hover,
+.dropdown-item:focus-visible {
     transform: translateX(3px);
+}
+.app-shell .dropdown-item.active {
+    border-bottom: 2px solid var(--accent-2);
+    border-radius: 0;
 }
 .hidden {
     display: none;

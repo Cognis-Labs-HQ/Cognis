@@ -10,6 +10,9 @@ Der Nachrichten-Browserclient ermöglicht Modulen, Raumnachrichten aufzulisten, 
 
 Der Client gibt die ursprüngliche `Response` zurück, damit der Aufrufer Status und Nutzdaten verarbeitet. Er URI-kodiert Raum-IDs, hält Routenwissen im zuständigen Adapter, leitet optionale Zugriffstoken und die Unterdrückung von Zugriffsfehlern weiter, sendet Schreibvorgänge als JSON und ist nur verfügbar, solange Social-Gateway und Messages-Adapter aktiviert sind.
 
+Die öffentliche Funktion `social:messages:deleteChatroom` akzeptiert eine Raum-ID und die Konto-ID des Handelnden. Sie entfernt den Raum und seine abhängigen Datensätze dauerhaft, wenn der Handelnde den Raum erstellt hat oder dessen einziger verbleibender Teilnehmer ist.
+
 ## Browser-Vertrag für VoIP-Anbieter
 
 Messages zeigt in Direkt- und Gruppenchats eine Videoanrufaktion an, sobald ein Browser-Anbieter die Capability `voip:startCall` zu `uiCtx.capabilities` beiträgt. Der Anbieter erhält die Raumidentität, die Kontoidentität und Anzeigemetadaten aller Chatmitglieder, die Quelle `messages` sowie die Darstellungsanforderung `pip`. Er ist für das Erstellen des Meetings, das Einladen der Teilnehmenden und das Einbinden seiner Anrufoberfläche als Bild-im-Bild-Fenster auf der aktuellen Seite verantwortlich.
+
