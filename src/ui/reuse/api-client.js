@@ -19,23 +19,28 @@ const RETRYABLE_SERVER_STATUS_MESSAGE_REGEX = new RegExp(
     `\\b(${[...RETRYABLE_SERVER_STATUS_CODES].join("|")})\\b`,
 );
 const CONNECTION_RECOVERY_POPUP_SUPPRESSION_WINDOW_MS = 5_000;
+const CONNECTION_RECOVERY_POLL_INTERVAL_MS = 5_000;
 const API_REQUEST_TIMEOUT_MS = 30_000;
 const connectionRecoveryFailureMarker = Symbol("connectionRecoveryFailure");
-const connectionRecoveryStateKey = Symbol.for("cognis.connectionRecoveryState");
-const connectionRecoveryState =
-    globalThis[connectionRecoveryStateKey] ??
-    (globalThis[connectionRecoveryStateKey] = {
-        didShowToast: false,
-        lastSignalAt: 0,
-    });
+const connectionRecoveryStatesKey = Symbol.for(
+    "cognis.connectionRecoveryStates",
+);
+const connectionRecoveryStates =
+    globalThis[connectionRecoveryStatesKey] ??
+    (globalThis[connectionRecoveryStatesKey] = new Map());
 
 let connectionRecoveryPrompt = "";
+let connectionRestoredPrompt = "";
 
-export function configureConnectionRecoveryPrompt(message) {
+export function configureConnectionRecoveryPrompt(
+    message,
+    restoredMessage = "",
+) {
     if (typeof message !== "string") return;
     const trimmedMessage = message.trim();
     if (!trimmedMessage) return;
     connectionRecoveryPrompt = trimmedMessage;
+    connectionRestoredPrompt = String(restoredMessage).trim();
 }
 
 export function requestTargetsApi(path) {
@@ -43,21 +48,87 @@ export function requestTargetsApi(path) {
     if (path.startsWith("/api/")) return true;
     try {
         const parsed = new URL(path, window.location.origin);
-        return parsed.pathname.startsWith("/api/");
+        return (
+            parsed.origin === window.location.origin &&
+            parsed.pathname.startsWith("/api/")
+        );
     } catch {
         return false;
     }
 }
 
-function showConnectionRecoveryToast() {
-    if (connectionRecoveryState.didShowToast || !connectionRecoveryPrompt)
-        return;
-    connectionRecoveryState.didShowToast = true;
-    connectionRecoveryState.lastSignalAt = Date.now();
-    showToast(connectionRecoveryPrompt, {
+function getConnectionRecoveryState() {
+    const origin = window.location.origin;
+    if (!connectionRecoveryStates.has(origin)) {
+        connectionRecoveryStates.set(origin, {
+            didShowToast: false,
+            dismissToast: null,
+            lastSignalAt: 0,
+            pollTimer: null,
+        });
+    }
+    return connectionRecoveryStates.get(origin);
+}
+
+function showConnectionRecoveryToast(state) {
+    if (state.didShowToast || !connectionRecoveryPrompt) return;
+    state.didShowToast = true;
+    state.lastSignalAt = Date.now();
+    state.dismissToast = showToast(connectionRecoveryPrompt, {
         variant: "warning",
         permanent: true,
     });
+    scheduleConnectionRecoveryCheck(state);
+}
+
+function showConnectionRestoredToast(state) {
+    state.dismissToast?.();
+    state.dismissToast = null;
+    state.didShowToast = false;
+    if (!connectionRestoredPrompt) return;
+    showToast(connectionRestoredPrompt, {
+        variant: "info",
+        onDismiss: () => window.location.reload(),
+    });
+}
+
+async function checkConnectionRecovery(state) {
+    try {
+        const response = await fetch("/api/v1/system/healthcheck", {
+            cache: "no-store",
+        });
+        if (response.ok) {
+            showConnectionRestoredToast(state);
+            return;
+        }
+    } catch {}
+    scheduleConnectionRecoveryCheck(state);
+}
+
+function scheduleConnectionRecoveryCheck(state) {
+    if (!state.didShowToast || state.pollTimer !== null) return;
+    state.pollTimer = setTimeout(() => {
+        state.pollTimer = null;
+        void checkConnectionRecovery(state);
+    }, CONNECTION_RECOVERY_POLL_INTERVAL_MS);
+}
+
+async function confirmConnectionFailure() {
+    try {
+        const response = await fetch("/api/v1/system/healthcheck", {
+            cache: "no-store",
+        });
+        return isRetryableServerStatusCode(response.status);
+    } catch {
+        return true;
+    }
+}
+
+async function signalConnectionFailure(error) {
+    if (!(await confirmConnectionFailure())) return;
+    const state = getConnectionRecoveryState();
+    showConnectionRecoveryToast(state);
+    markConnectionRecoveryFailure(error);
 }
 
 function markConnectionRecoveryFailure(value) {
@@ -86,6 +157,7 @@ function isRetryableServerStatusCode(status) {
 }
 
 function isRecentConnectionRecoverySignal() {
+    const connectionRecoveryState = getConnectionRecoveryState();
     return (
         connectionRecoveryState.lastSignalAt > 0 &&
         Date.now() - connectionRecoveryState.lastSignalAt <=
@@ -165,7 +237,7 @@ export async function apiFetch(path, options = {}) {
             requestTargetsApi(path) &&
             RETRYABLE_SERVER_STATUS_CODES.has(response.status)
         ) {
-            showConnectionRecoveryToast();
+            await signalConnectionFailure(response);
         }
         return response;
     } catch (error) {
@@ -175,8 +247,7 @@ export async function apiFetch(path, options = {}) {
             requestTargetsApi(path) &&
             error?.name !== "AbortError"
         ) {
-            showConnectionRecoveryToast();
-            markConnectionRecoveryFailure(error);
+            await signalConnectionFailure(error);
         }
         throw error;
     }

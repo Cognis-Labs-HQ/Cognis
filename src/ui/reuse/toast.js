@@ -30,7 +30,7 @@
  *               removes it). Overrides duration.
  *
  * @param {string} message - Plain-text message to display.
- * @param {{ variant?: 'info' | 'success' | 'warning' | 'error', duration?: number, permanent?: boolean, linkHref?: string, linkLabel?: string }} [options]
+ * @param {{ variant?: 'info' | 'success' | 'warning' | 'error', duration?: number, permanent?: boolean, linkHref?: string, linkLabel?: string, onDismiss?: () => void }} [options]
  * @returns {() => void} dismiss — call to immediately dismiss the toast.
  */
 
@@ -133,6 +133,7 @@ export function showToast(
         permanent = false,
         linkHref = "",
         linkLabel = "",
+        onDismiss,
     } = {},
 ) {
     const variantClass = VARIANT_CLASSES[variant] ?? VARIANT_CLASSES.info;
@@ -211,7 +212,13 @@ export function showToast(
         resetDrag();
         toast.classList.remove("toast--visible");
         toast.classList.add("toast--hiding");
-        const onEnd = () => toast.remove();
+        let removalFinished = false;
+        const onEnd = () => {
+            if (removalFinished) return;
+            removalFinished = true;
+            toast.remove();
+            onDismiss?.();
+        };
         toast.addEventListener("transitionend", onEnd, { once: true });
         setTimeout(onEnd, 400);
     }

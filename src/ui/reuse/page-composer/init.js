@@ -539,6 +539,7 @@ export function createPageComposer(
         configureToastDismissLabel(i18n.t("ui.reuse.dismiss"));
         configureConnectionRecoveryPrompt(
             i18n.t("ui.reuse.connection_lost_refresh_prompt"),
+            i18n.t("ui.reuse.connection_restored_refresh_prompt"),
         );
 
         const pageContextHtml = pageContext

@@ -21,6 +21,7 @@ function loadApiClientForTests({
     token = "test-token",
     fetchImpl = async () => ({ ok: true, status: 200 }),
     now = () => Date.now(),
+    origin = "https://example.com",
 } = {}) {
     const source = readFileSync(
         resolve(ROOT, "src/ui/reuse/api-client.js"),
@@ -37,9 +38,19 @@ function loadApiClientForTests({
 
     const showToastCalls = [];
     const dispatchedEvents = [];
+    const timers = [];
+    let reloadCount = 0;
     const context = {
         showToast(message, options) {
-            showToastCalls.push({ message, options });
+            const call = { dismissed: false, message, options };
+            showToastCalls.push(call);
+            return () => {
+                call.dismissed = true;
+            };
+        },
+        setTimeout(callback) {
+            timers.push(callback);
+            return timers.length;
         },
         localStorage: {
             getItem(key) {
@@ -55,7 +66,10 @@ function loadApiClientForTests({
         },
         window: {
             location: {
-                origin: "https://example.com",
+                origin,
+                reload() {
+                    reloadCount += 1;
+                },
             },
             dispatchEvent(event) {
                 dispatchedEvents.push(event);
@@ -77,6 +91,12 @@ function loadApiClientForTests({
     return {
         apiClient: context.__testExports,
         dispatchedEvents,
+        getReloadCount: () => reloadCount,
+        runNextTimer: async () => {
+            const callback = timers.shift();
+            callback?.();
+            await new Promise((resolve) => setImmediate(resolve));
+        },
         showToastCalls,
     };
 }
@@ -136,7 +156,7 @@ test("apiFetch preserves Headers input while attaching account authorization", a
 test("apiFetch shows one permanent warning toast for repeated API network failures", async () => {
     assert.match(
         apiClientSource,
-        /Symbol\.for\("cognis\.connectionRecoveryState"\)/,
+        /Symbol\.for\([\s\S]*?"cognis\.connectionRecoveryStates"/,
     );
     const networkError = new Error("network down");
     networkError.name = "TypeError";
@@ -160,6 +180,61 @@ test("apiFetch shows one permanent warning toast for repeated API network failur
     assert.equal(showToastCalls[0].message, "Connection interrupted.");
     assert.equal(showToastCalls[0].options.variant, "warning");
     assert.equal(showToastCalls[0].options.permanent, true);
+});
+
+test("apiFetch confirms failures and ignores unrelated HTTP errors", async () => {
+    let requestCount = 0;
+    const { apiClient, showToastCalls } = loadApiClientForTests({
+        fetchImpl: async () => {
+            requestCount += 1;
+            return requestCount === 1
+                ? { ok: false, status: 503 }
+                : { ok: true, status: 200 };
+        },
+    });
+    apiClient.configureConnectionRecoveryPrompt("Connection interrupted.");
+
+    await apiClient.apiFetch("/api/v1/users");
+    await apiClient.apiFetch("/api/v1/missing");
+
+    assert.equal(showToastCalls.length, 0);
+});
+
+test("apiFetch does not treat another Cognis origin as the current API", async () => {
+    const { apiClient, showToastCalls } = loadApiClientForTests({
+        fetchImpl: async () => ({ ok: false, status: 503 }),
+    });
+    apiClient.configureConnectionRecoveryPrompt("Connection interrupted.");
+
+    await apiClient.apiFetch("https://cognis.study/api/v1/users");
+
+    assert.equal(showToastCalls.length, 0);
+});
+
+test("connection recovery dismisses the warning, announces recovery, and reloads after the info toast", async () => {
+    let online = false;
+    const { apiClient, getReloadCount, runNextTimer, showToastCalls } =
+        loadApiClientForTests({
+            fetchImpl: async () => {
+                if (!online) throw new TypeError("Failed to fetch");
+                return { ok: true, status: 200 };
+            },
+        });
+    apiClient.configureConnectionRecoveryPrompt(
+        "Connection interrupted.",
+        "Connection restored. Refreshing the page.",
+    );
+
+    await assert.rejects(apiClient.apiFetch("/api/v1/users"));
+    online = true;
+    await runNextTimer();
+
+    assert.equal(showToastCalls.length, 2);
+    assert.equal(showToastCalls[0].dismissed, true);
+    assert.equal(showToastCalls[1].options.variant, "info");
+    assert.equal(getReloadCount(), 0);
+    showToastCalls[1].options.onDismiss();
+    assert.equal(getReloadCount(), 1);
 });
 
 test("apiFetch does not show connection toast when there is no authenticated session", async () => {
