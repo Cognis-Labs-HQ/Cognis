@@ -8,8 +8,10 @@ Verbindungswarnungen erfordern nun eine fehlgeschlagene, gleichursprüngliche St
 
 ## Nach Wiederherstellung aktualisieren
 
-Cognis prüft nach einer bestätigten Unterbrechung, ob der Dienst wieder verfügbar ist, ersetzt die Warnung durch eine Informationsmeldung und aktualisiert die Seite, sobald diese Meldung verschwindet.
+Cognis prüft nach einer bestätigten Unterbrechung, ob der Dienst wieder verfügbar ist, ersetzt die Warnung durch eine Informationsmeldung und aktualisiert die Seite, sobald diese Meldung abläuft. Wird die Meldung manuell geschlossen, entfällt die Aktualisierung, damit Entwickler den wiederhergestellten Seitenzustand untersuchen können.
 
 ## Commits
 
 - [8f529113](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f52911346de2bc69b977b2345e072e7631f8033)
+
+- [16536120](https://github.com/Cognis-Labs-HQ/Cognis/commit/16536120a1eb3de2bceda8db1a0b19ff73bf4e22)

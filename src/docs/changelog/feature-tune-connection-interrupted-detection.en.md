@@ -8,8 +8,10 @@ Connection warnings now require a failed same-origin health check, preventing un
 
 ## Refresh After Recovery
 
-Cognis now checks for restored service after a confirmed interruption, replaces the warning with an informational recovery toast, and refreshes the page when that toast disappears.
+Cognis now checks for restored service after a confirmed interruption, replaces the warning with an informational recovery toast, and refreshes the page when that toast expires. Manually dismissing the toast cancels the refresh so developers can inspect the recovered page state.
 
 ## Commits
 
 - [8f529113](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f52911346de2bc69b977b2345e072e7631f8033)
+
+- [16536120](https://github.com/Cognis-Labs-HQ/Cognis/commit/16536120a1eb3de2bceda8db1a0b19ff73bf4e22)

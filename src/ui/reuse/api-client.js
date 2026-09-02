@@ -88,7 +88,7 @@ function showConnectionRestoredToast(state) {
     if (!connectionRestoredPrompt) return;
     showToast(connectionRestoredPrompt, {
         variant: "info",
-        onDismiss: () => window.location.reload(),
+        onExpire: () => window.location.reload(),
     });
 }
 

@@ -30,7 +30,7 @@
  *               removes it). Overrides duration.
  *
  * @param {string} message - Plain-text message to display.
- * @param {{ variant?: 'info' | 'success' | 'warning' | 'error', duration?: number, permanent?: boolean, linkHref?: string, linkLabel?: string, onDismiss?: () => void }} [options]
+ * @param {{ variant?: 'info' | 'success' | 'warning' | 'error', duration?: number, permanent?: boolean, linkHref?: string, linkLabel?: string, onDismiss?: () => void, onExpire?: () => void }} [options]
  * @returns {() => void} dismiss — call to immediately dismiss the toast.
  */
 
@@ -134,6 +134,7 @@ export function showToast(
         linkHref = "",
         linkLabel = "",
         onDismiss,
+        onExpire,
     } = {},
 ) {
     const variantClass = VARIANT_CLASSES[variant] ?? VARIANT_CLASSES.info;
@@ -186,7 +187,7 @@ export function showToast(
 
     function startDismissTimer() {
         if (dismissTimer !== null) clearTimeout(dismissTimer);
-        dismissTimer = setTimeout(dismiss, effectiveDuration);
+        dismissTimer = setTimeout(() => dismiss("expired"), effectiveDuration);
     }
 
     function restartTimebar() {
@@ -205,7 +206,7 @@ export function showToast(
         toast.style.removeProperty("opacity");
     }
 
-    function dismiss() {
+    function dismiss(reason = "dismissed") {
         if (dismissed) return;
         dismissed = true;
         if (dismissTimer !== null) clearTimeout(dismissTimer);
@@ -218,6 +219,7 @@ export function showToast(
             removalFinished = true;
             toast.remove();
             onDismiss?.();
+            if (reason === "expired") onExpire?.();
         };
         toast.addEventListener("transitionend", onEnd, { once: true });
         setTimeout(onEnd, 400);
