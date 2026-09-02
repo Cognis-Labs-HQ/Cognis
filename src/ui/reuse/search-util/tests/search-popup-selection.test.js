@@ -54,6 +54,21 @@ test("search controls use theme-aware close icons", () => {
     assert.match(styleSource, /close-dark\.svg/);
     assert.match(styleSource, /::-webkit-search-cancel-button/);
     assert.match(styleSource, /\.search-popup-clear\s*\{[^}]*opacity: 0\.48/s);
+    assert.match(
+        styleSource,
+        /\.search-popup-clear-icon\s*\{[^}]*height: 0\.72rem;[^}]*width: 0\.72rem;/s,
+    );
+});
+
+test("multi-select search results keep the checkbox beside their content", () => {
+    const styleSource = readFileSync(
+        resolve(ROOT, "src/ui/styles/reuse/search-bar.css"),
+        "utf8",
+    );
+    assert.match(
+        styleSource,
+        /\.search-popup-result--selectable\s*\{[^}]*flex-direction: row;/s,
+    );
 });
 
 test("search popup checked indicator stays centered in selectable rows", () => {
