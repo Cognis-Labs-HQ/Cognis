@@ -50,6 +50,7 @@
   <string name="ui.reuse.refresh">Segarkan</string>
   <string name="ui.reuse.update">Perbarui</string>
   <string name="ui.reuse.connection_lost_refresh_prompt">Koneksi terputus. Silakan segarkan halaman.</string>
+  <string name="ui.reuse.connection_restored_refresh_prompt">Koneksi pulih. Halaman akan disegarkan.</string>
   <string name="ui.reuse.loading">Memuat…</string>
   <string name="ui.reuse.loading_joke_1">Cognis seharusnya tidak selambat ini, ini sudah 2026 kan?</string>
   <string name="ui.reuse.loading_joke_2">Sedang memoles piksel... rupanya satu per satu.</string>

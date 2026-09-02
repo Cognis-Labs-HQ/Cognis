@@ -50,6 +50,7 @@
   <string name="ui.reuse.refresh">Aktualisieren</string>
   <string name="ui.reuse.update">Aktualisieren</string>
   <string name="ui.reuse.connection_lost_refresh_prompt">Verbindung unterbrochen. Bitte die Seite aktualisieren.</string>
+  <string name="ui.reuse.connection_restored_refresh_prompt">Verbindung wiederhergestellt. Die Seite wird aktualisiert.</string>
   <string name="ui.reuse.loading">Wird geladen…</string>
   <string name="ui.reuse.loading_joke_1">Cognis sollte nicht so langsam sein, wir haben doch 2026, oder?</string>
   <string name="ui.reuse.loading_joke_2">Wir polieren gerade Pixel... offenbar einzeln.</string>
