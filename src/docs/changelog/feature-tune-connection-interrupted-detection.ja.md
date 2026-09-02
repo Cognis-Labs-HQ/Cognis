@@ -1,6 +1,6 @@
 # 安定した接続復旧
 
-**機能ブランチ:** work
+**機能ブランチ:** feature-tune-connection-interrupted-detection
 
 ## 接続中断を確認
 

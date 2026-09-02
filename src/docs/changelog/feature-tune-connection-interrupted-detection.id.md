@@ -1,6 +1,6 @@
 # Pemulihan Koneksi Andal
 
-**Cabang Fitur:** work
+**Cabang Fitur:** feature-tune-connection-interrupted-detection
 
 ## Konfirmasi Gangguan Koneksi
 

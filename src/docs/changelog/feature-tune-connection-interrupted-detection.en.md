@@ -1,6 +1,6 @@
 # Reliable Connection Recovery
 
-**Feature Branch:** work
+**Feature Branch:** feature-tune-connection-interrupted-detection
 
 ## Confirm Connection Interruptions
 

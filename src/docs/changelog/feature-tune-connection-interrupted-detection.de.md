@@ -1,6 +1,6 @@
 # Zuverlässige Wiederverbindung
 
-**Feature-Zweig:** work
+**Feature-Zweig:** feature-tune-connection-interrupted-detection
 
 ## Verbindungsabbrüche bestätigen
 
