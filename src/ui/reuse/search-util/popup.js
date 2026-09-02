@@ -345,7 +345,7 @@ export function openSearchPopup({
 
     const clearButton = document.createElement("button");
     clearButton.type = "button";
-    clearButton.className = "search-popup-clear";
+    clearButton.className = "search-popup-clear btn-neutral";
     clearButton.setAttribute("aria-label", "Clear search");
     const clearIcon = document.createElement("span");
     clearIcon.className = "search-popup-clear-icon";

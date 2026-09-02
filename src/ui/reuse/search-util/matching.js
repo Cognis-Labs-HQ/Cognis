@@ -1,4 +1,10 @@
 /** Search data collection, normalization, filtering, and ranking helpers.
+ *
+ * Public exports include `filterSearchGroupsForType`, which limits grouped
+ * search results to a normalized result type such as `users`.
+ *
+ * @example
+ * filterSearchGroupsForType(groups, "user");
  * @module reuse/search-util/matching
  */
 import { uiCtx } from "../ui-ctx.js";
@@ -146,6 +152,13 @@ function normalizeResultType(value) {
     return normalizedType === "user" ? "users" : normalizedType;
 }
 
+/**
+ * Filters grouped search results using normalized category and item types.
+ *
+ * @param {Array<{category?: string, items?: Array<object>}>} groups
+ * @param {string} typeFilter
+ * @returns {Array<{category?: string, items: Array<object>}>}
+ */
 export function filterSearchGroupsForType(groups, typeFilter) {
     const normalizedTypeFilter = normalizeResultType(typeFilter);
     if (!typeFilter || normalizedTypeFilter === "text") return groups ?? [];

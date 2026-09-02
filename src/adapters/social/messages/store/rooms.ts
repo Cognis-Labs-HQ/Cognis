@@ -134,29 +134,51 @@ export async function deleteRoom(
     roomId: string,
 ): Promise<void> {
     await db.transaction(async (transactionDb) => {
-        for (const table of [
-            "chatroom_typing",
-            "chat_message_reactions",
-            "chat_messages",
-            "chatroom_keys",
-            "chatroom_members",
-        ]) {
-            await transactionDb.executeCommand({
-                option: "DELETE",
-                table,
-                where: [{ column: "chatroom_id", value: roomId }],
-            });
-        }
-        await transactionDb.executeCommand({
+        await deleteRoomRecords(transactionDb, roomId);
+    });
+}
+
+async function deleteRoomRecords(db: DbExecutor, roomId: string) {
+    for (const table of [
+        "chatroom_typing",
+        "chat_message_reactions",
+        "chat_messages",
+        "chatroom_keys",
+        "chatroom_members",
+    ]) {
+        await db.executeCommand({
             option: "DELETE",
-            table: "chat_message_requests",
-            where: [{ column: "room_id", value: roomId }],
+            table,
+            where: [{ column: "chatroom_id", value: roomId }],
         });
-        await transactionDb.executeCommand({
-            option: "DELETE",
-            table: "chatrooms",
-            where: [{ column: "id", value: roomId }],
-        });
+    }
+    await db.executeCommand({
+        option: "DELETE",
+        table: "chat_message_requests",
+        where: [{ column: "room_id", value: roomId }],
+    });
+    await db.executeCommand({
+        option: "DELETE",
+        table: "chatrooms",
+        where: [{ column: "id", value: roomId }],
+    });
+}
+
+export async function deleteRoomForActor(
+    db: DbExecutor,
+    roomId: string,
+    actorAccountId: string,
+): Promise<"deleted" | "forbidden" | "not_found"> {
+    return db.transaction(async (transactionDb) => {
+        const room = await getRoom(transactionDb, roomId);
+        if (!room) return "not_found";
+        const members = await listMembers(transactionDb, roomId);
+        const isOwner = room.createdBy === actorAccountId;
+        const isSoleParticipant =
+            members.length === 1 && members[0]?.accountId === actorAccountId;
+        if (!isOwner && !isSoleParticipant) return "forbidden";
+        await deleteRoomRecords(transactionDb, roomId);
+        return "deleted";
     });
 }
 

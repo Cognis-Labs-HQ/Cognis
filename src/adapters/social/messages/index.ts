@@ -126,13 +126,37 @@ export async function bootstrapSocialAdapter(
         messagesStore,
         ctx.log,
     );
+    if (systemCtx && !systemCtx.hasFlow("delete-chatroom")) {
+        systemCtx.registerFlow({
+            id: "delete-chatroom",
+            description:
+                "Deletes a chatroom through staged validation, authorization, and cleanup.",
+            stages: [
+                "validate-request",
+                "authorize-and-delete",
+                "after-delete",
+            ],
+        });
+    }
+    ctx.flow.extend(
+        "delete-chatroom",
+        "authorize-and-delete",
+        { id: "social-messages-adapter:authorize-and-delete" },
+        async (stageCtx) => deleteChatroom(stageCtx.input as never),
+    );
+    const runDeleteChatroomFlow = async (input: {
+        roomId?: unknown;
+        actorAccountId?: unknown;
+    }) => {
+        await ctx.flow.run("delete-chatroom", input);
+    };
     ctx.capabilities.contribute(
         "social:messages:deleteChatroom",
-        deleteChatroom,
+        runDeleteChatroomFlow,
     );
     systemCtx?.contributePublicCapability(
         "social:messages:deleteChatroom",
-        deleteChatroom,
+        runDeleteChatroomFlow,
     );
 
     type ExternalRoomAuthorizer = (input: {

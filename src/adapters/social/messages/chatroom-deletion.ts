@@ -27,22 +27,18 @@ export function createChatroomDeletionCapability(
 
         try {
             await store.ensureSchema();
-            const room = await store.getRoom(roomId);
-            if (!room) {
+            const result = await store.deleteRoomForActor(
+                roomId,
+                actorAccountId,
+            );
+            if (result === "not_found") {
                 throw new ChatroomDeletionRequestError("Chatroom not found.");
             }
-            const members = await store.listMembers(roomId);
-            const isOwner = room.createdBy === actorAccountId;
-            const isSoleParticipant =
-                members.length === 1 &&
-                members[0]?.accountId === actorAccountId;
-            if (!isOwner && !isSoleParticipant) {
+            if (result === "forbidden") {
                 throw new ChatroomDeletionRequestError(
                     "Only the chatroom owner or sole participant can delete the chatroom.",
                 );
             }
-
-            await store.deleteRoom(roomId);
             log?.("info", "Chatroom deleted.", {
                 component: "social-messages-adapter",
                 operation: "delete_chatroom",

@@ -9,16 +9,9 @@ function createHarness() {
         async ensureSchema() {
             calls.push("ensureSchema");
         },
-        async getRoom(id: string) {
-            calls.push(["getRoom", id]);
-            return { id, createdBy: "owner" };
-        },
-        async listMembers(id: string) {
-            calls.push(["listMembers", id]);
-            return [{ accountId: "owner" }, { accountId: "participant" }];
-        },
-        async deleteRoom(id: string) {
-            calls.push(["deleteRoom", id]);
+        async deleteRoomForActor(id: string, actorAccountId: string) {
+            calls.push(["deleteRoomForActor", id, actorAccountId]);
+            return actorAccountId === "owner" ? "deleted" : "forbidden";
         },
     };
     const logs: Array<{
@@ -38,21 +31,32 @@ test("chatroom deletion allows the owner", async () => {
         roomId: "room-1",
         actorAccountId: "owner",
     });
-    assert.deepEqual(harness.calls.at(-1), ["deleteRoom", "room-1"]);
+    assert.deepEqual(harness.calls.at(-1), [
+        "deleteRoomForActor",
+        "room-1",
+        "owner",
+    ]);
     assert.equal(harness.logs[0]?.metadata?.operation, "delete_chatroom");
 });
 
 test("chatroom deletion allows the sole participant", async () => {
     const harness = createHarness();
-    harness.store.listMembers = async (id: string) => {
-        harness.calls.push(["listMembers", id]);
-        return [{ accountId: "participant" }];
+    harness.store.deleteRoomForActor = async (
+        id: string,
+        actorAccountId: string,
+    ) => {
+        harness.calls.push(["deleteRoomForActor", id, actorAccountId]);
+        return "deleted";
     };
     await harness.deleteChatroom({
         roomId: "room-1",
         actorAccountId: "participant",
     });
-    assert.deepEqual(harness.calls.at(-1), ["deleteRoom", "room-1"]);
+    assert.deepEqual(harness.calls.at(-1), [
+        "deleteRoomForActor",
+        "room-1",
+        "participant",
+    ]);
 });
 
 test("chatroom deletion rejects another participant", async () => {
@@ -66,9 +70,9 @@ test("chatroom deletion rejects another participant", async () => {
     );
     assert.equal(
         harness.calls.some(
-            (call) => Array.isArray(call) && call[0] === "deleteRoom",
+            (call) => Array.isArray(call) && call[0] === "deleteRoomForActor",
         ),
-        false,
+        true,
     );
 });
 
@@ -106,4 +110,58 @@ test("chatroom deletion removes dependent records transactionally", async () => 
                 "room-1",
         ),
     );
+});
+
+test("chatroom deletion authorizes and deletes in the same transaction", async () => {
+    const commands: Array<Record<string, unknown>> = [];
+    let transactionActive = false;
+    const executor = {
+        async executeCommand(command: Record<string, unknown>) {
+            assert.equal(transactionActive, true);
+            commands.push(command);
+            if (command.table === "chatrooms" && command.option === "SELECT") {
+                return {
+                    rows: [
+                        {
+                            id: "room-1",
+                            kind: "group",
+                            title: null,
+                            created_by: "owner",
+                            created_at: "2026-01-01T00:00:00.000Z",
+                            updated_at: "2026-01-01T00:00:00.000Z",
+                        },
+                    ],
+                };
+            }
+            if (
+                command.table === "chatroom_members" &&
+                command.option === "SELECT"
+            ) {
+                return {
+                    rows: [
+                        {
+                            chatroom_id: "room-1",
+                            account_id: "participant",
+                            role: "member",
+                            joined_at: "2026-01-01T00:00:00.000Z",
+                        },
+                    ],
+                };
+            }
+            return { rows: [] };
+        },
+        async transaction<T>(callback: (db: typeof executor) => Promise<T>) {
+            transactionActive = true;
+            const result = await callback(executor);
+            transactionActive = false;
+            return result;
+        },
+    };
+    const store = new DbMessagesStore(executor as never);
+
+    const result = await store.deleteRoomForActor("room-1", "participant");
+
+    assert.equal(result, "deleted");
+    assert.equal(commands.at(-1)?.table, "chatrooms");
+    assert.equal(commands.at(-1)?.option, "DELETE");
 });
