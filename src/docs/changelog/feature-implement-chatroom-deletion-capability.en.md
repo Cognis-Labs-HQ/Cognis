@@ -1,6 +1,6 @@
 # Safer chatroom cleanup
 
-**Feature Branch:** work
+**Feature Branch:** feature/implement-chatroom-deletion-capability
 
 ## Authorized chatroom deletion
 
