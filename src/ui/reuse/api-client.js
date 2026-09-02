@@ -62,7 +62,6 @@ function getConnectionRecoveryState() {
     if (!connectionRecoveryStates.has(origin)) {
         connectionRecoveryStates.set(origin, {
             didShowToast: false,
-            dismissToast: null,
             lastSignalAt: 0,
             pollTimer: null,
         });
@@ -74,17 +73,14 @@ function showConnectionRecoveryToast(state) {
     if (state.didShowToast || !connectionRecoveryPrompt) return;
     state.didShowToast = true;
     state.lastSignalAt = Date.now();
-    state.dismissToast = showToast(connectionRecoveryPrompt, {
+    showToast(connectionRecoveryPrompt, {
         variant: "warning",
         permanent: true,
     });
     scheduleConnectionRecoveryCheck(state);
 }
 
-function showConnectionRestoredToast(state) {
-    state.dismissToast?.();
-    state.dismissToast = null;
-    state.didShowToast = false;
+function showConnectionRestoredToast() {
     if (!connectionRestoredPrompt) return;
     showToast(connectionRestoredPrompt, {
         variant: "info",
@@ -98,7 +94,7 @@ async function checkConnectionRecovery(state) {
             cache: "no-store",
         });
         if (response.ok) {
-            showConnectionRestoredToast(state);
+            showConnectionRestoredToast();
             return;
         }
     } catch {}

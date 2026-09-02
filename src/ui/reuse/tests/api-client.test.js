@@ -211,7 +211,7 @@ test("apiFetch does not treat another Cognis origin as the current API", async (
     assert.equal(showToastCalls.length, 0);
 });
 
-test("connection recovery reloads only when the restored info toast expires", async () => {
+test("connection recovery keeps its warning and reloads only when the restored info toast expires", async () => {
     let online = false;
     const { apiClient, getReloadCount, runNextTimer, showToastCalls } =
         loadApiClientForTests({
@@ -230,7 +230,7 @@ test("connection recovery reloads only when the restored info toast expires", as
     await runNextTimer();
 
     assert.equal(showToastCalls.length, 2);
-    assert.equal(showToastCalls[0].dismissed, true);
+    assert.equal(showToastCalls[0].dismissed, false);
     assert.equal(showToastCalls[1].options.variant, "info");
     assert.equal(getReloadCount(), 0);
     assert.equal(showToastCalls[1].options.onDismiss, undefined);
