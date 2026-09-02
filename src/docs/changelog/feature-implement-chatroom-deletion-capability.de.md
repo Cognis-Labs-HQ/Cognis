@@ -1,6 +1,6 @@
 # Sicherere Chatraum-Bereinigung
 
-**Feature-Zweig:** work
+**Feature-Zweig:** feature/implement-chatroom-deletion-capability
 
 ## Autorisiertes Löschen von Chaträumen
 

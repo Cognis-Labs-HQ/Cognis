@@ -1,6 +1,6 @@
 # Pembersihan ruang obrolan aman
 
-**Cabang Fitur:** work
+**Cabang Fitur:** feature/implement-chatroom-deletion-capability
 
 ## Penghapusan ruang obrolan terotorisasi
 

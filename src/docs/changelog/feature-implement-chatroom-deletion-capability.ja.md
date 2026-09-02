@@ -1,6 +1,6 @@
 # 安全なチャットルーム整理
 
-**機能ブランチ:** work
+**機能ブランチ:** feature/implement-chatroom-deletion-capability
 
 ## 認可されたチャットルーム削除
 
