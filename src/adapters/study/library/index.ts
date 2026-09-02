@@ -57,6 +57,7 @@ export async function bootstrapStudyAdapter(
         ctx.capabilities.get<StudyClassAccessCapability>(
             "study:classes:access",
         ),
+        ctx.flow,
     );
     ctx.capabilities.contribute("study:library", service);
     ctx.registerRoute(
@@ -70,7 +71,7 @@ export async function bootstrapStudyAdapter(
     ctx.registerAdapterStaticDir?.("study", "library", UI_ROOT);
     ctx.registerSpaRoute?.({
         id: "study-library-page",
-        pattern: "^/study/library$",
+        pattern: "^/study/library(?:/[^/]+/[^/]+/[^/]+)?$",
         base: "/study/library",
         scriptUrl: "/static/adapters/study/library/app.js",
         stylesheets: ["/static/adapters/study/library/library.css"],

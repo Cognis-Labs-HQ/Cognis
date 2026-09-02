@@ -205,6 +205,29 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const routeHelpers = resolveRouteContext(routeContext);
     const gateway = new CoreStudyGateway();
     const adaptersRoot = path.join(ctx.adaptersRoot, "study");
+    const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    for (const flow of [
+        {
+            id: "study-library-create",
+            stages: ["normalize", "resolve", "validate", "persist"],
+        },
+        {
+            id: "study-library-resolve",
+            stages: ["normalize", "propose", "rank"],
+        },
+        {
+            id: "study-library-lookup",
+            stages: ["discover", "lookup", "rank"],
+        },
+    ]) {
+        if (!systemCtx?.hasFlow(flow.id)) {
+            systemCtx?.registerFlow({
+                ...flow,
+                description:
+                    "Orchestrates provider-neutral Study Library operations.",
+            });
+        }
+    }
 
     const syncLanguageCapabilities = (): void => {
         const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");

@@ -1,27 +1,25 @@
 # Library Adapter
 
-## Purpose
+## Consumer-defined schemas
 
-The Library adapter stores reusable, traceable learning and activity materials in the database. Every entry belongs to a known layer and to a global, class, or user scope. Empty layers are omitted by the UI.
+The Library adapter stores generic, related study records. Consumers register immutable, versioned schemas through the `study:library` ctx capability. A schema defines its language, layers, typed fields, and directed relationships; the adapter does not own names such as alphabet, word, or sentence.
 
-## Standard layers
+Relationship definitions declare their target layer, cardinality, ordering, and optional resolver. Every write validates fields, schema version, targets, scope visibility, and cardinality before persistence. Alternate definitions are modeled as consumer-declared layers and relationships.
 
-The ordered layers are `alphabet`, `alt_characters`, `definitions`, `words`, `sentences`, `exercises`, `workouts`, `routines`, and `collections`. Alphabet and definition entries are roots. Higher layers reference only meaningful lower building blocks: words use writing units and definitions; sentences use words and definitions; exercises use language material; workouts use exercises; routines use exercises or workouts; and collections can group any non-collection layer.
+## Resolution and lookup
 
-## Consumer templates
+The `grapheme` resolver uses Unicode grapheme clusters and the `longest-match` resolver uses explicit whitespace-delimited blocks. Both return proposals and unresolved units without silently creating entries. Sentences and other ordered structures use stored relationship positions as their identity.
 
-Consumers obtain the adapter through the `study:library` ctx capability and call `cloneTemplate` with the exact layers they need. A language can therefore request only `alphabet`, `alt_characters`, `definitions`, `words`, and `sentences`, without inheriting activity layers. The clone preserves canonical ordering, includes only links whose two ends were requested, rejects duplicate or unknown layers, and identifies required links. Word and sentence creation can infer links from normalized characters and whitespace-delimited words while explicit references remain authoritative.
+Consumers can contribute lookup providers with `registerLookupProvider`. Providers declare whether they support a schema and layer, then return ranked suggestions with provenance. Removing the returned registration callback disables that provider without coupling the adapter to its implementation.
 
-## Access control
+Create, resolve, and lookup operations participate in named ctx flows so consumers can add removable normalization, proposal, validation, enrichment, or ranking hooks.
 
-Everyone can read global data. Only admins and owners can create global entries or perform JSON imports. A class is readable by its teacher and active members, while only its teacher, admins, and owners can write it. A user's scope is private to that account. Push requests target a class or global scope and never bypass destination review.
+## API and UI
 
-## Capability and formats
+The Study gateway exposes schema discovery, generic entry listing and creation, entry details, bidirectional tracing, resolution previews, and lookup suggestions. Browser requests are centralized in the Study gateway Library client.
 
-The `study:library` ctx capability provides `list`, `read`, `create`, `trace`, `requestPush`, `importJson`, `exportJson`, and `exportAnki`. JSON imports use `{ "entries": [...] }`, validate every entry through the same layer, size, reference, and ACL rules as individual writes, and are limited to 10,000 entries per request. JSON exports include the schema version and immutable layer catalogue. Anki export produces UTF-8 tab-separated text suitable for importing as notes.
+Every entry is available at `/study/library/:schemaId/:layerId/:entryId`. The schema-driven page displays all configured layers and localized labels, entry fields, component relationships, and entries that use the selected item. Direct loads and client-side navigation use the same URL.
 
-## Deep links
+## Access
 
-References are stored as directed edges with a relation and position. `trace` returns the requested entry and all visible entries that directly use it. Repeating trace queries walks the graph from an alphabet unit through words and sentences into later material without exposing entries outside the caller's scopes.
-
-When a word is entered without explicit references, Cognis normalizes it to Unicode NFC, segments it into Unicode code points, resolves matching alphabet entries, and creates missing alphabet entries in the same scope. Sentences and later layers require explicit existing references; clients can batch word creation before sentence creation.
+Global records are readable by authenticated users and writable by admins and owners. User records are private. Class access is delegated to the Classes capability. Relationship targets must be visible to the writer and must use the same schema version.

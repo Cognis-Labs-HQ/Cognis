@@ -1,17 +1,13 @@
 # Bibliotheksadapter
 
-## Zweck
+## Verbraucherdefinierte Schemata
 
-Der Bibliotheksadapter speichert wiederverwendbare, nachverfolgbare Lern- und Aktivitätsmaterialien in der Datenbank. Jeder Eintrag gehört zu einer unveränderlichen Ebene sowie zum globalen, Klassen- oder Benutzerbereich. Leere Ebenen werden in der Oberfläche ausgeblendet.
+Der Bibliotheksadapter speichert generische, verknüpfte Lerninhalte. Verbraucher registrieren unveränderliche, versionierte Schemata über die ctx-Fähigkeit `study:library`. Ein Schema beschreibt Sprache, Ebenen, typisierte Felder und gerichtete Beziehungen; Begriffe wie Alphabet, Wort oder Satz sind nicht im Adapter festgelegt.
 
-## Standardebenen
+Beziehungen bestimmen Zielebene, Kardinalität, Reihenfolge und optionalen Resolver. Jeder Schreibvorgang prüft Felder, Schemaversion, Ziele, Sichtbarkeit und Kardinalität. Alternative Definitionen werden als vom Verbraucher deklarierte Ebenen und Beziehungen modelliert.
 
-Die Reihenfolge lautet `alphabet`, `alt_characters`, `definitions`, `words`, `sentences`, `exercises`, `workouts`, `routines` und `collections`. Verweise sind gerichtete Kanten zu zulässigen Bausteinen niedrigerer Ebenen; Sammlungen dürfen jede Ebene außer anderen Sammlungen gruppieren.
+## Auflösung, API und UI
 
-## Vorlagen für Verbraucher
+Der `grapheme`-Resolver nutzt Unicode-Grapheme; `longest-match` verarbeitet ausdrücklich getrennte Blöcke. Beide liefern Vorschläge und ungelöste Einheiten, ohne still Einträge anzulegen. Lookup-Anbieter werden über `registerLookupProvider` beigetragen, liefern gewichtete Vorschläge mit Herkunft und lassen sich über den zurückgegebenen Callback entfernen. Erstellen, Auflösen und Nachschlagen laufen durch benannte ctx-Flows.
 
-Verbraucher rufen über die `study:library`-Fähigkeit von `ctx` die Funktion `cloneTemplate` mit genau den benötigten Ebenen auf. Ein Sprachmodul kann dadurch ausschließlich `alphabet`, `alt_characters`, `definitions`, `words` und `sentences` anfordern. Die Kopie behält die kanonische Reihenfolge bei, entfernt Verknüpfungen zu nicht angeforderten Ebenen und kennzeichnet erforderliche Verknüpfungen. Beim Erstellen von Wörtern und Sätzen können passende Zeichen beziehungsweise durch Leerraum getrennte Wörter automatisch verknüpft werden.
-
-## Zugriff und Austausch
-
-Globale Daten sind lesbar, aber nur Administratoren und Eigentümer dürfen sie ändern oder JSON importieren. Klassen sind für Lehrkraft und aktive Mitglieder lesbar und nur für die Lehrkraft sowie Administratoren beschreibbar. Der Benutzerbereich ist privat. `study:library` stellt Lesen, Schreiben, Verfolgen, Push-Anfragen sowie JSON- und Anki-Import/Export über `ctx` bereit.
+Das Study-Gateway bietet Schemaerkennung, Auflistung, Erstellung, Details, beidseitige Verfolgung, Auflösungsvorschau und Lookup-Vorschläge. Jeder Eintrag besitzt die Direktadresse `/study/library/:schemaId/:layerId/:entryId`. Die schemagesteuerte Oberfläche zeigt lokalisierte Ebenen, Felder und Beziehungen. Global-, Benutzer- und Klassenzugriff wird weiterhin am Service-Rand durchgesetzt.

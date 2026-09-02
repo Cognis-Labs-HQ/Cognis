@@ -43,10 +43,10 @@ export function createLibraryRoutes(
         };
         try {
             if (
-                url.pathname === "/api/v1/study/library/layers" &&
+                url.pathname === "/api/v1/study/library/schemas" &&
                 req.method === "GET"
             ) {
-                sendJson(res, 200, { data: library.layers });
+                sendJson(res, 200, { data: library.listSchemas() });
                 return true;
             }
             if (
@@ -54,12 +54,26 @@ export function createLibraryRoutes(
                 req.method === "GET"
             ) {
                 sendJson(res, 200, {
-                    data: await library.list(
-                        actor,
-                        locationFrom(url),
-                        url.searchParams.get("layer") ?? undefined,
-                    ),
+                    data: await library.list(actor, locationFrom(url), {
+                        schemaId: url.searchParams.get("schemaId") ?? undefined,
+                        layer: url.searchParams.get("layer") ?? undefined,
+                    }),
                 });
+                return true;
+            }
+            const detailMatch = url.pathname.match(
+                /^\/api\/v1\/study\/library\/entries\/([^/]+)$/,
+            );
+            if (detailMatch && req.method === "GET") {
+                const entry = await library.read(
+                    actor,
+                    decodeURIComponent(detailMatch[1]),
+                );
+                sendJson(
+                    res,
+                    entry ? 200 : 404,
+                    entry ? { data: entry } : { error: { code: "not_found" } },
+                );
                 return true;
             }
             if (
@@ -97,42 +111,34 @@ export function createLibraryRoutes(
                 return true;
             }
             if (
-                url.pathname === "/api/v1/study/library/import" &&
+                url.pathname === "/api/v1/study/library/resolve" &&
                 req.method === "POST"
             ) {
-                const created = await library.importJson(
+                const body = (await readJson(req)) as {
+                    location: LibraryLocation;
+                    entry: Parameters<LibraryCapability["resolve"]>[2];
+                };
+                const proposals = await library.resolve(
                     actor,
-                    await readJson(req),
+                    body.location,
+                    body.entry,
                 );
-                await log?.("info", "Imported library entries.", {
+                await log?.("info", "Resolved library relationships.", {
                     component: "study-library",
-                    operation: "import",
+                    operation: "resolve",
                     accountId: actor.accountId,
-                    count: created.length,
                 });
-                sendJson(res, 201, { data: created });
+                sendJson(res, 200, { data: proposals });
                 return true;
             }
             if (
-                url.pathname === "/api/v1/study/library/export" &&
-                req.method === "GET"
+                url.pathname === "/api/v1/study/library/lookup" &&
+                req.method === "POST"
             ) {
-                const format = url.searchParams.get("format") ?? "json";
-                if (format === "anki") {
-                    res.writeHead(200, {
-                        "content-type":
-                            "text/tab-separated-values; charset=utf-8",
-                        "content-disposition":
-                            'attachment; filename="cognis-library.txt"',
-                    });
-                    res.end(await library.exportAnki(actor, locationFrom(url)));
-                } else {
-                    sendJson(
-                        res,
-                        200,
-                        await library.exportJson(actor, locationFrom(url)),
-                    );
-                }
+                const entry = (await readJson(req)) as Parameters<
+                    LibraryCapability["lookup"]
+                >[0];
+                sendJson(res, 200, { data: await library.lookup(entry) });
                 return true;
             }
             if (

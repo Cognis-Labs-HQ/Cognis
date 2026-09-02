@@ -3,16 +3,18 @@ import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type {
     LibraryEntry,
     LibraryEntryInput,
-    LibraryLayer,
     LibraryLocation,
     LibraryPushRequest,
+    LibrarySchema,
 } from "./types.js";
 
 function mapEntry(row: Record<string, unknown>): LibraryEntry {
     return {
         id: String(row.id),
-        layer: String(row.layer) as LibraryLayer,
-        language: row.language ? String(row.language) : undefined,
+        schemaId: String(row.schema_id),
+        schemaVersion: Number(row.schema_version),
+        layer: String(row.layer),
+        language: String(row.language),
         label: String(row.label),
         fields: JSON.parse(String(row.fields_json ?? "{}")),
         references: [],
@@ -29,13 +31,30 @@ export class LibraryStore {
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({
+            name: "study_library_schemas",
+            columns: [
+                { name: "schema_id", type: "text", notNull: true },
+                { name: "version", type: "integer", notNull: true },
+                { name: "schema_json", type: "text", notNull: true },
+                {
+                    name: "created_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+            primaryKey: ["schema_id", "version"],
+        });
+        await this.db.ensureTable({
             name: "study_library_entries",
             columns: [
                 { name: "id", type: "text", primaryKey: true },
                 { name: "scope", type: "text", notNull: true },
                 { name: "scope_id", type: "text", notNull: true },
+                { name: "schema_id", type: "text", notNull: true },
+                { name: "schema_version", type: "integer", notNull: true },
                 { name: "layer", type: "text", notNull: true },
-                { name: "language", type: "text" },
+                { name: "language", type: "text", notNull: true },
                 { name: "label", type: "text", notNull: true },
                 {
                     name: "fields_json",
@@ -76,7 +95,12 @@ export class LibraryStore {
                     default: 0,
                 },
             ],
-            primaryKey: ["source_entry_id", "target_entry_id", "relation"],
+            primaryKey: [
+                "source_entry_id",
+                "target_entry_id",
+                "relation",
+                "position",
+            ],
         });
         await this.db.ensureTable({
             name: "study_library_push_requests",
@@ -109,6 +133,18 @@ export class LibraryStore {
         });
     }
 
+    async saveSchema(schema: LibrarySchema): Promise<void> {
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "study_library_schemas",
+            values: {
+                schema_id: schema.id,
+                version: schema.version,
+                schema_json: JSON.stringify(schema),
+            },
+        });
+    }
+
     async get(id: string): Promise<LibraryEntry | null> {
         const result = await this.db.executeCommand({
             option: "SELECT",
@@ -133,13 +169,16 @@ export class LibraryStore {
 
     async list(
         location: LibraryLocation,
-        layer?: LibraryLayer,
+        filters: { schemaId?: string; layer?: string } = {},
     ): Promise<LibraryEntry[]> {
         const where = [
             { column: "scope", value: location.scope },
             { column: "scope_id", value: location.scopeId ?? location.scope },
         ];
-        if (layer) where.push({ column: "layer", value: layer });
+        if (filters.schemaId)
+            where.push({ column: "schema_id", value: filters.schemaId });
+        if (filters.layer)
+            where.push({ column: "layer", value: filters.layer });
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "study_library_entries",
@@ -155,6 +194,7 @@ export class LibraryStore {
     async create(
         location: LibraryLocation,
         input: LibraryEntryInput,
+        language: string,
         accountId: string,
     ): Promise<LibraryEntry> {
         const id = randomUUID();
@@ -166,8 +206,10 @@ export class LibraryStore {
                     id,
                     scope: location.scope,
                     scope_id: location.scopeId ?? location.scope,
+                    schema_id: input.schemaId,
+                    schema_version: input.schemaVersion,
                     layer: input.layer,
-                    language: input.language ?? null,
+                    language,
                     label: input.label,
                     fields_json: JSON.stringify(input.fields ?? {}),
                     created_by: accountId,

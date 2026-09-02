@@ -6,34 +6,90 @@ import {
     loadStudySubNavigationModel,
     renderStudySubNavigation,
 } from "/static/gateways/study/ui/sub-navigation.js";
-import { fetchEntries, fetchLayers } from "./client.js";
+import {
+    fetchLibraryEntries,
+    fetchLibraryEntry,
+    fetchLibrarySchemas,
+} from "/static/gateways/study/ui/library-client.js";
+
+function entryUrl(entry) {
+    return `/study/library/${encodeURIComponent(entry.schemaId)}/${encodeURIComponent(entry.layer)}/${encodeURIComponent(entry.id)}`;
+}
+
+function renderRelationshipList(entries, emptyLabel) {
+    if (entries.length === 0) return `<p>${escapeHtml(emptyLabel)}</p>`;
+    return `<ul>${entries
+        .map(
+            (entry) =>
+                `<li><a href="${entryUrl(entry)}">${escapeHtml(entry.label)}</a></li>`,
+        )
+        .join("")}</ul>`;
+}
+
+function renderDetail(detail, i18n) {
+    const { entry, references, usedBy } = detail;
+    const fields = Object.entries(entry.fields ?? {});
+    return `<article class="library-detail">
+        <p><a href="/study/library">${escapeHtml(i18n.t("gateway.study.library_back"))}</a></p>
+        <h2>${escapeHtml(entry.label)}</h2>
+        <dl>
+            <dt>${escapeHtml(i18n.t("gateway.study.library_schema"))}</dt><dd>${escapeHtml(entry.schemaId)}</dd>
+            <dt>${escapeHtml(i18n.t("gateway.study.library_layer"))}</dt><dd>${escapeHtml(entry.layer)}</dd>
+            ${fields.map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(String(value))}</dd>`).join("")}
+        </dl>
+        <h3>${escapeHtml(i18n.t("gateway.study.library_components"))}</h3>
+        ${renderRelationshipList(references, i18n.t("gateway.study.library_no_relationships"))}
+        <h3>${escapeHtml(i18n.t("gateway.study.library_used_by"))}</h3>
+        ${renderRelationshipList(usedBy, i18n.t("gateway.study.library_no_relationships"))}
+    </article>`;
+}
+
+function renderBrowser(schemas, entries, i18n) {
+    if (schemas.length === 0) {
+        return `<p>${escapeHtml(i18n.t("gateway.study.library_empty"))}</p>`;
+    }
+    return schemas
+        .map(
+            (schema) => `<section class="library-schema">
+                <h2>${escapeHtml(schema.label)}</h2>
+                ${schema.layers
+                    .map((layer) => {
+                        const matching = entries.filter(
+                            (entry) =>
+                                entry.schemaId === schema.id &&
+                                entry.layer === layer.id,
+                        );
+                        return `<section><h3>${escapeHtml(layer.label)}</h3>${renderRelationshipList(matching, i18n.t("gateway.study.library_empty"))}</section>`;
+                    })
+                    .join("")}
+            </section>`,
+        )
+        .join("");
+}
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/study/languages"],
     });
     applyDocumentTitle(i18n, "gateway.study.library_label");
-    const language =
-        new URLSearchParams(window.location.search).get("language") ??
-        undefined;
-    const model = await loadStudySubNavigationModel({
-        fallbackLanguageCode: language,
-    });
-    let layers = [];
-    let entries = [];
+    const model = await loadStudySubNavigationModel();
+    const segments = window.location.pathname.split("/").filter(Boolean);
+    const entryId = segments.length === 5 ? segments[4] : undefined;
+    let content;
     try {
-        [layers, entries] = await Promise.all([
-            fetchLayers(),
-            fetchEntries({ scope: "global" }),
-        ]);
+        content = entryId
+            ? renderDetail(await fetchLibraryEntry(entryId), i18n)
+            : renderBrowser(
+                  await fetchLibrarySchemas(),
+                  await fetchLibraryEntries({ scope: "global" }),
+                  i18n,
+              );
     } catch {
         showToast(i18n.t("gateway.study.library_load_error"), {
             type: "error",
         });
+        content = `<p>${escapeHtml(i18n.t("gateway.study.library_load_error"))}</p>`;
     }
-    const populatedLayers = layers.filter((layer) =>
-        entries.some((entry) => entry.layer === layer),
-    );
     const composer = createPageComposer(root, {
         allowCustomization: true,
         elements: [
@@ -42,31 +98,8 @@ export async function mount(root, { signal } = {}) {
                 label: i18n.t("gateway.study.library_label"),
                 pinned: true,
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
-                render: () => `
-                <section class="library-browser">
-                    <nav class="library-layers" aria-label="${escapeHtml(i18n.t("gateway.study.library_layers"))}">
-                        ${populatedLayers.map((layer) => `<a href="#layer-${escapeHtml(layer)}">${escapeHtml(layer.replaceAll("_", " "))}</a>`).join("")}
-                    </nav>
-                    ${
-                        populatedLayers.length === 0
-                            ? `<p>${escapeHtml(i18n.t("gateway.study.library_empty"))}</p>`
-                            : populatedLayers
-                                  .map(
-                                      (layer) => `
-                        <section id="layer-${escapeHtml(layer)}">
-                            <h2>${escapeHtml(layer.replaceAll("_", " "))}</h2>
-                            <ul>${entries
-                                .filter((entry) => entry.layer === layer)
-                                .map(
-                                    (entry) =>
-                                        `<li><strong>${escapeHtml(entry.label)}</strong></li>`,
-                                )
-                                .join("")}</ul>
-                        </section>`,
-                                  )
-                                  .join("")
-                    }
-                </section>`,
+                render: () =>
+                    `<section class="library-browser">${content}</section>`,
             },
         ],
         preferenceKey: "study-library-layout",

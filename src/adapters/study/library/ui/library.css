@@ -17,3 +17,25 @@
 .library-browser h2 {
     text-transform: capitalize;
 }
+
+.library-schema,
+.library-detail {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.library-detail dl {
+    display: grid;
+    grid-template-columns: minmax(8rem, max-content) 1fr;
+    gap: 0.5rem 1rem;
+    margin: 0;
+}
+
+.library-detail dt {
+    font-weight: 700;
+}
+
+.library-detail dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}

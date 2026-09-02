@@ -1,17 +1,13 @@
-# Adaptor Pustaka
+# Adapter Pustaka
 
-## Tujuan
+## Skema milik konsumen
 
-Adaptor Pustaka menyimpan materi pembelajaran dan aktivitas yang dapat digunakan ulang serta dilacak di basis data. Setiap entri berada pada lapisan tetap dan cakupan global, kelas, atau pengguna. Lapisan kosong tidak ditampilkan.
+Adapter Pustaka menyimpan materi studi generik yang saling terhubung. Konsumen mendaftarkan skema berversi dan tetap melalui kapabilitas ctx `study:library`. Skema mendefinisikan bahasa, lapisan, bidang bertipe, dan relasi terarah; istilah seperti alfabet, kata, atau kalimat tidak ditetapkan adapter.
 
-## Lapisan standar
+Relasi menentukan lapisan target, kardinalitas, urutan, dan resolver opsional. Setiap penulisan memvalidasi bidang, versi skema, target, visibilitas, dan kardinalitas. Definisi alternatif dimodelkan sebagai lapisan dan relasi deklaratif milik konsumen.
 
-Urutannya adalah `alphabet`, `alt_characters`, `definitions`, `words`, `sentences`, `exercises`, `workouts`, `routines`, dan `collections`. Referensi merupakan hubungan terarah menuju unsur lapisan bawah yang diizinkan; koleksi dapat mengelompokkan semua lapisan selain koleksi lain.
+## Resolusi, API, dan UI
 
-## Templat untuk konsumen
+Resolver `grapheme` memakai grafem Unicode, sedangkan `longest-match` memakai blok yang dipisahkan secara eksplisit. Keduanya mengembalikan usulan dan unit yang belum terselesaikan tanpa membuat entri diam-diam. Penyedia lookup dipasang melalui `registerLookupProvider`, mengembalikan saran berperingkat beserta asalnya, dan dapat dilepas melalui callback registrasi. Pembuatan, resolusi, dan lookup mengikuti flow ctx bernama.
 
-Konsumen memanggil `cloneTemplate` melalui kapabilitas `study:library` pada `ctx` dengan lapisan yang benar-benar diperlukan. Modul bahasa dapat meminta hanya `alphabet`, `alt_characters`, `definitions`, `words`, dan `sentences` tanpa lapisan aktivitas. Salinan mempertahankan urutan baku, menghapus tautan ke lapisan yang tidak diminta, serta menandai tautan wajib. Saat kata dan kalimat dibuat, karakter yang dinormalisasi dan kata yang dipisahkan spasi dapat ditautkan secara otomatis.
-
-## Akses dan pertukaran
-
-Data global dapat dibaca semua pengguna, tetapi hanya admin dan pemilik yang dapat mengubah atau mengimpor JSON. Kelas dapat dibaca guru dan anggota aktif serta hanya dapat ditulis guru atau admin. Cakupan pengguna bersifat privat. Kapabilitas `study:library` mengekspos baca, tulis, penelusuran, permintaan kirim, serta ekspor JSON dan Anki melalui `ctx`.
+Gateway Study menyediakan penemuan skema, daftar, pembuatan, detail, penelusuran dua arah, pratinjau resolusi, dan saran lookup. Setiap entri memiliki URL `/study/library/:schemaId/:layerId/:entryId`. UI berbasis skema menampilkan lapisan terlokalisasi, bidang, dan relasi. Akses global, pengguna, dan kelas tetap ditegakkan pada batas layanan.

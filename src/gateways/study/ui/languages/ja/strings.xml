@@ -11,7 +11,6 @@
   <string name="gateway.study.hiragana_subtitle">日本語の基本的な音節文字（かな）を学びましょう。</string>
   <string name="gateway.study.hiragana_section_heading">ひらがな</string>
   <string name="gateway.study.hiragana_description">日本語の基本的な音節文字です。データは言語ライブラリの文字レイヤーから取得されます。</string>
-  <string name="gateway.study.library_subtitle">言語ライブラリの記録を管理する</string>
   <string name="gateway.study.classroom_subtitle">教室を表示・管理する</string>
   <string name="gateway.study.welcome_heading">Cognisへようこそ</string>
   <string name="gateway.study.welcome_tagline">学習を始める準備はできましたか？</string>
@@ -47,4 +46,10 @@
   <string name="gateway.study.library_layers">ライブラリの階層</string>
   <string name="gateway.study.library_empty">このライブラリにはまだ教材がありません。</string>
   <string name="gateway.study.library_load_error">ライブラリを読み込めませんでした。</string>
+  <string name="gateway.study.library_back">ライブラリへ戻る</string>
+  <string name="gateway.study.library_schema">スキーマ</string>
+  <string name="gateway.study.library_layer">レイヤー</string>
+  <string name="gateway.study.library_components">構成要素</string>
+  <string name="gateway.study.library_used_by">使用元</string>
+  <string name="gateway.study.library_no_relationships">関連する項目はありません。</string>
   </resources>

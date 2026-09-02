@@ -1,18 +1,21 @@
-import type { AccessRole } from "@cognis/core";
+import type { AccessRole, FlowApi } from "@cognis/core";
 import {
-    cloneLibraryTemplate,
-    inferReferenceLinks,
-    isLibraryLayer,
-    validateReferenceLayers,
+    findLayer,
+    resolveRelationships,
+    validateFields,
+    validateLibrarySchema,
+    validateReferences,
 } from "./layers.js";
 import { LibraryStore } from "./store.js";
 import type {
     LibraryEntry,
     LibraryEntryInput,
     LibraryLocation,
+    LibraryLookupProvider,
+    LibraryLookupSuggestion,
     LibraryPushRequest,
-    LibraryLayer,
-    LibraryTemplate,
+    LibraryResolutionProposal,
+    LibrarySchema,
 } from "./types.js";
 
 export interface LibraryActor {
@@ -34,12 +37,14 @@ export interface LibraryClassAccess {
 }
 
 export interface LibraryCapability {
-    readonly layers: readonly string[];
-    cloneTemplate(includedLayers: readonly LibraryLayer[]): LibraryTemplate;
+    registerSchema(schema: LibrarySchema): Promise<void>;
+    registerLookupProvider(provider: LibraryLookupProvider): () => void;
+    listSchemas(): LibrarySchema[];
+    getSchema(id: string, version?: number): LibrarySchema | null;
     list(
         actor: LibraryActor,
         location: LibraryLocation,
-        layer?: string,
+        filters?: { schemaId?: string; layer?: string },
     ): Promise<LibraryEntry[]>;
     read(actor: LibraryActor, entryId: string): Promise<LibraryEntry | null>;
     create(
@@ -47,16 +52,28 @@ export interface LibraryCapability {
         location: LibraryLocation,
         input: LibraryEntryInput,
     ): Promise<LibraryEntry>;
-    importJson(actor: LibraryActor, document: unknown): Promise<LibraryEntry[]>;
-    exportJson(
+    resolve(
         actor: LibraryActor,
         location: LibraryLocation,
-    ): Promise<Record<string, unknown>>;
-    exportAnki(actor: LibraryActor, location: LibraryLocation): Promise<string>;
+        input: Pick<
+            LibraryEntryInput,
+            "schemaId" | "schemaVersion" | "layer" | "label"
+        >,
+    ): Promise<LibraryResolutionProposal[]>;
+    lookup(
+        input: Pick<
+            LibraryEntryInput,
+            "schemaId" | "schemaVersion" | "layer" | "label"
+        >,
+    ): Promise<LibraryLookupSuggestion[]>;
     trace(
         actor: LibraryActor,
         entryId: string,
-    ): Promise<{ entry: LibraryEntry; usedBy: LibraryEntry[] }>;
+    ): Promise<{
+        entry: LibraryEntry;
+        references: LibraryEntry[];
+        usedBy: LibraryEntry[];
+    }>;
     requestPush(
         actor: LibraryActor,
         entryId: string,
@@ -82,33 +99,60 @@ function normalizeLocation(
 }
 
 export class LibraryService implements LibraryCapability {
-    readonly layers = [
-        "alphabet",
-        "alt_characters",
-        "definitions",
-        "words",
-        "sentences",
-        "exercises",
-        "workouts",
-        "routines",
-        "collections",
-    ] as const;
+    private readonly schemas = new Map<string, Map<number, LibrarySchema>>();
+    private readonly lookupProviders = new Map<string, LibraryLookupProvider>();
 
     constructor(
         private readonly store: LibraryStore,
         private readonly classAccess?: LibraryClassAccess,
+        private readonly flow?: FlowApi,
     ) {}
 
-    cloneTemplate(includedLayers: readonly LibraryLayer[]): LibraryTemplate {
-        return cloneLibraryTemplate(includedLayers);
+    async registerSchema(input: LibrarySchema): Promise<void> {
+        const schema = validateLibrarySchema(input);
+        const versions = this.schemas.get(schema.id) ?? new Map();
+        if (versions.has(schema.version))
+            throw new Error("schema_version_registered");
+        const newest = Math.max(0, ...versions.keys());
+        if (schema.version <= newest)
+            throw new Error("schema_version_regression");
+        await this.store.saveSchema(schema);
+        versions.set(schema.version, schema);
+        this.schemas.set(schema.id, versions);
+    }
+
+    registerLookupProvider(provider: LibraryLookupProvider): () => void {
+        if (!provider.id.trim() || this.lookupProviders.has(provider.id))
+            throw new Error("lookup_provider_registered");
+        this.lookupProviders.set(provider.id, provider);
+        return () => this.lookupProviders.delete(provider.id);
+    }
+
+    listSchemas(): LibrarySchema[] {
+        return Array.from(this.schemas.values(), (versions) =>
+            versions.get(Math.max(...versions.keys()))!,
+        ).map(structuredClone);
+    }
+
+    getSchema(id: string, version?: number): LibrarySchema | null {
+        const versions = this.schemas.get(id);
+        if (!versions) return null;
+        const selected = versions.get(version ?? Math.max(...versions.keys()));
+        return selected ? structuredClone(selected) : null;
+    }
+
+    private schema(id: string, version?: number): LibrarySchema {
+        const schema = this.getSchema(id, version);
+        if (!schema) throw new Error("schema_not_found");
+        return schema;
     }
 
     private async authorize(
         actor: LibraryActor,
-        rawLocation: LibraryLocation,
+        raw: LibraryLocation,
         write: boolean,
     ): Promise<LibraryLocation> {
-        const location = normalizeLocation(rawLocation, actor);
+        const location = normalizeLocation(raw, actor);
         if (location.scope === "global") {
             if (write && actor.role !== "admin" && actor.role !== "owner")
                 throw new Error("forbidden");
@@ -137,13 +181,17 @@ export class LibraryService implements LibraryCapability {
 
     async list(
         actor: LibraryActor,
-        rawLocation: LibraryLocation,
-        rawLayer?: string,
+        raw: LibraryLocation,
+        filters: { schemaId?: string; layer?: string } = {},
     ): Promise<LibraryEntry[]> {
-        const location = await this.authorize(actor, rawLocation, false);
-        if (rawLayer && !isLibraryLayer(rawLayer))
-            throw new Error("invalid_layer");
-        return this.store.list(location, rawLayer || undefined);
+        const location = await this.authorize(actor, raw, false);
+        if (filters.schemaId) {
+            const schema = this.schema(filters.schemaId);
+            if (filters.layer) findLayer(schema, filters.layer);
+        } else if (filters.layer) {
+            throw new Error("schema_required");
+        }
+        return this.store.list(location, filters);
     }
 
     async read(
@@ -160,142 +208,105 @@ export class LibraryService implements LibraryCapability {
         return entry;
     }
 
+    async resolve(
+        actor: LibraryActor,
+        raw: LibraryLocation,
+        input: Pick<
+            LibraryEntryInput,
+            "schemaId" | "schemaVersion" | "layer" | "label"
+        >,
+    ): Promise<LibraryResolutionProposal[]> {
+        await this.flow?.run("study-library-resolve", input);
+        const location = await this.authorize(actor, raw, false);
+        const schema = this.schema(input.schemaId, input.schemaVersion);
+        findLayer(schema, input.layer);
+        return resolveRelationships(
+            schema,
+            input.layer,
+            input.label,
+            await this.store.list(location, { schemaId: schema.id }),
+        );
+    }
+
+    async lookup(
+        input: Pick<
+            LibraryEntryInput,
+            "schemaId" | "schemaVersion" | "layer" | "label"
+        >,
+    ): Promise<LibraryLookupSuggestion[]> {
+        await this.flow?.run("study-library-lookup", input);
+        const schema = this.schema(input.schemaId, input.schemaVersion);
+        const layer = findLayer(schema, input.layer);
+        const suggestions = await Promise.all(
+            Array.from(this.lookupProviders.values())
+                .filter((provider) => provider.supports(schema, layer))
+                .map((provider) =>
+                    provider.lookup({ schema, layer, label: input.label }),
+                ),
+        );
+        return suggestions
+            .flat()
+            .filter(
+                (suggestion) =>
+                    suggestion.provider.trim() &&
+                    suggestion.provenance.trim() &&
+                    Number.isFinite(suggestion.confidence) &&
+                    suggestion.confidence >= 0 &&
+                    suggestion.confidence <= 1,
+            )
+            .sort((left, right) => right.confidence - left.confidence);
+    }
+
     async create(
         actor: LibraryActor,
-        rawLocation: LibraryLocation,
+        raw: LibraryLocation,
         input: LibraryEntryInput,
     ): Promise<LibraryEntry> {
-        const location = await this.authorize(actor, rawLocation, true);
-        if (!isLibraryLayer(input.layer)) throw new Error("invalid_layer");
+        await this.flow?.run("study-library-create", {
+            actor,
+            location: raw,
+            entry: input,
+        });
+        const location = await this.authorize(actor, raw, true);
+        const schema = this.schema(input.schemaId, input.schemaVersion);
         if (!input.label?.trim() || input.label.length > 500)
             throw new Error("invalid_label");
-        const fieldsJson = JSON.stringify(input.fields ?? {});
-        if (fieldsJson.length > 100_000) throw new Error("fields_too_large");
-        const references = [...(input.references ?? [])];
-        if (input.layer === "words" && references.length === 0) {
-            const alphabetEntries = await this.store.list(location, "alphabet");
-            const alphabetByLabel = new Map(
-                alphabetEntries.map((entry) => [
-                    entry.label.normalize("NFC"),
-                    entry,
-                ]),
-            );
-            for (const symbol of Array.from(input.label.normalize("NFC"))) {
-                let alphabetEntry = alphabetByLabel.get(symbol);
-                if (!alphabetEntry) {
-                    alphabetEntry = await this.store.create(
-                        location,
-                        {
-                            layer: "alphabet",
-                            language: input.language,
-                            label: symbol,
-                        },
-                        actor.accountId,
-                    );
-                    alphabetByLabel.set(symbol, alphabetEntry);
-                }
-                references.push({
-                    entryId: alphabetEntry.id,
-                    relation: "contains",
-                });
-            }
-        }
-        if (input.layer === "sentences" && references.length === 0) {
-            const candidates = new Map<
-                LibraryLayer,
-                readonly { id: string; label: string }[]
-            >();
-            for (const layer of ["words", "definitions"] as const) {
-                candidates.set(layer, await this.store.list(location, layer));
-            }
-            references.push(
-                ...inferReferenceLinks(input.layer, input.label, candidates),
-            );
-        }
-        const referencedLayers = new Map();
+        const fields = input.fields ?? {};
+        if (JSON.stringify(fields).length > 100_000)
+            throw new Error("fields_too_large");
+        validateFields(schema, input.layer, fields);
+        const references = input.references ?? [];
+        const targets = new Map<string, LibraryEntry>();
         for (const reference of references) {
-            const referencedEntry = await this.read(actor, reference.entryId);
-            if (!referencedEntry) throw new Error("reference_not_found");
-            referencedLayers.set(reference.entryId, referencedEntry.layer);
+            const target = await this.read(actor, reference.entryId);
+            if (!target) throw new Error("reference_not_found");
+            targets.set(target.id, target);
         }
-        validateReferenceLayers(input.layer, references, referencedLayers);
+        validateReferences(schema, input.layer, references, targets);
         return this.store.create(
             location,
-            { ...input, label: input.label.trim(), references },
+            {
+                ...input,
+                schemaVersion: schema.version,
+                label: input.label.trim(),
+                fields,
+                references,
+            },
+            schema.language,
             actor.accountId,
         );
     }
 
-    async importJson(
-        actor: LibraryActor,
-        document: unknown,
-    ): Promise<LibraryEntry[]> {
-        if (actor.role !== "admin" && actor.role !== "owner")
-            throw new Error("forbidden");
-        const entries = (document as { entries?: unknown })?.entries;
-        if (!Array.isArray(entries) || entries.length > 10_000)
-            throw new Error("invalid_import");
-        const created: LibraryEntry[] = [];
-        const importedIds = new Map<string, string>();
-        for (const rawEntry of entries) {
-            if (!rawEntry || typeof rawEntry !== "object")
-                throw new Error("invalid_import_entry");
-            const input = rawEntry as LibraryEntryInput & { id?: unknown };
-            const references = (input.references ?? []).map((reference) => ({
-                ...reference,
-                entryId:
-                    importedIds.get(reference.entryId) ?? reference.entryId,
-            }));
-            const entry = await this.create(
-                actor,
-                { scope: "global" },
-                { ...input, references },
-            );
-            created.push(entry);
-            if (typeof input.id === "string" && input.id.trim()) {
-                importedIds.set(input.id, entry.id);
-            }
-        }
-        return created;
-    }
-
-    async exportJson(
-        actor: LibraryActor,
-        location: LibraryLocation,
-    ): Promise<Record<string, unknown>> {
-        return {
-            schemaVersion: 1,
-            layers: this.layers,
-            entries: await this.list(actor, location),
-        };
-    }
-
-    async exportAnki(
-        actor: LibraryActor,
-        location: LibraryLocation,
-    ): Promise<string> {
-        const entries = await this.list(actor, location);
-        return entries
-            .filter(
-                (entry) =>
-                    entry.layer === "words" || entry.layer === "sentences",
-            )
-            .map(
-                (entry) =>
-                    `${entry.label.replaceAll("\t", " ")}\t${String(entry.fields?.definition ?? "").replaceAll("\t", " ")}`,
-            )
-            .join("\n");
-    }
-
-    async trace(
-        actor: LibraryActor,
-        entryId: string,
-    ): Promise<{ entry: LibraryEntry; usedBy: LibraryEntry[] }> {
+    async trace(actor: LibraryActor, entryId: string) {
         const entry = await this.read(actor, entryId);
         if (!entry) throw new Error("not_found");
-        const candidates = await this.store.referencesFor(entryId);
-        const usedBy: LibraryEntry[] = [];
-        for (const candidate of candidates) {
+        const references: LibraryEntry[] = [];
+        for (const reference of entry.references ?? []) {
+            const target = await this.read(actor, reference.entryId);
+            if (target) references.push(target);
+        }
+        const usedBy = [];
+        for (const candidate of await this.store.referencesFor(entryId)) {
             try {
                 await this.authorize(
                     actor,
@@ -308,7 +319,7 @@ export class LibraryService implements LibraryCapability {
                     throw error;
             }
         }
-        return { entry, usedBy };
+        return { entry, references, usedBy };
     }
 
     async requestPush(
@@ -316,26 +327,10 @@ export class LibraryService implements LibraryCapability {
         entryId: string,
         destination: LibraryLocation,
     ): Promise<LibraryPushRequest> {
-        const entry = await this.read(actor, entryId);
-        if (!entry) throw new Error("not_found");
-        if (entry.layer !== "words" && entry.references?.length === 0)
-            throw new Error("references_required");
-        const normalizedDestination = normalizeLocation(destination, actor);
-        if (normalizedDestination.scope === "user")
-            throw new Error("invalid_destination");
-        if (normalizedDestination.scope === "class" && this.classAccess) {
-            const canRead = await this.classAccess.canRead(
-                normalizedDestination.scopeId!,
-                actor.accountId,
-                actor.role,
-            );
-            if (!canRead) throw new Error("forbidden");
-        }
-        return this.store.createPush(
-            entryId,
-            normalizedDestination,
-            actor.accountId,
-        );
+        if (!(await this.read(actor, entryId))) throw new Error("not_found");
+        const normalized = normalizeLocation(destination, actor);
+        if (normalized.scope === "user") throw new Error("invalid_destination");
+        return this.store.createPush(entryId, normalized, actor.accountId);
     }
 
     async reviewPush(
@@ -348,36 +343,34 @@ export class LibraryService implements LibraryCapability {
         if (request.status !== "pending") throw new Error("already_reviewed");
         await this.authorize(actor, request.destination, true);
         if (decision === "approved") {
-            const copiedIds = new Map<string, string>();
-            const copyWithDependencies = async (
-                entryId: string,
-            ): Promise<string> => {
-                const copiedId = copiedIds.get(entryId);
-                if (copiedId) return copiedId;
+            const copied = new Map<string, string>();
+            const visiting = new Set<string>();
+            const copyEntry = async (entryId: string): Promise<string> => {
+                const existing = copied.get(entryId);
+                if (existing) return existing;
+                if (visiting.has(entryId))
+                    throw new Error("relationship_cycle_copy");
+                visiting.add(entryId);
                 const source = await this.store.get(entryId);
                 if (!source) throw new Error("reference_not_found");
                 const references = [];
                 for (const reference of source.references ?? []) {
                     references.push({
                         ...reference,
-                        entryId: await copyWithDependencies(reference.entryId),
+                        entryId: await copyEntry(reference.entryId),
                     });
                 }
-                const copy = await this.store.create(
+                const created = await this.store.create(
                     request.destination,
-                    {
-                        layer: source.layer,
-                        language: source.language,
-                        label: source.label,
-                        fields: source.fields,
-                        references,
-                    },
+                    { ...source, references },
+                    source.language,
                     actor.accountId,
                 );
-                copiedIds.set(entryId, copy.id);
-                return copy.id;
+                visiting.delete(entryId);
+                copied.set(entryId, created.id);
+                return created.id;
             };
-            await copyWithDependencies(request.sourceEntryId);
+            await copyEntry(request.sourceEntryId);
         }
         await this.store.reviewPush(requestId, decision, actor.accountId);
         return { ...request, status: decision };

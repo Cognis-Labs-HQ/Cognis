@@ -1,4 +1,4 @@
-# Plan für das Beziehungsframework der Studienbibliothek
+# Bibliotheks-Neugestaltung
 
 ## Zielrichtung
 

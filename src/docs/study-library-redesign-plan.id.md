@@ -1,4 +1,4 @@
-# Rencana kerangka relasi Pustaka Studi
+# Rencana desain Pustaka
 
 ## Arah
 

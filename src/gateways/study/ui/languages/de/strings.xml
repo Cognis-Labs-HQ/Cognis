@@ -11,7 +11,6 @@
   <string name="gateway.study.hiragana_subtitle">Lerne die grundlegende phonetische Silbenschrift des Japanischen.</string>
   <string name="gateway.study.hiragana_section_heading">ひらがな — Hiragana</string>
   <string name="gateway.study.hiragana_description">Die grundlegende phonetische Silbenschrift des Japanischen. Daten stammen aus der Zeichenebene der Sprachbibliothek.</string>
-  <string name="gateway.study.library_subtitle">Bibliothekseinträge verwalten</string>
   <string name="gateway.study.classroom_subtitle">Dein Klassenzimmer anzeigen und verwalten</string>
   <string name="gateway.study.welcome_heading">Willkommen bei Cognis</string>
   <string name="gateway.study.welcome_tagline">Bereit zu lernen?</string>
@@ -47,4 +46,10 @@
   <string name="gateway.study.library_layers">Bibliotheksebenen</string>
   <string name="gateway.study.library_empty">Diese Bibliothek enthält noch keine Materialien.</string>
   <string name="gateway.study.library_load_error">Die Bibliothek konnte nicht geladen werden.</string>
+  <string name="gateway.study.library_back">Zurück zur Bibliothek</string>
+  <string name="gateway.study.library_schema">Schema</string>
+  <string name="gateway.study.library_layer">Ebene</string>
+  <string name="gateway.study.library_components">Bestandteile</string>
+  <string name="gateway.study.library_used_by">Verwendet von</string>
+  <string name="gateway.study.library_no_relationships">Keine verbundenen Einträge.</string>
   </resources>

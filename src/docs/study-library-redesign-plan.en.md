@@ -1,4 +1,4 @@
-# Study Library relationship framework plan
+# Library redesign plan
 
 ## Direction
 
