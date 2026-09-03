@@ -87,13 +87,17 @@ test("profile menu keeps the current page link active", () => {
     );
 });
 
-test("dashboard keeps global search styles across SPA navigations", () => {
+test("dashboard keeps shared control styles across SPA navigations", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
         "utf8",
     );
 
     assert.match(layoutSource, /import \{ ensurePersistentStylesheet \}/);
+    assert.match(
+        layoutSource,
+        /ensurePersistentStylesheet\(BUTTON_STYLESHEET\)/,
+    );
     assert.match(layoutSource, /ensurePersistentStylesheet\(SEARCH_BAR_CSS\)/);
 });
 

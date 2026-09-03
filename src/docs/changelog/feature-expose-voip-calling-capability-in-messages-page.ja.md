@@ -18,9 +18,14 @@ Messages はルームごとにプロバイダーへアクションを問い合�
 
 通話コンポーネントは、ミーティングのホワイトボードと同じ埋め込みコンポーネントウィンドウ方式で、スレッドヘッダー領域とメッセージ一覧の間に開くようになりました。左上の戻る操作で通話をピクチャーインピクチャーへ移動し、通常の Messages レイアウトを復元して、終了後に古いステージを残しません。
 
+## Meetings の移動後もボタン表示を維持
+
+共通のアクション種別ボタンスタイルを専用の再利用可能なスタイルシートへ移し、ダッシュボードシェルで常に保持するようにしました。Meetings から移動するとルート固有のスタイルだけが解除されるため、どの移動先ページでもサイドメニューや操作の中立ボタンに枠線、色、ホバー状態、無効状態が維持されます。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/fddbcbf8999173159b88ee4efddf284e426b9a67
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9c16bf732cf74c071bc41201a303f57d3f561e30
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/69e21d58c8f04c27848c9b646672d6a436891d2c
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/2b179ef3cd20fab51af1eac5fa36506bf46021c6

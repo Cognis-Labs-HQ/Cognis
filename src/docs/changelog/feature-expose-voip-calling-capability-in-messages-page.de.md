@@ -18,9 +18,14 @@ Messages fragt den Anbieter nun für jeden Raum nach einer Aktion. Anbieter kön
 
 Anrufkomponenten öffnen sich nun zwischen dem Thread-Kopfbereich und der Nachrichtenliste und entsprechen damit dem eingebetteten Komponentenfenster von Meeting-Whiteboards. Eine Zurück-Steuerung oben links verschiebt den Anruf in den Bild-im-Bild-Modus, stellt das normale Messages-Layout wieder her und hinterlässt nach dem Schließen keine veraltete Bühne.
 
+## Button-Stile bleiben nach Meetings erhalten
+
+Gemeinsame Stile für Aktionsfolgen liegen nun in einem eigenen wiederverwendbaren Stylesheet und bleiben für die Dashboard-Shell dauerhaft geladen. Beim Verlassen von Meetings werden nur die routenspezifischen Stile entfernt, sodass neutrale Seitenmenü- und Aktionsbuttons auf jeder Zielseite Rahmen, Farben, Hover- und Deaktivierungszustände behalten.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/fddbcbf8999173159b88ee4efddf284e426b9a67
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9c16bf732cf74c071bc41201a303f57d3f561e30
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/69e21d58c8f04c27848c9b646672d6a436891d2c
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/2b179ef3cd20fab51af1eac5fa36506bf46021c6

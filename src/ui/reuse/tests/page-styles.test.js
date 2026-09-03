@@ -5,10 +5,10 @@ import {
     preparePageStylesheets,
 } from "../page-styles.js";
 
-test("persistent shell styles survive page stylesheet reconciliation", async (testContext) => {
-    const availabilityStylesheet = {
+function createStylesheet(pathname) {
+    return {
         dataset: { pageStylesheet: "true" },
-        href: "http://localhost/static/adapters/social/profile/availability.css",
+        href: `http://localhost${pathname}`,
         rel: "stylesheet",
         removed: false,
         sheet: {},
@@ -16,18 +16,28 @@ test("persistent shell styles survive page stylesheet reconciliation", async (te
             this.removed = true;
         },
     };
+}
+
+test("shared button styles survive Meetings route reconciliation", async (testContext) => {
+    const buttonStylesheet = createStylesheet(
+        "/static/styles/reuse/buttons.css",
+    );
+    const meetingsStylesheet = createStylesheet(
+        "/static/modules/jitsi-meet/jitsi-meet.css",
+    );
+    const stylesheets = [buttonStylesheet, meetingsStylesheet];
     globalThis.window = { location: { origin: "http://localhost" } };
     globalThis.document = {
         head: {
             querySelector(selector) {
-                return selector.includes("availability.css")
-                    ? availabilityStylesheet
-                    : null;
+                return stylesheets.find(
+                    (stylesheet) =>
+                        !stylesheet.removed &&
+                        selector.includes(new URL(stylesheet.href).pathname),
+                );
             },
             querySelectorAll() {
-                return availabilityStylesheet.removed
-                    ? []
-                    : [availabilityStylesheet];
+                return stylesheets.filter((stylesheet) => !stylesheet.removed);
             },
         },
     };
@@ -36,16 +46,16 @@ test("persistent shell styles survive page stylesheet reconciliation", async (te
         delete globalThis.window;
     });
 
-    const commitInitialStyles = await preparePageStylesheets([
-        "/static/adapters/social/profile/availability.css",
+    const commitMeetingsStyles = await preparePageStylesheets([
+        "/static/styles/reuse/buttons.css",
+        "/static/modules/jitsi-meet/jitsi-meet.css",
     ]);
-    commitInitialStyles();
-    await ensurePersistentStylesheet(
-        "/static/adapters/social/profile/availability.css",
-    );
+    commitMeetingsStyles();
+    await ensurePersistentStylesheet("/static/styles/reuse/buttons.css");
     const commitNextPageStyles = await preparePageStylesheets([]);
     commitNextPageStyles();
 
-    assert.equal(availabilityStylesheet.removed, false);
-    assert.equal(availabilityStylesheet.dataset.pageStylesheet, undefined);
+    assert.equal(buttonStylesheet.removed, false);
+    assert.equal(buttonStylesheet.dataset.pageStylesheet, undefined);
+    assert.equal(meetingsStylesheet.removed, true);
 });

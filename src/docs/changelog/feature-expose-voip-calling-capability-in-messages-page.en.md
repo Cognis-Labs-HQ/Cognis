@@ -18,9 +18,14 @@ Messages now asks the provider for an action for each room. Providers can hide c
 
 Call components now open between the thread header area and message list, matching the embedded component-window approach used by meeting whiteboards. A top-left back control moves the call into picture-in-picture, restores the normal Messages layout, and leaves no stale stage after the call closes.
 
+## Button styles survive Meetings navigation
+
+Shared consequence-button styles now live in their own reusable stylesheet and remain persistent for the dashboard shell. Leaving Meetings unloads only its route-specific styles, so neutral side-menu and action buttons retain their borders, colors, hover states, and disabled states on every destination page.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/fddbcbf8999173159b88ee4efddf284e426b9a67
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9c16bf732cf74c071bc41201a303f57d3f561e30
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/69e21d58c8f04c27848c9b646672d6a436891d2c
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/2b179ef3cd20fab51af1eac5fa36506bf46021c6
