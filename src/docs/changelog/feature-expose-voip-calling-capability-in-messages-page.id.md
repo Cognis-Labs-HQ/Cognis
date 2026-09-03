@@ -64,7 +64,7 @@ Mulai panggilan dan jawaban notifikasi kini mempertahankan izin aktivasi penggun
 
 ## Peralihan PiP langsung yang stabil
 
-Komponen rapat kini tetap berada di host DOM asalnya saat presentasi lapisan teratas browser menyediakan jendela PiP. Hal ini mempertahankan status penyedia selama peralihan, memastikan pembongkaran oleh penyedia tetap memulihkan obrolan, dan membatasi konten rapat sesuai ukuran jendela mengambang.
+Peralihan panggilan Messages kini mengambangkan host komponen—struktur pembungkus berbatas yang sama dengan Focus Control di Meetings—alih-alih jendela penyedia bagian dalam. Host memotong kontennya dan menggunakan jalur grid dengan minimum nol, sehingga Jitsi mengisi viewport PiP tanpa menambah tinggi konten melampaui dimensi pengontrol ukuran.
 
 ## Komit
 
@@ -86,3 +86,4 @@ Komponen rapat kini tetap berada di host DOM asalnya saat presentasi lapisan ter
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/4e75f696
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/59245f23
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/86cbe55e587061e6dd58927c20dd5c1fee530be9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/7fa6ee9910ab1da664c9992dd88b5659fe0af400

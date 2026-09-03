@@ -64,7 +64,7 @@ Call starts and notification answers now preserve a single-use user-activation p
 
 ## Stable in-place PiP handoff
 
-The meeting component now remains in its original DOM host while browser top-layer presentation provides the PiP window. This preserves provider state during the transition, ensures provider-led teardown still restores the chat, and keeps meeting content constrained to the floating window itself.
+The Messages call handoff now floats the component host—the same bounded-shell structure used by Meetings Focus Control—instead of the inner provider window. The host clips its content and uses zero-minimum grid tracks, so Jitsi fills the PiP viewport without increasing the content height beyond the resize controller’s dimensions.
 
 ## Commits
 
@@ -86,3 +86,4 @@ The meeting component now remains in its original DOM host while browser top-lay
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/4e75f696
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/59245f23
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/86cbe55e587061e6dd58927c20dd5c1fee530be9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/7fa6ee9910ab1da664c9992dd88b5659fe0af400

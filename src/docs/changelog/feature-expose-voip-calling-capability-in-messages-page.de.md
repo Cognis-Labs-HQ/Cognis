@@ -64,7 +64,7 @@ Anrufstart und Benachrichtigungsantwort bewahren nun eine einmal verwendbare Ben
 
 ## Stabile direkte PiP-Übergabe
 
-Die Besprechungskomponente verbleibt jetzt während der PiP-Übergabe in ihrem ursprünglichen DOM-Host, während die Browser-Top-Layer-Darstellung das PiP-Fenster bereitstellt. Dadurch bleibt der Anbieterzustand beim Übergang erhalten, die anbieterseitige Beendigung stellt weiterhin den Chat wieder her und der Besprechungsinhalt bleibt auf das schwebende Fenster begrenzt.
+Die Anrufübergabe in Messages lässt nun den Komponenten-Host schweben – dieselbe begrenzte Hüllenstruktur wie bei der Focus Control in Meetings – statt des inneren Anbieterfensters. Der Host beschneidet seinen Inhalt und verwendet Rasterspuren mit einem Minimum von null, sodass Jitsi den PiP-Viewport ausfüllt, ohne die Inhaltshöhe über die Abmessungen der Größensteuerung hinaus zu vergrößern.
 
 ## Commits
 
@@ -86,3 +86,4 @@ Die Besprechungskomponente verbleibt jetzt während der PiP-Übergabe in ihrem u
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/4e75f696
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/59245f23
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/86cbe55e587061e6dd58927c20dd5c1fee530be9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/7fa6ee9910ab1da664c9992dd88b5659fe0af400

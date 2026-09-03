@@ -214,7 +214,7 @@ async function mountProviderAction(
             if (!(windowElement instanceof HTMLElement) || !makeFloatingWindow)
                 return;
             callStage.setFloatingRelease(
-                makeFloatingWindow(windowElement, {
+                makeFloatingWindow(componentHost, {
                     portal: false,
                     topLayer: true,
                 }),

@@ -23,16 +23,32 @@
     display: none;
 }
 
-.call-stage--floating .call-stage-component {
-    width: 0;
-    min-height: 0;
-}
-
-.call-stage--floating .component-page-window.floating-window {
+.call-stage--floating .call-stage-component.floating-window {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
     width: min(32vw, 24rem);
     height: min(32vh, 15rem);
     min-width: 240px;
     min-height: 160px;
+}
+
+.call-stage--floating
+    .call-stage-component.floating-window
+    > .component-page-window {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.call-stage--floating
+    .call-stage-component.floating-window
+    .composer-view-grid {
+    grid-template-rows: minmax(0, 1fr);
+    grid-auto-rows: minmax(0, 1fr);
+    min-height: 0;
 }
 
 .call-stage-toolbar {

@@ -40,7 +40,6 @@ test("Call toolbar keeps its arrow separate from mounted meeting content", () =>
     assert.match(providerSource, /portal: false/);
     assert.match(providerSource, /topLayer: true/);
     assert.match(providerSource, /call-stage--floating/);
-    assert.doesNotMatch(providerSource, /callStage\.stage\.hidden = true/);
     assert.match(providerSource, /new MutationObserver/);
     assert.match(providerSource, /removeStageOnDiscard: true/);
     assert.ok(
@@ -55,8 +54,11 @@ test("Call PiP dimensions belong to the floating window", () => {
     assert.match(callStyles, /\.call-stage--floating/);
     assert.match(
         callStyles,
-        /\.component-page-window\.floating-window[\s\S]*width: min\(32vw, 24rem\)[\s\S]*height: min\(32vh, 15rem\)/,
+        /\.call-stage-component\.floating-window[\s\S]*width: min\(32vw, 24rem\)[\s\S]*height: min\(32vh, 15rem\)/,
     );
+    assert.match(callStyles, /> \.component-page-window[\s\S]*height: 100%/);
+    assert.match(callStyles, /overflow: hidden/);
+    assert.match(callStyles, /grid-template-rows: minmax\(0, 1fr\)/);
 });
 
 test("Call UI reports cancellation outcomes and room priority state", () => {

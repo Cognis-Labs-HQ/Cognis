@@ -64,7 +64,7 @@ Messages はカメラ操作を表示する前に、各ルームに呼び出し�
 
 ## 安定したインプレース PiP 引き継ぎ
 
-会議コンポーネントを元の DOM ホストに保持したまま、ブラウザーのトップレイヤー表示で PiP ウィンドウを提供するようにしました。これにより、切り替え中もプロバイダーの状態が維持され、プロバイダーによる終了後もチャットが復元され、会議内容がフローティングウィンドウの寸法内に収まります。
+Messages の通話引き継ぎでは、内側のプロバイダーウィンドウではなく、Meetings の Focus Control と同じ境界付きシェル構造であるコンポーネントホストをフローティング表示するようにしました。ホストが内容をクリップし、最小値ゼロのグリッドトラックを使用するため、Jitsi はサイズ変更コントローラーの寸法を超えて内容の高さを拡大せずに PiP ビューポートを満たします。
 
 ## コミット
 
@@ -86,3 +86,4 @@ Messages はカメラ操作を表示する前に、各ルームに呼び出し�
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/4e75f696
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/59245f23
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/86cbe55e587061e6dd58927c20dd5c1fee530be9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/7fa6ee9910ab1da664c9992dd88b5659fe0af400
