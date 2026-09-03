@@ -62,6 +62,10 @@ Messages kini memeriksa panggilan berdering atau aktif yang sudah ada di setiap 
 
 Mulai panggilan dan jawaban notifikasi kini mempertahankan izin aktivasi pengguna sekali pakai selama pensinyalan asinkron, sehingga kedua peserta dapat memasang komponen Jitsi saat undangan menjadi aktif. Filter bilah samping modul juga mempertahankan keadaan tidak aktif tanpa bingkai ketika penyedia memuat gaya tombol bersama selama panggilan.
 
+## PiP yang mempertahankan koneksi dan pembersihan permukaan panggilan otomatis
+
+Komponen panggilan kini menggunakan pemindahan DOM yang mempertahankan keadaan saat masuk atau keluar dari gambar-dalam-gambar, sehingga konferensi Jitsi tersemat tidak tersambung ulang selama transisi. Penghapusan komponen dipantau segera setelah pemasangan, sehingga rapat yang diakhiri penyedia menghapus bingkai panggilan kosong dan memulihkan obrolan.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -80,3 +84,4 @@ Mulai panggilan dan jawaban notifikasi kini mempertahankan izin aktivasi penggun
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/53dee857
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/630ac8d9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/4e75f696
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/59245f23

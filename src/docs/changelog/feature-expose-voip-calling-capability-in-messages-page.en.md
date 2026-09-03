@@ -62,6 +62,10 @@ Messages now checks each room for an existing ringing or active call before rend
 
 Call starts and notification answers now preserve a single-use user-activation permit through asynchronous signaling, so both participants can mount the Jitsi component when the invitation becomes active. Module sidebar filters also keep their intended borderless inactive state when a provider loads shared button styles during the call.
 
+## Connection-preserving PiP and automatic call-surface cleanup
+
+Call components now use state-preserving DOM movement when entering or leaving picture-in-picture, preventing an embedded Jitsi conference from reconnecting during the transition. Component removal is monitored immediately after mounting, so a provider-ended meeting removes the empty call frame and restores the chat.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -80,3 +84,4 @@ Call starts and notification answers now preserve a single-use user-activation p
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/53dee857
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/630ac8d9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/4e75f696
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/59245f23

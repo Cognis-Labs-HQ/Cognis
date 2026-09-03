@@ -45,6 +45,18 @@ function ensureFloatingWindowStyles() {
     document.head.append(link);
 }
 
+function movePreservingState(parent, element, before = null) {
+    if (typeof parent?.moveBefore === "function") {
+        parent.moveBefore(element, before);
+        return;
+    }
+    if (before) {
+        parent.insertBefore(element, before);
+        return;
+    }
+    parent?.append(element);
+}
+
 function createFloatingWindowChrome(element) {
     if (typeof document === "undefined" || !document.createElement) {
         return { toolbar: null, resizeHandles: [], remove: () => {} };
@@ -136,7 +148,7 @@ export function makeFloatingWindow(
 
     ensureFloatingWindowStyles();
     if (portal && document.body && portalElement.parentNode !== document.body) {
-        document.body.append(portalElement);
+        movePreservingState(document.body, portalElement);
     }
     const chrome = createFloatingWindowChrome(element);
     element.classList.add("floating-window");
@@ -512,7 +524,7 @@ export function makeFloatingWindow(
             element.removeAttribute?.("popover");
         }
         if (portal && portalParent && portalParent.isConnected !== false) {
-            portalParent.insertBefore(portalElement, portalNextSibling);
+            movePreservingState(portalParent, portalElement, portalNextSibling);
         }
     };
     release.updateMinimumSize = updateMinimumSize;

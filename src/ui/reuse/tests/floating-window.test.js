@@ -50,6 +50,11 @@ class FakeElement {
         child.parentElement = this;
     }
 
+    moveBefore(child, sibling) {
+        this.statePreservingMoves = (this.statePreservingMoves ?? 0) + 1;
+        this.insertBefore(child, sibling);
+    }
+
     remove() {
         if (!this.parentElement) return;
         this.parentElement.children = this.parentElement.children.filter(
@@ -138,6 +143,7 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         const handle = new FakeElement(panel.rect);
         const release = makeFloatingWindow(panel, { handle });
         assert.equal(panel.parentElement, body);
+        assert.equal(body.statePreservingMoves, 1);
         assert.equal(panel.popoverOpen, true);
         assert.equal(panel.classes.has("floating-window"), true);
         assert.equal(handle.classes.has("floating-window-handle"), true);
@@ -324,6 +330,7 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         );
 
         release();
+        assert.equal(originalParent.statePreservingMoves, 1);
         assert.equal(
             release.updateMinimumSize({ width: 400, height: 300 }),
             false,

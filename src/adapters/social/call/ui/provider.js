@@ -186,15 +186,27 @@ async function mountProviderAction(
     });
     if (!componentWindow) return false;
     callStage.setComponentWindow(componentWindow);
+    const windowElement = componentHost.querySelector(".component-page-window");
+    if (!(windowElement instanceof HTMLElement)) {
+        await callStage.cleanup();
+        return false;
+    }
+    const closeObserver = new MutationObserver(() => {
+        if (windowElement.isConnected) return;
+        closeObserver.disconnect();
+        void callStage.cleanup();
+    });
+    closeObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+    });
+    callStage.setCloseObserver(closeObserver);
     const backButton = callStage.stage.querySelector(".call-stage-back");
     backButton.hidden = false;
     backButton.addEventListener(
         "click",
         () => {
             if (callStage.isFloating()) return;
-            const windowElement = componentHost.querySelector(
-                ".component-page-window",
-            );
             const makeFloatingWindow = uiCtx.capabilities.get(
                 "ui:makeFloatingWindow",
             );
@@ -222,16 +234,6 @@ async function mountProviderAction(
                     detail: { roomId: callStage.stage.dataset.roomId },
                 }),
             );
-            const closeObserver = new MutationObserver(() => {
-                if (windowElement.isConnected) return;
-                closeObserver.disconnect();
-                void callStage.cleanup();
-            });
-            closeObserver.observe(document.body, {
-                childList: true,
-                subtree: true,
-            });
-            callStage.setCloseObserver(closeObserver);
         },
         { signal },
     );

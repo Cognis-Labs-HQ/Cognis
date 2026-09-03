@@ -62,6 +62,10 @@ Messages prüft jetzt vor dem Anzeigen der Kameraaktion, ob im jeweiligen Raum e
 
 Anrufstart und Benachrichtigungsantwort bewahren nun eine einmal verwendbare Benutzeraktivierungsberechtigung über die asynchrone Signalisierung hinweg, sodass beide Teilnehmenden die Jitsi-Komponente einbinden können, sobald die Einladung aktiv wird. Modul-Seitenleistenfilter behalten außerdem ihren vorgesehenen randlosen inaktiven Zustand, wenn ein Anbieter während des Anrufs gemeinsame Schaltflächenstile lädt.
 
+## Verbindungserhaltendes PiP und automatische Bereinigung der Anrufoberfläche
+
+Anrufkomponenten verwenden beim Wechsel in oder aus Bild-in-Bild nun eine zustandserhaltende DOM-Verschiebung. Dadurch verbindet sich eine eingebettete Jitsi-Konferenz während des Übergangs nicht erneut. Das Entfernen der Komponente wird direkt nach dem Einbinden überwacht, sodass ein vom Anbieter beendetes Meeting den leeren Anrufrahmen entfernt und den Chat wiederherstellt.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -80,3 +84,4 @@ Anrufstart und Benachrichtigungsantwort bewahren nun eine einmal verwendbare Ben
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/53dee857
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/630ac8d9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/4e75f696
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/59245f23
