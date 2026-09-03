@@ -84,4 +84,7 @@
   <string name="module.social.messages.event_call_cancelled">{name} membatalkan panggilan.</string>
   <string name="module.social.messages.event_call_declined">{name} menolak panggilan.</string>
   <string name="module.social.messages.event_call_missed">Panggilan dari {name} tidak dijawab.</string>
+  <string name="module.social.messages.call_ringing">Panggilan dari {name} berdering…</string>
+  <string name="module.social.messages.answer_call">Jawab panggilan</string>
+  <string name="module.social.messages.decline_call">Tolak panggilan</string>
 </resources>

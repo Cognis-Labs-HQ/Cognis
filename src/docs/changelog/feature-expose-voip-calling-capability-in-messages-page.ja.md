@@ -38,6 +38,10 @@ SPA スタイルシートの準備状態を、バージョン付き URL 全体�
 
 通話ライフサイクルの状態変化がルームイベントとして保存され、すべての参加者に表示されるようになりました。Call アダプターは招待中に着信と発信で異なる音を繰り返し再生します。発信者が自分の招待をキャンセルした場合に、誤って通話拒否のメッセージが表示されることもなくなりました。
 
+## ルーム内の操作可能な着信イベント
+
+現在呼び出し中の招待がルーム履歴に通話カードとして表示されるようになりました。受信者は結果に応じた色の SVG 操作で応答または拒否でき、発信者には呼び出し状態が表示されます。状態が変わるか新しい通話が始まると、項目は自動的に通常の履歴イベントになります。保存済み着信プロンプトはシェル移動後も維持され、呼び出し音はより強いパルスを使用します。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -50,3 +54,4 @@ SPA スタイルシートの準備状態を、バージョン付き URL 全体�
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/60ad8491
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bbcc6537
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/263c98cc
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/92f46be7

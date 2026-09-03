@@ -266,9 +266,7 @@ async function answerRequestedCall({ signal } = {}) {
     return true;
 }
 
-window.addEventListener("cognis:call-decline-requested", async (event) => {
-    const callId = String(event.detail?.callId ?? "");
-    const roomId = String(event.detail?.roomId ?? "");
+async function declineCall(callId, roomId) {
     if (!callId) return;
     const i18n = await getCallI18n();
     try {
@@ -283,6 +281,21 @@ window.addEventListener("cognis:call-decline-requested", async (event) => {
             variant: "error",
         });
     }
+}
+
+async function answerCall(callId, roomId) {
+    if (!callId || !roomId) return false;
+    await uiCtx.capabilities.get("ui:navigate")?.(
+        `/messages/${encodeURIComponent(roomId)}?call=${encodeURIComponent(callId)}&answer=1`,
+    );
+    return true;
+}
+
+window.addEventListener("cognis:call-decline-requested", (event) => {
+    void declineCall(
+        String(event.detail?.callId ?? ""),
+        String(event.detail?.roomId ?? ""),
+    );
 });
 
 window.addEventListener("cognis:notification-arrival", (event) => {
@@ -305,4 +318,6 @@ uiCtx.capabilities.contribute(CALL_UI_CAPABILITY, {
     resolveRoomCall,
     startRoomCall,
     answerRequestedCall,
+    answerCall,
+    declineCall,
 });

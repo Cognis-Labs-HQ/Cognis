@@ -15,7 +15,7 @@ export function startRingingTone(direction) {
         oscillator.frequency.value = direction === "inbound" ? 440 : 425;
         gain.gain.setValueAtTime(0.0001, context.currentTime);
         gain.gain.exponentialRampToValueAtTime(
-            0.08,
+            0.16,
             context.currentTime + 0.02,
         );
         gain.gain.exponentialRampToValueAtTime(

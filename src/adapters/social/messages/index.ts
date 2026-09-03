@@ -176,6 +176,7 @@ export async function bootstrapSocialAdapter(
         subjectAccountId: string;
         subjectHandle?: string | null;
         subjectDisplayName?: string | null;
+        details?: Record<string, unknown>;
     }) => messagesStore.appendRoomEvent(input);
     ctx.capabilities.contribute(
         "social:messages:appendCallEvent",

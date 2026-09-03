@@ -50,3 +50,10 @@ test("Call UI plays distinct inbound and outbound ringing tones", () => {
     assert.match(toneSource, /createOscillator/);
     assert.match(toneSource, /TONE_INTERVAL_MILLISECONDS/);
 });
+
+test("Call UI exposes room-event answer and decline actions", () => {
+    assert.match(providerSource, /async function answerCall/);
+    assert.match(providerSource, /async function declineCall/);
+    assert.match(providerSource, /answerCall,/);
+    assert.match(providerSource, /declineCall,/);
+});

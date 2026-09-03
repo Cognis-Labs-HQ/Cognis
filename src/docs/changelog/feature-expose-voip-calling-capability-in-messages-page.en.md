@@ -38,6 +38,10 @@ Incoming calls now remain in the transient-notification area with green Answer a
 
 Call lifecycle transitions are now persisted as room events visible to every participant. The Call adapter plays distinct repeating inbound and outbound tones while an invitation is ringing, and a caller who cancels their own invitation no longer receives a misleading declined-call message.
 
+## Actionable ringing events in rooms
+
+The current ringing invitation now appears in room history as a call card. Recipients can answer or decline with consequence-colored SVG controls, callers see the ringing state, and the entry automatically becomes a plain historical event after the call changes state or a newer call starts. Persisted incoming prompts survive shell navigation, and ringing tones use a stronger pulse.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -50,3 +54,4 @@ Call lifecycle transitions are now persisted as room events visible to every par
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/60ad8491
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bbcc6537
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/263c98cc
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/92f46be7

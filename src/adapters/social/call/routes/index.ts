@@ -71,6 +71,7 @@ export function createCallRoutes(
         subjectAccountId: string;
         subjectHandle?: string | null;
         subjectDisplayName?: string | null;
+        details?: Record<string, unknown>;
     }) => Promise<unknown>,
 ) {
     const recordedEvents = new Set<string>();
@@ -96,6 +97,11 @@ export function createCallRoutes(
             subjectAccountId: actorId,
             subjectHandle: actor?.handle,
             subjectDisplayName: actor?.displayName,
+            details: {
+                callId: call.id,
+                callerAccountId: call.callerAccountId,
+                status: call.status,
+            },
         });
         recordedEvents.add(key);
     };

@@ -77,6 +77,7 @@ export async function appendRoomEvent(
         subjectAccountId: string;
         subjectHandle?: string | null;
         subjectDisplayName?: string | null;
+        details?: Record<string, unknown>;
     },
 ): Promise<MessageRow> {
     return db.transaction((executor) => insertRoomEvent(executor, input));
@@ -100,6 +101,7 @@ export async function insertRoomEvent(
         subjectAccountId: string;
         subjectHandle?: string | null;
         subjectDisplayName?: string | null;
+        details?: Record<string, unknown>;
     },
 ): Promise<MessageRow> {
     const payload = JSON.stringify({
@@ -107,6 +109,7 @@ export async function insertRoomEvent(
         subjectAccountId: input.subjectAccountId,
         subjectHandle: input.subjectHandle ?? null,
         subjectDisplayName: input.subjectDisplayName ?? null,
+        ...(input.details ?? {}),
     });
     return insertMessage(db, {
         roomId: input.roomId,

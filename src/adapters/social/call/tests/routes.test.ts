@@ -43,7 +43,10 @@ const roomContext = {
 
 test("call creation validates room membership and dispatches an answer action", async () => {
     const notifications: Array<{ actionUrl?: string; category: string }> = [];
-    const roomEvents: Array<{ eventType: string }> = [];
+    const roomEvents: Array<{
+        eventType: string;
+        details?: Record<string, unknown>;
+    }> = [];
     const route = createCallRoutes(
         new CallStore(),
         {
@@ -70,6 +73,8 @@ test("call creation validates room membership and dispatches an answer action", 
         roomEvents.map((event) => event.eventType),
         ["call_started"],
     );
+    assert.equal(typeof roomEvents[0].details?.callId, "string");
+    assert.equal(roomEvents[0].details?.callerAccountId, "caller");
 });
 
 test("call creation rejects rooms the Messages capability does not authorize", async () => {

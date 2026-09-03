@@ -246,6 +246,7 @@ export class DbMessagesStore {
         subjectAccountId: string;
         subjectHandle?: string | null;
         subjectDisplayName?: string | null;
+        details?: Record<string, unknown>;
     }): Promise<MessageRow> {
         return appendRoomEvent(this.db, input);
     }

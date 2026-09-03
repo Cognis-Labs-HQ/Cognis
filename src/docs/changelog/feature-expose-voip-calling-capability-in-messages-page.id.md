@@ -38,6 +38,10 @@ Panggilan masuk kini tetap berada di area notifikasi singkat dengan kontrol Jawa
 
 Transisi siklus hidup panggilan kini disimpan sebagai peristiwa ruang yang terlihat oleh setiap peserta. Adapter Call memainkan nada masuk dan keluar berulang yang berbeda selama undangan berdering, dan penelepon yang membatalkan undangannya sendiri tidak lagi menerima pesan penolakan panggilan yang menyesatkan.
 
+## Peristiwa berdering interaktif di ruang
+
+Undangan berdering saat ini kini muncul sebagai kartu panggilan dalam riwayat ruang. Penerima dapat menjawab atau menolak dengan kontrol SVG berwarna sesuai konsekuensi, penelepon melihat status berdering, dan entri otomatis menjadi peristiwa riwayat biasa setelah status berubah atau panggilan yang lebih baru dimulai. Prompt persisten bertahan selama navigasi shell dan nada dering menggunakan denyut yang lebih kuat.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -50,3 +54,4 @@ Transisi siklus hidup panggilan kini disimpan sebagai peristiwa ruang yang terli
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/60ad8491
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bbcc6537
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/263c98cc
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/92f46be7

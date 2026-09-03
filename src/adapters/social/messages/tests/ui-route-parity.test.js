@@ -131,11 +131,27 @@ const ROOM_RENDER_SOURCE = readFileSync(
     resolve(ROOT, "src/adapters/social/messages/ui/room-render.js"),
     "utf8",
 );
+const MESSAGE_RENDER_SOURCE = readFileSync(
+    resolve(ROOT, "src/adapters/social/messages/ui/message-render.js"),
+    "utf8",
+);
 test("messages delegates calling through the Call adapter capability", () => {
     assert.match(APP_SOURCE, /social:callUi/);
     assert.match(APP_SOURCE, /resolveRoomCall/);
     assert.match(APP_SOURCE, /startRoomCall/);
     assert.match(APP_SOURCE, /answerRequestedCall/);
+    assert.match(APP_SOURCE, /data-call-action/);
+    assert.match(APP_SOURCE, /answerCall/);
+    assert.match(APP_SOURCE, /declineCall/);
+    assert.match(MESSAGE_RENDER_SOURCE, /renderActiveCallEvent/);
+    assert.match(
+        MESSAGE_RENDER_SOURCE,
+        /messages-call-event-answer btn-confirm/,
+    );
+    assert.match(
+        MESSAGE_RENDER_SOURCE,
+        /messages-call-event-decline btn-cancel/,
+    );
     assert.match(ROOM_RENDER_SOURCE, /showCallAction && \["dm", "group"\]/);
     assert.match(ROOM_RENDER_SOURCE, /messages-room-call-btn btn-confirm/);
 });

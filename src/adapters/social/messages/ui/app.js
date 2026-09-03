@@ -397,6 +397,22 @@ export async function mount(root, { signal } = {}) {
                     "click",
                     async (clickEvent) => {
                         hideAllMessageHoverPopups();
+                        const callAction = clickEvent.target.closest(
+                            "[data-call-action][data-call-id]",
+                        );
+                        if (callAction instanceof HTMLElement) {
+                            const callUi =
+                                uiCtx.capabilities.get("social:callUi");
+                            const callId = callAction.dataset.callId;
+                            const roomId = roomState.getSelectedRoomId();
+                            if (callAction.dataset.callAction === "answer") {
+                                await callUi?.answerCall(callId, roomId);
+                            } else {
+                                await callUi?.declineCall(callId, roomId);
+                                await roomState.refreshActiveConversation();
+                            }
+                            return;
+                        }
                         const moreButton = clickEvent.target.closest(
                             "[data-reaction-more]",
                         );
