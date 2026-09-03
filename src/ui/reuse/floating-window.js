@@ -120,6 +120,8 @@ export function makeFloatingWindow(
     const hadPopoverAttribute = element.hasAttribute?.("popover") ?? false;
     const previousPopoverValue = element.getAttribute?.("popover");
     let shownInTopLayer = false;
+    const originalParent = element.parentNode ?? element.parentElement;
+    const originalNextSibling = element.nextSibling;
     const previousStyles = Object.fromEntries(
         MANAGED_STYLE_PROPERTIES.map((property) => [
             property,
@@ -128,6 +130,9 @@ export function makeFloatingWindow(
     );
 
     ensureFloatingWindowStyles();
+    if (portal && document.body && element.parentNode !== document.body) {
+        document.body.append(element);
+    }
     const chrome = createFloatingWindowChrome(element);
     element.classList.add("floating-window");
     handle.classList.add("floating-window-handle");
@@ -482,11 +487,27 @@ export function makeFloatingWindow(
         for (const [property, value] of Object.entries(previousStyles)) {
             element.style[property] = value;
         }
-        if (shownInTopLayer) element.hidePopover?.();
+        if (shownInTopLayer) {
+            try {
+                if (
+                    typeof element.matches !== "function" ||
+                    element.matches(":popover-open")
+                ) {
+                    element.hidePopover?.();
+                }
+            } catch {
+                // Popover state changed during beforetoggle; handled by the
+                // popover-attribute-restoration block immediately below.
+            }
+        }
+        // popover-attribute-restoration
         if (hadPopoverAttribute) {
             element.setAttribute("popover", previousPopoverValue ?? "");
         } else {
             element.removeAttribute?.("popover");
+        }
+        if (portal && originalParent && originalParent.isConnected !== false) {
+            originalParent.insertBefore(element, originalNextSibling);
         }
     };
     release.updateMinimumSize = updateMinimumSize;

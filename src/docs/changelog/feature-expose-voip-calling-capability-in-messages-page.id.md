@@ -46,6 +46,10 @@ Undangan berdering saat ini kini muncul sebagai kartu panggilan dalam riwayat ru
 
 Pemindahan pertemuan ke gambar-dalam-gambar kini hanya dilakukan sekali sehingga ukuran jendela pilihan pengguna tetap dipertahankan. Messages segera memulihkan dan menggambar ulang percakapan, menyembunyikan panah, dan menonaktifkan tindakan kamera hingga komponen ditutup. Kartu panggilan masuk aktif kini memiliki latar berbayang dan batas animasi, sedangkan peristiwa lama tidak mempertahankan kontrol jawab atau tolak.
 
+## Jendela PiP bertahan selama navigasi SPA
+
+Jendela komponen mengambang kini dipindahkan ke shell dokumen persisten dan dapat melepaskan diri secara eksplisit dari siklus hidup halaman pemanggil. Navigasi SPA membuang jendela komponen biasa tetapi mempertahankan panggilan PiP hingga ditutup secara eksplisit. Pembongkaran popover kini memeriksa status lapisan atas sebelum menyembunyikan, sehingga mencegah NotSupportedError ketika beforetoggle mengubah status popover.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -60,3 +64,4 @@ Pemindahan pertemuan ke gambar-dalam-gambar kini hanya dilakukan sekali sehingga
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/263c98cc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/92f46be7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb

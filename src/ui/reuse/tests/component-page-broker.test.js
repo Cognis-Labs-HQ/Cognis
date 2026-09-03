@@ -356,11 +356,28 @@ test("component windows stay disposable across activation and SPA navigation", a
 
     releasedMount = false;
     const navigationController = new AbortController();
-    await spawnComponentPage({
+    const retainedWindow = await spawnComponentPage({
         componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
         routeId: "core.dashboard",
         elementId: "meeting-whiteboard-stage",
         signal: navigationController.signal,
+    });
+    retainedWindow.retainAcrossCallerAbort();
+    window.dispatchEvent({ type: "cognis:route-will-change" });
+    navigationController.abort();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(releasedMount, false);
+    assert.equal(componentStage.children.length, 1);
+    await retainedWindow.discard();
+    assert.equal(releasedMount, true);
+
+    releasedMount = false;
+    const disposableNavigationController = new AbortController();
+    await spawnComponentPage({
+        componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+        routeId: "core.dashboard",
+        elementId: "meeting-whiteboard-stage",
+        signal: disposableNavigationController.signal,
     });
     window.dispatchEvent({ type: "cognis:route-will-change" });
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -372,9 +389,9 @@ test("component windows stay disposable across activation and SPA navigation", a
         componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
         routeId: "core.dashboard",
         elementId: "meeting-whiteboard-stage",
-        signal: navigationController.signal,
+        signal: disposableNavigationController.signal,
     });
-    navigationController.abort();
+    disposableNavigationController.abort();
     await new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(releasedMount, true);
     assert.equal(componentStage.children.length, 0);

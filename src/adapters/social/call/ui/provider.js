@@ -192,10 +192,9 @@ async function mountProviderAction(action, callStage, signal) {
             );
             if (!(windowElement instanceof HTMLElement) || !makeFloatingWindow)
                 return;
-            callStage.setFloatingRelease(
-                makeFloatingWindow(windowElement, { signal }),
-            );
+            callStage.setFloatingRelease(makeFloatingWindow(windowElement));
             callStage.markFloating();
+            componentWindow.retainAcrossCallerAbort?.();
             componentWindow.restoreHostLayout?.();
             backButton.hidden = true;
             callStage.stage.hidden = true;

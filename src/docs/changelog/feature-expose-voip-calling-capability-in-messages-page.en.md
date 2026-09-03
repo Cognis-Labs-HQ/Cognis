@@ -46,6 +46,10 @@ The current ringing invitation now appears in room history as a call card. Recip
 
 Moving a meeting to picture-in-picture now happens only once, preserving the user-sized floating window. Messages immediately restores and redraws the conversation, hides the arrow, and disables the camera action until the component closes. Active incoming-call cards now have a shaded background and animated border, while past call events never retain answer or decline controls.
 
+## PiP windows survive SPA navigation
+
+Floating component windows are now portaled into the persistent document shell and can explicitly detach from their caller page lifecycle. SPA navigation discards ordinary component windows but preserves retained PiP calls until they are explicitly closed. Popover teardown now verifies top-layer state before hiding, preventing the browser NotSupportedError when a beforetoggle handler changes the popover state.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -60,3 +64,4 @@ Moving a meeting to picture-in-picture now happens only once, preserving the use
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/263c98cc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/92f46be7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb

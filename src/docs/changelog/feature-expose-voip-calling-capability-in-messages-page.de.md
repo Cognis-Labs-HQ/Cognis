@@ -46,6 +46,10 @@ Die aktuelle klingelnde Einladung erscheint jetzt als Anrufkarte im Raumverlauf.
 
 Das Verschieben eines Meetings in Bild-in-Bild erfolgt jetzt nur einmal und bewahrt die vom Benutzer festgelegte Fenstergröße. Messages stellt die Unterhaltung sofort wieder her und zeichnet sie neu, blendet den Pfeil aus und deaktiviert die Kameraaktion bis zum Schließen der Komponente. Aktive Anrufkarten erhalten einen schattierten Hintergrund und animierten Rand; vergangene Ereignisse behalten keine Annehmen- oder Ablehnen-Steuerung.
 
+## PiP-Fenster überstehen SPA-Navigation
+
+Schwebende Komponentenfenster werden jetzt in die dauerhafte Dokumentoberfläche verschoben und können sich ausdrücklich vom Lebenszyklus ihrer aufrufenden Seite lösen. SPA-Navigation verwirft gewöhnliche Komponentenfenster, behält jedoch gehaltene PiP-Anrufe bis zum ausdrücklichen Schließen. Beim Popover-Abbau wird der Zustand der obersten Ebene vor dem Ausblenden geprüft, wodurch der NotSupportedError bei Zustandsänderungen durch beforetoggle verhindert wird.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -60,3 +64,4 @@ Das Verschieben eines Meetings in Bild-in-Bild erfolgt jetzt nur einmal und bewa
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/263c98cc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/92f46be7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb

@@ -137,7 +137,7 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         originalParent.append(panel);
         const handle = new FakeElement(panel.rect);
         const release = makeFloatingWindow(panel, { handle });
-        assert.equal(panel.parentElement, originalParent);
+        assert.equal(panel.parentElement, body);
         assert.equal(panel.popoverOpen, true);
         assert.equal(panel.classes.has("floating-window"), true);
         assert.equal(handle.classes.has("floating-window-handle"), true);

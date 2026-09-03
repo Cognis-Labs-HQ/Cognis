@@ -5,7 +5,7 @@
  * - `requestComponentPage` — resolves an eligible page without mounting it.
  * - `spawnComponentPage` — mounts an eligible page in a protected caller-owned stage.
  * - `discardComponentPage` — tears down the component window in a stage.
- * - `discardAllComponentPages` — tears down every active component window.
+ * - `discardAllComponentPages` — tears down active component windows, optionally retaining navigation-safe windows.
  * - `installComponentPageBroker` — registers browser flow hooks and capabilities once.
  *
  * @example
@@ -117,7 +117,7 @@ export async function requestComponentPage(request) {
  * Mounts an eligible component page in a protected, caller-owned stage.
  *
  * @param {{componentUuid: string, routeId: string, elementId: string, mode?: string, context?: object, signal?: AbortSignal, borderless?: boolean, removeStageOnDiscard?: boolean}} request
- * @returns {Promise<{elementId: string, ownerUuid: string, routeId: string, borderless: boolean, restoreHostLayout: () => void, discard: () => Promise<void>} | null>} A mounted component-window handle or null.
+ * @returns {Promise<{elementId: string, ownerUuid: string, routeId: string, borderless: boolean, restoreHostLayout: () => void, retainAcrossCallerAbort: () => void, discard: () => Promise<void>} | null>} A mounted component-window handle or null.
  */
 export async function spawnComponentPage(request) {
     const result = await uiCtx.runFlow("spawn-component-page", request);
@@ -139,15 +139,21 @@ export async function discardComponentPage(elementId) {
 }
 
 /**
- * Discards every active component window before the SPA replaces page content.
+ * Discards active component windows.
  *
+ * @param {{includeRetained?: boolean}} options - Set false during SPA navigation to preserve retained windows.
  * @returns {Promise<void>}
  */
-export async function discardAllComponentPages() {
+export async function discardAllComponentPages({
+    includeRetained = true,
+} = {}) {
     await Promise.all(
-        [...activeWindows.values()].map((activeWindow) =>
-            activeWindow.discard(),
-        ),
+        [...activeWindows.values()]
+            .filter(
+                (activeWindow) =>
+                    includeRetained || !activeWindow.retainedAcrossNavigation,
+            )
+            .map((activeWindow) => activeWindow.discard()),
     );
 }
 
@@ -282,6 +288,7 @@ export function installComponentPageBroker({
             let mountResult;
             let discarded = false;
             let discardOnCallerAbort;
+            let retainedAcrossCallerAbort = false;
             const discard = async () => {
                 if (discarded) return;
                 discarded = true;
@@ -327,6 +334,16 @@ export function installComponentPageBroker({
                 borderless: data.request.borderless,
                 restoreHostLayout,
                 discard,
+                retainedAcrossNavigation: false,
+                retainAcrossCallerAbort() {
+                    if (retainedAcrossCallerAbort) return;
+                    retainedAcrossCallerAbort = true;
+                    handle.retainedAcrossNavigation = true;
+                    data.request.signal?.removeEventListener(
+                        "abort",
+                        discardOnCallerAbort,
+                    );
+                },
             };
             activeWindows.set(data.request.elementId, handle);
             discardOnCallerAbort = () => void discard();
@@ -400,7 +417,7 @@ export function installComponentPageBroker({
         discardAllComponentPages,
     );
     window.addEventListener("cognis:route-will-change", () => {
-        void discardAllComponentPages();
+        void discardAllComponentPages({ includeRetained: false });
     });
     uiCtx.capabilities.contribute(
         "router:resolveDeclaredRoute",

@@ -46,6 +46,10 @@ SPA スタイルシートの準備状態を、バージョン付き URL 全体�
 
 Meeting のピクチャーインピクチャー移動は一度だけ実行され、ユーザーが調整したフローティングウィンドウの大きさを維持します。Messages は会話を直ちに復元して再描画し、矢印を隠し、コンポーネントが閉じるまでカメラ操作を無効化します。アクティブな着信カードには塗りつぶし背景とアニメーション枠を追加し、過去のイベントには応答・拒否操作を残しません。
 
+## PiP ウィンドウを SPA 移動後も維持
+
+フローティングコンポーネントウィンドウを永続的なドキュメントシェルへ移し、呼び出し元ページのライフサイクルから明示的に切り離せるようになりました。SPA 移動では通常のコンポーネントを破棄しますが、保持された PiP 通話は明示的に閉じるまで維持します。Popover の破棄前にトップレイヤー状態を確認し、beforetoggle が状態を変更した場合の NotSupportedError を防ぎます。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -60,3 +64,4 @@ Meeting のピクチャーインピクチャー移動は一度だけ実行され
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/263c98cc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/92f46be7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb
