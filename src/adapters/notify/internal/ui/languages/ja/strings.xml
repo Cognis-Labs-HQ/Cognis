@@ -9,4 +9,5 @@
   <string name="adapter.notify.internal.error_clear_all">通知を削除できませんでした。もう一度お試しください。</string>
   <string name="adapter.notify.internal.new_message">新しいメッセージ</string>
   <string name="adapter.notify.internal.answer_call">応答</string>
+  <string name="adapter.notify.internal.decline_call">拒否</string>
 </resources>

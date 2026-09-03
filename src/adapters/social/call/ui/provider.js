@@ -1,11 +1,28 @@
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { createCall, getCall, updateCall } from "./client.js";
+import { showToast } from "/static/reuse/toast.js";
 
 const CALL_UI_CAPABILITY = "social:callUi";
 const VOIP_PROVIDER_CAPABILITY = "voip:startCall";
 const POLL_INTERVAL_MILLISECONDS = 1_000;
 let activeCall = null;
+let callI18n = null;
+
+async function getCallI18n() {
+    callI18n ??= createI18n({
+        componentStringBaseUrls: ["/static/adapters/social/call/languages"],
+    });
+    return callI18n;
+}
+
+function announceRoomCall(roomId, active) {
+    window.dispatchEvent(
+        new CustomEvent("cognis:room-call-state", {
+            detail: { roomId, active },
+        }),
+    );
+}
 
 function ensureCallStyles() {
     const href = "/static/adapters/social/call/call.css";
@@ -55,9 +72,7 @@ function otherParticipantLabel(call) {
 }
 
 async function createStage(call, signal) {
-    const i18n = await createI18n({
-        componentStringBaseUrls: ["/static/adapters/social/call/languages"],
-    });
+    const i18n = await getCallI18n();
     ensureCallStyles();
     const thread = document.querySelector(".messages-thread");
     const headerSlot = document.getElementById("messages-thread-header-slot");
@@ -84,11 +99,23 @@ async function createStage(call, signal) {
         if (activeCall?.stage === stage) activeCall = null;
     };
     activeCall = { callId: call.id, cleanup, stage };
+    announceRoomCall(call.roomId, true);
     stage.querySelector(".call-stage-hangup")?.addEventListener(
         "click",
         async () => {
-            await updateCall(call.id, "hangup").catch(() => null);
-            await cleanup();
+            try {
+                await updateCall(call.id, "hangup");
+                await cleanup();
+                announceRoomCall(call.roomId, false);
+                showToast(i18n.t("adapter.social.call.cancelled"), {
+                    variant: "info",
+                });
+            } catch (error) {
+                console.error("[calls] Failed to cancel call", error);
+                showToast(i18n.t("adapter.social.call.cancel_failed"), {
+                    variant: "error",
+                });
+            }
         },
         { signal },
     );
@@ -164,7 +191,14 @@ async function waitForAnswer(call, callStage, signal) {
         }
         if (["ended", "expired"].includes(current.status)) {
             await callStage.cleanup();
-            return false;
+            announceRoomCall(current.roomId, false);
+            const i18n = await getCallI18n();
+            const key =
+                current.status === "expired"
+                    ? "adapter.social.call.no_answer"
+                    : "adapter.social.call.declined";
+            showToast(i18n.t(key), { variant: "warning" });
+            return true;
         }
         await new Promise((resolve) =>
             setTimeout(resolve, POLL_INTERVAL_MILLISECONDS),
@@ -203,8 +237,35 @@ async function answerRequestedCall({ signal } = {}) {
         `/messages/${encodeURIComponent(call.roomId)}`,
     );
     const action = await resolveProviderAction(call);
-    return mountProviderAction(action, callStage, signal);
+    const mounted = await mountProviderAction(action, callStage, signal);
+    if (!mounted) {
+        await callStage.cleanup();
+        showToast(
+            (await getCallI18n()).t("adapter.social.call.provider_declined"),
+            { variant: "warning" },
+        );
+    }
+    return true;
 }
+
+window.addEventListener("cognis:call-decline-requested", async (event) => {
+    const callId = String(event.detail?.callId ?? "");
+    const roomId = String(event.detail?.roomId ?? "");
+    if (!callId) return;
+    const i18n = await getCallI18n();
+    try {
+        await updateCall(callId, "hangup");
+        announceRoomCall(roomId, false);
+        showToast(i18n.t("adapter.social.call.declined_self"), {
+            variant: "info",
+        });
+    } catch (error) {
+        console.error("[calls] Failed to decline call", error);
+        showToast(i18n.t("adapter.social.call.decline_failed"), {
+            variant: "error",
+        });
+    }
+});
 
 uiCtx.capabilities.contribute(CALL_UI_CAPABILITY, {
     resolveRoomCall,

@@ -9,4 +9,5 @@
   <string name="adapter.notify.internal.error_clear_all">Couldn't clear notifications. Please try again.</string>
   <string name="adapter.notify.internal.new_message">New message</string>
   <string name="adapter.notify.internal.answer_call">Answer</string>
+  <string name="adapter.notify.internal.decline_call">Decline</string>
 </resources>

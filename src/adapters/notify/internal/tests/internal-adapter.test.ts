@@ -194,13 +194,17 @@ test("createNotificationSender: uses module activeStore when called with process
     assert.equal(stored[0].subject, "Subject A");
 });
 
-test("call notifications render an explicit answer action", async () => {
+test("call notifications render persistent answer and decline actions", async () => {
     const { readFile } = await import("node:fs/promises");
     const source = await readFile(
         new URL("../ui/navbar-plugin.js", import.meta.url),
         "utf8",
     );
     assert.match(source, /notif\.category === "calls"/);
-    assert.match(source, /notification-answer btn-confirm/);
+    assert.match(source, /arrival-toast-answer btn-confirm/);
+    assert.match(source, /arrival-toast-decline btn-cancel/);
     assert.match(source, /adapter\.notify\.internal\.answer_call/);
+    assert.match(source, /adapter\.notify\.internal\.decline_call/);
+    assert.match(source, /notification\.category !== "calls"/);
+    assert.match(source, /cognis:room-call-state/);
 });

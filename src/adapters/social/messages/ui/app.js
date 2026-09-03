@@ -167,7 +167,7 @@ export async function mount(root, { signal } = {}) {
                 const callStarted = await uiCtx.capabilities
                     .get("social:callUi")
                     ?.startRoomCall(action, { signal });
-                if (!callStarted) throw new Error("VoIP action was declined");
+                if (!callStarted) return;
             } catch (error) {
                 console.error("[messages] VoIP call action failed", {
                     component: "social-messages",
@@ -193,6 +193,34 @@ export async function mount(root, { signal } = {}) {
         await roomState.reloadRoomsList();
         await roomState.refreshActiveConversation();
     };
+    const roomCallPositions = new Map();
+    window.addEventListener(
+        "cognis:room-call-state",
+        (event) => {
+            const roomId = String(event.detail?.roomId ?? "");
+            const roomElement = document.querySelector(
+                `.messages-room[data-room-id="${CSS.escape(roomId)}"]`,
+            );
+            if (!roomId || !(roomElement instanceof HTMLElement)) return;
+            if (event.detail?.active) {
+                if (!roomCallPositions.has(roomId)) {
+                    roomCallPositions.set(roomId, roomElement.nextSibling);
+                }
+                roomElement.parentElement?.prepend(roomElement);
+                roomElement.classList.add("messages-room--calling");
+                return;
+            }
+            const nextSibling = roomCallPositions.get(roomId);
+            if (nextSibling?.parentNode === roomElement.parentNode) {
+                roomElement.parentNode.insertBefore(roomElement, nextSibling);
+            } else {
+                roomElement.parentElement?.append(roomElement);
+            }
+            roomElement.classList.remove("messages-room--calling");
+            roomCallPositions.delete(roomId);
+        },
+        { signal },
+    );
     window.addEventListener(
         "cognis:keyring-event",
         (event) => {

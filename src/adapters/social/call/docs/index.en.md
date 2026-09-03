@@ -11,3 +11,5 @@ The Call adapter is activated automatically when Messages and a `voip:startCall`
 ## Technical specification
 
 The `social:callUi` capability owns invitation state, the 45-second timeout, notification answer links, component mounting, hangup, and provider handoff.
+
+Incoming calls do not enter the notification-bell list. They remain in the transient-notification area until answered, declined, or expired, with green Answer and red Decline controls. While Messages is open, the associated room moves temporarily to the top of the room list. Callers receive distinct feedback when they cancel, the recipient declines, nobody answers, or the meeting provider refuses the handoff.

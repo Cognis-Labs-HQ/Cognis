@@ -9,4 +9,5 @@
   <string name="adapter.notify.internal.error_clear_all">Benachrichtigungen konnten nicht gelöscht werden. Bitte erneut versuchen.</string>
   <string name="adapter.notify.internal.new_message">Neue Nachricht</string>
   <string name="adapter.notify.internal.answer_call">Annehmen</string>
+  <string name="adapter.notify.internal.decline_call">Ablehnen</string>
 </resources>

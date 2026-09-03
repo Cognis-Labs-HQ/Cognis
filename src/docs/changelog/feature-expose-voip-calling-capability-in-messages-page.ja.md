@@ -30,6 +30,10 @@ SPA スタイルシートの準備状態を、バージョン付き URL 全体�
 
 新しい Call アダプターが、ルーム認可、招待状態、未応答時の 45 秒タイムアウト、応答、通話終了、通知、VoIP プロバイダーへの引き渡しを管理します。発信すると会話領域は直ちに呼び出し画面へ置き換わり、カメラ操作がアクティブになります。受信者には応答操作付きの継続通知が届きます。Meeting は応答後にだけ開始され、独立した矢印操作でマウント済みコンポーネントをピクチャーインピクチャーへ移動できます。
 
+## 着信への操作を常に表示
+
+着信は通知ベルの一覧に表示せず、緑の応答操作と赤の拒否操作を備えた短時間通知領域に残るようになりました。Messages は着信中のルームを一時的にサイドバーの先頭へ移動し、通話終了時に元の位置へ戻します。発信者と受信者には、キャンセル、拒否、タイムアウト、プロバイダー拒否ごとの具体的なフィードバックが表示されます。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -39,3 +43,5 @@ SPA スタイルシートの準備状態を、バージョン付き URL 全体�
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2b179ef3cd20fab51af1eac5fa36506bf46021c6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3b62797540e433c07ee81751a58e327085f01739
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0e7ff946
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/60ad8491
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/bbcc6537

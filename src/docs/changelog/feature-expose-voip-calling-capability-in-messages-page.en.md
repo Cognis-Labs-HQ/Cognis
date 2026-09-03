@@ -30,6 +30,10 @@ SPA stylesheet readiness is now keyed by normalized path rather than the full ve
 
 A new Call adapter now owns room authorization, invitation state, a 45-second unanswered timeout, answering, hangup, notifications, and VoIP-provider handoff. Starting a call immediately replaces the conversation with a ringing screen and activates the camera control; recipients receive a persistent notification with an Answer action. Meetings begin only after acceptance, and the separate arrow control moves the mounted component to picture-in-picture.
 
+## Incoming-call decisions stay visible
+
+Incoming calls now remain in the transient-notification area with green Answer and red Decline controls instead of appearing in the notification-bell list. Messages temporarily promotes the ringing room to the top of its sidebar, then restores its original position when the call ends. Callers and recipients receive specific feedback for cancellation, rejection, timeout, and provider refusal.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -39,3 +43,5 @@ A new Call adapter now owns room authorization, invitation state, a 45-second un
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2b179ef3cd20fab51af1eac5fa36506bf46021c6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3b62797540e433c07ee81751a58e327085f01739
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0e7ff946
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/60ad8491
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/bbcc6537

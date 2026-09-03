@@ -30,3 +30,11 @@ test("Call toolbar keeps its arrow separate from mounted meeting content", () =>
     assert.match(providerSource, /call-stage-back-icon/);
     assert.match(providerSource, /ui:makeFloatingWindow/);
 });
+
+test("Call UI reports cancellation outcomes and room priority state", () => {
+    assert.match(providerSource, /adapter\.social\.call\.cancelled/);
+    assert.match(providerSource, /adapter\.social\.call\.declined/);
+    assert.match(providerSource, /adapter\.social\.call\.no_answer/);
+    assert.match(providerSource, /cognis:room-call-state/);
+    assert.match(providerSource, /cognis:call-decline-requested/);
+});

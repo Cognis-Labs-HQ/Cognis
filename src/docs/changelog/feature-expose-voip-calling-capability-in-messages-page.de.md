@@ -30,6 +30,10 @@ Die Bereitschaft von SPA-Stylesheets wird nun anhand des normalisierten Pfads st
 
 Ein neuer Call-Adapter verwaltet jetzt Raumberechtigung, Einladungsstatus, ein Zeitlimit von 45 Sekunden für unbeantwortete Anrufe, Annehmen, Auflegen, Benachrichtigungen und die Übergabe an den VoIP-Anbieter. Beim Start ersetzt sofort eine Klingelansicht die Unterhaltung und aktiviert die Kamerasteuerung; Empfänger erhalten eine dauerhafte Benachrichtigung mit einer Schaltfläche zum Annehmen. Meetings beginnen erst nach der Annahme, und die separate Pfeilschaltfläche verschiebt die eingebettete Komponente in Bild-in-Bild.
 
+## Entscheidungen bei eingehenden Anrufen bleiben sichtbar
+
+Eingehende Anrufe bleiben jetzt mit grüner Annehmen- und roter Ablehnen-Schaltfläche im Bereich für kurzlebige Benachrichtigungen, statt in der Liste der Benachrichtigungsglocke zu erscheinen. Messages verschiebt den klingelnden Raum vorübergehend an den Anfang der Seitenleiste und stellt seine ursprüngliche Position nach Anrufende wieder her. Anrufende und Empfangende erhalten gezielte Rückmeldungen zu Abbruch, Ablehnung, Zeitüberschreitung und verweigerter Anbieterübergabe.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -39,3 +43,5 @@ Ein neuer Call-Adapter verwaltet jetzt Raumberechtigung, Einladungsstatus, ein Z
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2b179ef3cd20fab51af1eac5fa36506bf46021c6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3b62797540e433c07ee81751a58e327085f01739
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0e7ff946
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/60ad8491
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/bbcc6537

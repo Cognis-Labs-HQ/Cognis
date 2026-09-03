@@ -17,7 +17,9 @@ test("calls ring until another room participant answers or hangs up", () => {
     assert.equal(call.status, "ringing");
     assert.equal(store.answer(call.id, "caller"), null);
     assert.equal(store.answer(call.id, "callee")?.status, "active");
-    assert.equal(store.hangup(call.id, "caller")?.status, "ended");
+    const ended = store.hangup(call.id, "caller");
+    assert.equal(ended?.status, "ended");
+    assert.equal(ended?.endedBy, "caller");
 });
 
 test("call access is limited to snapshotted room participants", () => {

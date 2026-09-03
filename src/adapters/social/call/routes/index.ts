@@ -37,6 +37,7 @@ function publicCall(call: CallRecord): Record<string, unknown> {
         participants: call.participants,
         status: call.status,
         answeredBy: call.answeredBy,
+        endedBy: call.endedBy,
         createdAt: call.createdAt,
         expiresAt: call.expiresAt,
     };
@@ -115,7 +116,12 @@ export function createCallRoutes(
                             senderName:
                                 caller?.displayName || caller?.handle || "Call",
                             actionUrl: `/messages/${encodeURIComponent(roomId)}?call=${encodeURIComponent(call.id)}&answer=1`,
-                            metadata: { callId: call.id, continuous: true },
+                            metadata: {
+                                callId: call.id,
+                                roomId,
+                                expiresAt: call.expiresAt,
+                                continuous: true,
+                            },
                         }),
                     ),
             );

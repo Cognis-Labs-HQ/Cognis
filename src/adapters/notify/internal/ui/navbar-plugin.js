@@ -148,17 +148,6 @@ async function decryptRoomMessage(roomId) {
     }
 }
 
-async function fetchCount() {
-    try {
-        const res = await apiFetch("/api/v1/notify/inbox/count");
-        if (!res.ok) return 0;
-        const payload = await res.json();
-        return payload.data?.count ?? 0;
-    } catch {
-        return 0;
-    }
-}
-
 async function fetchNotifications() {
     try {
         const res = await apiFetch("/api/v1/notify/inbox");
@@ -345,7 +334,11 @@ function renderNotificationItem(notif, i18n) {
 }
 
 async function refreshCount() {
-    const count = await fetchCount();
+    const notifications = await fetchNotifications();
+    const count = notifications.filter(
+        (notification) =>
+            !notification.read && notification.category !== "calls",
+    ).length;
     updateBadge(count);
 }
 
@@ -365,18 +358,21 @@ function renderPanelContents(i18n) {
     if (emptyEl) emptyEl.hidden = true;
 
     currentNotifications.forEach((n) => seenIds?.add(n.id));
-    const unreadCount = currentNotifications.filter((n) => !n.read).length;
+    const panelNotifications = currentNotifications.filter(
+        (notification) => notification.category !== "calls",
+    );
+    const unreadCount = panelNotifications.filter((n) => !n.read).length;
     updateBadge(unreadCount);
 
     updateClearAllButton();
 
-    if (currentNotifications.length === 0) {
+    if (panelNotifications.length === 0) {
         if (emptyEl) emptyEl.hidden = false;
         stopRelativeTimeTicker();
         return;
     }
 
-    for (const notif of currentNotifications) {
+    for (const notif of panelNotifications) {
         listEl.appendChild(renderNotificationItem(notif, i18n));
     }
 
@@ -605,8 +601,23 @@ function insertButton(wrap) {
 async function startPolling(i18n) {
     const initial = await fetchNotifications();
     seenIds = new Set(initial.map((n) => n.id));
-    const unread = initial.filter((n) => !n.read).length;
+    const incomingCalls = initial.filter(
+        (notification) =>
+            !notification.read && notification.category === "calls",
+    );
+    const unread = initial.filter(
+        (notification) =>
+            !notification.read && notification.category !== "calls",
+    ).length;
     updateBadge(unread);
+    for (const notification of incomingCalls) {
+        window.dispatchEvent(
+            new CustomEvent("cognis:notification-arrival", {
+                detail: { notification },
+            }),
+        );
+        void showArrivalToast(notification, i18n);
+    }
 
     function scheduleNext() {
         const delay =
@@ -630,13 +641,10 @@ async function startPolling(i18n) {
 
 async function checkForNew(i18n) {
     const notifs = await fetchNotifications();
-    const unread = notifs.filter((n) => !n.read).length;
+    const unread = notifs.filter(
+        (n) => !n.read && n.category !== "calls",
+    ).length;
     updateBadge(unread);
-
-    if (seenIds === null) {
-        seenIds = new Set(notifs.map((n) => n.id));
-        return;
-    }
 
     const arrivals = notifs.filter((n) => !seenIds.has(n.id));
     for (const notif of arrivals) {
@@ -646,7 +654,11 @@ async function checkForNew(i18n) {
                 detail: { notification: notif },
             }),
         );
-        if (!notif.read && !isNotificationOwnedByCurrentPage(notif)) {
+        if (
+            !notif.read &&
+            (notif.category === "calls" ||
+                !isNotificationOwnedByCurrentPage(notif))
+        ) {
             void showArrivalToast(notif, i18n);
         }
     }
@@ -735,6 +747,8 @@ async function showArrivalToast(notif, i18n) {
 
     const sender = notif.senderName ?? i18n.t("ui.reuse.system");
 
+    const isCall = notif.category === "calls";
+    toast.classList.toggle("arrival-toast--call", isCall);
     toast.innerHTML =
         '<span class="arrival-toast-icon" aria-hidden="true">\uD83D\uDD14</span>' +
         '<div class="arrival-toast-text">' +
@@ -742,7 +756,9 @@ async function showArrivalToast(notif, i18n) {
         `<span class="arrival-toast-sender">${escapeHtml(sender)}</span>` +
         `<span class="arrival-toast-preview">${escapeHtml(preview)}</span>` +
         "</div>" +
-        `<button class="arrival-toast-dismiss" type="button" aria-label="${i18n.t("ui.reuse.dismiss")}">&#215;</button>`;
+        (isCall
+            ? `<span class="arrival-toast-call-actions"><button class="arrival-toast-answer btn-confirm" type="button" aria-label="${i18n.t("adapter.notify.internal.answer_call")}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8c1.5 2.9 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1l-2.3 2.2Z"/></svg></button><button class="arrival-toast-decline btn-cancel" type="button" aria-label="${i18n.t("adapter.notify.internal.decline_call")}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.6 13.2 2.3 2.2c.2.2.3.6.2 1-.4 1.1-.6 2.3-.6 3.6 0 .6-.4 1-1 1H4c-.6 0-1-.4-1-1 0-9.4 7.6-17 17-17 .6 0 1 .4 1 1v3.5c0 .6-.4 1-1 1-1.3 0-2.5.2-3.6.6-.4.2-.8.1-1-.2l-2.2-2.2c-2.8 1.4-5.2 3.7-6.6 6.5Z"/></svg></button></span>`
+            : `<button class="arrival-toast-dismiss" type="button" aria-label="${i18n.t("ui.reuse.dismiss")}">&#215;</button>`);
 
     const dismiss = () => {
         toast.classList.add("arrival-toast--out");
@@ -752,6 +768,20 @@ async function showArrivalToast(notif, i18n) {
     };
 
     toast.addEventListener("click", (e) => {
+        if (e.target.closest(".arrival-toast-decline")) {
+            const metadata = notif.metadata ?? {};
+            window.dispatchEvent(
+                new CustomEvent("cognis:call-decline-requested", {
+                    detail: {
+                        callId: metadata.callId,
+                        roomId: metadata.roomId,
+                    },
+                }),
+            );
+            void markArrivalRead(notif);
+            dismiss();
+            return;
+        }
         if (e.target.closest(".arrival-toast-dismiss")) {
             dismiss();
             return;
@@ -773,7 +803,28 @@ async function showArrivalToast(notif, i18n) {
         });
 
     container.appendChild(toast);
-    setTimeout(dismiss, TOAST_AUTO_DISMISS_MS);
+    if (isCall) {
+        const metadata = notif.metadata ?? {};
+        window.dispatchEvent(
+            new CustomEvent("cognis:room-call-state", {
+                detail: { roomId: metadata.roomId, active: true },
+            }),
+        );
+        const remaining = Number(metadata.expiresAt) - Date.now();
+        setTimeout(
+            () => {
+                dismiss();
+                window.dispatchEvent(
+                    new CustomEvent("cognis:room-call-state", {
+                        detail: { roomId: metadata.roomId, active: false },
+                    }),
+                );
+            },
+            Math.max(0, remaining),
+        );
+    } else {
+        setTimeout(dismiss, TOAST_AUTO_DISMISS_MS);
+    }
 }
 
 (async function init() {

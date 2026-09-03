@@ -30,6 +30,10 @@ Kesiapan lembar gaya SPA kini disimpan berdasarkan jalur yang dinormalisasi, buk
 
 Adapter Call baru kini mengelola otorisasi ruang, status undangan, batas waktu 45 detik untuk panggilan tanpa jawaban, jawaban, penutupan panggilan, notifikasi, dan penyerahan ke penyedia VoIP. Memulai panggilan langsung mengganti percakapan dengan layar berdering dan mengaktifkan kontrol kamera; penerima memperoleh notifikasi persisten dengan tindakan Jawab. Pertemuan baru dimulai setelah diterima, dan tombol panah terpisah memindahkan komponen ke gambar-dalam-gambar.
 
+## Keputusan panggilan masuk tetap terlihat
+
+Panggilan masuk kini tetap berada di area notifikasi singkat dengan kontrol Jawab hijau dan Tolak merah, bukan muncul di daftar lonceng notifikasi. Messages memindahkan ruang yang berdering ke posisi teratas bilah samping untuk sementara, lalu mengembalikan posisi aslinya ketika panggilan berakhir. Penelepon dan penerima memperoleh umpan balik khusus untuk pembatalan, penolakan, batas waktu, dan penolakan penyedia.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -39,3 +43,5 @@ Adapter Call baru kini mengelola otorisasi ruang, status undangan, batas waktu 4
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2b179ef3cd20fab51af1eac5fa36506bf46021c6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3b62797540e433c07ee81751a58e327085f01739
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0e7ff946
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/60ad8491
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/bbcc6537

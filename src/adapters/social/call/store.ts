@@ -15,6 +15,7 @@ export interface CallRecord {
     participants: CallParticipant[];
     status: CallStatus;
     answeredBy: string | null;
+    endedBy: string | null;
     createdAt: number;
     expiresAt: number;
 }
@@ -43,6 +44,7 @@ export class CallStore {
             ...input,
             status: "ringing",
             answeredBy: null,
+            endedBy: null,
             createdAt,
             expiresAt: createdAt + CALL_TIMEOUT_MILLISECONDS,
         };
@@ -69,6 +71,7 @@ export class CallStore {
         if (!call || !this.hasParticipant(call, accountId)) return null;
         if (call.status === "ringing" || call.status === "active") {
             call.status = "ended";
+            call.endedBy = accountId;
         }
         return call;
     }

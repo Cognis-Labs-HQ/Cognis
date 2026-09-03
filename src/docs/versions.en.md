@@ -33,7 +33,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component             | Path                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.26` |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.23` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.24` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.16` |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.14` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.16` |
@@ -51,8 +51,8 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.15` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.13` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `2.0.4`  |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.4.0`  |
-| Calls (Social)        | `src/adapters/social/call/`         | `0.1.0`  |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.4.1`  |
+| Calls (Social)        | `src/adapters/social/call/`         | `0.1.1`  |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10` |
