@@ -15,4 +15,3 @@ Die öffentliche Funktion `social:messages:deleteChatroom` akzeptiert eine Raum-
 ## Browser-Vertrag für VoIP-Anbieter
 
 Messages zeigt in Direkt- und Gruppenchats eine Videoanrufaktion an, sobald ein Browser-Anbieter die Capability `voip:startCall` zu `uiCtx.capabilities` beiträgt. Der Anbieter erhält die Raumidentität, die Kontoidentität und Anzeigemetadaten aller Chatmitglieder, die Quelle `messages` sowie die Darstellungsanforderung `pip`. Er ist für das Erstellen des Meetings, das Einladen der Teilnehmenden und das Einbinden seiner Anrufoberfläche als Bild-im-Bild-Fenster auf der aktuellen Seite verantwortlich.
-

@@ -15,4 +15,3 @@ The public `social:messages:deleteChatroom` capability accepts a room ID and act
 ## Browser VoIP provider contract
 
 Messages displays a video-call action for direct and group chats when a browser provider contributes the `voip:startCall` capability to `uiCtx.capabilities`. The provider receives the room identity, every chat member's account identity and display metadata, the `messages` source identifier, and a `pip` presentation request. It owns meeting creation, participant invitation, and mounting its call surface as a picture-in-picture window on the current page.
-

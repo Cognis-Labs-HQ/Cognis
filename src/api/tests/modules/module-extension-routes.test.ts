@@ -222,7 +222,7 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
                 throw new Error("auth capability unavailable");
             }
             ctx.registerStaticDir("", ctx.moduleRoot + "/ui");
-            ctx.registerNavbarPlugin({ scriptUrl: "/static/modules/meetings/navbar.js" });
+            ctx.registerNavbarPlugin({ scriptUrl: "/static/modules/meetings/navbar.js", providesCapabilities: ["voip:startCall"] });
             ctx.registerSpaRoute({ id: "meetings", pattern: "^/meetings$", base: "/meetings", scriptUrl: "/static/modules/meetings/app.js" });
             ctx.registerAuthTypingMessage({ id: "meetings-ready", textKey: "module.meetings.ready" });
             ctx.log("info", "Meetings module started.", { operation: "bootstrap" });
@@ -280,6 +280,26 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
     try {
         await extensions.refresh();
         assert.equal(uiRegistry.listNavbarPlugins().length, 2);
+        assert.deepEqual(
+            uiRegistry.listCapabilityProviders().map((provider) => ({
+                scriptUrl: provider.scriptUrl,
+                providesCapabilities: provider.providesCapabilities,
+            })),
+            [
+                {
+                    scriptUrl: "/static/profile-avatar.js",
+                    providesCapabilities: ["ui:profileAvatarRenderer"],
+                },
+                {
+                    scriptUrl: "/static/modules/meetings/navbar.js",
+                    providesCapabilities: ["voip:startCall"],
+                },
+                {
+                    scriptUrl: "/static/share-popup.js",
+                    providesCapabilities: ["share:openPopup"],
+                },
+            ],
+        );
         assert.equal(uiRegistry.listSpaRoutes()[0].base, "/meetings");
         assert.deepEqual(uiRegistry.listSpaRoutes()[0].capabilityScripts, [
             "/static/profile-avatar.js",

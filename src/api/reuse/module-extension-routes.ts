@@ -64,7 +64,13 @@ interface ModuleUiRegistrationContext {
     moduleUuid: string;
     moduleRoot: string;
     registerNavbarPlugin(
-        plugin: { scriptUrl: string; access?: RoleAccessPolicy } | string,
+        plugin:
+            | {
+                  scriptUrl: string;
+                  access?: RoleAccessPolicy;
+                  providesCapabilities?: string[];
+              }
+            | string,
     ): void;
     registerSpaRoute(route: {
         id: string;
@@ -476,6 +482,7 @@ export function createModuleExtensionRoutes(
                 options?.uiRegistry?.registerNavbarPlugin({
                     scriptUrl: pluginConfig.scriptUrl,
                     access: pluginConfig.access,
+                    providesCapabilities: pluginConfig.providesCapabilities,
                     ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });

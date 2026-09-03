@@ -78,4 +78,4 @@ if (ctx.flow.exists("construct-settings-ui")) {
 
 モジュールは、使用するサービスをマニフェスト最上位の `requiresCapabilities` で宣言します。サーバーケイパビリティは `auth:requireAuth` などの登録 ID を使用し、ブラウザーケイパビリティは `ui:profileAvatarRenderer` などの `ui:` 名前空間を使用します。Cognis は宣言された UI 要件をモジュールの SPA ルートへ関連付け、ルートのマウント前に一致する登録済みプロバイダースクリプトだけを読み込みます。有効化時にはサーバー機能をサーバーコンテキストで、`ui:` 機能を UI レジストリのアクティブなプロバイダーで解決します。SPA ルーティングはマウント前にブラウザープロバイダーを再確認します。
 
-プロバイダーはコンポーネント文書にケイパビリティ ID を記載し、ブラウザープロバイダーは `providesCapabilities` で登録する必要があります。Owner は `GET /api/v1/system/capabilities` または `cognisctl system:capabilities` で稼働中の登録一覧を確認できます。
+プロバイダーはコンポーネント文書にケイパビリティ ID を記載し、ブラウザープロバイダーは `providesCapabilities` で登録する必要があります。Owner は `GET /api/v1/system/capabilities` または `cognisctl system:capabilities` で稼働中の登録一覧を確認できます。 ナビゲーションスクリプトがブラウザーケイパビリティを提供するモジュールは、`registerNavbarPlugin({ providesCapabilities: [...] })` でその ID を宣言します。これにより、ホストはケイパビリティを利用するページをマウントする前にスクリプトを読み込みます。
