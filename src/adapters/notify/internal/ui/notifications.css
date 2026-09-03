@@ -225,6 +225,11 @@
     margin-right: 2px;
 }
 
+.notification-answer {
+    align-self: center;
+    white-space: nowrap;
+}
+
 .notification-item--linked:hover .notification-item-link-arrow {
     opacity: 1;
 }

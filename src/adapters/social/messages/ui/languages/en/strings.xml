@@ -79,6 +79,4 @@
   <string name="adapter.social.messages.keyring_request_action_save">save an encryption key for</string>
   <string name="adapter.social.messages.keyring_request_process">chat {{roomId}}</string>
   <string name="module.social.messages.start_video_call">Start video call</string>
-  <string name="module.social.messages.call_failed">Call could not be started.</string>
-  <string name="module.social.messages.move_call_to_pip">Move call to picture in picture</string>
 </resources>

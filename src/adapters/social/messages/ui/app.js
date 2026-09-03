@@ -48,11 +48,6 @@ import { resolveMessageTemplateVariables } from "./message-templates.js";
 import { loadChatRoomKey, requireChatRoomKey } from "./chat-loading.js";
 import { createMessagesRoomState } from "./room-state.js";
 import { renderRoomList } from "./room-render.js";
-import {
-    hasVoipProvider,
-    resolveRoomCallAction,
-    startRoomCall,
-} from "./voip.js";
 
 const profileAvatars = () => {
     const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
@@ -152,7 +147,7 @@ export async function mount(root, { signal } = {}) {
                 // when the synthetic input event fires below.
                 // composerInputRef may be null before the first onRender fires;
                 // the instanceof guard safely skips the clear in that case
-                // (lines 296-299 below, where composerInputRef is assigned).
+                // (lines 294-297 below, where composerInputRef is assigned).
                 if (
                     persistedState.size === 0 &&
                     composerInputRef instanceof HTMLTextAreaElement
@@ -166,13 +161,12 @@ export async function mount(root, { signal } = {}) {
             }
         },
         resolveCallAction: (room) =>
-            resolveRoomCallAction(room, currentAccountId),
+            uiCtx.capabilities.get("social:callUi")?.resolveRoomCall(room),
         onStartCall: async (_room, action) => {
             try {
-                const callStarted = await startRoomCall(action, {
-                    signal,
-                    pipLabel: i18n.t("module.social.messages.move_call_to_pip"),
-                });
+                const callStarted = await uiCtx.capabilities
+                    .get("social:callUi")
+                    ?.startRoomCall(action, { signal });
                 if (!callStarted) throw new Error("VoIP action was declined");
             } catch (error) {
                 console.error("[messages] VoIP call action failed", {
@@ -181,12 +175,12 @@ export async function mount(root, { signal } = {}) {
                     roomId: roomState.getSelectedRoomId(),
                     error,
                 });
-                showToast(i18n.t("module.social.messages.call_failed"), {
+                showToast(i18n.t("ui.reuse.error"), {
                     variant: "error",
                 });
             }
         },
-        showCallAction: hasVoipProvider(),
+        showCallAction: Boolean(uiCtx.capabilities.get("social:callUi")),
     });
 
     let pageReady = false;
@@ -904,6 +898,9 @@ export async function mount(root, { signal } = {}) {
     });
 
     await composer.init();
+    await uiCtx.capabilities
+        .get("social:callUi")
+        ?.answerRequestedCall({ signal });
     pageReady = true;
     if (refreshAfterKeyringUnlock) {
         refreshAfterKeyringUnlock = false;

@@ -193,3 +193,14 @@ test("createNotificationSender: uses module activeStore when called with process
     assert.equal(stored.length, 1);
     assert.equal(stored[0].subject, "Subject A");
 });
+
+test("call notifications render an explicit answer action", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const source = await readFile(
+        new URL("../ui/navbar-plugin.js", import.meta.url),
+        "utf8",
+    );
+    assert.match(source, /notif\.category === "calls"/);
+    assert.match(source, /notification-answer btn-confirm/);
+    assert.match(source, /adapter\.notify\.internal\.answer_call/);
+});

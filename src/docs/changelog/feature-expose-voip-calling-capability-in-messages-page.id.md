@@ -26,6 +26,10 @@ Gaya tombol konsekuensi bersama kini berada dalam lembar gaya pakai ulang tersen
 
 Kesiapan lembar gaya SPA kini disimpan berdasarkan jalur yang dinormalisasi, bukan URL berversi lengkap. Ketika CSS rute dihapus saat meninggalkan Meetings, halaman berikutnya dapat memuat ulang lembar gaya page-builder berversi yang sama alih-alih memakai promise lama yang sudah selesai dan dirender dengan gaya yang tidak lengkap.
 
+## Panggilan berdering dimiliki adapter Call
+
+Adapter Call baru kini mengelola otorisasi ruang, status undangan, batas waktu 45 detik untuk panggilan tanpa jawaban, jawaban, penutupan panggilan, notifikasi, dan penyerahan ke penyedia VoIP. Memulai panggilan langsung mengganti percakapan dengan layar berdering dan mengaktifkan kontrol kamera; penerima memperoleh notifikasi persisten dengan tindakan Jawab. Pertemuan baru dimulai setelah diterima, dan tombol panah terpisah memindahkan komponen ke gambar-dalam-gambar.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -34,3 +38,4 @@ Kesiapan lembar gaya SPA kini disimpan berdasarkan jalur yang dinormalisasi, buk
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/69e21d58c8f04c27848c9b646672d6a436891d2c
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2b179ef3cd20fab51af1eac5fa36506bf46021c6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3b62797540e433c07ee81751a58e327085f01739
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/0e7ff946

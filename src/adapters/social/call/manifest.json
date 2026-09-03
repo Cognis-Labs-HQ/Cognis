@@ -1,0 +1,13 @@
+{
+    "id": "social-call",
+    "uuid": "4fc9b9c3-7288-5a51-bfd4-6ba1298ff034",
+    "name": "Calls",
+    "version": "0.1.0",
+    "gateway": "social",
+    "description": "Coordinates room-scoped call invitations, ringing, answering, timeouts, and provider handoff.",
+    "publisher": "Cognis Labs HQ",
+    "requires": [
+        "062a74f5-5699-52fb-98a3-63ec6538bdfc",
+        "433cd9f3-5b80-5e7d-911b-1907b9348f26"
+    ]
+}

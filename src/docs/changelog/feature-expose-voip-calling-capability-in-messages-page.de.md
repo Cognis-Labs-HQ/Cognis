@@ -26,6 +26,10 @@ Gemeinsame Stile für Aktionsfolgen liegen nun in einem eigenen wiederverwendbar
 
 Die Bereitschaft von SPA-Stylesheets wird nun anhand des normalisierten Pfads statt der vollständigen versionierten URL gespeichert. Wenn beim Verlassen von Meetings Routen-CSS entfernt wird, kann eine spätere Seite dasselbe versionierte Page-Builder-Stylesheet erneut laden, statt ein veraltetes erfülltes Promise zu verwenden und mit unvollständigen Stilen zu erscheinen.
 
+## Klingelnde Anrufe gehören dem Call-Adapter
+
+Ein neuer Call-Adapter verwaltet jetzt Raumberechtigung, Einladungsstatus, ein Zeitlimit von 45 Sekunden für unbeantwortete Anrufe, Annehmen, Auflegen, Benachrichtigungen und die Übergabe an den VoIP-Anbieter. Beim Start ersetzt sofort eine Klingelansicht die Unterhaltung und aktiviert die Kamerasteuerung; Empfänger erhalten eine dauerhafte Benachrichtigung mit einer Schaltfläche zum Annehmen. Meetings beginnen erst nach der Annahme, und die separate Pfeilschaltfläche verschiebt die eingebettete Komponente in Bild-in-Bild.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -34,3 +38,4 @@ Die Bereitschaft von SPA-Stylesheets wird nun anhand des normalisierten Pfads st
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/69e21d58c8f04c27848c9b646672d6a436891d2c
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2b179ef3cd20fab51af1eac5fa36506bf46021c6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3b62797540e433c07ee81751a58e327085f01739
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/0e7ff946

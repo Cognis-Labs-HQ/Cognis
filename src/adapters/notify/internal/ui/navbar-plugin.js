@@ -107,7 +107,7 @@ function isNotificationOwnedByCurrentPage(notification) {
                 .filter(Boolean)[0];
             if (actionPage === currentPage) return true;
         } catch {
-            // Malformed actions are handled by navigateNotif (lines 42-60 above).
+            // Malformed actions are handled by navigateNotif (lines 63-79 above).
         }
     }
 
@@ -291,6 +291,9 @@ function renderNotificationItem(notif, i18n) {
         `<span class="notification-item-preview">${escapeHtml(notif.body)}</span>` +
         "</span>" +
         `<span class="notification-item-time" data-relative-time="${notif.createdAt}">${escapeHtml(formatRelativeTime(notif.createdAt))}</span>` +
+        (notif.category === "calls" && notif.actionUrl
+            ? `<button class="notification-answer btn-confirm" type="button">${escapeHtml(i18n.t("adapter.notify.internal.answer_call"))}</button>`
+            : "") +
         (notif.actionUrl
             ? '<span class="notification-item-link-arrow" aria-hidden="true">&#8250;</span>'
             : "") +

@@ -25,3 +25,5 @@ Adaptor Internal mengirimkan notifikasi langsung ke bel notifikasi dalam aplikas
 ## Konfigurasi
 
 Adaptor ini tidak memiliki konfigurasi. Adaptor aktif selama gateway notify memuatnya (yaitu selalu, karena adaptor ditemukan secara otomatis). Untuk menonaktifkan adaptor, hapus atau ubah nama direktori adaptor — setelah itu bel notifikasi akan menghilang dari antarmuka.
+
+Notifikasi panggilan tetap berada dalam daftar notifikasi selama berdering dan menampilkan tindakan Jawab yang membuka ruang Messages terkait beserta token panggilan.

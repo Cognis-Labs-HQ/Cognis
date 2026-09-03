@@ -26,6 +26,10 @@ Messages はルームごとにプロバイダーへアクションを問い合�
 
 SPA スタイルシートの準備状態を、バージョン付き URL 全体ではなく正規化したパスで管理するようにしました。Meetings からの移動時にルート CSS が削除されても、後続ページは古い解決済み Promise を再利用せず、同じバージョン付き Page Builder スタイルシートを再読み込みして完全な表示を保ちます。
 
+## 呼び出しは Call アダプターが管理
+
+新しい Call アダプターが、ルーム認可、招待状態、未応答時の 45 秒タイムアウト、応答、通話終了、通知、VoIP プロバイダーへの引き渡しを管理します。発信すると会話領域は直ちに呼び出し画面へ置き換わり、カメラ操作がアクティブになります。受信者には応答操作付きの継続通知が届きます。Meeting は応答後にだけ開始され、独立した矢印操作でマウント済みコンポーネントをピクチャーインピクチャーへ移動できます。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -34,3 +38,4 @@ SPA スタイルシートの準備状態を、バージョン付き URL 全体�
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/69e21d58c8f04c27848c9b646672d6a436891d2c
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2b179ef3cd20fab51af1eac5fa36506bf46021c6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3b62797540e433c07ee81751a58e327085f01739
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/0e7ff946

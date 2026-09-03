@@ -25,3 +25,5 @@ Der interne Adapter leitet Benachrichtigungen direkt an die In-App-Benachrichtig
 ## Konfiguration
 
 Der Adapter verfügt über keine Konfigurationsoptionen. Er ist aktiv, solange das Notify-Gateway ihn lädt (also immer, da Adapter automatisch erkannt werden). Das Deaktivieren des Adapters erfordert das Entfernen oder Umbenennen des Adapter-Verzeichnisses – woraufhin die Benachrichtigungsglocke aus der Oberfläche verschwindet.
+
+Anrufbenachrichtigungen bleiben während des Klingelns in der Benachrichtigungsliste und zeigen eine ausdrückliche Aktion „Annehmen“, die den zugehörigen Messages-Raum mit dem Anruftoken öffnet.

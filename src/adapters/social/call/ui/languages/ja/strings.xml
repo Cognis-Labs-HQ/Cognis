@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="adapter.social.call.name">通話</string>
+  <string name="adapter.social.call.ringing">{{user}} を呼び出しています...</string>
+  <string name="adapter.social.call.hangup">通話を終了</string>
+  <string name="adapter.social.call.move_to_pip">通話をピクチャーインピクチャーへ移動</string>
+  <string name="adapter.social.call.window_title">ミーティングウィンドウ</string>
+</resources>

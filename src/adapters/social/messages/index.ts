@@ -122,6 +122,48 @@ export async function bootstrapSocialAdapter(
     ctx.capabilities.contribute("social:messages:membership", membership);
     const systemCtx = ctx.capabilities.get<Ctx>(CTX_CAPABILITY);
     systemCtx?.contributeCapability("social:messages:membership", membership);
+    const resolveCallContext = async (input: {
+        roomId: string;
+        accountId: string;
+    }) => {
+        const [room, member, members] = await Promise.all([
+            messagesStore.getRoom(input.roomId),
+            messagesStore.getMember(input.roomId, input.accountId),
+            messagesStore.listMembers(input.roomId),
+        ]);
+        if (!room || !member) return null;
+        const participants = await Promise.all(
+            members.map(async (roomMember) => {
+                const profile = await profileStore.getProfile(
+                    roomMember.accountId,
+                );
+                return {
+                    accountId: roomMember.accountId,
+                    handle: profile?.handle ?? roomMember.accountId,
+                    displayName:
+                        profile?.displayName ??
+                        profile?.handle ??
+                        roomMember.accountId,
+                };
+            }),
+        );
+        return {
+            room: {
+                id: room.id,
+                kind: room.kind,
+                title: room.title ?? "",
+            },
+            participants,
+        };
+    };
+    ctx.capabilities.contribute(
+        "social:messages:callContext",
+        resolveCallContext,
+    );
+    systemCtx?.contributeCapability(
+        "social:messages:callContext",
+        resolveCallContext,
+    );
     const deleteChatroom = createChatroomDeletionCapability(
         messagesStore,
         ctx.log,

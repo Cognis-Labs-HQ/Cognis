@@ -8,4 +8,5 @@
   <string name="adapter.notify.internal.clear_all_confirm_body">This will permanently delete all of your notifications. This cannot be undone.</string>
   <string name="adapter.notify.internal.error_clear_all">Couldn't clear notifications. Please try again.</string>
   <string name="adapter.notify.internal.new_message">New message</string>
+  <string name="adapter.notify.internal.answer_call">Answer</string>
 </resources>

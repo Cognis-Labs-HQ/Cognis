@@ -131,33 +131,11 @@ const ROOM_RENDER_SOURCE = readFileSync(
     resolve(ROOT, "src/adapters/social/messages/ui/room-render.js"),
     "utf8",
 );
-const VOIP_SOURCE = readFileSync(
-    resolve(ROOT, "src/adapters/social/messages/ui/voip.js"),
-    "utf8",
-);
-const ROOM_STATE_SOURCE = readFileSync(
-    resolve(ROOT, "src/adapters/social/messages/ui/room-state.js"),
-    "utf8",
-);
-
-test("messages offers provider-neutral VoIP calling only when supplied", () => {
-    assert.match(VOIP_SOURCE, /VOIP_PROVIDER_CAPABILITY = "voip:startCall"/);
-    assert.match(VOIP_SOURCE, /uiCtx\.registerFlow\(FLOW_ID/);
-    assert.match(VOIP_SOURCE, /supportedActions: \["component", "navigate"\]/);
-    assert.match(VOIP_SOURCE, /resolveRoomCallAction/);
-    assert.match(VOIP_SOURCE, /component-pages:spawn/);
-    assert.match(VOIP_SOURCE, /ui:navigate/);
-    assert.match(VOIP_SOURCE, /removeStageOnDiscard: true/);
-    assert.match(VOIP_SOURCE, /threadList\.before\(stage\)/);
-    assert.match(VOIP_SOURCE, /messages-voip-pip-button btn-neutral/);
-    assert.match(VOIP_SOURCE, /handle\.restoreHostLayout\?\.\(\)/);
-    assert.match(VOIP_SOURCE, /room\.members/);
-    assert.match(ROOM_STATE_SOURCE, /await resolveCallAction\(room\)/);
-    assert.match(
-        ROOM_STATE_SOURCE,
-        /showCallAction: Boolean\(selectedCallAction\)/,
-    );
+test("messages delegates calling through the Call adapter capability", () => {
+    assert.match(APP_SOURCE, /social:callUi/);
+    assert.match(APP_SOURCE, /resolveRoomCall/);
+    assert.match(APP_SOURCE, /startRoomCall/);
+    assert.match(APP_SOURCE, /answerRequestedCall/);
     assert.match(ROOM_RENDER_SOURCE, /showCallAction && \["dm", "group"\]/);
     assert.match(ROOM_RENDER_SOURCE, /messages-room-call-btn btn-confirm/);
-    assert.match(ROOM_RENDER_SOURCE, /<svg viewBox="0 0 24 24"/);
 });
