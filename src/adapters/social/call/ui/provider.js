@@ -13,8 +13,9 @@ const inboundTones = new Map();
 const answerSpawnPermits = new Map();
 
 function stopInboundTone(callId) {
-    inboundTones.get(callId)?.();
+    const stopTone = inboundTones.get(callId);
     inboundTones.delete(callId);
+    if (typeof stopTone === "function") stopTone();
 }
 
 async function getCallI18n() {
@@ -212,12 +213,17 @@ async function mountProviderAction(
             );
             if (!(windowElement instanceof HTMLElement) || !makeFloatingWindow)
                 return;
-            callStage.setFloatingRelease(makeFloatingWindow(windowElement));
+            callStage.setFloatingRelease(
+                makeFloatingWindow(windowElement, {
+                    portal: false,
+                    topLayer: true,
+                }),
+            );
             callStage.markFloating();
             componentWindow.retainAcrossCallerAbort?.();
             componentWindow.restoreHostLayout?.();
             backButton.hidden = true;
-            callStage.stage.hidden = true;
+            callStage.stage.classList.add("call-stage--floating");
             document
                 .querySelector(".messages-thread")
                 ?.classList.remove("messages-thread--call-active");

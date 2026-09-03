@@ -37,6 +37,10 @@ test("Call toolbar keeps its arrow separate from mounted meeting content", () =>
     assert.match(providerSource, /backButton\.hidden = true/);
     assert.match(providerSource, /callButton\.disabled = true/);
     assert.match(providerSource, /cognis:call-moved-to-pip/);
+    assert.match(providerSource, /portal: false/);
+    assert.match(providerSource, /topLayer: true/);
+    assert.match(providerSource, /call-stage--floating/);
+    assert.doesNotMatch(providerSource, /callStage\.stage\.hidden = true/);
     assert.match(providerSource, /new MutationObserver/);
     assert.match(providerSource, /removeStageOnDiscard: true/);
     assert.ok(
@@ -44,6 +48,14 @@ test("Call toolbar keeps its arrow separate from mounted meeting content", () =>
             providerSource.indexOf(
                 'backButton.addEventListener(\n        "click"',
             ),
+    );
+});
+
+test("Call PiP dimensions belong to the floating window", () => {
+    assert.match(callStyles, /\.call-stage--floating/);
+    assert.match(
+        callStyles,
+        /\.component-page-window\.floating-window[\s\S]*width: min\(32vw, 24rem\)[\s\S]*height: min\(32vh, 15rem\)/,
     );
 });
 

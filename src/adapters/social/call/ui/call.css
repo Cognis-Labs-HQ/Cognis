@@ -11,6 +11,30 @@
     overflow: hidden;
 }
 
+.call-stage--floating {
+    position: absolute;
+    width: 0;
+    height: 0;
+    min-height: 0;
+    overflow: visible;
+}
+
+.call-stage--floating > :not(.call-stage-component) {
+    display: none;
+}
+
+.call-stage--floating .call-stage-component {
+    width: 0;
+    min-height: 0;
+}
+
+.call-stage--floating .component-page-window.floating-window {
+    width: min(32vw, 24rem);
+    height: min(32vh, 15rem);
+    min-width: 240px;
+    min-height: 160px;
+}
+
 .call-stage-toolbar {
     display: flex;
     align-items: center;
