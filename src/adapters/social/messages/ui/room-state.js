@@ -260,7 +260,10 @@ export function createMessagesRoomState({
                 room,
                 currentAccountId,
                 i18n,
-                { showCallAction: Boolean(selectedCallAction) },
+                {
+                    showCallAction: Boolean(selectedCallAction),
+                    callActive: selectedCallAction?.state === "active",
+                },
             );
             void hydrateProfileAvatars(headerSlot);
             bindRoomHeaderEvents();

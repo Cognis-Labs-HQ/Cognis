@@ -34,6 +34,20 @@ test("call access is limited to snapshotted room participants", () => {
     assert.equal(store.hangup(call.id, "outsider"), null);
 });
 
+test("the current room call reports ringing and active calls only", () => {
+    const store = new CallStore();
+    const call = store.create({
+        roomId: "room-1",
+        callerAccountId: "caller",
+        participants,
+    });
+    assert.equal(store.getCurrentRoomCall("room-1")?.id, call.id);
+    store.answer(call.id, "callee");
+    assert.equal(store.getCurrentRoomCall("room-1")?.status, "active");
+    store.hangup(call.id, "caller");
+    assert.equal(store.getCurrentRoomCall("room-1"), null);
+});
+
 test("unanswered calls expire after the ringing timeout", (testContext) => {
     let now = 1_000;
     testContext.mock.method(Date, "now", () => now);

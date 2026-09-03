@@ -22,6 +22,16 @@ export async function getCall(callId) {
     return payload.data;
 }
 
+export async function getRoomCall(roomId) {
+    const response = await apiFetch(
+        `/api/v1/social/call/room/${encodeURIComponent(roomId)}`,
+    );
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok)
+        throw new Error(payload?.error?.message ?? "Request failed");
+    return payload.data;
+}
+
 export async function updateCall(callId, operation) {
     const response = await apiFetch(
         `/api/v1/social/call/${encodeURIComponent(callId)}/${operation}`,

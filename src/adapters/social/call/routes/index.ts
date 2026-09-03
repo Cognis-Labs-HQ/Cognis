@@ -116,6 +116,25 @@ export function createCallRoutes(
         const callMatch = url.pathname.match(
             /^\/api\/v1\/social\/call\/([0-9a-f-]+)(?:\/(answer|hangup))?$/,
         );
+        const roomCallMatch = url.pathname.match(
+            /^\/api\/v1\/social\/call\/room\/([^/]+)$/,
+        );
+        if (roomCallMatch && req.method === "GET") {
+            const roomId = decodeURIComponent(roomCallMatch[1]);
+            const room = await resolveRoom({
+                roomId,
+                accountId: claims.sub,
+            });
+            if (!room) {
+                sendJson(res, 404, {
+                    error: { code: "not_found", message: "Room not found." },
+                });
+                return true;
+            }
+            const call = store.getCurrentRoomCall(roomId);
+            sendJson(res, 200, { data: call ? publicCall(call) : null });
+            return true;
+        }
         if (url.pathname === "/api/v1/social/call" && req.method === "POST") {
             let body: Record<string, unknown>;
             try {
@@ -137,6 +156,11 @@ export function createCallRoutes(
                         message: "Calling is unavailable for this room.",
                     },
                 });
+                return true;
+            }
+            const existingCall = store.getCurrentRoomCall(roomId);
+            if (existingCall) {
+                sendJson(res, 200, { data: publicCall(existingCall) });
                 return true;
             }
             const call = store.create({

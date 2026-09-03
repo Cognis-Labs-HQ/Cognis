@@ -54,6 +54,10 @@ Floating component windows are now portaled into the persistent document shell a
 
 Retained PiP calls now portal their broker-owned stage together with the component window, preserving the stable stage ID expected by Jitsi Meet. When a participant leaves, is kicked, or the conference ends, Jitsi can resolve the parent stage and invoke `component-pages:discard`; Cognis then removes the disposable call stage without waiting for SPA cleanup.
 
+## Room-aware call recovery
+
+Messages now checks each room for an existing ringing or active call before rendering its camera action. Active calls display an active camera state and reconnect immediately when selected, including after refresh. Ringing calls are resumed or answered instead of creating a second invitation, and the server repeats the current-call check during creation to prevent crossed calls during concurrent clicks.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -70,3 +74,4 @@ Retained PiP calls now portal their broker-owned stage together with the compone
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/53dee857
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/630ac8d9

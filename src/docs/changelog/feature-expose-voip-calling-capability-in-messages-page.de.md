@@ -54,6 +54,10 @@ Schwebende Komponentenfenster werden jetzt in die dauerhafte Dokumentoberfläche
 
 Gehaltene PiP-Anrufe verschieben jetzt ihre vom Broker verwaltete Bühne gemeinsam mit dem Komponentenfenster und bewahren so die von Jitsi Meet erwartete stabile Bühnen-ID. Beim Verlassen, Entfernen oder Beenden der Konferenz kann Jitsi die Elternbühne auflösen und `component-pages:discard` aufrufen; Cognis entfernt anschließend die temporäre Anrufbühne unabhängig von der SPA-Bereinigung.
 
+## Raumbezogene Anrufwiederherstellung
+
+Messages prüft jetzt vor dem Anzeigen der Kameraaktion, ob im jeweiligen Raum ein klingelnder oder aktiver Anruf besteht. Aktive Anrufe zeigen einen aktiven Kamerastatus und verbinden beim Auswählen sofort erneut, auch nach dem Aktualisieren. Klingelnde Anrufe werden fortgesetzt oder angenommen, statt eine zweite Einladung zu erstellen; der Server wiederholt die Prüfung bei der Erstellung, um gekreuzte Anrufe bei gleichzeitigen Klicks zu verhindern.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -70,3 +74,4 @@ Gehaltene PiP-Anrufe verschieben jetzt ihre vom Broker verwaltete Bühne gemeins
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/53dee857
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/630ac8d9

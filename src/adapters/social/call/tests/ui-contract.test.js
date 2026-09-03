@@ -63,3 +63,10 @@ test("Call UI exposes room-event answer and decline actions", () => {
     assert.match(providerSource, /answerCall,/);
     assert.match(providerSource, /declineCall,/);
 });
+
+test("Call UI resolves and rejoins the current room call", () => {
+    assert.match(providerSource, /getRoomCall\(roomId\)/);
+    assert.match(providerSource, /state: call\?\.status \?\? "available"/);
+    assert.match(providerSource, /call\.status === "active"/);
+    assert.match(providerSource, /call\.callerAccountId !== currentAccountId/);
+});

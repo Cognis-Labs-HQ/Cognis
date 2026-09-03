@@ -94,3 +94,36 @@ test("call creation rejects rooms the Messages capability does not authorize", a
     assert.equal(recorder.result().status, 403);
     assert.equal(recorder.result().payload.error.code, "call_not_allowed");
 });
+
+test("room lookup returns the existing call without creating crossed invitations", async () => {
+    const store = new CallStore();
+    const call = store.create({
+        roomId: "room-1",
+        callerAccountId: "caller",
+        participants: roomContext.participants,
+    });
+    const route = createCallRoutes(
+        store,
+        {
+            requireAuth: () => ({ sub: "callee", role: "user" }),
+        } as never,
+        async () => roomContext,
+    );
+    const lookup = response();
+    await route(
+        request("GET") as never,
+        lookup.res as never,
+        new URL("http://localhost/api/v1/social/call/room/room-1"),
+    );
+    assert.equal(lookup.result().status, 200);
+    assert.equal(lookup.result().payload.data.id, call.id);
+
+    const create = response();
+    await route(
+        request("POST", { roomId: "room-1" }) as never,
+        create.res as never,
+        new URL("http://localhost/api/v1/social/call"),
+    );
+    assert.equal(create.result().status, 200);
+    assert.equal(create.result().payload.data.id, call.id);
+});

@@ -156,4 +156,6 @@ test("messages delegates calling through the Call adapter capability", () => {
     assert.match(MESSAGE_RENDER_SOURCE, /roomEvent\.status === "ringing"/);
     assert.match(ROOM_RENDER_SOURCE, /showCallAction && \["dm", "group"\]/);
     assert.match(ROOM_RENDER_SOURCE, /messages-room-call-btn btn-confirm/);
+    assert.match(ROOM_RENDER_SOURCE, /callActive \? " active"/);
+    assert.match(ROOM_RENDER_SOURCE, /aria-pressed/);
 });

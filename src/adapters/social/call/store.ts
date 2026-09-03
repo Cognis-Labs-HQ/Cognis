@@ -57,6 +57,20 @@ export class CallStore {
         return this.calls.get(id) ?? null;
     }
 
+    getCurrentRoomCall(roomId: string): CallRecord | null {
+        this.expireCalls();
+        return (
+            [...this.calls.values()]
+                .filter(
+                    (call) =>
+                        call.roomId === roomId &&
+                        (call.status === "ringing" || call.status === "active"),
+                )
+                .sort((left, right) => right.createdAt - left.createdAt)[0] ??
+            null
+        );
+    }
+
     answer(id: string, accountId: string): CallRecord | null {
         const call = this.get(id);
         if (!call || call.status !== "ringing") return null;

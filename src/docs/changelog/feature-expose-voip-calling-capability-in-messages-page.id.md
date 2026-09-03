@@ -54,6 +54,10 @@ Jendela komponen mengambang kini dipindahkan ke shell dokumen persisten dan dapa
 
 Panggilan PiP yang dipertahankan kini memindahkan panggung milik broker bersama jendela komponen, sehingga ID panggung stabil yang diharapkan Jitsi Meet tetap tersedia. Ketika peserta keluar, dikeluarkan, atau konferensi berakhir, Jitsi dapat menemukan panggung induk dan memanggil `component-pages:discard`; Cognis kemudian menghapus panggung panggilan sementara tanpa menunggu pembersihan SPA.
 
+## Pemulihan panggilan berdasarkan ruang
+
+Messages kini memeriksa panggilan berdering atau aktif yang sudah ada di setiap ruang sebelum merender tindakan kamera. Panggilan aktif menampilkan status kamera aktif dan langsung tersambung kembali saat dipilih, termasuk setelah penyegaran. Panggilan berdering dilanjutkan atau dijawab tanpa membuat undangan kedua, dan server mengulangi pemeriksaan saat pembuatan untuk mencegah panggilan silang ketika klik terjadi bersamaan.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -70,3 +74,4 @@ Panggilan PiP yang dipertahankan kini memindahkan panggung milik broker bersama 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/53dee857
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/630ac8d9

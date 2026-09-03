@@ -54,6 +54,10 @@ Meeting のピクチャーインピクチャー移動は一度だけ実行され
 
 保持された PiP 通話は、ブローカー所有のステージをコンポーネントウィンドウと一緒に移動し、Jitsi Meet が参照する安定したステージ ID を維持します。参加者の退出、キック、または会議終了時に Jitsi は親ステージを解決して `component-pages:discard` を呼び出せます。Cognis は SPA のクリーンアップを待たずに一時通話ステージを削除します。
 
+## ルーム単位の通話復帰
+
+Messages はカメラ操作を表示する前に、各ルームに呼び出し中またはアクティブな通話があるか確認します。アクティブな通話ではカメラがアクティブ表示になり、更新後でも選択すると直ちに再接続します。呼び出し中の通話は二重招待を作らず待機を再開または応答し、サーバーも作成時に再確認して同時クリックによる通話の交差を防ぎます。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -70,3 +74,4 @@ Meeting のピクチャーインピクチャー移動は一度だけ実行され
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/53dee857
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/630ac8d9

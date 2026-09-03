@@ -1,6 +1,6 @@
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n } from "/static/reuse/i18n.js";
-import { createCall, getCall, updateCall } from "./client.js";
+import { createCall, getCall, getRoomCall, updateCall } from "./client.js";
 import { showToast } from "/static/reuse/toast.js";
 import { startRingingTone } from "./tone-player.js";
 
@@ -265,11 +265,26 @@ async function resolveRoomCall(room) {
         return null;
     }
     if (!room || !["dm", "group"].includes(room.kind)) return null;
-    return { roomId: String(room.id), room };
+    const roomId = String(room.id);
+    const call = await getRoomCall(roomId);
+    return {
+        roomId,
+        room,
+        call,
+        state: call?.status ?? "available",
+    };
 }
 
 async function startRoomCall(action, { signal } = {}) {
-    const call = await createCall(action.roomId);
+    let call = action.call;
+    if (
+        call?.status === "ringing" &&
+        call.callerAccountId !== currentAccountId()
+    ) {
+        call = await updateCall(call.id, "answer");
+        stopInboundTone(call.id);
+    }
+    call ??= await createCall(action.roomId);
     const stopTone = startRingingTone("outbound");
     const callStage = await createStage(call, signal);
     if (!callStage) {
@@ -277,6 +292,17 @@ async function startRoomCall(action, { signal } = {}) {
         return false;
     }
     try {
+        if (call.status === "active") {
+            stopTone();
+            const providerAction = await resolveProviderAction(call);
+            const mounted = await mountProviderAction(
+                providerAction,
+                callStage,
+                signal,
+            );
+            if (!mounted) await callStage.cleanup();
+            return mounted;
+        }
         return await waitForAnswer(call, callStage, signal);
     } finally {
         stopTone();
