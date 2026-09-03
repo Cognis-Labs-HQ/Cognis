@@ -4,6 +4,7 @@
  * Public exports:
  * - `requestComponentPage` — resolves an eligible page without mounting it.
  * - `spawnComponentPage` — mounts an eligible page in a protected caller-owned stage.
+ * - `component-pages:createSpawnPermit` capability — captures one user activation for one deferred spawn.
  * - `discardComponentPage` — tears down the component window in a stage.
  * - `discardAllComponentPages` — tears down active component windows, optionally retaining navigation-safe windows.
  * - `installComponentPageBroker` — registers browser flow hooks and capabilities once.
@@ -32,6 +33,20 @@ const WHEEL_DELTA_LINE = 1;
 const WHEEL_DELTA_PAGE = 2;
 const activeWindows = new Map();
 const borderlessHosts = new WeakMap();
+const spawnPermits = new WeakSet();
+const SPAWN_PERMIT_LIFETIME_MILLISECONDS = 60_000;
+
+function createComponentSpawnPermit() {
+    if (!defaultSpawnAuthorization()) return null;
+    const permit = Object.freeze({});
+    spawnPermits.add(permit);
+    const expirationTimer = setTimeout(
+        () => spawnPermits.delete(permit),
+        SPAWN_PERMIT_LIFETIME_MILLISECONDS,
+    );
+    expirationTimer.unref?.();
+    return permit;
+}
 
 function isAbortSignal(value) {
     return (
@@ -116,7 +131,7 @@ export async function requestComponentPage(request) {
 /**
  * Mounts an eligible component page in a protected, caller-owned stage.
  *
- * @param {{componentUuid: string, routeId: string, elementId: string, mode?: string, context?: object, signal?: AbortSignal, borderless?: boolean, removeStageOnDiscard?: boolean}} request
+ * @param {{componentUuid: string, routeId: string, elementId: string, mode?: string, context?: object, signal?: AbortSignal, borderless?: boolean, removeStageOnDiscard?: boolean, activationPermit?: object}} request
  * @returns {Promise<{elementId: string, ownerUuid: string, routeId: string, borderless: boolean, restoreHostLayout: () => void, retainAcrossCallerAbort: () => void, discard: () => Promise<void>} | null>} A mounted component-window handle or null.
  */
 export async function spawnComponentPage(request) {
@@ -224,12 +239,17 @@ export function installComponentPageBroker({
                 signal,
                 borderless: input?.borderless === true,
                 removeStageOnDiscard: input?.removeStageOnDiscard === true,
+                activationPermit: input?.activationPermit ?? null,
             };
             data.requestValid =
                 ELEMENT_ID_PATTERN.test(elementId) &&
                 isAbortSignal(signal) &&
                 !signal?.aborted;
-            data.spawnAuthorized = authorizeSpawn();
+            const permitAuthorized =
+                typeof data.request.activationPermit === "object" &&
+                data.request.activationPermit !== null &&
+                spawnPermits.delete(data.request.activationPermit);
+            data.spawnAuthorized = authorizeSpawn() || permitAuthorized;
         },
     );
     uiCtx.extendFlow(
@@ -408,6 +428,10 @@ export function installComponentPageBroker({
         requestComponentPage,
     );
     uiCtx.capabilities.contribute("component-pages:spawn", spawnComponentPage);
+    uiCtx.capabilities.contribute(
+        "component-pages:createSpawnPermit",
+        createComponentSpawnPermit,
+    );
     uiCtx.capabilities.contribute(
         "component-pages:discard",
         discardComponentPage,

@@ -58,6 +58,10 @@ Panggilan PiP yang dipertahankan kini memindahkan panggung milik broker bersama 
 
 Messages kini memeriksa panggilan berdering atau aktif yang sudah ada di setiap ruang sebelum merender tindakan kamera. Panggilan aktif menampilkan status kamera aktif dan langsung tersambung kembali saat dipilih, termasuk setelah penyegaran. Panggilan berdering dilanjutkan atau dijawab tanpa membuat undangan kedua, dan server mengulangi pemeriksaan saat pembuatan untuk mencegah panggilan silang ketika klik terjadi bersamaan.
 
+## Serah terima penelepon yang andal dan filter modul terisolasi
+
+Mulai panggilan dan jawaban notifikasi kini mempertahankan izin aktivasi pengguna sekali pakai selama pensinyalan asinkron, sehingga kedua peserta dapat memasang komponen Jitsi saat undangan menjadi aktif. Filter bilah samping modul juga mempertahankan keadaan tidak aktif tanpa bingkai ketika penyedia memuat gaya tombol bersama selama panggilan.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -75,3 +79,4 @@ Messages kini memeriksa panggilan berdering atau aktif yang sudah ada di setiap 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/53dee857
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/630ac8d9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/4e75f696

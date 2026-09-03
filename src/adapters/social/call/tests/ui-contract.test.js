@@ -70,3 +70,9 @@ test("Call UI resolves and rejoins the current room call", () => {
     assert.match(providerSource, /call\.status === "active"/);
     assert.match(providerSource, /call\.callerAccountId !== currentAccountId/);
 });
+
+test("Call UI carries user activation through delayed provider mounting", () => {
+    assert.match(providerSource, /component-pages:createSpawnPermit/);
+    assert.match(providerSource, /activationPermit/);
+    assert.match(providerSource, /answerSpawnPermits/);
+});

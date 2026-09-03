@@ -782,6 +782,18 @@ async function showArrivalToast(notif, i18n) {
             dismiss();
             return;
         }
+        if (e.target.closest(".arrival-toast-answer")) {
+            const metadata = notif.metadata ?? {};
+            dismiss();
+            void markArrivalRead(notif);
+            void uiCtx.capabilities
+                .get("social:callUi")
+                ?.answerCall(
+                    String(metadata.callId ?? ""),
+                    String(metadata.roomId ?? ""),
+                );
+            return;
+        }
         if (e.target.closest(".arrival-toast-dismiss")) {
             dismiss();
             return;

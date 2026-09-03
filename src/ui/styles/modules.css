@@ -72,6 +72,9 @@ body[data-theme="dark"] .module-icon-settings {
     width: fit-content;
     min-width: 0;
 }
+[data-module-sidebar] button:not(.is-active) {
+    border-color: transparent;
+}
 [data-module-sidebar] button.is-active {
     border-color: var(--accent-color);
     background: var(--surface-soft);

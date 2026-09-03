@@ -58,6 +58,10 @@ Retained PiP calls now portal their broker-owned stage together with the compone
 
 Messages now checks each room for an existing ringing or active call before rendering its camera action. Active calls display an active camera state and reconnect immediately when selected, including after refresh. Ringing calls are resumed or answered instead of creating a second invitation, and the server repeats the current-call check during creation to prevent crossed calls during concurrent clicks.
 
+## Reliable caller handoff and isolated module filters
+
+Call starts and notification answers now preserve a single-use user-activation permit through asynchronous signaling, so both participants can mount the Jitsi component when the invitation becomes active. Module sidebar filters also keep their intended borderless inactive state when a provider loads shared button styles during the call.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -75,3 +79,4 @@ Messages now checks each room for an existing ringing or active call before rend
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/53dee857
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/630ac8d9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/4e75f696

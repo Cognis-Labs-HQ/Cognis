@@ -173,6 +173,10 @@ test("component windows stay disposable across activation and SPA navigation", a
                 : null;
         },
     });
+    assert.equal(
+        typeof uiCtx.capabilities.get("component-pages:createSpawnPermit"),
+        "function",
+    );
     const shareContext = {
         resourceType: "meeting",
         guestAccessToken: "guest-token",
@@ -234,6 +238,42 @@ test("component windows stay disposable across activation and SPA navigation", a
         }),
         null,
     );
+
+    const originalNavigator = Object.getOwnPropertyDescriptor(
+        globalThis,
+        "navigator",
+    );
+    const userActivation = { isActive: true };
+    Object.defineProperty(globalThis, "navigator", {
+        configurable: true,
+        value: { userActivation },
+    });
+    const activationPermit = uiCtx.capabilities.get(
+        "component-pages:createSpawnPermit",
+    )();
+    userActivation.isActive = false;
+    const permittedWindow = await spawnComponentPage({
+        componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+        routeId: "core.dashboard",
+        elementId: "meeting-whiteboard-stage",
+        activationPermit,
+    });
+    assert.equal(permittedWindow?.elementId, "meeting-whiteboard-stage");
+    await permittedWindow.discard();
+    assert.equal(
+        await spawnComponentPage({
+            componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+            routeId: "core.dashboard",
+            elementId: "meeting-whiteboard-stage",
+            activationPermit,
+        }),
+        null,
+    );
+    if (originalNavigator) {
+        Object.defineProperty(globalThis, "navigator", originalNavigator);
+    } else {
+        delete globalThis.navigator;
+    }
 
     spawnAuthorized = true;
     const callerController = new AbortController();

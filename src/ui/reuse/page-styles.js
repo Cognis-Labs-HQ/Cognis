@@ -123,11 +123,7 @@ export async function preparePageStylesheets(hrefs) {
     const destinationStylesheets = new Set(
         hrefs.map((href) => new URL(href, window.location.origin).pathname),
     );
-    destinationStylesheets.forEach((href) => {
-        if (!_persistentStylesheets.has(href)) {
-            _managedPageStylesheets.add(href);
-        }
-    });
+    destinationStylesheets.forEach((href) => _managedPageStylesheets.add(href));
     await Promise.all(hrefs.map(ensurePageStylesheet));
     return () => {
         for (const staleStylesheet of _managedPageStylesheets) {

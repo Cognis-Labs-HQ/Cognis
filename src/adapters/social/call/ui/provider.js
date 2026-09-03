@@ -10,6 +10,7 @@ const POLL_INTERVAL_MILLISECONDS = 1_000;
 let activeCall = null;
 let callI18n = null;
 const inboundTones = new Map();
+const answerSpawnPermits = new Map();
 
 function stopInboundTone(callId) {
     inboundTones.get(callId)?.();
@@ -152,7 +153,12 @@ async function createStage(call, signal) {
     };
 }
 
-async function mountProviderAction(action, callStage, signal) {
+async function mountProviderAction(
+    action,
+    callStage,
+    signal,
+    activationPermit,
+) {
     if (action?.action === "navigate") {
         await callStage.cleanup();
         await uiCtx.capabilities.get("ui:navigate")?.(action.url);
@@ -176,6 +182,7 @@ async function mountProviderAction(action, callStage, signal) {
         signal,
         borderless: action.borderless !== false,
         removeStageOnDiscard: true,
+        activationPermit,
     });
     if (!componentWindow) return false;
     callStage.setComponentWindow(componentWindow);
@@ -231,12 +238,17 @@ async function mountProviderAction(action, callStage, signal) {
     return true;
 }
 
-async function waitForAnswer(call, callStage, signal) {
+async function waitForAnswer(call, callStage, signal, activationPermit) {
     while (!signal?.aborted && activeCall?.callId === call.id) {
         const current = await getCall(call.id);
         if (current.status === "active") {
             const action = await resolveProviderAction(current);
-            return mountProviderAction(action, callStage, signal);
+            return mountProviderAction(
+                action,
+                callStage,
+                signal,
+                activationPermit,
+            );
         }
         if (["ended", "expired"].includes(current.status)) {
             await callStage.cleanup();
@@ -276,6 +288,9 @@ async function resolveRoomCall(room) {
 }
 
 async function startRoomCall(action, { signal } = {}) {
+    const activationPermit = uiCtx.capabilities.get(
+        "component-pages:createSpawnPermit",
+    )?.();
     let call = action.call;
     if (
         call?.status === "ringing" &&
@@ -299,11 +314,12 @@ async function startRoomCall(action, { signal } = {}) {
                 providerAction,
                 callStage,
                 signal,
+                activationPermit,
             );
             if (!mounted) await callStage.cleanup();
             return mounted;
         }
-        return await waitForAnswer(call, callStage, signal);
+        return await waitForAnswer(call, callStage, signal, activationPermit);
     } finally {
         stopTone();
     }
@@ -314,6 +330,8 @@ async function answerRequestedCall({ signal } = {}) {
     const callId = url.searchParams.get("call");
     if (!callId || url.searchParams.get("answer") !== "1") return false;
     const call = await updateCall(callId, "answer");
+    const activationPermit = answerSpawnPermits.get(callId) ?? null;
+    answerSpawnPermits.delete(callId);
     stopInboundTone(callId);
     const callStage = await createStage(call, signal);
     if (!callStage) return false;
@@ -323,7 +341,12 @@ async function answerRequestedCall({ signal } = {}) {
         `/messages/${encodeURIComponent(call.roomId)}`,
     );
     const action = await resolveProviderAction(call);
-    const mounted = await mountProviderAction(action, callStage, signal);
+    const mounted = await mountProviderAction(
+        action,
+        callStage,
+        signal,
+        activationPermit,
+    );
     if (!mounted) {
         await callStage.cleanup();
         showToast(
@@ -353,6 +376,10 @@ async function declineCall(callId, roomId) {
 
 async function answerCall(callId, roomId) {
     if (!callId || !roomId) return false;
+    const activationPermit = uiCtx.capabilities.get(
+        "component-pages:createSpawnPermit",
+    )?.();
+    if (activationPermit) answerSpawnPermits.set(callId, activationPermit);
     await uiCtx.capabilities.get("ui:navigate")?.(
         `/messages/${encodeURIComponent(roomId)}?call=${encodeURIComponent(callId)}&answer=1`,
     );

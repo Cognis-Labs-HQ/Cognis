@@ -207,4 +207,6 @@ test("call notifications render persistent answer and decline actions", async ()
     assert.match(source, /adapter\.notify\.internal\.decline_call/);
     assert.match(source, /notification\.category !== "calls"/);
     assert.match(source, /cognis:room-call-state/);
+    assert.match(source, /social:callUi/);
+    assert.match(source, /\.answerCall/);
 });

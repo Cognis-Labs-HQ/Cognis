@@ -58,6 +58,10 @@ Meeting のピクチャーインピクチャー移動は一度だけ実行され
 
 Messages はカメラ操作を表示する前に、各ルームに呼び出し中またはアクティブな通話があるか確認します。アクティブな通話ではカメラがアクティブ表示になり、更新後でも選択すると直ちに再接続します。呼び出し中の通話は二重招待を作らず待機を再開または応答し、サーバーも作成時に再確認して同時クリックによる通話の交差を防ぎます。
 
+## 確実な発信者ハンドオフと分離されたモジュールフィルター
+
+通話開始と通知からの応答は、非同期シグナリング中も一回限りのユーザー操作許可を保持するようになり、招待がアクティブになった時点で双方が Jitsi コンポーネントをマウントできます。また、通話中にプロバイダーが共通ボタンスタイルを読み込んでも、モジュールサイドバーの非アクティブなフィルターは意図した枠線なしの表示を維持します。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -75,3 +79,4 @@ Messages はカメラ操作を表示する前に、各ルームに呼び出し�
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/53dee857
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/630ac8d9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/4e75f696

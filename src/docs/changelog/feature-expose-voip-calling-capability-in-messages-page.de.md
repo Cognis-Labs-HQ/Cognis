@@ -58,6 +58,10 @@ Gehaltene PiP-Anrufe verschieben jetzt ihre vom Broker verwaltete Bühne gemeins
 
 Messages prüft jetzt vor dem Anzeigen der Kameraaktion, ob im jeweiligen Raum ein klingelnder oder aktiver Anruf besteht. Aktive Anrufe zeigen einen aktiven Kamerastatus und verbinden beim Auswählen sofort erneut, auch nach dem Aktualisieren. Klingelnde Anrufe werden fortgesetzt oder angenommen, statt eine zweite Einladung zu erstellen; der Server wiederholt die Prüfung bei der Erstellung, um gekreuzte Anrufe bei gleichzeitigen Klicks zu verhindern.
 
+## Zuverlässige Anruferübergabe und isolierte Modulfilter
+
+Anrufstart und Benachrichtigungsantwort bewahren nun eine einmal verwendbare Benutzeraktivierungsberechtigung über die asynchrone Signalisierung hinweg, sodass beide Teilnehmenden die Jitsi-Komponente einbinden können, sobald die Einladung aktiv wird. Modul-Seitenleistenfilter behalten außerdem ihren vorgesehenen randlosen inaktiven Zustand, wenn ein Anbieter während des Anrufs gemeinsame Schaltflächenstile lädt.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -75,3 +79,4 @@ Messages prüft jetzt vor dem Anzeigen der Kameraaktion, ob im jeweiligen Raum e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/53dee857
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/630ac8d9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/4e75f696
