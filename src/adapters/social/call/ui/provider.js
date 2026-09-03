@@ -91,18 +91,24 @@ async function createStage(call, signal) {
     const stage = document.createElement("section");
     stage.className = "call-stage";
     stage.dataset.callId = call.id;
+    stage.dataset.roomId = call.roomId;
     stage.innerHTML = `<div class="call-stage-toolbar"><button type="button" class="call-stage-back btn-neutral" title="${i18n.t("adapter.social.call.move_to_pip")}" aria-label="${i18n.t("adapter.social.call.move_to_pip")}" hidden><span class="call-stage-back-icon" aria-hidden="true"></span></button><strong>${i18n.t("adapter.social.call.window_title")}</strong></div><div class="call-stage-ringing"><p>${i18n.t("adapter.social.call.ringing").replace("{{user}}", otherParticipantLabel(call))}</p><button type="button" class="call-stage-hangup btn-cancel" title="${i18n.t("adapter.social.call.hangup")}" aria-label="${i18n.t("adapter.social.call.hangup")}"><img src="/static/adapters/social/call/hangup.svg" alt="" /></button></div>`;
     headerSlot.after(stage);
     thread.classList.add("messages-thread--call-active");
     let componentWindow = null;
     let releaseFloatingWindow = null;
+    let isFloating = false;
+    let closeObserver = null;
     const cleanup = async () => {
+        closeObserver?.disconnect();
         releaseFloatingWindow?.();
         await componentWindow?.discard?.();
         stage.remove();
         thread.classList.remove("messages-thread--call-active");
         callButton?.classList.remove("active");
         callButton?.setAttribute("aria-pressed", "false");
+        if (callButton instanceof HTMLButtonElement)
+            callButton.disabled = false;
         if (activeCall?.stage === stage) activeCall = null;
     };
     activeCall = { callId: call.id, cleanup, stage };
@@ -135,6 +141,13 @@ async function createStage(call, signal) {
         },
         setFloatingRelease(value) {
             releaseFloatingWindow = value;
+        },
+        isFloating: () => isFloating,
+        markFloating() {
+            isFloating = true;
+        },
+        setCloseObserver(value) {
+            closeObserver = value;
         },
     };
 }
@@ -170,6 +183,7 @@ async function mountProviderAction(action, callStage, signal) {
     backButton.addEventListener(
         "click",
         () => {
+            if (callStage.isFloating()) return;
             const windowElement = componentHost.querySelector(
                 ".component-page-window",
             );
@@ -181,8 +195,36 @@ async function mountProviderAction(action, callStage, signal) {
             callStage.setFloatingRelease(
                 makeFloatingWindow(windowElement, { signal }),
             );
+            callStage.markFloating();
             componentWindow.restoreHostLayout?.();
+            backButton.hidden = true;
             callStage.stage.hidden = true;
+            document
+                .querySelector(".messages-thread")
+                ?.classList.remove("messages-thread--call-active");
+            const callButton = document.getElementById(
+                "messages-room-call-btn",
+            );
+            callButton?.classList.remove("active");
+            callButton?.setAttribute("aria-pressed", "false");
+            if (callButton instanceof HTMLButtonElement) {
+                callButton.disabled = true;
+            }
+            window.dispatchEvent(
+                new CustomEvent("cognis:call-moved-to-pip", {
+                    detail: { roomId: callStage.stage.dataset.roomId },
+                }),
+            );
+            const closeObserver = new MutationObserver(() => {
+                if (windowElement.isConnected) return;
+                closeObserver.disconnect();
+                void callStage.cleanup();
+            });
+            closeObserver.observe(document.body, {
+                childList: true,
+                subtree: true,
+            });
+            callStage.setCloseObserver(closeObserver);
         },
         { signal },
     );

@@ -854,7 +854,8 @@ export async function renderThread(
             const roomEvent = parseRoomEvent(messageRecord);
             if (
                 roomEvent?.eventType === "call_started" &&
-                roomEvent.callId === activeCallId
+                roomEvent.callId === activeCallId &&
+                roomEvent.status === "ringing"
             ) {
                 return `${showDateDivider}${renderActiveCallEvent(roomEvent, i18n, currentAccountId)}`;
             }

@@ -42,6 +42,10 @@ Transisi siklus hidup panggilan kini disimpan sebagai peristiwa ruang yang terli
 
 Undangan berdering saat ini kini muncul sebagai kartu panggilan dalam riwayat ruang. Penerima dapat menjawab atau menolak dengan kontrol SVG berwarna sesuai konsekuensi, penelepon melihat status berdering, dan entri otomatis menjadi peristiwa riwayat biasa setelah status berubah atau panggilan yang lebih baru dimulai. Prompt persisten bertahan selama navigasi shell dan nada dering menggunakan denyut yang lebih kuat.
 
+## Penyerahan PiP stabil dan panggilan menonjol
+
+Pemindahan pertemuan ke gambar-dalam-gambar kini hanya dilakukan sekali sehingga ukuran jendela pilihan pengguna tetap dipertahankan. Messages segera memulihkan dan menggambar ulang percakapan, menyembunyikan panah, dan menonaktifkan tindakan kamera hingga komponen ditutup. Kartu panggilan masuk aktif kini memiliki latar berbayang dan batas animasi, sedangkan peristiwa lama tidak mempertahankan kontrol jawab atau tolak.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -55,3 +59,4 @@ Undangan berdering saat ini kini muncul sebagai kartu panggilan dalam riwayat ru
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bbcc6537
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/263c98cc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/92f46be7
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5

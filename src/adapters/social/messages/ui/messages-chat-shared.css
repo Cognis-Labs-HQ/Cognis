@@ -371,6 +371,11 @@
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
+    padding: 0.65rem 0.9rem;
+    background: color-mix(in srgb, var(--accent) 18%, var(--surface-2));
+    border: 2px solid var(--accent);
+    border-radius: 0.75rem;
+    animation: messages-call-event-pulse 1.5s ease-in-out infinite;
 }
 
 .messages-call-event-actions {
@@ -391,4 +396,18 @@
     width: 1rem;
     height: 1rem;
     fill: currentColor;
+}
+
+@keyframes messages-call-event-pulse {
+    50% {
+        border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+        box-shadow: 0 0 0 0.3rem
+            color-mix(in srgb, var(--accent) 12%, transparent);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .messages-call-event {
+        animation: none;
+    }
 }

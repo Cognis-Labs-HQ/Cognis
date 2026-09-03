@@ -222,6 +222,14 @@ export async function mount(root, { signal } = {}) {
         { signal },
     );
     window.addEventListener(
+        "cognis:call-moved-to-pip",
+        (event) => {
+            if (event.detail?.roomId !== roomState.getSelectedRoomId()) return;
+            void roomState.refreshActiveConversation();
+        },
+        { signal },
+    );
+    window.addEventListener(
         "cognis:keyring-event",
         (event) => {
             const refreshAfterUnlock = event.detail?.type === "unlock";

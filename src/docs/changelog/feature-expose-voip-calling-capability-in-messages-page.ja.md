@@ -42,6 +42,10 @@ SPA スタイルシートの準備状態を、バージョン付き URL 全体�
 
 現在呼び出し中の招待がルーム履歴に通話カードとして表示されるようになりました。受信者は結果に応じた色の SVG 操作で応答または拒否でき、発信者には呼び出し状態が表示されます。状態が変わるか新しい通話が始まると、項目は自動的に通常の履歴イベントになります。保存済み着信プロンプトはシェル移動後も維持され、呼び出し音はより強いパルスを使用します。
 
+## 安定した PiP 移動と着信の強調
+
+Meeting のピクチャーインピクチャー移動は一度だけ実行され、ユーザーが調整したフローティングウィンドウの大きさを維持します。Messages は会話を直ちに復元して再描画し、矢印を隠し、コンポーネントが閉じるまでカメラ操作を無効化します。アクティブな着信カードには塗りつぶし背景とアニメーション枠を追加し、過去のイベントには応答・拒否操作を残しません。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -55,3 +59,4 @@ SPA スタイルシートの準備状態を、バージョン付き URL 全体�
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bbcc6537
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/263c98cc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/92f46be7
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5

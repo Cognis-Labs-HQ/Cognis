@@ -42,6 +42,10 @@ Eingehende Anrufe bleiben jetzt mit grüner Annehmen- und roter Ablehnen-Schaltf
 
 Die aktuelle klingelnde Einladung erscheint jetzt als Anrufkarte im Raumverlauf. Empfangende können sie über farblich passende SVG-Steuerelemente annehmen oder ablehnen, Anrufende sehen den Klingelstatus, und nach einer Statusänderung oder einem neueren Anruf wird der Eintrag automatisch zu einem einfachen Verlaufsereignis. Gespeicherte Hinweise überstehen die Navigation in der Oberfläche und Klingeltöne verwenden einen stärkeren Impuls.
 
+## Stabile PiP-Übergabe und hervorgehobene Anrufe
+
+Das Verschieben eines Meetings in Bild-in-Bild erfolgt jetzt nur einmal und bewahrt die vom Benutzer festgelegte Fenstergröße. Messages stellt die Unterhaltung sofort wieder her und zeichnet sie neu, blendet den Pfeil aus und deaktiviert die Kameraaktion bis zum Schließen der Komponente. Aktive Anrufkarten erhalten einen schattierten Hintergrund und animierten Rand; vergangene Ereignisse behalten keine Annehmen- oder Ablehnen-Steuerung.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -55,3 +59,4 @@ Die aktuelle klingelnde Einladung erscheint jetzt als Anrufkarte im Raumverlauf.
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bbcc6537
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/263c98cc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/92f46be7
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5

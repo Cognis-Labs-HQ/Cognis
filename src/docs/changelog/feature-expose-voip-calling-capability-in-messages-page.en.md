@@ -42,6 +42,10 @@ Call lifecycle transitions are now persisted as room events visible to every par
 
 The current ringing invitation now appears in room history as a call card. Recipients can answer or decline with consequence-colored SVG controls, callers see the ringing state, and the entry automatically becomes a plain historical event after the call changes state or a newer call starts. Persisted incoming prompts survive shell navigation, and ringing tones use a stronger pulse.
 
+## Stable PiP handoff and emphasized calls
+
+Moving a meeting to picture-in-picture now happens only once, preserving the user-sized floating window. Messages immediately restores and redraws the conversation, hides the arrow, and disables the camera action until the component closes. Active incoming-call cards now have a shaded background and animated border, while past call events never retain answer or decline controls.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -55,3 +59,4 @@ The current ringing invitation now appears in room history as a call card. Recip
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bbcc6537
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/263c98cc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/92f46be7
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5

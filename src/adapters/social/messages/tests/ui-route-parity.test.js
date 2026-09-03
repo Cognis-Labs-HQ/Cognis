@@ -143,6 +143,7 @@ test("messages delegates calling through the Call adapter capability", () => {
     assert.match(APP_SOURCE, /data-call-action/);
     assert.match(APP_SOURCE, /answerCall/);
     assert.match(APP_SOURCE, /declineCall/);
+    assert.match(APP_SOURCE, /cognis:call-moved-to-pip/);
     assert.match(MESSAGE_RENDER_SOURCE, /renderActiveCallEvent/);
     assert.match(
         MESSAGE_RENDER_SOURCE,
@@ -152,6 +153,7 @@ test("messages delegates calling through the Call adapter capability", () => {
         MESSAGE_RENDER_SOURCE,
         /messages-call-event-decline btn-cancel/,
     );
+    assert.match(MESSAGE_RENDER_SOURCE, /roomEvent\.status === "ringing"/);
     assert.match(ROOM_RENDER_SOURCE, /showCallAction && \["dm", "group"\]/);
     assert.match(ROOM_RENDER_SOURCE, /messages-room-call-btn btn-confirm/);
 });
