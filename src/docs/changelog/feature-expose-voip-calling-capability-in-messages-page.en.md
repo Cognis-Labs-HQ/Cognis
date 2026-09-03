@@ -62,9 +62,9 @@ Messages now checks each room for an existing ringing or active call before rend
 
 Call starts and notification answers now preserve a single-use user-activation permit through asynchronous signaling, so both participants can mount the Jitsi component when the invitation becomes active. Module sidebar filters also keep their intended borderless inactive state when a provider loads shared button styles during the call.
 
-## Stable in-place PiP handoff
+## Reusable calls and returnable PiP
 
-The Messages call handoff now floats the component host—the same bounded-shell structure used by Meetings Focus Control—instead of the inner provider window. The host clips its content and uses zero-minimum grid tracks, so Jitsi fills the PiP viewport without increasing the content height beyond the resize controller’s dimensions.
+Group calls now start after the first invitee answers, allow later invitees to join, and release after the final joined participant leaves so the next camera action rings everyone again. Floating-window spawn options can request a translucent close control; Messages uses it to return the same live call from PiP to the component stage.
 
 ## Commits
 
@@ -87,3 +87,4 @@ The Messages call handoff now floats the component host—the same bounded-shell
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/59245f23
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/86cbe55e587061e6dd58927c20dd5c1fee530be9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7fa6ee9910ab1da664c9992dd88b5659fe0af400
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/930a3b084240205cd1e9ab4124e1bbfdbf6d2f52

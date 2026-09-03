@@ -37,6 +37,7 @@ function publicCall(call: CallRecord): Record<string, unknown> {
         participants: call.participants,
         status: call.status,
         answeredBy: call.answeredBy,
+        joinedAccountIds: call.joinedAccountIds,
         endedBy: call.endedBy,
         createdAt: call.createdAt,
         expiresAt: call.expiresAt,
@@ -114,7 +115,7 @@ export function createCallRoutes(
         const claims = routeContext.requireAuth(req, res, "user");
         if (!claims) return true;
         const callMatch = url.pathname.match(
-            /^\/api\/v1\/social\/call\/([0-9a-f-]+)(?:\/(answer|hangup))?$/,
+            /^\/api\/v1\/social\/call\/([0-9a-f-]+)(?:\/(answer|hangup|leave))?$/,
         );
         const roomCallMatch = url.pathname.match(
             /^\/api\/v1\/social\/call\/room\/([^/]+)$/,
@@ -236,6 +237,20 @@ export function createCallRoutes(
             sendJson(res, 200, {
                 data: publicCall(ended),
             });
+            return true;
+        }
+        if (req.method === "POST" && operation === "leave") {
+            const left = store.leave(call.id, claims.sub);
+            if (!left) {
+                sendJson(res, 409, {
+                    error: {
+                        code: "call_unavailable",
+                        message: "Call is no longer active.",
+                    },
+                });
+                return true;
+            }
+            sendJson(res, 200, { data: publicCall(left) });
             return true;
         }
         if (req.method === "GET" && !operation) {

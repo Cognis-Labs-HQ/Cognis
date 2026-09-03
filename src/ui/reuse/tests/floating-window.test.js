@@ -141,12 +141,27 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         const originalParent = new FakeElement();
         originalParent.append(panel);
         const handle = new FakeElement(panel.rect);
-        const release = makeFloatingWindow(panel, { handle });
+        let closeRequested = false;
+        const release = makeFloatingWindow(panel, {
+            handle,
+            closeButton: {
+                label: "Return",
+                onClose: () => {
+                    closeRequested = true;
+                },
+            },
+        });
         assert.equal(panel.parentElement, body);
         assert.equal(body.statePreservingMoves, 1);
         assert.equal(panel.popoverOpen, true);
         assert.equal(panel.classes.has("floating-window"), true);
         assert.equal(handle.classes.has("floating-window-handle"), true);
+        const closeButton = panel.children.find(
+            (child) =>
+                child.className ===
+                "floating-window-close btn-close btn-neutral",
+        );
+        assert.equal(closeButton.attributes["aria-label"], "Return");
         assert.equal(panel.style.minWidth, "240px");
         assert.equal(panel.style.minHeight, "160px");
         assert.equal(panel.style.position, "fixed");
@@ -328,7 +343,14 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
             floatingWindowStyles,
             /\.floating-window-resize-handle--bottom-right\s*{[\s\S]*?right: 0;[\s\S]*?bottom: 0;/,
         );
+        assert.match(
+            floatingWindowStyles,
+            /\.floating-window-close\s*{[\s\S]*?top: 0\.35rem;[\s\S]*?right: 0\.35rem;/,
+        );
 
+        closeButton.dispatch("click", {});
+        assert.equal(closeRequested, true);
+        assert.equal(panel.classes.has("floating-window"), false);
         release();
         assert.equal(originalParent.statePreservingMoves, 1);
         assert.equal(

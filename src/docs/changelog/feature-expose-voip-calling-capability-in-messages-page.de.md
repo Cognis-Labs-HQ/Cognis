@@ -62,9 +62,9 @@ Messages prüft jetzt vor dem Anzeigen der Kameraaktion, ob im jeweiligen Raum e
 
 Anrufstart und Benachrichtigungsantwort bewahren nun eine einmal verwendbare Benutzeraktivierungsberechtigung über die asynchrone Signalisierung hinweg, sodass beide Teilnehmenden die Jitsi-Komponente einbinden können, sobald die Einladung aktiv wird. Modul-Seitenleistenfilter behalten außerdem ihren vorgesehenen randlosen inaktiven Zustand, wenn ein Anbieter während des Anrufs gemeinsame Schaltflächenstile lädt.
 
-## Stabile direkte PiP-Übergabe
+## Wiederverwendbare Anrufe und rückführbares PiP
 
-Die Anrufübergabe in Messages lässt nun den Komponenten-Host schweben – dieselbe begrenzte Hüllenstruktur wie bei der Focus Control in Meetings – statt des inneren Anbieterfensters. Der Host beschneidet seinen Inhalt und verwendet Rasterspuren mit einem Minimum von null, sodass Jitsi den PiP-Viewport ausfüllt, ohne die Inhaltshöhe über die Abmessungen der Größensteuerung hinaus zu vergrößern.
+Gruppenanrufe starten jetzt, sobald die erste eingeladene Person antwortet, lassen spätere Beitritte zu und werden nach dem Verlassen des letzten Teilnehmers freigegeben, sodass die nächste Kameraaktion wieder alle anruft. Floating-Window-Startoptionen können eine halbtransparente Schließen-Schaltfläche anfordern; Messages führt damit denselben aktiven Anruf aus PiP zur Komponentenoberfläche zurück.
 
 ## Commits
 
@@ -87,3 +87,4 @@ Die Anrufübergabe in Messages lässt nun den Komponenten-Host schweben – dies
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/59245f23
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/86cbe55e587061e6dd58927c20dd5c1fee530be9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7fa6ee9910ab1da664c9992dd88b5659fe0af400
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/930a3b084240205cd1e9ab4124e1bbfdbf6d2f52

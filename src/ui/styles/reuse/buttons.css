@@ -34,6 +34,15 @@
     color: var(--text);
 }
 
+.btn-close {
+    opacity: 0.68;
+}
+
+.btn-close:hover:not(:disabled),
+.btn-close:focus-visible {
+    opacity: 1;
+}
+
 .btn-animated {
     transition:
         background 0.18s ease,

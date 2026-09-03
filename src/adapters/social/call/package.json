@@ -1,13 +1,13 @@
 {
     "name": "@cognis/adapter-social-call",
-    "version": "0.5.3",
+    "version": "0.5.4",
     "description": "Room-scoped call signaling and browser presentation.",
     "type": "module",
     "main": "index.ts",
     "private": true,
     "dependencies": {
         "@cognis/adapter-social-messages": "<=2.7.0",
-        "@cognis/core": "<=0.3.82",
+        "@cognis/core": "<=0.3.83",
         "@cognis/gateways": "<=0.1.9"
     }
 }

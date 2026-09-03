@@ -127,3 +127,43 @@ test("room lookup returns the existing call without creating crossed invitations
     assert.equal(create.result().status, 200);
     assert.equal(create.result().payload.data.id, call.id);
 });
+
+test("a released group call can ring every participant again", async () => {
+    const store = new CallStore();
+    const groupRoom = {
+        ...roomContext,
+        room: { ...roomContext.room, kind: "group" },
+        participants: [
+            ...roomContext.participants,
+            { accountId: "third", handle: "third", displayName: "Third" },
+        ],
+    };
+    const notifications: string[] = [];
+    const route = createCallRoutes(
+        store,
+        {
+            requireAuth: () => ({ sub: "caller", role: "user" }),
+        } as never,
+        async () => groupRoom,
+        async (notification) => {
+            notifications.push(notification.recipientUsername);
+        },
+    );
+    const previous = store.create({
+        roomId: "room-1",
+        callerAccountId: "caller",
+        participants: groupRoom.participants,
+    });
+    store.answer(previous.id, "callee");
+    store.leave(previous.id, "callee");
+    store.leave(previous.id, "caller");
+    const recorder = response();
+    await route(
+        request("POST", { roomId: "room-1" }) as never,
+        recorder.res as never,
+        new URL("http://localhost/api/v1/social/call"),
+    );
+    assert.equal(recorder.result().status, 201);
+    assert.notEqual(recorder.result().payload.data.id, previous.id);
+    assert.deepEqual(notifications.sort(), ["callee", "third"]);
+});

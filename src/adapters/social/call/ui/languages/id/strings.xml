@@ -4,6 +4,7 @@
   <string name="adapter.social.call.ringing">Memanggil {{user}}...</string>
   <string name="adapter.social.call.hangup">Tutup panggilan</string>
   <string name="adapter.social.call.move_to_pip">Pindahkan panggilan ke gambar-dalam-gambar</string>
+  <string name="adapter.social.call.return_from_pip">Kembalikan panggilan ke Messages</string>
   <string name="adapter.social.call.window_title">Jendela Rapat</string>
   <string name="adapter.social.call.cancelled">Panggilan dibatalkan.</string>
   <string name="adapter.social.call.declined">Panggilan ditolak.</string>
@@ -12,4 +13,5 @@
   <string name="adapter.social.call.declined_self">Panggilan ditolak.</string>
   <string name="adapter.social.call.cancel_failed">Panggilan tidak dapat dibatalkan.</string>
   <string name="adapter.social.call.decline_failed">Panggilan tidak dapat ditolak.</string>
+  <string name="adapter.social.call.leave_failed">Tidak dapat keluar dari panggilan dengan benar.</string>
 </resources>

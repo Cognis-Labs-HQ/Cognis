@@ -4,6 +4,7 @@
   <string name="adapter.social.call.ringing">{{user}} wird angerufen ...</string>
   <string name="adapter.social.call.hangup">Auflegen</string>
   <string name="adapter.social.call.move_to_pip">Anruf in Bild-im-Bild verschieben</string>
+  <string name="adapter.social.call.return_from_pip">Anruf zu Messages zurückholen</string>
   <string name="adapter.social.call.window_title">Meeting-Fenster</string>
   <string name="adapter.social.call.cancelled">Anruf abgebrochen.</string>
   <string name="adapter.social.call.declined">Anruf abgelehnt.</string>
@@ -12,4 +13,5 @@
   <string name="adapter.social.call.declined_self">Anruf abgelehnt.</string>
   <string name="adapter.social.call.cancel_failed">Der Anruf konnte nicht abgebrochen werden.</string>
   <string name="adapter.social.call.decline_failed">Der Anruf konnte nicht abgelehnt werden.</string>
+  <string name="adapter.social.call.leave_failed">Der Anruf konnte nicht ordnungsgemäß verlassen werden.</string>
 </resources>

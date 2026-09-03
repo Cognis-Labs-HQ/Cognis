@@ -62,9 +62,9 @@ Messages kini memeriksa panggilan berdering atau aktif yang sudah ada di setiap 
 
 Mulai panggilan dan jawaban notifikasi kini mempertahankan izin aktivasi pengguna sekali pakai selama pensinyalan asinkron, sehingga kedua peserta dapat memasang komponen Jitsi saat undangan menjadi aktif. Filter bilah samping modul juga mempertahankan keadaan tidak aktif tanpa bingkai ketika penyedia memuat gaya tombol bersama selama panggilan.
 
-## Peralihan PiP langsung yang stabil
+## Panggilan berulang dan PiP yang dapat dikembalikan
 
-Peralihan panggilan Messages kini mengambangkan host komponen—struktur pembungkus berbatas yang sama dengan Focus Control di Meetings—alih-alih jendela penyedia bagian dalam. Host memotong kontennya dan menggunakan jalur grid dengan minimum nol, sehingga Jitsi mengisi viewport PiP tanpa menambah tinggi konten melampaui dimensi pengontrol ukuran.
+Panggilan grup kini dimulai setelah undangan pertama menjawab, mengizinkan undangan lain bergabung kemudian, dan dilepas setelah peserta terakhir keluar agar tindakan kamera berikutnya memanggil semua orang lagi. Opsi pemunculan jendela mengambang dapat meminta kontrol tutup transparan sebagian; Messages menggunakannya untuk mengembalikan panggilan aktif yang sama dari PiP ke tahap komponen.
 
 ## Komit
 
@@ -87,3 +87,4 @@ Peralihan panggilan Messages kini mengambangkan host komponen—struktur pembung
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/59245f23
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/86cbe55e587061e6dd58927c20dd5c1fee530be9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7fa6ee9910ab1da664c9992dd88b5659fe0af400
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/930a3b084240205cd1e9ab4124e1bbfdbf6d2f52

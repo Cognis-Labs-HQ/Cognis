@@ -15,7 +15,7 @@
  * release.updateMinimumSize({ width: 320, height: 180 });
  *
  * @param {HTMLElement} element - Floating window to control.
- * @param {{handle?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number, width?: string, height?: string, right?: string, bottom?: string, zIndex?: number, portal?: boolean, topLayer?: boolean}} options
+ * @param {{handle?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number, width?: string, height?: string, right?: string, bottom?: string, zIndex?: number, portal?: boolean, topLayer?: boolean, closeButton?: {label: string, onClose: () => void}}} options
  * @returns {(() => void) & {updateMinimumSize: (size: {width: number, height: number}) => boolean}} Idempotent cleanup with a minimum-size updater.
  */
 import { uiCtx } from "./ui-ctx.js";
@@ -57,13 +57,24 @@ function movePreservingState(parent, element, before = null) {
     parent?.append(element);
 }
 
-function createFloatingWindowChrome(element) {
+function createFloatingWindowChrome(element, closeButton, release) {
     if (typeof document === "undefined" || !document.createElement) {
         return { toolbar: null, resizeHandles: [], remove: () => {} };
     }
     const toolbar = document.createElement("div");
     toolbar.className = "floating-window-toolbar";
     toolbar.setAttribute("aria-hidden", "true");
+    let closeControl = null;
+    if (closeButton?.label && typeof closeButton.onClose === "function") {
+        closeControl = document.createElement("button");
+        closeControl.type = "button";
+        closeControl.className = "floating-window-close btn-close btn-neutral";
+        closeControl.setAttribute("aria-label", closeButton.label);
+        closeControl.addEventListener("click", () => {
+            release();
+            closeButton.onClose();
+        });
+    }
     const createResizeHandle = (edge) => {
         const resizeHandle = document.createElement("div");
         resizeHandle.className = `floating-window-resize-handle floating-window-resize-handle--${edge}`;
@@ -91,11 +102,13 @@ function createFloatingWindowChrome(element) {
         createResizeHandle("bottom-right"),
     ];
     element.append(toolbar, ...resizeHandles);
+    if (closeControl) element.append(closeControl);
     return {
         toolbar,
         resizeHandles,
         remove: () => {
             toolbar.remove();
+            closeControl?.remove();
             for (const resizeHandle of resizeHandles) resizeHandle.remove();
         },
     };
@@ -115,6 +128,7 @@ export function makeFloatingWindow(
         zIndex = 1201,
         portal = true,
         topLayer = portal,
+        closeButton,
     } = {},
 ) {
     if (!element || !handle) {
@@ -150,7 +164,10 @@ export function makeFloatingWindow(
     if (portal && document.body && portalElement.parentNode !== document.body) {
         movePreservingState(document.body, portalElement);
     }
-    const chrome = createFloatingWindowChrome(element);
+    let releaseFloatingWindow = () => {};
+    const chrome = createFloatingWindowChrome(element, closeButton, () =>
+        releaseFloatingWindow(),
+    );
     element.classList.add("floating-window");
     handle.classList.add("floating-window-handle");
     chrome.toolbar?.classList.add("floating-window-handle");
@@ -527,6 +544,7 @@ export function makeFloatingWindow(
             movePreservingState(portalParent, portalElement, portalNextSibling);
         }
     };
+    releaseFloatingWindow = release;
     release.updateMinimumSize = updateMinimumSize;
     signal?.addEventListener("abort", release, { once: true });
     if (signal?.aborted) release();

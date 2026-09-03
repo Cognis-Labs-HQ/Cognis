@@ -4,6 +4,7 @@
   <string name="adapter.social.call.ringing">Ringing {{user}}...</string>
   <string name="adapter.social.call.hangup">Hang up</string>
   <string name="adapter.social.call.move_to_pip">Move call to picture in picture</string>
+  <string name="adapter.social.call.return_from_pip">Return call to Messages</string>
   <string name="adapter.social.call.window_title">Meeting Window</string>
   <string name="adapter.social.call.cancelled">Call cancelled.</string>
   <string name="adapter.social.call.declined">Call declined.</string>
@@ -12,4 +13,5 @@
   <string name="adapter.social.call.declined_self">Call declined.</string>
   <string name="adapter.social.call.cancel_failed">Could not cancel the call.</string>
   <string name="adapter.social.call.decline_failed">Could not decline the call.</string>
+  <string name="adapter.social.call.leave_failed">Could not leave the call cleanly.</string>
 </resources>

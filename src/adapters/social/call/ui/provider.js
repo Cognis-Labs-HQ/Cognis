@@ -100,10 +100,27 @@ async function createStage(call, signal) {
     let componentWindow = null;
     let releaseFloatingWindow = null;
     let isFloating = false;
+    let connected = false;
     let closeObserver = null;
-    const cleanup = async () => {
+    const cleanup = async ({ leave = true } = {}) => {
         closeObserver?.disconnect();
         releaseFloatingWindow?.();
+        if (connected && leave) {
+            connected = false;
+            try {
+                await updateCall(call.id, "leave");
+            } catch (error) {
+                console.error("[calls] Failed to leave call", {
+                    callId: call.id,
+                    roomId: call.roomId,
+                    error,
+                });
+                showToast(
+                    (await getCallI18n()).t("adapter.social.call.leave_failed"),
+                    { variant: "error" },
+                );
+            }
+        }
         await componentWindow?.discard?.();
         stage.remove();
         thread.classList.remove("messages-thread--call-active");
@@ -120,7 +137,7 @@ async function createStage(call, signal) {
         async () => {
             try {
                 await updateCall(call.id, "hangup");
-                await cleanup();
+                await cleanup({ leave: false });
                 announceRoomCall(call.roomId, false);
                 showToast(i18n.t("adapter.social.call.cancelled"), {
                     variant: "info",
@@ -147,6 +164,12 @@ async function createStage(call, signal) {
         isFloating: () => isFloating,
         markFloating() {
             isFloating = true;
+        },
+        markDocked() {
+            isFloating = false;
+        },
+        markConnected() {
+            connected = true;
         },
         setCloseObserver(value) {
             closeObserver = value;
@@ -186,6 +209,7 @@ async function mountProviderAction(
         activationPermit,
     });
     if (!componentWindow) return false;
+    callStage.markConnected();
     callStage.setComponentWindow(componentWindow);
     const windowElement = componentHost.querySelector(".component-page-window");
     if (!(windowElement instanceof HTMLElement)) {
@@ -217,6 +241,27 @@ async function mountProviderAction(
                 makeFloatingWindow(componentHost, {
                     portal: false,
                     topLayer: true,
+                    closeButton: {
+                        label: callStage.i18n.t(
+                            "adapter.social.call.return_from_pip",
+                        ),
+                        onClose() {
+                            callStage.setFloatingRelease(null);
+                            callStage.markDocked();
+                            callStage.stage.classList.remove(
+                                "call-stage--floating",
+                            );
+                            document
+                                .querySelector(".messages-thread")
+                                ?.classList.add("messages-thread--call-active");
+                            backButton.hidden = false;
+                            callButton?.classList.add("active");
+                            callButton?.setAttribute("aria-pressed", "true");
+                            if (callButton instanceof HTMLButtonElement) {
+                                callButton.disabled = false;
+                            }
+                        },
+                    },
                 }),
             );
             callStage.markFloating();
@@ -259,7 +304,7 @@ async function waitForAnswer(call, callStage, signal, activationPermit) {
             );
         }
         if (["ended", "expired"].includes(current.status)) {
-            await callStage.cleanup();
+            await callStage.cleanup({ leave: false });
             announceRoomCall(current.roomId, false);
             const i18n = await getCallI18n();
             const key =

@@ -48,6 +48,26 @@ test("the current room call reports ringing and active calls only", () => {
     assert.equal(store.getCurrentRoomCall("room-1"), null);
 });
 
+test("one answer starts a group call and the final departure releases it", () => {
+    const store = new CallStore();
+    const call = store.create({
+        roomId: "room-1",
+        callerAccountId: "caller",
+        participants: [
+            ...participants,
+            { accountId: "third", handle: "third", displayName: "Third" },
+        ],
+    });
+    assert.equal(store.answer(call.id, "callee")?.status, "active");
+    assert.deepEqual(call.joinedAccountIds, ["caller", "callee"]);
+    assert.equal(store.answer(call.id, "third")?.status, "active");
+    assert.deepEqual(call.joinedAccountIds, ["caller", "callee", "third"]);
+    assert.equal(store.leave(call.id, "callee")?.status, "active");
+    assert.equal(store.leave(call.id, "third")?.status, "active");
+    assert.equal(store.leave(call.id, "caller")?.status, "ended");
+    assert.equal(store.getCurrentRoomCall("room-1"), null);
+});
+
 test("unanswered calls expire after the ringing timeout", (testContext) => {
     let now = 1_000;
     testContext.mock.method(Date, "now", () => now);

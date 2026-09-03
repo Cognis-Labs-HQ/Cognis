@@ -15,6 +15,7 @@ export interface CallRecord {
     participants: CallParticipant[];
     status: CallStatus;
     answeredBy: string | null;
+    joinedAccountIds: string[];
     endedBy: string | null;
     createdAt: number;
     expiresAt: number;
@@ -44,6 +45,7 @@ export class CallStore {
             ...input,
             status: "ringing",
             answeredBy: null,
+            joinedAccountIds: [input.callerAccountId],
             endedBy: null,
             createdAt,
             expiresAt: createdAt + CALL_TIMEOUT_MILLISECONDS,
@@ -73,10 +75,28 @@ export class CallStore {
 
     answer(id: string, accountId: string): CallRecord | null {
         const call = this.get(id);
-        if (!call || call.status !== "ringing") return null;
+        if (!call || !["ringing", "active"].includes(call.status)) return null;
         if (call.callerAccountId === accountId) return null;
-        call.status = "active";
-        call.answeredBy = accountId;
+        if (call.status === "ringing") {
+            call.status = "active";
+            call.answeredBy = accountId;
+        }
+        if (!call.joinedAccountIds.includes(accountId)) {
+            call.joinedAccountIds.push(accountId);
+        }
+        return call;
+    }
+
+    leave(id: string, accountId: string): CallRecord | null {
+        const call = this.get(id);
+        if (!call || call.status !== "active") return null;
+        call.joinedAccountIds = call.joinedAccountIds.filter(
+            (joinedAccountId) => joinedAccountId !== accountId,
+        );
+        if (call.joinedAccountIds.length === 0) {
+            call.status = "ended";
+            call.endedBy = accountId;
+        }
         return call;
     }
 
