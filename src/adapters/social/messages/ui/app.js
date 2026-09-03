@@ -48,7 +48,11 @@ import { resolveMessageTemplateVariables } from "./message-templates.js";
 import { loadChatRoomKey, requireChatRoomKey } from "./chat-loading.js";
 import { createMessagesRoomState } from "./room-state.js";
 import { renderRoomList } from "./room-render.js";
-import { hasVoipProvider, startRoomCall } from "./voip.js";
+import {
+    hasVoipProvider,
+    resolveRoomCallAction,
+    startRoomCall,
+} from "./voip.js";
 
 const profileAvatars = () => {
     const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
@@ -148,7 +152,7 @@ export async function mount(root, { signal } = {}) {
                 // when the synthetic input event fires below.
                 // composerInputRef may be null before the first onRender fires;
                 // the instanceof guard safely skips the clear in that case
-                // (lines 232-239 below, where composerInputRef is assigned).
+                // (lines 296-299 below, where composerInputRef is assigned).
                 if (
                     persistedState.size === 0 &&
                     composerInputRef instanceof HTMLTextAreaElement
@@ -161,7 +165,24 @@ export async function mount(root, { signal } = {}) {
                 composerInputRef?.dispatchEvent(new Event("input"));
             }
         },
-        onStartCall: (room) => startRoomCall(room, currentAccountId),
+        resolveCallAction: (room) =>
+            resolveRoomCallAction(room, currentAccountId),
+        onStartCall: async (_room, action) => {
+            try {
+                const callStarted = await startRoomCall(action, { signal });
+                if (!callStarted) throw new Error("VoIP action was declined");
+            } catch (error) {
+                console.error("[messages] VoIP call action failed", {
+                    component: "social-messages",
+                    operation: "start_voip_call",
+                    roomId: roomState.getSelectedRoomId(),
+                    error,
+                });
+                showToast(i18n.t("module.social.messages.call_failed"), {
+                    variant: "error",
+                });
+            }
+        },
         showCallAction: hasVoipProvider(),
     });
 

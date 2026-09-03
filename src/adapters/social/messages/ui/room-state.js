@@ -40,6 +40,7 @@ export function createMessagesRoomState({
     requireRoomKey,
     resolveThreadRoomKey,
     onRoomOpened = async () => {},
+    resolveCallAction = async () => null,
     onStartCall = async () => {},
     showCallAction = false,
     lastOpenedRoomKey = "messages:last-opened-room",
@@ -60,6 +61,7 @@ export function createMessagesRoomState({
     let openingRoomId = null;
     let roomOpenPromise = null;
     let readyRoomId = null;
+    let selectedCallAction = null;
 
     function keyringAccessSuppressed() {
         return (
@@ -240,12 +242,25 @@ export function createMessagesRoomState({
                     : entry,
             );
         }
+        selectedCallAction = null;
+        if (showCallAction && room) {
+            try {
+                selectedCallAction = await resolveCallAction(room);
+            } catch (error) {
+                console.error("[messages] VoIP room capability check failed", {
+                    component: "social-messages",
+                    operation: "resolve_voip_room_action",
+                    roomId: String(room.id ?? ""),
+                    error,
+                });
+            }
+        }
         if (headerSlot && room) {
             headerSlot.innerHTML = renderThreadHeader(
                 room,
                 currentAccountId,
                 i18n,
-                { showCallAction },
+                { showCallAction: Boolean(selectedCallAction) },
             );
             void hydrateProfileAvatars(headerSlot);
             bindRoomHeaderEvents();
@@ -639,7 +654,9 @@ export function createMessagesRoomState({
         const callButton = document.getElementById("messages-room-call-btn");
         callButton?.addEventListener("click", async () => {
             const selectedRoom = getSelectedRoom();
-            if (selectedRoom) await onStartCall(selectedRoom);
+            if (selectedRoom && selectedCallAction) {
+                await onStartCall(selectedRoom, selectedCallAction);
+            }
         });
 
         const input = document.getElementById("messages-room-avatar-input");

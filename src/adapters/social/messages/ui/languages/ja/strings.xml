@@ -79,4 +79,5 @@
   <string name="adapter.social.messages.keyring_request_action_save">暗号鍵を保存する</string>
   <string name="adapter.social.messages.keyring_request_process">チャット {{roomId}}</string>
   <string name="module.social.messages.start_video_call">ビデオ通話を開始</string>
+  <string name="module.social.messages.call_failed">通話を開始できませんでした。</string>
 </resources>

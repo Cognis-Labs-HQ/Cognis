@@ -79,4 +79,5 @@
   <string name="adapter.social.messages.keyring_request_action_save">einen Verschlüsselungsschlüssel speichern für</string>
   <string name="adapter.social.messages.keyring_request_process">Chat {{roomId}}</string>
   <string name="module.social.messages.start_video_call">Videoanruf starten</string>
+  <string name="module.social.messages.call_failed">Der Anruf konnte nicht gestartet werden.</string>
 </resources>

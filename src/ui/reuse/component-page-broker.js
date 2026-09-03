@@ -116,7 +116,7 @@ export async function requestComponentPage(request) {
 /**
  * Mounts an eligible component page in a protected, caller-owned stage.
  *
- * @param {{componentUuid: string, routeId: string, elementId: string, mode?: string, context?: object, signal?: AbortSignal, borderless?: boolean}} request
+ * @param {{componentUuid: string, routeId: string, elementId: string, mode?: string, context?: object, signal?: AbortSignal, borderless?: boolean, removeStageOnDiscard?: boolean}} request
  * @returns {Promise<{elementId: string, ownerUuid: string, routeId: string, borderless: boolean, discard: () => Promise<void>} | null>} A mounted component-window handle or null.
  */
 export async function spawnComponentPage(request) {
@@ -217,6 +217,7 @@ export function installComponentPageBroker({
                 elementId,
                 signal,
                 borderless: input?.borderless === true,
+                removeStageOnDiscard: input?.removeStageOnDiscard === true,
             };
             data.requestValid =
                 ELEMENT_ID_PATTERN.test(elementId) &&
@@ -295,7 +296,11 @@ export function installComponentPageBroker({
                         discardOnCallerAbort,
                     );
                     data.windowElement.remove();
-                    if (!data.stage.querySelector?.(".component-page-window")) {
+                    if (data.request.removeStageOnDiscard) {
+                        data.stage.remove();
+                    } else if (
+                        !data.stage.querySelector?.(".component-page-window")
+                    ) {
                         data.stage.classList.remove(
                             "component-page-stage",
                             "component-page-stage--borderless",

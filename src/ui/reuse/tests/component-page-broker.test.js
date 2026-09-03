@@ -101,6 +101,9 @@ test("component windows stay disposable across activation and SPA navigation", a
         },
     };
     const componentStage = new FakeElement();
+    const componentStages = new Map([
+        ["meeting-whiteboard-stage", componentStage],
+    ]);
     const appPageMain = new FakeElement();
     componentStage.closest = (selector) =>
         selector === ".app-page__main" ? appPageMain : null;
@@ -108,8 +111,7 @@ test("component windows stay disposable across activation and SPA navigation", a
     appRoot.dataset.activePage = "meetings";
     globalThis.document = {
         createElement: () => new FakeElement(),
-        getElementById: (elementId) =>
-            elementId === "meeting-whiteboard-stage" ? componentStage : null,
+        getElementById: (elementId) => componentStages.get(elementId) ?? null,
         querySelector: (selector) => (selector === "#app" ? appRoot : null),
     };
     globalThis.fetch = async () => catalogResponse();
@@ -322,6 +324,20 @@ test("component windows stay disposable across activation and SPA navigation", a
         componentStage.classNames.has("component-page-stage--borderless"),
         false,
     );
+
+    const temporaryStageHost = new FakeElement();
+    const temporaryStage = new FakeElement();
+    temporaryStageHost.append(temporaryStage);
+    componentStages.set("temporary-call-stage", temporaryStage);
+    const temporaryWindow = await spawnComponentPage({
+        componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+        routeId: "core.dashboard",
+        elementId: "temporary-call-stage",
+        removeStageOnDiscard: true,
+    });
+    assert.ok(temporaryWindow);
+    await temporaryWindow.discard();
+    assert.equal(temporaryStageHost.children.length, 0);
     assert.equal(
         appPageMain.classNames.has("app-page__main--component-borderless"),
         false,
