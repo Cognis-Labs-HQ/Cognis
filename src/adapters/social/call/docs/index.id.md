@@ -13,3 +13,5 @@ Adapter Call diaktifkan otomatis ketika Messages dan penyedia browser `voip:star
 Kapabilitas `social:callUi` mengelola status undangan, batas waktu 45 detik, tautan jawab notifikasi, pemasangan komponen, penutupan panggilan, dan penyerahan ke penyedia.
 
 Panggilan masuk tidak dimasukkan ke daftar lonceng notifikasi. Panggilan tetap berada di area notifikasi singkat hingga dijawab, ditolak, atau kedaluwarsa, dengan kontrol Jawab hijau dan Tolak merah. Saat Messages terbuka, ruang terkait dipindahkan sementara ke posisi teratas daftar ruang. Penelepon menerima umpan balik yang berbeda saat membatalkan, penerima menolak, tidak ada jawaban, atau penyedia pertemuan menolak penyerahan.
+
+Setiap transisi panggilan disimpan sebagai peristiwa ruang dalam riwayat Messages, sehingga semua peserta melihat siapa yang memulai, menjawab, membatalkan, atau menolak panggilan serta kapan panggilan tidak dijawab. Browser memainkan nada dering sintetis masuk dan keluar yang berbeda secara berulang hingga undangan dijawab, ditolak, dibatalkan, atau kedaluwarsa.

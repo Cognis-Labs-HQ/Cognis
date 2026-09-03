@@ -59,7 +59,46 @@ export function createCallRoutes(
         actionUrl?: string;
         metadata?: Record<string, unknown>;
     }) => Promise<unknown>,
+    appendRoomEvent?: (input: {
+        roomId: string;
+        actorId: string;
+        eventType:
+            | "call_started"
+            | "call_answered"
+            | "call_cancelled"
+            | "call_declined"
+            | "call_missed";
+        subjectAccountId: string;
+        subjectHandle?: string | null;
+        subjectDisplayName?: string | null;
+    }) => Promise<unknown>,
 ) {
+    const recordedEvents = new Set<string>();
+    const recordEvent = async (
+        call: CallRecord,
+        eventType:
+            | "call_started"
+            | "call_answered"
+            | "call_cancelled"
+            | "call_declined"
+            | "call_missed",
+        actorId: string,
+    ) => {
+        const key = `${call.id}:${eventType}`;
+        if (recordedEvents.has(key)) return;
+        const actor = call.participants.find(
+            (participant) => participant.accountId === actorId,
+        );
+        await appendRoomEvent?.({
+            roomId: call.roomId,
+            actorId,
+            eventType,
+            subjectAccountId: actorId,
+            subjectHandle: actor?.handle,
+            subjectDisplayName: actor?.displayName,
+        });
+        recordedEvents.add(key);
+    };
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -102,6 +141,7 @@ export function createCallRoutes(
             const caller = room.participants.find(
                 (participant) => participant.accountId === claims.sub,
             );
+            await recordEvent(call, "call_started", claims.sub);
             await Promise.all(
                 room.participants
                     .filter(
@@ -150,16 +190,28 @@ export function createCallRoutes(
                 });
                 return true;
             }
+            await recordEvent(answered, "call_answered", claims.sub);
             sendJson(res, 200, { data: publicCall(answered) });
             return true;
         }
         if (req.method === "POST" && operation === "hangup") {
+            const ended = store.hangup(call.id, claims.sub)!;
+            await recordEvent(
+                ended,
+                claims.sub === ended.callerAccountId
+                    ? "call_cancelled"
+                    : "call_declined",
+                claims.sub,
+            );
             sendJson(res, 200, {
-                data: publicCall(store.hangup(call.id, claims.sub)!),
+                data: publicCall(ended),
             });
             return true;
         }
         if (req.method === "GET" && !operation) {
+            if (call.status === "expired") {
+                await recordEvent(call, "call_missed", call.callerAccountId);
+            }
             sendJson(res, 200, { data: publicCall(call) });
             return true;
         }

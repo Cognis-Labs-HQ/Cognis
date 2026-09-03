@@ -237,7 +237,12 @@ export class DbMessagesStore {
             | "member_joined"
             | "member_left"
             | "profile_display_name_changed"
-            | "profile_avatar_changed";
+            | "profile_avatar_changed"
+            | "call_started"
+            | "call_answered"
+            | "call_cancelled"
+            | "call_declined"
+            | "call_missed";
         subjectAccountId: string;
         subjectHandle?: string | null;
         subjectDisplayName?: string | null;

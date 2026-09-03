@@ -34,6 +34,10 @@ Adapter Call baru kini mengelola otorisasi ruang, status undangan, batas waktu 4
 
 Panggilan masuk kini tetap berada di area notifikasi singkat dengan kontrol Jawab hijau dan Tolak merah, bukan muncul di daftar lonceng notifikasi. Messages memindahkan ruang yang berdering ke posisi teratas bilah samping untuk sementara, lalu mengembalikan posisi aslinya ketika panggilan berakhir. Penelepon dan penerima memperoleh umpan balik khusus untuk pembatalan, penolakan, batas waktu, dan penolakan penyedia.
 
+## Riwayat panggilan dan nada dering
+
+Transisi siklus hidup panggilan kini disimpan sebagai peristiwa ruang yang terlihat oleh setiap peserta. Adapter Call memainkan nada masuk dan keluar berulang yang berbeda selama undangan berdering, dan penelepon yang membatalkan undangannya sendiri tidak lagi menerima pesan penolakan panggilan yang menyesatkan.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -45,3 +49,4 @@ Panggilan masuk kini tetap berada di area notifikasi singkat dengan kontrol Jawa
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0e7ff946
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/60ad8491
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bbcc6537
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/263c98cc

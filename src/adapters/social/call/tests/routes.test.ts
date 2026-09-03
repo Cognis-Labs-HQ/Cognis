@@ -43,6 +43,7 @@ const roomContext = {
 
 test("call creation validates room membership and dispatches an answer action", async () => {
     const notifications: Array<{ actionUrl?: string; category: string }> = [];
+    const roomEvents: Array<{ eventType: string }> = [];
     const route = createCallRoutes(
         new CallStore(),
         {
@@ -50,6 +51,7 @@ test("call creation validates room membership and dispatches an answer action", 
         } as never,
         async () => roomContext,
         async (notification) => notifications.push(notification),
+        async (event) => roomEvents.push(event),
     );
     const recorder = response();
     assert.equal(
@@ -64,6 +66,10 @@ test("call creation validates room membership and dispatches an answer action", 
     assert.equal(notifications.length, 1);
     assert.equal(notifications[0].category, "calls");
     assert.match(notifications[0].actionUrl ?? "", /answer=1/);
+    assert.deepEqual(
+        roomEvents.map((event) => event.eventType),
+        ["call_started"],
+    );
 });
 
 test("call creation rejects rooms the Messages capability does not authorize", async () => {

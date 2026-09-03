@@ -265,6 +265,16 @@ function formatRoomEventText(message, i18n) {
             .t("module.social.messages.event_avatar_changed")
             .replace("{name}", subjectLabel);
     }
+    const callEventKeys = {
+        call_started: "module.social.messages.event_call_started",
+        call_answered: "module.social.messages.event_call_answered",
+        call_cancelled: "module.social.messages.event_call_cancelled",
+        call_declined: "module.social.messages.event_call_declined",
+        call_missed: "module.social.messages.event_call_missed",
+    };
+    if (callEventKeys[eventType]) {
+        return i18n.t(callEventKeys[eventType]).replace("{name}", subjectLabel);
+    }
     return null;
 }
 

@@ -2,12 +2,19 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { createCall, getCall, updateCall } from "./client.js";
 import { showToast } from "/static/reuse/toast.js";
+import { startRingingTone } from "./tone-player.js";
 
 const CALL_UI_CAPABILITY = "social:callUi";
 const VOIP_PROVIDER_CAPABILITY = "voip:startCall";
 const POLL_INTERVAL_MILLISECONDS = 1_000;
 let activeCall = null;
 let callI18n = null;
+const inboundTones = new Map();
+
+function stopInboundTone(callId) {
+    inboundTones.get(callId)?.();
+    inboundTones.delete(callId);
+}
 
 async function getCallI18n() {
     callI18n ??= createI18n({
@@ -183,7 +190,7 @@ async function mountProviderAction(action, callStage, signal) {
 }
 
 async function waitForAnswer(call, callStage, signal) {
-    while (!signal?.aborted) {
+    while (!signal?.aborted && activeCall?.callId === call.id) {
         const current = await getCall(call.id);
         if (current.status === "active") {
             const action = await resolveProviderAction(current);
@@ -196,7 +203,9 @@ async function waitForAnswer(call, callStage, signal) {
             const key =
                 current.status === "expired"
                     ? "adapter.social.call.no_answer"
-                    : "adapter.social.call.declined";
+                    : current.endedBy === currentAccountId()
+                      ? "adapter.social.call.cancelled"
+                      : "adapter.social.call.declined";
             showToast(i18n.t(key), { variant: "warning" });
             return true;
         }
@@ -204,7 +213,7 @@ async function waitForAnswer(call, callStage, signal) {
             setTimeout(resolve, POLL_INTERVAL_MILLISECONDS),
         );
     }
-    return false;
+    return true;
 }
 
 async function resolveRoomCall(room) {
@@ -219,9 +228,17 @@ async function resolveRoomCall(room) {
 
 async function startRoomCall(action, { signal } = {}) {
     const call = await createCall(action.roomId);
+    const stopTone = startRingingTone("outbound");
     const callStage = await createStage(call, signal);
-    if (!callStage) return false;
-    return waitForAnswer(call, callStage, signal);
+    if (!callStage) {
+        stopTone();
+        return false;
+    }
+    try {
+        return await waitForAnswer(call, callStage, signal);
+    } finally {
+        stopTone();
+    }
 }
 
 async function answerRequestedCall({ signal } = {}) {
@@ -229,6 +246,7 @@ async function answerRequestedCall({ signal } = {}) {
     const callId = url.searchParams.get("call");
     if (!callId || url.searchParams.get("answer") !== "1") return false;
     const call = await updateCall(callId, "answer");
+    stopInboundTone(callId);
     const callStage = await createStage(call, signal);
     if (!callStage) return false;
     history.replaceState(
@@ -264,6 +282,22 @@ window.addEventListener("cognis:call-decline-requested", async (event) => {
         showToast(i18n.t("adapter.social.call.decline_failed"), {
             variant: "error",
         });
+    }
+});
+
+window.addEventListener("cognis:notification-arrival", (event) => {
+    const notification = event.detail?.notification;
+    if (notification?.category !== "calls") return;
+    const callId = String(notification.metadata?.callId ?? "");
+    if (!callId || inboundTones.has(callId)) return;
+    inboundTones.set(callId, startRingingTone("inbound"));
+});
+
+window.addEventListener("cognis:room-call-state", (event) => {
+    if (event.detail?.active) return;
+    for (const [callId, stopTone] of inboundTones) {
+        stopTone();
+        inboundTones.delete(callId);
     }
 });
 

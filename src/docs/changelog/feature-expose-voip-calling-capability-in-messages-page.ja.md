@@ -34,6 +34,10 @@ SPA スタイルシートの準備状態を、バージョン付き URL 全体�
 
 着信は通知ベルの一覧に表示せず、緑の応答操作と赤の拒否操作を備えた短時間通知領域に残るようになりました。Messages は着信中のルームを一時的にサイドバーの先頭へ移動し、通話終了時に元の位置へ戻します。発信者と受信者には、キャンセル、拒否、タイムアウト、プロバイダー拒否ごとの具体的なフィードバックが表示されます。
 
+## 通話履歴と呼び出し音
+
+通話ライフサイクルの状態変化がルームイベントとして保存され、すべての参加者に表示されるようになりました。Call アダプターは招待中に着信と発信で異なる音を繰り返し再生します。発信者が自分の招待をキャンセルした場合に、誤って通話拒否のメッセージが表示されることもなくなりました。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -45,3 +49,4 @@ SPA スタイルシートの準備状態を、バージョン付き URL 全体�
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0e7ff946
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/60ad8491
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bbcc6537
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/263c98cc

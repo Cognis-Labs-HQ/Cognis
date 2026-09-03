@@ -34,6 +34,10 @@ A new Call adapter now owns room authorization, invitation state, a 45-second un
 
 Incoming calls now remain in the transient-notification area with green Answer and red Decline controls instead of appearing in the notification-bell list. Messages temporarily promotes the ringing room to the top of its sidebar, then restores its original position when the call ends. Callers and recipients receive specific feedback for cancellation, rejection, timeout, and provider refusal.
 
+## Call history and ringing tones
+
+Call lifecycle transitions are now persisted as room events visible to every participant. The Call adapter plays distinct repeating inbound and outbound tones while an invitation is ringing, and a caller who cancels their own invitation no longer receives a misleading declined-call message.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -45,3 +49,4 @@ Incoming calls now remain in the transient-notification area with green Answer a
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0e7ff946
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/60ad8491
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bbcc6537
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/263c98cc

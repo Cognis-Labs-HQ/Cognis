@@ -61,6 +61,13 @@ export async function bootstrapSocialAdapter(
                 metadata?: Record<string, unknown>;
             }) => Promise<unknown>
         >("notify:dispatch");
+    type AppendCallEvent = Parameters<
+        NonNullable<Parameters<typeof createCallRoutes>[4]>
+    >[0];
+    const appendRoomEvent = (input: AppendCallEvent) =>
+        ctx.capabilities.get<(value: AppendCallEvent) => Promise<unknown>>(
+            "social:messages:appendCallEvent",
+        )?.(input) ?? Promise.resolve();
     ctx.capabilities.get<(id: string, label: string) => void>(
         "notify:registerCategory",
     )?.("calls", "Calls");
@@ -71,6 +78,7 @@ export async function bootstrapSocialAdapter(
             resolveRouteContext(routeContext),
             resolveRoom,
             dispatch,
+            appendRoomEvent,
         ),
         "social",
     );

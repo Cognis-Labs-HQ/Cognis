@@ -10,6 +10,10 @@ const callStyles = readFileSync(
     new URL("../ui/call.css", import.meta.url),
     "utf8",
 );
+const toneSource = readFileSync(
+    new URL("../ui/tone-player.js", import.meta.url),
+    "utf8",
+);
 
 test("Call UI rings before provider handoff and replaces conversation content", () => {
     assert.ok(
@@ -37,4 +41,12 @@ test("Call UI reports cancellation outcomes and room priority state", () => {
     assert.match(providerSource, /adapter\.social\.call\.no_answer/);
     assert.match(providerSource, /cognis:room-call-state/);
     assert.match(providerSource, /cognis:call-decline-requested/);
+    assert.match(providerSource, /current\.endedBy === currentAccountId\(\)/);
+});
+
+test("Call UI plays distinct inbound and outbound ringing tones", () => {
+    assert.match(providerSource, /startRingingTone\("outbound"\)/);
+    assert.match(providerSource, /startRingingTone\("inbound"\)/);
+    assert.match(toneSource, /createOscillator/);
+    assert.match(toneSource, /TONE_INTERVAL_MILLISECONDS/);
 });

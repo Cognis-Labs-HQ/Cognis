@@ -34,6 +34,10 @@ Ein neuer Call-Adapter verwaltet jetzt Raumberechtigung, Einladungsstatus, ein Z
 
 Eingehende Anrufe bleiben jetzt mit grüner Annehmen- und roter Ablehnen-Schaltfläche im Bereich für kurzlebige Benachrichtigungen, statt in der Liste der Benachrichtigungsglocke zu erscheinen. Messages verschiebt den klingelnden Raum vorübergehend an den Anfang der Seitenleiste und stellt seine ursprüngliche Position nach Anrufende wieder her. Anrufende und Empfangende erhalten gezielte Rückmeldungen zu Abbruch, Ablehnung, Zeitüberschreitung und verweigerter Anbieterübergabe.
 
+## Anrufverlauf und Klingeltöne
+
+Übergänge im Anruflebenszyklus werden jetzt als Raumereignisse gespeichert und sind für alle Teilnehmenden sichtbar. Der Call-Adapter spielt während einer klingelnden Einladung unterschiedliche, wiederholte Töne für eingehende und ausgehende Anrufe. Wer die eigene Einladung abbricht, erhält nicht länger fälschlich eine Meldung über einen abgelehnten Anruf.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -45,3 +49,4 @@ Eingehende Anrufe bleiben jetzt mit grüner Annehmen- und roter Ablehnen-Schaltf
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0e7ff946
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/60ad8491
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bbcc6537
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/263c98cc

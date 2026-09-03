@@ -13,3 +13,5 @@ Der Call-Adapter wird automatisch aktiviert, wenn Messages und ein Browser-Anbie
 Die Fähigkeit `social:callUi` verwaltet Einladungsstatus, 45-Sekunden-Zeitlimit, Antwortlinks in Benachrichtigungen, Komponentenmontage, Auflegen und Anbieterübergabe.
 
 Eingehende Anrufe erscheinen nicht in der Liste der Benachrichtigungsglocke. Sie bleiben bis zur Annahme, Ablehnung oder zum Ablauf im Bereich für kurzlebige Benachrichtigungen und bieten eine grüne Annehmen- sowie eine rote Ablehnen-Schaltfläche. Während Messages geöffnet ist, wird der zugehörige Raum vorübergehend an den Anfang der Raumliste verschoben. Anrufende erhalten unterschiedliche Rückmeldungen bei Abbruch, Ablehnung, ausbleibender Antwort oder verweigerter Übergabe durch den Meeting-Anbieter.
+
+Jeder Anrufübergang wird als Raumereignis im Messages-Verlauf gespeichert, sodass alle Teilnehmenden sehen, wer den Anruf gestartet, angenommen, abgebrochen oder abgelehnt hat und wann ein Anruf unbeantwortet blieb. Der Browser spielt unterschiedliche, wiederholte synthetisierte Klingeltöne für eingehende und ausgehende Anrufe, bis die Einladung angenommen, abgelehnt, abgebrochen oder abgelaufen ist.
