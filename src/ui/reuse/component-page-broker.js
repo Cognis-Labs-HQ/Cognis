@@ -117,7 +117,7 @@ export async function requestComponentPage(request) {
  * Mounts an eligible component page in a protected, caller-owned stage.
  *
  * @param {{componentUuid: string, routeId: string, elementId: string, mode?: string, context?: object, signal?: AbortSignal, borderless?: boolean, removeStageOnDiscard?: boolean}} request
- * @returns {Promise<{elementId: string, ownerUuid: string, routeId: string, borderless: boolean, discard: () => Promise<void>} | null>} A mounted component-window handle or null.
+ * @returns {Promise<{elementId: string, ownerUuid: string, routeId: string, borderless: boolean, restoreHostLayout: () => void, discard: () => Promise<void>} | null>} A mounted component-window handle or null.
  */
 export async function spawnComponentPage(request) {
     const result = await uiCtx.runFlow("spawn-component-page", request);
@@ -273,6 +273,12 @@ export function installComponentPageBroker({
             const releaseBorderlessHost = data.request.borderless
                 ? activateBorderlessHost(data.stage)
                 : () => {};
+            let hostLayoutRestored = false;
+            const restoreHostLayout = () => {
+                if (hostLayoutRestored) return;
+                hostLayoutRestored = true;
+                releaseBorderlessHost();
+            };
             let mountResult;
             let discarded = false;
             let discardOnCallerAbort;
@@ -290,7 +296,7 @@ export function installComponentPageBroker({
                         error,
                     });
                 } finally {
-                    releaseBorderlessHost();
+                    restoreHostLayout();
                     data.request.signal?.removeEventListener(
                         "abort",
                         discardOnCallerAbort,
@@ -319,6 +325,7 @@ export function installComponentPageBroker({
                 ownerUuid: data.request.componentUuid,
                 routeId: data.request.routeId,
                 borderless: data.request.borderless,
+                restoreHostLayout,
                 discard,
             };
             activeWindows.set(data.request.elementId, handle);

@@ -14,8 +14,13 @@ Modul eksternal kini dapat mendeklarasikan kapabilitas peramban pada plug-in nav
 
 Messages kini meminta tindakan kepada penyedia untuk setiap ruang. Penyedia dapat menyembunyikan panggilan, meminta jendela komponen milik host dengan konteks rapat, atau mengarahkan ke rapat yang sudah ada. Panggung komponen sementara dihapus setelah ditutup, sedangkan kegagalan peluncuran dicatat dan ditampilkan sebagai toast tanpa mengubah tinggi percakapan.
 
+## Panggilan sebaris berpindah rapi ke gambar-dalam-gambar
+
+Komponen panggilan kini terbuka di antara area tajuk utas dan daftar pesan, selaras dengan pendekatan jendela komponen tertanam pada papan tulis rapat. Kontrol kembali di kiri atas memindahkan panggilan ke gambar-dalam-gambar, memulihkan tata letak Messages yang normal, dan tidak meninggalkan panggung usang setelah panggilan ditutup.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/fddbcbf8999173159b88ee4efddf284e426b9a67
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9c16bf732cf74c071bc41201a303f57d3f561e30
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/69e21d58c8f04c27848c9b646672d6a436891d2c

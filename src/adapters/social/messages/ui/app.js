@@ -169,7 +169,10 @@ export async function mount(root, { signal } = {}) {
             resolveRoomCallAction(room, currentAccountId),
         onStartCall: async (_room, action) => {
             try {
-                const callStarted = await startRoomCall(action, { signal });
+                const callStarted = await startRoomCall(action, {
+                    signal,
+                    pipLabel: i18n.t("module.social.messages.move_call_to_pip"),
+                });
                 if (!callStarted) throw new Error("VoIP action was declined");
             } catch (error) {
                 console.error("[messages] VoIP call action failed", {

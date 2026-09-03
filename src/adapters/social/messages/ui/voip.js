@@ -80,7 +80,7 @@ export async function resolveRoomCallAction(room, currentAccountId) {
     );
 }
 
-export async function startRoomCall(action, { signal } = {}) {
+export async function startRoomCall(action, { signal, pipLabel = "" } = {}) {
     if (action?.action === "navigate") {
         const navigate = uiCtx.capabilities.get("ui:navigate");
         if (typeof navigate !== "function") return false;
@@ -92,9 +92,18 @@ export async function startRoomCall(action, { signal } = {}) {
     if (typeof spawn !== "function") return false;
     nextCallStageId += 1;
     const elementId = `messages-voip-stage-${nextCallStageId}`;
+    const headerSlot = document.getElementById("messages-thread-header-slot");
+    const threadList = document.getElementById("messages-thread-list");
+    if (
+        !headerSlot ||
+        !threadList ||
+        headerSlot.parentElement !== threadList.parentElement
+    )
+        return false;
     const stage = document.createElement("section");
     stage.id = elementId;
-    document.body.append(stage);
+    stage.className = "messages-voip-stage";
+    threadList.before(stage);
     try {
         const handle = await spawn({
             componentUuid: action.componentUuid,
@@ -106,8 +115,37 @@ export async function startRoomCall(action, { signal } = {}) {
             borderless: action.borderless,
             removeStageOnDiscard: true,
         });
-        if (!handle) stage.remove();
-        return Boolean(handle);
+        if (!handle) {
+            stage.remove();
+            return false;
+        }
+        const componentWindow = stage.querySelector(".component-page-window");
+        const makeFloatingWindow = uiCtx.capabilities.get(
+            "ui:makeFloatingWindow",
+        );
+        if (
+            componentWindow instanceof HTMLElement &&
+            typeof makeFloatingWindow === "function"
+        ) {
+            const pipButton = document.createElement("button");
+            pipButton.type = "button";
+            pipButton.className = "messages-voip-pip-button btn-neutral";
+            pipButton.textContent = "<";
+            pipButton.title = pipLabel;
+            pipButton.setAttribute("aria-label", pipLabel);
+            pipButton.addEventListener(
+                "click",
+                () => {
+                    makeFloatingWindow(componentWindow, { signal });
+                    handle.restoreHostLayout?.();
+                    stage.hidden = true;
+                    pipButton.remove();
+                },
+                { signal },
+            );
+            componentWindow.prepend(pipButton);
+        }
+        return true;
     } catch (error) {
         stage.remove();
         throw error;

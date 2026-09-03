@@ -310,6 +310,11 @@ test("component windows stay disposable across activation and SPA navigation", a
         top: 48,
         behavior: "auto",
     });
+    componentWindow.restoreHostLayout();
+    assert.equal(
+        appPageMain.classNames.has("app-page__main--component-borderless"),
+        false,
+    );
 
     assert.equal(
         await uiCtx.capabilities.get("component-pages:discard")(

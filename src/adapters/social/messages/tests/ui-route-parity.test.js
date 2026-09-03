@@ -148,6 +148,9 @@ test("messages offers provider-neutral VoIP calling only when supplied", () => {
     assert.match(VOIP_SOURCE, /component-pages:spawn/);
     assert.match(VOIP_SOURCE, /ui:navigate/);
     assert.match(VOIP_SOURCE, /removeStageOnDiscard: true/);
+    assert.match(VOIP_SOURCE, /threadList\.before\(stage\)/);
+    assert.match(VOIP_SOURCE, /messages-voip-pip-button btn-neutral/);
+    assert.match(VOIP_SOURCE, /handle\.restoreHostLayout\?\.\(\)/);
     assert.match(VOIP_SOURCE, /room\.members/);
     assert.match(ROOM_STATE_SOURCE, /await resolveCallAction\(room\)/);
     assert.match(
