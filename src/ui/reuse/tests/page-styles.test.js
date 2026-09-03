@@ -59,3 +59,55 @@ test("shared button styles survive Meetings route reconciliation", async (testCo
     assert.equal(buttonStylesheet.dataset.pageStylesheet, undefined);
     assert.equal(meetingsStylesheet.removed, true);
 });
+
+test("versioned route styles reload after Meetings unloads them", async (testContext) => {
+    const pageBuilderPath = "/static/styles/page-builder.css?v=development";
+    const stylesheets = [createStylesheet(pageBuilderPath)];
+    let appendedStylesheets = 0;
+    globalThis.window = { location: { origin: "http://localhost" } };
+    globalThis.document = {
+        createElement() {
+            const listeners = new Map();
+            return {
+                dataset: {},
+                addEventListener(type, listener) {
+                    listeners.set(type, listener);
+                },
+                dispatchLoad() {
+                    listeners.get("load")?.();
+                },
+            };
+        },
+        head: {
+            appendChild(stylesheet) {
+                appendedStylesheets += 1;
+                stylesheet.href = new URL(
+                    stylesheet.href,
+                    window.location.origin,
+                ).href;
+                stylesheet.remove = () => {
+                    stylesheet.removed = true;
+                };
+                stylesheets.push(stylesheet);
+                stylesheet.dispatchLoad();
+            },
+            querySelectorAll() {
+                return stylesheets.filter((stylesheet) => !stylesheet.removed);
+            },
+        },
+    };
+    testContext.after(() => {
+        delete globalThis.document;
+        delete globalThis.window;
+    });
+
+    const commitMeetingsStyles = await preparePageStylesheets([
+        pageBuilderPath,
+    ]);
+    commitMeetingsStyles();
+    const commitWithoutPageBuilder = await preparePageStylesheets([]);
+    commitWithoutPageBuilder();
+    await preparePageStylesheets([pageBuilderPath]);
+
+    assert.equal(appendedStylesheets, 1);
+});

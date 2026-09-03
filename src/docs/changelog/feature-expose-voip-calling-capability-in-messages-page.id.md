@@ -22,6 +22,10 @@ Komponen panggilan kini terbuka di antara area tajuk utas dan daftar pesan, sela
 
 Gaya tombol konsekuensi bersama kini berada dalam lembar gaya pakai ulang tersendiri dan tetap dimuat untuk shell dasbor. Saat meninggalkan Meetings, hanya gaya khusus rutenya yang dibongkar sehingga tombol netral pada menu samping dan tindakan mempertahankan bingkai, warna, status sorot, dan status nonaktif di setiap halaman tujuan.
 
+## Gaya berversi dimuat ulang setelah pembersihan SPA
+
+Kesiapan lembar gaya SPA kini disimpan berdasarkan jalur yang dinormalisasi, bukan URL berversi lengkap. Ketika CSS rute dihapus saat meninggalkan Meetings, halaman berikutnya dapat memuat ulang lembar gaya page-builder berversi yang sama alih-alih memakai promise lama yang sudah selesai dan dirender dengan gaya yang tidak lengkap.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -29,3 +33,4 @@ Gaya tombol konsekuensi bersama kini berada dalam lembar gaya pakai ulang tersen
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9c16bf732cf74c071bc41201a303f57d3f561e30
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/69e21d58c8f04c27848c9b646672d6a436891d2c
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2b179ef3cd20fab51af1eac5fa36506bf46021c6
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/3b62797540e433c07ee81751a58e327085f01739

@@ -22,6 +22,10 @@ Call components now open between the thread header area and message list, matchi
 
 Shared consequence-button styles now live in their own reusable stylesheet and remain persistent for the dashboard shell. Leaving Meetings unloads only its route-specific styles, so neutral side-menu and action buttons retain their borders, colors, hover states, and disabled states on every destination page.
 
+## Versioned styles reload after SPA cleanup
+
+SPA stylesheet readiness is now keyed by normalized path rather than the full versioned URL. When leaving Meetings removes route CSS, a later page can load the same versioned page-builder stylesheet again instead of reusing a stale resolved promise and rendering with incomplete styles.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -29,3 +33,4 @@ Shared consequence-button styles now live in their own reusable stylesheet and r
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9c16bf732cf74c071bc41201a303f57d3f561e30
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/69e21d58c8f04c27848c9b646672d6a436891d2c
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2b179ef3cd20fab51af1eac5fa36506bf46021c6
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/3b62797540e433c07ee81751a58e327085f01739

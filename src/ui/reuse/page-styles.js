@@ -38,6 +38,10 @@ const _managedPageStylesheets = new Set();
 const _persistentStylesheets = new Set();
 let _initialPageStylesheetsRegistered = false;
 
+function stylesheetPathname(href) {
+    return new URL(href, window.location.origin).pathname;
+}
+
 function registerInitialPageStylesheets() {
     if (_initialPageStylesheetsRegistered) return;
     _initialPageStylesheetsRegistered = true;
@@ -51,18 +55,19 @@ function registerInitialPageStylesheets() {
 }
 
 export function ensurePageStylesheet(href) {
-    if (_pending.has(href)) return _pending.get(href);
+    const pathname = stylesheetPathname(href);
+    if (_pending.has(pathname)) return _pending.get(pathname);
 
-    const existing = document.head.querySelector(
-        `link[rel="stylesheet"][href="${href}"]`,
-    );
+    const existing = [
+        ...document.head.querySelectorAll('link[rel="stylesheet"][href]'),
+    ].find((link) => stylesheetPathname(link.href) === pathname);
     if (existing) {
         const ready = existing.sheet
             ? Promise.resolve()
             : new Promise((resolve) =>
                   existing.addEventListener("load", resolve, { once: true }),
               );
-        _pending.set(href, ready);
+        _pending.set(pathname, ready);
         return ready;
     }
 
@@ -82,7 +87,7 @@ export function ensurePageStylesheet(href) {
         });
     });
     document.head.appendChild(link);
-    _pending.set(href, ready);
+    _pending.set(pathname, ready);
     return ready;
 }
 
