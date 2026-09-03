@@ -131,8 +131,8 @@ export async function requestComponentPage(request) {
 /**
  * Mounts an eligible component page in a protected, caller-owned stage.
  *
- * @param {{componentUuid: string, routeId: string, elementId: string, mode?: string, context?: object, signal?: AbortSignal, borderless?: boolean, removeStageOnDiscard?: boolean, activationPermit?: object}} request
- * @returns {Promise<{elementId: string, ownerUuid: string, routeId: string, borderless: boolean, restoreHostLayout: () => void, retainAcrossCallerAbort: () => void, discard: () => Promise<void>} | null>} A mounted component-window handle or null.
+ * @param {{componentUuid: string, routeId: string, elementId: string, mode?: string, context?: object, signal?: AbortSignal, borderless?: boolean, removeStageOnDiscard?: boolean, activationPermit?: object, allowNavigation?: boolean}} request
+ * @returns {Promise<{elementId: string, ownerUuid: string, routeId: string, borderless: boolean, restoreHostLayout: () => void, setNavigationAllowed: (allowed: boolean) => boolean, discard: () => Promise<void>} | null>} A mounted component-window handle or null.
  */
 export async function spawnComponentPage(request) {
     const result = await uiCtx.runFlow("spawn-component-page", request);
@@ -240,6 +240,7 @@ export function installComponentPageBroker({
                 borderless: input?.borderless === true,
                 removeStageOnDiscard: input?.removeStageOnDiscard === true,
                 activationPermit: input?.activationPermit ?? null,
+                allowNavigation: input?.allowNavigation === true,
             };
             data.requestValid =
                 ELEMENT_ID_PATTERN.test(elementId) &&
@@ -308,7 +309,7 @@ export function installComponentPageBroker({
             let mountResult;
             let discarded = false;
             let discardOnCallerAbort;
-            let retainedAcrossCallerAbort = false;
+            let navigationAllowed = false;
             const discard = async () => {
                 if (discarded) return;
                 discarded = true;
@@ -355,14 +356,24 @@ export function installComponentPageBroker({
                 restoreHostLayout,
                 discard,
                 retainedAcrossNavigation: false,
-                retainAcrossCallerAbort() {
-                    if (retainedAcrossCallerAbort) return;
-                    retainedAcrossCallerAbort = true;
-                    handle.retainedAcrossNavigation = true;
-                    data.request.signal?.removeEventListener(
-                        "abort",
-                        discardOnCallerAbort,
-                    );
+                setNavigationAllowed(allowed) {
+                    if (allowed && !data.request.allowNavigation) return false;
+                    navigationAllowed = allowed;
+                    handle.retainedAcrossNavigation = allowed;
+                    if (allowed) {
+                        data.request.signal?.removeEventListener(
+                            "abort",
+                            discardOnCallerAbort,
+                        );
+                    } else {
+                        data.request.signal?.addEventListener(
+                            "abort",
+                            discardOnCallerAbort,
+                            { once: true },
+                        );
+                        if (data.request.signal?.aborted) void discard();
+                    }
+                    return navigationAllowed;
                 },
             };
             activeWindows.set(data.request.elementId, handle);

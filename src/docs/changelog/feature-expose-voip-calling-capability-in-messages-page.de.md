@@ -64,7 +64,7 @@ Anrufstart und Benachrichtigungsantwort bewahren nun eine einmal verwendbare Ben
 
 ## Wiederverwendbare Anrufe und rückführbares PiP
 
-Gruppenanrufe starten jetzt, sobald die erste eingeladene Person antwortet, lassen spätere Beitritte zu und werden nach dem Verlassen des letzten Teilnehmers freigegeben, sodass die nächste Kameraaktion wieder alle anruft. Floating-Window-Startoptionen können eine halbtransparente Schließen-Schaltfläche anfordern; Messages führt damit denselben aktiven Anruf aus PiP zur Komponentenoberfläche zurück.
+Gruppenanrufe starten jetzt, sobald die erste eingeladene Person antwortet, lassen spätere Beitritte zu und werden nach dem Verlassen des letzten Teilnehmers freigegeben, sodass die nächste Kameraaktion wieder alle anruft. Floating-Window-Startoptionen können eine halbtransparente Schließen-Schaltfläche anfordern; Messages führt damit denselben aktiven Anruf aus PiP zur Komponentenoberfläche zurück. Das vom Anbieter deklarierte `allowNavigation` wird jetzt nur berücksichtigt, solange der Anruf als Bild-im-Bild schwebt, und beim Zurückkehren zur eingebetteten Ansicht wieder entzogen.
 
 ## Commits
 
@@ -88,3 +88,4 @@ Gruppenanrufe starten jetzt, sobald die erste eingeladene Person antwortet, lass
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/86cbe55e587061e6dd58927c20dd5c1fee530be9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7fa6ee9910ab1da664c9992dd88b5659fe0af400
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/930a3b084240205cd1e9ab4124e1bbfdbf6d2f52
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/d4306538a8b51362f0c603c84c280eb3c00ce18d

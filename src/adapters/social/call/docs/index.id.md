@@ -27,3 +27,5 @@ Saat komponen aktif dipindahkan ke gambar-dalam-gambar, penyedia tetap terpasang
 Panggilan aktif mencatat akun yang sedang bergabung. Penelepon dan penjawab pertama sudah cukup untuk mengaktifkan panggilan grup; undangan lain dapat bergabung setelahnya. Pembongkaran penyedia membuat akun lokal keluar, dan panggilan dilepas setelah akun terakhir keluar, sehingga tindakan kamera dapat membuat undangan baru dan memberi tahu semua peserta ruang lainnya.
 
 Penyedia komponen mungkin baru selesai diatasi setelah klik awal berakhir. Karena itu, UI Panggilan menangkap izin pemunculan komponen sekali pakai milik inti secara sinkron saat Mulai atau Jawab dan meneruskannya ke pemasangan komponen berikutnya. Izin berakhir setelah 60 detik dan tidak dapat mengotorisasi jendela kedua.
+
+Penyedia dapat menetapkan `allowNavigation: true` pada tindakan komponennya. UI Panggilan meneruskan izin tersebut saat memunculkan komponen dan memindahkan host PiP ke shell persisten, tetapi baru mengaktifkan retensi navigasi setelah panggilan memasuki PiP; mengembalikan panggilan ke Messages segera memulihkan pembatasan navigasi halaman pemanggil.

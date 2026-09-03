@@ -64,7 +64,7 @@ Call starts and notification answers now preserve a single-use user-activation p
 
 ## Reusable calls and returnable PiP
 
-Group calls now start after the first invitee answers, allow later invitees to join, and release after the final joined participant leaves so the next camera action rings everyone again. Floating-window spawn options can request a translucent close control; Messages uses it to return the same live call from PiP to the component stage.
+Group calls now start after the first invitee answers, allow later invitees to join, and release after the final joined participant leaves so the next camera action rings everyone again. Floating-window spawn options can request a translucent close control; Messages uses it to return the same live call from PiP to the component stage. Provider-declared `allowNavigation` is now honored only while the call is floating in PiP and is revoked when the call returns inline.
 
 ## Commits
 
@@ -88,3 +88,4 @@ Group calls now start after the first invitee answers, allow later invitees to j
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/86cbe55e587061e6dd58927c20dd5c1fee530be9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7fa6ee9910ab1da664c9992dd88b5659fe0af400
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/930a3b084240205cd1e9ab4124e1bbfdbf6d2f52
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/d4306538a8b51362f0c603c84c280eb3c00ce18d

@@ -207,6 +207,7 @@ async function mountProviderAction(
         borderless: action.borderless !== false,
         removeStageOnDiscard: true,
         activationPermit,
+        allowNavigation: action.allowNavigation === true,
     });
     if (!componentWindow) return false;
     callStage.markConnected();
@@ -239,7 +240,7 @@ async function mountProviderAction(
                 return;
             callStage.setFloatingRelease(
                 makeFloatingWindow(componentHost, {
-                    portal: false,
+                    portal: action.allowNavigation === true,
                     topLayer: true,
                     closeButton: {
                         label: callStage.i18n.t(
@@ -248,6 +249,7 @@ async function mountProviderAction(
                         onClose() {
                             callStage.setFloatingRelease(null);
                             callStage.markDocked();
+                            componentWindow.setNavigationAllowed?.(false);
                             callStage.stage.classList.remove(
                                 "call-stage--floating",
                             );
@@ -265,7 +267,7 @@ async function mountProviderAction(
                 }),
             );
             callStage.markFloating();
-            componentWindow.retainAcrossCallerAbort?.();
+            componentWindow.setNavigationAllowed?.(true);
             componentWindow.restoreHostLayout?.();
             backButton.hidden = true;
             callStage.stage.classList.add("call-stage--floating");

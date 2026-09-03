@@ -401,8 +401,9 @@ test("component windows stay disposable across activation and SPA navigation", a
         routeId: "core.dashboard",
         elementId: "meeting-whiteboard-stage",
         signal: navigationController.signal,
+        allowNavigation: true,
     });
-    retainedWindow.retainAcrossCallerAbort();
+    assert.equal(retainedWindow.setNavigationAllowed(true), true);
     window.dispatchEvent({ type: "cognis:route-will-change" });
     navigationController.abort();
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -413,12 +414,13 @@ test("component windows stay disposable across activation and SPA navigation", a
 
     releasedMount = false;
     const disposableNavigationController = new AbortController();
-    await spawnComponentPage({
+    const navigationRestrictedWindow = await spawnComponentPage({
         componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
         routeId: "core.dashboard",
         elementId: "meeting-whiteboard-stage",
         signal: disposableNavigationController.signal,
     });
+    assert.equal(navigationRestrictedWindow.setNavigationAllowed(true), false);
     window.dispatchEvent({ type: "cognis:route-will-change" });
     await new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(releasedMount, true);

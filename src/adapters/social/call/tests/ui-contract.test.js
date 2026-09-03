@@ -37,12 +37,18 @@ test("Call toolbar keeps its arrow separate from mounted meeting content", () =>
     assert.match(providerSource, /backButton\.hidden = true/);
     assert.match(providerSource, /callButton\.disabled = true/);
     assert.match(providerSource, /cognis:call-moved-to-pip/);
-    assert.match(providerSource, /portal: false/);
+    assert.match(providerSource, /portal: action\.allowNavigation === true/);
     assert.match(providerSource, /topLayer: true/);
     assert.match(providerSource, /call-stage--floating/);
     assert.match(providerSource, /closeButton:/);
     assert.match(providerSource, /markDocked/);
     assert.match(providerSource, /updateCall\(call\.id, "leave"\)/);
+    assert.match(
+        providerSource,
+        /allowNavigation: action\.allowNavigation === true/,
+    );
+    assert.match(providerSource, /setNavigationAllowed\?\.\(true\)/);
+    assert.match(providerSource, /setNavigationAllowed\?\.\(false\)/);
     assert.match(providerSource, /new MutationObserver/);
     assert.match(providerSource, /removeStageOnDiscard: true/);
     assert.ok(

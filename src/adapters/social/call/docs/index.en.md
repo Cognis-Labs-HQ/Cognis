@@ -25,3 +25,5 @@ Moving an active component to picture-in-picture keeps the provider mounted in i
 An active call records the accounts currently joined. The caller and first respondent are sufficient to activate a group call; additional invitees may join afterward. Provider teardown makes the local account leave, and the call is released after the final joined account leaves, allowing the camera action to create a fresh invitation and notify every other room participant.
 
 Component providers may finish resolving only after the original click has returned. The Call UI therefore captures the core’s single-use component spawn permit synchronously during Start or Answer and passes it to the eventual component mount. The permit expires after 60 seconds and cannot authorize a second window.
+
+Providers may set `allowNavigation: true` on their component action. The Call UI passes that permission into the component spawn and moves the PiP host into the persistent shell, but enables navigation retention only after the call enters PiP; returning the call to Messages immediately restores the caller-page navigation restriction.

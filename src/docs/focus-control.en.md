@@ -59,6 +59,8 @@ The stage ID may contain only letters, digits, dots, underscores, colons, or hyp
 
 For synchronized Focus Control, declare a `module-route` loader whose `moduleId` is that UUID and whose `routeId` is the eligible route ID. A collaboration provider must still authorize the request, create or resolve the whiteboard through server-side ctx capabilities, grant meeting participants access, and publish only stable resource identifiers through `focus:transport`.
 
+A spawn request may set `allowNavigation: true` to authorize its handle to retain the mounted component during SPA navigation. Authorization alone does not retain it: the owning surface must call `setNavigationAllowed(true)` when it enters a navigation-safe presentation such as PiP, and call `setNavigationAllowed(false)` when it returns inline.
+
 ## Borderless component windows
 
 Pass `borderless: true` to `component-pages:spawn` when the embedded page must touch every edge of its caller-owned stage. Cognis removes the component window's outer margin, padding, border, and radius, sizes it and its direct content root to the full parent, and forwards `borderless: true` to the provider mount options. Internal content spacing remains the provider's responsibility.
