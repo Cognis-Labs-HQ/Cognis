@@ -175,6 +175,7 @@ async function mountProviderAction(action, callStage, signal) {
         context: action.context ?? {},
         signal,
         borderless: action.borderless !== false,
+        removeStageOnDiscard: true,
     });
     if (!componentWindow) return false;
     callStage.setComponentWindow(componentWindow);

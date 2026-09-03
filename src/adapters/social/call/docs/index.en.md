@@ -21,3 +21,5 @@ While the newest invitation is ringing, its room event is an actionable call car
 Moving an accepted component to picture-in-picture is idempotent: subsequent arrow activation does not recreate or resize the floating window. The first activation hides the arrow and inline stage, restores and refreshes the conversation, and disables the room camera action until the component closes. Active call cards use a shaded surface and animated border; completed call events never retain answer or decline controls.
 
 After a call component is moved to picture-in-picture, it is portaled to the persistent document shell and retained across caller-page aborts and SPA route cleanup. Explicit component closure still performs full cleanup and restores its original host when that host remains connected.
+
+The retained PiP portal keeps the broker-owned component stage around the window, including its stable element ID. Providers such as Jitsi can therefore resolve their containing stage and invoke the host `component-pages:discard` capability when a participant leaves, is kicked, or the conference terminates; disposable call stages are removed after that discard.

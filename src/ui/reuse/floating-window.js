@@ -121,7 +121,12 @@ export function makeFloatingWindow(
     const previousPopoverValue = element.getAttribute?.("popover");
     let shownInTopLayer = false;
     const originalParent = element.parentNode ?? element.parentElement;
-    const originalNextSibling = element.nextSibling;
+    const portalElement = originalParent?.matches?.(".component-page-stage")
+        ? originalParent
+        : element;
+    const portalParent =
+        portalElement.parentNode ?? portalElement.parentElement;
+    const portalNextSibling = portalElement.nextSibling;
     const previousStyles = Object.fromEntries(
         MANAGED_STYLE_PROPERTIES.map((property) => [
             property,
@@ -130,8 +135,8 @@ export function makeFloatingWindow(
     );
 
     ensureFloatingWindowStyles();
-    if (portal && document.body && element.parentNode !== document.body) {
-        document.body.append(element);
+    if (portal && document.body && portalElement.parentNode !== document.body) {
+        document.body.append(portalElement);
     }
     const chrome = createFloatingWindowChrome(element);
     element.classList.add("floating-window");
@@ -506,8 +511,8 @@ export function makeFloatingWindow(
         } else {
             element.removeAttribute?.("popover");
         }
-        if (portal && originalParent && originalParent.isConnected !== false) {
-            originalParent.insertBefore(element, originalNextSibling);
+        if (portal && portalParent && portalParent.isConnected !== false) {
+            portalParent.insertBefore(portalElement, portalNextSibling);
         }
     };
     release.updateMinimumSize = updateMinimumSize;

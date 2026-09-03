@@ -50,6 +50,10 @@ Moving a meeting to picture-in-picture now happens only once, preserving the use
 
 Floating component windows are now portaled into the persistent document shell and can explicitly detach from their caller page lifecycle. SPA navigation discards ordinary component windows but preserves retained PiP calls until they are explicitly closed. Popover teardown now verifies top-layer state before hiding, preventing the browser NotSupportedError when a beforetoggle handler changes the popover state.
 
+## Provider-owned call teardown
+
+Retained PiP calls now portal their broker-owned stage together with the component window, preserving the stable stage ID expected by Jitsi Meet. When a participant leaves, is kicked, or the conference ends, Jitsi can resolve the parent stage and invoke `component-pages:discard`; Cognis then removes the disposable call stage without waiting for SPA cleanup.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -65,3 +69,4 @@ Floating component windows are now portaled into the persistent document shell a
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/92f46be7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/53dee857

@@ -50,6 +50,10 @@ Pemindahan pertemuan ke gambar-dalam-gambar kini hanya dilakukan sekali sehingga
 
 Jendela komponen mengambang kini dipindahkan ke shell dokumen persisten dan dapat melepaskan diri secara eksplisit dari siklus hidup halaman pemanggil. Navigasi SPA membuang jendela komponen biasa tetapi mempertahankan panggilan PiP hingga ditutup secara eksplisit. Pembongkaran popover kini memeriksa status lapisan atas sebelum menyembunyikan, sehingga mencegah NotSupportedError ketika beforetoggle mengubah status popover.
 
+## Pembongkaran panggilan milik penyedia
+
+Panggilan PiP yang dipertahankan kini memindahkan panggung milik broker bersama jendela komponen, sehingga ID panggung stabil yang diharapkan Jitsi Meet tetap tersedia. Ketika peserta keluar, dikeluarkan, atau konferensi berakhir, Jitsi dapat menemukan panggung induk dan memanggil `component-pages:discard`; Cognis kemudian menghapus panggung panggilan sementara tanpa menunggu pembersihan SPA.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -65,3 +69,4 @@ Jendela komponen mengambang kini dipindahkan ke shell dokumen persisten dan dapa
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/92f46be7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/53dee857

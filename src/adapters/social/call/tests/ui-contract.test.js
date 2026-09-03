@@ -38,6 +38,7 @@ test("Call toolbar keeps its arrow separate from mounted meeting content", () =>
     assert.match(providerSource, /callButton\.disabled = true/);
     assert.match(providerSource, /cognis:call-moved-to-pip/);
     assert.match(providerSource, /new MutationObserver/);
+    assert.match(providerSource, /removeStageOnDiscard: true/);
 });
 
 test("Call UI reports cancellation outcomes and room priority state", () => {

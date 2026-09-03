@@ -50,6 +50,10 @@ Das Verschieben eines Meetings in Bild-in-Bild erfolgt jetzt nur einmal und bewa
 
 Schwebende Komponentenfenster werden jetzt in die dauerhafte Dokumentoberfläche verschoben und können sich ausdrücklich vom Lebenszyklus ihrer aufrufenden Seite lösen. SPA-Navigation verwirft gewöhnliche Komponentenfenster, behält jedoch gehaltene PiP-Anrufe bis zum ausdrücklichen Schließen. Beim Popover-Abbau wird der Zustand der obersten Ebene vor dem Ausblenden geprüft, wodurch der NotSupportedError bei Zustandsänderungen durch beforetoggle verhindert wird.
 
+## Anbietergesteuerter Anrufabbau
+
+Gehaltene PiP-Anrufe verschieben jetzt ihre vom Broker verwaltete Bühne gemeinsam mit dem Komponentenfenster und bewahren so die von Jitsi Meet erwartete stabile Bühnen-ID. Beim Verlassen, Entfernen oder Beenden der Konferenz kann Jitsi die Elternbühne auflösen und `component-pages:discard` aufrufen; Cognis entfernt anschließend die temporäre Anrufbühne unabhängig von der SPA-Bereinigung.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -65,3 +69,4 @@ Schwebende Komponentenfenster werden jetzt in die dauerhafte Dokumentoberfläche
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/92f46be7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/53dee857

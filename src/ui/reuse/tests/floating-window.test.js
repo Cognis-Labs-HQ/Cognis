@@ -342,6 +342,19 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.popoverOpen, false);
         assert.equal(panel.hasAttribute("popover"), false);
 
+        const componentPortalHost = new FakeElement();
+        const componentPortalStage = new FakeElement();
+        componentPortalStage.matches = (selector) =>
+            selector === ".component-page-stage";
+        componentPortalHost.append(componentPortalStage);
+        componentPortalStage.append(panel);
+        const releaseComponentPortal = makeFloatingWindow(panel, { handle });
+        assert.equal(componentPortalStage.parentElement, body);
+        assert.equal(panel.parentElement, componentPortalStage);
+        releaseComponentPortal();
+        assert.equal(componentPortalStage.parentElement, componentPortalHost);
+        assert.equal(panel.parentElement, componentPortalStage);
+
         const componentStage = new FakeElement({
             left: 100,
             top: 50,

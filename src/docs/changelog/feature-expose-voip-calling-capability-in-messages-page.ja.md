@@ -50,6 +50,10 @@ Meeting のピクチャーインピクチャー移動は一度だけ実行され
 
 フローティングコンポーネントウィンドウを永続的なドキュメントシェルへ移し、呼び出し元ページのライフサイクルから明示的に切り離せるようになりました。SPA 移動では通常のコンポーネントを破棄しますが、保持された PiP 通話は明示的に閉じるまで維持します。Popover の破棄前にトップレイヤー状態を確認し、beforetoggle が状態を変更した場合の NotSupportedError を防ぎます。
 
+## プロバイダー主導の通話終了処理
+
+保持された PiP 通話は、ブローカー所有のステージをコンポーネントウィンドウと一緒に移動し、Jitsi Meet が参照する安定したステージ ID を維持します。参加者の退出、キック、または会議終了時に Jitsi は親ステージを解決して `component-pages:discard` を呼び出せます。Cognis は SPA のクリーンアップを待たずに一時通話ステージを削除します。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -65,3 +69,4 @@ Meeting のピクチャーインピクチャー移動は一度だけ実行され
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/92f46be7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/53dee857
