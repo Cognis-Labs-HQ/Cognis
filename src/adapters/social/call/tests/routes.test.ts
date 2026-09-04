@@ -189,6 +189,32 @@ test("ringing endpoint is idempotent after a call is no longer active", async ()
     }
 });
 
+test("leave endpoint is idempotent after a call is no longer active", async () => {
+    const store = new CallStore();
+    const call = store.create({
+        roomId: "room-1",
+        callerAccountId: "caller",
+        participants: roomContext.participants,
+    });
+    store.answer(call.id, "callee");
+    store.hangup(call.id, "caller");
+    const route = createCallRoutes(
+        store,
+        {
+            requireAuth: () => ({ sub: "callee", role: "user" }),
+        } as never,
+        async () => roomContext,
+    );
+    const recorder = response();
+    await route(
+        request("POST") as never,
+        recorder.res as never,
+        new URL(`http://localhost/api/v1/social/call/${call.id}/leave`),
+    );
+    assert.equal(recorder.result().status, 200);
+    assert.equal(recorder.result().payload.data.status, "ended");
+});
+
 test("a released group call can ring every participant again", async () => {
     const store = new CallStore();
     const groupRoom = {

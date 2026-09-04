@@ -150,15 +150,19 @@ async function createStage(call) {
             try {
                 await updateCall(call.id, "leave");
             } catch (error) {
-                console.error("[calls] Failed to leave call", {
-                    callId: call.id,
-                    roomId: call.roomId,
-                    error,
-                });
-                showToast(
-                    (await getCallI18n()).t("adapter.social.call.leave_failed"),
-                    { variant: "error" },
-                );
+                if (error?.code !== "call_unavailable") {
+                    console.error("[calls] Failed to leave call", {
+                        callId: call.id,
+                        roomId: call.roomId,
+                        error,
+                    });
+                    showToast(
+                        (await getCallI18n()).t(
+                            "adapter.social.call.leave_failed",
+                        ),
+                        { variant: "error" },
+                    );
+                }
             }
         }
         await componentWindow?.discard?.();
@@ -389,7 +393,11 @@ async function mountProviderAction(
                         if (disposition === "return") {
                             window.addEventListener(
                                 "cognis:route-will-change",
-                                () => void callStage.cleanup(),
+                                () => {
+                                    if (!callStage.isFloating()) {
+                                        void callStage.cleanup();
+                                    }
+                                },
                                 { once: true, signal: callStage.signal },
                             );
                         } else {

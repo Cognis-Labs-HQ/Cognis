@@ -38,8 +38,12 @@ export async function updateCall(callId, operation) {
         { method: "POST" },
     );
     const payload = await response.json().catch(() => ({}));
-    if (!response.ok)
-        throw new Error(payload?.error?.message ?? "Request failed");
+    if (!response.ok) {
+        const error = new Error(payload?.error?.message ?? "Request failed");
+        error.code = payload?.error?.code;
+        error.status = response.status;
+        throw error;
+    }
     return payload.data;
 }
 

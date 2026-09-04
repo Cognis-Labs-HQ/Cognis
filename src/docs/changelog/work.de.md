@@ -34,6 +34,10 @@ Verspätete Klingel-Lease-Anfragen liefern nach dem Ende eines Anrufs nun erfolg
 
 Die Bild-im-Bild-Schließaktion behält den aktiven Anruf nun in ihrem Stage-Lebenszyklus und beseitigt dadurch den `ReferenceError` nach einer Navigation. Das Schließsteuerelement verwendet wieder die Standardgröße des schwebenden Fensters und trägt nun die destruktive Klasse `btn-cancel`.
 
+## Idempotentes Verlassen und wiederholte Bild-im-Bild-Beständigkeit
+
+Ein verspäteter Abbau durch den Anbieter meldet keinen Fehler mehr, wenn der Server den Anruf bereits beendet hat. Das Verlassen ist nun idempotent und die Bereinigung unterdrückt den bekannten Wettlauf mit einem nicht mehr verfügbaren Anruf. Nach der Rückkehr zu Messages bleibt der Anruf auch beim zweiten Wechsel in Bild-im-Bild über die nächste SPA-Navigation hinweg erhalten.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -45,3 +49,4 @@ Die Bild-im-Bild-Schließaktion behält den aktiven Anruf nun in ihrem Stage-Leb
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/738a98d449247b89ce94cfda908042dbe8c28043
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea5a087cdcc7d7cce9ece27fff4d90353c7e8fe7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/5e8996297422cc379e6747e980fcd613a482716f
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e7560cabcb987acf49dbbfdc74a1135755ce3713

@@ -286,12 +286,7 @@ export function createCallRoutes(
         if (req.method === "POST" && operation === "leave") {
             const left = store.leave(call.id, claims.sub);
             if (!left) {
-                sendJson(res, 409, {
-                    error: {
-                        code: "call_unavailable",
-                        message: "Call is no longer active.",
-                    },
-                });
+                sendJson(res, 200, { data: publicCall(call) });
                 return true;
             }
             sendJson(res, 200, { data: publicCall(left) });

@@ -34,6 +34,10 @@ Permintaan lease dering yang terlambat kini berhasil dengan hasil tanpa dering s
 
 Tindakan tutup gambar-dalam-gambar kini menyimpan panggilan aktif dalam siklus hidup stage sehingga menghapus `ReferenceError` setelah navigasi. Kontrol tutup kembali menggunakan ukuran standar jendela mengambang dan kini memakai kelas destruktif `btn-cancel`.
 
+## Keluar idempoten dan persistensi gambar-dalam-gambar berulang
+
+Pembongkaran penyedia yang terlambat tidak lagi melaporkan kesalahan ketika server telah mengakhiri panggilan. Keluar kini berhasil secara idempoten dan pembersihan menekan kondisi balapan panggilan-tidak-tersedia yang telah diketahui. Setelah kembali ke Messages, perpindahan kedua ke gambar-dalam-gambar kini mempertahankan panggilan selama navigasi SPA berikutnya.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -45,3 +49,4 @@ Tindakan tutup gambar-dalam-gambar kini menyimpan panggilan aktif dalam siklus h
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/738a98d449247b89ce94cfda908042dbe8c28043
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea5a087cdcc7d7cce9ece27fff4d90353c7e8fe7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/5e8996297422cc379e6747e980fcd613a482716f
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e7560cabcb987acf49dbbfdc74a1135755ce3713

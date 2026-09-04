@@ -65,6 +65,11 @@ test("Call toolbar keeps its arrow separate from mounted meeting content", () =>
     assert.match(providerSource, /variant: "neutral"/);
     assert.match(providerSource, /returnCallStageToMessages/);
     assert.match(providerSource, /cognis:route-will-change/);
+    assert.match(
+        providerSource,
+        /if \(!callStage\.isFloating\(\)\) \{[\s\S]*callStage\.cleanup\(\)/,
+    );
+    assert.match(providerSource, /error\?\.code !== "call_unavailable"/);
     assert.match(providerSource, /markDocked/);
     assert.match(providerSource, /updateCall\(call\.id, "leave"\)/);
     assert.match(providerSource, /allowNavigation,/);
