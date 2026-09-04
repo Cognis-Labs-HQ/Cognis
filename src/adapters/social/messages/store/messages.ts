@@ -64,16 +64,7 @@ export async function appendRoomEvent(
     input: {
         roomId: string;
         actorId: string;
-        eventType:
-            | "member_joined"
-            | "member_left"
-            | "profile_display_name_changed"
-            | "profile_avatar_changed"
-            | "call_started"
-            | "call_answered"
-            | "call_cancelled"
-            | "call_declined"
-            | "call_missed";
+        eventType: string;
         subjectAccountId: string;
         subjectHandle?: string | null;
         subjectDisplayName?: string | null;
@@ -88,16 +79,7 @@ export async function insertRoomEvent(
     input: {
         roomId: string;
         actorId: string;
-        eventType:
-            | "member_joined"
-            | "member_left"
-            | "profile_display_name_changed"
-            | "profile_avatar_changed"
-            | "call_started"
-            | "call_answered"
-            | "call_cancelled"
-            | "call_declined"
-            | "call_missed";
+        eventType: string;
         subjectAccountId: string;
         subjectHandle?: string | null;
         subjectDisplayName?: string | null;

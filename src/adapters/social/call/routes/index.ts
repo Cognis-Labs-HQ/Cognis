@@ -74,12 +74,7 @@ export function createCallRoutes(
     appendRoomEvent?: (input: {
         roomId: string;
         actorId: string;
-        eventType:
-            | "call_started"
-            | "call_answered"
-            | "call_cancelled"
-            | "call_declined"
-            | "call_missed";
+        eventType: string;
         subjectAccountId: string;
         subjectHandle?: string | null;
         subjectDisplayName?: string | null;

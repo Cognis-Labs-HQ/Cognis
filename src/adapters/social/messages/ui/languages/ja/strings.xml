@@ -79,12 +79,6 @@
   <string name="adapter.social.messages.keyring_request_action_save">暗号鍵を保存する</string>
   <string name="adapter.social.messages.keyring_request_process">チャット {{roomId}}</string>
   <string name="module.social.messages.start_video_call">ビデオ通話を開始</string>
-  <string name="module.social.messages.event_call_started">{name} が通話を開始しました。</string>
-  <string name="module.social.messages.event_call_answered">{name} が通話に応答しました。</string>
-  <string name="module.social.messages.event_call_cancelled">{name} が通話をキャンセルしました。</string>
-  <string name="module.social.messages.event_call_declined">{name} が通話を拒否しました。</string>
-  <string name="module.social.messages.event_call_missed">{name} からの通話には応答がありませんでした。</string>
-  <string name="module.social.messages.call_ringing">{name} から着信中…</string>
   <string name="module.social.messages.answer_call">通話に応答</string>
   <string name="module.social.messages.decline_call">通話を拒否</string>
 </resources>

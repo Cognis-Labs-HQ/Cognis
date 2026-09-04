@@ -172,6 +172,9 @@ test("Call UI exposes room-event answer and decline actions", () => {
     assert.match(providerSource, /async function declineCall/);
     assert.match(providerSource, /answerCall,/);
     assert.match(providerSource, /declineCall,/);
+    assert.match(providerSource, /messages:format-room-event/);
+    assert.match(providerSource, /social-call:format-room-events/);
+    assert.match(providerSource, /adapter\.social\.call\.event_call_started/);
 });
 
 test("Call UI resolves and rejoins the current room call", () => {

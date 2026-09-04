@@ -79,12 +79,6 @@
   <string name="adapter.social.messages.keyring_request_action_save">menyimpan kunci enkripsi untuk</string>
   <string name="adapter.social.messages.keyring_request_process">chat {{roomId}}</string>
   <string name="module.social.messages.start_video_call">Mulai panggilan video</string>
-  <string name="module.social.messages.event_call_started">{name} memulai panggilan.</string>
-  <string name="module.social.messages.event_call_answered">{name} menjawab panggilan.</string>
-  <string name="module.social.messages.event_call_cancelled">{name} membatalkan panggilan.</string>
-  <string name="module.social.messages.event_call_declined">{name} menolak panggilan.</string>
-  <string name="module.social.messages.event_call_missed">Panggilan dari {name} tidak dijawab.</string>
-  <string name="module.social.messages.call_ringing">Panggilan dari {name} berdering…</string>
   <string name="module.social.messages.answer_call">Jawab panggilan</string>
   <string name="module.social.messages.decline_call">Tolak panggilan</string>
 </resources>

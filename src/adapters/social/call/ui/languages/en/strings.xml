@@ -24,4 +24,9 @@
   <string name="adapter.social.call.cancel_failed">Could not cancel the call.</string>
   <string name="adapter.social.call.decline_failed">Could not decline the call.</string>
   <string name="adapter.social.call.leave_failed">Could not leave the call cleanly.</string>
+  <string name="adapter.social.call.event_call_started">{name} started a call.</string>
+  <string name="adapter.social.call.event_call_answered">{name} answered the call.</string>
+  <string name="adapter.social.call.event_call_cancelled">{name} cancelled the call.</string>
+  <string name="adapter.social.call.event_call_declined">{name} declined the call.</string>
+  <string name="adapter.social.call.event_call_missed">The call from {name} was not answered.</string>
 </resources>

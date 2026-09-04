@@ -142,6 +142,10 @@ const MESSAGE_RENDER_SOURCE = readFileSync(
     resolve(ROOT, "src/adapters/social/messages/ui/message-render.js"),
     "utf8",
 );
+const MESSAGE_FLOWS_SOURCE = readFileSync(
+    resolve(ROOT, "src/adapters/social/messages/ui/flows.js"),
+    "utf8",
+);
 test("messages exposes neutral flows for contributed room actions", () => {
     assert.doesNotMatch(APP_SOURCE, /social:callUi/);
     assert.match(APP_SOURCE, /resolveRoomActions/);
@@ -153,4 +157,6 @@ test("messages exposes neutral flows for contributed room actions", () => {
     assert.match(ROOM_RENDER_SOURCE, /messages-room-action-banner/);
     assert.doesNotMatch(ROOM_RENDER_SOURCE, /start_video_call/);
     assert.match(ROOM_RENDER_SOURCE, /aria-pressed/);
+    assert.match(MESSAGE_FLOWS_SOURCE, /messages:format-room-event/);
+    assert.match(MESSAGE_RENDER_SOURCE, /await formatRoomEventText/);
 });

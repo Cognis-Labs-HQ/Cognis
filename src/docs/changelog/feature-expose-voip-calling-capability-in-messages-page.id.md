@@ -134,8 +134,13 @@ Perenderan panggilan kini memasukkan label yang dikendalikan peserta melalui sim
 
 SVG tindakan panggilan kini berada dalam file aset milik adapter Call. Aset video yang sama menyediakan tindakan ruang Messages, sedangkan kontrol jawab dan tolak di notifikasi serta ruang menggunakan kembali aset yang sesuai tanpa menyematkan markup SVG dalam kode sumber.
 
+## Integrasi riwayat panggilan terisolasi
+
+Messages kini menyediakan capability persistensi peristiwa ruang yang generik dan flow pemformatan bertahap. Calls memiliki serta menyuntikkan jenis peristiwa, teks terlokalisasi, dan tampilannya sehingga store, renderer, dan sumber bahasa Messages tidak lagi memuat kontrak khusus panggilan.
+
 ## Komit
 
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ea665452e791853c2fd72b8dfa141b0a7a1f1ecb
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/968d9fb49a0df9e137ab7ab0606b5950ef759e26
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/fddbcbf8999173159b88ee4efddf284e426b9a67
@@ -143,17 +148,6 @@ SVG tindakan panggilan kini berada dalam file aset milik adapter Call. Aset vide
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/69e21d58c8f04c27848c9b646672d6a436891d2c
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2b179ef3cd20fab51af1eac5fa36506bf46021c6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3b62797540e433c07ee81751a58e327085f01739
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/0e7ff946
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/60ad8491
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/bbcc6537
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/263c98cc
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/92f46be7
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/14d4fbd5
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d746bb
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/53dee857
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/630ac8d9
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/4e75f696
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/59245f23
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/86cbe55e587061e6dd58927c20dd5c1fee530be9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7fa6ee9910ab1da664c9992dd88b5659fe0af400
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/930a3b084240205cd1e9ab4124e1bbfdbf6d2f52
@@ -174,4 +168,3 @@ SVG tindakan panggilan kini berada dalam file aset milik adapter Call. Aset vide
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea5a087cdcc7d7cce9ece27fff4d90353c7e8fe7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/5e8996297422cc379e6747e980fcd613a482716f
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e7560cabcb987acf49dbbfdc74a1135755ce3713
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/da2e46c1

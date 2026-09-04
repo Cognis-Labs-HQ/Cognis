@@ -24,4 +24,9 @@
   <string name="adapter.social.call.cancel_failed">Der Anruf konnte nicht abgebrochen werden.</string>
   <string name="adapter.social.call.decline_failed">Der Anruf konnte nicht abgelehnt werden.</string>
   <string name="adapter.social.call.leave_failed">Der Anruf konnte nicht ordnungsgemäß verlassen werden.</string>
+  <string name="adapter.social.call.event_call_started">{name} hat einen Anruf gestartet.</string>
+  <string name="adapter.social.call.event_call_answered">{name} hat den Anruf angenommen.</string>
+  <string name="adapter.social.call.event_call_cancelled">{name} hat den Anruf abgebrochen.</string>
+  <string name="adapter.social.call.event_call_declined">{name} hat den Anruf abgelehnt.</string>
+  <string name="adapter.social.call.event_call_missed">Der Anruf von {name} wurde nicht angenommen.</string>
 </resources>

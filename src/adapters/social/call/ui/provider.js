@@ -15,6 +15,7 @@ const CALL_UI_CAPABILITY = "social:callUi";
 const VOIP_PROVIDER_CAPABILITY = "voip:startCall";
 const ROOM_ACTIONS_FLOW = "messages:compose-room-actions";
 const ROOM_ACTION_FLOW = "messages:activate-room-action";
+const ROOM_EVENT_TEXT_FLOW = "messages:format-room-event";
 const POLL_INTERVAL_MILLISECONDS = 1_000;
 let activeCall = null;
 let callI18n = null;
@@ -688,9 +689,28 @@ uiCtx.capabilities.contribute(CALL_UI_CAPABILITY, {
 function installMessagesFlowHooks() {
     if (
         !uiCtx.flowExists(ROOM_ACTIONS_FLOW) ||
-        !uiCtx.flowExists(ROOM_ACTION_FLOW)
+        !uiCtx.flowExists(ROOM_ACTION_FLOW) ||
+        !uiCtx.flowExists(ROOM_EVENT_TEXT_FLOW)
     )
         return;
+    uiCtx.extendFlow(
+        ROOM_EVENT_TEXT_FLOW,
+        "format",
+        { id: "social-call:format-room-events" },
+        async ({ input, data }) => {
+            const eventKeys = {
+                call_started: "adapter.social.call.event_call_started",
+                call_answered: "adapter.social.call.event_call_answered",
+                call_cancelled: "adapter.social.call.event_call_cancelled",
+                call_declined: "adapter.social.call.event_call_declined",
+                call_missed: "adapter.social.call.event_call_missed",
+            };
+            const key = eventKeys[input.event?.eventType];
+            if (!key) return;
+            const i18n = await getCallI18n();
+            data.text = i18n.t(key).replace("{name}", input.subjectLabel);
+        },
+    );
     uiCtx.extendFlow(
         ROOM_ACTIONS_FLOW,
         "contribute",

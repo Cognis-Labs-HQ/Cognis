@@ -176,27 +176,22 @@ export async function bootstrapSocialAdapter(
         "social:messages:callContext",
         resolveCallContext,
     );
-    const appendCallEvent = (input: {
+    const appendRoomEvent = (input: {
         roomId: string;
         actorId: string;
-        eventType:
-            | "call_started"
-            | "call_answered"
-            | "call_cancelled"
-            | "call_declined"
-            | "call_missed";
+        eventType: string;
         subjectAccountId: string;
         subjectHandle?: string | null;
         subjectDisplayName?: string | null;
         details?: Record<string, unknown>;
     }) => messagesStore.appendRoomEvent(input);
     ctx.capabilities.contribute(
-        "social:messages:appendCallEvent",
-        appendCallEvent,
+        "social:messages:appendRoomEvent",
+        appendRoomEvent,
     );
     systemCtx?.contributeCapability(
-        "social:messages:appendCallEvent",
-        appendCallEvent,
+        "social:messages:appendRoomEvent",
+        appendRoomEvent,
     );
     const deleteChatroom = createChatroomDeletionCapability(
         messagesStore,

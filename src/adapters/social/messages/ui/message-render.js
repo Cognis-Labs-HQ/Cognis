@@ -16,6 +16,7 @@ import {
     stableJson,
 } from "./message-utils.js";
 import { messageRenderSignature } from "./room-render.js";
+import { formatRoomEvent } from "./flows.js";
 
 const profileAvatars = () => {
     const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
@@ -95,22 +96,31 @@ async function collectRoomMessageSearchItems(room) {
             ? await searchRoomKeyResolver(roomId)
             : null;
         records = await Promise.all(
-            records.map(async (messageRecord) => ({
-                ...messageRecord,
-                text: roomKey
-                    ? await decryptMessageOrReturnPlaintext(
-                          roomKey,
-                          messageRecord,
-                      )
-                    : messageRecord.text || messageRecord.content || "",
-            })),
+            records.map(async (messageRecord) => {
+                const resolved = {
+                    ...messageRecord,
+                    text: roomKey
+                        ? await decryptMessageOrReturnPlaintext(
+                              roomKey,
+                              messageRecord,
+                          )
+                        : messageRecord.text || messageRecord.content || "",
+                };
+                return {
+                    ...resolved,
+                    roomEventLabel: await formatRoomEventText(
+                        resolved,
+                        searchI18n,
+                    ),
+                };
+            }),
         );
         searchableRoomMessages.set(roomId, records);
     }
     return records
         .filter(
             (messageRecord) =>
-                !formatRoomEventText(messageRecord, searchI18n) &&
+                !messageRecord.roomEventLabel &&
                 String(messageRecord.text ?? "").trim(),
         )
         .map((messageRecord) => {
@@ -230,7 +240,7 @@ function renderMessageStatus(
     return `<span class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}"><span class="messages-status-badge messages-status-badge--delivered">${statusSentSvgMarkup()}</span></span>`;
 }
 
-function formatRoomEventText(message, i18n) {
+async function formatRoomEventText(message, i18n) {
     if (message.contentType !== "application/vnd.cognis.room-event+json") {
         return null;
     }
@@ -244,49 +254,7 @@ function formatRoomEventText(message, i18n) {
         payload.subjectDisplayName ||
         payload.subjectHandle ||
         payload.subjectAccountId;
-    const eventType = payload.eventType;
-    if (eventType === "member_joined") {
-        return i18n
-            .t("module.social.messages.event_member_joined")
-            .replace("{name}", subjectLabel);
-    }
-    if (eventType === "member_left") {
-        return i18n
-            .t("module.social.messages.event_member_left")
-            .replace("{name}", subjectLabel);
-    }
-    if (eventType === "profile_display_name_changed") {
-        return i18n
-            .t("module.social.messages.event_display_name_changed")
-            .replace("{name}", subjectLabel);
-    }
-    if (eventType === "profile_avatar_changed") {
-        return i18n
-            .t("module.social.messages.event_avatar_changed")
-            .replace("{name}", subjectLabel);
-    }
-    const callEventKeys = {
-        call_started: "module.social.messages.event_call_started",
-        call_answered: "module.social.messages.event_call_answered",
-        call_cancelled: "module.social.messages.event_call_cancelled",
-        call_declined: "module.social.messages.event_call_declined",
-        call_missed: "module.social.messages.event_call_missed",
-    };
-    if (callEventKeys[eventType]) {
-        return i18n.t(callEventKeys[eventType]).replace("{name}", subjectLabel);
-    }
-    return null;
-}
-
-function parseRoomEvent(message) {
-    if (message.contentType !== "application/vnd.cognis.room-event+json") {
-        return null;
-    }
-    try {
-        return JSON.parse(message.text || "{}");
-    } catch {
-        return null;
-    }
+    return formatRoomEvent(payload, subjectLabel, i18n);
 }
 
 function renderReactionRows(message, i18n, isOwn = false) {
@@ -805,7 +773,11 @@ export async function renderThread(
             const text = key
                 ? await decryptMessageOrReturnPlaintext(key, messageRecord)
                 : null;
-            return { ...messageRecord, text };
+            const resolved = { ...messageRecord, text };
+            return {
+                ...resolved,
+                roomEventLabel: await formatRoomEventText(resolved, i18n),
+            };
         }),
     );
     searchableRoomMessages.set(roomId, decoded);
@@ -822,8 +794,7 @@ export async function renderThread(
             if (dateLabel) {
                 previousDateLabel = dateLabel;
             }
-            const roomEvent = parseRoomEvent(messageRecord);
-            const roomEventLabel = formatRoomEventText(messageRecord, i18n);
+            const roomEventLabel = messageRecord.roomEventLabel;
             if (roomEventLabel) {
                 return `${showDateDivider}<div class="messages-room-event">${escapeHtml(roomEventLabel)}</div>`;
             }

@@ -79,12 +79,6 @@
   <string name="adapter.social.messages.keyring_request_action_save">einen Verschlüsselungsschlüssel speichern für</string>
   <string name="adapter.social.messages.keyring_request_process">Chat {{roomId}}</string>
   <string name="module.social.messages.start_video_call">Videoanruf starten</string>
-  <string name="module.social.messages.event_call_started">{name} hat einen Anruf gestartet.</string>
-  <string name="module.social.messages.event_call_answered">{name} hat den Anruf angenommen.</string>
-  <string name="module.social.messages.event_call_cancelled">{name} hat den Anruf abgebrochen.</string>
-  <string name="module.social.messages.event_call_declined">{name} hat den Anruf abgelehnt.</string>
-  <string name="module.social.messages.event_call_missed">Der Anruf von {name} wurde nicht angenommen.</string>
-  <string name="module.social.messages.call_ringing">Anruf von {name} klingelt …</string>
   <string name="module.social.messages.answer_call">Anruf annehmen</string>
   <string name="module.social.messages.decline_call">Anruf ablehnen</string>
 </resources>

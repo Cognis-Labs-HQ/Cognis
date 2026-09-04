@@ -103,7 +103,7 @@ export async function bootstrapSocialAdapter(
     >[0];
     const appendRoomEvent = (input: AppendCallEvent) =>
         ctx.capabilities.get<(value: AppendCallEvent) => Promise<unknown>>(
-            "social:messages:appendCallEvent",
+            "social:messages:appendRoomEvent",
         )?.(input) ?? Promise.resolve();
     const uiDir = path.resolve(
         path.dirname(fileURLToPath(import.meta.url)),

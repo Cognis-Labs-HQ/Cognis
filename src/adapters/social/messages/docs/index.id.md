@@ -17,3 +17,5 @@ Adaptor juga menerbitkan `social:messages:resolveRoomMembership`. Dengan ID ruan
 Pemilih Ruang Baru memakai parameter `category: "user"` dan `typeFilter: "user"` dari popup pencarian bersama, sama seperti konsumen khusus pengguna lain seperti Jitsi Meet, sehingga hanya hasil pengguna yang ditawarkan untuk membuat percakapan.
 
 Panggilan masuk ditampilkan sebagai bilah tindakan kontribusi tepat di bawah tajuk utas, dengan label di kiri serta tindakan SVG Jawab dan Tolak milik penyedia di kanan. Peristiwa panggilan historis tetap menjadi catatan lini masa biasa, bukan prompt interaktif.
+
+Adapter menyediakan capability generik `social:messages:appendRoomEvent` bagi komponen yang perlu mencatat peristiwa linimasa dalam ruang. Payload hanya menyimpan metadata peristiwa yang netral; komponen pemilik tetap memiliki nama dan bidang peristiwa khusus domainnya. Flow browser `messages:format-room-event` memungkinkan komponen tersebut menyediakan tampilan terlokalisasi tanpa menambahkan teks atau aturan render ke Messages.

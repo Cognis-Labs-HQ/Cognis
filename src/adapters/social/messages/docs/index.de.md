@@ -17,3 +17,5 @@ Der Adapter veröffentlicht außerdem `social:messages:resolveRoomMembership`. M
 Die Auswahl „Neuer Raum“ verwendet die Parameter `category: "user"` und `typeFilter: "user"` des gemeinsamen Such-Popups, wie auch andere reine Benutzersuchen etwa in Jitsi Meet, sodass für neue Unterhaltungen ausschließlich Benutzerergebnisse angeboten werden.
 
 Ein eingehender Anruf erscheint als beigesteuerte Aktionsleiste unmittelbar unter dem Thread-Kopf, mit der Beschriftung links und den vom Anbieter verwalteten SVG-Aktionen zum Annehmen und Ablehnen rechts. Historische Anrufereignisse bleiben einfache Zeitleisteneinträge statt interaktiver Hinweise.
+
+Der Adapter stellt die allgemeine Capability `social:messages:appendRoomEvent` für Komponenten bereit, die ein raumbezogenes Zeitleistenereignis aufzeichnen müssen. Die Nutzlast speichert nur neutrale Ereignismetadaten; die besitzenden Komponenten behalten ihre domänenspezifischen Ereignisnamen und Felder. Über den Browser-Flow `messages:format-room-event` liefern diese Komponenten die lokalisierte Darstellung, ohne ihre Texte oder Darstellungsregeln in Messages einzufügen.
