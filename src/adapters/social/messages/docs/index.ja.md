@@ -13,3 +13,5 @@ Messages ブラウザークライアントは、Social Messages アダプター�
 公開機能 `social:messages:deleteChatroom` はルーム ID と実行者のアカウント ID を受け取ります。実行者がルームの作成者、または唯一残った参加者である場合に、ルームとその依存レコードを完全に削除します。
 
 アダプターは `social:messages:resolveRoomMembership` も公開します。ルーム ID と要求元アカウント ID を受け取り、アクティブなルームメンバーだけを認可して、アクティブメンバーのアカウント ID を返します。プロバイダーは Messages の永続化層を直接読み取らず、この境界を使用します。
+
+「新しいルーム」選択画面は、Jitsi Meet などのユーザー専用検索と同じく、共通検索ポップアップの `category: "user"` と `typeFilter: "user"` パラメーターを使用し、会話の作成候補をユーザー結果だけに限定します。

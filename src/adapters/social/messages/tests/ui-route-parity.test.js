@@ -27,6 +27,13 @@ test("global message search imports its authenticated API client", () => {
     );
 });
 
+test("new-room search requests the shared user result filter", () => {
+    assert.match(
+        APP_SOURCE,
+        /endpoint: "\/api\/v1\/social\/messages\/users\/lookup",\s*category: "user",\s*typeFilter: "user"/,
+    );
+});
+
 function collectFilePathsRecursively(directoryPath) {
     const files = [];
     for (const entryName of readdirSync(directoryPath)) {
