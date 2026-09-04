@@ -2,7 +2,7 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 export const ROOM_ACTIONS_FLOW = "messages:compose-room-actions";
 export const ROOM_ACTION_FLOW = "messages:activate-room-action";
-export const ROOM_EVENT_TEXT_FLOW = "messages:format-room-event";
+export const ROOM_EVENT_TEXT_FLOW = "messages:formatRoomEvent";
 
 for (const [flowId, stages] of [
     [ROOM_ACTIONS_FLOW, ["contribute", "finalize"]],

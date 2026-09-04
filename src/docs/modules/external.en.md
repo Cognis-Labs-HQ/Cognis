@@ -114,3 +114,5 @@ Modules that must load a runtime script declare `ui:resourceLoader` and call its
 ## Installation dependencies
 
 External manifests may declare `hardDependencies` and `softDependencies` as arrays of module UUIDs or IDs. Hard dependencies are discouraged because administrators must install and enable them before installation can continue. Soft dependencies are optional selections in the installation dialog.
+
+Disabled modules never import or execute their normal bootstrap. A module that must expose configuration while disabled declares `entrypoints.disabledApi`; that isolated file exports `registerDisabledApiRoutes(ctx)` and may register only routes explicitly marked `allowWhenDisabled`.

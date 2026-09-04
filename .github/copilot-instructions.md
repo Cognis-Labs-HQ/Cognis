@@ -66,6 +66,10 @@ specific consumers. Callers supply their own labels, icons, action identifiers,
 and other presentation or behavior metadata; the providing component only
 validates and renders the neutral contract.
 
+### Ctx capability naming
+
+All ctx capability and flow names must use camel case within each colon-delimited segment; do not introduce kebab-case names (for example, use `messages:formatRoomEvent`, not `messages:format-room-event`).
+
 ### Ctx is the capability backbone
 
 Use `ctx` as the only cross-component import surface for both core-to-component and inter-component interactions. When core, a gateway, an adapter, a module, or a route needs something owned elsewhere, it must obtain that capability through `ctx` (or a request/route context built from `ctx`) instead of importing another component's internals or receiving ad-hoc side-channel references.

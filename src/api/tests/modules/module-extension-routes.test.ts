@@ -109,6 +109,12 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
             return () => { throw new Error("expected teardown failure"); };
         }`,
     );
+    await writeFile(
+        path.join(moduleRoot, "disabled-api.js"),
+        `export function registerDisabledApiRoutes(ctx) {
+            ctx.registerApiGet("/api/v1/modules/owned/config", (_req, res) => { res.writeHead(ctx.getCapability("system:ctx") ? 500 : 200); res.end("config"); }, { allowWhenDisabled: true });
+        }`,
+    );
     const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
     process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
     const systemCtx = createCtx();
@@ -122,7 +128,10 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
                 {
                     id: "owned-module",
                     uuid: moduleUuid,
-                    entrypoints: { bootstrap: "./bootstrap.js" },
+                    entrypoints: {
+                        bootstrap: "./bootstrap.js",
+                        disabledApi: "./disabled-api.js",
+                    },
                 },
             ],
         } as any,

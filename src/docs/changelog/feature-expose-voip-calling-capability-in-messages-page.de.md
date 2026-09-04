@@ -138,8 +138,13 @@ SVGs für Anrufaktionen liegen jetzt in eigenen Asset-Dateien des Call-Adapters.
 
 Messages stellt jetzt eine allgemeine Capability zur Speicherung von Raumereignissen und einen mehrstufigen Formatierungs-Flow bereit. Calls besitzt und injiziert seine Ereignistypen, lokalisierten Texte und Darstellung, sodass Messages-Speicher, -Renderer und -Sprachressourcen keine anrufspezifischen Verträge mehr enthalten.
 
+## Gehärtete Anruf- und Modulzyklen
+
+Aktive Anrufe können nur noch von beigetretenen Teilnehmenden beendet werden, Anrufende und Eingeladene treten vor der Wiederverbindung erneut dem Signalisierungsstatus bei und fehlgeschlagene Verlassen-Anfragen behalten einen wiederholbaren Beitrittsstatus. Calls besitzt die Übersetzung von Benachrichtigungen in Raumstatus, die redundante Beschriftung „Meeting-Fenster“ wurde entfernt, deaktivierte Module verwenden einen isolierten Konfigurationseinstieg ohne ihren normalen Bootstrap auszuführen, API-Ergebnisexporte sind vollständig dokumentiert und der Raumereignis-Flow verwendet Camel Case.
+
 ## Commits
 
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/6bf285c42a978273d039d2547d17e827512f4b26
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea665452e791853c2fd72b8dfa141b0a7a1f1ecb
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/968d9fb49a0df9e137ab7ab0606b5950ef759e26
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10

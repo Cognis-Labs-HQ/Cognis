@@ -302,8 +302,32 @@ export function createCallRoutes(
             sendJson(res, 200, { data: publicCall(answered) });
             return true;
         }
+        if (req.method === "POST" && operation === "join") {
+            const joined = store.join(call.id, claims.sub);
+            if (!joined) {
+                sendJson(res, 409, {
+                    error: {
+                        code: "call_unavailable",
+                        message: "Call is no longer active.",
+                    },
+                });
+                return true;
+            }
+            sendJson(res, 200, { data: publicCall(joined) });
+            return true;
+        }
         if (req.method === "POST" && operation === "hangup") {
-            const ended = store.hangup(call.id, claims.sub)!;
+            const ended = store.hangup(call.id, claims.sub);
+            if (!ended) {
+                sendJson(res, 403, {
+                    error: {
+                        code: "call_not_joined",
+                        message:
+                            "Only joined participants can end an active call.",
+                    },
+                });
+                return true;
+            }
             await recordEvent(
                 ended,
                 claims.sub === ended.callerAccountId

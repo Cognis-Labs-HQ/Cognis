@@ -82,6 +82,25 @@ test("one answer starts a group call and the final departure releases it", () =>
     assert.equal(store.getCurrentRoomCall("room-1"), null);
 });
 
+test("only joined participants can end an active call and callers can rejoin", () => {
+    const store = new CallStore();
+    const call = store.create({
+        roomId: "room-1",
+        callerAccountId: "caller",
+        participants: [
+            ...participants,
+            { accountId: "third", handle: "third", displayName: "Third" },
+        ],
+    });
+    store.answer(call.id, "callee");
+    assert.equal(store.hangup(call.id, "third"), null);
+    store.leave(call.id, "caller");
+    assert.deepEqual(store.join(call.id, "caller")?.joinedAccountIds, [
+        "callee",
+        "caller",
+    ]);
+});
+
 test("unanswered calls expire after the ringing timeout", (testContext) => {
     let now = 1_000;
     testContext.mock.method(Date, "now", () => now);

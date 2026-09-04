@@ -138,8 +138,13 @@ SVG tindakan panggilan kini berada dalam file aset milik adapter Call. Aset vide
 
 Messages kini menyediakan capability persistensi peristiwa ruang yang generik dan flow pemformatan bertahap. Calls memiliki serta menyuntikkan jenis peristiwa, teks terlokalisasi, dan tampilannya sehingga store, renderer, dan sumber bahasa Messages tidak lagi memuat kontrak khusus panggilan.
 
+## Siklus hidup panggilan dan modul diperkuat
+
+Panggilan aktif kini hanya dapat diakhiri peserta yang sudah bergabung, pemanggil dan undangan bergabung kembali ke pensinyalan sebelum tersambung ulang, serta kegagalan keluar mempertahankan status bergabung yang dapat dicoba kembali. Calls memiliki penerjemahan notifikasi ke status ruang, label Meeting Window yang berulang telah dihapus, modul nonaktif memakai titik masuk konfigurasi terisolasi tanpa menjalankan bootstrap normal, ekspor hasil API didokumentasikan lengkap, dan flow peristiwa ruang memakai camel case.
+
 ## Komit
 
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/6bf285c42a978273d039d2547d17e827512f4b26
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea665452e791853c2fd72b8dfa141b0a7a1f1ecb
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/968d9fb49a0df9e137ab7ab0606b5950ef759e26
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10

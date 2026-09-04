@@ -95,6 +95,20 @@ export class CallStore {
         return call;
     }
 
+    join(id: string, accountId: string): CallRecord | null {
+        const call = this.get(id);
+        if (
+            !call ||
+            call.status !== "active" ||
+            !this.hasParticipant(call, accountId)
+        )
+            return null;
+        if (!call.joinedAccountIds.includes(accountId)) {
+            call.joinedAccountIds.push(accountId);
+        }
+        return call;
+    }
+
     leave(id: string, accountId: string): CallRecord | null {
         const call = this.get(id);
         if (!call || call.status !== "active") return null;
@@ -111,6 +125,12 @@ export class CallStore {
     hangup(id: string, accountId: string): CallRecord | null {
         const call = this.get(id);
         if (!call || !this.hasParticipant(call, accountId)) return null;
+        if (
+            call.status === "active" &&
+            !call.joinedAccountIds.includes(accountId)
+        ) {
+            return null;
+        }
         if (call.status === "ringing" || call.status === "active") {
             call.status = "ended";
             call.endedBy = accountId;

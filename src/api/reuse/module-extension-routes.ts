@@ -189,6 +189,12 @@ interface ModuleBootstrapPlugin {
     ) => Promise<void> | void;
 }
 
+interface ModuleDisabledApiPlugin {
+    registerDisabledApiRoutes?: (
+        ctx: ModuleBootstrapCtx,
+    ) => Promise<void> | void;
+}
+
 export interface ModuleExtensionOptions {
     uiRegistry?: UIRegistry;
     routeContext: RouteContext;
@@ -577,6 +583,15 @@ export function createModuleExtensionRoutes(
         return null;
     }
 
+    function resolveDisabledApiEntrypointPath(
+        moduleRoot: string,
+        entrypoints: { disabledApi?: string } | undefined,
+    ): string | null {
+        return entrypoints?.disabledApi
+            ? path.join(moduleRoot, entrypoints.disabledApi)
+            : null;
+    }
+
     async function bootstrapWithTimeout(
         plugin: ModuleBootstrapPlugin,
         moduleCtx: ModuleBootstrapCtx,
@@ -684,6 +699,36 @@ export function createModuleExtensionRoutes(
                 moduleRoot,
                 manifest.entrypoints,
             );
+            const disabledApiEntrypoint = resolveDisabledApiEntrypointPath(
+                moduleRoot,
+                manifest.entrypoints,
+            );
+            if (!moduleEnabled) {
+                if (!disabledApiEntrypoint) continue;
+                try {
+                    const plugin = (await import(
+                        `${disabledApiEntrypoint}?t=${Date.now()}`
+                    )) as ModuleDisabledApiPlugin;
+                    await plugin.registerDisabledApiRoutes?.(moduleCtx);
+                    scope.active = false;
+                    loadedModules.set(manifest.id, {
+                        ctx: moduleCtx,
+                        plugin: {},
+                        ...scope,
+                    });
+                } catch (error) {
+                    log?.("error", "Disabled module API registration failed.", {
+                        component: "module-extension-routes",
+                        moduleId: manifest.id,
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    });
+                    if (refreshOptions?.throwOnFailure) throw error;
+                }
+                continue;
+            }
             if (!entrypoint) continue;
             log?.("debug", "Loading module route entrypoint.", {
                 component: "module-extension-routes",

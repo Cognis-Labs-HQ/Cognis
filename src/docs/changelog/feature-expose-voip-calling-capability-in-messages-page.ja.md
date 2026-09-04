@@ -138,8 +138,13 @@ PiP 中の VoIP 通話を閉じる際に元のポータル階層を検証し、�
 
 Messages は汎用的なルームイベント永続化 Capability と段階的な書式設定 Flow を公開するようになりました。Calls がイベント種別、ローカライズ済みテキスト、表示を所有して注入するため、Messages のストア、レンダラー、言語リソースに通話固有の契約は残りません。
 
+## 通話とモジュールのライフサイクル強化
+
+アクティブ通話を終了できるのは参加済みユーザーだけになり、発信者と招待者は再接続前にシグナリングへ再参加し、退出失敗時は再試行可能な参加状態を維持します。通知からルーム状態への変換は Calls が所有し、重複していた Meeting Window 表示を削除しました。無効なモジュールは通常の Bootstrap を実行せず分離された設定エントリーポイントを使い、API 結果のエクスポートを完全に文書化し、ルームイベント Flow は Camel Case を使用します。
+
 ## コミット
 
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/6bf285c42a978273d039d2547d17e827512f4b26
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea665452e791853c2fd72b8dfa141b0a7a1f1ecb
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/968d9fb49a0df9e137ab7ab0606b5950ef759e26
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10

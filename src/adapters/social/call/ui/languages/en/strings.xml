@@ -15,7 +15,6 @@
   <string name="adapter.social.call.return_to_messages">Return to Messages</string>
   <string name="adapter.social.call.cancel">Cancel</string>
   <string name="adapter.social.call.close_pip_failed">Could not close the picture-in-picture call.</string>
-  <string name="adapter.social.call.window_title">Meeting Window</string>
   <string name="adapter.social.call.cancelled">Call cancelled.</string>
   <string name="adapter.social.call.declined">Call declined.</string>
   <string name="adapter.social.call.no_answer">No answer.</string>

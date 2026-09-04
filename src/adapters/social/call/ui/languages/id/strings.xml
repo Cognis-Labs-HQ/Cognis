@@ -15,7 +15,6 @@
   <string name="adapter.social.call.return_to_messages">Kembali ke Messages</string>
   <string name="adapter.social.call.cancel">Batal</string>
   <string name="adapter.social.call.close_pip_failed">Panggilan gambar-dalam-gambar tidak dapat ditutup.</string>
-  <string name="adapter.social.call.window_title">Jendela Rapat</string>
   <string name="adapter.social.call.cancelled">Panggilan dibatalkan.</string>
   <string name="adapter.social.call.declined">Panggilan ditolak.</string>
   <string name="adapter.social.call.no_answer">Tidak ada jawaban.</string>

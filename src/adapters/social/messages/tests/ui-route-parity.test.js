@@ -157,6 +157,6 @@ test("messages exposes neutral flows for contributed room actions", () => {
     assert.match(ROOM_RENDER_SOURCE, /messages-room-action-banner/);
     assert.doesNotMatch(ROOM_RENDER_SOURCE, /start_video_call/);
     assert.match(ROOM_RENDER_SOURCE, /aria-pressed/);
-    assert.match(MESSAGE_FLOWS_SOURCE, /messages:format-room-event/);
+    assert.match(MESSAGE_FLOWS_SOURCE, /messages:formatRoomEvent/);
     assert.match(MESSAGE_RENDER_SOURCE, /await formatRoomEventText/);
 });

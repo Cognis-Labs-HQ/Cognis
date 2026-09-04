@@ -138,8 +138,13 @@ Call action SVGs now live in Call-owned asset files. The same video asset suppli
 
 Messages now exposes a generic room-event persistence capability and a staged formatting flow. Calls owns and injects its event types, localized text, and presentation, so the Messages store, renderer, and language resources no longer contain call-specific contracts.
 
+## Hardened call and module lifecycles
+
+Active calls can now be ended only by joined participants, callers and invitees rejoin signaling before reconnecting, and failed leave requests retain retryable joined state. Calls owns notification-to-room-state translation, the redundant Meeting Window label is gone, disabled modules use an isolated configuration entrypoint without executing their normal bootstrap, API-result exports are fully documented, and the room-event flow uses camel case.
+
 ## Commits
 
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/6bf285c42a978273d039d2547d17e827512f4b26
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea665452e791853c2fd72b8dfa141b0a7a1f1ecb
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/968d9fb49a0df9e137ab7ab0606b5950ef759e26
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10

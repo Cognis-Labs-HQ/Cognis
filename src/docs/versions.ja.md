@@ -33,7 +33,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント        | パス                                | バージョン |
 | --------------------- | ----------------------------------- | ---------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.27`   |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.28`   |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.29`   |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.17`   |
 | ファイル容量制限      | `src/adapters/file/quota/`          | `1.0.15`   |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.17`   |
@@ -51,8 +51,8 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.16`   |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.14`   |
 | Profile (Social)      | `src/adapters/social/profile/`      | `2.0.4`    |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.7`    |
-| Calls (Social)        | `src/adapters/social/call/`         | `0.5.18`   |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.8`    |
+| Calls (Social)        | `src/adapters/social/call/`         | `0.5.19`   |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34`   |
 | User Share            | `src/adapters/share/user/`          | `1.1.19`   |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10`   |
@@ -81,7 +81,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス        | バージョン |
 | -------------- | ----------- | ---------- |
-| Core Package   | `src/core/` | `0.3.87`   |
+| Core Package   | `src/core/` | `0.3.88`   |
 
 ## API
 

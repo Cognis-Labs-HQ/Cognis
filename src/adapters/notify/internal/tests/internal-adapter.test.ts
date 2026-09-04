@@ -207,4 +207,5 @@ test("notification producers control persistent action presentation", async () =
     assert.match(source, /resolveCorrelatedNotifications/);
     assert.doesNotMatch(source, /social:callUi/);
     assert.doesNotMatch(source, /category === "calls"/);
+    assert.doesNotMatch(source, /cognis:room-call-state/);
 });

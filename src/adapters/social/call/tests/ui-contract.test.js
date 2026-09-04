@@ -66,6 +66,7 @@ test("Call toolbar keeps its arrow separate from mounted meeting content", () =>
     assert.match(providerSource, /social-call-stage__toolbar/);
     assert.match(providerSource, /social-call-stage__component/);
     assert.match(providerSource, /social-call-stage__back-icon/);
+    assert.doesNotMatch(providerSource, /adapter\.social\.call\.window_title/);
     assert.match(providerSource, /ui:makeFloatingWindow/);
     assert.match(providerSource, /if \(callStage\.isFloating\(\)\) return/);
     assert.match(providerSource, /backButton\.hidden = true/);
@@ -91,7 +92,11 @@ test("Call toolbar keeps its arrow separate from mounted meeting content", () =>
         providerSource,
         /if \(!callStage\.isFloating\(\)\) \{[\s\S]*callStage\.cleanup\(\)/,
     );
-    assert.match(providerSource, /error\?\.code !== "call_unavailable"/);
+    assert.match(providerSource, /error\?\.code === "call_unavailable"/);
+    assert.match(
+        providerSource,
+        /window\.setTimeout\(\(\) => void cleanup\(\), 2_000\)/,
+    );
     assert.match(providerSource, /markDocked/);
     assert.match(providerSource, /updateCall\(call\.id, "leave"\)/);
     assert.match(providerSource, /allowNavigation,/);
@@ -172,7 +177,7 @@ test("Call UI exposes room-event answer and decline actions", () => {
     assert.match(providerSource, /async function declineCall/);
     assert.match(providerSource, /answerCall,/);
     assert.match(providerSource, /declineCall,/);
-    assert.match(providerSource, /messages:format-room-event/);
+    assert.match(providerSource, /messages:formatRoomEvent/);
     assert.match(providerSource, /social-call:format-room-events/);
     assert.match(providerSource, /adapter\.social\.call\.event_call_started/);
 });
@@ -181,7 +186,10 @@ test("Call UI resolves and rejoins the current room call", () => {
     assert.match(providerSource, /getRoomCall\(roomId\)/);
     assert.match(providerSource, /state: call\?\.status \?\? "available"/);
     assert.match(providerSource, /call\.status === "active"/);
-    assert.match(providerSource, /call\.callerAccountId !== currentAccountId/);
+    assert.match(
+        providerSource,
+        /call\.status === "active" \? "join" : "answer"/,
+    );
 });
 
 test("Call UI carries user activation through delayed provider mounting", () => {

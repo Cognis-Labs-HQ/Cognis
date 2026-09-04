@@ -15,7 +15,6 @@
   <string name="adapter.social.call.return_to_messages">Messages に戻る</string>
   <string name="adapter.social.call.cancel">キャンセル</string>
   <string name="adapter.social.call.close_pip_failed">ピクチャーインピクチャー通話を閉じることができませんでした。</string>
-  <string name="adapter.social.call.window_title">ミーティングウィンドウ</string>
   <string name="adapter.social.call.cancelled">通話をキャンセルしました。</string>
   <string name="adapter.social.call.declined">通話が拒否されました。</string>
   <string name="adapter.social.call.no_answer">応答がありません。</string>

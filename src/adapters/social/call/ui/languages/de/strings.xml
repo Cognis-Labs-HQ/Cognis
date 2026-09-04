@@ -15,7 +15,6 @@
   <string name="adapter.social.call.return_to_messages">Zu Messages zurückkehren</string>
   <string name="adapter.social.call.cancel">Abbrechen</string>
   <string name="adapter.social.call.close_pip_failed">Der Bild-im-Bild-Anruf konnte nicht geschlossen werden.</string>
-  <string name="adapter.social.call.window_title">Meeting-Fenster</string>
   <string name="adapter.social.call.cancelled">Anruf abgebrochen.</string>
   <string name="adapter.social.call.declined">Anruf abgelehnt.</string>
   <string name="adapter.social.call.no_answer">Keine Antwort.</string>

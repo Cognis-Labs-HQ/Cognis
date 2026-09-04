@@ -945,20 +945,10 @@ async function showArrivalToast(notif, i18n) {
     container.appendChild(toast);
     if (isPersistent) {
         const metadata = notif.metadata ?? {};
-        window.dispatchEvent(
-            new CustomEvent("cognis:room-call-state", {
-                detail: { roomId: metadata.roomId, active: true },
-            }),
-        );
         const remaining = Number(metadata.expiresAt) - Date.now();
         setTimeout(
             () => {
                 dismiss();
-                window.dispatchEvent(
-                    new CustomEvent("cognis:room-call-state", {
-                        detail: { roomId: metadata.roomId, active: false },
-                    }),
-                );
             },
             Math.max(0, Number.isFinite(remaining) ? remaining : 0),
         );

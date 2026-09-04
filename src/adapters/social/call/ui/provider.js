@@ -15,7 +15,7 @@ const CALL_UI_CAPABILITY = "social:callUi";
 const VOIP_PROVIDER_CAPABILITY = "voip:startCall";
 const ROOM_ACTIONS_FLOW = "messages:compose-room-actions";
 const ROOM_ACTION_FLOW = "messages:activate-room-action";
-const ROOM_EVENT_TEXT_FLOW = "messages:format-room-event";
+const ROOM_EVENT_TEXT_FLOW = "messages:formatRoomEvent";
 const POLL_INTERVAL_MILLISECONDS = 1_000;
 let activeCall = null;
 let callI18n = null;
@@ -152,14 +152,12 @@ async function createStage(call) {
     stage.className = "social-call-stage";
     stage.dataset.callId = call.id;
     stage.dataset.roomId = call.roomId;
-    stage.innerHTML = `<div class="social-call-stage__toolbar"><button type="button" class="social-call-stage__back btn-neutral" hidden><span class="social-call-stage__back-icon" aria-hidden="true"></span></button><strong></strong></div><div class="social-call-stage__ringing"><p></p><button type="button" class="social-call-stage__hangup btn-cancel"><img src="/static/adapters/social/call/hangup.svg" alt="" /></button></div>`;
+    stage.innerHTML = `<div class="social-call-stage__toolbar"><button type="button" class="social-call-stage__back btn-neutral" hidden><span class="social-call-stage__back-icon" aria-hidden="true"></span></button></div><div class="social-call-stage__ringing"><p></p><button type="button" class="social-call-stage__hangup btn-cancel"><img src="/static/adapters/social/call/hangup.svg" alt="" /></button></div>`;
     const moveToPipLabel = i18n.t("adapter.social.call.move_to_pip");
     const hangupLabel = i18n.t("adapter.social.call.hangup");
     const initialBackButton = stage.querySelector(".social-call-stage__back");
     initialBackButton.title = moveToPipLabel;
     initialBackButton.setAttribute("aria-label", moveToPipLabel);
-    stage.querySelector(".social-call-stage__toolbar strong").textContent =
-        i18n.t("adapter.social.call.window_title");
     stage.querySelector(".social-call-stage__ringing p").textContent = i18n
         .t("adapter.social.call.ringing")
         .replace("{{user}}", otherParticipantLabel(call));
@@ -181,11 +179,13 @@ async function createStage(call) {
         closeObserver?.disconnect();
         releaseFloatingWindow?.();
         if (connected && leave) {
-            connected = false;
             try {
                 await updateCall(call.id, "leave");
+                connected = false;
             } catch (error) {
-                if (error?.code !== "call_unavailable") {
+                if (error?.code === "call_unavailable") {
+                    connected = false;
+                } else {
                     console.error("[calls] Failed to leave call", {
                         callId: call.id,
                         roomId: call.roomId,
@@ -197,6 +197,8 @@ async function createStage(call) {
                         ),
                         { variant: "error" },
                     );
+                    window.setTimeout(() => void cleanup(), 2_000);
+                    return;
                 }
             }
         }
@@ -561,10 +563,12 @@ async function startRoomCall(action, { signal } = {}) {
     let call = action.call;
     if (
         ["ringing", "active"].includes(call?.status) &&
-        call.callerAccountId !== currentAccountId() &&
         !call.joinedAccountIds?.includes(currentAccountId())
     ) {
-        call = await updateCall(call.id, "answer");
+        call = await updateCall(
+            call.id,
+            call.status === "active" ? "join" : "answer",
+        );
         stopInboundTone(call.id);
     }
     call ??= await createCall(action.roomId);
@@ -670,6 +674,14 @@ window.addEventListener("cognis:notification-arrival", (event) => {
     const notification = event.detail?.notification;
     if (notification?.category !== "calls") return;
     const callId = String(notification.metadata?.callId ?? "");
+    const roomId = String(notification.metadata?.roomId ?? "");
+    if (!roomId) return;
+    announceRoomCall(roomId, true);
+    const remaining = Number(notification.metadata?.expiresAt) - Date.now();
+    window.setTimeout(
+        () => announceRoomCall(roomId, false),
+        Math.max(0, Number.isFinite(remaining) ? remaining : 0),
+    );
     void startInboundTone(callId);
 });
 
