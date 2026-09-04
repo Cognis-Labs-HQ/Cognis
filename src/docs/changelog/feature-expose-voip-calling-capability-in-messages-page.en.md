@@ -90,8 +90,53 @@ Core now advertises its component-page spawn, component-page discard, and floati
 
 Internal notifications now render producer-supplied action labels and sanitized SVGs through a neutral continuous-notification contract. Messages owns generic room-action flows that Calls extends, removing Messages’ static Call capability knowledge. Ringing uses a longer double-pulse cadence.
 
+## User-only room discovery
+
+The Messages New Room picker now passes the shared search utility’s user category and type filter, matching the filtered-search parameters used by Jitsi Meet and excluding unrelated result types.
+
+## Responsive search status
+
+Search now replaces the minimum-length prompt with a loading state as soon as an eligible query runs. Failed and timed-out requests render an explicit error instead of leaving stale results or an unresponsive prompt.
+
+## Synchronized incoming-call prompts
+
+Incoming calls now appear in a bar immediately above the Messages thread header. Answer and Decline resolve the correlated notification and in-chat prompt together, while a per-user ringing lease prevents multiple tabs or surfaces from playing duplicate ringtones.
+
+## Visible call bar and focused PiP
+
+Incoming-call state now refreshes the selected room so its action bar appears directly below the thread header while the notification may remain visible. Spawned VoIP components are explicitly marked with the Jitsi Meet `voipCall` context, keeping meeting chat out of the PiP surface.
+
+## Safe PiP teardown
+
+Closing a VoIP call in PiP now validates the original portal hierarchy and safely falls back when the browser rejects a state-preserving atomic move. Component teardown can finish without an unhandled `HierarchyRequestError`.
+
+## Full-height docked call stage
+
+Docked provider calls now use the full remaining height of the Messages widget card. The active thread collapses to header and call-stage rows, while the stage, component host, and component window all stretch through the available content row.
+
+## Reliable ringing cleanup and PiP return
+
+Late ringing-lease requests now succeed with a non-ringing result after a call has ended. Closing a call from PiP after SPA navigation offers Return to Messages, Hang Up, and Cancel with consequence-appropriate actions. Returning navigates to the call room and restores the existing provider component without remounting it.
+
+## Stable PiP close control
+
+The PiP close action now retains the active call in its stage lifecycle, eliminating the navigation-time `ReferenceError`. The close control again uses the standard floating-window size and now carries the destructive `btn-cancel` class.
+
+## Idempotent leave and repeat PiP persistence
+
+Late provider teardown no longer reports an error when the server has already ended the call; leave now succeeds idempotently and cleanup suppresses the known unavailable-call race. Returning to Messages and entering PiP a second time now preserves the call across the next SPA navigation.
+
+## Security, lifecycle, and test-suite corrections
+
+Call rendering now inserts participant-controlled labels through text nodes, call operations revalidate current Messages membership, archived rooms are excluded, active group joiners are registered, rejected ringing renewals stop audio, aborted outbound polling cancels invitations, and provider contracts retain the actual room kind. Incoming call copy is supplied in all supported locales through neutral notification metadata. The shared search matcher was split into a dedicated API-results module to satisfy the 1,000-line limit, and stale Messages, notification, and hardcoded-string tests were corrected without deleting newlines.
+
+## Standalone reusable call icons
+
+Call action SVGs now live in Call-owned asset files. The same video asset supplies the Messages room action, while notification and in-room answer and decline controls reuse their corresponding assets without embedding SVG markup in source code.
+
 ## Commits
 
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/968d9fb49a0df9e137ab7ab0606b5950ef759e26
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/fddbcbf8999173159b88ee4efddf284e426b9a67
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9c16bf732cf74c071bc41201a303f57d3f561e30
@@ -119,3 +164,14 @@ Internal notifications now render producer-supplied action labels and sanitized 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ff335be25d9d3858ae287ec0d84ee7c041fbc635
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/81b69ddc13d7ffba92acfaa9e3067907bfa0b55b
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e9735b3df0ec8a939a9598eadc7d3681fa512594
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/aa9c83fcc501bfede1e9d392a2dbdd9e7a6e943e
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/87e5e5e0d7ee3403d421fbe099e94425932a3a4e
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d242f8921775d346b655c2699d3e174c6e4373
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/fa2b5983f609ce6932d5ded0aa5f3c24afead9ca
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e2b9683158388267faea8ede560a681c45518ba9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/738a98d449247b89ce94cfda908042dbe8c28043
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ea5a087cdcc7d7cce9ece27fff4d90353c7e8fe7
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/5e8996297422cc379e6747e980fcd613a482716f
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e7560cabcb987acf49dbbfdc74a1135755ce3713
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/da2e46c1

@@ -511,6 +511,11 @@ Comprehensive logging is required for every new feature and behaviour change.
 
 ## Symbols and icons
 
+SVG icons must always be stored as standalone asset files rather than embedded
+as SVG markup in JavaScript, TypeScript, HTML, or CSS. Reuse the same asset
+wherever an icon appears; callers that contribute icon markup to a neutral
+capability must load that markup from the owning component's asset file.
+
 When applying a symbol or icon (e.g. as a UI label, button decoration, or status indicator), check https://www.w3schools.com/charsets/ref_utf_symbols.asp first. It provides the most expansive set of UTF symbol codes and should be the primary reference for selecting an appropriate character.
 
 Unicode emoji should be avoided for interface icons because their rendering varies by platform and cannot be themed consistently. Prefer reusable SVG assets with explicit light and dark variants; use Unicode symbols only when no suitable SVG asset exists and the symbol's textual meaning is intentional.

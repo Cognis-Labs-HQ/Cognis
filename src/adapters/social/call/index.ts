@@ -42,6 +42,14 @@ async function loadNotificationTranslations(uiDir: string) {
     return Object.fromEntries(entries);
 }
 
+async function loadNotificationActionIcons(uiDir: string) {
+    const [answer, decline] = await Promise.all([
+        readFile(path.join(uiDir, "answer.svg"), "utf8"),
+        readFile(path.join(uiDir, "decline.svg"), "utf8"),
+    ]);
+    return { answer, decline };
+}
+
 export function createSocialAdapter(): SocialAdapter {
     return {
         adapterId: "call",
@@ -102,6 +110,7 @@ export async function bootstrapSocialAdapter(
         "ui",
     );
     const notificationTranslations = await loadNotificationTranslations(uiDir);
+    const notificationActionIcons = await loadNotificationActionIcons(uiDir);
     ctx.capabilities.get<(id: string, label: string) => void>(
         "notify:registerCategory",
     )?.("calls", "Calls");
@@ -114,6 +123,7 @@ export async function bootstrapSocialAdapter(
             dispatch,
             appendRoomEvent,
             notificationTranslations,
+            notificationActionIcons,
         ),
         "social",
     );

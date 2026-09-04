@@ -14,6 +14,28 @@ const toneSource = readFileSync(
     new URL("../ui/tone-player.js", import.meta.url),
     "utf8",
 );
+const routeSource = readFileSync(
+    new URL("../routes/index.ts", import.meta.url),
+    "utf8",
+);
+
+test("Call actions reuse standalone SVG assets", () => {
+    for (const asset of ["answer.svg", "decline.svg", "video.svg"]) {
+        const markup = readFileSync(
+            new URL(`../ui/${asset}`, import.meta.url),
+            "utf8",
+        );
+        assert.match(markup, /^<svg/);
+        assert.match(
+            providerSource,
+            new RegExp(`loadIconAsset\\("${asset}"\\)`),
+        );
+    }
+    assert.doesNotMatch(providerSource, /iconSvg:\s*["']<svg/);
+    assert.doesNotMatch(routeSource, /iconSvg:\s*["']<svg/);
+    assert.match(routeSource, /notificationActionIcons\.answer/);
+    assert.match(routeSource, /notificationActionIcons\.decline/);
+});
 
 test("Call UI rings before provider handoff and replaces conversation content", () => {
     assert.ok(

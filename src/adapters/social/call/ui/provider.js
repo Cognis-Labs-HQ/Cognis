@@ -20,7 +20,25 @@ let activeCall = null;
 let callI18n = null;
 const inboundTones = new Map();
 const answerSpawnPermits = new Map();
+const iconAssets = new Map();
 const ringerId = window.crypto.randomUUID();
+
+function loadIconAsset(fileName) {
+    if (!iconAssets.has(fileName)) {
+        iconAssets.set(
+            fileName,
+            fetch(`/static/adapters/social/call/${fileName}`).then(
+                (response) => {
+                    if (!response.ok) {
+                        throw new Error(`Unable to load call icon ${fileName}`);
+                    }
+                    return response.text();
+                },
+            ),
+        );
+    }
+    return iconAssets.get(fileName);
+}
 
 function stopInboundTone(callId) {
     const tone = inboundTones.get(callId);
@@ -681,6 +699,11 @@ function installMessagesFlowHooks() {
             const action = await resolveRoomCall(stageContext.input.room);
             if (!action) return;
             const i18n = await getCallI18n();
+            const [videoIcon, answerIcon, declineIcon] = await Promise.all([
+                loadIconAsset("video.svg"),
+                loadIconAsset("answer.svg"),
+                loadIconAsset("decline.svg"),
+            ]);
             stageContext.data.actions ??= [];
             stageContext.data.actions.push({
                 ...action,
@@ -689,8 +712,7 @@ function installMessagesFlowHooks() {
                 className: "messages-room-call-btn btn-confirm",
                 label: i18n.t("adapter.social.call.start_video_call"),
                 active: action.state === "active",
-                iconSvg:
-                    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 8.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-2.5l5 3.5a1 1 0 0 0 1.57-.82V6.82A1 1 0 0 0 20 6l-5 3.5Z"/></svg>',
+                iconSvg: videoIcon,
             });
             if (
                 action.call?.status === "ringing" &&
@@ -707,8 +729,7 @@ function installMessagesFlowHooks() {
                             roomId: action.roomId,
                             label: i18n.t("adapter.social.call.answer"),
                             className: "btn-confirm",
-                            iconSvg:
-                                '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8c1.5 2.9 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1l-2.3 2.2Z"/></svg>',
+                            iconSvg: answerIcon,
                         },
                         {
                             id: "call:decline",
@@ -716,8 +737,7 @@ function installMessagesFlowHooks() {
                             roomId: action.roomId,
                             label: i18n.t("adapter.social.call.decline"),
                             className: "btn-cancel",
-                            iconSvg:
-                                '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.6 13.2 2.3 2.2c.2.2.3.6.2 1-.4 1.1-.6 2.3-.6 3.6 0 .6-.4 1-1 1H4c-.6 0-1-.4-1-1 0-9.4 7.6-17 17-17 .6 0 1 .4 1 1v3.5c0 .6-.4 1-1 1-1.3 0-2.5.2-3.6.6-.4.2-.8.1-1-.2l-2.2-2.2c-2.8 1.4-5.2 3.7-6.6 6.5Z"/></svg>',
+                            iconSvg: declineIcon,
                         },
                     ],
                 });
