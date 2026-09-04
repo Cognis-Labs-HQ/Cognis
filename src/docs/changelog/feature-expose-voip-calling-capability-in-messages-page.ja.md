@@ -86,6 +86,10 @@ Core は無効な外部モジュールのエントリーポイントを制限付
 
 Core はコンポーネントページの起動と破棄、およびフローティングウィンドウのブラウザー Capability を UI プロバイダーレジストリで公開するようになりました。現在の Jitsi Meet マニフェストが宣言する全 Capability をモジュール有効化時に検証しても、Core 所有のブラウザー契約が拒否されません。プロバイダーの読み込みでは、それらをインストールするルーターバンドルをインポートします。
 
+## プロバイダーに依存しない通知アクションと Messages フロー
+
+内部通知は、汎用的な継続通知契約を通じて、生成元が提供したアクションラベルとサニタイズ済み SVG を描画するようになりました。Messages が汎用ルームアクションフローを所有し、Calls がそれを拡張することで、Messages から Call 固有の静的な知識を削除しました。呼び出し音は、より長い二重パルスになりました。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -114,3 +118,4 @@ Core はコンポーネントページの起動と破棄、およびフローテ
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/b6e47c6553f8b24ae90e42631e3712617082c7a6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ff335be25d9d3858ae287ec0d84ee7c041fbc635
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/81b69ddc13d7ffba92acfaa9e3067907bfa0b55b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e9735b3df0ec8a939a9598eadc7d3681fa512594

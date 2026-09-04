@@ -192,6 +192,22 @@ export function createCallRoutes(
                                 roomId,
                                 expiresAt: call.expiresAt,
                                 continuous: true,
+                                actions: [
+                                    {
+                                        id: "answer",
+                                        label: "Answer call",
+                                        consequence: "creative",
+                                        iconSvg:
+                                            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8c1.5 2.9 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1l-2.3 2.2Z"/></svg>',
+                                    },
+                                    {
+                                        id: "decline",
+                                        label: "Decline call",
+                                        consequence: "destructive",
+                                        iconSvg:
+                                            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.6 13.2 2.3 2.2c.2.2.3.6.2 1-.4 1.1-.6 2.3-.6 3.6 0 .6-.4 1-1 1H4c-.6 0-1-.4-1-1 0-9.4 7.6-17 17-17 .6 0 1 .4 1 1v3.5c0 .6-.4 1-1 1-1.3 0-2.5.2-3.6.6-.4.2-.8.1-1-.2l-2.2-2.2c-2.8 1.4-5.2 3.7-6.6 6.5Z"/></svg>',
+                                    },
+                                ],
                             },
                         }),
                     ),

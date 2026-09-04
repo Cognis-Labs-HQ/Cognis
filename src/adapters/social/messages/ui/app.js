@@ -48,6 +48,7 @@ import { resolveMessageTemplateVariables } from "./message-templates.js";
 import { loadChatRoomKey, requireChatRoomKey } from "./chat-loading.js";
 import { createMessagesRoomState } from "./room-state.js";
 import { renderRoomList } from "./room-render.js";
+import { activateRoomAction, resolveRoomActions } from "./flows.js";
 
 const profileAvatars = () => {
     const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
@@ -160,14 +161,10 @@ export async function mount(root, { signal } = {}) {
                 composerInputRef?.dispatchEvent(new Event("input"));
             }
         },
-        resolveCallAction: (room) =>
-            uiCtx.capabilities.get("social:callUi")?.resolveRoomCall(room),
-        onStartCall: async (_room, action) => {
+        resolveRoomActions,
+        onRoomAction: async (room, action) => {
             try {
-                const callStarted = await uiCtx.capabilities
-                    .get("social:callUi")
-                    ?.startRoomCall(action, { signal });
-                if (!callStarted) return;
+                await activateRoomAction(action, room, { signal });
             } catch (error) {
                 console.error("[messages] VoIP call action failed", {
                     component: "social-messages",
@@ -180,7 +177,6 @@ export async function mount(root, { signal } = {}) {
                 });
             }
         },
-        showCallAction: Boolean(uiCtx.capabilities.get("social:callUi")),
     });
 
     let pageReady = false;
@@ -409,16 +405,18 @@ export async function mount(root, { signal } = {}) {
                             "[data-call-action][data-call-id]",
                         );
                         if (callAction instanceof HTMLElement) {
-                            const callUi =
-                                uiCtx.capabilities.get("social:callUi");
                             const callId = callAction.dataset.callId;
                             const roomId = roomState.getSelectedRoomId();
-                            if (callAction.dataset.callAction === "answer") {
-                                await callUi?.answerCall(callId, roomId);
-                            } else {
-                                await callUi?.declineCall(callId, roomId);
-                                await roomState.refreshActiveConversation();
-                            }
+                            await activateRoomAction(
+                                {
+                                    id: `call:${callAction.dataset.callAction}`,
+                                    callId,
+                                    roomId,
+                                },
+                                null,
+                                { signal },
+                            );
+                            await roomState.refreshActiveConversation();
                             return;
                         }
                         const moreButton = clickEvent.target.closest(
@@ -950,9 +948,7 @@ export async function mount(root, { signal } = {}) {
     });
 
     await composer.init();
-    await uiCtx.capabilities
-        .get("social:callUi")
-        ?.answerRequestedCall({ signal });
+    await activateRoomAction({ id: "page:mounted" }, null, { signal });
     pageReady = true;
     if (refreshAfterKeyringUnlock) {
         refreshAfterKeyringUnlock = false;

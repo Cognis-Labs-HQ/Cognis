@@ -45,6 +45,6 @@ The navbar plugin (`ui/navbar-plugin.js`) is a self-contained ES module loaded b
 
 The adapter has no configuration. It is active as long as the notify gateway loads it (i.e. always, since adapters are discovered automatically). Disabling the adapter requires removing or renaming the adapter directory so the gateway no longer discovers it — at which point the notification bell disappears from the UI.
 
-Call notifications remain in the notification list while ringing and render an explicit Answer action that opens the associated Messages room and call token.
+Notification producers may mark an entry as continuous and provide action-button descriptors containing an identifier, accessible label, optional SVG icon, and consequence. Continuous entries remain visible until their supplied lifetime ends. The adapter validates and renders those generic descriptors, then emits the selected identifier and notification payload; it does not interpret the producer's domain or invoke producer capabilities.
 
-The call toast's Answer control invokes the Call UI capability before SPA navigation. This preserves the initiating user activation so the caller and recipient can both mount the provider component after asynchronous signaling completes.
+Notification producers may mark an entry as continuous and provide action-button descriptors containing an identifier, accessible label, optional SVG icon, and consequence. Continuous entries remain visible until their supplied lifetime ends. The adapter validates and renders those generic descriptors, then emits the selected identifier and notification payload; it does not interpret the producer’s domain or invoke producer capabilities.

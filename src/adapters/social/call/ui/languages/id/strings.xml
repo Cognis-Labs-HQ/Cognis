@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
   <string name="adapter.social.call.name">Panggilan</string>
+  <string name="adapter.social.call.start_video_call">Mulai panggilan video</string>
   <string name="adapter.social.call.ringing">Memanggil {{user}}...</string>
   <string name="adapter.social.call.hangup">Tutup panggilan</string>
   <string name="adapter.social.call.move_to_pip">Pindahkan panggilan ke gambar-dalam-gambar</string>

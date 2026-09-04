@@ -75,7 +75,7 @@ test("Call UI reports cancellation outcomes and room priority state", () => {
     assert.match(providerSource, /adapter\.social\.call\.declined/);
     assert.match(providerSource, /adapter\.social\.call\.no_answer/);
     assert.match(providerSource, /cognis:room-call-state/);
-    assert.match(providerSource, /cognis:call-decline-requested/);
+    assert.match(providerSource, /cognis:notification-command/);
     assert.match(providerSource, /current\.endedBy === currentAccountId\(\)/);
 });
 
@@ -84,6 +84,7 @@ test("Call UI plays distinct inbound and outbound ringing tones", () => {
     assert.match(providerSource, /startRingingTone\("inbound"\)/);
     assert.match(toneSource, /createOscillator/);
     assert.match(toneSource, /TONE_INTERVAL_MILLISECONDS/);
+    assert.match(toneSource, /BURST_GAP_MILLISECONDS/);
 });
 
 test("Call UI exposes room-event answer and decline actions", () => {

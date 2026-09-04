@@ -40,9 +40,8 @@ export function createMessagesRoomState({
     requireRoomKey,
     resolveThreadRoomKey,
     onRoomOpened = async () => {},
-    resolveCallAction = async () => null,
-    onStartCall = async () => {},
-    showCallAction = false,
+    resolveRoomActions = async () => [],
+    onRoomAction = async () => {},
     lastOpenedRoomKey = "messages:last-opened-room",
     typingTtlSeconds = 8,
     typingIdleResetMs = 5000,
@@ -61,7 +60,7 @@ export function createMessagesRoomState({
     let openingRoomId = null;
     let roomOpenPromise = null;
     let readyRoomId = null;
-    let selectedCallAction = null;
+    let selectedRoomActions = [];
 
     function keyringAccessSuppressed() {
         return (
@@ -242,10 +241,10 @@ export function createMessagesRoomState({
                     : entry,
             );
         }
-        selectedCallAction = null;
-        if (showCallAction && room) {
+        selectedRoomActions = [];
+        if (room) {
             try {
-                selectedCallAction = await resolveCallAction(room);
+                selectedRoomActions = await resolveRoomActions(room);
             } catch (error) {
                 console.error("[messages] VoIP room capability check failed", {
                     component: "social-messages",
@@ -261,8 +260,7 @@ export function createMessagesRoomState({
                 currentAccountId,
                 i18n,
                 {
-                    showCallAction: Boolean(selectedCallAction),
-                    callActive: selectedCallAction?.state === "active",
+                    actions: selectedRoomActions,
                 },
             );
             void hydrateProfileAvatars(headerSlot);
@@ -654,13 +652,21 @@ export function createMessagesRoomState({
     }
 
     function bindRoomHeaderEvents() {
-        const callButton = document.getElementById("messages-room-call-btn");
-        callButton?.addEventListener("click", async () => {
-            const selectedRoom = getSelectedRoom();
-            if (selectedRoom && selectedCallAction) {
-                await onStartCall(selectedRoom, selectedCallAction);
-            }
-        });
+        document
+            .getElementById("messages-thread-header-slot")
+            ?.querySelectorAll("[data-room-action]")
+            .forEach((button) =>
+                button.addEventListener("click", async () => {
+                    const selectedRoom = getSelectedRoom();
+                    const action = selectedRoomActions.find(
+                        (candidate) =>
+                            candidate.id === button.dataset.roomAction,
+                    );
+                    if (selectedRoom && action) {
+                        await onRoomAction(selectedRoom, action);
+                    }
+                }),
+            );
 
         const input = document.getElementById("messages-room-avatar-input");
         input?.addEventListener("change", async () => {

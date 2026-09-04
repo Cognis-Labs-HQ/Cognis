@@ -26,6 +26,4 @@ Der interne Adapter leitet Benachrichtigungen direkt an die In-App-Benachrichtig
 
 Der Adapter verfügt über keine Konfigurationsoptionen. Er ist aktiv, solange das Notify-Gateway ihn lädt (also immer, da Adapter automatisch erkannt werden). Das Deaktivieren des Adapters erfordert das Entfernen oder Umbenennen des Adapter-Verzeichnisses – woraufhin die Benachrichtigungsglocke aus der Oberfläche verschwindet.
 
-Anrufbenachrichtigungen bleiben während des Klingelns in der Benachrichtigungsliste und zeigen eine ausdrückliche Aktion „Annehmen“, die den zugehörigen Messages-Raum mit dem Anruftoken öffnet.
-
-Die Antwortaktion des Anrufhinweises ruft die Anruf-UI-Fähigkeit vor der SPA-Navigation auf. Dadurch bleibt die auslösende Benutzeraktivierung erhalten, sodass Anrufer und Empfänger die Anbieterkomponente nach Abschluss der asynchronen Signalisierung einbinden können.
+Benachrichtigungsproduzenten können einen Eintrag als dauerhaft markieren und Aktionsbeschreibungen mit Kennung, barrierefreier Beschriftung, optionalem SVG-Symbol und Konsequenz bereitstellen. Der Adapter validiert und rendert diesen allgemeinen Vertrag und meldet die ausgewählte Kennung mit der Benachrichtigung zurück; er interpretiert weder die Domäne des Produzenten noch ruft er dessen Capabilities auf.

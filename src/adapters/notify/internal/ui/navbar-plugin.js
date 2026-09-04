@@ -78,6 +78,94 @@ function navigateNotif(actionUrl) {
     }
 }
 
+function actionButtonClass(consequence) {
+    if (consequence === "creative") return "btn-confirm";
+    if (consequence === "destructive") return "btn-cancel";
+    return "btn-neutral";
+}
+
+function safeActionIcon(iconSvg) {
+    if (typeof iconSvg !== "string") return "";
+    const documentNode = new DOMParser().parseFromString(
+        iconSvg,
+        "image/svg+xml",
+    );
+    const svg = documentNode.documentElement;
+    if (
+        svg.nodeName.toLowerCase() !== "svg" ||
+        svg.querySelector("parsererror")
+    )
+        return "";
+    const allowedElements = new Set([
+        "svg",
+        "path",
+        "circle",
+        "line",
+        "polyline",
+    ]);
+    const allowedAttributes = new Set([
+        "aria-hidden",
+        "d",
+        "fill",
+        "focusable",
+        "viewBox",
+        "cx",
+        "cy",
+        "r",
+        "x1",
+        "x2",
+        "y1",
+        "y2",
+        "points",
+        "stroke",
+        "stroke-width",
+    ]);
+    for (const element of svg.querySelectorAll("*")) {
+        if (!allowedElements.has(element.nodeName.toLowerCase())) {
+            element.remove();
+            continue;
+        }
+        for (const attribute of [...element.attributes]) {
+            if (!allowedAttributes.has(attribute.name)) {
+                element.removeAttribute(attribute.name);
+            }
+        }
+    }
+    for (const attribute of [...svg.attributes]) {
+        if (!allowedAttributes.has(attribute.name))
+            svg.removeAttribute(attribute.name);
+    }
+    return new XMLSerializer().serializeToString(svg);
+}
+
+function renderNotificationActions(notification) {
+    const actions = notification.metadata?.actions;
+    if (!Array.isArray(actions)) return "";
+    const buttons = actions
+        .filter(
+            (action) =>
+                action &&
+                typeof action.id === "string" &&
+                typeof action.label === "string",
+        )
+        .map(
+            (action) =>
+                `<button class="notification-action ${actionButtonClass(action.consequence)}" data-notification-action="${escapeHtml(action.id)}" type="button" aria-label="${escapeHtml(action.label)}">${safeActionIcon(action.iconSvg) || escapeHtml(action.label)}</button>`,
+        )
+        .join("");
+    return buttons
+        ? `<span class="notification-actions">${buttons}</span>`
+        : "";
+}
+
+function dispatchNotificationAction(notification, actionId) {
+    window.dispatchEvent(
+        new CustomEvent("cognis:notification-command", {
+            detail: { actionId, notification },
+        }),
+    );
+}
+
 async function getRoomKey(roomId) {
     const loadChatRoomKey = uiCtx.capabilities.get(
         "social:messages:loadChatRoomKey",
@@ -280,9 +368,7 @@ function renderNotificationItem(notif, i18n) {
         `<span class="notification-item-preview">${escapeHtml(notif.body)}</span>` +
         "</span>" +
         `<span class="notification-item-time" data-relative-time="${notif.createdAt}">${escapeHtml(formatRelativeTime(notif.createdAt))}</span>` +
-        (notif.category === "calls" && notif.actionUrl
-            ? `<button class="notification-answer btn-confirm" type="button">${escapeHtml(i18n.t("adapter.notify.internal.answer_call"))}</button>`
-            : "") +
+        renderNotificationActions(notif) +
         (notif.actionUrl
             ? '<span class="notification-item-link-arrow" aria-hidden="true">&#8250;</span>'
             : "") +
@@ -290,6 +376,14 @@ function renderNotificationItem(notif, i18n) {
 
     listItem.addEventListener("click", async (e) => {
         if (e.target.closest(".notification-dismiss")) return;
+        const actionButton = e.target.closest("[data-notification-action]");
+        if (actionButton instanceof HTMLElement) {
+            dispatchNotificationAction(
+                notif,
+                actionButton.dataset.notificationAction,
+            );
+            return;
+        }
         if (!notif.read) {
             try {
                 await markOneRead(notif.id);
@@ -337,7 +431,7 @@ async function refreshCount() {
     const notifications = await fetchNotifications();
     const count = notifications.filter(
         (notification) =>
-            !notification.read && notification.category !== "calls",
+            !notification.read && notification.metadata?.continuous !== true,
     ).length;
     updateBadge(count);
 }
@@ -359,7 +453,7 @@ function renderPanelContents(i18n) {
 
     currentNotifications.forEach((n) => seenIds?.add(n.id));
     const panelNotifications = currentNotifications.filter(
-        (notification) => notification.category !== "calls",
+        (notification) => notification.metadata?.continuous !== true,
     );
     const unreadCount = panelNotifications.filter((n) => !n.read).length;
     updateBadge(unreadCount);
@@ -601,16 +695,16 @@ function insertButton(wrap) {
 async function startPolling(i18n) {
     const initial = await fetchNotifications();
     seenIds = new Set(initial.map((n) => n.id));
-    const incomingCalls = initial.filter(
+    const persistentArrivals = initial.filter(
         (notification) =>
-            !notification.read && notification.category === "calls",
+            !notification.read && notification.metadata?.continuous === true,
     );
     const unread = initial.filter(
         (notification) =>
-            !notification.read && notification.category !== "calls",
+            !notification.read && notification.metadata?.continuous !== true,
     ).length;
     updateBadge(unread);
-    for (const notification of incomingCalls) {
+    for (const notification of persistentArrivals) {
         window.dispatchEvent(
             new CustomEvent("cognis:notification-arrival", {
                 detail: { notification },
@@ -642,7 +736,7 @@ async function startPolling(i18n) {
 async function checkForNew(i18n) {
     const notifs = await fetchNotifications();
     const unread = notifs.filter(
-        (n) => !n.read && n.category !== "calls",
+        (n) => !n.read && n.metadata?.continuous !== true,
     ).length;
     updateBadge(unread);
 
@@ -656,7 +750,7 @@ async function checkForNew(i18n) {
         );
         if (
             !notif.read &&
-            (notif.category === "calls" ||
+            (notif.metadata?.continuous === true ||
                 !isNotificationOwnedByCurrentPage(notif))
         ) {
             void showArrivalToast(notif, i18n);
@@ -747,8 +841,8 @@ async function showArrivalToast(notif, i18n) {
 
     const sender = notif.senderName ?? i18n.t("ui.reuse.system");
 
-    const isCall = notif.category === "calls";
-    toast.classList.toggle("arrival-toast--call", isCall);
+    const isPersistent = notif.metadata?.continuous === true;
+    toast.classList.toggle("arrival-toast--persistent", isPersistent);
     toast.innerHTML =
         '<span class="arrival-toast-icon" aria-hidden="true">\uD83D\uDD14</span>' +
         '<div class="arrival-toast-text">' +
@@ -756,8 +850,8 @@ async function showArrivalToast(notif, i18n) {
         `<span class="arrival-toast-sender">${escapeHtml(sender)}</span>` +
         `<span class="arrival-toast-preview">${escapeHtml(preview)}</span>` +
         "</div>" +
-        (isCall
-            ? `<span class="arrival-toast-call-actions"><button class="arrival-toast-answer btn-confirm" type="button" aria-label="${i18n.t("adapter.notify.internal.answer_call")}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8c1.5 2.9 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1l-2.3 2.2Z"/></svg></button><button class="arrival-toast-decline btn-cancel" type="button" aria-label="${i18n.t("adapter.notify.internal.decline_call")}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.6 13.2 2.3 2.2c.2.2.3.6.2 1-.4 1.1-.6 2.3-.6 3.6 0 .6-.4 1-1 1H4c-.6 0-1-.4-1-1 0-9.4 7.6-17 17-17 .6 0 1 .4 1 1v3.5c0 .6-.4 1-1 1-1.3 0-2.5.2-3.6.6-.4.2-.8.1-1-.2l-2.2-2.2c-2.8 1.4-5.2 3.7-6.6 6.5Z"/></svg></button></span>`
+        (isPersistent
+            ? renderNotificationActions(notif)
             : `<button class="arrival-toast-dismiss" type="button" aria-label="${i18n.t("ui.reuse.dismiss")}">&#215;</button>`);
 
     const dismiss = () => {
@@ -768,30 +862,14 @@ async function showArrivalToast(notif, i18n) {
     };
 
     toast.addEventListener("click", (e) => {
-        if (e.target.closest(".arrival-toast-decline")) {
-            const metadata = notif.metadata ?? {};
-            window.dispatchEvent(
-                new CustomEvent("cognis:call-decline-requested", {
-                    detail: {
-                        callId: metadata.callId,
-                        roomId: metadata.roomId,
-                    },
-                }),
+        const actionButton = e.target.closest("[data-notification-action]");
+        if (actionButton instanceof HTMLElement) {
+            dismiss();
+            void markArrivalRead(notif);
+            dispatchNotificationAction(
+                notif,
+                actionButton.dataset.notificationAction,
             );
-            void markArrivalRead(notif);
-            dismiss();
-            return;
-        }
-        if (e.target.closest(".arrival-toast-answer")) {
-            const metadata = notif.metadata ?? {};
-            dismiss();
-            void markArrivalRead(notif);
-            void uiCtx.capabilities
-                .get("social:callUi")
-                ?.answerCall(
-                    String(metadata.callId ?? ""),
-                    String(metadata.roomId ?? ""),
-                );
             return;
         }
         if (e.target.closest(".arrival-toast-dismiss")) {
@@ -815,7 +893,7 @@ async function showArrivalToast(notif, i18n) {
         });
 
     container.appendChild(toast);
-    if (isCall) {
+    if (isPersistent) {
         const metadata = notif.metadata ?? {};
         window.dispatchEvent(
             new CustomEvent("cognis:room-call-state", {
@@ -832,7 +910,7 @@ async function showArrivalToast(notif, i18n) {
                     }),
                 );
             },
-            Math.max(0, remaining),
+            Math.max(0, Number.isFinite(remaining) ? remaining : 0),
         );
     } else {
         setTimeout(dismiss, TOAST_AUTO_DISMISS_MS);

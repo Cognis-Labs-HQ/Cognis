@@ -183,7 +183,7 @@ export function renderThreadHeader(
     room,
     currentAccountId,
     i18n,
-    { showCallAction = false, callActive = false } = {},
+    { actions = [] } = {},
 ) {
     if (!room) return "";
     const members = room.members ?? [];
@@ -204,13 +204,12 @@ export function renderThreadHeader(
         ${renderMemberCountControl(room, members, i18n)}
       </div>
       <div class="messages-thread-actions">
-        ${
-            showCallAction && ["dm", "group"].includes(room.kind)
-                ? `<button id="messages-room-call-btn" class="messages-room-call-btn btn-confirm${callActive ? " active" : ""}" type="button" aria-pressed="${callActive ? "true" : "false"}" title="${escapeHtml(i18n.t("module.social.messages.start_video_call"))}" aria-label="${escapeHtml(i18n.t("module.social.messages.start_video_call"))}">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 8.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-2.5l5 3.5a1 1 0 0 0 1.57-.82V6.82A1 1 0 0 0 20 6l-5 3.5Z"/></svg>
-          </button>`
-                : ""
-        }
+        ${actions
+            .map(
+                (action) =>
+                    `<button id="${escapeHtml(action.elementId ?? `messages-room-action-${action.id}`)}" class="${escapeHtml(action.className ?? "messages-room-action-btn btn-neutral")}${action.active ? " active" : ""}" data-room-action="${escapeHtml(action.id)}" type="button" aria-pressed="${action.active ? "true" : "false"}" title="${escapeHtml(action.label)}" aria-label="${escapeHtml(action.label)}">${action.iconSvg ?? ""}</button>`,
+            )
+            .join("")}
         ${canSetAvatar ? `<label class="messages-room-avatar-btn">${escapeHtml(i18n.t("module.social.messages.set_avatar"))}<input id="messages-room-avatar-input" type="file" accept="image/*" hidden /></label>` : ""}
         ${
             leaveHandle

@@ -31,6 +31,7 @@ interface EncryptedPayload {
     category: string;
     senderName?: string;
     actionUrl?: string;
+    metadata?: Record<string, unknown>;
 }
 
 const MAX_PER_USER = 50;
@@ -92,6 +93,7 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
             category: envelope.category,
             senderName: envelope.senderName,
             actionUrl: envelope.actionUrl,
+            metadata: envelope.metadata,
         };
         const { iv, ciphertext } = await encryptPayload(
             key,
@@ -182,6 +184,7 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
                     category: payload.category,
                     senderName: payload.senderName,
                     actionUrl: payload.actionUrl,
+                    metadata: payload.metadata,
                     read: Boolean(row.is_read),
                     createdAt: Number(row.created_at),
                 });

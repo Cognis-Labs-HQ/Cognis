@@ -6,6 +6,8 @@ import { startRingingTone } from "./tone-player.js";
 
 const CALL_UI_CAPABILITY = "social:callUi";
 const VOIP_PROVIDER_CAPABILITY = "voip:startCall";
+const ROOM_ACTIONS_FLOW = "messages:compose-room-actions";
+const ROOM_ACTION_FLOW = "messages:activate-room-action";
 const POLL_INTERVAL_MILLISECONDS = 1_000;
 let activeCall = null;
 let callI18n = null;
@@ -448,11 +450,12 @@ async function answerCall(callId, roomId) {
     return true;
 }
 
-window.addEventListener("cognis:call-decline-requested", (event) => {
-    void declineCall(
-        String(event.detail?.callId ?? ""),
-        String(event.detail?.roomId ?? ""),
-    );
+window.addEventListener("cognis:notification-command", (event) => {
+    const { actionId, notification } = event.detail ?? {};
+    const callId = String(notification?.metadata?.callId ?? "");
+    const roomId = String(notification?.metadata?.roomId ?? "");
+    if (actionId === "answer") void answerCall(callId, roomId);
+    if (actionId === "decline") void declineCall(callId, roomId);
 });
 
 window.addEventListener("cognis:notification-arrival", (event) => {
@@ -478,3 +481,57 @@ uiCtx.capabilities.contribute(CALL_UI_CAPABILITY, {
     answerCall,
     declineCall,
 });
+
+function installMessagesFlowHooks() {
+    if (
+        !uiCtx.flowExists(ROOM_ACTIONS_FLOW) ||
+        !uiCtx.flowExists(ROOM_ACTION_FLOW)
+    )
+        return;
+    uiCtx.extendFlow(
+        ROOM_ACTIONS_FLOW,
+        "contribute",
+        { id: "social-call:contribute-room-action" },
+        async (stageContext) => {
+            const action = await resolveRoomCall(stageContext.input.room);
+            if (!action) return;
+            const i18n = await getCallI18n();
+            stageContext.data.actions ??= [];
+            stageContext.data.actions.push({
+                ...action,
+                id: "social-call:start",
+                elementId: "messages-room-call-btn",
+                className: "messages-room-call-btn btn-confirm",
+                label: i18n.t("adapter.social.call.start_video_call"),
+                active: action.state === "active",
+                iconSvg:
+                    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 8.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-2.5l5 3.5a1 1 0 0 0 1.57-.82V6.82A1 1 0 0 0 20 6l-5 3.5Z"/></svg>',
+            });
+        },
+    );
+    uiCtx.extendFlow(
+        ROOM_ACTION_FLOW,
+        "activate",
+        { id: "social-call:activate-room-action" },
+        async ({ input }) => {
+            if (input.action?.id === "social-call:start") {
+                return startRoomCall(input.action, input.options);
+            }
+            if (input.action?.id === "call:answer") {
+                return answerCall(input.action.callId, input.action.roomId);
+            }
+            if (input.action?.id === "call:decline") {
+                return declineCall(input.action.callId, input.action.roomId);
+            }
+            if (input.action?.id === "page:mounted") {
+                return answerRequestedCall(input.options);
+            }
+        },
+    );
+}
+
+installMessagesFlowHooks();
+window.addEventListener(
+    "cognis:messages-flows-ready",
+    installMessagesFlowHooks,
+);

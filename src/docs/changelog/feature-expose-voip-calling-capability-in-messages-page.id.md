@@ -86,6 +86,10 @@ Core kini memuat entrypoint modul eksternal nonaktif dalam konteks terbatas yang
 
 Core kini mengumumkan capability browser untuk memunculkan halaman komponen, membuang halaman komponen, dan jendela mengambang melalui registri penyedia UI. Aktivasi modul dapat memvalidasi setiap capability yang dideklarasikan manifest Jitsi Meet saat ini tanpa menolak kontrak browser milik Core tersebut, dan pemuatan penyedia mengimpor bundel router yang memasangnya.
 
+## Tindakan notifikasi dan flow Messages yang netral terhadap penyedia
+
+Notifikasi internal kini merender label tindakan dan SVG yang telah disanitasi dari produsen melalui kontrak notifikasi berkelanjutan yang netral. Messages memiliki flow tindakan ruang generik yang diperluas Calls, sehingga pengetahuan statis tentang Call dihapus dari Messages. Nada dering memakai pola denyut ganda yang lebih panjang.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -114,3 +118,4 @@ Core kini mengumumkan capability browser untuk memunculkan halaman komponen, mem
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/b6e47c6553f8b24ae90e42631e3712617082c7a6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ff335be25d9d3858ae287ec0d84ee7c041fbc635
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/81b69ddc13d7ffba92acfaa9e3067907bfa0b55b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e9735b3df0ec8a939a9598eadc7d3681fa512594

@@ -86,6 +86,10 @@ Core now loads disabled external module entrypoints in a restricted context that
 
 Core now advertises its component-page spawn, component-page discard, and floating-window browser capabilities through the UI provider registry. Module enablement validates every capability declared by the current Jitsi Meet manifest without rejecting these core-owned browser contracts, and provider loading imports the router bundle that installs them.
 
+## Provider-neutral notification actions and Messages flows
+
+Internal notifications now render producer-supplied action labels and sanitized SVGs through a neutral continuous-notification contract. Messages owns generic room-action flows that Calls extends, removing Messages’ static Call capability knowledge. Ringing uses a longer double-pulse cadence.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -114,3 +118,4 @@ Core now advertises its component-page spawn, component-page discard, and floati
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/b6e47c6553f8b24ae90e42631e3712617082c7a6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ff335be25d9d3858ae287ec0d84ee7c041fbc635
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/81b69ddc13d7ffba92acfaa9e3067907bfa0b55b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e9735b3df0ec8a939a9598eadc7d3681fa512594

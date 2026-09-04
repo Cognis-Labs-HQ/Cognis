@@ -86,6 +86,10 @@ Core lädt jetzt Einstiegspunkte deaktivierter externer Module in einem eingesch
 
 Core kündigt seine Browser-Capabilities zum Öffnen und Schließen von Komponentenseiten sowie für schwebende Fenster jetzt über die UI-Anbieterregistrierung an. Die Modulaktivierung prüft damit jede im aktuellen Jitsi-Meet-Manifest deklarierte Capability, ohne diese Core-eigenen Browserverträge abzulehnen; das Laden des Anbieters importiert das Router-Bundle, das sie installiert.
 
+## Anbieterneutrale Benachrichtigungsaktionen und Messages-Flows
+
+Interne Benachrichtigungen rendern nun vom Produzenten gelieferte Aktionsbeschriftungen und bereinigte SVGs über einen neutralen Vertrag für dauerhafte Benachrichtigungen. Messages besitzt allgemeine Raumaktions-Flows, die Calls erweitert, wodurch statisches Call-Wissen aus Messages entfernt wird. Das Klingeln verwendet einen längeren Doppelimpuls.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -114,3 +118,4 @@ Core kündigt seine Browser-Capabilities zum Öffnen und Schließen von Komponen
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/b6e47c6553f8b24ae90e42631e3712617082c7a6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ff335be25d9d3858ae287ec0d84ee7c041fbc635
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/81b69ddc13d7ffba92acfaa9e3067907bfa0b55b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e9735b3df0ec8a939a9598eadc7d3681fa512594

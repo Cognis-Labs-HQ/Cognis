@@ -135,14 +135,11 @@ const MESSAGE_RENDER_SOURCE = readFileSync(
     resolve(ROOT, "src/adapters/social/messages/ui/message-render.js"),
     "utf8",
 );
-test("messages delegates calling through the Call adapter capability", () => {
-    assert.match(APP_SOURCE, /social:callUi/);
-    assert.match(APP_SOURCE, /resolveRoomCall/);
-    assert.match(APP_SOURCE, /startRoomCall/);
-    assert.match(APP_SOURCE, /answerRequestedCall/);
+test("messages exposes neutral flows for contributed room actions", () => {
+    assert.doesNotMatch(APP_SOURCE, /social:callUi/);
+    assert.match(APP_SOURCE, /resolveRoomActions/);
+    assert.match(APP_SOURCE, /activateRoomAction/);
     assert.match(APP_SOURCE, /data-call-action/);
-    assert.match(APP_SOURCE, /answerCall/);
-    assert.match(APP_SOURCE, /declineCall/);
     assert.match(APP_SOURCE, /cognis:call-moved-to-pip/);
     assert.match(MESSAGE_RENDER_SOURCE, /renderActiveCallEvent/);
     assert.match(
@@ -154,8 +151,7 @@ test("messages delegates calling through the Call adapter capability", () => {
         /messages-call-event-decline btn-cancel/,
     );
     assert.match(MESSAGE_RENDER_SOURCE, /roomEvent\.status === "ringing"/);
-    assert.match(ROOM_RENDER_SOURCE, /showCallAction && \["dm", "group"\]/);
-    assert.match(ROOM_RENDER_SOURCE, /messages-room-call-btn btn-confirm/);
-    assert.match(ROOM_RENDER_SOURCE, /callActive \? " active"/);
+    assert.match(ROOM_RENDER_SOURCE, /data-room-action/);
+    assert.doesNotMatch(ROOM_RENDER_SOURCE, /start_video_call/);
     assert.match(ROOM_RENDER_SOURCE, /aria-pressed/);
 });

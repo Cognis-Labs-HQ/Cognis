@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
   <string name="adapter.social.call.name">Calls</string>
+  <string name="adapter.social.call.start_video_call">Start video call</string>
   <string name="adapter.social.call.ringing">Ringing {{user}}...</string>
   <string name="adapter.social.call.hangup">Hang up</string>
   <string name="adapter.social.call.move_to_pip">Move call to picture in picture</string>

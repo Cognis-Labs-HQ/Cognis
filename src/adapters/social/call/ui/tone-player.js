@@ -1,4 +1,5 @@
-const TONE_INTERVAL_MILLISECONDS = 2_000;
+const TONE_INTERVAL_MILLISECONDS = 3_200;
+const BURST_GAP_MILLISECONDS = 260;
 
 export function startRingingTone(direction) {
     const AudioContext = window.AudioContext ?? window.webkitAudioContext;
@@ -6,9 +7,11 @@ export function startRingingTone(direction) {
     const context = new AudioContext();
     let stopped = false;
 
-    const playPulse = async () => {
+    const playPulse = async (delay = 0) => {
         if (stopped) return;
         await context.resume();
+        if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+        if (stopped) return;
         const oscillator = context.createOscillator();
         const gain = context.createGain();
         oscillator.type = "sine";
@@ -20,18 +23,19 @@ export function startRingingTone(direction) {
         );
         gain.gain.exponentialRampToValueAtTime(
             0.0001,
-            context.currentTime + 0.6,
+            context.currentTime + 0.9,
         );
         oscillator.connect(gain).connect(context.destination);
         oscillator.start();
-        oscillator.stop(context.currentTime + 0.65);
+        oscillator.stop(context.currentTime + 0.95);
     };
 
-    void playPulse().catch(() => undefined);
-    const interval = window.setInterval(
-        () => void playPulse().catch(() => undefined),
-        TONE_INTERVAL_MILLISECONDS,
-    );
+    const playRing = () => {
+        void playPulse().catch(() => undefined);
+        void playPulse(BURST_GAP_MILLISECONDS).catch(() => undefined);
+    };
+    playRing();
+    const interval = window.setInterval(playRing, TONE_INTERVAL_MILLISECONDS);
     return () => {
         if (stopped) return;
         stopped = true;
