@@ -26,6 +26,18 @@ test("Call UI rings before provider handoff and replaces conversation content", 
     assert.match(providerSource, /social:callUi/);
     assert.match(callStyles, /messages-thread--call-active/);
     assert.match(callStyles, /:not\(#messages-thread-header-slot\)/);
+    assert.match(
+        callStyles,
+        /\.messages-thread--call-active\s*\{[\s\S]*grid-template-rows: auto minmax\(0, 1fr\)/,
+    );
+    assert.match(
+        callStyles,
+        /\.social-call-stage\s*\{[\s\S]*height: 100%;[\s\S]*min-height: 0/,
+    );
+    assert.match(
+        callStyles,
+        /\.social-call-stage__component > \.component-page-window\s*\{[\s\S]*height: 100%/,
+    );
 });
 
 test("Call toolbar keeps its arrow separate from mounted meeting content", () => {

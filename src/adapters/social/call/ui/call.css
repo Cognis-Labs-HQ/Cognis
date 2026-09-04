@@ -3,11 +3,16 @@
     display: none;
 }
 
+.messages-thread--call-active {
+    grid-template-rows: auto minmax(0, 1fr);
+}
+
 .social-call-stage {
     position: relative;
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
-    min-height: 24rem;
+    height: 100%;
+    min-height: 0;
     overflow: hidden;
 }
 
@@ -87,7 +92,13 @@
 }
 
 .social-call-stage__component {
-    min-height: 20rem;
+    height: 100%;
+    min-height: 0;
+}
+
+.social-call-stage__component > .component-page-window {
+    height: 100%;
+    min-height: 0;
 }
 
 .social-call-stage__back-icon {

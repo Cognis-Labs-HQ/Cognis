@@ -1,6 +1,6 @@
 {
     "name": "@cognis/adapter-social-call",
-    "version": "0.5.11",
+    "version": "0.5.12",
     "description": "Room-scoped call signaling and browser presentation.",
     "type": "module",
     "main": "index.ts",

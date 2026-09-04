@@ -35,3 +35,5 @@ Panggilan masuk memakai lease `/ringing` terautentikasi per pengguna. Permukaan 
 Host Call mempertahankan konteks penyedia dan secara eksplisit menandai komponen panggilan yang dimunculkan sebagai `voipCall`, sesuai kontrak komponen Jitsi Meet agar panggilan PiP sekali pakai tidak menampilkan chat rapat.
 
 Pembersihan jendela mengambang memvalidasi hierarki tujuan tersimpan dan beralih dari operasi `moveBefore` penjaga status yang ditolak ke pemindahan DOM biasa. Jika kedua pemindahan tidak valid secara struktural, portal dibiarkan agar dibuang pemiliknya tanpa memunculkan penolakan yang tidak tertangani.
+
+Saat komponen penyedia tetap tertambat di Messages, utas panggilan aktif beralih ke kisi dua baris dan panggung Call, host komponen, serta jendela komponen mengisi sisa tinggi kartu widget. PiP tetap memakai dimensi mengambang yang dibatasi secara terpisah.

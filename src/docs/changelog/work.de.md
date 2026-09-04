@@ -22,6 +22,10 @@ Der Status eingehender Anrufe aktualisiert jetzt den ausgewählten Raum, sodass 
 
 Beim Schließen eines VoIP-Anrufs im PiP-Modus wird jetzt die ursprüngliche Portalhierarchie geprüft und sicher ausgewichen, wenn der Browser eine zustandserhaltende atomare Verschiebung ablehnt. Der Komponentenabbau endet ohne unbehandelten `HierarchyRequestError`.
 
+## Angedockte Anrufbühne in voller Höhe
+
+Angedockte Anbieteranrufe nutzen jetzt die gesamte verbleibende Höhe der Messages-Widget-Karte. Der aktive Thread reduziert sich auf Kopf- und Anrufbühnenzeile; Bühne, Komponenten-Host und Komponentenfenster füllen die verfügbare Inhaltszeile vollständig.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -29,3 +33,4 @@ Beim Schließen eines VoIP-Anrufs im PiP-Modus wird jetzt die ursprüngliche Por
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/87e5e5e0d7ee3403d421fbe099e94425932a3a4e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d242f8921775d346b655c2699d3e174c6e4373
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/fa2b5983f609ce6932d5ded0aa5f3c24afead9ca
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e2b9683158388267faea8ede560a681c45518ba9

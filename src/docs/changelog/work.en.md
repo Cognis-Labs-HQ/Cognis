@@ -22,6 +22,10 @@ Incoming-call state now refreshes the selected room so its action bar appears di
 
 Closing a VoIP call in PiP now validates the original portal hierarchy and safely falls back when the browser rejects a state-preserving atomic move. Component teardown can finish without an unhandled `HierarchyRequestError`.
 
+## Full-height docked call stage
+
+Docked provider calls now use the full remaining height of the Messages widget card. The active thread collapses to header and call-stage rows, while the stage, component host, and component window all stretch through the available content row.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -29,3 +33,4 @@ Closing a VoIP call in PiP now validates the original portal hierarchy and safel
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/87e5e5e0d7ee3403d421fbe099e94425932a3a4e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d242f8921775d346b655c2699d3e174c6e4373
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/fa2b5983f609ce6932d5ded0aa5f3c24afead9ca
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e2b9683158388267faea8ede560a681c45518ba9

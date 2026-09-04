@@ -22,6 +22,10 @@ Status panggilan masuk kini menyegarkan ruang terpilih sehingga bilah tindakanny
 
 Saat panggilan VoIP dalam PiP ditutup, hierarki portal asal kini divalidasi dan memakai jalur cadangan dengan aman jika peramban menolak pemindahan atomik penjaga status. Pembongkaran komponen selesai tanpa `HierarchyRequestError` yang tidak tertangani.
 
+## Panggung panggilan tertambat setinggi penuh
+
+Panggilan penyedia yang tertambat kini memakai seluruh sisa tinggi kartu widget Messages. Utas aktif menyusut menjadi baris tajuk dan panggung panggilan, sedangkan panggung, host komponen, serta jendela komponen meregang memenuhi baris konten yang tersedia.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -29,3 +33,4 @@ Saat panggilan VoIP dalam PiP ditutup, hierarki portal asal kini divalidasi dan 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/87e5e5e0d7ee3403d421fbe099e94425932a3a4e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d242f8921775d346b655c2699d3e174c6e4373
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/fa2b5983f609ce6932d5ded0aa5f3c24afead9ca
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e2b9683158388267faea8ede560a681c45518ba9

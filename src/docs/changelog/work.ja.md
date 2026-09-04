@@ -22,6 +22,10 @@ Messages の「新しいルーム」選択画面は、共通検索ユーティ�
 
 PiP 中の VoIP 通話を閉じる際に元のポータル階層を検証し、ブラウザーが状態保持のアトミック移動を拒否した場合は安全にフォールバックします。未処理の `HierarchyRequestError` を発生させずにコンポーネントを終了できます。
 
+## 全高を使うドッキング通話ステージ
+
+ドッキングされたプロバイダー通話は、Messages ウィジェットカードの残りの高さをすべて使用します。通話中のスレッドをヘッダー行と通話ステージ行にまとめ、ステージ、コンポーネントホスト、コンポーネントウィンドウを利用可能なコンテンツ行全体へ伸ばします。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -29,3 +33,4 @@ PiP 中の VoIP 通話を閉じる際に元のポータル階層を検証し、�
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/87e5e5e0d7ee3403d421fbe099e94425932a3a4e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d242f8921775d346b655c2699d3e174c6e4373
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/fa2b5983f609ce6932d5ded0aa5f3c24afead9ca
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e2b9683158388267faea8ede560a681c45518ba9

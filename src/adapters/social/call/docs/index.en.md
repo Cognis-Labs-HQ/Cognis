@@ -33,3 +33,5 @@ Incoming calls use an authenticated per-user `/ringing` lease. Browser surfaces 
 The Call host preserves provider context and explicitly marks spawned call components as `voipCall`, matching the Jitsi Meet component contract so disposable PiP calls omit the meeting chat surface.
 
 Floating-window cleanup validates the saved destination hierarchy and falls back from a rejected state-preserving `moveBefore` operation to a regular DOM move. If both moves are structurally invalid, cleanup leaves the portal in place for its owner to discard instead of surfacing an unhandled rejection.
+
+While a provider component remains docked in Messages, the active-call thread switches to a two-row grid and the Call stage, component host, and component window fill the remaining widget-card height. PiP continues to use its independently bounded floating dimensions.

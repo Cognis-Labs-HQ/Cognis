@@ -35,3 +35,5 @@ Eingehende Anrufe verwenden eine authentifizierte benutzerbezogene `/ringing`-Le
 Der Call-Host bewahrt den Anbieter-Kontext und kennzeichnet gestartete Anrufkomponenten ausdrücklich als `voipCall`. Damit entspricht er dem Jitsi-Meet-Komponentenvertrag, sodass bei kurzlebigen PiP-Anrufen kein Meeting-Chat angezeigt wird.
 
 Die Bereinigung schwebender Fenster prüft die gespeicherte Zielhierarchie und wechselt bei einer abgelehnten zustandserhaltenden `moveBefore`-Operation zu einer normalen DOM-Verschiebung. Sind beide Verschiebungen strukturell ungültig, bleibt das Portal zur Entfernung durch seinen Besitzer bestehen, statt eine unbehandelte Ablehnung auszulösen.
+
+Solange eine Anbieterkomponente in Messages angedockt bleibt, wechselt der aktive Anruf-Thread zu einem zweizeiligen Raster; Call-Bühne, Komponenten-Host und Komponentenfenster füllen die verbleibende Höhe der Widget-Karte. PiP verwendet weiterhin seine unabhängig begrenzten schwebenden Abmessungen.
