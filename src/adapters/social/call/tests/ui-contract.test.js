@@ -21,7 +21,7 @@ test("Call UI rings before provider handoff and replaces conversation content", 
             providerSource.indexOf("waitForAnswer(call"),
     );
     assert.match(providerSource, /phase: "connect"/);
-    assert.match(providerSource, /call-stage-hangup btn-cancel/);
+    assert.match(providerSource, /social-call-stage__hangup btn-cancel/);
     assert.match(providerSource, /hangup\.svg/);
     assert.match(providerSource, /social:callUi/);
     assert.match(callStyles, /messages-thread--call-active/);
@@ -29,24 +29,24 @@ test("Call UI rings before provider handoff and replaces conversation content", 
 });
 
 test("Call toolbar keeps its arrow separate from mounted meeting content", () => {
-    assert.match(providerSource, /call-stage-toolbar/);
-    assert.match(providerSource, /call-stage-component/);
-    assert.match(providerSource, /call-stage-back-icon/);
+    assert.match(providerSource, /social-call-stage__toolbar/);
+    assert.match(providerSource, /social-call-stage__component/);
+    assert.match(providerSource, /social-call-stage__back-icon/);
     assert.match(providerSource, /ui:makeFloatingWindow/);
     assert.match(providerSource, /if \(callStage\.isFloating\(\)\) return/);
     assert.match(providerSource, /backButton\.hidden = true/);
     assert.match(providerSource, /callButton\.disabled = true/);
     assert.match(providerSource, /cognis:call-moved-to-pip/);
-    assert.match(providerSource, /portal: action\.allowNavigation === true/);
+    assert.match(providerSource, /action\.context\?\.allowNavigation === true/);
+    assert.match(providerSource, /portal: allowNavigation/);
     assert.match(providerSource, /topLayer: true/);
-    assert.match(providerSource, /call-stage--floating/);
+    assert.match(providerSource, /social-call-stage--floating/);
     assert.match(providerSource, /closeButton:/);
     assert.match(providerSource, /markDocked/);
     assert.match(providerSource, /updateCall\(call\.id, "leave"\)/);
-    assert.match(
-        providerSource,
-        /allowNavigation: action\.allowNavigation === true/,
-    );
+    assert.match(providerSource, /allowNavigation,/);
+    assert.match(providerSource, /minWidth: action\.minSize\?\.width/);
+    assert.match(providerSource, /minHeight: action\.minSize\?\.height/);
     assert.match(providerSource, /setNavigationAllowed\?\.\(true\)/);
     assert.match(providerSource, /setNavigationAllowed\?\.\(false\)/);
     assert.match(providerSource, /new MutationObserver/);
@@ -60,10 +60,10 @@ test("Call toolbar keeps its arrow separate from mounted meeting content", () =>
 });
 
 test("Call PiP dimensions belong to the floating window", () => {
-    assert.match(callStyles, /\.call-stage--floating/);
+    assert.match(callStyles, /\.social-call-stage--floating/);
     assert.match(
         callStyles,
-        /\.call-stage-component\.floating-window[\s\S]*width: min\(32vw, 24rem\)[\s\S]*height: min\(32vh, 15rem\)/,
+        /\.social-call-stage__component\.floating-window[\s\S]*width: min\(32vw, 24rem\)[\s\S]*height: min\(32vh, 15rem\)/,
     );
     assert.match(callStyles, /> \.component-page-window[\s\S]*height: 100%/);
     assert.match(callStyles, /overflow: hidden/);

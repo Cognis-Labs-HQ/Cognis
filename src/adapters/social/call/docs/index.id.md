@@ -28,4 +28,4 @@ Panggilan aktif mencatat akun yang sedang bergabung. Penelepon dan penjawab pert
 
 Penyedia komponen mungkin baru selesai diatasi setelah klik awal berakhir. Karena itu, UI Panggilan menangkap izin pemunculan komponen sekali pakai milik inti secara sinkron saat Mulai atau Jawab dan meneruskannya ke pemasangan komponen berikutnya. Izin berakhir setelah 60 detik dan tidak dapat mengotorisasi jendela kedua.
 
-Penyedia dapat menetapkan `allowNavigation: true` pada tindakan komponennya. UI Panggilan meneruskan izin tersebut saat memunculkan komponen dan memindahkan host PiP ke shell persisten, tetapi baru mengaktifkan retensi navigasi setelah panggilan memasuki PiP; mengembalikan panggilan ke Messages segera memulihkan pembatasan navigasi halaman pemanggil.
+Penyedia dapat menetapkan `context.allowNavigation: true` pada tindakan komponennya dan dapat menyediakan `minSize` untuk permukaan PiP. UI Panggilan meneruskan izin tersebut saat memunculkan komponen dan memindahkan host PiP ke shell persisten, tetapi baru mengaktifkan retensi navigasi setelah panggilan memasuki PiP; mengembalikan panggilan ke Messages segera memulihkan pembatasan navigasi halaman pemanggil.

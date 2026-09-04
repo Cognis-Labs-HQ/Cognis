@@ -154,23 +154,15 @@ test("navbar plugins mount after the shell and can recover pre-mount imports", (
     assert.match(share, /cognis:navbar-refresh/);
 });
 
-test("SPA route cleanup preserves shell-owned stylesheets", () => {
+test("SPA route preparation retains every loaded stylesheet", () => {
     const pageStyles = readFileSync(
         resolve(ROOT, "src/ui/reuse/page-styles.js"),
         "utf8",
     );
-    assert.match(pageStyles, /const _managedPageStylesheets = new Set\(\)/);
-    assert.doesNotMatch(
-        pageStyles,
-        /_managedPageStylesheets = new Set\(_initialPageStylesheets\)/,
-    );
     assert.match(
         pageStyles,
-        /destinationStylesheets\.forEach\(\(href\) => _managedPageStylesheets\.add\(href\)\)/,
+        /await Promise\.all\(hrefs\.map\(ensurePageStylesheet\)\)/,
     );
-    assert.match(
-        pageStyles,
-        /link\[data-page-stylesheet=["']true["']\]\[href\]/,
-        "direct-load route styles must join SPA stylesheet cleanup",
-    );
+    assert.match(pageStyles, /return \(\) => \{\};/);
+    assert.doesNotMatch(pageStyles, /\.remove\(\)/);
 });

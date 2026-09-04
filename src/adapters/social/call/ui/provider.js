@@ -91,10 +91,10 @@ async function createStage(call, signal) {
     callButton?.classList.add("active");
     callButton?.setAttribute("aria-pressed", "true");
     const stage = document.createElement("section");
-    stage.className = "call-stage";
+    stage.className = "social-call-stage";
     stage.dataset.callId = call.id;
     stage.dataset.roomId = call.roomId;
-    stage.innerHTML = `<div class="call-stage-toolbar"><button type="button" class="call-stage-back btn-neutral" title="${i18n.t("adapter.social.call.move_to_pip")}" aria-label="${i18n.t("adapter.social.call.move_to_pip")}" hidden><span class="call-stage-back-icon" aria-hidden="true"></span></button><strong>${i18n.t("adapter.social.call.window_title")}</strong></div><div class="call-stage-ringing"><p>${i18n.t("adapter.social.call.ringing").replace("{{user}}", otherParticipantLabel(call))}</p><button type="button" class="call-stage-hangup btn-cancel" title="${i18n.t("adapter.social.call.hangup")}" aria-label="${i18n.t("adapter.social.call.hangup")}"><img src="/static/adapters/social/call/hangup.svg" alt="" /></button></div>`;
+    stage.innerHTML = `<div class="social-call-stage__toolbar"><button type="button" class="social-call-stage__back btn-neutral" title="${i18n.t("adapter.social.call.move_to_pip")}" aria-label="${i18n.t("adapter.social.call.move_to_pip")}" hidden><span class="social-call-stage__back-icon" aria-hidden="true"></span></button><strong>${i18n.t("adapter.social.call.window_title")}</strong></div><div class="social-call-stage__ringing"><p>${i18n.t("adapter.social.call.ringing").replace("{{user}}", otherParticipantLabel(call))}</p><button type="button" class="social-call-stage__hangup btn-cancel" title="${i18n.t("adapter.social.call.hangup")}" aria-label="${i18n.t("adapter.social.call.hangup")}"><img src="/static/adapters/social/call/hangup.svg" alt="" /></button></div>`;
     headerSlot.after(stage);
     thread.classList.add("messages-thread--call-active");
     let componentWindow = null;
@@ -132,7 +132,7 @@ async function createStage(call, signal) {
     };
     activeCall = { callId: call.id, cleanup, stage };
     announceRoomCall(call.roomId, true);
-    stage.querySelector(".call-stage-hangup")?.addEventListener(
+    stage.querySelector(".social-call-stage__hangup")?.addEventListener(
         "click",
         async () => {
             try {
@@ -189,11 +189,14 @@ async function mountProviderAction(
         return true;
     }
     if (action?.action !== "component") return false;
-    const ringing = callStage.stage.querySelector(".call-stage-ringing");
+    const allowNavigation = action.context?.allowNavigation === true;
+    const ringing = callStage.stage.querySelector(
+        ".social-call-stage__ringing",
+    );
     ringing?.remove();
     const componentHost = document.createElement("div");
     componentHost.id = `call-component-${callStage.stage.dataset.callId}`;
-    componentHost.className = "call-stage-component";
+    componentHost.className = "social-call-stage__component";
     callStage.stage.append(componentHost);
     const componentWindow = await uiCtx.capabilities.get(
         "component-pages:spawn",
@@ -207,7 +210,7 @@ async function mountProviderAction(
         borderless: action.borderless !== false,
         removeStageOnDiscard: true,
         activationPermit,
-        allowNavigation: action.allowNavigation === true,
+        allowNavigation,
     });
     if (!componentWindow) return false;
     callStage.markConnected();
@@ -227,7 +230,9 @@ async function mountProviderAction(
         subtree: true,
     });
     callStage.setCloseObserver(closeObserver);
-    const backButton = callStage.stage.querySelector(".call-stage-back");
+    const backButton = callStage.stage.querySelector(
+        ".social-call-stage__back",
+    );
     backButton.hidden = false;
     backButton.addEventListener(
         "click",
@@ -240,8 +245,10 @@ async function mountProviderAction(
                 return;
             callStage.setFloatingRelease(
                 makeFloatingWindow(componentHost, {
-                    portal: action.allowNavigation === true,
+                    portal: allowNavigation,
                     topLayer: true,
+                    minWidth: action.minSize?.width,
+                    minHeight: action.minSize?.height,
                     closeButton: {
                         label: callStage.i18n.t(
                             "adapter.social.call.return_from_pip",
@@ -251,7 +258,7 @@ async function mountProviderAction(
                             callStage.markDocked();
                             componentWindow.setNavigationAllowed?.(false);
                             callStage.stage.classList.remove(
-                                "call-stage--floating",
+                                "social-call-stage--floating",
                             );
                             document
                                 .querySelector(".messages-thread")
@@ -270,7 +277,7 @@ async function mountProviderAction(
             componentWindow.setNavigationAllowed?.(true);
             componentWindow.restoreHostLayout?.();
             backButton.hidden = true;
-            callStage.stage.classList.add("call-stage--floating");
+            callStage.stage.classList.add("social-call-stage--floating");
             document
                 .querySelector(".messages-thread")
                 ?.classList.remove("messages-thread--call-active");

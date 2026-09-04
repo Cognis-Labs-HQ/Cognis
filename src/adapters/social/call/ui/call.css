@@ -1,9 +1,9 @@
 .messages-thread--call-active
-    > :not(#messages-thread-header-slot):not(.call-stage) {
+    > :not(#messages-thread-header-slot):not(.social-call-stage) {
     display: none;
 }
 
-.call-stage {
+.social-call-stage {
     position: relative;
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
@@ -11,7 +11,7 @@
     overflow: hidden;
 }
 
-.call-stage--floating {
+.social-call-stage--floating {
     position: absolute;
     width: 0;
     height: 0;
@@ -19,11 +19,11 @@
     overflow: visible;
 }
 
-.call-stage--floating > :not(.call-stage-component) {
+.social-call-stage--floating > :not(.social-call-stage__component) {
     display: none;
 }
 
-.call-stage--floating .call-stage-component.floating-window {
+.social-call-stage--floating .social-call-stage__component.floating-window {
     display: grid;
     grid-template-rows: minmax(0, 1fr);
     width: min(32vw, 24rem);
@@ -32,8 +32,8 @@
     min-height: 160px;
 }
 
-.call-stage--floating
-    .call-stage-component.floating-window
+.social-call-stage--floating
+    .social-call-stage__component.floating-window
     > .component-page-window {
     width: 100%;
     height: 100%;
@@ -43,15 +43,15 @@
     box-sizing: border-box;
 }
 
-.call-stage--floating
-    .call-stage-component.floating-window
+.social-call-stage--floating
+    .social-call-stage__component.floating-window
     .composer-view-grid {
     grid-template-rows: minmax(0, 1fr);
     grid-auto-rows: minmax(0, 1fr);
     min-height: 0;
 }
 
-.call-stage-toolbar {
+.social-call-stage__toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -59,12 +59,12 @@
     padding: 0.75rem;
 }
 
-.call-stage-back {
+.social-call-stage__back {
     min-width: 2.5rem;
     font-size: 1.5rem;
 }
 
-.call-stage-ringing {
+.social-call-stage__ringing {
     display: grid;
     place-items: center;
     align-content: center;
@@ -72,7 +72,7 @@
     min-height: 20rem;
 }
 
-.call-stage-hangup {
+.social-call-stage__hangup {
     display: inline-grid;
     place-items: center;
     width: 3.5rem;
@@ -80,17 +80,17 @@
     border-radius: 50%;
 }
 
-.call-stage-hangup img {
+.social-call-stage__hangup img {
     width: 1.75rem;
     height: 1.75rem;
     filter: invert(1);
 }
 
-.call-stage-component {
+.social-call-stage__component {
     min-height: 20rem;
 }
 
-.call-stage-back-icon {
+.social-call-stage__back-icon {
     display: block;
     width: 1.25rem;
     height: 1.25rem;
@@ -98,7 +98,7 @@
         url("/static/assets/reuse/arrow-back-dark.svg");
 }
 
-body[data-theme="light"] .call-stage-back-icon {
+body[data-theme="light"] .social-call-stage__back-icon {
     background-image: url("/static/assets/reuse/arrow-back-light.svg");
 }
 

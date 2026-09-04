@@ -66,6 +66,10 @@ Messages はカメラ操作を表示する前に、各ルームに呼び出し�
 
 グループ通話は最初の招待者が応答すると開始し、ほかの招待者は後から参加できます。最後の参加者が退出すると通話が解放され、次のカメラ操作ですべての参加者を再び呼び出します。フローティングウィンドウの起動オプションで半透明の閉じるコントロールを要求でき、Messages はこれを使って同じライブ通話を PiP からコンポーネント画面へ戻します。 プロバイダーが宣言した `allowNavigation` は、通話が PiP でフローティング表示されている間だけ有効になり、インライン表示へ戻ると無効になります。
 
+## 安定した PiP ナビゲーションと保持されるスタイル
+
+Cognis は Jitsi プロバイダーのナビゲーション許可をコンポーネントコンテキストから読み取り、要求された PiP の最小寸法を適用するようになりました。SPA ナビゲーション後もルートスタイルを保持し、Social Call は機能固有のクラス名を使用します。これにより、ライブ PiP 会議のスタイルを維持しながら、通話画面のルールがほかのページへ影響することを防ぎます。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -89,3 +93,4 @@ Messages はカメラ操作を表示する前に、各ルームに呼び出し�
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7fa6ee9910ab1da664c9992dd88b5659fe0af400
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/930a3b084240205cd1e9ab4124e1bbfdbf6d2f52
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d4306538a8b51362f0c603c84c280eb3c00ce18d
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/55fe7acc297c636ffa38791b448775f62b063159

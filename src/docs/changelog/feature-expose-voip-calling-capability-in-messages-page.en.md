@@ -66,6 +66,10 @@ Call starts and notification answers now preserve a single-use user-activation p
 
 Group calls now start after the first invitee answers, allow later invitees to join, and release after the final joined participant leaves so the next camera action rings everyone again. Floating-window spawn options can request a translucent close control; Messages uses it to return the same live call from PiP to the component stage. Provider-declared `allowNavigation` is now honored only while the call is floating in PiP and is revoked when the call returns inline.
 
+## Stable PiP navigation and retained styles
+
+Cognis now reads the Jitsi provider navigation permission from the component context and applies its requested minimum PiP size. Route styles remain mounted across SPA navigation, while Social Call uses capability-scoped class names so a live PiP meeting keeps all of its styling without leaking call-stage rules into other pages.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -89,3 +93,4 @@ Group calls now start after the first invitee answers, allow later invitees to j
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7fa6ee9910ab1da664c9992dd88b5659fe0af400
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/930a3b084240205cd1e9ab4124e1bbfdbf6d2f52
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d4306538a8b51362f0c603c84c280eb3c00ce18d
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/55fe7acc297c636ffa38791b448775f62b063159

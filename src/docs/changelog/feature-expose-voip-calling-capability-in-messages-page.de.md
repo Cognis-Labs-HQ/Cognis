@@ -66,6 +66,10 @@ Anrufstart und Benachrichtigungsantwort bewahren nun eine einmal verwendbare Ben
 
 Gruppenanrufe starten jetzt, sobald die erste eingeladene Person antwortet, lassen spätere Beitritte zu und werden nach dem Verlassen des letzten Teilnehmers freigegeben, sodass die nächste Kameraaktion wieder alle anruft. Floating-Window-Startoptionen können eine halbtransparente Schließen-Schaltfläche anfordern; Messages führt damit denselben aktiven Anruf aus PiP zur Komponentenoberfläche zurück. Das vom Anbieter deklarierte `allowNavigation` wird jetzt nur berücksichtigt, solange der Anruf als Bild-im-Bild schwebt, und beim Zurückkehren zur eingebetteten Ansicht wieder entzogen.
 
+## Stabile PiP-Navigation und beibehaltene Stile
+
+Cognis liest die Navigationsberechtigung des Jitsi-Anbieters jetzt aus dem Komponentenkontext und übernimmt dessen angeforderte PiP-Mindestgröße. Routenstile bleiben bei SPA-Navigationen eingebunden, während Social Call fähigkeitsspezifische Klassennamen verwendet. Dadurch behält ein aktives PiP-Meeting alle Stile, ohne Regeln der Anrufoberfläche auf andere Seiten zu übertragen.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -89,3 +93,4 @@ Gruppenanrufe starten jetzt, sobald die erste eingeladene Person antwortet, lass
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7fa6ee9910ab1da664c9992dd88b5659fe0af400
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/930a3b084240205cd1e9ab4124e1bbfdbf6d2f52
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d4306538a8b51362f0c603c84c280eb3c00ce18d
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/55fe7acc297c636ffa38791b448775f62b063159

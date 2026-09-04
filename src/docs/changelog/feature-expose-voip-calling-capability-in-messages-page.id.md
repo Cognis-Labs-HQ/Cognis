@@ -66,6 +66,10 @@ Mulai panggilan dan jawaban notifikasi kini mempertahankan izin aktivasi penggun
 
 Panggilan grup kini dimulai setelah undangan pertama menjawab, mengizinkan undangan lain bergabung kemudian, dan dilepas setelah peserta terakhir keluar agar tindakan kamera berikutnya memanggil semua orang lagi. Opsi pemunculan jendela mengambang dapat meminta kontrol tutup transparan sebagian; Messages menggunakannya untuk mengembalikan panggilan aktif yang sama dari PiP ke tahap komponen. `allowNavigation` yang dideklarasikan penyedia kini hanya dihormati saat panggilan mengambang dalam PiP dan dicabut ketika panggilan kembali tertanam.
 
+## Navigasi PiP stabil dan gaya yang dipertahankan
+
+Cognis kini membaca izin navigasi penyedia Jitsi dari konteks komponen dan menerapkan ukuran minimum PiP yang diminta. Gaya rute tetap terpasang selama navigasi SPA, sedangkan Social Call memakai nama kelas khusus kapabilitas agar rapat PiP aktif mempertahankan seluruh gayanya tanpa membocorkan aturan tahap panggilan ke halaman lain.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -89,3 +93,4 @@ Panggilan grup kini dimulai setelah undangan pertama menjawab, mengizinkan undan
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7fa6ee9910ab1da664c9992dd88b5659fe0af400
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/930a3b084240205cd1e9ab4124e1bbfdbf6d2f52
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d4306538a8b51362f0c603c84c280eb3c00ce18d
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/55fe7acc297c636ffa38791b448775f62b063159

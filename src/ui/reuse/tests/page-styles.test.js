@@ -18,7 +18,7 @@ function createStylesheet(pathname) {
     };
 }
 
-test("shared button styles survive Meetings route reconciliation", async (testContext) => {
+test("route and shared styles survive SPA navigation", async (testContext) => {
     const buttonStylesheet = createStylesheet(
         "/static/styles/reuse/buttons.css",
     );
@@ -56,11 +56,11 @@ test("shared button styles survive Meetings route reconciliation", async (testCo
     commitNextPageStyles();
 
     assert.equal(buttonStylesheet.removed, false);
-    assert.equal(buttonStylesheet.dataset.pageStylesheet, undefined);
-    assert.equal(meetingsStylesheet.removed, true);
+    assert.equal(buttonStylesheet.dataset.pageStylesheet, "true");
+    assert.equal(meetingsStylesheet.removed, false);
 });
 
-test("versioned route styles reload after Meetings unloads them", async (testContext) => {
+test("versioned route styles are reused after navigation", async (testContext) => {
     const pageBuilderPath = "/static/styles/page-builder.css?v=development";
     const stylesheets = [createStylesheet(pageBuilderPath)];
     let appendedStylesheets = 0;
@@ -109,5 +109,5 @@ test("versioned route styles reload after Meetings unloads them", async (testCon
     commitWithoutPageBuilder();
     await preparePageStylesheets([pageBuilderPath]);
 
-    assert.equal(appendedStylesheets, 1);
+    assert.equal(appendedStylesheets, 0);
 });

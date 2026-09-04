@@ -26,4 +26,4 @@ An active call records the accounts currently joined. The caller and first respo
 
 Component providers may finish resolving only after the original click has returned. The Call UI therefore captures the core’s single-use component spawn permit synchronously during Start or Answer and passes it to the eventual component mount. The permit expires after 60 seconds and cannot authorize a second window.
 
-Providers may set `allowNavigation: true` on their component action. The Call UI passes that permission into the component spawn and moves the PiP host into the persistent shell, but enables navigation retention only after the call enters PiP; returning the call to Messages immediately restores the caller-page navigation restriction.
+Providers may set `context.allowNavigation: true` on their component action and may provide `minSize` for the PiP surface. The Call UI passes that permission into the component spawn and moves the PiP host into the persistent shell, but enables navigation retention only after the call enters PiP; returning the call to Messages immediately restores the caller-page navigation restriction.
