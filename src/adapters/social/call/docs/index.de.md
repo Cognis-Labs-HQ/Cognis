@@ -31,3 +31,5 @@ Komponentenanbieter können die Auflösung erst abschließen, nachdem der urspr�
 Anbieter können in ihrer Komponentenaktion `context.allowNavigation: true` setzen und mit `minSize` die Mindestgröße der PiP-Oberfläche angeben. Die Anrufoberfläche übergibt diese Berechtigung beim Start der Komponente und verschiebt den PiP-Host in die beständige Shell, aktiviert die Navigationserhaltung jedoch erst nach dem Wechsel des Anrufs in Bild-im-Bild. Beim Zurückholen zu Messages wird die Navigationsbeschränkung der aufrufenden Seite sofort wiederhergestellt.
 
 Eingehende Anrufe verwenden eine authentifizierte benutzerbezogene `/ringing`-Lease. Browseroberflächen erneuern die Lease während des Klingelns und geben sie nach der Auflösung frei, sodass nur ein Tab oder Hinweis den Klingelton besitzt. Annehmen oder Ablehnen löst Benachrichtigung und Messages-Hinweis gemeinsam über dieselbe Korrelation auf.
+
+Der Call-Host bewahrt den Anbieter-Kontext und kennzeichnet gestartete Anrufkomponenten ausdrücklich als `voipCall`. Damit entspricht er dem Jitsi-Meet-Komponentenvertrag, sodass bei kurzlebigen PiP-Anrufen kein Meeting-Chat angezeigt wird.

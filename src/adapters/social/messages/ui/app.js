@@ -204,6 +204,9 @@ export async function mount(root, { signal } = {}) {
                 }
                 roomElement.parentElement?.prepend(roomElement);
                 roomElement.classList.add("messages-room--calling");
+                if (roomId === roomState.getSelectedRoomId()) {
+                    void roomState.openRoom(roomId);
+                }
                 return;
             }
             const nextSibling = roomCallPositions.get(roomId);

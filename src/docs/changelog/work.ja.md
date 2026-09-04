@@ -14,8 +14,13 @@ Messages の「新しいルーム」選択画面は、共通検索ユーティ�
 
 着信は Messages のスレッドヘッダー直上のバーに表示されます。応答と拒否は関連付けられた通知とチャット内プロンプトを同時に解決し、ユーザー単位の呼び出しリースによって複数タブや画面で着信音が重複するのを防ぎます。
 
+## 表示される通話バーと通話に集中した PiP
+
+着信状態で選択中のルームを更新し、通知を表示したままでもアクションバーがスレッドヘッダー直下に現れるようになりました。起動する VoIP コンポーネントには Jitsi Meet の `voipCall` コンテキストを明示し、PiP 画面からミーティングチャットを除外します。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/aa9c83fcc501bfede1e9d392a2dbdd9e7a6e943e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/87e5e5e0d7ee3403d421fbe099e94425932a3a4e
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d242f8921775d346b655c2699d3e174c6e4373

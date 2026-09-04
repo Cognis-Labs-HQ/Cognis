@@ -14,8 +14,13 @@ Die Suche ersetzt den Hinweis zur Mindestlänge jetzt durch einen Ladestatus, so
 
 Eingehende Anrufe erscheinen jetzt in einer Leiste direkt über dem Messages-Thread-Kopf. Annehmen und Ablehnen lösen die korrelierte Benachrichtigung und den Hinweis im Chat gemeinsam auf; eine benutzerbezogene Klingel-Lease verhindert doppelte Klingeltöne aus mehreren Tabs oder Oberflächen.
 
+## Sichtbare Anrufleiste und fokussiertes PiP
+
+Der Status eingehender Anrufe aktualisiert jetzt den ausgewählten Raum, sodass dessen Aktionsleiste direkt unter dem Thread-Kopf erscheint, während die Benachrichtigung sichtbar bleiben kann. Gestartete VoIP-Komponenten werden ausdrücklich mit dem Jitsi-Meet-Kontext `voipCall` markiert, damit der Meeting-Chat nicht in der PiP-Oberfläche erscheint.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/aa9c83fcc501bfede1e9d392a2dbdd9e7a6e943e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/87e5e5e0d7ee3403d421fbe099e94425932a3a4e
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d242f8921775d346b655c2699d3e174c6e4373

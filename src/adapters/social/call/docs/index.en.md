@@ -29,3 +29,5 @@ Component providers may finish resolving only after the original click has retur
 Providers may set `context.allowNavigation: true` on their component action and may provide `minSize` for the PiP surface. The Call UI passes that permission into the component spawn and moves the PiP host into the persistent shell, but enables navigation retention only after the call enters PiP; returning the call to Messages immediately restores the caller-page navigation restriction.
 
 Incoming calls use an authenticated per-user `/ringing` lease. Browser surfaces renew the lease while sounding and release it when resolved, so only one tab or prompt owns the ringtone. Answering or declining emits a correlated resolution that dismisses the notification and the Messages prompt together.
+
+The Call host preserves provider context and explicitly marks spawned call components as `voipCall`, matching the Jitsi Meet component contract so disposable PiP calls omit the meeting chat surface.

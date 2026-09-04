@@ -31,3 +31,5 @@ Penyedia komponen mungkin baru selesai diatasi setelah klik awal berakhir. Karen
 Penyedia dapat menetapkan `context.allowNavigation: true` pada tindakan komponennya dan dapat menyediakan `minSize` untuk permukaan PiP. UI Panggilan meneruskan izin tersebut saat memunculkan komponen dan memindahkan host PiP ke shell persisten, tetapi baru mengaktifkan retensi navigasi setelah panggilan memasuki PiP; mengembalikan panggilan ke Messages segera memulihkan pembatasan navigasi halaman pemanggil.
 
 Panggilan masuk memakai lease `/ringing` terautentikasi per pengguna. Permukaan peramban memperbarui lease selama berdering dan melepasnya saat selesai, sehingga hanya satu tab atau prompt yang memiliki nada dering. Menjawab atau menolak memancarkan penyelesaian berkorelasi yang menutup notifikasi dan prompt Messages bersama-sama.
+
+Host Call mempertahankan konteks penyedia dan secara eksplisit menandai komponen panggilan yang dimunculkan sebagai `voipCall`, sesuai kontrak komponen Jitsi Meet agar panggilan PiP sekali pakai tidak menampilkan chat rapat.

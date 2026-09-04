@@ -242,7 +242,7 @@ async function mountProviderAction(
         routeId: action.routeId,
         elementId: componentHost.id,
         mode: action.mode ?? "overlay",
-        context: action.context ?? {},
+        context: { ...action.context, voipCall: true },
         signal,
         borderless: action.borderless !== false,
         removeStageOnDiscard: true,
@@ -548,7 +548,7 @@ function installMessagesFlowHooks() {
             ) {
                 stageContext.data.actions.push({
                     id: "social-call:incoming-prompt",
-                    placement: "before-header",
+                    placement: "after-header",
                     label: i18n.t("adapter.social.call.incoming_call"),
                     actions: [
                         {
