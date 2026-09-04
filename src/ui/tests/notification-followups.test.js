@@ -68,7 +68,7 @@ test("notification actions can be handled without leaving the dashboard", () => 
     );
 });
 
-test("non-call arrival notifications are suppressed on their owning page", () => {
+test("continuous arrivals remain visible while page-owned arrivals are suppressed", () => {
     const source = readFileSync(
         resolve(ROOT, "src/adapters/notify/internal/ui/navbar-plugin.js"),
         "utf8",
@@ -77,7 +77,7 @@ test("non-call arrival notifications are suppressed on their owning page", () =>
     assert.match(source, /actionPage === currentPage/);
     assert.match(
         source,
-        /notif\.category === "calls" \|\|\s*!isNotificationOwnedByCurrentPage\(notif\)/,
+        /notif\.metadata\?\.continuous === true \|\|\s*!isNotificationOwnedByCurrentPage\(notif\)/,
     );
 });
 

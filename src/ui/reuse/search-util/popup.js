@@ -32,21 +32,23 @@ import {
     collectVisibleNavigationSearchGroups,
     collectVisiblePageSearchGroups,
     collectVisiblePostSearchGroups,
-    filterApiFlatMatches,
     filterLocalGroupsIncrementally,
-    filterApiGroupMatches,
-    filterNavigableGroups,
     filterSearchGroupsForQuery,
     filterSearchGroupsForType,
     filterVisibleSearchGroups,
-    hasSelectableTarget,
     isSearchResultVisibleToUser,
     mergeSearchGroups,
     normalizeSearchGroup,
     normalizeSearchOptions,
     resolvePopupPlaceholder,
-    shouldClientFilterApiResults,
 } from "./matching.js";
+import {
+    filterApiFlatMatches,
+    filterApiGroupMatches,
+    filterNavigableGroups,
+    hasSelectableTarget,
+    shouldClientFilterApiResults,
+} from "./api-results.js";
 import {
     clearPageFindHighlights,
     filterGroupsBySelectedCategories,

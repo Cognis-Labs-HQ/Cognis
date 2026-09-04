@@ -41,8 +41,12 @@ const roomContext = {
     ],
 };
 
-test("call creation validates room membership and dispatches an answer action", async () => {
-    const notifications: Array<{ actionUrl?: string; category: string }> = [];
+test("call creation validates membership and dispatches localized actions", async () => {
+    const notifications: Array<{
+        actionUrl?: string;
+        category: string;
+        metadata?: Record<string, unknown>;
+    }> = [];
     const roomEvents: Array<{
         eventType: string;
         details?: Record<string, unknown>;
@@ -55,6 +59,16 @@ test("call creation validates room membership and dispatches an answer action", 
         async () => roomContext,
         async (notification) => notifications.push(notification),
         async (event) => roomEvents.push(event),
+        {
+            en: {
+                incomingCall: "Incoming Call...",
+                incomingCallFrom: "{{user}} is calling",
+            },
+            de: {
+                incomingCall: "Eingehender Anruf…",
+                incomingCallFrom: "{{user}} ruft an",
+            },
+        },
     );
     const recorder = response();
     assert.equal(
@@ -69,6 +83,10 @@ test("call creation validates room membership and dispatches an answer action", 
     assert.equal(notifications.length, 1);
     assert.equal(notifications[0].category, "calls");
     assert.match(notifications[0].actionUrl ?? "", /answer=1/);
+    assert.deepEqual(notifications[0].metadata?.localizedText, {
+        en: { subject: "Incoming Call...", body: "Caller is calling" },
+        de: { subject: "Eingehender Anruf…", body: "Caller ruft an" },
+    });
     assert.deepEqual(
         roomEvents.map((event) => event.eventType),
         ["call_started"],
@@ -93,6 +111,33 @@ test("call creation rejects rooms the Messages capability does not authorize", a
     );
     assert.equal(recorder.result().status, 403);
     assert.equal(recorder.result().payload.error.code, "call_not_allowed");
+});
+
+test("call operations revalidate current room membership", async () => {
+    const store = new CallStore();
+    const call = store.create({
+        roomId: "room-1",
+        callerAccountId: "caller",
+        participants: roomContext.participants,
+    });
+    const route = createCallRoutes(
+        store,
+        {
+            requireAuth: () => ({ sub: "callee", role: "user" }),
+        } as never,
+        async () => null,
+    );
+    for (const operation of ["", "/answer", "/hangup", "/leave"]) {
+        const recorder = response();
+        await route(
+            request(operation ? "POST" : "GET") as never,
+            recorder.res as never,
+            new URL(
+                `http://localhost/api/v1/social/call/${call.id}${operation}`,
+            ),
+        );
+        assert.equal(recorder.result().status, 404);
+    }
 });
 
 test("room lookup returns the existing call without creating crossed invitations", async () => {

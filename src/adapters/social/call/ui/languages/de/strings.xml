@@ -3,6 +3,7 @@
   <string name="adapter.social.call.name">Anrufe</string>
   <string name="adapter.social.call.start_video_call">Videoanruf starten</string>
   <string name="adapter.social.call.incoming_call">Eingehender Anruf…</string>
+  <string name="adapter.social.call.incoming_call_from">{{user}} ruft an</string>
   <string name="adapter.social.call.answer">Anruf annehmen</string>
   <string name="adapter.social.call.decline">Anruf ablehnen</string>
   <string name="adapter.social.call.ringing">{{user}} wird angerufen ...</string>

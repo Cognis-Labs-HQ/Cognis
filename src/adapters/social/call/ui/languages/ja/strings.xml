@@ -3,6 +3,7 @@
   <string name="adapter.social.call.name">通話</string>
   <string name="adapter.social.call.start_video_call">ビデオ通話を開始</string>
   <string name="adapter.social.call.incoming_call">着信中…</string>
+  <string name="adapter.social.call.incoming_call_from">{{user}} から着信中</string>
   <string name="adapter.social.call.answer">通話に応答</string>
   <string name="adapter.social.call.decline">通話を拒否</string>
   <string name="adapter.social.call.ringing">{{user}} を呼び出しています...</string>

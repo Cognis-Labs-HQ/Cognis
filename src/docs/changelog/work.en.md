@@ -38,6 +38,10 @@ The PiP close action now retains the active call in its stage lifecycle, elimina
 
 Late provider teardown no longer reports an error when the server has already ended the call; leave now succeeds idempotently and cleanup suppresses the known unavailable-call race. Returning to Messages and entering PiP a second time now preserves the call across the next SPA navigation.
 
+## Security, lifecycle, and test-suite corrections
+
+Call rendering now inserts participant-controlled labels through text nodes, call operations revalidate current Messages membership, archived rooms are excluded, active group joiners are registered, rejected ringing renewals stop audio, aborted outbound polling cancels invitations, and provider contracts retain the actual room kind. Incoming call copy is supplied in all supported locales through neutral notification metadata. The shared search matcher was split into a dedicated API-results module to satisfy the 1,000-line limit, and stale Messages, notification, and hardcoded-string tests were corrected without deleting newlines.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -50,3 +54,4 @@ Late provider teardown no longer reports an error when the server has already en
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea5a087cdcc7d7cce9ece27fff4d90353c7e8fe7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/5e8996297422cc379e6747e980fcd613a482716f
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e7560cabcb987acf49dbbfdc74a1135755ce3713
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/da2e46c1

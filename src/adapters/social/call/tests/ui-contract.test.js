@@ -115,6 +115,23 @@ test("Call UI plays distinct inbound and outbound ringing tones", () => {
     assert.match(toneSource, /BURST_GAP_MILLISECONDS/);
     assert.match(providerSource, /setCallRinging/);
     assert.match(providerSource, /ringerId/);
+    assert.match(
+        providerSource,
+        /if \(!\(await setCallRinging\(callId, ringerId\)\)\) \{[\s\S]*stopInboundTone\(callId\)/,
+    );
+    assert.match(providerSource, /room: call\.room \?\?/);
+    assert.match(
+        providerSource,
+        /\["ringing", "active"\]\.includes\(call\?\.status\)/,
+    );
+    assert.match(
+        providerSource,
+        /signal\?\.aborted[\s\S]*updateCall\(call\.id, "hangup"\)/,
+    );
+    assert.doesNotMatch(
+        providerSource,
+        /replace\("\{\{user\}\}", otherParticipantLabel\(call\)\)<\/p>/,
+    );
 });
 
 test("Call prompts resolve together and render below the room header", () => {

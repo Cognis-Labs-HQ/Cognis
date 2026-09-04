@@ -241,10 +241,36 @@ async function fetchNotifications() {
         const res = await apiFetch("/api/v1/notify/inbox");
         if (!res.ok) return [];
         const payload = await res.json();
-        return payload.data ?? [];
+        return (payload.data ?? []).map(localizeNotification);
     } catch {
         return [];
     }
+}
+
+function localizeNotification(notification) {
+    const localizedText = notification.metadata?.localizedText;
+    if (!localizedText || typeof localizedText !== "object") {
+        return notification;
+    }
+    const preferredLocales = [
+        ...(navigator.languages ?? []),
+        navigator.language,
+        "en",
+    ];
+    for (const locale of preferredLocales) {
+        const normalizedLocale = String(locale ?? "")
+            .toLowerCase()
+            .split("-")[0];
+        const copy = localizedText[normalizedLocale];
+        if (
+            copy &&
+            typeof copy.subject === "string" &&
+            typeof copy.body === "string"
+        ) {
+            return { ...notification, subject: copy.subject, body: copy.body };
+        }
+    }
+    return notification;
 }
 
 async function markAllRead() {

@@ -1,5 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { readFile } from "node:fs/promises";
 import type {
     SocialAdapter,
     SocialAdapterBootstrapCtx,
@@ -12,6 +13,34 @@ import { CallStore } from "./store.js";
 import { createCallRoutes } from "./routes/index.js";
 
 let adapterReady = false;
+const CALL_NOTIFICATION_LOCALES = ["de", "en", "id", "ja"];
+
+async function loadNotificationTranslations(uiDir: string) {
+    const entries = await Promise.all(
+        CALL_NOTIFICATION_LOCALES.map(async (locale) => {
+            const xml = await readFile(
+                path.join(uiDir, "languages", locale, "strings.xml"),
+                "utf8",
+            );
+            const readString = (key: string) =>
+                xml.match(
+                    new RegExp(`<string name="${key}">([^<]*)</string>`),
+                )?.[1] ?? "";
+            return [
+                locale,
+                {
+                    incomingCall: readString(
+                        "adapter.social.call.incoming_call",
+                    ),
+                    incomingCallFrom: readString(
+                        "adapter.social.call.incoming_call_from",
+                    ),
+                },
+            ] as const;
+        }),
+    );
+    return Object.fromEntries(entries);
+}
 
 export function createSocialAdapter(): SocialAdapter {
     return {
@@ -68,6 +97,11 @@ export async function bootstrapSocialAdapter(
         ctx.capabilities.get<(value: AppendCallEvent) => Promise<unknown>>(
             "social:messages:appendCallEvent",
         )?.(input) ?? Promise.resolve();
+    const uiDir = path.resolve(
+        path.dirname(fileURLToPath(import.meta.url)),
+        "ui",
+    );
+    const notificationTranslations = await loadNotificationTranslations(uiDir);
     ctx.capabilities.get<(id: string, label: string) => void>(
         "notify:registerCategory",
     )?.("calls", "Calls");
@@ -79,12 +113,9 @@ export async function bootstrapSocialAdapter(
             resolveRoom,
             dispatch,
             appendRoomEvent,
+            notificationTranslations,
         ),
         "social",
-    );
-    const uiDir = path.resolve(
-        path.dirname(fileURLToPath(import.meta.url)),
-        "ui",
     );
     ctx.registerAdapterStaticDir?.("social", "call", uiDir);
     ctx.registerCapabilityProvider?.({

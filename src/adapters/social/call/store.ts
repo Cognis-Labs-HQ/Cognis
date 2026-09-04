@@ -11,6 +11,7 @@ export interface CallParticipant {
 export interface CallRecord {
     id: string;
     roomId: string;
+    room: { id: string; kind: string; title: string };
     callerAccountId: string;
     participants: CallParticipant[];
     status: CallStatus;
@@ -33,6 +34,7 @@ export class CallStore {
 
     create(input: {
         roomId: string;
+        room?: { id: string; kind: string; title: string };
         callerAccountId: string;
         participants: CallParticipant[];
     }): CallRecord {
@@ -48,6 +50,7 @@ export class CallStore {
         const call: CallRecord = {
             id: randomUUID(),
             ...input,
+            room: input.room ?? { id: input.roomId, kind: "dm", title: "" },
             status: "ringing",
             answeredBy: null,
             joinedAccountIds: [input.callerAccountId],

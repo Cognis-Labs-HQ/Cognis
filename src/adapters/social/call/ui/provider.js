@@ -39,10 +39,11 @@ async function startInboundTone(callId) {
         return;
     }
     const stop = startRingingTone("inbound");
-    const renewalId = window.setInterval(
-        () => void setCallRinging(callId, ringerId),
-        4_000,
-    );
+    const renewalId = window.setInterval(async () => {
+        if (!(await setCallRinging(callId, ringerId))) {
+            stopInboundTone(callId);
+        }
+    }, 4_000);
     inboundTones.set(callId, { stop, renewalId });
 }
 
@@ -98,7 +99,7 @@ async function resolveProviderAction(call) {
         source: "messages",
         phase: "connect",
         call: { id: call.id, status: call.status },
-        room: { id: call.roomId, kind: "dm", title: "" },
+        room: call.room ?? { id: call.roomId, kind: "dm", title: "" },
         users: callParticipants(call),
         supportedActions: ["component", "navigate"],
     });
@@ -132,7 +133,22 @@ async function createStage(call) {
     stage.className = "social-call-stage";
     stage.dataset.callId = call.id;
     stage.dataset.roomId = call.roomId;
-    stage.innerHTML = `<div class="social-call-stage__toolbar"><button type="button" class="social-call-stage__back btn-neutral" title="${i18n.t("adapter.social.call.move_to_pip")}" aria-label="${i18n.t("adapter.social.call.move_to_pip")}" hidden><span class="social-call-stage__back-icon" aria-hidden="true"></span></button><strong>${i18n.t("adapter.social.call.window_title")}</strong></div><div class="social-call-stage__ringing"><p>${i18n.t("adapter.social.call.ringing").replace("{{user}}", otherParticipantLabel(call))}</p><button type="button" class="social-call-stage__hangup btn-cancel" title="${i18n.t("adapter.social.call.hangup")}" aria-label="${i18n.t("adapter.social.call.hangup")}"><img src="/static/adapters/social/call/hangup.svg" alt="" /></button></div>`;
+    stage.innerHTML = `<div class="social-call-stage__toolbar"><button type="button" class="social-call-stage__back btn-neutral" hidden><span class="social-call-stage__back-icon" aria-hidden="true"></span></button><strong></strong></div><div class="social-call-stage__ringing"><p></p><button type="button" class="social-call-stage__hangup btn-cancel"><img src="/static/adapters/social/call/hangup.svg" alt="" /></button></div>`;
+    const moveToPipLabel = i18n.t("adapter.social.call.move_to_pip");
+    const hangupLabel = i18n.t("adapter.social.call.hangup");
+    const initialBackButton = stage.querySelector(".social-call-stage__back");
+    initialBackButton.title = moveToPipLabel;
+    initialBackButton.setAttribute("aria-label", moveToPipLabel);
+    stage.querySelector(".social-call-stage__toolbar strong").textContent =
+        i18n.t("adapter.social.call.window_title");
+    stage.querySelector(".social-call-stage__ringing p").textContent = i18n
+        .t("adapter.social.call.ringing")
+        .replace("{{user}}", otherParticipantLabel(call));
+    const initialHangupButton = stage.querySelector(
+        ".social-call-stage__hangup",
+    );
+    initialHangupButton.title = hangupLabel;
+    initialHangupButton.setAttribute("aria-label", hangupLabel);
     headerSlot.after(stage);
     thread.classList.add("messages-thread--call-active");
     let componentWindow = null;
@@ -491,6 +507,14 @@ async function waitForAnswer(call, callStage, signal, activationPermit) {
             setTimeout(resolve, POLL_INTERVAL_MILLISECONDS),
         );
     }
+    if (signal?.aborted && activeCall?.callId === call.id) {
+        try {
+            await updateCall(call.id, "hangup");
+        } finally {
+            await callStage.cleanup({ leave: false });
+            announceRoomCall(call.roomId, false);
+        }
+    }
     return true;
 }
 
@@ -517,8 +541,9 @@ async function startRoomCall(action, { signal } = {}) {
     )?.();
     let call = action.call;
     if (
-        call?.status === "ringing" &&
-        call.callerAccountId !== currentAccountId()
+        ["ringing", "active"].includes(call?.status) &&
+        call.callerAccountId !== currentAccountId() &&
+        !call.joinedAccountIds?.includes(currentAccountId())
     ) {
         call = await updateCall(call.id, "answer");
         stopInboundTone(call.id);

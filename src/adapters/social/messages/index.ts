@@ -141,21 +141,23 @@ export async function bootstrapSocialAdapter(
             messagesStore.getMember(input.roomId, input.accountId),
             messagesStore.listMembers(input.roomId),
         ]);
-        if (!room || !member) return null;
+        if (!room || !member || member.archived) return null;
         const participants = await Promise.all(
-            members.map(async (roomMember) => {
-                const profile = await profileStore.getProfile(
-                    roomMember.accountId,
-                );
-                return {
-                    accountId: roomMember.accountId,
-                    handle: profile?.handle ?? roomMember.accountId,
-                    displayName:
-                        profile?.displayName ??
-                        profile?.handle ??
+            members
+                .filter((roomMember) => !roomMember.archived)
+                .map(async (roomMember) => {
+                    const profile = await profileStore.getProfile(
                         roomMember.accountId,
-                };
-            }),
+                    );
+                    return {
+                        accountId: roomMember.accountId,
+                        handle: profile?.handle ?? roomMember.accountId,
+                        displayName:
+                            profile?.displayName ??
+                            profile?.handle ??
+                            roomMember.accountId,
+                    };
+                }),
         );
         return {
             room: {

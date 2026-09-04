@@ -11,6 +11,11 @@ interface CallRoomContext {
     }>;
 }
 
+type NotificationTranslations = Record<
+    string,
+    { incomingCall: string; incomingCallFrom: string }
+>;
+
 async function readBody(
     req: IncomingMessage,
 ): Promise<Record<string, unknown>> {
@@ -33,6 +38,7 @@ function publicCall(call: CallRecord): Record<string, unknown> {
     return {
         id: call.id,
         roomId: call.roomId,
+        room: call.room,
         callerAccountId: call.callerAccountId,
         participants: call.participants,
         status: call.status,
@@ -74,6 +80,7 @@ export function createCallRoutes(
         subjectDisplayName?: string | null;
         details?: Record<string, unknown>;
     }) => Promise<unknown>,
+    notificationTranslations: NotificationTranslations = {},
 ) {
     const recordedEvents = new Set<string>();
     const recordEvent = async (
@@ -166,6 +173,7 @@ export function createCallRoutes(
             }
             const call = store.create({
                 roomId,
+                room: room.room,
                 callerAccountId: claims.sub,
                 participants: room.participants,
             });
@@ -178,12 +186,28 @@ export function createCallRoutes(
                     .filter(
                         (participant) => participant.accountId !== claims.sub,
                     )
-                    .map((participant) =>
-                        dispatch?.({
+                    .map((participant) => {
+                        const callerName =
+                            caller?.displayName || caller?.handle || "Cognis";
+                        const localizedText = Object.fromEntries(
+                            Object.entries(notificationTranslations).map(
+                                ([locale, copy]) => [
+                                    locale,
+                                    {
+                                        subject: copy.incomingCall,
+                                        body: copy.incomingCallFrom.replace(
+                                            "{{user}}",
+                                            callerName,
+                                        ),
+                                    },
+                                ],
+                            ),
+                        );
+                        return dispatch?.({
                             category: "calls",
                             recipientUsername: participant.handle,
-                            subject: "Incoming call",
-                            body: `${caller?.displayName || caller?.handle || "Someone"} is calling`,
+                            subject: localizedText.en?.subject ?? "Call",
+                            body: localizedText.en?.body ?? callerName,
                             senderName:
                                 caller?.displayName || caller?.handle || "Call",
                             actionUrl: `/messages/${encodeURIComponent(roomId)}?call=${encodeURIComponent(call.id)}&answer=1`,
@@ -209,9 +233,10 @@ export function createCallRoutes(
                                             '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.6 13.2 2.3 2.2c.2.2.3.6.2 1-.4 1.1-.6 2.3-.6 3.6 0 .6-.4 1-1 1H4c-.6 0-1-.4-1-1 0-9.4 7.6-17 17-17 .6 0 1 .4 1 1v3.5c0 .6-.4 1-1 1-1.3 0-2.5.2-3.6.6-.4.2-.8.1-1-.2l-2.2-2.2c-2.8 1.4-5.2 3.7-6.6 6.5Z"/></svg>',
                                     },
                                 ],
+                                localizedText,
                             },
-                        }),
-                    ),
+                        });
+                    }),
             );
             sendJson(res, 201, { data: publicCall(call) });
             return true;
@@ -231,6 +256,13 @@ export function createCallRoutes(
                 return true;
             }
             const ringerId = String(body.ringerId ?? "").trim();
+            const ringingCall = store.get(callMatch[1]);
+            const authorizedRoom = ringingCall
+                ? await resolveRoom({
+                      roomId: ringingCall.roomId,
+                      accountId: claims.sub,
+                  })
+                : null;
             if (body.active === false) {
                 store.releaseRinging(callMatch[1], claims.sub, ringerId);
                 sendJson(res, 200, { data: { ringing: false } });
@@ -238,17 +270,18 @@ export function createCallRoutes(
             }
             sendJson(res, 200, {
                 data: {
-                    ringing: store.claimRinging(
-                        callMatch[1],
-                        claims.sub,
-                        ringerId,
-                    ),
+                    ringing:
+                        Boolean(authorizedRoom) &&
+                        store.claimRinging(callMatch[1], claims.sub, ringerId),
                 },
             });
             return true;
         }
         const call = store.get(callMatch[1]);
-        if (!call || !store.hasParticipant(call, claims.sub)) {
+        const room = call
+            ? await resolveRoom({ roomId: call.roomId, accountId: claims.sub })
+            : null;
+        if (!call || !room || !store.hasParticipant(call, claims.sub)) {
             sendJson(res, 404, {
                 error: { code: "not_found", message: "Call not found." },
             });

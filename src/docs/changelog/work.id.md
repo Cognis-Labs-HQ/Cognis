@@ -38,6 +38,10 @@ Tindakan tutup gambar-dalam-gambar kini menyimpan panggilan aktif dalam siklus h
 
 Pembongkaran penyedia yang terlambat tidak lagi melaporkan kesalahan ketika server telah mengakhiri panggilan. Keluar kini berhasil secara idempoten dan pembersihan menekan kondisi balapan panggilan-tidak-tersedia yang telah diketahui. Setelah kembali ke Messages, perpindahan kedua ke gambar-dalam-gambar kini mempertahankan panggilan selama navigasi SPA berikutnya.
 
+## Perbaikan keamanan, siklus hidup, dan rangkaian pengujian
+
+Perenderan panggilan kini memasukkan label yang dikendalikan peserta melalui simpul teks, operasi panggilan memvalidasi ulang keanggotaan Messages saat ini, ruang yang diarsipkan dikecualikan, peserta grup aktif didaftarkan, penolakan perpanjangan dering menghentikan audio, pembatalan polling keluar membatalkan undangan, dan kontrak penyedia mempertahankan jenis ruang sebenarnya. Teks panggilan masuk disediakan dalam semua bahasa yang didukung melalui metadata notifikasi netral. Pencocok pencarian bersama dipisah menjadi modul hasil API khusus untuk memenuhi batas 1.000 baris, dan pengujian Messages, notifikasi, serta string hardcode yang usang diperbaiki tanpa menghapus baris baru.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -50,3 +54,4 @@ Pembongkaran penyedia yang terlambat tidak lagi melaporkan kesalahan ketika serv
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea5a087cdcc7d7cce9ece27fff4d90353c7e8fe7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/5e8996297422cc379e6747e980fcd613a482716f
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e7560cabcb987acf49dbbfdc74a1135755ce3713
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/da2e46c1

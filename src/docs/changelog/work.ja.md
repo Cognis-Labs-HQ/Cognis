@@ -38,6 +38,10 @@ PiP 中の VoIP 通話を閉じる際に元のポータル階層を検証し、�
 
 サーバーがすでに通話を終了した後にプロバイダーの終了処理が遅れても、エラーを報告しなくなりました。退出は冪等に成功し、クリーンアップは既知の通話利用不可競合を抑制します。Messages に戻った後で 2 回目にピクチャーインピクチャーへ移動しても、次の SPA ナビゲーション中に通話が保持されます。
 
+## セキュリティ、ライフサイクル、テストスイートの修正
+
+通話表示では参加者が制御するラベルをテキストノードとして挿入し、通話操作ごとに現在の Messages メンバーシップを再検証します。アーカイブ済みルームを除外し、進行中のグループ通話への参加者を登録し、呼び出しリース更新が拒否された場合は音を停止し、発信側のポーリング中断時は招待を終了し、プロバイダー契約へ実際のルーム種別を渡します。着信文言は中立的な通知メタデータを通じて、対応する全言語で提供します。共有検索マッチャーは 1,000 行制限を満たすため API 結果専用モジュールへ分割し、古い Messages、通知、ハードコード文字列のテストを改行削除なしで修正しました。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -50,3 +54,4 @@ PiP 中の VoIP 通話を閉じる際に元のポータル階層を検証し、�
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea5a087cdcc7d7cce9ece27fff4d90353c7e8fe7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/5e8996297422cc379e6747e980fcd613a482716f
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e7560cabcb987acf49dbbfdc74a1135755ce3713
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/da2e46c1

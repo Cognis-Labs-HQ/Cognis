@@ -38,6 +38,10 @@ Die Bild-im-Bild-Schließaktion behält den aktiven Anruf nun in ihrem Stage-Leb
 
 Ein verspäteter Abbau durch den Anbieter meldet keinen Fehler mehr, wenn der Server den Anruf bereits beendet hat. Das Verlassen ist nun idempotent und die Bereinigung unterdrückt den bekannten Wettlauf mit einem nicht mehr verfügbaren Anruf. Nach der Rückkehr zu Messages bleibt der Anruf auch beim zweiten Wechsel in Bild-im-Bild über die nächste SPA-Navigation hinweg erhalten.
 
+## Sicherheits-, Lebenszyklus- und Testsuite-Korrekturen
+
+Die Anrufdarstellung fügt teilnehmergesteuerte Bezeichnungen nun über Textknoten ein, Anrufoperationen prüfen die aktuelle Messages-Mitgliedschaft erneut, archivierte Räume werden ausgeschlossen, aktive Gruppenbeitritte werden registriert, abgelehnte Klingelverlängerungen stoppen den Ton, abgebrochene ausgehende Abfragen beenden Einladungen und Anbieter-Verträge behalten die tatsächliche Raumart. Eingehende Anruftexte werden in allen unterstützten Sprachen über neutrale Benachrichtigungsmetadaten bereitgestellt. Der gemeinsame Suchabgleich wurde zur Einhaltung der 1.000-Zeilen-Grenze in ein eigenes API-Ergebnismodul aufgeteilt; veraltete Messages-, Benachrichtigungs- und Hartcodierungsprüfungen wurden ohne Löschen von Zeilen korrigiert.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -50,3 +54,4 @@ Ein verspäteter Abbau durch den Anbieter meldet keinen Fehler mehr, wenn der Se
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea5a087cdcc7d7cce9ece27fff4d90353c7e8fe7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/5e8996297422cc379e6747e980fcd613a482716f
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e7560cabcb987acf49dbbfdc74a1135755ce3713
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/da2e46c1
