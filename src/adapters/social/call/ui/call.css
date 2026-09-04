@@ -37,6 +37,13 @@
     min-height: 160px;
 }
 
+.social-call-stage__pip-close {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+    z-index: 3;
+}
+
 .social-call-stage--floating
     .social-call-stage__component.floating-window
     > .component-page-window {

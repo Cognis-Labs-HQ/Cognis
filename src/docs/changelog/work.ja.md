@@ -26,6 +26,10 @@ PiP 中の VoIP 通話を閉じる際に元のポータル階層を検証し、�
 
 ドッキングされたプロバイダー通話は、Messages ウィジェットカードの残りの高さをすべて使用します。通話中のスレッドをヘッダー行と通話ステージ行にまとめ、ステージ、コンポーネントホスト、コンポーネントウィンドウを利用可能なコンテンツ行全体へ伸ばします。
 
+## 確実な呼び出し音の終了処理とピクチャーインピクチャーからの復帰
+
+通話終了後に遅れて届いた呼び出しリース要求は、呼び出しなしの結果として正常に完了するようになりました。SPA ナビゲーション後にピクチャーインピクチャーから通話を閉じると、結果に適したスタイルの「Messages に戻る」「通話を終了」「キャンセル」が表示されます。Messages に戻ると通話ルームへ移動し、既存のプロバイダーコンポーネントを再マウントせずに復元します。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -34,3 +38,5 @@ PiP 中の VoIP 通話を閉じる際に元のポータル階層を検証し、�
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d242f8921775d346b655c2699d3e174c6e4373
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/fa2b5983f609ce6932d5ded0aa5f3c24afead9ca
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e2b9683158388267faea8ede560a681c45518ba9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/738a98d449247b89ce94cfda908042dbe8c28043
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ea5a087cdcc7d7cce9ece27fff4d90353c7e8fe7

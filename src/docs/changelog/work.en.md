@@ -26,6 +26,10 @@ Closing a VoIP call in PiP now validates the original portal hierarchy and safel
 
 Docked provider calls now use the full remaining height of the Messages widget card. The active thread collapses to header and call-stage rows, while the stage, component host, and component window all stretch through the available content row.
 
+## Reliable ringing cleanup and PiP return
+
+Late ringing-lease requests now succeed with a non-ringing result after a call has ended. Closing a call from PiP after SPA navigation offers Return to Messages, Hang Up, and Cancel with consequence-appropriate actions. Returning navigates to the call room and restores the existing provider component without remounting it.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -34,3 +38,5 @@ Docked provider calls now use the full remaining height of the Messages widget c
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d242f8921775d346b655c2699d3e174c6e4373
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/fa2b5983f609ce6932d5ded0aa5f3c24afead9ca
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e2b9683158388267faea8ede560a681c45518ba9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/738a98d449247b89ce94cfda908042dbe8c28043
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ea5a087cdcc7d7cce9ece27fff4d90353c7e8fe7

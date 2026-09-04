@@ -28,7 +28,7 @@ Panggilan aktif mencatat akun yang sedang bergabung. Penelepon dan penjawab pert
 
 Penyedia komponen mungkin baru selesai diatasi setelah klik awal berakhir. Karena itu, UI Panggilan menangkap izin pemunculan komponen sekali pakai milik inti secara sinkron saat Mulai atau Jawab dan meneruskannya ke pemasangan komponen berikutnya. Izin berakhir setelah 60 detik dan tidak dapat mengotorisasi jendela kedua.
 
-Penyedia dapat menetapkan `context.allowNavigation: true` pada tindakan komponennya dan dapat menyediakan `minSize` untuk permukaan PiP. UI Panggilan meneruskan izin tersebut saat memunculkan komponen dan memindahkan host PiP ke shell persisten, tetapi baru mengaktifkan retensi navigasi setelah panggilan memasuki PiP; mengembalikan panggilan ke Messages segera memulihkan pembatasan navigasi halaman pemanggil.
+Penyedia dapat menetapkan `context.allowNavigation: true` pada tindakan komponennya dan dapat menyediakan `minSize` untuk permukaan PiP. UI Panggilan meneruskan izin tersebut saat memunculkan komponen dan memindahkan host PiP ke shell persisten, tetapi baru mengaktifkan retensi navigasi setelah panggilan memasuki PiP; mengembalikan panggilan ke Messages memasang kembali host penyedia yang ada dan memulihkan pembersihan berbasis rute untuk navigasi berikutnya.
 
 Panggilan masuk memakai lease `/ringing` terautentikasi per pengguna. Permukaan peramban memperbarui lease selama berdering dan melepasnya saat selesai, sehingga hanya satu tab atau prompt yang memiliki nada dering. Menjawab atau menolak memancarkan penyelesaian berkorelasi yang menutup notifikasi dan prompt Messages bersama-sama.
 
@@ -37,3 +37,5 @@ Host Call mempertahankan konteks penyedia dan secara eksplisit menandai komponen
 Pembersihan jendela mengambang memvalidasi hierarki tujuan tersimpan dan beralih dari operasi `moveBefore` penjaga status yang ditolak ke pemindahan DOM biasa. Jika kedua pemindahan tidak valid secara struktural, portal dibiarkan agar dibuang pemiliknya tanpa memunculkan penolakan yang tidak tertangani.
 
 Saat komponen penyedia tetap tertambat di Messages, utas panggilan aktif beralih ke kisi dua baris dan panggung Call, host komponen, serta jendela komponen mengisi sisa tinggi kartu widget. PiP tetap memakai dimensi mengambang yang dibatasi secara terpisah.
+
+Endpoint lease `/ringing` bersifat idempoten setelah panggilan berakhir: pembaruan dan pelepasan yang terlambat mengembalikan hasil berhasil tanpa dering, bukan kesalahan panggilan tidak ditemukan. Saat pengguna mencoba menutup panggilan gambar-dalam-gambar setelah berpindah ke halaman lain, Calls meminta pilihan untuk kembali ke Messages, menutup panggilan, atau membatalkan. Pilihan kembali memakai navigasi SPA, memasang kembali host penyedia yang sama tanpa memuat ulang rapat, lalu menutup gambar-dalam-gambar.

@@ -26,7 +26,7 @@ An active call records the accounts currently joined. The caller and first respo
 
 Component providers may finish resolving only after the original click has returned. The Call UI therefore captures the core’s single-use component spawn permit synchronously during Start or Answer and passes it to the eventual component mount. The permit expires after 60 seconds and cannot authorize a second window.
 
-Providers may set `context.allowNavigation: true` on their component action and may provide `minSize` for the PiP surface. The Call UI passes that permission into the component spawn and moves the PiP host into the persistent shell, but enables navigation retention only after the call enters PiP; returning the call to Messages immediately restores the caller-page navigation restriction.
+Providers may set `context.allowNavigation: true` on their component action and may provide `minSize` for the PiP surface. The Call UI passes that permission into the component spawn and moves the PiP host into the persistent shell, but enables navigation retention only after the call enters PiP; returning the call to Messages reattaches the existing provider host and restores route-scoped cleanup for the next navigation.
 
 Incoming calls use an authenticated per-user `/ringing` lease. Browser surfaces renew the lease while sounding and release it when resolved, so only one tab or prompt owns the ringtone. Answering or declining emits a correlated resolution that dismisses the notification and the Messages prompt together.
 
@@ -35,3 +35,5 @@ The Call host preserves provider context and explicitly marks spawned call compo
 Floating-window cleanup validates the saved destination hierarchy and falls back from a rejected state-preserving `moveBefore` operation to a regular DOM move. If both moves are structurally invalid, cleanup leaves the portal in place for its owner to discard instead of surfacing an unhandled rejection.
 
 While a provider component remains docked in Messages, the active-call thread switches to a two-row grid and the Call stage, component host, and component window fill the remaining widget-card height. PiP continues to use its independently bounded floating dimensions.
+
+The `/ringing` lease endpoint is idempotent after a call ends: late renewals and releases return a successful non-ringing result rather than a missing-call error. When a user tries to close a PiP call after navigating elsewhere, Calls asks whether to return to Messages, hang up, or cancel. Returning uses SPA navigation, reattaches the existing provider host without remounting the meeting, and then closes PiP.

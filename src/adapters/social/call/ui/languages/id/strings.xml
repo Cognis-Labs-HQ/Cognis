@@ -9,6 +9,11 @@
   <string name="adapter.social.call.hangup">Tutup panggilan</string>
   <string name="adapter.social.call.move_to_pip">Pindahkan panggilan ke gambar-dalam-gambar</string>
   <string name="adapter.social.call.return_from_pip">Kembalikan panggilan ke Messages</string>
+  <string name="adapter.social.call.close_pip_title">Tutup panggilan gambar-dalam-gambar</string>
+  <string name="adapter.social.call.close_pip_body">Panggilan ini masih aktif. Apa yang ingin Anda lakukan?</string>
+  <string name="adapter.social.call.return_to_messages">Kembali ke Messages</string>
+  <string name="adapter.social.call.cancel">Batal</string>
+  <string name="adapter.social.call.close_pip_failed">Panggilan gambar-dalam-gambar tidak dapat ditutup.</string>
   <string name="adapter.social.call.window_title">Jendela Rapat</string>
   <string name="adapter.social.call.cancelled">Panggilan dibatalkan.</string>
   <string name="adapter.social.call.declined">Panggilan ditolak.</string>

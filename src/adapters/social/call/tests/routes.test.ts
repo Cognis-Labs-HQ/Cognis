@@ -159,6 +159,36 @@ test("ringing endpoint grants one authenticated per-user lease", async () => {
     assert.equal(duplicate.result().payload.data.ringing, false);
 });
 
+test("ringing endpoint is idempotent after a call is no longer active", async () => {
+    const store = new CallStore();
+    const call = store.create({
+        roomId: "room-1",
+        callerAccountId: "caller",
+        participants: roomContext.participants,
+    });
+    store.hangup(call.id, "caller");
+    const route = createCallRoutes(
+        store,
+        {
+            requireAuth: () => ({ sub: "callee", role: "user" }),
+        } as never,
+        async () => roomContext,
+    );
+    for (const body of [
+        { ringerId: "tab-a" },
+        { ringerId: "tab-a", active: false },
+    ]) {
+        const recorder = response();
+        await route(
+            request("POST", body) as never,
+            recorder.res as never,
+            new URL(`http://localhost/api/v1/social/call/${call.id}/ringing`),
+        );
+        assert.equal(recorder.result().status, 200);
+        assert.equal(recorder.result().payload.data.ringing, false);
+    }
+});
+
 test("a released group call can ring every participant again", async () => {
     const store = new CallStore();
     const groupRoom = {

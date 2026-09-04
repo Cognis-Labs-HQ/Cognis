@@ -26,6 +26,10 @@ Saat panggilan VoIP dalam PiP ditutup, hierarki portal asal kini divalidasi dan 
 
 Panggilan penyedia yang tertambat kini memakai seluruh sisa tinggi kartu widget Messages. Utas aktif menyusut menjadi baris tajuk dan panggung panggilan, sedangkan panggung, host komponen, serta jendela komponen meregang memenuhi baris konten yang tersedia.
 
+## Pembersihan dering andal dan kembali dari gambar-dalam-gambar
+
+Permintaan lease dering yang terlambat kini berhasil dengan hasil tanpa dering setelah panggilan berakhir. Menutup panggilan dari gambar-dalam-gambar setelah navigasi SPA menawarkan Kembali ke Messages, Tutup Panggilan, dan Batal dengan gaya tindakan yang sesuai konsekuensi. Kembali akan bernavigasi ke ruang panggilan dan memulihkan komponen penyedia yang ada tanpa memasangnya ulang.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -34,3 +38,5 @@ Panggilan penyedia yang tertambat kini memakai seluruh sisa tinggi kartu widget 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d242f8921775d346b655c2699d3e174c6e4373
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/fa2b5983f609ce6932d5ded0aa5f3c24afead9ca
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e2b9683158388267faea8ede560a681c45518ba9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/738a98d449247b89ce94cfda908042dbe8c28043
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ea5a087cdcc7d7cce9ece27fff4d90353c7e8fe7

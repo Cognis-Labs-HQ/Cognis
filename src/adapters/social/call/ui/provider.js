@@ -8,6 +8,7 @@ import {
     updateCall,
 } from "./client.js";
 import { showToast } from "/static/reuse/toast.js";
+import { openPopup } from "/static/reuse/popup.js";
 import { startRingingTone } from "./tone-player.js";
 
 const CALL_UI_CAPABILITY = "social:callUi";
@@ -117,7 +118,7 @@ function otherParticipantLabel(call) {
         .join(", ");
 }
 
-async function createStage(call, signal) {
+async function createStage(call) {
     const i18n = await getCallI18n();
     ensureCallStyles();
     const thread = document.querySelector(".messages-thread");
@@ -139,7 +140,9 @@ async function createStage(call, signal) {
     let isFloating = false;
     let connected = false;
     let closeObserver = null;
+    const lifecycleController = new AbortController();
     const cleanup = async ({ leave = true } = {}) => {
+        lifecycleController.abort();
         closeObserver?.disconnect();
         releaseFloatingWindow?.();
         if (connected && leave) {
@@ -159,12 +162,15 @@ async function createStage(call, signal) {
             }
         }
         await componentWindow?.discard?.();
+        const hostingThread = stage.closest(".messages-thread") ?? thread;
         stage.remove();
-        thread.classList.remove("messages-thread--call-active");
-        callButton?.classList.remove("active");
-        callButton?.setAttribute("aria-pressed", "false");
-        if (callButton instanceof HTMLButtonElement)
-            callButton.disabled = false;
+        hostingThread.classList.remove("messages-thread--call-active");
+        const currentCallButton =
+            document.getElementById("messages-room-call-btn") ?? callButton;
+        currentCallButton?.classList.remove("active");
+        currentCallButton?.setAttribute("aria-pressed", "false");
+        if (currentCallButton instanceof HTMLButtonElement)
+            currentCallButton.disabled = false;
         if (activeCall?.stage === stage) activeCall = null;
     };
     activeCall = { callId: call.id, cleanup, stage };
@@ -186,11 +192,12 @@ async function createStage(call, signal) {
                 });
             }
         },
-        { signal },
+        { signal: lifecycleController.signal },
     );
     return {
         stage,
         i18n,
+        signal: lifecycleController.signal,
         cleanup,
         setComponentWindow(value) {
             componentWindow = value;
@@ -212,6 +219,62 @@ async function createStage(call, signal) {
             closeObserver = value;
         },
     };
+}
+
+function isCurrentMessagesRoom(callStage) {
+    return (
+        callStage.stage.isConnected &&
+        window.location.pathname ===
+            `/messages/${encodeURIComponent(callStage.stage.dataset.roomId)}`
+    );
+}
+
+async function returnCallStageToMessages(callStage) {
+    const roomId = callStage.stage.dataset.roomId;
+    const navigate = uiCtx.capabilities.get("ui:navigate");
+    if (!roomId || typeof navigate !== "function") return false;
+    const mounted = await navigate(`/messages/${encodeURIComponent(roomId)}`);
+    if (!mounted) return false;
+    const thread = document.querySelector(".messages-thread");
+    const headerSlot = document.getElementById("messages-thread-header-slot");
+    if (!(thread instanceof HTMLElement) || !headerSlot) return false;
+    headerSlot.after(callStage.stage);
+    return true;
+}
+
+async function requestFloatingCallClose(call, callStage) {
+    if (isCurrentMessagesRoom(callStage)) return "dock";
+    const result = await openPopup({
+        title: callStage.i18n.t("adapter.social.call.close_pip_title"),
+        body: callStage.i18n.t("adapter.social.call.close_pip_body"),
+        actions: [
+            {
+                id: "return",
+                label: callStage.i18n.t(
+                    "adapter.social.call.return_to_messages",
+                ),
+                variant: "confirm",
+            },
+            {
+                id: "hangup",
+                label: callStage.i18n.t("adapter.social.call.hangup"),
+                variant: "cancel",
+            },
+            {
+                id: "cancel",
+                label: callStage.i18n.t("adapter.social.call.cancel"),
+                variant: "neutral",
+            },
+        ],
+    });
+    if (result === "return") {
+        return (await returnCallStageToMessages(callStage)) ? "return" : null;
+    }
+    if (result === "hangup") {
+        await updateCall(call.id, "hangup");
+        return "hangup";
+    }
+    return null;
 }
 
 async function mountProviderAction(
@@ -280,35 +343,87 @@ async function mountProviderAction(
             );
             if (!(windowElement instanceof HTMLElement) || !makeFloatingWindow)
                 return;
-            callStage.setFloatingRelease(
-                makeFloatingWindow(componentHost, {
-                    portal: allowNavigation,
-                    topLayer: true,
-                    minWidth: action.minSize?.width,
-                    minHeight: action.minSize?.height,
-                    closeButton: {
-                        label: callStage.i18n.t(
-                            "adapter.social.call.return_from_pip",
-                        ),
-                        onClose() {
-                            callStage.setFloatingRelease(null);
-                            callStage.markDocked();
-                            componentWindow.setNavigationAllowed?.(false);
-                            callStage.stage.classList.remove(
-                                "social-call-stage--floating",
+            const pipCloseButton = document.createElement("button");
+            pipCloseButton.type = "button";
+            pipCloseButton.className =
+                "social-call-stage__pip-close btn-close btn-neutral";
+            pipCloseButton.setAttribute(
+                "aria-label",
+                callStage.i18n.t("adapter.social.call.return_from_pip"),
+            );
+            componentHost.append(pipCloseButton);
+            const releaseFloatingWindow = makeFloatingWindow(componentHost, {
+                portal: allowNavigation,
+                topLayer: true,
+                minWidth: action.minSize?.width,
+                minHeight: action.minSize?.height,
+            });
+            callStage.setFloatingRelease(releaseFloatingWindow);
+            pipCloseButton.addEventListener(
+                "click",
+                async () => {
+                    pipCloseButton.disabled = true;
+                    try {
+                        const disposition = await requestFloatingCallClose(
+                            call,
+                            callStage,
+                        );
+                        if (!disposition) return;
+                        releaseFloatingWindow();
+                        callStage.setFloatingRelease(null);
+                        pipCloseButton.remove();
+                        if (disposition === "hangup") {
+                            await callStage.cleanup({ leave: false });
+                            announceRoomCall(call.roomId, false);
+                            showToast(
+                                callStage.i18n.t(
+                                    "adapter.social.call.cancelled",
+                                ),
+                                { variant: "info" },
                             );
-                            document
-                                .querySelector(".messages-thread")
-                                ?.classList.add("messages-thread--call-active");
-                            backButton.hidden = false;
-                            callButton?.classList.add("active");
-                            callButton?.setAttribute("aria-pressed", "true");
-                            if (callButton instanceof HTMLButtonElement) {
-                                callButton.disabled = false;
-                            }
-                        },
-                    },
-                }),
+                            return;
+                        }
+                        callStage.markDocked();
+                        if (disposition === "return") {
+                            window.addEventListener(
+                                "cognis:route-will-change",
+                                () => void callStage.cleanup(),
+                                { once: true, signal: callStage.signal },
+                            );
+                        } else {
+                            componentWindow.setNavigationAllowed?.(false);
+                        }
+                        callStage.stage.classList.remove(
+                            "social-call-stage--floating",
+                        );
+                        document
+                            .querySelector(".messages-thread")
+                            ?.classList.add("messages-thread--call-active");
+                        backButton.hidden = false;
+                        const currentCallButton = document.getElementById(
+                            "messages-room-call-btn",
+                        );
+                        currentCallButton?.classList.add("active");
+                        currentCallButton?.setAttribute("aria-pressed", "true");
+                        if (currentCallButton instanceof HTMLButtonElement) {
+                            currentCallButton.disabled = false;
+                        }
+                    } catch (error) {
+                        console.error(
+                            "[calls] Failed to close floating call",
+                            error,
+                        );
+                        showToast(
+                            callStage.i18n.t(
+                                "adapter.social.call.close_pip_failed",
+                            ),
+                            { variant: "error" },
+                        );
+                    } finally {
+                        pipCloseButton.disabled = false;
+                    }
+                },
+                { signal: callStage.signal },
             );
             callStage.markFloating();
             componentWindow.setNavigationAllowed?.(true);
@@ -332,7 +447,7 @@ async function mountProviderAction(
                 }),
             );
         },
-        { signal },
+        { signal: callStage.signal },
     );
     return true;
 }
@@ -400,7 +515,7 @@ async function startRoomCall(action, { signal } = {}) {
     }
     call ??= await createCall(action.roomId);
     const stopTone = startRingingTone("outbound");
-    const callStage = await createStage(call, signal);
+    const callStage = await createStage(call);
     if (!callStage) {
         stopTone();
         return false;
@@ -433,7 +548,7 @@ async function answerRequestedCall({ signal } = {}) {
     answerSpawnPermits.delete(callId);
     stopInboundTone(callId);
     resolveCallPrompts(callId, call.roomId);
-    const callStage = await createStage(call, signal);
+    const callStage = await createStage(call);
     if (!callStage) return false;
     history.replaceState(
         {},

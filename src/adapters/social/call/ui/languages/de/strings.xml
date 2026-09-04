@@ -9,6 +9,11 @@
   <string name="adapter.social.call.hangup">Auflegen</string>
   <string name="adapter.social.call.move_to_pip">Anruf in Bild-im-Bild verschieben</string>
   <string name="adapter.social.call.return_from_pip">Anruf zu Messages zurückholen</string>
+  <string name="adapter.social.call.close_pip_title">Bild-im-Bild-Anruf schließen</string>
+  <string name="adapter.social.call.close_pip_body">Dieser Anruf ist noch aktiv. Was möchten Sie tun?</string>
+  <string name="adapter.social.call.return_to_messages">Zu Messages zurückkehren</string>
+  <string name="adapter.social.call.cancel">Abbrechen</string>
+  <string name="adapter.social.call.close_pip_failed">Der Bild-im-Bild-Anruf konnte nicht geschlossen werden.</string>
   <string name="adapter.social.call.window_title">Meeting-Fenster</string>
   <string name="adapter.social.call.cancelled">Anruf abgebrochen.</string>
   <string name="adapter.social.call.declined">Anruf abgelehnt.</string>

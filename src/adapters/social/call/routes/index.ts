@@ -219,13 +219,6 @@ export function createCallRoutes(
         if (!callMatch || (req.method !== "GET" && req.method !== "POST")) {
             return false;
         }
-        const call = store.get(callMatch[1]);
-        if (!call || !store.hasParticipant(call, claims.sub)) {
-            sendJson(res, 404, {
-                error: { code: "not_found", message: "Call not found." },
-            });
-            return true;
-        }
         const operation = callMatch[2];
         if (req.method === "POST" && operation === "ringing") {
             let body: Record<string, unknown>;
@@ -239,14 +232,25 @@ export function createCallRoutes(
             }
             const ringerId = String(body.ringerId ?? "").trim();
             if (body.active === false) {
-                store.releaseRinging(call.id, claims.sub, ringerId);
+                store.releaseRinging(callMatch[1], claims.sub, ringerId);
                 sendJson(res, 200, { data: { ringing: false } });
                 return true;
             }
             sendJson(res, 200, {
                 data: {
-                    ringing: store.claimRinging(call.id, claims.sub, ringerId),
+                    ringing: store.claimRinging(
+                        callMatch[1],
+                        claims.sub,
+                        ringerId,
+                    ),
                 },
+            });
+            return true;
+        }
+        const call = store.get(callMatch[1]);
+        if (!call || !store.hasParticipant(call, claims.sub)) {
+            sendJson(res, 404, {
+                error: { code: "not_found", message: "Call not found." },
             });
             return true;
         }

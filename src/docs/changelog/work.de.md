@@ -26,6 +26,10 @@ Beim Schließen eines VoIP-Anrufs im PiP-Modus wird jetzt die ursprüngliche Por
 
 Angedockte Anbieteranrufe nutzen jetzt die gesamte verbleibende Höhe der Messages-Widget-Karte. Der aktive Thread reduziert sich auf Kopf- und Anrufbühnenzeile; Bühne, Komponenten-Host und Komponentenfenster füllen die verfügbare Inhaltszeile vollständig.
 
+## Zuverlässige Klingelbereinigung und Bild-im-Bild-Rückkehr
+
+Verspätete Klingel-Lease-Anfragen liefern nach dem Ende eines Anrufs nun erfolgreich ein Ergebnis ohne Klingeln. Beim Schließen eines Anrufs aus Bild-im-Bild nach einer SPA-Navigation stehen die folgerichtig gestalteten Aktionen „Zu Messages zurückkehren“, „Auflegen“ und „Abbrechen“ zur Auswahl. Die Rückkehr navigiert zum Anrufraum und stellt die vorhandene Anbieterkomponente ohne erneutes Einbinden wieder her.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -34,3 +38,5 @@ Angedockte Anbieteranrufe nutzen jetzt die gesamte verbleibende Höhe der Messag
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d242f8921775d346b655c2699d3e174c6e4373
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/fa2b5983f609ce6932d5ded0aa5f3c24afead9ca
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e2b9683158388267faea8ede560a681c45518ba9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/738a98d449247b89ce94cfda908042dbe8c28043
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ea5a087cdcc7d7cce9ece27fff4d90353c7e8fe7
