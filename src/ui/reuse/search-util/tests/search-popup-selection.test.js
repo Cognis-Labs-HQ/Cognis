@@ -38,6 +38,21 @@ test("search result types filter local and grouped API categories", () => {
     );
 });
 
+test("two-character searches replace pending text for loading and errors", () => {
+    const popupSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
+        "utf8",
+    );
+    const resultsSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-util/results.js"),
+        "utf8",
+    );
+    assert.match(popupSource, /renderSearchStatus/);
+    assert.match(popupSource, /requestController\.abort\(\)/);
+    assert.match(popupSource, /apiFailed = true/);
+    assert.match(resultsSource, /export function renderSearchStatus/);
+});
+
 test("search controls use theme-aware close icons", () => {
     const popupSource = readFileSync(
         resolve(ROOT, "src/ui/reuse/search-util/popup.js"),

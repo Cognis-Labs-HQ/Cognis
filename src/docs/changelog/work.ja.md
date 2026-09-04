@@ -6,5 +6,11 @@
 
 Messages の「新しいルーム」選択画面は、共通検索ユーティリティへユーザーカテゴリとタイプフィルターを渡すようになりました。Jitsi Meet の絞り込み検索と同じパラメーターを使い、無関係な結果タイプを除外します。
 
+## 応答性のある検索状態
+
+検索可能な文字数に達したクエリを実行すると、最小文字数の案内を直ちに読み込み状態へ置き換えます。失敗またはタイムアウトした要求では、古い結果や応答しない案内を残さず、明示的なエラーを表示します。
+
 ## コミット
+
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/aa9c83fcc501bfede1e9d392a2dbdd9e7a6e943e
