@@ -70,6 +70,10 @@ Gruppenanrufe starten jetzt, sobald die erste eingeladene Person antwortet, lass
 
 Cognis liest die Navigationsberechtigung des Jitsi-Anbieters jetzt aus dem Komponentenkontext und übernimmt dessen angeforderte PiP-Mindestgröße. Routenstile bleiben bei SPA-Navigationen eingebunden, während Social Call fähigkeitsspezifische Klassennamen verwendet. Dadurch behält ein aktives PiP-Meeting alle Stile, ohne Regeln der Anrufoberfläche auf andere Seiten zu übertragen.
 
+## Schnellere deterministische Image-Installation
+
+Die Installation und Bereinigung der Abhängigkeiten im Produktions-Image überspringt jetzt Netzwerkabfragen für npm-Audits und Finanzierung. Docker-Builds warten nach dem Entpacken aller Pakete nicht mehr auf optionale Registry-Endpunkte und überschreiben die Proxy-Konfiguration nicht mehr mit einem nicht unterstützten npm-Umgebungsschlüssel.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -94,3 +98,4 @@ Cognis liest die Navigationsberechtigung des Jitsi-Anbieters jetzt aus dem Kompo
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/930a3b084240205cd1e9ab4124e1bbfdbf6d2f52
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d4306538a8b51362f0c603c84c280eb3c00ce18d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/55fe7acc297c636ffa38791b448775f62b063159
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/734aa1e505f092db36fe2853ada1515ac0f0712a

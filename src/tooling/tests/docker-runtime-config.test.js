@@ -64,3 +64,16 @@ test("the production image stores module source configuration in the persistent 
         /COGNIS_MODULE_SOURCES_PATH=\/app\/config\/module-sources\.json/,
     );
 });
+
+test("the production image installs dependencies without registry audit requests", async () => {
+    const dockerfile = await readRepositoryFile("docker/Dockerfile");
+
+    assert.match(
+        dockerfile,
+        /npm ci --ignore-scripts --include=dev --no-audit --no-fund/,
+    );
+    assert.match(
+        dockerfile,
+        /npm prune --ignore-scripts --omit=dev --no-audit --no-fund/,
+    );
+});

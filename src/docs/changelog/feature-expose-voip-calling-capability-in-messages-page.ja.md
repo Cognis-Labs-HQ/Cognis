@@ -70,6 +70,10 @@ Messages はカメラ操作を表示する前に、各ルームに呼び出し�
 
 Cognis は Jitsi プロバイダーのナビゲーション許可をコンポーネントコンテキストから読み取り、要求された PiP の最小寸法を適用するようになりました。SPA ナビゲーション後もルートスタイルを保持し、Social Call は機能固有のクラス名を使用します。これにより、ライブ PiP 会議のスタイルを維持しながら、通話画面のルールがほかのページへ影響することを防ぎます。
 
+## 高速で確実なイメージインストール
+
+本番イメージの依存関係インストールと整理では、npm の監査および資金提供に関するネットワーク要求を省略するようになりました。全パッケージの展開後に Docker ビルドが任意のレジストリエンドポイントを待つことがなくなり、未対応の npm 環境キーでプロキシ設定を上書きすることもありません。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -94,3 +98,4 @@ Cognis は Jitsi プロバイダーのナビゲーション許可をコンポー
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/930a3b084240205cd1e9ab4124e1bbfdbf6d2f52
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d4306538a8b51362f0c603c84c280eb3c00ce18d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/55fe7acc297c636ffa38791b448775f62b063159
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/734aa1e505f092db36fe2853ada1515ac0f0712a

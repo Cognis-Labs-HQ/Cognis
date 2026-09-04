@@ -70,6 +70,10 @@ Panggilan grup kini dimulai setelah undangan pertama menjawab, mengizinkan undan
 
 Cognis kini membaca izin navigasi penyedia Jitsi dari konteks komponen dan menerapkan ukuran minimum PiP yang diminta. Gaya rute tetap terpasang selama navigasi SPA, sedangkan Social Call memakai nama kelas khusus kapabilitas agar rapat PiP aktif mempertahankan seluruh gayanya tanpa membocorkan aturan tahap panggilan ke halaman lain.
 
+## Instalasi image lebih cepat dan deterministik
+
+Instalasi serta pemangkasan dependensi image produksi kini melewati permintaan jaringan audit dan pendanaan npm. Build Docker tidak lagi menunggu endpoint registri opsional setelah seluruh paket selesai diekstrak dan tidak lagi menimpa konfigurasi proksi dengan kunci lingkungan npm yang tidak didukung.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -94,3 +98,4 @@ Cognis kini membaca izin navigasi penyedia Jitsi dari konteks komponen dan mener
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/930a3b084240205cd1e9ab4124e1bbfdbf6d2f52
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d4306538a8b51362f0c603c84c280eb3c00ce18d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/55fe7acc297c636ffa38791b448775f62b063159
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/734aa1e505f092db36fe2853ada1515ac0f0712a

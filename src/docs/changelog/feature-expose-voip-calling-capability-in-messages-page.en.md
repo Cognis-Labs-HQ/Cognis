@@ -70,6 +70,10 @@ Group calls now start after the first invitee answers, allow later invitees to j
 
 Cognis now reads the Jitsi provider navigation permission from the component context and applies its requested minimum PiP size. Route styles remain mounted across SPA navigation, while Social Call uses capability-scoped class names so a live PiP meeting keeps all of its styling without leaking call-stage rules into other pages.
 
+## Faster deterministic image installs
+
+Production image dependency installation and pruning now skip npm audit and funding network requests. Docker builds no longer wait on optional registry endpoints after all packages have already been unpacked, and they no longer override proxy configuration with an unsupported npm environment key.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -94,3 +98,4 @@ Cognis now reads the Jitsi provider navigation permission from the component con
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/930a3b084240205cd1e9ab4124e1bbfdbf6d2f52
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d4306538a8b51362f0c603c84c280eb3c00ce18d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/55fe7acc297c636ffa38791b448775f62b063159
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/734aa1e505f092db36fe2853ada1515ac0f0712a
