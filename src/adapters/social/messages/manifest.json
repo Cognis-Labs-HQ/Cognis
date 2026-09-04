@@ -2,7 +2,7 @@
     "id": "social-messages",
     "uuid": "062a74f5-5699-52fb-98a3-63ec6538bdfc",
     "name": "Messages",
-    "version": "2.2.1",
+    "version": "2.7.8",
     "gateway": "social",
     "description": "Private messages with chatrooms (DM and group), per-room AES-GCM encryption, and notification dispatch.",
     "publisher": "Cognis Labs HQ",

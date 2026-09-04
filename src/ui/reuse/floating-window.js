@@ -15,7 +15,7 @@
  * release.updateMinimumSize({ width: 320, height: 180 });
  *
  * @param {HTMLElement} element - Floating window to control.
- * @param {{handle?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number, width?: string, height?: string, right?: string, bottom?: string, zIndex?: number, portal?: boolean, topLayer?: boolean}} options
+ * @param {{handle?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number, width?: string, height?: string, right?: string, bottom?: string, zIndex?: number, portal?: boolean, topLayer?: boolean, closeButton?: {label: string, onClose: () => void}}} options
  * @returns {(() => void) & {updateMinimumSize: (size: {width: number, height: number}) => boolean}} Idempotent cleanup with a minimum-size updater.
  */
 import { uiCtx } from "./ui-ctx.js";
@@ -45,13 +45,55 @@ function ensureFloatingWindowStyles() {
     document.head.append(link);
 }
 
-function createFloatingWindowChrome(element) {
+function movePreservingState(parent, element, before = null) {
+    if (
+        !parent ||
+        !element ||
+        parent === element ||
+        element.contains?.(parent)
+    ) {
+        return false;
+    }
+    const validSibling = before?.parentNode === parent ? before : null;
+    if (typeof parent?.moveBefore === "function") {
+        try {
+            parent.moveBefore(element, validSibling);
+            return true;
+        } catch (error) {
+            if (error?.name !== "HierarchyRequestError") throw error;
+        }
+    }
+    try {
+        if (validSibling) {
+            parent.insertBefore(element, validSibling);
+        } else {
+            parent.append(element);
+        }
+        return true;
+    } catch (error) {
+        if (error?.name !== "HierarchyRequestError") throw error;
+        return false;
+    }
+}
+
+function createFloatingWindowChrome(element, closeButton, release) {
     if (typeof document === "undefined" || !document.createElement) {
         return { toolbar: null, resizeHandles: [], remove: () => {} };
     }
     const toolbar = document.createElement("div");
     toolbar.className = "floating-window-toolbar";
     toolbar.setAttribute("aria-hidden", "true");
+    let closeControl = null;
+    if (closeButton?.label && typeof closeButton.onClose === "function") {
+        closeControl = document.createElement("button");
+        closeControl.type = "button";
+        closeControl.className = "floating-window-close btn-close btn-neutral";
+        closeControl.setAttribute("aria-label", closeButton.label);
+        closeControl.addEventListener("click", () => {
+            release();
+            closeButton.onClose();
+        });
+    }
     const createResizeHandle = (edge) => {
         const resizeHandle = document.createElement("div");
         resizeHandle.className = `floating-window-resize-handle floating-window-resize-handle--${edge}`;
@@ -79,11 +121,13 @@ function createFloatingWindowChrome(element) {
         createResizeHandle("bottom-right"),
     ];
     element.append(toolbar, ...resizeHandles);
+    if (closeControl) element.append(closeControl);
     return {
         toolbar,
         resizeHandles,
         remove: () => {
             toolbar.remove();
+            closeControl?.remove();
             for (const resizeHandle of resizeHandles) resizeHandle.remove();
         },
     };
@@ -103,6 +147,7 @@ export function makeFloatingWindow(
         zIndex = 1201,
         portal = true,
         topLayer = portal,
+        closeButton,
     } = {},
 ) {
     if (!element || !handle) {
@@ -120,6 +165,13 @@ export function makeFloatingWindow(
     const hadPopoverAttribute = element.hasAttribute?.("popover") ?? false;
     const previousPopoverValue = element.getAttribute?.("popover");
     let shownInTopLayer = false;
+    const originalParent = element.parentNode ?? element.parentElement;
+    const portalElement = originalParent?.matches?.(".component-page-stage")
+        ? originalParent
+        : element;
+    const portalParent =
+        portalElement.parentNode ?? portalElement.parentElement;
+    const portalNextSibling = portalElement.nextSibling;
     const previousStyles = Object.fromEntries(
         MANAGED_STYLE_PROPERTIES.map((property) => [
             property,
@@ -128,7 +180,13 @@ export function makeFloatingWindow(
     );
 
     ensureFloatingWindowStyles();
-    const chrome = createFloatingWindowChrome(element);
+    if (portal && document.body && portalElement.parentNode !== document.body) {
+        movePreservingState(document.body, portalElement);
+    }
+    let releaseFloatingWindow = () => {};
+    const chrome = createFloatingWindowChrome(element, closeButton, () =>
+        releaseFloatingWindow(),
+    );
     element.classList.add("floating-window");
     handle.classList.add("floating-window-handle");
     chrome.toolbar?.classList.add("floating-window-handle");
@@ -482,13 +540,30 @@ export function makeFloatingWindow(
         for (const [property, value] of Object.entries(previousStyles)) {
             element.style[property] = value;
         }
-        if (shownInTopLayer) element.hidePopover?.();
+        if (shownInTopLayer) {
+            try {
+                if (
+                    typeof element.matches !== "function" ||
+                    element.matches(":popover-open")
+                ) {
+                    element.hidePopover?.();
+                }
+            } catch {
+                // Popover state changed during beforetoggle; handled by the
+                // popover-attribute-restoration block immediately below.
+            }
+        }
+        // popover-attribute-restoration
         if (hadPopoverAttribute) {
             element.setAttribute("popover", previousPopoverValue ?? "");
         } else {
             element.removeAttribute?.("popover");
         }
+        if (portal && portalParent && portalParent.isConnected !== false) {
+            movePreservingState(portalParent, portalElement, portalNextSibling);
+        }
     };
+    releaseFloatingWindow = release;
     release.updateMinimumSize = updateMinimumSize;
     signal?.addEventListener("abort", release, { once: true });
     if (signal?.aborted) release();

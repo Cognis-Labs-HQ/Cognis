@@ -237,6 +237,14 @@ uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/ui-ctx.js",
     providesCapabilities: ["ui:reuse"],
 });
+uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/app-router.js",
+    providesCapabilities: [
+        "component-pages:spawn",
+        "component-pages:discard",
+        "ui:makeFloatingWindow",
+    ],
+});
 const healthService = new HealthService();
 
 const gatewayService = new GatewayService(gatewayRegistry);

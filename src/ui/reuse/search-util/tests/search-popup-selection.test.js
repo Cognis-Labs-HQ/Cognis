@@ -38,6 +38,21 @@ test("search result types filter local and grouped API categories", () => {
     );
 });
 
+test("two-character searches replace pending text for loading and errors", () => {
+    const popupSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
+        "utf8",
+    );
+    const resultsSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-util/results.js"),
+        "utf8",
+    );
+    assert.match(popupSource, /renderSearchStatus/);
+    assert.match(popupSource, /requestController\.abort\(\)/);
+    assert.match(popupSource, /apiFailed = true/);
+    assert.match(resultsSource, /export function renderSearchStatus/);
+});
+
 test("search controls use theme-aware close icons", () => {
     const popupSource = readFileSync(
         resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
@@ -98,6 +113,10 @@ test("global search exposes registered categories and match controls", () => {
         resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
         "utf8",
     );
+    const apiResultsSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-util/api-results.js"),
+        "utf8",
+    );
     const stateSource = readFileSync(
         resolve(ROOT, "src/ui/reuse/search-util/state.js"),
         "utf8",
@@ -132,14 +151,14 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /shouldIndexBrowserPreferenceKey/);
     assert.match(stateSource, /MIN_SEARCH_QUERY_LENGTH = 2/);
     assert.match(source, /mergeSearchGroups/);
-    assert.match(source, /filterNavigableGroups/);
+    assert.match(apiResultsSource, /filterNavigableGroups/);
     assert.match(source, /filterVisibleSearchGroups/);
     assert.match(source, /isSearchResultVisibleToUser/);
     assert.match(source, /isInternalSearchUrlAccessible/);
-    assert.match(source, /hasSelectableTarget/);
+    assert.match(apiResultsSource, /hasSelectableTarget/);
     assert.match(source, /normalizeResultClass/);
     assert.match(resultsSource, /dataset\.searchResultClass/);
-    assert.match(source, /filterApiFlatMatches/);
+    assert.match(apiResultsSource, /filterApiFlatMatches/);
     assert.match(resultsSource, /renderResultCategorySummary/);
     assert.match(resultsSource, /filterGroupsBySelectedCategories/);
     assert.match(source, /normalizeSearchUrlKey/);

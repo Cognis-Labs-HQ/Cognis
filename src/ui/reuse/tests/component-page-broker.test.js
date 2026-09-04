@@ -101,6 +101,9 @@ test("component windows stay disposable across activation and SPA navigation", a
         },
     };
     const componentStage = new FakeElement();
+    const componentStages = new Map([
+        ["meeting-whiteboard-stage", componentStage],
+    ]);
     const appPageMain = new FakeElement();
     componentStage.closest = (selector) =>
         selector === ".app-page__main" ? appPageMain : null;
@@ -108,8 +111,7 @@ test("component windows stay disposable across activation and SPA navigation", a
     appRoot.dataset.activePage = "meetings";
     globalThis.document = {
         createElement: () => new FakeElement(),
-        getElementById: (elementId) =>
-            elementId === "meeting-whiteboard-stage" ? componentStage : null,
+        getElementById: (elementId) => componentStages.get(elementId) ?? null,
         querySelector: (selector) => (selector === "#app" ? appRoot : null),
     };
     globalThis.fetch = async () => catalogResponse();
@@ -171,6 +173,10 @@ test("component windows stay disposable across activation and SPA navigation", a
                 : null;
         },
     });
+    assert.equal(
+        typeof uiCtx.capabilities.get("component-pages:createSpawnPermit"),
+        "function",
+    );
     const shareContext = {
         resourceType: "meeting",
         guestAccessToken: "guest-token",
@@ -232,6 +238,42 @@ test("component windows stay disposable across activation and SPA navigation", a
         }),
         null,
     );
+
+    const originalNavigator = Object.getOwnPropertyDescriptor(
+        globalThis,
+        "navigator",
+    );
+    const userActivation = { isActive: true };
+    Object.defineProperty(globalThis, "navigator", {
+        configurable: true,
+        value: { userActivation },
+    });
+    const activationPermit = uiCtx.capabilities.get(
+        "component-pages:createSpawnPermit",
+    )();
+    userActivation.isActive = false;
+    const permittedWindow = await spawnComponentPage({
+        componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+        routeId: "core.dashboard",
+        elementId: "meeting-whiteboard-stage",
+        activationPermit,
+    });
+    assert.equal(permittedWindow?.elementId, "meeting-whiteboard-stage");
+    await permittedWindow.discard();
+    assert.equal(
+        await spawnComponentPage({
+            componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+            routeId: "core.dashboard",
+            elementId: "meeting-whiteboard-stage",
+            activationPermit,
+        }),
+        null,
+    );
+    if (originalNavigator) {
+        Object.defineProperty(globalThis, "navigator", originalNavigator);
+    } else {
+        delete globalThis.navigator;
+    }
 
     spawnAuthorized = true;
     const callerController = new AbortController();
@@ -308,6 +350,11 @@ test("component windows stay disposable across activation and SPA navigation", a
         top: 48,
         behavior: "auto",
     });
+    componentWindow.restoreHostLayout();
+    assert.equal(
+        appPageMain.classNames.has("app-page__main--component-borderless"),
+        false,
+    );
 
     assert.equal(
         await uiCtx.capabilities.get("component-pages:discard")(
@@ -322,6 +369,20 @@ test("component windows stay disposable across activation and SPA navigation", a
         componentStage.classNames.has("component-page-stage--borderless"),
         false,
     );
+
+    const temporaryStageHost = new FakeElement();
+    const temporaryStage = new FakeElement();
+    temporaryStageHost.append(temporaryStage);
+    componentStages.set("temporary-call-stage", temporaryStage);
+    const temporaryWindow = await spawnComponentPage({
+        componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+        routeId: "core.dashboard",
+        elementId: "temporary-call-stage",
+        removeStageOnDiscard: true,
+    });
+    assert.ok(temporaryWindow);
+    await temporaryWindow.discard();
+    assert.equal(temporaryStageHost.children.length, 0);
     assert.equal(
         appPageMain.classNames.has("app-page__main--component-borderless"),
         false,
@@ -335,12 +396,31 @@ test("component windows stay disposable across activation and SPA navigation", a
 
     releasedMount = false;
     const navigationController = new AbortController();
-    await spawnComponentPage({
+    const retainedWindow = await spawnComponentPage({
         componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
         routeId: "core.dashboard",
         elementId: "meeting-whiteboard-stage",
         signal: navigationController.signal,
+        allowNavigation: true,
     });
+    assert.equal(retainedWindow.setNavigationAllowed(true), true);
+    window.dispatchEvent({ type: "cognis:route-will-change" });
+    navigationController.abort();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(releasedMount, false);
+    assert.equal(componentStage.children.length, 1);
+    await retainedWindow.discard();
+    assert.equal(releasedMount, true);
+
+    releasedMount = false;
+    const disposableNavigationController = new AbortController();
+    const navigationRestrictedWindow = await spawnComponentPage({
+        componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+        routeId: "core.dashboard",
+        elementId: "meeting-whiteboard-stage",
+        signal: disposableNavigationController.signal,
+    });
+    assert.equal(navigationRestrictedWindow.setNavigationAllowed(true), false);
     window.dispatchEvent({ type: "cognis:route-will-change" });
     await new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(releasedMount, true);
@@ -351,9 +431,9 @@ test("component windows stay disposable across activation and SPA navigation", a
         componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
         routeId: "core.dashboard",
         elementId: "meeting-whiteboard-stage",
-        signal: navigationController.signal,
+        signal: disposableNavigationController.signal,
     });
-    navigationController.abort();
+    disposableNavigationController.abort();
     await new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(releasedMount, true);
     assert.equal(componentStage.children.length, 0);

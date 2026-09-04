@@ -179,6 +179,10 @@ test("module filters expose every selected state", () => {
         marketplaceStyles,
         /\[data-module-sidebar\] button\.is-active\s*{[^}]*border-color: var\(--accent-color\)/,
     );
+    assert.match(
+        marketplaceStyles,
+        /\[data-module-sidebar\] button:not\(\.is-active\)\s*{[^}]*border-color: transparent/,
+    );
 });
 
 test("module marketplace passes root and options to the page composer", () => {

@@ -48,6 +48,7 @@ import { resolveMessageTemplateVariables } from "./message-templates.js";
 import { loadChatRoomKey, requireChatRoomKey } from "./chat-loading.js";
 import { createMessagesRoomState } from "./room-state.js";
 import { renderRoomList } from "./room-render.js";
+import { activateRoomAction, resolveRoomActions } from "./flows.js";
 
 const profileAvatars = () => {
     const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
@@ -147,7 +148,7 @@ export async function mount(root, { signal } = {}) {
                 // when the synthetic input event fires below.
                 // composerInputRef may be null before the first onRender fires;
                 // the instanceof guard safely skips the clear in that case
-                // (lines 232-239 below, where composerInputRef is assigned).
+                // (lines 294-297 below, where composerInputRef is assigned).
                 if (
                     persistedState.size === 0 &&
                     composerInputRef instanceof HTMLTextAreaElement
@@ -158,6 +159,22 @@ export async function mount(root, { signal } = {}) {
                 // (preview rendering, character counters, typing indicators)
                 // is updated after the draft value is restored programmatically.
                 composerInputRef?.dispatchEvent(new Event("input"));
+            }
+        },
+        resolveRoomActions,
+        onRoomAction: async (room, action) => {
+            try {
+                await activateRoomAction(action, room, { signal });
+            } catch (error) {
+                console.error("[messages] VoIP call action failed", {
+                    component: "social-messages",
+                    operation: "start_voip_call",
+                    roomId: roomState.getSelectedRoomId(),
+                    error,
+                });
+                showToast(i18n.t("ui.reuse.error"), {
+                    variant: "error",
+                });
             }
         },
     });
@@ -172,6 +189,48 @@ export async function mount(root, { signal } = {}) {
         await roomState.reloadRoomsList();
         await roomState.refreshActiveConversation();
     };
+    const roomCallPositions = new Map();
+    window.addEventListener(
+        "cognis:room-call-state",
+        (event) => {
+            const roomId = String(event.detail?.roomId ?? "");
+            const roomElement = document.querySelector(
+                `.messages-room[data-room-id="${CSS.escape(roomId)}"]`,
+            );
+            if (!roomId || !(roomElement instanceof HTMLElement)) return;
+            if (event.detail?.active) {
+                if (!roomCallPositions.has(roomId)) {
+                    roomCallPositions.set(roomId, roomElement.nextSibling);
+                }
+                roomElement.parentElement?.prepend(roomElement);
+                roomElement.classList.add("messages-room--calling");
+                if (roomId === roomState.getSelectedRoomId()) {
+                    void roomState.openRoom(roomId);
+                }
+                return;
+            }
+            const nextSibling = roomCallPositions.get(roomId);
+            if (nextSibling?.parentNode === roomElement.parentNode) {
+                roomElement.parentNode.insertBefore(roomElement, nextSibling);
+            } else {
+                roomElement.parentElement?.append(roomElement);
+            }
+            roomElement.classList.remove("messages-room--calling");
+            roomCallPositions.delete(roomId);
+            if (roomId === roomState.getSelectedRoomId()) {
+                void roomState.openRoom(roomId);
+            }
+        },
+        { signal },
+    );
+    window.addEventListener(
+        "cognis:call-moved-to-pip",
+        (event) => {
+            if (event.detail?.roomId !== roomState.getSelectedRoomId()) return;
+            void roomState.refreshActiveConversation();
+        },
+        { signal },
+    );
     window.addEventListener(
         "cognis:keyring-event",
         (event) => {
@@ -790,6 +849,7 @@ export async function mount(root, { signal } = {}) {
             openSearchPopup({
                 endpoint: "/api/v1/social/messages/users/lookup",
                 category: "user",
+                typeFilter: "user",
                 ariaLabel: i18n.t("module.social.messages.new"),
                 noResultsText: i18n.t("ui.layout.search.no_results"),
                 onSelect: async (result) => {
@@ -877,6 +937,7 @@ export async function mount(root, { signal } = {}) {
     });
 
     await composer.init();
+    await activateRoomAction({ id: "page:mounted" }, null, { signal });
     pageReady = true;
     if (refreshAfterKeyringUnlock) {
         refreshAfterKeyringUnlock = false;

@@ -917,24 +917,6 @@ export function mergeSearchGroups(groups) {
     });
 }
 
-export function hasSelectableTarget(item) {
-    return Boolean(
-        String(item?.url ?? "").trim() ||
-        String(item?.handle ?? "").trim() ||
-        String(item?.id ?? "").trim() ||
-        String(item?.accountId ?? "").trim(),
-    );
-}
-
-export function filterNavigableGroups(groups) {
-    return (groups ?? [])
-        .map((group) => ({
-            ...group,
-            items: (group.items ?? []).filter(hasSelectableTarget),
-        }))
-        .filter((group) => group.items.length > 0);
-}
-
 function escapeSearchSelectorToken(value) {
     if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
         return CSS.escape(value);
@@ -1001,35 +983,4 @@ export function filterVisibleSearchGroups(groups) {
             items: (group.items ?? []).filter(isSearchResultVisibleToUser),
         }))
         .filter((group) => group.items.length > 0);
-}
-
-export function shouldClientFilterApiResults(searchOptions = {}) {
-    const options = normalizeSearchOptions(searchOptions);
-    return options.wholeWord || options.regex || options.caseSensitive;
-}
-
-export function filterApiGroupMatches(groups, query, searchOptions = {}) {
-    if (!shouldClientFilterApiResults(searchOptions)) return groups;
-    const resolveMatch = createSearchMatchResolver(query, searchOptions);
-    return (groups ?? [])
-        .map((group) => ({
-            ...group,
-            items: (group.items ?? [])
-                .map((item) => attachSearchMatch(item, resolveMatch))
-                .filter(Boolean),
-        }))
-        .filter((group) => group.items.length > 0);
-}
-
-export function filterApiFlatMatches(items, query, searchOptions = {}) {
-    if (!shouldClientFilterApiResults(searchOptions)) return items;
-    const resolveMatch = createSearchMatchResolver(query, searchOptions);
-    return (items ?? [])
-        .map((item) =>
-            attachSearchMatch(
-                normalizeSearchItem(item, item?.category ?? "Search") ?? item,
-                resolveMatch,
-            ),
-        )
-        .filter(Boolean);
 }

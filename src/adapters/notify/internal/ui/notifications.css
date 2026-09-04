@@ -52,6 +52,26 @@
     padding: 0 4px;
 }
 
+.notification-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.notification-actions button {
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0.65rem;
+    border-radius: 50%;
+}
+
+.notification-actions svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
 .notification-panel {
     position: absolute;
     top: calc(100% + 8px);
@@ -223,6 +243,11 @@
     opacity: 0.5;
     transition: opacity 0.15s;
     margin-right: 2px;
+}
+
+.notification-item .notification-actions {
+    align-self: center;
+    white-space: nowrap;
 }
 
 .notification-item--linked:hover .notification-item-link-arrow {

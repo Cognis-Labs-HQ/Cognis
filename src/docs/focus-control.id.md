@@ -50,6 +50,8 @@ ID panggung hanya boleh berisi huruf, angka, titik, garis bawah, titik dua, atau
 
 Untuk Focus Control tersinkron, deklarasikan loader `module-route` dengan `moduleId` berupa UUID tersebut dan `routeId` berupa ID rute yang memenuhi syarat. Penyedia kolaborasi tetap harus mengotorisasi permintaan, membuat atau menemukan whiteboard melalui capability ctx sisi server, memberikan akses kepada peserta rapat, dan hanya menerbitkan pengenal sumber daya stabil melalui `focus:transport`.
 
+Permintaan pemunculan dapat menetapkan `allowNavigation: true` untuk mengizinkan handelnya mempertahankan komponen terpasang selama navigasi SPA. Izin saja tidak mempertahankannya: permukaan pemilik harus memanggil `setNavigationAllowed(true)` saat memasuki presentasi yang aman untuk navigasi seperti PiP, dan `setNavigationAllowed(false)` saat kembali tertanam.
+
 ## Jendela komponen tanpa bingkai
 
 Teruskan `borderless: true` ke `component-pages:spawn` ketika halaman tertanam harus menyentuh setiap sisi panggung milik pemanggil. Cognis menghapus margin luar, padding, bingkai, dan radius jendela komponen, mengukur jendela beserta akar konten langsungnya agar memenuhi induk, serta meneruskan `borderless: true` ke opsi mount penyedia. Jarak internal konten tetap menjadi tanggung jawab penyedia.

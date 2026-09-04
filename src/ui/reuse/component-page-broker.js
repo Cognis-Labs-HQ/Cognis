@@ -4,8 +4,9 @@
  * Public exports:
  * - `requestComponentPage` — resolves an eligible page without mounting it.
  * - `spawnComponentPage` — mounts an eligible page in a protected caller-owned stage.
+ * - `component-pages:createSpawnPermit` capability — captures one user activation for one deferred spawn.
  * - `discardComponentPage` — tears down the component window in a stage.
- * - `discardAllComponentPages` — tears down every active component window.
+ * - `discardAllComponentPages` — tears down active component windows, optionally retaining navigation-safe windows.
  * - `installComponentPageBroker` — registers browser flow hooks and capabilities once.
  *
  * @example
@@ -32,6 +33,20 @@ const WHEEL_DELTA_LINE = 1;
 const WHEEL_DELTA_PAGE = 2;
 const activeWindows = new Map();
 const borderlessHosts = new WeakMap();
+const spawnPermits = new WeakSet();
+const SPAWN_PERMIT_LIFETIME_MILLISECONDS = 60_000;
+
+function createComponentSpawnPermit() {
+    if (!defaultSpawnAuthorization()) return null;
+    const permit = Object.freeze({});
+    spawnPermits.add(permit);
+    const expirationTimer = setTimeout(
+        () => spawnPermits.delete(permit),
+        SPAWN_PERMIT_LIFETIME_MILLISECONDS,
+    );
+    expirationTimer.unref?.();
+    return permit;
+}
 
 function isAbortSignal(value) {
     return (
@@ -116,8 +131,8 @@ export async function requestComponentPage(request) {
 /**
  * Mounts an eligible component page in a protected, caller-owned stage.
  *
- * @param {{componentUuid: string, routeId: string, elementId: string, mode?: string, context?: object, signal?: AbortSignal, borderless?: boolean}} request
- * @returns {Promise<{elementId: string, ownerUuid: string, routeId: string, borderless: boolean, discard: () => Promise<void>} | null>} A mounted component-window handle or null.
+ * @param {{componentUuid: string, routeId: string, elementId: string, mode?: string, context?: object, signal?: AbortSignal, borderless?: boolean, removeStageOnDiscard?: boolean, activationPermit?: object, allowNavigation?: boolean}} request
+ * @returns {Promise<{elementId: string, ownerUuid: string, routeId: string, borderless: boolean, restoreHostLayout: () => void, setNavigationAllowed: (allowed: boolean) => boolean, discard: () => Promise<void>} | null>} A mounted component-window handle or null.
  */
 export async function spawnComponentPage(request) {
     const result = await uiCtx.runFlow("spawn-component-page", request);
@@ -139,15 +154,21 @@ export async function discardComponentPage(elementId) {
 }
 
 /**
- * Discards every active component window before the SPA replaces page content.
+ * Discards active component windows.
  *
+ * @param {{includeRetained?: boolean}} options - Set false during SPA navigation to preserve retained windows.
  * @returns {Promise<void>}
  */
-export async function discardAllComponentPages() {
+export async function discardAllComponentPages({
+    includeRetained = true,
+} = {}) {
     await Promise.all(
-        [...activeWindows.values()].map((activeWindow) =>
-            activeWindow.discard(),
-        ),
+        [...activeWindows.values()]
+            .filter(
+                (activeWindow) =>
+                    includeRetained || !activeWindow.retainedAcrossNavigation,
+            )
+            .map((activeWindow) => activeWindow.discard()),
     );
 }
 
@@ -217,12 +238,19 @@ export function installComponentPageBroker({
                 elementId,
                 signal,
                 borderless: input?.borderless === true,
+                removeStageOnDiscard: input?.removeStageOnDiscard === true,
+                activationPermit: input?.activationPermit ?? null,
+                allowNavigation: input?.allowNavigation === true,
             };
             data.requestValid =
                 ELEMENT_ID_PATTERN.test(elementId) &&
                 isAbortSignal(signal) &&
                 !signal?.aborted;
-            data.spawnAuthorized = authorizeSpawn();
+            const permitAuthorized =
+                typeof data.request.activationPermit === "object" &&
+                data.request.activationPermit !== null &&
+                spawnPermits.delete(data.request.activationPermit);
+            data.spawnAuthorized = authorizeSpawn() || permitAuthorized;
         },
     );
     uiCtx.extendFlow(
@@ -272,9 +300,16 @@ export function installComponentPageBroker({
             const releaseBorderlessHost = data.request.borderless
                 ? activateBorderlessHost(data.stage)
                 : () => {};
+            let hostLayoutRestored = false;
+            const restoreHostLayout = () => {
+                if (hostLayoutRestored) return;
+                hostLayoutRestored = true;
+                releaseBorderlessHost();
+            };
             let mountResult;
             let discarded = false;
             let discardOnCallerAbort;
+            let navigationAllowed = false;
             const discard = async () => {
                 if (discarded) return;
                 discarded = true;
@@ -289,13 +324,17 @@ export function installComponentPageBroker({
                         error,
                     });
                 } finally {
-                    releaseBorderlessHost();
+                    restoreHostLayout();
                     data.request.signal?.removeEventListener(
                         "abort",
                         discardOnCallerAbort,
                     );
                     data.windowElement.remove();
-                    if (!data.stage.querySelector?.(".component-page-window")) {
+                    if (data.request.removeStageOnDiscard) {
+                        data.stage.remove();
+                    } else if (
+                        !data.stage.querySelector?.(".component-page-window")
+                    ) {
                         data.stage.classList.remove(
                             "component-page-stage",
                             "component-page-stage--borderless",
@@ -314,7 +353,28 @@ export function installComponentPageBroker({
                 ownerUuid: data.request.componentUuid,
                 routeId: data.request.routeId,
                 borderless: data.request.borderless,
+                restoreHostLayout,
                 discard,
+                retainedAcrossNavigation: false,
+                setNavigationAllowed(allowed) {
+                    if (allowed && !data.request.allowNavigation) return false;
+                    navigationAllowed = allowed;
+                    handle.retainedAcrossNavigation = allowed;
+                    if (allowed) {
+                        data.request.signal?.removeEventListener(
+                            "abort",
+                            discardOnCallerAbort,
+                        );
+                    } else {
+                        data.request.signal?.addEventListener(
+                            "abort",
+                            discardOnCallerAbort,
+                            { once: true },
+                        );
+                        if (data.request.signal?.aborted) void discard();
+                    }
+                    return navigationAllowed;
+                },
             };
             activeWindows.set(data.request.elementId, handle);
             discardOnCallerAbort = () => void discard();
@@ -380,6 +440,10 @@ export function installComponentPageBroker({
     );
     uiCtx.capabilities.contribute("component-pages:spawn", spawnComponentPage);
     uiCtx.capabilities.contribute(
+        "component-pages:createSpawnPermit",
+        createComponentSpawnPermit,
+    );
+    uiCtx.capabilities.contribute(
         "component-pages:discard",
         discardComponentPage,
     );
@@ -388,7 +452,7 @@ export function installComponentPageBroker({
         discardAllComponentPages,
     );
     window.addEventListener("cognis:route-will-change", () => {
-        void discardAllComponentPages();
+        void discardAllComponentPages({ includeRetained: false });
     });
     uiCtx.capabilities.contribute(
         "router:resolveDeclaredRoute",

@@ -9,6 +9,7 @@ export interface InternalNotification {
     category: string;
     senderName?: string;
     actionUrl?: string;
+    metadata?: Record<string, unknown>;
     read: boolean;
     createdAt: number;
 }
@@ -50,6 +51,7 @@ export class InternalNotificationStore {
             category: envelope.category,
             senderName: envelope.senderName,
             actionUrl: envelope.actionUrl,
+            metadata: envelope.metadata,
             read: false,
             createdAt: Date.now(),
         });

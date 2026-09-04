@@ -9,6 +9,9 @@
  *   registerSearchIndex(categoryId, provider) — registers component-owned content indexes.
  *   search — ctx-backed search capability with component avenues.
  *
+ * @example
+ * openSearchPopup({ endpoint: "/api/v1/search", onSelect() {} });
+ *
  * @module reuse/search-util/popup
  */
 
@@ -29,21 +32,23 @@ import {
     collectVisibleNavigationSearchGroups,
     collectVisiblePageSearchGroups,
     collectVisiblePostSearchGroups,
-    filterApiFlatMatches,
     filterLocalGroupsIncrementally,
-    filterApiGroupMatches,
-    filterNavigableGroups,
     filterSearchGroupsForQuery,
     filterSearchGroupsForType,
     filterVisibleSearchGroups,
-    hasSelectableTarget,
     isSearchResultVisibleToUser,
     mergeSearchGroups,
     normalizeSearchGroup,
     normalizeSearchOptions,
     resolvePopupPlaceholder,
-    shouldClientFilterApiResults,
 } from "./matching.js";
+import {
+    filterApiFlatMatches,
+    filterApiGroupMatches,
+    filterNavigableGroups,
+    hasSelectableTarget,
+    shouldClientFilterApiResults,
+} from "./api-results.js";
 import {
     clearPageFindHighlights,
     filterGroupsBySelectedCategories,
@@ -54,6 +59,7 @@ import {
     renderPageFindHighlights,
     renderResultCategorySummary,
     renderSearchPendingMessage,
+    renderSearchStatus,
     setCurrentPageFindMatch,
     updatePageFindCounter,
 } from "./results.js";
@@ -74,6 +80,8 @@ async function runSearch({
     closeOverlay,
     multiSelectState,
     searchOptions,
+    searchingText,
+    errorText,
 }) {
     if (query.length < MIN_SEARCH_QUERY_LENGTH) {
         renderSearchPendingMessage(resultsContainer, categoriesContainer);
@@ -81,12 +89,14 @@ async function runSearch({
     }
 
     const searchRunId = ++latestSearchRunId;
+    renderSearchStatus(resultsContainer, categoriesContainer, searchingText);
     const isMultiSelect = Boolean(multiSelectState);
     let localComplete = false;
     let apiComplete = false;
     let navigableLocalGroups = [];
     let navigableApiGroups = [];
     let flatItems = [];
+    let apiFailed = false;
 
     const isCurrentRun = () => searchRunId === latestSearchRunId;
     const renderAvailableResults = () => {
@@ -118,6 +128,14 @@ async function runSearch({
             return;
         }
         if (localComplete && apiComplete) {
+            if (apiFailed) {
+                renderSearchStatus(
+                    resultsContainer,
+                    categoriesContainer,
+                    errorText,
+                );
+                return;
+            }
             renderFlatResults(
                 resultsContainer,
                 [],
@@ -158,12 +176,21 @@ async function runSearch({
 
     const token = localStorage.getItem("cognis_access_token");
     const headers = token ? { authorization: `Bearer ${token}` } : {};
+    const requestController = new AbortController();
+    const requestTimeout = window.setTimeout(
+        () => requestController.abort(),
+        10_000,
+    );
     fetch(buildSearchUrl(endpoint, query, typeFilter, searchOptions), {
         credentials: "same-origin",
         headers,
+        signal: requestController.signal,
     })
         .then(async (response) => {
-            if (!response.ok) return;
+            if (!response.ok) {
+                apiFailed = true;
+                return;
+            }
             const payload = await response.json();
             const responseData = payload?.data ?? [];
             const isGrouped =
@@ -191,8 +218,11 @@ async function runSearch({
                           (item) => isMultiSelect || hasSelectableTarget(item),
                       );
         })
-        .catch(() => {})
+        .catch(() => {
+            apiFailed = true;
+        })
         .finally(() => {
+            window.clearTimeout(requestTimeout);
             apiComplete = true;
             renderAvailableResults();
         });
@@ -307,6 +337,8 @@ export function openSearchPopup({
     localGroups = [],
     multiSelect = false,
     showOptions = true,
+    searchingText = "Searching…",
+    errorText = "Search failed. Please try again.",
 }) {
     const existingOverlay = document.querySelector(".search-popup-overlay");
     if (existingOverlay) {
@@ -563,6 +595,8 @@ export function openSearchPopup({
                     closeOverlay,
                     multiSelectState,
                     searchOptions,
+                    searchingText,
+                    errorText,
                 }),
             DEBOUNCE_MS,
         );

@@ -37,7 +37,9 @@ import {
 } from "../reuse/ui-provider-loader.js";
 
 capturePwaInstallPrompt();
+const BUTTON_STYLESHEET = "/static/styles/reuse/buttons.css";
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
+void ensurePersistentStylesheet(BUTTON_STYLESHEET);
 
 function isAdminRole() {
     const role = localStorage.getItem("cognis_role");

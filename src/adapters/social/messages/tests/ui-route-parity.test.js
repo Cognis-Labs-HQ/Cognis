@@ -27,6 +27,13 @@ test("global message search imports its authenticated API client", () => {
     );
 });
 
+test("new-room search requests the shared user result filter", () => {
+    assert.match(
+        APP_SOURCE,
+        /endpoint: "\/api\/v1\/social\/messages\/users\/lookup",\s*category: "user",\s*typeFilter: "user"/,
+    );
+});
+
 function collectFilePathsRecursively(directoryPath) {
     const files = [];
     for (const entryName of readdirSync(directoryPath)) {
@@ -125,4 +132,31 @@ test("social messages route definitions are referenced by UI callers", () => {
         [],
         `Unused social messages route definitions found:\n${unusedDefinitions.join("\n")}`,
     );
+});
+
+const ROOM_RENDER_SOURCE = readFileSync(
+    resolve(ROOT, "src/adapters/social/messages/ui/room-render.js"),
+    "utf8",
+);
+const MESSAGE_RENDER_SOURCE = readFileSync(
+    resolve(ROOT, "src/adapters/social/messages/ui/message-render.js"),
+    "utf8",
+);
+const MESSAGE_FLOWS_SOURCE = readFileSync(
+    resolve(ROOT, "src/adapters/social/messages/ui/flows.js"),
+    "utf8",
+);
+test("messages exposes neutral flows for contributed room actions", () => {
+    assert.doesNotMatch(APP_SOURCE, /social:callUi/);
+    assert.match(APP_SOURCE, /resolveRoomActions/);
+    assert.match(APP_SOURCE, /activateRoomAction/);
+    assert.match(APP_SOURCE, /cognis:call-moved-to-pip/);
+    assert.doesNotMatch(MESSAGE_RENDER_SOURCE, /renderActiveCallEvent/);
+    assert.match(ROOM_RENDER_SOURCE, /data-room-action/);
+    assert.match(ROOM_RENDER_SOURCE, /placement === "after-header"/);
+    assert.match(ROOM_RENDER_SOURCE, /messages-room-action-banner/);
+    assert.doesNotMatch(ROOM_RENDER_SOURCE, /start_video_call/);
+    assert.match(ROOM_RENDER_SOURCE, /aria-pressed/);
+    assert.match(MESSAGE_FLOWS_SOURCE, /messages:formatRoomEvent/);
+    assert.match(MESSAGE_RENDER_SOURCE, /await formatRoomEventText/);
 });

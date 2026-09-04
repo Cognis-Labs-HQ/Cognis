@@ -1,5 +1,13 @@
 /**
- * Search result rendering and on-page find helpers.
+ * Renders search result lists, category filters, status messages, and page-find
+ * highlights.
+ *
+ * Public exports include result-content and selection renderers, grouped and
+ * flat result renderers, category-filter state helpers, page-find navigation
+ * helpers, `renderSearchPendingMessage`, and `renderSearchStatus`.
+ *
+ * @example
+ * renderSearchStatus(resultsElement, categoriesElement, "Searching…");
  *
  * @module reuse/search-util/results
  */
@@ -284,6 +292,26 @@ export function renderSearchPendingMessage(
     resultsContainer,
     categoriesContainer = null,
 ) {
+    renderSearchStatus(
+        resultsContainer,
+        categoriesContainer,
+        `Type at least ${MIN_SEARCH_QUERY_LENGTH} characters to search.`,
+    );
+}
+
+/**
+ * Replaces the current search output with a status message.
+ *
+ * @param {HTMLElement} resultsContainer
+ * @param {HTMLElement|null} categoriesContainer
+ * @param {string} text
+ * @returns {void}
+ */
+export function renderSearchStatus(
+    resultsContainer,
+    categoriesContainer,
+    text,
+) {
     if (categoriesContainer) {
         categoriesContainer.innerHTML = "";
         categoriesContainer.hidden = true;
@@ -292,7 +320,7 @@ export function renderSearchPendingMessage(
     resultsContainer.innerHTML = "";
     const message = document.createElement("p");
     message.className = "search-popup-no-results";
-    message.textContent = `Type at least ${MIN_SEARCH_QUERY_LENGTH} characters to search.`;
+    message.textContent = text;
     resultsContainer.appendChild(message);
 }
 

@@ -40,6 +40,8 @@ export function createMessagesRoomState({
     requireRoomKey,
     resolveThreadRoomKey,
     onRoomOpened = async () => {},
+    resolveRoomActions = async () => [],
+    onRoomAction = async () => {},
     lastOpenedRoomKey = "messages:last-opened-room",
     typingTtlSeconds = 8,
     typingIdleResetMs = 5000,
@@ -58,6 +60,7 @@ export function createMessagesRoomState({
     let openingRoomId = null;
     let roomOpenPromise = null;
     let readyRoomId = null;
+    let selectedRoomActions = [];
 
     function keyringAccessSuppressed() {
         return (
@@ -238,11 +241,27 @@ export function createMessagesRoomState({
                     : entry,
             );
         }
+        selectedRoomActions = [];
+        if (room) {
+            try {
+                selectedRoomActions = await resolveRoomActions(room);
+            } catch (error) {
+                console.error("[messages] VoIP room capability check failed", {
+                    component: "social-messages",
+                    operation: "resolve_voip_room_action",
+                    roomId: String(room.id ?? ""),
+                    error,
+                });
+            }
+        }
         if (headerSlot && room) {
             headerSlot.innerHTML = renderThreadHeader(
                 room,
                 currentAccountId,
                 i18n,
+                {
+                    actions: selectedRoomActions,
+                },
             );
             void hydrateProfileAvatars(headerSlot);
             bindRoomHeaderEvents();
@@ -633,6 +652,32 @@ export function createMessagesRoomState({
     }
 
     function bindRoomHeaderEvents() {
+        document
+            .getElementById("messages-thread-header-slot")
+            ?.querySelectorAll("[data-room-action]")
+            .forEach((button) =>
+                button.addEventListener("click", async () => {
+                    const selectedRoom = getSelectedRoom();
+                    const action = selectedRoomActions.find((candidate) => {
+                        if (candidate.id === button.dataset.roomAction)
+                            return true;
+                        return candidate.actions?.some(
+                            (nestedAction) =>
+                                nestedAction.id === button.dataset.roomAction,
+                        );
+                    });
+                    if (selectedRoom && action) {
+                        const selectedAction =
+                            action.actions?.find(
+                                (nestedAction) =>
+                                    nestedAction.id ===
+                                    button.dataset.roomAction,
+                            ) ?? action;
+                        await onRoomAction(selectedRoom, selectedAction);
+                    }
+                }),
+            );
+
         const input = document.getElementById("messages-room-avatar-input");
         input?.addEventListener("change", async () => {
             const file = input.files?.[0];

@@ -366,3 +366,48 @@
     background: var(--color-surface-elevated);
     border-color: var(--color-border);
 }
+.messages-room-action-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.65rem 0.9rem;
+    background: color-mix(in srgb, var(--accent) 18%, var(--surface-2));
+    border: 2px solid var(--accent);
+    border-radius: 0.75rem;
+    animation: messages-room-action-banner-pulse 1.5s ease-in-out infinite;
+}
+
+.messages-room-action-banner__actions {
+    display: inline-flex;
+    gap: 0.4rem;
+}
+
+.messages-room-action-banner__actions button {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border-radius: 50%;
+}
+
+.messages-room-action-banner__actions svg {
+    width: 1rem;
+    height: 1rem;
+    fill: currentColor;
+}
+
+@keyframes messages-room-action-banner-pulse {
+    50% {
+        border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+        box-shadow: 0 0 0 0.3rem
+            color-mix(in srgb, var(--accent) 12%, transparent);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .messages-room-action-banner {
+        animation: none;
+    }
+}
