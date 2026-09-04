@@ -74,6 +74,14 @@ Cognis kini membaca izin navigasi penyedia Jitsi dari konteks komponen dan mener
 
 Instalasi serta pemangkasan dependensi image produksi kini melewati permintaan jaringan audit dan pendanaan npm. Build Docker tidak lagi menunggu endpoint registri opsional setelah seluruh paket selesai diekstrak dan tidak lagi menimpa konfigurasi proksi dengan kunci lingkungan npm yang tidak didukung.
 
+## Penyelarasan capability Jitsi lengkap
+
+Messages kini menerbitkan resolver keanggotaan ruang yang diwajibkan manifest Jitsi Meet saat ini. Capability memvalidasi bahwa pemohon adalah anggota aktif dan hanya mengembalikan ID akun ruang aktif, sehingga Jitsi dapat mengizinkan pembuatan rapat VoIP sekali pakai tanpa mengakses penyimpanan Messages secara langsung.
+
+## Konfigurasi modul nonaktif tetap tersedia
+
+Core kini memuat entrypoint modul eksternal nonaktif dalam konteks terbatas yang hanya menerima rute yang secara eksplisit ditandai untuk operasi nonaktif. Endpoint konfigurasi Jitsi dapat dibuka sebelum aktivasi, sedangkan rute fitur, kontribusi UI, flow, dan capability tetap tidak aktif.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -99,3 +107,5 @@ Instalasi serta pemangkasan dependensi image produksi kini melewati permintaan j
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d4306538a8b51362f0c603c84c280eb3c00ce18d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/55fe7acc297c636ffa38791b448775f62b063159
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/734aa1e505f092db36fe2853ada1515ac0f0712a
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/b6e47c6553f8b24ae90e42631e3712617082c7a6
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ff335be25d9d3858ae287ec0d84ee7c041fbc635

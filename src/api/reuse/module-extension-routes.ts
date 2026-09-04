@@ -653,13 +653,6 @@ export function createModuleExtensionRoutes(
                 });
                 continue;
             }
-            if (!moduleEnabled) {
-                log?.("debug", "Skipping disabled module entrypoint.", {
-                    component: "module-extension-routes",
-                    moduleId: manifest.id,
-                });
-                continue;
-            }
             const moduleRoot = path.resolve(externalModulesRoot, manifest.uuid);
             const moduleRootEntry = await stat(moduleRoot).catch(() => null);
             if (!moduleRootEntry?.isDirectory()) {

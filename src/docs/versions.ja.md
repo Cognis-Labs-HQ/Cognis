@@ -51,7 +51,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.15`   |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.13`   |
 | Profile (Social)      | `src/adapters/social/profile/`      | `2.0.4`    |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.0`    |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.1`    |
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.6`    |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34`   |
 | User Share            | `src/adapters/share/user/`          | `1.1.19`   |
@@ -87,7 +87,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.5.0`    |
+| API Server     | `src/api/` | `0.5.1`    |
 
 ## ツール
 

@@ -74,6 +74,14 @@ Cognis は Jitsi プロバイダーのナビゲーション許可をコンポー
 
 本番イメージの依存関係インストールと整理では、npm の監査および資金提供に関するネットワーク要求を省略するようになりました。全パッケージの展開後に Docker ビルドが任意のレジストリエンドポイントを待つことがなくなり、未対応の npm 環境キーでプロキシ設定を上書きすることもありません。
 
+## Jitsi Capability の完全な整合
+
+Messages は現在の Jitsi Meet マニフェストが要求するルームメンバーシップ Resolver を公開するようになりました。この Capability は要求元がアクティブメンバーであることを検証し、アクティブなルームのアカウント ID だけを返します。Jitsi は Messages のストレージへ直接アクセスせずに、一時的な VoIP 会議の作成を認可できます。
+
+## 無効なモジュールの設定を維持
+
+Core は無効な外部モジュールのエントリーポイントを制限付きコンテキストで読み込み、無効時の動作が明示されたルートだけを受け付けるようになりました。これにより、有効化前でも Jitsi の設定エンドポイントを開ける一方、機能ルート、UI コントリビューション、Flow、Capability は無効なまま維持されます。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -99,3 +107,5 @@ Cognis は Jitsi プロバイダーのナビゲーション許可をコンポー
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d4306538a8b51362f0c603c84c280eb3c00ce18d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/55fe7acc297c636ffa38791b448775f62b063159
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/734aa1e505f092db36fe2853ada1515ac0f0712a
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/b6e47c6553f8b24ae90e42631e3712617082c7a6
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ff335be25d9d3858ae287ec0d84ee7c041fbc635

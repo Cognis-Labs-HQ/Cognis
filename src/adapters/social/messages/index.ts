@@ -21,6 +21,7 @@ import {
 import type { Ctx } from "@cognis/core";
 import { createChatroomMembershipCapability } from "./membership.js";
 import { createChatroomDeletionCapability } from "./chatroom-deletion.js";
+import { createRoomMembershipResolver } from "./room-membership.js";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -122,6 +123,15 @@ export async function bootstrapSocialAdapter(
     ctx.capabilities.contribute("social:messages:membership", membership);
     const systemCtx = ctx.capabilities.get<Ctx>(CTX_CAPABILITY);
     systemCtx?.contributeCapability("social:messages:membership", membership);
+    const resolveRoomMembership = createRoomMembershipResolver(messagesStore);
+    ctx.capabilities.contribute(
+        "social:messages:resolveRoomMembership",
+        resolveRoomMembership,
+    );
+    systemCtx?.contributeCapability(
+        "social:messages:resolveRoomMembership",
+        resolveRoomMembership,
+    );
     const resolveCallContext = async (input: {
         roomId: string;
         accountId: string;

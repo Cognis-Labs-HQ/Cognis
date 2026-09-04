@@ -74,6 +74,14 @@ Cognis liest die Navigationsberechtigung des Jitsi-Anbieters jetzt aus dem Kompo
 
 Die Installation und Bereinigung der Abhängigkeiten im Produktions-Image überspringt jetzt Netzwerkabfragen für npm-Audits und Finanzierung. Docker-Builds warten nach dem Entpacken aller Pakete nicht mehr auf optionale Registry-Endpunkte und überschreiben die Proxy-Konfiguration nicht mehr mit einem nicht unterstützten npm-Umgebungsschlüssel.
 
+## Vollständige Jitsi-Capability-Ausrichtung
+
+Messages veröffentlicht jetzt den vom aktuellen Jitsi-Meet-Manifest benötigten Resolver für Raummitgliedschaften. Die Capability prüft, dass die anfragende Person aktives Mitglied ist, und gibt nur aktive Raumkonto-IDs zurück. Damit kann Jitsi die Erstellung temporärer VoIP-Meetings autorisieren, ohne direkt auf den Messages-Speicher zuzugreifen.
+
+## Konfiguration deaktivierter Module bleibt verfügbar
+
+Core lädt jetzt Einstiegspunkte deaktivierter externer Module in einem eingeschränkten Kontext, der nur ausdrücklich für den deaktivierten Betrieb markierte Routen akzeptiert. Dadurch lassen sich Jitsi-Konfigurationsendpunkte vor der Aktivierung öffnen, während Funktionsrouten, UI-Beiträge, Flows und Capabilities inaktiv bleiben.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -99,3 +107,5 @@ Die Installation und Bereinigung der Abhängigkeiten im Produktions-Image übers
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d4306538a8b51362f0c603c84c280eb3c00ce18d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/55fe7acc297c636ffa38791b448775f62b063159
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/734aa1e505f092db36fe2853ada1515ac0f0712a
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/b6e47c6553f8b24ae90e42631e3712617082c7a6
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ff335be25d9d3858ae287ec0d84ee7c041fbc635

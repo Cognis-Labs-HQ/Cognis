@@ -191,7 +191,7 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
                 } as any,
                 new URL("http://localhost/api/v1/modules/owned/config"),
             ),
-            false,
+            true,
         );
     } finally {
         delete (

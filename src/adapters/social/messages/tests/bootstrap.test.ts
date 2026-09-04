@@ -114,6 +114,22 @@ test("messages membership is exported through the system ctx", () => {
     );
 });
 
+test("messages room membership resolution is exported through ctx", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/index.ts"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /ctx\.capabilities\.contribute\(\s*"social:messages:resolveRoomMembership",\s*resolveRoomMembership,?\s*\)/,
+    );
+    assert.match(
+        source,
+        /systemCtx\?\.contributeCapability\(\s*"social:messages:resolveRoomMembership",\s*resolveRoomMembership,?\s*\)/,
+    );
+});
+
 test("messages avatars fall back after failed image loads", () => {
     const appSource = readMessagesUiBundle();
     const sharedSource = readFileSync(

@@ -74,6 +74,14 @@ Cognis now reads the Jitsi provider navigation permission from the component con
 
 Production image dependency installation and pruning now skip npm audit and funding network requests. Docker builds no longer wait on optional registry endpoints after all packages have already been unpacked, and they no longer override proxy configuration with an unsupported npm environment key.
 
+## Complete Jitsi capability alignment
+
+Messages now publishes the room-membership resolver required by the current Jitsi Meet manifest. The capability validates that the requester is an active member and returns only active room account IDs, allowing Jitsi to authorize disposable VoIP meeting creation without accessing Messages storage directly.
+
+## Disabled module configuration remains available
+
+Core now loads disabled external module entrypoints in a restricted context that accepts only routes explicitly marked for disabled operation. Jitsi configuration endpoints can therefore be opened before enablement, while feature routes, UI contributions, flows, and capabilities remain inactive.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -99,3 +107,5 @@ Production image dependency installation and pruning now skip npm audit and fund
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d4306538a8b51362f0c603c84c280eb3c00ce18d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/55fe7acc297c636ffa38791b448775f62b063159
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/734aa1e505f092db36fe2853ada1515ac0f0712a
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/b6e47c6553f8b24ae90e42631e3712617082c7a6
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ff335be25d9d3858ae287ec0d84ee7c041fbc635
