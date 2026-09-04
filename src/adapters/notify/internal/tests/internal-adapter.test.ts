@@ -203,6 +203,8 @@ test("notification producers control persistent action presentation", async () =
     assert.match(source, /renderNotificationActions/);
     assert.match(source, /notification\.metadata\?\.continuous/);
     assert.match(source, /cognis:notification-command/);
+    assert.match(source, /cognis:notification-resolved/);
+    assert.match(source, /resolveCorrelatedNotifications/);
     assert.doesNotMatch(source, /social:callUi/);
     assert.doesNotMatch(source, /category === "calls"/);
 });

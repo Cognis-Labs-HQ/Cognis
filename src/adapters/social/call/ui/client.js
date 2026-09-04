@@ -42,3 +42,16 @@ export async function updateCall(callId, operation) {
         throw new Error(payload?.error?.message ?? "Request failed");
     return payload.data;
 }
+
+export async function setCallRinging(callId, ringerId, active = true) {
+    const response = await apiFetch(
+        `/api/v1/social/call/${encodeURIComponent(callId)}/ringing`,
+        {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ ringerId, active }),
+        },
+    );
+    const payload = await response.json().catch(() => ({}));
+    return response.ok && payload.data?.ringing === true;
+}

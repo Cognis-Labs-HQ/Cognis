@@ -115,7 +115,7 @@ export function createCallRoutes(
         const claims = routeContext.requireAuth(req, res, "user");
         if (!claims) return true;
         const callMatch = url.pathname.match(
-            /^\/api\/v1\/social\/call\/([0-9a-f-]+)(?:\/(answer|hangup|leave))?$/,
+            /^\/api\/v1\/social\/call\/([0-9a-f-]+)(?:\/(answer|hangup|leave|ringing))?$/,
         );
         const roomCallMatch = url.pathname.match(
             /^\/api\/v1\/social\/call\/room\/([^/]+)$/,
@@ -192,6 +192,7 @@ export function createCallRoutes(
                                 roomId,
                                 expiresAt: call.expiresAt,
                                 continuous: true,
+                                correlationId: call.id,
                                 actions: [
                                     {
                                         id: "answer",
@@ -226,6 +227,29 @@ export function createCallRoutes(
             return true;
         }
         const operation = callMatch[2];
+        if (req.method === "POST" && operation === "ringing") {
+            let body: Record<string, unknown>;
+            try {
+                body = await readBody(req);
+            } catch {
+                sendJson(res, 400, {
+                    error: { code: "invalid_json", message: "Invalid JSON." },
+                });
+                return true;
+            }
+            const ringerId = String(body.ringerId ?? "").trim();
+            if (body.active === false) {
+                store.releaseRinging(call.id, claims.sub, ringerId);
+                sendJson(res, 200, { data: { ringing: false } });
+                return true;
+            }
+            sendJson(res, 200, {
+                data: {
+                    ringing: store.claimRinging(call.id, claims.sub, ringerId),
+                },
+            });
+            return true;
+        }
         if (req.method === "POST" && operation === "answer") {
             const answered = store.answer(call.id, claims.sub);
             if (!answered) {

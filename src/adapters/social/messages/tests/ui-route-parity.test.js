@@ -146,19 +146,11 @@ test("messages exposes neutral flows for contributed room actions", () => {
     assert.doesNotMatch(APP_SOURCE, /social:callUi/);
     assert.match(APP_SOURCE, /resolveRoomActions/);
     assert.match(APP_SOURCE, /activateRoomAction/);
-    assert.match(APP_SOURCE, /data-call-action/);
     assert.match(APP_SOURCE, /cognis:call-moved-to-pip/);
-    assert.match(MESSAGE_RENDER_SOURCE, /renderActiveCallEvent/);
-    assert.match(
-        MESSAGE_RENDER_SOURCE,
-        /messages-call-event-answer btn-confirm/,
-    );
-    assert.match(
-        MESSAGE_RENDER_SOURCE,
-        /messages-call-event-decline btn-cancel/,
-    );
-    assert.match(MESSAGE_RENDER_SOURCE, /roomEvent\.status === "ringing"/);
+    assert.doesNotMatch(MESSAGE_RENDER_SOURCE, /renderActiveCallEvent/);
     assert.match(ROOM_RENDER_SOURCE, /data-room-action/);
+    assert.match(ROOM_RENDER_SOURCE, /placement === "before-header"/);
+    assert.match(ROOM_RENDER_SOURCE, /messages-room-action-banner/);
     assert.doesNotMatch(ROOM_RENDER_SOURCE, /start_video_call/);
     assert.match(ROOM_RENDER_SOURCE, /aria-pressed/);
 });

@@ -22,9 +22,14 @@ export interface CallRecord {
 }
 
 const CALL_TIMEOUT_MILLISECONDS = 45_000;
+const RINGING_LEASE_MILLISECONDS = 6_000;
 
 export class CallStore {
     private readonly calls = new Map<string, CallRecord>();
+    private readonly ringingLeases = new Map<
+        string,
+        { ringerId: string; expiresAt: number }
+    >();
 
     create(input: {
         roomId: string;
@@ -114,6 +119,41 @@ export class CallStore {
         return call.participants.some(
             (participant) => participant.accountId === accountId,
         );
+    }
+
+    claimRinging(callId: string, accountId: string, ringerId: string): boolean {
+        const call = this.get(callId);
+        if (
+            !call ||
+            call.status !== "ringing" ||
+            !this.hasParticipant(call, accountId) ||
+            call.callerAccountId === accountId ||
+            !ringerId
+        ) {
+            return false;
+        }
+        const key = `${callId}:${accountId}`;
+        const existing = this.ringingLeases.get(key);
+        const now = Date.now();
+        if (
+            existing &&
+            existing.expiresAt > now &&
+            existing.ringerId !== ringerId
+        ) {
+            return false;
+        }
+        this.ringingLeases.set(key, {
+            ringerId,
+            expiresAt: now + RINGING_LEASE_MILLISECONDS,
+        });
+        return true;
+    }
+
+    releaseRinging(callId: string, accountId: string, ringerId: string): void {
+        const key = `${callId}:${accountId}`;
+        if (this.ringingLeases.get(key)?.ringerId === ringerId) {
+            this.ringingLeases.delete(key);
+        }
     }
 
     private expireCalls(): void {

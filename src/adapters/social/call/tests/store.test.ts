@@ -34,6 +34,20 @@ test("call access is limited to snapshotted room participants", () => {
     assert.equal(store.hangup(call.id, "outsider"), null);
 });
 
+test("one per-user ringing lease prevents duplicate ringtone owners", () => {
+    const store = new CallStore();
+    const call = store.create({
+        roomId: "room-1",
+        callerAccountId: "caller",
+        participants,
+    });
+    assert.equal(store.claimRinging(call.id, "callee", "tab-a"), true);
+    assert.equal(store.claimRinging(call.id, "callee", "tab-b"), false);
+    assert.equal(store.claimRinging(call.id, "caller", "tab-a"), false);
+    store.releaseRinging(call.id, "callee", "tab-a");
+    assert.equal(store.claimRinging(call.id, "callee", "tab-b"), true);
+});
+
 test("the current room call reports ringing and active calls only", () => {
     const store = new CallStore();
     const call = store.create({

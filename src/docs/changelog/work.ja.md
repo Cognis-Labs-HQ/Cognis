@@ -10,7 +10,12 @@ Messages の「新しいルーム」選択画面は、共通検索ユーティ�
 
 検索可能な文字数に達したクエリを実行すると、最小文字数の案内を直ちに読み込み状態へ置き換えます。失敗またはタイムアウトした要求では、古い結果や応答しない案内を残さず、明示的なエラーを表示します。
 
+## 同期された着信プロンプト
+
+着信は Messages のスレッドヘッダー直上のバーに表示されます。応答と拒否は関連付けられた通知とチャット内プロンプトを同時に解決し、ユーザー単位の呼び出しリースによって複数タブや画面で着信音が重複するのを防ぎます。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/aa9c83fcc501bfede1e9d392a2dbdd9e7a6e943e
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/87e5e5e0d7ee3403d421fbe099e94425932a3a4e

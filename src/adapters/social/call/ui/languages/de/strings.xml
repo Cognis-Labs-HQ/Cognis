@@ -2,6 +2,9 @@
 <resources>
   <string name="adapter.social.call.name">Anrufe</string>
   <string name="adapter.social.call.start_video_call">Videoanruf starten</string>
+  <string name="adapter.social.call.incoming_call">Eingehender Anruf…</string>
+  <string name="adapter.social.call.answer">Anruf annehmen</string>
+  <string name="adapter.social.call.decline">Anruf ablehnen</string>
   <string name="adapter.social.call.ringing">{{user}} wird angerufen ...</string>
   <string name="adapter.social.call.hangup">Auflegen</string>
   <string name="adapter.social.call.move_to_pip">Anruf in Bild-im-Bild verschieben</string>

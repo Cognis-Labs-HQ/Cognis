@@ -658,12 +658,22 @@ export function createMessagesRoomState({
             .forEach((button) =>
                 button.addEventListener("click", async () => {
                     const selectedRoom = getSelectedRoom();
-                    const action = selectedRoomActions.find(
-                        (candidate) =>
-                            candidate.id === button.dataset.roomAction,
-                    );
+                    const action = selectedRoomActions.find((candidate) => {
+                        if (candidate.id === button.dataset.roomAction)
+                            return true;
+                        return candidate.actions?.some(
+                            (nestedAction) =>
+                                nestedAction.id === button.dataset.roomAction,
+                        );
+                    });
                     if (selectedRoom && action) {
-                        await onRoomAction(selectedRoom, action);
+                        const selectedAction =
+                            action.actions?.find(
+                                (nestedAction) =>
+                                    nestedAction.id ===
+                                    button.dataset.roomAction,
+                            ) ?? action;
+                        await onRoomAction(selectedRoom, selectedAction);
                     }
                 }),
             );

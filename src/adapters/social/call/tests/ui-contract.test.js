@@ -85,6 +85,15 @@ test("Call UI plays distinct inbound and outbound ringing tones", () => {
     assert.match(toneSource, /createOscillator/);
     assert.match(toneSource, /TONE_INTERVAL_MILLISECONDS/);
     assert.match(toneSource, /BURST_GAP_MILLISECONDS/);
+    assert.match(providerSource, /setCallRinging/);
+    assert.match(providerSource, /ringerId/);
+});
+
+test("Call prompts resolve together and render above the room header", () => {
+    assert.match(providerSource, /cognis:notification-resolved/);
+    assert.match(providerSource, /social-call:incoming-prompt/);
+    assert.match(providerSource, /placement: "before-header"/);
+    assert.match(providerSource, /adapter\.social\.call\.incoming_call/);
 });
 
 test("Call UI exposes room-event answer and decline actions", () => {

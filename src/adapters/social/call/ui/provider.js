@@ -1,6 +1,12 @@
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n } from "/static/reuse/i18n.js";
-import { createCall, getCall, getRoomCall, updateCall } from "./client.js";
+import {
+    createCall,
+    getCall,
+    getRoomCall,
+    setCallRinging,
+    updateCall,
+} from "./client.js";
 import { showToast } from "/static/reuse/toast.js";
 import { startRingingTone } from "./tone-player.js";
 
@@ -13,11 +19,40 @@ let activeCall = null;
 let callI18n = null;
 const inboundTones = new Map();
 const answerSpawnPermits = new Map();
+const ringerId = window.crypto.randomUUID();
 
 function stopInboundTone(callId) {
-    const stopTone = inboundTones.get(callId);
+    const tone = inboundTones.get(callId);
     inboundTones.delete(callId);
-    if (typeof stopTone === "function") stopTone();
+    if (!tone) return;
+    window.clearInterval(tone.renewalId);
+    tone.stop();
+    void setCallRinging(callId, ringerId, false);
+}
+
+async function startInboundTone(callId) {
+    if (!callId || inboundTones.has(callId)) return;
+    inboundTones.set(callId, null);
+    if (!(await setCallRinging(callId, ringerId))) {
+        inboundTones.delete(callId);
+        return;
+    }
+    const stop = startRingingTone("inbound");
+    const renewalId = window.setInterval(
+        () => void setCallRinging(callId, ringerId),
+        4_000,
+    );
+    inboundTones.set(callId, { stop, renewalId });
+}
+
+function resolveCallPrompts(callId, roomId) {
+    stopInboundTone(callId);
+    window.dispatchEvent(
+        new CustomEvent("cognis:notification-resolved", {
+            detail: { correlationId: callId },
+        }),
+    );
+    announceRoomCall(roomId, false);
 }
 
 async function getCallI18n() {
@@ -397,6 +432,7 @@ async function answerRequestedCall({ signal } = {}) {
     const activationPermit = answerSpawnPermits.get(callId) ?? null;
     answerSpawnPermits.delete(callId);
     stopInboundTone(callId);
+    resolveCallPrompts(callId, call.roomId);
     const callStage = await createStage(call, signal);
     if (!callStage) return false;
     history.replaceState(
@@ -426,6 +462,7 @@ async function declineCall(callId, roomId) {
     const i18n = await getCallI18n();
     try {
         await updateCall(callId, "hangup");
+        resolveCallPrompts(callId, roomId);
         announceRoomCall(roomId, false);
         showToast(i18n.t("adapter.social.call.declined_self"), {
             variant: "info",
@@ -454,7 +491,9 @@ window.addEventListener("cognis:notification-command", (event) => {
     const { actionId, notification } = event.detail ?? {};
     const callId = String(notification?.metadata?.callId ?? "");
     const roomId = String(notification?.metadata?.roomId ?? "");
-    if (actionId === "answer") void answerCall(callId, roomId);
+    if (actionId === "answer") {
+        void answerCall(callId, roomId);
+    }
     if (actionId === "decline") void declineCall(callId, roomId);
 });
 
@@ -462,16 +501,12 @@ window.addEventListener("cognis:notification-arrival", (event) => {
     const notification = event.detail?.notification;
     if (notification?.category !== "calls") return;
     const callId = String(notification.metadata?.callId ?? "");
-    if (!callId || inboundTones.has(callId)) return;
-    inboundTones.set(callId, startRingingTone("inbound"));
+    void startInboundTone(callId);
 });
 
 window.addEventListener("cognis:room-call-state", (event) => {
     if (event.detail?.active) return;
-    for (const [callId, stopTone] of inboundTones) {
-        stopTone();
-        inboundTones.delete(callId);
-    }
+    for (const callId of inboundTones.keys()) stopInboundTone(callId);
 });
 
 uiCtx.capabilities.contribute(CALL_UI_CAPABILITY, {
@@ -507,6 +542,36 @@ function installMessagesFlowHooks() {
                 iconSvg:
                     '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 8.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-2.5l5 3.5a1 1 0 0 0 1.57-.82V6.82A1 1 0 0 0 20 6l-5 3.5Z"/></svg>',
             });
+            if (
+                action.call?.status === "ringing" &&
+                action.call.callerAccountId !== currentAccountId()
+            ) {
+                stageContext.data.actions.push({
+                    id: "social-call:incoming-prompt",
+                    placement: "before-header",
+                    label: i18n.t("adapter.social.call.incoming_call"),
+                    actions: [
+                        {
+                            id: "call:answer",
+                            callId: action.call.id,
+                            roomId: action.roomId,
+                            label: i18n.t("adapter.social.call.answer"),
+                            className: "btn-confirm",
+                            iconSvg:
+                                '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8c1.5 2.9 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1l-2.3 2.2Z"/></svg>',
+                        },
+                        {
+                            id: "call:decline",
+                            callId: action.call.id,
+                            roomId: action.roomId,
+                            label: i18n.t("adapter.social.call.decline"),
+                            className: "btn-cancel",
+                            iconSvg:
+                                '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.6 13.2 2.3 2.2c.2.2.3.6.2 1-.4 1.1-.6 2.3-.6 3.6 0 .6-.4 1-1 1H4c-.6 0-1-.4-1-1 0-9.4 7.6-17 17-17 .6 0 1 .4 1 1v3.5c0 .6-.4 1-1 1-1.3 0-2.5.2-3.6.6-.4.2-.8.1-1-.2l-2.2-2.2c-2.8 1.4-5.2 3.7-6.6 6.5Z"/></svg>',
+                        },
+                    ],
+                });
+            }
         },
     );
     uiCtx.extendFlow(

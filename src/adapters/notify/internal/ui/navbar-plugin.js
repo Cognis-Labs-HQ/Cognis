@@ -263,6 +263,26 @@ async function deleteNotification(id) {
     });
 }
 
+async function resolveCorrelatedNotifications(correlationId) {
+    if (!correlationId) return;
+    document
+        .querySelectorAll(
+            `[data-notification-correlation="${CSS.escape(correlationId)}"]`,
+        )
+        .forEach((element) => element.remove());
+    const notifications = await fetchNotifications();
+    const matches = notifications.filter(
+        (notification) =>
+            String(notification.metadata?.correlationId ?? "") ===
+            correlationId,
+    );
+    await Promise.all(
+        matches.map((notification) => deleteNotification(notification.id)),
+    );
+    for (const notification of matches) seenIds?.delete(notification.id);
+    await refreshCount();
+}
+
 async function deleteAllNotifications() {
     const res = await apiFetch("/api/v1/notify/inbox", {
         method: "DELETE",
@@ -818,6 +838,10 @@ async function showArrivalToast(notif, i18n) {
     const toast = document.createElement("div");
     toast.className = "arrival-toast";
     toast.setAttribute("role", "alert");
+    const correlationId = String(notif.metadata?.correlationId ?? "");
+    if (correlationId) {
+        toast.dataset.notificationCorrelation = correlationId;
+    }
 
     let toastSubject = notif.subject;
     let toastPreview = notif.body;
@@ -916,6 +940,12 @@ async function showArrivalToast(notif, i18n) {
         setTimeout(dismiss, TOAST_AUTO_DISMISS_MS);
     }
 }
+
+window.addEventListener("cognis:notification-resolved", (event) => {
+    void resolveCorrelatedNotifications(
+        String(event.detail?.correlationId ?? ""),
+    );
+});
 
 (async function init() {
     if (!localStorage.getItem("cognis_access_token")) return;

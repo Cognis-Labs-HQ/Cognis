@@ -289,17 +289,6 @@ function parseRoomEvent(message) {
     }
 }
 
-function renderActiveCallEvent(payload, i18n, currentAccountId) {
-    const isCaller = payload.callerAccountId === currentAccountId;
-    const label = i18n
-        .t("module.social.messages.call_ringing")
-        .replace("{name}", payload.subjectDisplayName || payload.subjectHandle);
-    const actions = isCaller
-        ? ""
-        : `<span class="messages-call-event-actions"><button type="button" class="messages-call-event-answer btn-confirm" data-call-action="answer" data-call-id="${escapeHtml(payload.callId)}" aria-label="${escapeHtml(i18n.t("module.social.messages.answer_call"))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8c1.5 2.9 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1l-2.3 2.2Z"/></svg></button><button type="button" class="messages-call-event-decline btn-cancel" data-call-action="decline" data-call-id="${escapeHtml(payload.callId)}" aria-label="${escapeHtml(i18n.t("module.social.messages.decline_call"))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.6 13.2 2.3 2.2c.2.2.3.6.2 1-.4 1.1-.6 2.3-.6 3.6 0 .6-.4 1-1 1H4c-.6 0-1-.4-1-1 0-9.4 7.6-17 17-17 .6 0 1 .4 1 1v3.5c0 .6-.4 1-1 1-1.3 0-2.5.2-3.6.6-.4.2-.8.1-1-.2l-2.2-2.2c-2.8 1.4-5.2 3.7-6.6 6.5Z"/></svg></button></span>`;
-    return `<div class="messages-room-event messages-call-event"><span>${escapeHtml(label)}</span>${actions}</div>`;
-}
-
 function renderReactionRows(message, i18n, isOwn = false) {
     if (!message?.id) {
         return {
@@ -819,24 +808,6 @@ export async function renderThread(
             return { ...messageRecord, text };
         }),
     );
-    let activeCallId = null;
-    for (const messageRecord of decoded) {
-        const roomEvent = parseRoomEvent(messageRecord);
-        if (roomEvent?.eventType === "call_started") {
-            activeCallId = roomEvent.callId;
-        } else if (
-            activeCallId &&
-            roomEvent?.callId === activeCallId &&
-            [
-                "call_answered",
-                "call_cancelled",
-                "call_declined",
-                "call_missed",
-            ].includes(roomEvent.eventType)
-        ) {
-            activeCallId = null;
-        }
-    }
     searchableRoomMessages.set(roomId, decoded);
     let previousDateLabel = "";
     const readersAtMessage = buildLastReadMap(decoded);
@@ -852,13 +823,6 @@ export async function renderThread(
                 previousDateLabel = dateLabel;
             }
             const roomEvent = parseRoomEvent(messageRecord);
-            if (
-                roomEvent?.eventType === "call_started" &&
-                roomEvent.callId === activeCallId &&
-                roomEvent.status === "ringing"
-            ) {
-                return `${showDateDivider}${renderActiveCallEvent(roomEvent, i18n, currentAccountId)}`;
-            }
             const roomEventLabel = formatRoomEventText(messageRecord, i18n);
             if (roomEventLabel) {
                 return `${showDateDivider}<div class="messages-room-event">${escapeHtml(roomEventLabel)}</div>`;

@@ -128,6 +128,37 @@ test("room lookup returns the existing call without creating crossed invitations
     assert.equal(create.result().payload.data.id, call.id);
 });
 
+test("ringing endpoint grants one authenticated per-user lease", async () => {
+    const store = new CallStore();
+    const call = store.create({
+        roomId: "room-1",
+        callerAccountId: "caller",
+        participants: roomContext.participants,
+    });
+    const route = createCallRoutes(
+        store,
+        {
+            requireAuth: () => ({ sub: "callee", role: "user" }),
+        } as never,
+        async () => roomContext,
+    );
+    const first = response();
+    await route(
+        request("POST", { ringerId: "tab-a" }) as never,
+        first.res as never,
+        new URL(`http://localhost/api/v1/social/call/${call.id}/ringing`),
+    );
+    assert.equal(first.result().payload.data.ringing, true);
+
+    const duplicate = response();
+    await route(
+        request("POST", { ringerId: "tab-b" }) as never,
+        duplicate.res as never,
+        new URL(`http://localhost/api/v1/social/call/${call.id}/ringing`),
+    );
+    assert.equal(duplicate.result().payload.data.ringing, false);
+});
+
 test("a released group call can ring every participant again", async () => {
     const store = new CallStore();
     const groupRoom = {

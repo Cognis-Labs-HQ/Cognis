@@ -214,6 +214,9 @@ export async function mount(root, { signal } = {}) {
             }
             roomElement.classList.remove("messages-room--calling");
             roomCallPositions.delete(roomId);
+            if (roomId === roomState.getSelectedRoomId()) {
+                void roomState.openRoom(roomId);
+            }
         },
         { signal },
     );
@@ -401,24 +404,6 @@ export async function mount(root, { signal } = {}) {
                     "click",
                     async (clickEvent) => {
                         hideAllMessageHoverPopups();
-                        const callAction = clickEvent.target.closest(
-                            "[data-call-action][data-call-id]",
-                        );
-                        if (callAction instanceof HTMLElement) {
-                            const callId = callAction.dataset.callId;
-                            const roomId = roomState.getSelectedRoomId();
-                            await activateRoomAction(
-                                {
-                                    id: `call:${callAction.dataset.callAction}`,
-                                    callId,
-                                    roomId,
-                                },
-                                null,
-                                { signal },
-                            );
-                            await roomState.refreshActiveConversation();
-                            return;
-                        }
                         const moreButton = clickEvent.target.closest(
                             "[data-reaction-more]",
                         );
