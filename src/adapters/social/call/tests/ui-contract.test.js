@@ -54,6 +54,11 @@ test("Call toolbar keeps its arrow separate from mounted meeting content", () =>
     assert.match(providerSource, /topLayer: true/);
     assert.match(providerSource, /social-call-stage--floating/);
     assert.match(providerSource, /requestFloatingCallClose/);
+    assert.match(providerSource, /const call = callStage\.call/);
+    assert.match(
+        providerSource,
+        /social-call-stage__pip-close floating-window-close btn-close btn-cancel/,
+    );
     assert.match(providerSource, /openPopup/);
     assert.match(providerSource, /variant: "confirm"/);
     assert.match(providerSource, /variant: "cancel"/);

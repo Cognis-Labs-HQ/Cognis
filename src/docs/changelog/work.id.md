@@ -30,6 +30,10 @@ Panggilan penyedia yang tertambat kini memakai seluruh sisa tinggi kartu widget 
 
 Permintaan lease dering yang terlambat kini berhasil dengan hasil tanpa dering setelah panggilan berakhir. Menutup panggilan dari gambar-dalam-gambar setelah navigasi SPA menawarkan Kembali ke Messages, Tutup Panggilan, dan Batal dengan gaya tindakan yang sesuai konsekuensi. Kembali akan bernavigasi ke ruang panggilan dan memulihkan komponen penyedia yang ada tanpa memasangnya ulang.
 
+## Kontrol tutup gambar-dalam-gambar yang stabil
+
+Tindakan tutup gambar-dalam-gambar kini menyimpan panggilan aktif dalam siklus hidup stage sehingga menghapus `ReferenceError` setelah navigasi. Kontrol tutup kembali menggunakan ukuran standar jendela mengambang dan kini memakai kelas destruktif `btn-cancel`.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -40,3 +44,4 @@ Permintaan lease dering yang terlambat kini berhasil dengan hasil tanpa dering s
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e2b9683158388267faea8ede560a681c45518ba9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/738a98d449247b89ce94cfda908042dbe8c28043
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea5a087cdcc7d7cce9ece27fff4d90353c7e8fe7
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/5e8996297422cc379e6747e980fcd613a482716f

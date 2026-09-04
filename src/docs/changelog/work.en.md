@@ -30,6 +30,10 @@ Docked provider calls now use the full remaining height of the Messages widget c
 
 Late ringing-lease requests now succeed with a non-ringing result after a call has ended. Closing a call from PiP after SPA navigation offers Return to Messages, Hang Up, and Cancel with consequence-appropriate actions. Returning navigates to the call room and restores the existing provider component without remounting it.
 
+## Stable PiP close control
+
+The PiP close action now retains the active call in its stage lifecycle, eliminating the navigation-time `ReferenceError`. The close control again uses the standard floating-window size and now carries the destructive `btn-cancel` class.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -40,3 +44,4 @@ Late ringing-lease requests now succeed with a non-ringing result after a call h
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e2b9683158388267faea8ede560a681c45518ba9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/738a98d449247b89ce94cfda908042dbe8c28043
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea5a087cdcc7d7cce9ece27fff4d90353c7e8fe7
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/5e8996297422cc379e6747e980fcd613a482716f

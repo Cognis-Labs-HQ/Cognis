@@ -30,6 +30,10 @@ Angedockte Anbieteranrufe nutzen jetzt die gesamte verbleibende Höhe der Messag
 
 Verspätete Klingel-Lease-Anfragen liefern nach dem Ende eines Anrufs nun erfolgreich ein Ergebnis ohne Klingeln. Beim Schließen eines Anrufs aus Bild-im-Bild nach einer SPA-Navigation stehen die folgerichtig gestalteten Aktionen „Zu Messages zurückkehren“, „Auflegen“ und „Abbrechen“ zur Auswahl. Die Rückkehr navigiert zum Anrufraum und stellt die vorhandene Anbieterkomponente ohne erneutes Einbinden wieder her.
 
+## Stabiles Bild-im-Bild-Schließsteuerelement
+
+Die Bild-im-Bild-Schließaktion behält den aktiven Anruf nun in ihrem Stage-Lebenszyklus und beseitigt dadurch den `ReferenceError` nach einer Navigation. Das Schließsteuerelement verwendet wieder die Standardgröße des schwebenden Fensters und trägt nun die destruktive Klasse `btn-cancel`.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -40,3 +44,4 @@ Verspätete Klingel-Lease-Anfragen liefern nach dem Ende eines Anrufs nun erfolg
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e2b9683158388267faea8ede560a681c45518ba9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/738a98d449247b89ce94cfda908042dbe8c28043
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea5a087cdcc7d7cce9ece27fff4d90353c7e8fe7
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/5e8996297422cc379e6747e980fcd613a482716f

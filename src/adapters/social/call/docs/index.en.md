@@ -37,3 +37,5 @@ Floating-window cleanup validates the saved destination hierarchy and falls back
 While a provider component remains docked in Messages, the active-call thread switches to a two-row grid and the Call stage, component host, and component window fill the remaining widget-card height. PiP continues to use its independently bounded floating dimensions.
 
 The `/ringing` lease endpoint is idempotent after a call ends: late renewals and releases return a successful non-ringing result rather than a missing-call error. When a user tries to close a PiP call after navigating elsewhere, Calls asks whether to return to Messages, hang up, or cancel. Returning uses SPA navigation, reattaches the existing provider host without remounting the meeting, and then closes PiP.
+
+The PiP close handler resolves the active call from its stage lifecycle before presenting or acting on the close choice, avoiding a stale-scope error after navigation. Its close control reuses the standard floating-window dimensions and uses the destructive `btn-cancel` consequence style.

@@ -195,6 +195,7 @@ async function createStage(call) {
         { signal: lifecycleController.signal },
     );
     return {
+        call,
         stage,
         i18n,
         signal: lifecycleController.signal,
@@ -283,6 +284,7 @@ async function mountProviderAction(
     signal,
     activationPermit,
 ) {
+    const call = callStage.call;
     if (action?.action === "navigate") {
         await callStage.cleanup();
         await uiCtx.capabilities.get("ui:navigate")?.(action.url);
@@ -346,7 +348,7 @@ async function mountProviderAction(
             const pipCloseButton = document.createElement("button");
             pipCloseButton.type = "button";
             pipCloseButton.className =
-                "social-call-stage__pip-close btn-close btn-neutral";
+                "social-call-stage__pip-close floating-window-close btn-close btn-cancel";
             pipCloseButton.setAttribute(
                 "aria-label",
                 callStage.i18n.t("adapter.social.call.return_from_pip"),

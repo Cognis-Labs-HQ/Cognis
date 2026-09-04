@@ -30,6 +30,10 @@ PiP 中の VoIP 通話を閉じる際に元のポータル階層を検証し、�
 
 通話終了後に遅れて届いた呼び出しリース要求は、呼び出しなしの結果として正常に完了するようになりました。SPA ナビゲーション後にピクチャーインピクチャーから通話を閉じると、結果に適したスタイルの「Messages に戻る」「通話を終了」「キャンセル」が表示されます。Messages に戻ると通話ルームへ移動し、既存のプロバイダーコンポーネントを再マウントせずに復元します。
 
+## 安定したピクチャーインピクチャー終了コントロール
+
+ピクチャーインピクチャーの終了操作がステージのライフサイクルにアクティブな通話を保持するようになり、ナビゲーション後の `ReferenceError` を解消しました。終了コントロールは標準のフローティングウィンドウサイズに戻り、破壊的な操作を示す `btn-cancel` クラスを使用します。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
@@ -40,3 +44,4 @@ PiP 中の VoIP 通話を閉じる際に元のポータル階層を検証し、�
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e2b9683158388267faea8ede560a681c45518ba9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/738a98d449247b89ce94cfda908042dbe8c28043
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea5a087cdcc7d7cce9ece27fff4d90353c7e8fe7
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/5e8996297422cc379e6747e980fcd613a482716f
