@@ -33,3 +33,5 @@ Penyedia dapat menetapkan `context.allowNavigation: true` pada tindakan komponen
 Panggilan masuk memakai lease `/ringing` terautentikasi per pengguna. Permukaan peramban memperbarui lease selama berdering dan melepasnya saat selesai, sehingga hanya satu tab atau prompt yang memiliki nada dering. Menjawab atau menolak memancarkan penyelesaian berkorelasi yang menutup notifikasi dan prompt Messages bersama-sama.
 
 Host Call mempertahankan konteks penyedia dan secara eksplisit menandai komponen panggilan yang dimunculkan sebagai `voipCall`, sesuai kontrak komponen Jitsi Meet agar panggilan PiP sekali pakai tidak menampilkan chat rapat.
+
+Pembersihan jendela mengambang memvalidasi hierarki tujuan tersimpan dan beralih dari operasi `moveBefore` penjaga status yang ditolak ke pemindahan DOM biasa. Jika kedua pemindahan tidak valid secara struktural, portal dibiarkan agar dibuang pemiliknya tanpa memunculkan penolakan yang tidak tertangani.

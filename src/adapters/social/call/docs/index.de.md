@@ -33,3 +33,5 @@ Anbieter können in ihrer Komponentenaktion `context.allowNavigation: true` setz
 Eingehende Anrufe verwenden eine authentifizierte benutzerbezogene `/ringing`-Lease. Browseroberflächen erneuern die Lease während des Klingelns und geben sie nach der Auflösung frei, sodass nur ein Tab oder Hinweis den Klingelton besitzt. Annehmen oder Ablehnen löst Benachrichtigung und Messages-Hinweis gemeinsam über dieselbe Korrelation auf.
 
 Der Call-Host bewahrt den Anbieter-Kontext und kennzeichnet gestartete Anrufkomponenten ausdrücklich als `voipCall`. Damit entspricht er dem Jitsi-Meet-Komponentenvertrag, sodass bei kurzlebigen PiP-Anrufen kein Meeting-Chat angezeigt wird.
+
+Die Bereinigung schwebender Fenster prüft die gespeicherte Zielhierarchie und wechselt bei einer abgelehnten zustandserhaltenden `moveBefore`-Operation zu einer normalen DOM-Verschiebung. Sind beide Verschiebungen strukturell ungültig, bleibt das Portal zur Entfernung durch seinen Besitzer bestehen, statt eine unbehandelte Ablehnung auszulösen.

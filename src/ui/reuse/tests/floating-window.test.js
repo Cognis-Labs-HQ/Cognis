@@ -384,6 +384,22 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(componentPortalStage.parentElement, componentPortalHost);
         assert.equal(panel.parentElement, componentPortalStage);
 
+        const rejectedMoveHost = new FakeElement();
+        const rejectedMoveStage = new FakeElement();
+        rejectedMoveStage.matches = (selector) =>
+            selector === ".component-page-stage";
+        rejectedMoveHost.append(rejectedMoveStage);
+        rejectedMoveStage.append(panel);
+        const releaseRejectedMove = makeFloatingWindow(panel, { handle });
+        rejectedMoveHost.moveBefore = () => {
+            const error = new Error("invalid hierarchy");
+            error.name = "HierarchyRequestError";
+            throw error;
+        };
+        assert.doesNotThrow(() => releaseRejectedMove());
+        assert.equal(rejectedMoveStage.parentElement, rejectedMoveHost);
+        assert.equal(panel.parentElement, rejectedMoveStage);
+
         const componentStage = new FakeElement({
             left: 100,
             top: 50,

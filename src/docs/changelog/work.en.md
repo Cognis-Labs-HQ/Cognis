@@ -18,9 +18,14 @@ Incoming calls now appear in a bar immediately above the Messages thread header.
 
 Incoming-call state now refreshes the selected room so its action bar appears directly below the thread header while the notification may remain visible. Spawned VoIP components are explicitly marked with the Jitsi Meet `voipCall` context, keeping meeting chat out of the PiP surface.
 
+## Safe PiP teardown
+
+Closing a VoIP call in PiP now validates the original portal hierarchy and safely falls back when the browser rejects a state-preserving atomic move. Component teardown can finish without an unhandled `HierarchyRequestError`.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/aa9c83fcc501bfede1e9d392a2dbdd9e7a6e943e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/87e5e5e0d7ee3403d421fbe099e94425932a3a4e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d242f8921775d346b655c2699d3e174c6e4373
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/fa2b5983f609ce6932d5ded0aa5f3c24afead9ca

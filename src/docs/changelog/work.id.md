@@ -18,9 +18,14 @@ Panggilan masuk kini muncul dalam bilah tepat di atas tajuk utas Messages. Jawab
 
 Status panggilan masuk kini menyegarkan ruang terpilih sehingga bilah tindakannya muncul tepat di bawah tajuk utas sementara notifikasi dapat tetap terlihat. Komponen VoIP yang dimunculkan ditandai secara eksplisit dengan konteks `voipCall` Jitsi Meet agar chat rapat tidak tampil pada permukaan PiP.
 
+## Pembongkaran PiP yang aman
+
+Saat panggilan VoIP dalam PiP ditutup, hierarki portal asal kini divalidasi dan memakai jalur cadangan dengan aman jika peramban menolak pemindahan atomik penjaga status. Pembongkaran komponen selesai tanpa `HierarchyRequestError` yang tidak tertangani.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6c387ba7c86b8218a9dc9b43211e5f0a95845a1d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/aa9c83fcc501bfede1e9d392a2dbdd9e7a6e943e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/87e5e5e0d7ee3403d421fbe099e94425932a3a4e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d242f8921775d346b655c2699d3e174c6e4373
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/fa2b5983f609ce6932d5ded0aa5f3c24afead9ca

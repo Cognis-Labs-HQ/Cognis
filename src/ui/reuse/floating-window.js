@@ -46,15 +46,34 @@ function ensureFloatingWindowStyles() {
 }
 
 function movePreservingState(parent, element, before = null) {
+    if (
+        !parent ||
+        !element ||
+        parent === element ||
+        element.contains?.(parent)
+    ) {
+        return false;
+    }
+    const validSibling = before?.parentNode === parent ? before : null;
     if (typeof parent?.moveBefore === "function") {
-        parent.moveBefore(element, before);
-        return;
+        try {
+            parent.moveBefore(element, validSibling);
+            return true;
+        } catch (error) {
+            if (error?.name !== "HierarchyRequestError") throw error;
+        }
     }
-    if (before) {
-        parent.insertBefore(element, before);
-        return;
+    try {
+        if (validSibling) {
+            parent.insertBefore(element, validSibling);
+        } else {
+            parent.append(element);
+        }
+        return true;
+    } catch (error) {
+        if (error?.name !== "HierarchyRequestError") throw error;
+        return false;
     }
-    parent?.append(element);
 }
 
 function createFloatingWindowChrome(element, closeButton, release) {

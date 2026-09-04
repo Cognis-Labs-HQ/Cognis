@@ -31,3 +31,5 @@ Providers may set `context.allowNavigation: true` on their component action and 
 Incoming calls use an authenticated per-user `/ringing` lease. Browser surfaces renew the lease while sounding and release it when resolved, so only one tab or prompt owns the ringtone. Answering or declining emits a correlated resolution that dismisses the notification and the Messages prompt together.
 
 The Call host preserves provider context and explicitly marks spawned call components as `voipCall`, matching the Jitsi Meet component contract so disposable PiP calls omit the meeting chat surface.
+
+Floating-window cleanup validates the saved destination hierarchy and falls back from a rejected state-preserving `moveBefore` operation to a regular DOM move. If both moves are structurally invalid, cleanup leaves the portal in place for its owner to discard instead of surfacing an unhandled rejection.
