@@ -1,0 +1,341 @@
+.share-links-popup {
+    display: grid;
+    gap: 1rem;
+}
+
+.share-links-popup--edit-only [data-share-cancel-edit] {
+    display: none;
+}
+
+.share-method-tabs {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+}
+
+.share-method-description {
+    margin: 0;
+    color: var(--text-muted);
+}
+
+.share-method-history-heading {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.share-method-tab {
+    flex: 1 0 auto;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--surface-2);
+    color: inherit;
+    cursor: pointer;
+}
+
+.share-method-tab.is-active {
+    border-color: var(--accent, currentColor);
+    background: var(--surface-3, var(--surface-2));
+    font-weight: 700;
+}
+
+.share-links-form-container {
+    display: contents;
+}
+
+.share-links-create-form {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.share-links-list-container {
+    display: contents;
+}
+
+.share-links-create-form label {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.share-links-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.share-links-row {
+    position: relative;
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    padding-right: 2.5rem;
+    border: 1px solid var(--border);
+    border-radius: 0.875rem;
+    background: var(--surface-2);
+}
+
+.share-links-row-close {
+    position: absolute;
+    top: 0.625rem;
+    right: 0.625rem;
+}
+
+.share-links-row-main,
+.share-links-row-actions {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.share-links-row-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.share-links-row-label {
+    margin: 0;
+    flex: 0 1 auto;
+    min-width: 0;
+    font-weight: 600;
+}
+
+.share-links-row-copy {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0.5rem;
+    background: none;
+    color: rgba(96, 165, 250, 0.95);
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.share-links-row-share {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.share-links-row-share-label {
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.share-links-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.share-links-row-quick-action {
+    text-decoration: none;
+}
+
+.share-links-row-mail-icon {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    background-color: currentColor;
+    -webkit-mask-image: url("/static/assets/reuse/mail.svg");
+    mask-image: url("/static/assets/reuse/mail.svg");
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+
+.share-links-row-status-line {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.share-links-row-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+}
+
+.share-links-row-status-active {
+    color: var(--color-success-outline-text, var(--color-success-text));
+    background: var(--color-success-hover-bg);
+}
+
+.share-links-row-status-expired {
+    color: var(--color-danger-outline-text, var(--color-danger-text));
+    background: var(--color-danger-hover-bg);
+}
+
+.share-links-row-expiry {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.share-links-empty {
+    margin: 0;
+    color: var(--text-muted);
+}
+
+.share-links-user-picker,
+.share-links-user-picker label,
+.share-links-user-results,
+.share-links-selected-users,
+.share-links-recipients {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.share-links-user-result {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.6rem;
+    background: var(--surface-2);
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.share-links-user-avatar,
+.share-links-user-avatar-image,
+.share-links-user-avatar-fallback {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+}
+
+.share-links-user-avatar {
+    display: inline-flex;
+    flex: none;
+    text-decoration: none;
+}
+
+.share-links-user-avatar-image {
+    object-fit: cover;
+}
+
+.share-links-user-avatar-fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--initials-bg);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.share-links-variants {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.share-links-selected-users,
+.share-links-recipients {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.share-links-recipient-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    background: var(--surface-3, var(--surface-2));
+}
+
+.share-links-recipient-chip button {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+.share-links-recipient-chip select {
+    width: auto;
+    min-width: 5rem;
+    padding: 0.2rem 0.35rem;
+}
+
+.share-email-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.share-email-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    background: var(--surface-3, var(--surface-2));
+}
+
+.share-email-tag button {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+.share-links-form-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.share-links-password-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.share-links-password-row > form {
+    flex: 1;
+}
+
+.share-links-password-generate {
+    flex: 0 0 auto;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    font-size: 1.25rem;
+}
+
+.share-password-result {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.share-password-result .btn-confirm {
+    justify-self: start;
+}
+
+.share-links-row-created {
+    margin: 0;
+    color: var(--text-muted, currentColor);
+    font-size: 0.85rem;
+}
+
+.share-email-popup {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.share-email-recipient-field {
+    display: grid;
+    gap: 0.5rem;
+}

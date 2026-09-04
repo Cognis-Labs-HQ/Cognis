@@ -1,0 +1,10 @@
+{
+    "name": "@cognis/adapter-db-memory",
+    "version": "0.1.16",
+    "private": true,
+    "type": "module",
+    "main": "index.ts",
+    "dependencies": {
+        "@cognis/core": "<=0.3.88"
+    }
+}

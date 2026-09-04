@@ -1,0 +1,15 @@
+{
+    "id": "social-profile",
+    "uuid": "4387fae9-26dd-5a80-84b2-e5f4833b7fb9",
+    "name": "Profile Adapter",
+    "version": "2.0.4",
+    "gateway": "social",
+    "description": "User profiles, social graph (follow/block), posts, file storage, and per-user preferences.",
+    "publisher": "Cognis Labs HQ",
+    "file_namespaces": [
+        {
+            "id": "profile",
+            "visibility": "component-managed"
+        }
+    ]
+}

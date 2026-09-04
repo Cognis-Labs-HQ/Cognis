@@ -1,0 +1,23 @@
+# Kontrol Adapter Lebih Rapi
+
+**Cabang Fitur:** feature-remove-config-popup-from-adapters
+
+## Popup Pengaturan Kosong Dihapus
+
+Baris adapter tidak lagi membuka popup pengaturan jika adapter tidak memiliki bidang yang dapat dikonfigurasi selain status daya. Mengeklik baris tersebut akan membuka detail manifes, sedangkan kontrol daya pada baris digunakan untuk mengaktifkan atau menonaktifkannya.
+
+## Kontrol Daya LDAP
+
+Popup pengaturan Autentikasi LDAP kini memiliki kontrol daya agar administrator dapat mengaktifkan atau menonaktifkan adapter tanpa meninggalkan konfigurasinya.
+
+## Kontrol komponen tetap tersinkronisasi
+
+Administrasi kini secara konsisten menyebut komponen aktif sebagai Diaktifkan, menonaktifkan kontrol konfigurasi yang dikunci, memperbarui kesehatan komponen dan navigasi setelah perubahan daya, menampilkan detail manifes untuk adaptor tanpa pengaturan, dan memungkinkan metode Share dinonaktifkan. Penyiapan Authenticator App menggunakan SHA-256 secara default. Judul pengaturan adaptor tidak lagi mengulang versi manifes.
+
+## Status Adapter Share Tersimpan
+
+Adapter Share yang dinonaktifkan kini tetap nonaktif setelah server dimulai ulang. Share yang telah diterbitkan tidak dapat diselesaikan selama adapternya dinonaktifkan.
+
+## Komit
+
+- [bde0ea7](https://github.com/Cognis-Labs-HQ/Cognis/commit/bde0ea7a65b26aa85e467dc7954e6db3c652e701)

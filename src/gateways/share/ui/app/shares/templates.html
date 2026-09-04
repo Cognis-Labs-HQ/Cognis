@@ -1,0 +1,55 @@
+<template id="shares-table-template">
+    <section class="shares-overview">
+        <div class="shares-summary" aria-live="polite">
+            <button
+                type="button"
+                data-share-total
+                data-share-filter="all"
+            ></button>
+            <button
+                type="button"
+                data-share-sent
+                data-share-filter="sent"
+            ></button>
+            <button
+                type="button"
+                data-share-received
+                data-share-filter="received"
+            ></button>
+        </div>
+        <div class="shares-table-wrap">
+            <table class="shares-table">
+                <thead>
+                    <tr>
+                        <th data-column-title></th>
+                        <th data-column-relationship></th>
+                        <th data-column-status></th>
+                        <th data-column-created></th>
+                        <th data-column-accessed></th>
+                        <th data-column-expires></th>
+                        <th
+                            class="shares-actions-heading"
+                            data-column-actions
+                        ></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <p class="shares-empty" hidden></p>
+        </div>
+    </section>
+</template>
+
+<template id="shares-row-template">
+    <tr data-share-id="">
+        <td data-share-title></td>
+        <td data-share-relationship></td>
+        <td data-share-status></td>
+        <td data-share-created></td>
+        <td data-share-accessed></td>
+        <td data-share-expires></td>
+        <td class="shares-actions-cell">
+            <div class="shares-actions" data-share-actions></div>
+        </td>
+    </tr>
+</template>

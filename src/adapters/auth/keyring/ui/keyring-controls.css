@@ -1,0 +1,20 @@
+.keyring-manual-unlock {
+    position: fixed;
+    right: 18px;
+    bottom: 130px;
+    z-index: 1000;
+    display: grid;
+    width: 48px;
+    height: 48px;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--theme-toggle-bg);
+    color: var(--theme-toggle-color);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+}
+
+.keyring-manual-unlock:hover {
+    background: var(--theme-toggle-bg-hover);
+}

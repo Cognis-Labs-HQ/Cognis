@@ -1,0 +1,331 @@
+.font-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0;
+}
+
+.font-picker-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.font-preview-box {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 10px 0 0;
+    display: inline-block;
+    min-width: 160px;
+}
+
+.font-preview-box h4 {
+    margin: 0 0 6px;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+}
+
+#pref-font-preview {
+    font-size: 0.95em;
+}
+
+.font-size-stepper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.font-size-btn {
+    min-width: 28px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    line-height: 1;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+.font-size-btn:hover {
+    background: var(--color-success-hover-bg);
+    color: var(--color-success-outline-text, var(--color-success-text));
+    border-color: var(--color-success-outline-text, var(--color-success-text));
+    transform: none;
+}
+
+.font-heading-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 0;
+}
+
+.theme-subsection {
+    margin: 18px 0 0;
+}
+
+.theme-subsection h3 {
+    margin: 0 0 8px;
+}
+
+.theme-selector {
+    display: flex;
+    gap: 8px;
+}
+
+.message-style-subsection {
+    margin: 18px 0 0;
+}
+
+.message-style-subsection h3 {
+    margin: 0 0 8px;
+}
+
+.message-style-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.theme-btn,
+.message-style-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--control-border);
+    background: var(--control-bg);
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.theme-btn {
+    padding: 8px 20px;
+}
+
+.theme-btn:hover,
+.message-style-btn:hover {
+    background: var(--control-hover-bg);
+    border-color: var(--border-strong);
+    transform: translateY(-1px);
+}
+
+.theme-btn.active,
+.message-style-btn.active {
+    background: var(--accent-2);
+    color: #fff;
+    border-color: transparent;
+}
+
+.prefs-dump {
+    box-sizing: border-box;
+    color: inherit;
+    display: block;
+    font-family: monospace;
+    min-height: 22rem;
+    resize: vertical;
+    width: 100%;
+    background: rgba(10, 22, 42, 0.9);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.82rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 0;
+}
+
+.prefs-dump[readonly] {
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+body[data-theme="light"] .prefs-dump {
+    background: var(--code-bg);
+}
+
+.email-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 10px;
+}
+
+.email-list-item {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.email-address {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+}
+
+.email-badge-primary {
+    background: var(--accent-2);
+    color: #fff;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    padding: 2px 7px;
+    font-weight: 600;
+}
+
+.email-badge-verified {
+    background: var(--accent);
+    color: #fff;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    padding: 2px 7px;
+    font-weight: 600;
+}
+
+.email-badge-unverified {
+    background: var(--control-bg);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.72rem;
+    padding: 2px 7px;
+}
+
+body[data-theme="light"] .email-badge-primary {
+    background: rgba(13, 148, 136, 0.14);
+    color: #0f766e;
+    border: 1px solid rgba(13, 148, 136, 0.38);
+}
+
+body[data-theme="light"] .email-badge-verified {
+    background: rgba(15, 118, 110, 0.12);
+    color: #0f766e;
+    border: 1px solid rgba(15, 118, 110, 0.32);
+}
+
+body[data-theme="light"] .email-badge-unverified {
+    background: rgba(226, 232, 240, 0.88);
+    color: #475569;
+    border-color: rgba(100, 116, 139, 0.36);
+}
+
+.email-verify-prompt {
+    font-size: 0.85rem;
+    margin: 6px 0 4px;
+}
+
+.email-verify-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 4px 0;
+}
+
+.email-add-row {
+    display: flex;
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0 4px;
+}
+
+.email-verify-row input,
+.email-add-row input {
+    flex: 1 1 180px;
+    min-width: 0;
+}
+
+.email-list-item > button,
+.email-add-row button,
+.email-verify-row button {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 640px) {
+    .email-add-row .btn-confirm,
+    .email-verify-row .btn-confirm {
+        width: 100%;
+    }
+}
+
+.notif-matrix {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+}
+
+.notif-matrix th {
+    text-align: left;
+    padding: 6px 10px;
+    background: var(--control-bg);
+    border: 1px solid var(--border);
+    font-size: 0.82rem;
+}
+
+.notif-matrix td {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    font-size: 0.85rem;
+}
+
+.timezone-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 4px 0;
+}
+
+.timezone-label select {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.settings-auth-recovery-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0;
+}
+.settings-danger-zone {
+    border: 1px solid var(--danger-border, #b91c1c);
+    border-radius: 12px;
+    margin-top: 1.5rem;
+    padding: 1rem;
+}
+
+.settings-danger-zone h3 {
+    color: var(--danger-text, #dc2626);
+}
+
+.settings-danger-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.settings-danger-password-label {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.settings-danger-password-label input {
+    min-width: 100%;
+}
+
+.settings-danger-warning {
+    color: var(--danger-text, #dc2626);
+    font-weight: 600;
+}

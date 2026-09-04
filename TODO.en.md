@@ -1,0 +1,261 @@
+# Ignored Automated Feedback
+
+## Code Review — Flow-Oriented Guest Share Sessions
+
+### calendar-routes regex suggestion for calendar ID
+
+**Reviewer suggestion:** Replace the `/^\/api\/v1\/calendar\/calendars\/([^/]+)\/share/` pattern with a stricter `[a-zA-Z0-9_-]+` segment matcher.
+
+**Reason ignored:** The current `([^/]+)` segment already enforces a non-empty calendar ID while preserving existing ID compatibility beyond alphanumeric/underscore/hyphen tokens. Narrowing to `[a-zA-Z0-9_-]+` would be a behavior change for valid existing IDs and is unrelated to the share-guest session work in this PR.
+
+## Code Review — Restore multi-link calendar sharing
+
+### share-link button wording — prefer singular labels
+
+**Reviewer suggestion:** Rename the share-link button labels from "Generate Links" / "Regenerate Links" to singular wording because the action creates one link at a time.
+
+**Reason ignored:** The current task explicitly requires renaming "Generate Link" to "Generate Links" and switching the existing-link state to "Regenerate Links." Following the review suggestion would directly contradict that user instruction, so the requested plural labels were kept.
+
+## Code Review — PR #45 third-pass (2026-05-29)
+
+### settings-section.js drag-drop handler — mutation before rerender
+
+**Reviewer suggestion:** Remove the `pendingPreferredIds.filter(...)` mutation at lines 461-463 because "the deactivation toast logic starting at line 466 already handles building the correct method list and the `rerender()` call will reflect the updated state."
+
+**Reason ignored:** The suggestion is based on a misreading of the code. The `allMethods` list built at line 466 is used only to look up the display name for the toast; it does not update `pendingPreferredIds`. Removing the filter mutation would mean `pendingPreferredIds` still contains the deactivated method after the drag, causing `rerender()` to show an incorrect UI state where the method appears as preferred even though it was dragged to the available table.
+
+### gateway.ts TfaAdapterFactory JSDoc — suggested `*/` relocation
+
+**Reviewer suggestion:** Move the closing `*/` of the JSDoc block to after the type definition so the type itself is inside the documentation block.
+
+**Reason ignored:** JSDoc syntax requires the `*/` to precede the declaration it documents — placing it after `TfaAdapterFactory`'s closing `) => TfaMethodAdapter;` would include the type syntax inside the comment string, making the declaration invisible to the TypeScript compiler.
+
+## Code Review — SMTP TFA resend layout and rate-limit visibility
+
+### login-flow.js rate-limit toast — extract into separate function
+
+**Reviewer suggestion:** Extract the rate-limit toast display logic from inside `updateCountdown` into a separate function (e.g. `showRateLimitNoticeOnce`) that manages its own state.
+
+**Reason ignored:** The toast fires exactly once per `switchToTfaPrompt` invocation and is tightly coupled to `rateLimitNoticeShownOnce` and `remainingSeconds` — both local closure variables. Extracting it would require passing or closing over those variables anyway, adding a named function for a single callsite with no meaningful readability or testability gain.
+
+## Code Review — SMTP TFA toast feedback follow-up
+
+### smtp-notification-sender.ts import ordering — verification builder before registration builder
+
+**Reviewer suggestion:** Reorder the `smtp-message-builders.js` imports so `buildVerificationEmailMessage` appears before `buildRegistrationInviteEmailMessage`, matching their usage order in `smtp-notification-sender.ts`.
+
+**Reason ignored:** This is a readability-only change in `src/adapters/notify/smtp/`, a component unrelated to the current TFA toast fix. Under the repository versioning rules, touching that adapter would require an additional notify-adapter version bump and changelog update unrelated to the user-visible bug being fixed here, so I left it unchanged to avoid unrelated component churn.
+
+### login/index.js TFA client loading — add rejected-promise handling
+
+**Reviewer suggestion:** Add `.catch()` or equivalent error handling around `loadTfaLoginClient().then(...)` in `src/ui/app/login/index.js` so failures are not silently swallowed.
+
+**Reason ignored:** This is a broader login-page resilience change outside the SMTP resend-toast bug being fixed here. Addressing it properly would require touching the shared login flow, validating the wider auth UI behavior, and likely bumping the core UI changelog surface as a separate task rather than folding it into this targeted TFA UX correction.
+
+### adapters/tfa/smtp/index.ts retry metadata helper — rename for brevity
+
+**Reviewer suggestion:** Rename `resolveRetryMetadataFromAvailableAt` to a shorter helper name such as `parseRetryMetadata` or `extractRetryMetadata`.
+
+**Reason ignored:** This is a naming-only refactor in the SMTP TFA adapter with no effect on the user-visible toast regression. Changing it would widen the patch into an unrelated adapter refactor and force extra component-version bookkeeping without improving correctness for the issue under review.
+
+### smtp-notification-sender.ts queued verification validation — guard missing notification IDs
+
+**Reviewer suggestion:** Validate the queued verification result before calling `waitForResult` so a missing `notificationId` produces a clearer error in `src/adapters/notify/smtp/smtp-notification-sender.ts`.
+
+**Reason ignored:** The current task is confined to the TFA login UI toast feedback. A notify-adapter validation change belongs in its own follow-up because it would touch a separate component with its own versioning/changelog requirements and needs dedicated adapter-level testing.
+
+### adapters/tfa/smtp/index.ts beginLoginChallenge — extract shared challenge preparation
+
+**Reviewer suggestion:** Extract the duplicated `challengeSentAt` / `key` / `code` preparation in `beginLoginChallenge` into a helper shared by both the queue and fallback branches.
+
+**Reason ignored:** This is a refactor suggestion for existing SMTP TFA adapter code rather than a correctness issue in the resend-toast flow. Folding it into this bug fix would expand the scope into unrelated adapter cleanup and require additional version/changelog churn for behavior that is already covered by the current adapter logic and tests.
+
+### login-flow.js resend-link helper naming — rename `getResendLink`
+
+**Reviewer suggestion:** Rename `getResendLink` to `getResendActionLink` so the helper name is more explicit.
+
+**Reason ignored:** The existing name is already specific within this file because the helper only resolves `#login-tfa-resend-action`, and the file has no other competing link helpers. Renaming it would be a no-behavior naming churn inside the just-updated TFA flow without improving correctness for the toast fix.
+
+### login-flow.js delivery toast extraction — create `showDeliveryToastOnce`
+
+**Reviewer suggestion:** Extract the delivery-toast gating from `updateCountdown` into a dedicated helper such as `showDeliveryToastOnce`.
+
+**Reason ignored:** The toast state depends entirely on the local `deliveryToastShownOnce` and `skipDeliveryToast` values that are already consumed at the single callsite where the countdown state is evaluated. Pulling that three-line guard into another helper would add indirection without materially improving readability, testing, or behavior for this targeted regression fix.
+
+## Code Review — TFA deferred-initiation fix follow-up
+
+### adapters/tfa/smtp/index.ts code-generation retry budget — revisit adaptive limit
+
+**Reviewer suggestion:** Reconsider whether the fixed `MAX_CODE_GENERATION_ATTEMPTS` value is sufficient for shorter SMTP code lengths.
+
+**Reason ignored:** The current loop is collision-avoidance against a single live code (not global uniqueness), so collision probability remains low even at 4 digits and the bounded retry cap prevents pathological loops. Raising or making this limit adaptive would be a policy/performance tuning change that needs separate analysis and load/risk discussion rather than being folded into this targeted correctness fix.
+
+### gateways/tfa/ui/login-flow.js method initiation gating — replace SMTP ID check with generic method flag
+
+**Reviewer suggestion:** Remove the hardcoded `method.id === "smtp"` initiation condition in favor of a generic `requiresInitiation`-style method property.
+
+**Reason ignored:** The current API payload for login methods does not expose a generic initiation contract, and adding one would require cross-layer contract changes (gateway response shape, UI rendering assumptions, and adapter compatibility) beyond this bugfix scope. This should be handled as a dedicated protocol enhancement task to avoid introducing implicit partial contracts.
+
+## Code Review — calendar popup + upcoming meetings (create-calendar-gateway)
+
+### admin-meetings-section.js — formatDateTime import flagged as missing
+
+**Reviewer suggestion:** Import `formatDateTime` from the timestamp utilities module.
+
+**Reason ignored:** False positive. `formatDateTime` is already imported on line 1: `import { formatDateTime } from "/static/reuse/timestamp.js";`
+
+### store.js listUpcomingMeetings — N+1 query pattern
+
+**Reviewer suggestion:** Batch presence/participants/state queries instead of running 3 × rowCount queries.
+
+**Reason ignored:** This is the same established pattern used by `listActiveMeetings()` (store.js lines 570–625), which also uses per-row `Promise.all([listPresence, listParticipants, getMeetingState])`. Refactoring to batch queries would require significant changes to the store's query interface and is out of scope for this PR. Tracked here for a future performance pass.
+
+## Code Review — ctx flow catalog phase 1
+
+### adapters/auth/ldap manifest version history — sequential manifest bumps
+
+**Reviewer suggestion:** Avoid jumping the LDAP adapter manifest version from `0.1.1` to `0.1.4`, or document the missing intermediate `0.1.2` / `0.1.3` manifest bumps.
+
+**Reason ignored:** The repository was already in an inconsistent state: `src/adapters/auth/ldap/package.json` and the version documents were at `0.1.3`, while `src/adapters/auth/ldap/manifest.json` still lagged at `0.1.1`. This change fixes the inconsistency by bringing the manifest up to the new synchronized version `0.1.4`, but it cannot reconstruct undocumented historical manifest edits inside the same PR.
+
+## Code Review — share gateway implementation
+
+### core/contracts/share/flow-catalog.ts export naming
+
+**Reviewer suggestion:** Revisit the `SHARE_FLOW_CATALOG` export name to ensure it matches the repository's canonical flow-catalog naming conventions.
+
+**Reason ignored:** The export already follows the established `<DOMAIN>_FLOW_CATALOG` pattern used across the repository (for example `MEETINGS_FLOW_CATALOG` and `PROFILE_MEDIA_FLOW_CATALOG`). Renaming it would be a no-behavior churn with no correctness or consistency benefit, so the existing canonical name was kept.
+
+### store.ts purgeExpired — two where conditions on expires_at
+
+**Reviewer suggestion:** Combine the two separate `where` conditions (`expires_at != ""` and `expires_at < now`) into a single range check for better index use.
+
+**Reason ignored:** The two conditions are semantically distinct: the `!= ""` guard excludes never-expiring tokens (which store an empty string), while `< now` identifies elapsed expirations. They cannot be collapsed into a single range expression without changing the data-model contract. DB adapters are expected to optimize equality checks on a single column naturally; the cost of two conditions on the same column is negligible compared to a table scan on the composite filter.
+
+### bootstrap/routes.ts — serve /share without a token
+
+**Reviewer suggestion:** Return 404 for GET /share without a trailing token segment so the share page is only served with a valid URL shape.
+
+**Reason ignored:** The share page is a single-page application that resolves the token client-side from the URL path or query string. Serving the HTML shell at `/share` (without a token) is intentional — the client handles the no-token case by rendering an appropriate error state rather than crashing. Gating at the server would prevent valid deep-linked entry patterns and would duplicate validation that already exists in the client-side token resolution logic.
+
+## Code Review — profile media ctx flows
+
+### routes/index.ts fallback upload path — remove direct onProfileChanged invocation
+
+**Reviewer suggestion:** Remove the direct `onProfileChanged` invocation in the fallback upload path because flow `emit-events` hooks already handle profile-change event fan-out.
+
+**Reason ignored:** False positive. The direct callback runs only in the explicit no-flow fallback branch used when `upload-profile-media` is unavailable; when the flow exists, event fan-out is handled exclusively by the flow hook and this fallback branch is not executed. Removing the fallback callback would silently drop avatar-change event emission in no-flow contexts (including isolated adapter tests), changing existing behavior.
+
+### profile-media-flow-hooks.ts getFirstStageResult helper — promote to shared reuse module
+
+**Reviewer suggestion:** Move `getFirstStageResult` into a shared reuse flow utility module.
+
+**Reason ignored:** This helper has exactly one callsite in one adapter flow file today. Promoting it to a shared module now would create a cross-component abstraction with no active reuse and increase indirection for no practical benefit. If another component needs the same helper, we will then promote it into a reuse module with multiple consumers.
+
+## Code Review — calendar response targeting restoration
+
+### popup-manager-response.js target-calendar popup markup extraction
+
+**Reviewer suggestion:** Move the popup body template markup out of `popup-manager-response.js` into a separate HTML template file instead of embedding it in JavaScript.
+
+**Reason ignored:** The existing calendar popup manager codebase already renders popup bodies as template strings in JavaScript (including neighboring calendar popups in this same area), so this suggestion conflicts with current repository patterns and would require a broader architectural migration rather than a focused behavior fix. This change intentionally stayed scoped to restoring the response-target flow and shared-calendar exemption.
+
+## Code Review — feature-share-utility: share popup moved to reuse
+
+### share-routes.js resolveExpiry — document return value semantics
+
+**Reviewer suggestion:** Add a JSDoc comment to `resolveExpiry` explaining that it returns `null` for invalid input, an empty string for no expiry, and an ISO string for a valid expiry timestamp.
+
+**Reason ignored:** `src/modules/jitsi-meet/api/share-routes.js` was not touched in this PR (the PR only moves UI code). Adding a JSDoc to an untouched file would be an out-of-scope change. Should be addressed in a future jitsi-meet API documentation pass.
+
+### share/gateway/store.ts — two where conditions on expires_at
+
+**Reviewer suggestion:** Combine the two separate `where` conditions on `expires_at` into a single range check.
+
+**Reason ignored:** This is the same issue already documented above under "Code Review — share gateway implementation → store.ts purgeExpired". The comment and reasoning already apply and a duplicate TODO entry is not added.
+
+### share/bootstrap/routes.ts — serve /share without a token
+
+**Reviewer suggestion:** Return 404 for GET /share without a token segment.
+
+**Reason ignored:** Same issue already documented above under "Code Review — share gateway implementation → bootstrap/routes.ts". Duplicate entry not added.
+
+### share-hooks.js firstStageResult — extract shared helper
+
+**Reviewer suggestion:** Move the `firstStageResult` helper to a shared utility in `src/api/reuse/`.
+
+**Reason ignored:** `src/modules/jitsi-meet/api/share-hooks.js` was not touched in this PR. Promoting a helper to a shared location belongs in a dedicated refactor task once multiple files consume the same pattern, as outlined in the existing TODO for `getFirstStageResult` in profile-media-flow-hooks.ts.
+
+### share/ui/app/index.js — validate token format client-side
+
+**Reviewer suggestion:** Add a format check (e.g. `shr_` prefix) before passing the token to the API.
+
+**Reason ignored:** `src/gateways/share/ui/app/index.js` was not touched in this PR. Client-side token validation is a share gateway concern and belongs in a separate share-gateway hardening task.
+
+### guest-profile-store.ts — randomInt upper bound for the default guest name
+
+**Reviewer suggestion:** `randomInt(100000, 1000000)` was flagged as possibly only producing a max value of 999999 instead of 1000000, implying the range might not be a full 6-digit range.
+
+**Reason ignored:** This is the intended, correct behavior, not a bug. Node's `crypto.randomInt(min, max)` returns an integer `>= min` and `< max`, so `randomInt(100000, 1000000)` always yields a value in `[100000, 999999]` — exactly the full range of 6-digit numbers. No change was made.
+
+### routes/room/index.ts — guest sender filter on `resolveShareGuestSessionId`
+
+**Reviewer suggestion:** The truthy check on `resolveShareGuestSessionId({ sub: senderId })` in the guest message-sender enrichment filter was flagged as potentially excluding guest senders that have no session ID.
+
+**Reason ignored:** This code in `src/adapters/social/messages/routes/room/index.ts` predates this PR and was not modified here. The truthy check is intentional: a share-guest subject with no session-ID segment has no `guestId` to look up a temporary profile for, so it is correctly excluded from guest-profile enrichment. Reverting this would not fix a real bug and is out of scope for this PR's guest-experience fixes.
+
+## Architecture Guardrail — jitsi-meet api/index.js exceeds 1000 lines
+
+**Guardrail:** `src/tooling/tests/architecture-compliance.test.js` requires files to stay at or below 1000 lines, splitting into a subdirectory with an `index` entry point otherwise.
+
+**Resolved:** `src/modules/jitsi-meet/api/index.js` (previously 1010 lines) has been split into `config-routes.js`, `participant-routes.js`, and `meeting-lifecycle-routes.js` sibling files in the Share Gateway UX bugfix PR, bringing `index.js` down to 414 lines. All previously-deferred concerns about this guardrail no longer apply.
+
+## Code Review — Jitsi Meet Bug Fixes Session
+
+### session-flow-hooks.js — beforeunload listener without AbortSignal
+
+**Resolved:** In the Share Gateway UX bugfix PR, the `beforeunload` listener in `src/gateways/share/ui/session-flow-hooks.js` is now registered with `{ signal: abortController?.signal }`, using the `AbortController` returned by `activateGuestToken`, so it is automatically removed alongside the guest auth stage's abort lifecycle.
+
+### share-button.js — GUEST_SESSION_ACTIVE_STORAGE_KEY "shadowed" constant
+
+**Reviewer suggestion:** Remove the local `GUEST_SESSION_ACTIVE_STORAGE_KEY` declaration since it is "shadowed" by the export.
+
+**Reason ignored:** False positive — `export { GUEST_SESSION_ACTIVE_STORAGE_KEY }` at line 83 re-exports the single local `const` declared at line 47; it is not a separate/duplicate declaration. No change made.
+
+### room/index.ts — invert share-guest allowed-operation condition
+
+**Reviewer suggestion:** Refactor the negated nested condition gating share-guest access to `key`/`messages` routes into a positive `isAllowedShareGuestOperation` helper.
+
+**Reason ignored:** `src/adapters/social/messages/routes/room/index.ts` was not touched in this PR (verified the existing logic already correctly permits guest GET `/key` and GET/POST `/messages` for their own meeting's chat room, which is unrelated to the chat-key 403 fixed in this PR — that 403 was caused by the UI requesting private per-user DM keys, not this route's guest gate). Readability refactor deferred as out of scope.
+
+### guard.ts — verifyAccessToken called twice
+
+**Reviewer suggestion:** Avoid calling `verifyAccessToken` twice with the same token when the first call returns null.
+
+**Reason ignored:** `src/gateways/auth/guard.ts` was not touched in this PR. This is a minor performance nit in unrelated auth-guard code; addressing it requires understanding all call sites of `verifyAccessToken`'s purpose parameter, which is out of scope for this PR's meeting/chat/share bug fixes.
+
+## Code Review — Share Gateway UX Bugfix Session
+
+### room/index.ts — resolveShareGuestSessionId called twice per guest sender
+
+**Resolved:** In `src/adapters/social/messages/routes/room/index.ts`, the guest sender enrichment loop now resolves `resolveShareGuestSessionId` once per unique sender ID into a `guestSessionIdsBySender` map, reusing the result in both the filtering and the profile-lookup steps instead of calling it twice.
+
+### server.ts — static-asset pathname check on every request
+
+**Reviewer suggestion:** The `isUiStaticAssetRequest` check runs on every request before the catch-all routes; consider having the route registry distinguish static vs dynamic routes at registration time to avoid the extra pathname check per request.
+
+**Reason ignored:** This is a minor, explicitly-caveated ("correct for the fix, but consider...") performance observation on `src/api/server.ts`, a file not touched by this PR's share/mailto/expiry/theme fixes. `isUiStaticAssetRequest` is a cheap prefix/extension check with negligible per-request cost; restructuring route registration to separate static/dynamic routes is a broader architectural change to the routing dispatch order that is unrelated to this PR's scope and risks regressing unrelated route matching. Deferred to a dedicated routing-performance task.
+
+### session-flow-hooks.js — redundant `typeof window !== "undefined"` guard
+
+**Reviewer suggestion:** Remove the `typeof window !== "undefined"` check since this UI module only ever runs in the browser.
+
+**Reason ignored:** This guard predates this PR (present since the share session-flow-hooks file was first introduced) and was not added by this PR's `beforeunload`/AbortSignal fix — only the `addEventListener` call inside it was modified. It is a harmless defensive check consistent with other guards in the same file; removing it is a pure style nitpick unrelated to this PR's share/mailto/expiry/theme bug fixes.
+
+## Files Gateway Namespace Expansion Session
+
+### Namespace-defaults admin panel under Administration
+
+**Deferred scope:** The design plan suggested an admin-only panel (likely under Administration) listing every registered namespace with its default quota, editable by admins, reusing `createPageComposer` contribution patterns.
+
+**Reason deferred:** `src/ui/app/administration/index.js` is already at 990 lines (the repository's own 1000-line file-size ceiling), and adding a full namespace-defaults panel would either push it over that limit or require a larger restructuring (splitting the file into a subdirectory with focused sibling modules) that is out of proportion to this task's core requirement (namespace/ACL/quota enforcement + the one real existing consumer's migration). The backend admin routes (`GET/PUT /api/v1/files/admin/namespace-defaults[...]`, `PUT /api/v1/files/admin/global-default`) are fully implemented and tested; only the UI panel is deferred. The higher-value, directly-tied-to-existing-UI per-user "Storage Quotas" popup (in `src/ui/app/users/index.js`) was implemented instead. A follow-up task should split `administration/index.js` per the file-size convention and add the namespace-defaults panel as a new contributed section.

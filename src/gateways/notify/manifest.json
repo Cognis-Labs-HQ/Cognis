@@ -1,0 +1,14 @@
+{
+    "id": "notify",
+    "uuid": "433cd9f3-5b80-5e7d-911b-1907b9348f26",
+    "name": "Notification Gateway",
+    "version": "1.5.10",
+    "required": true,
+    "requires": ["5711a248-4ac9-5d44-98b5-b99bd4c6d722"],
+    "hasAdapters": true,
+    "description": "Dispatches notifications via pluggable adapter senders.",
+    "publisher": "Cognis Labs HQ",
+    "entrypoints": {
+        "cli": "./cli/index.js"
+    }
+}

@@ -1,0 +1,6 @@
+<resources>
+  <string name="adapter.logging.console.level">Tingkat log</string>
+  <string name="adapter.logging.console.format">Format keluaran</string>
+  <string name="adapter.logging.console.error.level">Tingkat log tidak didukung</string>
+  <string name="adapter.logging.console.error.format">Format keluaran tidak didukung</string>
+</resources>

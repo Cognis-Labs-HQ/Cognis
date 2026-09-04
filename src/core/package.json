@@ -1,0 +1,10 @@
+{
+    "name": "@cognis/core",
+    "version": "0.3.88",
+    "private": true,
+    "type": "module",
+    "main": "index.ts",
+    "dependencies": {
+        "tsx": "^4.23.10"
+    }
+}

@@ -1,0 +1,125 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import {
+    readSharePassphrase,
+    resolveGatewayCalendarShare,
+} from "../reuse/share-auth.js";
+
+test("readSharePassphrase prefers explicit header over query", () => {
+    const passphrase = readSharePassphrase(
+        {
+            headers: {
+                "x-cognis-calendar-passphrase": "header-secret",
+            },
+        },
+        new URL("http://localhost/calendar.ics?passphrase=query-secret"),
+    );
+    assert.equal(passphrase, "header-secret");
+});
+
+test("readSharePassphrase prefers basic auth over query", () => {
+    const encoded = Buffer.from("user:basic-secret", "utf8").toString("base64");
+    const passphrase = readSharePassphrase(
+        {
+            headers: {
+                authorization: `Basic ${encoded}`,
+            },
+        },
+        new URL("http://localhost/calendar.ics?passphrase=query-secret"),
+    );
+    assert.equal(passphrase, "basic-secret");
+});
+
+test("readSharePassphrase accepts a query passphrase without auth headers", () => {
+    const passphrase = readSharePassphrase(
+        { headers: {} },
+        new URL("http://localhost/calendar.ics?passphrase=query-secret"),
+    );
+    assert.equal(passphrase, "query-secret");
+});
+
+test("resolveGatewayCalendarShare resolves a central token with its supplied password", async () => {
+    const observedPasswords: Array<string | null | undefined> = [];
+    const capabilities = {
+        get<T>(name: string): T | undefined {
+            if (name !== "share:resolveToken") return undefined;
+            return (async (_token: string, password?: string | null) => {
+                observedPasswords.push(password);
+                return password === "client-secret"
+                    ? {
+                          resourceType: "calendar",
+                          resourceId: "calendar-1",
+                          grantedCapabilities: [
+                              "calendar:read",
+                              "calendar:write",
+                          ],
+                      }
+                    : null;
+            }) as T;
+        },
+    };
+    assert.deepEqual(
+        await resolveGatewayCalendarShare(
+            capabilities,
+            "shared-token",
+            "client-secret",
+        ),
+        { calendarId: "calendar-1", writable: true },
+    );
+    assert.deepEqual(observedPasswords, ["client-secret"]);
+});
+
+test("resolveGatewayCalendarShare authorizes user-share recipients", async () => {
+    const capabilities = {
+        get<T>(name: string): T | undefined {
+            if (name !== "share:resolveToken") return undefined;
+            return (async () => ({
+                resourceType: "calendar",
+                resourceId: "calendar-1",
+                ownerAccountId: "owner",
+                grantedCapabilities: ["calendar:read", "calendar:write"],
+                accessControls: {
+                    recipients: [{ type: "user", id: "recipient" }],
+                },
+            })) as T;
+        },
+    };
+    assert.deepEqual(
+        await resolveGatewayCalendarShare(
+            capabilities,
+            "shared-token",
+            "",
+            undefined,
+            "recipient",
+        ),
+        { calendarId: "calendar-1", writable: true },
+    );
+    assert.deepEqual(
+        await resolveGatewayCalendarShare(
+            capabilities,
+            "shared-token",
+            "",
+            undefined,
+            "stranger",
+        ),
+        { unauthorized: true },
+    );
+});
+
+test("resolveGatewayCalendarShare challenges for a protected calendar token", async () => {
+    const capabilities = {
+        get<T>(name: string): T | undefined {
+            if (name === "share:resolveToken") {
+                return (async () => null) as T;
+            }
+            if (name === "share:inspectToken") {
+                return (async () => ({ resourceType: "calendar" })) as T;
+            }
+            return undefined;
+        },
+    };
+    assert.deepEqual(
+        await resolveGatewayCalendarShare(capabilities, "protected-token", ""),
+        { unauthorized: true },
+    );
+});

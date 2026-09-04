@@ -1,0 +1,9 @@
+{
+    "id": "calendar-ics",
+    "uuid": "d0e84a29-7c21-55b7-983d-a38943017cc0",
+    "name": "ICS Adapter",
+    "version": "1.0.10",
+    "gateway": "calendar",
+    "description": "Imports and exports calendar data in ICS format.",
+    "publisher": "Cognis Labs HQ"
+}

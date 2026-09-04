@@ -1,0 +1,377 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
+import type { CapabilityStore, GatewayRegistry } from "@cognis/core";
+import type { CoreCalendarGateway } from "./index.js";
+
+export type CalendarVisibility = "private" | "public" | "shared";
+export type CalendarEventStatus = string;
+export type CalendarEventRecurrence =
+    "none" | "daily" | "weekly" | "monthly" | "yearly";
+export type CalendarEventResponse =
+    "pending" | "accepted" | "tentative" | "declined";
+
+export interface CalendarRecord {
+    id: string;
+    ownerAccountId: string;
+    name: string;
+    visibility: CalendarVisibility;
+    color: string;
+    defaultReminderOffsetsMinutes: number[];
+    isDefault: boolean;
+    sourceCalendarId?: string | null;
+    sharedByAccountId?: string | null;
+    sharedByLabel?: string | null;
+    sharedPermission?: "read" | "write" | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CalendarEventRecord {
+    id: string;
+    calendarId: string;
+    sourceEventId: string | null;
+    title: string;
+    description: string | null;
+    startAt: string;
+    endAt: string;
+    createdBy: string;
+    status: CalendarEventStatus;
+    recurrence: CalendarEventRecurrence;
+    recurrenceId: string | null;
+    attendees: string[];
+    inviteEmails: string[];
+    reminderOffsetsMinutes: number[];
+    meetingUrl: string | null;
+    responses: Record<string, CalendarEventResponse>;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CalendarEventResponseRecord {
+    rootEventId: string;
+    accountId: string;
+    response: CalendarEventResponse;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CaldavTokenRecord {
+    token: string;
+    ownerAccountId: string;
+    calendarId: string;
+    expiresAt: string;
+    name?: string;
+}
+
+export interface CalendarShareLinkRecord {
+    calendarId: string;
+    ownerAccountId: string;
+    token: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CalendarUserShareRecord {
+    id: string;
+    ownerAccountId: string;
+    calendarId: string;
+    recipientAccountId: string;
+    recipientHandle: string | null;
+    recipientDisplayName: string | null;
+    recipientAvatarKey: string | null;
+    permission: "read" | "write";
+    expiresAt: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface ScopedMeetingAccessTokenRecord {
+    token: string;
+    targetUrl: string;
+    createdByAccountId: string;
+    eventId: string | null;
+    expiresAt: string;
+}
+
+export interface CalendarAdapter {
+    readonly adapterId: string;
+    readonly adapterName: string;
+    readonly version?: string;
+    readonly publisher?: string;
+    readonly requires?: string[];
+    getConfig?(): Record<string, unknown>;
+    setConfig?(config: Record<string, unknown>): void;
+    isConfigured?(): boolean;
+}
+
+export interface CalendarAdapterInfo {
+    id: string;
+    name: string;
+    version?: string;
+    publisher?: string;
+    active: boolean;
+    requires?: string[];
+}
+
+export interface CalendarAdapterBootstrapCtx {
+    gateway: CoreCalendarGateway;
+    adapterId: string;
+    adapterRoot: string;
+    capabilities: CapabilityStore;
+    gatewayRegistry: GatewayRegistry;
+    registerRoute(
+        handler: (
+            req: IncomingMessage,
+            res: ServerResponse,
+            url: URL,
+        ) => Promise<boolean>,
+        gatewayId?: string,
+    ): void;
+    log?: (level: string, msg: string, meta?: Record<string, unknown>) => void;
+    isGatewayEnabled(): boolean;
+    isAdapterEnabled(adapterId?: string): boolean;
+}
+
+export type CalendarBootstrapBaseCtx = Omit<
+    CalendarAdapterBootstrapCtx,
+    "adapterId" | "adapterRoot" | "isAdapterEnabled"
+>;
+
+const DAILY_SERIES_LENGTH = 30;
+const WEEKLY_SERIES_LENGTH = 26;
+const MONTHLY_SERIES_LENGTH = 12;
+const YEARLY_SERIES_LENGTH = 5;
+
+export function escapeIcsText(value: string): string {
+    return value
+        .replaceAll("\\", "\\\\")
+        .replaceAll(";", "\\;")
+        .replaceAll(",", "\\,")
+        .replaceAll("\n", "\\n");
+}
+
+export function formatIcsDate(dateInput: string): string {
+    const parsed = new Date(dateInput);
+    if (Number.isNaN(parsed.getTime())) {
+        return new Date()
+            .toISOString()
+            .replace(/[-:]/g, "")
+            .replace(".000", "");
+    }
+    return parsed.toISOString().replace(/[-:]/g, "").replace(".000", "");
+}
+
+export function formatIcsDateOnly(dateInput: string): string {
+    const parsed = new Date(dateInput);
+    const fallback = Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+    return [
+        String(fallback.getUTCFullYear()).padStart(4, "0"),
+        String(fallback.getUTCMonth() + 1).padStart(2, "0"),
+        String(fallback.getUTCDate()).padStart(2, "0"),
+    ].join("");
+}
+
+export function isAllDayEventRange(startAt: string, endAt: string): boolean {
+    const start = new Date(startAt);
+    const end = new Date(endAt);
+    const dayMs = 24 * 60 * 60 * 1000;
+    if (
+        Number.isNaN(start.getTime()) ||
+        Number.isNaN(end.getTime()) ||
+        end.getTime() <= start.getTime()
+    ) {
+        return false;
+    }
+    const startsAtUtcMidnight =
+        start.getUTCHours() === 0 &&
+        start.getUTCMinutes() === 0 &&
+        start.getUTCSeconds() === 0 &&
+        start.getUTCMilliseconds() === 0;
+    const endsAtUtcMidnight =
+        end.getUTCHours() === 0 &&
+        end.getUTCMinutes() === 0 &&
+        end.getUTCSeconds() === 0 &&
+        end.getUTCMilliseconds() === 0;
+    const durationMs = end.getTime() - start.getTime();
+    if (durationMs % dayMs !== 0) return false;
+    const preservesLocalMidnightOffset =
+        start.getUTCHours() === end.getUTCHours() &&
+        start.getUTCMinutes() === end.getUTCMinutes() &&
+        start.getUTCSeconds() === end.getUTCSeconds() &&
+        start.getUTCMilliseconds() === end.getUTCMilliseconds();
+    return (
+        (startsAtUtcMidnight && endsAtUtcMidnight) ||
+        preservesLocalMidnightOffset
+    );
+}
+
+export function parseIcsDate(value: string): string | null {
+    const compact = value.trim();
+    const dateOnlyMatch = compact.match(/^(\d{4})(\d{2})(\d{2})$/);
+    if (dateOnlyMatch) {
+        const [, year, month, day] = dateOnlyMatch;
+        return new Date(
+            Date.UTC(Number(year), Number(month) - 1, Number(day)),
+        ).toISOString();
+    }
+    const match = compact.match(
+        /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z?$/,
+    );
+    if (!match) return null;
+    const [, year, month, day, hour, minute, second] = match;
+    return new Date(
+        Date.UTC(
+            Number(year),
+            Number(month) - 1,
+            Number(day),
+            Number(hour),
+            Number(minute),
+            Number(second),
+        ),
+    ).toISOString();
+}
+
+export function parseIcsAttendee(value: string): string | null {
+    const normalized = value.trim();
+    const mailToMatch = normalized.match(/mailto:([^;\s]+)/i);
+    if (mailToMatch?.[1]) {
+        return mailToMatch[1].trim().toLowerCase();
+    }
+    if (normalized.includes(":")) {
+        return normalized.split(":").at(-1)?.trim().toLowerCase() ?? null;
+    }
+    return normalized ? normalized.toLowerCase() : null;
+}
+
+export function normalizeAttendeeList(attendees: string[]): string[] {
+    return Array.from(
+        new Set(
+            attendees
+                .map((entry) =>
+                    String(entry ?? "")
+                        .trim()
+                        .replace(/^@/, "")
+                        .toLowerCase(),
+                )
+                .filter(Boolean),
+        ),
+    );
+}
+
+export function normalizeInviteEmails(inviteEmails: string[]): string[] {
+    return Array.from(
+        new Set(
+            inviteEmails
+                .map((entry) =>
+                    String(entry ?? "")
+                        .trim()
+                        .toLowerCase(),
+                )
+                .filter(Boolean),
+        ),
+    );
+}
+
+// Approximately one year in minutes; prevents unrealistic reminder offsets.
+const MAX_REMINDER_OFFSET_MINUTES = 7 * 24 * 60 * 52;
+
+export function normalizeReminderOffsets(value: unknown): number[] {
+    const entries = Array.isArray(value) ? value : [];
+    return Array.from(
+        new Set(
+            entries
+                .map((entry) =>
+                    typeof entry === "number" ? entry : Number(entry),
+                )
+                .filter(
+                    (entry) =>
+                        Number.isFinite(entry) &&
+                        entry > 0 &&
+                        entry <= MAX_REMINDER_OFFSET_MINUTES,
+                )
+                .map((entry) => Math.trunc(entry)),
+        ),
+    ).sort((left, right) => left - right);
+}
+
+export function resolveReminderOffsets(
+    value: unknown,
+    fallback: unknown = [],
+): number[] {
+    const normalized = normalizeReminderOffsets(value);
+    if (normalized.length > 0) return normalized;
+    return normalizeReminderOffsets(fallback);
+}
+
+export function normalizeEventStatus(value: unknown): CalendarEventStatus {
+    return typeof value === "string" && value.trim() ? value.trim() : "busy";
+}
+
+export function normalizeEventRecurrence(
+    value: unknown,
+): CalendarEventRecurrence {
+    return value === "daily" ||
+        value === "weekly" ||
+        value === "monthly" ||
+        value === "yearly"
+        ? value
+        : "none";
+}
+
+export function normalizeEventResponse(value: unknown): CalendarEventResponse {
+    return value === "accepted" || value === "tentative" || value === "declined"
+        ? value
+        : "pending";
+}
+
+export function applyEventFieldsFromSource(
+    targetEvent: CalendarEventRecord,
+    sourceEvent: CalendarEventRecord,
+): void {
+    targetEvent.title = sourceEvent.title;
+    targetEvent.description = sourceEvent.description;
+    targetEvent.startAt = sourceEvent.startAt;
+    targetEvent.endAt = sourceEvent.endAt;
+    targetEvent.attendees = [...sourceEvent.attendees];
+    targetEvent.inviteEmails = [...sourceEvent.inviteEmails];
+    targetEvent.reminderOffsetsMinutes = [
+        ...sourceEvent.reminderOffsetsMinutes,
+    ];
+    targetEvent.meetingUrl = sourceEvent.meetingUrl;
+    targetEvent.status = sourceEvent.status;
+    targetEvent.recurrence = sourceEvent.recurrence;
+    targetEvent.recurrenceId = sourceEvent.recurrenceId;
+    targetEvent.updatedAt = sourceEvent.updatedAt;
+}
+
+export function getSeriesLength(recurrence: CalendarEventRecurrence): number {
+    if (recurrence === "daily") return DAILY_SERIES_LENGTH;
+    if (recurrence === "weekly") return WEEKLY_SERIES_LENGTH;
+    if (recurrence === "monthly") return MONTHLY_SERIES_LENGTH;
+    if (recurrence === "yearly") return YEARLY_SERIES_LENGTH;
+    return 1;
+}
+
+export function shiftDateByRecurrence(
+    isoValue: string,
+    recurrence: CalendarEventRecurrence,
+    occurrenceIndex: number,
+): string {
+    const nextDate = new Date(isoValue);
+    if (recurrence === "daily") {
+        nextDate.setUTCDate(nextDate.getUTCDate() + occurrenceIndex);
+    } else if (recurrence === "weekly") {
+        nextDate.setUTCDate(nextDate.getUTCDate() + occurrenceIndex * 7);
+    } else if (recurrence === "monthly") {
+        nextDate.setUTCMonth(nextDate.getUTCMonth() + occurrenceIndex);
+    } else if (recurrence === "yearly") {
+        nextDate.setUTCFullYear(nextDate.getUTCFullYear() + occurrenceIndex);
+    }
+    return nextDate.toISOString();
+}
+
+export function enforceOwnerAttendance(
+    ownerAccountId: string,
+    attendees: string[] | undefined,
+): string[] {
+    return normalizeAttendeeList([...(attendees ?? []), ownerAccountId]);
+}

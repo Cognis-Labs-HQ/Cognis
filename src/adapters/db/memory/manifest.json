@@ -1,0 +1,7 @@
+{
+    "id": "memory",
+    "uuid": "e4f2e4d1-29a6-5ac9-81d7-b7b10fbf0942",
+    "name": "In-Memory Database",
+    "version": "0.1.16",
+    "publisher": "Cognis Labs HQ"
+}

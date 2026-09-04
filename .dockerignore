@@ -5,3 +5,6 @@ dist
 .gitlab
 .gitlab-ci.yml
 *.log
+data/
+logs/
+config/

@@ -1,0 +1,81 @@
+# Fokussteuerung
+
+## Manifestschema
+
+Seiten und einzelne Composer-Elemente deklarieren `focusControl` mit stabilen Kennungen, lokalisierten Textschlüsseln, einer registrierten Route, Darstellungsarten und serialisierbarem Zustand. Nachrichten dürfen weder HTML noch Rückrufe enthalten.
+
+## Abläufe und Anbieter
+
+Benannte Abläufe trennen Deklaration, Autorisierung, Start, Laden, Veröffentlichung, Anwendung, Übergabe und Beendigung. Anbieter registrieren Fähigkeiten ausschließlich über ctx.
+
+## Sicherheit und Synchronisierung
+
+Jeder Vorgang wird authentifiziert, auf eine Kollaborationsressource begrenzt und erneut auf Mitgliedschaft und Rolle geprüft. Zustände sind auf 64 KiB begrenzt; monotone Revisionen verhindern Konflikte und ermöglichen Wiederverbindungen.
+
+## Externes Modul
+
+Ein Whiteboard-Modul verweist auf seine entdeckte Modulroute. Nur Ressourcenkennung und Darstellungsmetadaten werden fokussynchronisiert; Dokumentänderungen verbleiben beim Whiteboard-Anbieter.
+
+## Eignung von Komponentenseiten
+
+Eine Seite eines externen Moduls steht anderen Komponenten nur zur Verfügung, wenn ihr Bootstrap die SPA-Route mit `componentPage` registriert. Die Deklaration muss kleingeschriebene Lokalisierungsschlüssel in `labelKey` und `descriptionKey` sowie mindestens einen unterstützten Modus (`overlay`, `fullscreen` oder `pip`) enthalten. Cognis ergänzt die Modul-UUID aus dem geprüften Manifest; Module dürfen weder den Dateipfad noch die Skript-URL eines anderen Moduls angeben oder herleiten.
+
+Verwenden Sie in jedem neuen Lokalisierungsschlüssel Punkte als Worttrenner, zum Beispiel `module.example.canvas.label`. Zwischen Wörtern dürfen keine Unterstriche oder Bindestriche eingeführt werden; nur eine bereits registrierte Modul-ID mit Bindestrich darf diesen im Modul-Namensraumsegment behalten.
+
+```js
+ctx.registerSpaRoute({
+    id: "whiteboard.canvas",
+    pattern: "^/whiteboards/[^/]+$",
+    base: "/whiteboards",
+    scriptUrl: "/static/modules/nextcloud-whiteboard/app.js",
+    componentPage: {
+        labelKey: "module.nextcloud-whiteboard.canvas.label",
+        descriptionKey: "module.nextcloud-whiteboard.canvas.description",
+        modes: ["overlay", "fullscreen"],
+    },
+});
+```
+
+Das Seitenmodul muss `mount(root, { signal, focusState })` exportieren, das Abbruchsignal beachten, ausschließlich innerhalb von `root` rendern und serialisierbaren Aufruferkontext über `focusState` akzeptieren. Die Freigabe betrifft nur die Darstellung; Autorisierung, Ressourcenerstellung, Teilnehmerzugriff, Speicherung und Live-Synchronisierung bleiben Aufgabe des bereitstellenden Moduls.
+
+## Seite einer anderen Komponente anfordern
+
+Eine anfordernde Komponente benennt den Anbieter anhand seiner unveränderlichen Manifest-UUID und der stabilen Routen-ID. Browsercode bezieht `component-pages:request` aus `uiCtx.capabilities`; er darf den Anbieter weder importieren noch dessen Asset-URL zusammensetzen. Die Capability liefert `null`, wenn das Modul deaktiviert, unzugänglich oder nicht vorhanden ist oder die Route nicht ausdrücklich freigegeben wurde.
+
+`component-pages:request` prüft ausschließlich die Verfügbarkeit und bindet niemals eine Oberfläche ein. Ein Komponentenfenster wird über `component-pages:spawn` synchron im Klick- oder Tastaturaktivierungs-Handler der Whiteboard-Schaltfläche geöffnet. Der Aufrufer übergibt die ID einer vorhandenen, eigenen Bühne und das `AbortSignal` seiner Seite. Cognis verlangt eine aktive Benutzeraktion, begrenzt das Fenster auf diese Bühne, verhindert Link- und Formularnavigation in den Dashboard-Router und übergibt dem Anbieter `navigationAllowed: false`.
+
+Die Spawn-Capability liefert ein Handle mit `discard()`. Der Aufrufer muss es bei seiner Schließen- oder Zurück-Aktion verwerfen; ein Abbruchsignal oder der Wechsel der SPA-Route verwirft es ebenfalls. Alternativ verwirft `component-pages:discard` das Fenster anhand der Bühnen-ID; für Shell-Lebenszyklen steht `component-pages:discardAll` bereit. Die Verfügbarkeitssuche beim Laden der Besprechungsseite darf nur `component-pages:request` verwenden. Anbieter müssen ausschließlich im übergebenen Root rendern, das Signal beachten, eigene Ressourcen beim Verwerfen freigeben und im eingebetteten Zustand keine direkte Navigation auslösen.
+
+Die Bühnen-ID darf nur Buchstaben, Ziffern, Punkte, Unterstriche, Doppelpunkte oder Bindestriche enthalten. Besitzt der Anbieter zusätzliche Ressourcen, gibt `mount` eine Bereinigungsfunktion oder ein Objekt mit `destroy` beziehungsweise `unmount` zurück.
+
+Für synchronisierte Fokussteuerung wird ein `module-route`-Loader deklariert, dessen `moduleId` diese UUID und dessen `routeId` die freigegebene Routen-ID ist. Ein Kollaborationsanbieter muss die Anfrage weiterhin autorisieren, das Whiteboard über serverseitige ctx-Capabilities erstellen oder auflösen, Teilnehmerzugriff vergeben und über `focus:transport` ausschließlich stabile Ressourcenkennungen veröffentlichen.
+
+Eine Startanfrage kann mit `allowNavigation: true` ihren Handle dazu berechtigen, die eingebundene Komponente während der SPA-Navigation beizubehalten. Die Berechtigung allein bewirkt keine Beibehaltung: Die besitzende Oberfläche muss beim Eintritt in eine navigationssichere Darstellung wie Bild-im-Bild `setNavigationAllowed(true)` und bei der Rückkehr zur eingebetteten Darstellung `setNavigationAllowed(false)` aufrufen.
+
+## Randlose Komponentenfenster
+
+Übergeben Sie `borderless: true` an `component-pages:spawn`, wenn die eingebettete Seite jede Kante ihrer vom Aufrufer verwalteten Bühne berühren soll. Cognis entfernt Außenabstand, Innenabstand, Rahmen und Radius des Komponentenfensters, passt das Fenster und seine direkte Inhaltswurzel an die volle Größe des Elternelements an und übergibt `borderless: true` an die Mount-Optionen des Anbieters. Für interne Inhaltsabstände bleibt der Anbieter verantwortlich.
+
+Solange eine randlose Komponente eingebunden ist, entfernt Cognis auch den Außenabstand des umgebenden Elements `.app-page__main`. Der normale Seitenabstand wird automatisch wiederhergestellt, sobald die letzte randlose Komponente dieser Seite entfernt wird.
+
+Komponentenfenster erzeugen keinen eigenen vertikalen Bildlaufbereich. Bühne und Fenster verbleiben im normalen Flex-Layout und wachsen mit dem eingebetteten Inhalt, während Radeingaben über der Komponente weiterhin die Hauptseite scrollen. Dadurch gibt es unabhängig von der Zeigerposition nur eine seitenweite Bildlaufposition.
+
+### Zuständigkeiten bei der randlosen Integration
+
+- **Cognis-Host:** setzt `component-page-stage--borderless`, streckt die vollständige Kette `component-page-window → app-shell → workspace → composer grid → widget`, entfernt verschachtelte Workspace-Abstände und übergibt `layout: { borderless: true, fillParent: true, scrollOwner: "document" }` an den Mount des Anbieters.
+- **Meeting-Aufrufer (beispielsweise Jitsi Meet):** fordert `borderless: true` an; solange das Handle aktiv ist, muss seine Meeting-Bühne feste Füllhöhen oder abgeschnittenen Überlauf durch ein automatisch wachsendes Layout mit sichtbarem Überlauf ersetzen. Beim Schließen wird das Broker-Handle verworfen und das normale Video-Layout der Meeting-Bühne wiederhergestellt.
+- **Seitenanbieter (beispielsweise Nextcloud Whiteboard):** berücksichtigt die Mount-Optionen `borderless` und `layout`, indem der Page Composer mit `frameless: true` und `contentScrolling: false` aufgebaut wird. Der Canvas-Wrapper füllt das Composer-Widget aus und die Canvas-Bühne darf kein `overflow: auto` deklarieren; Cognis behält die Kontrolle über den Dokumentbildlauf.
+
+## Integrierte Komponentenseiten
+
+Mit Cognis ausgelieferte authentifizierte Dashboard-Seiten verwenden die Cognis-Core-UUID `b4d49c4a-61d0-5db2-84fd-f89b80fd6398`; Study verwendet seine Gateway-UUID `338b9237-a2c8-5bcf-9437-bccc9abd9a27`. Ihre stabilen Routen-IDs sind `core.dashboard`, `core.settings`, `core.users`, `core.invite`, `core.modules`, `core.administration`, `core.docs`, `core.changelogs`, `core.license`, `core.error`, `gateway.study` und `gateway.study.child`. Sie nutzen denselben Vertrag `component-pages:request` wie externe Module und unterstützen die Einbettung als Overlay oder Vollbild. Anmelde- und Demonstrationseinstiege sind keine Komponentenseiten der Dashboard-Shell und daher nicht freigegeben.
+
+## Verschiebbare und größenveränderbare PiP-Fenster
+
+Eine Oberfläche, die `pip` deklariert, wird mit dem wiederverwendbaren Verhalten für schwebende Fenster von Cognis dargestellt. Jedes schwebende Fenster enthält eine schmale, vom Host bereitgestellte Werkzeugleiste, die entlang der gesamten Oberkante gezogen werden kann, sowie sichtbare SVG-Größengriffe oben links und unten rechts. Cognis hält das Fenster im sichtbaren Bereich und entfernt alle Listener beim Ende der Fokussitzung. Anbietermodule deklarieren nur `pip` und hängen sich in die bereitgestellte Wurzel ein; sie dürfen keine konkurrierenden dokumentweiten Handler zum Ziehen oder Ändern der Größe installieren.
+
+Ein Anbieter kann `minSize: { width, height }` in seinen Oberflächenmetadaten angeben, um die Mindestabmessungen des PiP in Pixeln festzulegen. Beide Maße müssen positive endliche Zahlen sein. Der Host übergibt sie zur Durchsetzung beim Skalieren an die Floating-Window-Steuerung; ohne `minSize` gelten die Host-Standardwerte. Ein Anbieter, der ein schwebendes Fenster direkt erstellt, kann `release.updateMinimumSize({ width, height })` an der zurückgegebenen Bereinigungsfunktion aufrufen. Gültige Aktualisierungen vergrößern ein zu kleines Fenster sofort und halten es innerhalb des verfügbaren Bereichs; bei ungültigen Aktualisierungen oder nach der Bereinigung gibt die Methode `false` zurück. Wird das Fenster beim Skalieren schmaler als seine Mindestbreite und zugleich höher als seine Mindesthöhe gezogen, wechseln diese Mindestmaße in eine vertikale Ausrichtung. Wird ein vertikal ausgerichtetes Fenster breiter als seine Mindestbreite und zugleich niedriger als seine Mindesthöhe gezogen, wechselt es zurück in die standardmäßige horizontale Ausrichtung.
+
+Ein Modul mit einem eigenen PiP-Element, beispielsweise einem Meeting-Frame, bezieht `ui:makeFloatingWindow` über `uiCtx.capabilities`, übergibt Element, Ziehbereich und Seitensignal und bewahrt die zurückgegebene Bereinigungsfunktion auf. Die Utility darf nicht direkt importiert werden.
+
+Cognis hebt das vorhandene Anbieter-Element in die oberste Browser-Ebene, ohne es in ein anderes DOM-Elternelement zu verschieben. Dadurch bleiben aktive Iframe- und Meeting-Verbindungen beim Öffnen und Schließen von PiP erhalten. Browser ohne Unterstützung für die oberste Ebene behalten das Element in seiner ursprünglichen Komponentenbühne und begrenzen es auf dieses Elternelement, statt es neu einzuhängen.

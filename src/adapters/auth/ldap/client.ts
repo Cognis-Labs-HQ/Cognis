@@ -1,0 +1,423 @@
+import { Attribute, Change, Client, Filter } from "ldapts";
+import type {
+    LdapClient,
+    LdapDirectorySample,
+    LdapIdentity,
+    LdapRuntimeOptions,
+} from "./index.js";
+
+type LdapEntry = Record<string, unknown> & { dn: string };
+
+function values(entry: LdapEntry, attribute: string): string[] {
+    const raw = entry[attribute];
+    if (Array.isArray(raw)) return raw.map(String);
+    return raw == null ? [] : [String(raw)];
+}
+
+function first(entry: LdapEntry, ...attributes: string[]): string | undefined {
+    for (const attribute of attributes) {
+        const value = values(entry, attribute)[0];
+        if (value) return value;
+    }
+    return undefined;
+}
+
+function userFilter(options: LdapRuntimeOptions, username: string): string {
+    return options.userFilter.includes("{username}")
+        ? options.userFilter.replaceAll(
+              "{username}",
+              Filter.escape(username).toString(),
+          )
+        : `(&${options.userFilter}(${options.userAttribute}=${Filter.escape(username)}))`;
+}
+
+export function resolveDirectorySearchBases(options: LdapRuntimeOptions): {
+    users: string;
+    groups: string;
+} {
+    return {
+        users: String(options.userDn ?? "").trim() || options.baseDn,
+        groups: String(options.groupDn ?? "").trim() || options.baseDn,
+    };
+}
+
+export function isDirectoryGroupEntry(entry: Record<string, unknown>): boolean {
+    const objectClasses = values(entry, "objectClass").map((value) =>
+        value.toLowerCase(),
+    );
+    return objectClasses.some((objectClass) =>
+        [
+            "group",
+            "groupofnames",
+            "groupofuniquenames",
+            "ipausergroup",
+            "posixgroup",
+        ].includes(objectClass),
+    );
+}
+
+export function isDnWithinBase(dn: string, baseDn: string): boolean {
+    const normalizedDn = dn.trim().toLowerCase();
+    const normalizedBase = baseDn.trim().toLowerCase();
+    return (
+        normalizedBase.length > 0 &&
+        (normalizedDn === normalizedBase ||
+            normalizedDn.endsWith(`,${normalizedBase}`))
+    );
+}
+
+async function withBoundClient<T>(
+    options: LdapRuntimeOptions,
+    dn: string,
+    password: string,
+    operation: (client: Client) => Promise<T>,
+): Promise<T> {
+    const client = new Client({
+        url: options.serverUrl,
+        timeout: 10_000,
+        connectTimeout: 10_000,
+        strictDN: true,
+    });
+    try {
+        await client.bind(dn, password);
+        return await operation(client);
+    } finally {
+        await client.unbind().catch(() => undefined);
+    }
+}
+
+async function findUser(
+    client: Client,
+    options: LdapRuntimeOptions,
+    username: string,
+): Promise<LdapEntry | undefined> {
+    const result = await client.search(
+        resolveDirectorySearchBases(options).users,
+        {
+            scope: "sub",
+            filter: userFilter(options, username),
+            attributes: [
+                options.userAttribute,
+                "mail",
+                "displayName",
+                "cn",
+                options.memberOfAttribute,
+            ],
+            sizeLimit: 2,
+            timeLimit: 10,
+        },
+    );
+    if (result.searchEntries.length !== 1) return undefined;
+    return result.searchEntries[0] as LdapEntry;
+}
+
+function mapUser(entry: LdapEntry, options: LdapRuntimeOptions) {
+    const memberOf = values(entry, options.memberOfAttribute);
+    const emails = values(entry, "mail")
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean);
+    return {
+        id: first(entry, options.userAttribute) ?? entry.dn,
+        dn: entry.dn,
+        email: emails[0],
+        emails,
+        displayName: first(entry, "displayName", "cn"),
+        memberOf,
+        groups: memberOf.map((dn) => firstRdnValue(dn)),
+    };
+}
+
+async function resolveGroups(
+    client: Client,
+    entry: LdapEntry,
+    options: LdapRuntimeOptions,
+): Promise<string[]> {
+    const result = await client.search(
+        resolveDirectorySearchBases(options).groups,
+        {
+            scope: "sub",
+            filter: options.groupFilter,
+            attributes: [
+                options.groupNameAttribute,
+                options.groupMemberAttribute,
+                "uniqueMember",
+                "memberUid",
+                "objectClass",
+            ],
+            paged: { pageSize: 100, pagePause: false },
+            sizeLimit: 500,
+            timeLimit: 15,
+        },
+    );
+    const username = first(entry, options.userAttribute) ?? "";
+    const groupBase = resolveDirectorySearchBases(options).groups;
+    const directDns = new Set(
+        values(entry, options.memberOfAttribute).filter((dn) =>
+            isDnWithinBase(dn, groupBase),
+        ),
+    );
+    const groupEntries = result.searchEntries.filter(
+        (raw) =>
+            isDirectoryGroupEntry(raw as LdapEntry) &&
+            isDnWithinBase((raw as LdapEntry).dn, groupBase),
+    );
+    for (const raw of groupEntries) {
+        const group = raw as LdapEntry;
+        const members = [
+            ...values(group, options.groupMemberAttribute),
+            ...values(group, "uniqueMember"),
+            ...values(group, "memberUid"),
+        ];
+        if (members.includes(entry.dn) || members.includes(username))
+            directDns.add(group.dn);
+    }
+    if (options.nestedMemberOf) {
+        let changed = true;
+        while (changed) {
+            changed = false;
+            for (const raw of groupEntries) {
+                const group = raw as LdapEntry;
+                const members = [
+                    ...values(group, options.groupMemberAttribute),
+                    ...values(group, "uniqueMember"),
+                ];
+                if (
+                    members.some((member) => directDns.has(member)) &&
+                    !directDns.has(group.dn)
+                ) {
+                    directDns.add(group.dn);
+                    changed = true;
+                }
+            }
+        }
+    }
+    const namesByDn = new Map(
+        groupEntries.map((raw) => {
+            const group = raw as LdapEntry;
+            return [
+                group.dn,
+                first(group, options.groupNameAttribute) ??
+                    firstRdnValue(group.dn),
+            ];
+        }),
+    );
+    return [...directDns].map((dn) => namesByDn.get(dn) ?? firstRdnValue(dn));
+}
+
+function firstRdnValue(dn: string): string {
+    const match = /^[^=]+=((?:\\.|[^,])*)/.exec(dn);
+    return match?.[1]?.replace(/\\([,=+<>#;\\"])/g, "$1") ?? dn;
+}
+
+/** A real, bounded LDAP client suitable for OpenLDAP and FreeIPA. */
+export class StandardLdapClient implements LdapClient {
+    async authenticate(
+        username: string,
+        password: string,
+        options: LdapRuntimeOptions,
+    ): Promise<LdapIdentity | null> {
+        const entry = await withBoundClient(
+            options,
+            options.bindDn,
+            options.bindPassword,
+            (client) => findUser(client, options, username),
+        );
+        if (!entry) return null;
+        let userBoundEntry: LdapEntry;
+        try {
+            userBoundEntry = await withBoundClient(
+                options,
+                entry.dn,
+                password,
+                async (client) => {
+                    const result = await client.search(entry.dn, {
+                        scope: "base",
+                        filter: "(objectClass=*)",
+                        attributes: [
+                            options.userAttribute,
+                            "mail",
+                            "displayName",
+                            "cn",
+                            options.memberOfAttribute,
+                        ],
+                        sizeLimit: 1,
+                        timeLimit: 10,
+                    });
+                    const userVisibleEntry = result.searchEntries[0] as
+                        LdapEntry | undefined;
+                    return {
+                        ...entry,
+                        ...(userVisibleEntry ?? {}),
+                        dn: entry.dn,
+                        mail: userVisibleEntry
+                            ? values(userVisibleEntry, "mail")
+                            : [],
+                    };
+                },
+            );
+        } catch {
+            return null;
+        }
+        const groups = await withBoundClient(
+            options,
+            options.bindDn,
+            options.bindPassword,
+            (client) => resolveGroups(client, entry, options),
+        );
+        const user = mapUser(userBoundEntry, options);
+        return { ...user, groups };
+    }
+
+    async discover(options: LdapRuntimeOptions): Promise<LdapDirectorySample> {
+        return withBoundClient(
+            options,
+            options.bindDn,
+            options.bindPassword,
+            async (client) => {
+                const searchBases = resolveDirectorySearchBases(options);
+                const [userResult, groupResult, rootDse] = await Promise.all([
+                    client.search(searchBases.users, {
+                        scope: "sub",
+                        filter: options.userFilter.replaceAll(
+                            "{username}",
+                            "*",
+                        ),
+                        attributes: [
+                            options.userAttribute,
+                            "mail",
+                            "displayName",
+                            "cn",
+                            options.memberOfAttribute,
+                            "objectClass",
+                        ],
+                        paged: { pageSize: 100, pagePause: false },
+                        sizeLimit: 500,
+                        timeLimit: 15,
+                    }),
+                    client.search(searchBases.groups, {
+                        scope: "sub",
+                        filter: options.groupFilter,
+                        attributes: [
+                            options.groupNameAttribute,
+                            options.groupMemberAttribute,
+                            "uniqueMember",
+                            "memberUid",
+                            "objectClass",
+                        ],
+                        paged: { pageSize: 100, pagePause: false },
+                        sizeLimit: 500,
+                        timeLimit: 15,
+                    }),
+                    client.search("", {
+                        scope: "base",
+                        filter: "(objectClass=*)",
+                        attributes: ["vendorName"],
+                        sizeLimit: 1,
+                    }),
+                ]);
+                const vendor = String(
+                    rootDse.searchEntries[0]?.vendorName ?? "",
+                );
+                return {
+                    directoryFlavor: /freeipa|389 project/i.test(vendor)
+                        ? "freeipa"
+                        : /openldap/i.test(vendor)
+                          ? "openldap"
+                          : "generic",
+                    supportsMemberOf: userResult.searchEntries.some(
+                        (entry) =>
+                            values(
+                                entry as LdapEntry,
+                                options.memberOfAttribute,
+                            ).length,
+                    ),
+                    users: userResult.searchEntries
+                        .filter((entry) =>
+                            isDnWithinBase(
+                                (entry as LdapEntry).dn,
+                                searchBases.users,
+                            ),
+                        )
+                        .map((entry) => mapUser(entry as LdapEntry, options)),
+                    groups: groupResult.searchEntries
+                        .filter(
+                            (raw) =>
+                                isDirectoryGroupEntry(raw as LdapEntry) &&
+                                isDnWithinBase(
+                                    (raw as LdapEntry).dn,
+                                    searchBases.groups,
+                                ),
+                        )
+                        .map((raw) => {
+                            const entry = raw as LdapEntry;
+                            return {
+                                name:
+                                    first(entry, options.groupNameAttribute) ??
+                                    firstRdnValue(entry.dn),
+                                dn: entry.dn,
+                                members: [
+                                    ...values(
+                                        entry,
+                                        options.groupMemberAttribute,
+                                    ),
+                                    ...values(entry, "uniqueMember"),
+                                    ...values(entry, "memberUid"),
+                                ],
+                            };
+                        }),
+                };
+            },
+        );
+    }
+
+    async validatePassword(
+        accountId: string,
+        currentPassword: string,
+        options: LdapRuntimeOptions,
+    ): Promise<boolean> {
+        const entry = await withBoundClient(
+            options,
+            options.bindDn,
+            options.bindPassword,
+            (client) => findUser(client, options, accountId),
+        );
+        if (!entry) return false;
+        try {
+            return await withBoundClient(
+                options,
+                entry.dn,
+                currentPassword,
+                async () => true,
+            );
+        } catch {
+            return false;
+        }
+    }
+
+    async updatePassword(
+        accountId: string,
+        nextPassword: string,
+        options: LdapRuntimeOptions,
+    ): Promise<boolean> {
+        return withBoundClient(
+            options,
+            options.bindDn,
+            options.bindPassword,
+            async (client) => {
+                const entry = await findUser(client, options, accountId);
+                if (!entry) return false;
+                await client.modify(
+                    entry.dn,
+                    new Change({
+                        operation: "replace",
+                        modification: new Attribute({
+                            type: "userPassword",
+                            values: [nextPassword],
+                        }),
+                    }),
+                );
+                return true;
+            },
+        );
+    }
+}
