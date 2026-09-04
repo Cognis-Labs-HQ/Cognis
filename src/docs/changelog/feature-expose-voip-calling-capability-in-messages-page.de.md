@@ -82,6 +82,10 @@ Messages veröffentlicht jetzt den vom aktuellen Jitsi-Meet-Manifest benötigten
 
 Core lädt jetzt Einstiegspunkte deaktivierter externer Module in einem eingeschränkten Kontext, der nur ausdrücklich für den deaktivierten Betrieb markierte Routen akzeptiert. Dadurch lassen sich Jitsi-Konfigurationsendpunkte vor der Aktivierung öffnen, während Funktionsrouten, UI-Beiträge, Flows und Capabilities inaktiv bleiben.
 
+## Vollständiger Host-UI-Capability-Katalog
+
+Core kündigt seine Browser-Capabilities zum Öffnen und Schließen von Komponentenseiten sowie für schwebende Fenster jetzt über die UI-Anbieterregistrierung an. Die Modulaktivierung prüft damit jede im aktuellen Jitsi-Meet-Manifest deklarierte Capability, ohne diese Core-eigenen Browserverträge abzulehnen; das Laden des Anbieters importiert das Router-Bundle, das sie installiert.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -109,3 +113,4 @@ Core lädt jetzt Einstiegspunkte deaktivierter externer Module in einem eingesch
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/734aa1e505f092db36fe2853ada1515ac0f0712a
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/b6e47c6553f8b24ae90e42631e3712617082c7a6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ff335be25d9d3858ae287ec0d84ee7c041fbc635
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/81b69ddc13d7ffba92acfaa9e3067907bfa0b55b

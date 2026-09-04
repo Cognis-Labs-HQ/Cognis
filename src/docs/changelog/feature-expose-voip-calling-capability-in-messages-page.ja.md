@@ -82,6 +82,10 @@ Messages は現在の Jitsi Meet マニフェストが要求するルームメ�
 
 Core は無効な外部モジュールのエントリーポイントを制限付きコンテキストで読み込み、無効時の動作が明示されたルートだけを受け付けるようになりました。これにより、有効化前でも Jitsi の設定エンドポイントを開ける一方、機能ルート、UI コントリビューション、Flow、Capability は無効なまま維持されます。
 
+## Host UI Capability の完全なカタログ
+
+Core はコンポーネントページの起動と破棄、およびフローティングウィンドウのブラウザー Capability を UI プロバイダーレジストリで公開するようになりました。現在の Jitsi Meet マニフェストが宣言する全 Capability をモジュール有効化時に検証しても、Core 所有のブラウザー契約が拒否されません。プロバイダーの読み込みでは、それらをインストールするルーターバンドルをインポートします。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -109,3 +113,4 @@ Core は無効な外部モジュールのエントリーポイントを制限付
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/734aa1e505f092db36fe2853ada1515ac0f0712a
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/b6e47c6553f8b24ae90e42631e3712617082c7a6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ff335be25d9d3858ae287ec0d84ee7c041fbc635
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/81b69ddc13d7ffba92acfaa9e3067907bfa0b55b

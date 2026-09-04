@@ -82,6 +82,10 @@ Messages now publishes the room-membership resolver required by the current Jits
 
 Core now loads disabled external module entrypoints in a restricted context that accepts only routes explicitly marked for disabled operation. Jitsi configuration endpoints can therefore be opened before enablement, while feature routes, UI contributions, flows, and capabilities remain inactive.
 
+## Complete host UI capability catalog
+
+Core now advertises its component-page spawn, component-page discard, and floating-window browser capabilities through the UI provider registry. Module enablement validates every capability declared by the current Jitsi Meet manifest without rejecting these core-owned browser contracts, and provider loading imports the router bundle that installs them.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -109,3 +113,4 @@ Core now loads disabled external module entrypoints in a restricted context that
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/734aa1e505f092db36fe2853ada1515ac0f0712a
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/b6e47c6553f8b24ae90e42631e3712617082c7a6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ff335be25d9d3858ae287ec0d84ee7c041fbc635
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/81b69ddc13d7ffba92acfaa9e3067907bfa0b55b

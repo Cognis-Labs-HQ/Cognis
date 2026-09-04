@@ -82,6 +82,10 @@ Messages kini menerbitkan resolver keanggotaan ruang yang diwajibkan manifest Ji
 
 Core kini memuat entrypoint modul eksternal nonaktif dalam konteks terbatas yang hanya menerima rute yang secara eksplisit ditandai untuk operasi nonaktif. Endpoint konfigurasi Jitsi dapat dibuka sebelum aktivasi, sedangkan rute fitur, kontribusi UI, flow, dan capability tetap tidak aktif.
 
+## Katalog capability UI host lengkap
+
+Core kini mengumumkan capability browser untuk memunculkan halaman komponen, membuang halaman komponen, dan jendela mengambang melalui registri penyedia UI. Aktivasi modul dapat memvalidasi setiap capability yang dideklarasikan manifest Jitsi Meet saat ini tanpa menolak kontrak browser milik Core tersebut, dan pemuatan penyedia mengimpor bundel router yang memasangnya.
+
 ## Komit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/9b6cc0e4d3118f80765af56f2b503c0e73aa1c10
@@ -109,3 +113,4 @@ Core kini memuat entrypoint modul eksternal nonaktif dalam konteks terbatas yang
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/734aa1e505f092db36fe2853ada1515ac0f0712a
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/b6e47c6553f8b24ae90e42631e3712617082c7a6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ff335be25d9d3858ae287ec0d84ee7c041fbc635
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/81b69ddc13d7ffba92acfaa9e3067907bfa0b55b
