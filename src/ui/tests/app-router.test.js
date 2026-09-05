@@ -123,6 +123,14 @@ test("router exports initRouter, navigateTo and getCurrentBase", () => {
     );
 });
 
+test("core router contains no Study gateway routes or API knowledge", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.doesNotMatch(source, /gateway\.study|\/api\/v1\/study|STUDY_/);
+});
+
 test("router registers routes for all dashboard pages", () => {
     const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),

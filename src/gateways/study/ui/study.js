@@ -18,10 +18,8 @@ import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import {
-    navigateTo,
-    invalidateStudyChildComponentCache,
-} from "/static/reuse/app-router.js";
+import { navigateTo } from "/static/reuse/app-router.js";
+import { invalidateStudyChildComponentCache } from "/static/gateways/study/route.js";
 import {
     bindStudySubNavigation,
     clearStudySubNavCache,

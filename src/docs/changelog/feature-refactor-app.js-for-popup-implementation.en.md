@@ -18,6 +18,10 @@ Direct loads and SPA transitions use the standard authenticated page-composer li
 
 Study now handles language-button navigation through its own UI capability binding rather than teaching the core app router about Study state. Direct entry routes resolve their schema language before rendering, and directly loaded listings participate correctly in Back navigation.
 
+## Study-owned browser infrastructure
+
+Study SPA routes, child-component discovery, cache invalidation, and the Library detail-flow contract now live with the Study gateway. Core routing and global search matching no longer contain Study-specific paths, APIs, selectors, or component metadata.
+
 ## Commits
 
 - [f25e2f64](https://github.com/Cognis-Labs-HQ/Cognis/commit/f25e2f649aadef46a713e85d70d627370f60ba5c)
@@ -26,3 +30,4 @@ Study now handles language-button navigation through its own UI capability bindi
 - [fc4bd3f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc4bd3f53c620345d597e94cdfd5f8b611b5c02c)
 - [e0e89430](https://github.com/Cognis-Labs-HQ/Cognis/commit/e0e894300370247239ce4b1811a56336db0b3e1c)
 - [13886e88](https://github.com/Cognis-Labs-HQ/Cognis/commit/13886e885724482b15279da0c5f0e949ab16fdc9)
+- [04cbf360](https://github.com/Cognis-Labs-HQ/Cognis/commit/04cbf3609557d0760bcd7cbfec836a850509c550)

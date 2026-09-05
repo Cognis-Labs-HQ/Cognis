@@ -211,11 +211,3 @@ test("createFlowEngine — registered hooks can be removed", async () => {
         false,
     );
 });
-
-test("Library detail flow is declared before provider loading", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/flow-contracts.js"),
-        "utf8",
-    );
-    assert.match(source, /"study:library:composeEntryDetail"/);
-});

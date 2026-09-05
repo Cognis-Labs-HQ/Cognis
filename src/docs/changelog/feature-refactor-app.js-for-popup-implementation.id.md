@@ -18,6 +18,10 @@ Pemuatan langsung dan transisi SPA memakai siklus penyusun halaman terautentikas
 
 Study kini menangani navigasi tombol bahasa melalui pengikatan kapabilitas UI miliknya sendiri tanpa mengaitkan router aplikasi inti dengan status Study. Rute entri langsung menentukan bahasa skemanya sebelum dirender dan daftar yang dimuat langsung merespons navigasi Kembali dengan benar.
 
+## Infrastruktur browser milik Study
+
+Rute SPA Study, penemuan komponen anak, invalidasi cache, dan kontrak alur detail Pustaka kini berada di gateway Study. Perutean inti dan pencocokan pencarian global tidak lagi memuat jalur, API, selektor, atau metadata komponen khusus Study.
+
 ## Komit
 
 - [f25e2f64](https://github.com/Cognis-Labs-HQ/Cognis/commit/f25e2f649aadef46a713e85d70d627370f60ba5c)
@@ -26,3 +30,4 @@ Study kini menangani navigasi tombol bahasa melalui pengikatan kapabilitas UI mi
 - [fc4bd3f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc4bd3f53c620345d597e94cdfd5f8b611b5c02c)
 - [e0e89430](https://github.com/Cognis-Labs-HQ/Cognis/commit/e0e894300370247239ce4b1811a56336db0b3e1c)
 - [13886e88](https://github.com/Cognis-Labs-HQ/Cognis/commit/13886e885724482b15279da0c5f0e949ab16fdc9)
+- [04cbf360](https://github.com/Cognis-Labs-HQ/Cognis/commit/04cbf3609557d0760bcd7cbfec836a850509c550)

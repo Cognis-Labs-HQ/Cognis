@@ -18,6 +18,10 @@
 
 Study の言語ボタン移動を独自の UI ケイパビリティバインディングで処理し、コアアプリルーターを Study 状態に結合しないようにしました。直接エントリルートは描画前にスキーマ言語を解決し、直接読み込まれた一覧でも戻る操作が正しく機能します。
 
+## Study 所有のブラウザインフラストラクチャ
+
+Study の SPA ルート、子コンポーネント検出、キャッシュ無効化、ライブラリ詳細フロー契約を Study ゲートウェイへ移しました。コアルーティングとグローバル検索照合には、Study 固有のパス、API、セレクター、コンポーネントメタデータが残りません。
+
 ## コミット
 
 - [f25e2f64](https://github.com/Cognis-Labs-HQ/Cognis/commit/f25e2f649aadef46a713e85d70d627370f60ba5c)
@@ -26,3 +30,4 @@ Study の言語ボタン移動を独自の UI ケイパビリティバインデ�
 - [fc4bd3f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc4bd3f53c620345d597e94cdfd5f8b611b5c02c)
 - [e0e89430](https://github.com/Cognis-Labs-HQ/Cognis/commit/e0e894300370247239ce4b1811a56336db0b3e1c)
 - [13886e88](https://github.com/Cognis-Labs-HQ/Cognis/commit/13886e885724482b15279da0c5f0e949ab16fdc9)
+- [04cbf360](https://github.com/Cognis-Labs-HQ/Cognis/commit/04cbf3609557d0760bcd7cbfec836a850509c550)

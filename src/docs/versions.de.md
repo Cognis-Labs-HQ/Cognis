@@ -56,7 +56,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.11` |
-| Library (Study)       | `src/adapters/study/library/`       | `2.2.11` |
+| Library (Study)       | `src/adapters/study/library/`       | `2.2.12` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
 | File Logging          | `src/adapters/logging/file/`        | `1.1.5`  |
@@ -75,7 +75,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration          | `src/gateways/registration/`  | `1.1.15`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
-| Study                 | `src/gateways/study/`         | `1.8.5`   |
+| Study                 | `src/gateways/study/`         | `1.8.6`   |
 | Calendar              | `src/gateways/calendar/`      | `1.4.108` |
 
 ## Kernverträge
