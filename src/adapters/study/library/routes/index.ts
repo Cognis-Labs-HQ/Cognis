@@ -48,6 +48,34 @@ export function createLibraryRoutes(
             role: claims.role,
         };
         try {
+            const assetMatch = url.pathname.match(
+                /^\/api\/v1\/study\/library\/assets\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/,
+            );
+            if (assetMatch && req.method === "GET") {
+                const assetPath = assetMatch[4]
+                    .split("/")
+                    .map(decodeURIComponent)
+                    .join("/");
+                const asset = await library.readContentPackAsset(
+                    decodeURIComponent(assetMatch[1]),
+                    decodeURIComponent(assetMatch[2]),
+                    decodeURIComponent(assetMatch[3]),
+                    assetPath,
+                );
+                if (!asset) {
+                    sendJson(res, 404, { error: { code: "not_found" } });
+                    return true;
+                }
+                res.writeHead(200, {
+                    "content-type": asset.mediaType,
+                    "content-length": String(asset.data.byteLength),
+                    "cache-control": "public, max-age=31536000, immutable",
+                    "x-content-type-options": "nosniff",
+                    "content-security-policy": "sandbox; default-src 'none'",
+                });
+                res.end(asset.data);
+                return true;
+            }
             if (
                 url.pathname === "/api/v1/study/library/schemas" &&
                 req.method === "GET"

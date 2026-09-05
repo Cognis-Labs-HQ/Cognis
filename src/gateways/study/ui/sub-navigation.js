@@ -106,9 +106,9 @@ function resolveDefaultChildPageUrl(modules) {
  *   languagePageUrlsByCode: Map<string, string>
  * }>} Model data for shared Study child-page sub-navigation rendering.
  */
-export async function loadStudySubNavigationModel(
-    { fallbackLanguageCode } = {},
-) {
+export async function loadStudySubNavigationModel({
+    fallbackLanguageCode,
+} = {}) {
     const requestedLanguageCode = parseLanguageCode(fallbackLanguageCode);
     const [registeredLanguagesRaw, learningLanguagesRaw] = await Promise.all([
         SUB_NAV_CACHE.registeredLanguages ?? loadRegisteredLanguages(),
@@ -220,10 +220,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         .map((component) => {
             const rawPageUrl = String(component?.pageUrl ?? "").trim();
             if (!rawPageUrl) return "";
-            const pageUrl = withLanguageQuery(
-                rawPageUrl,
-                selectedLanguageCode,
-            );
+            const pageUrl = withLanguageQuery(rawPageUrl, selectedLanguageCode);
             const activeClass = rawPageUrl === currentPath ? " active" : "";
             return `
                 <li>
@@ -234,15 +231,16 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             `;
         })
         .join("");
-    const libraryLink = isStudentScope() && !hasLibraryModule
-        ? `
+    const libraryLink =
+        isStudentScope() && !hasLibraryModule
+            ? `
             <li>
                 <a class="study-subnav-link study-subnav-module-link${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(libraryUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                     ${escapeHtml(i18n.t("gateway.study.library_label"))}
                 </a>
             </li>
         `
-        : "";
+            : "";
 
     const languageOptions = (model.learningLanguages ?? [])
         .map((languageCode) => {

@@ -18,7 +18,7 @@ Fields have localized metadata and one of the types `string`, `number`, `integer
 
 Relationships have localized metadata, a target layer, minimum and maximum cardinality, optional ordering, a required-target constraint, and mandatory deletion behavior (`restrict`, `detach`, or `cascade`). Resolver roles (`grapheme`, `token`, `longestMatch`, or `explicit`) describe intent without embedding algorithms. Ordered references require unique non-negative integer positions.
 
-Layers may publish activity-compatibility roles and interest veins as namespaced camel-case role identifiers. These are discovery tags, not executable hooks. A layer can also declare an optional SVG or JSON stroke asset field and coordinate system. Asset fields contain package-relative references under the manifest's assets directory.
+Layers may publish activity-compatibility roles and interest veins as namespaced camel-case role identifiers. These are discovery tags, not executable hooks. A layer can also declare an optional SVG or JSON stroke asset field and coordinate system. Asset fields contain package-relative references under the manifest's assets directory. During atomic ingestion, Cognis stores validated asset bytes with their immutable package identity and replaces record values with authenticated Library asset URLs.
 
 ## Records and references
 

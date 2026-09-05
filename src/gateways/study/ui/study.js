@@ -410,9 +410,7 @@ async function mountHub(
                     executableModules.length === 0 && isStudentScope()
                         ? [
                               {
-                                  label: i18n.t(
-                                      "gateway.study.library_label",
-                                  ),
+                                  label: i18n.t("gateway.study.library_label"),
                                   pageUrl: buildLibraryUrl(languageCode),
                               },
                           ]

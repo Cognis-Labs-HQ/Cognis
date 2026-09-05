@@ -80,3 +80,44 @@ test("schema route rejects unauthorized requests", async () => {
     assert.equal(result.status, 401);
     assert.equal(result.body.error.code, "unauthorized");
 });
+
+test("asset route serves persisted package bytes with immutable headers", async () => {
+    const route = createLibraryRoutes(
+        {
+            readContentPackAsset: async () => ({
+                mediaType: "image/svg+xml",
+                data: Buffer.from("<svg/>"),
+            }),
+        } as never,
+        createAuthContext(
+            new Map([["learner", { sub: "alice", role: "user" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({ method: "GET", token: "learner" }) as never,
+        response as never,
+        new URL(
+            "http://localhost/api/v1/study/library/assets/Publisher/pack/1.0.0/strokes/a.svg",
+        ),
+    );
+
+    assert.equal(response.statusCode, 200);
+    assert.equal(response.headers["content-type"], "image/svg+xml");
+    assert.equal(
+        response.headers["cache-control"],
+        "public, max-age=31536000, immutable",
+    );
+    assert.equal(response.payload, "<svg/>");
+});
+
+test("Library browser resolves labels from localized schema metadata", async () => {
+    const source = await import("node:fs/promises").then(({ readFile }) =>
+        readFile(new URL("../ui/app.js", import.meta.url), "utf8"),
+    );
+    assert.match(
+        source,
+        /localizedLabel\(schema\.metadata, schema\.language\)/,
+    );
+    assert.match(source, /localizedLabel\(layer\.metadata, schema\.language\)/);
+});

@@ -10,6 +10,11 @@ External language packages can define immutable schemas with arbitrary layers, l
 
 Package preflight now validates identity, semantic versions, licenses, safe paths, namespace ownership, schemas, complete record graphs, and referenced assets before a transaction writes any content.
 
+## Review hardening
+
+Localized schema labels now render in the Library browser, complete semantic versions are accepted, deletion behavior is required by the type contract, package assets remain retrievable after ingestion, and the gateway package dependency ceiling is synchronized.
+
 ## Commits
 
 - [c1cb3240](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1cb3240)
+- [1325c06a](https://github.com/Cognis-Labs-HQ/Cognis/commit/1325c06a)

@@ -41,7 +41,7 @@ export interface LibraryRelationshipSchema {
     maximum?: number;
     ordered?: boolean;
     requiredTarget?: boolean;
-    onDelete?: "restrict" | "detach" | "cascade";
+    onDelete: "restrict" | "detach" | "cascade";
     resolverRole?: "grapheme" | "token" | "longestMatch" | "explicit";
 }
 
@@ -164,6 +164,16 @@ export interface LibraryContentPackPlan {
     schema: LibrarySchema;
     digest: string;
     records: Array<LibraryContentRecord & { layer: string }>;
+    assets: Array<{
+        path: string;
+        mediaType: "image/svg+xml" | "application/json";
+        data: string;
+    }>;
+}
+
+export interface LibraryAsset {
+    mediaType: "image/svg+xml" | "application/json";
+    data: Buffer;
 }
 
 export interface LibraryContentPackReceipt {

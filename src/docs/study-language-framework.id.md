@@ -18,7 +18,7 @@ Bidang memiliki metadata terlokalisasi dan tipe `string`, `number`, `integer`, `
 
 Relasi memiliki metadata terlokalisasi, lapisan target, kardinalitas minimum dan maksimum, urutan opsional, target wajib, serta perilaku penghapusan wajib (`restrict`, `detach`, atau `cascade`). Peran resolver (`grapheme`, `token`, `longestMatch`, atau `explicit`) menyatakan maksud tanpa menanamkan algoritme. Referensi berurutan memerlukan posisi bilangan bulat nonnegatif yang unik.
 
-Lapisan dapat menerbitkan kompatibilitas aktivitas dan jalur minat sebagai peran camel-case bernamespace. Nilai ini adalah tag penemuan, bukan kait yang dapat dieksekusi. Lapisan juga dapat menyatakan bidang aset goresan SVG atau JSON dan sistem koordinat. Bidang aset merujuk jalur di bawah direktori aset manifes.
+Lapisan dapat menerbitkan kompatibilitas aktivitas dan jalur minat sebagai peran camel-case bernamespace. Nilai ini adalah tag penemuan, bukan kait yang dapat dieksekusi. Lapisan juga dapat menyatakan bidang aset goresan SVG atau JSON dan sistem koordinat. Bidang aset merujuk jalur di bawah direktori aset manifes. Saat pemasukan atomik, Cognis menyimpan byte tervalidasi beserta identitas paket yang tidak dapat diubah dan mengganti nilai rekaman dengan URL aset Library yang diautentikasi.
 
 ## Validasi dan pemasukan
 

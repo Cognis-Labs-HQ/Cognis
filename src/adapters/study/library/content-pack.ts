@@ -14,7 +14,8 @@ import type {
 } from "./types.js";
 
 const ID_PATTERN = /^[a-z0-9]+(?:[-_.:][a-z0-9]+)*$/i;
-const VERSION_PATTERN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
+const VERSION_PATTERN =
+    /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 const LICENSE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9-.+]*$/;
 
 function canonicalJson(value: unknown): string {
@@ -113,6 +114,7 @@ export async function inspectContentPack(
         : undefined;
     const layerIds = new Set(schema.layers.map(({ id }) => id));
     const records: LibraryContentPackPlan["records"] = [];
+    const assets: LibraryContentPackPlan["assets"] = [];
     const digest = createHash("sha256");
     digest.update(canonicalJson(manifest));
     digest.update(canonicalJson(schema));
@@ -138,12 +140,20 @@ export async function inspectContentPack(
             }
         }
     }
-    await validateContentRecords(manifest, schema, records, digest, assetsRoot);
+    await validateContentRecords(
+        manifest,
+        schema,
+        records,
+        assets,
+        digest,
+        assetsRoot,
+    );
     return {
         root,
         manifest,
         schema,
         records,
+        assets,
         digest: digest.digest("hex"),
     };
 }
@@ -152,6 +162,7 @@ async function validateContentRecords(
     manifest: LibraryContentPackManifest,
     schema: LibraryContentPackPlan["schema"],
     records: LibraryContentPackPlan["records"],
+    assets: LibraryContentPackPlan["assets"],
     digest: ReturnType<typeof createHash>,
     assetsRoot?: string,
 ): Promise<void> {
@@ -175,11 +186,25 @@ async function validateContentRecords(
             const asset = await resolveInside(assetsRoot, value);
             if (!(await stat(asset)).isFile())
                 throw new Error("asset_not_file");
+            const data = await readFile(asset);
+            const mediaType = value.endsWith(".svg")
+                ? "image/svg+xml"
+                : value.endsWith(".json")
+                  ? "application/json"
+                  : undefined;
+            if (!mediaType) throw new Error("unsupported_asset_type");
+            if (!assets.some(({ path }) => path === value)) {
+                assets.push({
+                    path: value,
+                    mediaType,
+                    data: data.toString("base64"),
+                });
+            }
             digest
                 .update(record.id)
                 .update(field.id)
                 .update(value)
-                .update(await readFile(asset));
+                .update(data);
         }
         entries.set(id, {
             ...record,

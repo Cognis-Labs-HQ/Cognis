@@ -18,7 +18,7 @@ Felder besitzen lokalisierte Metadaten und den Typ `string`, `number`, `integer`
 
 Beziehungen deklarieren lokalisierte Metadaten, Zielebene, minimale und maximale Kardinalität, optionale Ordnung, erforderliches Ziel und zwingendes Löschverhalten (`restrict`, `detach` oder `cascade`). Resolverrollen (`grapheme`, `token`, `longestMatch` oder `explicit`) beschreiben Absicht ohne Algorithmen einzubetten. Geordnete Referenzen benötigen eindeutige, nichtnegative Ganzzahlpositionen.
 
-Ebenen können Aktivitätskompatibilität und Interessensadern als namensräumige Camel-Case-Rollen veröffentlichen. Das sind Erkennungsmerkmale, keine ausführbaren Hooks. Optional kann ein SVG- oder JSON-Strich-Asset-Feld mit Koordinatensystem deklariert werden. Asset-Felder referenzieren Dateien relativ zum Asset-Verzeichnis.
+Ebenen können Aktivitätskompatibilität und Interessensadern als namensräumige Camel-Case-Rollen veröffentlichen. Das sind Erkennungsmerkmale, keine ausführbaren Hooks. Optional kann ein SVG- oder JSON-Strich-Asset-Feld mit Koordinatensystem deklariert werden. Asset-Felder referenzieren Dateien relativ zum Asset-Verzeichnis. Bei der atomaren Aufnahme speichert Cognis die geprüften Bytes mit ihrer unveränderlichen Paketidentität und ersetzt Datensatzwerte durch authentifizierte Library-Asset-URLs.
 
 ## Deterministische Aufnahme
 

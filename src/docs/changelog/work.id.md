@@ -10,6 +10,11 @@ Paket bahasa eksternal dapat menetapkan skema yang tidak dapat diubah dengan lap
 
 Prapemeriksaan memvalidasi identitas, versi semantik, lisensi, jalur aman, kepemilikan namespace, skema, graf rekaman lengkap, dan aset rujukan sebelum transaksi menulis konten.
 
+## Penguatan hasil tinjauan
+
+Label skema terlokalisasi kini tampil di peramban Library, versi semantik lengkap diterima, perilaku penghapusan diwajibkan oleh kontrak tipe, aset paket tetap dapat diambil setelah pemasukan, dan batas dependensi paket gateway telah diselaraskan.
+
 ## Komit
 
 - [c1cb3240](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1cb3240)
+- [1325c06a](https://github.com/Cognis-Labs-HQ/Cognis/commit/1325c06a)

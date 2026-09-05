@@ -89,6 +89,13 @@ test("declarative language packs are inspected deterministically", async (t) => 
     const second = await inspectContentPack(root);
     assert.equal(first.digest, second.digest);
     assert.equal(first.records.length, 2);
+    assert.deepEqual(first.assets, [
+        {
+            path: "strokes/a.svg",
+            mediaType: "image/svg+xml",
+            data: Buffer.from("<svg/>").toString("base64"),
+        },
+    ]);
     assert.equal(
         contentEntryId(manifest, "english:letter:a"),
         contentEntryId(manifest, "english:letter:a"),
@@ -101,6 +108,38 @@ test("declarative language packs are inspected deterministically", async (t) => 
     await assert.rejects(
         inspectContentPack(root),
         /schema_namespace_not_owned/,
+    );
+});
+
+test("content packs accept complete semantic versions", async (t) => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-library-pack-"));
+    t.after(() => rm(root, { recursive: true, force: true }));
+    await mkdir(path.join(root, "content", "units"), { recursive: true });
+    await writeJson(path.join(root, "manifest.json"), {
+        id: "versioned",
+        publisher: "Test Publisher",
+        namespace: "versioned",
+        version: "1.2.3-beta.1+vendor.7",
+        contentRevision: "1",
+        schema: "schema.json",
+        content: "content",
+        license: { id: "CC-BY-4.0" },
+    });
+    await writeJson(path.join(root, "schema.json"), {
+        id: "versioned",
+        version: 1,
+        namespace: "versioned",
+        language: "x-test",
+        metadata: { labels: { en: "Versioned" } },
+        layers: [{ id: "units", metadata: { labels: { en: "Units" } } }],
+    });
+    await writeJson(path.join(root, "content", "units", "data.json"), [
+        { id: "versioned:unit", label: "Unit" },
+    ]);
+
+    assert.equal(
+        (await inspectContentPack(root)).manifest.version,
+        "1.2.3-beta.1+vendor.7",
     );
 });
 
