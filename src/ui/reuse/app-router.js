@@ -470,11 +470,11 @@ function findRoute(path) {
 
 async function resolveRoute(path) {
     const staticRoute = findMatchingRoute(STATIC_ROUTES, path);
-    if (staticRoute) {
+    if (staticRoute && staticRoute.id !== "gateway.study.child") {
         return staticRoute;
     }
-    const allRoutes = await loadAllRoutes();
-    return findMatchingRoute(allRoutes, path);
+    const dynamicRoute = findMatchingRoute(await loadSpaRoutes(), path);
+    return dynamicRoute ?? staticRoute;
 }
 
 let _root = null;
@@ -627,7 +627,7 @@ async function loadRoute(path) {
 export async function navigateTo(path) {
     const route = await resolveRoute(path);
     if (!route) return false;
-    if (isPotentialStudyChildPath(path)) {
+    if (route.id === "gateway.study.child") {
         const component = await resolveStudyChildComponent(path);
         if (!component) return false;
     }
@@ -715,7 +715,7 @@ export function initRouter(root) {
         const pathWithHash = `${window.location.pathname}${window.location.hash}`;
         const route = await resolveRoute(path);
         if (!route) return;
-        if (isPotentialStudyChildPath(path)) {
+        if (route.id === "gateway.study.child") {
             const component = await resolveStudyChildComponent(path);
             if (!component) return;
         }

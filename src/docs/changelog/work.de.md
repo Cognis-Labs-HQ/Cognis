@@ -14,7 +14,12 @@ Die Vorprüfung validiert Identität, semantische Versionen, Lizenzen, sichere P
 
 Lokalisierte Schemabezeichnungen werden im Library-Browser dargestellt, vollständige semantische Versionen werden akzeptiert, das Löschverhalten ist im Typvertrag erforderlich, Paket-Assets bleiben nach der Aufnahme abrufbar und die Abhängigkeitsobergrenze des Gateway-Pakets ist synchronisiert.
 
+## Library-Navigation
+
+Der App-Router bevorzugt jetzt von Adaptern registrierte Study-Seiten gegenüber dem allgemeinen Sprachkomponenten-Rückfall. Dadurch wird beim Auswählen von Library die Library-Seite eingebunden, statt die Navigation stillschweigend abzulehnen.
+
 ## Commits
 
 - [c1cb3240](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1cb3240)
 - [1325c06a](https://github.com/Cognis-Labs-HQ/Cognis/commit/1325c06a)
+- [a28869ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/a28869ed)

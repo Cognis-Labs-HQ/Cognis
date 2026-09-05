@@ -14,7 +14,12 @@ Package preflight now validates identity, semantic versions, licenses, safe path
 
 Localized schema labels now render in the Library browser, complete semantic versions are accepted, deletion behavior is required by the type contract, package assets remain retrievable after ingestion, and the gateway package dependency ceiling is synchronized.
 
+## Library navigation
+
+The app router now gives adapter-registered Study pages precedence over the generic language-child fallback, so selecting Library mounts the Library page instead of silently rejecting navigation.
+
 ## Commits
 
 - [c1cb3240](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1cb3240)
 - [1325c06a](https://github.com/Cognis-Labs-HQ/Cognis/commit/1325c06a)
+- [a28869ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/a28869ed)

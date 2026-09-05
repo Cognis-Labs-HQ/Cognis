@@ -14,7 +14,12 @@ Prapemeriksaan memvalidasi identitas, versi semantik, lisensi, jalur aman, kepem
 
 Label skema terlokalisasi kini tampil di peramban Library, versi semantik lengkap diterima, perilaku penghapusan diwajibkan oleh kontrak tipe, aset paket tetap dapat diambil setelah pemasukan, dan batas dependensi paket gateway telah diselaraskan.
 
+## Navigasi Library
+
+Router aplikasi kini mendahulukan halaman Study yang didaftarkan adapter daripada pengganti komponen anak bahasa umum, sehingga memilih Library memasang halaman Library alih-alih menolak navigasi secara diam-diam.
+
 ## Komit
 
 - [c1cb3240](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1cb3240)
 - [1325c06a](https://github.com/Cognis-Labs-HQ/Cognis/commit/1325c06a)
+- [a28869ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/a28869ed)

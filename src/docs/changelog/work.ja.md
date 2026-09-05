@@ -14,7 +14,12 @@
 
 翻訳済みスキーマラベルをLibraryブラウザーで表示し、完全なセマンティック版を受理し、削除動作を型契約で必須にしました。パッケージアセットは取込後も取得でき、ゲートウェイパッケージの依存上限も同期されます。
 
+## Libraryナビゲーション
+
+アプリルーターは、汎用の言語子コンポーネントよりアダプター登録済みStudyページを優先するようになりました。Libraryを選択すると、移動が黙って拒否されずLibraryページがマウントされます。
+
 ## コミット
 
 - [c1cb3240](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1cb3240)
 - [1325c06a](https://github.com/Cognis-Labs-HQ/Cognis/commit/1325c06a)
+- [a28869ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/a28869ed)
