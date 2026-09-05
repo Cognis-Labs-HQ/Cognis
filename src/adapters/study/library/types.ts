@@ -1,34 +1,72 @@
 export type LibraryScope = "global" | "class" | "user";
 
+export type LocalizedText = Readonly<Record<string, string>>;
+
+export type LibrarySemanticRole =
+    | "atomicWritingUnit"
+    | "compoundWritingUnit"
+    | "lexicalUnit"
+    | "orderedLexicalSequence"
+    | "passage"
+    | "definition"
+    | "practicePrompt";
+
+export interface LibraryDetailHint {
+    renderer: "text" | "number" | "boolean" | "badge" | "media" | "stroke";
+    order?: number;
+    group?: string;
+    hidden?: boolean;
+}
+
 export interface LibraryFieldSchema {
     id: string;
-    label: string;
-    type: "string" | "number" | "boolean";
+    metadata: { labels: LocalizedText; descriptions?: LocalizedText };
+    type:
+        | "string"
+        | "number"
+        | "integer"
+        | "boolean"
+        | "localizedText"
+        | "stringList"
+        | "asset";
     required?: boolean;
+    detail?: LibraryDetailHint;
 }
 
 export interface LibraryRelationshipSchema {
     id: string;
     targetLayer: string;
-    label: string;
+    metadata: { labels: LocalizedText; descriptions?: LocalizedText };
     minimum?: number;
     maximum?: number;
     ordered?: boolean;
-    resolver?: "grapheme" | "longest-match" | "explicit";
+    requiredTarget?: boolean;
+    onDelete?: "restrict" | "detach" | "cascade";
+    resolverRole?: "grapheme" | "token" | "longestMatch" | "explicit";
 }
 
 export interface LibraryLayerSchema {
     id: string;
-    label: string;
+    metadata: { labels: LocalizedText; descriptions?: LocalizedText };
+    semanticRole?: LibrarySemanticRole;
     fields?: readonly LibraryFieldSchema[];
     relationships?: readonly LibraryRelationshipSchema[];
+    detail?: { titleField?: string; fieldOrder?: readonly string[] };
+    activityCompatibility?: readonly string[];
+    interestVeins?: readonly string[];
+    strokeAsset?: {
+        field: string;
+        format: "svg" | "json";
+        coordinateSystem?: string;
+    };
 }
 
 export interface LibrarySchema {
     id: string;
     version: number;
+    namespace: string;
     language: string;
-    label: string;
+    metadata: { labels: LocalizedText; descriptions?: LocalizedText };
     layers: readonly LibraryLayerSchema[];
 }
 
@@ -102,8 +140,10 @@ export interface LibraryContentPackManifest {
     publisher: string;
     version: string;
     contentRevision: string;
+    namespace: string;
     schema: string;
     content: string;
+    assets?: string;
     license: {
         id: string;
         url?: string;

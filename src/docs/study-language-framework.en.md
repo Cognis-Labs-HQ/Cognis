@@ -1,103 +1,39 @@
 # Study language packs
 
-## Overview
+## Purpose
 
-Study languages are declarative content packs. They contain a manifest, a consumer-defined Library schema, language records, and documentation. They do not contain browser UI, API routes, stores, CSS, or language-specific page components. Cognis Study adapters generate interfaces from schema roles and presentation metadata.
+A Study language package is an external, immutable data release. It contains a manifest, one versioned Library schema, records, optional assets, licenses, and localized documentation. Packages never contain language records in Cognis core, executable renderers, routes, CSS, or provider-specific storage code.
 
-## Package contract
+## Package layout and manifest
 
-A package may use a minimal bootstrap entry point only to resolve its installed root and call `study:library.ingestContentPack(root)`. It must obtain that capability through `ctx`; it must not import Library internals. In environments that expose declarative module resources directly, no executable entry point is necessary.
+A package provides `manifest.json`, the referenced schema file and content directory, and optionally an assets directory. All paths are relative slash-separated paths without empty, absolute, parent (`..`), backslash, or symlink escapes. Content shards are read by layer and filename in lexical order.
 
-```ts
-export async function bootstrapLanguageModule(ctx, moduleRoot) {
-    const library = ctx.capabilities.require("study:library");
-    await library.ingestContentPack(moduleRoot);
-}
-```
+The manifest declares `id`, `publisher`, `namespace`, semantic `version`, `contentRevision`, `schema`, `content`, optional `assets`, and `license`. The license has a machine-readable ID and may have an HTTPS URL and attribution. The package owns exactly the namespace named by both manifest and schema; every record ID starts with `<namespace>:`. Publishers must release changed bytes under a new package version.
 
-The Library adapter owns file discovery, path safety, validation, stable IDs, transactions, idempotency, logging, and persistence. Resolver algorithms and remote dictionaries are separate Study adapters that contribute hooks or lookup providers through `ctx`.
+## Neutral schema contract
 
-## Required structure
+Schemas have an immutable positive integer version, BCP 47 language tag, namespace, localized labels and descriptions, and arbitrary consumer-named layers. Cognis assigns no meaning to layer IDs. A layer may instead declare a semantic role: `atomicWritingUnit`, `compoundWritingUnit`, `lexicalUnit`, `orderedLexicalSequence`, `passage`, `definition`, or `practicePrompt`.
 
-```text
-cognis-language-ja/
-  package.json
-  manifest.json
-  schema.json
-  content/
-    characters/
-      hiragana.json
-      katakana.json
-    symbols/
-      common.json
-    definitions/
-      core.en.json
-    words/
-      beginner-01.json
-    sentences/
-      beginner-01.json
-  docs/
-    standard.en.md
-    standard.de.md
-    standard.id.md
-    standard.ja.md
-```
+Fields have localized metadata and one of the types `string`, `number`, `integer`, `boolean`, `localizedText`, `stringList`, or `asset`. They can be required and carry detail-rendering hints for renderer, order, group, and visibility. Layer detail hints may select a title field and field order.
 
-`manifest.json` contains `id`, `publisher`, `version`, `contentRevision`, relative `schema` and `content` paths, and a required license descriptor. Paths must stay inside the package root. Reusing a publisher, pack ID, and version with different bytes is rejected.
+Relationships have localized metadata, a target layer, minimum and maximum cardinality, optional ordering, a required-target constraint, and mandatory deletion behavior (`restrict`, `detach`, or `cascade`). Resolver roles (`grapheme`, `token`, `longestMatch`, or `explicit`) describe intent without embedding algorithms. Ordered references require unique non-negative integer positions.
 
-```json
-{
-    "id": "japanese-core",
-    "publisher": "Example Publisher",
-    "version": "1.0.0",
-    "contentRevision": "2026-09-05",
-    "schema": "schema.json",
-    "content": "content",
-    "license": { "id": "CC-BY-4.0", "url": "https://example.com/license" }
-}
-```
+Layers may publish activity-compatibility roles and interest veins as namespaced camel-case role identifiers. These are discovery tags, not executable hooks. A layer can also declare an optional SVG or JSON stroke asset field and coordinate system. Asset fields contain package-relative references under the manifest's assets directory.
 
-## Schema
+## Records and references
 
-The schema declares a stable ID, positive integer version, BCP 47 language, localized display label, and any number of layers. Layers declare typed fields and directed relationships. Relationships specify target layers, minimum and maximum cardinality, ordering, and optional resolver. Layer names are consumer-owned; English may define letters, Korean may define Jamo and syllable blocks, and a signed language may define handshapes and movements.
+Each immediate content subdirectory matches one declared layer. JSON shards contain an array or `{ "records": [...] }`. Records contain a namespaced stable `id`, display `label`, typed `fields`, and references. Every target must exist in the same package and schema version, target the declared layer, and meet cardinality, ordering, and required-target constraints. All language facts remain in these external record files.
 
-A schema version is immutable. Change the schema version when a layer, field, relationship, or constraint changes. A content-only correction increments the package version or content revision without rewriting the schema.
+## Deterministic atomic ingestion
 
-## Content files
+`inspectContentPack` performs a read-only preflight: it checks the manifest, semantic version, license, safe paths, namespace ownership, schema references, typed fields, the complete relationship graph, and every asset reference. It hashes canonical manifest, schema, record data and referenced asset bytes in deterministic order. A failure produces no writes.
 
-Each immediate directory under `content/` exactly matches a schema layer ID. Every `.json` file contains either an array of records or `{ "records": [...] }`. Sharding has no semantic meaning; use small topical files for compact layers and bounded shards for large dictionaries.
-
-```json
-[
-    {
-        "id": "word:nihon",
-        "label": "日本",
-        "fields": { "reading": "にほん" },
-        "references": [
-            { "entryId": "symbol:日", "relation": "spelling", "position": 0 },
-            { "entryId": "symbol:本", "relation": "spelling", "position": 1 }
-        ]
-    }
-]
-```
-
-Record IDs are stable within the pack and are the only valid relationship targets. Cognis derives collision-resistant internal IDs from publisher, pack, and record IDs. Every referenced record must be present in the same validated pack. Fields, targets, cardinality, and ordering must satisfy the schema before any data is written.
-
-## Ingestion lifecycle
-
-`inspectContentPack` resolves safe paths, parses files in deterministic order, validates the complete graph, and calculates a digest without writing. `ingestContentPack` registers the immutable schema and writes all records, edges, and the installation receipt in one transaction. Reinstalling identical bytes is an unchanged success; changing bytes without changing the package version is an error.
-
-Imported content is global and records its pack origin. Class and user material remains an overlay managed through normal Library operations. Large reference corpora should be split into dedicated lookup adapters rather than bundled when eager materialization would be unreasonable.
-
-## Generated interfaces
-
-Core Study adapters inspect schemas and render compatible browser, detail, writing-system, lexicon, sentence-composer, and relationship views. Content packs may eventually provide declarative semantic roles and presentation hints, but never executable templates or CSS. All entry navigation uses `/study/library/:schemaId/:layerId/:entryId` and the Study gateway UI client.
+`ingestContentPack` persists the validated schema, records, relationships, and receipt in one database transaction. Schema IDs and versions are immutable. Reinstalling an identical publisher/package/version digest is idempotent; different bytes for that identity are rejected. Interfaces consume semantic roles and rendering hints, while resolver and activity adapters participate through `ctx` flows.
 
 ## Author checklist
 
-- Keep all language facts under `content/`; never embed them in bootstrap code or UI.
-- Use stable IDs and explicit ordered relationships.
-- Translate pack documentation and display metadata.
-- Declare sources, licenses, attribution, and revisions.
-- Validate the whole pack before publishing.
-- Put tokenizers, Hangul decomposition, morphology, audio, and external lookups in ctx-connected adapters when they require executable behavior.
+- Keep all records and assets outside Cognis core.
+- Use stable namespaces, record IDs, semantic package versions, and immutable schema versions.
+- Localize schema, layer, field, relationship, and documentation metadata.
+- Declare license, attribution, relationship deletion behavior, and exact constraints.
+- Run inspection before publishing and never depend on content shard enumeration order.

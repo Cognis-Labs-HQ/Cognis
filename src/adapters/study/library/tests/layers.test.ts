@@ -10,21 +10,23 @@ import type { LibraryEntry, LibrarySchema } from "../types.js";
 const english: LibrarySchema = {
     id: "english",
     version: 1,
+    namespace: "english",
     language: "en",
-    label: "English",
+    metadata: { labels: { en: "English" } },
     layers: [
-        { id: "letters", label: "Letters" },
+        { id: "letters", metadata: { labels: { en: "Letters" } } },
         {
             id: "words",
-            label: "Words",
+            metadata: { labels: { en: "Words" } },
             relationships: [
                 {
                     id: "letters",
-                    label: "Letters",
+                    metadata: { labels: { en: "Letters" } },
                     targetLayer: "letters",
                     minimum: 1,
                     ordered: true,
-                    resolver: "grapheme",
+                    resolverRole: "grapheme",
+                    onDelete: "restrict",
                 },
             ],
         },
@@ -54,12 +56,13 @@ test("consumers define arbitrary layers and constrained relationships", () => {
                 layers: [
                     {
                         id: "words",
-                        label: "Words",
+                        metadata: { labels: { en: "Words" } },
                         relationships: [
                             {
                                 id: "missing",
-                                label: "Missing",
+                                metadata: { labels: { en: "Missing" } },
                                 targetLayer: "unknown",
+                                onDelete: "restrict",
                             },
                         ],
                     },
@@ -137,26 +140,61 @@ test("Korean consumers can model Jamo and compound syllable blocks", () => {
     const korean: LibrarySchema = {
         id: "korean",
         version: 1,
+        namespace: "korean",
         language: "ko",
-        label: "한국어",
+        metadata: { labels: { ko: "한국어" } },
         layers: [
-            { id: "jamo", label: "자모" },
+            { id: "jamo", metadata: { labels: { ko: "자모" } } },
             {
                 id: "syllables",
-                label: "음절",
+                metadata: { labels: { ko: "음절" } },
                 relationships: [
                     {
                         id: "composed-of",
-                        label: "구성",
+                        metadata: { labels: { ko: "구성" } },
                         targetLayer: "jamo",
                         minimum: 2,
                         maximum: 3,
                         ordered: true,
-                        resolver: "explicit",
+                        resolverRole: "explicit",
+                        onDelete: "restrict",
                     },
                 ],
             },
         ],
     };
     assert.equal(validateLibrarySchema(korean).layers[1].id, "syllables");
+});
+
+test("schema roles and rendering hints remain independent of layer IDs", () => {
+    const schema: LibrarySchema = {
+        ...english,
+        layers: [
+            {
+                id: "prompts",
+                metadata: { labels: { en: "Prompts", de: "Übungen" } },
+                semanticRole: "practicePrompt",
+                activityCompatibility: ["practice:writtenRecall"],
+                interestVeins: ["topic:travel"],
+                fields: [
+                    {
+                        id: "instruction",
+                        metadata: { labels: { en: "Instruction" } },
+                        type: "localizedText",
+                        required: true,
+                        detail: { renderer: "text", order: 1 },
+                    },
+                ],
+                detail: {
+                    titleField: "instruction",
+                    fieldOrder: ["instruction"],
+                },
+            },
+        ],
+    };
+
+    assert.equal(
+        validateLibrarySchema(schema).layers[0].semanticRole,
+        "practicePrompt",
+    );
 });

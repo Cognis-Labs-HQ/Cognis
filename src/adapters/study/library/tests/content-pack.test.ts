@@ -14,47 +14,73 @@ test("declarative language packs are inspected deterministically", async (t) => 
     t.after(() => rm(root, { recursive: true, force: true }));
     await mkdir(path.join(root, "content", "letters"), { recursive: true });
     await mkdir(path.join(root, "content", "words"), { recursive: true });
+    await mkdir(path.join(root, "assets", "strokes"), { recursive: true });
+    await writeFile(path.join(root, "assets", "strokes", "a.svg"), "<svg/>");
     const manifest = {
         id: "english-core",
         publisher: "Cognis Labs HQ",
         version: "1.0.0",
         contentRevision: "2026-09-05",
+        namespace: "english",
         schema: "schema.json",
         content: "content",
+        assets: "assets",
         license: { id: "CC-BY-4.0" },
     };
     await writeJson(path.join(root, "manifest.json"), manifest);
     await writeJson(path.join(root, "schema.json"), {
         id: "english",
         version: 1,
+        namespace: "english",
         language: "en",
-        label: "English",
+        metadata: { labels: { en: "English" } },
         layers: [
-            { id: "letters", label: "Letters" },
+            {
+                id: "letters",
+                metadata: { labels: { en: "Letters" } },
+                semanticRole: "atomicWritingUnit",
+                fields: [
+                    {
+                        id: "strokes",
+                        metadata: { labels: { en: "Strokes" } },
+                        type: "asset",
+                    },
+                ],
+                strokeAsset: { field: "strokes", format: "svg" },
+            },
             {
                 id: "words",
-                label: "Words",
+                metadata: { labels: { en: "Words" } },
                 relationships: [
                     {
                         id: "spelling",
-                        label: "Spelling",
+                        metadata: { labels: { en: "Spelling" } },
                         targetLayer: "letters",
                         minimum: 1,
                         ordered: true,
+                        onDelete: "restrict",
                     },
                 ],
             },
         ],
     });
     await writeJson(path.join(root, "content", "letters", "a.json"), [
-        { id: "letter:a", label: "a" },
+        {
+            id: "english:letter:a",
+            label: "a",
+            fields: { strokes: "strokes/a.svg" },
+        },
     ]);
     await writeJson(path.join(root, "content", "words", "a.json"), [
         {
-            id: "word:a",
+            id: "english:word:a",
             label: "a",
             references: [
-                { entryId: "letter:a", relation: "spelling", position: 0 },
+                {
+                    entryId: "english:letter:a",
+                    relation: "spelling",
+                    position: 0,
+                },
             ],
         },
     ]);
@@ -64,8 +90,17 @@ test("declarative language packs are inspected deterministically", async (t) => 
     assert.equal(first.digest, second.digest);
     assert.equal(first.records.length, 2);
     assert.equal(
-        contentEntryId(manifest, "letter:a"),
-        contentEntryId(manifest, "letter:a"),
+        contentEntryId(manifest, "english:letter:a"),
+        contentEntryId(manifest, "english:letter:a"),
+    );
+
+    await writeJson(path.join(root, "schema.json"), {
+        ...first.schema,
+        namespace: "unowned",
+    });
+    await assert.rejects(
+        inspectContentPack(root),
+        /schema_namespace_not_owned/,
     );
 });
 
@@ -78,6 +113,7 @@ test("content packs reject dangling relationships", async (t) => {
         publisher: "Test Publisher",
         version: "1.0.0",
         contentRevision: "1",
+        namespace: "broken",
         schema: "schema.json",
         content: "content",
         license: { id: "test" },
@@ -85,17 +121,19 @@ test("content packs reject dangling relationships", async (t) => {
     await writeJson(path.join(root, "schema.json"), {
         id: "broken",
         version: 1,
+        namespace: "broken",
         language: "x-test",
-        label: "Broken",
+        metadata: { labels: { en: "Broken" } },
         layers: [
             {
                 id: "units",
-                label: "Units",
+                metadata: { labels: { en: "Units" } },
                 relationships: [
                     {
                         id: "parts",
-                        label: "Parts",
+                        metadata: { labels: { en: "Parts" } },
                         targetLayer: "units",
+                        onDelete: "restrict",
                     },
                 ],
             },
@@ -103,9 +141,9 @@ test("content packs reject dangling relationships", async (t) => {
     });
     await writeJson(path.join(root, "content", "units", "broken.json"), [
         {
-            id: "unit:a",
+            id: "broken:unit:a",
             label: "A",
-            references: [{ entryId: "unit:missing", relation: "parts" }],
+            references: [{ entryId: "broken:unit:missing", relation: "parts" }],
         },
     ]);
 

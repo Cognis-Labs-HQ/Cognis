@@ -1,39 +1,27 @@
 # Paket bahasa Study
 
-## Ringkasan
+## Tujuan
 
-Bahasa Study adalah paket konten deklaratif yang berisi manifes, skema Pustaka milik konsumen, data bahasa, dan dokumentasi. Paket tidak memuat UI browser, rute API, penyimpanan, CSS, atau halaman khusus bahasa. Adapter Study di Cognis menghasilkan antarmuka dari skema dan metadata tampilan.
+Paket bahasa Study adalah rilis data eksternal yang tidak dapat diubah. Paket berisi manifes, satu skema Library berversi, rekaman, aset opsional, lisensi, dan dokumentasi terlokalisasi. Rekaman bahasa, perender yang dapat dieksekusi, rute, CSS, dan penyimpanan khusus penyedia tidak pernah berada di inti Cognis.
 
-## Kontrak paket
+## Susunan dan manifes
 
-Bootstrap minimal hanya boleh menemukan akar instalasi lalu memanggil `study:library.ingestContentPack(root)` melalui `ctx`. Bootstrap tidak mengimpor internal Pustaka. Adapter Pustaka memiliki penemuan berkas, keamanan jalur, validasi, ID stabil, transaksi, idempotensi, pencatatan, dan persistensi. Resolver serta kamus eksternal menjadi adapter terpisah.
+Paket menyediakan `manifest.json`, berkas skema dan direktori konten yang dirujuk, serta direktori aset opsional. Semua jalur harus relatif, dipisahkan garis miring, dan tidak boleh kosong, absolut, memuat induk (`..`), garis miring terbalik, atau lolos melalui symlink. Pecahan konten dibaca menurut lapisan dan nama berkas secara leksikal.
 
-## Struktur wajib
+Manifes menyatakan `id`, `publisher`, `namespace`, `version` semantik, `contentRevision`, `schema`, `content`, `assets` opsional, dan `license`. Lisensi memiliki ID yang terbaca mesin serta URL HTTPS dan atribusi opsional. Manifes dan skema memiliki namespace yang sama; setiap ID rekaman diawali `<namespace>:`. Perubahan byte wajib dirilis sebagai versi paket baru.
 
-```text
-cognis-language-ja/
-  package.json
-  manifest.json
-  schema.json
-  content/
-    characters/hiragana.json
-    symbols/common.json
-    definitions/core.id.json
-    words/beginner-01.json
-    sentences/beginner-01.json
-  docs/standard.id.md
-```
+## Kontrak skema netral
 
-Manifes memuat `id`, `publisher`, `version`, `contentRevision`, jalur relatif `schema` dan `content`, serta lisensi. Jalur tidak boleh keluar dari akar paket. Kombinasi penerbit, ID paket, dan versi yang sama dengan byte berbeda akan ditolak.
+Skema memiliki versi bilangan bulat positif yang tidak dapat diubah, tag bahasa BCP 47, namespace, label dan deskripsi terlokalisasi, serta lapisan dengan nama bebas. Cognis tidak menentukan ID lapisan. Lapisan dapat menyatakan peran semantik `atomicWritingUnit`, `compoundWritingUnit`, `lexicalUnit`, `orderedLexicalSequence`, `passage`, `definition`, atau `practicePrompt`.
 
-## Skema dan konten
+Bidang memiliki metadata terlokalisasi dan tipe `string`, `number`, `integer`, `boolean`, `localizedText`, `stringList`, atau `asset`. Bidang dapat diwajibkan dan membawa petunjuk perenderan detail untuk perender, urutan, grup, dan visibilitas. Lapisan dapat memilih bidang judul dan urutan bidang.
 
-Skema menetapkan ID stabil, versi positif, bahasa BCP 47, dan lapisan dalam jumlah bebas. Lapisan memiliki bidang bertipe serta relasi terarah dengan target, kardinalitas, urutan, dan resolver opsional. Nama lapisan milik konsumen: bahasa Inggris dapat memakai huruf, sedangkan bahasa Korea dapat memakai Jamo dan blok suku kata.
+Relasi memiliki metadata terlokalisasi, lapisan target, kardinalitas minimum dan maksimum, urutan opsional, target wajib, serta perilaku penghapusan wajib (`restrict`, `detach`, atau `cascade`). Peran resolver (`grapheme`, `token`, `longestMatch`, atau `explicit`) menyatakan maksud tanpa menanamkan algoritme. Referensi berurutan memerlukan posisi bilangan bulat nonnegatif yang unik.
 
-Setiap direktori langsung di bawah `content/` harus sama dengan ID lapisan. Berkas JSON berisi array rekaman atau `{ "records": [...] }`. ID rekaman stabil dalam paket; relasi memakai ID tersebut dan posisi untuk urutan. Cognis memvalidasi seluruh graf sebelum menulis apa pun.
+Lapisan dapat menerbitkan kompatibilitas aktivitas dan jalur minat sebagai peran camel-case bernamespace. Nilai ini adalah tag penemuan, bukan kait yang dapat dieksekusi. Lapisan juga dapat menyatakan bidang aset goresan SVG atau JSON dan sistem koordinat. Bidang aset merujuk jalur di bawah direktori aset manifes.
 
-## Ingesti dan UI
+## Validasi dan pemasukan
 
-`inspectContentPack` membaca secara deterministik, memeriksa jalur, skema, bidang, dan relasi, lalu menghitung digest. `ingestContentPack` menyimpan skema, rekaman, edge, dan tanda terima dalam satu transaksi. Instalasi ulang identik dinyatakan tidak berubah; isi berbeda dengan versi paket sama ditolak.
+`inspectContentPack` memeriksa manifes, versi semantik, lisensi, jalur aman, kepemilikan namespace, rujukan skema, tipe bidang, seluruh graf relasi, dan setiap aset sebelum penulisan. Manifes, skema, rekaman, dan byte aset di-hash secara kanonis dalam urutan deterministik. Kegagalan tidak menghasilkan penulisan.
 
-Adapter Study generik menghasilkan tampilan penjelajah, detail, sistem tulisan, leksikon, penyusun kalimat, dan relasi. Paket boleh memberi petunjuk tampilan deklaratif, tetapi tidak boleh memberi templat, skrip, atau CSS. Tokenizer, dekomposisi Hangul, morfologi, serta lookup eksternal berada dalam adapter yang terhubung melalui `ctx`.
+`ingestContentPack` menyimpan skema, rekaman, relasi, dan tanda terima dalam satu transaksi. ID dan versi skema tidak dapat diubah. Instalasi identik bersifat idempoten; byte berbeda untuk identitas yang sama ditolak. Semua fakta bahasa tetap berada di berkas konten eksternal; resolver dan aktivitas terhubung melalui alur `ctx`.

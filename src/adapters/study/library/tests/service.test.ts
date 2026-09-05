@@ -6,9 +6,10 @@ import type { LibrarySchema } from "../types.js";
 const schema = (version: number): LibrarySchema => ({
     id: "test-language",
     version,
+    namespace: "test",
     language: "x-test",
-    label: "Test Language",
-    layers: [{ id: "units", label: "Units" }],
+    metadata: { labels: { en: "Test Language" } },
+    layers: [{ id: "units", metadata: { labels: { en: "Units" } } }],
 });
 
 function service() {
@@ -28,9 +29,12 @@ test("schema registrations are versioned, persisted, and immutable", async () =>
     const { library, saved } = service();
     const input = schema(1);
     await library.registerSchema(input);
-    input.label = "Changed outside the registry";
+    input.metadata.labels.en = "Changed outside the registry";
 
-    assert.equal(library.getSchema("test-language")?.label, "Test Language");
+    assert.equal(
+        library.getSchema("test-language")?.metadata.labels.en,
+        "Test Language",
+    );
     assert.equal(saved.length, 1);
     await assert.rejects(
         library.registerSchema(schema(1)),
