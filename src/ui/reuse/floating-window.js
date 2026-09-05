@@ -15,7 +15,7 @@
  * release.updateMinimumSize({ width: 320, height: 180 });
  *
  * @param {HTMLElement} element - Floating window to control.
- * @param {{handle?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number, width?: string, height?: string, right?: string, bottom?: string, zIndex?: number, portal?: boolean, topLayer?: boolean, closeButton?: {label: string, onClose: () => void}}} options
+ * @param {{handle?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number, width?: string, height?: string, right?: string, bottom?: string, zIndex?: number, portal?: boolean, topLayer?: boolean, preserveBrowsingContext?: boolean, closeButton?: {label: string, onClose: () => void}}} options
  * @returns {(() => void) & {updateMinimumSize: (size: {width: number, height: number}) => boolean}} Idempotent cleanup with a minimum-size updater.
  */
 import { uiCtx } from "./ui-ctx.js";
@@ -45,7 +45,12 @@ function ensureFloatingWindowStyles() {
     document.head.append(link);
 }
 
-function movePreservingState(parent, element, before = null) {
+function movePreservingState(
+    parent,
+    element,
+    before = null,
+    requireStatePreservation = false,
+) {
     if (
         !parent ||
         !element ||
@@ -63,6 +68,7 @@ function movePreservingState(parent, element, before = null) {
             if (error?.name !== "HierarchyRequestError") throw error;
         }
     }
+    if (requireStatePreservation) return false;
     try {
         if (validSibling) {
             parent.insertBefore(element, validSibling);
@@ -147,6 +153,7 @@ export function makeFloatingWindow(
         zIndex = 1201,
         portal = true,
         topLayer = portal,
+        preserveBrowsingContext = false,
         closeButton,
     } = {},
 ) {
@@ -180,8 +187,14 @@ export function makeFloatingWindow(
     );
 
     ensureFloatingWindowStyles();
+    let portalMoved = false;
     if (portal && document.body && portalElement.parentNode !== document.body) {
-        movePreservingState(document.body, portalElement);
+        portalMoved = movePreservingState(
+            document.body,
+            portalElement,
+            null,
+            preserveBrowsingContext,
+        );
     }
     let releaseFloatingWindow = () => {};
     const chrome = createFloatingWindowChrome(element, closeButton, () =>
@@ -559,7 +572,7 @@ export function makeFloatingWindow(
         } else {
             element.removeAttribute?.("popover");
         }
-        if (portal && portalParent && portalParent.isConnected !== false) {
+        if (portalMoved && portalParent && portalParent.isConnected !== false) {
             movePreservingState(portalParent, portalElement, portalNextSibling);
         }
     };

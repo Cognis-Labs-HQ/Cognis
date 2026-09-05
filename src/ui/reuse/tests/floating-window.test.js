@@ -384,6 +384,24 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(componentPortalStage.parentElement, componentPortalHost);
         assert.equal(panel.parentElement, componentPortalStage);
 
+        const preservedPortalHost = new FakeElement();
+        const preservedPortalStage = new FakeElement();
+        preservedPortalStage.matches = (selector) =>
+            selector === ".component-page-stage";
+        preservedPortalHost.append(preservedPortalStage);
+        preservedPortalStage.append(panel);
+        body.moveBefore = undefined;
+        const releasePreservedPortal = makeFloatingWindow(panel, {
+            handle,
+            preserveBrowsingContext: true,
+        });
+        assert.equal(preservedPortalStage.parentElement, preservedPortalHost);
+        assert.equal(panel.parentElement, preservedPortalStage);
+        releasePreservedPortal();
+        assert.equal(preservedPortalStage.parentElement, preservedPortalHost);
+        assert.equal(panel.parentElement, preservedPortalStage);
+        delete body.moveBefore;
+
         const rejectedMoveHost = new FakeElement();
         const rejectedMoveStage = new FakeElement();
         rejectedMoveStage.matches = (selector) =>
