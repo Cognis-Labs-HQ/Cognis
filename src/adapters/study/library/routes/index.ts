@@ -6,6 +6,7 @@ import {
 } from "../../../../api/reuse/route-context.js";
 import type { LibraryCapability, LibraryActor } from "../service.js";
 import type { LibraryLocation } from "../types.js";
+import { canonicalizeLanguageTag } from "../language.js";
 
 function sendJson(res: ServerResponse, status: number, body: unknown): void {
     res.writeHead(status, { "content-type": "application/json" });
@@ -21,14 +22,7 @@ function locationFrom(url: URL): LibraryLocation {
 
 function languageFrom(url: URL): string | undefined {
     const language = url.searchParams.get("language");
-    if (language === null) return undefined;
-    if (!language.trim() || language.length > 63)
-        throw new Error("invalid_language");
-    try {
-        return Intl.getCanonicalLocales(language)[0];
-    } catch {
-        throw new Error("invalid_language");
-    }
+    return language === null ? undefined : canonicalizeLanguageTag(language);
 }
 
 export function createLibraryRoutes(
@@ -62,7 +56,10 @@ export function createLibraryRoutes(
                 const schemas = library
                     .listSchemas()
                     .filter(
-                        (schema) => !language || schema.language === language,
+                        (schema) =>
+                            !language ||
+                            canonicalizeLanguageTag(schema.language) ===
+                                language,
                     );
                 sendJson(res, 200, { data: schemas });
                 return true;

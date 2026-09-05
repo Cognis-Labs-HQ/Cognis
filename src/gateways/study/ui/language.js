@@ -47,6 +47,9 @@ export function resolveLanguageLabel(languageCode, fallbackName = "") {
 export function parseLanguageCode(value) {
     const candidate = String(value ?? "").trim();
     if (!candidate || candidate.length > 63) return undefined;
+    if (/^x(?:-[a-z0-9]{1,8})+$/i.test(candidate)) {
+        return candidate.toLowerCase();
+    }
     try {
         const [canonical] = Intl.getCanonicalLocales(candidate);
         return canonical;

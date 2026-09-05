@@ -69,6 +69,21 @@ test("consumers define arbitrary layers and constrained relationships", () => {
     );
 });
 
+test("schema languages canonicalize standard and private-use tags", () => {
+    assert.equal(
+        validateLibrarySchema({ ...english, language: "EN-us" }).language,
+        "en-US",
+    );
+    assert.equal(
+        validateLibrarySchema({ ...english, language: "X-Test" }).language,
+        "x-test",
+    );
+    assert.throws(
+        () => validateLibrarySchema({ ...english, language: "not_a_tag" }),
+        /invalid_language/,
+    );
+});
+
 test("relationship cardinality and target layers are enforced", () => {
     const a = entry("a", "a");
     validateReferences(

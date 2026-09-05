@@ -6,6 +6,7 @@ import type {
     LibraryResolutionProposal,
     LibrarySchema,
 } from "./types.js";
+import { canonicalizeLanguageTag } from "./language.js";
 
 const ID_PATTERN = /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/;
 
@@ -60,7 +61,10 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
             validateRelationship(relationship, layerIds, relationshipIds);
         }
     }
-    return structuredClone(schema);
+    return structuredClone({
+        ...schema,
+        language: canonicalizeLanguageTag(schema.language),
+    });
 }
 
 export function findLayer(schema: LibrarySchema, layerId: string) {

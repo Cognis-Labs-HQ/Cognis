@@ -4,7 +4,7 @@
 
 ## Pertahankan konteks bahasa Study
 
-Tautan Study dan Pustaka kini mempertahankan bahasa BCP-47 yang dipilih dan divalidasi pada pemuatan langsung, navigasi klien, serta riwayat browser. Paket bahasa deklaratif tetap dapat digunakan melalui Pustaka yang dihasilkan meskipun tanpa halaman yang dapat dieksekusi.
+Tautan Study dan Pustaka kini mempertahankan bahasa BCP-47 yang dipilih dan divalidasi pada pemuatan langsung, navigasi klien, serta riwayat browser. Paket bahasa deklaratif tetap dapat digunakan melalui Pustaka yang dihasilkan meskipun tanpa halaman yang dapat dieksekusi. Tag penggunaan privat dan tag skema dengan kapitalisasi berbeda dinormalisasi secara konsisten.
 
 ## Buka akses baca bagi pelajar
 
@@ -13,3 +13,4 @@ Pelajar yang berwenang dapat menemukan dan menjelajahi Pustaka, sementara izin p
 ## Commit
 
 - [65f8a1c5](https://github.com/Cognis-Labs-HQ/Cognis/commit/65f8a1c56537b2eb2ed5b5db89b42cc2e25db0a3)
+- [6e7542de](https://github.com/Cognis-Labs-HQ/Cognis/commit/6e7542de9096abc78f24ae5b8516225d56f0ef87)

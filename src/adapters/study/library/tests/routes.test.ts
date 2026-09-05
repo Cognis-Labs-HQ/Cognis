@@ -11,11 +11,18 @@ const schemas = [
     {
         id: "japanese",
         version: 1,
-        language: "ja",
+        language: "JA",
         label: "Japanese",
         layers: [],
     },
     { id: "german", version: 1, language: "de", label: "German", layers: [] },
+    {
+        id: "private-use",
+        version: 1,
+        language: "X-Test",
+        label: "Test Language",
+        layers: [],
+    },
 ];
 
 async function request(path: string, token = "learner") {
@@ -52,6 +59,17 @@ test("schema route rejects malformed language codes", async () => {
     );
     assert.equal(result.status, 400);
     assert.equal(result.body.error.code, "invalid_language");
+});
+
+test("schema route supports private-use BCP-47 languages", async () => {
+    const result = await request(
+        "/api/v1/study/library/schemas?language=x-test",
+    );
+    assert.equal(result.status, 200);
+    assert.deepEqual(
+        result.body.data.map((schema: { id: string }) => schema.id),
+        ["private-use"],
+    );
 });
 
 test("schema route rejects unauthorized requests", async () => {
