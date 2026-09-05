@@ -367,11 +367,18 @@ export async function mount(root, { signal } = {}) {
             subtitle: i18n.t("gateway.study.library_subtitle"),
         },
         toolbar: [],
-        subNavigation: renderStudySubNavigation({
-            model,
-            currentPath: "/study/library",
-            i18n,
-        }),
+        subNavigation: [
+            {
+                id: "study-subnav",
+                label: i18n.t("gateway.study.page_title"),
+                render: () =>
+                    renderStudySubNavigation({
+                        model,
+                        currentPath: "/study/library",
+                        i18n,
+                    }),
+            },
+        ],
     });
     await composer.init();
     signal?.throwIfAborted();

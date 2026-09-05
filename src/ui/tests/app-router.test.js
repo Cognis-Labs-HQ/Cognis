@@ -56,6 +56,11 @@ test("Study Library uses the authenticated direct-mount lifecycle", () => {
         /import\s+\{[^}]*\bmountWhenDirect\b[^}]*\}\s+from\s+["']\/static\/reuse\/page-entry\.js["'];/,
     );
     assert.match(source, /await mountWhenDirect\(mount\);/);
+    assert.match(
+        source,
+        /subNavigation:\s*\[\s*\{[\s\S]*?id:\s*["']study-subnav["'][\s\S]*?render:\s*\(\)\s*=>\s*renderStudySubNavigation/,
+        "Study Library must provide the composer with a renderable sub-navigation descriptor",
+    );
 });
 
 test("all dashboard pages export an async mount function", () => {

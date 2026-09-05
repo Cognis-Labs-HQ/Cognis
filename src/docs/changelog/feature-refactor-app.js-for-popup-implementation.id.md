@@ -14,8 +14,13 @@ Identitas entri kini disimpan dalam status riwayat browser, bukan bilah alamat. 
 
 Pemuatan langsung Pustaka kini memakai siklus entri halaman terautentikasi bersama, sehingga penyedia UI dan alur pemuatan halaman siap sebelum Pustaka dipasang.
 
+## Submenu Study yang tetap tampil
+
+Pustaka kini memasok navigasi Study kepada penyusun halaman sebagai deskriptor standar yang dapat dirender, sehingga submenu bahasa dan modul tetap terlihat pada pemuatan langsung maupun transisi SPA.
+
 ## Commit
 
 - https://github.com/Cognis-app/Cognis/commit/f29be454
 - https://github.com/Cognis-app/Cognis/commit/3695db82
 - https://github.com/Cognis-app/Cognis/commit/fbf97f59
+- https://github.com/Cognis-app/Cognis/commit/ed1f8f31
