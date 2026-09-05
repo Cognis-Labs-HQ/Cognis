@@ -52,4 +52,12 @@
   <string name="gateway.study.library_components">Komponen</string>
   <string name="gateway.study.library_used_by">Digunakan Oleh</string>
   <string name="gateway.study.library_no_relationships">Tidak ada entri terkait.</string>
-  </resources>
+    <string name="gateway.study.library_fields">Bidang</string>
+  <string name="gateway.study.library_definitions">Definisi</string>
+  <string name="gateway.study.library_alternate_definitions">Definisi alternatif</string>
+  <string name="gateway.study.library_provenance">Asal-usul</string>
+  <string name="gateway.study.library_scope">Cakupan</string>
+  <string name="gateway.study.library_revisions">Revisi</string>
+  <string name="gateway.study.library_progress">Kemajuan</string>
+  <string name="gateway.study.library_strokes">Goresan</string>
+</resources>

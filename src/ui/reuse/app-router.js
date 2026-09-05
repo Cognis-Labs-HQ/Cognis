@@ -632,12 +632,16 @@ async function loadRoute(path) {
     }
 }
 
-export async function navigateTo(path) {
+export async function navigateTo(path, { state = {} } = {}) {
     const route = await resolveRoute(path);
     if (!route) return false;
     if (!(await canNavigateToRoute(route, path))) return false;
     const previousRouterPage = getCurrentRoutePath();
-    history.pushState({ routerPage: path, previousRouterPage }, "", path);
+    history.pushState(
+        { ...state, routerPage: path, previousRouterPage },
+        "",
+        path,
+    );
     return loadRoute(path);
 }
 
