@@ -1,6 +1,6 @@
 # バージョン付き言語スキーマ
 
-**機能ブランチ:** work
+**機能ブランチ:** feature-extend-language-package-and-library-schemas
 
 ## 中立なパッケージ契約
 
