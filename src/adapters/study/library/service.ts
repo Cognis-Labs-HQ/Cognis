@@ -1,4 +1,5 @@
 import type { AccessRole, FlowApi } from "@cognis/core";
+import { inspectContentPack } from "./content-pack.js";
 import {
     findLayer,
     resolveRelationships,
@@ -9,6 +10,8 @@ import {
 import { LibraryStore } from "./store.js";
 import type {
     LibraryEntry,
+    LibraryContentPackPlan,
+    LibraryContentPackReceipt,
     LibraryEntryInput,
     LibraryLocation,
     LibraryLookupProvider,
@@ -41,6 +44,8 @@ export interface LibraryCapability {
     registerLookupProvider(provider: LibraryLookupProvider): () => void;
     listSchemas(): LibrarySchema[];
     getSchema(id: string, version?: number): LibrarySchema | null;
+    inspectContentPack(root: string): Promise<LibraryContentPackPlan>;
+    ingestContentPack(root: string): Promise<LibraryContentPackReceipt>;
     list(
         actor: LibraryActor,
         location: LibraryLocation,
@@ -106,17 +111,31 @@ export class LibraryService implements LibraryCapability {
         private readonly store: LibraryStore,
         private readonly classAccess?: LibraryClassAccess,
         private readonly flow?: FlowApi,
+        private readonly log?: (
+            level: string,
+            message: string,
+            meta?: Record<string, unknown>,
+        ) => void | Promise<void>,
     ) {}
 
     async registerSchema(input: LibrarySchema): Promise<void> {
         const schema = validateLibrarySchema(input);
+        this.assertSchemaVersionAvailable(schema);
+        await this.store.saveSchema(schema);
+        this.rememberSchema(schema);
+    }
+
+    private assertSchemaVersionAvailable(schema: LibrarySchema): void {
         const versions = this.schemas.get(schema.id) ?? new Map();
         if (versions.has(schema.version))
             throw new Error("schema_version_registered");
         const newest = Math.max(0, ...versions.keys());
         if (schema.version <= newest)
             throw new Error("schema_version_regression");
-        await this.store.saveSchema(schema);
+    }
+
+    private rememberSchema(schema: LibrarySchema): void {
+        const versions = this.schemas.get(schema.id) ?? new Map();
         versions.set(schema.version, schema);
         this.schemas.set(schema.id, versions);
     }
@@ -139,6 +158,47 @@ export class LibraryService implements LibraryCapability {
         if (!versions) return null;
         const selected = versions.get(version ?? Math.max(...versions.keys()));
         return selected ? structuredClone(selected) : null;
+    }
+
+    async inspectContentPack(root: string): Promise<LibraryContentPackPlan> {
+        return inspectContentPack(root);
+    }
+
+    async ingestContentPack(root: string): Promise<LibraryContentPackReceipt> {
+        try {
+            const plan = await inspectContentPack(root);
+            const registered = this.getSchema(
+                plan.schema.id,
+                plan.schema.version,
+            );
+            if (registered) {
+                if (JSON.stringify(registered) !== JSON.stringify(plan.schema))
+                    throw new Error("schema_version_conflict");
+            } else {
+                this.assertSchemaVersionAvailable(plan.schema);
+            }
+            await this.flow?.run("study-library-ingest", { plan });
+            const receipt = await this.store.ingestContentPack(plan);
+            if (!registered) this.rememberSchema(plan.schema);
+            await this.log?.("info", "Ingested Study Library content pack.", {
+                component: "study-library",
+                operation: "ingest-content-pack",
+                packId: receipt.packId,
+                publisher: receipt.publisher,
+                version: receipt.version,
+                recordCount: receipt.recordCount,
+                unchanged: receipt.unchanged,
+            });
+            return receipt;
+        } catch (error) {
+            await this.log?.("error", "Study Library content pack failed.", {
+                component: "study-library",
+                operation: "ingest-content-pack",
+                root,
+                error: error instanceof Error ? error.message : String(error),
+            });
+            throw error;
+        }
     }
 
     private schema(id: string, version?: number): LibrarySchema {

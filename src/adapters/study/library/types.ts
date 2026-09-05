@@ -96,3 +96,45 @@ export interface LibraryPushRequest {
     requestedBy: string;
     status: "pending" | "approved" | "rejected";
 }
+
+export interface LibraryContentPackManifest {
+    id: string;
+    publisher: string;
+    version: string;
+    contentRevision: string;
+    schema: string;
+    content: string;
+    license: {
+        id: string;
+        url?: string;
+        attribution?: string;
+    };
+}
+
+export interface LibraryContentRecord {
+    id: string;
+    label: string;
+    fields?: Record<string, unknown>;
+    references?: LibraryReferenceInput[];
+}
+
+export interface LibraryContentPackPlan {
+    root: string;
+    manifest: LibraryContentPackManifest;
+    schema: LibrarySchema;
+    digest: string;
+    records: Array<LibraryContentRecord & { layer: string }>;
+}
+
+export interface LibraryContentPackReceipt {
+    packId: string;
+    publisher: string;
+    version: string;
+    contentRevision: string;
+    schemaId: string;
+    schemaVersion: number;
+    digest: string;
+    recordCount: number;
+    relationshipCount: number;
+    unchanged: boolean;
+}

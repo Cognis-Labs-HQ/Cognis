@@ -58,6 +58,7 @@ export async function bootstrapStudyAdapter(
             "study:classes:access",
         ),
         ctx.flow,
+        ctx.log,
     );
     ctx.capabilities.contribute("study:library", service);
     ctx.registerRoute(

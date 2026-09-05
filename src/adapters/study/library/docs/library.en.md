@@ -23,3 +23,7 @@ Every entry is available at `/study/library/:schemaId/:layerId/:entryId`. The sc
 ## Access
 
 Global records are readable by authenticated users and writable by admins and owners. User records are private. Class access is delegated to the Classes capability. Relationship targets must be visible to the writer and must use the same schema version.
+
+## Declarative content packs
+
+Installed language packages call `inspectContentPack(root)` to validate or `ingestContentPack(root)` to install a data-only Library. Each root contains `manifest.json`, a referenced schema file, and a content directory whose immediate subdirectories match layer IDs. Files contain record arrays with stable IDs and explicit references. Cognis validates the complete graph, derives namespaced IDs, records a digest and receipt, and writes the schema, entries, and edges atomically. The full authoring contract and example tree are documented in `study-language-framework.en.md`.

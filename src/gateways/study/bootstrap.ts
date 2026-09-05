@@ -219,6 +219,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             id: "study-library-lookup",
             stages: ["discover", "lookup", "rank"],
         },
+        {
+            id: "study-library-ingest",
+            stages: ["inspect", "validate", "stage", "persist", "audit"],
+        },
     ]) {
         if (!systemCtx?.hasFlow(flow.id)) {
             systemCtx?.registerFlow({

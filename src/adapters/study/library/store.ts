@@ -1,6 +1,9 @@
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import { contentEntryId } from "./content-pack.js";
 import type {
+    LibraryContentPackPlan,
+    LibraryContentPackReceipt,
     LibraryEntry,
     LibraryEntryInput,
     LibraryLocation,
@@ -44,6 +47,27 @@ export class LibraryStore {
                 },
             ],
             primaryKey: ["schema_id", "version"],
+        });
+        await this.db.ensureTable({
+            name: "study_library_content_packs",
+            columns: [
+                { name: "pack_id", type: "text", notNull: true },
+                { name: "publisher", type: "text", notNull: true },
+                { name: "version", type: "text", notNull: true },
+                { name: "content_revision", type: "text", notNull: true },
+                { name: "schema_id", type: "text", notNull: true },
+                { name: "schema_version", type: "integer", notNull: true },
+                { name: "digest", type: "text", notNull: true },
+                { name: "record_count", type: "integer", notNull: true },
+                { name: "relationship_count", type: "integer", notNull: true },
+                {
+                    name: "installed_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+            primaryKey: ["publisher", "pack_id", "version"],
         });
         await this.db.ensureTable({
             name: "study_library_entries",
@@ -134,6 +158,19 @@ export class LibraryStore {
     }
 
     async saveSchema(schema: LibrarySchema): Promise<void> {
+        const existing = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_library_schemas",
+            where: [
+                { column: "schema_id", value: schema.id },
+                { column: "version", value: schema.version },
+            ],
+        });
+        if (existing.rows?.length) {
+            if (String(existing.rows[0].schema_json) !== JSON.stringify(schema))
+                throw new Error("schema_version_conflict");
+            return;
+        }
         await this.db.executeCommand({
             option: "INSERT",
             table: "study_library_schemas",
@@ -143,6 +180,135 @@ export class LibraryStore {
                 schema_json: JSON.stringify(schema),
             },
         });
+    }
+
+    async ingestContentPack(
+        plan: LibraryContentPackPlan,
+    ): Promise<LibraryContentPackReceipt> {
+        const { manifest, schema, records, digest } = plan;
+        const existing = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_library_content_packs",
+            where: [
+                { column: "publisher", value: manifest.publisher },
+                { column: "pack_id", value: manifest.id },
+                { column: "version", value: manifest.version },
+            ],
+        });
+        if (existing.rows?.length) {
+            if (String(existing.rows[0].digest) !== digest)
+                throw new Error("content_pack_version_conflict");
+            return this.contentPackReceipt(plan, true);
+        }
+        await this.db.transaction(async (db) => {
+            const registeredSchema = await db.executeCommand({
+                option: "SELECT",
+                table: "study_library_schemas",
+                where: [
+                    { column: "schema_id", value: schema.id },
+                    { column: "version", value: schema.version },
+                ],
+            });
+            if (registeredSchema.rows?.length) {
+                if (
+                    String(registeredSchema.rows[0].schema_json) !==
+                    JSON.stringify(schema)
+                ) {
+                    throw new Error("schema_version_conflict");
+                }
+            } else {
+                await db.executeCommand({
+                    option: "INSERT",
+                    table: "study_library_schemas",
+                    values: {
+                        schema_id: schema.id,
+                        version: schema.version,
+                        schema_json: JSON.stringify(schema),
+                    },
+                });
+            }
+            for (const record of records) {
+                await db.executeCommand({
+                    option: "INSERT",
+                    table: "study_library_entries",
+                    values: {
+                        id: contentEntryId(manifest, record.id),
+                        scope: "global",
+                        scope_id: "global",
+                        schema_id: schema.id,
+                        schema_version: schema.version,
+                        layer: record.layer,
+                        language: schema.language,
+                        label: record.label.trim(),
+                        fields_json: JSON.stringify(record.fields ?? {}),
+                        created_by: `content-pack:${manifest.id}`,
+                    },
+                });
+            }
+            for (const record of records) {
+                for (const [index, reference] of (
+                    record.references ?? []
+                ).entries()) {
+                    await db.executeCommand({
+                        option: "INSERT",
+                        table: "study_library_references",
+                        values: {
+                            source_entry_id: contentEntryId(
+                                manifest,
+                                record.id,
+                            ),
+                            target_entry_id: contentEntryId(
+                                manifest,
+                                reference.entryId,
+                            ),
+                            relation: reference.relation,
+                            position: reference.position ?? index,
+                        },
+                    });
+                }
+            }
+            await db.executeCommand({
+                option: "INSERT",
+                table: "study_library_content_packs",
+                values: {
+                    pack_id: manifest.id,
+                    publisher: manifest.publisher,
+                    version: manifest.version,
+                    content_revision: manifest.contentRevision,
+                    schema_id: schema.id,
+                    schema_version: schema.version,
+                    digest,
+                    record_count: records.length,
+                    relationship_count: records.reduce(
+                        (count, record) =>
+                            count + (record.references?.length ?? 0),
+                        0,
+                    ),
+                },
+            });
+        });
+        return this.contentPackReceipt(plan, false);
+    }
+
+    private contentPackReceipt(
+        plan: LibraryContentPackPlan,
+        unchanged: boolean,
+    ): LibraryContentPackReceipt {
+        return {
+            packId: plan.manifest.id,
+            publisher: plan.manifest.publisher,
+            version: plan.manifest.version,
+            contentRevision: plan.manifest.contentRevision,
+            schemaId: plan.schema.id,
+            schemaVersion: plan.schema.version,
+            digest: plan.digest,
+            recordCount: plan.records.length,
+            relationshipCount: plan.records.reduce(
+                (count, record) => count + (record.references?.length ?? 0),
+                0,
+            ),
+            unchanged,
+        };
     }
 
     async get(id: string): Promise<LibraryEntry | null> {

@@ -11,3 +11,7 @@
 `grapheme` リゾルバーは Unicode 書記素を、`longest-match` は明示的に区切られたブロックを使用します。どちらも項目を暗黙に作成せず、候補と未解決単位を返します。lookup プロバイダーは `registerLookupProvider` で追加し、出典付きの順位候補を返し、登録時の callback で解除できます。作成、解決、lookup は名前付き ctx flow に参加します。
 
 Study ゲートウェイはスキーマ検出、一覧、作成、詳細、双方向追跡、解決プレビュー、lookup 候補を提供します。各項目は `/study/library/:schemaId/:layerId/:entryId` で直接開けます。スキーマ駆動 UI は翻訳済みレイヤー、フィールド、関係を表示し、グローバル、利用者、クラスの権限をサービス境界で強制します。
+
+## 宣言的コンテンツパック
+
+導入済み言語パックは、検証に `inspectContentPack(root)`、データ専用ライブラリの導入に `ingestContentPack(root)` を呼びます。ルートには `manifest.json`、参照スキーマ、レイヤー ID のサブディレクトリを持つコンテンツディレクトリを置きます。ファイルは安定 ID と明示的関係を持つレコード配列です。Cognis はグラフ全体を検証し、名前空間 ID、digest、receipt を記録して、スキーマ、項目、edge を原子的に保存します。完全な作成契約は `study-language-framework.ja.md` にあります。

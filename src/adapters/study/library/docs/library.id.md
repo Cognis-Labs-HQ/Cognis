@@ -11,3 +11,7 @@ Relasi menentukan lapisan target, kardinalitas, urutan, dan resolver opsional. S
 Resolver `grapheme` memakai grafem Unicode, sedangkan `longest-match` memakai blok yang dipisahkan secara eksplisit. Keduanya mengembalikan usulan dan unit yang belum terselesaikan tanpa membuat entri diam-diam. Penyedia lookup dipasang melalui `registerLookupProvider`, mengembalikan saran berperingkat beserta asalnya, dan dapat dilepas melalui callback registrasi. Pembuatan, resolusi, dan lookup mengikuti flow ctx bernama.
 
 Gateway Study menyediakan penemuan skema, daftar, pembuatan, detail, penelusuran dua arah, pratinjau resolusi, dan saran lookup. Setiap entri memiliki URL `/study/library/:schemaId/:layerId/:entryId`. UI berbasis skema menampilkan lapisan terlokalisasi, bidang, dan relasi. Akses global, pengguna, dan kelas tetap ditegakkan pada batas layanan.
+
+## Paket konten deklaratif
+
+Paket bahasa terpasang memanggil `inspectContentPack(root)` untuk validasi atau `ingestContentPack(root)` untuk memasang Pustaka khusus data. Akar paket berisi `manifest.json`, berkas skema yang dirujuk, serta direktori konten dengan subdirektori ID lapisan. Berkas memuat array rekaman dengan ID stabil dan relasi eksplisit. Cognis memvalidasi seluruh graf, membuat ID bernamespace, mencatat digest dan tanda terima, lalu menulis skema, entri, serta edge secara atomik. Kontrak penulisan lengkap berada di `study-language-framework.id.md`.
