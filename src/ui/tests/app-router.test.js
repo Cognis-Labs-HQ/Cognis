@@ -20,6 +20,11 @@ const DASHBOARD_PAGES = [
 
 const ADAPTER_BACKED_SPA_ROUTES = [
     {
+        id: "study-library-page",
+        sourceFile: "src/adapters/study/library/index.ts",
+        scriptUrl: "/static/adapters/study/library/app.js",
+    },
+    {
         id: "social-messages-page",
         sourceFile: "src/adapters/social/messages/index.ts",
         scriptUrl: "/static/adapters/social/messages/app.js",
@@ -40,6 +45,18 @@ const ADAPTER_BACKED_SPA_ROUTES = [
         scriptUrl: "/static/adapters/study/classes/my-classes.js",
     },
 ];
+
+test("Study Library uses the authenticated direct-mount lifecycle", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/study/library/ui/app.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /import\s+\{[^}]*\bmountWhenDirect\b[^}]*\}\s+from\s+["']\/static\/reuse\/page-entry\.js["'];/,
+    );
+    assert.match(source, /await mountWhenDirect\(mount\);/);
+});
 
 test("all dashboard pages export an async mount function", () => {
     for (const page of DASHBOARD_PAGES) {

@@ -10,7 +10,12 @@
 
 エントリ識別情報をアドレスバーではなくブラウザ履歴の状態に保持するようにしました。再読み込みやブラウザの移動でもポップアップが維持され、従来のディープリンクは簡潔なライブラリ URL に移行されます。
 
+## 信頼性の高いページ再読み込み
+
+ライブラリの直接読み込みで共通の認証済みページエントリ処理を使用し、UI プロバイダーとページ読み込みフローの準備完了後にライブラリをマウントするようにしました。
+
 ## コミット
 
 - https://github.com/Cognis-app/Cognis/commit/f29be454
 - https://github.com/Cognis-app/Cognis/commit/3695db82
+- https://github.com/Cognis-app/Cognis/commit/fbf97f59
