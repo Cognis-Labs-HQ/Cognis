@@ -22,9 +22,14 @@ Router aplikasi kini mendahulukan halaman Study yang didaftarkan adapter daripad
 
 Daftar skema Library kini mengklon setiap skema secara eksplisit sehingga argumen indeks `Array.map` yang sebelumnya ditafsirkan runtime sebagai opsi `structuredClone` tidak valid tidak lagi diteruskan.
 
+## Perlindungan hasil tinjauan
+
+Aset terautentikasi kini melarang cache bersama, kebijakan penghapusan divalidasi terhadap kontrak, kunci lokal dikononisasi saat pencarian label, dan perutean inti memakai metadata pengganti serta navigasi yang netral alih-alih percabangan rute khusus Study.
+
 ## Komit
 
 - [c1cb3240](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1cb3240)
 - [1325c06a](https://github.com/Cognis-Labs-HQ/Cognis/commit/1325c06a)
 - [a28869ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/a28869ed)
 - [22cee541](https://github.com/Cognis-Labs-HQ/Cognis/commit/22cee541)
+- [3d440d68](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d440d68)

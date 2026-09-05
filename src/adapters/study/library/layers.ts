@@ -61,7 +61,8 @@ function validateRelationship(
         throw new Error("invalid_cardinality");
     if (relationship.requiredTarget && minimum < 1)
         throw new Error("required_target_needs_minimum");
-    if (!relationship.onDelete) throw new Error("deletion_behavior_required");
+    if (!["restrict", "detach", "cascade"].includes(relationship.onDelete))
+        throw new Error("invalid_deletion_behavior");
     ids.add(relationship.id);
 }
 

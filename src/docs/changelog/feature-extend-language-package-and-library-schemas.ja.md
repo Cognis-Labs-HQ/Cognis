@@ -22,9 +22,14 @@
 
 Libraryのスキーマ一覧は各スキーマを明示的に複製するようになり、実行環境が無効な`structuredClone`オプションとして解釈していた`Array.map`のインデックス引数を渡しません。
 
+## レビュー後の保護
+
+認証付きアセットは共有キャッシュを禁止し、削除規則を契約に照らして検証し、ラベル検索時にロケールキーを正規化するようになりました。コアルーティングはStudy固有の分岐ではなく、中立なフォールバックおよびナビゲーションメタデータを使用します。
+
 ## コミット
 
 - [c1cb3240](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1cb3240)
 - [1325c06a](https://github.com/Cognis-Labs-HQ/Cognis/commit/1325c06a)
 - [a28869ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/a28869ed)
 - [22cee541](https://github.com/Cognis-Labs-HQ/Cognis/commit/22cee541)
+- [3d440d68](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d440d68)

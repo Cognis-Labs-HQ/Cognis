@@ -22,9 +22,14 @@ Der App-Router bevorzugt jetzt von Adaptern registrierte Study-Seiten gegenüber
 
 Die Library-Schemaauflistung klont nun jedes Schema ausdrücklich. Dadurch wird das unbeabsichtigte Indexargument von `Array.map` vermieden, das Laufzeitumgebungen als ungültige `structuredClone`-Optionen interpretierten.
 
+## Schutzmaßnahmen nach Prüfung
+
+Authentifizierte Assets verbieten nun gemeinsames Caching, Löschregeln werden gegen den Vertrag geprüft, Sprachschlüssel werden bei der Bezeichnungssuche kanonisiert und das Core-Routing verwendet neutrale Rückfall- und Navigationsmetadaten statt einer Study-spezifischen Routenverzweigung.
+
 ## Commits
 
 - [c1cb3240](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1cb3240)
 - [1325c06a](https://github.com/Cognis-Labs-HQ/Cognis/commit/1325c06a)
 - [a28869ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/a28869ed)
 - [22cee541](https://github.com/Cognis-Labs-HQ/Cognis/commit/22cee541)
+- [3d440d68](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d440d68)

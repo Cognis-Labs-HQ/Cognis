@@ -134,20 +134,15 @@ test("router loads adapter-backed SPA routes from the UI app-routes API", () => 
     );
 });
 
-test("adapter Study routes take precedence over the language-child fallback", () => {
+test("adapter routes take precedence over neutral fallback routes", () => {
     const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
-    assert.match(
-        src,
-        /staticRoute && staticRoute\.id !== "gateway\.study\.child"[\s\S]*dynamicRoute \?\? staticRoute/,
-    );
-    assert.equal(
-        src.match(/if \(route\.id === "gateway\.study\.child"\)/g)?.length,
-        2,
-        "only the generic child fallback should require a language component",
-    );
+    assert.match(src, /primaryRoutes[\s\S]*dynamicRoutes[\s\S]*fallbackRoutes/);
+    assert.match(src, /staticRoute && !staticRoute\.fallback/);
+    assert.match(src, /canNavigateToRoute\(route, path\)/);
+    assert.doesNotMatch(src, /route\.id === "gateway\.study\.child"/);
 });
 
 test("route invalidation prevents in-flight anonymous loads from restoring stale routes", () => {

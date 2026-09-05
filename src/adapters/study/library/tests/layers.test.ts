@@ -112,6 +112,28 @@ test("relationship cardinality and target layers are enforced", () => {
     );
 });
 
+test("relationship deletion behavior must use a supported policy", () => {
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...english,
+                layers: [
+                    english.layers[0],
+                    {
+                        ...english.layers[1],
+                        relationships: [
+                            {
+                                ...english.layers[1].relationships![0],
+                                onDelete: "restrcit",
+                            },
+                        ],
+                    },
+                ],
+            } as never),
+        /invalid_deletion_behavior/,
+    );
+});
+
 test("grapheme resolution preserves repeated ordered components", () => {
     const proposals = resolveRelationships(english, "words", "letter", [
         entry("l", "l"),

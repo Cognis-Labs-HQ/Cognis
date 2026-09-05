@@ -69,7 +69,7 @@ export function createLibraryRoutes(
                 res.writeHead(200, {
                     "content-type": asset.mediaType,
                     "content-length": String(asset.data.byteLength),
-                    "cache-control": "public, max-age=31536000, immutable",
+                    "cache-control": "private, no-store",
                     "x-content-type-options": "nosniff",
                     "content-security-policy": "sandbox; default-src 'none'",
                 });

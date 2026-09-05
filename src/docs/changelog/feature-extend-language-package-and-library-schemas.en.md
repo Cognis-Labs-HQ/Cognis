@@ -22,9 +22,14 @@ The app router now gives adapter-registered Study pages precedence over the gene
 
 Library schema listing now clones each schema explicitly, avoiding the accidental `Array.map` index argument that runtimes interpreted as invalid `structuredClone` options.
 
+## Review safeguards
+
+Authenticated assets now prohibit shared caching, deletion policies are validated against the contract, locale keys are canonicalized during label lookup, and core routing uses neutral fallback and navigation metadata instead of a Study-specific route branch.
+
 ## Commits
 
 - [c1cb3240](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1cb3240)
 - [1325c06a](https://github.com/Cognis-Labs-HQ/Cognis/commit/1325c06a)
 - [a28869ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/a28869ed)
 - [22cee541](https://github.com/Cognis-Labs-HQ/Cognis/commit/22cee541)
+- [3d440d68](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d440d68)

@@ -26,6 +26,11 @@ function entryUrl(entry, languageCode) {
 
 function localizedLabel(metadata, contentLanguage) {
     const labels = metadata?.labels ?? {};
+    const labelsByLanguage = new Map(
+        Object.entries(labels)
+            .map(([language, label]) => [parseLanguageCode(language), label])
+            .filter(([language]) => language),
+    );
     const preferredLanguages = [
         document.documentElement.lang,
         ...navigator.languages,
@@ -33,9 +38,11 @@ function localizedLabel(metadata, contentLanguage) {
         "en",
     ].filter(Boolean);
     for (const language of preferredLanguages) {
-        const exact = labels[language];
+        const canonicalLanguage = parseLanguageCode(language);
+        if (!canonicalLanguage) continue;
+        const exact = labelsByLanguage.get(canonicalLanguage);
         if (exact) return exact;
-        const base = labels[language.split("-")[0]];
+        const base = labelsByLanguage.get(canonicalLanguage.split("-")[0]);
         if (base) return base;
     }
     return Object.values(labels)[0] ?? "";

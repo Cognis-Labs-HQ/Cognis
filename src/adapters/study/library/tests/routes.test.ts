@@ -81,7 +81,7 @@ test("schema route rejects unauthorized requests", async () => {
     assert.equal(result.body.error.code, "unauthorized");
 });
 
-test("asset route serves persisted package bytes with immutable headers", async () => {
+test("asset route keeps authenticated package bytes out of shared caches", async () => {
     const route = createLibraryRoutes(
         {
             readContentPackAsset: async () => ({
@@ -104,10 +104,7 @@ test("asset route serves persisted package bytes with immutable headers", async 
 
     assert.equal(response.statusCode, 200);
     assert.equal(response.headers["content-type"], "image/svg+xml");
-    assert.equal(
-        response.headers["cache-control"],
-        "public, max-age=31536000, immutable",
-    );
+    assert.equal(response.headers["cache-control"], "private, no-store");
     assert.equal(response.payload, "<svg/>");
 });
 
@@ -120,4 +117,5 @@ test("Library browser resolves labels from localized schema metadata", async () 
         /localizedLabel\(schema\.metadata, schema\.language\)/,
     );
     assert.match(source, /localizedLabel\(layer\.metadata, schema\.language\)/);
+    assert.match(source, /parseLanguageCode\(language\)/);
 });
