@@ -11,7 +11,6 @@
   <string name="gateway.study.hiragana_subtitle">Pelajari aksara suku kata fonetik dasar bahasa Jepang.</string>
   <string name="gateway.study.hiragana_section_heading">ひらがな — Hiragana</string>
   <string name="gateway.study.hiragana_description">Aksara suku kata fonetik dasar bahasa Jepang. Data bersumber dari lapisan karakter perpustakaan bahasa.</string>
-  <string name="gateway.study.library_subtitle">Kelola catatan perpustakaan bahasa</string>
   <string name="gateway.study.classroom_subtitle">Lihat dan kelola kelasmu</string>
   <string name="gateway.study.welcome_heading">Selamat Datang di Cognis</string>
   <string name="gateway.study.welcome_tagline">Siap untuk mulai belajar?</string>
@@ -43,4 +42,22 @@
   <string name="gateway.study.classroom_load_failed">Gagal memuat data kelas.</string>
   <string name="gateway.study.classroom_save_success">Perubahan kelas berhasil disimpan.</string>
   <string name="gateway.study.classroom_save_failed">Gagal menyimpan perubahan kelas.</string>
-  </resources>
+  <string name="gateway.study.library_subtitle">Jelajahi unsur yang dapat dilacak dalam materi pembelajaran Anda.</string>
+  <string name="gateway.study.library_layers">Lapisan Pustaka</string>
+  <string name="gateway.study.library_empty">Pustaka ini belum memiliki materi.</string>
+  <string name="gateway.study.library_load_error">Pustaka tidak dapat dimuat.</string>
+  <string name="gateway.study.library_back">Kembali ke Pustaka</string>
+  <string name="gateway.study.library_schema">Skema</string>
+  <string name="gateway.study.library_layer">Lapisan</string>
+  <string name="gateway.study.library_components">Komponen</string>
+  <string name="gateway.study.library_used_by">Digunakan Oleh</string>
+  <string name="gateway.study.library_no_relationships">Tidak ada entri terkait.</string>
+    <string name="gateway.study.library_fields">Bidang</string>
+  <string name="gateway.study.library_definitions">Definisi</string>
+  <string name="gateway.study.library_alternate_definitions">Definisi alternatif</string>
+  <string name="gateway.study.library_provenance">Asal-usul</string>
+  <string name="gateway.study.library_scope">Cakupan</string>
+  <string name="gateway.study.library_revisions">Revisi</string>
+  <string name="gateway.study.library_progress">Kemajuan</string>
+  <string name="gateway.study.library_strokes">Goresan</string>
+</resources>

@@ -319,7 +319,7 @@ export class UIRegistry {
 
     /**
      * Given the path portion after /static/modules/ (e.g.
-     * "study/languages/ja/components/hiragana-alphabet/app.js"), finds the
+     * "modules/example/components/board/app.js"), finds the
      * longest registered module URL prefix and returns the directory and the
      * relative file path within it. Returns undefined when no prefix matches.
      */

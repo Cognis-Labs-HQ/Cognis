@@ -16,6 +16,23 @@ const ACCESS_ROLE_RANK: Record<AccessRole, number> = {
     owner: 5,
 };
 
+/** Neutral, immutable identity advertised by an external language package. */
+export interface LanguagePackageDescriptor {
+    readonly id: string;
+    readonly publisher: string;
+    readonly namespace: string;
+    readonly version: string;
+    readonly contentRevision: string;
+    readonly license: {
+        readonly id: string;
+        readonly url?: string;
+        readonly attribution?: string;
+    };
+    readonly schema: string;
+    readonly content: string;
+    readonly assets?: string;
+}
+
 /**
  * A single study activity or tool for a language, registered by its parent
  * language module. The UI builds a sub-navigation menu from these descriptors.
@@ -50,6 +67,8 @@ export interface LanguageModule {
     readonly languageFlag: string;
     /** Semver version of this module. */
     readonly version: string;
+    /** Immutable package identity when the module installs declarative data. */
+    readonly package?: LanguagePackageDescriptor;
     listChildComponents(): LanguageChildComponent[];
 }
 
@@ -145,6 +164,7 @@ export interface StudyAdapterBootstrapCtx {
         base: string;
         scriptUrl: string;
         stylesheets?: string[];
+        requiredCapabilities?: string[];
         isEnabled?: () => boolean;
     }): void;
     registerPageExtension(
@@ -162,6 +182,20 @@ export interface StudyAdapterBootstrapCtx {
         message: string,
         meta?: Record<string, unknown>,
     ): void | Promise<void>;
+}
+
+/** Caller-neutral access check supplied by the Classes adapter. */
+export interface StudyClassAccessCapability {
+    canRead(
+        classId: string,
+        accountId: string,
+        role: AccessRole,
+    ): Promise<boolean>;
+    canWrite(
+        classId: string,
+        accountId: string,
+        role: AccessRole,
+    ): Promise<boolean>;
 }
 
 type StudyBootstrapBaseCtx = Omit<

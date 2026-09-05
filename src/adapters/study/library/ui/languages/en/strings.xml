@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="gateway.study.library_definition_create">Add definition</string>
+  <string name="gateway.study.library_definition_save">Save definition</string>
+  <string name="gateway.study.library_definition_layer">Definition layer</string>
+  <string name="gateway.study.library_view_details">View details</string>
+  <string name="gateway.study.library_layer_empty">This layer has no entries yet.</string>
+  <string name="gateway.study.library_previous">Previous</string>
+  <string name="gateway.study.library_next">Next</string>
+</resources>
