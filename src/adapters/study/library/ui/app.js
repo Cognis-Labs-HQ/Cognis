@@ -26,10 +26,11 @@ if (!uiCtx.flowExists(DETAIL_FLOW))
     uiCtx.registerFlow(DETAIL_FLOW, DETAIL_STAGES);
 
 export function entryUrl(entry, languageCode) {
-    return withLanguageQuery(
-        `/study/library/${encodeURIComponent(entry.schemaId)}/${encodeURIComponent(entry.layer)}/${encodeURIComponent(entry.id)}`,
-        languageCode,
-    );
+    return withLanguageQuery("/study/library", languageCode);
+}
+
+function entryAttributes(entry) {
+    return `data-library-schema="${escapeHtml(entry.schemaId)}" data-library-layer="${escapeHtml(entry.layer)}" data-library-entry="${escapeHtml(entry.id)}"`;
 }
 
 function localizedLabel(metadata, contentLanguage) {
@@ -77,7 +78,7 @@ function section(title, value) {
 }
 
 function relationSection(title, entries, languageCode, emptyLabel) {
-    return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${entries.length ? `<ul>${entries.map((entry) => `<li><a href="${entryUrl(entry, languageCode)}">${escapeHtml(entry.label)}</a></li>`).join("")}</ul>` : `<p>${escapeHtml(emptyLabel)}</p>`}</section>`;
+    return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${entries.length ? `<ul>${entries.map((entry) => `<li><a href="${entryUrl(entry, languageCode)}" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</a></li>`).join("")}</ul>` : `<p>${escapeHtml(emptyLabel)}</p>`}</section>`;
 }
 
 function coreSections(detail, i18n, languageCode) {
@@ -180,7 +181,7 @@ function renderBrowser(schemas, entries, i18n, languageCode) {
                                 )
                                 .map(
                                     (entry) =>
-                                        `<li><a href="${entryUrl(entry, languageCode)}">${escapeHtml(entry.label)}</a></li>`,
+                                        `<li><a href="${entryUrl(entry, languageCode)}" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</a></li>`,
                                 )
                                 .join("")}</ul></section>`,
                     )
@@ -202,6 +203,12 @@ function parseEntryRoute() {
         : null;
 }
 
+function currentEntry() {
+    const entry = history.state?.libraryEntry;
+    if (entry?.schemaId && entry?.layerId && entry?.entryId) return entry;
+    return parseEntryRoute();
+}
+
 async function openEntryPopup(route, entries, i18n, languageCode, signal) {
     const detail = await fetchLibraryEntry(route.entryId);
     if (
@@ -215,10 +222,8 @@ async function openEntryPopup(route, entries, i18n, languageCode, signal) {
     );
     const index = active.findIndex((entry) => entry.id === route.entryId);
     const composed = await composeDetail(detail, i18n, languageCode);
-    const origin =
-        history.state?.libraryOrigin ??
-        history.state?.previousRouterPage ??
-        buildLibraryUrl(languageCode);
+    const origin = history.state?.libraryOrigin;
+    const popupDepth = Number(history.state?.libraryPopupDepth ?? 0);
     let aborted = false;
     let dismissPopup;
     signal?.addEventListener(
@@ -243,8 +248,25 @@ async function openEntryPopup(route, entries, i18n, languageCode, signal) {
                 : []),
             ...composed.actions,
         ],
-        onOpen: (_overlay, dismiss) => {
+        onOpen: (overlay, dismiss) => {
             dismissPopup = dismiss;
+            overlay.addEventListener("click", (event) => {
+                const link = event.target.closest("a[data-library-entry]");
+                if (!link) return;
+                event.preventDefault();
+                event.stopPropagation();
+                navigateTo(link.getAttribute("href"), {
+                    state: {
+                        libraryEntry: {
+                            schemaId: link.dataset.librarySchema,
+                            layerId: link.dataset.libraryLayer,
+                            entryId: link.dataset.libraryEntry,
+                        },
+                        libraryOrigin: origin,
+                        libraryPopupDepth: popupDepth + 1,
+                    },
+                });
+            });
         },
         onAction: async (actionId) => {
             const target =
@@ -255,13 +277,27 @@ async function openEntryPopup(route, entries, i18n, languageCode, signal) {
                       : null;
             if (!target) return undefined;
             navigateTo(entryUrl(target, languageCode), {
-                state: { libraryOrigin: origin },
+                state: {
+                    libraryEntry: {
+                        schemaId: target.schemaId,
+                        layerId: target.layer,
+                        entryId: target.id,
+                    },
+                    libraryOrigin: origin,
+                    libraryPopupDepth: popupDepth + 1,
+                },
             });
             return true;
         },
     });
-    if (!aborted && result !== "previous" && result !== "next")
-        navigateTo(origin);
+    if (!aborted && result !== "previous" && result !== "next") {
+        if (origin && popupDepth > 0) {
+            history.go(-popupDepth);
+        } else {
+            const libraryUrl = buildLibraryUrl(languageCode);
+            history.replaceState({ routerPage: libraryUrl }, "", libraryUrl);
+        }
+    }
 }
 
 export async function mount(root, { signal } = {}) {
@@ -276,7 +312,20 @@ export async function mount(root, { signal } = {}) {
     const model = await loadStudySubNavigationModel({
         fallbackLanguageCode: languageCode,
     });
-    const route = parseEntryRoute();
+    const legacyRoute = parseEntryRoute();
+    const route = currentEntry();
+    if (legacyRoute) {
+        const libraryUrl = buildLibraryUrl(languageCode);
+        history.replaceState(
+            {
+                ...history.state,
+                routerPage: libraryUrl,
+                libraryEntry: legacyRoute,
+            },
+            "",
+            libraryUrl,
+        );
+    }
     let schemas = [];
     let entries = [];
     try {
@@ -325,6 +374,27 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     signal?.throwIfAborted();
+    root.addEventListener(
+        "click",
+        (event) => {
+            const link = event.target.closest("a[data-library-entry]");
+            if (!link) return;
+            event.preventDefault();
+            event.stopPropagation();
+            navigateTo(link.getAttribute("href"), {
+                state: {
+                    libraryEntry: {
+                        schemaId: link.dataset.librarySchema,
+                        layerId: link.dataset.libraryLayer,
+                        entryId: link.dataset.libraryEntry,
+                    },
+                    libraryOrigin: `${window.location.pathname}${window.location.search}`,
+                    libraryPopupDepth: 1,
+                },
+            });
+        },
+        { signal },
+    );
     if (route)
         void openEntryPopup(route, entries, i18n, languageCode, signal).catch(
             () =>

@@ -6,6 +6,11 @@
 
 Entri Pustaka kini dibuka sebagai popup berbasis rute yang dapat disusun, dengan seluruh metadata yang tersedia, tautan relasi, tindakan kontribusi, serta navigasi sebelumnya/berikutnya.
 
+## URL Pustaka yang bersih
+
+Identitas entri kini disimpan dalam status riwayat browser, bukan bilah alamat. Penyegaran dan navigasi browser mempertahankan popup aktif, sedangkan tautan langsung lama dialihkan ke URL Pustaka yang bersih.
+
 ## Commit
 
 - https://github.com/Cognis-app/Cognis/commit/f29be454
+- https://github.com/Cognis-app/Cognis/commit/3695db82
