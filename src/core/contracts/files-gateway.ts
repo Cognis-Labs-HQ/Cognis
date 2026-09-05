@@ -117,6 +117,33 @@ export interface NamespaceFileClientRequest {
     callerComponent: string;
 }
 
+export type FileCollection =
+    "all" | "favorites" | "recent" | "shared" | "trash";
+
+export interface VirtualFileEntry extends StoredObject {
+    namespaceId: string;
+    providerId: string;
+    folderId: string | null;
+    favorite: boolean;
+    lastOpenedAt: string | null;
+}
+
+export interface VirtualFolder {
+    id: string;
+    name: string;
+    namespaceId: string;
+    classId?: string;
+}
+
+/** Request passed to the renderer-neutral file-open capability. */
+export interface FileOpenRequest {
+    namespaceId: string;
+    key: string;
+    actorId: string;
+    callerComponent: string;
+    rendererId?: string;
+}
+
 /** Factory capability contributed as `files:namespace`. */
 export type NamespaceFileClientFactory = (
     request: NamespaceFileClientRequest,

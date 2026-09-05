@@ -1,0 +1,9 @@
+{
+    "id": "file-render",
+    "uuid": "dfdca9e5-a146-4a5b-9c76-410d7110c6a5",
+    "name": "File Render Gateway",
+    "version": "0.1.0",
+    "required": false,
+    "description": "Selects renderer adapters for file-open requests.",
+    "publisher": "Cognis Labs HQ"
+}

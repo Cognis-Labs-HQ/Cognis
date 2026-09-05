@@ -54,6 +54,13 @@ export class NamespaceFileService {
         this.registry.register(definition);
     }
 
+    async getOwner(
+        namespaceId: string,
+        key: string,
+    ): Promise<string | undefined> {
+        return (await this.objects.get(namespaceId, key))?.ownerId;
+    }
+
     createNamespaceClient(
         namespaceId: string,
         callerComponent: string,

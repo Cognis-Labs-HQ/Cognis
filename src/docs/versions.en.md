@@ -54,7 +54,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.2.1`  |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10` |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.0`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
 | File Logging          | `src/adapters/logging/file/`        | `1.1.5`  |
@@ -69,7 +69,8 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.19`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.10`  |
 | Social                | `src/gateways/social/`        | `1.3.5`   |
-| File Storage (files)  | `src/gateways/files/`         | `2.1.10`  |
+| File Storage (files)  | `src/gateways/files/`         | `2.2.0`   |
+| File Render           | `src/gateways/file-render/`   | `0.1.0`   |
 | Registration          | `src/gateways/registration/`  | `1.1.15`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
@@ -80,7 +81,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component    | Path        | Version  |
 | ------------ | ----------- | -------- |
-| Core Package | `src/core/` | `0.3.82` |
+| Core Package | `src/core/` | `0.3.83` |
 
 ## API
 

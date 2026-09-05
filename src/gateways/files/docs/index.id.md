@@ -101,3 +101,7 @@ Komponen sebaiknya menggunakan `files:namespace` untuk operasi file rutin melalu
 ### Kapabilitas klien browser
 
 `files:uiClient` dikontribusikan oleh penyedia UI Berkas dan menyediakan penyelesaian URL berkas bernamespace bagi modul browser.
+
+## Ruang kerja berkas
+
+Ruang kerja `/files` menggabungkan objek berbasis penyedia dengan folder virtual, favorit, item terkini, filter ruang nama, dan pemilihan penyedia tanpa mengubah kunci objek fisik. Folder pengajar disinkronkan dari adapter Kelas melalui `ctx`. Sumber daya berkas mengikuti alur token gateway Share untuk pembagian pengguna dan tautan dengan akses baca atau tulis, termasuk tampilan tamu. Kuota global pengguna menjadi batas gabungan di seluruh penyedia terpilih; batas ruang nama tetap tersedia untuk pemisahan kebijakan.

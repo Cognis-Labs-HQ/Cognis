@@ -101,3 +101,7 @@ Components should prefer `files:namespace` for routine ctx file operations: bind
 ### Browser client capability
 
 `files:uiClient` is contributed by the Files UI provider and exposes namespaced file URL resolution for browser modules.
+
+## Files workspace
+
+The `/files` workspace combines provider-backed objects with virtual folders, favorites, recents, namespace filters, and provider selection without changing physical object keys. Teacher folders synchronize from the Classes adapter through `ctx`. File resources participate in Share gateway token flows for viewer/editor user and link shares, including guest delivery. The global user quota is a pooled ceiling across selected providers; namespace ceilings remain available for policy isolation.

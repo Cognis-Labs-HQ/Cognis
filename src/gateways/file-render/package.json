@@ -1,0 +1,10 @@
+{
+    "name": "@cognis/gateway-file-render",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "dependencies": {
+        "@cognis/gateways": "<=0.1.9",
+        "@cognis/core": "<=0.3.83"
+    }
+}

@@ -101,3 +101,7 @@ Komponenten sollten für reguläre Dateioperationen über `ctx` bevorzugt `files
 ### Browserclient-Capability
 
 `files:uiClient` wird vom Files-UI-Anbieter bereitgestellt und löst namensraumbezogene Datei-URLs für Browsermodule auf.
+
+## Datei-Arbeitsbereich
+
+Der Arbeitsbereich `/files` kombiniert anbieterbasierte Objekte mit virtuellen Ordnern, Favoriten, zuletzt verwendeten Dateien, Namensraumfiltern und Anbieterauswahl, ohne physische Objektschlüssel zu ändern. Lehrerordner werden über `ctx` mit dem Klassenadapter synchronisiert. Dateiressourcen nehmen an den Token-Flows des Share-Gateways für Benutzer- und Linkfreigaben mit Lese- oder Schreibzugriff einschließlich Gastzugriff teil. Das globale Benutzerkontingent ist eine gemeinsame Obergrenze über ausgewählte Anbieter; Namensraumgrenzen bleiben zur Richtlinientrennung verfügbar.

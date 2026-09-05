@@ -120,6 +120,11 @@ export async function bootstrapStudyAdapter(
     }
 
     const store = new DbClassesStore(dbExecutor);
+    ctx.capabilities.contribute(
+        "study:classes:listOwned",
+        (teacherAccountId: string) =>
+            store.getClassesForTeacher(teacherAccountId),
+    );
 
     try {
         await store.ensureSchema();
