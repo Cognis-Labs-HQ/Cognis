@@ -193,3 +193,19 @@ test("createNotificationSender: uses module activeStore when called with process
     assert.equal(stored.length, 1);
     assert.equal(stored[0].subject, "Subject A");
 });
+
+test("notification producers control persistent action presentation", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const source = await readFile(
+        new URL("../ui/navbar-plugin.js", import.meta.url),
+        "utf8",
+    );
+    assert.match(source, /renderNotificationActions/);
+    assert.match(source, /notification\.metadata\?\.continuous/);
+    assert.match(source, /cognis:notification-command/);
+    assert.match(source, /cognis:notification-resolved/);
+    assert.match(source, /resolveCorrelatedNotifications/);
+    assert.doesNotMatch(source, /social:callUi/);
+    assert.doesNotMatch(source, /category === "calls"/);
+    assert.doesNotMatch(source, /cognis:room-call-state/);
+});

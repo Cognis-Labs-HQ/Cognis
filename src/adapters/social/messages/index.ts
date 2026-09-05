@@ -20,6 +20,8 @@ import {
 } from "@cognis/core";
 import type { Ctx } from "@cognis/core";
 import { createChatroomMembershipCapability } from "./membership.js";
+import { createChatroomDeletionCapability } from "./chatroom-deletion.js";
+import { createRoomMembershipResolver } from "./room-membership.js";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -121,6 +123,112 @@ export async function bootstrapSocialAdapter(
     ctx.capabilities.contribute("social:messages:membership", membership);
     const systemCtx = ctx.capabilities.get<Ctx>(CTX_CAPABILITY);
     systemCtx?.contributeCapability("social:messages:membership", membership);
+    const resolveRoomMembership = createRoomMembershipResolver(messagesStore);
+    ctx.capabilities.contribute(
+        "social:messages:resolveRoomMembership",
+        resolveRoomMembership,
+    );
+    systemCtx?.contributeCapability(
+        "social:messages:resolveRoomMembership",
+        resolveRoomMembership,
+    );
+    const resolveCallContext = async (input: {
+        roomId: string;
+        accountId: string;
+    }) => {
+        const [room, member, members] = await Promise.all([
+            messagesStore.getRoom(input.roomId),
+            messagesStore.getMember(input.roomId, input.accountId),
+            messagesStore.listMembers(input.roomId),
+        ]);
+        if (!room || !member || member.archived) return null;
+        const participants = await Promise.all(
+            members
+                .filter((roomMember) => !roomMember.archived)
+                .map(async (roomMember) => {
+                    const profile = await profileStore.getProfile(
+                        roomMember.accountId,
+                    );
+                    return {
+                        accountId: roomMember.accountId,
+                        handle: profile?.handle ?? roomMember.accountId,
+                        displayName:
+                            profile?.displayName ??
+                            profile?.handle ??
+                            roomMember.accountId,
+                    };
+                }),
+        );
+        return {
+            room: {
+                id: room.id,
+                kind: room.kind,
+                title: room.title ?? "",
+            },
+            participants,
+        };
+    };
+    ctx.capabilities.contribute(
+        "social:messages:callContext",
+        resolveCallContext,
+    );
+    systemCtx?.contributeCapability(
+        "social:messages:callContext",
+        resolveCallContext,
+    );
+    const appendRoomEvent = (input: {
+        roomId: string;
+        actorId: string;
+        eventType: string;
+        subjectAccountId: string;
+        subjectHandle?: string | null;
+        subjectDisplayName?: string | null;
+        details?: Record<string, unknown>;
+    }) => messagesStore.appendRoomEvent(input);
+    ctx.capabilities.contribute(
+        "social:messages:appendRoomEvent",
+        appendRoomEvent,
+    );
+    systemCtx?.contributeCapability(
+        "social:messages:appendRoomEvent",
+        appendRoomEvent,
+    );
+    const deleteChatroom = createChatroomDeletionCapability(
+        messagesStore,
+        ctx.log,
+    );
+    if (systemCtx && !systemCtx.hasFlow("delete-chatroom")) {
+        systemCtx.registerFlow({
+            id: "delete-chatroom",
+            description:
+                "Deletes a chatroom through staged validation, authorization, and cleanup.",
+            stages: [
+                "validate-request",
+                "authorize-and-delete",
+                "after-delete",
+            ],
+        });
+    }
+    ctx.flow.extend(
+        "delete-chatroom",
+        "authorize-and-delete",
+        { id: "social-messages-adapter:authorize-and-delete" },
+        async (stageCtx) => deleteChatroom(stageCtx.input as never),
+    );
+    const runDeleteChatroomFlow = async (input: {
+        roomId?: unknown;
+        actorAccountId?: unknown;
+    }) => {
+        await ctx.flow.run("delete-chatroom", input);
+    };
+    ctx.capabilities.contribute(
+        "social:messages:deleteChatroom",
+        runDeleteChatroomFlow,
+    );
+    systemCtx?.contributePublicCapability(
+        "social:messages:deleteChatroom",
+        runDeleteChatroomFlow,
+    );
 
     type ExternalRoomAuthorizer = (input: {
         claims: { sub: string; role: string };

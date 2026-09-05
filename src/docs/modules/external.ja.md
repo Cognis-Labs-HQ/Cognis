@@ -114,3 +114,5 @@ await reuse.loadStylesheets(["layout.css", "page-sections.css"]);
 ## インストール依存関係
 
 外部マニフェストでは、モジュールの UUID または ID の配列として `hardDependencies` と `softDependencies` を宣言できます。ハード依存関係は、続行前に管理者がインストールして有効化する必要があるため非推奨です。ソフト依存関係はインストールダイアログで任意に選択できます。
+
+無効なモジュールは通常の Bootstrap をインポートも実行もしません。無効時にも設定を公開する必要があるモジュールは `entrypoints.disabledApi` を宣言します。この分離ファイルは `registerDisabledApiRoutes(ctx)` をエクスポートし、`allowWhenDisabled` を明示したルートだけを登録できます。

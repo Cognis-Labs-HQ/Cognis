@@ -50,6 +50,8 @@ Die Bühnen-ID darf nur Buchstaben, Ziffern, Punkte, Unterstriche, Doppelpunkte 
 
 Für synchronisierte Fokussteuerung wird ein `module-route`-Loader deklariert, dessen `moduleId` diese UUID und dessen `routeId` die freigegebene Routen-ID ist. Ein Kollaborationsanbieter muss die Anfrage weiterhin autorisieren, das Whiteboard über serverseitige ctx-Capabilities erstellen oder auflösen, Teilnehmerzugriff vergeben und über `focus:transport` ausschließlich stabile Ressourcenkennungen veröffentlichen.
 
+Eine Startanfrage kann mit `allowNavigation: true` ihren Handle dazu berechtigen, die eingebundene Komponente während der SPA-Navigation beizubehalten. Die Berechtigung allein bewirkt keine Beibehaltung: Die besitzende Oberfläche muss beim Eintritt in eine navigationssichere Darstellung wie Bild-im-Bild `setNavigationAllowed(true)` und bei der Rückkehr zur eingebetteten Darstellung `setNavigationAllowed(false)` aufrufen.
+
 ## Randlose Komponentenfenster
 
 Übergeben Sie `borderless: true` an `component-pages:spawn`, wenn die eingebettete Seite jede Kante ihrer vom Aufrufer verwalteten Bühne berühren soll. Cognis entfernt Außenabstand, Innenabstand, Rahmen und Radius des Komponentenfensters, passt das Fenster und seine direkte Inhaltswurzel an die volle Größe des Elternelements an und übergibt `borderless: true` an die Mount-Optionen des Anbieters. Für interne Inhaltsabstände bleibt der Anbieter verantwortlich.

@@ -57,6 +57,19 @@ Route handlers should be unassuming about the details of any backing service or 
 
 Prefer gateway/adapter abstractions at every seam where a concrete implementation might change. This extends beyond the DB layer to auth providers, file storage, queues, and any other pluggable subsystem.
 
+### Capabilities must be use-case neutral
+
+Capabilities shared between components must describe the generic facility they
+provide, not one caller's current use of it. Provider contracts, payload fields,
+events, documentation, styles, and strings must remain unassuming about feature-
+specific consumers. Callers supply their own labels, icons, action identifiers,
+and other presentation or behavior metadata; the providing component only
+validates and renders the neutral contract.
+
+### Ctx capability naming
+
+All ctx capability and flow names must use camel case within each colon-delimited segment; do not introduce kebab-case names (for example, use `messages:formatRoomEvent`, not `messages:format-room-event`).
+
 ### Ctx is the capability backbone
 
 Use `ctx` as the only cross-component import surface for both core-to-component and inter-component interactions. When core, a gateway, an adapter, a module, or a route needs something owned elsewhere, it must obtain that capability through `ctx` (or a request/route context built from `ctx`) instead of importing another component's internals or receiving ad-hoc side-channel references.
@@ -225,8 +238,14 @@ Every pull request change must add changelog files for that PR in every supporte
 Changelog entry structure is mandatory:
 
 - `# ...` — changelog title (release summary title)
+- `**Feature Branch:** ...` — the source branch, placed directly after the title; localize the label as `Feature-Zweig`, `Cabang Fitur`, or `機能ブランチ` in the corresponding language file
 - `## ...` — one change point per heading (these are shown as dot-point summary items in release popups)
 - body content under each `##` — full details shown on the changelogs page only
+- `## Commits` — the final section containing a Markdown list of full GitHub commit links; localize this heading in each language file
+
+Commit-list items must be contiguous: never place blank lines between commit links in a changelog's final commit section.
+
+The final commit section is bookkeeping metadata, not a release-summary change point. Do not omit the feature-branch line or commit section merely because the title, change headings, and bodies are already present. Use `N/A` as the branch and leave the commit list empty only for changelogs that do not belong to a feature branch.
 
 Every implementation commit whose work is described by the current pull request's changelog must ensure that the changelog's commit list links the immediately preceding implementation commit. When a user requests this provenance update immediately before implementation, finish the work with a dedicated final commit that changes only the localized changelog files to record the prior implementation commit; that bookkeeping commit must not add unrelated changes or link itself.
 
@@ -495,6 +514,11 @@ Comprehensive logging is required for every new feature and behaviour change.
 - Do not write tests that assert the absence of legacy artefacts — for example, "this deprecated column is not present in the insert" or "this removed route returns 404". These legacy-absence tests are strictly forbidden. Delete any that already exist.
 
 ## Symbols and icons
+
+SVG icons must always be stored as standalone asset files rather than embedded
+as SVG markup in JavaScript, TypeScript, HTML, or CSS. Reuse the same asset
+wherever an icon appears; callers that contribute icon markup to a neutral
+capability must load that markup from the owning component's asset file. Paired `-light` and `-dark` image variants are strongly recommended so icons remain legible in every theme.
 
 When applying a symbol or icon (e.g. as a UI label, button decoration, or status indicator), check https://www.w3schools.com/charsets/ref_utf_symbols.asp first. It provides the most expansive set of UTF symbol codes and should be the primary reference for selecting an appropriate character.
 

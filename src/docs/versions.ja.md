@@ -32,26 +32,27 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント        | パス                                | バージョン |
 | --------------------- | ----------------------------------- | ---------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.26`   |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.22`   |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.16`   |
-| ファイル容量制限      | `src/adapters/file/quota/`          | `1.0.14`   |
-| Local Auth            | `src/adapters/auth/local/`          | `0.3.16`   |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.27`   |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.29`   |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.17`   |
+| ファイル容量制限      | `src/adapters/file/quota/`          | `1.0.15`   |
+| Local Auth            | `src/adapters/auth/local/`          | `0.3.17`   |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.48`   |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.28`   |
-| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.14`   |
-| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.14`   |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.27`   |
-| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.17`   |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.16`   |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.22`   |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.18`   |
-| Memory Database       | `src/adapters/db/memory/`           | `0.1.15`   |
-| Registration Invite   | `src/adapters/registration/invite/` | `0.1.16`   |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.15`   |
-| Public Registration   | `src/adapters/registration/public/` | `0.1.13`   |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.29`   |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.15`   |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.15`   |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.28`   |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.18`   |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.17`   |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.23`   |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.19`   |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.16`   |
+| Registration Invite   | `src/adapters/registration/invite/` | `0.1.17`   |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.16`   |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.14`   |
 | Profile (Social)      | `src/adapters/social/profile/`      | `2.0.4`    |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.1.6`    |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.8`    |
+| Calls (Social)        | `src/adapters/social/call/`         | `0.5.19`   |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34`   |
 | User Share            | `src/adapters/share/user/`          | `1.1.19`   |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.11`   |
@@ -81,13 +82,13 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス        | バージョン |
 | -------------- | ----------- | ---------- |
-| Core Package   | `src/core/` | `0.3.82`   |
+| Core Package   | `src/core/` | `0.3.89`   |
 
 ## API
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.4.0`    |
+| API Server     | `src/api/` | `0.5.3`    |
 
 ## ツール
 

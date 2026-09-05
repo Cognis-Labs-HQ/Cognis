@@ -25,3 +25,9 @@ Adaptor Internal mengirimkan notifikasi langsung ke bel notifikasi dalam aplikas
 ## Konfigurasi
 
 Adaptor ini tidak memiliki konfigurasi. Adaptor aktif selama gateway notify memuatnya (yaitu selalu, karena adaptor ditemukan secara otomatis). Untuk menonaktifkan adaptor, hapus atau ubah nama direktori adaptor — setelah itu bel notifikasi akan menghilang dari antarmuka.
+
+Produsen notifikasi dapat menandai entri sebagai berkelanjutan dan menyediakan deskriptor tombol tindakan berisi pengenal, label aksesibel, ikon SVG opsional, serta konsekuensi. Adaptor memvalidasi dan merender kontrak umum ini, lalu memancarkan pengenal terpilih beserta payload notifikasi; adaptor tidak menafsirkan domain produsen atau memanggil kapabilitas produsen.
+
+Produsen dapat mengorelasikan notifikasi berkelanjutan dengan prompt UI lain. Peristiwa generik `cognis:notification-resolved` menghapus setiap notifikasi dengan pengenal korelasi yang sama tanpa membuat adaptor mengetahui produsennya.
+
+Produsen dapat melampirkan peta `metadata.localizedText` berdasarkan locale dengan string `subject` dan `body`. Adaptor peramban internal memilih locale peramban pertama yang didukung dan memakai teks amplop asli jika tidak tersedia; adaptor tidak menafsirkan domain produsen.

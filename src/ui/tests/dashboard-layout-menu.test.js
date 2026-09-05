@@ -45,6 +45,79 @@ test("layout CSS restores [hidden] visibility inside .dropdown", () => {
     );
 });
 
+test("profile menu toggle is active while its dropdown is open", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+
+    assert.match(layoutSource, /toggle\?\.classList\.add\("active"\)/);
+    assert.match(layoutSource, /toggle\?\.classList\.remove\("active"\)/);
+});
+
+test("profile menu keeps the current page link active", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    const layoutCss = readFileSync(
+        resolve(ROOT, "src/ui/styles/reuse/layout.css"),
+        "utf8",
+    );
+
+    assert.match(layoutSource, /\.user-dropdown-content a/);
+    assert.match(layoutCss, /\.dropdown-item\.active/);
+    assert.match(layoutSource, /activeDropdownLink/);
+    assert.match(
+        layoutSource,
+        /right\.getAttribute\("href"\)\?\.length[\s\S]*left\.getAttribute\("href"\)\?\.length/,
+    );
+    assert.match(
+        layoutCss,
+        /\.app-shell \.dropdown-item\.active\s*{[^}]*border-bottom: 2px solid var\(--accent-2\)/,
+    );
+    assert.doesNotMatch(
+        layoutCss,
+        /\.dropdown-item:focus-visible,\s*\.dropdown-item\.active/,
+    );
+    assert.ok(
+        layoutCss.indexOf(".app-shell .dropdown-item.active") <
+            layoutCss.indexOf(".app-shell .dropdown-item {"),
+        "the more-specific active selector must override the later control reset",
+    );
+});
+
+test("dashboard keeps shared control styles across SPA navigations", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+
+    assert.match(layoutSource, /import \{ ensurePersistentStylesheet \}/);
+    assert.match(
+        layoutSource,
+        /ensurePersistentStylesheet\(BUTTON_STYLESHEET\)/,
+    );
+    assert.match(layoutSource, /ensurePersistentStylesheet\(SEARCH_BAR_CSS\)/);
+});
+
+test("global search toggle uses theme-specific SVG assets", () => {
+    const popupSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
+        "utf8",
+    );
+    const searchCss = readFileSync(
+        resolve(ROOT, "src/ui/styles/reuse/search-bar.css"),
+        "utf8",
+    );
+
+    assert.match(popupSource, /search-bar-toggle-icon/);
+    assert.match(searchCss, /search-light\.svg/);
+    assert.match(searchCss, /search-dark\.svg/);
+    assert.match(searchCss, /width: 1\.65rem/);
+    assert.match(searchCss, /height: 1\.65rem/);
+});
+
 test("dashboard footer renders license and changelogs links", () => {
     const template = readFileSync(
         resolve(ROOT, "src/ui/public/templates/dashboard-layout.html"),

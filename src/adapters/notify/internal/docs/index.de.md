@@ -25,3 +25,9 @@ Der interne Adapter leitet Benachrichtigungen direkt an die In-App-Benachrichtig
 ## Konfiguration
 
 Der Adapter verfügt über keine Konfigurationsoptionen. Er ist aktiv, solange das Notify-Gateway ihn lädt (also immer, da Adapter automatisch erkannt werden). Das Deaktivieren des Adapters erfordert das Entfernen oder Umbenennen des Adapter-Verzeichnisses – woraufhin die Benachrichtigungsglocke aus der Oberfläche verschwindet.
+
+Benachrichtigungsproduzenten können einen Eintrag als dauerhaft markieren und Aktionsbeschreibungen mit Kennung, barrierefreier Beschriftung, optionalem SVG-Symbol und Konsequenz bereitstellen. Der Adapter validiert und rendert diesen allgemeinen Vertrag und meldet die ausgewählte Kennung mit der Benachrichtigung zurück; er interpretiert weder die Domäne des Produzenten noch ruft er dessen Capabilities auf.
+
+Produzenten können eine dauerhafte Benachrichtigung mit einem anderen UI-Hinweis korrelieren. Ein allgemeines `cognis:notification-resolved`-Ereignis entfernt und löscht jede Benachrichtigung mit derselben Korrelationskennung, ohne dass der Adapter den Produzenten kennen muss.
+
+Erzeuger können eine nach Gebietsschema sortierte `metadata.localizedText`-Map mit `subject`- und `body`-Texten anhängen. Der interne Browseradapter wählt das erste unterstützte Browsergebietsschema und verwendet andernfalls den ursprünglichen Umschlagtext; die Domäne des Erzeugers wird nicht interpretiert.

@@ -64,7 +64,13 @@ interface ModuleUiRegistrationContext {
     moduleUuid: string;
     moduleRoot: string;
     registerNavbarPlugin(
-        plugin: { scriptUrl: string; access?: RoleAccessPolicy } | string,
+        plugin:
+            | {
+                  scriptUrl: string;
+                  access?: RoleAccessPolicy;
+                  providesCapabilities?: string[];
+              }
+            | string,
     ): void;
     registerSpaRoute(route: {
         id: string;
@@ -180,6 +186,12 @@ interface ModuleBootstrapPlugin {
             "moduleId" | "moduleRoot" | "getCapability" | "log"
         >,
         options: { deleteContent: boolean },
+    ) => Promise<void> | void;
+}
+
+interface ModuleDisabledApiPlugin {
+    registerDisabledApiRoutes?: (
+        ctx: ModuleBootstrapCtx,
     ) => Promise<void> | void;
 }
 
@@ -476,6 +488,7 @@ export function createModuleExtensionRoutes(
                 options?.uiRegistry?.registerNavbarPlugin({
                     scriptUrl: pluginConfig.scriptUrl,
                     access: pluginConfig.access,
+                    providesCapabilities: pluginConfig.providesCapabilities,
                     ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
@@ -570,6 +583,15 @@ export function createModuleExtensionRoutes(
         return null;
     }
 
+    function resolveDisabledApiEntrypointPath(
+        moduleRoot: string,
+        entrypoints: { disabledApi?: string } | undefined,
+    ): string | null {
+        return entrypoints?.disabledApi
+            ? path.join(moduleRoot, entrypoints.disabledApi)
+            : null;
+    }
+
     async function bootstrapWithTimeout(
         plugin: ModuleBootstrapPlugin,
         moduleCtx: ModuleBootstrapCtx,
@@ -646,13 +668,6 @@ export function createModuleExtensionRoutes(
                 });
                 continue;
             }
-            if (!moduleEnabled) {
-                log?.("debug", "Skipping disabled module entrypoint.", {
-                    component: "module-extension-routes",
-                    moduleId: manifest.id,
-                });
-                continue;
-            }
             const moduleRoot = path.resolve(externalModulesRoot, manifest.uuid);
             const moduleRootEntry = await stat(moduleRoot).catch(() => null);
             if (!moduleRootEntry?.isDirectory()) {
@@ -684,6 +699,36 @@ export function createModuleExtensionRoutes(
                 moduleRoot,
                 manifest.entrypoints,
             );
+            const disabledApiEntrypoint = resolveDisabledApiEntrypointPath(
+                moduleRoot,
+                manifest.entrypoints,
+            );
+            if (!moduleEnabled) {
+                if (!disabledApiEntrypoint) continue;
+                try {
+                    const plugin = (await import(
+                        `${disabledApiEntrypoint}?t=${Date.now()}`
+                    )) as ModuleDisabledApiPlugin;
+                    await plugin.registerDisabledApiRoutes?.(moduleCtx);
+                    scope.active = false;
+                    loadedModules.set(manifest.id, {
+                        ctx: moduleCtx,
+                        plugin: {},
+                        ...scope,
+                    });
+                } catch (error) {
+                    log?.("error", "Disabled module API registration failed.", {
+                        component: "module-extension-routes",
+                        moduleId: manifest.id,
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    });
+                    if (refreshOptions?.throwOnFailure) throw error;
+                }
+                continue;
+            }
             if (!entrypoint) continue;
             log?.("debug", "Loading module route entrypoint.", {
                 component: "module-extension-routes",

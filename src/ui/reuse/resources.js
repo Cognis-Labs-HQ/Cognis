@@ -21,6 +21,7 @@ import { ensurePageStylesheet } from "./page-styles.js";
 
 export const COMMON_STYLESHEETS = Object.freeze([
     "button-loading.css",
+    "buttons.css",
     "char-counter.css",
     "choice-checkbox.css",
     "floating-window.css",

@@ -114,3 +114,5 @@ Modul yang harus memuat skrip runtime mendeklarasikan `ui:resourceLoader` dan me
 ## Dependensi instalasi
 
 Manifes eksternal dapat menyatakan `hardDependencies` dan `softDependencies` sebagai daftar UUID atau ID modul. Dependensi keras tidak dianjurkan karena administrator harus memasang dan mengaktifkannya sebelum instalasi dapat dilanjutkan. Dependensi lunak dapat dipilih secara opsional pada dialog instalasi.
+
+Modul yang dinonaktifkan tidak pernah mengimpor atau menjalankan bootstrap normalnya. Modul yang harus menyediakan konfigurasi saat nonaktif mendeklarasikan `entrypoints.disabledApi`; file terisolasi itu mengekspor `registerDisabledApiRoutes(ctx)` dan hanya boleh mendaftarkan rute yang ditandai `allowWhenDisabled` secara eksplisit.

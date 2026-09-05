@@ -36,11 +36,11 @@ USER cognis
 
 COPY --chown=cognis:cognis package.json package-lock.json tsconfig.json tsconfig.base.json ./
 COPY --chown=cognis:cognis src ./src
-RUN npm_config_http_proxy= npm ci --ignore-scripts --include=dev
-RUN npm_config_http_proxy= npm run build \
-  && npm_config_http_proxy= npm run check:ui-build \
-  && npm_config_http_proxy= npm run check:server-build
-RUN npm_config_http_proxy= npm prune --ignore-scripts --omit=dev
+RUN npm ci --ignore-scripts --include=dev --no-audit --no-fund
+RUN npm run build \
+  && npm run check:ui-build \
+  && npm run check:server-build
+RUN npm prune --ignore-scripts --omit=dev --no-audit --no-fund
 
 EXPOSE 3000
 

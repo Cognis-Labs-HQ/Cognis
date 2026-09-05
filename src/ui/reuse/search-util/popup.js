@@ -9,6 +9,9 @@
  *   registerSearchIndex(categoryId, provider) — registers component-owned content indexes.
  *   search — ctx-backed search capability with component avenues.
  *
+ * @example
+ * openSearchPopup({ endpoint: "/api/v1/search", onSelect() {} });
+ *
  * @module reuse/search-util/popup
  */
 
@@ -29,20 +32,23 @@ import {
     collectVisibleNavigationSearchGroups,
     collectVisiblePageSearchGroups,
     collectVisiblePostSearchGroups,
-    filterApiFlatMatches,
     filterLocalGroupsIncrementally,
-    filterApiGroupMatches,
-    filterNavigableGroups,
     filterSearchGroupsForQuery,
+    filterSearchGroupsForType,
     filterVisibleSearchGroups,
-    hasSelectableTarget,
     isSearchResultVisibleToUser,
     mergeSearchGroups,
     normalizeSearchGroup,
     normalizeSearchOptions,
     resolvePopupPlaceholder,
-    shouldClientFilterApiResults,
 } from "./matching.js";
+import {
+    filterApiFlatMatches,
+    filterApiGroupMatches,
+    filterNavigableGroups,
+    hasSelectableTarget,
+    shouldClientFilterApiResults,
+} from "./api-results.js";
 import {
     clearPageFindHighlights,
     filterGroupsBySelectedCategories,
@@ -53,6 +59,7 @@ import {
     renderPageFindHighlights,
     renderResultCategorySummary,
     renderSearchPendingMessage,
+    renderSearchStatus,
     setCurrentPageFindMatch,
     updatePageFindCounter,
 } from "./results.js";
@@ -73,6 +80,8 @@ async function runSearch({
     closeOverlay,
     multiSelectState,
     searchOptions,
+    searchingText,
+    errorText,
 }) {
     if (query.length < MIN_SEARCH_QUERY_LENGTH) {
         renderSearchPendingMessage(resultsContainer, categoriesContainer);
@@ -80,12 +89,14 @@ async function runSearch({
     }
 
     const searchRunId = ++latestSearchRunId;
+    renderSearchStatus(resultsContainer, categoriesContainer, searchingText);
     const isMultiSelect = Boolean(multiSelectState);
     let localComplete = false;
     let apiComplete = false;
     let navigableLocalGroups = [];
     let navigableApiGroups = [];
     let flatItems = [];
+    let apiFailed = false;
 
     const isCurrentRun = () => searchRunId === latestSearchRunId;
     const renderAvailableResults = () => {
@@ -117,6 +128,14 @@ async function runSearch({
             return;
         }
         if (localComplete && apiComplete) {
+            if (apiFailed) {
+                renderSearchStatus(
+                    resultsContainer,
+                    categoriesContainer,
+                    errorText,
+                );
+                return;
+            }
             renderFlatResults(
                 resultsContainer,
                 [],
@@ -134,11 +153,15 @@ async function runSearch({
         query,
         searchOptions,
         (matchedLocalGroups) => {
+            const typedLocalGroups = filterSearchGroupsForType(
+                matchedLocalGroups,
+                typeFilter,
+            );
             navigableLocalGroups = mergeSearchGroups([
                 ...navigableLocalGroups,
                 ...(isMultiSelect
-                    ? matchedLocalGroups
-                    : filterNavigableGroups(matchedLocalGroups)),
+                    ? typedLocalGroups
+                    : filterNavigableGroups(typedLocalGroups)),
             ]);
             renderAvailableResults();
         },
@@ -153,12 +176,21 @@ async function runSearch({
 
     const token = localStorage.getItem("cognis_access_token");
     const headers = token ? { authorization: `Bearer ${token}` } : {};
+    const requestController = new AbortController();
+    const requestTimeout = window.setTimeout(
+        () => requestController.abort(),
+        10_000,
+    );
     fetch(buildSearchUrl(endpoint, query, typeFilter, searchOptions), {
         credentials: "same-origin",
         headers,
+        signal: requestController.signal,
     })
         .then(async (response) => {
-            if (!response.ok) return;
+            if (!response.ok) {
+                apiFailed = true;
+                return;
+            }
             const payload = await response.json();
             const responseData = payload?.data ?? [];
             const isGrouped =
@@ -169,8 +201,11 @@ async function runSearch({
             const apiGroups = isGrouped
                 ? responseData.map(normalizeSearchGroup).filter(Boolean)
                 : [];
-            const matchedApiGroups = filterVisibleSearchGroups(
-                filterApiGroupMatches(apiGroups, query, searchOptions),
+            const matchedApiGroups = filterSearchGroupsForType(
+                filterVisibleSearchGroups(
+                    filterApiGroupMatches(apiGroups, query, searchOptions),
+                ),
+                typeFilter,
             );
             navigableApiGroups = isMultiSelect
                 ? matchedApiGroups
@@ -183,8 +218,11 @@ async function runSearch({
                           (item) => isMultiSelect || hasSelectableTarget(item),
                       );
         })
-        .catch(() => {})
+        .catch(() => {
+            apiFailed = true;
+        })
         .finally(() => {
+            window.clearTimeout(requestTimeout);
             apiComplete = true;
             renderAvailableResults();
         });
@@ -299,6 +337,8 @@ export function openSearchPopup({
     localGroups = [],
     multiSelect = false,
     showOptions = true,
+    searchingText = "Searching…",
+    errorText = "Search failed. Please try again.",
 }) {
     const existingOverlay = document.querySelector(".search-popup-overlay");
     if (existingOverlay) {
@@ -323,7 +363,10 @@ export function openSearchPopup({
     closeButton.type = "button";
     closeButton.className = "search-popup-close btn-cancel";
     closeButton.setAttribute("aria-label", "Close search");
-    closeButton.textContent = "×";
+    const closeIcon = document.createElement("span");
+    closeIcon.className = "search-popup-close-icon";
+    closeIcon.setAttribute("aria-hidden", "true");
+    closeButton.appendChild(closeIcon);
 
     const input = document.createElement("input");
     input.type = "search";
@@ -331,6 +374,15 @@ export function openSearchPopup({
     input.placeholder = resolvePopupPlaceholder(placeholder, category);
     input.setAttribute("aria-label", ariaLabel);
     input.setAttribute("autocomplete", "off");
+
+    const clearButton = document.createElement("button");
+    clearButton.type = "button";
+    clearButton.className = "search-popup-clear btn-neutral";
+    clearButton.setAttribute("aria-label", "Clear search");
+    const clearIcon = document.createElement("span");
+    clearIcon.className = "search-popup-clear-icon";
+    clearIcon.setAttribute("aria-hidden", "true");
+    clearButton.appendChild(clearIcon);
 
     const categoriesContainer = document.createElement("div");
     categoriesContainer.className = "search-popup-result-categories";
@@ -342,6 +394,7 @@ export function openSearchPopup({
     const inputWrap = document.createElement("div");
     inputWrap.className = "search-popup-input-wrap";
     inputWrap.appendChild(input);
+    inputWrap.appendChild(clearButton);
 
     const pageFindControls = document.createElement("div");
     pageFindControls.className = "search-popup-page-find-controls";
@@ -542,6 +595,8 @@ export function openSearchPopup({
                     closeOverlay,
                     multiSelectState,
                     searchOptions,
+                    searchingText,
+                    errorText,
                 }),
             DEBOUNCE_MS,
         );
@@ -549,6 +604,14 @@ export function openSearchPopup({
 
     closeButton.addEventListener("click", () => {
         closeOverlay();
+    });
+
+    clearButton.addEventListener("click", () => {
+        input.value = "";
+        currentQuery = "";
+        clearButton.classList.remove("search-popup-clear--visible");
+        runCurrentSearch();
+        input.focus();
     });
 
     previousFindButton.addEventListener("click", () => {
@@ -565,6 +628,10 @@ export function openSearchPopup({
         const query = input.value.trim();
         if (query === currentQuery) return;
         currentQuery = query;
+        clearButton.classList.toggle(
+            "search-popup-clear--visible",
+            query.length > 0,
+        );
         runCurrentSearch();
     });
 
@@ -603,7 +670,10 @@ export function createSearchBar({
     toggleBtn.type = "button";
     toggleBtn.className = "search-bar-toggle";
     toggleBtn.setAttribute("aria-label", ariaLabel);
-    toggleBtn.innerHTML = "&#128269;";
+    const toggleIcon = document.createElement("span");
+    toggleIcon.className = "search-bar-toggle-icon";
+    toggleIcon.setAttribute("aria-hidden", "true");
+    toggleBtn.appendChild(toggleIcon);
     wrapper.appendChild(toggleBtn);
     setActiveSearchToggleButton(toggleBtn);
     bindSearchShortcut();

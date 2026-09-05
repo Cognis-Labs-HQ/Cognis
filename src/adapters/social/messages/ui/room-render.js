@@ -179,7 +179,12 @@ function renderRoomAvatar(room, currentAccountId) {
     });
 }
 
-export function renderThreadHeader(room, currentAccountId, i18n) {
+export function renderThreadHeader(
+    room,
+    currentAccountId,
+    i18n,
+    { actions = [] } = {},
+) {
     if (!room) return "";
     const members = room.members ?? [];
     const currentMember = members.find(
@@ -191,6 +196,14 @@ export function renderThreadHeader(room, currentAccountId, i18n) {
         ["teacher", "admin", "owner"].includes(
             localStorage.getItem("cognis_role") ?? "",
         );
+    const bannerActions = actions.filter(
+        (action) => action.placement === "after-header",
+    );
+    const headerActions = actions.filter(
+        (action) => action.placement !== "after-header",
+    );
+    const renderActionButton = (action) =>
+        `<button id="${escapeHtml(action.elementId ?? `messages-room-action-${action.id}`)}" class="${escapeHtml(action.className ?? "messages-room-action-btn btn-neutral")}${action.active ? " active" : ""}" data-room-action="${escapeHtml(action.id)}" type="button" aria-pressed="${action.active ? "true" : "false"}" title="${escapeHtml(action.label)}" aria-label="${escapeHtml(action.label)}">${action.iconSvg ?? ""}</button>`;
     return `
     <header class="messages-thread-header" id="messages-thread-header">
       ${renderRoomAvatar(room, currentAccountId)}
@@ -199,6 +212,7 @@ export function renderThreadHeader(room, currentAccountId, i18n) {
         ${renderMemberCountControl(room, members, i18n)}
       </div>
       <div class="messages-thread-actions">
+        ${headerActions.map(renderActionButton).join("")}
         ${canSetAvatar ? `<label class="messages-room-avatar-btn">${escapeHtml(i18n.t("module.social.messages.set_avatar"))}<input id="messages-room-avatar-input" type="file" accept="image/*" hidden /></label>` : ""}
         ${
             leaveHandle
@@ -207,6 +221,12 @@ export function renderThreadHeader(room, currentAccountId, i18n) {
         }
       </div>
     </header>
+    ${bannerActions
+        .map(
+            (action) =>
+                `<div class="messages-room-action-banner"><span>${escapeHtml(action.label)}</span><span class="messages-room-action-banner__actions">${(action.actions ?? []).map(renderActionButton).join("")}</span></div>`,
+        )
+        .join("")}
   `;
 }
 

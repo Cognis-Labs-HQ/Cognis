@@ -1,4 +1,10 @@
 /** Search data collection, normalization, filtering, and ranking helpers.
+ *
+ * Public exports include `filterSearchGroupsForType`, which limits grouped
+ * search results to a normalized result type such as `users`.
+ *
+ * @example
+ * filterSearchGroupsForType(groups, "user");
  * @module reuse/search-util/matching
  */
 import { uiCtx } from "../ui-ctx.js";
@@ -139,6 +145,35 @@ function normalizeResultClass(value) {
         .replace(/[^a-z0-9_-]+/g, "-")
         .replace(/^-+|-+$/g, "");
     return resultClass || "text";
+}
+
+function normalizeResultType(value) {
+    const normalizedType = normalizeResultClass(value);
+    return normalizedType === "user" ? "users" : normalizedType;
+}
+
+/**
+ * Filters grouped search results using normalized category and item types.
+ *
+ * @param {Array<{category?: string, items?: Array<object>}>} groups
+ * @param {string} typeFilter
+ * @returns {Array<{category?: string, items: Array<object>}>}
+ */
+export function filterSearchGroupsForType(groups, typeFilter) {
+    const normalizedTypeFilter = normalizeResultType(typeFilter);
+    if (!typeFilter || normalizedTypeFilter === "text") return groups ?? [];
+    return (groups ?? [])
+        .map((group) => {
+            const categoryType = normalizeResultType(group?.category);
+            const items = (group?.items ?? []).filter(
+                (item) =>
+                    categoryType === normalizedTypeFilter ||
+                    normalizeResultType(item?.resultClass) ===
+                        normalizedTypeFilter,
+            );
+            return { ...group, items };
+        })
+        .filter((group) => group.items.length > 0);
 }
 
 export function normalizeSearchItem(item, category) {
@@ -800,10 +835,11 @@ export function buildSearchUrl(
     typeFilter,
     searchOptions = {},
 ) {
-    const resolvedTypeFilter =
+    const rawTypeFilter =
         typeof typeFilter === "string" && typeFilter.trim()
             ? typeFilter.trim()
             : "";
+    const resolvedTypeFilter = normalizeResultType(rawTypeFilter);
     const connector = endpoint.includes("?") ? "&" : "?";
     const typeFilterParam = resolvedTypeFilter
         ? `&type=${encodeURIComponent(resolvedTypeFilter)}`
@@ -881,24 +917,6 @@ export function mergeSearchGroups(groups) {
     });
 }
 
-export function hasSelectableTarget(item) {
-    return Boolean(
-        String(item?.url ?? "").trim() ||
-        String(item?.handle ?? "").trim() ||
-        String(item?.id ?? "").trim() ||
-        String(item?.accountId ?? "").trim(),
-    );
-}
-
-export function filterNavigableGroups(groups) {
-    return (groups ?? [])
-        .map((group) => ({
-            ...group,
-            items: (group.items ?? []).filter(hasSelectableTarget),
-        }))
-        .filter((group) => group.items.length > 0);
-}
-
 function escapeSearchSelectorToken(value) {
     if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
         return CSS.escape(value);
@@ -965,35 +983,4 @@ export function filterVisibleSearchGroups(groups) {
             items: (group.items ?? []).filter(isSearchResultVisibleToUser),
         }))
         .filter((group) => group.items.length > 0);
-}
-
-export function shouldClientFilterApiResults(searchOptions = {}) {
-    const options = normalizeSearchOptions(searchOptions);
-    return options.wholeWord || options.regex || options.caseSensitive;
-}
-
-export function filterApiGroupMatches(groups, query, searchOptions = {}) {
-    if (!shouldClientFilterApiResults(searchOptions)) return groups;
-    const resolveMatch = createSearchMatchResolver(query, searchOptions);
-    return (groups ?? [])
-        .map((group) => ({
-            ...group,
-            items: (group.items ?? [])
-                .map((item) => attachSearchMatch(item, resolveMatch))
-                .filter(Boolean),
-        }))
-        .filter((group) => group.items.length > 0);
-}
-
-export function filterApiFlatMatches(items, query, searchOptions = {}) {
-    if (!shouldClientFilterApiResults(searchOptions)) return items;
-    const resolveMatch = createSearchMatchResolver(query, searchOptions);
-    return (items ?? [])
-        .map((item) =>
-            attachSearchMatch(
-                normalizeSearchItem(item, item?.category ?? "Search") ?? item,
-                resolveMatch,
-            ),
-        )
-        .filter(Boolean);
 }

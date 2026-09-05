@@ -50,6 +50,8 @@ Spawn Capability は `discard()` を持つハンドルを返します。閉じ�
 
 同期 Focus Control では、その UUID を `moduleId`、利用可能なルート ID を `routeId` とする `module-route` ローダーを宣言します。コラボレーションプロバイダーは引き続き要求を認可し、サーバー側の ctx Capability を通じて Whiteboard を作成または解決し、会議参加者へアクセス権を付与し、`focus:transport` では安定したリソース識別子だけを公開する必要があります。
 
+起動要求で `allowNavigation: true` を設定すると、SPA ナビゲーション中もマウント済みコンポーネントを保持する権限をハンドルへ付与できます。権限だけでは保持されません。所有する画面は PiP などナビゲーション可能な表示へ入るときに `setNavigationAllowed(true)` を呼び、インライン表示へ戻るときに `setNavigationAllowed(false)` を呼ぶ必要があります。
+
 ## 枠なしコンポーネントウィンドウ
 
 埋め込みページを呼び出し元所有のステージ全面に接して表示する場合は、`component-pages:spawn` に `borderless: true` を渡します。Cognis はコンポーネントウィンドウの外側の余白、内側の余白、境界線、角丸を除去し、ウィンドウと直下のコンテンツルートを親全体の大きさにして、プロバイダーのマウントオプションにも `borderless: true` を渡します。コンテンツ内部の間隔は引き続きプロバイダーが管理します。

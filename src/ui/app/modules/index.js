@@ -76,6 +76,7 @@ let selectedModule = null;
 let discoverySequence = 0;
 let marketplaceRefreshPending = false;
 let marketplacePollPending = false;
+let moduleLifecycleQueue = Promise.resolve();
 let refreshScreenshotCarousels = () => {};
 let pageMountController = null;
 const selectedBranches = new Map();
@@ -89,6 +90,16 @@ const PRIVATE_SOURCE_FAILURE_KEYS = new Set([
     "private_repository_access_failed",
     "private_repository_contents_access_failed",
 ]);
+
+export function isMarketplaceRefreshPending() {
+    return marketplaceRefreshPending;
+}
+
+function queueModuleLifecycleAction(operation) {
+    const queuedOperation = moduleLifecycleQueue.then(operation, operation);
+    moduleLifecycleQueue = queuedOperation.catch(() => {});
+    return queuedOperation;
+}
 
 function reportSourceFailures(sourceFailures) {
     for (const failure of sourceFailures) {
@@ -331,8 +342,16 @@ function renderSidebar(categories) {
 }
 
 function renderStore() {
+    const refreshPending = isMarketplaceRefreshPending();
+    const refreshButtonClass = `btn-neutral module-icon-button${refreshPending ? " button-loading module-icon-button-loading" : ""}`;
+    const refreshIcon = refreshPending
+        ? ""
+        : '<span class="module-icon module-icon-refresh" aria-hidden="true"></span>';
+    const refreshBusyAttributes = refreshPending
+        ? " disabled" + ' aria-busy="true"'
+        : "";
     return `<section class="module-store-results">
-        ${selectedModule ? renderModuleDetails(selectedModule) : `<div class="module-store-toolbar"><h2>${escapeHtml(i18n.t("ui.reuse.modules"))}</h2><div class="module-store-toolbar-actions"><button id="module-source-refresh" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.refresh"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.refresh"))}"><span class="module-icon module-icon-refresh" aria-hidden="true"></span></button><button id="module-marketplace-settings" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.settings"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.settings"))}"><span class="module-icon module-icon-settings" aria-hidden="true"></span></button></div></div><div class="module-store-grid">${visibleModules().map(renderCard).join("") || `<p>${escapeHtml(i18n.t("ui.app.modules.empty"))}</p>`}</div>`}
+        ${selectedModule ? renderModuleDetails(selectedModule) : `<div class="module-store-toolbar"><h2>${escapeHtml(i18n.t("ui.reuse.modules"))}</h2><div class="module-store-toolbar-actions"><button id="module-source-refresh" class="${refreshButtonClass}" type="button" title="${escapeHtml(i18n.t("ui.reuse.refresh"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.refresh"))}"${refreshBusyAttributes}>${refreshIcon}</button><button id="module-marketplace-settings" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.settings"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.settings"))}"><span class="module-icon module-icon-settings" aria-hidden="true"></span></button></div></div><div class="module-store-grid">${visibleModules().map(renderCard).join("") || `<p>${escapeHtml(i18n.t("ui.app.modules.empty"))}</p>`}</div>`}
       </section>`;
 }
 
@@ -736,20 +755,19 @@ function bindInteractions(root, signal) {
                 return;
             }
             if (target.id === "module-source-refresh") {
-                if (marketplaceRefreshPending) return;
+                if (isMarketplaceRefreshPending()) return;
                 marketplaceRefreshPending = true;
-                target.disabled = true;
+                refreshMarketplace();
                 try {
                     await refreshMarketplaceData();
-                    refreshMarketplace();
                     showToast(i18n.t("ui.app.modules.refresh_complete"), {
                         type: "success",
                     });
                 } catch (error) {
                     showToast(error.message, { type: "error" });
-                    target.disabled = false;
                 } finally {
                     marketplaceRefreshPending = false;
+                    refreshMarketplace();
                 }
                 return;
             }
@@ -861,9 +879,11 @@ function bindInteractions(root, signal) {
                     : beginButtonLoading(target);
                 refreshDetailActions();
                 try {
-                    const completed = await runLifecycleAction(module, action, {
-                        dependenciesReady,
-                    });
+                    const completed = await queueModuleLifecycleAction(() =>
+                        runLifecycleAction(module, action, {
+                            dependenciesReady,
+                        }),
+                    );
                     if (completed === false && action === "install") {
                         showToast(i18n.t("ui.app.modules.install_cancelled"), {
                             type: "info",

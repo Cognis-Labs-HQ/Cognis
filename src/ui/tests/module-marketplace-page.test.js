@@ -179,6 +179,10 @@ test("module filters expose every selected state", () => {
         marketplaceStyles,
         /\[data-module-sidebar\] button\.is-active\s*{[^}]*border-color: var\(--accent-color\)/,
     );
+    assert.match(
+        marketplaceStyles,
+        /\[data-module-sidebar\] button:not\(\.is-active\)\s*{[^}]*border-color: transparent/,
+    );
 });
 
 test("module marketplace passes root and options to the page composer", () => {
@@ -578,6 +582,16 @@ test("module marketplace refreshes every configured source on demand", () => {
     assert.match(source, /target\.id === "module-source-refresh"/);
     assert.match(source, /ui\.app\.modules\.refresh_complete/);
     assert.match(source, /await refreshMarketplaceData\(\)/);
+    assert.match(source, /isMarketplaceRefreshPending\(\)/);
+    assert.match(
+        source,
+        /marketplaceRefreshPending = true;\s*refreshMarketplace\(\)/,
+    );
+    assert.match(
+        source,
+        /marketplaceRefreshPending = false;\s*refreshMarketplace\(\)/,
+    );
+    assert.match(source, /button-loading module-icon-button-loading/);
     assert.match(
         source,
         /loadKnownModules\(false, signal, false\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
@@ -884,11 +898,25 @@ test("module marketplace refresh actions emit one completion result", () => {
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
     );
-    assert.match(source, /if \(marketplaceRefreshPending\) return/);
+    assert.match(source, /if \(isMarketplaceRefreshPending\(\)\) return/);
     assert.match(source, /marketplaceRefreshPending = true/);
     assert.match(
         source,
-        /finally \{\s*marketplaceRefreshPending = false;\s*\}/,
+        /finally \{\s*marketplaceRefreshPending = false;\s*refreshMarketplace\(\);\s*\}/,
+    );
+});
+
+test("module lifecycle actions are serialized without dropping queued work", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /let moduleLifecycleQueue = Promise\.resolve\(\)/);
+    assert.match(source, /moduleLifecycleQueue\.then\(operation, operation\)/);
+    assert.match(
+        source,
+        /await queueModuleLifecycleAction\(\(\) =>\s*runLifecycleAction/,
     );
 });
 

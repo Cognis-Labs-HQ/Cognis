@@ -21,6 +21,8 @@ import {
     addMember,
     createDm,
     createRoom,
+    deleteRoom,
+    deleteRoomForActor,
     findDmBetween,
     findGroupByExactMembers,
     getMember,
@@ -87,6 +89,17 @@ export class DbMessagesStore {
         return getRoom(this.db, id);
     }
 
+    async deleteRoom(id: string): Promise<void> {
+        await deleteRoom(this.db, id);
+    }
+
+    async deleteRoomForActor(
+        roomId: string,
+        actorAccountId: string,
+    ): Promise<"deleted" | "forbidden" | "not_found"> {
+        return deleteRoomForActor(this.db, roomId, actorAccountId);
+    }
+
     async updateRoomAvatar(
         roomId: string,
         avatarKey: string | null,
@@ -111,13 +124,26 @@ export class DbMessagesStore {
         displayName?: string | null;
     }): Promise<boolean> {
         return this.db.transaction(async (executor) => {
+            const existingMember = await getMember(
+                executor,
+                input.roomId,
+                input.accountId,
+            );
+            if (existingMember?.archived) {
+                await setArchived(
+                    executor,
+                    input.roomId,
+                    input.accountId,
+                    false,
+                );
+            }
             const added = await addMember(
                 executor,
                 input.roomId,
                 input.accountId,
                 input.role,
             );
-            if (!added) return false;
+            if (!added && !existingMember?.archived) return false;
             await insertRoomEvent(executor, {
                 roomId: input.roomId,
                 actorId: input.actorId,
@@ -126,7 +152,7 @@ export class DbMessagesStore {
                 subjectHandle: input.handle,
                 subjectDisplayName: input.displayName,
             });
-            return true;
+            return added;
         });
     }
 
@@ -220,14 +246,11 @@ export class DbMessagesStore {
     async appendRoomEvent(input: {
         roomId: string;
         actorId: string;
-        eventType:
-            | "member_joined"
-            | "member_left"
-            | "profile_display_name_changed"
-            | "profile_avatar_changed";
+        eventType: string;
         subjectAccountId: string;
         subjectHandle?: string | null;
         subjectDisplayName?: string | null;
+        details?: Record<string, unknown>;
     }): Promise<MessageRow> {
         return appendRoomEvent(this.db, input);
     }

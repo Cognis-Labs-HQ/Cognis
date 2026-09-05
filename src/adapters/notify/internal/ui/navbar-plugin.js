@@ -78,6 +78,94 @@ function navigateNotif(actionUrl) {
     }
 }
 
+function actionButtonClass(consequence) {
+    if (consequence === "creative") return "btn-confirm";
+    if (consequence === "destructive") return "btn-cancel";
+    return "btn-neutral";
+}
+
+function safeActionIcon(iconSvg) {
+    if (typeof iconSvg !== "string") return "";
+    const documentNode = new DOMParser().parseFromString(
+        iconSvg,
+        "image/svg+xml",
+    );
+    const svg = documentNode.documentElement;
+    if (
+        svg.nodeName.toLowerCase() !== "svg" ||
+        svg.querySelector("parsererror")
+    )
+        return "";
+    const allowedElements = new Set([
+        "svg",
+        "path",
+        "circle",
+        "line",
+        "polyline",
+    ]);
+    const allowedAttributes = new Set([
+        "aria-hidden",
+        "d",
+        "fill",
+        "focusable",
+        "viewBox",
+        "cx",
+        "cy",
+        "r",
+        "x1",
+        "x2",
+        "y1",
+        "y2",
+        "points",
+        "stroke",
+        "stroke-width",
+    ]);
+    for (const element of svg.querySelectorAll("*")) {
+        if (!allowedElements.has(element.nodeName.toLowerCase())) {
+            element.remove();
+            continue;
+        }
+        for (const attribute of [...element.attributes]) {
+            if (!allowedAttributes.has(attribute.name)) {
+                element.removeAttribute(attribute.name);
+            }
+        }
+    }
+    for (const attribute of [...svg.attributes]) {
+        if (!allowedAttributes.has(attribute.name))
+            svg.removeAttribute(attribute.name);
+    }
+    return new XMLSerializer().serializeToString(svg);
+}
+
+function renderNotificationActions(notification) {
+    const actions = notification.metadata?.actions;
+    if (!Array.isArray(actions)) return "";
+    const buttons = actions
+        .filter(
+            (action) =>
+                action &&
+                typeof action.id === "string" &&
+                typeof action.label === "string",
+        )
+        .map(
+            (action) =>
+                `<button class="notification-action ${actionButtonClass(action.consequence)}" data-notification-action="${escapeHtml(action.id)}" type="button" aria-label="${escapeHtml(action.label)}">${safeActionIcon(action.iconSvg) || escapeHtml(action.label)}</button>`,
+        )
+        .join("");
+    return buttons
+        ? `<span class="notification-actions">${buttons}</span>`
+        : "";
+}
+
+function dispatchNotificationAction(notification, actionId) {
+    window.dispatchEvent(
+        new CustomEvent("cognis:notification-command", {
+            detail: { actionId, notification },
+        }),
+    );
+}
+
 async function getRoomKey(roomId) {
     const loadChatRoomKey = uiCtx.capabilities.get(
         "social:messages:loadChatRoomKey",
@@ -107,7 +195,7 @@ function isNotificationOwnedByCurrentPage(notification) {
                 .filter(Boolean)[0];
             if (actionPage === currentPage) return true;
         } catch {
-            // Malformed actions are handled by navigateNotif (lines 42-60 above).
+            // Malformed actions are handled by navigateNotif (lines 63-79 above).
         }
     }
 
@@ -148,26 +236,41 @@ async function decryptRoomMessage(roomId) {
     }
 }
 
-async function fetchCount() {
-    try {
-        const res = await apiFetch("/api/v1/notify/inbox/count");
-        if (!res.ok) return 0;
-        const payload = await res.json();
-        return payload.data?.count ?? 0;
-    } catch {
-        return 0;
-    }
-}
-
 async function fetchNotifications() {
     try {
         const res = await apiFetch("/api/v1/notify/inbox");
         if (!res.ok) return [];
         const payload = await res.json();
-        return payload.data ?? [];
+        return (payload.data ?? []).map(localizeNotification);
     } catch {
         return [];
     }
+}
+
+function localizeNotification(notification) {
+    const localizedText = notification.metadata?.localizedText;
+    if (!localizedText || typeof localizedText !== "object") {
+        return notification;
+    }
+    const preferredLocales = [
+        ...(navigator.languages ?? []),
+        navigator.language,
+        "en",
+    ];
+    for (const locale of preferredLocales) {
+        const normalizedLocale = String(locale ?? "")
+            .toLowerCase()
+            .split("-")[0];
+        const copy = localizedText[normalizedLocale];
+        if (
+            copy &&
+            typeof copy.subject === "string" &&
+            typeof copy.body === "string"
+        ) {
+            return { ...notification, subject: copy.subject, body: copy.body };
+        }
+    }
+    return notification;
 }
 
 async function markAllRead() {
@@ -184,6 +287,26 @@ async function deleteNotification(id) {
     await apiFetch(`/api/v1/notify/inbox/${encodeURIComponent(id)}`, {
         method: "DELETE",
     });
+}
+
+async function resolveCorrelatedNotifications(correlationId) {
+    if (!correlationId) return;
+    document
+        .querySelectorAll(
+            `[data-notification-correlation="${CSS.escape(correlationId)}"]`,
+        )
+        .forEach((element) => element.remove());
+    const notifications = await fetchNotifications();
+    const matches = notifications.filter(
+        (notification) =>
+            String(notification.metadata?.correlationId ?? "") ===
+            correlationId,
+    );
+    await Promise.all(
+        matches.map((notification) => deleteNotification(notification.id)),
+    );
+    for (const notification of matches) seenIds?.delete(notification.id);
+    await refreshCount();
 }
 
 async function deleteAllNotifications() {
@@ -291,6 +414,7 @@ function renderNotificationItem(notif, i18n) {
         `<span class="notification-item-preview">${escapeHtml(notif.body)}</span>` +
         "</span>" +
         `<span class="notification-item-time" data-relative-time="${notif.createdAt}">${escapeHtml(formatRelativeTime(notif.createdAt))}</span>` +
+        renderNotificationActions(notif) +
         (notif.actionUrl
             ? '<span class="notification-item-link-arrow" aria-hidden="true">&#8250;</span>'
             : "") +
@@ -298,6 +422,14 @@ function renderNotificationItem(notif, i18n) {
 
     listItem.addEventListener("click", async (e) => {
         if (e.target.closest(".notification-dismiss")) return;
+        const actionButton = e.target.closest("[data-notification-action]");
+        if (actionButton instanceof HTMLElement) {
+            dispatchNotificationAction(
+                notif,
+                actionButton.dataset.notificationAction,
+            );
+            return;
+        }
         if (!notif.read) {
             try {
                 await markOneRead(notif.id);
@@ -342,7 +474,11 @@ function renderNotificationItem(notif, i18n) {
 }
 
 async function refreshCount() {
-    const count = await fetchCount();
+    const notifications = await fetchNotifications();
+    const count = notifications.filter(
+        (notification) =>
+            !notification.read && notification.metadata?.continuous !== true,
+    ).length;
     updateBadge(count);
 }
 
@@ -362,18 +498,21 @@ function renderPanelContents(i18n) {
     if (emptyEl) emptyEl.hidden = true;
 
     currentNotifications.forEach((n) => seenIds?.add(n.id));
-    const unreadCount = currentNotifications.filter((n) => !n.read).length;
+    const panelNotifications = currentNotifications.filter(
+        (notification) => notification.metadata?.continuous !== true,
+    );
+    const unreadCount = panelNotifications.filter((n) => !n.read).length;
     updateBadge(unreadCount);
 
     updateClearAllButton();
 
-    if (currentNotifications.length === 0) {
+    if (panelNotifications.length === 0) {
         if (emptyEl) emptyEl.hidden = false;
         stopRelativeTimeTicker();
         return;
     }
 
-    for (const notif of currentNotifications) {
+    for (const notif of panelNotifications) {
         listEl.appendChild(renderNotificationItem(notif, i18n));
     }
 
@@ -602,8 +741,23 @@ function insertButton(wrap) {
 async function startPolling(i18n) {
     const initial = await fetchNotifications();
     seenIds = new Set(initial.map((n) => n.id));
-    const unread = initial.filter((n) => !n.read).length;
+    const persistentArrivals = initial.filter(
+        (notification) =>
+            !notification.read && notification.metadata?.continuous === true,
+    );
+    const unread = initial.filter(
+        (notification) =>
+            !notification.read && notification.metadata?.continuous !== true,
+    ).length;
     updateBadge(unread);
+    for (const notification of persistentArrivals) {
+        window.dispatchEvent(
+            new CustomEvent("cognis:notification-arrival", {
+                detail: { notification },
+            }),
+        );
+        void showArrivalToast(notification, i18n);
+    }
 
     function scheduleNext() {
         const delay =
@@ -627,13 +781,10 @@ async function startPolling(i18n) {
 
 async function checkForNew(i18n) {
     const notifs = await fetchNotifications();
-    const unread = notifs.filter((n) => !n.read).length;
+    const unread = notifs.filter(
+        (n) => !n.read && n.metadata?.continuous !== true,
+    ).length;
     updateBadge(unread);
-
-    if (seenIds === null) {
-        seenIds = new Set(notifs.map((n) => n.id));
-        return;
-    }
 
     const arrivals = notifs.filter((n) => !seenIds.has(n.id));
     for (const notif of arrivals) {
@@ -643,7 +794,11 @@ async function checkForNew(i18n) {
                 detail: { notification: notif },
             }),
         );
-        if (!notif.read && !isNotificationOwnedByCurrentPage(notif)) {
+        if (
+            !notif.read &&
+            (notif.metadata?.continuous === true ||
+                !isNotificationOwnedByCurrentPage(notif))
+        ) {
             void showArrivalToast(notif, i18n);
         }
     }
@@ -709,6 +864,10 @@ async function showArrivalToast(notif, i18n) {
     const toast = document.createElement("div");
     toast.className = "arrival-toast";
     toast.setAttribute("role", "alert");
+    const correlationId = String(notif.metadata?.correlationId ?? "");
+    if (correlationId) {
+        toast.dataset.notificationCorrelation = correlationId;
+    }
 
     let toastSubject = notif.subject;
     let toastPreview = notif.body;
@@ -732,6 +891,8 @@ async function showArrivalToast(notif, i18n) {
 
     const sender = notif.senderName ?? i18n.t("ui.reuse.system");
 
+    const isPersistent = notif.metadata?.continuous === true;
+    toast.classList.toggle("arrival-toast--persistent", isPersistent);
     toast.innerHTML =
         '<span class="arrival-toast-icon" aria-hidden="true">\uD83D\uDD14</span>' +
         '<div class="arrival-toast-text">' +
@@ -739,7 +900,9 @@ async function showArrivalToast(notif, i18n) {
         `<span class="arrival-toast-sender">${escapeHtml(sender)}</span>` +
         `<span class="arrival-toast-preview">${escapeHtml(preview)}</span>` +
         "</div>" +
-        `<button class="arrival-toast-dismiss" type="button" aria-label="${i18n.t("ui.reuse.dismiss")}">&#215;</button>`;
+        (isPersistent
+            ? renderNotificationActions(notif)
+            : `<button class="arrival-toast-dismiss" type="button" aria-label="${i18n.t("ui.reuse.dismiss")}">&#215;</button>`);
 
     const dismiss = () => {
         toast.classList.add("arrival-toast--out");
@@ -749,6 +912,16 @@ async function showArrivalToast(notif, i18n) {
     };
 
     toast.addEventListener("click", (e) => {
+        const actionButton = e.target.closest("[data-notification-action]");
+        if (actionButton instanceof HTMLElement) {
+            dismiss();
+            void markArrivalRead(notif);
+            dispatchNotificationAction(
+                notif,
+                actionButton.dataset.notificationAction,
+            );
+            return;
+        }
         if (e.target.closest(".arrival-toast-dismiss")) {
             dismiss();
             return;
@@ -770,8 +943,25 @@ async function showArrivalToast(notif, i18n) {
         });
 
     container.appendChild(toast);
-    setTimeout(dismiss, TOAST_AUTO_DISMISS_MS);
+    if (isPersistent) {
+        const metadata = notif.metadata ?? {};
+        const remaining = Number(metadata.expiresAt) - Date.now();
+        setTimeout(
+            () => {
+                dismiss();
+            },
+            Math.max(0, Number.isFinite(remaining) ? remaining : 0),
+        );
+    } else {
+        setTimeout(dismiss, TOAST_AUTO_DISMISS_MS);
+    }
 }
+
+window.addEventListener("cognis:notification-resolved", (event) => {
+    void resolveCorrelatedNotifications(
+        String(event.detail?.correlationId ?? ""),
+    );
+});
 
 (async function init() {
     if (!localStorage.getItem("cognis_access_token")) return;
