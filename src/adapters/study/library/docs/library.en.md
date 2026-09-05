@@ -27,3 +27,7 @@ Global records are readable by authenticated users and writable by admins and ow
 ## Declarative content packs
 
 Installed language packages call `inspectContentPack(root)` to validate or `ingestContentPack(root)` to install a data-only Library. Each root contains `manifest.json`, a referenced schema file, and a content directory whose immediate subdirectories match layer IDs. Files contain record arrays with stable IDs and explicit references. Cognis validates the complete graph, derives namespaced IDs, records a digest and receipt, and writes the schema, entries, and edges atomically. The full authoring contract and example tree are documented in `study-language-framework.en.md`.
+
+## Localized definitions
+
+Every layer with the `definition` semantic role declares its module-owned string-key prefix and its string-key and localized-text fields. Entry creation requires English, prompts for every UI language advertised by Cognis, stores the generated key on the definition record, and can fill omitted languages through the optional `localization:translateString` capability.

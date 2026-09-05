@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="gateway.study.library_definition_create">定義を追加</string>
+  <string name="gateway.study.library_definition_save">定義を保存</string>
+  <string name="gateway.study.library_definition_layer">定義レイヤー</string>
+</resources>

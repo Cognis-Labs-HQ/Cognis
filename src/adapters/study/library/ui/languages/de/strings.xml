@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="gateway.study.library_definition_create">Definition hinzufügen</string>
+  <string name="gateway.study.library_definition_save">Definition speichern</string>
+  <string name="gateway.study.library_definition_layer">Definitionsebene</string>
+</resources>

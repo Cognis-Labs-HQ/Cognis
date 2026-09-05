@@ -6,6 +6,8 @@ import { openPopup } from "/static/reuse/popup.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { showToast } from "/static/reuse/toast.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
+import { fetchSupportedLanguages } from "/static/reuse/system-client.js";
 import {
     bindStudySubNavigation,
     loadStudySubNavigationModel,
@@ -16,6 +18,7 @@ import {
     fetchLibraryEntries,
     fetchLibraryEntry,
     fetchLibrarySchemas,
+    createLibraryEntry,
 } from "/static/gateways/study/ui/library-client.js";
 import {
     buildLibraryUrl,
@@ -23,6 +26,94 @@ import {
 } from "/static/gateways/study/ui/language.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
+
+async function openDefinitionForm(schemas, i18n) {
+    const definitions = schemas.flatMap((schema) =>
+        schema.layers
+            .filter((layer) => layer.semanticRole === "definition")
+            .map((layer) => ({ schema, layer })),
+    );
+    if (!definitions.length) return false;
+    const languages = await fetchSupportedLanguages();
+    const fields = [
+        {
+            name: "definition_target",
+            label: i18n.t("gateway.study.library_definition_layer"),
+            type: "select",
+            required: true,
+            options: definitions.map(({ schema, layer }) => ({
+                value: `${schema.id}:${layer.id}`,
+                label: `${localizedLabel(schema.metadata, schema.language)} — ${localizedLabel(layer.metadata, schema.language)}`,
+            })),
+        },
+        ...languages.map((language) => ({
+            name: `translation_${language.key}`,
+            label: language.label ?? language.key,
+            type: "textarea",
+            required: parseLanguageCode(language.key) === "en",
+        })),
+    ];
+    const builder = createFormBuilder(
+        { i18n, escapeHtml },
+        {
+            formId: "library-definition-form",
+            submitLabelKey: "gateway.study.library_definition_save",
+            includeSubmitButton: false,
+            fields,
+        },
+    );
+    let controller;
+    await openPopup({
+        title: i18n.t("gateway.study.library_definition_create"),
+        body: builder.render(),
+        actions: [
+            {
+                id: "save",
+                label: i18n.t("gateway.study.library_definition_save"),
+                variant: "confirm",
+            },
+        ],
+        onOpen: (overlay) => {
+            controller = builder.attach(
+                overlay.querySelector("#library-definition-form"),
+            );
+        },
+        onAction: async (actionId) => {
+            if (actionId !== "save" || !controller?.validateAll()) return false;
+            const values = controller.getValues();
+            const translations = Object.fromEntries(
+                languages
+                    .map(({ key }) => [
+                        key,
+                        values[`translation_${key}`]?.trim(),
+                    ])
+                    .filter(([, value]) => value),
+            );
+            const [schemaId, layerId] = values.definition_target.split(":");
+            const { schema, layer } = definitions.find(
+                (candidate) =>
+                    candidate.schema.id === schemaId &&
+                    candidate.layer.id === layerId,
+            );
+            await createLibraryEntry(
+                { scope: "global" },
+                {
+                    schemaId: schema.id,
+                    schemaVersion: schema.version,
+                    layer: layer.id,
+                    label: translations.en,
+                    fields: {
+                        [layer.definitionLocalization.translationsField]:
+                            translations,
+                    },
+                    definitionLanguages: languages.map(({ key }) => key),
+                },
+            );
+            return true;
+        },
+    });
+    return true;
+}
 
 export function entryUrl(entry) {
     return `/study/library/${encodeURIComponent(entry.schemaId)}/${encodeURIComponent(entry.layer)}/${encodeURIComponent(entry.id)}`;
@@ -328,7 +419,10 @@ async function openEntryPopup(
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
-        componentStringBaseUrls: ["/static/gateways/study/languages"],
+        componentStringBaseUrls: [
+            "/static/gateways/study/languages",
+            "/static/adapters/study/library/languages",
+        ],
     });
     applyDocumentTitle(i18n, "gateway.study.library_label");
     if (!history.state?.routerPage) {
@@ -390,7 +484,18 @@ export async function mount(root, { signal } = {}) {
             title: i18n.t("gateway.study.library_label"),
             subtitle: i18n.t("gateway.study.library_subtitle"),
         },
-        toolbar: [],
+        toolbar: schemas.some((schema) =>
+            schema.layers.some((layer) => layer.semanticRole === "definition"),
+        )
+            ? [
+                  {
+                      id: "library-actions",
+                      label: i18n.t("gateway.study.library_definition_create"),
+                      render: () =>
+                          `<button class="btn-confirm" data-create-definition>${escapeHtml(i18n.t("gateway.study.library_definition_create"))}</button>`,
+                  },
+              ]
+            : [],
         subNavigation: [
             {
                 id: "study-subnav",
@@ -407,6 +512,11 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
     signal?.throwIfAborted();
     bindStudySubNavigation(root, { signal });
+    root.querySelector("[data-create-definition]")?.addEventListener(
+        "click",
+        () => void openDefinitionForm(schemas, i18n),
+        { signal },
+    );
     root.addEventListener(
         "click",
         (event) => {

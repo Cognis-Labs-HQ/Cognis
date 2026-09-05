@@ -10,6 +10,10 @@ import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { createLibraryRoutes } from "./routes/index.js";
 import { LibraryService } from "./service.js";
 import { LibraryStore } from "./store.js";
+import {
+    STRING_LOCALIZATION_CAPABILITY,
+    type StringLocalizationCapability,
+} from "./types.js";
 
 let adapterReady = false;
 const UI_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "ui");
@@ -59,6 +63,9 @@ export async function bootstrapStudyAdapter(
         ),
         ctx.flow,
         ctx.log,
+        ctx.capabilities.get<StringLocalizationCapability>(
+            STRING_LOCALIZATION_CAPABILITY,
+        ),
     );
     ctx.capabilities.contribute("study:library", service);
     ctx.registerRoute(

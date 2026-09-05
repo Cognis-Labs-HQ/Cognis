@@ -105,6 +105,25 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
             if (field?.type !== "asset")
                 throw new Error("stroke_asset_field_not_found");
         }
+        if (layer.semanticRole === "definition") {
+            const localization = layer.definitionLocalization;
+            if (!localization)
+                throw new Error("definition_localization_required");
+            if (!ROLE_PATTERN.test(localization.stringKeyPrefix))
+                throw new Error("invalid_definition_string_key_prefix");
+            const stringKeyField = (layer.fields ?? []).find(
+                ({ id }) => id === localization.stringKeyField,
+            );
+            const translationsField = (layer.fields ?? []).find(
+                ({ id }) => id === localization.translationsField,
+            );
+            if (stringKeyField?.type !== "string")
+                throw new Error("definition_string_key_field_required");
+            if (translationsField?.type !== "localizedText")
+                throw new Error("definition_translations_field_required");
+        } else if (layer.definitionLocalization) {
+            throw new Error("definition_localization_role_required");
+        }
         const relationshipIds = new Set<string>();
         for (const relationship of layer.relationships ?? []) {
             validateRelationship(relationship, layerIds, relationshipIds);

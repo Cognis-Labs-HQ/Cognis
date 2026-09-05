@@ -15,3 +15,7 @@ Das Study-Gateway bietet Schemaerkennung, Auflistung, Erstellung, Details, beids
 ## Deklarative Inhaltspakete
 
 Installierte Sprachpakete rufen `inspectContentPack(root)` zur Prüfung oder `ingestContentPack(root)` zur Installation einer reinen Datenbibliothek auf. Das Verzeichnis enthält `manifest.json`, eine referenzierte Schemadatei und ein Inhaltsverzeichnis mit Ebenen-Unterverzeichnissen. Dateien enthalten Datensatzarrays mit stabilen IDs und ausdrücklichen Beziehungen. Cognis prüft den vollständigen Graphen, erzeugt Namensraum-IDs, erfasst Digest und Beleg und schreibt Schema, Einträge und Kanten atomar. Der Autorenvertrag steht in `study-language-framework.de.md`.
+
+## Lokalisierte Definitionen
+
+Jede Ebene mit der semantischen Rolle `definition` deklariert ihr moduleigenes Zeichenkettenpräfix sowie ihre Felder für Schlüssel und lokalisierten Text. Beim Erstellen ist Englisch erforderlich; das Formular fragt alle von Cognis angebotenen Oberflächensprachen ab, speichert den erzeugten Schlüssel im Definitionsdatensatz und kann fehlende Sprachen über die optionale Fähigkeit `localization:translateString` ergänzen.

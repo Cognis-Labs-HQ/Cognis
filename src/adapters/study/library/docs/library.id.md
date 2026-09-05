@@ -15,3 +15,7 @@ Gateway Study menyediakan penemuan skema, daftar, pembuatan, detail, penelusuran
 ## Paket konten deklaratif
 
 Paket bahasa terpasang memanggil `inspectContentPack(root)` untuk validasi atau `ingestContentPack(root)` untuk memasang Pustaka khusus data. Akar paket berisi `manifest.json`, berkas skema yang dirujuk, serta direktori konten dengan subdirektori ID lapisan. Berkas memuat array rekaman dengan ID stabil dan relasi eksplisit. Cognis memvalidasi seluruh graf, membuat ID bernamespace, mencatat digest dan tanda terima, lalu menulis skema, entri, serta edge secara atomik. Kontrak penulisan lengkap berada di `study-language-framework.id.md`.
+
+## Definisi yang dilokalkan
+
+Setiap lapisan dengan peran semantik `definition` mendeklarasikan awalan kunci string milik modul serta bidang kunci dan teks terlokalnya. Pembuatan entri mewajibkan bahasa Inggris, meminta masukan untuk setiap bahasa antarmuka yang diiklankan Cognis, menyimpan kunci yang dihasilkan pada rekaman definisi, dan dapat mengisi bahasa yang kosong melalui kapabilitas opsional `localization:translateString`.

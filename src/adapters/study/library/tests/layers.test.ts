@@ -72,6 +72,44 @@ test("consumers define arbitrary layers and constrained relationships", () => {
     );
 });
 
+test("definition layers declare module-owned localization fields", () => {
+    const definitionLayer = {
+        id: "definitions",
+        semanticRole: "definition" as const,
+        metadata: { labels: { en: "Definitions" } },
+        fields: [
+            {
+                id: "string_key",
+                type: "string" as const,
+                metadata: { labels: { en: "String key" } },
+            },
+            {
+                id: "translations",
+                type: "localizedText" as const,
+                metadata: { labels: { en: "Translations" } },
+            },
+        ],
+        definitionLocalization: {
+            stringKeyPrefix: "japanese:definitions",
+            stringKeyField: "string_key",
+            translationsField: "translations",
+        },
+    };
+    assert.doesNotThrow(() =>
+        validateLibrarySchema({ ...english, layers: [definitionLayer] }),
+    );
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...english,
+                layers: [
+                    { ...definitionLayer, definitionLocalization: undefined },
+                ],
+            }),
+        /definition_localization_required/,
+    );
+});
+
 test("schema languages canonicalize standard and private-use tags", () => {
     assert.equal(
         validateLibrarySchema({ ...english, language: "EN-us" }).language,

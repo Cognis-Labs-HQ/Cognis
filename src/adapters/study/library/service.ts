@@ -1,4 +1,6 @@
 import type { AccessRole, FlowApi } from "@cognis/core";
+import { randomUUID } from "node:crypto";
+import { canonicalizeLanguageTag } from "./language.js";
 import { inspectContentPack } from "./content-pack.js";
 import {
     findLayer,
@@ -20,6 +22,7 @@ import type {
     LibraryPushRequest,
     LibraryResolutionProposal,
     LibrarySchema,
+    StringLocalizationCapability,
 } from "./types.js";
 
 export interface LibraryActor {
@@ -123,6 +126,7 @@ export class LibraryService implements LibraryCapability {
             message: string,
             meta?: Record<string, unknown>,
         ) => void | Promise<void>,
+        private readonly stringLocalization?: StringLocalizationCapability,
     ) {}
 
     async registerSchema(input: LibrarySchema): Promise<void> {
@@ -352,7 +356,43 @@ export class LibraryService implements LibraryCapability {
         const schema = this.schema(input.schemaId, input.schemaVersion);
         if (!input.label?.trim() || input.label.length > 500)
             throw new Error("invalid_label");
-        const fields = input.fields ?? {};
+        const layer = findLayer(schema, input.layer);
+        const fields = structuredClone(input.fields ?? {});
+        let entryId: string | undefined;
+        if (layer.semanticRole === "definition") {
+            const localization = layer.definitionLocalization!;
+            const translations = fields[localization.translationsField];
+            if (
+                !translations ||
+                typeof translations !== "object" ||
+                Array.isArray(translations) ||
+                typeof (translations as Record<string, unknown>).en !==
+                    "string" ||
+                !(translations as Record<string, string>).en.trim()
+            ) {
+                throw new Error("definition_english_required");
+            }
+            entryId = randomUUID();
+            const stringKey = `${localization.stringKeyPrefix}:${entryId}`;
+            fields[localization.stringKeyField] = stringKey;
+            if (this.stringLocalization) {
+                const localized = translations as Record<string, string>;
+                for (const requestedLanguage of input.definitionLanguages ??
+                    []) {
+                    const targetLanguage =
+                        canonicalizeLanguageTag(requestedLanguage);
+                    if (localized[targetLanguage]?.trim()) continue;
+                    const translated = await this.stringLocalization.translate({
+                        stringKey,
+                        sourceText: localized.en.trim(),
+                        sourceLanguage: "en",
+                        targetLanguage,
+                    });
+                    if (translated?.trim())
+                        localized[targetLanguage] = translated.trim();
+                }
+            }
+        }
         if (JSON.stringify(fields).length > 100_000)
             throw new Error("fields_too_large");
         validateFields(schema, input.layer, fields);
@@ -368,6 +408,7 @@ export class LibraryService implements LibraryCapability {
             location,
             {
                 ...input,
+                definitionLanguages: undefined,
                 schemaVersion: schema.version,
                 label: input.label.trim(),
                 fields,
@@ -375,6 +416,7 @@ export class LibraryService implements LibraryCapability {
             },
             schema.language,
             actor.accountId,
+            entryId,
         );
     }
 

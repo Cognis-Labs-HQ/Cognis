@@ -444,8 +444,9 @@ export class LibraryStore {
         input: LibraryEntryInput,
         language: string,
         accountId: string,
+        requestedId?: string,
     ): Promise<LibraryEntry> {
-        const id = randomUUID();
+        const id = requestedId ?? randomUUID();
         await this.db.transaction(async (transactionDb) => {
             await transactionDb.executeCommand({
                 option: "INSERT",

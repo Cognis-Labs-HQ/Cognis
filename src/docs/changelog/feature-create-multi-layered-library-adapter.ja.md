@@ -38,8 +38,13 @@ ctx と認証済み API を通じて、検証付きグローバル JSON イン�
 
 言語パックはデータ専用ディレクトリをライブラリ capability に渡し、決定的な検査と原子的な取り込みを行えるようになりました。Cognis は安全なパス、manifest、license、schema、全レコードと関係を検証し、安定した名前空間 ID とバージョン付き導入 receipt を保存します。言語 framework には必要な manifest、schema、レイヤーディレクトリ、レコードファイルと、実行可能 resolver・lookup アダプターとの境界を記載しました。
 
+## ローカライズ済み定義レコード
+
+定義レイヤーがモジュール所有の文字列キーマッピングを宣言するようになりました。ライブラリ作成フォームは Cognis の全 UI 言語を提示しつつ英語のみを必須とし、定義エントリー ID に結び付く安定したキーを生成します。また、将来のプロバイダー向けに任意の ctx 翻訳ケイパビリティを提供します。
+
 ## コミット
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
 - [45c1c7e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/45c1c7e011bfde255e69e0dcf87b01e95600c49a)
 - [2b1ff9e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b1ff9e205cab5fb1645370b367efa76f1e9b199)
+- [8a0ef5f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a0ef5f9)

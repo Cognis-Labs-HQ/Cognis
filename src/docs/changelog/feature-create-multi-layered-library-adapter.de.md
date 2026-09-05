@@ -38,8 +38,13 @@ Die inkompatible Schemafähigkeit wurde mit Adapter 2.0.0 eingeführt; die dekla
 
 Sprachpakete können nun ein reines Datenverzeichnis zur deterministischen Prüfung und atomaren Übernahme an die Bibliotheksfähigkeit übergeben. Cognis prüft sichere Pfade, Manifest, Lizenz, Schema, alle Datensätze und Beziehungen, erzeugt stabile Namensraum-IDs und speichert versionierte Installationsbelege. Das Sprachframework beschreibt Manifest, Schema, Ebenenverzeichnisse, Datendateien und die Trennung zu ausführbaren Resolver- und Lookup-Adaptern.
 
+## Lokalisierte Definitionsdatensätze
+
+Definitionsebenen deklarieren jetzt moduleigene Zuordnungen von Zeichenkettenschlüsseln. Das Erstellungsformular der Bibliothek fragt alle Cognis-Oberflächensprachen ab, verlangt nur Englisch, erzeugt einen stabilen Schlüssel zur ID des Definitionseintrags und bietet eine optionale ctx-Übersetzungsfähigkeit für zukünftige Anbieter.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
 - [45c1c7e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/45c1c7e011bfde255e69e0dcf87b01e95600c49a)
 - [2b1ff9e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b1ff9e205cab5fb1645370b367efa76f1e9b199)
+- [8a0ef5f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a0ef5f9)

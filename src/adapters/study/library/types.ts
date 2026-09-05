@@ -2,6 +2,17 @@ export type LibraryScope = "global" | "class" | "user";
 
 export type LocalizedText = Readonly<Record<string, string>>;
 
+export const STRING_LOCALIZATION_CAPABILITY = "localization:translateString";
+
+export interface StringLocalizationCapability {
+    translate(request: {
+        stringKey: string;
+        sourceText: string;
+        sourceLanguage: string;
+        targetLanguage: string;
+    }): Promise<string | null>;
+}
+
 export type LibrarySemanticRole =
     | "atomicWritingUnit"
     | "compoundWritingUnit"
@@ -49,6 +60,12 @@ export interface LibraryLayerSchema {
     id: string;
     metadata: { labels: LocalizedText; descriptions?: LocalizedText };
     semanticRole?: LibrarySemanticRole;
+    definitionLocalization?: {
+        /** Module-owned prefix used to generate a stable key for each definition. */
+        stringKeyPrefix: string;
+        stringKeyField: string;
+        translationsField: string;
+    };
     fields?: readonly LibraryFieldSchema[];
     relationships?: readonly LibraryRelationshipSchema[];
     detail?: { titleField?: string; fieldOrder?: readonly string[] };
@@ -83,6 +100,8 @@ export interface LibraryEntryInput {
     label: string;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
+    /** Languages requested by a definition form; used by an optional localization provider. */
+    definitionLanguages?: string[];
 }
 
 export interface LibraryEntry extends LibraryEntryInput {
