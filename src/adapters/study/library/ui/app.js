@@ -24,7 +24,10 @@ import {
 const DETAIL_FLOW = "study:library:composeEntryDetail";
 
 export function entryUrl(entry, languageCode) {
-    return withLanguageQuery("/study/library", languageCode);
+    return withLanguageQuery(
+        `/study/library/${encodeURIComponent(entry.schemaId)}/${encodeURIComponent(entry.layer)}/${encodeURIComponent(entry.id)}`,
+        languageCode,
+    );
 }
 
 function entryAttributes(entry) {
@@ -224,6 +227,7 @@ async function openEntryPopup(route, entries, i18n, languageCode, signal) {
     );
     const index = active.findIndex((entry) => entry.id === route.entryId);
     const composed = await composeDetail(detail, i18n, languageCode);
+    signal?.throwIfAborted();
     const origin = history.state?.libraryOrigin;
     const popupDepth = Number(history.state?.libraryPopupDepth ?? 0);
     let aborted = false;
@@ -271,6 +275,7 @@ async function openEntryPopup(route, entries, i18n, languageCode, signal) {
             });
         },
         onAction: async (actionId, overlay, popupApi) => {
+            if (actionId === null) return true;
             const target =
                 actionId === "previous"
                     ? active[index - 1]

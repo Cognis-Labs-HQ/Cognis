@@ -540,4 +540,10 @@ test("Library detail composition preserves stages and dispatches contributed act
     );
     assert.match(source, /contributedAction\.onAction\(\{/);
     assert.doesNotMatch(source, /registerFlow\(DETAIL_FLOW/);
+    assert.match(
+        source,
+        /\/study\/library\/\$\{encodeURIComponent\(entry\.schemaId\)\}\/\$\{encodeURIComponent\(entry\.layer\)\}\/\$\{encodeURIComponent\(entry\.id\)\}/,
+    );
+    assert.match(source, /signal\?\.throwIfAborted\(\);[\s\S]*openPopup\(\{/);
+    assert.match(source, /if \(actionId === null\) return true;/);
 });

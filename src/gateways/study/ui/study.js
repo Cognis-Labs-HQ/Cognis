@@ -339,7 +339,7 @@ async function mountHub(
                     window.location.pathname === rawPageUrl ? " active" : "";
                 return `
                     <li>
-                        <a class="study-subnav-module-link${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(String(component.label ?? pageUrl))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                        <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(String(component.label ?? pageUrl))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                             ${escapeHtml(String(component.label ?? pageUrl))}
                         </a>
                     </li>
@@ -350,7 +350,7 @@ async function mountHub(
             isStudentScope() && !hasLibraryModule
                 ? `
                 <li>
-                    <a class="study-subnav-module-link${window.location.pathname === "/study/library" ? " active" : ""}" href="${escapeHtml(buildLibraryUrl(selectedLanguageCode))}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                    <a class="dropdown-item${window.location.pathname === "/study/library" ? " active" : ""}" href="${escapeHtml(buildLibraryUrl(selectedLanguageCode))}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                         ${escapeHtml(i18n.t("gateway.study.library_label"))}
                     </a>
                 </li>
@@ -365,7 +365,7 @@ async function mountHub(
                     languageCode === selectedLanguageCode ? " active" : "";
                 return `
                     <li>
-                        <a class="study-subnav-language-option${activeClass}" href="${escapeHtml(href)}" data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                        <a class="dropdown-item${activeClass}" href="${escapeHtml(href)}" data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                             ${escapeHtml(language.flag)}
                             <span>${escapeHtml(language.name)}</span>
                         </a>
@@ -385,17 +385,21 @@ async function mountHub(
                 <ul class="page-subnav-list study-subnav-language-options">
                     ${activeLanguageLinks}
                 </ul>
-                <a
-                    class="study-subnav-settings-link${settingsActiveClass}"
-                    href="${escapeHtml(settingsUrl)}"
-                    data-search-category="Pages"
-                    data-search-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-                    data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}"
-                    aria-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-                    title="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-                >
-                    ${SETTINGS_GEAR_SVG}
-                </a>
+                <ul class="page-subnav-list study-subnav-settings">
+                    <li>
+                        <a
+                            class="dropdown-item${settingsActiveClass}"
+                            href="${escapeHtml(settingsUrl)}"
+                            data-search-category="Pages"
+                            data-search-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
+                            data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}"
+                            aria-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
+                            title="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
+                        >
+                            ${SETTINGS_GEAR_SVG}
+                        </a>
+                    </li>
+                </ul>
             </div>
         `;
     }

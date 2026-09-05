@@ -12,9 +12,10 @@ Der Detailablauf wird vor den UI-Anbietern deklariert, bewahrt die Reihenfolge v
 
 ## Zuverlässiger Seitenlebenszyklus
 
-Direkte Aufrufe und SPA-Wechsel verwenden den standardmäßigen authentifizierten Seiten-Composer-Lebenszyklus und behalten das Study-Untermenü bei.
+Direkte Aufrufe und SPA-Wechsel verwenden den standardmäßigen authentifizierten Seiten-Composer-Lebenszyklus und behalten ein einzeiliges, einheitlich dimensioniertes Study-Untermenü bei. Kanonische Eintragslinks bleiben teilbar, abgebrochene Einbindungen öffnen keine veralteten Popups und die Popup-Schließen-Schaltfläche funktioniert wie erwartet.
 
 ## Commits
 
 - [f25e2f64](https://github.com/Cognis-Labs-HQ/Cognis/commit/f25e2f649aadef46a713e85d70d627370f60ba5c)
 - [160cbba5](https://github.com/Cognis-Labs-HQ/Cognis/commit/160cbba5e9344f11c429f4c8f8ae2ba4ceda468b)
+- [a6b4a095](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b4a09575d55c2d74e28d58a85beecd832e8c6c)

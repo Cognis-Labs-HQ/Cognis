@@ -15,6 +15,10 @@ test("Study submenu links use the user-dropdown button class", () => {
         resolve(ROOT, "src/gateways/study/ui/study.css"),
         "utf8",
     );
+    const studyPage = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/study.js"),
+        "utf8",
+    );
 
     assert.match(source, /class="dropdown-item\$\{activeClass\}"/);
     assert.match(source, /class="dropdown-item\$\{settingsActiveClass\}"/);
@@ -25,5 +29,18 @@ test("Study submenu links use the user-dropdown button class", () => {
     assert.doesNotMatch(
         stylesheet,
         /\.study-subnav-(?:module-link|language-option|settings-link)(?:\s|,|\{|:)/,
+    );
+    assert.doesNotMatch(
+        studyPage,
+        /class="[^"]*study-subnav-(?:module-link|language-option|settings-link)(?:\s|"|\$)/,
+    );
+    assert.match(
+        stylesheet,
+        /\.study-page-subnav \.dropdown-item\s*\{\s*width: auto;/,
+    );
+    assert.match(source, /<ul class="page-subnav-list study-subnav-settings">/);
+    assert.match(
+        studyPage,
+        /<ul class="page-subnav-list study-subnav-settings">/,
     );
 });

@@ -281,17 +281,21 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             <ul class="page-subnav-list study-subnav-language-options">
                 ${languageOptions}
             </ul>
-            <a
-                class="dropdown-item${settingsActiveClass}"
-                href="${escapeHtml(settingsUrl)}"
-                data-search-category="Pages"
-                data-search-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-                data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}"
-                aria-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-                title="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-            >
-                ${SETTINGS_GEAR_SVG}
-            </a>
+            <ul class="page-subnav-list study-subnav-settings">
+                <li>
+                    <a
+                        class="dropdown-item${settingsActiveClass}"
+                        href="${escapeHtml(settingsUrl)}"
+                        data-search-category="Pages"
+                        data-search-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
+                        data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}"
+                        aria-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
+                        title="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
+                    >
+                        ${SETTINGS_GEAR_SVG}
+                    </a>
+                </li>
+            </ul>
         </div>
     `;
 }

@@ -12,9 +12,10 @@
 
 ## 信頼性の高いページライフサイクル
 
-直接読み込みと SPA 遷移は標準の認証済みページコンポーザーライフサイクルを使用し、Study サブメニューを維持します。
+直接読み込みと SPA 遷移は標準の認証済みページコンポーザーライフサイクルを使用し、Study サブメニューを一行かつ一貫したサイズで維持します。正規エントリリンクは共有可能で、中止されたマウントによる古いポップアップを防ぎ、閉じる操作も正常に機能します。
 
 ## コミット
 
 - [f25e2f64](https://github.com/Cognis-Labs-HQ/Cognis/commit/f25e2f649aadef46a713e85d70d627370f60ba5c)
 - [160cbba5](https://github.com/Cognis-Labs-HQ/Cognis/commit/160cbba5e9344f11c429f4c8f8ae2ba4ceda468b)
+- [a6b4a095](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b4a09575d55c2d74e28d58a85beecd832e8c6c)
