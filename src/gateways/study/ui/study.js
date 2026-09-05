@@ -22,13 +22,14 @@ import {
     navigateTo,
     invalidateStudyChildComponentCache,
 } from "/static/reuse/app-router.js";
-import { clearStudySubNavCache } from "/static/gateways/study/ui/sub-navigation.js";
+import {
+    clearStudySubNavCache,
+    readSelectedStudyLanguageCode,
+} from "/static/gateways/study/ui/sub-navigation.js";
 import {
     resolveLanguageLabel,
     isStudentScope,
     buildLibraryUrl,
-    parseLanguageCode,
-    withLanguageQuery,
 } from "/static/gateways/study/ui/language.js";
 import { openPopup } from "/static/reuse/popup.js";
 
@@ -57,9 +58,7 @@ export async function mount(root, { signal } = {}) {
     applyDocumentTitle(i18n, "gateway.study.page_title");
 
     const currentPath = window.location.pathname;
-    const requestedLanguageCode = parseLanguageCode(
-        new URLSearchParams(window.location.search).get("language"),
-    );
+    const requestedLanguageCode = readSelectedStudyLanguageCode();
     const isWelcomePath = currentPath === "/study/welcome";
     const isSettingsPath = currentPath === "/study/settings";
 
@@ -316,11 +315,11 @@ async function mountHub(
         const firstModulePageUrl = modules
             .map((component) => String(component?.pageUrl ?? "").trim())
             .find(Boolean);
-        return withLanguageQuery(firstModulePageUrl || "/study", languageCode);
+        return firstModulePageUrl || "/study";
     }
 
     function buildSettingsUrl() {
-        return withLanguageQuery("/study/settings", selectedLanguageCode);
+        return "/study/settings";
     }
 
     function renderSubNavigation() {
@@ -331,10 +330,7 @@ async function mountHub(
             .map((component) => {
                 const rawPageUrl = String(component.pageUrl ?? "").trim();
                 if (!rawPageUrl) return "";
-                const pageUrl = withLanguageQuery(
-                    rawPageUrl,
-                    selectedLanguageCode,
-                );
+                const pageUrl = rawPageUrl;
                 const activeClass =
                     window.location.pathname === rawPageUrl ? " active" : "";
                 return `
@@ -365,7 +361,7 @@ async function mountHub(
                     languageCode === selectedLanguageCode ? " active" : "";
                 return `
                     <li>
-                        <a class="dropdown-item${activeClass}" href="${escapeHtml(href)}" data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                        <a class="dropdown-item${activeClass}" href="${escapeHtml(href)}" data-language-code="${escapeHtml(languageCode)}" data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                             ${escapeHtml(language.flag)}
                             <span>${escapeHtml(language.name)}</span>
                         </a>
@@ -425,7 +421,7 @@ async function mountHub(
                         : modules
                               .map(
                                   (component) => `
-                                    <a href="${escapeHtml(withLanguageQuery(component.pageUrl, languageCode))}" class="study-hub-module-link" data-search-category="${escapeHtml(i18n.t("gateway.study.page_title"))}" data-search-label="${escapeHtml(component.label)}" data-search-description="${escapeHtml(language.name)}" data-search-text="${escapeHtml([i18n.t("gateway.study.page_title"), language.name, component.label].filter(Boolean).join(" "))}">
+                                    <a href="${escapeHtml(component.pageUrl)}" class="study-hub-module-link" data-search-category="${escapeHtml(i18n.t("gateway.study.page_title"))}" data-search-label="${escapeHtml(component.label)}" data-search-description="${escapeHtml(language.name)}" data-search-text="${escapeHtml([i18n.t("gateway.study.page_title"), language.name, component.label].filter(Boolean).join(" "))}">
                                         ${escapeHtml(component.label)}
                                     </a>
                                 `,

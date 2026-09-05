@@ -8,6 +8,7 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { showToast } from "/static/reuse/toast.js";
 import {
     loadStudySubNavigationModel,
+    readSelectedStudyLanguageCode,
     renderStudySubNavigation,
 } from "/static/gateways/study/ui/sub-navigation.js";
 import {
@@ -18,16 +19,12 @@ import {
 import {
     buildLibraryUrl,
     parseLanguageCode,
-    withLanguageQuery,
 } from "/static/gateways/study/ui/language.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
 
-export function entryUrl(entry, languageCode) {
-    return withLanguageQuery(
-        `/study/library/${encodeURIComponent(entry.schemaId)}/${encodeURIComponent(entry.layer)}/${encodeURIComponent(entry.id)}`,
-        languageCode,
-    );
+export function entryUrl(entry) {
+    return `/study/library/${encodeURIComponent(entry.schemaId)}/${encodeURIComponent(entry.layer)}/${encodeURIComponent(entry.id)}`;
 }
 
 function entryAttributes(entry) {
@@ -79,7 +76,7 @@ function section(title, value) {
 }
 
 function relationSection(title, entries, languageCode, emptyLabel) {
-    return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${entries.length ? `<ul>${entries.map((entry) => `<li><a href="${entryUrl(entry, languageCode)}" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</a></li>`).join("")}</ul>` : `<p>${escapeHtml(emptyLabel)}</p>`}</section>`;
+    return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${entries.length ? `<ul>${entries.map((entry) => `<li><a href="${entryUrl(entry)}" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</a></li>`).join("")}</ul>` : `<p>${escapeHtml(emptyLabel)}</p>`}</section>`;
 }
 
 function coreSections(detail, i18n, languageCode) {
@@ -186,7 +183,7 @@ function renderBrowser(schemas, entries, i18n, languageCode) {
                                 )
                                 .map(
                                     (entry) =>
-                                        `<li><a href="${entryUrl(entry, languageCode)}" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</a></li>`,
+                                        `<li><a href="${entryUrl(entry)}" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</a></li>`,
                                 )
                                 .join("")}</ul></section>`,
                     )
@@ -283,7 +280,7 @@ async function openEntryPopup(route, entries, i18n, languageCode, signal) {
                       ? active[index + 1]
                       : null;
             if (target) {
-                navigateTo(entryUrl(target, languageCode), {
+                navigateTo(entryUrl(target), {
                     state: {
                         libraryEntry: {
                             schemaId: target.schemaId,
@@ -324,13 +321,11 @@ export async function mount(root, { signal } = {}) {
         componentStringBaseUrls: ["/static/gateways/study/languages"],
     });
     applyDocumentTitle(i18n, "gateway.study.library_label");
-    const rawLanguageCode = new URLSearchParams(window.location.search).get(
-        "language",
-    );
-    const languageCode = parseLanguageCode(rawLanguageCode);
+    const requestedLanguageCode = readSelectedStudyLanguageCode();
     const model = await loadStudySubNavigationModel({
-        fallbackLanguageCode: languageCode,
+        fallbackLanguageCode: requestedLanguageCode,
     });
+    const languageCode = model.selectedLanguageCode;
     const legacyRoute = parseEntryRoute();
     const route = currentEntry();
     if (legacyRoute) {
@@ -348,8 +343,6 @@ export async function mount(root, { signal } = {}) {
     let schemas = [];
     let entries = [];
     try {
-        if (rawLanguageCode !== null && !languageCode)
-            throw new Error("invalid_language");
         schemas = await fetchLibrarySchemas(languageCode);
         entries = (
             await Promise.all(

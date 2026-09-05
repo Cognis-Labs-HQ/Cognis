@@ -5,7 +5,6 @@ import {
     buildLibraryUrl,
     isStudentScope,
     parseLanguageCode,
-    withLanguageQuery,
 } from "/static/gateways/study/ui/language.js";
 
 const SETTINGS_GEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -56,6 +55,16 @@ const SUB_NAV_CACHE = {
     learningLanguages: null,
     modulesByLanguage: new Map(),
 };
+
+export function readSelectedStudyLanguageCode() {
+    const selectedButton = document.querySelector(
+        ".study-subnav-language-options .dropdown-item.active[data-language-code]",
+    );
+    return parseLanguageCode(
+        history.state?.studyLanguageCode ??
+            selectedButton?.dataset.languageCode,
+    );
+}
 
 /**
  * Clears the in-memory sub-navigation cache. Call this after any operation
@@ -212,7 +221,7 @@ export async function loadStudySubNavigationModel({
  */
 export function renderStudySubNavigation({ model, currentPath, i18n }) {
     const selectedLanguageCode = model.selectedLanguageCode ?? "";
-    const libraryUrl = buildLibraryUrl(selectedLanguageCode);
+    const libraryUrl = buildLibraryUrl();
     const hasLibraryModule = (model.modules ?? []).some(
         (component) => String(component?.id ?? "").trim() === "library",
     );
@@ -220,7 +229,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         .map((component) => {
             const rawPageUrl = String(component?.pageUrl ?? "").trim();
             if (!rawPageUrl) return "";
-            const pageUrl = withLanguageQuery(rawPageUrl, selectedLanguageCode);
+            const pageUrl = rawPageUrl;
             const activeClass = rawPageUrl === currentPath ? " active" : "";
             return `
                 <li>
@@ -251,13 +260,11 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             };
             const activeClass =
                 languageCode === model.selectedLanguageCode ? " active" : "";
-            const languageHubUrl = withLanguageQuery(
-                model.languagePageUrlsByCode?.get(languageCode) || "/study",
-                languageCode,
-            );
+            const languageHubUrl =
+                model.languagePageUrlsByCode?.get(languageCode) || "/study";
             return `
                 <li>
-                    <a class="dropdown-item${activeClass}" href="${escapeHtml(languageHubUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                    <a class="dropdown-item${activeClass}" href="${escapeHtml(languageHubUrl)}" data-language-code="${escapeHtml(languageCode)}" data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                         ${escapeHtml(language.flag)}
                         <span>${escapeHtml(language.name)}</span>
                     </a>
@@ -266,10 +273,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         })
         .join("");
 
-    const settingsUrl = withLanguageQuery(
-        "/study/settings",
-        selectedLanguageCode,
-    );
+    const settingsUrl = "/study/settings";
     const settingsActiveClass =
         currentPath === "/study/settings" ? " active" : "";
 
