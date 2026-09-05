@@ -18,8 +18,13 @@ Localized schema labels now render in the Library browser, complete semantic ver
 
 The app router now gives adapter-registered Study pages precedence over the generic language-child fallback, so selecting Library mounts the Library page instead of silently rejecting navigation.
 
+## Reliable schema listing
+
+Library schema listing now clones each schema explicitly, avoiding the accidental `Array.map` index argument that runtimes interpreted as invalid `structuredClone` options.
+
 ## Commits
 
 - [c1cb3240](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1cb3240)
 - [1325c06a](https://github.com/Cognis-Labs-HQ/Cognis/commit/1325c06a)
 - [a28869ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/a28869ed)
+- [22cee541](https://github.com/Cognis-Labs-HQ/Cognis/commit/22cee541)

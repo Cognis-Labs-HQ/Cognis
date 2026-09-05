@@ -18,8 +18,13 @@ Lokalisierte Schemabezeichnungen werden im Library-Browser dargestellt, vollstä
 
 Der App-Router bevorzugt jetzt von Adaptern registrierte Study-Seiten gegenüber dem allgemeinen Sprachkomponenten-Rückfall. Dadurch wird beim Auswählen von Library die Library-Seite eingebunden, statt die Navigation stillschweigend abzulehnen.
 
+## Zuverlässige Schemaauflistung
+
+Die Library-Schemaauflistung klont nun jedes Schema ausdrücklich. Dadurch wird das unbeabsichtigte Indexargument von `Array.map` vermieden, das Laufzeitumgebungen als ungültige `structuredClone`-Optionen interpretierten.
+
 ## Commits
 
 - [c1cb3240](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1cb3240)
 - [1325c06a](https://github.com/Cognis-Labs-HQ/Cognis/commit/1325c06a)
 - [a28869ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/a28869ed)
+- [22cee541](https://github.com/Cognis-Labs-HQ/Cognis/commit/22cee541)

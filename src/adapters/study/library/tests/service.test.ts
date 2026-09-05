@@ -35,6 +35,10 @@ test("schema registrations are versioned, persisted, and immutable", async () =>
         library.getSchema("test-language")?.metadata.labels.en,
         "Test Language",
     );
+    const listed = library.listSchemas();
+    assert.equal(listed[0].metadata.labels.en, "Test Language");
+    listed[0].metadata.labels.en = "Changed outside the listing";
+    assert.equal(library.listSchemas()[0].metadata.labels.en, "Test Language");
     assert.equal(saved.length, 1);
     await assert.rejects(
         library.registerSchema(schema(1)),

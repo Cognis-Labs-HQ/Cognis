@@ -18,8 +18,13 @@
 
 アプリルーターは、汎用の言語子コンポーネントよりアダプター登録済みStudyページを優先するようになりました。Libraryを選択すると、移動が黙って拒否されずLibraryページがマウントされます。
 
+## 安定したスキーマ一覧
+
+Libraryのスキーマ一覧は各スキーマを明示的に複製するようになり、実行環境が無効な`structuredClone`オプションとして解釈していた`Array.map`のインデックス引数を渡しません。
+
 ## コミット
 
 - [c1cb3240](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1cb3240)
 - [1325c06a](https://github.com/Cognis-Labs-HQ/Cognis/commit/1325c06a)
 - [a28869ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/a28869ed)
+- [22cee541](https://github.com/Cognis-Labs-HQ/Cognis/commit/22cee541)

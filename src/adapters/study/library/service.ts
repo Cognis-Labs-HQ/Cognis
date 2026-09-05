@@ -157,7 +157,7 @@ export class LibraryService implements LibraryCapability {
     listSchemas(): LibrarySchema[] {
         return Array.from(this.schemas.values(), (versions) =>
             versions.get(Math.max(...versions.keys()))!,
-        ).map(structuredClone);
+        ).map((schema) => structuredClone(schema));
     }
 
     getSchema(id: string, version?: number): LibrarySchema | null {
