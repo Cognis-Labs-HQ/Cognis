@@ -1,7 +1,10 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 
-export async function fetchLibrarySchemas() {
-    const response = await apiFetch("/api/v1/study/library/schemas");
+export async function fetchLibrarySchemas(languageCode) {
+    const query = new URLSearchParams();
+    if (languageCode) query.set("language", languageCode);
+    const suffix = query.size > 0 ? `?${query}` : "";
+    const response = await apiFetch(`/api/v1/study/library/schemas${suffix}`);
     if (!response.ok) throw new Error("schemas_failed");
     return (await response.json()).data;
 }

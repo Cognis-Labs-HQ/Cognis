@@ -41,13 +41,40 @@ export function resolveLanguageLabel(languageCode, fallbackName = "") {
 }
 
 /**
+ * @param {unknown} value Candidate BCP-47 language code.
+ * @returns {string | undefined} Canonical language code, or undefined when invalid.
+ */
+export function parseLanguageCode(value) {
+    const candidate = String(value ?? "").trim();
+    if (!candidate || candidate.length > 63) return undefined;
+    if (/^x(?:-[a-z0-9]{1,8})+$/i.test(candidate)) {
+        return candidate.toLowerCase();
+    }
+    try {
+        const [canonical] = Intl.getCanonicalLocales(candidate);
+        return canonical;
+    } catch {
+        return undefined;
+    }
+}
+
+/**
+ * @param {string} url Study URL to update.
+ * @param {unknown} languageCode Candidate BCP-47 language code.
+ * @returns {string} URL with a validated language query parameter.
+ */
+export function withLanguageQuery(url, languageCode) {
+    const canonicalLanguageCode = parseLanguageCode(languageCode);
+    if (!canonicalLanguageCode) return url;
+    const parsedUrl = new URL(url, window.location.origin);
+    parsedUrl.searchParams.set("language", canonicalLanguageCode);
+    return `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`;
+}
+
+/**
  * @param {string} [languageCode] BCP-47 language code to scope the URL to.
  * @returns {string} Library path, with an optional `?language=` query parameter.
  */
 export function buildLibraryUrl(languageCode) {
-    const normalizedLanguageCode = String(languageCode ?? "").trim();
-    if (!normalizedLanguageCode) {
-        return "/study/library";
-    }
-    return `/study/library?language=${encodeURIComponent(normalizedLanguageCode)}`;
+    return withLanguageQuery("/study/library", languageCode);
 }

@@ -11,26 +11,34 @@ import {
     fetchLibraryEntry,
     fetchLibrarySchemas,
 } from "/static/gateways/study/ui/library-client.js";
+import {
+    buildLibraryUrl,
+    parseLanguageCode,
+    withLanguageQuery,
+} from "/static/gateways/study/ui/language.js";
 
-function entryUrl(entry) {
-    return `/study/library/${encodeURIComponent(entry.schemaId)}/${encodeURIComponent(entry.layer)}/${encodeURIComponent(entry.id)}`;
+function entryUrl(entry, languageCode) {
+    return withLanguageQuery(
+        `/study/library/${encodeURIComponent(entry.schemaId)}/${encodeURIComponent(entry.layer)}/${encodeURIComponent(entry.id)}`,
+        languageCode,
+    );
 }
 
-function renderRelationshipList(entries, emptyLabel) {
+function renderRelationshipList(entries, emptyLabel, languageCode) {
     if (entries.length === 0) return `<p>${escapeHtml(emptyLabel)}</p>`;
     return `<ul>${entries
         .map(
             (entry) =>
-                `<li><a href="${entryUrl(entry)}">${escapeHtml(entry.label)}</a></li>`,
+                `<li><a href="${entryUrl(entry, languageCode)}">${escapeHtml(entry.label)}</a></li>`,
         )
         .join("")}</ul>`;
 }
 
-function renderDetail(detail, i18n) {
+function renderDetail(detail, i18n, languageCode) {
     const { entry, references, usedBy } = detail;
     const fields = Object.entries(entry.fields ?? {});
     return `<article class="library-detail">
-        <p><a href="/study/library">${escapeHtml(i18n.t("gateway.study.library_back"))}</a></p>
+        <p><a href="${escapeHtml(buildLibraryUrl(languageCode))}">${escapeHtml(i18n.t("gateway.study.library_back"))}</a></p>
         <h2>${escapeHtml(entry.label)}</h2>
         <dl>
             <dt>${escapeHtml(i18n.t("gateway.study.library_schema"))}</dt><dd>${escapeHtml(entry.schemaId)}</dd>
@@ -38,13 +46,13 @@ function renderDetail(detail, i18n) {
             ${fields.map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(String(value))}</dd>`).join("")}
         </dl>
         <h3>${escapeHtml(i18n.t("gateway.study.library_components"))}</h3>
-        ${renderRelationshipList(references, i18n.t("gateway.study.library_no_relationships"))}
+        ${renderRelationshipList(references, i18n.t("gateway.study.library_no_relationships"), languageCode)}
         <h3>${escapeHtml(i18n.t("gateway.study.library_used_by"))}</h3>
-        ${renderRelationshipList(usedBy, i18n.t("gateway.study.library_no_relationships"))}
+        ${renderRelationshipList(usedBy, i18n.t("gateway.study.library_no_relationships"), languageCode)}
     </article>`;
 }
 
-function renderBrowser(schemas, entries, i18n) {
+function renderBrowser(schemas, entries, i18n, languageCode) {
     if (schemas.length === 0) {
         return `<p>${escapeHtml(i18n.t("gateway.study.library_empty"))}</p>`;
     }
@@ -59,7 +67,7 @@ function renderBrowser(schemas, entries, i18n) {
                                 entry.schemaId === schema.id &&
                                 entry.layer === layer.id,
                         );
-                        return `<section><h3>${escapeHtml(layer.label)}</h3>${renderRelationshipList(matching, i18n.t("gateway.study.library_empty"))}</section>`;
+                        return `<section><h3>${escapeHtml(layer.label)}</h3>${renderRelationshipList(matching, i18n.t("gateway.study.library_empty"), languageCode)}</section>`;
                     })
                     .join("")}
             </section>`,
@@ -72,18 +80,44 @@ export async function mount(root, { signal } = {}) {
         componentStringBaseUrls: ["/static/gateways/study/languages"],
     });
     applyDocumentTitle(i18n, "gateway.study.library_label");
-    const model = await loadStudySubNavigationModel();
+    const rawLanguageCode = new URLSearchParams(window.location.search).get(
+        "language",
+    );
+    const languageCode = parseLanguageCode(rawLanguageCode);
+    const model = await loadStudySubNavigationModel({
+        fallbackLanguageCode: languageCode,
+    });
     const segments = window.location.pathname.split("/").filter(Boolean);
     const entryId = segments.length === 5 ? segments[4] : undefined;
     let content;
     try {
-        content = entryId
-            ? renderDetail(await fetchLibraryEntry(entryId), i18n)
-            : renderBrowser(
-                  await fetchLibrarySchemas(),
-                  await fetchLibraryEntries({ scope: "global" }),
-                  i18n,
-              );
+        if (rawLanguageCode !== null && !languageCode) {
+            throw new Error("invalid_language");
+        }
+        const schemas = await fetchLibrarySchemas(languageCode);
+        if (entryId) {
+            const detail = await fetchLibraryEntry(entryId);
+            const schemaIds = new Set(schemas.map((schema) => schema.id));
+            if (!schemaIds.has(detail.entry.schemaId)) {
+                throw new Error("entry_language_mismatch");
+            }
+            content = renderDetail(detail, i18n, languageCode);
+        } else {
+            const entryGroups = await Promise.all(
+                schemas.map((schema) =>
+                    fetchLibraryEntries({
+                        scope: "global",
+                        schemaId: schema.id,
+                    }),
+                ),
+            );
+            content = renderBrowser(
+                schemas,
+                entryGroups.flat(),
+                i18n,
+                languageCode,
+            );
+        }
     } catch {
         showToast(i18n.t("gateway.study.library_load_error"), {
             type: "error",

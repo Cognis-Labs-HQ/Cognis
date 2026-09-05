@@ -6,6 +6,7 @@ import {
 } from "../../../../api/reuse/route-context.js";
 import type { LibraryCapability, LibraryActor } from "../service.js";
 import type { LibraryLocation } from "../types.js";
+import { canonicalizeLanguageTag } from "../language.js";
 
 function sendJson(res: ServerResponse, status: number, body: unknown): void {
     res.writeHead(status, { "content-type": "application/json" });
@@ -17,6 +18,11 @@ function locationFrom(url: URL): LibraryLocation {
     if (scope !== "global" && scope !== "class" && scope !== "user")
         throw new Error("invalid_scope");
     return { scope, scopeId: url.searchParams.get("scopeId") ?? undefined };
+}
+
+function languageFrom(url: URL): string | undefined {
+    const language = url.searchParams.get("language");
+    return language === null ? undefined : canonicalizeLanguageTag(language);
 }
 
 export function createLibraryRoutes(
@@ -46,7 +52,16 @@ export function createLibraryRoutes(
                 url.pathname === "/api/v1/study/library/schemas" &&
                 req.method === "GET"
             ) {
-                sendJson(res, 200, { data: library.listSchemas() });
+                const language = languageFrom(url);
+                const schemas = library
+                    .listSchemas()
+                    .filter(
+                        (schema) =>
+                            !language ||
+                            canonicalizeLanguageTag(schema.language) ===
+                                language,
+                    );
+                sendJson(res, 200, { data: schemas });
                 return true;
             }
             if (
