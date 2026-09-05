@@ -22,6 +22,7 @@ export function createGatewayUiRegistryHooks(
             base: string;
             scriptUrl: string;
             stylesheets?: string[];
+            requiredCapabilities?: string[];
             isEnabled?: () => boolean;
         }): void {
             uiRegistry?.registerSpaRoute(route);

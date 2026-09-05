@@ -76,6 +76,7 @@ export async function bootstrapStudyAdapter(
         base: "/study/library",
         scriptUrl: "/static/adapters/study/library/app.js",
         stylesheets: ["/static/adapters/study/library/library.css"],
+        requiredCapabilities: ["study:library:detailFlow"],
         isEnabled: () => ctx.isAdapterEnabled(),
     });
     adapterReady = true;

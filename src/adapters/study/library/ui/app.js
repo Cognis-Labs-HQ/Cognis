@@ -1,9 +1,15 @@
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
+import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { openPopup } from "/static/reuse/popup.js";
+import { navigateTo } from "/static/reuse/app-router.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { showToast } from "/static/reuse/toast.js";
 import {
+    bindStudySubNavigation,
     loadStudySubNavigationModel,
+    readSelectedStudyLanguageCode,
     renderStudySubNavigation,
 } from "/static/gateways/study/ui/sub-navigation.js";
 import {
@@ -14,89 +20,310 @@ import {
 import {
     buildLibraryUrl,
     parseLanguageCode,
-    withLanguageQuery,
 } from "/static/gateways/study/ui/language.js";
 
-function entryUrl(entry, languageCode) {
-    return withLanguageQuery(
-        `/study/library/${encodeURIComponent(entry.schemaId)}/${encodeURIComponent(entry.layer)}/${encodeURIComponent(entry.id)}`,
-        languageCode,
-    );
+const DETAIL_FLOW = "study:library:composeEntryDetail";
+
+export function entryUrl(entry) {
+    return `/study/library/${encodeURIComponent(entry.schemaId)}/${encodeURIComponent(entry.layer)}/${encodeURIComponent(entry.id)}`;
+}
+
+function entryAttributes(entry) {
+    return `data-library-schema="${escapeHtml(entry.schemaId)}" data-library-layer="${escapeHtml(entry.layer)}" data-library-entry="${escapeHtml(entry.id)}"`;
 }
 
 function localizedLabel(metadata, contentLanguage) {
-    const labels = metadata?.labels ?? {};
-    const labelsByLanguage = new Map(
-        Object.entries(labels)
-            .map(([language, label]) => [parseLanguageCode(language), label])
-            .filter(([language]) => language),
+    const labels = new Map(
+        Object.entries(metadata?.labels ?? {}).map(([key, value]) => [
+            parseLanguageCode(key),
+            value,
+        ]),
     );
-    const preferredLanguages = [
+    for (const language of [
         document.documentElement.lang,
         ...navigator.languages,
         contentLanguage,
         "en",
-    ].filter(Boolean);
-    for (const language of preferredLanguages) {
-        const canonicalLanguage = parseLanguageCode(language);
-        if (!canonicalLanguage) continue;
-        const exact = labelsByLanguage.get(canonicalLanguage);
-        if (exact) return exact;
-        const base = labelsByLanguage.get(canonicalLanguage.split("-")[0]);
-        if (base) return base;
+    ]) {
+        const code = parseLanguageCode(language);
+        const label = labels.get(code) ?? labels.get(code?.split("-")[0]);
+        if (label) return label;
     }
-    return Object.values(labels)[0] ?? "";
+    return Object.values(metadata?.labels ?? {})[0] ?? "";
 }
 
-function renderRelationshipList(entries, emptyLabel, languageCode) {
-    if (entries.length === 0) return `<p>${escapeHtml(emptyLabel)}</p>`;
-    return `<ul>${entries
-        .map(
-            (entry) =>
-                `<li><a href="${entryUrl(entry, languageCode)}">${escapeHtml(entry.label)}</a></li>`,
-        )
-        .join("")}</ul>`;
+function renderValue(value) {
+    if (value === null || value === undefined) return "";
+    if (Array.isArray(value))
+        return `<ul>${value.map((item) => `<li>${renderValue(item)}</li>`).join("")}</ul>`;
+    if (typeof value === "object")
+        return `<dl>${Object.entries(value)
+            .map(
+                ([key, item]) =>
+                    `<dt>${escapeHtml(key)}</dt><dd>${renderValue(item)}</dd>`,
+            )
+            .join("")}</dl>`;
+    return escapeHtml(String(value));
 }
 
-function renderDetail(detail, i18n, languageCode) {
-    const { entry, references, usedBy } = detail;
-    const fields = Object.entries(entry.fields ?? {});
-    return `<article class="library-detail">
-        <p><a href="${escapeHtml(buildLibraryUrl(languageCode))}">${escapeHtml(i18n.t("gateway.study.library_back"))}</a></p>
-        <h2>${escapeHtml(entry.label)}</h2>
-        <dl>
-            <dt>${escapeHtml(i18n.t("gateway.study.library_schema"))}</dt><dd>${escapeHtml(entry.schemaId)}</dd>
-            <dt>${escapeHtml(i18n.t("gateway.study.library_layer"))}</dt><dd>${escapeHtml(entry.layer)}</dd>
-            ${fields.map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(String(value))}</dd>`).join("")}
-        </dl>
-        <h3>${escapeHtml(i18n.t("gateway.study.library_components"))}</h3>
-        ${renderRelationshipList(references, i18n.t("gateway.study.library_no_relationships"), languageCode)}
-        <h3>${escapeHtml(i18n.t("gateway.study.library_used_by"))}</h3>
-        ${renderRelationshipList(usedBy, i18n.t("gateway.study.library_no_relationships"), languageCode)}
-    </article>`;
+function section(title, value) {
+    if (
+        value === undefined ||
+        value === null ||
+        (Array.isArray(value) && value.length === 0)
+    )
+        return "";
+    return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${renderValue(value)}</section>`;
+}
+
+function relationSection(title, entries, languageCode, emptyLabel) {
+    return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${entries.length ? `<ul>${entries.map((entry) => `<li><a href="${entryUrl(entry)}" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</a></li>`).join("")}</ul>` : `<p>${escapeHtml(emptyLabel)}</p>`}</section>`;
+}
+
+function coreSections(detail, i18n, languageCode) {
+    const { entry, references = [], usedBy = [] } = detail;
+    const fields = entry.fields ?? {};
+    const reserved = new Set([
+        "definitions",
+        "alternateDefinitions",
+        "provenance",
+        "scope",
+        "revisions",
+        "progress",
+        "strokes",
+    ]);
+    const genericFields = Object.fromEntries(
+        Object.entries(fields).filter(([key]) => !reserved.has(key)),
+    );
+    return [
+        section(i18n.t("gateway.study.library_fields"), genericFields),
+        section(
+            i18n.t("gateway.study.library_definitions"),
+            fields.definitions ?? entry.definitions,
+        ),
+        section(
+            i18n.t("gateway.study.library_alternate_definitions"),
+            fields.alternateDefinitions ?? entry.alternateDefinitions,
+        ),
+        section(
+            i18n.t("gateway.study.library_provenance"),
+            fields.provenance ?? entry.provenance,
+        ),
+        section(
+            i18n.t("gateway.study.library_scope"),
+            fields.scope ?? entry.scope,
+        ),
+        section(
+            i18n.t("gateway.study.library_revisions"),
+            fields.revisions ?? entry.revisions,
+        ),
+        relationSection(
+            i18n.t("gateway.study.library_components"),
+            references,
+            languageCode,
+            i18n.t("gateway.study.library_no_relationships"),
+        ),
+        relationSection(
+            i18n.t("gateway.study.library_used_by"),
+            usedBy,
+            languageCode,
+            i18n.t("gateway.study.library_no_relationships"),
+        ),
+        section(
+            i18n.t("gateway.study.library_progress"),
+            fields.progress ?? entry.progress,
+        ),
+        section(
+            i18n.t("gateway.study.library_strokes"),
+            fields.strokes ?? entry.strokes,
+        ),
+    ].filter(Boolean);
+}
+
+async function composeDetail(detail, i18n, languageCode) {
+    const flow = await uiCtx.runFlow(DETAIL_FLOW, {
+        detail,
+        i18n,
+        languageCode,
+    });
+    const sectionsFor = (stageId) =>
+        (flow.stageResults[stageId] ?? []).flatMap((contribution) =>
+            Array.isArray(contribution?.sections)
+                ? contribution.sections.filter(Boolean)
+                : [],
+        );
+    const actions = (flow.stageResults.actions ?? []).flatMap((contribution) =>
+        Array.isArray(contribution?.actions) ? contribution.actions : [],
+    );
+    const sections = [
+        ...sectionsFor("beforeCore"),
+        ...coreSections(detail, i18n, languageCode),
+        ...sectionsFor("core"),
+        ...sectionsFor("afterCore"),
+    ];
+    return {
+        body: `<div class="library-detail">${sections.join("")}</div>`,
+        actions,
+    };
 }
 
 function renderBrowser(schemas, entries, i18n, languageCode) {
-    if (schemas.length === 0) {
+    if (!schemas.length)
         return `<p>${escapeHtml(i18n.t("gateway.study.library_empty"))}</p>`;
-    }
     return schemas
         .map(
-            (schema) => `<section class="library-schema">
-                <h2>${escapeHtml(localizedLabel(schema.metadata, schema.language))}</h2>
-                ${schema.layers
-                    .map((layer) => {
-                        const matching = entries.filter(
-                            (entry) =>
-                                entry.schemaId === schema.id &&
-                                entry.layer === layer.id,
-                        );
-                        return `<section><h3>${escapeHtml(localizedLabel(layer.metadata, schema.language))}</h3>${renderRelationshipList(matching, i18n.t("gateway.study.library_empty"), languageCode)}</section>`;
-                    })
-                    .join("")}
-            </section>`,
+            (schema) =>
+                `<section class="library-schema"><h2>${escapeHtml(localizedLabel(schema.metadata, schema.language))}</h2>${schema.layers
+                    .map(
+                        (layer) =>
+                            `<section><h3>${escapeHtml(localizedLabel(layer.metadata, schema.language))}</h3><ul>${entries
+                                .filter(
+                                    (entry) =>
+                                        entry.schemaId === schema.id &&
+                                        entry.layer === layer.id,
+                                )
+                                .map(
+                                    (entry) =>
+                                        `<li><a href="${entryUrl(entry)}" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</a></li>`,
+                                )
+                                .join("")}</ul></section>`,
+                    )
+                    .join("")}</section>`,
         )
         .join("");
+}
+
+function parseEntryRoute() {
+    const match = window.location.pathname.match(
+        /^\/study\/library\/([^/]+)\/([^/]+)\/([^/]+)$/,
+    );
+    return match
+        ? {
+              schemaId: decodeURIComponent(match[1]),
+              layerId: decodeURIComponent(match[2]),
+              entryId: decodeURIComponent(match[3]),
+          }
+        : null;
+}
+
+function currentEntry() {
+    const entry = history.state?.libraryEntry;
+    if (entry?.schemaId && entry?.layerId && entry?.entryId) return entry;
+    return parseEntryRoute();
+}
+
+async function openEntryPopup(
+    route,
+    schemas,
+    entries,
+    i18n,
+    languageCode,
+    signal,
+) {
+    const detail = await fetchLibraryEntry(route.entryId);
+    if (
+        detail.entry.schemaId !== route.schemaId ||
+        detail.entry.layer !== route.layerId
+    )
+        throw new Error("entry_route_mismatch");
+    if (!schemas.some((schema) => schema.id === route.schemaId))
+        throw new Error("entry_language_mismatch");
+    const active = entries.filter(
+        (entry) =>
+            entry.schemaId === route.schemaId && entry.layer === route.layerId,
+    );
+    const index = active.findIndex((entry) => entry.id === route.entryId);
+    const composed = await composeDetail(detail, i18n, languageCode);
+    signal?.throwIfAborted();
+    const origin = history.state?.libraryOrigin;
+    const popupDepth = Number(history.state?.libraryPopupDepth ?? 0);
+    let aborted = false;
+    let dismissPopup;
+    signal?.addEventListener(
+        "abort",
+        () => {
+            aborted = true;
+            dismissPopup?.();
+        },
+        { once: true },
+    );
+    const result = await openPopup({
+        title: detail.entry.label,
+        body: composed.body,
+        maxWidth: "min(56rem, 94vw)",
+        closeButtonVariant: "neutral",
+        actions: [
+            ...(index > 0
+                ? [{ id: "previous", label: "←", variant: "neutral" }]
+                : []),
+            ...(index >= 0 && index < active.length - 1
+                ? [{ id: "next", label: "→", variant: "neutral" }]
+                : []),
+            ...composed.actions,
+        ],
+        onOpen: (overlay, dismiss) => {
+            dismissPopup = dismiss;
+            overlay.addEventListener("click", (event) => {
+                const link = event.target.closest("a[data-library-entry]");
+                if (!link) return;
+                event.preventDefault();
+                event.stopPropagation();
+                navigateTo(link.getAttribute("href"), {
+                    state: {
+                        libraryEntry: {
+                            schemaId: link.dataset.librarySchema,
+                            layerId: link.dataset.libraryLayer,
+                            entryId: link.dataset.libraryEntry,
+                        },
+                        libraryOrigin: origin,
+                        libraryPopupDepth: popupDepth + 1,
+                    },
+                });
+            });
+        },
+        onAction: async (actionId, overlay, popupApi) => {
+            if (actionId === null) return true;
+            const target =
+                actionId === "previous"
+                    ? active[index - 1]
+                    : actionId === "next"
+                      ? active[index + 1]
+                      : null;
+            if (target) {
+                navigateTo(entryUrl(target), {
+                    state: {
+                        libraryEntry: {
+                            schemaId: target.schemaId,
+                            layerId: target.layer,
+                            entryId: target.id,
+                        },
+                        libraryOrigin: origin,
+                        libraryPopupDepth: popupDepth + 1,
+                    },
+                });
+                return true;
+            }
+            const contributedAction = composed.actions.find(
+                (action) => action.id === actionId,
+            );
+            if (typeof contributedAction?.onAction !== "function") return false;
+            return contributedAction.onAction({
+                actionId,
+                detail,
+                overlay,
+                popupApi,
+                languageCode,
+            });
+        },
+    });
+    if (!aborted && result !== "previous" && result !== "next") {
+        if (origin && popupDepth > 0) {
+            history.go(-popupDepth);
+        } else {
+            const libraryUrl = buildLibraryUrl(languageCode);
+            history.replaceState({ routerPage: libraryUrl }, "", libraryUrl);
+        }
+    }
 }
 
 export async function mount(root, { signal } = {}) {
@@ -104,49 +331,46 @@ export async function mount(root, { signal } = {}) {
         componentStringBaseUrls: ["/static/gateways/study/languages"],
     });
     applyDocumentTitle(i18n, "gateway.study.library_label");
-    const rawLanguageCode = new URLSearchParams(window.location.search).get(
-        "language",
-    );
-    const languageCode = parseLanguageCode(rawLanguageCode);
+    if (!history.state?.routerPage) {
+        const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        history.replaceState(
+            { ...history.state, routerPage: currentUrl },
+            "",
+            currentUrl,
+        );
+    }
+    const route = currentEntry();
+    let requestedLanguageCode = readSelectedStudyLanguageCode();
+    let routeSchemas;
+    if (route) {
+        routeSchemas = await fetchLibrarySchemas();
+        requestedLanguageCode = parseLanguageCode(
+            routeSchemas.find((schema) => schema.id === route.schemaId)
+                ?.language,
+        );
+    }
     const model = await loadStudySubNavigationModel({
-        fallbackLanguageCode: languageCode,
+        fallbackLanguageCode: requestedLanguageCode,
     });
-    const segments = window.location.pathname.split("/").filter(Boolean);
-    const entryId = segments.length === 5 ? segments[4] : undefined;
-    let content;
+    const languageCode = model.selectedLanguageCode;
+    let schemas = [];
+    let entries = [];
     try {
-        if (rawLanguageCode !== null && !languageCode) {
-            throw new Error("invalid_language");
-        }
-        const schemas = await fetchLibrarySchemas(languageCode);
-        if (entryId) {
-            const detail = await fetchLibraryEntry(entryId);
-            const schemaIds = new Set(schemas.map((schema) => schema.id));
-            if (!schemaIds.has(detail.entry.schemaId)) {
-                throw new Error("entry_language_mismatch");
-            }
-            content = renderDetail(detail, i18n, languageCode);
-        } else {
-            const entryGroups = await Promise.all(
+        schemas = await fetchLibrarySchemas(languageCode);
+        entries = (
+            await Promise.all(
                 schemas.map((schema) =>
                     fetchLibraryEntries({
                         scope: "global",
                         schemaId: schema.id,
                     }),
                 ),
-            );
-            content = renderBrowser(
-                schemas,
-                entryGroups.flat(),
-                i18n,
-                languageCode,
-            );
-        }
+            )
+        ).flat();
     } catch {
         showToast(i18n.t("gateway.study.library_load_error"), {
             type: "error",
         });
-        content = `<p>${escapeHtml(i18n.t("gateway.study.library_load_error"))}</p>`;
     }
     const composer = createPageComposer(root, {
         allowCustomization: true,
@@ -157,7 +381,7 @@ export async function mount(root, { signal } = {}) {
                 pinned: true,
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
                 render: () =>
-                    `<section class="library-browser">${content}</section>`,
+                    `<section class="library-browser">${renderBrowser(schemas, entries, i18n, languageCode)}</section>`,
             },
         ],
         preferenceKey: "study-library-layout",
@@ -167,14 +391,56 @@ export async function mount(root, { signal } = {}) {
             subtitle: i18n.t("gateway.study.library_subtitle"),
         },
         toolbar: [],
-        subNavigation: renderStudySubNavigation({
-            model,
-            currentPath: window.location.pathname,
-            i18n,
-        }),
+        subNavigation: [
+            {
+                id: "study-subnav",
+                label: i18n.t("gateway.study.page_title"),
+                render: () =>
+                    renderStudySubNavigation({
+                        model,
+                        currentPath: "/study/library",
+                        i18n,
+                    }),
+            },
+        ],
     });
     await composer.init();
     signal?.throwIfAborted();
+    bindStudySubNavigation(root, { signal });
+    root.addEventListener(
+        "click",
+        (event) => {
+            const link = event.target.closest("a[data-library-entry]");
+            if (!link) return;
+            event.preventDefault();
+            event.stopPropagation();
+            navigateTo(link.getAttribute("href"), {
+                state: {
+                    libraryEntry: {
+                        schemaId: link.dataset.librarySchema,
+                        layerId: link.dataset.libraryLayer,
+                        entryId: link.dataset.libraryEntry,
+                    },
+                    libraryOrigin: `${window.location.pathname}${window.location.search}`,
+                    libraryPopupDepth: 1,
+                },
+            });
+        },
+        { signal },
+    );
+    if (route)
+        void openEntryPopup(
+            route,
+            schemas,
+            entries,
+            i18n,
+            languageCode,
+            signal,
+        ).catch(() =>
+            showToast(i18n.t("gateway.study.library_load_error"), {
+                type: "error",
+            }),
+        );
 }
 
-await mount(document.querySelector("#app"));
+await mountWhenDirect(mount);

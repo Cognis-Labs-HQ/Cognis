@@ -6,13 +6,13 @@
  * - `isAdminScope()` Returns true when the local session has admin or owner privilege.
  * - `isTeacherScope()` Returns true when the local session role is teacher.
  * - `isStudentScope()` Returns true when the local session role allows student enrolment.
- * - `buildLibraryUrl(languageCode)` Builds the canonical library URL, optionally scoped to a language.
+ * - `buildLibraryUrl()` Builds the canonical library URL.
  *
  * @example
  * ```js
  * import { resolveLanguageLabel, isAdminScope, buildLibraryUrl } from '/static/gateways/study/ui/language.js';
  * const label = resolveLanguageLabel('ja', 'Japanese');
- * const url   = buildLibraryUrl('ja');
+ * const url   = buildLibraryUrl();
  * ```
  *
  * @param {string} languageCode BCP-47 language code (e.g. 'en', 'ja').
@@ -59,22 +59,8 @@ export function parseLanguageCode(value) {
 }
 
 /**
- * @param {string} url Study URL to update.
- * @param {unknown} languageCode Candidate BCP-47 language code.
- * @returns {string} URL with a validated language query parameter.
+ * @returns {string} Canonical Library path.
  */
-export function withLanguageQuery(url, languageCode) {
-    const canonicalLanguageCode = parseLanguageCode(languageCode);
-    if (!canonicalLanguageCode) return url;
-    const parsedUrl = new URL(url, window.location.origin);
-    parsedUrl.searchParams.set("language", canonicalLanguageCode);
-    return `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`;
-}
-
-/**
- * @param {string} [languageCode] BCP-47 language code to scope the URL to.
- * @returns {string} Library path, with an optional `?language=` query parameter.
- */
-export function buildLibraryUrl(languageCode) {
-    return withLanguageQuery("/study/library", languageCode);
+export function buildLibraryUrl() {
+    return "/study/library";
 }

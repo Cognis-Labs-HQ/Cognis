@@ -52,4 +52,12 @@
   <string name="gateway.study.library_components">Bestandteile</string>
   <string name="gateway.study.library_used_by">Verwendet von</string>
   <string name="gateway.study.library_no_relationships">Keine verbundenen Einträge.</string>
-  </resources>
+    <string name="gateway.study.library_fields">Felder</string>
+  <string name="gateway.study.library_definitions">Definitionen</string>
+  <string name="gateway.study.library_alternate_definitions">Alternative Definitionen</string>
+  <string name="gateway.study.library_provenance">Herkunft</string>
+  <string name="gateway.study.library_scope">Geltungsbereich</string>
+  <string name="gateway.study.library_revisions">Revisionen</string>
+  <string name="gateway.study.library_progress">Fortschritt</string>
+  <string name="gateway.study.library_strokes">Striche</string>
+</resources>

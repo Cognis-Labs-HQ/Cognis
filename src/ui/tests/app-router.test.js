@@ -20,6 +20,11 @@ const DASHBOARD_PAGES = [
 
 const ADAPTER_BACKED_SPA_ROUTES = [
     {
+        id: "study-library-page",
+        sourceFile: "src/adapters/study/library/index.ts",
+        scriptUrl: "/static/adapters/study/library/app.js",
+    },
+    {
         id: "social-messages-page",
         sourceFile: "src/adapters/social/messages/index.ts",
         scriptUrl: "/static/adapters/social/messages/app.js",
@@ -40,6 +45,23 @@ const ADAPTER_BACKED_SPA_ROUTES = [
         scriptUrl: "/static/adapters/study/classes/my-classes.js",
     },
 ];
+
+test("Study Library uses the authenticated direct-mount lifecycle", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/study/library/ui/app.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /import\s+\{[^}]*\bmountWhenDirect\b[^}]*\}\s+from\s+["']\/static\/reuse\/page-entry\.js["'];/,
+    );
+    assert.match(source, /await mountWhenDirect\(mount\);/);
+    assert.match(
+        source,
+        /subNavigation:\s*\[\s*\{[\s\S]*?id:\s*["']study-subnav["'][\s\S]*?render:\s*\(\)\s*=>\s*renderStudySubNavigation/,
+        "Study Library must provide the composer with a renderable sub-navigation descriptor",
+    );
+});
 
 test("all dashboard pages export an async mount function", () => {
     for (const page of DASHBOARD_PAGES) {
@@ -99,6 +121,14 @@ test("router exports initRouter, navigateTo and getCurrentBase", () => {
         /capabilities\.contribute\([\s\S]*"router:invalidateRoutes",[\s\S]*invalidateSpaRouteCache/,
         "app-router.js must expose route invalidation through uiCtx",
     );
+});
+
+test("core router contains no Study gateway routes or API knowledge", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.doesNotMatch(source, /gateway\.study|\/api\/v1\/study|STUDY_/);
 });
 
 test("router registers routes for all dashboard pages", () => {
@@ -505,4 +535,23 @@ test("direct SPA entry loads capability providers before the route module", () =
 
     assert.ok(providerImport >= 0);
     assert.ok(routeImport > providerImport);
+});
+
+test("Library detail composition preserves stages and dispatches contributed actions", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/study/library/ui/app.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /\.\.\.sectionsFor\("beforeCore"\)[\s\S]*\.\.\.coreSections\([\s\S]*\.\.\.sectionsFor\("core"\)[\s\S]*\.\.\.sectionsFor\("afterCore"\)/,
+    );
+    assert.match(source, /contributedAction\.onAction\(\{/);
+    assert.doesNotMatch(source, /registerFlow\(DETAIL_FLOW/);
+    assert.match(
+        source,
+        /\/study\/library\/\$\{encodeURIComponent\(entry\.schemaId\)\}\/\$\{encodeURIComponent\(entry\.layer\)\}\/\$\{encodeURIComponent\(entry\.id\)\}/,
+    );
+    assert.match(source, /signal\?\.throwIfAborted\(\);[\s\S]*openPopup\(\{/);
+    assert.match(source, /if \(actionId === null\) return true;/);
 });

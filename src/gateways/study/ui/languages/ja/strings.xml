@@ -52,4 +52,12 @@
   <string name="gateway.study.library_components">構成要素</string>
   <string name="gateway.study.library_used_by">使用元</string>
   <string name="gateway.study.library_no_relationships">関連する項目はありません。</string>
-  </resources>
+    <string name="gateway.study.library_fields">フィールド</string>
+  <string name="gateway.study.library_definitions">定義</string>
+  <string name="gateway.study.library_alternate_definitions">別の定義</string>
+  <string name="gateway.study.library_provenance">来歴</string>
+  <string name="gateway.study.library_scope">範囲</string>
+  <string name="gateway.study.library_revisions">改訂履歴</string>
+  <string name="gateway.study.library_progress">進捗</string>
+  <string name="gateway.study.library_strokes">筆画</string>
+</resources>
