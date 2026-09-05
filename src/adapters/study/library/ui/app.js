@@ -24,6 +24,30 @@ function entryUrl(entry, languageCode) {
     );
 }
 
+function localizedLabel(metadata, contentLanguage) {
+    const labels = metadata?.labels ?? {};
+    const labelsByLanguage = new Map(
+        Object.entries(labels)
+            .map(([language, label]) => [parseLanguageCode(language), label])
+            .filter(([language]) => language),
+    );
+    const preferredLanguages = [
+        document.documentElement.lang,
+        ...navigator.languages,
+        contentLanguage,
+        "en",
+    ].filter(Boolean);
+    for (const language of preferredLanguages) {
+        const canonicalLanguage = parseLanguageCode(language);
+        if (!canonicalLanguage) continue;
+        const exact = labelsByLanguage.get(canonicalLanguage);
+        if (exact) return exact;
+        const base = labelsByLanguage.get(canonicalLanguage.split("-")[0]);
+        if (base) return base;
+    }
+    return Object.values(labels)[0] ?? "";
+}
+
 function renderRelationshipList(entries, emptyLabel, languageCode) {
     if (entries.length === 0) return `<p>${escapeHtml(emptyLabel)}</p>`;
     return `<ul>${entries
@@ -59,7 +83,7 @@ function renderBrowser(schemas, entries, i18n, languageCode) {
     return schemas
         .map(
             (schema) => `<section class="library-schema">
-                <h2>${escapeHtml(schema.label)}</h2>
+                <h2>${escapeHtml(localizedLabel(schema.metadata, schema.language))}</h2>
                 ${schema.layers
                     .map((layer) => {
                         const matching = entries.filter(
@@ -67,7 +91,7 @@ function renderBrowser(schemas, entries, i18n, languageCode) {
                                 entry.schemaId === schema.id &&
                                 entry.layer === layer.id,
                         );
-                        return `<section><h3>${escapeHtml(layer.label)}</h3>${renderRelationshipList(matching, i18n.t("gateway.study.library_empty"), languageCode)}</section>`;
+                        return `<section><h3>${escapeHtml(localizedLabel(layer.metadata, schema.language))}</h3>${renderRelationshipList(matching, i18n.t("gateway.study.library_empty"), languageCode)}</section>`;
                     })
                     .join("")}
             </section>`,

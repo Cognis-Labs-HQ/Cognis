@@ -412,6 +412,9 @@ const STATIC_ROUTES = [
         pattern: STUDY_CHILD_ROUTE_PATTERN,
         base: "/study",
         stylesheets: ROUTE_STYLE_BUNDLES.study,
+        fallback: true,
+        canNavigate: async (path) =>
+            Boolean(await resolveStudyChildComponent(path)),
         load: (path) => loadStudyChildRouteModule(path),
     },
 ];
@@ -445,7 +448,9 @@ async function loadAllRoutes() {
     const loadGeneration = _routeCacheGeneration;
     const loadPromise = (async () => {
         const dynamicRoutes = await loadSpaRoutes();
-        const routes = [...STATIC_ROUTES, ...dynamicRoutes];
+        const primaryRoutes = STATIC_ROUTES.filter((route) => !route.fallback);
+        const fallbackRoutes = STATIC_ROUTES.filter((route) => route.fallback);
+        const routes = [...primaryRoutes, ...dynamicRoutes, ...fallbackRoutes];
         if (loadGeneration === _routeCacheGeneration) {
             _allRoutes = routes;
         }
@@ -470,11 +475,14 @@ function findRoute(path) {
 
 async function resolveRoute(path) {
     const staticRoute = findMatchingRoute(STATIC_ROUTES, path);
-    if (staticRoute) {
+    if (staticRoute && !staticRoute.fallback) {
         return staticRoute;
     }
-    const allRoutes = await loadAllRoutes();
-    return findMatchingRoute(allRoutes, path);
+    return findMatchingRoute(await loadAllRoutes(), path);
+}
+
+async function canNavigateToRoute(route, path) {
+    return !route.canNavigate || (await route.canNavigate(path));
 }
 
 let _root = null;
@@ -627,10 +635,7 @@ async function loadRoute(path) {
 export async function navigateTo(path) {
     const route = await resolveRoute(path);
     if (!route) return false;
-    if (isPotentialStudyChildPath(path)) {
-        const component = await resolveStudyChildComponent(path);
-        if (!component) return false;
-    }
+    if (!(await canNavigateToRoute(route, path))) return false;
     const previousRouterPage = getCurrentRoutePath();
     history.pushState({ routerPage: path, previousRouterPage }, "", path);
     return loadRoute(path);
@@ -715,10 +720,7 @@ export function initRouter(root) {
         const pathWithHash = `${window.location.pathname}${window.location.hash}`;
         const route = await resolveRoute(path);
         if (!route) return;
-        if (isPotentialStudyChildPath(path)) {
-            const component = await resolveStudyChildComponent(path);
-            if (!component) return;
-        }
+        if (!(await canNavigateToRoute(route, path))) return;
         // If navigating within the same page section (e.g. docs internal
         // pushState) and this wasn't a router-level push, let the page's
         // own popstate handler deal with it (handled by AbortSignal cleanup).

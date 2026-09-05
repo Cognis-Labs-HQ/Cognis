@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { contentEntryId } from "./content-pack.js";
 import type {
+    LibraryAsset,
     LibraryContentPackPlan,
     LibraryContentPackReceipt,
     LibraryEntry,
@@ -68,6 +69,18 @@ export class LibraryStore {
                 },
             ],
             primaryKey: ["publisher", "pack_id", "version"],
+        });
+        await this.db.ensureTable({
+            name: "study_library_content_pack_assets",
+            columns: [
+                { name: "publisher", type: "text", notNull: true },
+                { name: "pack_id", type: "text", notNull: true },
+                { name: "version", type: "text", notNull: true },
+                { name: "asset_path", type: "text", notNull: true },
+                { name: "media_type", type: "text", notNull: true },
+                { name: "data_base64", type: "text", notNull: true },
+            ],
+            primaryKey: ["publisher", "pack_id", "version", "asset_path"],
         });
         await this.db.ensureTable({
             name: "study_library_entries",
@@ -228,6 +241,24 @@ export class LibraryStore {
                 });
             }
             for (const record of records) {
+                const layer = schema.layers.find(
+                    ({ id }) => id === record.layer,
+                )!;
+                const fields = structuredClone(record.fields ?? {});
+                for (const field of layer.fields ?? []) {
+                    const assetPath = fields[field.id];
+                    if (
+                        field.type === "asset" &&
+                        typeof assetPath === "string"
+                    ) {
+                        fields[field.id] = this.contentPackAssetUrl(
+                            manifest.publisher,
+                            manifest.id,
+                            manifest.version,
+                            assetPath,
+                        );
+                    }
+                }
                 await db.executeCommand({
                     option: "INSERT",
                     table: "study_library_entries",
@@ -240,8 +271,22 @@ export class LibraryStore {
                         layer: record.layer,
                         language: schema.language,
                         label: record.label.trim(),
-                        fields_json: JSON.stringify(record.fields ?? {}),
+                        fields_json: JSON.stringify(fields),
                         created_by: `content-pack:${manifest.id}`,
+                    },
+                });
+            }
+            for (const asset of plan.assets) {
+                await db.executeCommand({
+                    option: "INSERT",
+                    table: "study_library_content_pack_assets",
+                    values: {
+                        publisher: manifest.publisher,
+                        pack_id: manifest.id,
+                        version: manifest.version,
+                        asset_path: asset.path,
+                        media_type: asset.mediaType,
+                        data_base64: asset.data,
                     },
                 });
             }
@@ -288,6 +333,43 @@ export class LibraryStore {
             });
         });
         return this.contentPackReceipt(plan, false);
+    }
+
+    private contentPackAssetUrl(
+        publisher: string,
+        packId: string,
+        version: string,
+        assetPath: string,
+    ): string {
+        const encodedPath = assetPath
+            .split("/")
+            .map(encodeURIComponent)
+            .join("/");
+        return `/api/v1/study/library/assets/${encodeURIComponent(publisher)}/${encodeURIComponent(packId)}/${encodeURIComponent(version)}/${encodedPath}`;
+    }
+
+    async getContentPackAsset(
+        publisher: string,
+        packId: string,
+        version: string,
+        assetPath: string,
+    ): Promise<LibraryAsset | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_library_content_pack_assets",
+            where: [
+                { column: "publisher", value: publisher },
+                { column: "pack_id", value: packId },
+                { column: "version", value: version },
+                { column: "asset_path", value: assetPath },
+            ],
+        });
+        const row = result.rows?.[0];
+        if (!row) return null;
+        return {
+            mediaType: String(row.media_type) as LibraryAsset["mediaType"],
+            data: Buffer.from(String(row.data_base64), "base64"),
+        };
     }
 
     private contentPackReceipt(

@@ -9,6 +9,7 @@ import {
 } from "./layers.js";
 import { LibraryStore } from "./store.js";
 import type {
+    LibraryAsset,
     LibraryEntry,
     LibraryContentPackPlan,
     LibraryContentPackReceipt,
@@ -46,6 +47,12 @@ export interface LibraryCapability {
     getSchema(id: string, version?: number): LibrarySchema | null;
     inspectContentPack(root: string): Promise<LibraryContentPackPlan>;
     ingestContentPack(root: string): Promise<LibraryContentPackReceipt>;
+    readContentPackAsset(
+        publisher: string,
+        packId: string,
+        version: string,
+        assetPath: string,
+    ): Promise<LibraryAsset | null>;
     list(
         actor: LibraryActor,
         location: LibraryLocation,
@@ -150,7 +157,7 @@ export class LibraryService implements LibraryCapability {
     listSchemas(): LibrarySchema[] {
         return Array.from(this.schemas.values(), (versions) =>
             versions.get(Math.max(...versions.keys()))!,
-        ).map(structuredClone);
+        ).map((schema) => structuredClone(schema));
     }
 
     getSchema(id: string, version?: number): LibrarySchema | null {
@@ -199,6 +206,20 @@ export class LibraryService implements LibraryCapability {
             });
             throw error;
         }
+    }
+
+    async readContentPackAsset(
+        publisher: string,
+        packId: string,
+        version: string,
+        assetPath: string,
+    ): Promise<LibraryAsset | null> {
+        return this.store.getContentPackAsset(
+            publisher,
+            packId,
+            version,
+            assetPath,
+        );
     }
 
     private schema(id: string, version?: number): LibrarySchema {
