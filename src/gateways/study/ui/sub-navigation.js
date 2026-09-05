@@ -1,5 +1,6 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
     resolveLanguageLabel,
     buildLibraryUrl,
@@ -63,6 +64,24 @@ export function readSelectedStudyLanguageCode() {
     return parseLanguageCode(
         history.state?.studyLanguageCode ??
             selectedButton?.dataset.languageCode,
+    );
+}
+
+export function bindStudySubNavigation(root, { signal } = {}) {
+    root.addEventListener(
+        "click",
+        (event) => {
+            const link = event.target.closest("a[data-language-code]");
+            if (!link) return;
+            const navigate = uiCtx.capabilities.get("ui:navigate");
+            if (typeof navigate !== "function") return;
+            event.preventDefault();
+            event.stopPropagation();
+            navigate(link.getAttribute("href"), {
+                state: { studyLanguageCode: link.dataset.languageCode },
+            });
+        },
+        { signal },
     );
 }
 

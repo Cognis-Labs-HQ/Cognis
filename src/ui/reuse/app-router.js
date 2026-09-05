@@ -716,10 +716,7 @@ export function initRouter(root) {
             window.location.assign(href);
             return;
         }
-        const studyLanguageCode = link.dataset.languageCode;
-        await navigateTo(href, {
-            state: studyLanguageCode ? { studyLanguageCode } : {},
-        });
+        await navigateTo(href);
     });
 
     window.addEventListener("popstate", async (event) => {

@@ -7,6 +7,7 @@ import { navigateTo } from "/static/reuse/app-router.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { showToast } from "/static/reuse/toast.js";
 import {
+    bindStudySubNavigation,
     loadStudySubNavigationModel,
     readSelectedStudyLanguageCode,
     renderStudySubNavigation,
@@ -211,13 +212,22 @@ function currentEntry() {
     return parseEntryRoute();
 }
 
-async function openEntryPopup(route, entries, i18n, languageCode, signal) {
+async function openEntryPopup(
+    route,
+    schemas,
+    entries,
+    i18n,
+    languageCode,
+    signal,
+) {
     const detail = await fetchLibraryEntry(route.entryId);
     if (
         detail.entry.schemaId !== route.schemaId ||
         detail.entry.layer !== route.layerId
     )
         throw new Error("entry_route_mismatch");
+    if (!schemas.some((schema) => schema.id === route.schemaId))
+        throw new Error("entry_language_mismatch");
     const active = entries.filter(
         (entry) =>
             entry.schemaId === route.schemaId && entry.layer === route.layerId,
@@ -321,25 +331,28 @@ export async function mount(root, { signal } = {}) {
         componentStringBaseUrls: ["/static/gateways/study/languages"],
     });
     applyDocumentTitle(i18n, "gateway.study.library_label");
-    const requestedLanguageCode = readSelectedStudyLanguageCode();
+    if (!history.state?.routerPage) {
+        const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        history.replaceState(
+            { ...history.state, routerPage: currentUrl },
+            "",
+            currentUrl,
+        );
+    }
+    const route = currentEntry();
+    let requestedLanguageCode = readSelectedStudyLanguageCode();
+    let routeSchemas;
+    if (route) {
+        routeSchemas = await fetchLibrarySchemas();
+        requestedLanguageCode = parseLanguageCode(
+            routeSchemas.find((schema) => schema.id === route.schemaId)
+                ?.language,
+        );
+    }
     const model = await loadStudySubNavigationModel({
         fallbackLanguageCode: requestedLanguageCode,
     });
     const languageCode = model.selectedLanguageCode;
-    const legacyRoute = parseEntryRoute();
-    const route = currentEntry();
-    if (legacyRoute) {
-        const libraryUrl = buildLibraryUrl(languageCode);
-        history.replaceState(
-            {
-                ...history.state,
-                routerPage: libraryUrl,
-                libraryEntry: legacyRoute,
-            },
-            "",
-            libraryUrl,
-        );
-    }
     let schemas = [];
     let entries = [];
     try {
@@ -393,6 +406,7 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     signal?.throwIfAborted();
+    bindStudySubNavigation(root, { signal });
     root.addEventListener(
         "click",
         (event) => {
@@ -415,11 +429,17 @@ export async function mount(root, { signal } = {}) {
         { signal },
     );
     if (route)
-        void openEntryPopup(route, entries, i18n, languageCode, signal).catch(
-            () =>
-                showToast(i18n.t("gateway.study.library_load_error"), {
-                    type: "error",
-                }),
+        void openEntryPopup(
+            route,
+            schemas,
+            entries,
+            i18n,
+            languageCode,
+            signal,
+        ).catch(() =>
+            showToast(i18n.t("gateway.study.library_load_error"), {
+                type: "error",
+            }),
         );
 }
 

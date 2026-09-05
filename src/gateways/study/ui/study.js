@@ -23,6 +23,7 @@ import {
     invalidateStudyChildComponentCache,
 } from "/static/reuse/app-router.js";
 import {
+    bindStudySubNavigation,
     clearStudySubNavCache,
     readSelectedStudyLanguageCode,
 } from "/static/gateways/study/ui/sub-navigation.js";
@@ -242,6 +243,7 @@ async function mountHub(
         learningLanguages,
         requestedLanguageCode,
         isSettingsPath,
+        signal,
     },
 ) {
     const selectedLanguageCode = learningLanguages.includes(
@@ -637,6 +639,7 @@ async function mountHub(
     });
 
     await composer.init();
+    bindStudySubNavigation(root, { signal });
 
     function bindSettingsEvents() {
         root.querySelectorAll(".study-lang-action-btn").forEach((button) => {

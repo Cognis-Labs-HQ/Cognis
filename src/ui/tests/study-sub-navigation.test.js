@@ -58,12 +58,18 @@ test("Study navigation stores language selection on buttons instead of URLs", ()
         resolve(ROOT, "src/adapters/study/library/ui/app.js"),
         "utf8",
     );
+    const routerSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
 
     assert.match(navigationSource, /data-language-code=/);
     assert.match(navigationSource, /readSelectedStudyLanguageCode/);
+    assert.match(navigationSource, /bindStudySubNavigation/);
     assert.match(studyPageSource, /readSelectedStudyLanguageCode\(\)/);
     assert.match(librarySource, /readSelectedStudyLanguageCode\(\)/);
     assert.doesNotMatch(navigationSource, /withLanguageQuery/);
     assert.doesNotMatch(studyPageSource, /withLanguageQuery/);
     assert.doesNotMatch(librarySource, /withLanguageQuery/);
+    assert.doesNotMatch(routerSource, /studyLanguageCode|data-language-code/);
 });

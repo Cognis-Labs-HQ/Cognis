@@ -2,7 +2,7 @@
     "id": "study",
     "uuid": "338b9237-a2c8-5bcf-9437-bccc9abd9a27",
     "name": "Study Gateway",
-    "version": "1.8.4",
+    "version": "1.8.5",
     "required": false,
     "requires": ["5711a248-4ac9-5d44-98b5-b99bd4c6d722"],
     "description": "Thin gateway for study features. Concrete capabilities (classes, teacher assignments) are provided by adapters under src/adapters/study/. Language learning content is provided by standalone modules installed through the Module Marketplace.",
