@@ -528,3 +528,16 @@ test("direct SPA entry loads capability providers before the route module", () =
     assert.ok(providerImport >= 0);
     assert.ok(routeImport > providerImport);
 });
+
+test("Library detail composition preserves stages and dispatches contributed actions", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/study/library/ui/app.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /\.\.\.sectionsFor\("beforeCore"\)[\s\S]*\.\.\.coreSections\([\s\S]*\.\.\.sectionsFor\("core"\)[\s\S]*\.\.\.sectionsFor\("afterCore"\)/,
+    );
+    assert.match(source, /contributedAction\.onAction\(\{/);
+    assert.doesNotMatch(source, /registerFlow\(DETAIL_FLOW/);
+});

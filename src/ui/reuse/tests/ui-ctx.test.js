@@ -185,3 +185,37 @@ test("createFlowEngine — stageCtx.input is the original flow input", async () 
     await engine.runFlow("input-flow", { userId: "alice" });
     assert.deepEqual(received, { userId: "alice" });
 });
+
+test("createFlowEngine — registered hooks can be removed", async () => {
+    const { createFlowEngine } = loadUiCtxForTests();
+    const engine = createFlowEngine();
+    engine.registerFlow("removable-flow", ["compose"]);
+    engine.extendFlow(
+        "removable-flow",
+        "compose",
+        { id: "provider:compose" },
+        async () => "included",
+    );
+
+    assert.equal(
+        engine.removeFlowHook("removable-flow", "compose", "provider:compose"),
+        true,
+    );
+    const result = await engine.runFlow("removable-flow", {});
+    assert.deepEqual(
+        JSON.parse(JSON.stringify(result.stageResults.compose)),
+        [],
+    );
+    assert.equal(
+        engine.removeFlowHook("removable-flow", "compose", "provider:compose"),
+        false,
+    );
+});
+
+test("Library detail flow is declared before provider loading", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/flow-contracts.js"),
+        "utf8",
+    );
+    assert.match(source, /"study:library:composeEntryDetail"/);
+});

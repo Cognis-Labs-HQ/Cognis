@@ -53,6 +53,12 @@ export const BROWSER_FLOW_CONTRACTS = Object.freeze({
     "load-page": Object.freeze(["authenticate", "mount-page"]),
     "defer-page-action": Object.freeze(["schedule"]),
     "complete-login": Object.freeze(["setup-account-services"]),
+    "study:library:composeEntryDetail": Object.freeze([
+        "beforeCore",
+        "core",
+        "afterCore",
+        "actions",
+    ]),
     search: Object.freeze([
         "visible-indexes",
         "component-indexes",

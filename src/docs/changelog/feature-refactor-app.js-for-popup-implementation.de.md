@@ -1,31 +1,20 @@
-# Routengestützte Detailansicht für Bibliothekseinträge
+# Erweiterbare Popups für Bibliothekseinträge
 
 **Feature-Zweig:** feature-refactor-app.js-for-popup-implementation
 
-## Tief verlinktes Eintrags-Popup
+## Routengestützte Eintragsdetails
 
-Bibliothekseinträge öffnen sich nun als erweiterbare, routengestützte Popups mit allen verfügbaren Metadaten, Beziehungslinks, beigetragenen Aktionen sowie Vor-/Zurück-Navigation.
+Bibliothekseinträge öffnen sich in übersichtlichen, verlaufsfähigen Popups mit verfügbaren Metadaten, Beziehungen, Vor-/Zurück-Navigation und einheitlichen Benutzermenü-Schaltflächen in der Study-Navigation.
 
-## Saubere Bibliotheks-URLs
+## Erweiterbare Detailzusammenstellung
 
-Die Identität des Eintrags wird nun im Browser-Verlaufszustand statt in der Adressleiste gespeichert. Aktualisieren und Browsernavigation erhalten das aktive Popup; bisherige Direktlinks werden auf die saubere Bibliotheks-URL umgestellt.
+Der Detailablauf wird vor den UI-Anbietern deklariert, bewahrt die Reihenfolge vor Kern, Kern und nach Kern, unterstützt entfernbare Hooks und führt beigetragene Popup-Aktionen aus.
 
-## Zuverlässiges Neuladen der Seite
+## Zuverlässiger Seitenlebenszyklus
 
-Direkte Bibliotheksaufrufe verwenden nun den gemeinsamen authentifizierten Seiteneinstiegszyklus, sodass UI-Anbieter und der Seitenladeablauf vor dem Einbinden der Bibliothek bereitstehen.
-
-## Beständiges Study-Untermenü
-
-Die Bibliothek übergibt die Study-Navigation nun als standardmäßige renderbare Beschreibung an den Seiten-Composer, sodass das Sprach- und Modul-Untermenü bei direkten Aufrufen und SPA-Wechseln sichtbar bleibt.
-
-## Einheitliche Untermenü-Schaltflächen
-
-Die Links im Study-Untermenü verwenden nun dieselbe Schaltflächenklasse `dropdown-item` wie das Benutzermenü; die bisherigen eigenen Linkklassen und Stile wurden entfernt.
+Direkte Aufrufe und SPA-Wechsel verwenden den standardmäßigen authentifizierten Seiten-Composer-Lebenszyklus und behalten das Study-Untermenü bei.
 
 ## Commits
 
-- https://github.com/Cognis-app/Cognis/commit/f29be454
-- https://github.com/Cognis-app/Cognis/commit/3695db82
-- https://github.com/Cognis-app/Cognis/commit/fbf97f59
-- https://github.com/Cognis-app/Cognis/commit/ed1f8f31
-- https://github.com/Cognis-app/Cognis/commit/e9c8891b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f25e2f649aadef46a713e85d70d627370f60ba5c
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/160cbba5e9344f11c429f4c8f8ae2ba4ceda468b

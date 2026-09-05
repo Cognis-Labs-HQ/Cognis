@@ -1,31 +1,20 @@
-# Route-backed Library entry details
+# Composable Library entry popups
 
 **Feature Branch:** feature-refactor-app.js-for-popup-implementation
 
-## Deep-linked entry popup
+## Route-backed entry details
 
-Library entries now open as composable, route-backed popups with complete available metadata, relationship links, contributed actions, and previous/next navigation.
+Library entries open in clean, history-aware popups with available metadata, relationships, previous and next navigation, and consistent user-menu button styling in Study navigation.
 
-## Clean Library URLs
+## Extensible detail composition
 
-Entry identity now stays in browser history state instead of the address bar. Refresh and browser navigation preserve the active popup, while legacy deep links are migrated to the clean Library URL.
+The detail flow is declared before UI providers load, preserves before-core, core, and after-core ordering, supports removable hooks, and dispatches contributed popup actions.
 
-## Reliable page refresh
+## Reliable page lifecycle
 
-Direct Library loads now use the shared authenticated page-entry lifecycle, ensuring UI providers and the page-loading flow are ready before the Library mounts.
-
-## Persistent Study submenu
-
-The Library now supplies Study navigation to the page composer as a standard renderable descriptor, keeping the language and module submenu visible on direct loads and SPA transitions.
-
-## Unified submenu buttons
-
-Study submenu links now use the same `dropdown-item` button class as the user dropdown, replacing their bespoke link classes and styling.
+Direct loads and SPA transitions use the standard authenticated page-composer lifecycle while retaining the Study submenu.
 
 ## Commits
 
-- https://github.com/Cognis-app/Cognis/commit/f29be454
-- https://github.com/Cognis-app/Cognis/commit/3695db82
-- https://github.com/Cognis-app/Cognis/commit/fbf97f59
-- https://github.com/Cognis-app/Cognis/commit/ed1f8f31
-- https://github.com/Cognis-app/Cognis/commit/e9c8891b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f25e2f649aadef46a713e85d70d627370f60ba5c
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/160cbba5e9344f11c429f4c8f8ae2ba4ceda468b

@@ -22,9 +22,6 @@ import {
 } from "/static/gateways/study/ui/language.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
-const DETAIL_STAGES = ["beforeCore", "core", "afterCore", "actions"];
-if (!uiCtx.flowExists(DETAIL_FLOW))
-    uiCtx.registerFlow(DETAIL_FLOW, DETAIL_STAGES);
 
 export function entryUrl(entry, languageCode) {
     return withLanguageQuery("/study/library", languageCode);
@@ -148,17 +145,21 @@ async function composeDetail(detail, i18n, languageCode) {
         i18n,
         languageCode,
     });
-    const contributed = DETAIL_STAGES.flatMap(
-        (stage) => flow.stageResults[stage] ?? [],
-    ).filter(Boolean);
-    const sections = [...coreSections(detail, i18n, languageCode)];
-    const actions = [];
-    for (const contribution of contributed) {
-        if (Array.isArray(contribution.sections))
-            sections.push(...contribution.sections.filter(Boolean));
-        if (Array.isArray(contribution.actions))
-            actions.push(...contribution.actions);
-    }
+    const sectionsFor = (stageId) =>
+        (flow.stageResults[stageId] ?? []).flatMap((contribution) =>
+            Array.isArray(contribution?.sections)
+                ? contribution.sections.filter(Boolean)
+                : [],
+        );
+    const actions = (flow.stageResults.actions ?? []).flatMap((contribution) =>
+        Array.isArray(contribution?.actions) ? contribution.actions : [],
+    );
+    const sections = [
+        ...sectionsFor("beforeCore"),
+        ...coreSections(detail, i18n, languageCode),
+        ...sectionsFor("core"),
+        ...sectionsFor("afterCore"),
+    ];
     return {
         body: `<div class="library-detail">${sections.join("")}</div>`,
         actions,
@@ -269,26 +270,38 @@ async function openEntryPopup(route, entries, i18n, languageCode, signal) {
                 });
             });
         },
-        onAction: async (actionId) => {
+        onAction: async (actionId, overlay, popupApi) => {
             const target =
                 actionId === "previous"
                     ? active[index - 1]
                     : actionId === "next"
                       ? active[index + 1]
                       : null;
-            if (!target) return undefined;
-            navigateTo(entryUrl(target, languageCode), {
-                state: {
-                    libraryEntry: {
-                        schemaId: target.schemaId,
-                        layerId: target.layer,
-                        entryId: target.id,
+            if (target) {
+                navigateTo(entryUrl(target, languageCode), {
+                    state: {
+                        libraryEntry: {
+                            schemaId: target.schemaId,
+                            layerId: target.layer,
+                            entryId: target.id,
+                        },
+                        libraryOrigin: origin,
+                        libraryPopupDepth: popupDepth + 1,
                     },
-                    libraryOrigin: origin,
-                    libraryPopupDepth: popupDepth + 1,
-                },
+                });
+                return true;
+            }
+            const contributedAction = composed.actions.find(
+                (action) => action.id === actionId,
+            );
+            if (typeof contributedAction?.onAction !== "function") return false;
+            return contributedAction.onAction({
+                actionId,
+                detail,
+                overlay,
+                popupApi,
+                languageCode,
             });
-            return true;
         },
     });
     if (!aborted && result !== "previous" && result !== "next") {
