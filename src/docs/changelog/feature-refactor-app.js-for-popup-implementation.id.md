@@ -18,9 +18,14 @@ Pemuatan langsung Pustaka kini memakai siklus entri halaman terautentikasi bersa
 
 Pustaka kini memasok navigasi Study kepada penyusun halaman sebagai deskriptor standar yang dapat dirender, sehingga submenu bahasa dan modul tetap terlihat pada pemuatan langsung maupun transisi SPA.
 
+## Tombol submenu yang seragam
+
+Tautan submenu Study kini memakai kelas tombol `dropdown-item` yang sama dengan menu tarik-turun pengguna, menggantikan kelas dan gaya tautan khusus sebelumnya.
+
 ## Commit
 
 - https://github.com/Cognis-app/Cognis/commit/f29be454
 - https://github.com/Cognis-app/Cognis/commit/3695db82
 - https://github.com/Cognis-app/Cognis/commit/fbf97f59
 - https://github.com/Cognis-app/Cognis/commit/ed1f8f31
+- https://github.com/Cognis-app/Cognis/commit/e9c8891b

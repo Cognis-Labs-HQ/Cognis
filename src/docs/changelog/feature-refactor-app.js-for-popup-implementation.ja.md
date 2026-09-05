@@ -18,9 +18,14 @@
 
 ライブラリが Study ナビゲーションを標準の描画可能な記述子としてページコンポーザーへ渡すようになり、直接読み込みと SPA 遷移のどちらでも言語・モジュールサブメニューが表示され続けます。
 
+## 統一されたサブメニューボタン
+
+Study サブメニューのリンクにユーザードロップダウンと同じ `dropdown-item` ボタンクラスを使用し、従来の専用リンククラスとスタイルを廃止しました。
+
 ## コミット
 
 - https://github.com/Cognis-app/Cognis/commit/f29be454
 - https://github.com/Cognis-app/Cognis/commit/3695db82
 - https://github.com/Cognis-app/Cognis/commit/fbf97f59
 - https://github.com/Cognis-app/Cognis/commit/ed1f8f31
+- https://github.com/Cognis-app/Cognis/commit/e9c8891b

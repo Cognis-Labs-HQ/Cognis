@@ -18,9 +18,14 @@ Direkte Bibliotheksaufrufe verwenden nun den gemeinsamen authentifizierten Seite
 
 Die Bibliothek übergibt die Study-Navigation nun als standardmäßige renderbare Beschreibung an den Seiten-Composer, sodass das Sprach- und Modul-Untermenü bei direkten Aufrufen und SPA-Wechseln sichtbar bleibt.
 
+## Einheitliche Untermenü-Schaltflächen
+
+Die Links im Study-Untermenü verwenden nun dieselbe Schaltflächenklasse `dropdown-item` wie das Benutzermenü; die bisherigen eigenen Linkklassen und Stile wurden entfernt.
+
 ## Commits
 
 - https://github.com/Cognis-app/Cognis/commit/f29be454
 - https://github.com/Cognis-app/Cognis/commit/3695db82
 - https://github.com/Cognis-app/Cognis/commit/fbf97f59
 - https://github.com/Cognis-app/Cognis/commit/ed1f8f31
+- https://github.com/Cognis-app/Cognis/commit/e9c8891b

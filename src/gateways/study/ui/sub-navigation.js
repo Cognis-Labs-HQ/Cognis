@@ -224,7 +224,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             const activeClass = rawPageUrl === currentPath ? " active" : "";
             return `
                 <li>
-                    <a class="study-subnav-link study-subnav-module-link${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(String(component?.label ?? pageUrl))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                    <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(String(component?.label ?? pageUrl))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                         ${escapeHtml(String(component?.label ?? pageUrl))}
                     </a>
                 </li>
@@ -235,7 +235,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         isStudentScope() && !hasLibraryModule
             ? `
             <li>
-                <a class="study-subnav-link study-subnav-module-link${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(libraryUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                <a class="dropdown-item${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(libraryUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                     ${escapeHtml(i18n.t("gateway.study.library_label"))}
                 </a>
             </li>
@@ -257,7 +257,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             );
             return `
                 <li>
-                    <a class="study-subnav-language-option${activeClass}" href="${escapeHtml(languageHubUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                    <a class="dropdown-item${activeClass}" href="${escapeHtml(languageHubUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                         ${escapeHtml(language.flag)}
                         <span>${escapeHtml(language.name)}</span>
                     </a>
@@ -282,7 +282,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                 ${languageOptions}
             </ul>
             <a
-                class="study-subnav-settings-link${settingsActiveClass}"
+                class="dropdown-item${settingsActiveClass}"
                 href="${escapeHtml(settingsUrl)}"
                 data-search-category="Pages"
                 data-search-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"

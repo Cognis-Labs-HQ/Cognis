@@ -18,9 +18,14 @@ Direct Library loads now use the shared authenticated page-entry lifecycle, ensu
 
 The Library now supplies Study navigation to the page composer as a standard renderable descriptor, keeping the language and module submenu visible on direct loads and SPA transitions.
 
+## Unified submenu buttons
+
+Study submenu links now use the same `dropdown-item` button class as the user dropdown, replacing their bespoke link classes and styling.
+
 ## Commits
 
 - https://github.com/Cognis-app/Cognis/commit/f29be454
 - https://github.com/Cognis-app/Cognis/commit/3695db82
 - https://github.com/Cognis-app/Cognis/commit/fbf97f59
 - https://github.com/Cognis-app/Cognis/commit/ed1f8f31
+- https://github.com/Cognis-app/Cognis/commit/e9c8891b
