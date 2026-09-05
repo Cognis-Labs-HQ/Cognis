@@ -25,8 +25,10 @@ import {
 import { clearStudySubNavCache } from "/static/gateways/study/ui/sub-navigation.js";
 import {
     resolveLanguageLabel,
-    isAdminScope,
+    isStudentScope,
     buildLibraryUrl,
+    parseLanguageCode,
+    withLanguageQuery,
 } from "/static/gateways/study/ui/language.js";
 import { openPopup } from "/static/reuse/popup.js";
 
@@ -55,6 +57,9 @@ export async function mount(root, { signal } = {}) {
     applyDocumentTitle(i18n, "gateway.study.page_title");
 
     const currentPath = window.location.pathname;
+    const requestedLanguageCode = parseLanguageCode(
+        new URLSearchParams(window.location.search).get("language"),
+    );
     const isWelcomePath = currentPath === "/study/welcome";
     const isSettingsPath = currentPath === "/study/settings";
 
@@ -99,6 +104,7 @@ export async function mount(root, { signal } = {}) {
         i18n,
         registeredLanguages,
         learningLanguages,
+        requestedLanguageCode,
         isSettingsPath,
         signal,
     });
@@ -231,9 +237,19 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
 
 async function mountHub(
     root,
-    { i18n, registeredLanguages, learningLanguages, isSettingsPath },
+    {
+        i18n,
+        registeredLanguages,
+        learningLanguages,
+        requestedLanguageCode,
+        isSettingsPath,
+    },
 ) {
-    const selectedLanguageCode = learningLanguages[0];
+    const selectedLanguageCode = learningLanguages.includes(
+        requestedLanguageCode,
+    )
+        ? requestedLanguageCode
+        : learningLanguages[0];
 
     const languageModulesMap = new Map();
     const discoveredLanguageCodes = new Set();
@@ -300,11 +316,11 @@ async function mountHub(
         const firstModulePageUrl = modules
             .map((component) => String(component?.pageUrl ?? "").trim())
             .find(Boolean);
-        return firstModulePageUrl || "/study";
+        return withLanguageQuery(firstModulePageUrl || "/study", languageCode);
     }
 
     function buildSettingsUrl() {
-        return "/study/settings";
+        return withLanguageQuery("/study/settings", selectedLanguageCode);
     }
 
     function renderSubNavigation() {
@@ -313,10 +329,14 @@ async function mountHub(
         );
         const moduleLinks = selectedLanguageModules
             .map((component) => {
-                const pageUrl = String(component.pageUrl ?? "").trim();
-                if (!pageUrl) return "";
+                const rawPageUrl = String(component.pageUrl ?? "").trim();
+                if (!rawPageUrl) return "";
+                const pageUrl = withLanguageQuery(
+                    rawPageUrl,
+                    selectedLanguageCode,
+                );
                 const activeClass =
-                    window.location.pathname === pageUrl ? " active" : "";
+                    window.location.pathname === rawPageUrl ? " active" : "";
                 return `
                     <li>
                         <a class="study-subnav-module-link${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(String(component.label ?? pageUrl))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
@@ -327,7 +347,7 @@ async function mountHub(
             })
             .join("");
         const libraryLink =
-            isAdminScope() && !hasLibraryModule
+            isStudentScope() && !hasLibraryModule
                 ? `
                 <li>
                     <a class="study-subnav-module-link${window.location.pathname === "/study/library" ? " active" : ""}" href="${escapeHtml(buildLibraryUrl(selectedLanguageCode))}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
@@ -384,14 +404,26 @@ async function mountHub(
         const cards = learningLanguages
             .map((languageCode) => {
                 const language = getLanguage(languageCode);
-                const modules = languageModulesMap.get(languageCode) ?? [];
+                const executableModules =
+                    languageModulesMap.get(languageCode) ?? [];
+                const modules =
+                    executableModules.length === 0 && isStudentScope()
+                        ? [
+                              {
+                                  label: i18n.t(
+                                      "gateway.study.library_label",
+                                  ),
+                                  pageUrl: buildLibraryUrl(languageCode),
+                              },
+                          ]
+                        : executableModules;
                 const moduleList =
                     modules.length === 0
                         ? `<span class="study-hub-no-modules">${escapeHtml(i18n.t("gateway.study.no_modules"))}</span>`
                         : modules
                               .map(
                                   (component) => `
-                                    <a href="${escapeHtml(component.pageUrl)}" class="study-hub-module-link" data-search-category="${escapeHtml(i18n.t("gateway.study.page_title"))}" data-search-label="${escapeHtml(component.label)}" data-search-description="${escapeHtml(language.name)}" data-search-text="${escapeHtml([i18n.t("gateway.study.page_title"), language.name, component.label].filter(Boolean).join(" "))}">
+                                    <a href="${escapeHtml(withLanguageQuery(component.pageUrl, languageCode))}" class="study-hub-module-link" data-search-category="${escapeHtml(i18n.t("gateway.study.page_title"))}" data-search-label="${escapeHtml(component.label)}" data-search-description="${escapeHtml(language.name)}" data-search-text="${escapeHtml([i18n.t("gateway.study.page_title"), language.name, component.label].filter(Boolean).join(" "))}">
                                         ${escapeHtml(component.label)}
                                     </a>
                                 `,

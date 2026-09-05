@@ -3,6 +3,9 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
     resolveLanguageLabel,
     buildLibraryUrl,
+    isStudentScope,
+    parseLanguageCode,
+    withLanguageQuery,
 } from "/static/gateways/study/ui/language.js";
 
 const SETTINGS_GEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -103,7 +106,10 @@ function resolveDefaultChildPageUrl(modules) {
  *   languagePageUrlsByCode: Map<string, string>
  * }>} Model data for shared Study child-page sub-navigation rendering.
  */
-export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
+export async function loadStudySubNavigationModel(
+    { fallbackLanguageCode } = {},
+) {
+    const requestedLanguageCode = parseLanguageCode(fallbackLanguageCode);
     const [registeredLanguagesRaw, learningLanguagesRaw] = await Promise.all([
         SUB_NAV_CACHE.registeredLanguages ?? loadRegisteredLanguages(),
         SUB_NAV_CACHE.learningLanguages ?? loadLearningLanguages(),
@@ -131,7 +137,7 @@ export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
     const activeLanguageCodes = Array.from(
         new Set([
             ...learningLanguages,
-            ...[fallbackLanguageCode].filter(Boolean),
+            ...[requestedLanguageCode].filter(Boolean),
         ]),
     );
     for (const languageCode of activeLanguageCodes) {
@@ -145,9 +151,7 @@ export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
     }
 
     const selectedLanguageCode =
-        (fallbackLanguageCode && String(fallbackLanguageCode).trim()) ||
-        activeLanguageCodes[0] ||
-        fallbackLanguageCode;
+        requestedLanguageCode || activeLanguageCodes[0];
 
     const modulesByLanguage = new Map();
     await Promise.all(
@@ -208,15 +212,19 @@ export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
  */
 export function renderStudySubNavigation({ model, currentPath, i18n }) {
     const selectedLanguageCode = model.selectedLanguageCode ?? "";
-    const adminLibraryUrl = buildLibraryUrl();
+    const libraryUrl = buildLibraryUrl(selectedLanguageCode);
     const hasLibraryModule = (model.modules ?? []).some(
         (component) => String(component?.id ?? "").trim() === "library",
     );
     const moduleLinks = (model.modules ?? [])
         .map((component) => {
-            const pageUrl = String(component?.pageUrl ?? "").trim();
-            if (!pageUrl) return "";
-            const activeClass = pageUrl === currentPath ? " active" : "";
+            const rawPageUrl = String(component?.pageUrl ?? "").trim();
+            if (!rawPageUrl) return "";
+            const pageUrl = withLanguageQuery(
+                rawPageUrl,
+                selectedLanguageCode,
+            );
+            const activeClass = rawPageUrl === currentPath ? " active" : "";
             return `
                 <li>
                     <a class="study-subnav-link study-subnav-module-link${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(String(component?.label ?? pageUrl))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
@@ -226,10 +234,10 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             `;
         })
         .join("");
-    const libraryLink = !hasLibraryModule
+    const libraryLink = isStudentScope() && !hasLibraryModule
         ? `
             <li>
-                <a class="study-subnav-link study-subnav-module-link${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(adminLibraryUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                <a class="study-subnav-link study-subnav-module-link${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(libraryUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                     ${escapeHtml(i18n.t("gateway.study.library_label"))}
                 </a>
             </li>
@@ -245,8 +253,10 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             };
             const activeClass =
                 languageCode === model.selectedLanguageCode ? " active" : "";
-            const languageHubUrl =
-                model.languagePageUrlsByCode?.get(languageCode) || "/study";
+            const languageHubUrl = withLanguageQuery(
+                model.languagePageUrlsByCode?.get(languageCode) || "/study",
+                languageCode,
+            );
             return `
                 <li>
                     <a class="study-subnav-language-option${activeClass}" href="${escapeHtml(languageHubUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
@@ -258,7 +268,10 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         })
         .join("");
 
-    const settingsUrl = "/study/settings";
+    const settingsUrl = withLanguageQuery(
+        "/study/settings",
+        selectedLanguageCode,
+    );
     const settingsActiveClass =
         currentPath === "/study/settings" ? " active" : "";
 

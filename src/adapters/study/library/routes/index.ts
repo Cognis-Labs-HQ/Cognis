@@ -19,6 +19,18 @@ function locationFrom(url: URL): LibraryLocation {
     return { scope, scopeId: url.searchParams.get("scopeId") ?? undefined };
 }
 
+function languageFrom(url: URL): string | undefined {
+    const language = url.searchParams.get("language");
+    if (language === null) return undefined;
+    if (!language.trim() || language.length > 63)
+        throw new Error("invalid_language");
+    try {
+        return Intl.getCanonicalLocales(language)[0];
+    } catch {
+        throw new Error("invalid_language");
+    }
+}
+
 export function createLibraryRoutes(
     library: LibraryCapability,
     routeContext?: RouteContext,
@@ -46,7 +58,13 @@ export function createLibraryRoutes(
                 url.pathname === "/api/v1/study/library/schemas" &&
                 req.method === "GET"
             ) {
-                sendJson(res, 200, { data: library.listSchemas() });
+                const language = languageFrom(url);
+                const schemas = library
+                    .listSchemas()
+                    .filter(
+                        (schema) => !language || schema.language === language,
+                    );
+                sendJson(res, 200, { data: schemas });
                 return true;
             }
             if (
