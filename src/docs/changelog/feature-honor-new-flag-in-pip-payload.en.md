@@ -1,6 +1,6 @@
 # Preserve meetings while entering picture-in-picture
 
-**Feature Branch:** work
+**Feature Branch:** feature-honor-new-flag-in-pip-payload
 
 ## Honor browsing-context preservation requests
 
@@ -8,4 +8,4 @@ Floating windows now honor the provider's `preserveBrowsingContext` option. When
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e75a1720
+- [bae46cbe](https://github.com/Cognis-Labs-HQ/Cognis/commit/bae46cbe55f7352a4fe023e859a2b0502c2fa9db)

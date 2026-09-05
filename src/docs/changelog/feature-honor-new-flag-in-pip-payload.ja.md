@@ -1,6 +1,6 @@
 # ピクチャーインピクチャーへの移行中も会議を維持
 
-**機能ブランチ:** work
+**機能ブランチ:** feature-honor-new-flag-in-pip-payload
 
 ## 閲覧コンテキスト維持要求への対応
 
@@ -8,4 +8,4 @@
 
 ## コミット
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e75a1720
+- [bae46cbe](https://github.com/Cognis-Labs-HQ/Cognis/commit/bae46cbe55f7352a4fe023e859a2b0502c2fa9db)
