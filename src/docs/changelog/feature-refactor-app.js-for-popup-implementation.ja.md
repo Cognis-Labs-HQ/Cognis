@@ -1,6 +1,6 @@
 # ルート連動のライブラリエントリ詳細
 
-**機能ブランチ:** work
+**機能ブランチ:** feature-refactor-app.js-for-popup-implementation
 
 ## ディープリンク対応エントリポップアップ
 

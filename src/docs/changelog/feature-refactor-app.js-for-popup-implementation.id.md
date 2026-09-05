@@ -1,6 +1,6 @@
 # Detail entri Pustaka berbasis rute
 
-**Cabang Fitur:** work
+**Cabang Fitur:** feature-refactor-app.js-for-popup-implementation
 
 ## Popup entri dengan tautan langsung
 

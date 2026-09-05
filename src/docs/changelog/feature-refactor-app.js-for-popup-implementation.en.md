@@ -1,6 +1,6 @@
 # Route-backed Library entry details
 
-**Feature Branch:** work
+**Feature Branch:** feature-refactor-app.js-for-popup-implementation
 
 ## Deep-linked entry popup
 

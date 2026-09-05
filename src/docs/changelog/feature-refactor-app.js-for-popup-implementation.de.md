@@ -1,6 +1,6 @@
 # Routengestützte Detailansicht für Bibliothekseinträge
 
-**Feature-Zweig:** work
+**Feature-Zweig:** feature-refactor-app.js-for-popup-implementation
 
 ## Tief verlinktes Eintrags-Popup
 
