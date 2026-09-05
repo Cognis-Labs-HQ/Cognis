@@ -3,4 +3,8 @@
   <string name="gateway.study.library_definition_create">定義を追加</string>
   <string name="gateway.study.library_definition_save">定義を保存</string>
   <string name="gateway.study.library_definition_layer">定義レイヤー</string>
+  <string name="gateway.study.library_view_details">詳細を表示</string>
+  <string name="gateway.study.library_layer_empty">このレイヤーにはまだ項目がありません。</string>
+  <string name="gateway.study.library_previous">前へ</string>
+  <string name="gateway.study.library_next">次へ</string>
 </resources>

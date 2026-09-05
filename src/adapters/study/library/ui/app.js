@@ -3,7 +3,6 @@ import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
-import { navigateTo } from "/static/reuse/app-router.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { showToast } from "/static/reuse/toast.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
@@ -115,10 +114,6 @@ async function openDefinitionForm(schemas, i18n) {
     return true;
 }
 
-export function entryUrl(entry) {
-    return `/study/library/${encodeURIComponent(entry.schemaId)}/${encodeURIComponent(entry.layer)}/${encodeURIComponent(entry.id)}`;
-}
-
 function entryAttributes(entry) {
     return `data-library-schema="${escapeHtml(entry.schemaId)}" data-library-layer="${escapeHtml(entry.layer)}" data-library-entry="${escapeHtml(entry.id)}"`;
 }
@@ -168,7 +163,7 @@ function section(title, value) {
 }
 
 function relationSection(title, entries, languageCode, emptyLabel) {
-    return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${entries.length ? `<ul>${entries.map((entry) => `<li><a href="${entryUrl(entry)}" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</a></li>`).join("")}</ul>` : `<p>${escapeHtml(emptyLabel)}</p>`}</section>`;
+    return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${entries.length ? `<div class="library-related-entries">${entries.map((entry) => `<button class="library-related-entry btn-neutral" type="button" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</button>`).join("")}</div>` : `<p>${escapeHtml(emptyLabel)}</p>`}</section>`;
 }
 
 function coreSections(detail, i18n, languageCode) {
@@ -262,158 +257,121 @@ function renderBrowser(schemas, entries, i18n, languageCode) {
     if (!schemas.length)
         return `<p>${escapeHtml(i18n.t("gateway.study.library_empty"))}</p>`;
     return schemas
-        .map(
-            (schema) =>
-                `<section class="library-schema"><h2>${escapeHtml(localizedLabel(schema.metadata, schema.language))}</h2>${schema.layers
-                    .map(
-                        (layer) =>
-                            `<section><h3>${escapeHtml(localizedLabel(layer.metadata, schema.language))}</h3><ul>${entries
-                                .filter(
-                                    (entry) =>
-                                        entry.schemaId === schema.id &&
-                                        entry.layer === layer.id,
-                                )
-                                .map(
-                                    (entry) =>
-                                        `<li><a href="${entryUrl(entry)}" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</a></li>`,
-                                )
-                                .join("")}</ul></section>`,
-                    )
-                    .join("")}</section>`,
-        )
+        .map((schema, schemaIndex) => {
+            const schemaLabel = localizedLabel(
+                schema.metadata,
+                schema.language,
+            );
+            const tabs = schema.layers
+                .map((layer, layerIndex) => {
+                    const layerLabel = localizedLabel(
+                        layer.metadata,
+                        schema.language,
+                    );
+                    return `<button class="library-layer-tab btn-neutral${layerIndex === 0 ? " active" : ""}" type="button" role="tab" id="library-tab-${schemaIndex}-${layerIndex}" aria-selected="${layerIndex === 0}" aria-controls="library-panel-${schemaIndex}-${layerIndex}" data-library-tab="${escapeHtml(layer.id)}">${escapeHtml(layerLabel)}</button>`;
+                })
+                .join("");
+            const panels = schema.layers
+                .map((layer, layerIndex) => {
+                    const layerEntries = entries.filter(
+                        (entry) =>
+                            entry.schemaId === schema.id &&
+                            entry.layer === layer.id,
+                    );
+                    const cards = layerEntries.length
+                        ? layerEntries
+                              .map(
+                                  (entry) =>
+                                      `<button class="library-entry-card btn-neutral" type="button" ${entryAttributes(entry)}><strong>${escapeHtml(entry.label)}</strong><span>${escapeHtml(i18n.t("gateway.study.library_view_details"))}</span></button>`,
+                              )
+                              .join("")
+                        : `<p class="library-layer-empty">${escapeHtml(i18n.t("gateway.study.library_layer_empty"))}</p>`;
+                    return `<section class="library-layer-panel" role="tabpanel" id="library-panel-${schemaIndex}-${layerIndex}" aria-labelledby="library-tab-${schemaIndex}-${layerIndex}" data-library-panel="${escapeHtml(layer.id)}"${layerIndex === 0 ? "" : " hidden"}><div class="library-entry-grid">${cards}</div></section>`;
+                })
+                .join("");
+            return `<section class="library-schema"><h2>${escapeHtml(schemaLabel)}</h2><div class="library-layer-tabs" role="tablist" aria-label="${escapeHtml(i18n.t("gateway.study.library_layers"))}">${tabs}</div>${panels}</section>`;
+        })
         .join("");
 }
 
-function parseEntryRoute() {
-    const match = window.location.pathname.match(
-        /^\/study\/library\/([^/]+)\/([^/]+)\/([^/]+)$/,
-    );
-    return match
-        ? {
-              schemaId: decodeURIComponent(match[1]),
-              layerId: decodeURIComponent(match[2]),
-              entryId: decodeURIComponent(match[3]),
-          }
-        : null;
-}
-
-function currentEntry() {
-    const entry = history.state?.libraryEntry;
-    if (entry?.schemaId && entry?.layerId && entry?.entryId) return entry;
-    return parseEntryRoute();
-}
-
 async function openEntryPopup(
-    route,
-    schemas,
+    initialEntry,
     entries,
     i18n,
     languageCode,
     signal,
 ) {
-    const detail = await fetchLibraryEntry(route.entryId);
-    if (
-        detail.entry.schemaId !== route.schemaId ||
-        detail.entry.layer !== route.layerId
-    )
-        throw new Error("entry_route_mismatch");
-    if (!schemas.some((schema) => schema.id === route.schemaId))
-        throw new Error("entry_language_mismatch");
-    const active = entries.filter(
-        (entry) =>
-            entry.schemaId === route.schemaId && entry.layer === route.layerId,
-    );
-    const index = active.findIndex((entry) => entry.id === route.entryId);
-    const composed = await composeDetail(detail, i18n, languageCode);
-    signal?.throwIfAborted();
-    const origin = history.state?.libraryOrigin;
-    const popupDepth = Number(history.state?.libraryPopupDepth ?? 0);
-    let aborted = false;
-    let dismissPopup;
-    signal?.addEventListener(
-        "abort",
-        () => {
-            aborted = true;
-            dismissPopup?.();
-        },
-        { once: true },
-    );
-    const result = await openPopup({
-        title: detail.entry.label,
-        body: composed.body,
-        maxWidth: "min(56rem, 94vw)",
-        closeButtonVariant: "neutral",
-        actions: [
-            ...(index > 0
-                ? [{ id: "previous", label: "←", variant: "neutral" }]
-                : []),
-            ...(index >= 0 && index < active.length - 1
-                ? [{ id: "next", label: "→", variant: "neutral" }]
-                : []),
-            ...composed.actions,
-        ],
-        onOpen: (overlay, dismiss) => {
-            dismissPopup = dismiss;
-            overlay.addEventListener("click", (event) => {
-                const link = event.target.closest("a[data-library-entry]");
-                if (!link) return;
-                event.preventDefault();
-                event.stopPropagation();
-                navigateTo(link.getAttribute("href"), {
-                    state: {
-                        libraryEntry: {
-                            schemaId: link.dataset.librarySchema,
-                            layerId: link.dataset.libraryLayer,
-                            entryId: link.dataset.libraryEntry,
-                        },
-                        libraryOrigin: origin,
-                        libraryPopupDepth: popupDepth + 1,
-                    },
+    let selectedEntry = initialEntry;
+    while (selectedEntry && !signal?.aborted) {
+        const detail = await fetchLibraryEntry(selectedEntry.id);
+        const active = entries.filter(
+            (entry) =>
+                entry.schemaId === selectedEntry.schemaId &&
+                entry.layer === selectedEntry.layer,
+        );
+        const index = active.findIndex(
+            (entry) => entry.id === selectedEntry.id,
+        );
+        const composed = await composeDetail(detail, i18n, languageCode);
+        signal?.throwIfAborted();
+        let dismissPopup;
+        let relatedEntry;
+        const abortPopup = () => dismissPopup?.();
+        signal?.addEventListener("abort", abortPopup, { once: true });
+        const result = await openPopup({
+            title: detail.entry.label,
+            body: composed.body,
+            maxWidth: "min(56rem, 94vw)",
+            closeButtonVariant: "neutral",
+            actions: [
+                {
+                    id: "previous",
+                    label: `← ${i18n.t("gateway.study.library_previous")}`,
+                    variant: "neutral",
+                    disabled: index <= 0,
+                },
+                {
+                    id: "next",
+                    label: `${i18n.t("gateway.study.library_next")} →`,
+                    variant: "neutral",
+                    disabled: index < 0 || index >= active.length - 1,
+                },
+                ...composed.actions,
+            ],
+            onOpen: (overlay, dismiss) => {
+                dismissPopup = dismiss;
+                overlay.classList.add("library-entry-popup");
+                overlay.addEventListener("click", (event) => {
+                    const control = event.target.closest(
+                        "button[data-library-entry]",
+                    );
+                    if (!control) return;
+                    relatedEntry = entries.find(
+                        (entry) => entry.id === control.dataset.libraryEntry,
+                    );
+                    void dismiss();
                 });
-            });
-        },
-        onAction: async (actionId, overlay, popupApi) => {
-            if (actionId === null) return true;
-            const target =
-                actionId === "previous"
-                    ? active[index - 1]
-                    : actionId === "next"
-                      ? active[index + 1]
-                      : null;
-            if (target) {
-                navigateTo(entryUrl(target), {
-                    state: {
-                        libraryEntry: {
-                            schemaId: target.schemaId,
-                            layerId: target.layer,
-                            entryId: target.id,
-                        },
-                        libraryOrigin: origin,
-                        libraryPopupDepth: popupDepth + 1,
-                    },
+            },
+            onAction: async (actionId, overlay, popupApi) => {
+                const contributedAction = composed.actions.find(
+                    (action) => action.id === actionId,
+                );
+                if (typeof contributedAction?.onAction !== "function")
+                    return true;
+                return contributedAction.onAction({
+                    actionId,
+                    detail,
+                    overlay,
+                    popupApi,
+                    languageCode,
                 });
-                return true;
-            }
-            const contributedAction = composed.actions.find(
-                (action) => action.id === actionId,
-            );
-            if (typeof contributedAction?.onAction !== "function") return false;
-            return contributedAction.onAction({
-                actionId,
-                detail,
-                overlay,
-                popupApi,
-                languageCode,
-            });
-        },
-    });
-    if (!aborted && result !== "previous" && result !== "next") {
-        if (origin && popupDepth > 0) {
-            history.go(-popupDepth);
-        } else {
-            const libraryUrl = buildLibraryUrl(languageCode);
-            history.replaceState({ routerPage: libraryUrl }, "", libraryUrl);
-        }
+            },
+        });
+        signal?.removeEventListener("abort", abortPopup);
+        if (result === "previous") selectedEntry = active[index - 1];
+        else if (result === "next") selectedEntry = active[index + 1];
+        else if (relatedEntry) selectedEntry = relatedEntry;
+        else selectedEntry = null;
     }
 }
 
@@ -425,24 +383,7 @@ export async function mount(root, { signal } = {}) {
         ],
     });
     applyDocumentTitle(i18n, "gateway.study.library_label");
-    if (!history.state?.routerPage) {
-        const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-        history.replaceState(
-            { ...history.state, routerPage: currentUrl },
-            "",
-            currentUrl,
-        );
-    }
-    const route = currentEntry();
-    let requestedLanguageCode = readSelectedStudyLanguageCode();
-    let routeSchemas;
-    if (route) {
-        routeSchemas = await fetchLibrarySchemas();
-        requestedLanguageCode = parseLanguageCode(
-            routeSchemas.find((schema) => schema.id === route.schemaId)
-                ?.language,
-        );
-    }
+    const requestedLanguageCode = readSelectedStudyLanguageCode();
     const model = await loadStudySubNavigationModel({
         fallbackLanguageCode: requestedLanguageCode,
     });
@@ -520,37 +461,45 @@ export async function mount(root, { signal } = {}) {
     root.addEventListener(
         "click",
         (event) => {
-            const link = event.target.closest("a[data-library-entry]");
-            if (!link) return;
-            event.preventDefault();
-            event.stopPropagation();
-            navigateTo(link.getAttribute("href"), {
-                state: {
-                    libraryEntry: {
-                        schemaId: link.dataset.librarySchema,
-                        layerId: link.dataset.libraryLayer,
-                        entryId: link.dataset.libraryEntry,
-                    },
-                    libraryOrigin: `${window.location.pathname}${window.location.search}`,
-                    libraryPopupDepth: 1,
-                },
-            });
+            const tab = event.target.closest("button[data-library-tab]");
+            if (tab) {
+                const schema = tab.closest(".library-schema");
+                schema
+                    .querySelectorAll("[data-library-tab]")
+                    .forEach((item) => {
+                        const active = item === tab;
+                        item.classList.toggle("active", active);
+                        item.setAttribute("aria-selected", String(active));
+                    });
+                schema
+                    .querySelectorAll("[data-library-panel]")
+                    .forEach((panel) => {
+                        panel.hidden =
+                            panel.dataset.libraryPanel !==
+                            tab.dataset.libraryTab;
+                    });
+                return;
+            }
+            const control = event.target.closest("button[data-library-entry]");
+            if (!control) return;
+            const entry = entries.find(
+                (candidate) => candidate.id === control.dataset.libraryEntry,
+            );
+            if (!entry) return;
+            void openEntryPopup(
+                entry,
+                entries,
+                i18n,
+                languageCode,
+                signal,
+            ).catch(() =>
+                showToast(i18n.t("gateway.study.library_load_error"), {
+                    type: "error",
+                }),
+            );
         },
         { signal },
     );
-    if (route)
-        void openEntryPopup(
-            route,
-            schemas,
-            entries,
-            i18n,
-            languageCode,
-            signal,
-        ).catch(() =>
-            showToast(i18n.t("gateway.study.library_load_error"), {
-                type: "error",
-            }),
-        );
 }
 
 await mountWhenDirect(mount);

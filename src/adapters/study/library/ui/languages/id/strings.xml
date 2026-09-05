@@ -3,4 +3,8 @@
   <string name="gateway.study.library_definition_create">Tambah definisi</string>
   <string name="gateway.study.library_definition_save">Simpan definisi</string>
   <string name="gateway.study.library_definition_layer">Lapisan definisi</string>
+  <string name="gateway.study.library_view_details">Lihat detail</string>
+  <string name="gateway.study.library_layer_empty">Lapisan ini belum memiliki entri.</string>
+  <string name="gateway.study.library_previous">Sebelumnya</string>
+  <string name="gateway.study.library_next">Berikutnya</string>
 </resources>

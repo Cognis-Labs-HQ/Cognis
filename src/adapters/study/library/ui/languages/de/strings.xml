@@ -3,4 +3,8 @@
   <string name="gateway.study.library_definition_create">Definition hinzufügen</string>
   <string name="gateway.study.library_definition_save">Definition speichern</string>
   <string name="gateway.study.library_definition_layer">Definitionsebene</string>
+  <string name="gateway.study.library_view_details">Details anzeigen</string>
+  <string name="gateway.study.library_layer_empty">Diese Ebene enthält noch keine Einträge.</string>
+  <string name="gateway.study.library_previous">Zurück</string>
+  <string name="gateway.study.library_next">Weiter</string>
 </resources>

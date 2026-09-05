@@ -42,9 +42,14 @@ Language packages can now submit a data-only directory to the Library capability
 
 Definition layers now declare module-owned string-key mappings. The Library creation form requests every Cognis UI language while requiring only English, generates a stable key tied to the definition entry ID, and offers an optional ctx translation capability for future providers.
 
+## Mature the Library browser
+
+Reworked the Library into layer tabs with card-based entries and reusable popup details. Entry selection and relationship traversal now stay behind the scenes without exposing record identifiers in the browser URL, while previous and next controls use equal-width directional navigation. The Study sub-navigation also gives every control enough room instead of clipping controls on hover.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
 - [45c1c7e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/45c1c7e011bfde255e69e0dcf87b01e95600c49a)
 - [2b1ff9e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b1ff9e205cab5fb1645370b367efa76f1e9b199)
 - [8a0ef5f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a0ef5f9)
+- [8d2b4358](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d2b4358c176a447bb60e9248f40c1234f8cb143)

@@ -42,9 +42,14 @@ ctx と認証済み API を通じて、検証付きグローバル JSON イン�
 
 定義レイヤーがモジュール所有の文字列キーマッピングを宣言するようになりました。ライブラリ作成フォームは Cognis の全 UI 言語を提示しつつ英語のみを必須とし、定義エントリー ID に結び付く安定したキーを生成します。また、将来のプロバイダー向けに任意の ctx 翻訳ケイパビリティを提供します。
 
+## ライブラリ閲覧画面の成熟化
+
+ライブラリをレイヤータブ、カード形式の項目、再利用可能なポップアップ詳細で再構成しました。項目の選択と関連項目の移動は、レコード識別子をブラウザーの URL に表示せず内部で管理します。前後の操作には、同じ幅の明確な方向矢印を使用します。また、学習サブナビゲーションの各操作に十分な領域を確保し、ホバー時の切り取りを防ぎます。
+
 ## コミット
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
 - [45c1c7e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/45c1c7e011bfde255e69e0dcf87b01e95600c49a)
 - [2b1ff9e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b1ff9e205cab5fb1645370b367efa76f1e9b199)
 - [8a0ef5f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a0ef5f9)
+- [8d2b4358](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d2b4358c176a447bb60e9248f40c1234f8cb143)

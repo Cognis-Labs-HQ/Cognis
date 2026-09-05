@@ -42,9 +42,14 @@ Sprachpakete können nun ein reines Datenverzeichnis zur deterministischen Prüf
 
 Definitionsebenen deklarieren jetzt moduleigene Zuordnungen von Zeichenkettenschlüsseln. Das Erstellungsformular der Bibliothek fragt alle Cognis-Oberflächensprachen ab, verlangt nur Englisch, erzeugt einen stabilen Schlüssel zur ID des Definitionseintrags und bietet eine optionale ctx-Übersetzungsfähigkeit für zukünftige Anbieter.
 
+## Bibliotheksansicht ausbauen
+
+Die Bibliothek verwendet jetzt Ebenen-Reiter, kartenbasierte Einträge und wiederverwendbare Pop-up-Details. Die Auswahl von Einträgen und das Navigieren durch Beziehungen erfolgen im Hintergrund, ohne Datensatzkennungen in der Browser-URL anzuzeigen. Die gleich breiten Zurück- und Weiter-Steuerelemente verwenden eindeutige Richtungspfeile. Außerdem bietet die Studien-Unternavigation allen Steuerelementen genügend Platz, statt sie beim Darüberfahren abzuschneiden.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
 - [45c1c7e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/45c1c7e011bfde255e69e0dcf87b01e95600c49a)
 - [2b1ff9e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b1ff9e205cab5fb1645370b367efa76f1e9b199)
 - [8a0ef5f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a0ef5f9)
+- [8d2b4358](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d2b4358c176a447bb60e9248f40c1234f8cb143)

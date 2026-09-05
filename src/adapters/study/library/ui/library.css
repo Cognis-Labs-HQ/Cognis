@@ -1,17 +1,26 @@
 .library-browser {
     display: grid;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
-.library-layers {
+.library-layer-tabs {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.25rem 0.125rem 0.75rem;
+    scrollbar-width: thin;
 }
 
-.library-layers a {
-    color: var(--color-primary);
-    text-transform: capitalize;
+.library-layer-tab {
+    flex: 0 0 auto;
+    padding: 0.65rem 1rem;
+    white-space: nowrap;
+}
+
+.library-layer-tab.active {
+    border-color: var(--accent-2);
+    background: color-mix(in srgb, var(--accent-2) 18%, transparent);
+    color: var(--text);
 }
 
 .library-browser h2 {
@@ -23,6 +32,81 @@
 .library-detail-section {
     display: grid;
     gap: 0.75rem;
+}
+
+.library-schema {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface-2);
+}
+
+.library-schema h2 {
+    margin: 0;
+}
+
+.library-entry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+    gap: 0.75rem;
+}
+
+.library-entry-card {
+    display: grid;
+    gap: 0.4rem;
+    min-height: 7rem;
+    padding: 1rem;
+    text-align: left;
+    border-color: var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+}
+
+.library-entry-card strong {
+    color: var(--text);
+    font-size: 1rem;
+}
+
+.library-entry-card span,
+.library-layer-empty {
+    color: var(--text-muted);
+}
+
+.library-related-entries {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.library-related-entry {
+    padding: 0.5rem 0.75rem;
+}
+
+.library-entry-popup
+    .popup-footer
+    .popup-action-btn[data-popup-action="previous"],
+.library-entry-popup .popup-footer .popup-action-btn[data-popup-action="next"] {
+    flex: 1 1 calc(50% - 0.5rem);
+    min-width: 0;
+}
+
+/* Library carries the Study sub-navigation stylesheet on this adapter page. */
+.study-page-subnav {
+    flex-wrap: wrap;
+}
+
+.study-page-subnav .page-subnav-list {
+    flex-shrink: 0;
+    overflow: visible;
+}
+
+.study-page-subnav .study-subnav-modules {
+    flex: 1 0 max-content;
+}
+
+.study-page-subnav .study-subnav-settings a {
+    min-width: 2.5rem;
+    justify-content: center;
 }
 
 .library-detail-section {
