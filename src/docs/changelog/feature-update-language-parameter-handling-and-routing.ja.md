@@ -1,6 +1,6 @@
 # 言語別の Study ライブラリーナビゲーション
 
-**機能ブランチ:** work
+**機能ブランチ:** feature-update-language-parameter-handling-and-routing
 
 ## Study の言語コンテキストを維持
 
