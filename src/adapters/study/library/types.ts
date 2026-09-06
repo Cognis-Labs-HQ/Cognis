@@ -41,7 +41,8 @@ export interface LibraryFieldSchema {
         | "boolean"
         | "localizedText"
         | "stringList"
-        | "asset";
+        | "asset"
+        | "audio";
     required?: boolean;
     detail?: LibraryDetailHint;
 }
@@ -187,13 +188,27 @@ export interface LibraryContentPackPlan {
     records: Array<LibraryContentRecord & { layer: string }>;
     assets: Array<{
         path: string;
-        mediaType: "image/svg+xml" | "application/json";
+        mediaType:
+            | "image/svg+xml"
+            | "application/json"
+            | "audio/mpeg"
+            | "audio/ogg"
+            | "audio/wav"
+            | "audio/webm"
+            | "audio/mp4";
         data: string;
     }>;
 }
 
 export interface LibraryAsset {
-    mediaType: "image/svg+xml" | "application/json";
+    mediaType:
+        | "image/svg+xml"
+        | "application/json"
+        | "audio/mpeg"
+        | "audio/ogg"
+        | "audio/wav"
+        | "audio/webm"
+        | "audio/mp4";
     data: Buffer;
 }
 

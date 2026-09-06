@@ -124,23 +124,46 @@
     background: var(--surface-soft);
 }
 
-.library-filters label {
+.library-filter-group {
     display: grid;
-    gap: 0.3rem;
-    min-width: min(100%, 11rem);
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    font-weight: 600;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
 }
 
-.library-filters select {
-    width: 100%;
-    padding: 0.45rem 0.6rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface);
-    color: var(--text);
-    font: inherit;
+.library-filter-group legend {
+    margin-block-end: 0.3rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.library-filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.library-filter-pill {
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.library-filter-pill.active {
+    border-color: var(--accent-2);
+    background: color-mix(in srgb, var(--accent-2) 18%, var(--surface));
+}
+
+.library-pronunciation {
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 650;
+}
+
+.library-audio {
+    width: min(100%, 26rem);
 }
 
 .library-filter-empty {
@@ -204,7 +227,7 @@
 
 /* Library carries the Study sub-navigation stylesheet on this adapter page. */
 .study-page-subnav {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 .study-page-subnav .page-subnav-list {
@@ -213,7 +236,13 @@
 }
 
 .study-page-subnav .study-subnav-modules {
-    flex: 1 0 max-content;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+}
+
+.study-page-subnav .study-subnav-language-options {
+    margin-inline-start: auto;
 }
 
 .study-page-subnav .study-subnav-settings a {

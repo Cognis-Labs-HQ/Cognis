@@ -248,8 +248,9 @@ export class LibraryStore {
                 for (const field of layer.fields ?? []) {
                     const assetPath = fields[field.id];
                     if (
-                        field.type === "asset" &&
-                        typeof assetPath === "string"
+                        (field.type === "asset" || field.type === "audio") &&
+                        typeof assetPath === "string" &&
+                        !assetPath.startsWith("https://")
                     ) {
                         fields[field.id] = this.contentPackAssetUrl(
                             manifest.publisher,

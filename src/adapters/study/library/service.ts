@@ -10,6 +10,7 @@ import {
     validateReferences,
 } from "./layers.js";
 import { LibraryStore } from "./store.js";
+import { LibraryAudioCache } from "./audio-cache.js";
 import type {
     LibraryAsset,
     LibraryEntry,
@@ -62,6 +63,11 @@ export interface LibraryCapability {
         filters?: { schemaId?: string; layer?: string },
     ): Promise<LibraryEntry[]>;
     read(actor: LibraryActor, entryId: string): Promise<LibraryEntry | null>;
+    readAudio(
+        actor: LibraryActor,
+        entryId: string,
+        fieldId: string,
+    ): Promise<{ mediaType: string; data: Buffer }>;
     create(
         actor: LibraryActor,
         location: LibraryLocation,
@@ -116,6 +122,7 @@ function normalizeLocation(
 export class LibraryService implements LibraryCapability {
     private readonly schemas = new Map<string, Map<number, LibrarySchema>>();
     private readonly lookupProviders = new Map<string, LibraryLookupProvider>();
+    private readonly audioCache = new LibraryAudioCache();
 
     constructor(
         private readonly store: LibraryStore,
@@ -291,6 +298,28 @@ export class LibraryService implements LibraryCapability {
             false,
         );
         return entry;
+    }
+
+    async readAudio(
+        actor: LibraryActor,
+        entryId: string,
+        fieldId: string,
+    ): Promise<{ mediaType: string; data: Buffer }> {
+        const entry = await this.read(actor, entryId);
+        if (!entry) throw new Error("not_found");
+        const layer = findLayer(
+            this.schema(entry.schemaId, entry.schemaVersion),
+            entry.layer,
+        );
+        const field = (layer.fields ?? []).find(({ id }) => id === fieldId);
+        const remoteUrl = entry.fields?.[fieldId];
+        if (
+            field?.type !== "audio" ||
+            typeof remoteUrl !== "string" ||
+            !remoteUrl.startsWith("https://")
+        )
+            throw new Error("audio_not_remote");
+        return this.audioCache.read(remoteUrl);
     }
 
     async resolve(

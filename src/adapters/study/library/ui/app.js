@@ -163,6 +163,28 @@ function renderComponentBoxes(entries) {
         .join("")}</div>`;
 }
 
+function renderPronunciation(entry, layer) {
+    const pronunciation = entry.fields?.pronunciation;
+    if (!pronunciation) return "";
+    const values = Array.isArray(pronunciation)
+        ? pronunciation
+        : [pronunciation];
+    return `<p class="library-pronunciation">${values.map((value) => escapeHtml(value)).join(" · ")}</p>`;
+}
+
+function renderAudio(entry, layer) {
+    const audioField = (layer?.fields ?? []).find(
+        (field) => field.id === "audio" && field.type === "audio",
+    );
+    const value = audioField ? entry.fields?.[audioField.id] : undefined;
+    if (typeof value !== "string" || !value) return "";
+    const source = value.startsWith("https://")
+        ? `/api/v1/study/library/entries/${encodeURIComponent(entry.id)}/audio/${encodeURIComponent(audioField.id)}`
+        : value;
+    const label = localizedLabel(audioField.metadata, entry.language);
+    return `<audio class="library-audio" controls preload="none" src="${escapeHtml(source)}" aria-label="${escapeHtml(label)}"></audio>`;
+}
+
 function coreSections(detail, schemas, i18n, languageCode) {
     const { entry, references = [], usedBy = [] } = detail;
     const layer = layerForEntry(schemas, entry);
@@ -184,6 +206,8 @@ function coreSections(detail, schemas, i18n, languageCode) {
         "revisions",
         "progress",
         "strokes",
+        "pronunciation",
+        "audio",
         ...metadataIds,
     ]);
     const genericFields = Object.fromEntries(
@@ -203,7 +227,7 @@ function coreSections(detail, schemas, i18n, languageCode) {
                   entry.definitions,
           );
     return [
-        `<header class="library-detail-summary">${definitionContent}${renderComponentBoxes(components)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</div></header>`,
+        `<header class="library-detail-summary">${definitionContent}${renderPronunciation(entry, layer)}${renderAudio(entry, layer)}${renderComponentBoxes(components)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</div></header>`,
         section(i18n.t("gateway.study.library_fields"), genericFields),
         section(
             i18n.t("gateway.study.library_alternate_definitions"),
@@ -296,11 +320,28 @@ function filterDescriptors(layer, layerEntries, contentLanguage) {
 function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
     const filters = filterDescriptors(layer, layerEntries, contentLanguage);
     if (!filters.length) return "";
-    return `<div class="library-filters" aria-label="${escapeHtml(i18n.t("gateway.study.library_filters"))}">${filters
-        .map(
-            (filter) =>
-                `<label><span>${escapeHtml(filter.label)}</span><select class="theme-select" data-library-filter="${escapeHtml(filter.id)}"><option value="">${escapeHtml(i18n.t("ui.reuse.all"))}</option>${filter.values.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}</select></label>`,
-        )
+    const groups = Map.groupBy(
+        filters,
+        (filter) =>
+            (layer.fields ?? []).find(({ id }) => id === filter.id)?.detail
+                ?.group ?? filter.id,
+    );
+    return `<div class="library-filters" aria-label="${escapeHtml(i18n.t("gateway.study.library_filters"))}">${Array.from(
+        groups.entries(),
+    )
+        .map(([, groupFilters]) => {
+            const groupLabel = [
+                ...new Set(groupFilters.map(({ label }) => label)),
+            ].join(" / ");
+            return `<fieldset class="library-filter-group"><legend>${escapeHtml(groupLabel)}</legend><div class="library-filter-pills">${groupFilters
+                .flatMap((filter) =>
+                    filter.values.map(
+                        (value) =>
+                            `<button class="library-filter-pill btn-neutral" type="button" data-library-filter="${escapeHtml(filter.id)}" data-library-filter-value="${escapeHtml(value)}" aria-pressed="false" title="${escapeHtml(`${filter.label}: ${value}`)}">${escapeHtml(value)}</button>`,
+                    ),
+                )
+                .join("")}</div></fieldset>`;
+        })
         .join("")}</div>`;
 }
 
@@ -448,15 +489,29 @@ async function openEntryPopup(
 }
 
 function applyLibraryFilters(filter) {
+    filter.classList.toggle("active");
+    filter.setAttribute(
+        "aria-pressed",
+        String(filter.classList.contains("active")),
+    );
     const panel = filter.closest("[data-library-panel]");
     const selectedFilters = Array.from(
-        panel.querySelectorAll("select[data-library-filter]"),
-    ).filter((item) => item.value);
+        panel.querySelectorAll("button[data-library-filter].active"),
+    );
+    const selections = Map.groupBy(
+        selectedFilters,
+        (item) => item.dataset.libraryFilter,
+    );
     let visibleCount = 0;
     panel.querySelectorAll(".library-entry-card").forEach((card) => {
         const values = JSON.parse(card.dataset.libraryFilterValues);
-        const visible = selectedFilters.every((item) =>
-            values[item.dataset.libraryFilter]?.includes(item.value),
+        const visible = Array.from(selections.entries()).every(
+            ([fieldId, controls]) =>
+                controls.some((control) =>
+                    values[fieldId]?.includes(
+                        control.dataset.libraryFilterValue,
+                    ),
+                ),
         );
         card.hidden = !visible;
         if (visible) visibleCount += 1;
@@ -531,15 +586,14 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
     signal?.throwIfAborted();
     bindStudySubNavigation(root, { signal });
-    const handleFilterSelection = (event) => {
-        const filter = event.target.closest("select[data-library-filter]");
-        if (filter) applyLibraryFilters(filter);
-    };
-    root.addEventListener("input", handleFilterSelection, { signal });
-    root.addEventListener("change", handleFilterSelection, { signal });
     root.addEventListener(
         "click",
         (event) => {
+            const filter = event.target.closest("button[data-library-filter]");
+            if (filter) {
+                applyLibraryFilters(filter);
+                return;
+            }
             const tab = event.target.closest("button[data-library-tab]");
             if (tab) {
                 const schema = tab.closest(".library-schema");

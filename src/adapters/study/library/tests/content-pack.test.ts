@@ -15,7 +15,9 @@ test("declarative language packs are inspected deterministically", async (t) => 
     await mkdir(path.join(root, "content", "letters"), { recursive: true });
     await mkdir(path.join(root, "content", "words"), { recursive: true });
     await mkdir(path.join(root, "assets", "strokes"), { recursive: true });
+    await mkdir(path.join(root, "assets", "audio"), { recursive: true });
     await writeFile(path.join(root, "assets", "strokes", "a.svg"), "<svg/>");
+    await writeFile(path.join(root, "assets", "audio", "a.mp3"), "audio");
     const manifest = {
         id: "english-core",
         publisher: "Cognis Labs HQ",
@@ -40,6 +42,18 @@ test("declarative language packs are inspected deterministically", async (t) => 
                 metadata: { labels: { en: "Letters" } },
                 semanticRole: "atomicWritingUnit",
                 fields: [
+                    {
+                        id: "pronunciation",
+                        metadata: { labels: { en: "Pronunciation" } },
+                        type: "stringList",
+                        required: true,
+                    },
+                    {
+                        id: "audio",
+                        metadata: { labels: { en: "Audio" } },
+                        type: "audio",
+                        required: true,
+                    },
                     {
                         id: "strokes",
                         metadata: { labels: { en: "Strokes" } },
@@ -68,7 +82,11 @@ test("declarative language packs are inspected deterministically", async (t) => 
         {
             id: "english:letter:a",
             label: "a",
-            fields: { strokes: "strokes/a.svg" },
+            fields: {
+                pronunciation: ["ay"],
+                audio: "audio/a.mp3",
+                strokes: "strokes/a.svg",
+            },
         },
     ]);
     await writeJson(path.join(root, "content", "words", "a.json"), [
@@ -90,6 +108,11 @@ test("declarative language packs are inspected deterministically", async (t) => 
     assert.equal(first.digest, second.digest);
     assert.equal(first.records.length, 2);
     assert.deepEqual(first.assets, [
+        {
+            path: "audio/a.mp3",
+            mediaType: "audio/mpeg",
+            data: Buffer.from("audio").toString("base64"),
+        },
         {
             path: "strokes/a.svg",
             mediaType: "image/svg+xml",

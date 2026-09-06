@@ -312,3 +312,51 @@ test("sentences can include ordered word and particle references", () => {
         ),
     );
 });
+
+test("writing-unit layers require pronunciation and audio fields", () => {
+    const writingLayer = {
+        id: "characters",
+        semanticRole: "atomicWritingUnit" as const,
+        metadata: { labels: { en: "Characters" } },
+        fields: [
+            {
+                id: "pronunciation",
+                type: "stringList" as const,
+                required: true,
+                metadata: { labels: { en: "Pronunciation" } },
+            },
+            {
+                id: "audio",
+                type: "audio" as const,
+                required: true,
+                metadata: { labels: { en: "Audio" } },
+            },
+        ],
+    };
+    assert.doesNotThrow(() =>
+        validateLibrarySchema({ ...english, layers: [writingLayer] }),
+    );
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...english,
+                layers: [
+                    { ...writingLayer, fields: writingLayer.fields.slice(1) },
+                ],
+            }),
+        /pronunciation_field_required/,
+    );
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...english,
+                layers: [
+                    {
+                        ...writingLayer,
+                        fields: writingLayer.fields.slice(0, 1),
+                    },
+                ],
+            }),
+        /audio_field_required/,
+    );
+});

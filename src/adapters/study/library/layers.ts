@@ -98,6 +98,19 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
         }
         if (layer.detail?.titleField && !fieldIds.has(layer.detail.titleField))
             throw new Error("detail_title_field_not_found");
+        if (
+            layer.semanticRole === "atomicWritingUnit" ||
+            layer.semanticRole === "compoundWritingUnit"
+        ) {
+            const pronunciation = (layer.fields ?? []).find(
+                ({ id }) => id === "pronunciation",
+            );
+            if (pronunciation?.type !== "stringList" || !pronunciation.required)
+                throw new Error("pronunciation_field_required");
+            const audio = (layer.fields ?? []).find(({ id }) => id === "audio");
+            if (audio?.type !== "audio" || !audio.required)
+                throw new Error("audio_field_required");
+        }
         if (layer.strokeAsset) {
             const field = (layer.fields ?? []).find(
                 ({ id }) => id === layer.strokeAsset!.field,
@@ -161,7 +174,9 @@ export function validateFields(
             (field.type === "number" &&
                 typeof value === "number" &&
                 Number.isFinite(value)) ||
-            ((field.type === "string" || field.type === "asset") &&
+            ((field.type === "string" ||
+                field.type === "asset" ||
+                field.type === "audio") &&
                 typeof value === "string") ||
             (field.type === "boolean" && typeof value === "boolean") ||
             (field.type === "stringList" &&

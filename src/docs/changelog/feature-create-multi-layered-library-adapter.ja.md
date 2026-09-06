@@ -54,6 +54,10 @@ ctx と認証済み API を通じて、検証付きグローバル JSON イン�
 
 ライブラリのメタデータ選択欄に共通テーマのスタイルを適用し、変更を即時反映するようにしました。詳細ポップアップでは見出しを大きくし、定義と意味をタイトルの下に配置し、認識済みの構成要素を独立したコンポーネント区画ではなく見出し内の移動可能なサブボックスとして表示します。
 
+## ピル絞り込みと共有音声
+
+メタデータ選択欄を任意にグループ化できる絞り込みピルへ置き換え、学習ナビゲーションを左側のページと右側の言語操作に再分離しました。書記単位スキーマでは発音と音声を必須とし、モジュールはローカル音声または HTTPS ソースを提供できます。Cognis はそれをアクセス制御された共有ローカルキャッシュへ一度だけダウンロードします。
+
 ## コミット
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -63,3 +67,4 @@ ctx と認証済み API を通じて、検証付きグローバル JSON イン�
 - [8d2b4358](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d2b4358c176a447bb60e9248f40c1234f8cb143)
 - [e4f406f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f406f16a3f0635a6f25206d19d19706cedbbbc)
 - [a7891aaa](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7891aaa8195180c45fa490ada5469d2d306c62b)
+- [b8a1852e](https://github.com/Cognis-Labs-HQ/Cognis/commit/b8a1852e1f4aa45ce950ad49484f818c713341d2)

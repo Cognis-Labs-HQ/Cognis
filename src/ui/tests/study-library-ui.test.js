@@ -18,10 +18,13 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /role="tablist"/);
     assert.match(source, /role="tabpanel"/);
     assert.match(source, /class="library-entry-card btn-neutral"/);
-    assert.match(source, /select class="theme-select" data-library-filter=/);
-    assert.match(source, /addEventListener\("input", handleFilterSelection/);
+    assert.match(source, /class="library-filter-pill btn-neutral"/);
+    assert.match(source, /aria-pressed="false"/);
+    assert.match(source, /function applyLibraryFilters/);
     assert.match(stylesheet, /\.library-entry-grid/);
     assert.match(stylesheet, /\.library-filters/);
+    assert.match(stylesheet, /\.library-filter-pill\.active/);
+    assert.match(stylesheet, /\.study-subnav-language-options/);
 });
 
 test("Study Library integrates definitions and particles into item details", () => {
@@ -38,6 +41,13 @@ test("Study Library renders metadata and scope indicators", () => {
     assert.match(source, /class="library-metadata-pill"/);
     assert.match(source, /class="library-scope"/);
     assert.match(stylesheet, /\.library-metadata-pill/);
+});
+
+test("Study Library renders writing-unit pronunciation and audio", () => {
+    assert.match(source, /function renderPronunciation/);
+    assert.match(source, /function renderAudio/);
+    assert.match(source, /<audio class="library-audio" controls/);
+    assert.match(stylesheet, /\.library-audio/);
 });
 
 test("Study Library popup uses equal directional navigation controls", () => {

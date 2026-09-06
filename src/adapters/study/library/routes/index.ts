@@ -104,6 +104,24 @@ export function createLibraryRoutes(
                 });
                 return true;
             }
+            const audioMatch = url.pathname.match(
+                /^\/api\/v1\/study\/library\/entries\/([^/]+)\/audio\/([^/]+)$/,
+            );
+            if (audioMatch && req.method === "GET") {
+                const audio = await library.readAudio(
+                    actor,
+                    decodeURIComponent(audioMatch[1]),
+                    decodeURIComponent(audioMatch[2]),
+                );
+                res.writeHead(200, {
+                    "content-type": audio.mediaType,
+                    "content-length": String(audio.data.byteLength),
+                    "cache-control": "private, max-age=86400",
+                    "x-content-type-options": "nosniff",
+                });
+                res.end(audio.data);
+                return true;
+            }
             const detailMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/entries\/([^/]+)$/,
             );

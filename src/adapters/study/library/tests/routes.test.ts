@@ -122,3 +122,33 @@ test("Library browser resolves labels from localized schema metadata", async () 
     );
     assert.match(source, /parseLanguageCode\(language\)/);
 });
+
+test("remote audio cache remains behind authenticated entry access", async () => {
+    let requestedEntry = "";
+    let requestedField = "";
+    const route = createLibraryRoutes(
+        {
+            readAudio: async (_actor, entryId, fieldId) => {
+                requestedEntry = entryId;
+                requestedField = fieldId;
+                return { mediaType: "audio/mpeg", data: Buffer.from("audio") };
+            },
+        } as never,
+        createAuthContext(
+            new Map([["learner", { sub: "alice", role: "user" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({ method: "GET", token: "learner" }) as never,
+        response as never,
+        new URL(
+            "http://localhost/api/v1/study/library/entries/character-a/audio/audio",
+        ),
+    );
+    assert.equal(response.statusCode, 200);
+    assert.equal(response.headers["content-type"], "audio/mpeg");
+    assert.equal(response.headers["cache-control"], "private, max-age=86400");
+    assert.equal(requestedEntry, "character-a");
+    assert.equal(requestedField, "audio");
+});

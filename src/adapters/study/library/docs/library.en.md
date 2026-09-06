@@ -18,7 +18,7 @@ Create, resolve, and lookup operations participate in named ctx flows so consume
 
 The Study gateway exposes schema discovery, generic entry listing and creation, entry details, bidirectional tracing, resolution previews, and lookup suggestions. Browser requests are centralized in the Study gateway Library client.
 
-The schema-driven page hides implementation-only definition and particle layers from direct browsing. Browseable layers use tabs, metadata filters, entry cards, metadata pills, and scope icons. Reusable popup details show definitions and meanings beneath the larger item heading. Recognized constituent entries, including sentence particles, appear as navigable sub-boxes inside that heading instead of a separate Components section, while particle details remain read-only. Filter dropdowns use the shared theme styling and apply selections immediately.
+The schema-driven page hides implementation-only definition and particle layers from direct browsing. Browseable layers use tabs, metadata filters, entry cards, metadata pills, and scope icons. Reusable popup details show definitions and meanings beneath the larger item heading. Recognized constituent entries, including sentence particles, appear as navigable sub-boxes inside that heading instead of a separate Components section, while particle details remain read-only. Metadata filters appear as immediately applied pills and use schema detail groups when a module supplies them.
 
 ## Access
 
@@ -31,3 +31,7 @@ Installed language packages call `inspectContentPack(root)` to validate or `inge
 ## Localized definitions
 
 Every layer with the `definition` semantic role declares its module-owned string-key prefix and its string-key and localized-text fields. Definitions are managed only while editing entries that require them; they are not directly browseable or editable as independent Library sections. English remains the required source text, generated keys remain on definition records, and the optional `localization:translateString` capability can fill omitted languages.
+
+## Writing-unit pronunciation and audio
+
+Layers with the `atomicWritingUnit` or `compoundWritingUnit` role declare required standard `pronunciation` (`stringList`) and `audio` (`audio`) fields. Content packs may supply MP3, Ogg, WAV, WebM, or M4A files, or an HTTPS URL. Local files remain authenticated pack assets. Remote audio is fetched through the entry-authorized Library route, restricted to public HTTPS hosts and supported audio media types, capped at 10 MiB, and cached once by URL under `COGNIS_LIBRARY_AUDIO_CACHE_DIR` (or `.cognis-data/study-library-audio`). The shared server-side file avoids repeated upstream downloads while each request still enforces the entry's scope.

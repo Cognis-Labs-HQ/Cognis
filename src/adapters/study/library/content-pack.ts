@@ -180,18 +180,37 @@ async function validateContentRecords(
         const layer = schema.layers.find(({ id }) => id === record.layer)!;
         for (const field of layer.fields ?? []) {
             const value = record.fields?.[field.id];
-            if (field.type !== "asset" || value === undefined) continue;
-            if (!assetsRoot || typeof value !== "string")
+            if (
+                (field.type !== "asset" && field.type !== "audio") ||
+                value === undefined
+            )
+                continue;
+            if (typeof value !== "string")
                 throw new Error("invalid_asset_reference");
+            if (field.type === "audio" && value.startsWith("https://"))
+                continue;
+            if (!assetsRoot) throw new Error("invalid_asset_reference");
             const asset = await resolveInside(assetsRoot, value);
             if (!(await stat(asset)).isFile())
                 throw new Error("asset_not_file");
             const data = await readFile(asset);
-            const mediaType = value.endsWith(".svg")
-                ? "image/svg+xml"
-                : value.endsWith(".json")
-                  ? "application/json"
-                  : undefined;
+            const extension = path.extname(value).toLowerCase();
+            const mediaType =
+                field.type === "audio"
+                    ? (
+                          {
+                              ".mp3": "audio/mpeg",
+                              ".ogg": "audio/ogg",
+                              ".wav": "audio/wav",
+                              ".webm": "audio/webm",
+                              ".m4a": "audio/mp4",
+                          } as const
+                      )[extension]
+                    : value.endsWith(".svg")
+                      ? "image/svg+xml"
+                      : value.endsWith(".json")
+                        ? "application/json"
+                        : undefined;
             if (!mediaType) throw new Error("unsupported_asset_type");
             if (!assets.some(({ path }) => path === value)) {
                 assets.push({

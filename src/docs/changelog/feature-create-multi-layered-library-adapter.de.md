@@ -54,6 +54,10 @@ Definitionen und Partikel bleiben jetzt aus der direkten Bibliotheksansicht ausg
 
 Metadaten-Auswahlfelder der Bibliothek verwenden jetzt die gemeinsame Theme-Gestaltung und wenden Änderungen sofort an. Detail-Pop-ups nutzen größere Überschriften, zeigen Definitionen und Bedeutungen unter dem Titel und stellen erkannte Bestandteile als navigierbare Unterfelder in der Überschrift statt in einem separaten Komponentenabschnitt dar.
 
+## Pill-Filter und gemeinsames Audio
+
+Metadaten-Auswahlfelder wurden durch optional gruppierte Filter-Pills ersetzt, und die Studiennavigation trennt wieder linke Seiten von rechten Sprachsteuerungen. Schemata für Schreibeinheiten verlangen jetzt Aussprache und Audio; Module können lokale Audiodateien oder HTTPS-Quellen liefern, die Cognis einmal in einen zugriffsgeschützten gemeinsamen lokalen Zwischenspeicher lädt.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -63,3 +67,4 @@ Metadaten-Auswahlfelder der Bibliothek verwenden jetzt die gemeinsame Theme-Gest
 - [8d2b4358](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d2b4358c176a447bb60e9248f40c1234f8cb143)
 - [e4f406f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f406f16a3f0635a6f25206d19d19706cedbbbc)
 - [a7891aaa](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7891aaa8195180c45fa490ada5469d2d306c62b)
+- [b8a1852e](https://github.com/Cognis-Labs-HQ/Cognis/commit/b8a1852e1f4aa45ce950ad49484f818c713341d2)

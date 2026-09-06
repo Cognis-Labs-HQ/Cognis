@@ -54,6 +54,10 @@ Definitions and particles now stay out of direct Library browsing. Item details 
 
 Library metadata dropdowns now use shared theme styling and apply selections as soon as they change. Detail popups use larger headings, place both definitions and meanings beneath the title, and present recognized constituent entries as navigable sub-boxes in the heading instead of a separate Components section.
 
+## Add pill filters and shared audio
+
+Replaced metadata dropdowns with optionally grouped filter pills and restored the Study navigation split between left-side pages and right-side language controls. Writing-unit schemas now require pronunciation and audio; modules can provide local audio or HTTPS sources that Cognis downloads once into an access-controlled shared local cache.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -63,3 +67,4 @@ Library metadata dropdowns now use shared theme styling and apply selections as 
 - [8d2b4358](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d2b4358c176a447bb60e9248f40c1234f8cb143)
 - [e4f406f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f406f16a3f0635a6f25206d19d19706cedbbbc)
 - [a7891aaa](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7891aaa8195180c45fa490ada5469d2d306c62b)
+- [b8a1852e](https://github.com/Cognis-Labs-HQ/Cognis/commit/b8a1852e1f4aa45ce950ad49484f818c713341d2)
