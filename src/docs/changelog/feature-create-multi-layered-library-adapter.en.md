@@ -58,6 +58,10 @@ Library metadata dropdowns now use shared theme styling and apply selections as 
 
 Replaced metadata dropdowns with optionally grouped filter pills and restored the Study navigation split between left-side pages and right-side language controls. Writing-unit schemas now require pronunciation and audio; modules can provide local audio or HTTPS sources that Cognis downloads once into an access-controlled shared local cache.
 
+## Restore Library loading and gateway storage
+
+Restored Library rendering on browsers without native `Map.groupBy`, normalized Study language codes so registered flags remain attached to language controls, and moved remote-audio persistence entirely behind a component-owned Files gateway namespace. The Library no longer writes cache files directly or imposes its own audio size ceiling.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -68,3 +72,4 @@ Replaced metadata dropdowns with optionally grouped filter pills and restored th
 - [e4f406f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f406f16a3f0635a6f25206d19d19706cedbbbc)
 - [a7891aaa](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7891aaa8195180c45fa490ada5469d2d306c62b)
 - [b8a1852e](https://github.com/Cognis-Labs-HQ/Cognis/commit/b8a1852e1f4aa45ce950ad49484f818c713341d2)
+- [820d53f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/820d53f65816655949a0a1f47068a10cdfc51178)

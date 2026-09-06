@@ -22,4 +22,4 @@ Study ゲートウェイはスキーマ検出、一覧、作成、詳細、双�
 
 ## 書記単位の発音と音声
 
-`atomicWritingUnit` または `compoundWritingUnit` ロールのレイヤーは、必須の標準フィールド `pronunciation`（`stringList`）と `audio`（`audio`）を宣言します。コンテンツパックは MP3、Ogg、WAV、WebM、M4A ファイル、または HTTPS URL を提供できます。ローカルファイルは認証済みパックアセットとして扱います。リモート音声は項目の認可を行うライブラリルート経由で取得し、公開 HTTPS ホストと対応音声メディアタイプのみに制限し、10 MiB を上限として、URL ごとに `COGNIS_LIBRARY_AUDIO_CACHE_DIR`（または `.cognis-data/study-library-audio`）へ一度だけキャッシュします。共有サーバーファイルにより上流からの重複ダウンロードを防ぎつつ、各リクエストで項目の範囲を引き続き検証します。
+`atomicWritingUnit` または `compoundWritingUnit` ロールのレイヤーは、必須の標準フィールド `pronunciation`（`stringList`）と `audio`（`audio`）を宣言します。コンテンツパックは MP3、Ogg、WAV、WebM、M4A ファイル、または HTTPS URL を提供できます。ローカルファイルは認証済みパックアセットとして扱います。リモート音声は項目の認可を行うライブラリルート経由で取得し、公開 HTTPS ホストと対応音声メディアタイプのみに制限します。ライブラリはファイルゲートウェイへコンポーネント管理の `study-library-audio` 名前空間を登録し、アダプター側のサイズ上限を設けず、URL ごとに決定的なキーで一度だけ保存します。永続化、容量制限、物理ファイル管理はファイルゲートウェイが担い、各再生リクエストでは引き続き項目の範囲を検証します。

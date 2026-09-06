@@ -58,6 +58,10 @@ Metadaten-Auswahlfelder der Bibliothek verwenden jetzt die gemeinsame Theme-Gest
 
 Metadaten-Auswahlfelder wurden durch optional gruppierte Filter-Pills ersetzt, und die Studiennavigation trennt wieder linke Seiten von rechten Sprachsteuerungen. Schemata für Schreibeinheiten verlangen jetzt Aussprache und Audio; Module können lokale Audiodateien oder HTTPS-Quellen liefern, die Cognis einmal in einen zugriffsgeschützten gemeinsamen lokalen Zwischenspeicher lädt.
 
+## Laden und Gateway-Speicherung wiederherstellen
+
+Die Bibliothek wird wieder in Browsern ohne natives `Map.groupBy` dargestellt. Normalisierte Studien-Sprachcodes erhalten registrierte Flaggen an den Sprachsteuerungen, und entferntes Audio wird vollständig in einem komponenteneigenen Namensraum des Datei-Gateways gespeichert. Die Bibliothek schreibt keine Cache-Dateien mehr direkt und setzt keine eigene Größenobergrenze für Audio.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -68,3 +72,4 @@ Metadaten-Auswahlfelder wurden durch optional gruppierte Filter-Pills ersetzt, u
 - [e4f406f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f406f16a3f0635a6f25206d19d19706cedbbbc)
 - [a7891aaa](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7891aaa8195180c45fa490ada5469d2d306c62b)
 - [b8a1852e](https://github.com/Cognis-Labs-HQ/Cognis/commit/b8a1852e1f4aa45ce950ad49484f818c713341d2)
+- [820d53f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/820d53f65816655949a0a1f47068a10cdfc51178)

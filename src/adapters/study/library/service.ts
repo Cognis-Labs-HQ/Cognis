@@ -1,5 +1,5 @@
 import type { AccessRole, FlowApi } from "@cognis/core";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { canonicalizeLanguageTag } from "./language.js";
 import { inspectContentPack } from "./content-pack.js";
 import {
@@ -122,7 +122,6 @@ function normalizeLocation(
 export class LibraryService implements LibraryCapability {
     private readonly schemas = new Map<string, Map<number, LibrarySchema>>();
     private readonly lookupProviders = new Map<string, LibraryLookupProvider>();
-    private readonly audioCache = new LibraryAudioCache();
 
     constructor(
         private readonly store: LibraryStore,
@@ -134,6 +133,7 @@ export class LibraryService implements LibraryCapability {
             meta?: Record<string, unknown>,
         ) => void | Promise<void>,
         private readonly stringLocalization?: StringLocalizationCapability,
+        private readonly audioCache?: LibraryAudioCache,
     ) {}
 
     async registerSchema(input: LibrarySchema): Promise<void> {
@@ -196,6 +196,7 @@ export class LibraryService implements LibraryCapability {
                 this.assertSchemaVersionAvailable(plan.schema);
             }
             await this.flow?.run("study-library-ingest", { plan });
+            await this.storeContentPackAudio(plan);
             const receipt = await this.store.ingestContentPack(plan);
             if (!registered) this.rememberSchema(plan.schema);
             await this.log?.("info", "Ingested Study Library content pack.", {
@@ -217,6 +218,45 @@ export class LibraryService implements LibraryCapability {
             });
             throw error;
         }
+    }
+
+    private async storeContentPackAudio(
+        plan: LibraryContentPackPlan,
+    ): Promise<void> {
+        if (!this.audioCache) throw new Error("file_gateway_unavailable");
+        const audioPaths = new Set<string>();
+        for (const record of plan.records) {
+            const layer = plan.schema.layers.find(
+                ({ id }) => id === record.layer,
+            )!;
+            const fields = { ...(record.fields ?? {}) };
+            for (const field of layer.fields ?? []) {
+                const value = fields[field.id];
+                if (
+                    field.type !== "audio" ||
+                    typeof value !== "string" ||
+                    value.startsWith("https://")
+                )
+                    continue;
+                const asset = plan.assets.find(({ path }) => path === value);
+                if (!asset || !asset.mediaType.startsWith("audio/"))
+                    throw new Error("audio_asset_not_found");
+                const key = `packs/${createHash("sha256")
+                    .update(
+                        `${plan.manifest.publisher}:${plan.manifest.id}:${plan.manifest.version}:${value}`,
+                    )
+                    .digest("hex")}.audio`;
+                await this.audioCache.store(
+                    key,
+                    asset.mediaType,
+                    Buffer.from(asset.data, "base64"),
+                );
+                fields[field.id] = `file:${key}`;
+                audioPaths.add(value);
+            }
+            record.fields = fields;
+        }
+        plan.assets = plan.assets.filter(({ path }) => !audioPaths.has(path));
     }
 
     async readContentPackAsset(
@@ -313,12 +353,13 @@ export class LibraryService implements LibraryCapability {
         );
         const field = (layer.fields ?? []).find(({ id }) => id === fieldId);
         const remoteUrl = entry.fields?.[fieldId];
-        if (
-            field?.type !== "audio" ||
-            typeof remoteUrl !== "string" ||
-            !remoteUrl.startsWith("https://")
-        )
-            throw new Error("audio_not_remote");
+        if (field?.type !== "audio" || typeof remoteUrl !== "string")
+            throw new Error("audio_not_found");
+        if (!this.audioCache) throw new Error("file_gateway_unavailable");
+        if (remoteUrl.startsWith("file:"))
+            return this.audioCache.readStored(remoteUrl.slice("file:".length));
+        if (!remoteUrl.startsWith("https://"))
+            throw new Error("invalid_audio_url");
         return this.audioCache.read(remoteUrl);
     }
 

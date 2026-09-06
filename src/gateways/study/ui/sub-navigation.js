@@ -147,7 +147,7 @@ export async function loadStudySubNavigationModel({
 
     const languageCatalogByCode = new Map();
     for (const registeredLanguage of registeredLanguagesRaw) {
-        const languageCode = String(registeredLanguage?.code ?? "").trim();
+        const languageCode = parseLanguageCode(registeredLanguage?.code);
         if (!languageCode) continue;
         languageCatalogByCode.set(languageCode, {
             code: languageCode,
@@ -159,9 +159,9 @@ export async function loadStudySubNavigationModel({
         });
     }
 
-    const learningLanguages = learningLanguagesRaw.filter((languageCode) =>
-        Boolean(String(languageCode ?? "").trim()),
-    );
+    const learningLanguages = learningLanguagesRaw
+        .map((languageCode) => parseLanguageCode(languageCode))
+        .filter(Boolean);
     const activeLanguageCodes = Array.from(
         new Set([
             ...learningLanguages,

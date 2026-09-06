@@ -5,6 +5,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { showToast } from "/static/reuse/toast.js";
+import { groupByToMap } from "/static/reuse/group-by.js";
 import {
     bindStudySubNavigation,
     loadStudySubNavigationModel,
@@ -178,9 +179,7 @@ function renderAudio(entry, layer) {
     );
     const value = audioField ? entry.fields?.[audioField.id] : undefined;
     if (typeof value !== "string" || !value) return "";
-    const source = value.startsWith("https://")
-        ? `/api/v1/study/library/entries/${encodeURIComponent(entry.id)}/audio/${encodeURIComponent(audioField.id)}`
-        : value;
+    const source = `/api/v1/study/library/entries/${encodeURIComponent(entry.id)}/audio/${encodeURIComponent(audioField.id)}`;
     const label = localizedLabel(audioField.metadata, entry.language);
     return `<audio class="library-audio" controls preload="none" src="${escapeHtml(source)}" aria-label="${escapeHtml(label)}"></audio>`;
 }
@@ -320,7 +319,7 @@ function filterDescriptors(layer, layerEntries, contentLanguage) {
 function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
     const filters = filterDescriptors(layer, layerEntries, contentLanguage);
     if (!filters.length) return "";
-    const groups = Map.groupBy(
+    const groups = groupByToMap(
         filters,
         (filter) =>
             (layer.fields ?? []).find(({ id }) => id === filter.id)?.detail
@@ -498,7 +497,7 @@ function applyLibraryFilters(filter) {
     const selectedFilters = Array.from(
         panel.querySelectorAll("button[data-library-filter].active"),
     );
-    const selections = Map.groupBy(
+    const selections = groupByToMap(
         selectedFilters,
         (item) => item.dataset.libraryFilter,
     );

@@ -58,6 +58,10 @@ Dropdown metadata Pustaka kini memakai gaya tema bersama dan langsung menerapkan
 
 Dropdown metadata diganti dengan pil filter yang dapat dikelompokkan, dan navigasi Belajar kembali memisahkan halaman di kiri dari kontrol bahasa di kanan. Skema unit tulisan kini mewajibkan pelafalan dan audio; modul dapat menyediakan audio lokal atau sumber HTTPS yang diunduh Cognis satu kali ke cache lokal bersama yang dilindungi akses.
 
+## Pulihkan pemuatan dan penyimpanan gateway
+
+Perenderan Pustaka dipulihkan pada peramban tanpa `Map.groupBy` bawaan. Kode bahasa Belajar dinormalisasi agar bendera terdaftar tetap melekat pada kontrol bahasa, dan persistensi audio jarak jauh dipindahkan sepenuhnya ke namespace milik komponen pada gateway Berkas. Pustaka tidak lagi menulis berkas cache secara langsung atau menetapkan batas ukurannya sendiri.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -68,3 +72,4 @@ Dropdown metadata diganti dengan pil filter yang dapat dikelompokkan, dan naviga
 - [e4f406f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f406f16a3f0635a6f25206d19d19706cedbbbc)
 - [a7891aaa](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7891aaa8195180c45fa490ada5469d2d306c62b)
 - [b8a1852e](https://github.com/Cognis-Labs-HQ/Cognis/commit/b8a1852e1f4aa45ce950ad49484f818c713341d2)
+- [820d53f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/820d53f65816655949a0a1f47068a10cdfc51178)

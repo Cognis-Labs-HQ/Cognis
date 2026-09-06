@@ -73,3 +73,19 @@ test("Study navigation stores language selection on buttons instead of URLs", ()
     assert.doesNotMatch(librarySource, /withLanguageQuery/);
     assert.doesNotMatch(routerSource, /studyLanguageCode|data-language-code/);
 });
+
+test("Study sub-navigation normalizes language codes before resolving flags", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/sub-navigation.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /const languageCode = parseLanguageCode\(registeredLanguage\?\.code\)/,
+    );
+    assert.match(
+        source,
+        /\.map\(\(languageCode\) => parseLanguageCode\(languageCode\)\)/,
+    );
+    assert.match(source, /\$\{escapeHtml\(language\.flag\)\}/);
+});

@@ -6,10 +6,15 @@ import type {
     StudyClassAccessCapability,
 } from "../../../gateways/study/gateway.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type {
+    NamespaceDefinition,
+    NamespaceFileClientFactory,
+} from "@cognis/core";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { createLibraryRoutes } from "./routes/index.js";
 import { LibraryService } from "./service.js";
 import { LibraryStore } from "./store.js";
+import { LibraryAudioCache } from "./audio-cache.js";
 import {
     STRING_LOCALIZATION_CAPABILITY,
     type StringLocalizationCapability,
@@ -40,6 +45,30 @@ export async function bootstrapStudyAdapter(
         );
         return;
     }
+    const registerFileNamespace = ctx.capabilities.get<
+        (definition: NamespaceDefinition) => void
+    >("files:registerNamespace");
+    const createNamespaceClient =
+        ctx.capabilities.get<NamespaceFileClientFactory>("files:namespace");
+    if (!registerFileNamespace || !createNamespaceClient) {
+        await ctx.log?.(
+            "error",
+            "Study/library adapter requires the Files gateway.",
+            { component: "study-library", operation: "bootstrap" },
+        );
+        return;
+    }
+    registerFileNamespace({
+        id: "study-library-audio",
+        ownerComponent: "study-library",
+        acl: { visibility: "component-managed" },
+    });
+    const audioCache = new LibraryAudioCache(
+        createNamespaceClient({
+            namespaceId: "study-library-audio",
+            callerComponent: "study-library",
+        }),
+    );
     const store = new LibraryStore(db);
     try {
         await store.ensureSchema();
@@ -66,6 +95,7 @@ export async function bootstrapStudyAdapter(
         ctx.capabilities.get<StringLocalizationCapability>(
             STRING_LOCALIZATION_CAPABILITY,
         ),
+        audioCache,
     );
     ctx.capabilities.contribute("study:library", service);
     ctx.registerRoute(

@@ -1,11 +1,10 @@
 import { createHash } from "node:crypto";
 import { lookup } from "node:dns/promises";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { isIP } from "node:net";
-import path from "node:path";
+import type { NamespaceFileClient } from "@cognis/core";
 
-const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
 const REDIRECT_LIMIT = 4;
+const CACHE_ACTOR = { actorId: "study-library-audio-cache", role: "owner" };
 const AUDIO_TYPES = new Set([
     "audio/mpeg",
     "audio/ogg",
@@ -55,6 +54,24 @@ async function validateRemoteUrl(
     return url;
 }
 
+function encodeAudio(mediaType: string, data: Uint8Array): Uint8Array {
+    const header = Buffer.from(`${JSON.stringify({ mediaType })}\n`, "utf8");
+    return Buffer.concat([header, data]);
+}
+
+function decodeAudio(value: Uint8Array): { mediaType: string; data: Buffer } {
+    const buffer = Buffer.from(value);
+    const separator = buffer.indexOf(10);
+    if (separator < 1) throw new Error("invalid_cached_audio");
+    const metadata = JSON.parse(buffer.subarray(0, separator).toString("utf8"));
+    if (!AUDIO_TYPES.has(metadata.mediaType))
+        throw new Error("invalid_cached_audio");
+    return {
+        mediaType: metadata.mediaType,
+        data: buffer.subarray(separator + 1),
+    };
+}
+
 export class LibraryAudioCache {
     private readonly pending = new Map<
         string,
@@ -62,8 +79,7 @@ export class LibraryAudioCache {
     >();
 
     constructor(
-        private readonly root = process.env.COGNIS_LIBRARY_AUDIO_CACHE_DIR ??
-            path.join(process.cwd(), ".cognis-data", "study-library-audio"),
+        private readonly files: NamespaceFileClient,
         private readonly fetcher: typeof fetch = fetch,
         private readonly resolveHost: (
             hostname: string,
@@ -73,29 +89,38 @@ export class LibraryAudioCache {
             ),
     ) {}
 
+    async store(
+        key: string,
+        mediaType: string,
+        data: Uint8Array,
+    ): Promise<void> {
+        if (!AUDIO_TYPES.has(mediaType))
+            throw new Error("unsupported_audio_type");
+        await this.files.put(CACHE_ACTOR, key, encodeAudio(mediaType, data), {
+            publicRead: true,
+            contentType: mediaType,
+        });
+    }
+
+    async readStored(
+        key: string,
+    ): Promise<{ mediaType: string; data: Buffer }> {
+        const cached = await this.files.get(CACHE_ACTOR, key);
+        if (!cached) throw new Error("audio_not_found");
+        return decodeAudio(cached);
+    }
+
     async read(
         remoteUrl: string,
     ): Promise<{ mediaType: string; data: Buffer }> {
-        const key = createHash("sha256").update(remoteUrl).digest("hex");
-        const metadataFile = path.join(this.root, `${key}.json`);
-        const audioFile = path.join(this.root, `${key}.audio`);
-        try {
-            const metadata = JSON.parse(await readFile(metadataFile, "utf8"));
-            return {
-                mediaType: metadata.mediaType,
-                data: await readFile(audioFile),
-            };
-        } catch {
-            // Continue at the DOWNLOAD_AND_CACHE block below.
-        }
+        const key = `${createHash("sha256").update(remoteUrl).digest("hex")}.audio`;
+        const cached = await this.files.get(CACHE_ACTOR, key);
+        if (cached) return decodeAudio(cached);
         const pending = this.pending.get(key);
         if (pending) return pending;
-        const download = this.downloadAndCache(
-            remoteUrl,
-            key,
-            metadataFile,
-            audioFile,
-        ).finally(() => this.pending.delete(key));
+        const download = this.downloadAndCache(remoteUrl, key).finally(() =>
+            this.pending.delete(key),
+        );
         this.pending.set(key, download);
         return download;
     }
@@ -103,11 +128,7 @@ export class LibraryAudioCache {
     private async downloadAndCache(
         remoteUrl: string,
         key: string,
-        metadataFile: string,
-        audioFile: string,
     ): Promise<{ mediaType: string; data: Buffer }> {
-        // DOWNLOAD_AND_CACHE
-        await mkdir(this.root, { recursive: true });
         let url = await validateRemoteUrl(remoteUrl, this.resolveHost);
         let response: Response | undefined;
         for (let redirect = 0; redirect <= REDIRECT_LIMIT; redirect += 1) {
@@ -128,22 +149,12 @@ export class LibraryAudioCache {
         const mediaType = response.headers.get("content-type")?.split(";")[0];
         if (!mediaType || !AUDIO_TYPES.has(mediaType))
             throw new Error("unsupported_audio_type");
-        const declaredLength = Number(
-            response.headers.get("content-length") ?? 0,
-        );
-        if (declaredLength > MAX_AUDIO_BYTES)
-            throw new Error("audio_too_large");
         const data = Buffer.from(await response.arrayBuffer());
-        if (!data.length || data.byteLength > MAX_AUDIO_BYTES)
-            throw new Error("audio_too_large");
-        const temporaryAudio = `${audioFile}.${process.pid}.${key.slice(0, 8)}.tmp`;
-        const temporaryMetadata = `${metadataFile}.${process.pid}.${key.slice(0, 8)}.tmp`;
-        await writeFile(temporaryAudio, data, { flag: "wx" });
-        await writeFile(temporaryMetadata, JSON.stringify({ mediaType }), {
-            flag: "wx",
+        if (!data.length) throw new Error("audio_empty");
+        await this.files.put(CACHE_ACTOR, key, encodeAudio(mediaType, data), {
+            publicRead: true,
+            contentType: mediaType,
         });
-        await rename(temporaryAudio, audioFile);
-        await rename(temporaryMetadata, metadataFile);
         return { mediaType, data };
     }
 }
