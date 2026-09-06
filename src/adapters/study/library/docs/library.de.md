@@ -10,7 +10,7 @@ Beziehungen bestimmen Zielebene, Kardinalität, Reihenfolge und optionalen Resol
 
 Der `grapheme`-Resolver nutzt Unicode-Grapheme; `longest-match` verarbeitet ausdrücklich getrennte Blöcke. Beide liefern Vorschläge und ungelöste Einheiten, ohne still Einträge anzulegen. Lookup-Anbieter werden über `registerLookupProvider` beigetragen, liefern gewichtete Vorschläge mit Herkunft und lassen sich über den zurückgegebenen Callback entfernen. Erstellen, Auflösen und Nachschlagen laufen durch benannte ctx-Flows.
 
-Das Study-Gateway bietet Schemaerkennung, Auflistung, Erstellung, Details, beidseitige Verfolgung, Auflösungsvorschau und Lookup-Vorschläge. Jeder Eintrag besitzt die Direktadresse `/study/library/:schemaId/:layerId/:entryId`. Die schemagesteuerte Oberfläche zeigt lokalisierte Ebenen, Felder und Beziehungen. Global-, Benutzer- und Klassenzugriff wird weiterhin am Service-Rand durchgesetzt.
+Das Study-Gateway bietet Schemaerkennung, Auflistung, Erstellung, Details, beidseitige Verfolgung, Auflösungsvorschau und Lookup-Vorschläge. Die schemagesteuerte Oberfläche blendet interne Definitions- und Partikelebenen beim direkten Browsen aus. Sichtbare Ebenen verwenden Reiter, Metadatenfilter, Eintragskarten, Metadaten-Pills und Bereichssymbole. Wiederverwendbare Pop-up-Details zeigen Definitionen direkt unter der Überschrift, halten die Beziehungsnavigation aus der sichtbaren URL heraus, nehmen referenzierte Partikel in geordneten Inhalten wie Sätzen auf und zeigen Partikeldetails schreibgeschützt an. Global-, Benutzer- und Klassenzugriff wird weiterhin am Service-Rand durchgesetzt.
 
 ## Deklarative Inhaltspakete
 
@@ -18,4 +18,4 @@ Installierte Sprachpakete rufen `inspectContentPack(root)` zur Prüfung oder `in
 
 ## Lokalisierte Definitionen
 
-Jede Ebene mit der semantischen Rolle `definition` deklariert ihr moduleigenes Zeichenkettenpräfix sowie ihre Felder für Schlüssel und lokalisierten Text. Beim Erstellen ist Englisch erforderlich; das Formular fragt alle von Cognis angebotenen Oberflächensprachen ab, speichert den erzeugten Schlüssel im Definitionsdatensatz und kann fehlende Sprachen über die optionale Fähigkeit `localization:translateString` ergänzen.
+Jede Ebene mit der semantischen Rolle `definition` deklariert ihr moduleigenes Zeichenkettenpräfix sowie ihre Felder für Schlüssel und lokalisierten Text. Definitionen werden nur beim Bearbeiten der Einträge verwaltet, die sie benötigen; sie sind nicht als eigenständige Bibliotheksbereiche direkt sichtbar oder bearbeitbar. Englisch bleibt der erforderliche Ausgangstext, erzeugte Schlüssel bleiben im Definitionsdatensatz und die optionale Fähigkeit `localization:translateString` kann fehlende Sprachen ergänzen.

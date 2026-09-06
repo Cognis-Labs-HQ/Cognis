@@ -5,8 +5,6 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { showToast } from "/static/reuse/toast.js";
-import { createFormBuilder } from "/static/reuse/form-builder.js";
-import { fetchSupportedLanguages } from "/static/reuse/system-client.js";
 import {
     bindStudySubNavigation,
     loadStudySubNavigationModel,
@@ -17,7 +15,6 @@ import {
     fetchLibraryEntries,
     fetchLibraryEntry,
     fetchLibrarySchemas,
-    createLibraryEntry,
 } from "/static/gateways/study/ui/library-client.js";
 import {
     buildLibraryUrl,
@@ -25,94 +22,6 @@ import {
 } from "/static/gateways/study/ui/language.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
-
-async function openDefinitionForm(schemas, i18n) {
-    const definitions = schemas.flatMap((schema) =>
-        schema.layers
-            .filter((layer) => layer.semanticRole === "definition")
-            .map((layer) => ({ schema, layer })),
-    );
-    if (!definitions.length) return false;
-    const languages = await fetchSupportedLanguages();
-    const fields = [
-        {
-            name: "definition_target",
-            label: i18n.t("gateway.study.library_definition_layer"),
-            type: "select",
-            required: true,
-            options: definitions.map(({ schema, layer }) => ({
-                value: `${schema.id}:${layer.id}`,
-                label: `${localizedLabel(schema.metadata, schema.language)} — ${localizedLabel(layer.metadata, schema.language)}`,
-            })),
-        },
-        ...languages.map((language) => ({
-            name: `translation_${language.key}`,
-            label: language.label ?? language.key,
-            type: "textarea",
-            required: parseLanguageCode(language.key) === "en",
-        })),
-    ];
-    const builder = createFormBuilder(
-        { i18n, escapeHtml },
-        {
-            formId: "library-definition-form",
-            submitLabelKey: "gateway.study.library_definition_save",
-            includeSubmitButton: false,
-            fields,
-        },
-    );
-    let controller;
-    await openPopup({
-        title: i18n.t("gateway.study.library_definition_create"),
-        body: builder.render(),
-        actions: [
-            {
-                id: "save",
-                label: i18n.t("gateway.study.library_definition_save"),
-                variant: "confirm",
-            },
-        ],
-        onOpen: (overlay) => {
-            controller = builder.attach(
-                overlay.querySelector("#library-definition-form"),
-            );
-        },
-        onAction: async (actionId) => {
-            if (actionId !== "save" || !controller?.validateAll()) return false;
-            const values = controller.getValues();
-            const translations = Object.fromEntries(
-                languages
-                    .map(({ key }) => [
-                        key,
-                        values[`translation_${key}`]?.trim(),
-                    ])
-                    .filter(([, value]) => value),
-            );
-            const [schemaId, layerId] = values.definition_target.split(":");
-            const { schema, layer } = definitions.find(
-                (candidate) =>
-                    candidate.schema.id === schemaId &&
-                    candidate.layer.id === layerId,
-            );
-            await createLibraryEntry(
-                { scope: "global" },
-                {
-                    schemaId: schema.id,
-                    schemaVersion: schema.version,
-                    layer: layer.id,
-                    label: translations.en,
-                    fields: {
-                        [layer.definitionLocalization.translationsField]:
-                            translations,
-                    },
-                    definitionLanguages: languages.map(({ key }) => key),
-                },
-            );
-            return true;
-        },
-    });
-    return true;
-}
 
 function entryAttributes(entry) {
     return `data-library-schema="${escapeHtml(entry.schemaId)}" data-library-layer="${escapeHtml(entry.layer)}" data-library-entry="${escapeHtml(entry.id)}"`;
@@ -162,13 +71,94 @@ function section(title, value) {
     return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${renderValue(value)}</section>`;
 }
 
-function relationSection(title, entries, languageCode, emptyLabel) {
+function layerForEntry(schemas, entry) {
+    return schemas
+        .find((schema) => schema.id === entry.schemaId)
+        ?.layers.find((layer) => layer.id === entry.layer);
+}
+
+function definitionText(entry, layer, languageCode) {
+    const translationsField = layer?.definitionLocalization?.translationsField;
+    const translations = entry.fields?.[translationsField];
+    if (!translations || typeof translations !== "object") return entry.label;
+    return (
+        translations[parseLanguageCode(document.documentElement.lang)] ??
+        translations[parseLanguageCode(languageCode)] ??
+        translations.en ??
+        entry.label
+    );
+}
+
+function metadataFields(layer) {
+    return (layer?.fields ?? []).filter(
+        (field) => field.detail?.renderer === "badge" && !field.detail.hidden,
+    );
+}
+
+function metadataValues(entry, layer) {
+    return metadataFields(layer).flatMap((field) => {
+        const raw = entry.fields?.[field.id];
+        const values = Array.isArray(raw) ? raw : [raw];
+        return values
+            .filter(
+                (value) =>
+                    value !== undefined &&
+                    value !== null &&
+                    typeof value !== "object",
+            )
+            .map((value) => ({ field, value: String(value) }));
+    });
+}
+
+function renderMetadataPills(entry, layer) {
+    const pills = metadataValues(entry, layer);
+    if (!pills.length) return "";
+    return `<div class="library-metadata-pills">${pills
+        .map(
+            ({ value }) =>
+                `<span class="library-metadata-pill">${escapeHtml(value)}</span>`,
+        )
+        .join("")}</div>`;
+}
+
+function scopeLabel(entry, i18n) {
+    if (entry.scope === "class") {
+        const className = entry.fields?.className ?? entry.scopeId;
+        return i18n
+            .t("gateway.study.library_scope_class")
+            .replace("{{ class name }}", String(className));
+    }
+    return i18n.t(`gateway.study.library_scope_${entry.scope}`);
+}
+
+function renderScope(entry, i18n) {
+    const icon =
+        entry.scope === "global"
+            ? "globe"
+            : entry.scope === "class"
+              ? "class"
+              : "user";
+    const label = scopeLabel(entry, i18n);
+    return `<span class="library-scope" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><picture><source media="(prefers-color-scheme: dark)" srcset="/static/adapters/study/library/assets/scope-${icon}-dark.svg"><img src="/static/adapters/study/library/assets/scope-${icon}-light.svg" alt=""></picture></span>`;
+}
+
+function relationSection(title, entries, emptyLabel) {
     return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${entries.length ? `<div class="library-related-entries">${entries.map((entry) => `<button class="library-related-entry btn-neutral" type="button" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</button>`).join("")}</div>` : `<p>${escapeHtml(emptyLabel)}</p>`}</section>`;
 }
 
-function coreSections(detail, i18n, languageCode) {
+function coreSections(detail, schemas, i18n, languageCode) {
     const { entry, references = [], usedBy = [] } = detail;
+    const layer = layerForEntry(schemas, entry);
+    const definitions = references.filter(
+        (candidate) =>
+            layerForEntry(schemas, candidate)?.semanticRole === "definition",
+    );
+    const components = references.filter(
+        (candidate) =>
+            layerForEntry(schemas, candidate)?.semanticRole !== "definition",
+    );
     const fields = entry.fields ?? {};
+    const metadataIds = new Set(metadataFields(layer).map(({ id }) => id));
     const reserved = new Set([
         "definitions",
         "alternateDefinitions",
@@ -177,16 +167,22 @@ function coreSections(detail, i18n, languageCode) {
         "revisions",
         "progress",
         "strokes",
+        ...metadataIds,
     ]);
     const genericFields = Object.fromEntries(
         Object.entries(fields).filter(([key]) => !reserved.has(key)),
     );
+    const definitionContent = definitions.length
+        ? definitions
+              .map(
+                  (definition) =>
+                      `<p>${escapeHtml(definitionText(definition, layerForEntry(schemas, definition), languageCode))}</p>`,
+              )
+              .join("")
+        : renderValue(fields.definitions ?? entry.definitions);
     return [
+        `<header class="library-detail-summary">${definitionContent}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</div></header>`,
         section(i18n.t("gateway.study.library_fields"), genericFields),
-        section(
-            i18n.t("gateway.study.library_definitions"),
-            fields.definitions ?? entry.definitions,
-        ),
         section(
             i18n.t("gateway.study.library_alternate_definitions"),
             fields.alternateDefinitions ?? entry.alternateDefinitions,
@@ -196,23 +192,21 @@ function coreSections(detail, i18n, languageCode) {
             fields.provenance ?? entry.provenance,
         ),
         section(
-            i18n.t("gateway.study.library_scope"),
-            fields.scope ?? entry.scope,
-        ),
-        section(
             i18n.t("gateway.study.library_revisions"),
             fields.revisions ?? entry.revisions,
         ),
         relationSection(
             i18n.t("gateway.study.library_components"),
-            references,
-            languageCode,
+            components,
             i18n.t("gateway.study.library_no_relationships"),
         ),
         relationSection(
             i18n.t("gateway.study.library_used_by"),
-            usedBy,
-            languageCode,
+            usedBy.filter(
+                (candidate) =>
+                    layerForEntry(schemas, candidate)?.semanticRole !==
+                    "definition",
+            ),
             i18n.t("gateway.study.library_no_relationships"),
         ),
         section(
@@ -226,7 +220,7 @@ function coreSections(detail, i18n, languageCode) {
     ].filter(Boolean);
 }
 
-async function composeDetail(detail, i18n, languageCode) {
+async function composeDetail(detail, schemas, i18n, languageCode) {
     const flow = await uiCtx.runFlow(DETAIL_FLOW, {
         detail,
         i18n,
@@ -238,12 +232,18 @@ async function composeDetail(detail, i18n, languageCode) {
                 ? contribution.sections.filter(Boolean)
                 : [],
         );
-    const actions = (flow.stageResults.actions ?? []).flatMap((contribution) =>
-        Array.isArray(contribution?.actions) ? contribution.actions : [],
-    );
+    const layer = layerForEntry(schemas, detail.entry);
+    const actions =
+        layer?.semanticRole === "particle"
+            ? []
+            : (flow.stageResults.actions ?? []).flatMap((contribution) =>
+                  Array.isArray(contribution?.actions)
+                      ? contribution.actions
+                      : [],
+              );
     const sections = [
         ...sectionsFor("beforeCore"),
-        ...coreSections(detail, i18n, languageCode),
+        ...coreSections(detail, schemas, i18n, languageCode),
         ...sectionsFor("core"),
         ...sectionsFor("afterCore"),
     ];
@@ -253,7 +253,41 @@ async function composeDetail(detail, i18n, languageCode) {
     };
 }
 
-function renderBrowser(schemas, entries, i18n, languageCode) {
+function filterDescriptors(layer, layerEntries, contentLanguage) {
+    return metadataFields(layer).flatMap((field) => {
+        const values = [
+            ...new Set(
+                layerEntries.flatMap((entry) =>
+                    metadataValues(entry, layer)
+                        .filter((item) => item.field.id === field.id)
+                        .map(({ value }) => value),
+                ),
+            ),
+        ].sort((left, right) => left.localeCompare(right));
+        return values.length
+            ? [
+                  {
+                      id: field.id,
+                      label: localizedLabel(field.metadata, contentLanguage),
+                      values,
+                  },
+              ]
+            : [];
+    });
+}
+
+function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
+    const filters = filterDescriptors(layer, layerEntries, contentLanguage);
+    if (!filters.length) return "";
+    return `<div class="library-filters" aria-label="${escapeHtml(i18n.t("gateway.study.library_filters"))}">${filters
+        .map(
+            (filter) =>
+                `<label><span>${escapeHtml(filter.label)}</span><select data-library-filter="${escapeHtml(filter.id)}"><option value="">${escapeHtml(i18n.t("ui.reuse.all"))}</option>${filter.values.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}</select></label>`,
+        )
+        .join("")}</div>`;
+}
+
+function renderBrowser(schemas, entries, i18n) {
     if (!schemas.length)
         return `<p>${escapeHtml(i18n.t("gateway.study.library_empty"))}</p>`;
     return schemas
@@ -262,7 +296,12 @@ function renderBrowser(schemas, entries, i18n, languageCode) {
                 schema.metadata,
                 schema.language,
             );
-            const tabs = schema.layers
+            const visibleLayers = schema.layers.filter(
+                (layer) =>
+                    layer.semanticRole !== "definition" &&
+                    layer.semanticRole !== "particle",
+            );
+            const tabs = visibleLayers
                 .map((layer, layerIndex) => {
                     const layerLabel = localizedLabel(
                         layer.metadata,
@@ -271,7 +310,7 @@ function renderBrowser(schemas, entries, i18n, languageCode) {
                     return `<button class="library-layer-tab btn-neutral${layerIndex === 0 ? " active" : ""}" type="button" role="tab" id="library-tab-${schemaIndex}-${layerIndex}" aria-selected="${layerIndex === 0}" aria-controls="library-panel-${schemaIndex}-${layerIndex}" data-library-tab="${escapeHtml(layer.id)}">${escapeHtml(layerLabel)}</button>`;
                 })
                 .join("");
-            const panels = schema.layers
+            const panels = visibleLayers
                 .map((layer, layerIndex) => {
                     const layerEntries = entries.filter(
                         (entry) =>
@@ -280,13 +319,24 @@ function renderBrowser(schemas, entries, i18n, languageCode) {
                     );
                     const cards = layerEntries.length
                         ? layerEntries
-                              .map(
-                                  (entry) =>
-                                      `<button class="library-entry-card btn-neutral" type="button" ${entryAttributes(entry)}><strong>${escapeHtml(entry.label)}</strong><span>${escapeHtml(i18n.t("gateway.study.library_view_details"))}</span></button>`,
-                              )
+                              .map((entry) => {
+                                  const filterValues = Object.fromEntries(
+                                      metadataFields(layer).map((field) => [
+                                          field.id,
+                                          metadataValues(entry, layer)
+                                              .filter(
+                                                  (item) =>
+                                                      item.field.id ===
+                                                      field.id,
+                                              )
+                                              .map(({ value }) => value),
+                                      ]),
+                                  );
+                                  return `<button class="library-entry-card btn-neutral" type="button" ${entryAttributes(entry)} data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}"><strong>${escapeHtml(entry.label)}</strong><span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span></button>`;
+                              })
                               .join("")
                         : `<p class="library-layer-empty">${escapeHtml(i18n.t("gateway.study.library_layer_empty"))}</p>`;
-                    return `<section class="library-layer-panel" role="tabpanel" id="library-panel-${schemaIndex}-${layerIndex}" aria-labelledby="library-tab-${schemaIndex}-${layerIndex}" data-library-panel="${escapeHtml(layer.id)}"${layerIndex === 0 ? "" : " hidden"}><div class="library-entry-grid">${cards}</div></section>`;
+                    return `<section class="library-layer-panel" role="tabpanel" id="library-panel-${schemaIndex}-${layerIndex}" aria-labelledby="library-tab-${schemaIndex}-${layerIndex}" data-library-panel="${escapeHtml(layer.id)}"${layerIndex === 0 ? "" : " hidden"}>${renderLayerFilters(layer, layerEntries, i18n, schema.language)}<div class="library-entry-grid">${cards}</div><p class="library-filter-empty" hidden>${escapeHtml(i18n.t("gateway.study.library_filter_empty"))}</p></section>`;
                 })
                 .join("");
             return `<section class="library-schema"><h2>${escapeHtml(schemaLabel)}</h2><div class="library-layer-tabs" role="tablist" aria-label="${escapeHtml(i18n.t("gateway.study.library_layers"))}">${tabs}</div>${panels}</section>`;
@@ -296,6 +346,7 @@ function renderBrowser(schemas, entries, i18n, languageCode) {
 
 async function openEntryPopup(
     initialEntry,
+    schemas,
     entries,
     i18n,
     languageCode,
@@ -312,7 +363,12 @@ async function openEntryPopup(
         const index = active.findIndex(
             (entry) => entry.id === selectedEntry.id,
         );
-        const composed = await composeDetail(detail, i18n, languageCode);
+        const composed = await composeDetail(
+            detail,
+            schemas,
+            i18n,
+            languageCode,
+        );
         signal?.throwIfAborted();
         let dismissPopup;
         let relatedEntry;
@@ -416,7 +472,7 @@ export async function mount(root, { signal } = {}) {
                 pinned: true,
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
                 render: () =>
-                    `<section class="library-browser">${renderBrowser(schemas, entries, i18n, languageCode)}</section>`,
+                    `<section class="library-browser">${renderBrowser(schemas, entries, i18n)}</section>`,
             },
         ],
         preferenceKey: "study-library-layout",
@@ -425,18 +481,7 @@ export async function mount(root, { signal } = {}) {
             title: i18n.t("gateway.study.library_label"),
             subtitle: i18n.t("gateway.study.library_subtitle"),
         },
-        toolbar: schemas.some((schema) =>
-            schema.layers.some((layer) => layer.semanticRole === "definition"),
-        )
-            ? [
-                  {
-                      id: "library-actions",
-                      label: i18n.t("gateway.study.library_definition_create"),
-                      render: () =>
-                          `<button class="btn-confirm" data-create-definition>${escapeHtml(i18n.t("gateway.study.library_definition_create"))}</button>`,
-                  },
-              ]
-            : [],
+        toolbar: [],
         subNavigation: [
             {
                 id: "study-subnav",
@@ -453,9 +498,27 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
     signal?.throwIfAborted();
     bindStudySubNavigation(root, { signal });
-    root.querySelector("[data-create-definition]")?.addEventListener(
-        "click",
-        () => void openDefinitionForm(schemas, i18n),
+    root.addEventListener(
+        "change",
+        (event) => {
+            const filter = event.target.closest("select[data-library-filter]");
+            if (!filter) return;
+            const panel = filter.closest("[data-library-panel]");
+            const selectedFilters = Array.from(
+                panel.querySelectorAll("select[data-library-filter]"),
+            ).filter((item) => item.value);
+            let visibleCount = 0;
+            panel.querySelectorAll(".library-entry-card").forEach((card) => {
+                const values = JSON.parse(card.dataset.libraryFilterValues);
+                const visible = selectedFilters.every((item) =>
+                    values[item.dataset.libraryFilter]?.includes(item.value),
+                );
+                card.hidden = !visible;
+                if (visible) visibleCount += 1;
+            });
+            panel.querySelector(".library-filter-empty").hidden =
+                visibleCount > 0;
+        },
         { signal },
     );
     root.addEventListener(
@@ -488,6 +551,7 @@ export async function mount(root, { signal } = {}) {
             if (!entry) return;
             void openEntryPopup(
                 entry,
+                schemas,
                 entries,
                 i18n,
                 languageCode,

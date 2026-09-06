@@ -46,6 +46,10 @@ Definitionsebenen deklarieren jetzt moduleigene Zuordnungen von Zeichenkettensch
 
 Die Bibliothek verwendet jetzt Ebenen-Reiter, kartenbasierte Einträge und wiederverwendbare Pop-up-Details. Die Auswahl von Einträgen und das Navigieren durch Beziehungen erfolgen im Hintergrund, ohne Datensatzkennungen in der Browser-URL anzuzeigen. Die gleich breiten Zurück- und Weiter-Steuerelemente verwenden eindeutige Richtungspfeile. Außerdem bietet die Studien-Unternavigation allen Steuerelementen genügend Platz, statt sie beim Darüberfahren abzuschneiden.
 
+## Unterstützende Inhalte integrieren
+
+Definitionen und Partikel bleiben jetzt aus der direkten Bibliotheksansicht ausgeblendet. Eintragsdetails zeigen lokalisierte Definitionen unter der Überschrift, beziehen Satzpartikel als schreibgeschützte Beziehungsdetails ein, stellen Badge-Metadaten als Pills dar, kennzeichnen den Bereich mit zugänglichen SVG-Symbolen und bieten jedes Badge-Feld als Kartenfilter an.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -53,3 +57,4 @@ Die Bibliothek verwendet jetzt Ebenen-Reiter, kartenbasierte Einträge und wiede
 - [2b1ff9e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b1ff9e205cab5fb1645370b367efa76f1e9b199)
 - [8a0ef5f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a0ef5f9)
 - [8d2b4358](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d2b4358c176a447bb60e9248f40c1234f8cb143)
+- [e4f406f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f406f16a3f0635a6f25206d19d19706cedbbbc)

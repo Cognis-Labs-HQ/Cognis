@@ -258,3 +258,57 @@ test("schema roles and rendering hints remain independent of layer IDs", () => {
         "practicePrompt",
     );
 });
+
+test("sentences can include ordered word and particle references", () => {
+    const schema: LibrarySchema = {
+        ...english,
+        layers: [
+            ...english.layers,
+            {
+                id: "particles",
+                semanticRole: "particle",
+                metadata: { labels: { en: "Particles" } },
+            },
+            {
+                id: "sentences",
+                semanticRole: "orderedLexicalSequence",
+                metadata: { labels: { en: "Sentences" } },
+                relationships: [
+                    {
+                        id: "words",
+                        targetLayer: "words",
+                        metadata: { labels: { en: "Words" } },
+                        ordered: true,
+                        onDelete: "restrict",
+                    },
+                    {
+                        id: "particles",
+                        targetLayer: "particles",
+                        metadata: { labels: { en: "Particles" } },
+                        ordered: true,
+                        onDelete: "restrict",
+                    },
+                ],
+            },
+        ],
+    };
+    const targets = new Map([
+        ["word", entry("word", "learn", "words")],
+        ["particle", entry("particle", "は", "particles")],
+    ]);
+    assert.doesNotThrow(() =>
+        validateReferences(
+            validateLibrarySchema(schema),
+            "sentences",
+            [
+                { entryId: "word", relation: "words", position: 0 },
+                {
+                    entryId: "particle",
+                    relation: "particles",
+                    position: 1,
+                },
+            ],
+            targets,
+        ),
+    );
+});

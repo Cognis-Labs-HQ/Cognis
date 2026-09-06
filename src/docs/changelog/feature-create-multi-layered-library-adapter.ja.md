@@ -46,6 +46,10 @@ ctx と認証済み API を通じて、検証付きグローバル JSON イン�
 
 ライブラリをレイヤータブ、カード形式の項目、再利用可能なポップアップ詳細で再構成しました。項目の選択と関連項目の移動は、レコード識別子をブラウザーの URL に表示せず内部で管理します。前後の操作には、同じ幅の明確な方向矢印を使用します。また、学習サブナビゲーションの各操作に十分な領域を確保し、ホバー時の切り取りを防ぎます。
 
+## 補助コンテンツの統合
+
+定義と助詞をライブラリの直接閲覧から除外しました。項目詳細では、ローカライズ済み定義を見出しの下に配置し、文の助詞を読み取り専用の関連詳細として含め、バッジ用メタデータをピルで表示し、アクセシブルな SVG アイコンで範囲を示し、すべてのバッジフィールドをカードの絞り込み条件として提供します。
+
 ## コミット
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -53,3 +57,4 @@ ctx と認証済み API を通じて、検証付きグローバル JSON イン�
 - [2b1ff9e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b1ff9e205cab5fb1645370b367efa76f1e9b199)
 - [8a0ef5f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a0ef5f9)
 - [8d2b4358](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d2b4358c176a447bb60e9248f40c1234f8cb143)
+- [e4f406f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f406f16a3f0635a6f25206d19d19706cedbbbc)

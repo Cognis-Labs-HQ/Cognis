@@ -114,8 +114,11 @@ test("Library browser resolves labels from localized schema metadata", async () 
     );
     assert.match(
         source,
-        /localizedLabel\(schema\.metadata, schema\.language\)/,
+        /localizedLabel\(\s*schema\.metadata,\s*schema\.language,?\s*\)/,
     );
-    assert.match(source, /localizedLabel\(layer\.metadata, schema\.language\)/);
+    assert.match(
+        source,
+        /localizedLabel\(\s*layer\.metadata,\s*schema\.language,?\s*\)/,
+    );
     assert.match(source, /parseLanguageCode\(language\)/);
 });

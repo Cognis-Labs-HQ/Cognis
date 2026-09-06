@@ -14,18 +14,28 @@ const stylesheet = readFileSync(
     "utf8",
 );
 
-test("Study Library presents layers as tabs and entries as cards", () => {
+test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /role="tablist"/);
     assert.match(source, /role="tabpanel"/);
     assert.match(source, /class="library-entry-card btn-neutral"/);
+    assert.match(source, /select data-library-filter=/);
     assert.match(stylesheet, /\.library-entry-grid/);
+    assert.match(stylesheet, /\.library-filters/);
 });
 
-test("Study Library keeps entry identifiers out of visible URLs", () => {
-    assert.doesNotMatch(source, /\/study\/library\/\$\{/);
-    assert.doesNotMatch(source, /history\.(?:pushState|replaceState)/);
-    assert.doesNotMatch(source, /navigateTo/);
-    assert.match(source, /button\[data-library-entry\]/);
+test("Study Library integrates definitions and particles into item details", () => {
+    assert.match(source, /semanticRole !== "definition"/);
+    assert.match(source, /semanticRole !== "particle"/);
+    assert.match(source, /class="library-detail-summary"/);
+    assert.match(source, /layer\?\.semanticRole === "particle"/);
+    assert.match(source, /const components = references\.filter/);
+});
+
+test("Study Library renders metadata and scope indicators", () => {
+    assert.match(source, /detail\?\.renderer === "badge"/);
+    assert.match(source, /class="library-metadata-pill"/);
+    assert.match(source, /class="library-scope"/);
+    assert.match(stylesheet, /\.library-metadata-pill/);
 });
 
 test("Study Library popup uses equal directional navigation controls", () => {

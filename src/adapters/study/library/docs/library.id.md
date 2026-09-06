@@ -10,7 +10,7 @@ Relasi menentukan lapisan target, kardinalitas, urutan, dan resolver opsional. S
 
 Resolver `grapheme` memakai grafem Unicode, sedangkan `longest-match` memakai blok yang dipisahkan secara eksplisit. Keduanya mengembalikan usulan dan unit yang belum terselesaikan tanpa membuat entri diam-diam. Penyedia lookup dipasang melalui `registerLookupProvider`, mengembalikan saran berperingkat beserta asalnya, dan dapat dilepas melalui callback registrasi. Pembuatan, resolusi, dan lookup mengikuti flow ctx bernama.
 
-Gateway Study menyediakan penemuan skema, daftar, pembuatan, detail, penelusuran dua arah, pratinjau resolusi, dan saran lookup. Setiap entri memiliki URL `/study/library/:schemaId/:layerId/:entryId`. UI berbasis skema menampilkan lapisan terlokalisasi, bidang, dan relasi. Akses global, pengguna, dan kelas tetap ditegakkan pada batas layanan.
+Gateway Study menyediakan penemuan skema, daftar, pembuatan, detail, penelusuran dua arah, pratinjau resolusi, dan saran lookup. UI berbasis skema menyembunyikan lapisan definisi dan partikel yang bersifat internal dari penjelajahan langsung. Lapisan yang dapat dijelajahi memakai tab, filter metadata, kartu entri, pil metadata, dan ikon cakupan. Detail popup pakai ulang menampilkan definisi tepat di bawah judul, menjaga penelusuran relasi di luar URL yang terlihat, menyertakan partikel yang dirujuk dalam konten berurutan seperti kalimat, dan menjadikan detail partikel hanya-baca. Akses global, pengguna, dan kelas tetap ditegakkan pada batas layanan.
 
 ## Paket konten deklaratif
 
@@ -18,4 +18,4 @@ Paket bahasa terpasang memanggil `inspectContentPack(root)` untuk validasi atau 
 
 ## Definisi yang dilokalkan
 
-Setiap lapisan dengan peran semantik `definition` mendeklarasikan awalan kunci string milik modul serta bidang kunci dan teks terlokalnya. Pembuatan entri mewajibkan bahasa Inggris, meminta masukan untuk setiap bahasa antarmuka yang diiklankan Cognis, menyimpan kunci yang dihasilkan pada rekaman definisi, dan dapat mengisi bahasa yang kosong melalui kapabilitas opsional `localization:translateString`.
+Setiap lapisan dengan peran semantik `definition` mendeklarasikan awalan kunci string milik modul serta bidang kunci dan teks terlokalnya. Definisi dikelola hanya ketika menyunting entri yang membutuhkannya; definisi tidak dapat dijelajahi atau disunting secara langsung sebagai bagian Pustaka tersendiri. Bahasa Inggris tetap menjadi teks sumber wajib, kunci yang dihasilkan tetap disimpan pada rekaman definisi, dan kapabilitas opsional `localization:translateString` dapat melengkapi bahasa yang kosong.

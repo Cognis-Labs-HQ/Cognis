@@ -18,7 +18,7 @@ Create, resolve, and lookup operations participate in named ctx flows so consume
 
 The Study gateway exposes schema discovery, generic entry listing and creation, entry details, bidirectional tracing, resolution previews, and lookup suggestions. Browser requests are centralized in the Study gateway Library client.
 
-Every entry is available at `/study/library/:schemaId/:layerId/:entryId`. The schema-driven page displays all configured layers and localized labels, entry fields, component relationships, and entries that use the selected item. Direct loads and client-side navigation use the same URL.
+The schema-driven page hides implementation-only definition and particle layers from direct browsing. Browseable layers use tabs, metadata filters, entry cards, metadata pills, and scope icons. Reusable popup details show definitions beneath the item heading, keep relationship traversal out of the visible URL, include referenced particles in ordered content such as sentences, and keep particle details read-only.
 
 ## Access
 
@@ -30,4 +30,4 @@ Installed language packages call `inspectContentPack(root)` to validate or `inge
 
 ## Localized definitions
 
-Every layer with the `definition` semantic role declares its module-owned string-key prefix and its string-key and localized-text fields. Entry creation requires English, prompts for every UI language advertised by Cognis, stores the generated key on the definition record, and can fill omitted languages through the optional `localization:translateString` capability.
+Every layer with the `definition` semantic role declares its module-owned string-key prefix and its string-key and localized-text fields. Definitions are managed only while editing entries that require them; they are not directly browseable or editable as independent Library sections. English remains the required source text, generated keys remain on definition records, and the optional `localization:translateString` capability can fill omitted languages.

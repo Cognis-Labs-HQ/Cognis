@@ -46,6 +46,10 @@ Definition layers now declare module-owned string-key mappings. The Library crea
 
 Reworked the Library into layer tabs with card-based entries and reusable popup details. Entry selection and relationship traversal now stay behind the scenes without exposing record identifiers in the browser URL, while previous and next controls use equal-width directional navigation. The Study sub-navigation also gives every control enough room instead of clipping controls on hover.
 
+## Integrate supporting content
+
+Definitions and particles now stay out of direct Library browsing. Item details place localized definitions beneath the heading, include sentence particles as read-only relationship details, present badge metadata as pills, identify scope with accessible SVG icons, and expose every badge field as a card filter.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -53,3 +57,4 @@ Reworked the Library into layer tabs with card-based entries and reusable popup 
 - [2b1ff9e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b1ff9e205cab5fb1645370b367efa76f1e9b199)
 - [8a0ef5f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a0ef5f9)
 - [8d2b4358](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d2b4358c176a447bb60e9248f40c1234f8cb143)
+- [e4f406f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f406f16a3f0635a6f25206d19d19706cedbbbc)
