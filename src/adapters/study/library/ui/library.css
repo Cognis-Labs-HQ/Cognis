@@ -155,7 +155,33 @@
 
 .library-detail-summary p {
     margin: 0;
-    font-size: 1.05rem;
+    font-size: 1.15rem;
+}
+
+.library-entry-popup .popup-title {
+    font-size: clamp(1.6rem, 4vw, 2.25rem);
+}
+
+.library-detail-section h3 {
+    margin-block: 0.25rem;
+    font-size: 1.25rem;
+}
+
+.library-component-boxes {
+    display: flex;
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.library-component-box {
+    min-width: 2.75rem;
+    padding: 0.6rem 0.8rem;
+    border-color: var(--border);
+    border-radius: 8px;
+    background: var(--surface-2);
+    font-size: 1rem;
+    font-weight: 700;
 }
 
 .library-related-entries {

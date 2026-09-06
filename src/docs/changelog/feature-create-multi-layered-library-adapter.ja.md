@@ -50,6 +50,10 @@ ctx と認証済み API を通じて、検証付きグローバル JSON イン�
 
 定義と助詞をライブラリの直接閲覧から除外しました。項目詳細では、ローカライズ済み定義を見出しの下に配置し、文の助詞を読み取り専用の関連詳細として含め、バッジ用メタデータをピルで表示し、アクセシブルな SVG アイコンで範囲を示し、すべてのバッジフィールドをカードの絞り込み条件として提供します。
 
+## 絞り込みと詳細表示の改善
+
+ライブラリのメタデータ選択欄に共通テーマのスタイルを適用し、変更を即時反映するようにしました。詳細ポップアップでは見出しを大きくし、定義と意味をタイトルの下に配置し、認識済みの構成要素を独立したコンポーネント区画ではなく見出し内の移動可能なサブボックスとして表示します。
+
 ## コミット
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -58,3 +62,4 @@ ctx と認証済み API を通じて、検証付きグローバル JSON イン�
 - [8a0ef5f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a0ef5f9)
 - [8d2b4358](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d2b4358c176a447bb60e9248f40c1234f8cb143)
 - [e4f406f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f406f16a3f0635a6f25206d19d19706cedbbbc)
+- [a7891aaa](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7891aaa8195180c45fa490ada5469d2d306c62b)

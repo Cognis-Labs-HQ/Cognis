@@ -50,6 +50,10 @@ Perpustakaan kini menggunakan tab lapisan, entri berbentuk kartu, dan detail mel
 
 Definisi dan partikel kini tidak ditampilkan dalam penjelajahan langsung Pustaka. Detail entri menempatkan definisi terlokalisasi di bawah judul, menyertakan partikel kalimat sebagai detail relasi hanya-baca, menampilkan metadata lencana sebagai pil, menandai cakupan dengan ikon SVG yang aksesibel, dan menyediakan setiap bidang lencana sebagai filter kartu.
 
+## Sempurnakan filter dan detail Pustaka
+
+Dropdown metadata Pustaka kini memakai gaya tema bersama dan langsung menerapkan perubahan. Popup detail memakai judul yang lebih besar, menempatkan definisi dan makna di bawah judul, serta menyajikan unsur penyusun yang dikenali sebagai subkotak yang dapat dinavigasi di dalam judul alih-alih bagian Komponen terpisah.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -58,3 +62,4 @@ Definisi dan partikel kini tidak ditampilkan dalam penjelajahan langsung Pustaka
 - [8a0ef5f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a0ef5f9)
 - [8d2b4358](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d2b4358c176a447bb60e9248f40c1234f8cb143)
 - [e4f406f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f406f16a3f0635a6f25206d19d19706cedbbbc)
+- [a7891aaa](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7891aaa8195180c45fa490ada5469d2d306c62b)

@@ -18,15 +18,17 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /role="tablist"/);
     assert.match(source, /role="tabpanel"/);
     assert.match(source, /class="library-entry-card btn-neutral"/);
-    assert.match(source, /select data-library-filter=/);
+    assert.match(source, /select class="theme-select" data-library-filter=/);
+    assert.match(source, /addEventListener\("input", handleFilterSelection/);
     assert.match(stylesheet, /\.library-entry-grid/);
     assert.match(stylesheet, /\.library-filters/);
 });
 
 test("Study Library integrates definitions and particles into item details", () => {
-    assert.match(source, /semanticRole !== "definition"/);
-    assert.match(source, /semanticRole !== "particle"/);
+    assert.match(source, /function isMeaningLayer/);
+    assert.match(source, /layer\.semanticRole !== "particle"/);
     assert.match(source, /class="library-detail-summary"/);
+    assert.match(source, /class="library-component-box btn-neutral"/);
     assert.match(source, /layer\?\.semanticRole === "particle"/);
     assert.match(source, /const components = references\.filter/);
 });

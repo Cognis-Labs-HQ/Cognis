@@ -20,6 +20,7 @@ export type LibrarySemanticRole =
     | "orderedLexicalSequence"
     | "passage"
     | "definition"
+    | "meaning"
     | "particle"
     | "practicePrompt";
 

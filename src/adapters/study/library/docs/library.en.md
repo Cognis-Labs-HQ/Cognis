@@ -18,7 +18,7 @@ Create, resolve, and lookup operations participate in named ctx flows so consume
 
 The Study gateway exposes schema discovery, generic entry listing and creation, entry details, bidirectional tracing, resolution previews, and lookup suggestions. Browser requests are centralized in the Study gateway Library client.
 
-The schema-driven page hides implementation-only definition and particle layers from direct browsing. Browseable layers use tabs, metadata filters, entry cards, metadata pills, and scope icons. Reusable popup details show definitions beneath the item heading, keep relationship traversal out of the visible URL, include referenced particles in ordered content such as sentences, and keep particle details read-only.
+The schema-driven page hides implementation-only definition and particle layers from direct browsing. Browseable layers use tabs, metadata filters, entry cards, metadata pills, and scope icons. Reusable popup details show definitions and meanings beneath the larger item heading. Recognized constituent entries, including sentence particles, appear as navigable sub-boxes inside that heading instead of a separate Components section, while particle details remain read-only. Filter dropdowns use the shared theme styling and apply selections immediately.
 
 ## Access
 

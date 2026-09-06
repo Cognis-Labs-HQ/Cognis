@@ -146,21 +146,38 @@ function relationSection(title, entries, emptyLabel) {
     return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${entries.length ? `<div class="library-related-entries">${entries.map((entry) => `<button class="library-related-entry btn-neutral" type="button" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</button>`).join("")}</div>` : `<p>${escapeHtml(emptyLabel)}</p>`}</section>`;
 }
 
+function isMeaningLayer(layer) {
+    return (
+        layer?.semanticRole === "definition" ||
+        layer?.semanticRole === "meaning"
+    );
+}
+
+function renderComponentBoxes(entries) {
+    if (!entries.length) return "";
+    return `<div class="library-component-boxes">${entries
+        .map(
+            (entry) =>
+                `<button class="library-component-box btn-neutral" type="button" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</button>`,
+        )
+        .join("")}</div>`;
+}
+
 function coreSections(detail, schemas, i18n, languageCode) {
     const { entry, references = [], usedBy = [] } = detail;
     const layer = layerForEntry(schemas, entry);
-    const definitions = references.filter(
-        (candidate) =>
-            layerForEntry(schemas, candidate)?.semanticRole === "definition",
+    const definitions = references.filter((candidate) =>
+        isMeaningLayer(layerForEntry(schemas, candidate)),
     );
     const components = references.filter(
-        (candidate) =>
-            layerForEntry(schemas, candidate)?.semanticRole !== "definition",
+        (candidate) => !isMeaningLayer(layerForEntry(schemas, candidate)),
     );
     const fields = entry.fields ?? {};
     const metadataIds = new Set(metadataFields(layer).map(({ id }) => id));
     const reserved = new Set([
         "definitions",
+        "meaning",
+        "meanings",
         "alternateDefinitions",
         "provenance",
         "scope",
@@ -179,9 +196,14 @@ function coreSections(detail, schemas, i18n, languageCode) {
                       `<p>${escapeHtml(definitionText(definition, layerForEntry(schemas, definition), languageCode))}</p>`,
               )
               .join("")
-        : renderValue(fields.definitions ?? entry.definitions);
+        : renderValue(
+              fields.definitions ??
+                  fields.meaning ??
+                  fields.meanings ??
+                  entry.definitions,
+          );
     return [
-        `<header class="library-detail-summary">${definitionContent}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</div></header>`,
+        `<header class="library-detail-summary">${definitionContent}${renderComponentBoxes(components)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</div></header>`,
         section(i18n.t("gateway.study.library_fields"), genericFields),
         section(
             i18n.t("gateway.study.library_alternate_definitions"),
@@ -194,11 +216,6 @@ function coreSections(detail, schemas, i18n, languageCode) {
         section(
             i18n.t("gateway.study.library_revisions"),
             fields.revisions ?? entry.revisions,
-        ),
-        relationSection(
-            i18n.t("gateway.study.library_components"),
-            components,
-            i18n.t("gateway.study.library_no_relationships"),
         ),
         relationSection(
             i18n.t("gateway.study.library_used_by"),
@@ -282,7 +299,7 @@ function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
     return `<div class="library-filters" aria-label="${escapeHtml(i18n.t("gateway.study.library_filters"))}">${filters
         .map(
             (filter) =>
-                `<label><span>${escapeHtml(filter.label)}</span><select data-library-filter="${escapeHtml(filter.id)}"><option value="">${escapeHtml(i18n.t("ui.reuse.all"))}</option>${filter.values.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}</select></label>`,
+                `<label><span>${escapeHtml(filter.label)}</span><select class="theme-select" data-library-filter="${escapeHtml(filter.id)}"><option value="">${escapeHtml(i18n.t("ui.reuse.all"))}</option>${filter.values.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}</select></label>`,
         )
         .join("")}</div>`;
 }
@@ -298,8 +315,7 @@ function renderBrowser(schemas, entries, i18n) {
             );
             const visibleLayers = schema.layers.filter(
                 (layer) =>
-                    layer.semanticRole !== "definition" &&
-                    layer.semanticRole !== "particle",
+                    !isMeaningLayer(layer) && layer.semanticRole !== "particle",
             );
             const tabs = visibleLayers
                 .map((layer, layerIndex) => {
@@ -431,6 +447,23 @@ async function openEntryPopup(
     }
 }
 
+function applyLibraryFilters(filter) {
+    const panel = filter.closest("[data-library-panel]");
+    const selectedFilters = Array.from(
+        panel.querySelectorAll("select[data-library-filter]"),
+    ).filter((item) => item.value);
+    let visibleCount = 0;
+    panel.querySelectorAll(".library-entry-card").forEach((card) => {
+        const values = JSON.parse(card.dataset.libraryFilterValues);
+        const visible = selectedFilters.every((item) =>
+            values[item.dataset.libraryFilter]?.includes(item.value),
+        );
+        card.hidden = !visible;
+        if (visible) visibleCount += 1;
+    });
+    panel.querySelector(".library-filter-empty").hidden = visibleCount > 0;
+}
+
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: [
@@ -498,29 +531,12 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
     signal?.throwIfAborted();
     bindStudySubNavigation(root, { signal });
-    root.addEventListener(
-        "change",
-        (event) => {
-            const filter = event.target.closest("select[data-library-filter]");
-            if (!filter) return;
-            const panel = filter.closest("[data-library-panel]");
-            const selectedFilters = Array.from(
-                panel.querySelectorAll("select[data-library-filter]"),
-            ).filter((item) => item.value);
-            let visibleCount = 0;
-            panel.querySelectorAll(".library-entry-card").forEach((card) => {
-                const values = JSON.parse(card.dataset.libraryFilterValues);
-                const visible = selectedFilters.every((item) =>
-                    values[item.dataset.libraryFilter]?.includes(item.value),
-                );
-                card.hidden = !visible;
-                if (visible) visibleCount += 1;
-            });
-            panel.querySelector(".library-filter-empty").hidden =
-                visibleCount > 0;
-        },
-        { signal },
-    );
+    const handleFilterSelection = (event) => {
+        const filter = event.target.closest("select[data-library-filter]");
+        if (filter) applyLibraryFilters(filter);
+    };
+    root.addEventListener("input", handleFilterSelection, { signal });
+    root.addEventListener("change", handleFilterSelection, { signal });
     root.addEventListener(
         "click",
         (event) => {

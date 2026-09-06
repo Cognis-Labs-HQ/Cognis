@@ -50,6 +50,10 @@ Reworked the Library into layer tabs with card-based entries and reusable popup 
 
 Definitions and particles now stay out of direct Library browsing. Item details place localized definitions beneath the heading, include sentence particles as read-only relationship details, present badge metadata as pills, identify scope with accessible SVG icons, and expose every badge field as a card filter.
 
+## Refine Library filtering and details
+
+Library metadata dropdowns now use shared theme styling and apply selections as soon as they change. Detail popups use larger headings, place both definitions and meanings beneath the title, and present recognized constituent entries as navigable sub-boxes in the heading instead of a separate Components section.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -58,3 +62,4 @@ Definitions and particles now stay out of direct Library browsing. Item details 
 - [8a0ef5f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a0ef5f9)
 - [8d2b4358](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d2b4358c176a447bb60e9248f40c1234f8cb143)
 - [e4f406f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f406f16a3f0635a6f25206d19d19706cedbbbc)
+- [a7891aaa](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7891aaa8195180c45fa490ada5469d2d306c62b)
