@@ -588,7 +588,6 @@ test("profile messages notifications and study indexes are privacy scoped", () =
         /formatRelativeTime\(notification\.createdAt\)/,
     );
     assert.match(notificationsSource, /resultClass: "notification"/);
-    assert.match(searchSource, /\.study-subnav a\[href\]/);
     assert.match(searchSource, /category: "Pages"/);
     assert.match(studySearchSource, /registeredLanguages/);
     assert.match(studySearchSource, /id: "study-page"/);

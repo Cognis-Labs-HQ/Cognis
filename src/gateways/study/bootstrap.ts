@@ -205,6 +205,33 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const routeHelpers = resolveRouteContext(routeContext);
     const gateway = new CoreStudyGateway();
     const adaptersRoot = path.join(ctx.adaptersRoot, "study");
+    const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    for (const flow of [
+        {
+            id: "study-library-create",
+            stages: ["normalize", "resolve", "validate", "persist"],
+        },
+        {
+            id: "study-library-resolve",
+            stages: ["normalize", "propose", "rank"],
+        },
+        {
+            id: "study-library-lookup",
+            stages: ["discover", "lookup", "rank"],
+        },
+        {
+            id: "study-library-ingest",
+            stages: ["inspect", "validate", "stage", "persist", "audit"],
+        },
+    ]) {
+        if (!systemCtx?.hasFlow(flow.id)) {
+            systemCtx?.registerFlow({
+                ...flow,
+                description:
+                    "Orchestrates provider-neutral Study Library operations.",
+            });
+        }
+    }
 
     const syncLanguageCapabilities = (): void => {
         const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
@@ -301,6 +328,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         return gateway.isLanguageModuleEnabled(languageModule.moduleId);
     };
     const uiHooks = createGatewayUiRegistryHooks(ctx.uiRegistry, "study");
+    ctx.uiRegistry?.registerCapabilityProvider({
+        scriptUrl: "/static/gateways/study/flow-contracts.js",
+        providesCapabilities: ["study:library:detailFlow"],
+        isEnabled: () =>
+            ctx.gatewayRegistry.get("study")?.status !== "disabled",
+    });
 
     await gateway.bootstrapAdapters(adaptersRoot, {
         ...uiHooks,
@@ -335,6 +368,29 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     ctx.uiRegistry?.registerStaticDir("study", path.join(GATEWAY_ROOT, "ui"));
+    const studyStylesheets = [
+        "/static/styles/page-builder.css",
+        "/static/styles/reuse/page-sections.css",
+        "/static/gateways/study/study.css",
+    ];
+    ctx.uiRegistry?.registerSpaRoute({
+        id: "gateway.study",
+        pattern: "^/study(?:/welcome|/settings)?$",
+        base: "/study",
+        scriptUrl: "/static/gateways/study/study.js",
+        stylesheets: studyStylesheets,
+        isEnabled: () =>
+            ctx.gatewayRegistry.get("study")?.status !== "disabled",
+    });
+    ctx.uiRegistry?.registerSpaRoute({
+        id: "gateway.study.child",
+        pattern: "^/study/(?!welcome$|settings$)[^/]+$",
+        base: "/study",
+        scriptUrl: "/static/gateways/study/route.js",
+        stylesheets: studyStylesheets,
+        isEnabled: () =>
+            ctx.gatewayRegistry.get("study")?.status !== "disabled",
+    });
 
     const serveStudyHtml = async (
         req: IncomingMessage,

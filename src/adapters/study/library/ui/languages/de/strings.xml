@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="gateway.study.library_layer_empty">Diese Ebene enthält noch keine Einträge.</string>
+  <string name="gateway.study.library_previous">Zurück</string>
+  <string name="gateway.study.library_next">Weiter</string>
+  <string name="gateway.study.library_filters">Bibliothekseinträge filtern</string>
+  <string name="gateway.study.library_filter_empty">Keine Einträge entsprechen den ausgewählten Filtern.</string>
+  <string name="gateway.study.library_scope_global">Bereich: Global</string>
+  <string name="gateway.study.library_scope_class">Bereich: Klasse {{ class name }}</string>
+  <string name="gateway.study.library_scope_user">Bereich: Benutzer</string>
+</resources>

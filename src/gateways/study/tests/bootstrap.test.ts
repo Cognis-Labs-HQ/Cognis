@@ -87,10 +87,11 @@ async function bootstrapStudyGateway() {
     capabilities.contribute("db:executor", dbExecutor);
     capabilities.contribute("system:ctx", systemCtx);
 
+    const uiRegistry = new UIRegistry();
     await bootstrap({
         capabilities,
         routeRegistry,
-        uiRegistry: new UIRegistry(),
+        uiRegistry,
         gatewayRegistry: new GatewayRegistry(),
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
         flow: systemCtx.flow,
@@ -99,8 +100,19 @@ async function bootstrapStudyGateway() {
     return {
         routeRegistry,
         systemCtx,
+        uiRegistry,
     };
 }
+
+test("Study owns its SPA routes and Library detail-flow provider", async () => {
+    const { uiRegistry } = await bootstrapStudyGateway();
+    const routes = uiRegistry.listSpaRoutes();
+    assert.ok(routes.some((route) => route.id === "gateway.study"));
+    assert.ok(routes.some((route) => route.id === "gateway.study.child"));
+    assert.ok(
+        uiRegistry.hasActiveCapabilityProvider("study:library:detailFlow"),
+    );
+});
 
 const japaneseLanguageCapability = {
     moduleId: "study-language-ja",

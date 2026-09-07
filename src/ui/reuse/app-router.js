@@ -17,8 +17,6 @@
  *   getCurrentBase()    — returns the base path of the currently mounted page.
  *   invalidateSpaRouteCache() — clears cached dynamic SPA route descriptors.
  *   `router:invalidateRoutes` — ctx capability for invalidating those routes.
- *   invalidateStudyChildComponentCache() — clears the cached Study child
- *                         component list; call after learning-language changes.
  *
  * Usage:
  *   import { initRouter } from '../reuse/app-router.js';
@@ -40,8 +38,7 @@
  * @returns {void}
  */
 
-import { ensurePageStylesheet, preparePageStylesheets } from "./page-styles.js";
-import { apiFetch } from "./api-client.js";
+import { preparePageStylesheets } from "./page-styles.js";
 import {
     beginPageLoading,
     ensureHostUiProviders,
@@ -67,11 +64,6 @@ import {
 
 observePerformance();
 
-const STUDY_BASE_STYLESHEETS = [
-    "/static/styles/page-builder.css",
-    "/static/styles/reuse/page-sections.css",
-    "/static/gateways/study/study.css",
-];
 const ROUTE_STYLE_BUNDLES = {
     pageSections: [
         "/static/styles/page-builder.css",
@@ -93,162 +85,13 @@ const ROUTE_STYLE_BUNDLES = {
         "/static/styles/reuse/page-sections.css",
         "/static/styles/license.css",
     ],
-    study: STUDY_BASE_STYLESHEETS,
 };
-
-const STUDY_CHILD_ROUTE_PATTERN = /^\/study\/(?!welcome$|settings$)[^/]+$/;
-const STUDY_CHILD_COMPONENT_CACHE_TTL_MS = 30_000;
-let _studyChildComponentsPromise = null;
-let _studyChildComponentsCache = null;
-let _studyChildComponentsCacheExpiresAt = 0;
 
 function normalizePath(path) {
     return String(path).split("?")[0].split("#")[0];
 }
 
-function isPotentialStudyChildPath(path) {
-    const normalizedPath = normalizePath(path);
-    return STUDY_CHILD_ROUTE_PATTERN.test(normalizedPath);
-}
-
-/**
- * Fetches a URL using the authenticated API client and parses the response as
- * JSON. Throws if the HTTP response is not ok.
- *
- * @param {string} urlPath - Absolute API path to fetch.
- * @returns {Promise<unknown>} Parsed JSON body.
- */
-async function fetchJson(urlPath) {
-    const response = await apiFetch(urlPath);
-    if (!response.ok) {
-        throw new Error(`HTTP ${response.status} while loading "${urlPath}"`);
-    }
-    return response.json();
-}
-
-/**
- * Loads the list of Study child component descriptors by querying the
- * registered-languages and per-language modules API endpoints. Results are
- * cached in memory for `STUDY_CHILD_COMPONENT_CACHE_TTL_MS` milliseconds so
- * rapid successive SPA navigations do not each trigger a fresh network round-
- * trip.
- *
- * @returns {Promise<Array<object>>} Array of child component descriptors.
- */
-async function loadStudyChildComponents() {
-    if (
-        _studyChildComponentsCache &&
-        Date.now() < _studyChildComponentsCacheExpiresAt
-    ) {
-        return _studyChildComponentsCache;
-    }
-    if (_studyChildComponentsPromise) {
-        return _studyChildComponentsPromise;
-    }
-    _studyChildComponentsPromise = (async () => {
-        try {
-            const registeredLanguagesResponse = await fetchJson(
-                "/api/v1/study/registered-languages",
-            );
-            const languages = Array.isArray(registeredLanguagesResponse?.data)
-                ? registeredLanguagesResponse.data
-                : [];
-            const moduleResponses = await Promise.all(
-                languages.map((language) =>
-                    fetchJson(
-                        `/api/v1/study/languages/${encodeURIComponent(String(language.code ?? ""))}/modules`,
-                    ).catch((fetchError) => {
-                        console.warn(
-                            "[router] Failed to load Study child components for language.",
-                            language.code,
-                            fetchError,
-                        );
-                        return { data: [] };
-                    }),
-                ),
-            );
-            const components = moduleResponses.flatMap((modulesResponse) =>
-                Array.isArray(modulesResponse?.data)
-                    ? modulesResponse.data
-                    : [],
-            );
-            _studyChildComponentsCache = components;
-            _studyChildComponentsCacheExpiresAt =
-                Date.now() + STUDY_CHILD_COMPONENT_CACHE_TTL_MS;
-            return components;
-        } finally {
-            _studyChildComponentsPromise = null;
-        }
-    })();
-    return _studyChildComponentsPromise;
-}
-
-/**
- * Resolves a URL path to a Study child component descriptor (scriptUrl and
- * stylesheets) if the path matches a dynamically-registered Study child route.
- * Returns null for non-Study paths and for Study paths that have no matching
- * registered component.
- *
- * @param {string} path - URL path to resolve (e.g. '/study/hiragana').
- * @returns {Promise<{scriptUrl: string, stylesheets: string[]} | null>}
- */
-async function resolveStudyChildComponent(path) {
-    if (!isPotentialStudyChildPath(path)) {
-        return null;
-    }
-    const normalizedPath = normalizePath(path);
-    const components = await loadStudyChildComponents();
-    const component = components.find(
-        (candidate) => String(candidate?.pageUrl ?? "") === normalizedPath,
-    );
-    if (!component) {
-        return null;
-    }
-    const scriptUrl = String(component.scriptUrl ?? "").trim();
-    if (!scriptUrl) {
-        return null;
-    }
-    const stylesheets = Array.isArray(component.stylesheets)
-        ? component.stylesheets
-              .map((stylesheetUrl) => String(stylesheetUrl ?? "").trim())
-              .filter(Boolean)
-        : [];
-    return {
-        scriptUrl,
-        stylesheets,
-    };
-}
-
-/**
- * Dynamically loads the ES module for a Study child route. Ensures all
- * module-declared stylesheets are injected into the document before the
- * module script executes. Throws if no component is registered for the path
- * or if the dynamic import fails.
- *
- * @param {string} path - URL path to load (e.g. '/study/hiragana').
- * @returns {Promise<object>} The imported ES module namespace.
- */
-async function loadStudyChildRouteModule(path) {
-    const component = await resolveStudyChildComponent(path);
-    if (!component) {
-        throw new Error(`No dynamic Study child module found for "${path}"`);
-    }
-    if (component.stylesheets.length) {
-        await Promise.all(component.stylesheets.map(ensurePageStylesheet));
-    }
-    try {
-        return await import(component.scriptUrl);
-    } catch (error) {
-        const errorMessage =
-            error instanceof Error ? error.message : String(error);
-        throw new Error(
-            `Failed to load Study child module "${path}" from "${component.scriptUrl}": ${errorMessage}`,
-        );
-    }
-}
-
 const CORE_COMPONENT_UUID = "b4d49c4a-61d0-5db2-84fd-f89b80fd6398";
-const STUDY_COMPONENT_UUID = "338b9237-a2c8-5bcf-9437-bccc9abd9a27";
 
 function componentPage(
     labelKey,
@@ -390,30 +233,6 @@ const STATIC_ROUTES = [
         ],
         load: () => import("../app/error/index.js"),
     },
-    {
-        id: "gateway.study",
-        ownerUuid: STUDY_COMPONENT_UUID,
-        componentPage: componentPage(
-            "gateway.study.page_title",
-            "gateway.study.page_subtitle",
-        ),
-        pattern: /^\/study(?:\/welcome|\/settings)?$/,
-        base: "/study",
-        stylesheets: ROUTE_STYLE_BUNDLES.study,
-        load: () => import("/static/gateways/study/study.js"),
-    },
-    {
-        id: "gateway.study.child",
-        ownerUuid: STUDY_COMPONENT_UUID,
-        componentPage: componentPage(
-            "gateway.study.page_title",
-            "gateway.study.page_subtitle",
-        ),
-        pattern: STUDY_CHILD_ROUTE_PATTERN,
-        base: "/study",
-        stylesheets: ROUTE_STYLE_BUNDLES.study,
-        load: (path) => loadStudyChildRouteModule(path),
-    },
 ];
 
 installComponentPageBroker({
@@ -445,7 +264,9 @@ async function loadAllRoutes() {
     const loadGeneration = _routeCacheGeneration;
     const loadPromise = (async () => {
         const dynamicRoutes = await loadSpaRoutes();
-        const routes = [...STATIC_ROUTES, ...dynamicRoutes];
+        const primaryRoutes = STATIC_ROUTES.filter((route) => !route.fallback);
+        const fallbackRoutes = STATIC_ROUTES.filter((route) => route.fallback);
+        const routes = [...primaryRoutes, ...dynamicRoutes, ...fallbackRoutes];
         if (loadGeneration === _routeCacheGeneration) {
             _allRoutes = routes;
         }
@@ -470,11 +291,14 @@ function findRoute(path) {
 
 async function resolveRoute(path) {
     const staticRoute = findMatchingRoute(STATIC_ROUTES, path);
-    if (staticRoute) {
+    if (staticRoute && !staticRoute.fallback) {
         return staticRoute;
     }
-    const allRoutes = await loadAllRoutes();
-    return findMatchingRoute(allRoutes, path);
+    return findMatchingRoute(await loadAllRoutes(), path);
+}
+
+async function canNavigateToRoute(route, path) {
+    return !route.canNavigate || (await route.canNavigate(path));
 }
 
 let _root = null;
@@ -624,15 +448,16 @@ async function loadRoute(path) {
     }
 }
 
-export async function navigateTo(path) {
+export async function navigateTo(path, { state = {} } = {}) {
     const route = await resolveRoute(path);
     if (!route) return false;
-    if (isPotentialStudyChildPath(path)) {
-        const component = await resolveStudyChildComponent(path);
-        if (!component) return false;
-    }
+    if (!(await canNavigateToRoute(route, path))) return false;
     const previousRouterPage = getCurrentRoutePath();
-    history.pushState({ routerPage: path, previousRouterPage }, "", path);
+    history.pushState(
+        { ...state, routerPage: path, previousRouterPage },
+        "",
+        path,
+    );
     return loadRoute(path);
 }
 
@@ -641,18 +466,6 @@ uiCtx.capabilities.contribute(
     "router:invalidateRoutes",
     invalidateSpaRouteCache,
 );
-
-/**
- * Invalidates the in-memory Study child component cache so the next navigation
- * to a Study child route fetches a fresh list from the API. Call this after
- * the user changes their learning-language preferences.
- *
- * @returns {void}
- */
-export function invalidateStudyChildComponentCache() {
-    _studyChildComponentsCache = null;
-    _studyChildComponentsCacheExpiresAt = 0;
-}
 
 /**
  * Invalidates the in-memory dynamic SPA route cache so the next navigation can
@@ -715,10 +528,7 @@ export function initRouter(root) {
         const pathWithHash = `${window.location.pathname}${window.location.hash}`;
         const route = await resolveRoute(path);
         if (!route) return;
-        if (isPotentialStudyChildPath(path)) {
-            const component = await resolveStudyChildComponent(path);
-            if (!component) return;
-        }
+        if (!(await canNavigateToRoute(route, path))) return;
         // If navigating within the same page section (e.g. docs internal
         // pushState) and this wasn't a router-level push, let the page's
         // own popstate handler deal with it (handled by AbortSignal cleanup).

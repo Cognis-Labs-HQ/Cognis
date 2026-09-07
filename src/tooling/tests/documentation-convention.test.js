@@ -82,3 +82,25 @@ test("AI instructions document the complete changelog structure", () => {
         assert.match(instructions, /bookkeeping metadata/);
     }
 });
+
+test("Study language framework translations preserve contract parity", () => {
+    const documents = ["de", "en", "id", "ja"].map((language) =>
+        readFileSync(
+            resolve(ROOT, `src/docs/study-language-framework.${language}.md`),
+            "utf8",
+        ),
+    );
+    const contractShape = (markdown) => ({
+        sections: (markdown.match(/^## /gm) ?? []).length,
+        checklistItems: (markdown.match(/^- /gm) ?? []).length,
+        contractTerms: [
+            ...new Set(
+                [...markdown.matchAll(/`([^`]+)`/g)].map(([, value]) => value),
+            ),
+        ].sort(),
+    });
+    const expected = contractShape(documents[0]);
+    for (const document of documents.slice(1)) {
+        assert.deepEqual(contractShape(document), expected);
+    }
+});

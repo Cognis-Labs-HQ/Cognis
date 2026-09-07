@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="gateway.study.library_layer_empty">Lapisan ini belum memiliki entri.</string>
+  <string name="gateway.study.library_previous">Sebelumnya</string>
+  <string name="gateway.study.library_next">Berikutnya</string>
+  <string name="gateway.study.library_filters">Filter entri perpustakaan</string>
+  <string name="gateway.study.library_filter_empty">Tidak ada entri yang cocok dengan filter terpilih.</string>
+  <string name="gateway.study.library_scope_global">Cakupan: Global</string>
+  <string name="gateway.study.library_scope_class">Cakupan: Kelas {{ class name }}</string>
+  <string name="gateway.study.library_scope_user">Cakupan: Pengguna</string>
+</resources>
