@@ -8,4 +8,5 @@
   <string name="gateway.study.library_scope_global">範囲: グローバル</string>
   <string name="gateway.study.library_scope_class">範囲: クラス {{ class name }}</string>
   <string name="gateway.study.library_scope_user">範囲: ユーザー</string>
+  <string name="gateway.study.library_audio_load_error">音声を読み込めませんでした。</string>
 </resources>

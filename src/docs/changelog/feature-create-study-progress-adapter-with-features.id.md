@@ -22,6 +22,10 @@ Titik masuk peramban Pustaka dipindahkan ke tata letak adaptor wajib `ui/app/ind
 
 ID konten Pustaka Studi kini stabil di seluruh versi paket dan setiap entri menyimpan hash konten kanonik. Impor menyatukan ID lama yang bergantung pada versi dan hash identik yang berulang menjadi satu entri kanonik sambil mempertahankan referensi masuk dan keluar sehingga kartu alfabet atau kosakata tidak berulang.
 
+## Kegagalan audio yang jelas
+
+Audio Pustaka yang gagal kini hanya mengganti pemutarnya dengan pesan terlokalisasi pada permukaan bertema yang sama, bukan melaporkan bahwa seluruh Pustaka gagal. Kontrol mode gelap menggunakan warna aksen dan permukaan tinggi aplikasi.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -36,3 +40,4 @@ ID konten Pustaka Studi kini stabil di seluruh versi paket dan setiap entri meny
 - [9fe9af00](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fe9af0021f9a093ba432fca9761368e8df0e5f6)
 - [51c727ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/51c727eaeb923bd3d4a569ed9e924945f56e286c)
 - [17756b2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/17756b2fb83d82f25bf7c349f63170fc738db995)
+- [86d3162c](https://github.com/Cognis-Labs-HQ/Cognis/commit/86d3162c19544032fa2ccc6d55f80de58f9495fb)

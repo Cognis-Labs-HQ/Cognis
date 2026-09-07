@@ -22,6 +22,10 @@ Der Einstiegspunkt des Bibliotheksbrowsers wurde in die vorgeschriebene Adapters
 
 Inhalts-IDs der Lernbibliothek bleiben jetzt über Paketversionen hinweg stabil, und jeder Eintrag speichert einen kanonischen Inhaltshash. Der Import führt ältere versionsabhängige IDs und wiederholte identische Hashes zu einem kanonischen Eintrag zusammen und erhält eingehende sowie ausgehende Verweise. Dadurch entstehen keine wiederholten Alphabet- oder Wortschatzkarten.
 
+## Klare Audiofehler
+
+Fehlgeschlagenes Bibliotheksaudio ersetzt jetzt nur seinen Player durch eine lokalisierte Meldung auf derselben thematischen Fläche, anstatt einen Fehler der gesamten Bibliothek zu melden. Steuerelemente im dunklen Modus verwenden die Akzent- und hervorgehobenen Flächenfarben der Anwendung.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -36,3 +40,4 @@ Inhalts-IDs der Lernbibliothek bleiben jetzt über Paketversionen hinweg stabil,
 - [9fe9af00](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fe9af0021f9a093ba432fca9761368e8df0e5f6)
 - [51c727ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/51c727eaeb923bd3d4a569ed9e924945f56e286c)
 - [17756b2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/17756b2fb83d82f25bf7c349f63170fc738db995)
+- [86d3162c](https://github.com/Cognis-Labs-HQ/Cognis/commit/86d3162c19544032fa2ccc6d55f80de58f9495fb)

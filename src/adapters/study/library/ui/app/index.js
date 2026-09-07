@@ -184,24 +184,35 @@ function renderAudio(entry, layer) {
     return `<audio class="library-audio" controls preload="none" data-library-audio-entry="${escapeHtml(entry.id)}" data-library-audio-field="${escapeHtml(audioField.id)}" aria-label="${escapeHtml(label)}"></audio>`;
 }
 
-async function loadLibraryAudio(overlay, objectUrls, signal) {
+async function loadLibraryAudio(overlay, objectUrls, signal, errorMessage) {
     await Promise.all(
         Array.from(
             overlay.querySelectorAll(
                 "audio[data-library-audio-entry][data-library-audio-field]",
             ),
             async (audio) => {
-                const objectUrl = await fetchLibraryAudioUrl(
-                    audio.dataset.libraryAudioEntry,
-                    audio.dataset.libraryAudioField,
-                    { signal },
-                );
-                if (!audio.isConnected || signal?.aborted) {
-                    URL.revokeObjectURL(objectUrl);
-                    return;
+                try {
+                    const objectUrl = await fetchLibraryAudioUrl(
+                        audio.dataset.libraryAudioEntry,
+                        audio.dataset.libraryAudioField,
+                        { signal },
+                    );
+                    if (!audio.isConnected || signal?.aborted) {
+                        URL.revokeObjectURL(objectUrl);
+                        return;
+                    }
+                    objectUrls.add(objectUrl);
+                    audio.src = objectUrl;
+                } catch (error) {
+                    if (error?.name === "AbortError" || !audio.isConnected) {
+                        return;
+                    }
+                    const message = document.createElement("p");
+                    message.className = "library-audio library-audio-error";
+                    message.setAttribute("role", "status");
+                    message.textContent = errorMessage;
+                    audio.replaceWith(message);
                 }
-                objectUrls.add(objectUrl);
-                audio.src = objectUrl;
             },
         ),
     );
@@ -487,13 +498,8 @@ async function openEntryPopup(
                     overlay,
                     audioObjectUrls,
                     audioController.signal,
-                ).catch((error) => {
-                    if (error?.name !== "AbortError") {
-                        showToast(i18n.t("gateway.study.library_load_error"), {
-                            type: "error",
-                        });
-                    }
-                });
+                    i18n.t("gateway.study.library_audio_load_error"),
+                );
                 overlay.addEventListener("click", (event) => {
                     const control = event.target.closest(
                         "button[data-library-entry]",

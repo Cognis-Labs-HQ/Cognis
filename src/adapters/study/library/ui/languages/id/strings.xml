@@ -8,4 +8,5 @@
   <string name="gateway.study.library_scope_global">Cakupan: Global</string>
   <string name="gateway.study.library_scope_class">Cakupan: Kelas {{ class name }}</string>
   <string name="gateway.study.library_scope_user">Cakupan: Pengguna</string>
+  <string name="gateway.study.library_audio_load_error">Audio tidak dapat dimuat.</string>
 </resources>

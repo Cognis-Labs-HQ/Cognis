@@ -1,6 +1,10 @@
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import { contentEntryId, contentRecordHash } from "./content-pack.js";
+import {
+    contentEntryId,
+    contentRecordHash,
+    versionedContentEntryId,
+} from "./content-pack.js";
 import type {
     LibraryAsset,
     LibraryContentPackPlan,
@@ -296,15 +300,22 @@ export class LibraryStore {
                 const { canonicalId: id, contentHash } = recordIdentity.get(
                     record.id,
                 )!;
-                await this.removeDuplicateContentEntries(db, id, contentHash, {
-                    schema_id: schema.id,
-                    schema_version: schema.version,
-                    layer: record.layer,
-                    language: schema.language,
-                    label: record.label.trim(),
-                    fields_json: JSON.stringify(fields),
-                    created_by: `content-pack:${manifest.id}`,
-                });
+                await this.removeDuplicateContentEntries(
+                    db,
+                    id,
+                    contentHash,
+                    {
+                        schema_id: schema.id,
+                        schema_version: schema.version,
+                        layer: record.layer,
+                        language: schema.language,
+                        label: record.label.trim(),
+                        fields_json: JSON.stringify(fields),
+                        created_by: `content-pack:${manifest.id}`,
+                    },
+                    manifest,
+                    record.id,
+                );
                 await this.upsert(db, "study_library_entries", ["id"], {
                     id,
                     scope: "global",
@@ -383,27 +394,65 @@ export class LibraryStore {
         canonicalId: string,
         contentHash: string,
         legacyIdentity: Record<string, unknown>,
+        manifest: LibraryContentPackPlan["manifest"],
+        recordId: string,
     ): Promise<void> {
+        const installedVersions = await db.executeCommand({
+            option: "SELECT",
+            table: "study_library_content_packs",
+            columns: ["version"],
+            where: [
+                { column: "publisher", value: manifest.publisher },
+                { column: "pack_id", value: manifest.id },
+            ],
+        });
+        const versionedIds = (installedVersions.rows ?? []).map((row) =>
+            versionedContentEntryId(
+                { ...manifest, version: String(row.version) },
+                recordId,
+            ),
+        );
         const matches = await Promise.all([
             db.executeCommand({
                 option: "SELECT",
                 table: "study_library_entries",
-                columns: ["id"],
+                columns: ["id", "updated_at"],
                 where: [{ column: "content_hash", value: contentHash }],
             }),
             db.executeCommand({
                 option: "SELECT",
                 table: "study_library_entries",
-                columns: ["id"],
+                columns: ["id", "updated_at"],
                 where: Object.entries(legacyIdentity).map(
                     ([column, value]) => ({ column, value }),
                 ),
             }),
+            ...(versionedIds.length > 0
+                ? [
+                      db.executeCommand({
+                          option: "SELECT",
+                          table: "study_library_entries",
+                          columns: ["id", "updated_at"],
+                          where: [
+                              {
+                                  column: "id",
+                                  operator: "IN",
+                                  value: versionedIds,
+                              },
+                          ],
+                      }),
+                  ]
+                : []),
         ]);
         const duplicateIds = new Set(
-            matches.flatMap((result) =>
-                (result.rows ?? []).map((row) => String(row.id)),
-            ),
+            matches
+                .flatMap((result) => result.rows ?? [])
+                .sort(
+                    (left, right) =>
+                        Date.parse(String(right.updated_at ?? "")) -
+                        Date.parse(String(left.updated_at ?? "")),
+                )
+                .map((row) => String(row.id)),
         );
         duplicateIds.delete(canonicalId);
         for (const duplicateId of duplicateIds) {

@@ -8,4 +8,5 @@
   <string name="gateway.study.library_scope_global">Scope: Global</string>
   <string name="gateway.study.library_scope_class">Scope: Class {{ class name }}</string>
   <string name="gateway.study.library_scope_user">Scope: User</string>
+  <string name="gateway.study.library_audio_load_error">Could not load audio.</string>
 </resources>

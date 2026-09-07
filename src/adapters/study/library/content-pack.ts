@@ -97,6 +97,17 @@ export function contentEntryId(
         .digest("hex");
 }
 
+export function versionedContentEntryId(
+    manifest: LibraryContentPackManifest,
+    recordId: string,
+): string {
+    return createHash("sha256")
+        .update(
+            `${manifest.publisher}:${manifest.id}:${manifest.version}:${recordId}`,
+        )
+        .digest("hex");
+}
+
 export function contentRecordHash(
     manifest: LibraryContentPackManifest,
     schema: LibraryContentPackPlan["schema"],

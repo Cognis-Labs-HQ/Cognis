@@ -172,7 +172,15 @@
     border-radius: 999px;
     background: var(--surface);
     color-scheme: light dark;
-    accent-color: var(--accent-2);
+    accent-color: var(--accent);
+}
+
+.library-audio-error {
+    box-sizing: border-box;
+    min-height: 3.375rem;
+    margin: 0;
+    padding: 1rem 1.25rem;
+    color: var(--text-muted);
 }
 
 body[data-theme="light"] .library-audio {
@@ -181,6 +189,7 @@ body[data-theme="light"] .library-audio {
 
 body[data-theme="dark"] .library-audio {
     color-scheme: dark;
+    background: var(--surface-2);
 }
 
 .library-filter-empty {

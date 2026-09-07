@@ -56,6 +56,8 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(source, /<audio class="library-audio" controls/);
     assert.match(source, /fetchLibraryAudioUrl/);
     assert.match(source, /audio\.src = objectUrl/);
+    assert.match(source, /audio\.replaceWith\(message\)/);
+    assert.match(source, /gateway\.study\.library_audio_load_error/);
     assert.match(source, /URL\.revokeObjectURL/);
     assert.match(clientSource, /apiFetch\([\s\S]*\/audio\//);
     assert.match(
@@ -66,6 +68,8 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(stylesheet, /color-scheme: light dark/);
     assert.match(stylesheet, /body\[data-theme="light"\] \.library-audio/);
     assert.match(stylesheet, /body\[data-theme="dark"\] \.library-audio/);
+    assert.match(stylesheet, /background: var\(--surface-2\)/);
+    assert.match(stylesheet, /\.library-audio-error/);
 });
 
 test("Study Library popup uses equal directional navigation controls", () => {
