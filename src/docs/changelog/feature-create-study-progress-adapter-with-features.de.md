@@ -1,6 +1,6 @@
 # Lernfortschrittsereignisse
 
-**Feature-Zweig:** work
+**Feature-Zweig:** feature-create-study-progress-adapter-with-features
 
 ## Unveränderliche Fortschrittsmessung
 

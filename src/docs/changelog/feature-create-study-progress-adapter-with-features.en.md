@@ -1,6 +1,6 @@
 # Learning Progress Events
 
-**Feature Branch:** work
+**Feature Branch:** feature-create-study-progress-adapter-with-features
 
 ## Immutable progress tracking
 

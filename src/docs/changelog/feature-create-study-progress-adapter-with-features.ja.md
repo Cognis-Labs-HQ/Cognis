@@ -1,6 +1,6 @@
 # 学習進捗イベント
 
-**機能ブランチ:** work
+**機能ブランチ:** feature-create-study-progress-adapter-with-features
 
 ## 不変の進捗追跡
 

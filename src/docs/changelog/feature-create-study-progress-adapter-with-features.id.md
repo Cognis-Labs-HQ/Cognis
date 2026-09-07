@@ -1,6 +1,6 @@
 # Peristiwa Kemajuan Belajar
 
-**Cabang Fitur:** work
+**Cabang Fitur:** feature-create-study-progress-adapter-with-features
 
 ## Pelacakan kemajuan tetap
 
