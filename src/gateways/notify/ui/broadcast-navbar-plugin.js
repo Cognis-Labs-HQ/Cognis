@@ -5,7 +5,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { showToast } from "/static/reuse/toast.js";
-import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
+import { ensurePersistentStylesheet } from "/static/reuse/page-styles.js";
 import {
     isTrustedHttpUrl,
     loadTrustedDomains,
@@ -262,7 +262,7 @@ async function startPolling(i18n) {
     if (pollTimer) clearTimeout(pollTimer);
     stopPollingForAuthFailure = false;
     try {
-        await ensurePageStylesheet(CSS_HREF);
+        await ensurePersistentStylesheet(CSS_HREF);
         const i18n = await createI18n({
             componentStringBaseUrls: ["/static/gateways/notify/languages"],
         });
