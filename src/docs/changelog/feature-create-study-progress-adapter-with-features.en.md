@@ -78,6 +78,10 @@ Cards with children now show a right-click hint on hover and expand variants onl
 
 Expanded child cards now have a green border and a green arrow showing their direction from the parent. Parent-to-child padding uses the same spacing token as the normal card grid.
 
+## Three-position variant contract
+
+Variant relationships now explicitly declare `variant: true`; directions are limited to left, top, and right. When omitted, the Library selects the first unoccupied position. Direction arrows ship as distinct light- and dark-theme assets, and the obsolete in-tree Japanese adapter version entry was removed.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -107,3 +111,4 @@ Expanded child cards now have a green border and a green arrow showing their dir
 - [44617c98](https://github.com/Cognis-Labs-HQ/Cognis/commit/44617c980ed07d896925f99bd27dd0ca57d2d831)
 - [95b3065d](https://github.com/Cognis-Labs-HQ/Cognis/commit/95b3065d2b20baf702b1b7ffb669cdd5351caf70)
 - [f1ad82df](https://github.com/Cognis-Labs-HQ/Cognis/commit/f1ad82df827fe30850bf4516aa790304a985d925)
+- [893aece3](https://github.com/Cognis-Labs-HQ/Cognis/commit/893aece39d60e4bd4c84f7a809c504811f630d13)

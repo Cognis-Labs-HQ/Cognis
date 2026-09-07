@@ -146,10 +146,13 @@ body[data-theme="dark"] .library-entry-selection:checked {
     position: absolute;
     width: var(--library-card-gap);
     height: var(--library-card-gap);
-    background: var(--color-success-outline-text, var(--color-success-text));
+    background: url("./assets/variant-arrow-light.svg") center / contain
+        no-repeat;
     content: "";
-    -webkit-mask: url("./assets/variant-arrow.svg") center / contain no-repeat;
-    mask: url("./assets/variant-arrow.svg") center / contain no-repeat;
+}
+
+body[data-theme="dark"] .library-entry-variant-shell::before {
+    background-image: url("./assets/variant-arrow-dark.svg");
 }
 
 .library-entry-variant {
@@ -231,18 +234,6 @@ body[data-theme="dark"] .library-entry-selection:checked {
     bottom: calc(-1 * var(--library-card-gap));
     left: calc(50% - var(--library-card-half-gap));
     transform: rotate(-90deg);
-}
-
-.library-entry-variant-down {
-    top: calc(100% + var(--library-card-gap));
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.library-entry-variant-down::before {
-    top: calc(-1 * var(--library-card-gap));
-    left: calc(50% - var(--library-card-half-gap));
-    transform: rotate(90deg);
 }
 
 .library-entry-card[hidden] {

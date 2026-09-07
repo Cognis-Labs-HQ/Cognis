@@ -536,7 +536,7 @@ function variantPlacement(entry, schema) {
             ?.relationships?.find(
                 (candidate) => candidate.id === reference.relation,
             );
-        if (relationship?.variantDirection) {
+        if (relationship?.variant === true) {
             return {
                 parentId: reference.entryId,
                 direction: relationship.variantDirection,
@@ -544,6 +544,32 @@ function variantPlacement(entry, schema) {
         }
     }
     return null;
+}
+
+function assignVariantPlacements(entries, schema) {
+    const placements = new Map();
+    const occupiedByParent = new Map();
+    const requests = entries.flatMap((entry) => {
+        const placement = variantPlacement(entry, schema);
+        return placement ? [{ entry, ...placement }] : [];
+    });
+    for (const request of requests.filter(({ direction }) => direction)) {
+        const occupied = occupiedByParent.get(request.parentId) ?? new Set();
+        occupied.add(request.direction);
+        occupiedByParent.set(request.parentId, occupied);
+        placements.set(request.entry.id, request);
+    }
+    for (const request of requests.filter(({ direction }) => !direction)) {
+        const occupied = occupiedByParent.get(request.parentId) ?? new Set();
+        const direction = ["left", "up", "right"].find(
+            (candidate) => !occupied.has(candidate),
+        );
+        if (!direction) continue;
+        occupied.add(direction);
+        occupiedByParent.set(request.parentId, occupied);
+        placements.set(request.entry.id, { ...request, direction });
+    }
+    return placements;
 }
 
 function canDeleteEntry(entry) {
@@ -571,7 +597,7 @@ function renderCardContents(entry, layer, i18n) {
     return `${heading}<span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span>`;
 }
 
-function renderEntryCard(entry, layer, schema, entries, i18n) {
+function renderEntryCard(entry, layer, entries, placements, i18n) {
     const filterValues = Object.fromEntries(
         metadataFields(layer).map((field) => [
             field.id,
@@ -581,7 +607,7 @@ function renderEntryCard(entry, layer, schema, entries, i18n) {
         ]),
     );
     const variants = entries.flatMap((candidate) => {
-        const placement = variantPlacement(candidate, schema);
+        const placement = placements.get(candidate.id);
         return placement?.parentId === entry.id
             ? [{ entry: candidate, direction: placement.direction }]
             : [];
@@ -598,14 +624,13 @@ function renderEntryCard(entry, layer, schema, entries, i18n) {
 }
 
 function renderLayerCards(layer, entries, schema, i18n) {
-    const baseEntries = entries.filter(
-        (entry) => !variantPlacement(entry, schema),
-    );
+    const placements = assignVariantPlacements(entries, schema);
+    const baseEntries = entries.filter((entry) => !placements.has(entry.id));
     if (!baseEntries.length) return "";
     if (!layer.grid) {
         return baseEntries
             .map((entry) =>
-                renderEntryCard(entry, layer, schema, entries, i18n),
+                renderEntryCard(entry, layer, entries, placements, i18n),
             )
             .join("");
     }
@@ -623,13 +648,15 @@ function renderLayerCards(layer, entries, schema, i18n) {
             }
             const entry = entriesBySourceId.get(itemId);
             return entry
-                ? renderEntryCard(entry, layer, schema, entries, i18n)
+                ? renderEntryCard(entry, layer, entries, placements, i18n)
                 : "";
         })
         .join("");
     const additionalCards = baseEntries
         .filter((entry) => !positionedIds.has(entry.sourceRecordId))
-        .map((entry) => renderEntryCard(entry, layer, schema, entries, i18n))
+        .map((entry) =>
+            renderEntryCard(entry, layer, entries, placements, i18n),
+        )
         .join("");
     return positionedCards + additionalCards;
 }

@@ -118,10 +118,17 @@ function validateRelationship(
     if (!["restrict", "detach", "cascade"].includes(relationship.onDelete))
         throw new Error("invalid_deletion_behavior");
     if (
+        relationship.variant !== undefined &&
+        typeof relationship.variant !== "boolean"
+    )
+        throw new Error("invalid_variant_relationship");
+    if (
         relationship.variantDirection !== undefined &&
-        !["left", "right", "up", "down"].includes(relationship.variantDirection)
+        !["left", "right", "up"].includes(relationship.variantDirection)
     )
         throw new Error("invalid_variant_direction");
+    if (relationship.variantDirection && relationship.variant !== true)
+        throw new Error("variant_direction_requires_relationship");
     ids.add(relationship.id);
 }
 

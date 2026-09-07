@@ -78,6 +78,10 @@ Karten mit untergeordneten Elementen zeigen beim Darüberfahren einen Hinweis zu
 
 Geöffnete untergeordnete Karten haben jetzt einen grünen Rahmen und einen grünen Pfeil, der ihre Richtung vom übergeordneten Element zeigt. Der Abstand zwischen Eltern- und Kindkarte verwendet denselben Wert wie das normale Kartenraster.
 
+## Variantenvertrag mit drei Positionen
+
+Variantenbeziehungen deklarieren jetzt ausdrücklich `variant: true`; Richtungen sind auf links, oben und rechts beschränkt. Ohne Angabe wählt die Bibliothek die erste freie Position. Richtungspfeile werden als getrennte Assets für helles und dunkles Design geliefert; der veraltete Versionseintrag des repositoryinternen Japanisch-Adapters wurde entfernt.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -107,3 +111,4 @@ Geöffnete untergeordnete Karten haben jetzt einen grünen Rahmen und einen grü
 - [44617c98](https://github.com/Cognis-Labs-HQ/Cognis/commit/44617c980ed07d896925f99bd27dd0ca57d2d831)
 - [95b3065d](https://github.com/Cognis-Labs-HQ/Cognis/commit/95b3065d2b20baf702b1b7ffb669cdd5351caf70)
 - [f1ad82df](https://github.com/Cognis-Labs-HQ/Cognis/commit/f1ad82df827fe30850bf4516aa790304a985d925)
+- [893aece3](https://github.com/Cognis-Labs-HQ/Cognis/commit/893aece39d60e4bd4c84f7a809c504811f630d13)

@@ -21,8 +21,18 @@ const adapterSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/index.ts"),
     "utf8",
 );
-const variantArrow = readFileSync(
-    resolve(ROOT, "src/adapters/study/library/ui/assets/variant-arrow.svg"),
+const variantArrowLight = readFileSync(
+    resolve(
+        ROOT,
+        "src/adapters/study/library/ui/assets/variant-arrow-light.svg",
+    ),
+    "utf8",
+);
+const variantArrowDark = readFileSync(
+    resolve(
+        ROOT,
+        "src/adapters/study/library/ui/assets/variant-arrow-dark.svg",
+    ),
     "utf8",
 );
 
@@ -89,12 +99,13 @@ test("Study Library positions pronunciations by semantic role", () => {
 
 test("Study Library unfolds structured character variants", () => {
     assert.match(source, /function variantPlacement/);
-    assert.match(source, /relationship\?\.variantDirection/);
+    assert.match(source, /relationship\?\.variant === true/);
     assert.match(source, /library-entry-variant-\$\{direction\}/);
     assert.match(stylesheet, /\.library-entry-variant-left/);
     assert.match(stylesheet, /\.library-entry-variant-right/);
     assert.match(stylesheet, /\.library-entry-variant-up/);
-    assert.match(stylesheet, /\.library-entry-variant-down/);
+    assert.match(source, /function assignVariantPlacements/);
+    assert.match(source, /\["left", "up", "right"\]/);
     assert.match(source, /renderCardContents\(variant, layer, i18n\)/);
     assert.match(stylesheet, /opacity: 0\.95/);
     assert.match(stylesheet, /box-shadow:/);
@@ -109,10 +120,12 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(stylesheet, /\.library-entry-variant-hint/);
     assert.match(stylesheet, /--library-card-gap: 0\.75rem/);
     assert.match(stylesheet, /\.library-entry-variant-shell::before/);
-    assert.match(stylesheet, /variant-arrow\.svg/);
+    assert.match(stylesheet, /variant-arrow-light\.svg/);
+    assert.match(stylesheet, /variant-arrow-dark\.svg/);
     assert.match(stylesheet, /\.library-entry-variant \{/);
     assert.match(stylesheet, /var\(--color-success-outline-text/);
-    assert.match(variantArrow, /<path/);
+    assert.match(variantArrowLight, /fill="#059669"/);
+    assert.match(variantArrowDark, /fill="#34d399"/);
     assert.match(
         stylesheet,
         /\.library-entry-card-shell:is\(:hover, :focus-within\)/,

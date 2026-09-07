@@ -78,6 +78,10 @@ Kartu dengan anak kini menampilkan petunjuk klik kanan saat diarahkan dan hanya 
 
 Kartu anak yang dibuka kini memiliki garis tepi hijau dan panah hijau yang menunjukkan arahnya dari induk. Jarak induk-ke-anak memakai token jarak yang sama dengan kisi kartu biasa.
 
+## Kontrak varian tiga posisi
+
+Relasi varian kini mendeklarasikan `variant: true` secara eksplisit; arah dibatasi ke kiri, atas, dan kanan. Jika dihilangkan, Pustaka memilih posisi pertama yang belum ditempati. Panah arah disediakan sebagai aset tema terang dan gelap yang terpisah, dan entri versi adaptor bahasa Jepang lama di repositori telah dihapus.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -107,3 +111,4 @@ Kartu anak yang dibuka kini memiliki garis tepi hijau dan panah hijau yang menun
 - [44617c98](https://github.com/Cognis-Labs-HQ/Cognis/commit/44617c980ed07d896925f99bd27dd0ca57d2d831)
 - [95b3065d](https://github.com/Cognis-Labs-HQ/Cognis/commit/95b3065d2b20baf702b1b7ffb669cdd5351caf70)
 - [f1ad82df](https://github.com/Cognis-Labs-HQ/Cognis/commit/f1ad82df827fe30850bf4516aa790304a985d925)
+- [893aece3](https://github.com/Cognis-Labs-HQ/Cognis/commit/893aece39d60e4bd4c84f7a809c504811f630d13)

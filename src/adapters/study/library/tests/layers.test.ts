@@ -348,6 +348,7 @@ test("writing layers declare directional variant relationships", () => {
                         targetLayer: "characters",
                         metadata: { labels: { en: "Variant Of" } },
                         onDelete: "detach",
+                        variant: true,
                         variantDirection: "right",
                     },
                 ],
@@ -361,13 +362,26 @@ test("writing layers declare directional variant relationships", () => {
         "right",
     );
     (
-        schema.layers[0].relationships![0] as {
-            variantDirection: string;
-        }
-    ).variantDirection = "diagonal";
+        schema.layers[0].relationships![0] as { variantDirection: string }
+    ).variantDirection = "down";
     assert.throws(
         () => validateLibrarySchema(schema),
         /invalid_variant_direction/,
+    );
+    const automatic = {
+        ...schema.layers[0].relationships![0],
+        variantDirection: undefined,
+    };
+    assert.doesNotThrow(() =>
+        validateLibrarySchema({
+            ...schema,
+            layers: [
+                {
+                    ...schema.layers[0],
+                    relationships: [automatic],
+                },
+            ],
+        }),
     );
 });
 

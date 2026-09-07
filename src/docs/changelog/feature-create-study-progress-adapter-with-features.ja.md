@@ -78,6 +78,10 @@
 
 展開した子カードに緑色の枠線と、親からの方向を示す緑色の矢印を追加しました。親子間の余白には通常のカードグリッドと同じ間隔値を使用します。
 
+## 3 方向の派生配置契約
+
+バリエーション関係は `variant: true` を明示し、方向を左、上、右だけに制限します。省略時はライブラリーが最初の未使用位置を選びます。方向矢印はライト・ダーク別のアセットとして提供し、不要なリポジトリ内日本語アダプターのバージョン項目を削除しました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -107,3 +111,4 @@
 - [44617c98](https://github.com/Cognis-Labs-HQ/Cognis/commit/44617c980ed07d896925f99bd27dd0ca57d2d831)
 - [95b3065d](https://github.com/Cognis-Labs-HQ/Cognis/commit/95b3065d2b20baf702b1b7ffb669cdd5351caf70)
 - [f1ad82df](https://github.com/Cognis-Labs-HQ/Cognis/commit/f1ad82df827fe30850bf4516aa790304a985d925)
+- [893aece3](https://github.com/Cognis-Labs-HQ/Cognis/commit/893aece39d60e4bd4c84f7a809c504811f630d13)
