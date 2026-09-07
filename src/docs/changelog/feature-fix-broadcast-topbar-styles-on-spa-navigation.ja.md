@@ -1,6 +1,6 @@
 # 永続的な一斉通知バー
 
-**機能ブランチ:** work
+**機能ブランチ:** feature-fix-broadcast-topbar-styles-on-spa-navigation
 
 ## 画面移動後もスタイルを維持
 
