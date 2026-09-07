@@ -20,7 +20,7 @@ Der Einstiegspunkt des Bibliotheksbrowsers wurde in die vorgeschriebene Adapters
 
 ## Wiederholbare Inhaltsimporte
 
-Inhaltspakete der Lernbibliothek aktualisieren vorhandene Datensätze, Anlagen und Verweise, bevor fehlende Zeilen erstellt werden. Gleichzeitige Einfügungen verwenden eine von der Einschränkungsstruktur unabhängige Konfliktbehandlung mit anschließender Aktualisierung, sodass doppelte Schlüssel kein bestimmtes Datenbanklayout voraussetzen.
+Die PostgreSQL-Tabellenbereitstellung repariert jetzt eindeutige Indizes für deklarierte Primär- und eindeutige Schlüssel bestehender Tabellen. Lernbibliotheksimporte verwenden diese garantierten Konfliktziele für atomare Upserts von Datensätzen, Anlagen und Verweisen und verhindern doppelte Schlüssel bei wiederholter oder gleichzeitiger Modulaktivierung.
 
 ## Commits
 
@@ -32,3 +32,4 @@ Inhaltspakete der Lernbibliothek aktualisieren vorhandene Datensätze, Anlagen u
 - [68bd7478](https://github.com/Cognis-Labs-HQ/Cognis/commit/68bd7478dbf6343109087bd83a9fba643452a838)
 - [eeabc5e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/eeabc5e1231e3de246a14ee4ff49582a7169768c)
 - [2cc37134](https://github.com/Cognis-Labs-HQ/Cognis/commit/2cc371343c54afed45e545d523a751cad101be3c)
+- [ad01aa56](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad01aa561321b7db5982b0fbfe7f1b28ed11347b)

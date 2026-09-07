@@ -20,7 +20,7 @@ Titik masuk peramban Pustaka dipindahkan ke tata letak adaptor wajib `ui/app/ind
 
 ## Impor konten yang dapat diulang
 
-Paket konten Pustaka Studi kini memperbarui catatan, aset, dan referensi yang ada sebelum membuat baris yang belum ada. Penyisipan serentak menggunakan penanganan konflik yang tidak bergantung pada susunan batasan, lalu menjalankan pembaruan sehingga kunci duplikat tidak memerlukan susunan basis data tertentu.
+Penyediaan tabel PostgreSQL kini memperbaiki sendiri indeks unik untuk kunci utama dan unik yang dideklarasikan pada tabel yang sudah ada. Impor Pustaka Studi menggunakan target konflik yang terjamin tersebut untuk upsert atomik catatan, aset, dan referensi sehingga mencegah kunci duplikat selama aktivasi modul berulang atau serentak.
 
 ## Commit
 
@@ -32,3 +32,4 @@ Paket konten Pustaka Studi kini memperbarui catatan, aset, dan referensi yang ad
 - [68bd7478](https://github.com/Cognis-Labs-HQ/Cognis/commit/68bd7478dbf6343109087bd83a9fba643452a838)
 - [eeabc5e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/eeabc5e1231e3de246a14ee4ff49582a7169768c)
 - [2cc37134](https://github.com/Cognis-Labs-HQ/Cognis/commit/2cc371343c54afed45e545d523a751cad101be3c)
+- [ad01aa56](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad01aa561321b7db5982b0fbfe7f1b28ed11347b)

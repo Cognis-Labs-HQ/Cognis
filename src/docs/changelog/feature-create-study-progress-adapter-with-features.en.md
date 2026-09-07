@@ -20,7 +20,7 @@ Moved the Library browser entry point to the required adapter `ui/app/index.js` 
 
 ## Repeatable content imports
 
-Study Library content packs now update existing records, assets, and references before creating missing rows. Concurrent inserts use constraint-independent conflict handling followed by an update, preventing duplicate keys without requiring a particular database constraint layout.
+PostgreSQL table provisioning now self-heals unique indexes for declared primary and unique keys on existing tables. Study Library imports use those guaranteed conflict targets for atomic record, asset, and reference upserts, preventing duplicate keys during repeated or concurrent module activation.
 
 ## Commits
 
@@ -32,3 +32,4 @@ Study Library content packs now update existing records, assets, and references 
 - [68bd7478](https://github.com/Cognis-Labs-HQ/Cognis/commit/68bd7478dbf6343109087bd83a9fba643452a838)
 - [eeabc5e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/eeabc5e1231e3de246a14ee4ff49582a7169768c)
 - [2cc37134](https://github.com/Cognis-Labs-HQ/Cognis/commit/2cc371343c54afed45e545d523a751cad101be3c)
+- [ad01aa56](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad01aa561321b7db5982b0fbfe7f1b28ed11347b)

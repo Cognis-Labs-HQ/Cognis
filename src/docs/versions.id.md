@@ -43,7 +43,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.15` |
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.28` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.18` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.17` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.18` |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.23` |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.19` |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.16` |
@@ -56,7 +56,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.11` |
-| Library (Study)       | `src/adapters/study/library/`       | `2.6.5`  |
+| Library (Study)       | `src/adapters/study/library/`       | `2.6.6`  |
 | Kemajuan (Study)      | `src/adapters/study/progress/`      | `1.0.0`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
