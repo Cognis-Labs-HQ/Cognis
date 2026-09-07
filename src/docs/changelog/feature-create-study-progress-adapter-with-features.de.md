@@ -42,6 +42,10 @@ Gerichtete Varianten verwenden jetzt die vollständige Darstellung einer Bibliot
 
 Karten und Detailtitel von Schreibeinheiten zeigen die Zeichenaussprache nun neben dem Zeichen; Aussprachen von Wörtern und Sätzen bleiben unter dem Text. Bedeutungstragende Einzelzeichenwörter können modulseitig durch eine lexikalische Beziehung zu genau einem Zeichen deklariert werden, und Zeichendetails zeigen die entsprechenden eingehenden Wörter.
 
+## Gezielte Links und Aktionen
+
+Die Auswahl per langem Drücken öffnet jetzt die vorhandene schwebende Aktionsleiste mit Alle auswählen, Löschen und Schließen; normale Kartenklicks beenden den Auswahlmodus. Häkchen sind zentriert, dunkle Audio-Steuerelemente unterdrücken den nativen Orangeton, und Beziehungsklicks aktivieren und markieren die Zielkategorie. Definitionstext trägt seinen Link jetzt direkt, während Bestandteilsfelder auf deklarierte Resolver-Beziehungen beschränkt sind, um doppelte und unpassende Katakana-Links zu entfernen.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -62,3 +66,4 @@ Karten und Detailtitel von Schreibeinheiten zeigen die Zeichenaussprache nun neb
 - [1190320b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1190320be506d0c74feefa441a4188d05d3892ae)
 - [5bb5607e](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bb5607ec3cd60ff7ff2d1329dd66cb4cfc907a8)
 - [83297da5](https://github.com/Cognis-Labs-HQ/Cognis/commit/83297da5d62dcbaa8166af88531432b8468d721e)
+- [164297bd](https://github.com/Cognis-Labs-HQ/Cognis/commit/164297bda76fa834f5a0e988260c7b2580ef4b87)

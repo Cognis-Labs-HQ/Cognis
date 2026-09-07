@@ -45,7 +45,11 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /class="library-detail-summary"/);
     assert.match(source, /class="library-component-box btn-neutral"/);
     assert.match(source, /layer\?\.semanticRole === "particle"/);
-    assert.match(source, /const components = references\.filter/);
+    assert.match(source, /const components = componentReferences/);
+    assert.match(source, /function componentReferences/);
+    assert.match(source, /relationship\.resolverRole/);
+    assert.match(source, /class="library-definition-link btn-neutral"/);
+    assert.match(stylesheet, /\.library-definition-link/);
 });
 
 test("Study Library renders metadata and scope indicators", () => {
@@ -114,7 +118,7 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(clientSource, /method: "DELETE"/);
     assert.match(stylesheet, /\.library-entry-selection/);
     assert.match(source, /LONG_PRESS_DURATION_MS/);
-    assert.match(source, /classList\.add\("library-selection-mode"\)/);
+    assert.match(source, /setSelectionMode\(root, true, i18n\)/);
     assert.match(
         stylesheet,
         /\.library-selection-mode \.library-entry-selection/,
@@ -123,6 +127,22 @@ test("Study Library owners can select and delete multiple entries", () => {
         stylesheet,
         /body\[data-theme="dark"\] \.library-entry-selection/,
     );
+    assert.match(source, /floatingMenu: entries\.some\(canDeleteEntry\)/);
+    assert.match(source, /data-library-select-all/);
+    assert.match(source, /data-library-selection-close/);
+    assert.match(source, /function setSelectionMode/);
+    assert.match(source, /function selectAllVisibleEntries/);
+    assert.match(stylesheet, /place-content: center/);
+});
+
+test("Study Library deep links activate and highlight their entry", () => {
+    assert.match(source, /highlightSearchTarget/);
+    assert.match(source, /function activateLibraryLayer/);
+    assert.match(source, /function focusLibraryEntry/);
+    assert.match(source, /data-search-id="library-entry-/);
+    assert.match(source, /focusLibraryEntry\(root, relatedEntry, schemas\)/);
+    assert.match(source, /library-entry-variant-revealed/);
+    assert.match(stylesheet, /\.library-entry-variant-revealed/);
 });
 
 test("Study Library popup uses equal directional navigation controls", () => {

@@ -42,6 +42,10 @@ Varian terarah kini memakai tampilan kartu Perpustakaan lengkap dengan sedikit t
 
 Kartu unit tulisan dan judul detail kini menempatkan pelafalan karakter di samping karakternya, sedangkan pelafalan kata dan kalimat tetap di bawah teks. Kata satu karakter yang bermakna dapat dideklarasikan di sisi modul melalui relasi leksikal satu karakter, dan detail karakter menampilkan kata masuk yang sesuai.
 
+## Tautan dan tindakan terarah
+
+Pemilihan dengan tekan lama kini membuka bilah tindakan mengambang yang ada dengan Pilih Semua, Hapus, dan tutup; klik kartu biasa keluar dari mode pemilihan. Tanda centang dipusatkan, kontrol audio gelap menekan warna jingga bawaan, dan klik relasi mengaktifkan serta menyorot kategori tujuan. Teks definisi kini memuat tautannya secara langsung, sedangkan kotak unsur dibatasi pada relasi resolver yang dideklarasikan untuk menghapus tautan Katakana yang ganda dan tidak terkait.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -62,3 +66,4 @@ Kartu unit tulisan dan judul detail kini menempatkan pelafalan karakter di sampi
 - [1190320b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1190320be506d0c74feefa441a4188d05d3892ae)
 - [5bb5607e](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bb5607ec3cd60ff7ff2d1329dd66cb4cfc907a8)
 - [83297da5](https://github.com/Cognis-Labs-HQ/Cognis/commit/83297da5d62dcbaa8166af88531432b8468d721e)
+- [164297bd](https://github.com/Cognis-Labs-HQ/Cognis/commit/164297bda76fa834f5a0e988260c7b2580ef4b87)

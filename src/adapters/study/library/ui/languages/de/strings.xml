@@ -10,7 +10,6 @@
   <string name="gateway.study.library_scope_user">Bereich: Benutzer</string>
   <string name="gateway.study.library_audio_load_error">Audio konnte nicht geladen werden.</string>
   <string name="gateway.study.library_select_entry">{{ entry }} auswählen</string>
-  <string name="gateway.study.library_delete_selected">Auswahl löschen ({{ count }})</string>
   <string name="gateway.study.library_delete_title">Bibliotheksinhalte löschen</string>
   <string name="gateway.study.library_delete_warning">Die ausgewählten Inhalte und ihre Beziehungen werden dauerhaft gelöscht. Modulinhalte werden beim nächsten Aktivieren des Moduls wiederhergestellt, sofern dies unten nicht verhindert wird.</string>
   <string name="gateway.study.library_delete_permanent">Verhindern, dass Module genau diese Inhalte erneut wiederherstellen</string>

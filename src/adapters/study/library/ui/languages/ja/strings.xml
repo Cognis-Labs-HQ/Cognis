@@ -10,7 +10,6 @@
   <string name="gateway.study.library_scope_user">範囲: ユーザー</string>
   <string name="gateway.study.library_audio_load_error">音声を読み込めませんでした。</string>
   <string name="gateway.study.library_select_entry">{{ entry }}を選択</string>
-  <string name="gateway.study.library_delete_selected">選択項目を削除 ({{ count }})</string>
   <string name="gateway.study.library_delete_title">ライブラリ内容を削除</string>
   <string name="gateway.study.library_delete_warning">選択した内容とその関係は完全に削除されます。下の復元防止を選ばない場合、モジュールを次回有効化したときにモジュール内容が復元されます。</string>
   <string name="gateway.study.library_delete_permanent">モジュールがこの同一内容を再び復元しないようにする</string>

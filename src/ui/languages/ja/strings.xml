@@ -42,6 +42,8 @@
   <string name="ui.reuse.true">真</string>
   <string name="ui.reuse.false">偽</string>
   <string name="ui.reuse.actions">操作</string>
+  <string name="ui.reuse.select_all">すべて選択</string>
+  <string name="ui.reuse.delete">削除</string>
   <string name="ui.reuse.id">ID</string>
   <string name="ui.reuse.version">バージョン</string>
   <string name="ui.reuse.class">クラス</string>

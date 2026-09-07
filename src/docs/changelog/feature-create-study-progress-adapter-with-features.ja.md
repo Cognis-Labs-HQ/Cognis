@@ -42,6 +42,10 @@
 
 書記単位のカードと詳細タイトルでは文字の発音を文字の横に表示し、単語と文の発音はテキストの下に残します。意味を持つ 1 文字の単語は、モジュール側で 1 文字への語彙関係として宣言でき、文字の詳細には対応する入力側の単語が表示されます。
 
+## 的確なリンクと操作
+
+長押し選択で既存の浮動アクションバーを開き、すべて選択、削除、閉じるを表示します。通常のカードクリックでは選択モードを終了します。チェック印を中央揃えにし、ダークテーマの音声操作部からネイティブのオレンジ色を除去し、関係クリックでは移動先カテゴリを有効化して強調表示します。定義テキスト自体にディープリンクを統合し、構成要素ボックスを宣言済みリゾルバー関係のみに限定して、重複した無関係なカタカナリンクを除去しました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -62,3 +66,4 @@
 - [1190320b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1190320be506d0c74feefa441a4188d05d3892ae)
 - [5bb5607e](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bb5607ec3cd60ff7ff2d1329dd66cb4cfc907a8)
 - [83297da5](https://github.com/Cognis-Labs-HQ/Cognis/commit/83297da5d62dcbaa8166af88531432b8468d721e)
+- [164297bd](https://github.com/Cognis-Labs-HQ/Cognis/commit/164297bda76fa834f5a0e988260c7b2580ef4b87)

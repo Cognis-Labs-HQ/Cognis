@@ -6,6 +6,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { showToast } from "/static/reuse/toast.js";
 import { groupByToMap } from "/static/reuse/group-by.js";
+import { highlightSearchTarget } from "/static/reuse/search-util/indexing.js";
 import {
     bindStudySubNavigation,
     loadStudySubNavigationModel,
@@ -31,6 +32,10 @@ const LONG_PRESS_MOVE_TOLERANCE_PX = 8;
 
 function entryAttributes(entry) {
     return `data-library-schema="${escapeHtml(entry.schemaId)}" data-library-layer="${escapeHtml(entry.layer)}" data-library-entry="${escapeHtml(entry.id)}"`;
+}
+
+function entrySearchAttribute(entry) {
+    return `data-search-id="library-entry-${escapeHtml(entry.id)}"`;
 }
 
 function localizedLabel(metadata, contentLanguage) {
@@ -184,6 +189,25 @@ function renderComponentBoxes(entries) {
         .join("")}</div>`;
 }
 
+function componentReferences(detail, schemas) {
+    const sourceLayer = layerForEntry(schemas, detail.entry);
+    const componentRelations = new Set(
+        (sourceLayer?.relationships ?? [])
+            .filter((relationship) => relationship.resolverRole)
+            .map((relationship) => relationship.id),
+    );
+    const componentIds = new Set(
+        (detail.entry.references ?? [])
+            .filter((reference) => componentRelations.has(reference.relation))
+            .map((reference) => reference.entryId),
+    );
+    return (detail.references ?? []).filter(
+        (candidate) =>
+            componentIds.has(candidate.id) &&
+            !isMeaningLayer(layerForEntry(schemas, candidate)),
+    );
+}
+
 function renderPronunciation(entry, layer) {
     const values = pronunciationValues(entry);
     if (!values.length || isWritingUnitLayer(layer)) return "";
@@ -247,9 +271,7 @@ function coreSections(detail, schemas, i18n, languageCode) {
     const definitions = references.filter((candidate) =>
         isMeaningLayer(layerForEntry(schemas, candidate)),
     );
-    const components = references.filter(
-        (candidate) => !isMeaningLayer(layerForEntry(schemas, candidate)),
-    );
+    const components = componentReferences(detail, schemas);
     const relatedWords = isWritingUnitLayer(layer)
         ? usedBy.filter(
               (candidate) =>
@@ -288,7 +310,7 @@ function coreSections(detail, schemas, i18n, languageCode) {
         ? definitions
               .map(
                   (definition) =>
-                      `<p>${escapeHtml(definitionText(definition, layerForEntry(schemas, definition), languageCode))}</p>`,
+                      `<button class="library-definition-link btn-neutral" type="button" ${entryAttributes(definition)}>${escapeHtml(definitionText(definition, layerForEntry(schemas, definition), languageCode))}</button>`,
               )
               .join("")
         : renderValue(
@@ -483,10 +505,10 @@ function renderEntryCard(entry, layer, schema, entries, i18n) {
             ? [{ entry: candidate, direction: placement.direction }]
             : [];
     });
-    return `<div class="library-entry-card-shell"><button class="library-entry-card btn-neutral" type="button" ${entryAttributes(entry)} data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}">${renderCardContents(entry, layer, i18n)}</button>${renderSelection(entry, i18n)}${variants
+    return `<div class="library-entry-card-shell"><button class="library-entry-card btn-neutral" type="button" ${entryAttributes(entry)} ${entrySearchAttribute(entry)} data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}">${renderCardContents(entry, layer, i18n)}</button>${renderSelection(entry, i18n)}${variants
         .map(
             ({ entry: variant, direction }) =>
-                `<div class="library-entry-variant-shell library-entry-variant-${direction}"><button class="library-entry-card library-entry-variant btn-neutral" type="button" ${entryAttributes(variant)}>${renderCardContents(variant, layer, i18n)}</button>${renderSelection(variant, i18n)}</div>`,
+                `<div class="library-entry-variant-shell library-entry-variant-${direction}"><button class="library-entry-card library-entry-variant btn-neutral" type="button" ${entryAttributes(variant)} ${entrySearchAttribute(variant)}>${renderCardContents(variant, layer, i18n)}</button>${renderSelection(variant, i18n)}</div>`,
         )
         .join("")}</div>`;
 }
@@ -512,9 +534,32 @@ function updateDeleteSelectionButton(root, i18n) {
     if (!button) return;
     const count = selectedEntryIds(root).length;
     button.disabled = count === 0;
-    button.textContent = i18n
-        .t("gateway.study.library_delete_selected")
-        .replace("{{ count }}", String(count));
+    button.textContent = i18n.t("ui.reuse.delete");
+}
+
+function setSelectionMode(root, enabled, i18n) {
+    root.classList.toggle("library-selection-mode", enabled);
+    if (!enabled) {
+        root.querySelectorAll("[data-library-select-entry]").forEach(
+            (selection) => {
+                selection.checked = false;
+            },
+        );
+    }
+    const floatingActions = root.querySelector(
+        '[data-floating-slot="library-selection-actions"]',
+    );
+    if (floatingActions) floatingActions.hidden = !enabled;
+    updateDeleteSelectionButton(root, i18n);
+}
+
+function selectAllVisibleEntries(root, i18n) {
+    root.querySelectorAll(
+        "[data-library-panel]:not([hidden]) .library-entry-card-shell:not([hidden]) [data-library-select-entry]",
+    ).forEach((selection) => {
+        selection.checked = true;
+    });
+    updateDeleteSelectionButton(root, i18n);
 }
 
 async function confirmEntryDeletion(root, i18n) {
@@ -595,12 +640,51 @@ function renderBrowser(schemas, entries, i18n) {
                     return `<section class="library-layer-panel" role="tabpanel" id="library-panel-${schemaIndex}-${layerIndex}" aria-labelledby="library-tab-${schemaIndex}-${layerIndex}" data-library-panel="${escapeHtml(layer.id)}"${layerIndex === 0 ? "" : " hidden"}>${renderLayerFilters(layer, layerEntries, i18n, schema.language)}<div class="library-entry-grid">${cards}</div><p class="library-filter-empty" hidden>${escapeHtml(i18n.t("gateway.study.library_filter_empty"))}</p></section>`;
                 })
                 .join("");
-            return `<section class="library-schema"><h2>${escapeHtml(schemaLabel)}</h2><div class="library-layer-tabs" role="tablist" aria-label="${escapeHtml(i18n.t("gateway.study.library_layers"))}">${tabs}</div>${panels}</section>`;
+            return `<section class="library-schema" data-library-schema-id="${escapeHtml(schema.id)}"><h2>${escapeHtml(schemaLabel)}</h2><div class="library-layer-tabs" role="tablist" aria-label="${escapeHtml(i18n.t("gateway.study.library_layers"))}">${tabs}</div>${panels}</section>`;
         })
         .join("");
 }
 
+function activateLibraryLayer(schema, layerId) {
+    schema.querySelectorAll("[data-library-tab]").forEach((item) => {
+        const active = item.dataset.libraryTab === layerId;
+        item.classList.toggle("active", active);
+        item.setAttribute("aria-selected", String(active));
+    });
+    schema.querySelectorAll("[data-library-panel]").forEach((panel) => {
+        panel.hidden = panel.dataset.libraryPanel !== layerId;
+    });
+}
+
+function focusLibraryEntry(root, entry, schemas) {
+    const layer = layerForEntry(schemas, entry);
+    const schema = root.querySelector(
+        `[data-library-schema-id="${CSS.escape(entry.schemaId)}"]`,
+    );
+    const tab = schema?.querySelector(
+        `[data-library-tab="${CSS.escape(entry.layer)}"]`,
+    );
+    if (!schema || !tab || isMeaningLayer(layer)) return false;
+    activateLibraryLayer(schema, entry.layer);
+    const target = root.querySelector(
+        `.library-browser [data-library-entry="${CSS.escape(entry.id)}"]`,
+    );
+    const variantShell = target?.closest(".library-entry-variant-shell");
+    variantShell?.classList.add("library-entry-variant-revealed");
+    target?.focus();
+    window.requestAnimationFrame(() => {
+        highlightSearchTarget({ id: `library-entry-${entry.id}` });
+    });
+    if (variantShell) {
+        window.setTimeout(() => {
+            variantShell.classList.remove("library-entry-variant-revealed");
+        }, 2000);
+    }
+    return true;
+}
+
 async function openEntryPopup(
+    root,
     initialEntry,
     schemas,
     entries,
@@ -697,6 +781,8 @@ async function openEntryPopup(
         signal?.removeEventListener("abort", abortPopup);
         if (result === "previous") selectedEntry = active[index - 1];
         else if (result === "next") selectedEntry = active[index + 1];
+        else if (relatedEntry && focusLibraryEntry(root, relatedEntry, schemas))
+            selectedEntry = null;
         else if (relatedEntry) selectedEntry = relatedEntry;
         else selectedEntry = null;
     }
@@ -798,13 +884,14 @@ export async function mount(root, { signal } = {}) {
             title: i18n.t("gateway.study.library_label"),
             subtitle: i18n.t("gateway.study.library_subtitle"),
         },
-        toolbar: entries.some(canDeleteEntry)
+        toolbar: [],
+        floatingMenu: entries.some(canDeleteEntry)
             ? [
                   {
-                      id: "library-content-actions",
+                      id: "library-selection-actions",
                       label: i18n.t("ui.reuse.actions"),
                       render: () =>
-                          `<button class="btn-cancel" type="button" data-library-delete-selection disabled>${escapeHtml(i18n.t("gateway.study.library_delete_selected").replace("{{ count }}", "0"))}</button>`,
+                          `<button class="btn-neutral" type="button" data-library-select-all>${escapeHtml(i18n.t("ui.reuse.select_all"))}</button><button class="btn-cancel" type="button" data-library-delete-selection disabled>${escapeHtml(i18n.t("ui.reuse.delete"))}</button><button class="btn-neutral library-selection-close" type="button" data-library-selection-close aria-label="${escapeHtml(i18n.t("ui.reuse.close"))}">X</button>`,
                   },
               ]
             : [],
@@ -843,7 +930,7 @@ export async function mount(root, { signal } = {}) {
             cancelLongPress();
             longPressOrigin = { x: event.clientX, y: event.clientY };
             longPressTimer = window.setTimeout(() => {
-                root.classList.add("library-selection-mode");
+                setSelectionMode(root, true, i18n);
                 selection.checked = true;
                 suppressEntryClick = true;
                 updateDeleteSelectionButton(root, i18n);
@@ -886,6 +973,14 @@ export async function mount(root, { signal } = {}) {
     root.addEventListener(
         "click",
         (event) => {
+            if (event.target.closest("[data-library-select-all]")) {
+                selectAllVisibleEntries(root, i18n);
+                return;
+            }
+            if (event.target.closest("[data-library-selection-close]")) {
+                setSelectionMode(root, false, i18n);
+                return;
+            }
             const deleteSelection = event.target.closest(
                 "[data-library-delete-selection]",
             );
@@ -902,7 +997,7 @@ export async function mount(root, { signal } = {}) {
                         );
                         root.querySelector(".library-browser").innerHTML =
                             renderBrowser(schemas, entries, i18n);
-                        updateDeleteSelectionButton(root, i18n);
+                        setSelectionMode(root, false, i18n);
                         showToast(
                             i18n.t("gateway.study.library_delete_success"),
                             { variant: "success" },
@@ -925,20 +1020,7 @@ export async function mount(root, { signal } = {}) {
             const tab = event.target.closest("button[data-library-tab]");
             if (tab) {
                 const schema = tab.closest(".library-schema");
-                schema
-                    .querySelectorAll("[data-library-tab]")
-                    .forEach((item) => {
-                        const active = item === tab;
-                        item.classList.toggle("active", active);
-                        item.setAttribute("aria-selected", String(active));
-                    });
-                schema
-                    .querySelectorAll("[data-library-panel]")
-                    .forEach((panel) => {
-                        panel.hidden =
-                            panel.dataset.libraryPanel !==
-                            tab.dataset.libraryTab;
-                    });
+                activateLibraryLayer(schema, tab.dataset.libraryTab);
                 return;
             }
             const control = event.target.closest("button[data-library-entry]");
@@ -947,11 +1029,15 @@ export async function mount(root, { signal } = {}) {
                 suppressEntryClick = false;
                 return;
             }
+            if (root.classList.contains("library-selection-mode")) {
+                setSelectionMode(root, false, i18n);
+            }
             const entry = entries.find(
                 (candidate) => candidate.id === control.dataset.libraryEntry,
             );
             if (!entry) return;
             void openEntryPopup(
+                root,
                 entry,
                 schemas,
                 entries,

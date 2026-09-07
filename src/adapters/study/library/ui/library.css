@@ -83,7 +83,8 @@
 }
 
 .library-selection-mode .library-entry-selection {
-    display: block;
+    display: grid;
+    place-content: center;
 }
 
 .library-entry-selection:checked {
@@ -95,11 +96,11 @@
     display: block;
     width: 0.28rem;
     height: 0.55rem;
-    margin: 0.12rem auto;
+    margin: 0;
     border: solid var(--surface);
     border-width: 0 0.14rem 0.14rem 0;
     content: "";
-    transform: rotate(45deg);
+    transform: translateY(-0.06rem) rotate(45deg);
 }
 
 body[data-theme="dark"] .library-entry-selection {
@@ -127,7 +128,8 @@ body[data-theme="dark"] .library-entry-selection:checked {
 }
 
 .library-entry-card-shell:hover .library-entry-variant-shell,
-.library-entry-card-shell:focus-within .library-entry-variant-shell {
+.library-entry-card-shell:focus-within .library-entry-variant-shell,
+.library-entry-variant-shell.library-entry-variant-revealed {
     visibility: visible;
     opacity: 0.9;
 }
@@ -136,6 +138,10 @@ body[data-theme="dark"] .library-entry-selection:checked {
     display: flex;
     align-items: start;
     gap: 0.5rem;
+}
+
+.library-selection-close {
+    min-width: 2.5rem;
 }
 
 .library-entry-variant-left {
@@ -282,6 +288,24 @@ body[data-theme="dark"] .library-entry-selection:checked {
     font-weight: 650;
 }
 
+.library-definition-link {
+    display: block;
+    width: fit-content;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: 1.15rem;
+    font-weight: 500;
+    text-align: start;
+}
+
+.library-definition-link:hover,
+.library-definition-link:focus-visible {
+    color: var(--accent-2);
+    text-decoration: underline;
+}
+
 .library-audio {
     width: min(100%, 26rem);
     border: 1px solid var(--border);
@@ -307,7 +331,12 @@ body[data-theme="light"] .library-audio {
 body[data-theme="dark"] .library-audio {
     color-scheme: dark;
     background: var(--surface-2);
-    filter: grayscale(1);
+    accent-color: var(--text-muted);
+    filter: grayscale(1) saturate(0) brightness(0.82) contrast(1.15);
+}
+
+body[data-theme="dark"] .library-audio::-webkit-media-controls-panel {
+    background-color: var(--surface-2);
 }
 
 .library-filter-empty {

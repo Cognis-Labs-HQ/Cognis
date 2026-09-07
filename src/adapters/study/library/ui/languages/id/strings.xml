@@ -10,7 +10,6 @@
   <string name="gateway.study.library_scope_user">Cakupan: Pengguna</string>
   <string name="gateway.study.library_audio_load_error">Audio tidak dapat dimuat.</string>
   <string name="gateway.study.library_select_entry">Pilih {{ entry }}</string>
-  <string name="gateway.study.library_delete_selected">Hapus yang Dipilih ({{ count }})</string>
   <string name="gateway.study.library_delete_title">Hapus Konten Perpustakaan</string>
   <string name="gateway.study.library_delete_warning">Konten terpilih dan relasinya akan dihapus secara permanen. Konten modul akan kembali saat modul diaktifkan lagi kecuali pemulihannya dicegah di bawah.</string>
   <string name="gateway.study.library_delete_permanent">Cegah modul memulihkan konten yang sama persis ini lagi</string>

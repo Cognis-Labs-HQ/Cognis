@@ -42,6 +42,8 @@
   <string name="ui.reuse.true">True</string>
   <string name="ui.reuse.false">False</string>
   <string name="ui.reuse.actions">Actions</string>
+  <string name="ui.reuse.select_all">Select All</string>
+  <string name="ui.reuse.delete">Delete</string>
   <string name="ui.reuse.id">ID</string>
   <string name="ui.reuse.version">Version</string>
   <string name="ui.reuse.class">Class</string>

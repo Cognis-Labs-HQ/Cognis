@@ -42,6 +42,8 @@
   <string name="ui.reuse.true">Benar</string>
   <string name="ui.reuse.false">Salah</string>
   <string name="ui.reuse.actions">Aksi</string>
+  <string name="ui.reuse.select_all">Pilih Semua</string>
+  <string name="ui.reuse.delete">Hapus</string>
   <string name="ui.reuse.id">ID</string>
   <string name="ui.reuse.version">Versi</string>
   <string name="ui.reuse.class">Kelas</string>
