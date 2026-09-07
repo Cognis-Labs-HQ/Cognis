@@ -58,6 +58,10 @@ Zeichenaussprachen neben Detailtiteln verwenden jetzt maskierten sekundären Tit
 
 Die Bibliothek rendert nun eigene barrierefreie Audiosteuerelemente, statt die nativen Mediensteuerelemente des Browsers zu verwenden. Dadurch gelangen keine Akzentfarben des Betriebssystems oder erzwungener Designs in den Player. Zeichenkarten werden beim Zeigen und bei Tastaturfokus über benachbarte Rasterkarten angehoben, damit ihre gerichteten untergeordneten Varianten sichtbar und interaktiv bleiben.
 
+## Moduldefinierte Diagrammraster
+
+Bibliotheksebenen können jetzt eine Zeilengröße anfordern und Inhalte anhand der Datensatz-ID positionieren, einschließlich ausdrücklicher Leerzellen für herkömmliche Diagramme. Karten werden gleichmäßig auf die angeforderte Zeile skaliert; schwebende untergeordnete Karten werden nun mit 95 % Deckkraft dargestellt.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -82,3 +86,4 @@ Die Bibliothek rendert nun eigene barrierefreie Audiosteuerelemente, statt die n
 - [31da2e2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/31da2e2fcd3284f1c2edd0da12a22c416c374b88)
 - [13754134](https://github.com/Cognis-Labs-HQ/Cognis/commit/13754134d1595372336cea85a1d1f85bb4da2a9c)
 - [f4ad7320](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4ad732066d653312f37bba8a08c61d7d37d3522)
+- [753a02dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/753a02dc9171670c41d02b9665e076422f3fc3b6)

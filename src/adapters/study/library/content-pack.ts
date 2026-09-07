@@ -199,6 +199,16 @@ async function validateContentRecords(
     digest: ReturnType<typeof createHash>,
     assetsRoot?: string,
 ): Promise<void> {
+    const recordsById = new Map(records.map((record) => [record.id, record]));
+    for (const layer of schema.layers) {
+        for (const itemId of layer.grid?.items ?? []) {
+            if (itemId === null) continue;
+            const record = recordsById.get(itemId);
+            if (!record || record.layer !== layer.id) {
+                throw new Error("layer_grid_item_not_found");
+            }
+        }
+    }
     const entries = new Map<string, LibraryEntry>();
     for (const record of records) {
         if (

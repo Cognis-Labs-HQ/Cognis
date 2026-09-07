@@ -58,6 +58,10 @@ Pelafalan karakter di samping judul detail kini memakai teks judul sekunder yang
 
 Pustaka kini merender kontrol audio aksesibelnya sendiri alih-alih mengandalkan tampilan media bawaan peramban, sehingga warna aksen sistem operasi dan tema paksa tidak masuk ke pemutar. Kartu karakter yang diarahkan atau difokuskan dengan papan ketik dinaikkan di atas kartu kisi di sekitarnya agar varian anak terarah tetap terlihat dan interaktif.
 
+## Kisi bagan yang ditentukan modul
+
+Skema lapisan Pustaka kini dapat meminta ukuran baris dan menempatkan konten berdasarkan ID rekaman, termasuk sel kosong eksplisit untuk bagan konvensional. Kartu diskalakan secara merata untuk memenuhi baris yang diminta, dan kartu anak mengambang kini dirender dengan opasitas 95%.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -82,3 +86,4 @@ Pustaka kini merender kontrol audio aksesibelnya sendiri alih-alih mengandalkan 
 - [31da2e2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/31da2e2fcd3284f1c2edd0da12a22c416c374b88)
 - [13754134](https://github.com/Cognis-Labs-HQ/Cognis/commit/13754134d1595372336cea85a1d1f85bb4da2a9c)
 - [f4ad7320](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4ad732066d653312f37bba8a08c61d7d37d3522)
+- [753a02dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/753a02dc9171670c41d02b9665e076422f3fc3b6)

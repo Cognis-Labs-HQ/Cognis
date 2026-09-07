@@ -346,6 +346,55 @@ test("writing layers declare directional variant relationships", () => {
     );
 });
 
+test("layers can request a validated grid row and item layout", () => {
+    const schema: LibrarySchema = {
+        ...english,
+        layers: [
+            {
+                ...english.layers[0],
+                grid: {
+                    rowSize: 5,
+                    items: ["english:letter:a", null, "english:letter:i"],
+                },
+            },
+        ],
+    };
+
+    assert.deepEqual(validateLibrarySchema(schema).layers[0].grid, {
+        rowSize: 5,
+        items: ["english:letter:a", null, "english:letter:i"],
+    });
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...schema,
+                layers: [
+                    {
+                        ...schema.layers[0],
+                        grid: { rowSize: 0, items: [] },
+                    },
+                ],
+            }),
+        /invalid_layer_grid/,
+    );
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...schema,
+                layers: [
+                    {
+                        ...schema.layers[0],
+                        grid: {
+                            rowSize: 5,
+                            items: ["english:letter:a", "english:letter:a"],
+                        },
+                    },
+                ],
+            }),
+        /invalid_layer_grid_items/,
+    );
+});
+
 test("schema roles and rendering hints remain independent of layer IDs", () => {
     const schema: LibrarySchema = {
         ...english,

@@ -58,6 +58,10 @@
 
 ライブラリーはブラウザー標準のメディア UI に依存せず、アクセシブルな音声コントロールを独自に描画するようになりました。これにより、OS や強制テーマのアクセント色がプレイヤーへ入り込みません。ホバーまたはキーボードフォーカスされた文字カードを隣接カードより前面に出し、方向付きの子バリエーションを確実に表示して操作できるようにしました。
 
+## モジュール指定の表グリッド
+
+ライブラリーレイヤーのスキーマで行サイズを指定し、一般的な表のための明示的な空欄を含め、レコード ID ごとにコンテンツを配置できるようになりました。カードは指定行を均等に満たすよう拡縮され、浮遊する子カードは不透明度 95% で表示されます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -82,3 +86,4 @@
 - [31da2e2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/31da2e2fcd3284f1c2edd0da12a22c416c374b88)
 - [13754134](https://github.com/Cognis-Labs-HQ/Cognis/commit/13754134d1595372336cea85a1d1f85bb4da2a9c)
 - [f4ad7320](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4ad732066d653312f37bba8a08c61d7d37d3522)
+- [753a02dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/753a02dc9171670c41d02b9665e076422f3fc3b6)

@@ -9,6 +9,7 @@ import type {
 import { canonicalizeLanguageTag } from "./language.js";
 
 const ID_PATTERN = /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/;
+const CONTENT_RECORD_ID_PATTERN = /^[a-z0-9]+(?:[-_.:][a-z0-9]+)*$/i;
 const ROLE_PATTERN = /^[a-z][a-zA-Z0-9]*(?::[a-z][a-zA-Z0-9]*)*$/;
 
 function validateLocalizedText(value: unknown, code: string): void {
@@ -103,6 +104,25 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
         assertIdentifier(layer.id, "invalid_layer_id");
         if (layerIds.has(layer.id)) throw new Error("duplicate_layer");
         validateMetadata(layer.metadata, "layer_metadata_required");
+        if (layer.grid) {
+            if (
+                !Number.isSafeInteger(layer.grid.rowSize) ||
+                layer.grid.rowSize < 1 ||
+                layer.grid.rowSize > 24 ||
+                !Array.isArray(layer.grid.items)
+            ) {
+                throw new Error("invalid_layer_grid");
+            }
+            const itemIds = layer.grid.items.filter(
+                (item): item is string => item !== null,
+            );
+            if (
+                itemIds.some((item) => !CONTENT_RECORD_ID_PATTERN.test(item)) ||
+                new Set(itemIds).size !== itemIds.length
+            ) {
+                throw new Error("invalid_layer_grid_items");
+            }
+        }
         for (const role of layer.activityCompatibility ?? []) {
             if (!ROLE_PATTERN.test(role))
                 throw new Error("invalid_activity_role");

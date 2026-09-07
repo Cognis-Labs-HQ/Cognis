@@ -45,6 +45,10 @@ test("declarative language packs are inspected deterministically", async (t) => 
                 id: "letters",
                 metadata: { labels: { en: "Letters" } },
                 semanticRole: "atomicWritingUnit",
+                grid: {
+                    rowSize: 5,
+                    items: [null, "english:letter:a"],
+                },
                 fields: [
                     {
                         id: "pronunciation",
@@ -111,6 +115,10 @@ test("declarative language packs are inspected deterministically", async (t) => 
     const second = await inspectContentPack(root);
     assert.equal(first.digest, second.digest);
     assert.equal(first.records.length, 2);
+    assert.deepEqual(first.schema.layers[0].grid, {
+        rowSize: 5,
+        items: [null, "english:letter:a"],
+    });
     assert.deepEqual(first.assets, [
         {
             path: "audio/a.mp3",

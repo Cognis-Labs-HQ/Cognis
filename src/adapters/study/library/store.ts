@@ -19,6 +19,10 @@ import type {
 function mapEntry(row: Record<string, unknown>): LibraryEntry {
     return {
         id: String(row.id),
+        sourceRecordId:
+            row.source_record_id === null || row.source_record_id === undefined
+                ? undefined
+                : String(row.source_record_id),
         schemaId: String(row.schema_id),
         schemaVersion: Number(row.schema_version),
         layer: String(row.layer),
@@ -115,6 +119,7 @@ export class LibraryStore {
                 { name: "layer", type: "text", notNull: true },
                 { name: "language", type: "text", notNull: true },
                 { name: "label", type: "text", notNull: true },
+                { name: "source_record_id", type: "text" },
                 {
                     name: "fields_json",
                     type: "text",
@@ -332,6 +337,7 @@ export class LibraryStore {
                         layer: record.layer,
                         language: schema.language,
                         label: record.label.trim(),
+                        source_record_id: record.id,
                         fields_json: JSON.stringify(fields),
                         created_by: `content-pack:${manifest.id}`,
                     },
@@ -347,6 +353,7 @@ export class LibraryStore {
                     layer: record.layer,
                     language: schema.language,
                     label: record.label.trim(),
+                    source_record_id: record.id,
                     fields_json: JSON.stringify(fields),
                     content_hash: contentHash,
                     created_by: `content-pack:${manifest.id}`,

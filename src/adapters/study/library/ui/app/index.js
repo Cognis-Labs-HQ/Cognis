@@ -556,6 +556,43 @@ function renderEntryCard(entry, layer, schema, entries, i18n) {
         .join("")}</div>`;
 }
 
+function renderLayerCards(layer, entries, schema, i18n) {
+    const baseEntries = entries.filter(
+        (entry) => !variantPlacement(entry, schema),
+    );
+    if (!baseEntries.length) return "";
+    if (!layer.grid) {
+        return baseEntries
+            .map((entry) =>
+                renderEntryCard(entry, layer, schema, entries, i18n),
+            )
+            .join("");
+    }
+
+    const entriesBySourceId = new Map(
+        baseEntries.map((entry) => [entry.sourceRecordId, entry]),
+    );
+    const positionedIds = new Set(
+        layer.grid.items.filter((itemId) => itemId !== null),
+    );
+    const positionedCards = layer.grid.items
+        .map((itemId) => {
+            if (itemId === null) {
+                return '<div class="library-entry-card-blank" aria-hidden="true"></div>';
+            }
+            const entry = entriesBySourceId.get(itemId);
+            return entry
+                ? renderEntryCard(entry, layer, schema, entries, i18n)
+                : "";
+        })
+        .join("");
+    const additionalCards = baseEntries
+        .filter((entry) => !positionedIds.has(entry.sourceRecordId))
+        .map((entry) => renderEntryCard(entry, layer, schema, entries, i18n))
+        .join("");
+    return positionedCards + additionalCards;
+}
+
 function selectedEntryIds(root) {
     return Array.from(
         root.querySelectorAll("[data-library-select-entry]:checked"),
@@ -664,23 +701,17 @@ function renderBrowser(schemas, entries, i18n) {
                             entry.schemaId === schema.id &&
                             entry.layer === layer.id,
                     );
-                    const baseEntries = layerEntries.filter(
-                        (entry) => !variantPlacement(entry, schema),
+                    const cards = renderLayerCards(
+                        layer,
+                        layerEntries,
+                        schema,
+                        i18n,
                     );
-                    const cards = baseEntries.length
-                        ? baseEntries
-                              .map((entry) =>
-                                  renderEntryCard(
-                                      entry,
-                                      layer,
-                                      schema,
-                                      layerEntries,
-                                      i18n,
-                                  ),
-                              )
-                              .join("")
+                    const contents = cards
+                        ? cards
                         : `<p class="library-layer-empty">${escapeHtml(i18n.t("gateway.study.library_layer_empty"))}</p>`;
-                    return `<section class="library-layer-panel" role="tabpanel" id="library-panel-${schemaIndex}-${layerIndex}" aria-labelledby="library-tab-${schemaIndex}-${layerIndex}" data-library-panel="${escapeHtml(layer.id)}"${layerIndex === 0 ? "" : " hidden"}>${renderLayerFilters(layer, layerEntries, i18n, schema.language)}<div class="library-entry-grid">${cards}</div><p class="library-filter-empty" hidden>${escapeHtml(i18n.t("gateway.study.library_filter_empty"))}</p></section>`;
+                    const rowSize = layer.grid?.rowSize;
+                    return `<section class="library-layer-panel" role="tabpanel" id="library-panel-${schemaIndex}-${layerIndex}" aria-labelledby="library-tab-${schemaIndex}-${layerIndex}" data-library-panel="${escapeHtml(layer.id)}"${layerIndex === 0 ? "" : " hidden"}>${renderLayerFilters(layer, layerEntries, i18n, schema.language)}<div class="library-entry-grid"${rowSize ? ` style="--library-grid-row-size: ${rowSize}"` : ""}>${contents}</div><p class="library-filter-empty" hidden>${escapeHtml(i18n.t("gateway.study.library_filter_empty"))}</p></section>`;
                 })
                 .join("");
             return `<section class="library-schema" data-library-schema-id="${escapeHtml(schema.id)}"><h2>${escapeHtml(schemaLabel)}</h2><div class="library-layer-tabs" role="tablist" aria-label="${escapeHtml(i18n.t("gateway.study.library_layers"))}">${tabs}</div>${panels}</section>`;

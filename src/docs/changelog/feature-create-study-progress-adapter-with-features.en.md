@@ -58,6 +58,10 @@ Character pronunciations beside detail titles now use escaped secondary title te
 
 The Library now renders its own accessible audio controls instead of relying on browser-native media chrome, preventing operating-system and forced-theme accent colors from leaking into the player. Hovered and keyboard-focused character cards are raised above adjacent grid cards so their directional child variants remain visible and interactive.
 
+## Module-defined chart grids
+
+Library layer schemas can now request a row size and position content by record ID, including explicit blank cells for conventional charts. Cards scale evenly to fill the requested row, and floating child cards now render at 95% opacity.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -82,3 +86,4 @@ The Library now renders its own accessible audio controls instead of relying on 
 - [31da2e2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/31da2e2fcd3284f1c2edd0da12a22c416c374b88)
 - [13754134](https://github.com/Cognis-Labs-HQ/Cognis/commit/13754134d1595372336cea85a1d1f85bb4da2a9c)
 - [f4ad7320](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4ad732066d653312f37bba8a08c61d7d37d3522)
+- [753a02dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/753a02dc9171670c41d02b9665e076422f3fc3b6)

@@ -72,6 +72,12 @@ test("content pack import ignores duplicate all-key references", async () => {
             command.table === "study_library_entries",
     );
     assert.equal(entryInsert?.option, "INSERT");
+    assert.equal(
+        entryInsert?.option === "INSERT"
+            ? entryInsert.values.source_record_id
+            : undefined,
+        "a",
+    );
     assert.deepEqual(
         entryInsert?.option === "INSERT"
             ? entryInsert.conflict?.target

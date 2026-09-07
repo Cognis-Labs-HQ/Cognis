@@ -82,13 +82,22 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(stylesheet, /\.library-entry-variant-up/);
     assert.match(stylesheet, /\.library-entry-variant-down/);
     assert.match(source, /renderCardContents\(variant, layer, i18n\)/);
-    assert.match(stylesheet, /opacity: 0\.9/);
+    assert.match(stylesheet, /opacity: 0\.95/);
     assert.match(stylesheet, /box-shadow:/);
     assert.match(
         stylesheet,
         /\.library-entry-card-shell:is\(:hover, :focus-within\)/,
     );
     assert.match(stylesheet, /z-index: 5/);
+});
+
+test("Study Library honors module-defined grid layouts", () => {
+    assert.match(source, /function renderLayerCards/);
+    assert.match(source, /entry\.sourceRecordId/);
+    assert.match(source, /library-entry-card-blank/);
+    assert.match(source, /--library-grid-row-size/);
+    assert.match(stylesheet, /\.library-entry-grid\[style\]/);
+    assert.match(stylesheet, /var\(--library-grid-row-size\)/);
 });
 
 test("Study Library renders writing-unit pronunciation and audio", () => {

@@ -75,6 +75,10 @@ export interface LibraryLayerSchema {
     fields?: readonly LibraryFieldSchema[];
     relationships?: readonly LibraryRelationshipSchema[];
     detail?: { titleField?: string; fieldOrder?: readonly string[] };
+    grid?: {
+        rowSize: number;
+        items: readonly (string | null)[];
+    };
     activityCompatibility?: readonly string[];
     interestVeins?: readonly string[];
     strokeAsset?: {
@@ -112,6 +116,7 @@ export interface LibraryEntryInput {
 
 export interface LibraryEntry extends LibraryEntryInput {
     id: string;
+    sourceRecordId?: string;
     schemaVersion: number;
     language: string;
     scope: LibraryScope;
