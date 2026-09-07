@@ -56,6 +56,8 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /function renderCompositionGroups/);
     assert.match(source, /relationship\.resolverRole/);
     assert.match(source, /library-composition-operator/);
+    assert.match(source, /const variantChildren = usedBy\.filter/);
+    assert.match(source, /gateway\.study\.library_variants/);
     assert.match(source, /class="library-definition-link btn-neutral"/);
     assert.match(stylesheet, /\.library-definition-link/);
     assert.match(stylesheet, /\.library-composition-label/);
@@ -92,6 +94,15 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /renderCardContents\(variant, layer, i18n\)/);
     assert.match(stylesheet, /opacity: 0\.95/);
     assert.match(stylesheet, /box-shadow:/);
+    assert.match(source, /gateway\.study\.library_variant_hint/);
+    assert.match(source, /library-entry-variants-open/);
+    assert.match(source, /"contextmenu"/);
+    assert.match(source, /"focusout"/);
+    assert.match(
+        stylesheet,
+        /\.library-entry-card-shell\.library-entry-variants-open/,
+    );
+    assert.match(stylesheet, /\.library-entry-variant-hint/);
     assert.match(
         stylesheet,
         /\.library-entry-card-shell:is\(:hover, :focus-within\)/,

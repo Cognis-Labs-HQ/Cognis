@@ -336,9 +336,14 @@ function coreSections(detail, schemas, i18n, languageCode) {
                   "lexicalUnit",
           )
         : [];
+    const variantChildren = usedBy.filter((candidate) => {
+        const placement = variantPlacement(candidate, schemas);
+        return placement?.parentId === entry.id;
+    });
     const otherUsedBy = usedBy.filter(
         (candidate) =>
             !relatedWords.includes(candidate) &&
+            !variantChildren.includes(candidate) &&
             layerForEntry(schemas, candidate)?.semanticRole !== "definition",
     );
     const wordLayer = relatedWords.length
@@ -391,6 +396,13 @@ function coreSections(detail, schemas, i18n, languageCode) {
             i18n.t("gateway.study.library_revisions"),
             fields.revisions ?? entry.revisions,
         ),
+        variantChildren.length
+            ? relationSection(
+                  i18n.t("gateway.study.library_variants"),
+                  variantChildren,
+                  i18n.t("gateway.study.library_no_relationships"),
+              )
+            : "",
         relatedWords.length
             ? relationSection(
                   localizedLabel(wordLayer.metadata, entry.language),
@@ -516,9 +528,11 @@ function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
 }
 
 function variantPlacement(entry, schema) {
+    const schemas = Array.isArray(schema) ? schema : [schema];
     for (const reference of entry.references ?? []) {
-        const relationship = schema.layers
-            .find((layer) => layer.id === entry.layer)
+        const relationship = schemas
+            .find((candidate) => candidate?.id === entry.schemaId)
+            ?.layers.find((layer) => layer.id === entry.layer)
             ?.relationships?.find(
                 (candidate) => candidate.id === reference.relation,
             );
@@ -572,7 +586,10 @@ function renderEntryCard(entry, layer, schema, entries, i18n) {
             ? [{ entry: candidate, direction: placement.direction }]
             : [];
     });
-    return `<div class="library-entry-card-shell"><button class="library-entry-card btn-neutral" type="button" ${entryAttributes(entry)} ${entrySearchAttribute(entry)} data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}">${renderCardContents(entry, layer, i18n)}</button>${renderSelection(entry, i18n)}${variants
+    const variantHint = variants.length
+        ? `<span class="library-entry-variant-hint" role="tooltip">${escapeHtml(i18n.t("gateway.study.library_variant_hint"))}</span>`
+        : "";
+    return `<div class="library-entry-card-shell"><button class="library-entry-card btn-neutral" type="button" ${entryAttributes(entry)} ${entrySearchAttribute(entry)} data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}">${renderCardContents(entry, layer, i18n)}</button>${renderSelection(entry, i18n)}${variantHint}${variants
         .map(
             ({ entry: variant, direction }) =>
                 `<div class="library-entry-variant-shell library-entry-variant-${direction}"><button class="library-entry-card library-entry-variant btn-neutral" type="button" ${entryAttributes(variant)} ${entrySearchAttribute(variant)}>${renderCardContents(variant, layer, i18n)}</button>${renderSelection(variant, i18n)}</div>`,
@@ -1077,7 +1094,29 @@ export async function mount(root, { signal } = {}) {
         (event) => {
             const card = event.target.closest("button[data-library-entry]");
             if (!card) return;
+            const shell = card.closest(".library-entry-card-shell");
+            if (
+                !card.classList.contains("library-entry-variant") &&
+                shell?.querySelector(".library-entry-variant-shell")
+            ) {
+                event.preventDefault();
+                shell.classList.add("library-entry-variants-open");
+                card.focus();
+                return;
+            }
             if (selectionForCard(root, card)) event.preventDefault();
+        },
+        { signal },
+    );
+    root.addEventListener(
+        "focusout",
+        (event) => {
+            const shell = event.target.closest(".library-entry-card-shell");
+            if (!shell?.classList.contains("library-entry-variants-open"))
+                return;
+            if (!shell.contains(event.relatedTarget)) {
+                shell.classList.remove("library-entry-variants-open");
+            }
         },
         { signal },
     );

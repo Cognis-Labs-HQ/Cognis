@@ -5,6 +5,8 @@
   <string name="gateway.study.library_next">次へ</string>
   <string name="gateway.study.library_filters">ライブラリ項目を絞り込む</string>
   <string name="gateway.study.library_filter_empty">選択した絞り込み条件に一致する項目はありません。</string>
+  <string name="gateway.study.library_variant_hint">右クリックして他のカードを表示</string>
+  <string name="gateway.study.library_variants">バリエーション</string>
   <string name="gateway.study.library_scope_global">範囲: グローバル</string>
   <string name="gateway.study.library_scope_class">範囲: クラス {{ class name }}</string>
   <string name="gateway.study.library_scope_user">範囲: ユーザー</string>

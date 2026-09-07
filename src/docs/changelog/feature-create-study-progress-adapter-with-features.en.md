@@ -70,6 +70,10 @@ Modules can mark metadata filter groups as required and choose a default tag. Re
 
 Alt-character and word details now group resolver-backed character links under their module-defined relationship labels and place composition operators between ordered characters. Definitions and pronunciation readings remain visually distinct from those spelling compositions.
 
+## Deliberate variant expansion
+
+Cards with children now show a right-click hint on hover and expand variants only after right-clicking. Variant cards retain constant transparency, close when focus leaves the complete card group, and also appear in a dedicated section of the parent detail view.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -97,3 +101,4 @@ Alt-character and word details now group resolver-backed character links under t
 - [753a02dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/753a02dc9171670c41d02b9665e076422f3fc3b6)
 - [82bb97c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/82bb97c02aac759f995373a1e9c1234d69b61d57)
 - [44617c98](https://github.com/Cognis-Labs-HQ/Cognis/commit/44617c980ed07d896925f99bd27dd0ca57d2d831)
+- [95b3065d](https://github.com/Cognis-Labs-HQ/Cognis/commit/95b3065d2b20baf702b1b7ffb669cdd5351caf70)

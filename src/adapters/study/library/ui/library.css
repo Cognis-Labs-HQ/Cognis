@@ -139,11 +139,35 @@ body[data-theme="dark"] .library-entry-selection:checked {
     transition: opacity 140ms ease;
 }
 
-.library-entry-card-shell:hover .library-entry-variant-shell,
-.library-entry-card-shell:focus-within .library-entry-variant-shell,
+.library-entry-card-shell.library-entry-variants-open
+    .library-entry-variant-shell,
 .library-entry-variant-shell.library-entry-variant-revealed {
     visibility: visible;
     opacity: 0.95;
+}
+
+.library-entry-variant-hint {
+    position: absolute;
+    z-index: 6;
+    bottom: calc(100% + 0.4rem);
+    left: 50%;
+    display: none;
+    width: max-content;
+    max-width: min(15rem, 90vw);
+    pointer-events: none;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-align: center;
+    transform: translateX(-50%);
+}
+
+.library-entry-card-shell:hover:not(.library-entry-variants-open)
+    > .library-entry-variant-hint {
+    display: block;
 }
 
 .library-delete-permanent {

@@ -70,6 +70,10 @@ Modul dapat menandai grup filter metadata sebagai wajib dan memilih tag bawaan. 
 
 Detail alt-character dan kata kini mengelompokkan tautan karakter berbasis resolver di bawah label relasi yang ditentukan modul serta menempatkan operator komposisi di antara karakter yang berurutan. Definisi dan bacaan pelafalan tetap dibedakan secara visual dari komposisi ejaan tersebut.
 
+## Pembukaan varian yang disengaja
+
+Kartu dengan anak kini menampilkan petunjuk klik kanan saat diarahkan dan hanya membuka varian setelah klik kanan. Kartu varian mempertahankan transparansi yang tetap, menutup ketika fokus meninggalkan seluruh grup kartu, dan juga muncul di bagian khusus pada tampilan detail induk.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -97,3 +101,4 @@ Detail alt-character dan kata kini mengelompokkan tautan karakter berbasis resol
 - [753a02dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/753a02dc9171670c41d02b9665e076422f3fc3b6)
 - [82bb97c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/82bb97c02aac759f995373a1e9c1234d69b61d57)
 - [44617c98](https://github.com/Cognis-Labs-HQ/Cognis/commit/44617c980ed07d896925f99bd27dd0ca57d2d831)
+- [95b3065d](https://github.com/Cognis-Labs-HQ/Cognis/commit/95b3065d2b20baf702b1b7ffb669cdd5351caf70)
