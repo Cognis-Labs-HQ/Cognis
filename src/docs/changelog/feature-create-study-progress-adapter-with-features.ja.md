@@ -30,6 +30,10 @@
 
 文字と代替文字の関係は、左、右、上、下のバリエーション方向を宣言できます。ライブラリは各バリエーションを独立した項目として保持し、親カードのホバーまたはキーボードフォーカス時に周囲へ子操作部を展開します。
 
+## 所有者によるライブラリ削除
+
+コンテンツ所有者、管理者、所有者は、複数のライブラリ項目を選択し、関係とともに完全に削除できるようになりました。通常はモジュールの有効化で不足した提供内容が復元されますが、削除時のチェックボックスを選ぶと対象のコンテンツハッシュがブロックリストに登録され、同一レコードの復元を防止します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -46,3 +50,5 @@
 - [17756b2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/17756b2fb83d82f25bf7c349f63170fc738db995)
 - [86d3162c](https://github.com/Cognis-Labs-HQ/Cognis/commit/86d3162c19544032fa2ccc6d55f80de58f9495fb)
 - [77611b4e](https://github.com/Cognis-Labs-HQ/Cognis/commit/77611b4ed1c6d7afa1221f966cf80ec9b1292316)
+- [4ff6b5ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ff6b5ec7825a19626c371347c04c43785971216)
+- [1190320b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1190320be506d0c74feefa441a4188d05d3892ae)

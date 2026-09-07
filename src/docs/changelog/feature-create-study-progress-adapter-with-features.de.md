@@ -30,6 +30,10 @@ Fehlgeschlagenes Bibliotheksaudio ersetzt jetzt nur seinen Player durch eine lok
 
 Beziehungen von Zeichen und alternativen Zeichen können eine Variantenrichtung nach links, rechts, oben oder unten deklarieren. Die Bibliothek hält jede Variante unabhängig und klappt untergeordnete Steuerelemente beim Überfahren oder Tastaturfokus um die übergeordnete Karte aus.
 
+## Vom Eigentümer gesteuerte Löschung
+
+Inhaltseigentümer, Administratoren und Eigentümer können jetzt mehrere Bibliothekseinträge auswählen und sie mit ihren Beziehungen dauerhaft löschen. Bei der Modulaktivierung werden fehlende bereitgestellte Inhalte standardmäßig wiederhergestellt; ein ausdrückliches Kontrollkästchen bei der Löschung sperrt stattdessen die ausgewählten Inhalts-Hashes und verhindert ihre Rückkehr.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -46,3 +50,5 @@ Beziehungen von Zeichen und alternativen Zeichen können eine Variantenrichtung 
 - [17756b2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/17756b2fb83d82f25bf7c349f63170fc738db995)
 - [86d3162c](https://github.com/Cognis-Labs-HQ/Cognis/commit/86d3162c19544032fa2ccc6d55f80de58f9495fb)
 - [77611b4e](https://github.com/Cognis-Labs-HQ/Cognis/commit/77611b4ed1c6d7afa1221f966cf80ec9b1292316)
+- [4ff6b5ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ff6b5ec7825a19626c371347c04c43785971216)
+- [1190320b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1190320be506d0c74feefa441a4188d05d3892ae)

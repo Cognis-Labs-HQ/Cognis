@@ -193,3 +193,173 @@ test("content pack import removes duplicate hashes and preserves references", as
     );
     assert.equal(importedEntryIds.size, 1);
 });
+
+test("permanent deletion blacklists content hashes and removes relationships", async () => {
+    const commands: StructuredDbCommand[] = [];
+    const db: DbExecutor = {
+        ensureTable: async () => {},
+        transaction: async (callback) => callback(db),
+        executeCommand: async (command) => {
+            commands.push(command);
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_entries"
+            ) {
+                return { rows: [{ content_hash: "hash-one" }] };
+            }
+            return { rowCount: 1 };
+        },
+    };
+
+    await new LibraryStore(db).deleteEntries(["entry-one"], "admin", true);
+
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "INSERT" &&
+                command.table === "study_library_content_hash_blacklist" &&
+                command.values.content_hash === "hash-one" &&
+                command.values.deleted_by === "admin",
+        ),
+        true,
+    );
+    assert.equal(
+        commands.filter(
+            (command) =>
+                command.option === "DELETE" &&
+                command.table === "study_library_references",
+        ).length,
+        2,
+    );
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "DELETE" &&
+                command.table === "study_library_entries",
+        ),
+        true,
+    );
+});
+
+test("content pack reconciliation skips blacklisted hashes", async () => {
+    const commands: StructuredDbCommand[] = [];
+    const schema = {
+        id: "japanese",
+        version: 1,
+        namespace: "ja",
+        language: "ja",
+        metadata: { labels: { en: "Japanese" } },
+        layers: [
+            {
+                id: "characters",
+                metadata: { labels: { en: "Characters" } },
+            },
+        ],
+    };
+    const plan: LibraryContentPackPlan = {
+        root: "/content",
+        manifest: {
+            id: "study-language-ja",
+            publisher: "Cognis Labs HQ",
+            version: "1.0.0",
+            contentRevision: "1",
+            namespace: "ja",
+            schema: "schema.json",
+            content: "data",
+            license: { id: "CC-BY-4.0" },
+        },
+        schema,
+        digest: "digest",
+        records: [{ id: "a", layer: "characters", label: "A" }],
+        assets: [],
+    };
+    const hash = (await import("../content-pack.js")).contentRecordHash(
+        plan.manifest,
+        plan.schema,
+        plan.records[0],
+    );
+    const db: DbExecutor = {
+        ensureTable: async () => {},
+        transaction: async (callback) => callback(db),
+        executeCommand: async (command) => {
+            commands.push(command);
+            if (command.option !== "SELECT") return { rowCount: 1 };
+            if (command.table === "study_library_content_hash_blacklist")
+                return { rows: [{ content_hash: hash }] };
+            if (command.table === "study_library_schemas")
+                return { rows: [{ schema_json: JSON.stringify(schema) }] };
+            return { rows: [] };
+        },
+    };
+
+    await new LibraryStore(db).ingestContentPack(plan);
+
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "INSERT" &&
+                command.table === "study_library_entries",
+        ),
+        false,
+    );
+});
+
+test("unchanged content packs restore entries removed after installation", async () => {
+    const commands: StructuredDbCommand[] = [];
+    const schema = {
+        id: "japanese",
+        version: 1,
+        namespace: "ja",
+        language: "ja",
+        metadata: { labels: { en: "Japanese" } },
+        layers: [
+            {
+                id: "characters",
+                metadata: { labels: { en: "Characters" } },
+            },
+        ],
+    };
+    const plan: LibraryContentPackPlan = {
+        root: "/content",
+        manifest: {
+            id: "study-language-ja",
+            publisher: "Cognis Labs HQ",
+            version: "1.0.0",
+            contentRevision: "1",
+            namespace: "ja",
+            schema: "schema.json",
+            content: "data",
+            license: { id: "CC-BY-4.0" },
+        },
+        schema,
+        digest: "installed-digest",
+        records: [{ id: "a", layer: "characters", label: "A" }],
+        assets: [],
+    };
+    const db: DbExecutor = {
+        ensureTable: async () => {},
+        transaction: async (callback) => callback(db),
+        executeCommand: async (command) => {
+            commands.push(command);
+            if (command.option !== "SELECT") return { rowCount: 1 };
+            if (command.table === "study_library_content_packs") {
+                if (command.columns?.includes("version")) return { rows: [] };
+                return { rows: [{ digest: "installed-digest" }] };
+            }
+            if (command.table === "study_library_schemas") {
+                return { rows: [{ schema_json: JSON.stringify(schema) }] };
+            }
+            return { rows: [] };
+        },
+    };
+
+    const receipt = await new LibraryStore(db).ingestContentPack(plan);
+    const restoredEntries = commands.filter(
+        (command) =>
+            command.option === "INSERT" &&
+            command.table === "study_library_entries",
+    );
+
+    assert.equal(receipt.unchanged, true);
+    assert.equal(restoredEntries.length, 1);
+});

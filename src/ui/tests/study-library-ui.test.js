@@ -84,6 +84,17 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(stylesheet, /filter: grayscale\(1\)/);
 });
 
+test("Study Library owners can select and delete multiple entries", () => {
+    assert.match(source, /function canDeleteEntry/);
+    assert.match(source, /data-library-select-entry/);
+    assert.match(source, /data-library-delete-selection/);
+    assert.match(source, /data-library-blacklist-content/);
+    assert.match(source, /deleteLibraryEntries/);
+    assert.match(clientSource, /export async function deleteLibraryEntries/);
+    assert.match(clientSource, /method: "DELETE"/);
+    assert.match(stylesheet, /\.library-entry-selection/);
+});
+
 test("Study Library popup uses equal directional navigation controls", () => {
     assert.match(source, /label: `← \$\{i18n\.t/);
     assert.match(source, /i18n\.t\("gateway\.study\.library_next"\)\} →`/);

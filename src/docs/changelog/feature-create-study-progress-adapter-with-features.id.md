@@ -30,6 +30,10 @@ Audio Pustaka yang gagal kini hanya mengganti pemutarnya dengan pesan terlokalis
 
 Relasi karakter dan karakter alternatif dapat mendeklarasikan arah varian kiri, kanan, atas, atau bawah. Pustaka mempertahankan setiap varian sebagai entitas mandiri sambil membuka kontrol anak di sekitar kartu induk saat diarahkan atau menerima fokus papan ketik.
 
+## Penghapusan oleh pemilik konten
+
+Pemilik konten, administrator, dan pemilik sistem kini dapat memilih beberapa entri Perpustakaan dan menghapusnya secara permanen beserta relasinya. Pengaktifan modul memulihkan konten bawaan yang hilang secara default, sedangkan kotak centang penghapusan akan memasukkan hash konten terpilih ke daftar blokir agar rekaman yang sama tidak kembali.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -46,3 +50,5 @@ Relasi karakter dan karakter alternatif dapat mendeklarasikan arah varian kiri, 
 - [17756b2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/17756b2fb83d82f25bf7c349f63170fc738db995)
 - [86d3162c](https://github.com/Cognis-Labs-HQ/Cognis/commit/86d3162c19544032fa2ccc6d55f80de58f9495fb)
 - [77611b4e](https://github.com/Cognis-Labs-HQ/Cognis/commit/77611b4ed1c6d7afa1221f966cf80ec9b1292316)
+- [4ff6b5ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ff6b5ec7825a19626c371347c04c43785971216)
+- [1190320b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1190320be506d0c74feefa441a4188d05d3892ae)

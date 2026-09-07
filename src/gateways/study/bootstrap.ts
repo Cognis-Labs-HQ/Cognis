@@ -208,20 +208,24 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
     for (const flow of [
         {
-            id: "study-library-create",
+            id: "study:library:create",
             stages: ["normalize", "resolve", "validate", "persist"],
         },
         {
-            id: "study-library-resolve",
+            id: "study:library:resolve",
             stages: ["normalize", "propose", "rank"],
         },
         {
-            id: "study-library-lookup",
+            id: "study:library:lookup",
             stages: ["discover", "lookup", "rank"],
         },
         {
-            id: "study-library-ingest",
+            id: "study:library:ingest",
             stages: ["inspect", "validate", "stage", "persist", "audit"],
+        },
+        {
+            id: "study:library:delete",
+            stages: ["authorize", "validate", "delete", "audit"],
         },
     ]) {
         if (!systemCtx?.hasFlow(flow.id)) {

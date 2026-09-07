@@ -46,6 +46,19 @@ export async function createLibraryEntry(location, entry) {
     return (await response.json()).data;
 }
 
+export async function deleteLibraryEntries(
+    entryIds,
+    { blacklistContentHashes = false } = {},
+) {
+    const response = await apiFetch("/api/v1/study/library/entries", {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ entryIds, blacklistContentHashes }),
+    });
+    if (!response.ok) throw new Error("delete_failed");
+    return (await response.json()).data;
+}
+
 export async function previewLibraryResolution(location, entry) {
     const response = await apiFetch("/api/v1/study/library/resolve", {
         method: "POST",

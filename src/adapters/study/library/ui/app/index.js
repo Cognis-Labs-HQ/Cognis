@@ -13,6 +13,7 @@ import {
     renderStudySubNavigation,
 } from "/static/gateways/study/ui/sub-navigation.js";
 import {
+    deleteLibraryEntries,
     fetchLibraryAudioUrl,
     fetchLibraryEntries,
     fetchLibraryEntry,
@@ -20,6 +21,7 @@ import {
 } from "/static/gateways/study/ui/library-client.js";
 import {
     buildLibraryUrl,
+    isAdminScope,
     parseLanguageCode,
 } from "/static/gateways/study/ui/language.js";
 
@@ -400,6 +402,24 @@ function variantPlacement(entry, schema) {
     return null;
 }
 
+function canDeleteEntry(entry) {
+    return (
+        isAdminScope() ||
+        entry.createdBy === localStorage.getItem("cognis_account")
+    );
+}
+
+function renderSelection(entry, i18n, direction = "") {
+    if (!canDeleteEntry(entry)) return "";
+    const directionClass = direction
+        ? ` library-entry-selection-${direction}`
+        : "";
+    const label = i18n
+        .t("gateway.study.library_select_entry")
+        .replace("{{ entry }}", entry.label);
+    return `<input class="library-entry-selection${directionClass}" type="checkbox" data-library-select-entry="${escapeHtml(entry.id)}" aria-label="${escapeHtml(label)}">`;
+}
+
 function renderEntryCard(entry, layer, schema, entries, i18n) {
     const filterValues = Object.fromEntries(
         metadataFields(layer).map((field) => [
@@ -415,12 +435,59 @@ function renderEntryCard(entry, layer, schema, entries, i18n) {
             ? [{ entry: candidate, direction: placement.direction }]
             : [];
     });
-    return `<div class="library-entry-card-shell"><button class="library-entry-card btn-neutral" type="button" ${entryAttributes(entry)} data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}"><strong>${escapeHtml(entry.label)}</strong><span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span></button>${variants
+    return `<div class="library-entry-card-shell"><button class="library-entry-card btn-neutral" type="button" ${entryAttributes(entry)} data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}"><strong>${escapeHtml(entry.label)}</strong><span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span></button>${renderSelection(entry, i18n)}${variants
         .map(
             ({ entry: variant, direction }) =>
-                `<button class="library-entry-variant library-entry-variant-${direction} btn-neutral" type="button" ${entryAttributes(variant)}>${escapeHtml(variant.label)}</button>`,
+                `<button class="library-entry-variant library-entry-variant-${direction} btn-neutral" type="button" ${entryAttributes(variant)}>${escapeHtml(variant.label)}</button>${renderSelection(variant, i18n, direction)}`,
         )
         .join("")}</div>`;
+}
+
+function selectedEntryIds(root) {
+    return Array.from(
+        root.querySelectorAll("[data-library-select-entry]:checked"),
+        (control) => control.dataset.librarySelectEntry,
+    );
+}
+
+function updateDeleteSelectionButton(root, i18n) {
+    const button = root.querySelector("[data-library-delete-selection]");
+    if (!button) return;
+    const count = selectedEntryIds(root).length;
+    button.disabled = count === 0;
+    button.textContent = i18n
+        .t("gateway.study.library_delete_selected")
+        .replace("{{ count }}", String(count));
+}
+
+async function confirmEntryDeletion(root, i18n) {
+    const entryIds = selectedEntryIds(root);
+    if (entryIds.length === 0) return null;
+    let blacklistContentHashes = false;
+    const action = await openPopup({
+        title: i18n.t("gateway.study.library_delete_title"),
+        body: `<p>${escapeHtml(i18n.t("gateway.study.library_delete_warning"))}</p><label class="library-delete-permanent"><input type="checkbox" data-library-blacklist-content> ${escapeHtml(i18n.t("gateway.study.library_delete_permanent"))}</label>`,
+        variant: "warning",
+        actions: [
+            {
+                id: "delete",
+                label: i18n.t("ui.reuse.delete"),
+                variant: "cancel",
+            },
+            {
+                id: "cancel",
+                label: i18n.t("ui.reuse.cancel"),
+                variant: "neutral",
+            },
+        ],
+        onAction(selectedAction, overlay) {
+            if (selectedAction !== "delete") return;
+            blacklistContentHashes = overlay.querySelector(
+                "[data-library-blacklist-content]",
+            ).checked;
+        },
+    });
+    return action === "delete" ? { entryIds, blacklistContentHashes } : null;
 }
 
 function renderBrowser(schemas, entries, i18n) {
@@ -631,13 +698,20 @@ export async function mount(root, { signal } = {}) {
     let entries = [];
     try {
         schemas = await fetchLibrarySchemas(languageCode);
+        const accountId = localStorage.getItem("cognis_account");
+        const locations = [
+            { scope: "global" },
+            ...(accountId ? [{ scope: "user", scopeId: accountId }] : []),
+        ];
         entries = (
             await Promise.all(
-                schemas.map((schema) =>
-                    fetchLibraryEntries({
-                        scope: "global",
-                        schemaId: schema.id,
-                    }),
+                schemas.flatMap((schema) =>
+                    locations.map((location) =>
+                        fetchLibraryEntries({
+                            ...location,
+                            schemaId: schema.id,
+                        }),
+                    ),
                 ),
             )
         ).flat();
@@ -664,7 +738,16 @@ export async function mount(root, { signal } = {}) {
             title: i18n.t("gateway.study.library_label"),
             subtitle: i18n.t("gateway.study.library_subtitle"),
         },
-        toolbar: [],
+        toolbar: entries.some(canDeleteEntry)
+            ? [
+                  {
+                      id: "library-content-actions",
+                      label: i18n.t("ui.reuse.actions"),
+                      render: () =>
+                          `<button class="btn-cancel" type="button" data-library-delete-selection disabled>${escapeHtml(i18n.t("gateway.study.library_delete_selected").replace("{{ count }}", "0"))}</button>`,
+                  },
+              ]
+            : [],
         subNavigation: [
             {
                 id: "study-subnav",
@@ -682,8 +765,47 @@ export async function mount(root, { signal } = {}) {
     signal?.throwIfAborted();
     bindStudySubNavigation(root, { signal });
     root.addEventListener(
+        "change",
+        (event) => {
+            if (!event.target.matches("[data-library-select-entry]")) return;
+            updateDeleteSelectionButton(root, i18n);
+        },
+        { signal },
+    );
+    root.addEventListener(
         "click",
         (event) => {
+            const deleteSelection = event.target.closest(
+                "[data-library-delete-selection]",
+            );
+            if (deleteSelection) {
+                void confirmEntryDeletion(root, i18n).then(async (request) => {
+                    if (!request) return;
+                    try {
+                        await deleteLibraryEntries(request.entryIds, {
+                            blacklistContentHashes:
+                                request.blacklistContentHashes,
+                        });
+                        entries = entries.filter(
+                            (entry) => !request.entryIds.includes(entry.id),
+                        );
+                        root.querySelector(".library-browser").innerHTML =
+                            renderBrowser(schemas, entries, i18n);
+                        updateDeleteSelectionButton(root, i18n);
+                        showToast(
+                            i18n.t("gateway.study.library_delete_success"),
+                            { variant: "success" },
+                        );
+                    } catch {
+                        showToast(
+                            i18n.t("gateway.study.library_delete_error"),
+                            { variant: "error" },
+                        );
+                    }
+                });
+                return;
+            }
+            if (event.target.matches("[data-library-select-entry]")) return;
             const filter = event.target.closest("button[data-library-filter]");
             if (filter) {
                 applyLibraryFilters(filter);

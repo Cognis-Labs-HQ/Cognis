@@ -73,6 +73,11 @@ export interface LibraryCapability {
         location: LibraryLocation,
         input: LibraryEntryInput,
     ): Promise<LibraryEntry>;
+    deleteEntries(
+        actor: LibraryActor,
+        entryIds: readonly string[],
+        blacklistContentHashes: boolean,
+    ): Promise<void>;
     resolve(
         actor: LibraryActor,
         location: LibraryLocation,
@@ -195,7 +200,7 @@ export class LibraryService implements LibraryCapability {
             } else {
                 this.assertSchemaVersionAvailable(plan.schema);
             }
-            await this.flow?.run("study-library-ingest", { plan });
+            await this.flow?.run("study:library:ingest", { plan });
             await this.storeContentPackAudio(plan);
             const receipt = await this.store.ingestContentPack(plan);
             if (!registered) this.rememberSchema(plan.schema);
@@ -371,7 +376,7 @@ export class LibraryService implements LibraryCapability {
             "schemaId" | "schemaVersion" | "layer" | "label"
         >,
     ): Promise<LibraryResolutionProposal[]> {
-        await this.flow?.run("study-library-resolve", input);
+        await this.flow?.run("study:library:resolve", input);
         const location = await this.authorize(actor, raw, false);
         const schema = this.schema(input.schemaId, input.schemaVersion);
         findLayer(schema, input.layer);
@@ -389,7 +394,7 @@ export class LibraryService implements LibraryCapability {
             "schemaId" | "schemaVersion" | "layer" | "label"
         >,
     ): Promise<LibraryLookupSuggestion[]> {
-        await this.flow?.run("study-library-lookup", input);
+        await this.flow?.run("study:library:lookup", input);
         const schema = this.schema(input.schemaId, input.schemaVersion);
         const layer = findLayer(schema, input.layer);
         const suggestions = await Promise.all(
@@ -417,7 +422,7 @@ export class LibraryService implements LibraryCapability {
         raw: LibraryLocation,
         input: LibraryEntryInput,
     ): Promise<LibraryEntry> {
-        await this.flow?.run("study-library-create", {
+        await this.flow?.run("study:library:create", {
             actor,
             location: raw,
             entry: input,
@@ -488,6 +493,49 @@ export class LibraryService implements LibraryCapability {
             actor.accountId,
             entryId,
         );
+    }
+
+    async deleteEntries(
+        actor: LibraryActor,
+        entryIds: readonly string[],
+        blacklistContentHashes: boolean,
+    ): Promise<void> {
+        if (entryIds.length === 0 || entryIds.length > 500)
+            throw new Error("invalid_entry_selection");
+        if (new Set(entryIds).size !== entryIds.length)
+            throw new Error("duplicate_entry_selection");
+        const entries: LibraryEntry[] = [];
+        for (const entryId of entryIds) {
+            if (!entryId.trim() || entryId.length > 200)
+                throw new Error("invalid_entry_id");
+            const entry = await this.read(actor, entryId);
+            if (!entry) throw new Error("not_found");
+            if (
+                actor.role !== "admin" &&
+                actor.role !== "owner" &&
+                entry.createdBy !== actor.accountId
+            ) {
+                throw new Error("forbidden");
+            }
+            entries.push(entry);
+        }
+        await this.flow?.run("study:library:delete", {
+            actor,
+            entries,
+            blacklistContentHashes,
+        });
+        await this.store.deleteEntries(
+            entryIds,
+            actor.accountId,
+            blacklistContentHashes,
+        );
+        await this.log?.("info", "Deleted Study Library entries.", {
+            component: "study-library",
+            operation: "delete-entries",
+            accountId: actor.accountId,
+            entryIds,
+            blacklistContentHashes,
+        });
     }
 
     async trace(actor: LibraryActor, entryId: string) {

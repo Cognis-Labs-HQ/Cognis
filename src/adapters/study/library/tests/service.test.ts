@@ -83,6 +83,85 @@ test("lookup providers are ranked and cleanly removable", async () => {
     );
 });
 
+test("content owners and administrators can delete selected entries", async () => {
+    const deleted: Array<{
+        ids: readonly string[];
+        accountId: string;
+        blacklist: boolean;
+    }> = [];
+    const entries = new Map([
+        [
+            "owned",
+            {
+                id: "owned",
+                scope: "global",
+                scopeId: "global",
+                createdBy: "alice",
+            },
+        ],
+        [
+            "module",
+            {
+                id: "module",
+                scope: "global",
+                scopeId: "global",
+                createdBy: "content-pack:language",
+            },
+        ],
+    ]);
+    const store = {
+        get: async (id: string) => entries.get(id) ?? null,
+        deleteEntries: async (
+            ids: readonly string[],
+            accountId: string,
+            blacklist: boolean,
+        ) => deleted.push({ ids, accountId, blacklist }),
+    };
+    const library = new LibraryService(store as never);
+
+    await library.deleteEntries(
+        { accountId: "alice", role: "user" },
+        ["owned"],
+        false,
+    );
+    await library.deleteEntries(
+        { accountId: "admin", role: "admin" },
+        ["module"],
+        true,
+    );
+
+    assert.deepEqual(deleted, [
+        { ids: ["owned"], accountId: "alice", blacklist: false },
+        { ids: ["module"], accountId: "admin", blacklist: true },
+    ]);
+});
+
+test("content deletion rejects actors who do not own every selection", async () => {
+    let deleteCalled = false;
+    const store = {
+        get: async () => ({
+            id: "other",
+            scope: "global",
+            scopeId: "global",
+            createdBy: "bob",
+        }),
+        deleteEntries: async () => {
+            deleteCalled = true;
+        },
+    };
+    const library = new LibraryService(store as never);
+
+    await assert.rejects(
+        library.deleteEntries(
+            { accountId: "alice", role: "user" },
+            ["other"],
+            false,
+        ),
+        /forbidden/,
+    );
+    assert.equal(deleteCalled, false);
+});
+
 test("definition creation generates a key and requires English", async () => {
     let captured: Record<string, unknown> | undefined;
     const store = {

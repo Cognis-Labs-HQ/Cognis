@@ -138,6 +138,19 @@ export class LibraryStore {
             ],
         });
         await this.db.ensureTable({
+            name: "study_library_content_hash_blacklist",
+            columns: [
+                { name: "content_hash", type: "text", primaryKey: true },
+                { name: "deleted_by", type: "text", notNull: true },
+                {
+                    name: "deleted_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+        });
+        await this.db.ensureTable({
             name: "study_library_references",
             columns: [
                 { name: "source_entry_id", type: "text", notNull: true },
@@ -231,25 +244,34 @@ export class LibraryStore {
                 { column: "version", value: manifest.version },
             ],
         });
-        if (existing.rows?.length) {
+        const unchanged = Boolean(existing.rows?.length);
+        if (unchanged) {
             if (String(existing.rows[0].digest) !== digest)
                 throw new Error("content_pack_version_conflict");
-            return this.contentPackReceipt(plan, true);
         }
         await this.db.transaction(async (db) => {
+            const blacklist = await db.executeCommand({
+                option: "SELECT",
+                table: "study_library_content_hash_blacklist",
+                columns: ["content_hash"],
+            });
+            const blockedHashes = new Set(
+                (blacklist.rows ?? []).map((row) => String(row.content_hash)),
+            );
             const canonicalIdsByHash = new Map<string, string>();
             const recordIdentity = new Map(
-                records.map((record) => {
+                records.flatMap((record) => {
                     const contentHash = contentRecordHash(
                         manifest,
                         schema,
                         record,
                     );
+                    if (blockedHashes.has(contentHash)) return [];
                     const canonicalId =
                         canonicalIdsByHash.get(contentHash) ??
                         contentEntryId(manifest, record.id);
                     canonicalIdsByHash.set(contentHash, canonicalId);
-                    return [record.id, { canonicalId, contentHash }] as const;
+                    return [[record.id, { canonicalId, contentHash }] as const];
                 }),
             );
             const registeredSchema = await db.executeCommand({
@@ -279,6 +301,8 @@ export class LibraryStore {
                 });
             }
             for (const record of records) {
+                const identity = recordIdentity.get(record.id);
+                if (!identity) continue;
                 const layer = schema.layers.find(
                     ({ id }) => id === record.layer,
                 )!;
@@ -297,9 +321,7 @@ export class LibraryStore {
                         );
                     }
                 }
-                const { canonicalId: id, contentHash } = recordIdentity.get(
-                    record.id,
-                )!;
+                const { canonicalId: id, contentHash } = identity;
                 await this.removeDuplicateContentEntries(
                     db,
                     id,
@@ -347,14 +369,16 @@ export class LibraryStore {
                 );
             }
             for (const record of records) {
+                const source = recordIdentity.get(record.id);
+                if (!source) continue;
                 for (const [index, reference] of (
                     record.references ?? []
                 ).entries()) {
+                    const target = recordIdentity.get(reference.entryId);
+                    if (!target) continue;
                     const values = {
-                        source_entry_id: recordIdentity.get(record.id)!
-                            .canonicalId,
-                        target_entry_id: recordIdentity.get(reference.entryId)!
-                            .canonicalId,
+                        source_entry_id: source.canonicalId,
+                        target_entry_id: target.canonicalId,
                         relation: reference.relation,
                         position: reference.position ?? index,
                     };
@@ -366,27 +390,70 @@ export class LibraryStore {
                     });
                 }
             }
-            await db.executeCommand({
-                option: "INSERT",
-                table: "study_library_content_packs",
-                values: {
-                    pack_id: manifest.id,
-                    publisher: manifest.publisher,
-                    version: manifest.version,
-                    content_revision: manifest.contentRevision,
-                    schema_id: schema.id,
-                    schema_version: schema.version,
-                    digest,
-                    record_count: records.length,
-                    relationship_count: records.reduce(
-                        (count, record) =>
-                            count + (record.references?.length ?? 0),
-                        0,
-                    ),
-                },
-            });
+            if (!unchanged) {
+                await db.executeCommand({
+                    option: "INSERT",
+                    table: "study_library_content_packs",
+                    values: {
+                        pack_id: manifest.id,
+                        publisher: manifest.publisher,
+                        version: manifest.version,
+                        content_revision: manifest.contentRevision,
+                        schema_id: schema.id,
+                        schema_version: schema.version,
+                        digest,
+                        record_count: records.length,
+                        relationship_count: records.reduce(
+                            (count, record) =>
+                                count + (record.references?.length ?? 0),
+                            0,
+                        ),
+                    },
+                });
+            }
         });
-        return this.contentPackReceipt(plan, false);
+        return this.contentPackReceipt(plan, unchanged);
+    }
+
+    async deleteEntries(
+        entryIds: readonly string[],
+        deletedBy: string,
+        blacklistContentHashes: boolean,
+    ): Promise<void> {
+        await this.db.transaction(async (db) => {
+            for (const entryId of entryIds) {
+                const result = await db.executeCommand({
+                    option: "SELECT",
+                    table: "study_library_entries",
+                    columns: ["content_hash"],
+                    where: [{ column: "id", value: entryId }],
+                });
+                const contentHash = result.rows?.[0]?.content_hash;
+                if (blacklistContentHashes && typeof contentHash === "string") {
+                    await db.executeCommand({
+                        option: "INSERT",
+                        table: "study_library_content_hash_blacklist",
+                        values: {
+                            content_hash: contentHash,
+                            deleted_by: deletedBy,
+                        },
+                        conflict: { action: "ignore" },
+                    });
+                }
+                for (const column of ["source_entry_id", "target_entry_id"]) {
+                    await db.executeCommand({
+                        option: "DELETE",
+                        table: "study_library_references",
+                        where: [{ column, value: entryId }],
+                    });
+                }
+                await db.executeCommand({
+                    option: "DELETE",
+                    table: "study_library_entries",
+                    where: [{ column: "id", value: entryId }],
+                });
+            }
+        });
     }
 
     private async removeDuplicateContentEntries(

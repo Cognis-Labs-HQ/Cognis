@@ -81,6 +81,46 @@ test("schema route rejects unauthorized requests", async () => {
     assert.equal(result.body.error.code, "unauthorized");
 });
 
+test("entry deletion passes validated selections to the Library capability", async () => {
+    let request:
+        | {
+              actor: { accountId: string; role: string };
+              entryIds: readonly string[];
+              blacklistContentHashes: boolean;
+          }
+        | undefined;
+    const route = createLibraryRoutes(
+        {
+            deleteEntries: async (actor, entryIds, blacklistContentHashes) => {
+                request = { actor, entryIds, blacklistContentHashes };
+            },
+        } as never,
+        createAuthContext(
+            new Map([["admin", { sub: "ada", role: "admin" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "DELETE",
+            token: "admin",
+            body: JSON.stringify({
+                entryIds: ["one", "two"],
+                blacklistContentHashes: true,
+            }),
+        }) as never,
+        response as never,
+        new URL("http://localhost/api/v1/study/library/entries"),
+    );
+
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(request, {
+        actor: { accountId: "ada", role: "admin" },
+        entryIds: ["one", "two"],
+        blacklistContentHashes: true,
+    });
+});
+
 test("asset route keeps authenticated package bytes out of shared caches", async () => {
     const route = createLibraryRoutes(
         {
