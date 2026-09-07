@@ -85,7 +85,7 @@ function externalKey(
     manifest: LibraryContentPackManifest,
     recordId: string,
 ): string {
-    return `${manifest.publisher}:${manifest.id}:${manifest.version}:${recordId}`;
+    return `${manifest.publisher}:${manifest.id}:${recordId}`;
 }
 
 export function contentEntryId(
@@ -94,6 +94,28 @@ export function contentEntryId(
 ): string {
     return createHash("sha256")
         .update(externalKey(manifest, recordId))
+        .digest("hex");
+}
+
+export function contentRecordHash(
+    manifest: LibraryContentPackManifest,
+    schema: LibraryContentPackPlan["schema"],
+    record: LibraryContentPackPlan["records"][number],
+): string {
+    return createHash("sha256")
+        .update(
+            canonicalJson({
+                publisher: manifest.publisher,
+                packId: manifest.id,
+                schemaId: schema.id,
+                schemaVersion: schema.version,
+                language: schema.language,
+                layer: record.layer,
+                label: record.label.trim(),
+                fields: record.fields ?? {},
+                references: record.references ?? [],
+            }),
+        )
         .digest("hex");
 }
 

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import { contentEntryId } from "./content-pack.js";
+import { contentEntryId, contentRecordHash } from "./content-pack.js";
 import type {
     LibraryAsset,
     LibraryContentPackPlan,
@@ -117,6 +117,7 @@ export class LibraryStore {
                     notNull: true,
                     default: "{}",
                 },
+                { name: "content_hash", type: "text", unique: true },
                 { name: "created_by", type: "text", notNull: true },
                 {
                     name: "created_at",
@@ -232,6 +233,21 @@ export class LibraryStore {
             return this.contentPackReceipt(plan, true);
         }
         await this.db.transaction(async (db) => {
+            const canonicalIdsByHash = new Map<string, string>();
+            const recordIdentity = new Map(
+                records.map((record) => {
+                    const contentHash = contentRecordHash(
+                        manifest,
+                        schema,
+                        record,
+                    );
+                    const canonicalId =
+                        canonicalIdsByHash.get(contentHash) ??
+                        contentEntryId(manifest, record.id);
+                    canonicalIdsByHash.set(contentHash, canonicalId);
+                    return [record.id, { canonicalId, contentHash }] as const;
+                }),
+            );
             const registeredSchema = await db.executeCommand({
                 option: "SELECT",
                 table: "study_library_schemas",
@@ -277,7 +293,18 @@ export class LibraryStore {
                         );
                     }
                 }
-                const id = contentEntryId(manifest, record.id);
+                const { canonicalId: id, contentHash } = recordIdentity.get(
+                    record.id,
+                )!;
+                await this.removeDuplicateContentEntries(db, id, contentHash, {
+                    schema_id: schema.id,
+                    schema_version: schema.version,
+                    layer: record.layer,
+                    language: schema.language,
+                    label: record.label.trim(),
+                    fields_json: JSON.stringify(fields),
+                    created_by: `content-pack:${manifest.id}`,
+                });
                 await this.upsert(db, "study_library_entries", ["id"], {
                     id,
                     scope: "global",
@@ -288,6 +315,7 @@ export class LibraryStore {
                     language: schema.language,
                     label: record.label.trim(),
                     fields_json: JSON.stringify(fields),
+                    content_hash: contentHash,
                     created_by: `content-pack:${manifest.id}`,
                     updated_at: new Date().toISOString(),
                 });
@@ -312,11 +340,10 @@ export class LibraryStore {
                     record.references ?? []
                 ).entries()) {
                     const values = {
-                        source_entry_id: contentEntryId(manifest, record.id),
-                        target_entry_id: contentEntryId(
-                            manifest,
-                            reference.entryId,
-                        ),
+                        source_entry_id: recordIdentity.get(record.id)!
+                            .canonicalId,
+                        target_entry_id: recordIdentity.get(reference.entryId)!
+                            .canonicalId,
                         relation: reference.relation,
                         position: reference.position ?? index,
                     };
@@ -349,6 +376,74 @@ export class LibraryStore {
             });
         });
         return this.contentPackReceipt(plan, false);
+    }
+
+    private async removeDuplicateContentEntries(
+        db: DbExecutor,
+        canonicalId: string,
+        contentHash: string,
+        legacyIdentity: Record<string, unknown>,
+    ): Promise<void> {
+        const matches = await Promise.all([
+            db.executeCommand({
+                option: "SELECT",
+                table: "study_library_entries",
+                columns: ["id"],
+                where: [{ column: "content_hash", value: contentHash }],
+            }),
+            db.executeCommand({
+                option: "SELECT",
+                table: "study_library_entries",
+                columns: ["id"],
+                where: Object.entries(legacyIdentity).map(
+                    ([column, value]) => ({ column, value }),
+                ),
+            }),
+        ]);
+        const duplicateIds = new Set(
+            matches.flatMap((result) =>
+                (result.rows ?? []).map((row) => String(row.id)),
+            ),
+        );
+        duplicateIds.delete(canonicalId);
+        for (const duplicateId of duplicateIds) {
+            for (const column of ["source_entry_id", "target_entry_id"]) {
+                const references = await db.executeCommand({
+                    option: "SELECT",
+                    table: "study_library_references",
+                    where: [{ column, value: duplicateId }],
+                });
+                for (const reference of references.rows ?? []) {
+                    await db.executeCommand({
+                        option: "INSERT",
+                        table: "study_library_references",
+                        values: {
+                            source_entry_id:
+                                column === "source_entry_id"
+                                    ? canonicalId
+                                    : reference.source_entry_id,
+                            target_entry_id:
+                                column === "target_entry_id"
+                                    ? canonicalId
+                                    : reference.target_entry_id,
+                            relation: reference.relation,
+                            position: reference.position,
+                        },
+                        conflict: { action: "ignore" },
+                    });
+                }
+                await db.executeCommand({
+                    option: "DELETE",
+                    table: "study_library_references",
+                    where: [{ column, value: duplicateId }],
+                });
+            }
+            await db.executeCommand({
+                option: "DELETE",
+                table: "study_library_entries",
+                where: [{ column: "id", value: duplicateId }],
+            });
+        }
     }
 
     private contentPackAssetUrl(

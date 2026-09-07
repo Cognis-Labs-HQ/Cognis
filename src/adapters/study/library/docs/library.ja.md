@@ -14,7 +14,7 @@ Study ゲートウェイはスキーマ検出、一覧、作成、詳細、双�
 
 ## 宣言的コンテンツパック
 
-導入済み言語パックは、検証に `inspectContentPack(root)`、データ専用ライブラリの導入に `ingestContentPack(root)` を呼びます。ルートには `manifest.json`、参照スキーマ、レイヤー ID のサブディレクトリを持つコンテンツディレクトリを置きます。ファイルは安定 ID と明示的関係を持つレコード配列です。Cognis はグラフ全体を検証し、名前空間 ID、digest、receipt を記録して、スキーマ、項目、edge を原子的に保存します。完全な作成契約は `study-language-framework.ja.md` にあります。
+導入済み言語パックは、検証に `inspectContentPack(root)`、データ専用ライブラリの導入に `ingestContentPack(root)` を呼びます。ルートには `manifest.json`、参照スキーマ、レイヤー ID のサブディレクトリを持つコンテンツディレクトリを置きます。ファイルは安定 ID と明示的関係を持つレコード配列です。Cognis はグラフ全体を検証し、名前空間 ID、digest、receipt を記録して、スキーマ、項目、edge を原子的に保存します。項目 ID はパック版が変わっても安定し、導入時に以前のインポートにある同一コンテンツハッシュを関係を保持したまま 1 つの正規項目へ統合します。完全な作成契約は `study-language-framework.ja.md` にあります。
 
 ## ローカライズされた定義
 

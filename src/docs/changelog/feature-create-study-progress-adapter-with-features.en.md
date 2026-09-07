@@ -20,7 +20,7 @@ Moved the Library browser entry point to the required adapter `ui/app/index.js` 
 
 ## Repeatable content imports
 
-PostgreSQL and MariaDB table provisioning now check for duplicate data before healing declared unique indexes, preserving module availability when existing data cannot safely become unique. Study Library entries and assets use healed conflict targets, while all-key references use conflict-ignore inserts so repeated content cannot fail on their primary key.
+Study Library content IDs are now stable across package versions, and each entry stores a canonical content hash. Import reconciles older version-derived IDs and repeated identical hashes into one canonical entry while preserving inbound and outbound references, preventing repeated alphabet or vocabulary cards. All-key references continue to use conflict-ignore inserts.
 
 ## Commits
 
@@ -35,3 +35,4 @@ PostgreSQL and MariaDB table provisioning now check for duplicate data before he
 - [ad01aa56](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad01aa561321b7db5982b0fbfe7f1b28ed11347b)
 - [9fe9af00](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fe9af0021f9a093ba432fca9761368e8df0e5f6)
 - [51c727ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/51c727eaeb923bd3d4a569ed9e924945f56e286c)
+- [17756b2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/17756b2fb83d82f25bf7c349f63170fc738db995)

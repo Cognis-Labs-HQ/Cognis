@@ -20,7 +20,7 @@
 
 ## 繰り返し可能なコンテンツ導入
 
-PostgreSQL と MariaDB のテーブル準備は、宣言された一意インデックスを修復する前に重複データを確認し、既存データを安全に一意化できない場合もモジュールを利用可能に保ちます。学習ライブラリの項目と資産は修復済みの競合対象を使い、すべての列がキーである参照は競合を無視する挿入を使います。
+学習ライブラリのコンテンツ ID はパッケージ版が変わっても安定し、各項目は正規コンテンツハッシュを保存します。導入時に、以前の版依存 ID と同一ハッシュの重複を 1 つの正規項目へ統合し、入出力の参照を保持するため、文字表や語彙カードが繰り返し表示されません。
 
 ## コミット
 
@@ -35,3 +35,4 @@ PostgreSQL と MariaDB のテーブル準備は、宣言された一意インデ
 - [ad01aa56](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad01aa561321b7db5982b0fbfe7f1b28ed11347b)
 - [9fe9af00](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fe9af0021f9a093ba432fca9761368e8df0e5f6)
 - [51c727ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/51c727eaeb923bd3d4a569ed9e924945f56e286c)
+- [17756b2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/17756b2fb83d82f25bf7c349f63170fc738db995)

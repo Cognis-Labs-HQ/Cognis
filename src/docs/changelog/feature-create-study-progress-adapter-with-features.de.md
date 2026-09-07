@@ -20,7 +20,7 @@ Der Einstiegspunkt des Bibliotheksbrowsers wurde in die vorgeschriebene Adapters
 
 ## Wiederholbare Inhaltsimporte
 
-Die Tabellenbereitstellung von PostgreSQL und MariaDB prüft jetzt vor der Reparatur deklarierter eindeutiger Indizes auf doppelte Daten und erhält die Modulverfügbarkeit, wenn vorhandene Daten nicht sicher eindeutig werden können. Einträge und Anlagen der Lernbibliothek verwenden reparierte Konfliktziele, während reine Schlüsselverweise konfliktignorierende Einfügungen verwenden.
+Inhalts-IDs der Lernbibliothek bleiben jetzt über Paketversionen hinweg stabil, und jeder Eintrag speichert einen kanonischen Inhaltshash. Der Import führt ältere versionsabhängige IDs und wiederholte identische Hashes zu einem kanonischen Eintrag zusammen und erhält eingehende sowie ausgehende Verweise. Dadurch entstehen keine wiederholten Alphabet- oder Wortschatzkarten.
 
 ## Commits
 
@@ -35,3 +35,4 @@ Die Tabellenbereitstellung von PostgreSQL und MariaDB prüft jetzt vor der Repar
 - [ad01aa56](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad01aa561321b7db5982b0fbfe7f1b28ed11347b)
 - [9fe9af00](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fe9af0021f9a093ba432fca9761368e8df0e5f6)
 - [51c727ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/51c727eaeb923bd3d4a569ed9e924945f56e286c)
+- [17756b2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/17756b2fb83d82f25bf7c349f63170fc738db995)

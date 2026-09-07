@@ -121,7 +121,7 @@ test("declarative language packs are inspected deterministically", async (t) => 
     ]);
     assert.equal(
         contentEntryId(manifest, "english:letter:a"),
-        contentEntryId(manifest, "english:letter:a"),
+        contentEntryId({ ...manifest, version: "2.0.0" }, "english:letter:a"),
     );
 
     await writeJson(path.join(root, "schema.json"), {
