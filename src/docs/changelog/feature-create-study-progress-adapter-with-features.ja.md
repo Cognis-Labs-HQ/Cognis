@@ -20,7 +20,7 @@
 
 ## 繰り返し可能なコンテンツ導入
 
-PostgreSQL のテーブル準備は、既存テーブルで宣言された主キーと一意キーの一意インデックスを自己修復するようになりました。学習ライブラリの導入は、保証された競合対象を使ってレコード、資産、参照をアトミックに upsert し、繰り返しまたは同時のモジュール有効化における重複キーを防ぎます。
+PostgreSQL と MariaDB のテーブル準備は、既存テーブルで宣言された主キーと一意キーの一意インデックスを自己修復するようになりました。学習ライブラリの導入は、保証された競合対象を使ってレコード、資産、参照をアトミックに upsert し、繰り返しまたは同時のモジュール有効化における重複キーを防ぎます。
 
 ## コミット
 
@@ -33,3 +33,4 @@ PostgreSQL のテーブル準備は、既存テーブルで宣言された主キ
 - [eeabc5e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/eeabc5e1231e3de246a14ee4ff49582a7169768c)
 - [2cc37134](https://github.com/Cognis-Labs-HQ/Cognis/commit/2cc371343c54afed45e545d523a751cad101be3c)
 - [ad01aa56](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad01aa561321b7db5982b0fbfe7f1b28ed11347b)
+- [9fe9af00](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fe9af0021f9a093ba432fca9761368e8df0e5f6)

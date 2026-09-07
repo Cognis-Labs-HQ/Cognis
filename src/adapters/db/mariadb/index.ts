@@ -1,5 +1,6 @@
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
 import type { BootstrapLog } from "@cognis/core";
+import { createHash } from "node:crypto";
 import type { RawDbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { DbProviderId } from "../../../gateways/db/reuse/provider-id.js";
 import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
@@ -133,6 +134,16 @@ const MARIADB_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
         return ` ON DUPLICATE KEY UPDATE ${assignments.join(", ")}`;
     },
 };
+
+function uniqueIndexName(table: string, columns: string[]): string {
+    const descriptiveName = `uq_${table}_${columns.join("_")}`;
+    if (descriptiveName.length <= 64) return descriptiveName;
+    const digest = createHash("sha256")
+        .update(`${table}:${columns.join(":")}`)
+        .digest("hex")
+        .slice(0, 12);
+    return `uq_${table.slice(0, 47)}_${digest}`;
+}
 
 export class MariaDbGateway implements DatabaseGateway {
     private readonly pool?: MariaDbPool;
@@ -491,6 +502,26 @@ class MariaDbExecutor implements RawDbExecutor {
                     : "";
             await this.execute(
                 `ALTER TABLE ${def.name} MODIFY COLUMN ${col.name} ${dbType(col)}${notNullClause}${defaultClause}`,
+            );
+        }
+        const declaredUniqueKeys = [
+            ...(compositePk.length > 0
+                ? [compositePk]
+                : def.columns
+                      .filter((column) => column.primaryKey)
+                      .map((column) => [column.name])),
+            ...(def.uniqueKeys ?? []),
+            ...def.columns
+                .filter((column) => column.unique)
+                .map((column) => [column.name]),
+        ];
+        const healedUniqueKeys = new Set<string>();
+        for (const columns of declaredUniqueKeys) {
+            const signature = columns.join("\u0000");
+            if (healedUniqueKeys.has(signature)) continue;
+            healedUniqueKeys.add(signature);
+            await this.execute(
+                `CREATE UNIQUE INDEX IF NOT EXISTS ${uniqueIndexName(def.name, columns)} ON ${def.name} (${columns.join(", ")})`,
             );
         }
         for (const index of def.indexes ?? []) {

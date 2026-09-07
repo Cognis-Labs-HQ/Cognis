@@ -306,6 +306,57 @@ test("mariadb uses indexable types for foreign keys and heals constraints", asyn
     );
 });
 
+test("mariadb heals declared conflict keys on existing tables", async () => {
+    const statements: string[] = [];
+    const executor = await createDbExecutor({
+        databaseUrl: "mariadb://unused",
+        pool: createPool({
+            query: async (sql: string) => {
+                statements.push(sql);
+                if (sql.includes("information_schema.COLUMNS")) {
+                    return [
+                        [
+                            { column_name: "source_id", data_type: "varchar" },
+                            { column_name: "target_id", data_type: "varchar" },
+                            { column_name: "slug", data_type: "varchar" },
+                        ],
+                        {},
+                    ];
+                }
+                return [[], {}];
+            },
+        }),
+    });
+
+    await executor.ensureTable({
+        name: "study_links",
+        columns: [
+            { name: "source_id", type: "text", notNull: true },
+            { name: "target_id", type: "text", notNull: true },
+            { name: "slug", type: "text", unique: true },
+        ],
+        primaryKey: ["source_id", "target_id"],
+        uniqueKeys: [["slug"]],
+    });
+
+    assert.equal(
+        statements.filter((sql) =>
+            sql.startsWith("CREATE UNIQUE INDEX IF NOT EXISTS"),
+        ).length,
+        2,
+    );
+    assert.ok(
+        statements.includes(
+            "CREATE UNIQUE INDEX IF NOT EXISTS uq_study_links_source_id_target_id ON study_links (source_id, target_id)",
+        ),
+    );
+    assert.ok(
+        statements.includes(
+            "CREATE UNIQUE INDEX IF NOT EXISTS uq_study_links_slug ON study_links (slug)",
+        ),
+    );
+});
+
 test("mariadb repairs text index columns before creating their indexes", async () => {
     const statements: string[] = [];
     const executor = await createDbExecutor({

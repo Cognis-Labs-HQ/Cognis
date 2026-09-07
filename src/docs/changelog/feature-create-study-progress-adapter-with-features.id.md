@@ -20,7 +20,7 @@ Titik masuk peramban Pustaka dipindahkan ke tata letak adaptor wajib `ui/app/ind
 
 ## Impor konten yang dapat diulang
 
-Penyediaan tabel PostgreSQL kini memperbaiki sendiri indeks unik untuk kunci utama dan unik yang dideklarasikan pada tabel yang sudah ada. Impor Pustaka Studi menggunakan target konflik yang terjamin tersebut untuk upsert atomik catatan, aset, dan referensi sehingga mencegah kunci duplikat selama aktivasi modul berulang atau serentak.
+Penyediaan tabel PostgreSQL dan MariaDB kini memperbaiki sendiri indeks unik untuk kunci utama dan unik yang dideklarasikan pada tabel yang sudah ada. Impor Pustaka Studi menggunakan target konflik yang terjamin tersebut untuk upsert atomik catatan, aset, dan referensi sehingga mencegah kunci duplikat selama aktivasi modul berulang atau serentak.
 
 ## Commit
 
@@ -33,3 +33,4 @@ Penyediaan tabel PostgreSQL kini memperbaiki sendiri indeks unik untuk kunci uta
 - [eeabc5e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/eeabc5e1231e3de246a14ee4ff49582a7169768c)
 - [2cc37134](https://github.com/Cognis-Labs-HQ/Cognis/commit/2cc371343c54afed45e545d523a751cad101be3c)
 - [ad01aa56](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad01aa561321b7db5982b0fbfe7f1b28ed11347b)
+- [9fe9af00](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fe9af0021f9a093ba432fca9761368e8df0e5f6)

@@ -44,7 +44,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.28` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.18` |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.18` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.23` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.24` |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.19` |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.16` |
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.17` |
