@@ -27,3 +27,7 @@ Ebenen mit der Rolle `atomicWritingUnit` oder `compoundWritingUnit` deklarieren 
 ## Metadatenfiltergruppen
 
 Ein Abzeichenfeld kann mit `detail.group` zusammengehörige Filter gruppieren und mit `detail.exclusive` die Auswahl steuern. Wenn jedes Feld einer Gruppe `exclusive: true` angibt, löscht die Auswahl einer Pille die vorherige Gruppenauswahl. Der Standardwert `false` erlaubt mehrere ausgewählte Pillen. Alle Felder einer benannten Gruppe müssen dieselbe Einstellung verwenden.
+
+## Authentifizierte Audiowiedergabe
+
+Der Study-Gateway-Client lädt Eintragsaudio über den authentifizierten API-Client und übergibt dem Player eine temporäre Objekt-URL. Beim Schließen des Detailfensters wird die URL widerrufen. Die nativen Player-Steuerelemente unterstützen helle und dunkle Farbschemata und folgen dem aktiven Anwendungsthema.

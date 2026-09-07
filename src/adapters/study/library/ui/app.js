@@ -13,6 +13,7 @@ import {
     renderStudySubNavigation,
 } from "/static/gateways/study/ui/sub-navigation.js";
 import {
+    fetchLibraryAudioUrl,
     fetchLibraryEntries,
     fetchLibraryEntry,
     fetchLibrarySchemas,
@@ -179,9 +180,31 @@ function renderAudio(entry, layer) {
     );
     const value = audioField ? entry.fields?.[audioField.id] : undefined;
     if (typeof value !== "string" || !value) return "";
-    const source = `/api/v1/study/library/entries/${encodeURIComponent(entry.id)}/audio/${encodeURIComponent(audioField.id)}`;
     const label = localizedLabel(audioField.metadata, entry.language);
-    return `<audio class="library-audio" controls preload="none" src="${escapeHtml(source)}" aria-label="${escapeHtml(label)}"></audio>`;
+    return `<audio class="library-audio" controls preload="none" data-library-audio-entry="${escapeHtml(entry.id)}" data-library-audio-field="${escapeHtml(audioField.id)}" aria-label="${escapeHtml(label)}"></audio>`;
+}
+
+async function loadLibraryAudio(overlay, objectUrls, signal) {
+    await Promise.all(
+        Array.from(
+            overlay.querySelectorAll(
+                "audio[data-library-audio-entry][data-library-audio-field]",
+            ),
+            async (audio) => {
+                const objectUrl = await fetchLibraryAudioUrl(
+                    audio.dataset.libraryAudioEntry,
+                    audio.dataset.libraryAudioField,
+                    { signal },
+                );
+                if (!audio.isConnected || signal?.aborted) {
+                    URL.revokeObjectURL(objectUrl);
+                    return;
+                }
+                objectUrls.add(objectUrl);
+                audio.src = objectUrl;
+            },
+        ),
+    );
 }
 
 function coreSections(detail, schemas, i18n, languageCode) {
@@ -433,6 +456,8 @@ async function openEntryPopup(
         signal?.throwIfAborted();
         let dismissPopup;
         let relatedEntry;
+        const audioObjectUrls = new Set();
+        const audioController = new AbortController();
         const abortPopup = () => dismissPopup?.();
         signal?.addEventListener("abort", abortPopup, { once: true });
         const result = await openPopup({
@@ -458,6 +483,17 @@ async function openEntryPopup(
             onOpen: (overlay, dismiss) => {
                 dismissPopup = dismiss;
                 overlay.classList.add("library-entry-popup");
+                void loadLibraryAudio(
+                    overlay,
+                    audioObjectUrls,
+                    audioController.signal,
+                ).catch((error) => {
+                    if (error?.name !== "AbortError") {
+                        showToast(i18n.t("gateway.study.library_load_error"), {
+                            type: "error",
+                        });
+                    }
+                });
                 overlay.addEventListener("click", (event) => {
                     const control = event.target.closest(
                         "button[data-library-entry]",
@@ -484,6 +520,10 @@ async function openEntryPopup(
                 });
             },
         });
+        audioController.abort();
+        for (const objectUrl of audioObjectUrls) {
+            URL.revokeObjectURL(objectUrl);
+        }
         signal?.removeEventListener("abort", abortPopup);
         if (result === "previous") selectedEntry = active[index - 1];
         else if (result === "next") selectedEntry = active[index + 1];

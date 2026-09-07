@@ -168,6 +168,19 @@
 
 .library-audio {
     width: min(100%, 26rem);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color-scheme: light dark;
+    accent-color: var(--accent-2);
+}
+
+body[data-theme="light"] .library-audio {
+    color-scheme: light;
+}
+
+body[data-theme="dark"] .library-audio {
+    color-scheme: dark;
 }
 
 .library-filter-empty {

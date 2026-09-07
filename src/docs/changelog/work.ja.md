@@ -10,7 +10,12 @@
 
 ライブラリのメタデータグループで、排他的な単一選択または複数選択を宣言できるようになりました。ピルを選択すると、グリッド表示のスタイルが以前 `hidden` 状態を上書きしていたカードを含め、一致しないカードが直ちに非表示になります。
 
+## 認証済みテーマ対応音声
+
+ライブラリ音声は未認証のネイティブメディア要求ではなく、認証済み Study ゲートウェイクライアントから読み込まれます。一時メディア URL は使用後に破棄され、ネイティブ操作部はライトまたはダークのアプリケーションテーマに従います。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
 - [656b59f](https://github.com/Cognis-Labs-HQ/Cognis/commit/656b59feef1ff344ce911a042eecae788a228cc4)
+- [e183481](https://github.com/Cognis-Labs-HQ/Cognis/commit/e18348130104134eaa7962aa3020a03a22325e86)

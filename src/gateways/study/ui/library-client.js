@@ -27,6 +27,15 @@ export async function fetchLibraryEntry(entryId) {
     return (await response.json()).data;
 }
 
+export async function fetchLibraryAudioUrl(entryId, fieldId, { signal } = {}) {
+    const response = await apiFetch(
+        `/api/v1/study/library/entries/${encodeURIComponent(entryId)}/audio/${encodeURIComponent(fieldId)}`,
+        { signal },
+    );
+    if (!response.ok) throw new Error("audio_failed");
+    return URL.createObjectURL(await response.blob());
+}
+
 export async function createLibraryEntry(location, entry) {
     const response = await apiFetch("/api/v1/study/library/entries", {
         method: "POST",

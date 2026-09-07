@@ -27,3 +27,7 @@ Lapisan dengan peran `atomicWritingUnit` atau `compoundWritingUnit` mendeklarasi
 ## Grup filter metadata
 
 Kolom lencana dapat memakai `detail.group` untuk mengelompokkan filter terkait dan `detail.exclusive` untuk mengatur pilihan. Jika setiap kolom dalam grup menetapkan `exclusive: true`, memilih satu pil akan menghapus pilihan grup sebelumnya. Nilai bawaan `false` mengizinkan beberapa pil terpilih. Semua kolom dalam grup bernama harus memakai pengaturan eksklusivitas yang sama.
+
+## Pemutaran audio terautentikasi
+
+Klien gateway Study mengambil audio entri melalui klien API terautentikasi dan memberikan URL objek sementara kepada pemutar. URL dicabut ketika jendela detail ditutup. Kontrol pemutar asli mendukung skema warna terang dan gelap serta mengikuti tema aplikasi yang aktif.

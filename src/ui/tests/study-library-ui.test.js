@@ -13,6 +13,10 @@ const stylesheet = readFileSync(
     resolve(ROOT, "src/adapters/study/library/ui/library.css"),
     "utf8",
 );
+const clientSource = readFileSync(
+    resolve(ROOT, "src/gateways/study/ui/library-client.js"),
+    "utf8",
+);
 
 test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /role="tablist"/);
@@ -50,7 +54,18 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(source, /function renderPronunciation/);
     assert.match(source, /function renderAudio/);
     assert.match(source, /<audio class="library-audio" controls/);
+    assert.match(source, /fetchLibraryAudioUrl/);
+    assert.match(source, /audio\.src = objectUrl/);
+    assert.match(source, /URL\.revokeObjectURL/);
+    assert.match(clientSource, /apiFetch\([\s\S]*\/audio\//);
+    assert.match(
+        clientSource,
+        /URL\.createObjectURL\(await response\.blob\(\)\)/,
+    );
     assert.match(stylesheet, /\.library-audio/);
+    assert.match(stylesheet, /color-scheme: light dark/);
+    assert.match(stylesheet, /body\[data-theme="light"\] \.library-audio/);
+    assert.match(stylesheet, /body\[data-theme="dark"\] \.library-audio/);
 });
 
 test("Study Library popup uses equal directional navigation controls", () => {

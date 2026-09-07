@@ -39,3 +39,7 @@ Layers with the `atomicWritingUnit` or `compoundWritingUnit` role declare requir
 ## Metadata filter groups
 
 A badge field can set `detail.group` to place related filters together and `detail.exclusive` to control selection. When every field in a group declares `exclusive: true`, choosing a pill clears the group's previous choice. The default `false` permits multiple selected pills. Every field in a named group must use the same exclusivity setting.
+
+## Authenticated audio playback
+
+The Study gateway client fetches entry audio through the authenticated API client and gives the player a temporary object URL. The URL is revoked when the detail popup closes. Native player controls declare light and dark color schemes and follow the active application theme.
