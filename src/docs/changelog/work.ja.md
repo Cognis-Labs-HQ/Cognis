@@ -18,9 +18,18 @@
 
 ライブラリブラウザーのエントリーポイントを必須のアダプター構造 `ui/app/index.js` へ移動し、実行時ルートと構造テストを更新しました。ドキュメント検査は生成済みビルド出力を除外し、命名検査は移動後のソースを正しく検査します。ルーターテストも動的ゲートウェイルートと保持されるナビゲーション状態を反映します。
 
+## 繰り返し可能なコンテンツ導入
+
+学習ライブラリのコンテンツパックは、存在しないコンテンツを作成する前に既存のレコード、資産、参照を更新するようになり、重複キーによってモジュールの再有効化が中断されなくなりました。
+
+## 有効化を妨げない処理
+
+起動時のコンテンツ導入が別の理由で失敗しても、モジュールは有効なままになります。Cognis は起動エラーを警告として記録し、不完全な実行時の提供内容を削除します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
 - [656b59f](https://github.com/Cognis-Labs-HQ/Cognis/commit/656b59feef1ff344ce911a042eecae788a228cc4)
 - [e183481](https://github.com/Cognis-Labs-HQ/Cognis/commit/e18348130104134eaa7962aa3020a03a22325e86)
 - [ba25e44](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba25e4481d6c71a35ebe2ecc8d0143b85f0125b3)
+- [ef782975](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef782975)

@@ -18,9 +18,18 @@ Library audio now loads through the authenticated Study gateway client instead o
 
 Moved the Library browser entry point to the required adapter `ui/app/index.js` layout and updated its runtime route and structural tests. Documentation scans now ignore generated build output, naming checks cover the moved source cleanly, and router tests reflect dynamic gateway routes and preserved navigation state.
 
+## Repeatable content imports
+
+Study Library content packs now update records, assets, and references that already exist before creating missing content, preventing duplicate keys from interrupting repeated module activation.
+
+## Non-blocking module activation
+
+A module remains enabled when its bootstrap content import fails for another reason. Cognis records the bootstrap failure as a warning while removing incomplete runtime contributions.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
 - [656b59f](https://github.com/Cognis-Labs-HQ/Cognis/commit/656b59feef1ff344ce911a042eecae788a228cc4)
 - [e183481](https://github.com/Cognis-Labs-HQ/Cognis/commit/e18348130104134eaa7962aa3020a03a22325e86)
 - [ba25e44](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba25e4481d6c71a35ebe2ecc8d0143b85f0125b3)
+- [ef782975](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef782975)

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDbWhereClause } from "../../../gateways/db/reuse/db-command.js";
 import { contentEntryId } from "./content-pack.js";
 import type {
     LibraryAsset,
@@ -32,6 +33,26 @@ function mapEntry(row: Record<string, unknown>): LibraryEntry {
 
 export class LibraryStore {
     constructor(private readonly db: DbExecutor) {}
+
+    private async updateOrInsert(
+        db: DbExecutor,
+        table: string,
+        where: StructuredDbWhereClause[],
+        values: Record<string, unknown>,
+    ): Promise<void> {
+        const updated = await db.executeCommand({
+            option: "UPDATE",
+            table,
+            set: values,
+            where,
+        });
+        if ((updated.rowCount ?? 0) > 0) return;
+        await db.executeCommand({
+            option: "INSERT",
+            table,
+            values,
+        });
+    }
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({
@@ -259,11 +280,13 @@ export class LibraryStore {
                         );
                     }
                 }
-                await db.executeCommand({
-                    option: "INSERT",
-                    table: "study_library_entries",
-                    values: {
-                        id: contentEntryId(manifest, record.id),
+                const id = contentEntryId(manifest, record.id);
+                await this.updateOrInsert(
+                    db,
+                    "study_library_entries",
+                    [{ column: "id", value: id }],
+                    {
+                        id,
                         scope: "global",
                         scope_id: "global",
                         schema_id: schema.id,
@@ -273,14 +296,21 @@ export class LibraryStore {
                         label: record.label.trim(),
                         fields_json: JSON.stringify(fields),
                         created_by: `content-pack:${manifest.id}`,
+                        updated_at: new Date().toISOString(),
                     },
-                });
+                );
             }
             for (const asset of plan.assets) {
-                await db.executeCommand({
-                    option: "INSERT",
-                    table: "study_library_content_pack_assets",
-                    values: {
+                await this.updateOrInsert(
+                    db,
+                    "study_library_content_pack_assets",
+                    [
+                        { column: "publisher", value: manifest.publisher },
+                        { column: "pack_id", value: manifest.id },
+                        { column: "version", value: manifest.version },
+                        { column: "asset_path", value: asset.path },
+                    ],
+                    {
                         publisher: manifest.publisher,
                         pack_id: manifest.id,
                         version: manifest.version,
@@ -288,28 +318,30 @@ export class LibraryStore {
                         media_type: asset.mediaType,
                         data_base64: asset.data,
                     },
-                });
+                );
             }
             for (const record of records) {
                 for (const [index, reference] of (
                     record.references ?? []
                 ).entries()) {
-                    await db.executeCommand({
-                        option: "INSERT",
-                        table: "study_library_references",
-                        values: {
-                            source_entry_id: contentEntryId(
-                                manifest,
-                                record.id,
-                            ),
-                            target_entry_id: contentEntryId(
-                                manifest,
-                                reference.entryId,
-                            ),
-                            relation: reference.relation,
-                            position: reference.position ?? index,
-                        },
-                    });
+                    const values = {
+                        source_entry_id: contentEntryId(manifest, record.id),
+                        target_entry_id: contentEntryId(
+                            manifest,
+                            reference.entryId,
+                        ),
+                        relation: reference.relation,
+                        position: reference.position ?? index,
+                    };
+                    await this.updateOrInsert(
+                        db,
+                        "study_library_references",
+                        Object.entries(values).map(([column, value]) => ({
+                            column,
+                            value,
+                        })),
+                        values,
+                    );
                 }
             }
             await db.executeCommand({

@@ -18,9 +18,18 @@ Audio Pustaka kini dimuat melalui klien gateway Study terautentikasi, bukan perm
 
 Titik masuk peramban Pustaka dipindahkan ke tata letak adaptor wajib `ui/app/index.js`, lalu rute waktu jalan dan pengujian struktur diperbarui. Pemindaian dokumentasi kini mengabaikan keluaran build, pemeriksaan nama menangani sumber yang dipindahkan, dan pengujian router mencerminkan rute gateway dinamis serta status navigasi yang dipertahankan.
 
+## Impor konten yang dapat diulang
+
+Paket konten Pustaka Studi kini memperbarui catatan, aset, dan referensi yang sudah ada sebelum membuat konten yang belum ada sehingga kunci duplikat tidak lagi mengganggu aktivasi ulang modul.
+
+## Aktivasi tanpa pemblokiran
+
+Modul tetap aktif ketika impor kontennya saat bootstrap gagal karena alasan lain. Cognis mencatat kegagalan bootstrap sebagai peringatan dan menghapus kontribusi runtime yang tidak lengkap.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
 - [656b59f](https://github.com/Cognis-Labs-HQ/Cognis/commit/656b59feef1ff344ce911a042eecae788a228cc4)
 - [e183481](https://github.com/Cognis-Labs-HQ/Cognis/commit/e18348130104134eaa7962aa3020a03a22325e86)
 - [ba25e44](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba25e4481d6c71a35ebe2ecc8d0143b85f0125b3)
+- [ef782975](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef782975)

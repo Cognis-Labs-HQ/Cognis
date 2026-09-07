@@ -396,11 +396,6 @@ export function buildServer(deps: ApiDependencies) {
             routeContext,
             getProtectedRoutePrefixes: () =>
                 deps.routeRegistry?.getClaimedPrefixes() ?? [],
-            onBootstrapFailed: async (moduleId) => {
-                enabledModules.delete(moduleId);
-                await deps.onModuleStateChanged?.(moduleId, false);
-                await deps.persistModuleState?.(moduleId, false);
-            },
         },
     );
 
@@ -491,9 +486,7 @@ export function buildServer(deps: ApiDependencies) {
                         );
                     }
                     temporarilyDisabledDependents.delete(moduleId);
-                    await moduleExtensionRoutes.refresh({
-                        throwOnFailure: true,
-                    });
+                    await moduleExtensionRoutes.refresh();
                 } catch (error) {
                     enabledModules.delete(moduleId);
                     await deps.onModuleStateChanged?.(moduleId, false);

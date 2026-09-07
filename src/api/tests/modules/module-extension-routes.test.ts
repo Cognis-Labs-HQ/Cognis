@@ -33,7 +33,7 @@ test("core manifests are not loaded from the external module directory", async (
     assert.deepEqual(errors, []);
 });
 
-test("a timed-out module bootstrap is disabled without blocking refresh", async () => {
+test("a timed-out module bootstrap warns without blocking enablement", async () => {
     const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
     const moduleUuid = "41ad9d2b-463e-4f50-8a62-f02d02d5e303";
     const moduleRoot = path.join(modulesRoot, moduleUuid);
@@ -48,7 +48,7 @@ test("a timed-out module bootstrap is disabled without blocking refresh", async 
     );
     const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
     process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
-    const failed: string[] = [];
+    const warnings: string[] = [];
     const extensions = createModuleExtensionRoutes(
         {
             listManifests: async () => [
@@ -60,19 +60,18 @@ test("a timed-out module bootstrap is disabled without blocking refresh", async 
             ],
         } as any,
         () => true,
-        undefined,
+        (level, message) => {
+            if (level === "warn") warnings.push(message);
+        },
         {
             routeContext: createDefaultRouteContext(),
             bootstrapTimeoutMs: 10,
-            onBootstrapFailed: (moduleId) => {
-                failed.push(moduleId);
-            },
         },
     );
 
     try {
         await extensions.refresh();
-        assert.deepEqual(failed, ["stalled-module"]);
+        assert.deepEqual(warnings, ["Failed to load module API route plugin."]);
         await new Promise((resolve) => setTimeout(resolve, 40));
         assert.equal(
             await extensions.handle(
