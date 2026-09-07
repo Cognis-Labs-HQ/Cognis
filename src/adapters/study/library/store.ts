@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import type { StructuredDbWhereClause } from "../../../gateways/db/reuse/db-command.js";
 import { contentEntryId } from "./content-pack.js";
 import type {
     LibraryAsset,
@@ -34,23 +33,21 @@ function mapEntry(row: Record<string, unknown>): LibraryEntry {
 export class LibraryStore {
     constructor(private readonly db: DbExecutor) {}
 
-    private async updateOrInsert(
+    private async upsert(
         db: DbExecutor,
         table: string,
-        where: StructuredDbWhereClause[],
+        conflictTarget: string[],
         values: Record<string, unknown>,
     ): Promise<void> {
-        const updated = await db.executeCommand({
-            option: "UPDATE",
-            table,
-            set: values,
-            where,
-        });
-        if ((updated.rowCount ?? 0) > 0) return;
         await db.executeCommand({
             option: "INSERT",
             table,
             values,
+            conflict: {
+                action: "update",
+                target: conflictTarget,
+                update: values,
+            },
         });
     }
 
@@ -281,35 +278,25 @@ export class LibraryStore {
                     }
                 }
                 const id = contentEntryId(manifest, record.id);
-                await this.updateOrInsert(
-                    db,
-                    "study_library_entries",
-                    [{ column: "id", value: id }],
-                    {
-                        id,
-                        scope: "global",
-                        scope_id: "global",
-                        schema_id: schema.id,
-                        schema_version: schema.version,
-                        layer: record.layer,
-                        language: schema.language,
-                        label: record.label.trim(),
-                        fields_json: JSON.stringify(fields),
-                        created_by: `content-pack:${manifest.id}`,
-                        updated_at: new Date().toISOString(),
-                    },
-                );
+                await this.upsert(db, "study_library_entries", ["id"], {
+                    id,
+                    scope: "global",
+                    scope_id: "global",
+                    schema_id: schema.id,
+                    schema_version: schema.version,
+                    layer: record.layer,
+                    language: schema.language,
+                    label: record.label.trim(),
+                    fields_json: JSON.stringify(fields),
+                    created_by: `content-pack:${manifest.id}`,
+                    updated_at: new Date().toISOString(),
+                });
             }
             for (const asset of plan.assets) {
-                await this.updateOrInsert(
+                await this.upsert(
                     db,
                     "study_library_content_pack_assets",
-                    [
-                        { column: "publisher", value: manifest.publisher },
-                        { column: "pack_id", value: manifest.id },
-                        { column: "version", value: manifest.version },
-                        { column: "asset_path", value: asset.path },
-                    ],
+                    ["publisher", "pack_id", "version", "asset_path"],
                     {
                         publisher: manifest.publisher,
                         pack_id: manifest.id,
@@ -333,13 +320,15 @@ export class LibraryStore {
                         relation: reference.relation,
                         position: reference.position ?? index,
                     };
-                    await this.updateOrInsert(
+                    await this.upsert(
                         db,
                         "study_library_references",
-                        Object.entries(values).map(([column, value]) => ({
-                            column,
-                            value,
-                        })),
+                        [
+                            "source_entry_id",
+                            "target_entry_id",
+                            "relation",
+                            "position",
+                        ],
                         values,
                     );
                 }

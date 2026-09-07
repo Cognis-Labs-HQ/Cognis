@@ -111,8 +111,6 @@ await reuse.loadStylesheets(["layout.css", "page-sections.css"]);
 
 Module, die ein Laufzeitskript laden müssen, deklarieren `ui:resourceLoader` und rufen dessen validierte, referenzgezählte Methode `loadScript({ id, src, globalName })` auf. Sie müssen den zurückgegebenen Griff beim Aushängen bereinigen und dürfen Skripte nicht direkt an das Dokument anhängen.
 
-Standardmäßig bricht ein Bootstrap-Fehler die Aktivierung ab und versetzt das Modul wieder in den deaktivierten Zustand. Ein Modul, dessen optionale Startarbeit sicher fehlschlagen darf, kann in `manifest.json` ausdrücklich `allowBootstrapFailure: true` setzen; Cognis lässt das Modul dann aktiviert, entfernt unvollständige Laufzeitbeiträge und protokolliert den Fehler als Warnung. Verwenden Sie diese Ausnahme nur, wenn jede durch den fehlgeschlagenen Bootstrap ausgelassene Fähigkeit und Route tatsächlich optional ist.
-
 ## Installationsabhängigkeiten
 
 Externe Manifeste können `hardDependencies` und `softDependencies` als Listen von Modul-UUIDs oder IDs deklarieren. Harte Abhängigkeiten werden nicht empfohlen, da Administratoren sie vor der Installation installieren und aktivieren müssen. Weiche Abhängigkeiten können im Installationsdialog optional ausgewählt werden.

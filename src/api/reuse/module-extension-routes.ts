@@ -800,25 +800,15 @@ export function createModuleExtensionRoutes(
                         nextHandlers.splice(index, 1);
                     }
                 }
-                const allowsBootstrapFailure =
-                    manifest.allowBootstrapFailure === true;
-                log?.(
-                    allowsBootstrapFailure ? "warn" : "error",
-                    "Failed to load module API route plugin.",
-                    {
-                        component: "module-extension-routes",
-                        moduleId: manifest.id,
-                        pluginPath: entrypoint.path,
-                        error:
-                            error instanceof Error
-                                ? error.message
-                                : String(error),
-                    },
-                );
-                if (!allowsBootstrapFailure) {
-                    await options.onBootstrapFailed?.(manifest.id);
-                    if (refreshOptions?.throwOnFailure) throw error;
-                }
+                log?.("error", "Failed to load module API route plugin.", {
+                    component: "module-extension-routes",
+                    moduleId: manifest.id,
+                    pluginPath: entrypoint.path,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+                await options.onBootstrapFailed?.(manifest.id);
+                if (refreshOptions?.throwOnFailure) throw error;
             }
         }
 

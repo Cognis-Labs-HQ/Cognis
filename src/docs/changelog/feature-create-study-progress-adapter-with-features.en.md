@@ -20,11 +20,7 @@ Moved the Library browser entry point to the required adapter `ui/app/index.js` 
 
 ## Repeatable content imports
 
-Study Library content packs now update records, assets, and references that already exist before creating missing content, preventing duplicate keys from interrupting repeated module activation.
-
-## Non-blocking module activation
-
-Modules block activation on bootstrap failures by default. A module manifest must explicitly set `allowBootstrapFailure: true` before Cognis will keep it enabled, remove incomplete runtime contributions, and record the failure as a warning.
+Study Library content packs now use atomic database upserts for records, assets, and references, preventing duplicate keys and concurrent imports from interrupting repeated module activation.
 
 ## Commits
 
@@ -34,3 +30,4 @@ Modules block activation on bootstrap failures by default. A module manifest mus
 - [ba25e44](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba25e4481d6c71a35ebe2ecc8d0143b85f0125b3)
 - [ef782975](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef782975)
 - [68bd7478](https://github.com/Cognis-Labs-HQ/Cognis/commit/68bd7478dbf6343109087bd83a9fba643452a838)
+- [eeabc5e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/eeabc5e1231e3de246a14ee4ff49582a7169768c)

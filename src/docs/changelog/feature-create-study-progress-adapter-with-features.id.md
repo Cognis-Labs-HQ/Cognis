@@ -20,11 +20,7 @@ Titik masuk peramban Pustaka dipindahkan ke tata letak adaptor wajib `ui/app/ind
 
 ## Impor konten yang dapat diulang
 
-Paket konten Pustaka Studi kini memperbarui catatan, aset, dan referensi yang sudah ada sebelum membuat konten yang belum ada sehingga kunci duplikat tidak lagi mengganggu aktivasi ulang modul.
-
-## Aktivasi tanpa pemblokiran
-
-Secara default, modul memblokir aktivasi jika bootstrap gagal. Manifes modul harus secara eksplisit menetapkan `allowBootstrapFailure: true` sebelum Cognis mempertahankannya tetap aktif, menghapus kontribusi runtime yang tidak lengkap, dan mencatat kegagalan sebagai peringatan.
+Paket konten Pustaka Studi kini menggunakan upsert basis data atomik untuk catatan, aset, dan referensi sehingga kunci duplikat dan impor serentak tidak lagi mengganggu aktivasi ulang modul.
 
 ## Commit
 
@@ -34,3 +30,4 @@ Secara default, modul memblokir aktivasi jika bootstrap gagal. Manifes modul har
 - [ba25e44](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba25e4481d6c71a35ebe2ecc8d0143b85f0125b3)
 - [ef782975](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef782975)
 - [68bd7478](https://github.com/Cognis-Labs-HQ/Cognis/commit/68bd7478dbf6343109087bd83a9fba643452a838)
+- [eeabc5e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/eeabc5e1231e3de246a14ee4ff49582a7169768c)

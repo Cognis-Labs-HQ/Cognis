@@ -33,7 +33,7 @@ test("core manifests are not loaded from the external module directory", async (
     assert.deepEqual(errors, []);
 });
 
-test("a timed-out module bootstrap warns without blocking enablement", async () => {
+test("a timed-out module bootstrap is disabled without blocking refresh", async () => {
     const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
     const moduleUuid = "41ad9d2b-463e-4f50-8a62-f02d02d5e303";
     const moduleRoot = path.join(modulesRoot, moduleUuid);
@@ -48,31 +48,31 @@ test("a timed-out module bootstrap warns without blocking enablement", async () 
     );
     const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
     process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
-    const warnings: string[] = [];
+    const failed: string[] = [];
     const extensions = createModuleExtensionRoutes(
         {
             listManifests: async () => [
                 {
                     id: "stalled-module",
                     uuid: moduleUuid,
-                    allowBootstrapFailure: true,
                     entrypoints: { bootstrap: "./bootstrap.js" },
                 },
             ],
         } as any,
         () => true,
-        (level, message) => {
-            if (level === "warn") warnings.push(message);
-        },
+        undefined,
         {
             routeContext: createDefaultRouteContext(),
             bootstrapTimeoutMs: 10,
+            onBootstrapFailed: (moduleId) => {
+                failed.push(moduleId);
+            },
         },
     );
 
     try {
         await extensions.refresh();
-        assert.deepEqual(warnings, ["Failed to load module API route plugin."]);
+        assert.deepEqual(failed, ["stalled-module"]);
         await new Promise((resolve) => setTimeout(resolve, 40));
         assert.equal(
             await extensions.handle(
@@ -82,58 +82,6 @@ test("a timed-out module bootstrap warns without blocking enablement", async () 
             ),
             false,
         );
-    } finally {
-        if (previousModulesRoot === undefined)
-            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
-        else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
-        await rm(modulesRoot, { recursive: true, force: true });
-    }
-});
-
-test("module bootstrap failures block enablement unless the manifest opts out", async () => {
-    const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
-    const moduleUuid = "7c5e39bc-17b7-5545-85ed-b099194ce76c";
-    const moduleRoot = path.join(modulesRoot, moduleUuid);
-    await mkdir(moduleRoot);
-    await writeFile(
-        path.join(moduleRoot, "bootstrap.js"),
-        `export function bootstrapModule() {
-            throw new Error("bootstrap failed");
-        }`,
-    );
-    const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
-    process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
-    const failedModules: string[] = [];
-    const errors: string[] = [];
-    const extensions = createModuleExtensionRoutes(
-        {
-            listManifests: async () => [
-                {
-                    id: "strict-module",
-                    uuid: moduleUuid,
-                    entrypoints: { bootstrap: "./bootstrap.js" },
-                },
-            ],
-        } as any,
-        () => true,
-        (level, message) => {
-            if (level === "error") errors.push(message);
-        },
-        {
-            routeContext: createDefaultRouteContext(),
-            onBootstrapFailed: (moduleId) => {
-                failedModules.push(moduleId);
-            },
-        },
-    );
-
-    try {
-        await assert.rejects(
-            extensions.refresh({ throwOnFailure: true }),
-            /bootstrap failed/,
-        );
-        assert.deepEqual(failedModules, ["strict-module"]);
-        assert.deepEqual(errors, ["Failed to load module API route plugin."]);
     } finally {
         if (previousModulesRoot === undefined)
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;

@@ -20,11 +20,7 @@
 
 ## 繰り返し可能なコンテンツ導入
 
-学習ライブラリのコンテンツパックは、存在しないコンテンツを作成する前に既存のレコード、資産、参照を更新するようになり、重複キーによってモジュールの再有効化が中断されなくなりました。
-
-## 有効化を妨げない処理
-
-既定では、ブートストラップに失敗したモジュールの有効化は中止されます。モジュールを有効なままにし、不完全な実行時提供を削除して失敗を警告として記録するには、モジュールマニフェストで `allowBootstrapFailure: true` を明示する必要があります。
+学習ライブラリのコンテンツパックは、レコード、資産、参照に対してアトミックなデータベース upsert を使用するようになり、重複キーや同時導入によってモジュールの再有効化が中断されなくなりました。
 
 ## コミット
 
@@ -34,3 +30,4 @@
 - [ba25e44](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba25e4481d6c71a35ebe2ecc8d0143b85f0125b3)
 - [ef782975](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef782975)
 - [68bd7478](https://github.com/Cognis-Labs-HQ/Cognis/commit/68bd7478dbf6343109087bd83a9fba643452a838)
+- [eeabc5e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/eeabc5e1231e3de246a14ee4ff49582a7169768c)

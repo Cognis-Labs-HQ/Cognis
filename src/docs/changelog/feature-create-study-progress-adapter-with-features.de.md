@@ -20,11 +20,7 @@ Der Einstiegspunkt des Bibliotheksbrowsers wurde in die vorgeschriebene Adapters
 
 ## Wiederholbare Inhaltsimporte
 
-Inhaltspakete der Lernbibliothek aktualisieren jetzt bereits vorhandene Datensätze, Anlagen und Verweise, bevor fehlende Inhalte erstellt werden. Dadurch unterbrechen doppelte Schlüssel eine erneute Modulaktivierung nicht mehr.
-
-## Nicht blockierende Aktivierung
-
-Module blockieren die Aktivierung bei Bootstrap-Fehlern standardmäßig. Ein Modulmanifest muss ausdrücklich `allowBootstrapFailure: true` setzen, bevor Cognis das Modul aktiviert lässt, unvollständige Laufzeitbeiträge entfernt und den Fehler als Warnung protokolliert.
+Inhaltspakete der Lernbibliothek verwenden jetzt atomare Datenbank-Upserts für Datensätze, Anlagen und Verweise. Dadurch unterbrechen weder doppelte Schlüssel noch gleichzeitige Importe eine erneute Modulaktivierung.
 
 ## Commits
 
@@ -34,3 +30,4 @@ Module blockieren die Aktivierung bei Bootstrap-Fehlern standardmäßig. Ein Mod
 - [ba25e44](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba25e4481d6c71a35ebe2ecc8d0143b85f0125b3)
 - [ef782975](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef782975)
 - [68bd7478](https://github.com/Cognis-Labs-HQ/Cognis/commit/68bd7478dbf6343109087bd83a9fba643452a838)
+- [eeabc5e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/eeabc5e1231e3de246a14ee4ff49582a7169768c)

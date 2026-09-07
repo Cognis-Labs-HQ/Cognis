@@ -5,7 +5,7 @@ import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { LibraryStore } from "../store.js";
 import type { LibraryContentPackPlan } from "../types.js";
 
-test("content pack import updates records and references that already exist", async () => {
+test("content pack import atomically updates duplicate records and references", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
         id: "japanese",
@@ -32,7 +32,6 @@ test("content pack import updates records and references that already exist", as
                 return { rows: [{ schema_json: JSON.stringify(schema) }] };
             }
             if (command.option === "SELECT") return { rows: [] };
-            if (command.option === "UPDATE") return { rowCount: 1 };
             return { rowCount: 1 };
         },
     };
@@ -67,28 +66,34 @@ test("content pack import updates records and references that already exist", as
     const receipt = await new LibraryStore(db).ingestContentPack(plan);
 
     assert.equal(receipt.unchanged, false);
-    assert.equal(
-        commands.some(
-            (command) =>
-                command.option === "UPDATE" &&
-                command.table === "study_library_entries",
-        ),
-        true,
+    const entryCommand = commands.find(
+        (command) => command.table === "study_library_entries",
+    );
+    assert.equal(entryCommand?.option, "INSERT");
+    assert.deepEqual(
+        entryCommand?.option === "INSERT" ? entryCommand.conflict?.target : [],
+        ["id"],
     );
     assert.equal(
-        commands.some(
-            (command) =>
-                command.option === "UPDATE" &&
-                command.table === "study_library_references",
-        ),
-        true,
+        entryCommand?.option === "INSERT"
+            ? entryCommand.conflict?.action
+            : undefined,
+        "update",
+    );
+    const referenceCommand = commands.find(
+        (command) => command.table === "study_library_references",
+    );
+    assert.equal(referenceCommand?.option, "INSERT");
+    assert.deepEqual(
+        referenceCommand?.option === "INSERT"
+            ? referenceCommand.conflict?.target
+            : [],
+        ["source_entry_id", "target_entry_id", "relation", "position"],
     );
     assert.equal(
-        commands.some(
-            (command) =>
-                command.option === "INSERT" &&
-                command.table === "study_library_references",
-        ),
-        false,
+        referenceCommand?.option === "INSERT"
+            ? referenceCommand.conflict?.action
+            : undefined,
+        "update",
     );
 });
