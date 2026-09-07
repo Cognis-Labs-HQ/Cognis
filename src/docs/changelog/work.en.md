@@ -24,7 +24,7 @@ Study Library content packs now update records, assets, and references that alre
 
 ## Non-blocking module activation
 
-A module remains enabled when its bootstrap content import fails for another reason. Cognis records the bootstrap failure as a warning while removing incomplete runtime contributions.
+Modules block activation on bootstrap failures by default. A module manifest must explicitly set `allowBootstrapFailure: true` before Cognis will keep it enabled, remove incomplete runtime contributions, and record the failure as a warning.
 
 ## Commits
 
@@ -33,3 +33,4 @@ A module remains enabled when its bootstrap content import fails for another rea
 - [e183481](https://github.com/Cognis-Labs-HQ/Cognis/commit/e18348130104134eaa7962aa3020a03a22325e86)
 - [ba25e44](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba25e4481d6c71a35ebe2ecc8d0143b85f0125b3)
 - [ef782975](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef782975)
+- [68bd7478](https://github.com/Cognis-Labs-HQ/Cognis/commit/68bd7478dbf6343109087bd83a9fba643452a838)

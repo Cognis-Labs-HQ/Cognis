@@ -9,6 +9,8 @@ export interface ModuleManifest {
     publisher?: string;
     class: ModuleClass;
     enabledByDefault?: boolean;
+    /** Allows activation to continue when the module bootstrap throws. */
+    allowBootstrapFailure?: boolean;
     /** Marketplace-only repositories are hidden only when explicitly marked. */
     template?: boolean;
     coreApiVersion: string;

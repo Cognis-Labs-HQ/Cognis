@@ -458,7 +458,9 @@ export class MarketplaceRepository {
             !manifest.assets?.icon ||
             !manifest.assets?.banner ||
             (manifest.template !== undefined &&
-                typeof manifest.template !== "boolean")
+                typeof manifest.template !== "boolean") ||
+            (manifest.allowBootstrapFailure !== undefined &&
+                typeof manifest.allowBootstrapFailure !== "boolean")
         ) {
             throw new Error("invalid_module_manifest");
         }

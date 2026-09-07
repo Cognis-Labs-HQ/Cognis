@@ -24,7 +24,7 @@ Paket konten Pustaka Studi kini memperbarui catatan, aset, dan referensi yang su
 
 ## Aktivasi tanpa pemblokiran
 
-Modul tetap aktif ketika impor kontennya saat bootstrap gagal karena alasan lain. Cognis mencatat kegagalan bootstrap sebagai peringatan dan menghapus kontribusi runtime yang tidak lengkap.
+Secara default, modul memblokir aktivasi jika bootstrap gagal. Manifes modul harus secara eksplisit menetapkan `allowBootstrapFailure: true` sebelum Cognis mempertahankannya tetap aktif, menghapus kontribusi runtime yang tidak lengkap, dan mencatat kegagalan sebagai peringatan.
 
 ## Commit
 
@@ -33,3 +33,4 @@ Modul tetap aktif ketika impor kontennya saat bootstrap gagal karena alasan lain
 - [e183481](https://github.com/Cognis-Labs-HQ/Cognis/commit/e18348130104134eaa7962aa3020a03a22325e86)
 - [ba25e44](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba25e4481d6c71a35ebe2ecc8d0143b85f0125b3)
 - [ef782975](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef782975)
+- [68bd7478](https://github.com/Cognis-Labs-HQ/Cognis/commit/68bd7478dbf6343109087bd83a9fba643452a838)

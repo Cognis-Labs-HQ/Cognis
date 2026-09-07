@@ -199,6 +199,7 @@ export interface ModuleExtensionOptions {
     uiRegistry?: UIRegistry;
     routeContext: RouteContext;
     bootstrapTimeoutMs?: number;
+    onBootstrapFailed?: (moduleId: string) => Promise<void> | void;
     getProtectedRoutePrefixes?: () => readonly string[];
 }
 
@@ -208,7 +209,7 @@ export interface ModuleExtensionRoutes {
         res: ServerResponse,
         url: URL,
     ): Promise<boolean>;
-    refresh(): Promise<void>;
+    refresh(options?: { throwOnFailure?: boolean }): Promise<void>;
     uninstall(
         moduleId: string,
         options: { deleteContent: boolean },
@@ -616,7 +617,7 @@ export function createModuleExtensionRoutes(
         }
     }
 
-    async function refresh() {
+    async function refresh(refreshOptions?: { throwOnFailure?: boolean }) {
         for (const [moduleId, loaded] of loadedModules) {
             for (const teardown of [
                 loaded.dispose,
@@ -716,7 +717,7 @@ export function createModuleExtensionRoutes(
                         ...scope,
                     });
                 } catch (error) {
-                    log?.("warn", "Disabled module API registration failed.", {
+                    log?.("error", "Disabled module API registration failed.", {
                         component: "module-extension-routes",
                         moduleId: manifest.id,
                         error:
@@ -724,6 +725,7 @@ export function createModuleExtensionRoutes(
                                 ? error.message
                                 : String(error),
                     });
+                    if (refreshOptions?.throwOnFailure) throw error;
                 }
                 continue;
             }
@@ -798,13 +800,25 @@ export function createModuleExtensionRoutes(
                         nextHandlers.splice(index, 1);
                     }
                 }
-                log?.("warn", "Failed to load module API route plugin.", {
-                    component: "module-extension-routes",
-                    moduleId: manifest.id,
-                    pluginPath: entrypoint.path,
-                    error:
-                        error instanceof Error ? error.message : String(error),
-                });
+                const allowsBootstrapFailure =
+                    manifest.allowBootstrapFailure === true;
+                log?.(
+                    allowsBootstrapFailure ? "warn" : "error",
+                    "Failed to load module API route plugin.",
+                    {
+                        component: "module-extension-routes",
+                        moduleId: manifest.id,
+                        pluginPath: entrypoint.path,
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    },
+                );
+                if (!allowsBootstrapFailure) {
+                    await options.onBootstrapFailed?.(manifest.id);
+                    if (refreshOptions?.throwOnFailure) throw error;
+                }
             }
         }
 

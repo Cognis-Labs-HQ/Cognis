@@ -24,7 +24,7 @@ Inhaltspakete der Lernbibliothek aktualisieren jetzt bereits vorhandene Datensä
 
 ## Nicht blockierende Aktivierung
 
-Ein Modul bleibt aktiviert, wenn sein Inhaltsimport beim Start aus einem anderen Grund fehlschlägt. Cognis protokolliert den Startfehler als Warnung und entfernt unvollständige Laufzeitbeiträge.
+Module blockieren die Aktivierung bei Bootstrap-Fehlern standardmäßig. Ein Modulmanifest muss ausdrücklich `allowBootstrapFailure: true` setzen, bevor Cognis das Modul aktiviert lässt, unvollständige Laufzeitbeiträge entfernt und den Fehler als Warnung protokolliert.
 
 ## Commits
 
@@ -33,3 +33,4 @@ Ein Modul bleibt aktiviert, wenn sein Inhaltsimport beim Start aus einem anderen
 - [e183481](https://github.com/Cognis-Labs-HQ/Cognis/commit/e18348130104134eaa7962aa3020a03a22325e86)
 - [ba25e44](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba25e4481d6c71a35ebe2ecc8d0143b85f0125b3)
 - [ef782975](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef782975)
+- [68bd7478](https://github.com/Cognis-Labs-HQ/Cognis/commit/68bd7478dbf6343109087bd83a9fba643452a838)

@@ -72,6 +72,29 @@ test("module manifests reject malformed dependency lists", () => {
     }
 });
 
+test("module manifests require a boolean bootstrap failure opt-out", () => {
+    const repository = new TestMarketplaceRepository("sources.json", "modules");
+    assert.equal(
+        repository.parse(
+            JSON.stringify({
+                ...validManifest,
+                allowBootstrapFailure: true,
+            }),
+        ).allowBootstrapFailure,
+        true,
+    );
+    assert.throws(
+        () =>
+            repository.parse(
+                JSON.stringify({
+                    ...validManifest,
+                    allowBootstrapFailure: "true",
+                }),
+            ),
+        /invalid_module_manifest/,
+    );
+});
+
 test("public GitHub strings use the raw content endpoint", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-strings-"));
     const repository = new TestMarketplaceRepository(

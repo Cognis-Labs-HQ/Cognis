@@ -24,7 +24,7 @@
 
 ## 有効化を妨げない処理
 
-起動時のコンテンツ導入が別の理由で失敗しても、モジュールは有効なままになります。Cognis は起動エラーを警告として記録し、不完全な実行時の提供内容を削除します。
+既定では、ブートストラップに失敗したモジュールの有効化は中止されます。モジュールを有効なままにし、不完全な実行時提供を削除して失敗を警告として記録するには、モジュールマニフェストで `allowBootstrapFailure: true` を明示する必要があります。
 
 ## コミット
 
@@ -33,3 +33,4 @@
 - [e183481](https://github.com/Cognis-Labs-HQ/Cognis/commit/e18348130104134eaa7962aa3020a03a22325e86)
 - [ba25e44](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba25e4481d6c71a35ebe2ecc8d0143b85f0125b3)
 - [ef782975](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef782975)
+- [68bd7478](https://github.com/Cognis-Labs-HQ/Cognis/commit/68bd7478dbf6343109087bd83a9fba643452a838)

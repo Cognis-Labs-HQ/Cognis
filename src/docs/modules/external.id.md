@@ -111,6 +111,8 @@ await reuse.loadStylesheets(["layout.css", "page-sections.css"]);
 
 Modul yang harus memuat skrip runtime mendeklarasikan `ui:resourceLoader` dan memanggil metode tervalidasi serta terhitung referensi `loadScript({ id, src, globalName })`. Modul harus membuang pegangan yang dikembalikan saat dilepas dan tidak boleh menambahkan skrip langsung ke dokumen.
 
+Secara default, kegagalan bootstrap membatalkan aktivasi dan mengembalikan modul ke keadaan nonaktif. Modul yang pekerjaan startup opsionalnya boleh gagal dengan aman dapat secara eksplisit menetapkan `allowBootstrapFailure: true` di `manifest.json`; Cognis kemudian mempertahankan modul tetap aktif, menghapus kontribusi runtime yang tidak lengkap, dan mencatat kegagalan sebagai peringatan. Gunakan pilihan pengecualian ini hanya jika setiap kapabilitas dan rute yang tidak dimuat akibat kegagalan bootstrap benar-benar opsional.
+
 ## Dependensi instalasi
 
 Manifes eksternal dapat menyatakan `hardDependencies` dan `softDependencies` sebagai daftar UUID atau ID modul. Dependensi keras tidak dianjurkan karena administrator harus memasang dan mengaktifkannya sebelum instalasi dapat dilanjutkan. Dependensi lunak dapat dipilih secara opsional pada dialog instalasi.

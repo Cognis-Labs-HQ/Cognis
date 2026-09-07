@@ -111,6 +111,8 @@ await reuse.loadStylesheets(["layout.css", "page-sections.css"]);
 
 Modules that must load a runtime script declare `ui:resourceLoader` and call its validated, reference-counted `loadScript({ id, src, globalName })` method. They must dispose the returned handle during unmount and must not append scripts directly to the document.
 
+By default, a bootstrap failure aborts activation and returns the module to its disabled state. A module whose optional startup work can safely fail may explicitly set `allowBootstrapFailure: true` in `manifest.json`; Cognis then keeps the module enabled, removes incomplete runtime contributions, and records the failure as a warning. Use this opt-out only when every capability and route omitted by the failed bootstrap is genuinely optional.
+
 ## Installation dependencies
 
 External manifests may declare `hardDependencies` and `softDependencies` as arrays of module UUIDs or IDs. Hard dependencies are discouraged because administrators must install and enable them before installation can continue. Soft dependencies are optional selections in the installation dialog.
