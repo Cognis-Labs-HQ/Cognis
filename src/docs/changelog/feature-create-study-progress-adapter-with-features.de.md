@@ -74,6 +74,10 @@ Details zu Alternativzeichen und Wörtern gruppieren auflösungsbasierte Zeichen
 
 Karten mit untergeordneten Elementen zeigen beim Darüberfahren einen Hinweis zum Rechtsklick und öffnen Varianten erst nach einem Rechtsklick. Variantenkarten behalten ihre konstante Transparenz, schließen beim Verlassen des Fokus aus der gesamten Kartengruppe und erscheinen zusätzlich in einem eigenen Abschnitt der übergeordneten Detailansicht.
 
+## Sichtbare Richtung der Kindkarten
+
+Geöffnete untergeordnete Karten haben jetzt einen grünen Rahmen und einen grünen Pfeil, der ihre Richtung vom übergeordneten Element zeigt. Der Abstand zwischen Eltern- und Kindkarte verwendet denselben Wert wie das normale Kartenraster.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -102,3 +106,4 @@ Karten mit untergeordneten Elementen zeigen beim Darüberfahren einen Hinweis zu
 - [82bb97c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/82bb97c02aac759f995373a1e9c1234d69b61d57)
 - [44617c98](https://github.com/Cognis-Labs-HQ/Cognis/commit/44617c980ed07d896925f99bd27dd0ca57d2d831)
 - [95b3065d](https://github.com/Cognis-Labs-HQ/Cognis/commit/95b3065d2b20baf702b1b7ffb669cdd5351caf70)
+- [f1ad82df](https://github.com/Cognis-Labs-HQ/Cognis/commit/f1ad82df827fe30850bf4516aa790304a985d925)

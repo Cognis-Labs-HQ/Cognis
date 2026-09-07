@@ -21,6 +21,10 @@ const adapterSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/index.ts"),
     "utf8",
 );
+const variantArrow = readFileSync(
+    resolve(ROOT, "src/adapters/study/library/ui/assets/variant-arrow.svg"),
+    "utf8",
+);
 
 test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /role="tablist"/);
@@ -103,6 +107,12 @@ test("Study Library unfolds structured character variants", () => {
         /\.library-entry-card-shell\.library-entry-variants-open/,
     );
     assert.match(stylesheet, /\.library-entry-variant-hint/);
+    assert.match(stylesheet, /--library-card-gap: 0\.75rem/);
+    assert.match(stylesheet, /\.library-entry-variant-shell::before/);
+    assert.match(stylesheet, /variant-arrow\.svg/);
+    assert.match(stylesheet, /\.library-entry-variant \{/);
+    assert.match(stylesheet, /var\(--color-success-outline-text/);
+    assert.match(variantArrow, /<path/);
     assert.match(
         stylesheet,
         /\.library-entry-card-shell:is\(:hover, :focus-within\)/,

@@ -1,4 +1,7 @@
 .library-browser {
+    --library-card-gap: 0.75rem;
+    --library-card-half-gap: 0.375rem;
+
     display: grid;
     gap: 1.5rem;
 }
@@ -48,7 +51,7 @@
 .library-entry-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
-    gap: 0.75rem;
+    gap: var(--library-card-gap);
 }
 
 .library-entry-grid[style] {
@@ -139,6 +142,21 @@ body[data-theme="dark"] .library-entry-selection:checked {
     transition: opacity 140ms ease;
 }
 
+.library-entry-variant-shell::before {
+    position: absolute;
+    width: var(--library-card-gap);
+    height: var(--library-card-gap);
+    background: var(--color-success-outline-text, var(--color-success-text));
+    content: "";
+    -webkit-mask: url("./assets/variant-arrow.svg") center / contain no-repeat;
+    mask: url("./assets/variant-arrow.svg") center / contain no-repeat;
+}
+
+.library-entry-variant {
+    border: 2px solid
+        var(--color-success-outline-text, var(--color-success-border));
+}
+
 .library-entry-card-shell.library-entry-variants-open
     .library-entry-variant-shell,
 .library-entry-variant-shell.library-entry-variant-revealed {
@@ -182,26 +200,49 @@ body[data-theme="dark"] .library-entry-selection:checked {
 
 .library-entry-variant-left {
     top: 50%;
-    right: 100%;
+    right: calc(100% + var(--library-card-gap));
     transform: translateY(-50%);
+}
+
+.library-entry-variant-left::before {
+    top: calc(50% - var(--library-card-half-gap));
+    right: calc(-1 * var(--library-card-gap));
+    transform: rotate(180deg);
 }
 
 .library-entry-variant-right {
     top: 50%;
-    left: 100%;
+    left: calc(100% + var(--library-card-gap));
     transform: translateY(-50%);
 }
 
+.library-entry-variant-right::before {
+    top: calc(50% - var(--library-card-half-gap));
+    left: calc(-1 * var(--library-card-gap));
+}
+
 .library-entry-variant-up {
-    bottom: 100%;
+    bottom: calc(100% + var(--library-card-gap));
     left: 50%;
     transform: translateX(-50%);
 }
 
+.library-entry-variant-up::before {
+    bottom: calc(-1 * var(--library-card-gap));
+    left: calc(50% - var(--library-card-half-gap));
+    transform: rotate(-90deg);
+}
+
 .library-entry-variant-down {
-    top: 100%;
+    top: calc(100% + var(--library-card-gap));
     left: 50%;
     transform: translateX(-50%);
+}
+
+.library-entry-variant-down::before {
+    top: calc(-1 * var(--library-card-gap));
+    left: calc(50% - var(--library-card-half-gap));
+    transform: rotate(90deg);
 }
 
 .library-entry-card[hidden] {

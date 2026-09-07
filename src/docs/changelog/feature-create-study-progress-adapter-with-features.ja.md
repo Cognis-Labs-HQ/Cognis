@@ -74,6 +74,10 @@
 
 子を持つカードはホバー時に右クリック案内を表示し、右クリック後にのみバリエーションを展開します。子カードの透明度は一定のまま、カードグループ全体からフォーカスが外れると閉じ、親の詳細画面にも専用節として表示されます。
 
+## 子カード方向の強調
+
+展開した子カードに緑色の枠線と、親からの方向を示す緑色の矢印を追加しました。親子間の余白には通常のカードグリッドと同じ間隔値を使用します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -102,3 +106,4 @@
 - [82bb97c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/82bb97c02aac759f995373a1e9c1234d69b61d57)
 - [44617c98](https://github.com/Cognis-Labs-HQ/Cognis/commit/44617c980ed07d896925f99bd27dd0ca57d2d831)
 - [95b3065d](https://github.com/Cognis-Labs-HQ/Cognis/commit/95b3065d2b20baf702b1b7ffb669cdd5351caf70)
+- [f1ad82df](https://github.com/Cognis-Labs-HQ/Cognis/commit/f1ad82df827fe30850bf4516aa790304a985d925)
