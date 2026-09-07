@@ -48,20 +48,54 @@ function validateField(field: LibraryFieldSchema, ids: Set<string>): void {
         typeof field.detail.exclusive !== "boolean"
     )
         throw new Error("invalid_filter_group_exclusivity");
+    if (
+        field.detail?.required !== undefined &&
+        typeof field.detail.required !== "boolean"
+    )
+        throw new Error("invalid_filter_group_requirement");
+    if (
+        field.detail?.defaultTag !== undefined &&
+        (typeof field.detail.defaultTag !== "string" ||
+            !field.detail.defaultTag.trim())
+    )
+        throw new Error("invalid_filter_group_default_tag");
     ids.add(field.id);
 }
 
 function validateFilterGroups(fields: readonly LibraryFieldSchema[]): void {
-    const groupExclusivity = new Map<string, boolean>();
+    const groupSettings = new Map<
+        string,
+        { exclusive: boolean; required: boolean; defaultTag?: string }
+    >();
     for (const field of fields) {
-        if (!field.detail?.group && field.detail?.exclusive === undefined)
+        if (
+            !field.detail?.group &&
+            field.detail?.exclusive === undefined &&
+            field.detail?.required === undefined &&
+            field.detail?.defaultTag === undefined
+        )
             continue;
         const groupId = field.detail.group ?? field.id;
         const exclusive = field.detail.exclusive ?? false;
-        const established = groupExclusivity.get(groupId);
-        if (established !== undefined && established !== exclusive)
-            throw new Error("inconsistent_filter_group_exclusivity");
-        groupExclusivity.set(groupId, exclusive);
+        const required = field.detail.required ?? false;
+        const defaultTag = field.detail.defaultTag?.trim();
+        const established = groupSettings.get(groupId);
+        if (established) {
+            if (established.exclusive !== exclusive)
+                throw new Error("inconsistent_filter_group_exclusivity");
+            if (established.required !== required)
+                throw new Error("inconsistent_filter_group_requirement");
+            if (
+                established.defaultTag &&
+                defaultTag &&
+                established.defaultTag !== defaultTag
+            )
+                throw new Error("multiple_filter_group_defaults");
+            if (!established.defaultTag && defaultTag)
+                established.defaultTag = defaultTag;
+            continue;
+        }
+        groupSettings.set(groupId, { exclusive, required, defaultTag });
     }
 }
 

@@ -82,6 +82,8 @@ test("metadata filter groups declare consistent selection exclusivity", () => {
                 renderer: "badge" as const,
                 group: "character-class",
                 exclusive: true,
+                required: true,
+                defaultTag: "hiragana",
             },
         },
         {
@@ -92,6 +94,7 @@ test("metadata filter groups declare consistent selection exclusivity", () => {
                 renderer: "badge" as const,
                 group: "character-class",
                 exclusive: true,
+                required: true,
             },
         },
     ];
@@ -127,6 +130,28 @@ test("metadata filter groups declare consistent selection exclusivity", () => {
                 ],
             }),
         /inconsistent_filter_group_exclusivity/,
+    );
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...english,
+                layers: [
+                    {
+                        ...english.layers[0],
+                        fields: [
+                            groupedFields[0],
+                            {
+                                ...groupedFields[1],
+                                detail: {
+                                    ...groupedFields[1].detail,
+                                    required: false,
+                                },
+                            },
+                        ],
+                    },
+                ],
+            }),
+        /inconsistent_filter_group_requirement/,
     );
 });
 

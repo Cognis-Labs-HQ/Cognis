@@ -26,11 +26,16 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /role="tablist"/);
     assert.match(source, /role="tabpanel"/);
     assert.match(source, /class="library-entry-card btn-neutral"/);
-    assert.match(source, /class="library-filter-pill btn-neutral"/);
-    assert.match(source, /aria-pressed="false"/);
+    assert.match(source, /class="library-filter-pill btn-neutral/);
+    assert.match(source, /aria-pressed="\$\{selected\}"/);
     assert.match(source, /function applyLibraryFilters/);
     assert.match(source, /\.library-entry-card\[data-library-filter-values\]/);
     assert.match(source, /data-library-filter-exclusive/);
+    assert.match(source, /data-library-filter-required/);
+    assert.match(source, /filter\.detail\?\.defaultTag/);
+    assert.match(source, /required \|\| tags\.length === 1/);
+    assert.match(source, /function refreshLibraryFilterResults/);
+    assert.match(source, /group\?\.dataset\.libraryFilterRequired === "true"/);
     assert.match(source, /classList\.toggle\("active", willActivate\)/);
     assert.match(stylesheet, /\.library-entry-grid/);
     assert.match(stylesheet, /\.library-filters/);

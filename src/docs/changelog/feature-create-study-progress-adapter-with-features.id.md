@@ -62,6 +62,10 @@ Pustaka kini merender kontrol audio aksesibelnya sendiri alih-alih mengandalkan 
 
 Skema lapisan Pustaka kini dapat meminta ukuran baris dan menempatkan konten berdasarkan ID rekaman, termasuk sel kosong eksplisit untuk bagan konvensional. Kartu diskalakan secara merata untuk memenuhi baris yang diminta, dan kartu anak mengambang kini dirender dengan opasitas 95%.
 
+## Filter metadata wajib
+
+Modul dapat menandai grup filter metadata sebagai wajib dan memilih tag bawaan. Grup wajib selalu mempertahankan satu pilihan, sedangkan grup dengan hanya satu tag yang dirender memilih tag tersebut secara otomatis.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -87,3 +91,4 @@ Skema lapisan Pustaka kini dapat meminta ukuran baris dan menempatkan konten ber
 - [13754134](https://github.com/Cognis-Labs-HQ/Cognis/commit/13754134d1595372336cea85a1d1f85bb4da2a9c)
 - [f4ad7320](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4ad732066d653312f37bba8a08c61d7d37d3522)
 - [753a02dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/753a02dc9171670c41d02b9665e076422f3fc3b6)
+- [82bb97c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/82bb97c02aac759f995373a1e9c1234d69b61d57)

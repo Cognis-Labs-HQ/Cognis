@@ -30,6 +30,10 @@ export interface LibraryDetailHint {
     group?: string;
     /** When true, selecting a filter in this group clears its other filters. */
     exclusive?: boolean;
+    /** When true, the filter group must retain at least one selected tag. */
+    required?: boolean;
+    /** A tag value that the module requests be selected initially. */
+    defaultTag?: string;
     hidden?: boolean;
 }
 

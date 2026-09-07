@@ -452,6 +452,7 @@ function filterDescriptors(layer, layerEntries, contentLanguage) {
                       id: field.id,
                       label: localizedLabel(field.metadata, contentLanguage),
                       values,
+                      detail: field.detail,
                   },
               ]
             : [];
@@ -475,17 +476,26 @@ function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
                 ...new Set(groupFilters.map(({ label }) => label)),
             ].join(" / ");
             const exclusive = groupFilters.every(
-                (filter) =>
-                    (layer.fields ?? []).find(({ id }) => id === filter.id)
-                        ?.detail?.exclusive === true,
+                (filter) => filter.detail?.exclusive === true,
             );
-            return `<fieldset class="library-filter-group" data-library-filter-group="${escapeHtml(groupId)}" data-library-filter-exclusive="${exclusive}"><legend>${escapeHtml(groupLabel)}</legend><div class="library-filter-pills">${groupFilters
-                .flatMap((filter) =>
-                    filter.values.map(
-                        (value) =>
-                            `<button class="library-filter-pill btn-neutral" type="button" data-library-filter="${escapeHtml(filter.id)}" data-library-filter-value="${escapeHtml(value)}" aria-pressed="false" title="${escapeHtml(`${filter.label}: ${value}`)}">${escapeHtml(value)}</button>`,
-                    ),
-                )
+            const required = groupFilters.every(
+                (filter) => filter.detail?.required === true,
+            );
+            const defaultTag = groupFilters.find(
+                (filter) => filter.detail?.defaultTag,
+            )?.detail?.defaultTag;
+            const tags = groupFilters.flatMap((filter) =>
+                filter.values.map((value) => ({ filter, value })),
+            );
+            const selectedTag =
+                tags.find(({ value }) => value === defaultTag) ??
+                (required || tags.length === 1 ? tags[0] : undefined);
+            return `<fieldset class="library-filter-group" data-library-filter-group="${escapeHtml(groupId)}" data-library-filter-exclusive="${exclusive}" data-library-filter-required="${required}"><legend>${escapeHtml(groupLabel)}</legend><div class="library-filter-pills">${tags
+                .map((tag) => {
+                    const { filter, value } = tag;
+                    const selected = selectedTag === tag;
+                    return `<button class="library-filter-pill btn-neutral${selected ? " active" : ""}" type="button" data-library-filter="${escapeHtml(filter.id)}" data-library-filter-value="${escapeHtml(value)}" aria-pressed="${selected}" title="${escapeHtml(`${filter.label}: ${value}`)}">${escapeHtml(value)}</button>`;
+                })
                 .join("")}</div></fieldset>`;
         })
         .join("")}</div>`;
@@ -866,6 +876,14 @@ async function openEntryPopup(
 function applyLibraryFilters(filter) {
     const group = filter.closest("[data-library-filter-group]");
     const willActivate = !filter.classList.contains("active");
+    if (
+        !willActivate &&
+        group?.dataset.libraryFilterRequired === "true" &&
+        group.querySelectorAll("button[data-library-filter].active").length ===
+            1
+    ) {
+        return;
+    }
     if (willActivate && group?.dataset.libraryFilterExclusive === "true") {
         group
             .querySelectorAll("button[data-library-filter].active")
@@ -877,6 +895,11 @@ function applyLibraryFilters(filter) {
     filter.classList.toggle("active", willActivate);
     filter.setAttribute("aria-pressed", String(willActivate));
     const panel = filter.closest("[data-library-panel]");
+    refreshLibraryFilterResults(panel);
+}
+
+function refreshLibraryFilterResults(panel) {
+    if (!panel) return;
     const selectedFilters = Array.from(
         panel.querySelectorAll("button[data-library-filter].active"),
     );
@@ -987,6 +1010,11 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     signal?.throwIfAborted();
+    root.querySelectorAll("[data-library-panel]").forEach((panel) => {
+        if (panel.querySelector("button[data-library-filter].active")) {
+            refreshLibraryFilterResults(panel);
+        }
+    });
     bindStudySubNavigation(root, { signal });
     let longPressTimer = null;
     let longPressOrigin = null;

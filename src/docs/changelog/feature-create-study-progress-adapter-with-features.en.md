@@ -62,6 +62,10 @@ The Library now renders its own accessible audio controls instead of relying on 
 
 Library layer schemas can now request a row size and position content by record ID, including explicit blank cells for conventional charts. Cards scale evenly to fill the requested row, and floating child cards now render at 95% opacity.
 
+## Required metadata filters
+
+Modules can mark metadata filter groups as required and choose a default tag. Required groups always retain a selection, while any group with only one rendered tag selects that tag automatically.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -87,3 +91,4 @@ Library layer schemas can now request a row size and position content by record 
 - [13754134](https://github.com/Cognis-Labs-HQ/Cognis/commit/13754134d1595372336cea85a1d1f85bb4da2a9c)
 - [f4ad7320](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4ad732066d653312f37bba8a08c61d7d37d3522)
 - [753a02dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/753a02dc9171670c41d02b9665e076422f3fc3b6)
+- [82bb97c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/82bb97c02aac759f995373a1e9c1234d69b61d57)

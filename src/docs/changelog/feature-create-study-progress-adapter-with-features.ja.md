@@ -62,6 +62,10 @@
 
 ライブラリーレイヤーのスキーマで行サイズを指定し、一般的な表のための明示的な空欄を含め、レコード ID ごとにコンテンツを配置できるようになりました。カードは指定行を均等に満たすよう拡縮され、浮遊する子カードは不透明度 95% で表示されます。
 
+## 必須メタデータフィルター
+
+モジュールはメタデータフィルターグループを必須にし、既定タグを指定できます。必須グループでは常に選択が維持され、表示タグが 1 つだけのグループでは自動的にそのタグが選択されます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -87,3 +91,4 @@
 - [13754134](https://github.com/Cognis-Labs-HQ/Cognis/commit/13754134d1595372336cea85a1d1f85bb4da2a9c)
 - [f4ad7320](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4ad732066d653312f37bba8a08c61d7d37d3522)
 - [753a02dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/753a02dc9171670c41d02b9665e076422f3fc3b6)
+- [82bb97c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/82bb97c02aac759f995373a1e9c1234d69b61d57)
