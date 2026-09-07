@@ -26,6 +26,8 @@ import {
 } from "/static/gateways/study/ui/language.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
+const LONG_PRESS_DURATION_MS = 550;
+const LONG_PRESS_MOVE_TOLERANCE_PX = 8;
 
 function entryAttributes(entry) {
     return `data-library-schema="${escapeHtml(entry.schemaId)}" data-library-layer="${escapeHtml(entry.layer)}" data-library-entry="${escapeHtml(entry.id)}"`;
@@ -409,15 +411,16 @@ function canDeleteEntry(entry) {
     );
 }
 
-function renderSelection(entry, i18n, direction = "") {
+function renderSelection(entry, i18n) {
     if (!canDeleteEntry(entry)) return "";
-    const directionClass = direction
-        ? ` library-entry-selection-${direction}`
-        : "";
     const label = i18n
         .t("gateway.study.library_select_entry")
         .replace("{{ entry }}", entry.label);
-    return `<input class="library-entry-selection${directionClass}" type="checkbox" data-library-select-entry="${escapeHtml(entry.id)}" aria-label="${escapeHtml(label)}">`;
+    return `<input class="library-entry-selection" type="checkbox" data-library-select-entry="${escapeHtml(entry.id)}" aria-label="${escapeHtml(label)}">`;
+}
+
+function renderCardContents(entry, layer, i18n) {
+    return `<strong>${escapeHtml(entry.label)}</strong><span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span>`;
 }
 
 function renderEntryCard(entry, layer, schema, entries, i18n) {
@@ -435,10 +438,10 @@ function renderEntryCard(entry, layer, schema, entries, i18n) {
             ? [{ entry: candidate, direction: placement.direction }]
             : [];
     });
-    return `<div class="library-entry-card-shell"><button class="library-entry-card btn-neutral" type="button" ${entryAttributes(entry)} data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}"><strong>${escapeHtml(entry.label)}</strong><span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span></button>${renderSelection(entry, i18n)}${variants
+    return `<div class="library-entry-card-shell"><button class="library-entry-card btn-neutral" type="button" ${entryAttributes(entry)} data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}">${renderCardContents(entry, layer, i18n)}</button>${renderSelection(entry, i18n)}${variants
         .map(
             ({ entry: variant, direction }) =>
-                `<button class="library-entry-variant library-entry-variant-${direction} btn-neutral" type="button" ${entryAttributes(variant)}>${escapeHtml(variant.label)}</button>${renderSelection(variant, i18n, direction)}`,
+                `<div class="library-entry-variant-shell library-entry-variant-${direction}"><button class="library-entry-card library-entry-variant btn-neutral" type="button" ${entryAttributes(variant)}>${renderCardContents(variant, layer, i18n)}</button>${renderSelection(variant, i18n)}</div>`,
         )
         .join("")}</div>`;
 }
@@ -447,6 +450,15 @@ function selectedEntryIds(root) {
     return Array.from(
         root.querySelectorAll("[data-library-select-entry]:checked"),
         (control) => control.dataset.librarySelectEntry,
+    );
+}
+
+function selectionForCard(root, card) {
+    return Array.from(
+        root.querySelectorAll("[data-library-select-entry]"),
+    ).find(
+        (control) =>
+            control.dataset.librarySelectEntry === card.dataset.libraryEntry,
     );
 }
 
@@ -764,6 +776,57 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
     signal?.throwIfAborted();
     bindStudySubNavigation(root, { signal });
+    let longPressTimer = null;
+    let longPressOrigin = null;
+    let suppressEntryClick = false;
+    const cancelLongPress = () => {
+        if (longPressTimer !== null) window.clearTimeout(longPressTimer);
+        longPressTimer = null;
+        longPressOrigin = null;
+    };
+    root.addEventListener(
+        "pointerdown",
+        (event) => {
+            if (event.button !== 0) return;
+            const card = event.target.closest("button[data-library-entry]");
+            if (!card) return;
+            const selection = selectionForCard(root, card);
+            if (!selection) return;
+            cancelLongPress();
+            longPressOrigin = { x: event.clientX, y: event.clientY };
+            longPressTimer = window.setTimeout(() => {
+                root.classList.add("library-selection-mode");
+                selection.checked = true;
+                suppressEntryClick = true;
+                updateDeleteSelectionButton(root, i18n);
+                longPressTimer = null;
+            }, LONG_PRESS_DURATION_MS);
+        },
+        { signal },
+    );
+    root.addEventListener(
+        "pointermove",
+        (event) => {
+            if (!longPressOrigin) return;
+            const distance = Math.hypot(
+                event.clientX - longPressOrigin.x,
+                event.clientY - longPressOrigin.y,
+            );
+            if (distance > LONG_PRESS_MOVE_TOLERANCE_PX) cancelLongPress();
+        },
+        { signal },
+    );
+    root.addEventListener("pointerup", cancelLongPress, { signal });
+    root.addEventListener("pointercancel", cancelLongPress, { signal });
+    root.addEventListener(
+        "contextmenu",
+        (event) => {
+            const card = event.target.closest("button[data-library-entry]");
+            if (!card) return;
+            if (selectionForCard(root, card)) event.preventDefault();
+        },
+        { signal },
+    );
     root.addEventListener(
         "change",
         (event) => {
@@ -832,6 +895,10 @@ export async function mount(root, { signal } = {}) {
             }
             const control = event.target.closest("button[data-library-entry]");
             if (!control) return;
+            if (suppressEntryClick) {
+                suppressEntryClick = false;
+                return;
+            }
             const entry = entries.find(
                 (candidate) => candidate.id === control.dataset.libraryEntry,
             );

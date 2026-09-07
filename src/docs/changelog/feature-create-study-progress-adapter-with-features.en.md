@@ -34,6 +34,10 @@ Character and alternative-character relationships can declare a left, right, up,
 
 Content owners, administrators, and owners can now select multiple Library entries and permanently delete them with their relationships. Module enablement restores missing supplied content by default, while an explicit deletion checkbox blacklists selected content hashes to prevent exact records from returning.
 
+## Usable variants and selection
+
+Directional variants now use the complete Library card presentation with slight transparency and a floating shadow. Their hover region remains connected to the parent so users can move to and open them. Multi-select checkboxes stay hidden until an eligible card is held, support dark mode, and the Library route once again loads the complete Study sub-navigation styling.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -52,3 +56,4 @@ Content owners, administrators, and owners can now select multiple Library entri
 - [77611b4e](https://github.com/Cognis-Labs-HQ/Cognis/commit/77611b4ed1c6d7afa1221f966cf80ec9b1292316)
 - [4ff6b5ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ff6b5ec7825a19626c371347c04c43785971216)
 - [1190320b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1190320be506d0c74feefa441a4188d05d3892ae)
+- [5bb5607e](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bb5607ec3cd60ff7ff2d1329dd66cb4cfc907a8)

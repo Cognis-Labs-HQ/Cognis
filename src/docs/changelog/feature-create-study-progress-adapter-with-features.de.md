@@ -34,6 +34,10 @@ Beziehungen von Zeichen und alternativen Zeichen können eine Variantenrichtung 
 
 Inhaltseigentümer, Administratoren und Eigentümer können jetzt mehrere Bibliothekseinträge auswählen und sie mit ihren Beziehungen dauerhaft löschen. Bei der Modulaktivierung werden fehlende bereitgestellte Inhalte standardmäßig wiederhergestellt; ein ausdrückliches Kontrollkästchen bei der Löschung sperrt stattdessen die ausgewählten Inhalts-Hashes und verhindert ihre Rückkehr.
 
+## Nutzbare Varianten und Auswahl
+
+Gerichtete Varianten verwenden jetzt die vollständige Darstellung einer Bibliothekskarte mit leichter Transparenz und schwebendem Schatten. Ihr Hover-Bereich bleibt mit dem übergeordneten Eintrag verbunden, sodass Benutzer zu ihnen wechseln und sie öffnen können. Mehrfachauswahlkästchen bleiben bis zum Halten einer berechtigten Karte verborgen, unterstützen den dunklen Modus, und die Bibliotheksroute lädt wieder die vollständige Gestaltung der Study-Unternavigation.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -52,3 +56,4 @@ Inhaltseigentümer, Administratoren und Eigentümer können jetzt mehrere Biblio
 - [77611b4e](https://github.com/Cognis-Labs-HQ/Cognis/commit/77611b4ed1c6d7afa1221f966cf80ec9b1292316)
 - [4ff6b5ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ff6b5ec7825a19626c371347c04c43785971216)
 - [1190320b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1190320be506d0c74feefa441a4188d05d3892ae)
+- [5bb5607e](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bb5607ec3cd60ff7ff2d1329dd66cb4cfc907a8)

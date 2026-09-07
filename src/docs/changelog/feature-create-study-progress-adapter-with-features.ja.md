@@ -34,6 +34,10 @@
 
 コンテンツ所有者、管理者、所有者は、複数のライブラリ項目を選択し、関係とともに完全に削除できるようになりました。通常はモジュールの有効化で不足した提供内容が復元されますが、削除時のチェックボックスを選ぶと対象のコンテンツハッシュがブロックリストに登録され、同一レコードの復元を防止します。
 
+## 操作しやすいバリエーションと選択
+
+方向付きバリエーションは、少し透明な浮遊シャドウ付きの完全なライブラリカード表示になりました。ホバー領域は親とつながっているため、ポインターを移動して開けます。複数選択チェックボックスは、権限のあるカードを長押しするまで非表示で、ダークモードに対応します。また、ライブラリルートで Study サブナビゲーションの完全なスタイルを再び読み込みます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -52,3 +56,4 @@
 - [77611b4e](https://github.com/Cognis-Labs-HQ/Cognis/commit/77611b4ed1c6d7afa1221f966cf80ec9b1292316)
 - [4ff6b5ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ff6b5ec7825a19626c371347c04c43785971216)
 - [1190320b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1190320be506d0c74feefa441a4188d05d3892ae)
+- [5bb5607e](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bb5607ec3cd60ff7ff2d1329dd66cb4cfc907a8)

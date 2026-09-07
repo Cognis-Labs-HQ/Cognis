@@ -112,7 +112,10 @@ export async function bootstrapStudyAdapter(
         pattern: "^/study/library(?:/[^/]+/[^/]+/[^/]+)?$",
         base: "/study/library",
         scriptUrl: "/static/adapters/study/library/app/index.js",
-        stylesheets: ["/static/adapters/study/library/library.css"],
+        stylesheets: [
+            "/static/gateways/study/study.css",
+            "/static/adapters/study/library/library.css",
+        ],
         requiredCapabilities: ["study:library:detailFlow"],
         isEnabled: () => ctx.isAdapterEnabled(),
     });

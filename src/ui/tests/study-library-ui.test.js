@@ -17,6 +17,10 @@ const clientSource = readFileSync(
     resolve(ROOT, "src/gateways/study/ui/library-client.js"),
     "utf8",
 );
+const adapterSource = readFileSync(
+    resolve(ROOT, "src/adapters/study/library/index.ts"),
+    "utf8",
+);
 
 test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /role="tablist"/);
@@ -32,6 +36,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(stylesheet, /\.library-filter-pill\.active/);
     assert.match(stylesheet, /\.library-entry-card\[hidden\]/);
     assert.match(stylesheet, /\.study-subnav-language-options/);
+    assert.match(adapterSource, /\/static\/gateways\/study\/study\.css/);
 });
 
 test("Study Library integrates definitions and particles into item details", () => {
@@ -58,6 +63,9 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(stylesheet, /\.library-entry-variant-right/);
     assert.match(stylesheet, /\.library-entry-variant-up/);
     assert.match(stylesheet, /\.library-entry-variant-down/);
+    assert.match(source, /renderCardContents\(variant, layer, i18n\)/);
+    assert.match(stylesheet, /opacity: 0\.9/);
+    assert.match(stylesheet, /box-shadow:/);
 });
 
 test("Study Library renders writing-unit pronunciation and audio", () => {
@@ -93,6 +101,16 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(clientSource, /export async function deleteLibraryEntries/);
     assert.match(clientSource, /method: "DELETE"/);
     assert.match(stylesheet, /\.library-entry-selection/);
+    assert.match(source, /LONG_PRESS_DURATION_MS/);
+    assert.match(source, /classList\.add\("library-selection-mode"\)/);
+    assert.match(
+        stylesheet,
+        /\.library-selection-mode \.library-entry-selection/,
+    );
+    assert.match(
+        stylesheet,
+        /body\[data-theme="dark"\] \.library-entry-selection/,
+    );
 });
 
 test("Study Library popup uses equal directional navigation controls", () => {

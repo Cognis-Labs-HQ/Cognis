@@ -34,6 +34,10 @@ Relasi karakter dan karakter alternatif dapat mendeklarasikan arah varian kiri, 
 
 Pemilik konten, administrator, dan pemilik sistem kini dapat memilih beberapa entri Perpustakaan dan menghapusnya secara permanen beserta relasinya. Pengaktifan modul memulihkan konten bawaan yang hilang secara default, sedangkan kotak centang penghapusan akan memasukkan hash konten terpilih ke daftar blokir agar rekaman yang sama tidak kembali.
 
+## Varian dan pemilihan yang mudah
+
+Varian terarah kini memakai tampilan kartu Perpustakaan lengkap dengan sedikit transparansi dan bayangan mengambang. Area hover tetap terhubung ke induk sehingga pengguna dapat berpindah dan membukanya. Kotak pilihan ganda tetap tersembunyi hingga kartu yang memenuhi syarat ditekan lama, mendukung mode gelap, dan rute Perpustakaan kembali memuat gaya subnavigasi Study secara lengkap.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -52,3 +56,4 @@ Pemilik konten, administrator, dan pemilik sistem kini dapat memilih beberapa en
 - [77611b4e](https://github.com/Cognis-Labs-HQ/Cognis/commit/77611b4ed1c6d7afa1221f966cf80ec9b1292316)
 - [4ff6b5ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ff6b5ec7825a19626c371347c04c43785971216)
 - [1190320b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1190320be506d0c74feefa441a4188d05d3892ae)
+- [5bb5607e](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bb5607ec3cd60ff7ff2d1329dd66cb4cfc907a8)
