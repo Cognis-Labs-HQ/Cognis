@@ -50,6 +50,10 @@
 
 メタデータ絞り込みは、シリアル化済み絞り込みデータを持つ基本ライブラリカードだけを処理します。浮動する方向付きバリエーションが未定義の dataset 値で絞り込み解析へ到達しなくなり、ライブラリページの実行時エラーを解消しました。
 
+## 控えめな発音と音声
+
+詳細タイトル横の文字発音は、エスケープ済みの副タイトルテキストとして、より小さい標準ウェイトで表示します。ダークテーマの音声領域は強制的な色置換を明示的に拒否し、ブラウザーのネイティブメディアパネルと操作部へ中立的なスタイルを適用します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -72,3 +76,4 @@
 - [83297da5](https://github.com/Cognis-Labs-HQ/Cognis/commit/83297da5d62dcbaa8166af88531432b8468d721e)
 - [164297bd](https://github.com/Cognis-Labs-HQ/Cognis/commit/164297bda76fa834f5a0e988260c7b2580ef4b87)
 - [31da2e2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/31da2e2fcd3284f1c2edd0da12a22c416c374b88)
+- [13754134](https://github.com/Cognis-Labs-HQ/Cognis/commit/13754134d1595372336cea85a1d1f85bb4da2a9c)

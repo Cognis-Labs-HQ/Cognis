@@ -63,7 +63,8 @@ test("Study Library renders metadata and scope indicators", () => {
 test("Study Library positions pronunciations by semantic role", () => {
     assert.match(source, /function isWritingUnitLayer/);
     assert.match(source, /function pronunciationValues/);
-    assert.match(source, /function detailTitle/);
+    assert.match(source, /function detailTitlePronunciation/);
+    assert.match(source, /titleDetail: detailTitlePronunciation/);
     assert.match(source, /class="library-entry-heading"/);
     assert.match(source, /library-card-pronunciation-below/);
     assert.match(source, /const relatedWords = isWritingUnitLayer/);
@@ -107,6 +108,9 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(stylesheet, /\.library-audio-error/);
     assert.match(stylesheet, /font-size: 0\.75rem/);
     assert.match(stylesheet, /filter: grayscale\(1\)/);
+    assert.match(stylesheet, /color-scheme: only dark/);
+    assert.match(stylesheet, /forced-color-adjust: none/);
+    assert.match(stylesheet, /::-webkit-media-controls-panel/);
 });
 
 test("Study Library owners can select and delete multiple entries", () => {

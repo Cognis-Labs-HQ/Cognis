@@ -69,6 +69,13 @@
     min-width: 0;
 }
 
+.popup-title-detail {
+    margin-inline-start: 0.5em;
+    color: var(--text-muted);
+    font-size: 0.72em;
+    font-weight: 400;
+}
+
 .popup-close-btn {
     flex-shrink: 0;
     border-radius: 6px;

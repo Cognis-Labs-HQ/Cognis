@@ -50,6 +50,10 @@ Die Auswahl per langem Drücken öffnet jetzt die vorhandene schwebende Aktionsl
 
 Metadatenfilter verarbeiten jetzt nur Basiskarten der Bibliothek mit serialisierten Filterdaten. Schwebende gerichtete Varianten erreichen den Filterparser nicht mehr mit einem undefinierten Datensatzwert, wodurch der Laufzeitfehler auf der Bibliotheksseite behoben ist.
 
+## Neutrale Aussprache und Audio
+
+Zeichenaussprachen neben Detailtiteln verwenden jetzt maskierten sekundären Titeltext in kleinerer Schrift und normaler Stärke. Dunkle Audioflächen lehnen erzwungene Farbersetzungen ausdrücklich ab und wenden neutrale Gestaltung auf native Medienbedienfelder und Steuerelemente des Browsers an.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -72,3 +76,4 @@ Metadatenfilter verarbeiten jetzt nur Basiskarten der Bibliothek mit serialisier
 - [83297da5](https://github.com/Cognis-Labs-HQ/Cognis/commit/83297da5d62dcbaa8166af88531432b8468d721e)
 - [164297bd](https://github.com/Cognis-Labs-HQ/Cognis/commit/164297bda76fa834f5a0e988260c7b2580ef4b87)
 - [31da2e2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/31da2e2fcd3284f1c2edd0da12a22c416c374b88)
+- [13754134](https://github.com/Cognis-Labs-HQ/Cognis/commit/13754134d1595372336cea85a1d1f85bb4da2a9c)

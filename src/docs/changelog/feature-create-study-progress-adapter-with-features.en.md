@@ -50,6 +50,10 @@ Long-press selection now opens the existing floating action bar with Select All,
 
 Metadata filters now process only base Library cards carrying serialized filter data. Floating directional variants no longer reach the filter parser with an undefined dataset value, eliminating the Library page runtime error.
 
+## Neutral pronunciation and audio
+
+Character pronunciations beside detail titles now use escaped secondary title text at a smaller size and normal weight. Dark audio surfaces explicitly reject forced-color substitutions and apply neutral styling to native browser media-control panels and controls.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -72,3 +76,4 @@ Metadata filters now process only base Library cards carrying serialized filter 
 - [83297da5](https://github.com/Cognis-Labs-HQ/Cognis/commit/83297da5d62dcbaa8166af88531432b8468d721e)
 - [164297bd](https://github.com/Cognis-Labs-HQ/Cognis/commit/164297bda76fa834f5a0e988260c7b2580ef4b87)
 - [31da2e2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/31da2e2fcd3284f1c2edd0da12a22c416c374b88)
+- [13754134](https://github.com/Cognis-Labs-HQ/Cognis/commit/13754134d1595372336cea85a1d1f85bb4da2a9c)

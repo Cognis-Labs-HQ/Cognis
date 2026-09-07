@@ -35,6 +35,7 @@
  *
  * Options:
  *   title    — heading text (rendered as plain text, HTML-escaped).
+ *   titleDetail — optional secondary heading text rendered smaller beside the title.
  *   body     — body content: either an HTML string or a `() => string` render
  *              function. Rendered as innerHTML; callers must escape dynamic values.
  *   variant  — visual style hint: 'info' | 'warning' | 'danger' | 'confirm'.
@@ -373,6 +374,7 @@ function hasUnsavedFormChanges(overlayElement) {
 
 export async function openPopup({
     title,
+    titleDetail,
     body,
     variant = "info",
     actions,
@@ -403,6 +405,11 @@ export async function openPopup({
                 .replaceAll(">", "&gt;")
                 .replaceAll('"', "&quot;")
                 .replaceAll("'", "&#39;");
+        }
+
+        function renderPopupTitle(titleValue, detailValue) {
+            const detail = String(detailValue ?? "");
+            return `${escapeHtml(titleValue ?? "")}${detail ? `<span class="popup-title-detail">${escapeHtml(detail)}</span>` : ""}`;
         }
 
         let dismissed = false;
@@ -509,7 +516,7 @@ export async function openPopup({
         overlay.innerHTML = `
       <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
         <div class="popup-header">
-          <h2 class="popup-title" id="popup-title">${escapeHtml(currentPage?.title ?? title ?? "")}</h2>
+          <h2 class="popup-title" id="popup-title">${renderPopupTitle(currentPage?.title ?? title, currentPage?.titleDetail ?? titleDetail)}</h2>
           <button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>
         </div>
         <div class="popup-body">${resolvedBody}</div>
@@ -534,7 +541,10 @@ export async function openPopup({
             const bodyEl = overlay.querySelector(".popup-body");
             const footerEl = overlay.querySelector(".popup-footer");
             if (titleEl)
-                titleEl.textContent = String(currentPage.title ?? title ?? "");
+                titleEl.innerHTML = renderPopupTitle(
+                    currentPage.title ?? title,
+                    currentPage.titleDetail ?? titleDetail,
+                );
             if (bodyEl)
                 bodyEl.innerHTML = resolvePageValue(currentPage.body, body);
             if (closeProtection) {

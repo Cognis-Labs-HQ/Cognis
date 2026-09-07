@@ -214,11 +214,11 @@ function renderPronunciation(entry, layer) {
     return `<p class="library-pronunciation">${values.map((value) => escapeHtml(value)).join(" · ")}</p>`;
 }
 
-function detailTitle(entry, layer) {
+function detailTitlePronunciation(entry, layer) {
     const pronunciations = pronunciationValues(entry);
     return isWritingUnitLayer(layer) && pronunciations.length
-        ? `${entry.label} · ${pronunciations.join(" · ")}`
-        : entry.label;
+        ? pronunciations.join(" · ")
+        : "";
 }
 
 function renderAudio(entry, layer) {
@@ -717,7 +717,8 @@ async function openEntryPopup(
         const abortPopup = () => dismissPopup?.();
         signal?.addEventListener("abort", abortPopup, { once: true });
         const result = await openPopup({
-            title: detailTitle(
+            title: detail.entry.label,
+            titleDetail: detailTitlePronunciation(
                 detail.entry,
                 layerForEntry(schemas, detail.entry),
             ),

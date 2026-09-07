@@ -50,6 +50,10 @@ Pemilihan dengan tekan lama kini membuka bilah tindakan mengambang yang ada deng
 
 Filter metadata kini hanya memproses kartu dasar Perpustakaan yang memiliki data filter terserialisasi. Varian terarah yang mengambang tidak lagi mencapai pengurai filter dengan nilai dataset tak terdefinisi sehingga galat runtime halaman Perpustakaan teratasi.
 
+## Pelafalan dan audio netral
+
+Pelafalan karakter di samping judul detail kini memakai teks judul sekunder yang di-escape, lebih kecil, dan berbobot normal. Permukaan audio gelap secara eksplisit menolak penggantian warna paksa dan menerapkan gaya netral pada panel serta kontrol media bawaan peramban.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -72,3 +76,4 @@ Filter metadata kini hanya memproses kartu dasar Perpustakaan yang memiliki data
 - [83297da5](https://github.com/Cognis-Labs-HQ/Cognis/commit/83297da5d62dcbaa8166af88531432b8468d721e)
 - [164297bd](https://github.com/Cognis-Labs-HQ/Cognis/commit/164297bda76fa834f5a0e988260c7b2580ef4b87)
 - [31da2e2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/31da2e2fcd3284f1c2edd0da12a22c416c374b88)
+- [13754134](https://github.com/Cognis-Labs-HQ/Cognis/commit/13754134d1595372336cea85a1d1f85bb4da2a9c)

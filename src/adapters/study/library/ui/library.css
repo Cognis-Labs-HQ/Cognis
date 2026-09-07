@@ -313,6 +313,7 @@ body[data-theme="dark"] .library-entry-selection:checked {
     background: var(--surface);
     color-scheme: light dark;
     accent-color: var(--accent);
+    forced-color-adjust: none;
 }
 
 .library-audio-error {
@@ -329,14 +330,23 @@ body[data-theme="light"] .library-audio {
 }
 
 body[data-theme="dark"] .library-audio {
-    color-scheme: dark;
-    background: var(--surface-2);
-    accent-color: var(--text-muted);
-    filter: grayscale(1) saturate(0) brightness(0.82) contrast(1.15);
+    color-scheme: only dark;
+    background: var(--surface-2) !important;
+    accent-color: var(--text-muted) !important;
+    filter: grayscale(1) saturate(0) brightness(0.82) contrast(1.15) !important;
 }
 
 body[data-theme="dark"] .library-audio::-webkit-media-controls-panel {
-    background-color: var(--surface-2);
+    background-color: var(--surface-2) !important;
+    forced-color-adjust: none;
+    filter: grayscale(1) saturate(0) !important;
+}
+
+body[data-theme="dark"] .library-audio::-webkit-media-controls-play-button,
+body[data-theme="dark"] .library-audio::-webkit-media-controls-mute-button,
+body[data-theme="dark"] .library-audio::-webkit-media-controls-timeline {
+    forced-color-adjust: none;
+    filter: grayscale(1) saturate(0) !important;
 }
 
 .library-filter-empty {
