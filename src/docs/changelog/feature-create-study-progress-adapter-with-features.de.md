@@ -46,6 +46,10 @@ Karten und Detailtitel von Schreibeinheiten zeigen die Zeichenaussprache nun neb
 
 Die Auswahl per langem Drücken öffnet jetzt die vorhandene schwebende Aktionsleiste mit Alle auswählen, Löschen und Schließen; normale Kartenklicks beenden den Auswahlmodus. Häkchen sind zentriert, dunkle Audio-Steuerelemente unterdrücken den nativen Orangeton, und Beziehungsklicks aktivieren und markieren die Zielkategorie. Definitionstext trägt seinen Link jetzt direkt, während Bestandteilsfelder auf deklarierte Resolver-Beziehungen beschränkt sind, um doppelte und unpassende Katakana-Links zu entfernen.
 
+## Stabile Filterung mit Varianten
+
+Metadatenfilter verarbeiten jetzt nur Basiskarten der Bibliothek mit serialisierten Filterdaten. Schwebende gerichtete Varianten erreichen den Filterparser nicht mehr mit einem undefinierten Datensatzwert, wodurch der Laufzeitfehler auf der Bibliotheksseite behoben ist.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -67,3 +71,4 @@ Die Auswahl per langem Drücken öffnet jetzt die vorhandene schwebende Aktionsl
 - [5bb5607e](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bb5607ec3cd60ff7ff2d1329dd66cb4cfc907a8)
 - [83297da5](https://github.com/Cognis-Labs-HQ/Cognis/commit/83297da5d62dcbaa8166af88531432b8468d721e)
 - [164297bd](https://github.com/Cognis-Labs-HQ/Cognis/commit/164297bda76fa834f5a0e988260c7b2580ef4b87)
+- [31da2e2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/31da2e2fcd3284f1c2edd0da12a22c416c374b88)

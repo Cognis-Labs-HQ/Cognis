@@ -46,6 +46,10 @@
 
 長押し選択で既存の浮動アクションバーを開き、すべて選択、削除、閉じるを表示します。通常のカードクリックでは選択モードを終了します。チェック印を中央揃えにし、ダークテーマの音声操作部からネイティブのオレンジ色を除去し、関係クリックでは移動先カテゴリを有効化して強調表示します。定義テキスト自体にディープリンクを統合し、構成要素ボックスを宣言済みリゾルバー関係のみに限定して、重複した無関係なカタカナリンクを除去しました。
 
+## バリエーション対応の安定した絞り込み
+
+メタデータ絞り込みは、シリアル化済み絞り込みデータを持つ基本ライブラリカードだけを処理します。浮動する方向付きバリエーションが未定義の dataset 値で絞り込み解析へ到達しなくなり、ライブラリページの実行時エラーを解消しました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -67,3 +71,4 @@
 - [5bb5607e](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bb5607ec3cd60ff7ff2d1329dd66cb4cfc907a8)
 - [83297da5](https://github.com/Cognis-Labs-HQ/Cognis/commit/83297da5d62dcbaa8166af88531432b8468d721e)
 - [164297bd](https://github.com/Cognis-Labs-HQ/Cognis/commit/164297bda76fa834f5a0e988260c7b2580ef4b87)
+- [31da2e2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/31da2e2fcd3284f1c2edd0da12a22c416c374b88)

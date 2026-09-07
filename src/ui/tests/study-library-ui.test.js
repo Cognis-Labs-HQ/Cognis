@@ -29,6 +29,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /class="library-filter-pill btn-neutral"/);
     assert.match(source, /aria-pressed="false"/);
     assert.match(source, /function applyLibraryFilters/);
+    assert.match(source, /\.library-entry-card\[data-library-filter-values\]/);
     assert.match(source, /data-library-filter-exclusive/);
     assert.match(source, /classList\.toggle\("active", willActivate\)/);
     assert.match(stylesheet, /\.library-entry-grid/);

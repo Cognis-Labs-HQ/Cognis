@@ -46,6 +46,10 @@ Writing-unit cards and detail titles now keep character pronunciations beside th
 
 Long-press selection now opens the existing floating action bar with Select All, Delete, and close controls; normal card clicks leave selection mode. Checkmarks are centered, dark audio controls suppress the native orange tint, and relationship clicks activate and highlight the destination category. Definition text now owns its deep link directly, while constituent boxes are limited to declared resolver relationships to remove duplicate and unrelated Katakana links.
 
+## Stable filtering with variants
+
+Metadata filters now process only base Library cards carrying serialized filter data. Floating directional variants no longer reach the filter parser with an undefined dataset value, eliminating the Library page runtime error.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -67,3 +71,4 @@ Long-press selection now opens the existing floating action bar with Select All,
 - [5bb5607e](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bb5607ec3cd60ff7ff2d1329dd66cb4cfc907a8)
 - [83297da5](https://github.com/Cognis-Labs-HQ/Cognis/commit/83297da5d62dcbaa8166af88531432b8468d721e)
 - [164297bd](https://github.com/Cognis-Labs-HQ/Cognis/commit/164297bda76fa834f5a0e988260c7b2580ef4b87)
+- [31da2e2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/31da2e2fcd3284f1c2edd0da12a22c416c374b88)

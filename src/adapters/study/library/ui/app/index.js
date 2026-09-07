@@ -810,20 +810,22 @@ function applyLibraryFilters(filter) {
         (item) => item.dataset.libraryFilter,
     );
     let visibleCount = 0;
-    panel.querySelectorAll(".library-entry-card").forEach((card) => {
-        const values = JSON.parse(card.dataset.libraryFilterValues);
-        const visible = Array.from(selections.entries()).every(
-            ([fieldId, controls]) =>
-                controls.some((control) =>
-                    values[fieldId]?.includes(
-                        control.dataset.libraryFilterValue,
+    panel
+        .querySelectorAll(".library-entry-card[data-library-filter-values]")
+        .forEach((card) => {
+            const values = JSON.parse(card.dataset.libraryFilterValues);
+            const visible = Array.from(selections.entries()).every(
+                ([fieldId, controls]) =>
+                    controls.some((control) =>
+                        values[fieldId]?.includes(
+                            control.dataset.libraryFilterValue,
+                        ),
                     ),
-                ),
-        );
-        card.hidden = !visible;
-        card.closest(".library-entry-card-shell").hidden = !visible;
-        if (visible) visibleCount += 1;
-    });
+            );
+            card.hidden = !visible;
+            card.closest(".library-entry-card-shell").hidden = !visible;
+            if (visible) visibleCount += 1;
+        });
     panel.querySelector(".library-filter-empty").hidden = visibleCount > 0;
 }
 
