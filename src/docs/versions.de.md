@@ -43,8 +43,8 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.15` |
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.28` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.18` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.18` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.24` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.19` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.25` |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.19` |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.16` |
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.17` |
@@ -56,7 +56,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.11` |
-| Library (Study)       | `src/adapters/study/library/`       | `2.6.6`  |
+| Library (Study)       | `src/adapters/study/library/`       | `2.6.7`  |
 | Fortschritt (Study)   | `src/adapters/study/progress/`      | `1.0.0`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |

@@ -297,6 +297,47 @@ test("postgres heals declared conflict targets on existing tables", async () => 
     );
 });
 
+test("postgres keeps provisioning available when unique-key data is duplicated", async () => {
+    const statements: string[] = [];
+    const logs: Array<{ level: string; message: string }> = [];
+    const executor = await createDbExecutor({
+        databaseUrl: "postgresql://unused",
+        log: (level, message) => logs.push({ level, message }),
+        pool: createPool({
+            query: async (sql: string) => {
+                statements.push(sql);
+                if (sql.includes("information_schema.columns")) {
+                    return { rows: [{ column_name: "slug" }], rowCount: 1 };
+                }
+                if (sql.includes("HAVING COUNT(*) > 1")) {
+                    return { rows: [{ slug: "duplicate" }], rowCount: 1 };
+                }
+                return { rows: [], rowCount: 0 };
+            },
+        }),
+    });
+
+    await executor.ensureTable({
+        name: "meeting_links",
+        columns: [{ name: "slug", type: "text", unique: true }],
+    });
+
+    assert.equal(
+        statements.some((sql) =>
+            sql.startsWith("CREATE UNIQUE INDEX IF NOT EXISTS"),
+        ),
+        false,
+    );
+    assert.deepEqual(
+        logs.find(({ message }) => message.includes("duplicate rows exist")),
+        {
+            level: "error",
+            message:
+                "Skipped unique index healing because duplicate rows exist.",
+        },
+    );
+});
+
 test("postgres renames legacy columns without losing their values", async () => {
     const statements: string[] = [];
     const executor = await createDbExecutor({

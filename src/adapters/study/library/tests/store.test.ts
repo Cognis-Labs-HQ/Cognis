@@ -5,7 +5,7 @@ import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { LibraryStore } from "../store.js";
 import type { LibraryContentPackPlan } from "../types.js";
 
-test("content pack import uses self-healed conflict targets", async () => {
+test("content pack import ignores duplicate all-key references", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
         id: "japanese",
@@ -85,14 +85,8 @@ test("content pack import uses self-healed conflict targets", async () => {
     );
     assert.deepEqual(
         referenceInsert.option === "INSERT"
-            ? referenceInsert.conflict?.target
+            ? referenceInsert.conflict
             : undefined,
-        ["source_entry_id", "target_entry_id", "relation", "position"],
-    );
-    assert.equal(
-        referenceInsert.option === "INSERT"
-            ? referenceInsert.conflict?.action
-            : undefined,
-        "update",
+        { action: "ignore" },
     );
 });

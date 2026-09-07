@@ -320,17 +320,12 @@ export class LibraryStore {
                         relation: reference.relation,
                         position: reference.position ?? index,
                     };
-                    await this.upsert(
-                        db,
-                        "study_library_references",
-                        [
-                            "source_entry_id",
-                            "target_entry_id",
-                            "relation",
-                            "position",
-                        ],
+                    await db.executeCommand({
+                        option: "INSERT",
+                        table: "study_library_references",
                         values,
-                    );
+                        conflict: { action: "ignore" },
+                    });
                 }
             }
             await db.executeCommand({

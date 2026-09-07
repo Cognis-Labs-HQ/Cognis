@@ -20,7 +20,7 @@ Moved the Library browser entry point to the required adapter `ui/app/index.js` 
 
 ## Repeatable content imports
 
-PostgreSQL and MariaDB table provisioning now self-heal unique indexes for declared primary and unique keys on existing tables. Study Library imports use those guaranteed conflict targets for atomic record, asset, and reference upserts, preventing duplicate keys during repeated or concurrent module activation.
+PostgreSQL and MariaDB table provisioning now check for duplicate data before healing declared unique indexes, preserving module availability when existing data cannot safely become unique. Study Library entries and assets use healed conflict targets, while all-key references use conflict-ignore inserts so repeated content cannot fail on their primary key.
 
 ## Commits
 
@@ -34,3 +34,4 @@ PostgreSQL and MariaDB table provisioning now self-heal unique indexes for decla
 - [2cc37134](https://github.com/Cognis-Labs-HQ/Cognis/commit/2cc371343c54afed45e545d523a751cad101be3c)
 - [ad01aa56](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad01aa561321b7db5982b0fbfe7f1b28ed11347b)
 - [9fe9af00](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fe9af0021f9a093ba432fca9761368e8df0e5f6)
+- [51c727ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/51c727eaeb923bd3d4a569ed9e924945f56e286c)

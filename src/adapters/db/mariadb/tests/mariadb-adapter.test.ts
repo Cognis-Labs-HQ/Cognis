@@ -357,6 +357,50 @@ test("mariadb heals declared conflict keys on existing tables", async () => {
     );
 });
 
+test("mariadb keeps provisioning available when unique-key data is duplicated", async () => {
+    const statements: string[] = [];
+    const logs: Array<{ level: string; message: string }> = [];
+    const executor = await createDbExecutor({
+        databaseUrl: "mariadb://unused",
+        log: (level, message) => logs.push({ level, message }),
+        pool: createPool({
+            query: async (sql: string) => {
+                statements.push(sql);
+                if (sql.includes("information_schema.COLUMNS")) {
+                    return [
+                        [{ column_name: "slug", data_type: "varchar" }],
+                        {},
+                    ];
+                }
+                if (sql.includes("HAVING COUNT(*) > 1")) {
+                    return [[{ slug: "duplicate" }], {}];
+                }
+                return [[], {}];
+            },
+        }),
+    });
+
+    await executor.ensureTable({
+        name: "meeting_links",
+        columns: [{ name: "slug", type: "text", unique: true }],
+    });
+
+    assert.equal(
+        statements.some((sql) =>
+            sql.startsWith("CREATE UNIQUE INDEX IF NOT EXISTS"),
+        ),
+        false,
+    );
+    assert.deepEqual(
+        logs.find(({ message }) => message.includes("duplicate rows exist")),
+        {
+            level: "error",
+            message:
+                "Skipped unique index healing because duplicate rows exist.",
+        },
+    );
+});
+
 test("mariadb repairs text index columns before creating their indexes", async () => {
     const statements: string[] = [];
     const executor = await createDbExecutor({

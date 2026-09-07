@@ -390,9 +390,42 @@ class PostgresExecutor implements RawDbExecutor {
             const signature = columns.join("\u0000");
             if (healedUniqueKeys.has(signature)) continue;
             healedUniqueKeys.add(signature);
-            await this.execute(
-                `CREATE UNIQUE INDEX IF NOT EXISTS ${uniqueIndexName(def.name, columns)} ON ${def.name} (${columns.join(", ")})`,
+            const duplicateRows = await this.execute(
+                `SELECT ${columns.join(", ")} FROM ${def.name} WHERE ${columns.map((column) => `${column} IS NOT NULL`).join(" AND ")} GROUP BY ${columns.join(", ")} HAVING COUNT(*) > 1 LIMIT 1`,
             );
+            if ((duplicateRows.rows?.length ?? 0) > 0) {
+                writeDbLog(
+                    this.log,
+                    "error",
+                    "Skipped unique index healing because duplicate rows exist.",
+                    {
+                        component: "db",
+                        provider: "postgresql",
+                        table: def.name,
+                        columns,
+                    },
+                );
+                continue;
+            }
+            try {
+                await this.execute(
+                    `CREATE UNIQUE INDEX IF NOT EXISTS ${uniqueIndexName(def.name, columns)} ON ${def.name} (${columns.join(", ")})`,
+                );
+            } catch (error) {
+                if ((error as { code?: unknown }).code !== "23505") throw error;
+                writeDbLog(
+                    this.log,
+                    "error",
+                    "Unique index healing encountered concurrent duplicate rows.",
+                    {
+                        component: "db",
+                        provider: "postgresql",
+                        table: def.name,
+                        columns,
+                        ...buildDbErrorMeta(error),
+                    },
+                );
+            }
         }
         for (const index of def.indexes ?? []) {
             const indexName =
