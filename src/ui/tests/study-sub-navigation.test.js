@@ -55,7 +55,7 @@ test("Study navigation stores language selection on buttons instead of URLs", ()
         "utf8",
     );
     const librarySource = readFileSync(
-        resolve(ROOT, "src/adapters/study/library/ui/app.js"),
+        resolve(ROOT, "src/adapters/study/library/ui/app/index.js"),
         "utf8",
     );
     const routerSource = readFileSync(

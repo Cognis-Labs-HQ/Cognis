@@ -30,7 +30,11 @@ function listTrackedDocFiles() {
         for (const entry of readdirSync(currentDirectory, {
             withFileTypes: true,
         })) {
-            if (entry.name === ".git" || entry.name === "node_modules") {
+            if (
+                entry.name === ".git" ||
+                entry.name === "node_modules" ||
+                entry.name === "dist"
+            ) {
                 continue;
             }
             const absolutePath = join(currentDirectory, entry.name);

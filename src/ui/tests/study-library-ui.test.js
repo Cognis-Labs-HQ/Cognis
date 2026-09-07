@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const source = readFileSync(
-    resolve(ROOT, "src/adapters/study/library/ui/app.js"),
+    resolve(ROOT, "src/adapters/study/library/ui/app/index.js"),
     "utf8",
 );
 const stylesheet = readFileSync(

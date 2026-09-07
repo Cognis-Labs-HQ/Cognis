@@ -22,7 +22,7 @@ const ADAPTER_BACKED_SPA_ROUTES = [
     {
         id: "study-library-page",
         sourceFile: "src/adapters/study/library/index.ts",
-        scriptUrl: "/static/adapters/study/library/app.js",
+        scriptUrl: "/static/adapters/study/library/app/index.js",
     },
     {
         id: "social-messages-page",
@@ -48,7 +48,7 @@ const ADAPTER_BACKED_SPA_ROUTES = [
 
 test("Study Library uses the authenticated direct-mount lifecycle", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/adapters/study/library/ui/app.js"),
+        resolve(ROOT, "src/adapters/study/library/ui/app/index.js"),
         "utf8",
     );
     assert.match(
@@ -539,7 +539,7 @@ test("direct SPA entry loads capability providers before the route module", () =
 
 test("Library detail composition preserves stages and dispatches contributed actions", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/adapters/study/library/ui/app.js"),
+        resolve(ROOT, "src/adapters/study/library/ui/app/index.js"),
         "utf8",
     );
     assert.match(
@@ -548,10 +548,8 @@ test("Library detail composition preserves stages and dispatches contributed act
     );
     assert.match(source, /contributedAction\.onAction\(\{/);
     assert.doesNotMatch(source, /registerFlow\(DETAIL_FLOW/);
-    assert.match(
-        source,
-        /\/study\/library\/\$\{encodeURIComponent\(entry\.schemaId\)\}\/\$\{encodeURIComponent\(entry\.layer\)\}\/\$\{encodeURIComponent\(entry\.id\)\}/,
-    );
+    assert.match(source, /entryAttributes\(entry\)/);
+    assert.match(source, /control\.dataset\.libraryEntry/);
     assert.match(source, /signal\?\.throwIfAborted\(\);[\s\S]*openPopup\(\{/);
-    assert.match(source, /if \(actionId === null\) return true;/);
+    assert.match(source, /else selectedEntry = null;/);
 });

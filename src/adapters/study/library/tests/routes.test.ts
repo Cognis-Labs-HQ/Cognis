@@ -110,7 +110,7 @@ test("asset route keeps authenticated package bytes out of shared caches", async
 
 test("Library browser resolves labels from localized schema metadata", async () => {
     const source = await import("node:fs/promises").then(({ readFile }) =>
-        readFile(new URL("../ui/app.js", import.meta.url), "utf8"),
+        readFile(new URL("../ui/app/index.js", import.meta.url), "utf8"),
     );
     assert.match(
         source,

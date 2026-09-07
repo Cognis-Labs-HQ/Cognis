@@ -184,12 +184,12 @@ test("schema languages canonicalize standard and private-use tags", () => {
 });
 
 test("relationship cardinality and target layers are enforced", () => {
-    const a = entry("a", "a");
+    const letterEntry = entry("a", "a");
     validateReferences(
         english,
         "words",
-        [{ entryId: a.id, relation: "letters", position: 0 }],
-        new Map([[a.id, a]]),
+        [{ entryId: letterEntry.id, relation: "letters", position: 0 }],
+        new Map([[letterEntry.id, letterEntry]]),
     );
     assert.throws(
         () => validateReferences(english, "words", [], new Map()),

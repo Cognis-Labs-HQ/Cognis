@@ -289,8 +289,6 @@ test("built-in dashboard pages expose UUID-owned component page metadata", () =>
         "core.changelogs",
         "core.license",
         "core.error",
-        "gateway.study",
-        "gateway.study.child",
     ]) {
         assert.match(
             routerSource,
