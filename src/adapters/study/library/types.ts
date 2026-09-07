@@ -59,6 +59,7 @@ export interface LibraryRelationshipSchema {
     requiredTarget?: boolean;
     onDelete: "restrict" | "detach" | "cascade";
     resolverRole?: "grapheme" | "token" | "longestMatch" | "explicit";
+    variantDirection?: "left" | "right" | "up" | "down";
 }
 
 export interface LibraryLayerSchema {

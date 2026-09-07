@@ -26,6 +26,10 @@ ID konten Pustaka Studi kini stabil di seluruh versi paket dan setiap entri meny
 
 Audio Pustaka yang gagal kini hanya mengganti pemutarnya dengan pesan terlokalisasi pada permukaan bertema yang sama, bukan melaporkan bahwa seluruh Pustaka gagal. Kontrol mode gelap menggunakan warna aksen dan permukaan tinggi aplikasi.
 
+## Varian karakter terarah
+
+Relasi karakter dan karakter alternatif dapat mendeklarasikan arah varian kiri, kanan, atas, atau bawah. Pustaka mempertahankan setiap varian sebagai entitas mandiri sambil membuka kontrol anak di sekitar kartu induk saat diarahkan atau menerima fokus papan ketik.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -41,3 +45,4 @@ Audio Pustaka yang gagal kini hanya mengganti pemutarnya dengan pesan terlokalis
 - [51c727ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/51c727eaeb923bd3d4a569ed9e924945f56e286c)
 - [17756b2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/17756b2fb83d82f25bf7c349f63170fc738db995)
 - [86d3162c](https://github.com/Cognis-Labs-HQ/Cognis/commit/86d3162c19544032fa2ccc6d55f80de58f9495fb)
+- [77611b4e](https://github.com/Cognis-Labs-HQ/Cognis/commit/77611b4ed1c6d7afa1221f966cf80ec9b1292316)

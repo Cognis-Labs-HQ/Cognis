@@ -383,6 +383,46 @@ function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
         .join("")}</div>`;
 }
 
+function variantPlacement(entry, schema) {
+    for (const reference of entry.references ?? []) {
+        const relationship = schema.layers
+            .find((layer) => layer.id === entry.layer)
+            ?.relationships?.find(
+                (candidate) => candidate.id === reference.relation,
+            );
+        if (relationship?.variantDirection) {
+            return {
+                parentId: reference.entryId,
+                direction: relationship.variantDirection,
+            };
+        }
+    }
+    return null;
+}
+
+function renderEntryCard(entry, layer, schema, entries, i18n) {
+    const filterValues = Object.fromEntries(
+        metadataFields(layer).map((field) => [
+            field.id,
+            metadataValues(entry, layer)
+                .filter((item) => item.field.id === field.id)
+                .map(({ value }) => value),
+        ]),
+    );
+    const variants = entries.flatMap((candidate) => {
+        const placement = variantPlacement(candidate, schema);
+        return placement?.parentId === entry.id
+            ? [{ entry: candidate, direction: placement.direction }]
+            : [];
+    });
+    return `<div class="library-entry-card-shell"><button class="library-entry-card btn-neutral" type="button" ${entryAttributes(entry)} data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}"><strong>${escapeHtml(entry.label)}</strong><span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span></button>${variants
+        .map(
+            ({ entry: variant, direction }) =>
+                `<button class="library-entry-variant library-entry-variant-${direction} btn-neutral" type="button" ${entryAttributes(variant)}>${escapeHtml(variant.label)}</button>`,
+        )
+        .join("")}</div>`;
+}
+
 function renderBrowser(schemas, entries, i18n) {
     if (!schemas.length)
         return `<p>${escapeHtml(i18n.t("gateway.study.library_empty"))}</p>`;
@@ -412,23 +452,20 @@ function renderBrowser(schemas, entries, i18n) {
                             entry.schemaId === schema.id &&
                             entry.layer === layer.id,
                     );
-                    const cards = layerEntries.length
-                        ? layerEntries
-                              .map((entry) => {
-                                  const filterValues = Object.fromEntries(
-                                      metadataFields(layer).map((field) => [
-                                          field.id,
-                                          metadataValues(entry, layer)
-                                              .filter(
-                                                  (item) =>
-                                                      item.field.id ===
-                                                      field.id,
-                                              )
-                                              .map(({ value }) => value),
-                                      ]),
-                                  );
-                                  return `<button class="library-entry-card btn-neutral" type="button" ${entryAttributes(entry)} data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}"><strong>${escapeHtml(entry.label)}</strong><span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span></button>`;
-                              })
+                    const baseEntries = layerEntries.filter(
+                        (entry) => !variantPlacement(entry, schema),
+                    );
+                    const cards = baseEntries.length
+                        ? baseEntries
+                              .map((entry) =>
+                                  renderEntryCard(
+                                      entry,
+                                      layer,
+                                      schema,
+                                      layerEntries,
+                                      i18n,
+                                  ),
+                              )
                               .join("")
                         : `<p class="library-layer-empty">${escapeHtml(i18n.t("gateway.study.library_layer_empty"))}</p>`;
                     return `<section class="library-layer-panel" role="tabpanel" id="library-panel-${schemaIndex}-${layerIndex}" aria-labelledby="library-tab-${schemaIndex}-${layerIndex}" data-library-panel="${escapeHtml(layer.id)}"${layerIndex === 0 ? "" : " hidden"}>${renderLayerFilters(layer, layerEntries, i18n, schema.language)}<div class="library-entry-grid">${cards}</div><p class="library-filter-empty" hidden>${escapeHtml(i18n.t("gateway.study.library_filter_empty"))}</p></section>`;
@@ -571,6 +608,7 @@ function applyLibraryFilters(filter) {
                 ),
         );
         card.hidden = !visible;
+        card.closest(".library-entry-card-shell").hidden = !visible;
         if (visible) visibleCount += 1;
     });
     panel.querySelector(".library-filter-empty").hidden = visibleCount > 0;

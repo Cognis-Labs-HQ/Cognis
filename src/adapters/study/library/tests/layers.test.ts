@@ -284,6 +284,42 @@ test("Korean consumers can model Jamo and compound syllable blocks", () => {
     assert.equal(validateLibrarySchema(korean).layers[1].id, "syllables");
 });
 
+test("writing layers declare directional variant relationships", () => {
+    const schema: LibrarySchema = {
+        ...english,
+        layers: [
+            {
+                id: "characters",
+                metadata: { labels: { en: "Characters" } },
+                relationships: [
+                    {
+                        id: "variant-of",
+                        targetLayer: "characters",
+                        metadata: { labels: { en: "Variant Of" } },
+                        onDelete: "detach",
+                        variantDirection: "right",
+                    },
+                ],
+            },
+        ],
+    };
+
+    assert.equal(
+        validateLibrarySchema(schema).layers[0].relationships?.[0]
+            .variantDirection,
+        "right",
+    );
+    (
+        schema.layers[0].relationships![0] as {
+            variantDirection: string;
+        }
+    ).variantDirection = "diagonal";
+    assert.throws(
+        () => validateLibrarySchema(schema),
+        /invalid_variant_direction/,
+    );
+});
+
 test("schema roles and rendering hints remain independent of layer IDs", () => {
     const schema: LibrarySchema = {
         ...english,

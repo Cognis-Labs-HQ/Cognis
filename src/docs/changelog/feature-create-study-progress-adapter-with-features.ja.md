@@ -26,6 +26,10 @@
 
 ライブラリ音声の読み込みに失敗した場合、ライブラリ全体の失敗を通知せず、そのプレーヤーだけを同じテーマ背景のローカライズ済みメッセージに置き換えます。ダークモードの操作部はアプリのアクセント色と浮き上がった背景色を使用します。
 
+## 方向付き文字バリエーション
+
+文字と代替文字の関係は、左、右、上、下のバリエーション方向を宣言できます。ライブラリは各バリエーションを独立した項目として保持し、親カードのホバーまたはキーボードフォーカス時に周囲へ子操作部を展開します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -41,3 +45,4 @@
 - [51c727ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/51c727eaeb923bd3d4a569ed9e924945f56e286c)
 - [17756b2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/17756b2fb83d82f25bf7c349f63170fc738db995)
 - [86d3162c](https://github.com/Cognis-Labs-HQ/Cognis/commit/86d3162c19544032fa2ccc6d55f80de58f9495fb)
+- [77611b4e](https://github.com/Cognis-Labs-HQ/Cognis/commit/77611b4ed1c6d7afa1221f966cf80ec9b1292316)

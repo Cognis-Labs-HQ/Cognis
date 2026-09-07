@@ -62,6 +62,55 @@
     background: var(--surface);
 }
 
+.library-entry-card-shell {
+    position: relative;
+}
+
+.library-entry-card-shell .library-entry-card {
+    width: 100%;
+}
+
+.library-entry-variant {
+    position: absolute;
+    z-index: 2;
+    min-width: 3rem;
+    min-height: 3rem;
+    border-radius: 0.75rem;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 140ms ease;
+}
+
+.library-entry-card-shell:hover .library-entry-variant,
+.library-entry-card-shell:focus-within .library-entry-variant {
+    visibility: visible;
+    opacity: 1;
+}
+
+.library-entry-variant-left {
+    top: 50%;
+    right: calc(100% + 0.35rem);
+    transform: translateY(-50%);
+}
+
+.library-entry-variant-right {
+    top: 50%;
+    left: calc(100% + 0.35rem);
+    transform: translateY(-50%);
+}
+
+.library-entry-variant-up {
+    bottom: calc(100% + 0.35rem);
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.library-entry-variant-down {
+    top: calc(100% + 0.35rem);
+    left: 50%;
+    transform: translateX(-50%);
+}
+
 .library-entry-card[hidden] {
     display: none;
 }
@@ -181,6 +230,7 @@
     margin: 0;
     padding: 1rem 1.25rem;
     color: var(--text-muted);
+    font-size: 0.75rem;
 }
 
 body[data-theme="light"] .library-audio {
@@ -190,6 +240,7 @@ body[data-theme="light"] .library-audio {
 body[data-theme="dark"] .library-audio {
     color-scheme: dark;
     background: var(--surface-2);
+    filter: grayscale(1);
 }
 
 .library-filter-empty {

@@ -50,6 +50,16 @@ test("Study Library renders metadata and scope indicators", () => {
     assert.match(stylesheet, /\.library-metadata-pill/);
 });
 
+test("Study Library unfolds structured character variants", () => {
+    assert.match(source, /function variantPlacement/);
+    assert.match(source, /relationship\?\.variantDirection/);
+    assert.match(source, /library-entry-variant-\$\{direction\}/);
+    assert.match(stylesheet, /\.library-entry-variant-left/);
+    assert.match(stylesheet, /\.library-entry-variant-right/);
+    assert.match(stylesheet, /\.library-entry-variant-up/);
+    assert.match(stylesheet, /\.library-entry-variant-down/);
+});
+
 test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(source, /function renderPronunciation/);
     assert.match(source, /function renderAudio/);
@@ -70,6 +80,8 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(stylesheet, /body\[data-theme="dark"\] \.library-audio/);
     assert.match(stylesheet, /background: var\(--surface-2\)/);
     assert.match(stylesheet, /\.library-audio-error/);
+    assert.match(stylesheet, /font-size: 0\.75rem/);
+    assert.match(stylesheet, /filter: grayscale\(1\)/);
 });
 
 test("Study Library popup uses equal directional navigation controls", () => {

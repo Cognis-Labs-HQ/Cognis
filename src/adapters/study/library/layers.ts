@@ -82,6 +82,11 @@ function validateRelationship(
         throw new Error("required_target_needs_minimum");
     if (!["restrict", "detach", "cascade"].includes(relationship.onDelete))
         throw new Error("invalid_deletion_behavior");
+    if (
+        relationship.variantDirection !== undefined &&
+        !["left", "right", "up", "down"].includes(relationship.variantDirection)
+    )
+        throw new Error("invalid_variant_direction");
     ids.add(relationship.id);
 }
 
