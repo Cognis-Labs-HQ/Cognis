@@ -54,6 +54,10 @@
 
 詳細タイトル横の文字発音は、エスケープ済みの副タイトルテキストとして、より小さい標準ウェイトで表示します。ダークテーマの音声領域は強制的な色置換を明示的に拒否し、ブラウザーのネイティブメディアパネルと操作部へ中立的なスタイルを適用します。
 
+## アプリ配色の音声と確実な派生表示
+
+ライブラリーはブラウザー標準のメディア UI に依存せず、アクセシブルな音声コントロールを独自に描画するようになりました。これにより、OS や強制テーマのアクセント色がプレイヤーへ入り込みません。ホバーまたはキーボードフォーカスされた文字カードを隣接カードより前面に出し、方向付きの子バリエーションを確実に表示して操作できるようにしました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -77,3 +81,4 @@
 - [164297bd](https://github.com/Cognis-Labs-HQ/Cognis/commit/164297bda76fa834f5a0e988260c7b2580ef4b87)
 - [31da2e2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/31da2e2fcd3284f1c2edd0da12a22c416c374b88)
 - [13754134](https://github.com/Cognis-Labs-HQ/Cognis/commit/13754134d1595372336cea85a1d1f85bb4da2a9c)
+- [f4ad7320](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4ad732066d653312f37bba8a08c61d7d37d3522)

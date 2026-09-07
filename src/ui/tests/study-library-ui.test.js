@@ -84,15 +84,23 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /renderCardContents\(variant, layer, i18n\)/);
     assert.match(stylesheet, /opacity: 0\.9/);
     assert.match(stylesheet, /box-shadow:/);
+    assert.match(
+        stylesheet,
+        /\.library-entry-card-shell:is\(:hover, :focus-within\)/,
+    );
+    assert.match(stylesheet, /z-index: 5/);
 });
 
 test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(source, /function renderPronunciation/);
     assert.match(source, /function renderAudio/);
-    assert.match(source, /<audio class="library-audio" controls/);
+    assert.match(source, /data-library-audio-player/);
+    assert.match(source, /data-library-audio-toggle/);
+    assert.match(source, /data-library-audio-progress/);
+    assert.match(source, /function connectLibraryAudioControls/);
     assert.match(source, /fetchLibraryAudioUrl/);
     assert.match(source, /audio\.src = objectUrl/);
-    assert.match(source, /audio\.replaceWith\(message\)/);
+    assert.match(source, /replaceWith\(message\)/);
     assert.match(source, /gateway\.study\.library_audio_load_error/);
     assert.match(source, /URL\.revokeObjectURL/);
     assert.match(clientSource, /apiFetch\([\s\S]*\/audio\//);
@@ -101,16 +109,16 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
         /URL\.createObjectURL\(await response\.blob\(\)\)/,
     );
     assert.match(stylesheet, /\.library-audio/);
-    assert.match(stylesheet, /color-scheme: light dark/);
+    assert.match(stylesheet, /\.library-audio-progress/);
+    assert.match(stylesheet, /appearance: none/);
     assert.match(stylesheet, /body\[data-theme="light"\] \.library-audio/);
     assert.match(stylesheet, /body\[data-theme="dark"\] \.library-audio/);
     assert.match(stylesheet, /background: var\(--surface-2\)/);
     assert.match(stylesheet, /\.library-audio-error/);
     assert.match(stylesheet, /font-size: 0\.75rem/);
-    assert.match(stylesheet, /filter: grayscale\(1\)/);
-    assert.match(stylesheet, /color-scheme: only dark/);
     assert.match(stylesheet, /forced-color-adjust: none/);
-    assert.match(stylesheet, /::-webkit-media-controls-panel/);
+    assert.match(stylesheet, /::-webkit-slider-thumb/);
+    assert.match(stylesheet, /::-moz-range-thumb/);
 });
 
 test("Study Library owners can select and delete multiple entries", () => {

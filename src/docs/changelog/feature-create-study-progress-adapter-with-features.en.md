@@ -54,6 +54,10 @@ Metadata filters now process only base Library cards carrying serialized filter 
 
 Character pronunciations beside detail titles now use escaped secondary title text at a smaller size and normal weight. Dark audio surfaces explicitly reject forced-color substitutions and apply neutral styling to native browser media-control panels and controls.
 
+## Theme-owned audio and reliable variants
+
+The Library now renders its own accessible audio controls instead of relying on browser-native media chrome, preventing operating-system and forced-theme accent colors from leaking into the player. Hovered and keyboard-focused character cards are raised above adjacent grid cards so their directional child variants remain visible and interactive.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -77,3 +81,4 @@ Character pronunciations beside detail titles now use escaped secondary title te
 - [164297bd](https://github.com/Cognis-Labs-HQ/Cognis/commit/164297bda76fa834f5a0e988260c7b2580ef4b87)
 - [31da2e2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/31da2e2fcd3284f1c2edd0da12a22c416c374b88)
 - [13754134](https://github.com/Cognis-Labs-HQ/Cognis/commit/13754134d1595372336cea85a1d1f85bb4da2a9c)
+- [f4ad7320](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4ad732066d653312f37bba8a08c61d7d37d3522)

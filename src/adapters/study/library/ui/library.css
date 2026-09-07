@@ -66,6 +66,10 @@
     position: relative;
 }
 
+.library-entry-card-shell:is(:hover, :focus-within) {
+    z-index: 5;
+}
+
 .library-entry-selection {
     position: absolute;
     z-index: 4;
@@ -307,13 +311,66 @@ body[data-theme="dark"] .library-entry-selection:checked {
 }
 
 .library-audio {
+    display: grid;
+    grid-template-columns: auto auto minmax(5rem, 1fr);
+    align-items: center;
+    gap: 0.75rem;
+    box-sizing: border-box;
     width: min(100%, 26rem);
+    min-height: 3.375rem;
+    padding: 0.55rem 1rem;
     border: 1px solid var(--border);
     border-radius: 999px;
     background: var(--surface);
-    color-scheme: light dark;
-    accent-color: var(--accent);
+    color: var(--text);
     forced-color-adjust: none;
+}
+
+.library-audio audio {
+    display: none;
+}
+
+.library-audio-toggle {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text);
+}
+
+.library-audio-time {
+    min-width: 5.75rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.library-audio-progress {
+    width: 100%;
+    height: 0.35rem;
+    margin: 0;
+    appearance: none;
+    border-radius: 999px;
+    background: var(--border);
+    forced-color-adjust: none;
+}
+
+.library-audio-progress::-webkit-slider-thumb {
+    width: 0.9rem;
+    height: 0.9rem;
+    appearance: none;
+    border: 0;
+    border-radius: 50%;
+    background: var(--text-muted);
+}
+
+.library-audio-progress::-moz-range-thumb {
+    width: 0.9rem;
+    height: 0.9rem;
+    border: 0;
+    border-radius: 50%;
+    background: var(--text-muted);
 }
 
 .library-audio-error {
@@ -326,27 +383,11 @@ body[data-theme="dark"] .library-entry-selection:checked {
 }
 
 body[data-theme="light"] .library-audio {
-    color-scheme: light;
+    background: var(--surface);
 }
 
 body[data-theme="dark"] .library-audio {
-    color-scheme: only dark;
     background: var(--surface-2) !important;
-    accent-color: var(--text-muted) !important;
-    filter: grayscale(1) saturate(0) brightness(0.82) contrast(1.15) !important;
-}
-
-body[data-theme="dark"] .library-audio::-webkit-media-controls-panel {
-    background-color: var(--surface-2) !important;
-    forced-color-adjust: none;
-    filter: grayscale(1) saturate(0) !important;
-}
-
-body[data-theme="dark"] .library-audio::-webkit-media-controls-play-button,
-body[data-theme="dark"] .library-audio::-webkit-media-controls-mute-button,
-body[data-theme="dark"] .library-audio::-webkit-media-controls-timeline {
-    forced-color-adjust: none;
-    filter: grayscale(1) saturate(0) !important;
 }
 
 .library-filter-empty {

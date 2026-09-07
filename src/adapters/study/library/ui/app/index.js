@@ -228,7 +228,47 @@ function renderAudio(entry, layer) {
     const value = audioField ? entry.fields?.[audioField.id] : undefined;
     if (typeof value !== "string" || !value) return "";
     const label = localizedLabel(audioField.metadata, entry.language);
-    return `<audio class="library-audio" controls preload="none" data-library-audio-entry="${escapeHtml(entry.id)}" data-library-audio-field="${escapeHtml(audioField.id)}" aria-label="${escapeHtml(label)}"></audio>`;
+    return `<div class="library-audio" data-library-audio-player><audio preload="none" data-library-audio-entry="${escapeHtml(entry.id)}" data-library-audio-field="${escapeHtml(audioField.id)}" aria-label="${escapeHtml(label)}"></audio><button class="library-audio-toggle btn-neutral" type="button" data-library-audio-toggle aria-label="${escapeHtml(label)}">▶</button><span class="library-audio-time" data-library-audio-time>0:00</span><input class="library-audio-progress" type="range" min="0" max="1000" value="0" step="1" data-library-audio-progress aria-label="${escapeHtml(label)}"></div>`;
+}
+
+function formatAudioTime(value) {
+    const seconds = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+    return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+function connectLibraryAudioControls(audio) {
+    const player = audio.closest("[data-library-audio-player]");
+    const toggle = player?.querySelector("[data-library-audio-toggle]");
+    const progress = player?.querySelector("[data-library-audio-progress]");
+    const time = player?.querySelector("[data-library-audio-time]");
+    if (!player || !toggle || !progress || !time) return;
+
+    const update = () => {
+        const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+        progress.value = String(
+            duration > 0
+                ? Math.round((audio.currentTime / duration) * 1000)
+                : 0,
+        );
+        time.textContent = `${formatAudioTime(audio.currentTime)} / ${formatAudioTime(duration)}`;
+        toggle.textContent = audio.paused ? "▶" : "❚❚";
+    };
+    toggle.addEventListener("click", () => {
+        if (audio.paused) void audio.play();
+        else audio.pause();
+    });
+    progress.addEventListener("input", () => {
+        if (Number.isFinite(audio.duration)) {
+            audio.currentTime =
+                (Number(progress.value) / 1000) * audio.duration;
+        }
+    });
+    audio.addEventListener("loadedmetadata", update);
+    audio.addEventListener("timeupdate", update);
+    audio.addEventListener("play", update);
+    audio.addEventListener("pause", update);
+    audio.addEventListener("ended", update);
+    update();
 }
 
 async function loadLibraryAudio(overlay, objectUrls, signal, errorMessage) {
@@ -250,6 +290,7 @@ async function loadLibraryAudio(overlay, objectUrls, signal, errorMessage) {
                     }
                     objectUrls.add(objectUrl);
                     audio.src = objectUrl;
+                    connectLibraryAudioControls(audio);
                 } catch (error) {
                     if (error?.name === "AbortError" || !audio.isConnected) {
                         return;
@@ -258,7 +299,9 @@ async function loadLibraryAudio(overlay, objectUrls, signal, errorMessage) {
                     message.className = "library-audio library-audio-error";
                     message.setAttribute("role", "status");
                     message.textContent = errorMessage;
-                    audio.replaceWith(message);
+                    audio
+                        .closest("[data-library-audio-player]")
+                        ?.replaceWith(message);
                 }
             },
         ),
