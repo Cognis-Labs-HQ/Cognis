@@ -1,0 +1,15 @@
+<resources>
+  <string name="ui.app.profile.crop_avatar_title">プロフィール写真を切り抜き</string>
+  <string name="ui.app.profile.crop_banner_title">バナー写真を切り抜き</string>
+  <string name="ui.app.profile.crop_zoom_label">ズーム</string>
+  <string name="ui.app.profile.crop_grid_expand">ガイドグリッドを拡張</string>
+  <string name="ui.app.profile.crop_grid_collapse">ガイドグリッドを縮小</string>
+  <string name="ui.app.profile.archived_banner">このプロフィールはアーカイブされています。このユーザーとのやり取りは無効です。</string>
+  <string name="ui.app.profile.message_start_failed">会話を開始できませんでした。</string>
+  <string name="ui.app.profile.message_request_sent">メッセージリクエストを送信しました。</string>
+  <string name="ui.app.profile.availability.free">空き</string>
+  <string name="ui.app.profile.availability.busy">取り込み中</string>
+  <string name="ui.app.profile.availability.tentative">仮予定</string>
+  <string name="ui.app.profile.availability.idle">離席中</string>
+  <string name="ui.app.profile.availability.unknown">不明</string>
+</resources>

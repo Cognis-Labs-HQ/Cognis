@@ -1,0 +1,33 @@
+.shared-calendar {
+    min-height: min(46rem, calc(100vh - 4rem));
+}
+
+.shared-calendar-event-form {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.shared-calendar-event-form label {
+    display: grid;
+    gap: 0.3rem;
+}
+
+.shared-calendar .calendar-view-canvas {
+    min-height: 36rem;
+    overflow-y: hidden;
+}
+
+.content-panel:has(.calendar-share-page),
+.composer-cell-content:has(.calendar-share-page),
+.widget-card:has(.calendar-share-page) {
+    overflow-y: hidden;
+}
+
+.calendar-share-page .calendar-timeslot-grid {
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.shared-calendar-title {
+    margin: 0;
+}

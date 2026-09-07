@@ -1,0 +1,4 @@
+<resources>
+  <string name="adapter.tfa.smtp.setup_prompt">Kode verifikasi telah dikirim ke alamat email utama Anda. Masukkan kode tersebut untuk menyelesaikan penyiapan.</string>
+  <string name="ui.app.login.tfa.code_placeholder_smtp">Kode Email</string>
+</resources>

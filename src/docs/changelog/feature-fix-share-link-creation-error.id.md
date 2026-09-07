@@ -1,0 +1,403 @@
+# Popup Berbagi Dipulihkan
+
+**Cabang Fitur:** feature-fix-share-link-creation-error
+
+## Popup berbagi yang konsisten
+
+Papan tulis kini membuka popup siap pakai milik gateway Berbagi dengan pengenal sumber daya dan kapabilitasnya, mengikuti integrasi gateway yang sama dengan komponen lain. Gateway tetap bertanggung jawab atas metode berbagi dan permintaan token.
+
+## Avatar kehadiran tetap di tempat
+
+Gambar profil kehadiran halaman kini memperoleh tampilannya dari stylesheet kehadiran bersama, sehingga tetap menjadi avatar bilah alat dan tidak muncul sebagai lapisan gambar tanpa gaya di atas kanvas papan tulis.
+
+## Mempertahankan autentikasi tamu berbagi
+
+Membuka tautan berbagi papan tulis kini mempertahankan sesi tamu terbatasnya. Cognis tidak lagi memeriksa identitas tamu sementara sebagai akun pengguna biasa, menghapus tokennya, atau melaporkan bahwa akun tersebut telah dihapus.
+
+## Memuat data dasbor yang menyadari sesi tamu
+
+Halaman bersama kini menggunakan kapabilitas sesi tamu milik gateway Share saat memilih permintaan profil dan dasbor, sehingga permintaan khusus akun yang tidak relevan tidak lagi gagal ketika papan tulis dibuka.
+
+## Berbagi terlindungi mempertahankan keyring tamu
+
+Halaman bersama kini menggunakan kembali satu sesi tamu yang telah diresolusi selama seluruh siklus hidupnya, alih-alih meresolusi identitas tamu baru ketika komponen yang dipasang diinisialisasi. Keyring tamu tetap terbatas pada sesi, mempertahankan kredensial rapat terlindungi, serta tidak lagi memanggil API keyring akun atau catatan rilis. Kontrol gaya penunjuk juga dihapus selama navigasi SPA kecuali halaman tujuan mengaktifkan pelacakan penunjuk dalam manifes composernya. Notifikasi berbagi pengguna kini membuka halaman kanonis gateway Share, dan identitas tamu tidak lagi menjalankan validasi akun atau permintaan ketersediaan Sosial. Penerima berbagi bertipe pengguna yang sudah masuk kini mempertahankan sesi akunnya dan memperoleh akses sumber daya melalui gateway Share, bukan diubah menjadi identitas tamu. Berbagi pengguna baru kini mengirim tujuan internal khusus sumber daya yang memuat pengenal catatan berbagi, bukan menyebarkan URL tamu publik. Penyedia konten kini hanya memberikan URL konten internal normalnya saat membuka Share; gateway Share memvalidasi, menyimpan, dan mengirim URL tersebut sekaligus tetap menjadi satu-satunya otoritas akses penerima. URL Share publik kini diresolusi melalui gateway Share dan meneruskan pemirsa yang diizinkan ke rute internal tersimpan; rute yang tidak tersedia tetap menampilkan halaman kesalahan Share. Token Share merujuk baris sumber daya milik gateway melalui kunci asing basis data. Berbagi aktif kini langsung beralih ke tampilan akses ditolak Share ketika permintaan sumber daya melaporkan akses yang dicabut. Sumber berbagi menyatakan dukungan hanya-baca secara eksplisit: rapat hanya menawarkan akses tulis, sedangkan papan tulis dan kalender menawarkan pilihan baca dan tulis; papan tulis hanya-baca dimuat tanpa mencoba penulisan yang dilindungi. Tamu berbagi kini mempertahankan identitas tamu dan konteks berbagi internal yang telah diselesaikan saat router membuka papan tulis, sehingga nama profil tidak diperlukan. Tamu hanya-baca dapat mengirim dan melihat kehadiran penunjuk dengan akses baca, dan meninggalkan papan tulis segera menghentikan polling kehadiran serta mengirim status tidak aktif. Notifikasi berbagi pengguna kini kembali melalui URL Share kanonis agar Kalender dan Rapat dapat memvalidasi serta memberikan akses sebelum menuju rute konten Cognis. Penerima tidak lagi melihat kontrol berbagi; kartu yang tidak mendukung perbedaan izin tidak menyebut baca/tulis, penyuntingan memakai istilah izin yang konsisten, dan pembaruan kedaluwarsa kosong tidak lagi membuat PATCH yang tidak valid. Penerima berbagi rapat mendapat akses peserta dinamis hanya selama berbagi masih berlaku; Rapat bersama melewati permintaan awal khusus akun dan payload Kalender bersama dimuat tanpa profil khusus akun.
+
+## Perbaiki formulir acara Kalender
+
+Formulir acara Kalender kini memuat dependensi pengamanan HTML secara eksplisit sehingga kesalahan `escapeHtml is not defined` tidak lagi terjadi saat membuka atau membuat acara.
+
+## Sempurnakan akses Meeting bersama
+
+Dialog berbagi kini menggunakan tindakan Tutup yang netral dan tindakan Cabut yang destruktif. Meeting yang dibagikan kepada pengguna mempertahankan struktur halaman lengkap tanpa menampilkan kontrol untuk membagikannya kembali, sedangkan tautan yang ditolak berhenti di layar akses dan tidak dimuat ulang berulang kali.
+
+## Kelola berbagi di satu tempat
+
+Menu Pengguna kini memiliki halaman Berbagi untuk membuka berbagi yang dikirim dan diterima. Pembuat dapat mengelola atau menghapus berbagi terkirim, penerima dapat menolak berbagi yang diterima, dan Cognis memberi tahu pengguna terkait saat berbagi dihapus, kedaluwarsa, atau ditolak.
+
+## Hentikan aktivitas halaman bersama saat akses berakhir
+
+Kehadiran Whiteboard kini segera berhenti ketika berbagi dicabut dan dilepas sepenuhnya saat navigasi SPA. Tombol tindakan halaman memakai satu dok yang dikelola CTX sehingga kontrol penunjuk, tema, dan tata letak memiliki posisi yang konsisten serta dapat ditambahkan, diperbarui, atau dihapus mengikuti siklus hidup halaman. Dialog berbagi selalu menyediakan label Tutup, dan penerima berbagi Meeting yang telah masuk memuat struktur halaman akun lengkap.
+
+## Sederhanakan ikhtisar Berbagi
+
+Berbagi terkirim dan diterima kini tampil dalam satu tabel responsif yang rapi dengan informasi tujuan dan asal berbagi yang jelas. Judul berbagi membuka kontennya secara langsung, sedangkan tindakan Kelola berbasis ikon membuka editor Berbagi yang sudah diisi dari basis data gateway sehingga pemilik dapat memperbarui penerima, izin, nama, kedaluwarsa, dan perlindungan tanpa meninggalkan halaman Berbagi.
+
+## Cegah navigasi dan status berbagi yang kedaluwarsa
+
+Navigasi SPA yang tumpang tindih kini membatalkan pemuatan rute lama sebelum dapat dipasang. Berbagi yang kedaluwarsa dilaporkan tidak aktif, dan notifikasi kedaluwarsa baru ditandai selesai setelah semua pengiriman berhasil sehingga kegagalan sementara dicatat dan dicoba kembali.
+
+## Satu konteks akun untuk sesi tamu
+
+Fitur dasbor kini menggunakan kapabilitas sesi tamu bersama dari konteks akun, bukan menafsirkan penyimpanan autentikasi secara terpisah.
+
+## Sejajarkan tindakan berbagi
+
+Tabel Berbagi kini memusatkan judul Tindakan dan mempertahankan kontrol Kelola, Salin, dan Hapus dalam kolom vertikal yang konsisten di setiap baris.
+
+## Pertahankan akses berbagi yang diperbarui
+
+Perubahan izin berbagi pengguna kini tidak lagi membatalkan pembukaan akses penerima yang sudah ada. Tautan berbagi yang tidak tersedia kini membuka halaman galat standar dengan penjelasan yang jelas dan terlokalisasi.
+
+## Siapkan rapat tanpa peserta
+
+Tamu tautan rapat kini menerima kata sandi Jitsi khusus rapat melalui sesi berbagi terbatas mereka. Panggung tanpa peserta menjelaskan bahwa memulai rapat akan menampilkan popup tautan, sedangkan panggung dengan peserta tetap menggunakan pesan kesiapan yang ada.
+
+## Muat obrolan rapat tamu dengan bersih
+
+Tamu tautan rapat kini menggunakan data peserta yang telah diotorisasi oleh respons rapat, bukan membuat permintaan metadata ruang yang ditolak. Link Share juga menyediakan label formulir surel terlokalisasi sendiri agar kontrol penerima dan Kirim selalu ditampilkan dengan benar.
+
+## Stabilkan sesi rapat tamu
+
+Obrolan rapat tamu kini menggunakan kredensial berbagi terbatas saat mengambil kunci ruang terenkripsi, dan polling status rapat mengabaikan respons yang selesai setelah rapat dibongkar dengan aman. Undangan surel menempatkan petunjuk penerima khusus rapat di atas kolom alamat.
+
+## Aktifkan rapat tamu sekali pakai
+
+Messages kini mendelegasikan otorisasi ruang eksternal melalui kapabilitas netral yang disediakan pemilik rapat, sehingga tamu dengan akses terbatas dapat membuka dan menggunakan obrolan rapat. Rapat yang dibuat tanpa peserta di panggung akan menghapus data rapat dan berbagi terkait saat ditutup.
+
+## Arahkan berbagi tak tersedia ke galat
+
+Tautan berbagi yang dihapus, kedaluwarsa, rusak, atau tidak ada kini meninggalkan layar pemuatan dan membuka halaman galat bawaan publik dengan deskripsi khusus berbagi yang terlokalisasi serta kode status 404 atau 410 yang sesuai.
+
+## Isolasi sesi tamu dan otorisasi obrolan rapat
+
+Autentikasi kini memiliki klasifikasi sesi tamu, pengiriman berbagi tidak lagi bercabang berdasarkan internal Kalender, dan akses obrolan rapat didaftarkan melalui permukaan ekstensi adapter Pesan.
+
+## Menjaga navigasi berbagi dan pencarian penerima tetap mutakhir
+
+Penyelesaian berbagi pengguna kini berhenti saat pengguna berpindah halaman sehingga permintaan yang terlambat tidak dapat menggantikan halaman tujuan baru. API penerima mengembalikan semua hasil, sedangkan pemilih berbagi membatasi sendiri hasil tampilannya.
+
+## Memecah modul berbagi dan halaman yang terlalu besar
+
+Berkas besar untuk Berbagi, Kalender, Whiteboard, dan penyusun halaman kini dibagi menjadi modul terfokus untuk perenderan, akses, penyimpanan, finalisasi rute, riwayat, overlay, dan DOM agar setiap berkas sumber tetap di bawah batas proyek.
+
+## Menyimpan ikon bilah alat sebagai aset yang dapat digunakan kembali
+
+Bilah alat penyusun halaman kini memuat ikon menu dan tutup dari berkas aset SVG yang dapat digunakan kembali, bukan menyematkan markup SVG di JavaScript.
+
+## Pulihkan kalender berbagi pengguna yang dilindungi dari keyring
+
+Kalender kini menyerahkan seluruh pengambilan rahasia berbagi yang dilindungi kepada gateway Berbagi, yang membaca kata sandi berbagi kanonis dari keyring tanpa membuka permintaan selama pekerjaan latar belakang dan meminta saat pemuatan kalender eksplisit bila diperlukan. Validasi yang berhasil membuat izin buka kunci server yang tercakup akun, sedangkan acara bersama yang terkunci tetap dikecualikan dari ringkasan terkait. Berbagi pengguna untuk rapat dan papan tulis tetap memakai izin buka kunci akun milik Berbagi yang sama sebelum kontennya dimuat.
+
+## Pertahankan visibilitas acara kalender yang diterima
+
+Berbagi kalender yang terikat akun kini direkonsiliasi dari metode berbagi milik adapter setiap kali status kalender atau ringkasan acara mendatang dimuat. Acara bersama diproyeksikan secara persisten ke kalender penerima dan ringkasan terkait tanpa perlu membuka kembali berbagi dari halaman Berbagi.
+
+## Pisahkan berbagi pengguna dari sesi tamu
+
+Berbagi pengguna yang terikat akun kini memakai halaman pengiriman terautentikasi khusus yang tidak pernah memuat bootstrap sesi tamu untuk tautan publik. Permintaan kata sandinya tidak menampilkan merek Cognis berbagi publik, sedangkan berbagi tautan publik tetap memakai siklus tamu dan permintaan bermerek.
+
+## Cabut berbagi aktif dan batasi antarmuka tamu
+
+Penghapusan berbagi kini menerbitkan peristiwa pencabutan ke tab aktif dan penerima yang masuk saat menerima pemberitahuan penghapusan, sehingga pemirsa terdampak segera kembali ke layar berbagi yang ditolak. Konfirmasi hapus ganda dicegah, sesi tamu tidak lagi menerima ringkasan rilis, dan sesi akun yang disimpan dipulihkan sebelum menentukan kepemilikan berbagi lain.
+
+## Pastikan kepemilikan berbagi dan kontrol ikhtisar konsisten
+
+Pemilik berbagi kini melewati tantangan kata sandi berbagi dan langsung menuju URL konten dengan sesi akun mereka, sementara penerima tetap menyelesaikan autentikasi berbagi yang dikonfigurasi. Halaman Berbagi milik gateway kini merender ulang baris yang difilter dan dihapus secara optimistis, memakai kolom awal ringkas sesuai isi, serta memberikan ukuran dan bantalan tombol aksi yang konsisten.
+
+## Ikat autentikasi berbagi ke rute SPA yang diminta
+
+Router kini memberikan jalur tujuan yang tepat kepada autentikasi sesi, dan gateway Share mengambil token berbagi pengguna dari masukan rute yang tetap tersebut. Perubahan URL yang bersamaan tidak lagi dapat membuat berbagi pengguna yang valid tampak tidak memiliki token atau menahan penerima di tampilan pemuatan publik.
+
+## Pertahankan autentikasi akun pada permintaan penyelesaian berbagi
+
+Penyelesaian berbagi kini menggunakan klien API terautentikasi yang selalu menyertakan token akun pengguna sambil mempertahankan header kata sandi berbagi. Tantangan kata sandi yang diharapkan dipisahkan dari penanganan penolakan akses global sehingga tidak lagi memicu pengalihan sesi tamu atau alur buka kunci ganda.
+
+## Daftarkan autentikasi berbagi tujuan sebelum pemeriksaan SPA
+
+Navigasi SPA kini memuat kontribusi alur entri tujuan sebelum mengautentikasi rute. Penerima berbagi pengguna karena itu diselesaikan oleh gateway Share dalam satu-satunya proses autentikasi router dan mempertahankan sesi akun lengkap, alih-alih masuk ke halaman tamu.
+
+## Menggunakan kembali berbagi akun yang diselesaikan router
+
+Halaman Berbagi kini memakai konteks berbagi terautentikasi yang sudah diselesaikan navigasi SPA, alih-alih menjalankan autentikasi untuk kedua kalinya. Berbagi pengguna mempertahankan klasifikasi akun langsung dan membuka halaman tujuan lengkap tanpa ditafsirkan ulang sebagai akses tamu.
+
+## Mempertahankan penerima langsung dalam tampilan akun
+
+Berbagi pengguna langsung yang diverifikasi server kini selalu membentuk sesi akun, meskipun tahap validasi lokal tidak mengembalikan metadata akun. Berbagi tersebut tidak lagi dapat jatuh ke tampilan tamu. Berbagi yang dihapus dan ditolak juga langsung dihilangkan dari tabel terlihat sebelum permintaan selesai.
+
+## Menyelesaikan berbagi pengguna dalam satu alur
+
+Klik berbagi pengguna kini menuju halaman Berbagi tanpa menyelesaikan token terlebih dahulu melalui jalur klien kedua. Alur sesi menangani validasi akun, permintaan kata sandi, dan pengiriman satu kali. Baris yang dihapus langsung menghilang dan hanya dipulihkan bila server menolak penghapusan.
+
+## Memperbaiki pembaruan basis data berbagi
+
+Stempel waktu akses berbagi, perubahan berbagi, dan penandaan notifikasi kedaluwarsa kini menggunakan kontrak pembaruan gateway basis data yang didukung. Ini menghapus galat objek null yang mengganggu penyelesaian berbagi yang valid.
+
+## Menjaga audit akses agar tidak menghalangi konten
+
+Penyelesaian berbagi tidak lagi gagal ketika pencatatan waktu akses terakhir opsional menemui kolom basis data lama atau sementara tidak tersedia. Berbagi yang belum pernah dibuka kini menampilkan Belum diakses, bukan Tidak pernah kedaluwarsa.
+
+## Memperjelas berbagi berhasil dan menampilkan tanggal akses
+
+Kegagalan halaman tujuan setelah berbagi pengguna diverifikasi tidak lagi melaporkan berbagi tersebut sebagai tidak valid atau kedaluwarsa. Berbagi kini menampilkan tanggal pembuatan dan akses terakhir, serta pilihan izin Whiteboard menggunakan Hanya Baca dan Baca + Tulis secara konsisten.
+
+## Menyelesaikan navigasi berbagi terlindungi dan kontrol tamu kalender
+
+Tindakan notifikasi kini hanya ditangani oleh satu penangan berbagi sehingga permintaan kata sandi ganda dan galat berbagi tidak valid yang keliru dicegah. Penerima kalender mengakui impor, penghapusan kalender yang diterima memakai teks yang sesuai, dan tamu kalender dapat menavigasi tampilan dengan gulir otomatis ke waktu saat ini. Akses tulis kini berlabel Baca + Tulis.
+
+## Melanjutkan berbagi pengguna terlindungi tanpa penyelesaian ganda
+
+Setelah penerima yang dituju membuka berbagi pengguna yang dilindungi kata sandi, hasil yang telah diverifikasi kini dibawa ke navigasi dalam aplikasi berikutnya. Cognis tidak lagi mengulangi permintaan penyelesaian tanpa kata sandinya, sehingga halaman akun lengkap terbuka alih-alih berakhir dengan galat 401 dan pemberitahuan berbagi tidak valid.
+
+## Membuka berbagi akun secara langsung
+
+Tautan berbagi pengguna pada halaman Berbagi dan dalam notifikasi kini diselesaikan satu kali melalui jalur akun terautentikasi lalu langsung menuju halaman tujuan lengkap. Tautan tersebut tidak lagi melewati halaman tamu atau mengaktifkan tampilan tamu terbatas.
+
+## Membatasi berbagi pengguna hanya untuk akun
+
+Berbagi yang ditujukan kepada pengguna Cognis tidak lagi dapat menerbitkan atau mengaktifkan sesi tamu. Hanya penerima terautentikasi yang disebutkan secara eksplisit atau pemilik berbagi yang dapat membukanya; berbagi tautan publik tetap menjadi satu-satunya mekanisme akses tamu.
+
+## Membuat pengeditan dan berbagi pengguna terlindungi dapat diprediksi
+
+Pembaruan berbagi kini hanya memuat perubahan nyata, pergantian metode berbagi keluar dari mode edit, dan tinggi halaman Berbagi menyesuaikan tabel. Notifikasi berbagi pengguna berpassword meminta satu kali dan dapat menyimpan password terverifikasi ke gantungan kunci penerima yang dituju, sedangkan berbagi tautan publik tetap terpisah dari gantungan kunci akun.
+
+## Menyederhanakan perilaku berbagi akun dan tamu
+
+Notifikasi berbagi pengguna mempertahankan sesi akun yang ditentukan, sedangkan tautan publik berpassword meminta password tanpa membuka atau menyimpannya di gantungan kunci akun sebelum masuk ke mode tamu. Kolom pembaruan kosong mempertahankan nilai lama, dan dialog berbagi milik modul kini selalu memakai teks password dan penghapusan yang telah diperbaiki.
+
+## Mengamankan berbagi pengguna dan memperjelas kontrol
+
+Berbagi pengguna tetap mewajibkan akun yang ditentukan alih-alih membuat akses tamu yang dapat dipindahtangankan. Tindakan berbagi kini memakai tampilan netral, pilihan izin membedakan Hanya Baca dan Baca & Tulis dengan jelas, dialog kata sandi memberi petunjuk singkat bagi penerima, dan berbagi tamu yang dihapus berakhir tanpa pengalihan atau pemberitahuan berulang.
+
+## Memulihkan pembaruan berbagi dan perpindahan halaman yang mulus
+
+Editor berbagi terfokus kini mengirim perubahan masa berlaku secara konsisten dan menampilkan tindakan pembaruan dengan tampilan konfirmasi standar. Navigasi dalam aplikasi mempertahankan gaya halaman saat ini sampai tujuan selesai dipasang sehingga konten lama tidak sempat berkedip tanpa gaya.
+
+## Memfilter dan langsung menghapus berbagi
+
+Pil ringkasan Total, Terkirim, dan Diterima kini memfilter tabel Berbagi. Berbagi yang berhasil ditolak atau dihapus langsung menghilang, dan setiap tindakan baris destruktif hanya menggunakan tampilan batal standar.
+
+## Mempertahankan akses akun untuk berbagi milik sendiri dan yang diterima
+
+Membuka berbagi Papan Tulis sebagai pembuatnya atau berbagi pengguna Rapat sebagai penerimanya kini mempertahankan sesi akun terautentikasi saat navigasi dalam aplikasi maupun setelah penyegaran. Tujuan memasang halaman akun lengkap, mempertahankan seluruh navigasi, dan tidak lagi masuk ke tampilan tamu terbatas.
+
+## Mengisolasi kontrol dan gaya halaman tujuan
+
+Pengeditan tata letak tetap dinonaktifkan pada halaman Papan Tulis dan Berbagi. Setiap navigasi dalam aplikasi kini membangun ulang dok tindakan halaman, membuang tindakan yang tidak disediakan kembali oleh tujuan, memuat paket stylesheet lengkap, dan menghapus gaya rute yang tidak lagi berlaku.
+
+## Memusatkan pengelolaan pada satu berbagi
+
+Halaman Berbagi kini membuka editor ringkas yang hanya memuat formulir berbagi yang dipilih. Jenis berbagi tetap terkunci, pembaruan hanya memengaruhi catatan basis data tersebut, dan dialog tidak lagi terbuka dua kali saat navigasi dalam aplikasi.
+
+## Menyelaraskan kontrol berbagi
+
+Halaman Berbagi tidak lagi menambahkan ruang vertikal di luar kartunya. Tombol berbagi juga selalu menggunakan tampilan batal untuk tindakan yang berpotensi mengurangi akses.
+
+## Memulihkan rute konten yang dibagikan
+
+Halaman gateway dan modul yang terdaftar kini memuat titik masuk dasbor serta paket stylesheet lengkapnya sendiri, baik setelah penyegaran peramban maupun saat navigasi dalam aplikasi. Karena itu, halaman Berbagi, Rapat, dan Papan Tulis tetap menampilkan bilah atas, footer, tata letak, dan gaya komponennya.
+
+## Mempertahankan berbagi Rapat selama masa berlaku yang ditentukan
+
+Berbagi Rapat kini tetap dapat diselesaikan di seluruh instans rapat dan sesi yang telah berakhir. Akses berlanjut sampai berbagi itu sendiri kedaluwarsa, ditolak, atau dicabut, sedangkan alur autentikasi berulang menggunakan kembali sesi berbagi yang sudah diselesaikan.
+
+## Berbagi pengguna tetap dalam sesi akun
+
+Berbagi langsung kepada pengguna kini mengirim tujuan buram dari penyedia konten kepada penerima yang ditentukan dan tidak pernah mengekspos URL berbagi publik atau membuat sesi tamu. Berbagi tautan mempertahankan siklus tautan publik dan akses tamunya secara mandiri.
+
+## Terapkan akses berbagi aktif
+
+Kata sandi berbagi yang salah kini menampilkan kesalahan dan dapat langsung dicoba kembali. Berbagi pengguna yang dilindungi dibuka sebelum konten ditampilkan, entri halaman Berbagi memakai gerbang akses yang sama dengan notifikasi, dan pencabutan berbagi tautan atau pengguna segera mengeluarkan penerima dari konten aktif.
+
+## Stabilkan tindakan entri berbagi
+
+Notifikasi berbagi pengguna tanpa perlindungan membuka kontennya secara langsung, entri terlindungi mengonsumsi tindakan satu kali di halaman Berbagi sebelum meminta kata sandi, dan pembukaan yang berhasil memakai rute aplikasi internal. Pengiriman berbagi pengguna duplikat kini melaporkan konflik atau memperbarui berbagi yang ada saat pengaturannya berubah.
+
+## Jaga tab jangka panjang tetap responsif
+
+Pemeriksaan pencabutan berbagi kini memakai satu pemantau yang sadar visibilitas, bukan polling berulang setiap setengah detik. Tab latar belakang menjeda pemeriksaan jaringan dan langsung memvalidasi saat difokuskan kembali, sehingga halaman berbagi yang berjalan lama tidak menghabiskan sumber daya peramban atau server.
+
+## Gunakan kembali kata sandi berbagi tersimpan
+
+Berbagi pengguna yang dilindungi kata sandi kini menyimpan dan mengambil kata sandinya dengan pengenal gantungan kunci stabil yang sama, `share:<share-id>`, sehingga pembukaan berikutnya tidak meminta kata sandi setelah disimpan.
+
+## Jeda Papan Tulis tersembunyi
+
+Polling kehadiran dan soket waktu nyata Papan Tulis kini dijeda saat tab tersembunyi dan dilanjutkan dengan koneksi baru ketika tab terlihat kembali. Pemuatan skrip kolaborasi juga memiliki batas waktu yang bersih agar permintaan eksternal yang macet tidak membuat pemuatan ulang berputar tanpa akhir.
+
+## Minta akses gantungan kunci hanya saat diperlukan
+
+Navigasi SPA tidak lagi membuka gantungan kunci secara spekulatif. Berbagi akun terlebih dahulu memeriksa apakah akses memerlukan kata sandi dan hanya meminta akses gantungan kunci untuk berbagi terlindungi tersebut, dengan tujuan akses Berbagi dan pengenal berbagi ditampilkan dalam permintaan.
+
+## Minta akses keyring hanya saat diperlukan
+
+Kontribusi pengaturan Keyring tidak lagi menjadwalkan permintaan buka kunci saat dirender, sehingga pemuatan Dasbor atau navigasi antarhalaman tidak dapat memicu permintaan umum. Dialog kata sandi berbagi terlindungi kini hanya menawarkan penyimpanan ke keyring setelah pembukaan kunci berkonteks berhasil.
+
+## Batasi pekerjaan latar dan permintaan yang macet
+
+Polling ketersediaan kini berhenti saat tab tersembunyi serta menggabungkan penyegaran dan heartbeat yang bertumpuk. Node dan Nginx menghentikan pekerjaan HTTP yang macet, PostgreSQL menerapkan batas waktu pernyataan, dan MariaDB membatasi antrean kueri agar dependensi bermasalah tidak menumpuk pekerjaan hingga halaman atau layanan tidak responsif.
+
+## Hentikan trafik kehadiran saat halaman tidak aktif
+
+Pelacak kehadiran kini menurunkan frekuensi dengan polling adaptif dan menghentikan semua permintaan berulang ketika pengguna tidak aktif, jendela kehilangan fokus, atau tab tersembunyi. Composer papan tulis mengikat pembersihan ke sinyal navigasinya sendiri agar navigasi SPA segera menghapus hook kehadiran, penunjuk, kanvas, dan waktu nyata tanpa memengaruhi mount berikutnya.
+
+## Pertahankan akses pemilik tanpa kata sandi dan batasi permintaan browser tertunda
+
+Pemilik terautentikasi dari berbagi pengguna yang dikirim ke akun kini dapat membuka berbagi miliknya tanpa memasukkan ulang kata sandi penerima; token akun pemilik tetap menjadi otoritas tanpa menyalin kata sandi ke keyring. Permintaan API browser dan lokalisasi kini memiliki tenggat, permintaan lokalisasi dan kehadiran bersamaan digabungkan, dan pembersihan navigasi membatalkan pekerjaan kehadiran yang masih berjalan.
+
+## Kurangi trafik kehadiran aktif Whiteboard
+
+Penyegaran kehadiran aktif kini berjalan paling cepat setiap 2,5 detik dan penulisan heartbeat paling cepat setiap 10 detik; keduanya melambat hingga 30 detik saat tidak ada perubahan. Pembaruan penunjuk dibatasi satu per detik, dan stempel waktu terakhir terlihat dari server tidak lagi dianggap sebagai perubahan UI bermakna yang mempertahankan polling adaptif pada kecepatan maksimum.
+
+## Pengamanan berbagi akun lama dan terlindungi
+
+Berbagi yang sudah ada dimigrasikan ke registri sumber daya saat peningkatan. Berbagi akun yang dilindungi kata sandi kini memerlukan pembukaan kunci persisten di server sebelum akses penyedia, penghapusan kedaluwarsa dipertahankan, dan pemeriksaan pencabutan berhenti setelah navigasi.
+
+## Memulihkan kalender bersama dan tautan rapat aktif
+
+Berbagi kalender pengguna langsung dikirim ke kalender penerima dan dibuka melalui tujuan milik penyedia. Rapat aktif yang dibagikan melalui tautan tidak lagi mewarisi status ditutup yang lama, dan ringkasan rilis tetap disembunyikan selama sesi tamu.
+
+## Menstabilkan kontrol kalender bersama dan ringkasan tamu
+
+Kontrol tampilan dan periode kalender bersama kini memakai satu listener sepanjang siklus halaman yang tetap aktif setelah setiap render ulang composer. Login dengan peran tamu dikenali bersama tamu berbagi terbatas sehingga ringkasan rilis dan permintaan dasbor khusus akun tidak dijalankan.
+
+## Menjadikan deteksi tamu dan input kalender bersama otoritatif
+
+Kontrol kalender bersama kini mendengarkan pada batas capture dokumen dan hanya menerima klik dari kalender yang dipasang, sehingga handler composer atau shell tidak mengambil navigasi lebih dahulu. Deteksi tamu kini mengenali status sesi terbatas, akun berbagi sintetis, serta penyedia tamu/berbagi sebelum ringkasan rilis atau permintaan kehadiran dimulai.
+
+## Mengisolasi shell berbagi tamu dari startup akun
+
+Composer berbagi publik dan kalender bersama kini secara eksplisit menonaktifkan peningkatan shell khusus akun, sehingga permintaan changelog, profil, kehadiran, dan verifikasi kata sandi tidak dimulai sebelum autentikasi tamu selesai. Navigasi pencabutan memakai kapabilitas router alih-alih impor runtime yang rapuh, dengan fallback ke URL berbagi langsung hanya bila router tidak terpasang.
+
+## Memperjelas berbagi dicabut dan kontrol tamu
+
+Menghapus berbagi milik sendiri kini mengonfirmasi “Berbagi Dihapus”, sedangkan penerima yang menghapus akses mendapat pesan terpisah. Kalender bersama yang dicabut membuka popup penghapusan saat dipilih, whiteboard hanya-baca memakai kursor penunjuk, dan pengeditan tata letak halaman selalu disembunyikan dari tamu berbagi.
+
+## Mempertahankan sesi tamu rapat saat perpindahan halaman
+
+Page Composer kini menghentikan pelacak kehadiran halaman sebelumnya meski tujuan tidak memiliki konfigurasi kehadiran, sehingga permintaan Whiteboard lama tidak mencabut sesi tamu Rapat. Kehadiran sosial dan pembersihan konfirmasi kata sandi tidak lagi memicu peristiwa penolakan akses global bagi tamu, dan Rapat membedakan kegagalan akses dari rapat yang benar-benar ditutup.
+
+## Membuka tautan dalam rapat secara langsung
+
+Halaman Rapat kini menyelesaikan setiap URL `meetingId` secara langsung, memulihkan pilihan peserta dari payload rapat, dan bergabung otomatis tanpa mengharuskan rapat muncul lebih dahulu dalam daftar rapat aktif. Tujuan rapat yang dibuka dari Shares kini menuju rapat yang dirujuk.
+
+## Menggunakan kredensial terbatas untuk tujuan bersama
+
+Berbagi tautan Rapat kini mengirim kredensial tamu yang telah diselesaikan secara eksplisit saat memuat rapat, menghindari konflik dengan token akun atau berbagi sebelumnya. Berbagi pengguna yang dilindungi kata sandi memakai metadata perlindungan yang diketahui untuk langsung membuka alur buka kunci tanpa sengaja membuat permintaan tidak sah awal.
+
+## Kunci tata letak tamu dan pertahankan visibilitas tanda Whiteboard
+
+Sesi tamu kini menghapus kontrol pengeditan tata letak halaman, bukan mengandalkan pemeriksaan kemampuan yang terlambat. Kanvas Whiteboard juga memilih goresan, label pilihan, dan bayangan kehadiran yang kontras untuk tema terang maupun gelap agar tanda dan kolaborator tetap terlihat setelah tema berubah.
+
+## Pulihkan tautan langsung rapat dan tambahkan riwayat papan ketik Whiteboard
+
+URL rapat kini memuat panggung peserta yang tersimpan, mematuhi opsi eksplisit `start=1` sebelum memulai otomatis, dan menghapus pengenal rapat yang tidak valid setelah memberi tahu pengguna. Tautan berbagi rapat meminta mulai otomatis dan menyelesaikan otorisasi Share saat permintaan, sementara Whiteboard mendukung pintasan riwayat Ctrl/Command+Z dan Ctrl/Command+Y.
+
+## Sederhanakan pemulihan rapat dan stabilkan kontrol berbagi tamu
+
+Tautan rapat tersimpan kini memulihkan undangan melalui panggung peserta normal, mengecualikan pengguna saat ini, dan memulai otomatis hanya ketika `start=1` hadir secara eksplisit. Otorisasi tamu rapat menggunakan kontrak gateway Share, kontrol kalender terikat langsung ke halaman terpasang, kehadiran akun segera dijeda pada rute Share, dan tautan tamu terlindungi menampilkan merek Cognis pada permintaan kata sandi.
+
+## Samakan merek Share dan lengkapi akses tamu rapat
+
+Permintaan berbagi terlindungi kini sama persis dengan merek ringkas pada header Cognis dan dokumen Share awal memiliki judul yang telah diselesaikan. URL konten berbagi rapat secara eksplisit meminta mode mulai, pembacaan dan pengiriman obrolan tamu memakai kredensial terbatas, Jitsi menyelesaikan akses tamu melalui Share, dan pemilik berbagi melewati permintaan kata sandi khusus penerima.
+
+## Pulihkan tautan rapat lama dan ikat kontrol kalender setiap render
+
+Otorisasi tamu rapat kini mempertahankan kompatibilitas dengan tautan rapat lama yang catatannya dibuat sebelum cakupan kapabilitas eksplisit, sambil tetap mewajibkan token cocok dengan rapat yang diminta. Kontrol kalender bersama diikat ke kartu kalender yang baru dirender setelah setiap penyegaran composer agar perubahan tampilan dan periode tetap interaktif.
+
+## Satukan rute Share dan perluas aktivitas berbagi terkirim
+
+Pengelolaan berbagi kini berada di `/share`, sedangkan berbagi publik dan akun memakai URL `/share/shr_…` dan `/share/usr_…`. Baris berbagi tautan menyediakan aksi salin, baris terkirim dapat diperluas menjadi tampilan stempel waktu dan penerima, serta ikon tindakan destruktif dipusatkan secara konsisten.
+
+## Pertahankan validitas sumber avatar SPA
+
+Penggunaan ulang shell dasbor tidak lagi mencabut URL blob milik penyedia profil saat mengganti avatar bilah navigasi. URL avatar yang di-cache tetap dapat dimuat pada navigasi SPA berikutnya, termasuk pengaturan Study, sementara penyedianya tetap mengendalikan siklus hidup.
+
+## Memulihkan kalender bersama dan proses bergabung rapat
+
+Halaman Kalender kini meminta keyring membuka kalender yang diterima setiap kali dimuat, dan kontrol kalender tamu mengganti tampilan hasil render alih-alih mempertahankan DOM lama. Tamu tautan rapat kini menyertakan kredensial berbagi terbatas pada permintaan bergabung terakhir agar tahap bergabung dapat diselesaikan.
+
+## Menjaga kontrol kalender bersama tetap aktif
+
+Kontrol kalender publik kini menggunakan satu batas interaksi terdelegasi pada tingkat halaman. Peralihan tampilan hari, minggu, bulan, dan tahun serta navigasi periode tetap terhubung setelah setiap perenderan ulang kalender.
+
+## Membuka konten berbagi secara langsung
+
+Tautan kalender kini terbuka dalam tampilan bulan dengan kontrol tampilan dan periode yang tetap aktif. Tautan rapat kini langsung memasuki rapat bersama dan tidak lagi menganggap ketiadaan parameter kueri `start` milik halaman akun sebagai perintah untuk tidak bergabung.
+
+## Bergabung sebagai tamu tanpa kartu
+
+Tamu dari tautan rapat kini dapat memasuki rapat bersama meskipun respons terbatas sengaja tidak memuat kartu peserta. Kontrol kalender bersama kini memperbarui kanvas yang ada secara langsung sehingga DOM kontrol tetap stabil saat tampilan dan periode berubah.
+
+## Memetakan aktivitas berbagi sepanjang waktu
+
+Detail tiap berbagi kini menggabungkan aktivitas pembuatan, pembaruan, dan akses dalam grafik titik responsif. Sumbu jumlah peristiwa dan linimasa menyesuaikan riwayat yang tersedia, sedangkan mengarahkan penunjuk atau fokus pada titik akan menampilkan peristiwa dan waktunya.
+
+## Menjelajahi riwayat akses berbagi lengkap
+
+Setiap akses berbagi yang berhasil kini disimpan dalam linimasa aktivitas terpadu. Grafik menggunakan label waktu untuk periode hingga dua hari dan tanggal untuk riwayat yang lebih panjang, mendukung pemilihan rentang dengan menyeret, serta memakai lebar penuh di atas daftar penerima.
+
+## Mempertahankan rentang grafik dan sesi akun
+
+Grafik aktivitas kini menampilkan label waktu hingga detik untuk riwayat singkat dan langsung menggambar ulang rentang tepat yang dipilih dengan menyeret. Stempel waktu berbagi yang sudah ada mengisi rentang grafik lengkap, sedangkan membuka `/share` memulihkan sesi akun alih-alih memakai kembali sesi tamu; aktivasi tamu dibatasi pada token tautan publik yang valid.
+
+## Memulihkan akun sebelum validasi
+
+Saat `/share` dimuat setelah tautan tamu, gateway Share kini memulihkan kredensial akun tersimpan sebelum gateway Authentication memvalidasi sesi peramban. Dasbor langsung mengenali akun sebenarnya alih-alih mempertahankan atau sempat mengenali token tamu terbatas.
+
+## Menyelaraskan pilihan grafik dan tanggal
+
+Pemilihan rentang pada grafik kini mengikuti kursor melalui transformasi koordinat SVG dan selalu menghapus sorotan saat dilepas atau dibatalkan. Periode kosong menampilkan toast peringatan, sedangkan sumbu waktu singkat menyertakan tanggal yang sama atau tanggal terpisah ketika titik ujung melewati batas hari.
+
+## Menggeneralisasi grafik dan mempertahankan akun
+
+Perender grafik pakai ulang kini mendukung mode titik dan garis, memakai lebar responsif penuh, serta menghitung frekuensi per jenis peristiwa dan stempel waktu tanpa terus menjumlahkannya. Aktivasi tamu kini menyimpan kredensial akun nyata yang ditemukan meskipun ada status tamu usang, sehingga kembali ke `/share` dapat memulihkan pengguna alih-alih mengeluarkannya.
+
+## Mempertahankan sesi valid dan grafik ringkas
+
+Hook autentikasi halaman Berbagi kini membedakan penanda tamu usang dari token tamu terbatas yang aktif dan hanya menghapus penanda usang ketika kredensial akun valid sudah tersedia. Grafik aktivitas memakai rasio plot yang lebih pendek dan lebar agar tetap mudah dibaca tanpa mendominasi detail berbagi yang diperluas.
+
+## Memisahkan pengelolaan berbagi dari tautan
+
+Pengelolaan berbagi terautentikasi dikembalikan ke `/shares`, sedangkan `/share/usr_…` dan `/share/shr_…` tetap menjadi ruang nama pengiriman untuk berbagi akun dan tautan publik. Kredensial akun valid kini diperiksa sebelum fallback tautan publik sehingga pemilik yang membuka tautannya sendiri tetap memakai sesi pengguna dan tidak berubah menjadi tamu. Dokumen pengelolaan juga tidak lagi memuat bootstrap sesi tamu.
+
+## Memperjelas tooltip peristiwa akses
+
+Setiap titik akses dalam grafik aktivitas berbagi yang diperluas kini diberi label “Diakses”, bukan “Terakhir diakses”, karena grafik menampilkan seluruh riwayat akses dan bukan hanya peristiwa terbaru.
+
+## Menjaga chat tamu tautan rapat tetap terbuka
+
+Tamu tautan rapat kini menerima kunci ruang chat melalui otorisasi berbagi terbatas tanpa memakai pengiriman kunci satu kali milik anggota akun. Kunci disimpan dalam keyring sementara tamu yang sudah terbuka, sehingga popup pembukaan keyring dan kunci ruang kosong tidak berulang saat chat rapat dimuat.
+
+## Memulai rapat sebelum mengundang peserta
+
+Rapat kini dapat dimulai dengan panggung peserta kosong. Setelah penyelenggara benar-benar bergabung ke konferensi yang baru dibuat, Cognis otomatis membuka popup berbagi khusus tautan untuk mendorong pembuatan tautan tamu; metode berbagi pengguna akun yang redundan tidak ditampilkan dalam popup rapat ini.
+
+## Menyelesaikan berbagi kalender akun dan rapat tamu
+
+Popup berbagi rapat kini hanya terbuka untuk rapat baru yang dimulai dengan panggung peserta kosong. Tamu tautan rapat tidak pernah menerima permintaan kata sandi keyring akun saat keyring sementara mereka diaktifkan, dan chat rapat yang diizinkan menyediakan nama serta avatar peserta tanpa membuka seluruh permukaan pementasan peserta. Kalender yang dibagikan kepada pengguna kini menghormati izin buka kunci akun sisi server dari gateway Share saat memuat acara pemilik secara langsung, termasuk berbagi yang dilindungi kata sandi.
+
+## Menjaga keyring tamu dan kalender bersama tetap tersedia
+
+Sesi tamu kini menyimpan kredensial keyring sementara yang dibuat dan dapat mengaktifkan kembali keyring tersebut saat konsumen meminta akses, sehingga permintaan kata sandi akun tidak muncul saat chat rapat dimuat. Tamu tautan kalender dapat membuka acara dalam pemeriksa hanya-baca, sedangkan tautan dengan akses tulis juga dapat membuat dan mengedit acara. Kalender yang dibagikan ke akun merekonsiliasi pengiriman persistennya dari berbagi aktif yang diterima setiap kali kalender dimuat, sehingga acara pemilik tetap terlihat setelah pemuatan ulang sampai berbagi dicabut atau ditolak.
+
+## Memperkuat pembaruan dan pengiriman berbagi
+
+Pengeditan berbagi kini mempertahankan label yang dikosongkan secara eksplisit, navigasi mengabaikan hasil autentikasi yang kedaluwarsa, kegagalan notifikasi berbagi langsung dicatat, metadata tersimpan yang rusak tetap dapat dipulihkan, dan kegagalan log aktivitas tidak lagi membuat pembuatan berbagi yang berhasil tampak gagal.
+
+## Menjaga pembaruan popup berbagi tetap aktif
+
+Popup berbagi kini menyimpan interval pembaruannya di dalam modul siklus hidup popup sehingga berbagi papan tulis tidak lagi gagal saat popup dibuka.
+
+## Komit
+
+- [5ede8a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ede8a9bd7324f23efc951337e5aa296a63acbd2)

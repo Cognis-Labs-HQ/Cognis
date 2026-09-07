@@ -1,0 +1,1 @@
+export const SMTP_VERIFICATION_RATE_LIMIT_MS = 60_000;

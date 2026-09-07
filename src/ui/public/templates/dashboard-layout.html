@@ -1,0 +1,222 @@
+<section class="app-shell app-page">
+    <header class="site-header app-page__header">
+        <div class="global-topbar">
+            <a
+                class="brandline"
+                href="/dashboard"
+                data-i18n-aria-label="ui.layout.brand.aria"
+                aria-label="Cognis home"
+            >
+                <img
+                    src="/static/assets/icons/cognis-icon.png"
+                    alt=""
+                    class="topbar-icon"
+                />
+                <strong data-i18n="ui.shared.brand.name">Cognis</strong>
+            </a>
+            <div class="page-context">{{pageContext}}</div>
+        </div>
+
+        <nav
+            class="global-navrow"
+            data-i18n-aria-label="ui.layout.nav.primary"
+            aria-label="Primary navigation"
+        >
+            <button
+                id="nav-compact-toggle"
+                class="nav-compact-toggle"
+                type="button"
+                data-i18n-aria-label="ui.layout.nav.open_menu"
+                aria-label="Open navigation menu"
+                aria-expanded="false"
+                aria-controls="nav-drawer"
+                hidden
+            >
+                <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                >
+                    <path
+                        d="M10 3V6H4L4 10H10L10 13L11 13L16 8L11 3L10 3Z"
+                        fill="currentColor"
+                    />
+                    <path
+                        d="M0 2L1.38281e-06 14H2L2 2L0 2Z"
+                        fill="currentColor"
+                    />
+                </svg>
+            </button>
+            <div class="topnav global-navrow-surface">
+                <a href="/dashboard" data-i18n="ui.reuse.dashboard"></a>
+                <a
+                    href="/messages"
+                    data-i18n="ui.reuse.messages"
+                    data-messages-link
+                    hidden
+                ></a>
+            </div>
+            <div class="account-cluster">
+                <span class="user-greeting"
+                    ><span data-i18n="ui.layout.greeting"></span>
+                    <span id="profile-name"></span
+                ></span>
+                <div class="global-search-wrap" id="global-search-wrap"></div>
+                <div class="profile-menu">
+                    <button
+                        id="profile-toggle"
+                        class="avatar-button"
+                        data-i18n-aria-label="ui.layout.account.aria"
+                        aria-label="Account options"
+                    >
+                        <img
+                            src="/static/assets/icons/cognis.png"
+                            data-i18n-alt="ui.layout.avatar.alt"
+                            alt="User avatar"
+                            class="avatar-image"
+                        />
+                    </button>
+                    <ul
+                        id="profile-dropdown"
+                        class="dropdown hidden user-dropdown-content"
+                    >
+                        <li hidden>
+                            <a
+                                class="dropdown-item"
+                                href="/profile"
+                                data-i18n="ui.reuse.profile"
+                                data-profile-link
+                            ></a>
+                        </li>
+                        <li>
+                            <a
+                                class="dropdown-item"
+                                href="/settings"
+                                data-i18n="ui.reuse.settings"
+                            ></a>
+                        </li>
+                        <li>
+                            <a
+                                class="dropdown-item"
+                                href="/docs"
+                                data-i18n="ui.reuse.docs"
+                            ></a>
+                        </li>
+                        <li class="admin-only" hidden>
+                            <a
+                                class="dropdown-item"
+                                href="/administration"
+                                data-i18n="ui.reuse.administration"
+                            ></a>
+                        </li>
+                        <li class="admin-only" hidden>
+                            <a
+                                class="dropdown-item"
+                                href="/administration/modules"
+                                data-i18n="ui.reuse.modules"
+                            ></a>
+                        </li>
+                        <li class="admin-only" hidden>
+                            <a
+                                class="dropdown-item"
+                                href="/users"
+                                data-i18n="ui.reuse.users"
+                            ></a>
+                        </li>
+                        <li class="teacher-only" hidden>
+                            <a
+                                class="dropdown-item"
+                                href="/classes"
+                                data-i18n="ui.reuse.classes"
+                            ></a>
+                        </li>
+                        <li>
+                            <button
+                                id="profile-logout"
+                                class="dropdown-item"
+                                data-i18n="ui.reuse.logout"
+                            ></button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        {{subNavigation}}
+    </header>
+
+    <main class="workspace app-page__main">
+        <section class="main-window {{workspaceClass}}">
+            {{toolbar}}
+            <section class="content-grid">{{content}}</section>
+        </section>
+    </main>
+    {{floatingToolbar}}
+    <footer class="global-footer">
+        <div class="global-footer-inner">
+            <a
+                class="global-footer-link"
+                href="/license"
+                data-i18n="ui.layout.footer.license"
+            ></a>
+            <a
+                class="global-footer-link"
+                href="/changelogs"
+                data-i18n="ui.layout.footer.changelogs"
+            ></a>
+        </div>
+    </footer>
+    <div class="page-action-dock" data-page-action-dock>
+        <button
+            id="language-toggle"
+            class="language-toggle page-action-button"
+            data-i18n-aria-label="ui.layout.language.aria"
+            hidden
+        ></button>
+        <button
+            id="theme-toggle"
+            class="theme-toggle page-action-button"
+            data-i18n-aria-label="ui.layout.theme.aria"
+            aria-label="Toggle theme"
+        >
+            🌙
+        </button>
+        <button
+            id="composer-edit-toggle"
+            class="composer-edit-toggle page-action-button"
+            hidden
+        >
+            <span class="composer-edit-icon" aria-hidden="true"></span>
+        </button>
+    </div>
+    <div
+        id="nav-drawer"
+        class="nav-drawer"
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+        data-i18n-aria-label="ui.layout.nav.primary"
+        aria-label="Primary navigation"
+    >
+        <div class="nav-drawer-content">
+            <button
+                id="nav-drawer-close"
+                class="nav-drawer-close"
+                type="button"
+                data-i18n-aria-label="ui.layout.nav.close_menu"
+                aria-label="Close navigation menu"
+            >
+                &times;
+            </button>
+            <nav class="nav-drawer-nav"></nav>
+        </div>
+    </div>
+    <div
+        id="nav-drawer-backdrop"
+        class="nav-drawer-backdrop"
+        aria-hidden="true"
+        hidden
+    ></div>
+</section>

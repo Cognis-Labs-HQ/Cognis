@@ -1,0 +1,273 @@
+import { apiFetch } from "/static/reuse/api-client.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+
+const STATUS_STYLESHEET_ID = "calendar-event-status-styles";
+
+export function loadCalendarEventStatusStyles() {
+    if (document.getElementById(STATUS_STYLESHEET_ID)) return;
+    const stylesheet = document.createElement("link");
+    stylesheet.id = STATUS_STYLESHEET_ID;
+    stylesheet.rel = "stylesheet";
+    stylesheet.href = "/static/gateways/calendar/ui/calendar-status.css";
+    document.head.append(stylesheet);
+}
+
+export function calendarEventStatusClasses(status) {
+    const visualStatus =
+        status === "free" || status === "tentative" ? status : "busy";
+    return `calendar-event-status calendar-event-status--${visualStatus}`;
+}
+
+export async function refreshUserAvailability() {
+    await uiCtx.capabilities
+        .get("ui:availabilityRenderer")
+        ?.refresh?.(document);
+}
+
+export async function fetchStatusPreference() {
+    const response = await apiFetch("/api/v1/calendar/status-preference");
+    if (!response.ok) throw new Error("calendar_status_preference_load_failed");
+    return (await response.json()).data?.prevented === true;
+}
+
+export async function saveStatusPreference(prevented) {
+    const response = await apiFetch("/api/v1/calendar/status-preference", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ prevented }),
+    });
+    if (!response.ok) throw new Error("calendar_status_preference_save_failed");
+}
+
+const shareAccessByCalendarId = new Map();
+
+function refusedSecretError() {
+    const error = new Error("calendar_share_secrets_refused");
+    error.code = error.message;
+    return error;
+}
+
+async function requestCalendarResource(
+    calendarId,
+    request,
+    { promptWhenLocked = true } = {},
+) {
+    const shareAccess = shareAccessByCalendarId.get(String(calendarId));
+    if (!shareAccess?.sharePasswordProtected || !shareAccess?.shareId) {
+        return request(null);
+    }
+    const fetchProtected = uiCtx.capabilities.get(
+        "share:fetchProtectedResource",
+    );
+    if (!fetchProtected) throw new Error("calendar_share_password_unavailable");
+    return fetchProtected({
+        shareId: shareAccess.shareId,
+        request,
+        promptWhenLocked,
+    });
+}
+
+async function fetchCalendarState() {
+    const response = await apiFetch("/api/v1/calendar/calendars");
+    if (!response.ok) throw new Error("calendar_load_failed");
+    const payload = await response.json();
+    return {
+        calendars: Array.isArray(payload?.data) ? payload.data : [],
+        meta:
+            payload && typeof payload.meta === "object" && payload.meta
+                ? payload.meta
+                : {},
+    };
+}
+
+async function fetchEvents(
+    calendarId,
+    shareAccess = null,
+    { promptWhenLocked = false } = {},
+) {
+    if (shareAccess) {
+        shareAccessByCalendarId.set(String(calendarId), shareAccess);
+    }
+    const request = (password) =>
+        apiFetch(
+            `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events`,
+            password
+                ? { headers: { "x-cognis-share-password": password } }
+                : undefined,
+        );
+    const response = await requestCalendarResource(calendarId, request, {
+        promptWhenLocked,
+    });
+    if (!response) throw new Error("calendar_share_password_unavailable");
+    if (!response.ok) {
+        const error =
+            response.status === 401
+                ? refusedSecretError()
+                : new Error("calendar_events_failed");
+        error.code = error.message;
+        throw error;
+    }
+    const payload = await response.json();
+    return Array.isArray(payload?.data?.events) ? payload.data.events : [];
+}
+
+async function fetchInvitations() {
+    const response = await apiFetch("/api/v1/calendar/invitations");
+    if (!response.ok) return [];
+    const payload = await response.json();
+    return Array.isArray(payload?.data) ? payload.data : [];
+}
+
+async function fetchUpcomingEvents(limit) {
+    const query =
+        limit === undefined ? "" : `?limit=${encodeURIComponent(limit)}`;
+    const response = await apiFetch(`/api/v1/calendar/upcoming-events${query}`);
+    if (!response.ok) throw new Error("upcoming_events_unavailable");
+    const payload = await response.json();
+    return Array.isArray(payload?.data) ? payload.data : [];
+}
+
+async function fetchEvent(calendarId, eventId) {
+    const response = await requestCalendarResource(calendarId, (password) =>
+        apiFetch(
+            `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+            password
+                ? { headers: { "x-cognis-share-password": password } }
+                : undefined,
+        ),
+    );
+    if (!response.ok) throw new Error("calendar_event_failed");
+    const payload = await response.json();
+    return payload?.data ?? null;
+}
+
+async function createEvent(calendarId, payload) {
+    const response = await requestCalendarResource(calendarId, (password) =>
+        apiFetch(
+            `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events`,
+            {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                    ...(password
+                        ? { "x-cognis-share-password": password }
+                        : {}),
+                },
+                body: JSON.stringify(payload),
+            },
+        ),
+    );
+    const now = Date.now();
+    if (
+        response.ok &&
+        Date.parse(payload.startAt) <= now &&
+        Date.parse(payload.endAt) > now
+    ) {
+        await refreshUserAvailability();
+    }
+    return response;
+}
+
+async function updateEvent(calendarId, eventId, payload) {
+    const response = await requestCalendarResource(calendarId, (password) =>
+        apiFetch(
+            `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+            {
+                method: "PATCH",
+                headers: {
+                    "content-type": "application/json",
+                    ...(password
+                        ? { "x-cognis-share-password": password }
+                        : {}),
+                },
+                body: JSON.stringify(payload),
+            },
+        ),
+    );
+    if (response.ok) {
+        await refreshUserAvailability();
+    }
+    return response;
+}
+
+async function deleteEvent(calendarId, eventId, { deleteAll = false } = {}) {
+    const query = deleteAll ? "?series=1" : "";
+    return requestCalendarResource(calendarId, (password) =>
+        apiFetch(
+            `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}${query}`,
+            {
+                method: "DELETE",
+                ...(password
+                    ? { headers: { "x-cognis-share-password": password } }
+                    : {}),
+            },
+        ),
+    );
+}
+
+async function respondToEvent(
+    calendarId,
+    eventId,
+    response,
+    { respondAll = false, targetCalendarId = null } = {},
+) {
+    const query = respondAll ? "?series=1" : "";
+    return requestCalendarResource(calendarId, (password) =>
+        apiFetch(
+            `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}/respond${query}`,
+            {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                    ...(password
+                        ? { "x-cognis-share-password": password }
+                        : {}),
+                },
+                body: JSON.stringify({
+                    response,
+                    ...(targetCalendarId ? { targetCalendarId } : {}),
+                }),
+            },
+        ),
+    );
+}
+
+async function createJitsiMeeting(attendees, { scheduledAt = null } = {}) {
+    const response = await apiFetch(
+        "/api/v1/modules/jitsi-meet/meetings/create",
+        {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+            },
+            body: JSON.stringify({ participants: attendees, scheduledAt }),
+        },
+    );
+    if (!response.ok) throw new Error("meeting_create_failed");
+    const payload = await response.json();
+    const meetingId = String(payload?.data?.id ?? "").trim();
+    if (meetingId) {
+        // Prefer the in-app Meetings route so join flows stay within Cognis UI.
+        return `${window.location.origin}/meetings?meetingId=${encodeURIComponent(meetingId)}`;
+    }
+    return payload?.data?.meetingUrl ? String(payload.data.meetingUrl) : null;
+}
+
+uiCtx.capabilities.contribute("calendar:dashboardEvents", {
+    fetchUpcomingEvents,
+    loadEventStatusStyles: loadCalendarEventStatusStyles,
+    eventStatusClasses: calendarEventStatusClasses,
+});
+
+export {
+    fetchCalendarState,
+    fetchEvents,
+    fetchInvitations,
+    fetchUpcomingEvents,
+    fetchEvent,
+    createEvent,
+    updateEvent,
+    deleteEvent,
+    respondToEvent,
+    createJitsiMeeting,
+};

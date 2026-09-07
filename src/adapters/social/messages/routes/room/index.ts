@@ -1,0 +1,879 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { resolveRouteContext } from "../../../../../api/reuse/route-context.js";
+import { readJson } from "../../../../../api/reuse/read-json.js";
+import {
+    canMessage,
+    enrichMembersWithProfiles,
+    hasAdminBypass,
+    normalizeReactionEmoji,
+    summarizeRoomRequest,
+    type MessagesRoutesDeps,
+} from "../shared.js";
+
+export function createRoomHandler(deps: MessagesRoutesDeps) {
+    const { messagesStore, profileStore, dispatch, flow } = deps;
+    const membership = deps.membership!;
+    const ctx = resolveRouteContext(deps.routeContext);
+
+    return async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        url: URL,
+    ): Promise<boolean> => {
+        const roomMatch = url.pathname.match(
+            /^\/api\/v1\/social\/messages\/rooms\/([^/]+)(?:\/([^/]+))?(?:\/([^/]+))?(?:\/([^/]+))?$/,
+        );
+        if (!roomMatch) return false;
+
+        const claims = ctx.requireAuth(req, res, "user");
+        if (!claims) return true;
+        const accountId = claims.sub;
+        const hasBypass = hasAdminBypass(claims.role);
+        const roomId = roomMatch[1];
+        const sub = roomMatch[2];
+        const subArg = roomMatch[3];
+        const subArg2 = roomMatch[4];
+        const resolveShareGuestId = ctx.getCapability<
+            (claims: { sub?: string }) => string
+        >("share:resolveGuestId");
+        const resolveShareGuestSessionId = ctx.getCapability<
+            (claims: { sub?: string }) => string
+        >("share:resolveGuestSessionId");
+        const shareGuestId = resolveShareGuestId?.({ sub: accountId }) ?? "";
+        const authorizeExternalRoomAccess = ctx.getCapability<
+            (input: {
+                claims: { sub: string; role: string };
+                roomId: string;
+                requiredCapability: "chat:read" | "chat:write";
+            }) => Promise<{ external: boolean; authorized: boolean }>
+        >("social:messages:authorizeExternalRoomAccess");
+        const getGuestProfile = ctx.getCapability<
+            (guestId: string) => Promise<{
+                displayName: string;
+                avatarKey: string | null;
+            } | null>
+        >("share:getGuestProfile");
+
+        const room = await messagesStore.getRoom(roomId);
+        if (!room) {
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: { code: "not_found", message: "Room not found." },
+                }),
+            );
+            return true;
+        }
+        const member = await messagesStore.getMember(roomId, accountId);
+        const [externalReadAccess, externalWriteAccess] =
+            typeof authorizeExternalRoomAccess === "function"
+                ? await Promise.all([
+                      authorizeExternalRoomAccess({
+                          claims,
+                          roomId,
+                          requiredCapability: "chat:read",
+                      }),
+                      authorizeExternalRoomAccess({
+                          claims,
+                          roomId,
+                          requiredCapability: "chat:write",
+                      }),
+                  ])
+                : [null, null];
+        const isShareGuest = Boolean(
+            shareGuestId || externalReadAccess?.external,
+        );
+        const isAllowedShareGuest =
+            isShareGuest && externalReadAccess?.authorized === true;
+        const hasMeetingChatAccess = (
+            capability: "chat:read" | "chat:write",
+        ) =>
+            capability === "chat:write"
+                ? externalWriteAccess?.authorized === true
+                : externalReadAccess?.authorized === true;
+        if (!member && !isAllowedShareGuest) {
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "not_member",
+                        message: "Not a member of this room.",
+                    },
+                }),
+            );
+            return true;
+        }
+        if (
+            isAllowedShareGuest &&
+            !(
+                (!sub && req.method === "GET") ||
+                (sub === "key-contribution" &&
+                    req.method === "POST" &&
+                    hasMeetingChatAccess("chat:read")) ||
+                (sub === "messages" &&
+                    !subArg &&
+                    (req.method === "GET" || req.method === "POST"))
+            )
+        ) {
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "forbidden",
+                        message:
+                            "Share guest access is limited to message reads.",
+                    },
+                }),
+            );
+            return true;
+        }
+        const pendingIncomingRoomRequest = isAllowedShareGuest
+            ? null
+            : hasBypass
+              ? null
+              : await messagesStore.getPendingIncomingRoomMessageRequest(
+                    roomId,
+                    accountId,
+                );
+        const pendingRoomRequest = isAllowedShareGuest
+            ? null
+            : pendingIncomingRoomRequest
+              ? pendingIncomingRoomRequest
+              : await messagesStore.getPendingRoomMessageRequest(roomId);
+        const incomingPendingRoomRequest =
+            pendingIncomingRoomRequest ||
+            (pendingRoomRequest?.toAccountId === accountId
+                ? pendingRoomRequest
+                : null);
+        const pendingRequestSummary = isAllowedShareGuest
+            ? null
+            : await summarizeRoomRequest(
+                  pendingRoomRequest,
+                  profileStore,
+                  accountId,
+              );
+
+        if (sub === "key-contribution" && !subArg && req.method === "POST") {
+            if (incomingPendingRoomRequest) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: { code: "message_request_pending" },
+                    }),
+                );
+                return true;
+            }
+            const roomKey = isAllowedShareGuest
+                ? ((await messagesStore.getUnwrappedRoomKey(roomId)) ??
+                  (await messagesStore.generateAndStoreRoomKey(roomId)))
+                : await messagesStore.claimRoomKeyContribution(
+                      roomId,
+                      accountId,
+                  );
+            if (!roomKey) {
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: { code: "room_key_already_delivered" },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        keyContribution: {
+                            id: `chatroom:${roomId}:key`,
+                            value: roomKey,
+                            metadata: { label: `Chat ${roomId}` },
+                        },
+                    },
+                }),
+            );
+            return true;
+        }
+
+        if (
+            sub === "key-contribution" &&
+            subArg === "acknowledge" &&
+            req.method === "POST"
+        ) {
+            if (!isAllowedShareGuest) {
+                await messagesStore.acknowledgeRoomKeyContribution(
+                    roomId,
+                    accountId,
+                );
+            }
+            res.writeHead(204);
+            res.end();
+            return true;
+        }
+
+        if (!sub && req.method === "GET") {
+            const members = await messagesStore.listMembers(roomId);
+            const enrichedMembers = await enrichMembersWithProfiles(
+                members,
+                profileStore,
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        ...room,
+                        members: enrichedMembers,
+                        isArchived: member?.archived ?? false,
+                        canSend:
+                            (isAllowedShareGuest || !member?.archived) &&
+                            !(room.kind === "dm" && members.length < 2),
+                        pendingRequest: pendingRequestSummary,
+                    },
+                }),
+            );
+            return true;
+        }
+
+        if (!sub && req.method === "PATCH") {
+            const body = (await readJson(req)) as { avatarKey?: unknown };
+            if (room.kind !== "classroom") {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message:
+                                "Only classroom rooms can set chat avatars.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (claims.role !== "teacher" && claims.role !== "admin") {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "forbidden",
+                            message:
+                                "Teacher role required to set classroom chat avatar.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const avatarKey =
+                typeof body.avatarKey === "string" && body.avatarKey.trim()
+                    ? body.avatarKey.trim()
+                    : null;
+            const updated = await messagesStore.updateRoomAvatar(
+                roomId,
+                avatarKey,
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: updated }));
+            return true;
+        }
+
+        if (sub === "messages" && !subArg) {
+            if (req.method === "GET") {
+                if (isAllowedShareGuest && !hasMeetingChatAccess("chat:read")) {
+                    res.writeHead(403, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "forbidden",
+                                message:
+                                    "Share guest access cannot read room messages.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                if (incomingPendingRoomRequest) {
+                    res.writeHead(200, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            data: [],
+                            pendingRequest: pendingRequestSummary,
+                        }),
+                    );
+                    return true;
+                }
+                const limit = Math.max(
+                    1,
+                    Math.min(100, Number(url.searchParams.get("limit") ?? 50)),
+                );
+                const before = url.searchParams.get("before") ?? undefined;
+                const messages = await messagesStore.listMessages(
+                    roomId,
+                    limit,
+                    before,
+                );
+                const roomMembers = await messagesStore.listMembers(roomId);
+                const profilesByAccountId = new Map(
+                    await Promise.all(
+                        roomMembers.map((roomMember) =>
+                            profileStore
+                                .getProfile(roomMember.accountId)
+                                .then(
+                                    (profile) =>
+                                        [
+                                            roomMember.accountId,
+                                            profile,
+                                        ] as const,
+                                ),
+                        ),
+                    ),
+                );
+                // Share guests are not room members, so their sender profile
+                // (a temporary guest display name/avatar) is not resolved by
+                // the loop above. Enrich message senders that are share
+                // guests separately, sourcing identity from the Share
+                // gateway's temporary guest profile.
+                if (getGuestProfile) {
+                    const uniqueSenderIds = new Set(
+                        messages
+                            .map((message) => message.senderId)
+                            .filter(
+                                (senderId) =>
+                                    !profilesByAccountId.has(senderId),
+                            ),
+                    );
+                    const guestSessionIdsBySender = new Map(
+                        Array.from(uniqueSenderIds)
+                            .map((senderId) => [
+                                senderId,
+                                resolveShareGuestSessionId({ sub: senderId }),
+                            ])
+                            .filter(([, guestSessionId]) => guestSessionId),
+                    );
+                    await Promise.all(
+                        Array.from(guestSessionIdsBySender.entries()).map(
+                            async ([senderId, guestSessionId]) => {
+                                const guestProfile = await getGuestProfile(
+                                    guestSessionId,
+                                ).catch(() => null);
+                                if (!guestProfile) return;
+                                profilesByAccountId.set(senderId, {
+                                    accountId: senderId,
+                                    handle: "",
+                                    displayName: guestProfile.displayName,
+                                    role: "user",
+                                    bio: null,
+                                    location: null,
+                                    website: null,
+                                    avatarKey: guestProfile.avatarKey,
+                                    bannerKey: null,
+                                    visibility: "community",
+                                    createdAt: "",
+                                    updatedAt: "",
+                                });
+                            },
+                        ),
+                    );
+                }
+                const reactionsByMessage = new Map<
+                    string,
+                    Map<
+                        string,
+                        {
+                            emoji: string;
+                            count: number;
+                            reactedByMe: boolean;
+                            reactedBy: Array<{
+                                accountId: string;
+                                handle: string | null;
+                                displayName: string | null;
+                                reactedAt: string;
+                            }>;
+                        }
+                    >
+                >();
+                const reactionRows =
+                    await messagesStore.listMessageReactions(roomId);
+                for (const reactionRow of reactionRows) {
+                    const normalizedEmoji = normalizeReactionEmoji(
+                        reactionRow.emoji,
+                    );
+                    if (!normalizedEmoji) continue;
+                    let emojiMap = reactionsByMessage.get(
+                        reactionRow.messageId,
+                    );
+                    if (!emojiMap) {
+                        emojiMap = new Map();
+                        reactionsByMessage.set(reactionRow.messageId, emojiMap);
+                    }
+                    let entry = emojiMap.get(normalizedEmoji);
+                    if (!entry) {
+                        entry = {
+                            emoji: normalizedEmoji,
+                            count: 0,
+                            reactedByMe: false,
+                            reactedBy: [],
+                        };
+                        emojiMap.set(normalizedEmoji, entry);
+                    }
+                    entry.count += 1;
+                    if (reactionRow.accountId === accountId) {
+                        entry.reactedByMe = true;
+                    }
+                    const reactorProfile = profilesByAccountId.get(
+                        reactionRow.accountId,
+                    );
+                    entry.reactedBy.push({
+                        accountId: reactionRow.accountId,
+                        handle: reactorProfile?.handle ?? null,
+                        displayName: reactorProfile?.displayName ?? null,
+                        reactedAt: reactionRow.createdAt,
+                    });
+                }
+                const enrichedMessages = messages.map((message) => {
+                    const senderProfile = profilesByAccountId.get(
+                        message.senderId,
+                    );
+                    const messageCreatedDate = new Date(message.createdAt);
+                    const readBy = roomMembers
+                        .filter(
+                            (roomMember) =>
+                                roomMember.accountId !== message.senderId &&
+                                Boolean(roomMember.lastReadAt) &&
+                                new Date(roomMember.lastReadAt as string) >=
+                                    messageCreatedDate,
+                        )
+                        .map((roomMember) => {
+                            const readerProfile = profilesByAccountId.get(
+                                roomMember.accountId,
+                            );
+                            return {
+                                accountId: roomMember.accountId,
+                                handle: readerProfile?.handle ?? null,
+                                displayName: readerProfile?.displayName ?? null,
+                                avatarKey: readerProfile?.avatarKey ?? null,
+                                readAt: roomMember.lastReadAt,
+                            };
+                        });
+                    const deliveredToCount = roomMembers.filter(
+                        (roomMember) =>
+                            roomMember.accountId !== message.senderId,
+                    ).length;
+                    return {
+                        ...message,
+                        senderHandle: senderProfile?.handle ?? null,
+                        senderDisplayName: senderProfile?.displayName ?? null,
+                        senderAvatarKey: senderProfile?.avatarKey ?? null,
+                        deliveredToCount,
+                        readBy,
+                        reactions: Array.from(
+                            reactionsByMessage.get(message.id)?.values() ?? [],
+                        ),
+                    };
+                });
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        data: enrichedMessages,
+                        pendingRequest: pendingRequestSummary,
+                    }),
+                );
+                return true;
+            }
+            if (req.method === "POST") {
+                if (
+                    isAllowedShareGuest &&
+                    !hasMeetingChatAccess("chat:write")
+                ) {
+                    res.writeHead(403, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "forbidden",
+                                message:
+                                    "Share guest access cannot post room messages.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                if (incomingPendingRoomRequest) {
+                    res.writeHead(403, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "forbidden",
+                                message:
+                                    "Approve the message request before replying.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                const activeMembers = await messagesStore.listMembers(roomId);
+                const dmIsArchivedForSender =
+                    room.kind === "dm" &&
+                    ((member?.archived ?? false) || activeMembers.length < 2);
+                if (dmIsArchivedForSender) {
+                    res.writeHead(409, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "chat_archived",
+                                message:
+                                    "This conversation is archived. Start a new conversation to message again.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                const body = (await readJson(req)) as {
+                    ciphertext?: unknown;
+                    iv?: unknown;
+                    authTag?: unknown;
+                    contentType?: unknown;
+                };
+                if (
+                    typeof body.ciphertext !== "string" ||
+                    typeof body.iv !== "string"
+                ) {
+                    res.writeHead(400, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "bad_request",
+                                message: "ciphertext and iv required.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                if (!flow?.exists("send-message")) {
+                    res.writeHead(503, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "flow_unavailable",
+                                message: "send-message flow not available",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                const flowResult = await flow.run("send-message", {
+                    roomId,
+                    senderId: accountId,
+                    ciphertext: body.ciphertext,
+                    iv: body.iv,
+                    authTag:
+                        typeof body.authTag === "string" ? body.authTag : "",
+                    contentType:
+                        typeof body.contentType === "string"
+                            ? body.contentType
+                            : "text/plain",
+                });
+                const persistResult = (flowResult.stageResults[
+                    "persist-message"
+                ] ?? [])[0] as
+                    | {
+                          messageId?: string;
+                          persisted?: boolean;
+                          message?: Record<string, unknown>;
+                      }
+                    | undefined;
+                if (!persistResult?.persisted) {
+                    res.writeHead(500, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "persist_failed",
+                                message: "Failed to send message",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                res.writeHead(201, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: persistResult.message }));
+                return true;
+            }
+        }
+
+        if (sub === "read" && !subArg && req.method === "POST") {
+            if (incomingPendingRoomRequest) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { ok: true } }));
+                return true;
+            }
+            await messagesStore.markRead(roomId, accountId);
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { ok: true } }));
+            return true;
+        }
+
+        if (sub === "typing" && !subArg) {
+            if (req.method === "POST") {
+                if (incomingPendingRoomRequest) {
+                    res.writeHead(200, { "content-type": "application/json" });
+                    res.end(JSON.stringify({ data: { ok: true } }));
+                    return true;
+                }
+                const body = (await readJson(req)) as {
+                    typing?: unknown;
+                    ttlSeconds?: unknown;
+                };
+                const ttlSeconds = Math.min(
+                    30,
+                    Math.max(1, Number(body.ttlSeconds) || 8),
+                );
+                await messagesStore.setTyping(
+                    roomId,
+                    accountId,
+                    Boolean(body.typing),
+                    ttlSeconds,
+                );
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { ok: true } }));
+                return true;
+            }
+            if (req.method === "GET") {
+                if (incomingPendingRoomRequest) {
+                    res.writeHead(200, { "content-type": "application/json" });
+                    res.end(JSON.stringify({ data: [] }));
+                    return true;
+                }
+                const typingRows = await messagesStore.listActiveTypers(roomId);
+                const enriched = await Promise.all(
+                    typingRows
+                        .filter(
+                            (typingRow) => typingRow.accountId !== accountId,
+                        )
+                        .map(async (typingRow) => {
+                            const profile = await profileStore.getProfile(
+                                typingRow.accountId,
+                            );
+                            return {
+                                accountId: typingRow.accountId,
+                                handle: profile?.handle ?? null,
+                                displayName: profile?.displayName ?? null,
+                                typingUntil: typingRow.typingUntil,
+                            };
+                        }),
+                );
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: enriched }));
+                return true;
+            }
+        }
+
+        if (sub === "members" && !subArg && req.method === "POST") {
+            if (member.role !== "owner" && member.role !== "admin") {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "forbidden",
+                            message: "Only owners/admins can add members.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const body = (await readJson(req)) as { handle?: unknown };
+            const handle = typeof body.handle === "string" ? body.handle : null;
+            if (!handle) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message: "handle required.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const target = await profileStore.getProfileByHandle(handle);
+            if (!target) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "User not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const allowed =
+                hasBypass ||
+                (await canMessage(profileStore, accountId, target.accountId));
+            if (!allowed) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "forbidden",
+                            message: "Cannot add this user.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            await membership.add({
+                roomId,
+                actorAccountId: accountId,
+                userAccountId: target.accountId,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { ok: true } }));
+            return true;
+        }
+
+        if (sub === "members" && subArg && req.method === "DELETE") {
+            const target = await profileStore.getProfileByHandle(subArg);
+            if (!target) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "User not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const isSelfLeave = target.accountId === accountId;
+            const isOwnerKick = member.role === "owner";
+            if (!isSelfLeave && !isOwnerKick) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "forbidden",
+                            message: "Only owners can remove other members.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            await membership.remove({
+                roomId,
+                actorAccountId: accountId,
+                userAccountId: target.accountId,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { ok: true } }));
+            return true;
+        }
+
+        if (
+            sub === "messages" &&
+            subArg &&
+            subArg2 === "reactions" &&
+            req.method === "POST"
+        ) {
+            if (incomingPendingRoomRequest) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "forbidden",
+                            message:
+                                "Approve the message request before reacting.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const message = await messagesStore.getMessage(subArg);
+            if (!message || message.chatroomId !== roomId) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Message not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const body = (await readJson(req)) as { emoji?: unknown };
+            const emoji = normalizeReactionEmoji(
+                typeof body.emoji === "string" ? body.emoji : "",
+            );
+            if (!emoji || emoji.length > 16) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message: "emoji required.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const hasReaction = await messagesStore.hasMessageReaction(
+                roomId,
+                subArg,
+                accountId,
+                emoji,
+            );
+            await messagesStore.setMessageReaction(
+                roomId,
+                subArg,
+                accountId,
+                emoji,
+                !hasReaction,
+            );
+            if (dispatch && !hasReaction && message.senderId !== accountId) {
+                const pendingIncomingForMessageSender =
+                    await messagesStore.getPendingIncomingRoomMessageRequest(
+                        roomId,
+                        message.senderId,
+                    );
+                if (pendingIncomingForMessageSender) {
+                    res.writeHead(200, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            data: { active: !hasReaction },
+                        }),
+                    );
+                    return true;
+                }
+                const [sender, recipient, recipientMember] = await Promise.all([
+                    profileStore.getProfile(accountId),
+                    profileStore.getProfile(message.senderId),
+                    messagesStore.getMember(roomId, message.senderId),
+                ]);
+                if (recipient && recipientMember && !recipientMember.muted) {
+                    await dispatch({
+                        category: "messages",
+                        recipientUsername: recipient.handle,
+                        subject: "New reaction",
+                        body: `Reacted with ${emoji}`,
+                        senderName: sender?.handle ?? sender?.accountId,
+                        actionUrl: `/messages/${roomId}`,
+                        metadata: {
+                            roomId,
+                            messageId: subArg,
+                            reaction: emoji,
+                        },
+                    }).catch(() => undefined);
+                }
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { active: !hasReaction } }));
+            return true;
+        }
+
+        return false;
+    };
+}

@@ -1,23 +1,37 @@
 {
-  "name": "cognis",
-  "private": true,
-  "version": "0.1.0",
-  "description": "Cognis monorepo scaffold",
-  "workspaces": [
-    "api",
-    "core",
-    "adapters/*",
-    "tooling/*"
-  ],
-  "scripts": {
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "node ./tooling/scripts/lint-placeholder.mjs",
-    "test": "node --import tsx --test $(find . -name \"*.test.ts\" -print)",
-    "start": "node --import tsx api/src/main.ts",
-    "ci:test": "npm run typecheck && npm test"
-  },
-  "devDependencies": {
-    "typescript": "^5.9.3",
-    "tsx": "^4.20.6"
-  }
+    "name": "cognis",
+    "private": true,
+    "version": "0.1.3",
+    "description": "Cognis monorepo scaffold",
+    "workspaces": [
+        "src/api",
+        "src/core",
+        "src/adapters/*/*",
+        "src/tooling/*",
+        "src/gateways"
+    ],
+    "scripts": {
+        "build": "npm run build:ui && npm run build:server",
+        "build:ui": "node src/tooling/scripts/build-ui.mjs",
+        "build:server": "node src/tooling/scripts/build-server.mjs",
+        "check:ui-build": "node src/tooling/scripts/check-ui-build.mjs",
+        "check:server-build": "node src/tooling/scripts/check-server-build.mjs",
+        "typecheck": "node src/tooling/scripts/gen-tsconfig.mjs && tsc -p tsconfig.json --noEmit",
+        "lint": "node ./src/tooling/scripts/lint-placeholder.mjs && node ./src/tooling/scripts/lint-readable.mjs",
+        "test": "node --import tsx src/tooling/scripts/run-tests.ts",
+        "start": "node --import tsx src/api/main.ts",
+        "start:production": "COGNIS_UI_ASSET_MANIFEST=dist/ui/asset-manifest.json COGNIS_UI_DIST_ROOT=dist/ui COGNIS_GATEWAYS_ROOT=dist/server/src/gateways COGNIS_ADAPTERS_ROOT=dist/server/src/adapters node dist/server/src/api/main.js",
+        "ci:test": "npm run typecheck && npm test",
+        "cli": "node --import tsx src/tooling/cli/index.ts"
+    },
+    "devDependencies": {
+        "esbuild": "^0.28.1",
+        "prettier": "^3.9.6",
+        "tsx": "^4.23.10",
+        "typescript": "^7.0.2"
+    },
+    "type": "module",
+    "engines": {
+        "node": ">=24"
+    }
 }

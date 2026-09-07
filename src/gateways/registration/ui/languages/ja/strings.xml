@@ -1,0 +1,3 @@
+<resources>
+  <string name="gateway.registration.no_tokens">登録トークンはまだ発行されていません。</string>
+</resources>

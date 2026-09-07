@@ -1,0 +1,7 @@
+{
+    "id": "ldap",
+    "uuid": "773843d7-68e0-5fe3-9609-a536a9dd9c4a",
+    "name": "LDAP Authentication",
+    "version": "0.5.29",
+    "publisher": "Cognis Labs HQ"
+}

@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS fixture_table (
+  id TEXT PRIMARY KEY
+);
