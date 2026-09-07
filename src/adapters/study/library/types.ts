@@ -28,6 +28,8 @@ export interface LibraryDetailHint {
     renderer: "text" | "number" | "boolean" | "badge" | "media" | "stroke";
     order?: number;
     group?: string;
+    /** When true, selecting a filter in this group clears its other filters. */
+    exclusive?: boolean;
     hidden?: boolean;
 }
 

@@ -62,6 +62,10 @@
     background: var(--surface);
 }
 
+.library-entry-card[hidden] {
+    display: none;
+}
+
 .library-entry-card strong {
     color: var(--text);
     font-size: 1rem;

@@ -23,3 +23,7 @@ Jede Ebene mit der semantischen Rolle `definition` deklariert ihr moduleigenes Z
 ## Aussprache und Audio für Schreibeinheiten
 
 Ebenen mit der Rolle `atomicWritingUnit` oder `compoundWritingUnit` deklarieren die erforderlichen Standardfelder `pronunciation` (`stringList`) und `audio` (`audio`). Inhaltspakete können MP3-, Ogg-, WAV-, WebM- oder M4A-Dateien oder eine HTTPS-URL bereitstellen. Lokale Dateien bleiben authentifizierte Paketressourcen. Entferntes Audio wird über die eintragsautorisierte Bibliotheksroute geladen und auf öffentliche HTTPS-Hosts sowie unterstützte Audio-Medientypen beschränkt. Die Bibliothek registriert beim Datei-Gateway den komponentenverwalteten Namensraum `study-library-audio` und speichert jede URL ohne adapterseitige Größenbegrenzung einmal unter einem deterministischen Schlüssel. Dauerhafte Speicherung, Kontingente und physische Dateiverwaltung bleiben Aufgabe des Datei-Gateways; jede Wiedergabeanfrage prüft weiterhin den Bereich des Eintrags.
+
+## Metadatenfiltergruppen
+
+Ein Abzeichenfeld kann mit `detail.group` zusammengehörige Filter gruppieren und mit `detail.exclusive` die Auswahl steuern. Wenn jedes Feld einer Gruppe `exclusive: true` angibt, löscht die Auswahl einer Pille die vorherige Gruppenauswahl. Der Standardwert `false` erlaubt mehrere ausgewählte Pillen. Alle Felder einer benannten Gruppe müssen dieselbe Einstellung verwenden.

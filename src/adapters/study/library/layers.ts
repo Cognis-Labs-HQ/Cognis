@@ -42,7 +42,26 @@ function validateField(field: LibraryFieldSchema, ids: Set<string>): void {
     assertIdentifier(field.id, "invalid_field_id");
     if (ids.has(field.id)) throw new Error("duplicate_field");
     validateMetadata(field.metadata, "field_metadata_required");
+    if (
+        field.detail?.exclusive !== undefined &&
+        typeof field.detail.exclusive !== "boolean"
+    )
+        throw new Error("invalid_filter_group_exclusivity");
     ids.add(field.id);
+}
+
+function validateFilterGroups(fields: readonly LibraryFieldSchema[]): void {
+    const groupExclusivity = new Map<string, boolean>();
+    for (const field of fields) {
+        if (!field.detail?.group && field.detail?.exclusive === undefined)
+            continue;
+        const groupId = field.detail.group ?? field.id;
+        const exclusive = field.detail.exclusive ?? false;
+        const established = groupExclusivity.get(groupId);
+        if (established !== undefined && established !== exclusive)
+            throw new Error("inconsistent_filter_group_exclusivity");
+        groupExclusivity.set(groupId, exclusive);
+    }
 }
 
 function validateRelationship(
@@ -92,6 +111,7 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
     for (const layer of schema.layers) {
         const fieldIds = new Set<string>();
         for (const field of layer.fields ?? []) validateField(field, fieldIds);
+        validateFilterGroups(layer.fields ?? []);
         for (const fieldId of layer.detail?.fieldOrder ?? []) {
             if (!fieldIds.has(fieldId))
                 throw new Error("detail_field_not_found");

@@ -328,11 +328,16 @@ function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
     return `<div class="library-filters" aria-label="${escapeHtml(i18n.t("gateway.study.library_filters"))}">${Array.from(
         groups.entries(),
     )
-        .map(([, groupFilters]) => {
+        .map(([groupId, groupFilters]) => {
             const groupLabel = [
                 ...new Set(groupFilters.map(({ label }) => label)),
             ].join(" / ");
-            return `<fieldset class="library-filter-group"><legend>${escapeHtml(groupLabel)}</legend><div class="library-filter-pills">${groupFilters
+            const exclusive = groupFilters.every(
+                (filter) =>
+                    (layer.fields ?? []).find(({ id }) => id === filter.id)
+                        ?.detail?.exclusive === true,
+            );
+            return `<fieldset class="library-filter-group" data-library-filter-group="${escapeHtml(groupId)}" data-library-filter-exclusive="${exclusive}"><legend>${escapeHtml(groupLabel)}</legend><div class="library-filter-pills">${groupFilters
                 .flatMap((filter) =>
                     filter.values.map(
                         (value) =>
@@ -488,11 +493,18 @@ async function openEntryPopup(
 }
 
 function applyLibraryFilters(filter) {
-    filter.classList.toggle("active");
-    filter.setAttribute(
-        "aria-pressed",
-        String(filter.classList.contains("active")),
-    );
+    const group = filter.closest("[data-library-filter-group]");
+    const willActivate = !filter.classList.contains("active");
+    if (willActivate && group?.dataset.libraryFilterExclusive === "true") {
+        group
+            .querySelectorAll("button[data-library-filter].active")
+            .forEach((activeFilter) => {
+                activeFilter.classList.remove("active");
+                activeFilter.setAttribute("aria-pressed", "false");
+            });
+    }
+    filter.classList.toggle("active", willActivate);
+    filter.setAttribute("aria-pressed", String(willActivate));
     const panel = filter.closest("[data-library-panel]");
     const selectedFilters = Array.from(
         panel.querySelectorAll("button[data-library-filter].active"),

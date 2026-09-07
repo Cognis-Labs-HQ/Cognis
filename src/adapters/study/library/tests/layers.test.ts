@@ -72,6 +72,64 @@ test("consumers define arbitrary layers and constrained relationships", () => {
     );
 });
 
+test("metadata filter groups declare consistent selection exclusivity", () => {
+    const groupedFields = [
+        {
+            id: "character_class",
+            type: "string" as const,
+            metadata: { labels: { en: "Character Class" } },
+            detail: {
+                renderer: "badge" as const,
+                group: "character-class",
+                exclusive: true,
+            },
+        },
+        {
+            id: "character_variant",
+            type: "string" as const,
+            metadata: { labels: { en: "Character Variant" } },
+            detail: {
+                renderer: "badge" as const,
+                group: "character-class",
+                exclusive: true,
+            },
+        },
+    ];
+    assert.doesNotThrow(() =>
+        validateLibrarySchema({
+            ...english,
+            layers: [
+                {
+                    ...english.layers[0],
+                    fields: groupedFields,
+                },
+            ],
+        }),
+    );
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...english,
+                layers: [
+                    {
+                        ...english.layers[0],
+                        fields: [
+                            groupedFields[0],
+                            {
+                                ...groupedFields[1],
+                                detail: {
+                                    ...groupedFields[1].detail,
+                                    exclusive: false,
+                                },
+                            },
+                        ],
+                    },
+                ],
+            }),
+        /inconsistent_filter_group_exclusivity/,
+    );
+});
+
 test("definition layers declare module-owned localization fields", () => {
     const definitionLayer = {
         id: "definitions",

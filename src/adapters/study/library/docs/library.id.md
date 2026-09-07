@@ -23,3 +23,7 @@ Setiap lapisan dengan peran semantik `definition` mendeklarasikan awalan kunci s
 ## Pelafalan dan audio unit tulisan
 
 Lapisan dengan peran `atomicWritingUnit` atau `compoundWritingUnit` mendeklarasikan bidang standar wajib `pronunciation` (`stringList`) dan `audio` (`audio`). Paket konten dapat menyediakan berkas MP3, Ogg, WAV, WebM, atau M4A maupun URL HTTPS. Berkas lokal tetap menjadi aset paket yang diautentikasi. Audio jarak jauh diambil melalui rute Pustaka yang mengotorisasi entri dan dibatasi pada host HTTPS publik serta jenis media audio yang didukung. Pustaka mendaftarkan namespace `study-library-audio` yang dikelola komponen pada gateway Berkas dan menyimpan setiap URL satu kali memakai kunci deterministik tanpa batas ukuran di tingkat adapter. Penyimpanan persisten, kuota, dan pengelolaan berkas fisik tetap menjadi tanggung jawab gateway Berkas, sementara setiap permintaan pemutaran tetap menegakkan cakupan entri.
+
+## Grup filter metadata
+
+Kolom lencana dapat memakai `detail.group` untuk mengelompokkan filter terkait dan `detail.exclusive` untuk mengatur pilihan. Jika setiap kolom dalam grup menetapkan `exclusive: true`, memilih satu pil akan menghapus pilihan grup sebelumnya. Nilai bawaan `false` mengizinkan beberapa pil terpilih. Semua kolom dalam grup bernama harus memakai pengaturan eksklusivitas yang sama.
