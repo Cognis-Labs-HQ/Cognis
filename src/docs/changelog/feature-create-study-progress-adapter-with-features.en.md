@@ -66,6 +66,10 @@ Library layer schemas can now request a row size and position content by record 
 
 Modules can mark metadata filter groups as required and choose a default tag. Required groups always retain a selection, while any group with only one rendered tag selects that tag automatically.
 
+## Explicit character compositions
+
+Alt-character and word details now group resolver-backed character links under their module-defined relationship labels and place composition operators between ordered characters. Definitions and pronunciation readings remain visually distinct from those spelling compositions.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -92,3 +96,4 @@ Modules can mark metadata filter groups as required and choose a default tag. Re
 - [f4ad7320](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4ad732066d653312f37bba8a08c61d7d37d3522)
 - [753a02dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/753a02dc9171670c41d02b9665e076422f3fc3b6)
 - [82bb97c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/82bb97c02aac759f995373a1e9c1234d69b61d57)
+- [44617c98](https://github.com/Cognis-Labs-HQ/Cognis/commit/44617c980ed07d896925f99bd27dd0ca57d2d831)

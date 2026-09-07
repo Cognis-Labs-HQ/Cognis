@@ -424,9 +424,26 @@ body[data-theme="dark"] .library-audio {
 
 .library-component-boxes {
     display: flex;
-    align-items: stretch;
+    align-items: center;
     flex-wrap: wrap;
     gap: 0.5rem;
+}
+
+.library-composition {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.library-composition-label {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.library-composition-operator {
+    align-self: center;
+    color: var(--text-muted);
+    font-weight: 700;
 }
 
 .library-component-box {

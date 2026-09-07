@@ -66,6 +66,10 @@ Bibliotheksebenen können jetzt eine Zeilengröße anfordern und Inhalte anhand 
 
 Module können Metadatenfiltergruppen als erforderlich markieren und ein Standard-Tag bestimmen. Erforderliche Gruppen behalten stets eine Auswahl; Gruppen mit nur einem dargestellten Tag wählen dieses automatisch aus.
 
+## Eindeutige Zeichenkompositionen
+
+Details zu Alternativzeichen und Wörtern gruppieren auflösungsbasierte Zeichenverknüpfungen jetzt unter den vom Modul definierten Beziehungsbezeichnungen und setzen Kompositionsoperatoren zwischen geordnete Zeichen. Definitionen und Aussprachen bleiben von diesen Schreibkompositionen visuell getrennt.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -92,3 +96,4 @@ Module können Metadatenfiltergruppen als erforderlich markieren und ein Standar
 - [f4ad7320](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4ad732066d653312f37bba8a08c61d7d37d3522)
 - [753a02dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/753a02dc9171670c41d02b9665e076422f3fc3b6)
 - [82bb97c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/82bb97c02aac759f995373a1e9c1234d69b61d57)
+- [44617c98](https://github.com/Cognis-Labs-HQ/Cognis/commit/44617c980ed07d896925f99bd27dd0ca57d2d831)

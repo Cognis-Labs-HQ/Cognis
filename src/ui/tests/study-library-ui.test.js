@@ -51,11 +51,14 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /class="library-detail-summary"/);
     assert.match(source, /class="library-component-box btn-neutral"/);
     assert.match(source, /layer\?\.semanticRole === "particle"/);
-    assert.match(source, /const components = componentReferences/);
-    assert.match(source, /function componentReferences/);
+    assert.match(source, /const compositions = compositionReferenceGroups/);
+    assert.match(source, /function compositionReferenceGroups/);
+    assert.match(source, /function renderCompositionGroups/);
     assert.match(source, /relationship\.resolverRole/);
+    assert.match(source, /library-composition-operator/);
     assert.match(source, /class="library-definition-link btn-neutral"/);
     assert.match(stylesheet, /\.library-definition-link/);
+    assert.match(stylesheet, /\.library-composition-label/);
 });
 
 test("Study Library renders metadata and scope indicators", () => {

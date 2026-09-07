@@ -66,6 +66,10 @@ Skema lapisan Pustaka kini dapat meminta ukuran baris dan menempatkan konten ber
 
 Modul dapat menandai grup filter metadata sebagai wajib dan memilih tag bawaan. Grup wajib selalu mempertahankan satu pilihan, sedangkan grup dengan hanya satu tag yang dirender memilih tag tersebut secara otomatis.
 
+## Komposisi karakter eksplisit
+
+Detail alt-character dan kata kini mengelompokkan tautan karakter berbasis resolver di bawah label relasi yang ditentukan modul serta menempatkan operator komposisi di antara karakter yang berurutan. Definisi dan bacaan pelafalan tetap dibedakan secara visual dari komposisi ejaan tersebut.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -92,3 +96,4 @@ Modul dapat menandai grup filter metadata sebagai wajib dan memilih tag bawaan. 
 - [f4ad7320](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4ad732066d653312f37bba8a08c61d7d37d3522)
 - [753a02dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/753a02dc9171670c41d02b9665e076422f3fc3b6)
 - [82bb97c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/82bb97c02aac759f995373a1e9c1234d69b61d57)
+- [44617c98](https://github.com/Cognis-Labs-HQ/Cognis/commit/44617c980ed07d896925f99bd27dd0ca57d2d831)

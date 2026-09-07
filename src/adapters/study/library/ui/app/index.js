@@ -179,33 +179,43 @@ function pronunciationValues(entry) {
     );
 }
 
-function renderComponentBoxes(entries) {
-    if (!entries.length) return "";
-    return `<div class="library-component-boxes">${entries
-        .map(
-            (entry) =>
-                `<button class="library-component-box btn-neutral" type="button" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</button>`,
-        )
-        .join("")}</div>`;
+function compositionReferenceGroups(detail, schemas, contentLanguage) {
+    const sourceLayer = layerForEntry(schemas, detail.entry);
+    const entriesById = new Map(
+        (detail.references ?? []).map((entry) => [entry.id, entry]),
+    );
+    return (sourceLayer?.relationships ?? [])
+        .filter((relationship) => relationship.resolverRole)
+        .map((relationship) => ({
+            id: relationship.id,
+            label: localizedLabel(relationship.metadata, contentLanguage),
+            entries: (detail.entry.references ?? [])
+                .filter((reference) => reference.relation === relationship.id)
+                .sort(
+                    (left, right) =>
+                        (left.position ?? 0) - (right.position ?? 0),
+                )
+                .map((reference) => entriesById.get(reference.entryId))
+                .filter(
+                    (entry) =>
+                        entry && !isMeaningLayer(layerForEntry(schemas, entry)),
+                ),
+        }))
+        .filter((group) => group.entries.length);
 }
 
-function componentReferences(detail, schemas) {
-    const sourceLayer = layerForEntry(schemas, detail.entry);
-    const componentRelations = new Set(
-        (sourceLayer?.relationships ?? [])
-            .filter((relationship) => relationship.resolverRole)
-            .map((relationship) => relationship.id),
-    );
-    const componentIds = new Set(
-        (detail.entry.references ?? [])
-            .filter((reference) => componentRelations.has(reference.relation))
-            .map((reference) => reference.entryId),
-    );
-    return (detail.references ?? []).filter(
-        (candidate) =>
-            componentIds.has(candidate.id) &&
-            !isMeaningLayer(layerForEntry(schemas, candidate)),
-    );
+function renderCompositionGroups(groups) {
+    return groups
+        .map(
+            (group) =>
+                `<section class="library-composition" data-library-composition="${escapeHtml(group.id)}"><span class="library-composition-label">${escapeHtml(group.label)}</span><div class="library-component-boxes">${group.entries
+                    .map(
+                        (entry, index) =>
+                            `${index ? '<span class="library-composition-operator" aria-hidden="true">+</span>' : ""}<button class="library-component-box btn-neutral" type="button" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</button>`,
+                    )
+                    .join("")}</div></section>`,
+        )
+        .join("");
 }
 
 function renderPronunciation(entry, layer) {
@@ -314,7 +324,11 @@ function coreSections(detail, schemas, i18n, languageCode) {
     const definitions = references.filter((candidate) =>
         isMeaningLayer(layerForEntry(schemas, candidate)),
     );
-    const components = componentReferences(detail, schemas);
+    const compositions = compositionReferenceGroups(
+        detail,
+        schemas,
+        entry.language,
+    );
     const relatedWords = isWritingUnitLayer(layer)
         ? usedBy.filter(
               (candidate) =>
@@ -363,7 +377,7 @@ function coreSections(detail, schemas, i18n, languageCode) {
                   entry.definitions,
           );
     return [
-        `<header class="library-detail-summary">${definitionContent}${renderPronunciation(entry, layer)}${renderAudio(entry, layer)}${renderComponentBoxes(components)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</div></header>`,
+        `<header class="library-detail-summary">${definitionContent}${renderPronunciation(entry, layer)}${renderAudio(entry, layer)}${renderCompositionGroups(compositions)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</div></header>`,
         section(i18n.t("gateway.study.library_fields"), genericFields),
         section(
             i18n.t("gateway.study.library_alternate_definitions"),

@@ -66,6 +66,10 @@
 
 モジュールはメタデータフィルターグループを必須にし、既定タグを指定できます。必須グループでは常に選択が維持され、表示タグが 1 つだけのグループでは自動的にそのタグが選択されます。
 
+## 明示的な文字構成
+
+代替文字と単語の詳細で、リゾルバーに基づく文字リンクをモジュール定義の関係ラベルごとにまとめ、順序付き文字の間に構成演算子を表示するようになりました。定義と発音の読みは、これらの綴り構成と視覚的に区別されます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -92,3 +96,4 @@
 - [f4ad7320](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4ad732066d653312f37bba8a08c61d7d37d3522)
 - [753a02dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/753a02dc9171670c41d02b9665e076422f3fc3b6)
 - [82bb97c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/82bb97c02aac759f995373a1e9c1234d69b61d57)
+- [44617c98](https://github.com/Cognis-Labs-HQ/Cognis/commit/44617c980ed07d896925f99bd27dd0ca57d2d831)
