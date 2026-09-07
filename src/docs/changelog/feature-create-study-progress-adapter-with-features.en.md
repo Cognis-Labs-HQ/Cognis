@@ -38,6 +38,10 @@ Content owners, administrators, and owners can now select multiple Library entri
 
 Directional variants now use the complete Library card presentation with slight transparency and a floating shadow. Their hover region remains connected to the parent so users can move to and open them. Multi-select checkboxes stay hidden until an eligible card is held, support dark mode, and the Library route once again loads the complete Study sub-navigation styling.
 
+## Pronunciation placement
+
+Writing-unit cards and detail titles now keep character pronunciations beside the character, while lexical and sentence pronunciations remain below their text. Meaningful single-character words can be declared module-side through a one-character lexical relationship, and character details surface the corresponding inbound words.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -57,3 +61,4 @@ Directional variants now use the complete Library card presentation with slight 
 - [4ff6b5ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ff6b5ec7825a19626c371347c04c43785971216)
 - [1190320b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1190320be506d0c74feefa441a4188d05d3892ae)
 - [5bb5607e](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bb5607ec3cd60ff7ff2d1329dd66cb4cfc907a8)
+- [83297da5](https://github.com/Cognis-Labs-HQ/Cognis/commit/83297da5d62dcbaa8166af88531432b8468d721e)

@@ -159,6 +159,21 @@ function isMeaningLayer(layer) {
     );
 }
 
+function isWritingUnitLayer(layer) {
+    return (
+        layer?.semanticRole === "atomicWritingUnit" ||
+        layer?.semanticRole === "compoundWritingUnit"
+    );
+}
+
+function pronunciationValues(entry) {
+    const pronunciation = entry.fields?.pronunciation;
+    if (!pronunciation) return [];
+    return (Array.isArray(pronunciation) ? pronunciation : [pronunciation]).map(
+        (value) => String(value),
+    );
+}
+
 function renderComponentBoxes(entries) {
     if (!entries.length) return "";
     return `<div class="library-component-boxes">${entries
@@ -170,12 +185,16 @@ function renderComponentBoxes(entries) {
 }
 
 function renderPronunciation(entry, layer) {
-    const pronunciation = entry.fields?.pronunciation;
-    if (!pronunciation) return "";
-    const values = Array.isArray(pronunciation)
-        ? pronunciation
-        : [pronunciation];
+    const values = pronunciationValues(entry);
+    if (!values.length || isWritingUnitLayer(layer)) return "";
     return `<p class="library-pronunciation">${values.map((value) => escapeHtml(value)).join(" · ")}</p>`;
+}
+
+function detailTitle(entry, layer) {
+    const pronunciations = pronunciationValues(entry);
+    return isWritingUnitLayer(layer) && pronunciations.length
+        ? `${entry.label} · ${pronunciations.join(" · ")}`
+        : entry.label;
 }
 
 function renderAudio(entry, layer) {
@@ -231,6 +250,21 @@ function coreSections(detail, schemas, i18n, languageCode) {
     const components = references.filter(
         (candidate) => !isMeaningLayer(layerForEntry(schemas, candidate)),
     );
+    const relatedWords = isWritingUnitLayer(layer)
+        ? usedBy.filter(
+              (candidate) =>
+                  layerForEntry(schemas, candidate)?.semanticRole ===
+                  "lexicalUnit",
+          )
+        : [];
+    const otherUsedBy = usedBy.filter(
+        (candidate) =>
+            !relatedWords.includes(candidate) &&
+            layerForEntry(schemas, candidate)?.semanticRole !== "definition",
+    );
+    const wordLayer = relatedWords.length
+        ? layerForEntry(schemas, relatedWords[0])
+        : null;
     const fields = entry.fields ?? {};
     const metadataIds = new Set(metadataFields(layer).map(({ id }) => id));
     const reserved = new Set([
@@ -278,15 +312,20 @@ function coreSections(detail, schemas, i18n, languageCode) {
             i18n.t("gateway.study.library_revisions"),
             fields.revisions ?? entry.revisions,
         ),
-        relationSection(
-            i18n.t("gateway.study.library_used_by"),
-            usedBy.filter(
-                (candidate) =>
-                    layerForEntry(schemas, candidate)?.semanticRole !==
-                    "definition",
-            ),
-            i18n.t("gateway.study.library_no_relationships"),
-        ),
+        relatedWords.length
+            ? relationSection(
+                  localizedLabel(wordLayer.metadata, entry.language),
+                  relatedWords,
+                  i18n.t("gateway.study.library_no_relationships"),
+              )
+            : "",
+        otherUsedBy.length || !relatedWords.length
+            ? relationSection(
+                  i18n.t("gateway.study.library_used_by"),
+                  otherUsedBy,
+                  i18n.t("gateway.study.library_no_relationships"),
+              )
+            : "",
         section(
             i18n.t("gateway.study.library_progress"),
             fields.progress ?? entry.progress,
@@ -420,7 +459,13 @@ function renderSelection(entry, i18n) {
 }
 
 function renderCardContents(entry, layer, i18n) {
-    return `<strong>${escapeHtml(entry.label)}</strong><span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span>`;
+    const pronunciation = pronunciationValues(entry)
+        .map((value) => escapeHtml(value))
+        .join(" · ");
+    const heading = isWritingUnitLayer(layer)
+        ? `<span class="library-entry-heading"><strong>${escapeHtml(entry.label)}</strong>${pronunciation ? `<span class="library-card-pronunciation">${pronunciation}</span>` : ""}</span>`
+        : `<strong>${escapeHtml(entry.label)}</strong>${pronunciation ? `<span class="library-card-pronunciation library-card-pronunciation-below">${pronunciation}</span>` : ""}`;
+    return `${heading}<span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span>`;
 }
 
 function renderEntryCard(entry, layer, schema, entries, i18n) {
@@ -588,7 +633,10 @@ async function openEntryPopup(
         const abortPopup = () => dismissPopup?.();
         signal?.addEventListener("abort", abortPopup, { once: true });
         const result = await openPopup({
-            title: detail.entry.label,
+            title: detailTitle(
+                detail.entry,
+                layerForEntry(schemas, detail.entry),
+            ),
             body: composed.body,
             maxWidth: "min(56rem, 94vw)",
             closeButtonVariant: "neutral",

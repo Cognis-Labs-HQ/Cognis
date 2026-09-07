@@ -208,6 +208,32 @@ test("relationship cardinality and target layers are enforced", () => {
     );
 });
 
+test("lexical units may reference one meaningful character", () => {
+    const schema: LibrarySchema = {
+        ...english,
+        layers: [
+            {
+                ...english.layers[0],
+                semanticRole: "atomicWritingUnit",
+            },
+            {
+                ...english.layers[1],
+                semanticRole: "lexicalUnit",
+            },
+        ],
+    };
+    const character = entry("a", "a");
+
+    assert.doesNotThrow(() =>
+        validateReferences(
+            schema,
+            "words",
+            [{ entryId: character.id, relation: "letters", position: 0 }],
+            new Map([[character.id, character]]),
+        ),
+    );
+});
+
 test("relationship deletion behavior must use a supported policy", () => {
     assert.throws(
         () =>

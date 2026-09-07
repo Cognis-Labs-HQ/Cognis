@@ -38,6 +38,10 @@
 
 方向付きバリエーションは、少し透明な浮遊シャドウ付きの完全なライブラリカード表示になりました。ホバー領域は親とつながっているため、ポインターを移動して開けます。複数選択チェックボックスは、権限のあるカードを長押しするまで非表示で、ダークモードに対応します。また、ライブラリルートで Study サブナビゲーションの完全なスタイルを再び読み込みます。
 
+## 発音の配置
+
+書記単位のカードと詳細タイトルでは文字の発音を文字の横に表示し、単語と文の発音はテキストの下に残します。意味を持つ 1 文字の単語は、モジュール側で 1 文字への語彙関係として宣言でき、文字の詳細には対応する入力側の単語が表示されます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -57,3 +61,4 @@
 - [4ff6b5ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ff6b5ec7825a19626c371347c04c43785971216)
 - [1190320b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1190320be506d0c74feefa441a4188d05d3892ae)
 - [5bb5607e](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bb5607ec3cd60ff7ff2d1329dd66cb4cfc907a8)
+- [83297da5](https://github.com/Cognis-Labs-HQ/Cognis/commit/83297da5d62dcbaa8166af88531432b8468d721e)

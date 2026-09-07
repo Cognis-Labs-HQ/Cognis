@@ -55,6 +55,18 @@ test("Study Library renders metadata and scope indicators", () => {
     assert.match(stylesheet, /\.library-metadata-pill/);
 });
 
+test("Study Library positions pronunciations by semantic role", () => {
+    assert.match(source, /function isWritingUnitLayer/);
+    assert.match(source, /function pronunciationValues/);
+    assert.match(source, /function detailTitle/);
+    assert.match(source, /class="library-entry-heading"/);
+    assert.match(source, /library-card-pronunciation-below/);
+    assert.match(source, /const relatedWords = isWritingUnitLayer/);
+    assert.match(source, /semanticRole ===\s*"lexicalUnit"/);
+    assert.match(stylesheet, /\.library-entry-heading/);
+    assert.match(stylesheet, /\.library-card-pronunciation/);
+});
+
 test("Study Library unfolds structured character variants", () => {
     assert.match(source, /function variantPlacement/);
     assert.match(source, /relationship\?\.variantDirection/);

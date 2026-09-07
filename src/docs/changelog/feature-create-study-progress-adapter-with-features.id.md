@@ -38,6 +38,10 @@ Pemilik konten, administrator, dan pemilik sistem kini dapat memilih beberapa en
 
 Varian terarah kini memakai tampilan kartu Perpustakaan lengkap dengan sedikit transparansi dan bayangan mengambang. Area hover tetap terhubung ke induk sehingga pengguna dapat berpindah dan membukanya. Kotak pilihan ganda tetap tersembunyi hingga kartu yang memenuhi syarat ditekan lama, mendukung mode gelap, dan rute Perpustakaan kembali memuat gaya subnavigasi Study secara lengkap.
 
+## Penempatan pelafalan
+
+Kartu unit tulisan dan judul detail kini menempatkan pelafalan karakter di samping karakternya, sedangkan pelafalan kata dan kalimat tetap di bawah teks. Kata satu karakter yang bermakna dapat dideklarasikan di sisi modul melalui relasi leksikal satu karakter, dan detail karakter menampilkan kata masuk yang sesuai.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -57,3 +61,4 @@ Varian terarah kini memakai tampilan kartu Perpustakaan lengkap dengan sedikit t
 - [4ff6b5ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ff6b5ec7825a19626c371347c04c43785971216)
 - [1190320b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1190320be506d0c74feefa441a4188d05d3892ae)
 - [5bb5607e](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bb5607ec3cd60ff7ff2d1329dd66cb4cfc907a8)
+- [83297da5](https://github.com/Cognis-Labs-HQ/Cognis/commit/83297da5d62dcbaa8166af88531432b8468d721e)

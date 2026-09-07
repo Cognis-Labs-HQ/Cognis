@@ -38,6 +38,10 @@ Inhaltseigentümer, Administratoren und Eigentümer können jetzt mehrere Biblio
 
 Gerichtete Varianten verwenden jetzt die vollständige Darstellung einer Bibliothekskarte mit leichter Transparenz und schwebendem Schatten. Ihr Hover-Bereich bleibt mit dem übergeordneten Eintrag verbunden, sodass Benutzer zu ihnen wechseln und sie öffnen können. Mehrfachauswahlkästchen bleiben bis zum Halten einer berechtigten Karte verborgen, unterstützen den dunklen Modus, und die Bibliotheksroute lädt wieder die vollständige Gestaltung der Study-Unternavigation.
 
+## Platzierung der Aussprache
+
+Karten und Detailtitel von Schreibeinheiten zeigen die Zeichenaussprache nun neben dem Zeichen; Aussprachen von Wörtern und Sätzen bleiben unter dem Text. Bedeutungstragende Einzelzeichenwörter können modulseitig durch eine lexikalische Beziehung zu genau einem Zeichen deklariert werden, und Zeichendetails zeigen die entsprechenden eingehenden Wörter.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -57,3 +61,4 @@ Gerichtete Varianten verwenden jetzt die vollständige Darstellung einer Bibliot
 - [4ff6b5ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ff6b5ec7825a19626c371347c04c43785971216)
 - [1190320b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1190320be506d0c74feefa441a4188d05d3892ae)
 - [5bb5607e](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bb5607ec3cd60ff7ff2d1329dd66cb4cfc907a8)
+- [83297da5](https://github.com/Cognis-Labs-HQ/Cognis/commit/83297da5d62dcbaa8166af88531432b8468d721e)
