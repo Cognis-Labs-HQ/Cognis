@@ -17,4 +17,5 @@
   <string name="gateway.study.library_delete_permanent">Verhindern, dass Module genau diese Inhalte erneut wiederherstellen</string>
   <string name="gateway.study.library_delete_success">Die ausgewählten Bibliotheksinhalte wurden gelöscht.</string>
   <string name="gateway.study.library_delete_error">Die ausgewählten Bibliotheksinhalte konnten nicht gelöscht werden.</string>
+  <string name="gateway.study.library_used_in_layer">Verwendet in {{ layer }}</string>
 </resources>

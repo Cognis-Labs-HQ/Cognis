@@ -86,6 +86,10 @@
 
 右クリックで複数選択に入り、親カードを長押ししきい値まで保持すると子カードがフェードインして開いた状態を保ちます。子カードは完全に不透明で、通常時もホバー時も同じ緑色の枠線を維持し、最後の選択を外すと複数選択を自動終了します。
 
+## 重複のない構造化ライブラリ表示
+
+ライブラリはローカライズ済みのレイヤー名を使用し、宣言済みで空ではないフィールドだけを表示して、詳細画面でバリアントを重複表示しなくなりました。定義表示レイヤーにはローカライズ済み意味への参照を必須とし、言語モジュールは詳細フローから助詞効果を含む文の統合意味を提供できます。グリッドは数値表示 ID と明示的な空白も受け付けます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -117,3 +121,4 @@
 - [f1ad82df](https://github.com/Cognis-Labs-HQ/Cognis/commit/f1ad82df827fe30850bf4516aa790304a985d925)
 - [893aece3](https://github.com/Cognis-Labs-HQ/Cognis/commit/893aece39d60e4bd4c84f7a809c504811f630d13)
 - [7387683a](https://github.com/Cognis-Labs-HQ/Cognis/commit/7387683a1faa0f8efd9d27a524f75b43eb81dbd4)
+- [7f34d0c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f34d0c98a4b693a14f5c864bed07ace40bf79da)

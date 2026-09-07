@@ -63,7 +63,10 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /function isMeaningLayer/);
     assert.match(source, /layer\.semanticRole !== "particle"/);
     assert.match(source, /class="library-detail-summary"/);
-    assert.match(source, /class="library-component-box btn-neutral"/);
+    assert.match(
+        source,
+        /renderEntryLink\(entry, "library-component-box btn-neutral"\)/,
+    );
     assert.match(source, /layer\?\.semanticRole === "particle"/);
     assert.match(source, /const compositions = compositionReferenceGroups/);
     assert.match(source, /function compositionReferenceGroups/);
@@ -71,10 +74,21 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /relationship\.resolverRole/);
     assert.match(source, /library-composition-operator/);
     assert.match(source, /const variantChildren = usedBy\.filter/);
-    assert.match(source, /gateway\.study\.library_variants/);
-    assert.match(source, /class="library-definition-link btn-neutral"/);
+    assert.doesNotMatch(
+        source,
+        /i18n\.t\("gateway\.study\.library_variants"\)/,
+    );
+    assert.match(source, /"library-definition-link btn-neutral"/);
     assert.match(stylesheet, /\.library-definition-link/);
     assert.match(stylesheet, /\.library-composition-label/);
+    assert.match(source, /layer\.displayDefinition/);
+    assert.match(source, /data-library-linked-entry/);
+    assert.match(source, /data-library-preview/);
+    assert.match(source, /Object\.keys\(value\)\.length === 0/);
+    assert.doesNotMatch(
+        source,
+        /i18n\.t\("gateway\.study\.library_alternate_definitions"\)/,
+    );
 });
 
 test("Study Library renders metadata and scope indicators", () => {
@@ -82,6 +96,7 @@ test("Study Library renders metadata and scope indicators", () => {
     assert.match(source, /class="library-metadata-pill"/);
     assert.match(source, /class="library-scope"/);
     assert.match(stylesheet, /\.library-metadata-pill/);
+    assert.match(stylesheet, /\.library-detail-summary > \.library-scope/);
 });
 
 test("Study Library positions pronunciations by semantic role", () => {
@@ -106,7 +121,10 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(stylesheet, /\.library-entry-variant-up/);
     assert.match(source, /function assignVariantPlacements/);
     assert.match(source, /\["left", "up", "right"\]/);
-    assert.match(source, /renderCardContents\(variant, layer, i18n\)/);
+    assert.match(
+        source,
+        /renderCardContents\(variant, layer, entries, schema, i18n\)/,
+    );
     assert.match(stylesheet, /opacity: 1/);
     assert.match(stylesheet, /box-shadow:/);
     assert.match(source, /gateway\.study\.library_variant_hint/);

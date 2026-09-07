@@ -86,6 +86,10 @@ Variantenbeziehungen deklarieren jetzt ausdrücklich `variant: true`; Richtungen
 
 Ein Rechtsklick öffnet jetzt die Mehrfachauswahl, während das Halten einer übergeordneten Karte bis zur Langdruckschwelle ihre Kinder einblendet und offen hält. Kindkarten sind vollständig deckend und behalten im Ruhezustand wie beim Darüberfahren denselben grünen Rahmen; das Abwählen des letzten Eintrags beendet die Mehrfachauswahl automatisch.
 
+## Strukturierte, deduplizierte Bibliotheksanzeige
+
+Die Bibliothek verwendet lokalisierte Ebenennamen, zeigt nur deklarierte und nicht leere Felder und wiederholt Varianten nicht mehr im Detailfenster. Definitionsgestützte Ebenen erzwingen Referenzen auf lokalisierte Bedeutungen; Sprachmodule können zusammengesetzte Satzbedeutungen samt Partikelwirkung über den Detail-Flow liefern. Raster unterstützen außerdem numerische Anzeige-IDs und ausdrückliche Leerplätze.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -117,3 +121,4 @@ Ein Rechtsklick öffnet jetzt die Mehrfachauswahl, während das Halten einer üb
 - [f1ad82df](https://github.com/Cognis-Labs-HQ/Cognis/commit/f1ad82df827fe30850bf4516aa790304a985d925)
 - [893aece3](https://github.com/Cognis-Labs-HQ/Cognis/commit/893aece39d60e4bd4c84f7a809c504811f630d13)
 - [7387683a](https://github.com/Cognis-Labs-HQ/Cognis/commit/7387683a1faa0f8efd9d27a524f75b43eb81dbd4)
+- [7f34d0c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f34d0c98a4b693a14f5c864bed07ace40bf79da)

@@ -320,6 +320,50 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     height: 1rem;
 }
 
+.library-detail-summary > .library-scope {
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-inline: 0 auto;
+}
+
+.library-detail-summary > .library-scope img {
+    width: 1.4rem;
+    height: 1.4rem;
+}
+
+.library-card-definition-link {
+    position: relative;
+    z-index: 1;
+    color: var(--accent-2);
+    font-size: 0.9rem;
+    text-decoration: underline;
+}
+
+[data-library-preview] {
+    position: relative;
+}
+
+[data-library-preview]:hover::after,
+[data-library-preview]:focus-visible::after {
+    position: absolute;
+    z-index: 12;
+    inset-block-end: calc(100% + 0.4rem);
+    inset-inline-start: 50%;
+    width: max-content;
+    max-width: 18rem;
+    padding: 0.45rem 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface);
+    box-shadow: 0 0.5rem 1.2rem color-mix(in srgb, #000 22%, transparent);
+    color: var(--text);
+    content: attr(data-library-preview);
+    font-size: 0.8rem;
+    font-weight: 400;
+    pointer-events: none;
+    transform: translateX(-50%);
+}
+
 .library-filters {
     display: flex;
     flex-wrap: wrap;

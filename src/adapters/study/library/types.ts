@@ -71,6 +71,8 @@ export interface LibraryLayerSchema {
     id: string;
     metadata: { labels: LocalizedText; descriptions?: LocalizedText };
     semanticRole?: LibrarySemanticRole;
+    /** Prefer the localized definition referenced by each entry as its display text. */
+    displayDefinition?: boolean;
     definitionLocalization?: {
         /** Module-owned prefix used to generate a stable key for each definition. */
         stringKeyPrefix: string;
@@ -82,7 +84,7 @@ export interface LibraryLayerSchema {
     detail?: { titleField?: string; fieldOrder?: readonly string[] };
     grid?: {
         rowSize: number;
-        items: readonly (string | null)[];
+        items: readonly (string | number | { blank: true } | null)[];
     };
     activityCompatibility?: readonly string[];
     interestVeins?: readonly string[];
@@ -122,6 +124,7 @@ export interface LibraryEntryInput {
 export interface LibraryEntry extends LibraryEntryInput {
     id: string;
     sourceRecordId?: string;
+    displayId?: number;
     schemaVersion: number;
     language: string;
     scope: LibraryScope;
@@ -188,6 +191,8 @@ export interface LibraryContentPackManifest {
 
 export interface LibraryContentRecord {
     id: string;
+    /** Optional module-owned numeric position identifier used by a layer grid. */
+    displayId?: number;
     label: string;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];

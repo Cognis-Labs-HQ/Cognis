@@ -202,8 +202,17 @@ async function validateContentRecords(
     const recordsById = new Map(records.map((record) => [record.id, record]));
     for (const layer of schema.layers) {
         for (const itemId of layer.grid?.items ?? []) {
-            if (itemId === null) continue;
-            const record = recordsById.get(itemId);
+            if (
+                itemId === null ||
+                (typeof itemId === "object" && itemId.blank === true)
+            )
+                continue;
+            const record =
+                typeof itemId === "number"
+                    ? records.find(
+                          (candidate) => candidate.displayId === itemId,
+                      )
+                    : recordsById.get(itemId);
             if (!record || record.layer !== layer.id) {
                 throw new Error("layer_grid_item_not_found");
             }
@@ -217,6 +226,11 @@ async function validateContentRecords(
             !record.label?.trim()
         )
             throw new Error("invalid_content_record");
+        if (
+            record.displayId !== undefined &&
+            (!Number.isSafeInteger(record.displayId) || record.displayId < 0)
+        )
+            throw new Error("invalid_content_display_id");
         const id = contentEntryId(manifest, record.id);
         if (entries.has(id)) throw new Error("duplicate_content_record");
         validateFields(schema, record.layer, record.fields ?? {});
@@ -289,5 +303,27 @@ async function validateContentRecords(
             entryId: contentEntryId(manifest, reference.entryId),
         }));
         validateReferences(schema, record.layer, references, entries);
+        const layer = schema.layers.find(({ id }) => id === record.layer)!;
+        if (layer.displayDefinition) {
+            const definitionRelations = new Set(
+                (layer.relationships ?? [])
+                    .filter((relationship) => {
+                        const target = schema.layers.find(
+                            ({ id }) => id === relationship.targetLayer,
+                        );
+                        return (
+                            target?.semanticRole === "definition" ||
+                            target?.semanticRole === "meaning"
+                        );
+                    })
+                    .map(({ id }) => id),
+            );
+            if (
+                !references.some(({ relation }) =>
+                    definitionRelations.has(relation),
+                )
+            )
+                throw new Error("display_definition_reference_required");
+        }
     }
 }

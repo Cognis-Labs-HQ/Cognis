@@ -145,6 +145,11 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
         assertIdentifier(layer.id, "invalid_layer_id");
         if (layerIds.has(layer.id)) throw new Error("duplicate_layer");
         validateMetadata(layer.metadata, "layer_metadata_required");
+        if (
+            layer.displayDefinition !== undefined &&
+            typeof layer.displayDefinition !== "boolean"
+        )
+            throw new Error("invalid_display_definition");
         if (layer.grid) {
             if (
                 !Number.isSafeInteger(layer.grid.rowSize) ||
@@ -155,11 +160,23 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
                 throw new Error("invalid_layer_grid");
             }
             const itemIds = layer.grid.items.filter(
-                (item): item is string => item !== null,
+                (item): item is string | number =>
+                    typeof item === "string" || typeof item === "number",
             );
             if (
-                itemIds.some((item) => !CONTENT_RECORD_ID_PATTERN.test(item)) ||
-                new Set(itemIds).size !== itemIds.length
+                layer.grid.items.some(
+                    (item) =>
+                        item !== null &&
+                        typeof item !== "string" &&
+                        typeof item !== "number" &&
+                        (typeof item !== "object" || item.blank !== true),
+                ) ||
+                itemIds.some((item) =>
+                    typeof item === "string"
+                        ? !CONTENT_RECORD_ID_PATTERN.test(item)
+                        : !Number.isSafeInteger(item) || item < 0,
+                ) ||
+                new Set(itemIds.map(String)).size !== itemIds.length
             ) {
                 throw new Error("invalid_layer_grid_items");
             }
@@ -226,6 +243,28 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
         const relationshipIds = new Set<string>();
         for (const relationship of layer.relationships ?? []) {
             validateRelationship(relationship, layerIds, relationshipIds);
+        }
+        if (layer.displayDefinition) {
+            if (
+                layer.semanticRole === "atomicWritingUnit" ||
+                layer.semanticRole === "definition" ||
+                layer.semanticRole === "meaning"
+            )
+                throw new Error("display_definition_not_supported");
+            const hasDefinitionRelationship = (layer.relationships ?? []).some(
+                (relationship) => {
+                    const target = schema.layers.find(
+                        ({ id }) => id === relationship.targetLayer,
+                    );
+                    return target &&
+                        (target.semanticRole === "definition" ||
+                            target.semanticRole === "meaning")
+                        ? (relationship.minimum ?? 0) >= 1
+                        : false;
+                },
+            );
+            if (!hasDefinitionRelationship)
+                throw new Error("display_definition_relationship_required");
         }
     }
     return structuredClone({

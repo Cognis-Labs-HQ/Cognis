@@ -76,7 +76,8 @@ function section(title, value) {
     if (
         value === undefined ||
         value === null ||
-        (Array.isArray(value) && value.length === 0)
+        (Array.isArray(value) && value.length === 0) ||
+        (typeof value === "object" && Object.keys(value).length === 0)
     )
         return "";
     return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${renderValue(value)}</section>`;
@@ -154,7 +155,11 @@ function renderScope(entry, i18n) {
 }
 
 function relationSection(title, entries, emptyLabel) {
-    return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${entries.length ? `<div class="library-related-entries">${entries.map((entry) => `<button class="library-related-entry btn-neutral" type="button" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</button>`).join("")}</div>` : `<p>${escapeHtml(emptyLabel)}</p>`}</section>`;
+    return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${entries.length ? `<div class="library-related-entries">${entries.map((entry) => renderEntryLink(entry, "library-related-entry btn-neutral")).join("")}</div>` : `<p>${escapeHtml(emptyLabel)}</p>`}</section>`;
+}
+
+function renderEntryLink(entry, className, label = entry.label) {
+    return `<button class="${className}" type="button" ${entryAttributes(entry)} data-library-preview="${escapeHtml(label)}">${escapeHtml(label)}</button>`;
 }
 
 function isMeaningLayer(layer) {
@@ -211,7 +216,7 @@ function renderCompositionGroups(groups) {
                 `<section class="library-composition" data-library-composition="${escapeHtml(group.id)}"><span class="library-composition-label">${escapeHtml(group.label)}</span><div class="library-component-boxes">${group.entries
                     .map(
                         (entry, index) =>
-                            `${index ? '<span class="library-composition-operator" aria-hidden="true">+</span>' : ""}<button class="library-component-box btn-neutral" type="button" ${entryAttributes(entry)}>${escapeHtml(entry.label)}</button>`,
+                            `${index ? '<span class="library-composition-operator" aria-hidden="true">+</span>' : ""}${renderEntryLink(entry, "library-component-box btn-neutral")}`,
                     )
                     .join("")}</div></section>`,
         )
@@ -226,7 +231,7 @@ function renderPronunciation(entry, layer) {
 
 function detailTitlePronunciation(entry, layer) {
     const pronunciations = pronunciationValues(entry);
-    return isWritingUnitLayer(layer) && pronunciations.length
+    return layer?.semanticRole === "atomicWritingUnit" && pronunciations.length
         ? pronunciations.join(" · ")
         : "";
 }
@@ -318,7 +323,7 @@ async function loadLibraryAudio(overlay, objectUrls, signal, errorMessage) {
     );
 }
 
-function coreSections(detail, schemas, i18n, languageCode) {
+function coreSections(detail, schemas, i18n, languageCode, resolvedDefinition) {
     const { entry, references = [], usedBy = [] } = detail;
     const layer = layerForEntry(schemas, entry);
     const definitions = references.filter((candidate) =>
@@ -351,61 +356,51 @@ function coreSections(detail, schemas, i18n, languageCode) {
         : null;
     const fields = entry.fields ?? {};
     const metadataIds = new Set(metadataFields(layer).map(({ id }) => id));
-    const reserved = new Set([
-        "definitions",
-        "meaning",
-        "meanings",
-        "alternateDefinitions",
-        "provenance",
-        "scope",
-        "revisions",
-        "progress",
-        "strokes",
-        "pronunciation",
-        "audio",
-        ...metadataIds,
-    ]);
+    const reserved = new Set(["pronunciation", "audio", ...metadataIds]);
     const genericFields = Object.fromEntries(
-        Object.entries(fields).filter(([key]) => !reserved.has(key)),
+        (layer?.fields ?? [])
+            .filter(
+                (field) =>
+                    !reserved.has(field.id) &&
+                    !field.detail?.hidden &&
+                    field.detail?.renderer !== "badge" &&
+                    fields[field.id] !== undefined &&
+                    fields[field.id] !== null &&
+                    fields[field.id] !== "",
+            )
+            .map((field) => [
+                localizedLabel(field.metadata, entry.language),
+                fields[field.id],
+            ]),
     );
-    const definitionContent = definitions.length
-        ? definitions
-              .map(
-                  (definition) =>
-                      `<button class="library-definition-link btn-neutral" type="button" ${entryAttributes(definition)}>${escapeHtml(definitionText(definition, layerForEntry(schemas, definition), languageCode))}</button>`,
-              )
-              .join("")
-        : renderValue(
-              fields.definitions ??
-                  fields.meaning ??
-                  fields.meanings ??
-                  entry.definitions,
-          );
+    const definitionContent = resolvedDefinition
+        ? renderValue(resolvedDefinition)
+        : definitions.length
+          ? definitions
+                .map((definition) =>
+                    renderEntryLink(
+                        definition,
+                        "library-definition-link btn-neutral",
+                        definitionText(
+                            definition,
+                            layerForEntry(schemas, definition),
+                            languageCode,
+                        ),
+                    ),
+                )
+                .join("")
+          : "";
     return [
-        `<header class="library-detail-summary">${definitionContent}${renderPronunciation(entry, layer)}${renderAudio(entry, layer)}${renderCompositionGroups(compositions)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</div></header>`,
+        `<header class="library-detail-summary">${renderScope(entry, i18n)}${definitionContent}${renderPronunciation(entry, layer)}${renderAudio(entry, layer)}${renderCompositionGroups(compositions)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
         section(i18n.t("gateway.study.library_fields"), genericFields),
-        section(
-            i18n.t("gateway.study.library_alternate_definitions"),
-            fields.alternateDefinitions ?? entry.alternateDefinitions,
-        ),
-        section(
-            i18n.t("gateway.study.library_provenance"),
-            fields.provenance ?? entry.provenance,
-        ),
-        section(
-            i18n.t("gateway.study.library_revisions"),
-            fields.revisions ?? entry.revisions,
-        ),
-        variantChildren.length
-            ? relationSection(
-                  i18n.t("gateway.study.library_variants"),
-                  variantChildren,
-                  i18n.t("gateway.study.library_no_relationships"),
-              )
-            : "",
         relatedWords.length
             ? relationSection(
-                  localizedLabel(wordLayer.metadata, entry.language),
+                  i18n
+                      .t("gateway.study.library_used_in_layer")
+                      .replace(
+                          "{{ layer }}",
+                          localizedLabel(wordLayer.metadata, entry.language),
+                      ),
                   relatedWords,
                   i18n.t("gateway.study.library_no_relationships"),
               )
@@ -417,14 +412,6 @@ function coreSections(detail, schemas, i18n, languageCode) {
                   i18n.t("gateway.study.library_no_relationships"),
               )
             : "",
-        section(
-            i18n.t("gateway.study.library_progress"),
-            fields.progress ?? entry.progress,
-        ),
-        section(
-            i18n.t("gateway.study.library_strokes"),
-            fields.strokes ?? entry.strokes,
-        ),
     ].filter(Boolean);
 }
 
@@ -451,7 +438,18 @@ async function composeDetail(detail, schemas, i18n, languageCode) {
               );
     const sections = [
         ...sectionsFor("beforeCore"),
-        ...coreSections(detail, schemas, i18n, languageCode),
+        ...coreSections(
+            detail,
+            schemas,
+            i18n,
+            languageCode,
+            Object.values(flow.stageResults)
+                .flat()
+                .find(
+                    (contribution) =>
+                        typeof contribution?.displayDefinition === "string",
+                )?.displayDefinition,
+        ),
         ...sectionsFor("core"),
         ...sectionsFor("afterCore"),
     ];
@@ -587,17 +585,50 @@ function renderSelection(entry, i18n) {
     return `<input class="library-entry-selection" type="checkbox" data-library-select-entry="${escapeHtml(entry.id)}" aria-label="${escapeHtml(label)}">`;
 }
 
-function renderCardContents(entry, layer, i18n) {
+function cardDefinition(entry, layer, entries, schema) {
+    if (!layer.displayDefinition) return null;
+    const definitionLayers = new Set(
+        (layer.relationships ?? [])
+            .filter((relationship) => {
+                const target = schema.layers.find(
+                    ({ id }) => id === relationship.targetLayer,
+                );
+                return isMeaningLayer(target);
+            })
+            .map(({ targetLayer }) => targetLayer),
+    );
+    const referencedIds = new Set(
+        (entry.references ?? []).map(({ entryId }) => entryId),
+    );
+    return entries.find(
+        (candidate) =>
+            referencedIds.has(candidate.id) &&
+            definitionLayers.has(candidate.layer),
+    );
+}
+
+function renderCardContents(entry, layer, entries, schema, i18n) {
     const pronunciation = pronunciationValues(entry)
         .map((value) => escapeHtml(value))
         .join(" · ");
     const heading = isWritingUnitLayer(layer)
         ? `<span class="library-entry-heading"><strong>${escapeHtml(entry.label)}</strong>${pronunciation ? `<span class="library-card-pronunciation">${pronunciation}</span>` : ""}</span>`
         : `<strong>${escapeHtml(entry.label)}</strong>${pronunciation ? `<span class="library-card-pronunciation library-card-pronunciation-below">${pronunciation}</span>` : ""}`;
-    return `${heading}<span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span>`;
+    const definition = cardDefinition(entry, layer, entries, schema);
+    const definitionLabel = definition
+        ? definitionText(
+              definition,
+              layerForEntry([schema], definition),
+              schema.language,
+          )
+        : "";
+    const definitionLink = definition
+        ? `<span class="library-card-definition-link" role="link" tabindex="0" data-library-linked-entry="${escapeHtml(definition.id)}" data-library-preview="${escapeHtml(definitionLabel)}">${escapeHtml(definitionLabel)}</span>`
+        : "";
+    return `${heading}${definitionLink}<span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span>`;
 }
 
-function renderEntryCard(entry, layer, entries, placements, i18n) {
+function renderEntryCard(entry, layer, entries, schema, placements, i18n) {
     const filterValues = Object.fromEntries(
         metadataFields(layer).map((field) => [
             field.id,
@@ -615,10 +646,10 @@ function renderEntryCard(entry, layer, entries, placements, i18n) {
     const variantHint = variants.length
         ? `<span class="library-entry-variant-hint" role="tooltip">${escapeHtml(i18n.t("gateway.study.library_variant_hint"))}</span>`
         : "";
-    return `<div class="library-entry-card-shell"><button class="library-entry-card btn-neutral" type="button" ${entryAttributes(entry)} ${entrySearchAttribute(entry)} data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}">${renderCardContents(entry, layer, i18n)}</button>${renderSelection(entry, i18n)}${variantHint}${variants
+    return `<div class="library-entry-card-shell"><button class="library-entry-card btn-neutral" type="button" ${entryAttributes(entry)} ${entrySearchAttribute(entry)} data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}">${renderCardContents(entry, layer, entries, schema, i18n)}</button>${renderSelection(entry, i18n)}${variantHint}${variants
         .map(
             ({ entry: variant, direction }) =>
-                `<div class="library-entry-variant-shell library-entry-variant-${direction}"><button class="library-entry-card library-entry-variant btn-neutral" type="button" ${entryAttributes(variant)} ${entrySearchAttribute(variant)}>${renderCardContents(variant, layer, i18n)}</button>${renderSelection(variant, i18n)}</div>`,
+                `<div class="library-entry-variant-shell library-entry-variant-${direction}"><button class="library-entry-card library-entry-variant btn-neutral" type="button" ${entryAttributes(variant)} ${entrySearchAttribute(variant)}>${renderCardContents(variant, layer, entries, schema, i18n)}</button>${renderSelection(variant, i18n)}</div>`,
         )
         .join("")}</div>`;
 }
@@ -630,32 +661,55 @@ function renderLayerCards(layer, entries, schema, i18n) {
     if (!layer.grid) {
         return baseEntries
             .map((entry) =>
-                renderEntryCard(entry, layer, entries, placements, i18n),
+                renderEntryCard(
+                    entry,
+                    layer,
+                    entries,
+                    schema,
+                    placements,
+                    i18n,
+                ),
             )
             .join("");
     }
 
-    const entriesBySourceId = new Map(
-        baseEntries.map((entry) => [entry.sourceRecordId, entry]),
+    const entriesByGridId = new Map(
+        baseEntries.flatMap((entry) => [
+            [entry.sourceRecordId, entry],
+            [entry.displayId, entry],
+        ]),
     );
     const positionedIds = new Set(
-        layer.grid.items.filter((itemId) => itemId !== null),
+        layer.grid.items.filter(
+            (itemId) => itemId !== null && typeof itemId !== "object",
+        ),
     );
     const positionedCards = layer.grid.items
         .map((itemId) => {
-            if (itemId === null) {
+            if (itemId === null || typeof itemId === "object") {
                 return '<div class="library-entry-card-blank" aria-hidden="true"></div>';
             }
-            const entry = entriesBySourceId.get(itemId);
+            const entry = entriesByGridId.get(itemId);
             return entry
-                ? renderEntryCard(entry, layer, entries, placements, i18n)
+                ? renderEntryCard(
+                      entry,
+                      layer,
+                      entries,
+                      schema,
+                      placements,
+                      i18n,
+                  )
                 : "";
         })
         .join("");
     const additionalCards = baseEntries
-        .filter((entry) => !positionedIds.has(entry.sourceRecordId))
+        .filter(
+            (entry) =>
+                !positionedIds.has(entry.sourceRecordId) &&
+                !positionedIds.has(entry.displayId),
+        )
         .map((entry) =>
-            renderEntryCard(entry, layer, entries, placements, i18n),
+            renderEntryCard(entry, layer, entries, schema, placements, i18n),
         )
         .join("");
     return positionedCards + additionalCards;
@@ -1163,6 +1217,28 @@ export async function mount(root, { signal } = {}) {
     root.addEventListener(
         "click",
         (event) => {
+            const linkedPreview = event.target.closest(
+                "[data-library-linked-entry]",
+            );
+            if (linkedPreview) {
+                event.preventDefault();
+                event.stopPropagation();
+                const linkedEntry = entries.find(
+                    ({ id }) => id === linkedPreview.dataset.libraryLinkedEntry,
+                );
+                if (linkedEntry) {
+                    void openEntryPopup(
+                        root,
+                        linkedEntry,
+                        schemas,
+                        entries,
+                        i18n,
+                        languageCode,
+                        signal,
+                    );
+                }
+                return;
+            }
             if (event.target.closest("[data-library-select-all]")) {
                 selectAllVisibleEntries(root, i18n);
                 return;

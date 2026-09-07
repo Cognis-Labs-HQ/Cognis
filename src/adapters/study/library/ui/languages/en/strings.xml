@@ -17,4 +17,5 @@
   <string name="gateway.study.library_delete_permanent">Prevent modules from restoring this exact content again</string>
   <string name="gateway.study.library_delete_success">The selected Library content was deleted.</string>
   <string name="gateway.study.library_delete_error">Could not delete the selected Library content.</string>
+  <string name="gateway.study.library_used_in_layer">Used in {{ layer }}</string>
 </resources>

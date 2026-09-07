@@ -297,6 +297,8 @@ Every language module owns a **library** — a layered, deep-linked register of 
 
 **The library is the single canonical source of truth for all language data.** Never hardcode language data (characters, words, definitions, sentences) in a child component's UI or server code. All such data lives in the module's `data/` directory, is loaded by the `LanguageLibraryStore` at bootstrap, and is served through the language library API (`/api/v1/study/languages/:code/library/:layer`). Child components consume the library API to display data. Adding new language content means adding or editing data files under `data/`, not modifying UI or server logic.
 
+The ownership boundary is absolute: neither the Study gateway, Study child components, Library adapters, nor core code may create fallback language records, embed vocabulary or grammar rules, synthesize language-specific definitions, or otherwise provide code that constitutes a language's content. Generic schema validation, relationship resolution, and rendering mechanisms belong in Cognis; every language-specific record, label, reading, particle effect, composition rule, and resolved sentence meaning belongs to the owning language module. If required language data is absent, report a module content error rather than inventing it outside that module.
+
 A language module also advertises **child components** — independently deliverable study features (e.g. "Hiragana Alphabet", "Kanji Explorer"). Each child component:
 
 - Registers its own route via `ctx.registerChildRoute()` during `bootstrapLanguageModule`.

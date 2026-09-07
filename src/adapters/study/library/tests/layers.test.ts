@@ -72,6 +72,46 @@ test("consumers define arbitrary layers and constrained relationships", () => {
     );
 });
 
+test("localized layers can require definition-backed display text", () => {
+    const schema: LibrarySchema = {
+        ...english,
+        layers: [
+            {
+                id: "definitions",
+                semanticRole: "meaning",
+                metadata: { labels: { en: "Definitions" } },
+            },
+            {
+                id: "words",
+                semanticRole: "lexicalUnit",
+                displayDefinition: true,
+                metadata: { labels: { en: "Vocabulary" } },
+                relationships: [
+                    {
+                        id: "definition",
+                        targetLayer: "definitions",
+                        metadata: { labels: { en: "Definition" } },
+                        minimum: 1,
+                        onDelete: "restrict",
+                    },
+                ],
+            },
+        ],
+    };
+    assert.deepEqual(validateLibrarySchema(schema), schema);
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...schema,
+                layers: [
+                    schema.layers[0],
+                    { ...schema.layers[1], relationships: [] },
+                ],
+            }),
+        /display_definition_relationship_required/,
+    );
+});
+
 test("metadata filter groups declare consistent selection exclusivity", () => {
     const groupedFields = [
         {
@@ -393,7 +433,13 @@ test("layers can request a validated grid row and item layout", () => {
                 ...english.layers[0],
                 grid: {
                     rowSize: 5,
-                    items: ["english:letter:a", null, "english:letter:i"],
+                    items: [
+                        "english:letter:a",
+                        { blank: true },
+                        3,
+                        null,
+                        "english:letter:i",
+                    ],
                 },
             },
         ],
@@ -401,7 +447,13 @@ test("layers can request a validated grid row and item layout", () => {
 
     assert.deepEqual(validateLibrarySchema(schema).layers[0].grid, {
         rowSize: 5,
-        items: ["english:letter:a", null, "english:letter:i"],
+        items: [
+            "english:letter:a",
+            { blank: true },
+            3,
+            null,
+            "english:letter:i",
+        ],
     });
     assert.throws(
         () =>

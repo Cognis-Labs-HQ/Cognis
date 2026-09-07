@@ -86,6 +86,10 @@ Variant relationships now explicitly declare `variant: true`; directions are lim
 
 Right-click now enters multi-select, while holding a parent card through the long-press threshold fades in and holds its children open. Child cards are fully opaque with the same green outline at rest and on hover, and clearing the last selection exits multi-select automatically.
 
+## Structured, deduplicated Library presentation
+
+The Library now uses localized layer names, renders only declared non-empty fields, and no longer repeats variants in detail views. Definition-backed layers enforce localized meaning references, while language modules can supply composed sentence meanings and particle effects through the detail flow. Grids also accept numeric display IDs and explicit blank slots.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -117,3 +121,4 @@ Right-click now enters multi-select, while holding a parent card through the lon
 - [f1ad82df](https://github.com/Cognis-Labs-HQ/Cognis/commit/f1ad82df827fe30850bf4516aa790304a985d925)
 - [893aece3](https://github.com/Cognis-Labs-HQ/Cognis/commit/893aece39d60e4bd4c84f7a809c504811f630d13)
 - [7387683a](https://github.com/Cognis-Labs-HQ/Cognis/commit/7387683a1faa0f8efd9d27a524f75b43eb81dbd4)
+- [7f34d0c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f34d0c98a4b693a14f5c864bed07ace40bf79da)

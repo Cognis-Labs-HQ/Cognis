@@ -86,6 +86,10 @@ Relasi varian kini mendeklarasikan `variant: true` secara eksplisit; arah dibata
 
 Klik kanan kini membuka pilihan ganda, sedangkan menahan kartu induk hingga ambang tekan lama memudarkan masuk dan mempertahankan kartu anak tetap terbuka. Kartu anak sepenuhnya legap dengan garis tepi hijau yang sama saat diam maupun diarahkan, dan mengosongkan pilihan terakhir otomatis keluar dari mode pilihan ganda.
 
+## Tampilan Perpustakaan terstruktur tanpa duplikasi
+
+Perpustakaan kini menggunakan nama lapisan terlokalisasi, hanya merender bidang terdeklarasi yang tidak kosong, dan tidak lagi mengulang varian pada tampilan detail. Lapisan berbasis definisi mewajibkan referensi makna terlokalisasi, sedangkan modul bahasa dapat menyediakan makna kalimat gabungan dan dampak partikel melalui alur detail. Kisi juga menerima ID tampilan numerik dan ruang kosong eksplisit.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -117,3 +121,4 @@ Klik kanan kini membuka pilihan ganda, sedangkan menahan kartu induk hingga amba
 - [f1ad82df](https://github.com/Cognis-Labs-HQ/Cognis/commit/f1ad82df827fe30850bf4516aa790304a985d925)
 - [893aece3](https://github.com/Cognis-Labs-HQ/Cognis/commit/893aece39d60e4bd4c84f7a809c504811f630d13)
 - [7387683a](https://github.com/Cognis-Labs-HQ/Cognis/commit/7387683a1faa0f8efd9d27a524f75b43eb81dbd4)
+- [7f34d0c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f34d0c98a4b693a14f5c864bed07ace40bf79da)
