@@ -107,12 +107,17 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /function assignVariantPlacements/);
     assert.match(source, /\["left", "up", "right"\]/);
     assert.match(source, /renderCardContents\(variant, layer, i18n\)/);
-    assert.match(stylesheet, /opacity: 0\.95/);
+    assert.match(stylesheet, /opacity: 1/);
     assert.match(stylesheet, /box-shadow:/);
     assert.match(source, /gateway\.study\.library_variant_hint/);
     assert.match(source, /library-entry-variants-open/);
     assert.match(source, /"contextmenu"/);
     assert.match(source, /"focusout"/);
+    assert.match(source, /setSelectionMode\(root, true, i18n\)/);
+    assert.match(
+        source,
+        /shell\.classList\.add\("library-entry-variants-open"\)/,
+    );
     assert.match(
         stylesheet,
         /\.library-entry-card-shell\.library-entry-variants-open/,
@@ -124,6 +129,11 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(stylesheet, /variant-arrow-dark\.svg/);
     assert.match(stylesheet, /\.library-entry-variant \{/);
     assert.match(stylesheet, /var\(--color-success-outline-text/);
+    assert.match(
+        stylesheet,
+        /\.library-entry-variant:is\(:hover, :focus-visible\)/,
+    );
+    assert.match(stylesheet, /visibility 0s linear 180ms/);
     assert.match(variantArrowLight, /fill="#059669"/);
     assert.match(variantArrowDark, /fill="#34d399"/);
     assert.match(
@@ -182,7 +192,7 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(clientSource, /method: "DELETE"/);
     assert.match(stylesheet, /\.library-entry-selection/);
     assert.match(source, /LONG_PRESS_DURATION_MS/);
-    assert.match(source, /setSelectionMode\(root, true, i18n\)/);
+    assert.match(source, /selectedEntryIds\(root\)\.length === 0/);
     assert.match(
         stylesheet,
         /\.library-selection-mode \.library-entry-selection/,

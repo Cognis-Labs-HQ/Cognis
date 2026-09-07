@@ -1088,15 +1088,18 @@ export async function mount(root, { signal } = {}) {
             if (event.button !== 0) return;
             const card = event.target.closest("button[data-library-entry]");
             if (!card) return;
-            const selection = selectionForCard(root, card);
-            if (!selection) return;
+            const shell = card.closest(".library-entry-card-shell");
+            if (
+                card.classList.contains("library-entry-variant") ||
+                !shell?.querySelector(".library-entry-variant-shell")
+            )
+                return;
             cancelLongPress();
             longPressOrigin = { x: event.clientX, y: event.clientY };
             longPressTimer = window.setTimeout(() => {
-                setSelectionMode(root, true, i18n);
-                selection.checked = true;
+                shell.classList.add("library-entry-variants-open");
+                card.focus();
                 suppressEntryClick = true;
-                updateDeleteSelectionButton(root, i18n);
                 longPressTimer = null;
             }, LONG_PRESS_DURATION_MS);
         },
@@ -1121,17 +1124,12 @@ export async function mount(root, { signal } = {}) {
         (event) => {
             const card = event.target.closest("button[data-library-entry]");
             if (!card) return;
-            const shell = card.closest(".library-entry-card-shell");
-            if (
-                !card.classList.contains("library-entry-variant") &&
-                shell?.querySelector(".library-entry-variant-shell")
-            ) {
-                event.preventDefault();
-                shell.classList.add("library-entry-variants-open");
-                card.focus();
-                return;
-            }
-            if (selectionForCard(root, card)) event.preventDefault();
+            const selection = selectionForCard(root, card);
+            if (!selection) return;
+            event.preventDefault();
+            setSelectionMode(root, true, i18n);
+            selection.checked = true;
+            updateDeleteSelectionButton(root, i18n);
         },
         { signal },
     );
@@ -1151,6 +1149,13 @@ export async function mount(root, { signal } = {}) {
         "change",
         (event) => {
             if (!event.target.matches("[data-library-select-entry]")) return;
+            if (
+                root.classList.contains("library-selection-mode") &&
+                selectedEntryIds(root).length === 0
+            ) {
+                setSelectionMode(root, false, i18n);
+                return;
+            }
             updateDeleteSelectionButton(root, i18n);
         },
         { signal },

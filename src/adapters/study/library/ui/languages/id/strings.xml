@@ -5,7 +5,7 @@
   <string name="gateway.study.library_next">Berikutnya</string>
   <string name="gateway.study.library_filters">Filter entri perpustakaan</string>
   <string name="gateway.study.library_filter_empty">Tidak ada entri yang cocok dengan filter terpilih.</string>
-  <string name="gateway.study.library_variant_hint">Klik kanan untuk menampilkan kartu lainnya</string>
+  <string name="gateway.study.library_variant_hint">Tekan lama untuk menampilkan kartu lainnya</string>
   <string name="gateway.study.library_variants">Varian</string>
   <string name="gateway.study.library_scope_global">Cakupan: Global</string>
   <string name="gateway.study.library_scope_class">Cakupan: Kelas {{ class name }}</string>

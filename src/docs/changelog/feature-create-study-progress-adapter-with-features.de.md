@@ -44,7 +44,7 @@ Karten und Detailtitel von Schreibeinheiten zeigen die Zeichenaussprache nun neb
 
 ## Gezielte Links und Aktionen
 
-Die Auswahl per langem Drücken öffnet jetzt die vorhandene schwebende Aktionsleiste mit Alle auswählen, Löschen und Schließen; normale Kartenklicks beenden den Auswahlmodus. Häkchen sind zentriert, dunkle Audio-Steuerelemente unterdrücken den nativen Orangeton, und Beziehungsklicks aktivieren und markieren die Zielkategorie. Definitionstext trägt seinen Link jetzt direkt, während Bestandteilsfelder auf deklarierte Resolver-Beziehungen beschränkt sind, um doppelte und unpassende Katakana-Links zu entfernen.
+Die Auswahl per einem Rechtsklick öffnet jetzt die vorhandene schwebende Aktionsleiste mit Alle auswählen, Löschen und Schließen; normale Kartenklicks beenden den Auswahlmodus. Häkchen sind zentriert, dunkle Audio-Steuerelemente unterdrücken den nativen Orangeton, und Beziehungsklicks aktivieren und markieren die Zielkategorie. Definitionstext trägt seinen Link jetzt direkt, während Bestandteilsfelder auf deklarierte Resolver-Beziehungen beschränkt sind, um doppelte und unpassende Katakana-Links zu entfernen.
 
 ## Stabile Filterung mit Varianten
 
@@ -72,7 +72,7 @@ Details zu Alternativzeichen und Wörtern gruppieren auflösungsbasierte Zeichen
 
 ## Bewusstes Öffnen von Varianten
 
-Karten mit untergeordneten Elementen zeigen beim Darüberfahren einen Hinweis zum Rechtsklick und öffnen Varianten erst nach einem Rechtsklick. Variantenkarten behalten ihre konstante Transparenz, schließen beim Verlassen des Fokus aus der gesamten Kartengruppe und erscheinen zusätzlich in einem eigenen Abschnitt der übergeordneten Detailansicht.
+Karten mit untergeordneten Elementen zeigen beim Darüberfahren einen Hinweis zum Gedrückthalten und öffnen Varianten erst nach der Halteschwelle. Variantenkarten behalten ihren grünen Rahmen beim Darüberfahren, schließen beim Verlassen des Fokus aus der gesamten Kartengruppe und erscheinen zusätzlich in einem eigenen Abschnitt der übergeordneten Detailansicht.
 
 ## Sichtbare Richtung der Kindkarten
 
@@ -81,6 +81,10 @@ Geöffnete untergeordnete Karten haben jetzt einen grünen Rahmen und einen grü
 ## Variantenvertrag mit drei Positionen
 
 Variantenbeziehungen deklarieren jetzt ausdrücklich `variant: true`; Richtungen sind auf links, oben und rechts beschränkt. Ohne Angabe wählt die Bibliothek die erste freie Position. Richtungspfeile werden als getrennte Assets für helles und dunkles Design geliefert; der veraltete Versionseintrag des repositoryinternen Japanisch-Adapters wurde entfernt.
+
+## Vertauschte Kartengesten
+
+Ein Rechtsklick öffnet jetzt die Mehrfachauswahl, während das Halten einer übergeordneten Karte bis zur Langdruckschwelle ihre Kinder einblendet und offen hält. Kindkarten sind vollständig deckend und behalten im Ruhezustand wie beim Darüberfahren denselben grünen Rahmen; das Abwählen des letzten Eintrags beendet die Mehrfachauswahl automatisch.
 
 ## Commits
 
@@ -112,3 +116,4 @@ Variantenbeziehungen deklarieren jetzt ausdrücklich `variant: true`; Richtungen
 - [95b3065d](https://github.com/Cognis-Labs-HQ/Cognis/commit/95b3065d2b20baf702b1b7ffb669cdd5351caf70)
 - [f1ad82df](https://github.com/Cognis-Labs-HQ/Cognis/commit/f1ad82df827fe30850bf4516aa790304a985d925)
 - [893aece3](https://github.com/Cognis-Labs-HQ/Cognis/commit/893aece39d60e4bd4c84f7a809c504811f630d13)
+- [7387683a](https://github.com/Cognis-Labs-HQ/Cognis/commit/7387683a1faa0f8efd9d27a524f75b43eb81dbd4)

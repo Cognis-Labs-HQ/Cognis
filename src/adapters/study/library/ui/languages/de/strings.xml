@@ -5,7 +5,7 @@
   <string name="gateway.study.library_next">Weiter</string>
   <string name="gateway.study.library_filters">Bibliothekseinträge filtern</string>
   <string name="gateway.study.library_filter_empty">Keine Einträge entsprechen den ausgewählten Filtern.</string>
-  <string name="gateway.study.library_variant_hint">Rechtsklicken, um weitere Karten anzuzeigen</string>
+  <string name="gateway.study.library_variant_hint">Gedrückt halten, um weitere Karten anzuzeigen</string>
   <string name="gateway.study.library_variants">Varianten</string>
   <string name="gateway.study.library_scope_global">Bereich: Global</string>
   <string name="gateway.study.library_scope_class">Bereich: Klasse {{ class name }}</string>

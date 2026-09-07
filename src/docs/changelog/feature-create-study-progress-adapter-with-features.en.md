@@ -44,7 +44,7 @@ Writing-unit cards and detail titles now keep character pronunciations beside th
 
 ## Focused deep links and actions
 
-Long-press selection now opens the existing floating action bar with Select All, Delete, and close controls; normal card clicks leave selection mode. Checkmarks are centered, dark audio controls suppress the native orange tint, and relationship clicks activate and highlight the destination category. Definition text now owns its deep link directly, while constituent boxes are limited to declared resolver relationships to remove duplicate and unrelated Katakana links.
+Right-click selection now opens the existing floating action bar with Select All, Delete, and close controls; normal card clicks leave selection mode. Checkmarks are centered, dark audio controls suppress the native orange tint, and relationship clicks activate and highlight the destination category. Definition text now owns its deep link directly, while constituent boxes are limited to declared resolver relationships to remove duplicate and unrelated Katakana links.
 
 ## Stable filtering with variants
 
@@ -72,7 +72,7 @@ Alt-character and word details now group resolver-backed character links under t
 
 ## Deliberate variant expansion
 
-Cards with children now show a right-click hint on hover and expand variants only after right-clicking. Variant cards retain constant transparency, close when focus leaves the complete card group, and also appear in a dedicated section of the parent detail view.
+Cards with children now show a long-press hint on hover and expand variants only after the hold threshold. Variant cards retain their green outline on hover, close when focus leaves the complete card group, and also appear in a dedicated section of the parent detail view.
 
 ## Visible child-card direction
 
@@ -81,6 +81,10 @@ Expanded child cards now have a green border and a green arrow showing their dir
 ## Three-position variant contract
 
 Variant relationships now explicitly declare `variant: true`; directions are limited to left, top, and right. When omitted, the Library selects the first unoccupied position. Direction arrows ship as distinct light- and dark-theme assets, and the obsolete in-tree Japanese adapter version entry was removed.
+
+## Swapped card gestures
+
+Right-click now enters multi-select, while holding a parent card through the long-press threshold fades in and holds its children open. Child cards are fully opaque with the same green outline at rest and on hover, and clearing the last selection exits multi-select automatically.
 
 ## Commits
 
@@ -112,3 +116,4 @@ Variant relationships now explicitly declare `variant: true`; directions are lim
 - [95b3065d](https://github.com/Cognis-Labs-HQ/Cognis/commit/95b3065d2b20baf702b1b7ffb669cdd5351caf70)
 - [f1ad82df](https://github.com/Cognis-Labs-HQ/Cognis/commit/f1ad82df827fe30850bf4516aa790304a985d925)
 - [893aece3](https://github.com/Cognis-Labs-HQ/Cognis/commit/893aece39d60e4bd4c84f7a809c504811f630d13)
+- [7387683a](https://github.com/Cognis-Labs-HQ/Cognis/commit/7387683a1faa0f8efd9d27a524f75b43eb81dbd4)
