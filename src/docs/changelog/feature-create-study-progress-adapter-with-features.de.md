@@ -20,7 +20,7 @@ Der Einstiegspunkt des Bibliotheksbrowsers wurde in die vorgeschriebene Adapters
 
 ## Wiederholbare Inhaltsimporte
 
-Inhaltspakete der Lernbibliothek verwenden jetzt atomare Datenbank-Upserts für Datensätze, Anlagen und Verweise. Dadurch unterbrechen weder doppelte Schlüssel noch gleichzeitige Importe eine erneute Modulaktivierung.
+Inhaltspakete der Lernbibliothek aktualisieren vorhandene Datensätze, Anlagen und Verweise, bevor fehlende Zeilen erstellt werden. Gleichzeitige Einfügungen verwenden eine von der Einschränkungsstruktur unabhängige Konfliktbehandlung mit anschließender Aktualisierung, sodass doppelte Schlüssel kein bestimmtes Datenbanklayout voraussetzen.
 
 ## Commits
 
@@ -31,3 +31,4 @@ Inhaltspakete der Lernbibliothek verwenden jetzt atomare Datenbank-Upserts für 
 - [ef782975](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef782975)
 - [68bd7478](https://github.com/Cognis-Labs-HQ/Cognis/commit/68bd7478dbf6343109087bd83a9fba643452a838)
 - [eeabc5e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/eeabc5e1231e3de246a14ee4ff49582a7169768c)
+- [2cc37134](https://github.com/Cognis-Labs-HQ/Cognis/commit/2cc371343c54afed45e545d523a751cad101be3c)

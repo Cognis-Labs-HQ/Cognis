@@ -5,7 +5,7 @@ import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { LibraryStore } from "../store.js";
 import type { LibraryContentPackPlan } from "../types.js";
 
-test("content pack import atomically updates duplicate records and references", async () => {
+test("content pack import recovers when another import inserts the same content", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
         id: "japanese",
@@ -32,6 +32,15 @@ test("content pack import atomically updates duplicate records and references", 
                 return { rows: [{ schema_json: JSON.stringify(schema) }] };
             }
             if (command.option === "SELECT") return { rows: [] };
+            if (command.option === "UPDATE") {
+                const attempts = commands.filter(
+                    (candidate) =>
+                        candidate.option === "UPDATE" &&
+                        candidate.table === command.table,
+                ).length;
+                return { rowCount: attempts > 1 ? 1 : 0 };
+            }
+            if (command.conflict?.action === "ignore") return { rowCount: 0 };
             return { rowCount: 1 };
         },
     };
@@ -66,34 +75,28 @@ test("content pack import atomically updates duplicate records and references", 
     const receipt = await new LibraryStore(db).ingestContentPack(plan);
 
     assert.equal(receipt.unchanged, false);
-    const entryCommand = commands.find(
-        (command) => command.table === "study_library_entries",
+    const entryInsert = commands.find(
+        (command) =>
+            command.option === "INSERT" &&
+            command.table === "study_library_entries",
     );
-    assert.equal(entryCommand?.option, "INSERT");
+    assert.equal(entryInsert?.option, "INSERT");
     assert.deepEqual(
-        entryCommand?.option === "INSERT" ? entryCommand.conflict?.target : [],
-        ["id"],
+        entryInsert?.option === "INSERT" ? entryInsert.conflict : undefined,
+        { action: "ignore" },
     );
-    assert.equal(
-        entryCommand?.option === "INSERT"
-            ? entryCommand.conflict?.action
-            : undefined,
-        "update",
-    );
-    const referenceCommand = commands.find(
+    const referenceCommands = commands.filter(
         (command) => command.table === "study_library_references",
     );
-    assert.equal(referenceCommand?.option, "INSERT");
     assert.deepEqual(
-        referenceCommand?.option === "INSERT"
-            ? referenceCommand.conflict?.target
-            : [],
-        ["source_entry_id", "target_entry_id", "relation", "position"],
+        referenceCommands.map((command) => command.option),
+        ["UPDATE", "INSERT", "UPDATE"],
     );
-    assert.equal(
-        referenceCommand?.option === "INSERT"
-            ? referenceCommand.conflict?.action
+    const referenceInsert = referenceCommands[1];
+    assert.deepEqual(
+        referenceInsert.option === "INSERT"
+            ? referenceInsert.conflict
             : undefined,
-        "update",
+        { action: "ignore" },
     );
 });

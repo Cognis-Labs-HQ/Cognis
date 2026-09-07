@@ -20,7 +20,7 @@ Titik masuk peramban Pustaka dipindahkan ke tata letak adaptor wajib `ui/app/ind
 
 ## Impor konten yang dapat diulang
 
-Paket konten Pustaka Studi kini menggunakan upsert basis data atomik untuk catatan, aset, dan referensi sehingga kunci duplikat dan impor serentak tidak lagi mengganggu aktivasi ulang modul.
+Paket konten Pustaka Studi kini memperbarui catatan, aset, dan referensi yang ada sebelum membuat baris yang belum ada. Penyisipan serentak menggunakan penanganan konflik yang tidak bergantung pada susunan batasan, lalu menjalankan pembaruan sehingga kunci duplikat tidak memerlukan susunan basis data tertentu.
 
 ## Commit
 
@@ -31,3 +31,4 @@ Paket konten Pustaka Studi kini menggunakan upsert basis data atomik untuk catat
 - [ef782975](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef782975)
 - [68bd7478](https://github.com/Cognis-Labs-HQ/Cognis/commit/68bd7478dbf6343109087bd83a9fba643452a838)
 - [eeabc5e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/eeabc5e1231e3de246a14ee4ff49582a7169768c)
+- [2cc37134](https://github.com/Cognis-Labs-HQ/Cognis/commit/2cc371343c54afed45e545d523a751cad101be3c)

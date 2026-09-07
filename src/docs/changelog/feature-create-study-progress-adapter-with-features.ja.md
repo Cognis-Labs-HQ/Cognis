@@ -20,7 +20,7 @@
 
 ## 繰り返し可能なコンテンツ導入
 
-学習ライブラリのコンテンツパックは、レコード、資産、参照に対してアトミックなデータベース upsert を使用するようになり、重複キーや同時導入によってモジュールの再有効化が中断されなくなりました。
+学習ライブラリのコンテンツパックは、欠けている行を作成する前に既存のレコード、資産、参照を更新します。同時挿入には制約構成に依存しない競合処理とその後の更新を使用し、特定のデータベース制約を必要とせずに重複キーを防ぎます。
 
 ## コミット
 
@@ -31,3 +31,4 @@
 - [ef782975](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef782975)
 - [68bd7478](https://github.com/Cognis-Labs-HQ/Cognis/commit/68bd7478dbf6343109087bd83a9fba643452a838)
 - [eeabc5e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/eeabc5e1231e3de246a14ee4ff49582a7169768c)
+- [2cc37134](https://github.com/Cognis-Labs-HQ/Cognis/commit/2cc371343c54afed45e545d523a751cad101be3c)
