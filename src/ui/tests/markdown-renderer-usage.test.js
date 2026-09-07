@@ -9,6 +9,18 @@ function source(path) {
     return readFileSync(join(ROOT, path), "utf8");
 }
 
+test("broadcast topbar keeps its stylesheet across SPA navigation", () => {
+    const pluginSource = source(
+        "src/gateways/notify/ui/broadcast-navbar-plugin.js",
+    );
+
+    assert.match(
+        pluginSource,
+        /ensurePersistentStylesheet\(CSS_HREF\)/,
+        "the shell-level broadcast topbar stylesheet must be persistent",
+    );
+});
+
 test("user and admin generated rich-text surfaces use the shared markdown renderer", () => {
     const surfaces = [
         {
