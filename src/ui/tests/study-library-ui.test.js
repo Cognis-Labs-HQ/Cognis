@@ -59,7 +59,9 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(stylesheet, /\.library-filters/);
     assert.match(stylesheet, /\.library-filter-pill\.active/);
     assert.match(stylesheet, /\.library-entry-card\[hidden\]/);
-    assert.match(source, /width: "fitContent"/);
+    assert.match(source, /allowCustomization: false/);
+    assert.match(source, /width: "fill"/);
+    assert.doesNotMatch(source, /width: "fitContent"/);
     assert.doesNotMatch(stylesheet, /\.widget-card/);
     assert.match(stylesheet, /max-width: 100%/);
     assert.doesNotMatch(stylesheet, /\.study-subnav/);

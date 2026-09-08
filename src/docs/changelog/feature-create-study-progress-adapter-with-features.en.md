@@ -122,6 +122,10 @@ External module enablement now performs a host-owned boundary scan before module
 
 The retained dashboard shell is now translated as a whole after client-side navigation, so every user-menu action remains labelled on Study and all other dashboard pages.
 
+## Use the full Library page width
+
+The Library card now fills its page-composer allocation, and layout editing is disabled so saved customization cannot shrink or reposition this fixed application surface.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -162,3 +166,4 @@ The retained dashboard shell is now translated as a whole after client-side navi
 - [abfaddbf](https://github.com/Cognis-Labs-HQ/Cognis/commit/abfaddbf0bafef8e9e08812cebdba2ee4557fbaf)
 - [7f007d44](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f007d4430f88b1ae7d37fb3daf346adc5f2c9b3)
 - [8ce047ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ce047ac3710628db7b52b16bc0169ab7fadd583)
+- [8373c151](https://github.com/Cognis-Labs-HQ/Cognis/commit/8373c15186eb49298e4d961f11d273d06b3146ef)

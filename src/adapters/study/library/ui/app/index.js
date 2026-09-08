@@ -677,13 +677,13 @@ export async function mount(root, { signal } = {}) {
         });
     }
     const composer = createPageComposer(root, {
-        allowCustomization: true,
+        allowCustomization: false,
         elements: [
             {
                 id: "study-library",
                 label: i18n.t("gateway.study.library_label"),
                 pinned: true,
-                width: "fitContent",
+                width: "fill",
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
                 render: () =>
                     `<section class="library-browser">${renderBrowser(schemas, entries, i18n)}</section>`,

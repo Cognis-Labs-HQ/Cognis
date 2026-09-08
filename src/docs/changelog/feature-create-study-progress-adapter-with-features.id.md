@@ -122,6 +122,10 @@ Aktivasi modul eksternal kini menjalankan pemindaian batas milik host sebelum pe
 
 Seluruh kerangka dasbor yang dipertahankan kini diterjemahkan setelah navigasi sisi klien, sehingga setiap tindakan menu pengguna tetap memiliki label pada halaman Belajar dan semua halaman dasbor lainnya.
 
+## Gunakan lebar penuh halaman Perpustakaan
+
+Kartu Perpustakaan kini memenuhi alokasi penyusun halamannya, dan penyuntingan tata letak dinonaktifkan agar penyesuaian tersimpan tidak dapat memperkecil atau memindahkan permukaan aplikasi tetap ini.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -162,3 +166,4 @@ Seluruh kerangka dasbor yang dipertahankan kini diterjemahkan setelah navigasi s
 - [abfaddbf](https://github.com/Cognis-Labs-HQ/Cognis/commit/abfaddbf0bafef8e9e08812cebdba2ee4557fbaf)
 - [7f007d44](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f007d4430f88b1ae7d37fb3daf346adc5f2c9b3)
 - [8ce047ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ce047ac3710628db7b52b16bc0169ab7fadd583)
+- [8373c151](https://github.com/Cognis-Labs-HQ/Cognis/commit/8373c15186eb49298e4d961f11d273d06b3146ef)

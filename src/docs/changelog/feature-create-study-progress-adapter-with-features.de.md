@@ -122,6 +122,10 @@ Beim Aktivieren externer Module führt der Host nun vor den Modultests eine Gren
 
 Die beibehaltene Dashboard-Oberfläche wird nach clientseitiger Navigation nun vollständig übersetzt, sodass alle Aktionen im Benutzermenü auf der Lernseite und allen anderen Dashboard-Seiten beschriftet bleiben.
 
+## Gesamte Seitenbreite für die Bibliothek verwenden
+
+Die Bibliothekskarte füllt nun ihre Zuweisung im Seiten-Composer aus. Die Layout-Bearbeitung ist deaktiviert, damit gespeicherte Anpassungen diese feste Anwendungsoberfläche nicht verkleinern oder verschieben können.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -162,3 +166,4 @@ Die beibehaltene Dashboard-Oberfläche wird nach clientseitiger Navigation nun v
 - [abfaddbf](https://github.com/Cognis-Labs-HQ/Cognis/commit/abfaddbf0bafef8e9e08812cebdba2ee4557fbaf)
 - [7f007d44](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f007d4430f88b1ae7d37fb3daf346adc5f2c9b3)
 - [8ce047ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ce047ac3710628db7b52b16bc0169ab7fadd583)
+- [8373c151](https://github.com/Cognis-Labs-HQ/Cognis/commit/8373c15186eb49298e4d961f11d273d06b3146ef)
