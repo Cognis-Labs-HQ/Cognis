@@ -210,6 +210,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 子関係から方向指定をなくしました。ライブラリが利用可能な空間から安全な位置を割り当て、子カードの内容をぼかさず不透明な浮き上がった面に表示し、入れ子の子チェーンを最大 4 階層まで再帰的に展開します。
 
+## ライブラリの自然なスクロール
+
+ライブラリコンテンツは入れ子のコンテンツ表示領域ではなく、ドキュメントの自然なスクロールに従うようになりました。展開中の子カードツリー外にあるカードをクリックすると、カード操作を続ける前に子表示を閉じます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -272,3 +276,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [be55dd47](https://github.com/Cognis-Labs-HQ/Cognis/commit/be55dd4775bda31fb70926e64af09fb322fdd50d)
 - [fc3379e4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc3379e48419678433fd00b250ff6bf45bf9a578)
 - [e4b572ee](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4b572ee)
+- [764c109d](https://github.com/Cognis-Labs-HQ/Cognis/commit/764c109dfa6530c33bddf8d8deaafff2e2ea7f48)

@@ -210,6 +210,10 @@ Detail judul popup kini dirender sebagai elemen h4 saudara, bukan berada di dala
 
 Relasi anak kini tidak menentukan arah. Pustaka memilih posisi aman berdasarkan ruang yang tersedia, menampilkan kartu anak pada permukaan buram yang terangkat tanpa mengaburkan isinya, dan membuka rantai anak bertingkat secara rekursif hingga empat tingkat.
 
+## Pengguliran Pustaka alami
+
+Konten Pustaka kini mengikuti pengguliran dokumen alami, bukan menggunakan area pandang konten bertingkat. Mengeklik kartu di luar pohon kartu anak yang terbuka akan menutup tampilan anak tersebut sebelum tindakan kartu dilanjutkan.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -272,3 +276,4 @@ Relasi anak kini tidak menentukan arah. Pustaka memilih posisi aman berdasarkan 
 - [be55dd47](https://github.com/Cognis-Labs-HQ/Cognis/commit/be55dd4775bda31fb70926e64af09fb322fdd50d)
 - [fc3379e4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc3379e48419678433fd00b250ff6bf45bf9a578)
 - [e4b572ee](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4b572ee)
+- [764c109d](https://github.com/Cognis-Labs-HQ/Cognis/commit/764c109dfa6530c33bddf8d8deaafff2e2ea7f48)

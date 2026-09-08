@@ -204,6 +204,14 @@ function canDeleteEntry(entry) {
     );
 }
 
+function closeUnrelatedVariantViews(root, control) {
+    root.querySelectorAll(".library-entry-variants-open").forEach((shell) => {
+        if (!shell.contains(control)) {
+            shell.classList.remove("library-entry-variants-open");
+        }
+    });
+}
+
 function renderSelection(entry, i18n) {
     if (!canDeleteEntry(entry)) return "";
     const label = i18n
@@ -756,6 +764,7 @@ export async function mount(root, { signal } = {}) {
     }
     const composer = createPageComposer(root, {
         allowCustomization: false,
+        contentScrolling: false,
         elements: [
             {
                 id: "study-library",
@@ -943,6 +952,7 @@ export async function mount(root, { signal } = {}) {
             }
             const control = event.target.closest("button[data-library-entry]");
             if (!control) return;
+            closeUnrelatedVariantViews(root, control);
             if (suppressEntryClick) {
                 suppressEntryClick = false;
                 return;

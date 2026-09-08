@@ -210,6 +210,10 @@ Popup title details now render as sibling h4 elements instead of being nested in
 
 Child relationships are now direction-neutral. The Library assigns safe positions from the available space, displays child cards on an opaque raised surface without blurring their content, and recursively reveals nested child chains up to four levels deep.
 
+## Natural Library scrolling
+
+Library content now participates in natural document scrolling instead of using a nested content viewport. Clicking a card outside an expanded child-card tree closes that child view before continuing the card action.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -272,3 +276,4 @@ Child relationships are now direction-neutral. The Library assigns safe position
 - [be55dd47](https://github.com/Cognis-Labs-HQ/Cognis/commit/be55dd4775bda31fb70926e64af09fb322fdd50d)
 - [fc3379e4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc3379e48419678433fd00b250ff6bf45bf9a578)
 - [e4b572ee](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4b572ee)
+- [764c109d](https://github.com/Cognis-Labs-HQ/Cognis/commit/764c109dfa6530c33bddf8d8deaafff2e2ea7f48)

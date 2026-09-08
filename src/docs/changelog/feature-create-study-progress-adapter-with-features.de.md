@@ -210,6 +210,10 @@ Popup-Titeldetails werden nun als benachbarte h4-Elemente statt innerhalb des h2
 
 Untergeordnete Beziehungen sind jetzt richtungsneutral. Die Bibliothek weist anhand des verfügbaren Platzes sichere Positionen zu, zeigt untergeordnete Karten auf einer undurchsichtigen, hervorgehobenen Fläche ohne unscharfen Inhalt und klappt verschachtelte Kindketten rekursiv bis zu vier Ebenen tief aus.
 
+## Natürliches Scrollen der Bibliothek
+
+Bibliotheksinhalte nehmen nun am natürlichen Scrollen des Dokuments teil, statt einen verschachtelten Inhaltsbereich zu verwenden. Ein Klick auf eine Karte außerhalb eines erweiterten untergeordneten Kartenbaums schließt diese Ansicht, bevor die Kartenaktion fortgesetzt wird.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -272,3 +276,4 @@ Untergeordnete Beziehungen sind jetzt richtungsneutral. Die Bibliothek weist anh
 - [be55dd47](https://github.com/Cognis-Labs-HQ/Cognis/commit/be55dd4775bda31fb70926e64af09fb322fdd50d)
 - [fc3379e4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc3379e48419678433fd00b250ff6bf45bf9a578)
 - [e4b572ee](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4b572ee)
+- [764c109d](https://github.com/Cognis-Labs-HQ/Cognis/commit/764c109dfa6530c33bddf8d8deaafff2e2ea7f48)

@@ -59,6 +59,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(stylesheet, /\.library-entry-grid/);
     assert.match(source, /layer\.minimal/);
     assert.match(source, /library-entry-grid--minimal/);
+    assert.match(source, /contentScrolling: false/);
     assert.match(source, /library-entry-minimal-content/);
     assert.match(
         source,
@@ -208,6 +209,9 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(stylesheet, /\.library-entry-variant-right/);
     assert.match(stylesheet, /\.library-entry-variant-up/);
     assert.match(source, /function assignVariantPlacements/);
+    assert.match(source, /function closeUnrelatedVariantViews/);
+    assert.match(source, /if \(!shell\.contains\(control\)\)/);
+    assert.match(source, /closeUnrelatedVariantViews\(root, control\)/);
     assert.doesNotMatch(source, /relationship\.variantDirection/);
     assert.match(source, /const depthFor/);
     assert.match(source, /placement\.depth <= 4/);
