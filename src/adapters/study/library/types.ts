@@ -65,7 +65,6 @@ export interface LibraryRelationshipSchema {
     resolverRole?: "grapheme" | "token" | "longestMatch" | "explicit";
     presentationRole?: "composition" | "alternateSpelling" | "pronunciation";
     variant?: boolean;
-    variantDirection?: "left" | "right" | "up";
 }
 
 export interface LibraryLayerSchema {

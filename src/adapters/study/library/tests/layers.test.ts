@@ -455,7 +455,7 @@ test("Korean consumers can model Jamo and compound syllable blocks", () => {
     assert.equal(validateLibrarySchema(korean).layers[1].id, "syllables");
 });
 
-test("writing layers declare directional variant relationships", () => {
+test("writing layers declare direction-neutral child relationships", () => {
     const schema: LibrarySchema = {
         ...english,
         layers: [
@@ -469,7 +469,6 @@ test("writing layers declare directional variant relationships", () => {
                         metadata: { labels: { en: "Variant Of" } },
                         onDelete: "detach",
                         variant: true,
-                        variantDirection: "right",
                     },
                 ],
             },
@@ -477,31 +476,8 @@ test("writing layers declare directional variant relationships", () => {
     };
 
     assert.equal(
-        validateLibrarySchema(schema).layers[0].relationships?.[0]
-            .variantDirection,
-        "right",
-    );
-    (
-        schema.layers[0].relationships![0] as { variantDirection: string }
-    ).variantDirection = "down";
-    assert.throws(
-        () => validateLibrarySchema(schema),
-        /invalid_variant_direction/,
-    );
-    const automatic = {
-        ...schema.layers[0].relationships![0],
-        variantDirection: undefined,
-    };
-    assert.doesNotThrow(() =>
-        validateLibrarySchema({
-            ...schema,
-            layers: [
-                {
-                    ...schema.layers[0],
-                    relationships: [automatic],
-                },
-            ],
-        }),
+        validateLibrarySchema(schema).layers[0].relationships?.[0].variant,
+        true,
     );
 });
 

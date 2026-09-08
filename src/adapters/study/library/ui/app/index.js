@@ -127,7 +127,6 @@ function variantPlacement(entry, schema) {
         if (relationship?.variant === true) {
             return {
                 parentId: reference.entryId,
-                direction: relationship.variantDirection,
             };
         }
     }
@@ -152,40 +151,48 @@ function assignVariantPlacements(entries, schema, layer) {
             return entry ? [[entry.id, index]] : [];
         }),
     );
-    const safeDirection = (request) => {
+    const requestsByEntryId = new Map(
+        requests.map((request) => [request.entry.id, request]),
+    );
+    const depthFor = (request, trail = new Set()) => {
+        if (trail.has(request.entry.id)) return Number.POSITIVE_INFINITY;
+        const parentRequest = requestsByEntryId.get(request.parentId);
+        if (!parentRequest) return 1;
+        return (
+            depthFor(parentRequest, new Set(trail).add(request.entry.id)) + 1
+        );
+    };
+    const orderedRequests = requests
+        .map((request) => ({ ...request, depth: depthFor(request) }))
+        .sort((left, right) => left.depth - right.depth);
+    for (const request of orderedRequests) {
+        const { depth } = request;
+        const parentPlacement = placements.get(request.parentId);
         const index = gridPosition.get(request.parentId);
         const rowSize = layer?.grid?.rowSize;
-        if (!Number.isInteger(index) || !rowSize) return request.direction;
-        if (request.direction === "left" && index % rowSize === 0) return "up";
-        if (request.direction === "right" && (index + 1) % rowSize === 0)
-            return "up";
-        return request.direction;
-    };
-    for (const request of requests.filter(({ direction }) => direction)) {
         const occupied = occupiedByParent.get(request.parentId) ?? new Set();
-        const direction = safeDirection(request);
-        const availableDirection = occupied.has(direction)
-            ? ["up", "left", "right"].find(
-                  (candidate) => !occupied.has(candidate),
-              )
-            : direction;
-        if (!availableDirection) continue;
-        occupied.add(availableDirection);
+        const preferred = [
+            parentPlacement?.direction,
+            "left",
+            "up",
+            "right",
+        ].filter(Boolean);
+        const direction = preferred.find((candidate) => {
+            if (occupied.has(candidate)) return false;
+            if (!Number.isInteger(index) || !rowSize) return true;
+            if (candidate === "left" && index % rowSize === 0) return false;
+            if (candidate === "right" && (index + 1) % rowSize === 0)
+                return false;
+            return true;
+        });
+        if (!direction || !Number.isFinite(depth)) continue;
+        occupied.add(direction);
         occupiedByParent.set(request.parentId, occupied);
         placements.set(request.entry.id, {
             ...request,
-            direction: availableDirection,
+            direction,
+            depth,
         });
-    }
-    for (const request of requests.filter(({ direction }) => !direction)) {
-        const occupied = occupiedByParent.get(request.parentId) ?? new Set();
-        const direction = ["left", "up", "right"].find(
-            (candidate) => !occupied.has(candidate),
-        );
-        if (!direction) continue;
-        occupied.add(direction);
-        occupiedByParent.set(request.parentId, occupied);
-        placements.set(request.entry.id, { ...request, direction });
     }
     return placements;
 }
@@ -250,7 +257,16 @@ function renderCardContents(entry, layer, entries, schema, i18n) {
     return `${heading}${definitionDisplay}<span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span>`;
 }
 
-function renderEntryCard(entry, layer, entries, schema, placements, i18n) {
+function renderEntryCard(
+    entry,
+    layer,
+    entries,
+    schema,
+    placements,
+    i18n,
+    depth = 0,
+    variant = false,
+) {
     const filterValues = Object.fromEntries(
         metadataFields(layer).map((field) => [
             field.id,
@@ -261,17 +277,20 @@ function renderEntryCard(entry, layer, entries, schema, placements, i18n) {
     );
     const variants = entries.flatMap((candidate) => {
         const placement = placements.get(candidate.id);
-        return placement?.parentId === entry.id
+        return placement?.parentId === entry.id && placement.depth <= 4
             ? [{ entry: candidate, direction: placement.direction }]
             : [];
     });
     const variantHint = variants.length
         ? `<span class="library-entry-variant-hint" role="tooltip">${escapeHtml(i18n.t("gateway.study.library_variant_hint"))}</span>`
         : "";
-    return `<div class="library-entry-card-shell"><button class="library-entry-card btn-neutral" type="button" ${entryAttributes(entry)} ${entrySearchAttribute(entry)} data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}">${renderCardContents(entry, layer, entries, schema, i18n)}</button>${renderSelection(entry, i18n)}${variantHint}${variants
+    const filterAttribute = variant
+        ? ""
+        : ` data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}"`;
+    return `<div class="library-entry-card-shell" data-library-variant-depth="${depth}"><button class="library-entry-card${variant ? " library-entry-variant" : ""} btn-neutral" type="button" ${entryAttributes(entry)} ${entrySearchAttribute(entry)}${filterAttribute}>${renderCardContents(entry, layer, entries, schema, i18n)}</button>${renderSelection(entry, i18n)}${variantHint}${variants
         .map(
-            ({ entry: variant, direction }) =>
-                `<div class="library-entry-variant-shell library-entry-variant-${direction}"><button class="library-entry-card library-entry-variant btn-neutral" type="button" ${entryAttributes(variant)} ${entrySearchAttribute(variant)}>${renderCardContents(variant, layer, entries, schema, i18n)}</button>${renderSelection(variant, i18n)}</div>`,
+            ({ entry: child, direction }) =>
+                `<div class="library-entry-variant-shell library-entry-variant-${direction}">${renderEntryCard(child, layer, entries, schema, placements, i18n, depth + 1, true)}</div>`,
         )
         .join("")}</div>`;
 }
@@ -485,15 +504,24 @@ function focusLibraryEntry(root, entry, schemas) {
     const target = root.querySelector(
         `.library-browser [data-library-entry="${CSS.escape(entry.id)}"]`,
     );
-    const variantShell = target?.closest(".library-entry-variant-shell");
-    variantShell?.classList.add("library-entry-variant-revealed");
+    const revealedShells = [];
+    let variantShell = target?.closest(".library-entry-variant-shell");
+    while (variantShell) {
+        variantShell.classList.add("library-entry-variant-revealed");
+        revealedShells.push(variantShell);
+        variantShell = variantShell.parentElement?.closest(
+            ".library-entry-variant-shell",
+        );
+    }
     target?.focus();
     window.requestAnimationFrame(() => {
         highlightSearchTarget({ id: `library-entry-${entry.id}` });
     });
-    if (variantShell) {
+    if (revealedShells.length) {
         window.setTimeout(() => {
-            variantShell.classList.remove("library-entry-variant-revealed");
+            revealedShells.forEach((shell) =>
+                shell.classList.remove("library-entry-variant-revealed"),
+            );
         }, 2000);
     }
     return true;
@@ -792,10 +820,7 @@ export async function mount(root, { signal } = {}) {
             const card = event.target.closest("button[data-library-entry]");
             if (!card) return;
             const shell = card.closest(".library-entry-card-shell");
-            if (
-                card.classList.contains("library-entry-variant") ||
-                !shell?.querySelector(".library-entry-variant-shell")
-            )
+            if (!shell?.querySelector(":scope > .library-entry-variant-shell"))
                 return;
             cancelLongPress();
             longPressOrigin = { x: event.clientX, y: event.clientY };

@@ -43,7 +43,8 @@ const variantArrowDark = readFileSync(
 test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /role="tablist"/);
     assert.match(source, /role="tabpanel"/);
-    assert.match(source, /class="library-entry-card btn-neutral"/);
+    assert.match(source, /class="library-entry-card\$\{variant/);
+    assert.match(source, /library-entry-variant/);
     assert.match(source, /class="library-filter-pill btn-neutral/);
     assert.match(source, /aria-pressed="\$\{selected\}"/);
     assert.match(source, /function applyLibraryFilters/);
@@ -86,7 +87,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /data-library-grid-blank[\s\S]*—/);
     assert.match(
         stylesheet,
-        /\.library-entry-grid:has\(\.library-entry-variants-open\)::before[\s\S]*z-index:\s*4[\s\S]*backdrop-filter:\s*blur\(0\.18rem\)[\s\S]*pointer-events:\s*none/,
+        /\.library-entry-grid:has\(\.library-entry-variants-open\)::before[\s\S]*z-index:\s*4[\s\S]*background:\s*color-mix[\s\S]*pointer-events:\s*none/,
     );
     assert.match(
         stylesheet,
@@ -207,14 +208,11 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(stylesheet, /\.library-entry-variant-right/);
     assert.match(stylesheet, /\.library-entry-variant-up/);
     assert.match(source, /function assignVariantPlacements/);
-    assert.match(source, /request\.direction === "left"/);
-    assert.match(source, /request\.direction === "right"/);
-    assert.match(source, /return "up"/);
-    assert.match(source, /\["left", "up", "right"\]/);
-    assert.match(
-        source,
-        /renderCardContents\(variant, layer, entries, schema, i18n\)/,
-    );
+    assert.doesNotMatch(source, /relationship\.variantDirection/);
+    assert.match(source, /const depthFor/);
+    assert.match(source, /placement\.depth <= 4/);
+    assert.match(source, /depth \+ 1, true/);
+    assert.match(source, /:scope > \.library-entry-variant-shell/);
     assert.match(stylesheet, /box-shadow:/);
     assert.match(source, /gateway\.study\.library_variant_hint/);
     assert.match(source, /library-entry-variants-open/);
@@ -238,7 +236,7 @@ test("Study Library unfolds structured character variants", () => {
     );
     assert.match(
         stylesheet,
-        /\.library-entry-card-shell\.library-entry-variants-open[\s\S]*\.library-entry-variant-shell\.library-entry-variant-revealed\s*\{[\s\S]*display:\s*block/,
+        /\.library-entry-card-shell\.library-entry-variants-open[\s\S]*> \.library-entry-variant-shell[\s\S]*display:\s*block/,
     );
     assert.doesNotMatch(
         stylesheet,
@@ -263,6 +261,11 @@ test("Study Library unfolds structured character variants", () => {
         /\.library-entry-card-shell:is\(:hover, :focus-within\)/,
     );
     assert.match(stylesheet, /z-index: 5/);
+    assert.match(
+        stylesheet,
+        /\.library-entry-card-shell\.library-entry-variants-open[\s\S]*z-index:\s*7/,
+    );
+    assert.doesNotMatch(stylesheet, /backdrop-filter:\s*blur/);
 });
 
 test("Study Library honors module-defined grid layouts", () => {
