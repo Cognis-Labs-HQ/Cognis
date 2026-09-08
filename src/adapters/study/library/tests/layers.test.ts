@@ -72,6 +72,45 @@ test("consumers define arbitrary layers and constrained relationships", () => {
     );
 });
 
+test("layers can explicitly reference other entries in the same layer", () => {
+    const schema: LibrarySchema = {
+        ...english,
+        layers: [
+            {
+                id: "compound_characters",
+                metadata: { labels: { en: "Compound characters" } },
+                relationships: [
+                    {
+                        id: "expanded_from",
+                        targetLayer: "compound_characters",
+                        metadata: { labels: { en: "Expanded from" } },
+                        onDelete: "restrict",
+                        resolverRole: "explicit",
+                        presentationRole: "composition",
+                    },
+                ],
+            },
+        ],
+    };
+    const validated = validateLibrarySchema(schema);
+    const target = entry("compound:japan", "日本", "compound_characters");
+
+    assert.deepEqual(validated, schema);
+    assert.doesNotThrow(() =>
+        validateReferences(
+            schema,
+            "compound_characters",
+            [
+                {
+                    entryId: target.id,
+                    relation: "expanded_from",
+                },
+            ],
+            new Map([[target.id, target]]),
+        ),
+    );
+});
+
 test("localized layers can require definition-backed display text", () => {
     const schema: LibrarySchema = {
         ...english,

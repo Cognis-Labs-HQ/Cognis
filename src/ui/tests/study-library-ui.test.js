@@ -147,6 +147,10 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.doesNotMatch(source, /if \(!layer\.displayDefinition\)/);
     assert.match(source, /data-library-preview/);
     assert.match(source, /function relationshipPresentationRole/);
+    assert.match(
+        source,
+        /targetLayer\?\.id === sourceLayer\?\.id && relationship\.variant/,
+    );
     assert.match(source, /function headingCompositionReference/);
     assert.match(source, /const titleReference = headingCompositionReference/);
     assert.match(source, /id: "open-title-reference"/);

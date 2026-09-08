@@ -34,6 +34,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 ライブラリの構成参照を表示ロールごとに統合し、指定された位置順を保持するようにしました。これにより、助詞が重複した見出しの下に分離されず、同じ完全な構成内に表示されます。Study サブナビゲーションの折りたたみにはヘッダーの高さを考慮したヒステリシスしきい値を使用し、レイアウトによるスクロール変化でメインナビゲーションが高速に開閉する問題を防ぎます。
 
+## ライブラリのレイヤー内参照
+
+ライブラリスキーマとコンテンツパックで、同一レイヤー内の項目同士を明示的に参照できるようにしました。これらのリンクは既定で構成として表示され、方向付きバリアントと別表記として明示された関係は従来の別表記動作を維持します。
+
 ## コミット
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -44,3 +48,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [8ec16aee](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ec16aee27bb9ba6e4d3b1461d30bb9b1003020f)
 - [c7a41d2c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7a41d2c3933afa6502a7633b1f6089c816e7c8e)
 - [c2b80b54](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2b80b5468ee6acfcb2e525fcdbcfd6df7865f5d)
+- [d07ce255](https://github.com/Cognis-Labs-HQ/Cognis/commit/d07ce255cc0f65d5402f264a21574155c11c853d)

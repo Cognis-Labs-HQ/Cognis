@@ -34,6 +34,10 @@ Setiap lapisan Pustaka kini menampilkan definisi melalui struktur detail judul p
 
 Referensi komposisi Pustaka kini digabungkan berdasarkan peran presentasi dan mempertahankan posisi yang ditentukan, sehingga partikel tetap berada dalam komposisi lengkap yang sama alih-alih muncul di bawah judul duplikat. Pelipatan subnavigasi Study kini memakai ambang histeresis yang memperhitungkan tinggi header agar perubahan gulir akibat tata letak tidak membuka dan menutup navigasi utama secara cepat.
 
+## Referensi Pustaka dalam satu lapisan
+
+Skema dan paket konten Pustaka dapat secara eksplisit menghubungkan satu entri ke entri lain pada lapisan yang sama. Tautan tersebut kini secara default ditampilkan sebagai komposisi, sedangkan varian berarah dan hubungan yang secara eksplisit ditandai sebagai ejaan alternatif tetap mempertahankan perilakunya.
+
 ## Commit
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -44,3 +48,4 @@ Referensi komposisi Pustaka kini digabungkan berdasarkan peran presentasi dan me
 - [8ec16aee](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ec16aee27bb9ba6e4d3b1461d30bb9b1003020f)
 - [c7a41d2c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7a41d2c3933afa6502a7633b1f6089c816e7c8e)
 - [c2b80b54](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2b80b5468ee6acfcb2e525fcdbcfd6df7865f5d)
+- [d07ce255](https://github.com/Cognis-Labs-HQ/Cognis/commit/d07ce255cc0f65d5402f264a21574155c11c853d)

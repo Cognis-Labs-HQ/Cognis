@@ -6,6 +6,8 @@ Adapter Pustaka menyimpan materi studi generik yang saling terhubung. Konsumen m
 
 Relasi menentukan lapisan target, kardinalitas, urutan, dan resolver opsional. Setiap penulisan memvalidasi bidang, versi skema, target, visibilitas, dan kardinalitas. Definisi alternatif dimodelkan sebagai lapisan dan relasi deklaratif milik konsumen.
 
+Lapisan dapat menargetkan dirinya sendiri dalam suatu hubungan sehingga satu entri dapat secara eksplisit memperluas entri lain pada lapisan yang sama. Hubungan dalam lapisan yang sama ditampilkan sebagai komposisi secara default; hanya hubungan yang ditandai sebagai varian atau secara eksplisit diberi `alternateSpelling` yang menggunakan tampilan ejaan alternatif.
+
 ## Resolusi, API, dan UI
 
 Resolver `grapheme` memakai grafem Unicode, sedangkan `longest-match` memakai blok yang dipisahkan secara eksplisit. Keduanya mengembalikan usulan dan unit yang belum terselesaikan tanpa membuat entri diam-diam. Penyedia lookup dipasang melalui `registerLookupProvider`, mengembalikan saran berperingkat beserta asalnya, dan dapat dilepas melalui callback registrasi. Pembuatan, resolusi, dan lookup mengikuti flow ctx bernama.

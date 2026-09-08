@@ -163,7 +163,8 @@ export function relationshipPresentationRole(
         .flatMap(({ layers }) => layers)
         .find(({ id }) => id === relationship.targetLayer);
     if (targetLayer?.semanticRole === "lexicalUnit") return "pronunciation";
-    if (targetLayer?.id === sourceLayer?.id) return "alternateSpelling";
+    if (targetLayer?.id === sourceLayer?.id && relationship.variant)
+        return "alternateSpelling";
     return "composition";
 }
 

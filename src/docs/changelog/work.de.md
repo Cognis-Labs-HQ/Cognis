@@ -34,6 +34,10 @@ Alle Bibliotheksebenen zeigen Definitionen nun über die gemeinsame Titel-Detail
 
 Kompositionsverweise der Bibliothek werden nun nach Darstellungsrolle zusammengeführt und behalten ihre festgelegten Positionen bei, sodass Partikel in derselben vollständigen Komposition bleiben, statt unter einer doppelten Überschrift zu erscheinen. Das Einklappen der Study-Unternavigation verwendet nun einen höhenabhängigen Hystereseschwellenwert, der verhindert, dass layoutbedingte Scrolländerungen die Hauptnavigation schnell öffnen und schließen.
 
+## Bibliotheksverweise innerhalb einer Ebene
+
+Bibliotheksschemas und Inhaltspakete können einen Eintrag ausdrücklich mit einem anderen Eintrag derselben Ebene verknüpfen. Solche Verknüpfungen werden nun standardmäßig als Komposition dargestellt, während gerichtete Varianten und ausdrücklich als alternative Schreibweisen markierte Beziehungen ihr bisheriges Verhalten behalten.
+
 ## Commits
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -44,3 +48,4 @@ Kompositionsverweise der Bibliothek werden nun nach Darstellungsrolle zusammenge
 - [8ec16aee](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ec16aee27bb9ba6e4d3b1461d30bb9b1003020f)
 - [c7a41d2c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7a41d2c3933afa6502a7633b1f6089c816e7c8e)
 - [c2b80b54](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2b80b5468ee6acfcb2e525fcdbcfd6df7865f5d)
+- [d07ce255](https://github.com/Cognis-Labs-HQ/Cognis/commit/d07ce255cc0f65d5402f264a21574155c11c853d)

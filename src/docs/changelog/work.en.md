@@ -34,6 +34,10 @@ Every Library layer now presents definitions through the shared popup title-deta
 
 Library composition references now merge by presentation role and preserve their declared positions, so particles remain in the same complete composition instead of appearing beneath a duplicate heading. Study sub-navigation folding now uses a header-height-aware hysteresis threshold that prevents layout-induced scroll changes from rapidly reopening and closing the primary navigation.
 
+## Intra-layer Library references
+
+Library schemas and content packs can explicitly link one entry to another entry in the same layer. These links now default to composition presentation, while directional variants and relationships explicitly marked as alternate spellings retain alternate-spelling behavior.
+
 ## Commits
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -44,3 +48,4 @@ Library composition references now merge by presentation role and preserve their
 - [8ec16aee](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ec16aee27bb9ba6e4d3b1461d30bb9b1003020f)
 - [c7a41d2c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7a41d2c3933afa6502a7633b1f6089c816e7c8e)
 - [c2b80b54](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2b80b5468ee6acfcb2e525fcdbcfd6df7865f5d)
+- [d07ce255](https://github.com/Cognis-Labs-HQ/Cognis/commit/d07ce255cc0f65d5402f264a21574155c11c853d)

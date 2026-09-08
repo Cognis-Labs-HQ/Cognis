@@ -6,6 +6,8 @@ The Library adapter stores generic, related study records. Consumers register im
 
 Relationship definitions declare their target layer, cardinality, ordering, and optional resolver. Every write validates fields, schema version, targets, scope visibility, and cardinality before persistence. Alternate definitions are modeled as consumer-declared layers and relationships.
 
+Layers may target themselves in a relationship, allowing one entry to explicitly expand on another entry in the same layer. Same-layer relationships render as compositions by default; only relationships marked as variants or explicitly assigned `alternateSpelling` use alternate-spelling presentation.
+
 ## Resolution and lookup
 
 The `grapheme` resolver uses Unicode grapheme clusters and the `longest-match` resolver uses explicit whitespace-delimited blocks. Both return proposals and unresolved units without silently creating entries. Sentences and other ordered structures use stored relationship positions as their identity.

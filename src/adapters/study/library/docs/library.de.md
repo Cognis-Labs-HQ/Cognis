@@ -6,6 +6,8 @@ Der Bibliotheksadapter speichert generische, verknüpfte Lerninhalte. Verbrauche
 
 Beziehungen bestimmen Zielebene, Kardinalität, Reihenfolge und optionalen Resolver. Jeder Schreibvorgang prüft Felder, Schemaversion, Ziele, Sichtbarkeit und Kardinalität. Alternative Definitionen werden als vom Verbraucher deklarierte Ebenen und Beziehungen modelliert.
 
+Ebenen können sich in einer Beziehung selbst als Ziel verwenden, sodass ein Eintrag einen anderen Eintrag derselben Ebene ausdrücklich erweitern kann. Beziehungen innerhalb derselben Ebene werden standardmäßig als Komposition dargestellt; nur als Varianten markierte oder ausdrücklich `alternateSpelling` zugewiesene Beziehungen verwenden die Darstellung als alternative Schreibweise.
+
 ## Auflösung, API und UI
 
 Der `grapheme`-Resolver nutzt Unicode-Grapheme; `longest-match` verarbeitet ausdrücklich getrennte Blöcke. Beide liefern Vorschläge und ungelöste Einheiten, ohne still Einträge anzulegen. Lookup-Anbieter werden über `registerLookupProvider` beigetragen, liefern gewichtete Vorschläge mit Herkunft und lassen sich über den zurückgegebenen Callback entfernen. Erstellen, Auflösen und Nachschlagen laufen durch benannte ctx-Flows.
