@@ -18,9 +18,14 @@
 
 ログアウトのホバー表示は赤いキャンセル表示だけになりました。最小表示カードでは主要値の横に発音とローカライズ済み定義を維持し、詳細タイトルと音声エラーには修正済みの相対サイズを使用します。コンテンツパックの取り込みでは、リンクされた語彙単位または助詞のエントリで裏付けられていないテキストを含む順序付き文を拒否します。
 
+## 利用できない Study ルートをリダイレクト
+
+Study の SPA ルートは、有効かつ検証済みの言語モジュールが少なくとも 1 つ存在する場合にのみ公開されます。言語検証の結果 Study が利用不可になった場合、空または壊れた Study シェルを表示せず、直接リクエストとキャッシュ済み SPA マウントを `/error?code=503` にリダイレクトします。
+
 ## コミット
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
 - [e1584351](https://github.com/Cognis-Labs-HQ/Cognis/commit/e1584351d43f0337d3aba919e5c369a50be4f69e)
 - [dfbc9b22](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfbc9b22569c7f426d08f075c8ac79e80fa7e165)
 - [98eb5217](https://github.com/Cognis-Labs-HQ/Cognis/commit/98eb5217e93fcd9cf765f3461e78080d9e33fd74)
+- [a6bb913b](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6bb913bf18284dd5bd7f172994ec41fdacb78d6)

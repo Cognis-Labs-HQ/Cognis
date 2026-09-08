@@ -18,9 +18,14 @@ Kartu varian berarah yang tersembunyi tidak lagi ikut membentuk luapan yang dapa
 
 Logout kini hanya mempertahankan tampilan batal berwarna merah saat diarahkan. Kartu minimal tetap menampilkan pelafalan dan definisi terlokalisasi di samping nilai utama, sedangkan judul detail dan kegagalan audio memakai ukuran relatif yang diperbaiki. Penyerapan paket konten menolak kalimat berurutan yang memuat teks tanpa dukungan entri unit leksikal atau partikel tertaut.
 
+## Alihkan rute Study yang tidak tersedia
+
+Rute SPA Study kini hanya ditawarkan selama setidaknya satu modul bahasa yang valid dan aktif tersedia. Permintaan langsung serta pemasangan SPA dari cache dialihkan ke `/error?code=503` ketika validasi bahasa membuat Study tidak tersedia, alih-alih merender kerangka Study yang kosong atau rusak.
+
 ## Commit
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
 - [e1584351](https://github.com/Cognis-Labs-HQ/Cognis/commit/e1584351d43f0337d3aba919e5c369a50be4f69e)
 - [dfbc9b22](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfbc9b22569c7f426d08f075c8ac79e80fa7e165)
 - [98eb5217](https://github.com/Cognis-Labs-HQ/Cognis/commit/98eb5217e93fcd9cf765f3461e78080d9e33fd74)
+- [a6bb913b](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6bb913bf18284dd5bd7f172994ec41fdacb78d6)

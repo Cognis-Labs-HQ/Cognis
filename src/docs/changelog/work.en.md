@@ -18,9 +18,14 @@ Hidden directional variant cards no longer participate in scrollable overflow. T
 
 Logout now retains only its red cancel hover treatment. Minimal cards keep pronunciation and localized definition context beside the primary value, while detail titles and audio failures use corrected relative sizing. Content-pack ingestion rejects ordered sentences containing text that is not backed by linked lexical-unit or particle entries.
 
+## Redirect unavailable Study routes
+
+Study SPA routes are now advertised only while at least one valid, enabled language module exists. Direct requests and cached SPA mounts redirect to `/error?code=503` when language validation leaves Study unavailable, rather than rendering an empty or broken Study shell.
+
 ## Commits
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
 - [e1584351](https://github.com/Cognis-Labs-HQ/Cognis/commit/e1584351d43f0337d3aba919e5c369a50be4f69e)
 - [dfbc9b22](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfbc9b22569c7f426d08f075c8ac79e80fa7e165)
 - [98eb5217](https://github.com/Cognis-Labs-HQ/Cognis/commit/98eb5217e93fcd9cf765f3461e78080d9e33fd74)
+- [a6bb913b](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6bb913bf18284dd5bd7f172994ec41fdacb78d6)

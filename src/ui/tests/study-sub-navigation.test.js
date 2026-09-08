@@ -75,6 +75,25 @@ test("Study navigation stores language selection on buttons instead of URLs", ()
     assert.doesNotMatch(routerSource, /studyLanguageCode|data-language-code/);
 });
 
+test("Study pages redirect to the unavailable page without valid languages", () => {
+    const studyPageSource = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/study.js"),
+        "utf8",
+    );
+    const childRouteSource = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/route.js"),
+        "utf8",
+    );
+    assert.match(
+        studyPageSource,
+        /registeredLanguages\.length === 0[\s\S]*navigateTo\("\/error\?code=503"\)/,
+    );
+    assert.match(
+        childRouteSource,
+        /languages\.length === 0[\s\S]*navigateTo\("\/error\?code=503"\)/,
+    );
+});
+
 test("Study sub-navigation normalizes language codes before resolving flags", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/study/ui/sub-navigation.js"),

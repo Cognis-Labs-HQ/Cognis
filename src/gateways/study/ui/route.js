@@ -4,6 +4,7 @@ import {
     loadWithSpaImportGuard,
     mountWhenDirect,
 } from "/static/reuse/page-entry.js";
+import { navigateTo } from "/static/reuse/app-router.js";
 
 let childComponentsPromise;
 
@@ -35,15 +36,23 @@ async function loadChildComponents() {
                 ).catch(() => ({ data: [] })),
             ),
         );
-        return responses.flatMap((response) =>
-            Array.isArray(response?.data) ? response.data : [],
-        );
+        return {
+            languages,
+            components: responses.flatMap((response) =>
+                Array.isArray(response?.data) ? response.data : [],
+            ),
+        };
     })();
     return childComponentsPromise;
 }
 
 export async function mount(root, options = {}) {
-    const component = (await loadChildComponents()).find(
+    const { languages, components } = await loadChildComponents();
+    if (languages.length === 0) {
+        await navigateTo("/error?code=503");
+        return;
+    }
+    const component = components.find(
         (candidate) => candidate?.pageUrl === window.location.pathname,
     );
     if (!component?.scriptUrl)

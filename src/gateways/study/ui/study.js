@@ -78,6 +78,11 @@ export async function mount(root, { signal } = {}) {
                   .filter(Boolean)
             : [];
 
+    if (registeredLanguages.length === 0) {
+        await navigateTo("/error?code=503");
+        return;
+    }
+
     const learningLanguages =
         prefsResult.status === "fulfilled" &&
         Array.isArray(prefsResult.value?.data?.learningLanguages)
