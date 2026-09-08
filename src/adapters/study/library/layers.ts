@@ -129,6 +129,13 @@ function validateRelationship(
         throw new Error("invalid_variant_direction");
     if (relationship.variantDirection && relationship.variant !== true)
         throw new Error("variant_direction_requires_relationship");
+    if (
+        relationship.presentationRole !== undefined &&
+        !["composition", "alternateSpelling", "pronunciation"].includes(
+            relationship.presentationRole,
+        )
+    )
+        throw new Error("invalid_relationship_presentation_role");
     ids.add(relationship.id);
 }
 

@@ -18,4 +18,7 @@
   <string name="gateway.study.library_delete_success">Konten Perpustakaan terpilih telah dihapus.</string>
   <string name="gateway.study.library_delete_error">Konten Perpustakaan terpilih tidak dapat dihapus.</string>
   <string name="gateway.study.library_used_in_layer">Digunakan dalam {{ layer }}</string>
+  <string name="gateway.study.library_relationship_composition">Komposisi</string>
+  <string name="gateway.study.library_relationship_alternateSpelling">Ejaan alternatif</string>
+  <string name="gateway.study.library_relationship_pronunciation">Pelafalan</string>
 </resources>

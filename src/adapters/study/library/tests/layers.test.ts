@@ -321,6 +321,47 @@ test("relationship deletion behavior must use a supported policy", () => {
     );
 });
 
+test("relationships distinguish compositions, spellings, and pronunciations", () => {
+    const relationship = english.layers[1].relationships![0];
+    for (const presentationRole of [
+        "composition",
+        "alternateSpelling",
+        "pronunciation",
+    ] as const) {
+        assert.doesNotThrow(() =>
+            validateLibrarySchema({
+                ...english,
+                layers: [
+                    english.layers[0],
+                    {
+                        ...english.layers[1],
+                        relationships: [{ ...relationship, presentationRole }],
+                    },
+                ],
+            }),
+        );
+    }
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...english,
+                layers: [
+                    english.layers[0],
+                    {
+                        ...english.layers[1],
+                        relationships: [
+                            {
+                                ...relationship,
+                                presentationRole: "readingCharacters" as never,
+                            },
+                        ],
+                    },
+                ],
+            }),
+        /invalid_relationship_presentation_role/,
+    );
+});
+
 test("grapheme resolution preserves repeated ordered components", () => {
     const proposals = resolveRelationships(english, "words", "letter", [
         entry("l", "l"),

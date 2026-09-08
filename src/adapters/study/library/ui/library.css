@@ -331,12 +331,11 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     height: 1.4rem;
 }
 
-.library-card-definition-link {
-    position: relative;
-    z-index: 1;
-    color: var(--accent-2);
+.library-card-definition,
+.library-definition-text {
+    color: var(--text-muted);
     font-size: 0.9rem;
-    text-decoration: underline;
+    font-weight: 400;
 }
 
 [data-library-preview] {

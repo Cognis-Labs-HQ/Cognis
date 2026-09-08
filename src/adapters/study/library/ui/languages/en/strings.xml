@@ -18,4 +18,7 @@
   <string name="gateway.study.library_delete_success">The selected Library content was deleted.</string>
   <string name="gateway.study.library_delete_error">Could not delete the selected Library content.</string>
   <string name="gateway.study.library_used_in_layer">Used in {{ layer }}</string>
+  <string name="gateway.study.library_relationship_composition">Composition</string>
+  <string name="gateway.study.library_relationship_alternateSpelling">Alternate spellings</string>
+  <string name="gateway.study.library_relationship_pronunciation">Pronunciations</string>
 </resources>

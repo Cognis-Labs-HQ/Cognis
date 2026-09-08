@@ -299,6 +299,8 @@ Every language module owns a **library** — a layered, deep-linked register of 
 
 The ownership boundary is absolute: neither the Study gateway, Study child components, Library adapters, nor core code may create fallback language records, embed vocabulary or grammar rules, synthesize language-specific definitions, or otherwise provide code that constitutes a language's content. Generic schema validation, relationship resolution, and rendering mechanisms belong in Cognis; every language-specific record, label, reading, particle effect, composition rule, and resolved sentence meaning belongs to the owning language module. If required language data is absent, report a module content error rather than inventing it outside that module.
 
+As a general UI rule, never make a localized string visible when it belongs to a language other than the user's active interface language. Do not fall back to a module's content language, the browser's secondary languages, or English for visible localized metadata or definitions. Use a language-neutral identifier or an explicitly localized unavailable-state message when the active translation is absent.
+
 A language module also advertises **child components** — independently deliverable study features (e.g. "Hiragana Alphabet", "Kanji Explorer"). Each child component:
 
 - Registers its own route via `ctx.registerChildRoute()` during `bootstrapLanguageModule`.

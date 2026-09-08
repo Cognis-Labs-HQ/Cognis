@@ -37,3 +37,5 @@ Klien gateway Study mengambil audio entri melalui klien API terautentikasi dan m
 ## Tampilan terstruktur
 
 Metadata terlokalisasi setiap lapisan menentukan nama yang ditampilkan. Lapisan selain karakter dapat menetapkan `displayDefinition: true`; hal ini mewajibkan relasi definisi dan referensi tersebut pada setiap entri impor. Modul bahasa dapat menyumbangkan definisi kalimat gabungan, termasuk dampak partikel khusus bahasa, melalui `study:library:composeEntryDetail`. Cognis tidak menciptakan konten bahasa. Hanya bidang yang dideklarasikan, tidak kosong, dan terlihat yang dirender secara generik. Kisi menerima ID rekaman, nilai numerik `displayId`, serta `{ "blank": true }` sebagai ruang kosong.
+
+Entri definisi tidak pernah dapat dibuka atau ditautkan secara langsung; entri tersebut hanya menyediakan teks terlokalisasi bagi entri lain. Terjemahan yang terlihat hanya ditampilkan dalam bahasa antarmuka aktif. Relasi resolver memakai `presentationRole` untuk membedakan `composition`, `alternateSpelling`, dan `pronunciation`, sehingga pelafalan berupa kata lengkap tidak tampil sebagai rangkaian karakter yang ambigu.

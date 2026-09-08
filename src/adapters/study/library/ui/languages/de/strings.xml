@@ -18,4 +18,7 @@
   <string name="gateway.study.library_delete_success">Die ausgewählten Bibliotheksinhalte wurden gelöscht.</string>
   <string name="gateway.study.library_delete_error">Die ausgewählten Bibliotheksinhalte konnten nicht gelöscht werden.</string>
   <string name="gateway.study.library_used_in_layer">Verwendet in {{ layer }}</string>
+  <string name="gateway.study.library_relationship_composition">Zusammensetzung</string>
+  <string name="gateway.study.library_relationship_alternateSpelling">Alternative Schreibweisen</string>
+  <string name="gateway.study.library_relationship_pronunciation">Aussprachen</string>
 </resources>

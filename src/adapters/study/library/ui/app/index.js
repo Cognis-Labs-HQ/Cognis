@@ -45,17 +45,12 @@ function localizedLabel(metadata, contentLanguage) {
             value,
         ]),
     );
-    for (const language of [
-        document.documentElement.lang,
-        ...navigator.languages,
-        contentLanguage,
-        "en",
-    ]) {
+    for (const language of [document.documentElement.lang]) {
         const code = parseLanguageCode(language);
         const label = labels.get(code) ?? labels.get(code?.split("-")[0]);
         if (label) return label;
     }
-    return Object.values(metadata?.labels ?? {})[0] ?? "";
+    return "";
 }
 
 function renderValue(value) {
@@ -92,12 +87,13 @@ function layerForEntry(schemas, entry) {
 function definitionText(entry, layer, languageCode) {
     const translationsField = layer?.definitionLocalization?.translationsField;
     const translations = entry.fields?.[translationsField];
-    if (!translations || typeof translations !== "object") return entry.label;
+    if (!translations || typeof translations !== "object") return "";
     return (
         translations[parseLanguageCode(document.documentElement.lang)] ??
-        translations[parseLanguageCode(languageCode)] ??
-        translations.en ??
-        entry.label
+        translations[
+            parseLanguageCode(document.documentElement.lang)?.split("-")[0]
+        ] ??
+        ""
     );
 }
 
@@ -184,6 +180,16 @@ function pronunciationValues(entry) {
     );
 }
 
+function relationshipPresentationRole(relationship, sourceLayer, schemas) {
+    if (relationship.presentationRole) return relationship.presentationRole;
+    const targetLayer = schemas
+        .flatMap(({ layers }) => layers)
+        .find(({ id }) => id === relationship.targetLayer);
+    if (targetLayer?.semanticRole === "lexicalUnit") return "pronunciation";
+    if (targetLayer?.id === sourceLayer?.id) return "alternateSpelling";
+    return "composition";
+}
+
 function compositionReferenceGroups(detail, schemas, contentLanguage) {
     const sourceLayer = layerForEntry(schemas, detail.entry);
     const entriesById = new Map(
@@ -193,7 +199,11 @@ function compositionReferenceGroups(detail, schemas, contentLanguage) {
         .filter((relationship) => relationship.resolverRole)
         .map((relationship) => ({
             id: relationship.id,
-            label: localizedLabel(relationship.metadata, contentLanguage),
+            presentationRole: relationshipPresentationRole(
+                relationship,
+                sourceLayer,
+                schemas,
+            ),
             entries: (detail.entry.references ?? [])
                 .filter((reference) => reference.relation === relationship.id)
                 .sort(
@@ -209,14 +219,14 @@ function compositionReferenceGroups(detail, schemas, contentLanguage) {
         .filter((group) => group.entries.length);
 }
 
-function renderCompositionGroups(groups) {
+function renderCompositionGroups(groups, i18n) {
     return groups
         .map(
             (group) =>
-                `<section class="library-composition" data-library-composition="${escapeHtml(group.id)}"><span class="library-composition-label">${escapeHtml(group.label)}</span><div class="library-component-boxes">${group.entries
+                `<section class="library-composition" data-library-composition="${escapeHtml(group.id)}" data-library-presentation-role="${escapeHtml(group.presentationRole)}"><span class="library-composition-label">${escapeHtml(i18n.t(`gateway.study.library_relationship_${group.presentationRole}`))}</span><div class="library-component-boxes">${group.entries
                     .map(
                         (entry, index) =>
-                            `${index ? '<span class="library-composition-operator" aria-hidden="true">+</span>' : ""}${renderEntryLink(entry, "library-component-box btn-neutral")}`,
+                            `${index ? `<span class="library-composition-operator" aria-hidden="true">${group.presentationRole === "composition" ? "+" : "·"}</span>` : ""}${renderEntryLink(entry, "library-component-box btn-neutral")}`,
                     )
                     .join("")}</div></section>`,
         )
@@ -242,7 +252,8 @@ function renderAudio(entry, layer) {
     );
     const value = audioField ? entry.fields?.[audioField.id] : undefined;
     if (typeof value !== "string" || !value) return "";
-    const label = localizedLabel(audioField.metadata, entry.language);
+    const label =
+        localizedLabel(audioField.metadata, entry.language) || audioField.id;
     return `<div class="library-audio" data-library-audio-player><audio preload="none" data-library-audio-entry="${escapeHtml(entry.id)}" data-library-audio-field="${escapeHtml(audioField.id)}" aria-label="${escapeHtml(label)}"></audio><button class="library-audio-toggle btn-neutral" type="button" data-library-audio-toggle aria-label="${escapeHtml(label)}">▶</button><span class="library-audio-time" data-library-audio-time>0:00</span><input class="library-audio-progress" type="range" min="0" max="1000" value="0" step="1" data-library-audio-progress aria-label="${escapeHtml(label)}"></div>`;
 }
 
@@ -369,7 +380,7 @@ function coreSections(detail, schemas, i18n, languageCode, resolvedDefinition) {
                     fields[field.id] !== "",
             )
             .map((field) => [
-                localizedLabel(field.metadata, entry.language),
+                localizedLabel(field.metadata, entry.language) || field.id,
                 fields[field.id],
             ]),
     );
@@ -377,21 +388,20 @@ function coreSections(detail, schemas, i18n, languageCode, resolvedDefinition) {
         ? renderValue(resolvedDefinition)
         : definitions.length
           ? definitions
-                .map((definition) =>
-                    renderEntryLink(
-                        definition,
-                        "library-definition-link btn-neutral",
-                        definitionText(
-                            definition,
-                            layerForEntry(schemas, definition),
-                            languageCode,
-                        ),
-                    ),
+                .map(
+                    (definition) =>
+                        `<span class="library-definition-text">${escapeHtml(
+                            definitionText(
+                                definition,
+                                layerForEntry(schemas, definition),
+                                languageCode,
+                            ),
+                        )}</span>`,
                 )
                 .join("")
           : "";
     return [
-        `<header class="library-detail-summary">${renderScope(entry, i18n)}${definitionContent}${renderPronunciation(entry, layer)}${renderAudio(entry, layer)}${renderCompositionGroups(compositions)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
+        `<header class="library-detail-summary">${renderScope(entry, i18n)}${definitionContent}${renderPronunciation(entry, layer)}${renderAudio(entry, layer)}${renderCompositionGroups(compositions, i18n)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
         section(i18n.t("gateway.study.library_fields"), genericFields),
         relatedWords.length
             ? relationSection(
@@ -399,7 +409,8 @@ function coreSections(detail, schemas, i18n, languageCode, resolvedDefinition) {
                       .t("gateway.study.library_used_in_layer")
                       .replace(
                           "{{ layer }}",
-                          localizedLabel(wordLayer.metadata, entry.language),
+                          localizedLabel(wordLayer.metadata, entry.language) ||
+                              wordLayer.id,
                       ),
                   relatedWords,
                   i18n.t("gateway.study.library_no_relationships"),
@@ -474,7 +485,9 @@ function filterDescriptors(layer, layerEntries, contentLanguage) {
             ? [
                   {
                       id: field.id,
-                      label: localizedLabel(field.metadata, contentLanguage),
+                      label:
+                          localizedLabel(field.metadata, contentLanguage) ||
+                          field.id,
                       values,
                       detail: field.detail,
                   },
@@ -622,10 +635,10 @@ function renderCardContents(entry, layer, entries, schema, i18n) {
               schema.language,
           )
         : "";
-    const definitionLink = definition
-        ? `<span class="library-card-definition-link" role="link" tabindex="0" data-library-linked-entry="${escapeHtml(definition.id)}" data-library-preview="${escapeHtml(definitionLabel)}">${escapeHtml(definitionLabel)}</span>`
+    const definitionDisplay = definition
+        ? `<span class="library-card-definition">${escapeHtml(definitionLabel)}</span>`
         : "";
-    return `${heading}${definitionLink}<span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span>`;
+    return `${heading}${definitionDisplay}<span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span>`;
 }
 
 function renderEntryCard(entry, layer, entries, schema, placements, i18n) {
@@ -654,7 +667,7 @@ function renderEntryCard(entry, layer, entries, schema, placements, i18n) {
         .join("")}</div>`;
 }
 
-function renderLayerCards(layer, entries, schema, i18n) {
+function renderLayerCards(layer, entries, schema, i18n, allEntries = entries) {
     const placements = assignVariantPlacements(entries, schema);
     const baseEntries = entries.filter((entry) => !placements.has(entry.id));
     if (!baseEntries.length) return "";
@@ -664,7 +677,7 @@ function renderLayerCards(layer, entries, schema, i18n) {
                 renderEntryCard(
                     entry,
                     layer,
-                    entries,
+                    allEntries,
                     schema,
                     placements,
                     i18n,
@@ -694,7 +707,7 @@ function renderLayerCards(layer, entries, schema, i18n) {
                 ? renderEntryCard(
                       entry,
                       layer,
-                      entries,
+                      allEntries,
                       schema,
                       placements,
                       i18n,
@@ -709,7 +722,7 @@ function renderLayerCards(layer, entries, schema, i18n) {
                 !positionedIds.has(entry.displayId),
         )
         .map((entry) =>
-            renderEntryCard(entry, layer, entries, schema, placements, i18n),
+            renderEntryCard(entry, layer, allEntries, schema, placements, i18n),
         )
         .join("");
     return positionedCards + additionalCards;
@@ -799,20 +812,17 @@ function renderBrowser(schemas, entries, i18n) {
         return `<p>${escapeHtml(i18n.t("gateway.study.library_empty"))}</p>`;
     return schemas
         .map((schema, schemaIndex) => {
-            const schemaLabel = localizedLabel(
-                schema.metadata,
-                schema.language,
-            );
+            const schemaLabel =
+                localizedLabel(schema.metadata, schema.language) || schema.id;
             const visibleLayers = schema.layers.filter(
                 (layer) =>
                     !isMeaningLayer(layer) && layer.semanticRole !== "particle",
             );
             const tabs = visibleLayers
                 .map((layer, layerIndex) => {
-                    const layerLabel = localizedLabel(
-                        layer.metadata,
-                        schema.language,
-                    );
+                    const layerLabel =
+                        localizedLabel(layer.metadata, schema.language) ||
+                        layer.id;
                     return `<button class="library-layer-tab btn-neutral${layerIndex === 0 ? " active" : ""}" type="button" role="tab" id="library-tab-${schemaIndex}-${layerIndex}" aria-selected="${layerIndex === 0}" aria-controls="library-panel-${schemaIndex}-${layerIndex}" data-library-tab="${escapeHtml(layer.id)}">${escapeHtml(layerLabel)}</button>`;
                 })
                 .join("");
@@ -828,6 +838,7 @@ function renderBrowser(schemas, entries, i18n) {
                         layerEntries,
                         schema,
                         i18n,
+                        entries,
                     );
                     const contents = cards
                         ? cards
@@ -888,6 +899,7 @@ async function openEntryPopup(
     languageCode,
     signal,
 ) {
+    if (isMeaningLayer(layerForEntry(schemas, initialEntry))) return;
     let selectedEntry = initialEntry;
     while (selectedEntry && !signal?.aborted) {
         const detail = await fetchLibraryEntry(selectedEntry.id);
@@ -980,7 +992,11 @@ async function openEntryPopup(
         else if (result === "next") selectedEntry = active[index + 1];
         else if (relatedEntry && focusLibraryEntry(root, relatedEntry, schemas))
             selectedEntry = null;
-        else if (relatedEntry) selectedEntry = relatedEntry;
+        else if (
+            relatedEntry &&
+            !isMeaningLayer(layerForEntry(schemas, relatedEntry))
+        )
+            selectedEntry = relatedEntry;
         else selectedEntry = null;
     }
 }
@@ -1217,28 +1233,6 @@ export async function mount(root, { signal } = {}) {
     root.addEventListener(
         "click",
         (event) => {
-            const linkedPreview = event.target.closest(
-                "[data-library-linked-entry]",
-            );
-            if (linkedPreview) {
-                event.preventDefault();
-                event.stopPropagation();
-                const linkedEntry = entries.find(
-                    ({ id }) => id === linkedPreview.dataset.libraryLinkedEntry,
-                );
-                if (linkedEntry) {
-                    void openEntryPopup(
-                        root,
-                        linkedEntry,
-                        schemas,
-                        entries,
-                        i18n,
-                        languageCode,
-                        signal,
-                    );
-                }
-                return;
-            }
             if (event.target.closest("[data-library-select-all]")) {
                 selectAllVisibleEntries(root, i18n);
                 return;

@@ -78,12 +78,18 @@ test("Study Library integrates definitions and particles into item details", () 
         source,
         /i18n\.t\("gateway\.study\.library_variants"\)/,
     );
-    assert.match(source, /"library-definition-link btn-neutral"/);
-    assert.match(stylesheet, /\.library-definition-link/);
+    assert.match(source, /class="library-definition-text"/);
+    assert.doesNotMatch(source, /library-definition-link/);
+    assert.match(stylesheet, /\.library-definition-text/);
     assert.match(stylesheet, /\.library-composition-label/);
     assert.match(source, /layer\.displayDefinition/);
-    assert.match(source, /data-library-linked-entry/);
     assert.match(source, /data-library-preview/);
+    assert.match(source, /function relationshipPresentationRole/);
+    assert.match(source, /data-library-presentation-role/);
+    assert.match(
+        source,
+        /if \(isMeaningLayer\(layerForEntry\(schemas, initialEntry\)\)\)/,
+    );
     assert.match(source, /Object\.keys\(value\)\.length === 0/);
     assert.doesNotMatch(
         source,

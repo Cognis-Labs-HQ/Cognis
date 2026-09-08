@@ -63,6 +63,7 @@ export interface LibraryRelationshipSchema {
     requiredTarget?: boolean;
     onDelete: "restrict" | "detach" | "cascade";
     resolverRole?: "grapheme" | "token" | "longestMatch" | "explicit";
+    presentationRole?: "composition" | "alternateSpelling" | "pronunciation";
     variant?: boolean;
     variantDirection?: "left" | "right" | "up";
 }
