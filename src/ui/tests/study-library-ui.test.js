@@ -61,7 +61,11 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /library-entry-minimal-content/);
     assert.match(
         source,
-        /library-entry-minimal-content[\s\S]*library-card-pronunciation[\s\S]*definitionDisplay/,
+        /library-entry-minimal-content[\s\S]*<\/span>\$\{pronunciation \? `<span class="library-card-pronunciation library-card-pronunciation-below"/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-entry-minimal-content\s*\{[\s\S]*font-size:\s*clamp\([\s\S]*2\.8rem[\s\S]*18rem[\s\S]*4rem/,
     );
     assert.match(
         stylesheet,

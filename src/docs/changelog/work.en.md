@@ -42,6 +42,10 @@ Library schemas and content packs can explicitly link one entry to another entry
 
 Minimal Library grids now constrain their overall chart width from the requested row size and scale card height, padding, and primary text proportionally. Explicit blank positions render as hidden, dimensioned grid cells so subsequent kana remain in their requested columns.
 
+## Larger minimal content with separated pronunciations
+
+Minimal Library cards now render their primary content at twice the previous scale. Pronunciations occupy a dedicated line beneath that enlarged content, while localized definitions remain separate supporting text.
+
 ## Commits
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -54,3 +58,4 @@ Minimal Library grids now constrain their overall chart width from the requested
 - [c2b80b54](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2b80b5468ee6acfcb2e525fcdbcfd6df7865f5d)
 - [d07ce255](https://github.com/Cognis-Labs-HQ/Cognis/commit/d07ce255cc0f65d5402f264a21574155c11c853d)
 - [92da28e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/92da28e2f01c823c14ca435c44d3f47cfebede9e)
+- [0e6be2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/0e6be2ce8afb587a41cfc189aac8b4c4a6016a48)

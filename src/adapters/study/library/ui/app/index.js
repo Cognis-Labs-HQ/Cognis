@@ -245,7 +245,7 @@ function renderCardContents(entry, layer, entries, schema, i18n) {
         ? `<span class="library-card-definition">${escapeHtml(definitionLabel)}</span>`
         : "";
     if (layer.minimal) {
-        return `<span class="library-entry-minimal-content"><strong>${escapeHtml(entry.label)}</strong>${pronunciation ? `<span class="library-card-pronunciation">${pronunciation}</span>` : ""}${definitionDisplay}</span>`;
+        return `<span class="library-entry-minimal-content"><strong>${escapeHtml(entry.label)}</strong></span>${pronunciation ? `<span class="library-card-pronunciation library-card-pronunciation-below">${pronunciation}</span>` : ""}${definitionDisplay}`;
     }
     return `${heading}${definitionDisplay}<span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span>`;
 }

@@ -42,6 +42,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 最小表示のライブラリグリッドは、要求された行サイズに基づいてチャート全体の幅を制限し、カードの高さ、余白、主要テキストを比例して拡大縮小するようになりました。明示的な空白位置は寸法を持つ非表示グリッドセルとして描画されるため、後続の仮名が指定された列に維持されます。
 
+## 拡大した最小コンテンツと分離した発音
+
+最小表示のライブラリカードでは、主要コンテンツを従来の2倍の大きさで表示します。発音は拡大したコンテンツの下の専用行に配置し、ローカライズ済み定義は別の補足テキストとして維持します。
+
 ## コミット
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -54,3 +58,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [c2b80b54](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2b80b5468ee6acfcb2e525fcdbcfd6df7865f5d)
 - [d07ce255](https://github.com/Cognis-Labs-HQ/Cognis/commit/d07ce255cc0f65d5402f264a21574155c11c853d)
 - [92da28e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/92da28e2f01c823c14ca435c44d3f47cfebede9e)
+- [0e6be2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/0e6be2ce8afb587a41cfc189aac8b4c4a6016a48)

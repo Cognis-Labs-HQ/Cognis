@@ -42,6 +42,10 @@ Skema dan paket konten Pustaka dapat secara eksplisit menghubungkan satu entri k
 
 Kisi Pustaka minimal kini membatasi lebar keseluruhan bagan berdasarkan ukuran baris yang diminta serta menskalakan tinggi kartu, ruang dalam, dan teks utama secara proporsional. Posisi kosong eksplisit dirender sebagai sel kisi tersembunyi yang memiliki dimensi agar kana berikutnya tetap berada pada kolom yang diminta.
 
+## Konten minimal lebih besar dengan pelafalan terpisah
+
+Kartu Pustaka minimal kini menampilkan konten utamanya dua kali lebih besar daripada sebelumnya. Pelafalan menempati baris khusus di bawah konten yang diperbesar, sedangkan definisi terlokalisasi tetap menjadi teks pendukung yang terpisah.
+
 ## Commit
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -54,3 +58,4 @@ Kisi Pustaka minimal kini membatasi lebar keseluruhan bagan berdasarkan ukuran b
 - [c2b80b54](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2b80b5468ee6acfcb2e525fcdbcfd6df7865f5d)
 - [d07ce255](https://github.com/Cognis-Labs-HQ/Cognis/commit/d07ce255cc0f65d5402f264a21574155c11c853d)
 - [92da28e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/92da28e2f01c823c14ca435c44d3f47cfebede9e)
+- [0e6be2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/0e6be2ce8afb587a41cfc189aac8b4c4a6016a48)

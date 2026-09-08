@@ -42,6 +42,10 @@ Bibliotheksschemas und Inhaltspakete können einen Eintrag ausdrücklich mit ein
 
 Minimale Bibliotheksraster begrenzen ihre gesamte Diagrammbreite nun anhand der angeforderten Zeilengröße und skalieren Kartenhöhe, Innenabstand und Primärtext proportional. Ausdrückliche Leerstellen werden als ausgeblendete, dimensionierte Rasterzellen gerendert, sodass nachfolgende Kana in ihren vorgesehenen Spalten bleiben.
 
+## Größerer Minimalinhalt mit getrennten Aussprachen
+
+Minimale Bibliothekskarten zeigen ihren Primärinhalt nun in der doppelten bisherigen Größe. Aussprachen stehen in einer eigenen Zeile unter dem vergrößerten Inhalt, während lokalisierte Definitionen als separater Begleittext erhalten bleiben.
+
 ## Commits
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -54,3 +58,4 @@ Minimale Bibliotheksraster begrenzen ihre gesamte Diagrammbreite nun anhand der 
 - [c2b80b54](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2b80b5468ee6acfcb2e525fcdbcfd6df7865f5d)
 - [d07ce255](https://github.com/Cognis-Labs-HQ/Cognis/commit/d07ce255cc0f65d5402f264a21574155c11c853d)
 - [92da28e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/92da28e2f01c823c14ca435c44d3f47cfebede9e)
+- [0e6be2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/0e6be2ce8afb587a41cfc189aac8b4c4a6016a48)

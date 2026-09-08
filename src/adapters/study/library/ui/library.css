@@ -118,16 +118,17 @@
     align-items: baseline;
     justify-content: center;
     gap: 0.4rem;
+    font-size: clamp(
+        2.8rem,
+        calc(18rem / var(--library-grid-row-size, 5)),
+        4rem
+    );
     line-height: 1;
     white-space: nowrap;
 }
 
 .library-entry-minimal-content > strong {
-    font-size: clamp(
-        1.4rem,
-        calc(9rem / var(--library-grid-row-size, 5)),
-        2rem
-    );
+    font-size: inherit;
 }
 
 .library-entry-card-shell {
