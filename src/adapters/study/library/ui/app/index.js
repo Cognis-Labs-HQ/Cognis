@@ -190,7 +190,7 @@ function relationshipPresentationRole(relationship, sourceLayer, schemas) {
     return "composition";
 }
 
-function compositionReferenceGroups(detail, schemas, contentLanguage) {
+function compositionReferenceGroups(detail, schemas) {
     const sourceLayer = layerForEntry(schemas, detail.entry);
     const entriesById = new Map(
         (detail.references ?? []).map((entry) => [entry.id, entry]),
@@ -217,6 +217,15 @@ function compositionReferenceGroups(detail, schemas, contentLanguage) {
                 ),
         }))
         .filter((group) => group.entries.length);
+}
+
+function headingCompositionReference(detail, schemas) {
+    return compositionReferenceGroups(detail, schemas).find(
+        (group) =>
+            group.presentationRole === "composition" &&
+            group.entries.length === 1 &&
+            group.entries[0].label === detail.entry.label,
+    )?.entries[0];
 }
 
 function renderCompositionGroups(groups, i18n) {
@@ -340,10 +349,9 @@ function coreSections(detail, schemas, i18n, languageCode, resolvedDefinition) {
     const definitions = references.filter((candidate) =>
         isMeaningLayer(layerForEntry(schemas, candidate)),
     );
-    const compositions = compositionReferenceGroups(
-        detail,
-        schemas,
-        entry.language,
+    const headingReference = headingCompositionReference(detail, schemas);
+    const compositions = compositionReferenceGroups(detail, schemas).filter(
+        (group) => !group.entries.includes(headingReference),
     );
     const relatedWords = isWritingUnitLayer(layer)
         ? usedBy.filter(
@@ -903,6 +911,7 @@ async function openEntryPopup(
     let selectedEntry = initialEntry;
     while (selectedEntry && !signal?.aborted) {
         const detail = await fetchLibraryEntry(selectedEntry.id);
+        const titleReference = headingCompositionReference(detail, schemas);
         const active = entries.filter(
             (entry) =>
                 entry.schemaId === selectedEntry.schemaId &&
@@ -951,6 +960,22 @@ async function openEntryPopup(
             onOpen: (overlay, dismiss) => {
                 dismissPopup = dismiss;
                 overlay.classList.add("library-entry-popup");
+                if (titleReference) {
+                    const title = overlay.querySelector(".popup-title");
+                    const titleDetail = title?.querySelector(
+                        ".popup-title-detail",
+                    );
+                    const link = document.createElement("button");
+                    link.className = "library-popup-title-link btn-neutral";
+                    link.type = "button";
+                    link.dataset.libraryEntry = titleReference.id;
+                    link.dataset.librarySchema = titleReference.schemaId;
+                    link.dataset.libraryLayer = titleReference.layer;
+                    link.dataset.libraryPreview = titleReference.label;
+                    link.textContent = detail.entry.label;
+                    title?.replaceChildren(link);
+                    if (titleDetail) title?.append(titleDetail);
+                }
                 void loadLibraryAudio(
                     overlay,
                     audioObjectUrls,

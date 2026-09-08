@@ -82,9 +82,14 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.doesNotMatch(source, /library-definition-link/);
     assert.match(stylesheet, /\.library-definition-text/);
     assert.match(stylesheet, /\.library-composition-label/);
+    assert.match(stylesheet, /\.library-popup-title-link/);
     assert.match(source, /layer\.displayDefinition/);
     assert.match(source, /data-library-preview/);
     assert.match(source, /function relationshipPresentationRole/);
+    assert.match(source, /function headingCompositionReference/);
+    assert.match(source, /const titleReference = headingCompositionReference/);
+    assert.match(source, /library-popup-title-link btn-neutral/);
+    assert.match(source, /title\?\.replaceChildren\(link\)/);
     assert.match(source, /data-library-presentation-role/);
     assert.match(
         source,

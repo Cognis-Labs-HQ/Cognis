@@ -94,6 +94,10 @@
 
 定義レコードは直接開かず、他のカードへテキストを提供する用途だけに限定しました。UI は現在のインターフェース言語に対応するローカライズ内容だけを表示します。新しい表示ロールで構成、別表記、読み方を区別し、定義表示カードには参照先の定義レコードを渡すようにしました。
 
+## 構成リンクを見出しへ移動
+
+単一の構成リンクが現在のカードと同じ文字列を持つ場合、そのリンクをポップアップ見出しとして表示し、重複する構成セクションを省略します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -127,3 +131,4 @@
 - [7387683a](https://github.com/Cognis-Labs-HQ/Cognis/commit/7387683a1faa0f8efd9d27a524f75b43eb81dbd4)
 - [7f34d0c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f34d0c98a4b693a14f5c864bed07ace40bf79da)
 - [c3a7f703](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3a7f703c729ca3490a6bc16ad01ae7eebe02674)
+- [84a349c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/84a349c7fc4c1efb389ffd09b2ddd6654c2ecaba)

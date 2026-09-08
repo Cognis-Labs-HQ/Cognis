@@ -94,6 +94,10 @@ Die Bibliothek verwendet lokalisierte Ebenennamen, zeigt nur deklarierte und nic
 
 Definitionsdatensätze können nicht mehr direkt geöffnet werden und liefern ausschließlich Text für andere Karten. Die Oberfläche zeigt lokalisierte Inhalte nur in der aktiven UI-Sprache. Neue Darstellungsrollen unterscheiden Zusammensetzungen, alternative Schreibweisen und Aussprachen, während definitionsgestützte Vorschauen nun die tatsächlich referenzierten Definitionsdatensätze erhalten.
 
+## Zusammensetzungslink in der Überschrift
+
+Wenn ein einzelner Zusammensetzungslink denselben Text wie die aktuelle Karte trägt, ersetzt der Link jetzt die Pop-up-Überschrift und der doppelte Zusammensetzungsabschnitt entfällt.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -127,3 +131,4 @@ Definitionsdatensätze können nicht mehr direkt geöffnet werden und liefern au
 - [7387683a](https://github.com/Cognis-Labs-HQ/Cognis/commit/7387683a1faa0f8efd9d27a524f75b43eb81dbd4)
 - [7f34d0c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f34d0c98a4b693a14f5c864bed07ace40bf79da)
 - [c3a7f703](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3a7f703c729ca3490a6bc16ad01ae7eebe02674)
+- [84a349c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/84a349c7fc4c1efb389ffd09b2ddd6654c2ecaba)

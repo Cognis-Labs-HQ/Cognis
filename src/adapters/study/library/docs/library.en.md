@@ -53,3 +53,5 @@ A badge field can set `detail.group` to place related filters together and `deta
 ## Authenticated audio playback
 
 The Study gateway client fetches entry audio through the authenticated API client and gives the player a temporary object URL. The URL is revoked when the detail popup closes. Native player controls declare light and dark color schemes and follow the active application theme.
+
+When a composition contains exactly one entry whose label matches the current entry, the duplicate composition block is suppressed and that deep link replaces the popup heading instead.

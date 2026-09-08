@@ -94,6 +94,10 @@ The Library now uses localized layer names, renders only declared non-empty fiel
 
 Definition records can no longer be opened directly and only supply text to other cards. The UI displays localized content only in the active interface language. New presentation roles distinguish compositions, alternate spellings, and pronunciations, while definition-backed previews now receive the referenced definition records.
 
+## Composition link in the heading
+
+When a single composition link carries the same text as the current card, that link now replaces the popup heading and the duplicate Composition section is omitted.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -127,3 +131,4 @@ Definition records can no longer be opened directly and only supply text to othe
 - [7387683a](https://github.com/Cognis-Labs-HQ/Cognis/commit/7387683a1faa0f8efd9d27a524f75b43eb81dbd4)
 - [7f34d0c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f34d0c98a4b693a14f5c864bed07ace40bf79da)
 - [c3a7f703](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3a7f703c729ca3490a6bc16ad01ae7eebe02674)
+- [84a349c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/84a349c7fc4c1efb389ffd09b2ddd6654c2ecaba)
