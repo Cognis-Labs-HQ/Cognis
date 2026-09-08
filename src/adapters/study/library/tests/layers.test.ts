@@ -527,6 +527,28 @@ test("layers can request a validated grid row and item layout", () => {
     );
 });
 
+test("layers can request minimal entry cards", () => {
+    const schema: LibrarySchema = {
+        ...english,
+        layers: [{ ...english.layers[0], minimal: true }],
+    };
+
+    assert.equal(validateLibrarySchema(schema).layers[0].minimal, true);
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...schema,
+                layers: [
+                    {
+                        ...schema.layers[0],
+                        minimal: "yes" as unknown as boolean,
+                    },
+                ],
+            }),
+        /invalid_minimal_layer/,
+    );
+});
+
 test("schema roles and rendering hints remain independent of layer IDs", () => {
     const schema: LibrarySchema = {
         ...english,

@@ -74,6 +74,8 @@ export interface LibraryLayerSchema {
     semanticRole?: LibrarySemanticRole;
     /** Prefer the localized definition referenced by each entry as its display text. */
     displayDefinition?: boolean;
+    /** Render entry cards using only their primary display content. */
+    minimal?: boolean;
     definitionLocalization?: {
         /** Module-owned prefix used to generate a stable key for each definition. */
         stringKeyPrefix: string;

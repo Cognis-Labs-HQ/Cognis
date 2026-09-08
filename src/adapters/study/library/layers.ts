@@ -157,6 +157,8 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
             typeof layer.displayDefinition !== "boolean"
         )
             throw new Error("invalid_display_definition");
+        if (layer.minimal !== undefined && typeof layer.minimal !== "boolean")
+            throw new Error("invalid_minimal_layer");
         if (layer.grid) {
             if (
                 !Number.isSafeInteger(layer.grid.rowSize) ||

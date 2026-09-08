@@ -198,6 +198,9 @@ function cardDefinition(entry, layer, entries, schema) {
 }
 
 function renderCardContents(entry, layer, entries, schema, i18n) {
+    if (layer.minimal) {
+        return `<strong class="library-entry-minimal-content">${escapeHtml(entry.label)}</strong>`;
+    }
     const pronunciation = pronunciationValues(entry)
         .map((value) => escapeHtml(value))
         .join(" · ");
@@ -421,7 +424,7 @@ function renderBrowser(schemas, entries, i18n) {
                         ? cards
                         : `<p class="library-layer-empty">${escapeHtml(i18n.t("gateway.study.library_layer_empty"))}</p>`;
                     const rowSize = layer.grid?.rowSize;
-                    return `<section class="library-layer-panel" role="tabpanel" id="library-panel-${schemaIndex}-${layerIndex}" aria-labelledby="library-tab-${schemaIndex}-${layerIndex}" data-library-panel="${escapeHtml(layer.id)}"${layerIndex === 0 ? "" : " hidden"}>${renderLayerFilters(layer, layerEntries, i18n, schema.language)}<div class="library-entry-grid"${rowSize ? ` style="--library-grid-row-size: ${rowSize}"` : ""}>${contents}</div><p class="library-filter-empty" hidden>${escapeHtml(i18n.t("gateway.study.library_filter_empty"))}</p></section>`;
+                    return `<section class="library-layer-panel" role="tabpanel" id="library-panel-${schemaIndex}-${layerIndex}" aria-labelledby="library-tab-${schemaIndex}-${layerIndex}" data-library-panel="${escapeHtml(layer.id)}"${layerIndex === 0 ? "" : " hidden"}>${renderLayerFilters(layer, layerEntries, i18n, schema.language)}<div class="library-entry-grid${layer.minimal ? " library-entry-grid--minimal" : ""}"${rowSize ? ` style="--library-grid-row-size: ${rowSize}"` : ""}>${contents}</div><p class="library-filter-empty" hidden>${escapeHtml(i18n.t("gateway.study.library_filter_empty"))}</p></section>`;
                 })
                 .join("");
             return `<section class="library-schema" data-library-schema-id="${escapeHtml(schema.id)}"><h2>${escapeHtml(schemaLabel)}</h2><div class="library-layer-tabs" role="tablist" aria-label="${escapeHtml(i18n.t("gateway.study.library_layers"))}">${tabs}</div>${panels}</section>`;

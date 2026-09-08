@@ -56,6 +56,13 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /group\?\.dataset\.libraryFilterRequired === "true"/);
     assert.match(source, /classList\.toggle\("active", willActivate\)/);
     assert.match(stylesheet, /\.library-entry-grid/);
+    assert.match(source, /layer\.minimal/);
+    assert.match(source, /library-entry-grid--minimal/);
+    assert.match(source, /library-entry-minimal-content/);
+    assert.match(
+        stylesheet,
+        /\.library-entry-grid--minimal \.library-entry-card[\s\S]*min-height:\s*3\.5rem[\s\S]*text-align:\s*center/,
+    );
     assert.match(
         stylesheet,
         /\.library-entry-grid:has\(\.library-entry-variants-open\)::before[\s\S]*z-index:\s*4[\s\S]*backdrop-filter:\s*blur\(0\.18rem\)[\s\S]*pointer-events:\s*none/,

@@ -91,6 +91,22 @@
     background: var(--surface);
 }
 
+.library-entry-grid--minimal {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 4rem), 1fr));
+}
+
+.library-entry-grid--minimal .library-entry-card {
+    place-content: center;
+    min-height: 3.5rem;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.library-entry-minimal-content {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
 .library-entry-card-shell {
     position: relative;
 }
