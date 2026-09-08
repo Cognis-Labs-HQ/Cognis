@@ -26,6 +26,10 @@ Rute SPA Study kini hanya ditawarkan selama setidaknya satu modul bahasa yang va
 
 Kisi Pustaka minimal tetap menyediakan jumlah kolom sama besar yang diminta modul, termasuk posisi kosong, sementara kartu yang terlihat kini menyusut sesuai konten beserta padding dan tetap berada di tengah setiap slot kisi yang diskalakan. Ukuran judul popup digandakan dan detail judul diperbesar tiga puluh persen.
 
+## Detail kartu Pustaka yang terpadu
+
+Setiap lapisan Pustaka kini menampilkan definisi melalui struktur detail judul popup bersama, menempatkan cakupan di samping judul, menggunakan kontrol tutup standar dan ikon navigasi SVG, serta menampilkan pratinjau definisi tertaut secara konsisten. Varian berarah di tepi kisi beralih ke atas agar tidak menimpa baris berikutnya atau sebelumnya.
+
 ## Commit
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -34,3 +38,4 @@ Kisi Pustaka minimal tetap menyediakan jumlah kolom sama besar yang diminta modu
 - [98eb5217](https://github.com/Cognis-Labs-HQ/Cognis/commit/98eb5217e93fcd9cf765f3461e78080d9e33fd74)
 - [a6bb913b](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6bb913bf18284dd5bd7f172994ec41fdacb78d6)
 - [8ec16aee](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ec16aee27bb9ba6e4d3b1461d30bb9b1003020f)
+- [c7a41d2c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7a41d2c3933afa6502a7633b1f6089c816e7c8e)

@@ -134,18 +134,48 @@ function variantPlacement(entry, schema) {
     return null;
 }
 
-function assignVariantPlacements(entries, schema) {
+function assignVariantPlacements(entries, schema, layer) {
     const placements = new Map();
     const occupiedByParent = new Map();
     const requests = entries.flatMap((entry) => {
         const placement = variantPlacement(entry, schema);
         return placement ? [{ entry, ...placement }] : [];
     });
+    const gridPosition = new Map(
+        (layer?.grid?.items ?? []).flatMap((item, index) => {
+            if (item === null || typeof item === "object") return [];
+            const entry = entries.find(
+                (candidate) =>
+                    candidate.sourceRecordId === item ||
+                    candidate.displayId === item,
+            );
+            return entry ? [[entry.id, index]] : [];
+        }),
+    );
+    const safeDirection = (request) => {
+        const index = gridPosition.get(request.parentId);
+        const rowSize = layer?.grid?.rowSize;
+        if (!Number.isInteger(index) || !rowSize) return request.direction;
+        if (request.direction === "left" && index % rowSize === 0) return "up";
+        if (request.direction === "right" && (index + 1) % rowSize === 0)
+            return "up";
+        return request.direction;
+    };
     for (const request of requests.filter(({ direction }) => direction)) {
         const occupied = occupiedByParent.get(request.parentId) ?? new Set();
-        occupied.add(request.direction);
+        const direction = safeDirection(request);
+        const availableDirection = occupied.has(direction)
+            ? ["up", "left", "right"].find(
+                  (candidate) => !occupied.has(candidate),
+              )
+            : direction;
+        if (!availableDirection) continue;
+        occupied.add(availableDirection);
         occupiedByParent.set(request.parentId, occupied);
-        placements.set(request.entry.id, request);
+        placements.set(request.entry.id, {
+            ...request,
+            direction: availableDirection,
+        });
     }
     for (const request of requests.filter(({ direction }) => !direction)) {
         const occupied = occupiedByParent.get(request.parentId) ?? new Set();
@@ -176,7 +206,6 @@ function renderSelection(entry, i18n) {
 }
 
 function cardDefinition(entry, layer, entries, schema) {
-    if (!layer.displayDefinition) return null;
     const definitionLayers = new Set(
         (layer.relationships ?? [])
             .filter((relationship) => {
@@ -248,7 +277,7 @@ function renderEntryCard(entry, layer, entries, schema, placements, i18n) {
 }
 
 function renderLayerCards(layer, entries, schema, i18n, allEntries = entries) {
-    const placements = assignVariantPlacements(entries, schema);
+    const placements = assignVariantPlacements(entries, schema, layer);
     const baseEntries = entries.filter((entry) => !placements.has(entry.id));
     if (!baseEntries.length) return "";
     if (!layer.grid) {
@@ -508,26 +537,43 @@ async function openEntryPopup(
         signal?.addEventListener("abort", abortPopup, { once: true });
         const result = await openPopup({
             title: detail.entry.label,
+            titleLeading: composed.titleLeading,
             titleAction: titleReference
                 ? { id: "open-title-reference", label: detail.entry.label }
                 : undefined,
-            titleDetail: detailTitlePronunciation(
-                detail.entry,
-                layerForEntry(schemas, detail.entry),
-            ),
+            titleDetail: [
+                detailTitlePronunciation(
+                    detail.entry,
+                    layerForEntry(schemas, detail.entry),
+                ),
+                composed.titleDefinition,
+            ]
+                .filter(Boolean)
+                .join(" · "),
             body: composed.body,
             maxWidth: "min(56rem, 94vw)",
             closeButtonVariant: "neutral",
             actions: [
                 {
                     id: "previous",
-                    label: `← ${i18n.t("gateway.study.library_previous")}`,
+                    label: i18n.t("gateway.study.library_previous"),
+                    icon: {
+                        light: "/static/assets/reuse/arrow-back-light.svg",
+                        dark: "/static/assets/reuse/arrow-back-dark.svg",
+                        position: "before",
+                    },
                     variant: "neutral",
                     disabled: index <= 0,
                 },
                 {
                     id: "next",
-                    label: `${i18n.t("gateway.study.library_next")} →`,
+                    label: i18n.t("gateway.study.library_next"),
+                    icon: {
+                        light: "/static/assets/reuse/arrow-back-light.svg",
+                        dark: "/static/assets/reuse/arrow-back-dark.svg",
+                        position: "after",
+                        flip: true,
+                    },
                     variant: "neutral",
                     disabled: index < 0 || index >= active.length - 1,
                 },

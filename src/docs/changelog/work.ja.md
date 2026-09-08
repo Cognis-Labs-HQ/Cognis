@@ -26,6 +26,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 最小表示のライブラリグリッドは、空白位置を含め、モジュールが要求した数の等幅列を引き続き確保します。表示カードはコンテンツと余白に合わせた幅になり、拡縮された各グリッドスロットの中央に配置されます。ポップアップタイトルは 2 倍、タイトル詳細は 30 パーセント大きくなりました。
 
+## ライブラリカード詳細の統一
+
+すべてのライブラリレイヤーで、定義を共通のポップアップタイトル詳細構造に表示し、スコープをタイトルの横に配置し、標準の閉じる操作と SVG ナビゲーションアイコンを使用し、リンク済み定義を一貫してプレビューするようにしました。グリッド端の方向付きバリアントは、前後の行に重ならないよう上方向へ切り替わります。
+
 ## コミット
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -34,3 +38,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [98eb5217](https://github.com/Cognis-Labs-HQ/Cognis/commit/98eb5217e93fcd9cf765f3461e78080d9e33fd74)
 - [a6bb913b](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6bb913bf18284dd5bd7f172994ec41fdacb78d6)
 - [8ec16aee](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ec16aee27bb9ba6e4d3b1461d30bb9b1003020f)
+- [c7a41d2c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7a41d2c3933afa6502a7633b1f6089c816e7c8e)

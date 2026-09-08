@@ -132,12 +132,13 @@ test("Study Library integrates definitions and particles into item details", () 
         source,
         /i18n\.t\("gateway\.study\.library_variants"\)/,
     );
-    assert.match(source, /class="library-definition-text"/);
+    assert.match(source, /titleDefinition/);
+    assert.match(source, /titleLeading: renderScope/);
     assert.doesNotMatch(source, /library-definition-link/);
-    assert.match(stylesheet, /\.library-definition-text/);
+    assert.doesNotMatch(stylesheet, /\.library-definition-text/);
     assert.match(stylesheet, /\.library-composition-label/);
     assert.doesNotMatch(stylesheet, /\.popup-title/);
-    assert.match(source, /layer\.displayDefinition/);
+    assert.doesNotMatch(source, /if \(!layer\.displayDefinition\)/);
     assert.match(source, /data-library-preview/);
     assert.match(source, /function relationshipPresentationRole/);
     assert.match(source, /function headingCompositionReference/);
@@ -162,14 +163,15 @@ test("Study Library renders metadata and scope indicators", () => {
     assert.match(source, /class="library-metadata-pill"/);
     assert.match(source, /class="library-scope"/);
     assert.match(stylesheet, /\.library-metadata-pill/);
-    assert.match(stylesheet, /\.library-detail-summary > \.library-scope/);
+    assert.match(stylesheet, /\.popup-heading > \.library-scope/);
 });
 
 test("Study Library positions pronunciations by semantic role", () => {
     assert.match(source, /function isWritingUnitLayer/);
     assert.match(source, /function pronunciationValues/);
     assert.match(source, /function detailTitlePronunciation/);
-    assert.match(source, /titleDetail: detailTitlePronunciation/);
+    assert.match(source, /detailTitlePronunciation\(/);
+    assert.match(source, /composed\.titleDefinition/);
     assert.match(source, /class="library-entry-heading"/);
     assert.match(source, /library-card-pronunciation-below/);
     assert.match(source, /const relatedWords = isWritingUnitLayer/);
@@ -186,6 +188,9 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(stylesheet, /\.library-entry-variant-right/);
     assert.match(stylesheet, /\.library-entry-variant-up/);
     assert.match(source, /function assignVariantPlacements/);
+    assert.match(source, /request\.direction === "left"/);
+    assert.match(source, /request\.direction === "right"/);
+    assert.match(source, /return "up"/);
     assert.match(source, /\["left", "up", "right"\]/);
     assert.match(
         source,
@@ -318,7 +323,11 @@ test("Study Library deep links activate and highlight their entry", () => {
 });
 
 test("Study Library popup uses equal directional navigation controls", () => {
-    assert.match(source, /label: `← \$\{i18n\.t/);
-    assert.match(source, /i18n\.t\("gateway\.study\.library_next"\)\} →`/);
+    assert.match(source, /arrow-back-light\.svg/);
+    assert.match(source, /arrow-back-dark\.svg/);
+    assert.match(source, /position: "before"/);
+    assert.match(source, /position: "after"/);
+    assert.match(source, /flip: true/);
+    assert.doesNotMatch(source, /label: `←/);
     assert.match(stylesheet, /flex: 1 1 calc\(50% - 0\.5rem\)/);
 });

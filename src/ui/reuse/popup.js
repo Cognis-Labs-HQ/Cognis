@@ -36,12 +36,13 @@
  * Options:
  *   title    — heading text (rendered as plain text, HTML-escaped).
  *   titleDetail — optional secondary heading text rendered smaller beside the title.
+ *   titleLeading — optional trusted HTML rendered immediately before the title.
  *   titleAction — optional `{ id, label }` that renders the heading as an action.
  *   body     — body content: either an HTML string or a `() => string` render
  *              function. Rendered as innerHTML; callers must escape dynamic values.
  *   variant  — visual style hint: 'info' | 'warning' | 'danger' | 'confirm'.
  *              Defaults to 'info'.
- *   actions  — Array<{ id: string, label: string, variant?: 'confirm' | 'cancel' | 'neutral', disabled?: boolean }>.
+ *   actions  — Array<{ id: string, label: string, variant?: 'confirm' | 'cancel' | 'neutral', disabled?: boolean, icon?: { light: string, dark?: string, position?: 'before' | 'after', flip?: boolean } }>.
  *              When omitted, a single green 'Done' (confirm) button is rendered.
  *   closeButtonVariant — Optional variant for the × header close button.
  *   maxWidth — CSS max-width value (e.g. '40%', '600px') applied to the dialog
@@ -74,10 +75,12 @@
  *
  * @param {{
  *   title: string,
+ *   titleDetail?: string,
+ *   titleLeading?: string,
  *   titleAction?: { id: string, label: string },
  *   body: string | (() => string),
  *   variant?: 'info' | 'warning' | 'danger' | 'confirm',
- *   actions?: Array<{ id: string, label: string, variant?: string, disabled?: boolean }>,
+ *   actions?: Array<{ id: string, label: string, variant?: string, disabled?: boolean, icon?: { light: string, dark?: string, position?: 'before' | 'after', flip?: boolean } }>,
  *   maxWidth?: string,
  *   onOpen?: (overlay: HTMLElement, dismiss: () => void, api: { updateBody: (body: string) => HTMLElement | null }) => void,
  *   onAction?: (actionId: string | null, overlay: HTMLElement, api: { updateBody: (body: string) => HTMLElement | null }) => Promise<boolean | void> | boolean | void,
@@ -377,6 +380,7 @@ function hasUnsavedFormChanges(overlayElement) {
 export async function openPopup({
     title,
     titleDetail,
+    titleLeading,
     titleAction,
     body,
     variant = "info",
@@ -416,6 +420,16 @@ export async function openPopup({
                 ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(actionValue.id)}" type="button">${escapeHtml(actionValue.label)}</button>`
                 : escapeHtml(titleValue ?? "");
             return `${heading}${detail ? `<span class="popup-title-detail">${escapeHtml(detail)}</span>` : ""}`;
+        }
+
+        function renderActionContent(action) {
+            const label = escapeHtml(action.label);
+            if (!action.icon?.light) return label;
+            const dark = action.icon.dark ?? action.icon.light;
+            const icon = `<picture class="popup-action-icon${action.icon.flip ? " popup-action-icon--flip" : ""}" aria-hidden="true"><source media="(prefers-color-scheme: dark)" srcset="${escapeHtml(dark)}"><img src="${escapeHtml(action.icon.light)}" alt=""></picture>`;
+            return action.icon.position === "after"
+                ? `${label}${icon}`
+                : `${icon}${label}`;
         }
 
         let dismissed = false;
@@ -503,8 +517,8 @@ export async function openPopup({
 
         const closeButtonClass =
             closeButtonVariant === "neutral"
-                ? "popup-close-btn btn-neutral btn-animated"
-                : "popup-close-btn btn-cancel btn-animated";
+                ? "popup-close-btn btn-close btn-neutral"
+                : "popup-close-btn btn-close btn-cancel";
 
         const actionButtons = effectiveActions
             .map((action) => {
@@ -515,14 +529,14 @@ export async function openPopup({
                         : btnVariant === "cancel"
                           ? "btn-cancel btn-animated popup-action-btn"
                           : "popup-action-btn popup-action-btn--neutral btn-animated";
-                return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${escapeHtml(action.label)}</button>`;
+                return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${renderActionContent(action)}</button>`;
             })
             .join("");
 
         overlay.innerHTML = `
       <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
         <div class="popup-header">
-          <h2 class="popup-title" id="popup-title">${renderPopupTitle(currentPage?.title ?? title, currentPage?.titleDetail ?? titleDetail, currentPage?.titleAction ?? titleAction)}</h2>
+          <div class="popup-heading">${currentPage?.titleLeading ?? titleLeading ?? ""}<h2 class="popup-title" id="popup-title">${renderPopupTitle(currentPage?.title ?? title, currentPage?.titleDetail ?? titleDetail, currentPage?.titleAction ?? titleAction)}</h2></div>
           <button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>
         </div>
         <div class="popup-body">${resolvedBody}</div>
@@ -571,7 +585,7 @@ export async function openPopup({
                                 : btnVariant === "cancel"
                                   ? "btn-cancel btn-animated popup-action-btn"
                                   : "popup-action-btn popup-action-btn--neutral btn-animated";
-                        return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${escapeHtml(action.label)}</button>`;
+                        return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${renderActionContent(action)}</button>`;
                     })
                     .join("");
                 bindActionButtons(footerEl);

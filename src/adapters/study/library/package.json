@@ -1,12 +1,12 @@
 {
     "name": "@cognis/adapter-study-library",
-    "version": "2.6.39",
+    "version": "2.6.40",
     "description": "Scoped, deeply linked study and activity materials.",
     "type": "module",
     "main": "index.ts",
     "private": true,
     "dependencies": {
         "@cognis/gateways": "<=0.1.10",
-        "@cognis/core": "<=0.3.93"
+        "@cognis/core": "<=0.3.94"
     }
 }

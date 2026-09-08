@@ -26,6 +26,10 @@ Study SPA routes are now advertised only while at least one valid, enabled langu
 
 Minimal Library grids continue to allocate the module-requested number of equal columns, including blank positions, while visible cards now shrink to their content plus padding and stay centered within each scaled grid slot. Popup titles are doubled in size and title details are thirty percent larger.
 
+## Unified Library card details
+
+Every Library layer now presents definitions through the shared popup title-detail structure, places scope beside the title, uses standard close controls and SVG navigation icons, and previews linked definitions consistently. Directional variants at grid edges fall back upward instead of overlapping the next or previous row.
+
 ## Commits
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -34,3 +38,4 @@ Minimal Library grids continue to allocate the module-requested number of equal 
 - [98eb5217](https://github.com/Cognis-Labs-HQ/Cognis/commit/98eb5217e93fcd9cf765f3461e78080d9e33fd74)
 - [a6bb913b](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6bb913bf18284dd5bd7f172994ec41fdacb78d6)
 - [8ec16aee](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ec16aee27bb9ba6e4d3b1461d30bb9b1003020f)
+- [c7a41d2c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7a41d2c3933afa6502a7633b1f6089c816e7c8e)

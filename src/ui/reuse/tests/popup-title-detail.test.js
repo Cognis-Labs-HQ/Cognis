@@ -27,6 +27,16 @@ test("popup exposes core-owned title actions and body updates", () => {
     assert.match(stylesheet, /\.popup-title-action/);
 });
 
+test("popup supports leading title content, standard close controls, and action icons", () => {
+    assert.match(source, /titleLeading/);
+    assert.match(source, /class="popup-heading"/);
+    assert.match(source, /popup-close-btn btn-close btn-neutral/);
+    assert.match(source, /function renderActionContent/);
+    assert.match(source, /class="popup-action-icon/);
+    assert.match(stylesheet, /\.popup-heading/);
+    assert.match(stylesheet, /\.popup-action-icon--flip/);
+});
+
 test("popup typography scales from the user font-size preference", () => {
     assert.match(stylesheet, /\.popup-dialog[\s\S]*font-size: 1rem/);
     assert.match(stylesheet, /\.popup-body[\s\S]*font-size: 1em/);

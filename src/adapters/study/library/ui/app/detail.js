@@ -1,4 +1,3 @@
-import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
     compositionReferenceGroups,
@@ -15,25 +14,14 @@ import {
     renderMetadataPills,
     renderPronunciation,
     renderScope,
-    renderValue,
     section,
 } from "./presentation.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
 
-function coreSections(
-    detail,
-    schemas,
-    i18n,
-    languageCode,
-    resolvedDefinition,
-    variantPlacement,
-) {
+function coreSections(detail, schemas, i18n, variantPlacement) {
     const { entry, references = [], usedBy = [] } = detail;
     const layer = layerForEntry(schemas, entry);
-    const definitions = references.filter((candidate) =>
-        isMeaningLayer(layerForEntry(schemas, candidate)),
-    );
     const headingReference = headingCompositionReference(detail, schemas);
     const compositions = compositionReferenceGroups(detail, schemas).filter(
         (group) => !group.entries.includes(headingReference),
@@ -77,24 +65,8 @@ function coreSections(
                 fields[field.id],
             ]),
     );
-    const definitionContent = resolvedDefinition
-        ? renderValue(resolvedDefinition)
-        : definitions.length
-          ? definitions
-                .map(
-                    (definition) =>
-                        `<span class="library-definition-text">${escapeHtml(
-                            definitionText(
-                                definition,
-                                layerForEntry(schemas, definition),
-                                languageCode,
-                            ),
-                        )}</span>`,
-                )
-                .join("")
-          : "";
     return [
-        `<header class="library-detail-summary">${renderScope(entry, i18n)}${definitionContent}${renderPronunciation(entry, layer)}${renderAudio(entry, layer)}${renderCompositionGroups(compositions, i18n)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
+        `<header class="library-detail-summary">${renderPronunciation(entry, layer)}${renderAudio(entry, layer)}${renderCompositionGroups(compositions, i18n)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
         section(i18n.t("gateway.study.library_fields"), genericFields),
         relatedWords.length
             ? relationSection(
@@ -138,6 +110,27 @@ export async function composeDetail(
                 : [],
         );
     const layer = layerForEntry(schemas, detail.entry);
+    const definitions = (detail.references ?? []).filter((candidate) =>
+        isMeaningLayer(layerForEntry(schemas, candidate)),
+    );
+    const flowDefinition = Object.values(flow.stageResults)
+        .flat()
+        .find(
+            (contribution) =>
+                typeof contribution?.displayDefinition === "string",
+        )?.displayDefinition;
+    const titleDefinition =
+        flowDefinition ??
+        definitions
+            .map((definition) =>
+                definitionText(
+                    definition,
+                    layerForEntry(schemas, definition),
+                    languageCode,
+                ),
+            )
+            .filter(Boolean)
+            .join(" · ");
     const actions =
         layer?.semanticRole === "particle"
             ? []
@@ -148,24 +141,14 @@ export async function composeDetail(
               );
     const sections = [
         ...sectionsFor("beforeCore"),
-        ...coreSections(
-            detail,
-            schemas,
-            i18n,
-            languageCode,
-            Object.values(flow.stageResults)
-                .flat()
-                .find(
-                    (contribution) =>
-                        typeof contribution?.displayDefinition === "string",
-                )?.displayDefinition,
-            variantPlacement,
-        ),
+        ...coreSections(detail, schemas, i18n, variantPlacement),
         ...sectionsFor("core"),
         ...sectionsFor("afterCore"),
     ];
     return {
         body: `<div class="library-detail">${sections.join("")}</div>`,
+        titleDefinition,
+        titleLeading: renderScope(detail.entry, i18n),
         actions,
     };
 }

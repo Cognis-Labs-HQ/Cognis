@@ -380,19 +380,19 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     height: 1rem;
 }
 
-.library-detail-summary > .library-scope {
+.popup-heading > .library-scope {
     width: 2.5rem;
     height: 2.5rem;
-    margin-inline: 0 auto;
+    margin-inline: 0;
+    flex: 0 0 auto;
 }
 
-.library-detail-summary > .library-scope img {
+.popup-heading > .library-scope img {
     width: 1.4rem;
     height: 1.4rem;
 }
 
-.library-card-definition,
-.library-definition-text {
+.library-card-definition {
     color: var(--text-muted);
     font-size: 0.9rem;
     font-weight: 400;
