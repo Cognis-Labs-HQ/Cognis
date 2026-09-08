@@ -142,6 +142,10 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 
 ログアウトの電源アイコンとラベルの間隔を確保し、ホバー時にはキャンセル操作と同じ赤色でアイコンを表示します。学習ホームのページリンクは、ライトモードでダークテーマ向けの濃い緑色ではなく、明るい成功表示を使用します。
 
+## ライブラリカードの操作と文字サイズを安定化
+
+表示された子カードがポインター下のカードのヒット領域を覆うようにし、詳細見出しを 50% 大きくし、選択操作ボタンの間隔を統一しました。詳細生成へバリアント配置を正しく渡すことで、最新の言語モジュールパックに含まれる参照付き項目の詳細ポップアップが再び開きます。アプリの文字サイズ設定をルート基準とし、固定ピクセル／ポイントの文字サイズを相対単位へ変更しました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -187,3 +191,4 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 - [1d47e019](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d47e019124ef7e2e90c05f96a46ff0d3282912e)
 - [e4fa5f2a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4fa5f2ac0669a6ec93fe00b2a926283b2ac8ab4)
 - [b1e6e962](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1e6e96288911f324cc48952431887ce89246ae1)
+- [8a67d78e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a67d78e78cf9a52a989ebc56fb01b8f90b49193)

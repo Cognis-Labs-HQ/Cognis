@@ -142,6 +142,10 @@ Kontribusi menu pengguna asinkron seperti Berbagi kini otomatis menerima kelas m
 
 Tindakan Keluar kini memberi jarak antara ikon daya dan label, serta mewarnai ikon dengan merah tindakan batal saat diarahkan. Tautan halaman Belajar memakai tampilan sukses yang lebih terang dalam mode terang, bukan hijau pekat dari tema gelap.
 
+## Stabilkan interaksi dan tipografi kartu Perpustakaan
+
+Kartu anak yang ditampilkan kini menutupi hitbox kartu di bawah penunjuk, judul detail diperbesar lima puluh persen, dan tindakan pemilihan memiliki jarak yang konsisten. Penyusunan detail kini menerima posisi varian dengan benar sehingga popup detail untuk catatan bereferensi dari paket modul bahasa terbaru kembali terbuka. Preferensi ukuran font aplikasi kini menjadi dasar root, dan ukuran teks piksel/poin tetap telah diubah menjadi unit relatif.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -187,3 +191,4 @@ Tindakan Keluar kini memberi jarak antara ikon daya dan label, serta mewarnai ik
 - [1d47e019](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d47e019124ef7e2e90c05f96a46ff0d3282912e)
 - [e4fa5f2a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4fa5f2ac0669a6ec93fe00b2a926283b2ac8ab4)
 - [b1e6e962](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1e6e96288911f324cc48952431887ce89246ae1)
+- [8a67d78e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a67d78e78cf9a52a989ebc56fb01b8f90b49193)

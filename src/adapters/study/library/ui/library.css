@@ -176,6 +176,14 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     background: var(--surface);
 }
 
+.library-entry-card--variant-masked,
+.library-entry-card--variant-masked:is(:hover, :focus-visible) {
+    pointer-events: none;
+    border-color: var(--border);
+    background: var(--surface);
+    transform: none;
+}
+
 .library-entry-card-shell.library-entry-variants-open
     .library-entry-variant-shell,
 .library-entry-variant-shell.library-entry-variant-revealed {
@@ -216,6 +224,10 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
 
 .library-selection-close {
     min-width: 2.5rem;
+}
+
+.library-selection-action + .library-selection-action {
+    margin-inline-start: 0.5rem;
 }
 
 .library-entry-variant-left {
@@ -531,7 +543,7 @@ body[data-theme="dark"] .library-audio {
 
 .library-detail-section h3 {
     margin-block: 0.25rem;
-    font-size: 1.25rem;
+    font-size: 1.875rem;
 }
 
 .library-component-boxes {

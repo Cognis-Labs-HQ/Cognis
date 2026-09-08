@@ -159,3 +159,25 @@ test("components cannot traverse protected core UI internals", async () => {
     }
     assert.deepEqual(violations, []);
 });
+
+test("custom text sizes remain relative to the user font-size baseline", async () => {
+    const violations = [];
+    for (const file of await cssFiles(path.join(repositoryRoot, "src"))) {
+        const source = await readFile(file, "utf8");
+        for (const match of source.matchAll(
+            /font-size\s*:\s*[-+]?(?:\d*\.)?\d+(?:px|pt)\b/gi,
+        )) {
+            violations.push(
+                `${path.relative(repositoryRoot, file)}: ${match[0]}`,
+            );
+        }
+    }
+    assert.deepEqual(violations, []);
+
+    const theme = await readFile(
+        path.join(repositoryRoot, "src/ui/styles/reuse/theme.css"),
+        "utf8",
+    );
+    assert.match(theme, /:root\s*\{[\s\S]*font-size:\s*var\(--app-font-size\)/);
+    assert.match(theme, /body\s*\{[\s\S]*font-size:\s*1rem/);
+});

@@ -29,7 +29,7 @@
     flex-wrap: wrap;
 }
 .badge {
-    font-size: 12px;
+    font-size: 0.75rem;
     background: var(--badge-bg);
     border: 0;
     border-radius: 999px;

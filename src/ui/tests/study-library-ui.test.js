@@ -59,6 +59,24 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(stylesheet, /\.library-filters/);
     assert.match(stylesheet, /\.library-filter-pill\.active/);
     assert.match(stylesheet, /\.library-entry-card\[hidden\]/);
+    assert.match(
+        source,
+        /composeDetail\([\s\S]*languageCode,[\s\S]*variantPlacement,[\s\S]*\)/,
+    );
+    assert.match(source, /document\s*\.elementsFromPoint\(/);
+    assert.match(source, /library-entry-card--variant-masked/);
+    assert.match(
+        stylesheet,
+        /\.library-entry-card--variant-masked[\s\S]*pointer-events:\s*none/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-selection-action \+ \.library-selection-action[\s\S]*margin-inline-start:\s*0\.5rem/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-detail-section h3[\s\S]*font-size:\s*1\.875rem/,
+    );
     assert.match(source, /allowCustomization: false/);
     assert.match(source, /width: "fill"/);
     assert.doesNotMatch(source, /width: "fitContent"/);

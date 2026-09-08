@@ -142,6 +142,10 @@ Asynchronous user-menu contributions such as Shares now receive the shell-owned 
 
 Logout now spaces its power icon from the label and tints the icon with the cancel-action red on hover. Study page links use the lighter success treatment in light mode instead of the saturated dark-theme green.
 
+## Stabilize Library card interactions and typography
+
+Revealed child cards now mask cards beneath the pointer, detail headings are fifty percent larger, and selection actions have consistent spacing. Library detail composition now receives variant placement correctly, fixing detail popups for referenced records from current language-module packs. The application font preference is now the root baseline, and fixed pixel/point text sizes were converted to relative units so custom text proportions scale with it.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -187,3 +191,4 @@ Logout now spaces its power icon from the label and tints the icon with the canc
 - [1d47e019](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d47e019124ef7e2e90c05f96a46ff0d3282912e)
 - [e4fa5f2a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4fa5f2ac0669a6ec93fe00b2a926283b2ac8ab4)
 - [b1e6e962](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1e6e96288911f324cc48952431887ce89246ae1)
+- [8a67d78e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a67d78e78cf9a52a989ebc56fb01b8f90b49193)

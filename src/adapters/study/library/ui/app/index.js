@@ -494,6 +494,7 @@ async function openEntryPopup(
             schemas,
             i18n,
             languageCode,
+            variantPlacement,
         );
         signal?.throwIfAborted();
         let dismissPopup;
@@ -702,7 +703,7 @@ export async function mount(root, { signal } = {}) {
                       id: "library-selection-actions",
                       label: i18n.t("ui.reuse.actions"),
                       render: () =>
-                          `<button class="btn-neutral" type="button" data-library-select-all>${escapeHtml(i18n.t("ui.reuse.select_all"))}</button><button class="btn-cancel" type="button" data-library-delete-selection disabled>${escapeHtml(i18n.t("ui.reuse.delete"))}</button><button class="btn-neutral library-selection-close" type="button" data-library-selection-close aria-label="${escapeHtml(i18n.t("ui.reuse.close"))}">X</button>`,
+                          `<button class="btn-neutral library-selection-action" type="button" data-library-select-all>${escapeHtml(i18n.t("ui.reuse.select_all"))}</button><button class="btn-cancel library-selection-action" type="button" data-library-delete-selection disabled>${escapeHtml(i18n.t("ui.reuse.delete"))}</button><button class="btn-neutral library-selection-action library-selection-close" type="button" data-library-selection-close aria-label="${escapeHtml(i18n.t("ui.reuse.close"))}">X</button>`,
                   },
               ]
             : [],
@@ -772,6 +773,42 @@ export async function mount(root, { signal } = {}) {
     );
     root.addEventListener("pointerup", cancelLongPress, { signal });
     root.addEventListener("pointercancel", cancelLongPress, { signal });
+    const clearVariantHitboxMasks = () => {
+        root.querySelectorAll(".library-entry-card--variant-masked").forEach(
+            (card) =>
+                card.classList.remove("library-entry-card--variant-masked"),
+        );
+    };
+    root.addEventListener(
+        "pointerover",
+        (event) => {
+            const variantShell = event.target.closest(
+                ".library-entry-variant-shell",
+            );
+            if (!variantShell) return;
+            clearVariantHitboxMasks();
+            const underlyingCard = document
+                .elementsFromPoint(event.clientX, event.clientY)
+                .find(
+                    (candidate) =>
+                        candidate.matches?.(".library-entry-card") &&
+                        !variantShell.contains(candidate),
+                );
+            underlyingCard?.classList.add("library-entry-card--variant-masked");
+        },
+        { signal },
+    );
+    root.addEventListener(
+        "pointerout",
+        (event) => {
+            const variantShell = event.target.closest(
+                ".library-entry-variant-shell",
+            );
+            if (variantShell?.contains(event.relatedTarget)) return;
+            clearVariantHitboxMasks();
+        },
+        { signal },
+    );
     root.addEventListener(
         "contextmenu",
         (event) => {

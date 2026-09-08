@@ -142,6 +142,10 @@ Asynchron hinzugefügte Einträge wie „Freigaben“ erhalten nun automatisch d
 
 Beim Abmelden steht nun Abstand zwischen Ein-/Aus-Symbol und Beschriftung; beim Darüberfahren nimmt das Symbol den Rotton der Abbruchaktion an. Links auf der Lernstartseite verwenden im hellen Modus die hellere Erfolgsdarstellung statt des kräftigen Grüntons des dunklen Themes.
 
+## Interaktionen und Typografie der Bibliothekskarten stabilisiert
+
+Eingeblendete untergeordnete Karten maskieren nun die darunterliegende Karte am Mauszeiger, Detailüberschriften sind fünfzig Prozent größer und Auswahlaktionen besitzen einheitliche Abstände. Die Detailzusammenstellung erhält jetzt die Variantenposition korrekt und öffnet dadurch wieder Details für referenzierte Einträge aktueller Sprachmodulpakete. Die bevorzugte Schriftgröße bildet nun die Wurzel-Basis; feste Pixel- und Punktgrößen wurden in relative Einheiten umgewandelt.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -187,3 +191,4 @@ Beim Abmelden steht nun Abstand zwischen Ein-/Aus-Symbol und Beschriftung; beim 
 - [1d47e019](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d47e019124ef7e2e90c05f96a46ff0d3282912e)
 - [e4fa5f2a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4fa5f2ac0669a6ec93fe00b2a926283b2ac8ab4)
 - [b1e6e962](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1e6e96288911f324cc48952431887ce89246ae1)
+- [8a67d78e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a67d78e78cf9a52a989ebc56fb01b8f90b49193)
