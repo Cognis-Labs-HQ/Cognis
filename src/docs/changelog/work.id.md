@@ -46,6 +46,10 @@ Kisi Pustaka minimal kini membatasi lebar keseluruhan bagan berdasarkan ukuran b
 
 Kartu Pustaka minimal kini menampilkan konten utamanya dua kali lebih besar daripada sebelumnya. Pelafalan menempati baris khusus di bawah konten yang diperbesar, sedangkan definisi terlokalisasi tetap menjadi teks pendukung yang terpisah.
 
+## Bagan minimal selebar penuh
+
+Bagan Pustaka minimal kini menggunakan seluruh lebar yang tersedia dengan sel sama besar tanpa celah yang mempertahankan rasio aspek dua banding satu. Kartu membesar bersama selnya, baris memakai pemisah berkesinambungan, dan posisi kosong yang diminta menampilkan tanda pisah redup alih-alih menghilang.
+
 ## Commit
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -59,3 +63,4 @@ Kartu Pustaka minimal kini menampilkan konten utamanya dua kali lebih besar dari
 - [d07ce255](https://github.com/Cognis-Labs-HQ/Cognis/commit/d07ce255cc0f65d5402f264a21574155c11c853d)
 - [92da28e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/92da28e2f01c823c14ca435c44d3f47cfebede9e)
 - [0e6be2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/0e6be2ce8afb587a41cfc189aac8b4c4a6016a48)
+- [be55dd47](https://github.com/Cognis-Labs-HQ/Cognis/commit/be55dd4775bda31fb70926e64af09fb322fdd50d)

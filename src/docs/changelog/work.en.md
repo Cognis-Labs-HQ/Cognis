@@ -46,6 +46,10 @@ Minimal Library grids now constrain their overall chart width from the requested
 
 Minimal Library cards now render their primary content at twice the previous scale. Pronunciations occupy a dedicated line beneath that enlarged content, while localized definitions remain separate supporting text.
 
+## Full-width minimal charts
+
+Minimal Library charts now use the full available width with gapless, equal cells that preserve a two-to-one aspect ratio. Cards grow with their cells, rows use continuous separators, and requested blank positions display muted dashes instead of disappearing.
+
 ## Commits
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -59,3 +63,4 @@ Minimal Library cards now render their primary content at twice the previous sca
 - [d07ce255](https://github.com/Cognis-Labs-HQ/Cognis/commit/d07ce255cc0f65d5402f264a21574155c11c853d)
 - [92da28e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/92da28e2f01c823c14ca435c44d3f47cfebede9e)
 - [0e6be2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/0e6be2ce8afb587a41cfc189aac8b4c4a6016a48)
+- [be55dd47](https://github.com/Cognis-Labs-HQ/Cognis/commit/be55dd4775bda31fb70926e64af09fb322fdd50d)

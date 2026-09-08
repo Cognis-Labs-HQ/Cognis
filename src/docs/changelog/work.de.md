@@ -46,6 +46,10 @@ Minimale Bibliotheksraster begrenzen ihre gesamte Diagrammbreite nun anhand der 
 
 Minimale Bibliothekskarten zeigen ihren Primärinhalt nun in der doppelten bisherigen Größe. Aussprachen stehen in einer eigenen Zeile unter dem vergrößerten Inhalt, während lokalisierte Definitionen als separater Begleittext erhalten bleiben.
 
+## Minimale Diagramme in voller Breite
+
+Minimale Bibliotheksdiagramme nutzen nun die gesamte verfügbare Breite mit lückenlosen, gleich großen Zellen im Seitenverhältnis zwei zu eins. Karten wachsen mit ihren Zellen, Zeilen verwenden durchgehende Trennlinien und angeforderte Leerstellen zeigen gedämpfte Gedankenstriche, statt zu verschwinden.
+
 ## Commits
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -59,3 +63,4 @@ Minimale Bibliothekskarten zeigen ihren Primärinhalt nun in der doppelten bishe
 - [d07ce255](https://github.com/Cognis-Labs-HQ/Cognis/commit/d07ce255cc0f65d5402f264a21574155c11c853d)
 - [92da28e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/92da28e2f01c823c14ca435c44d3f47cfebede9e)
 - [0e6be2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/0e6be2ce8afb587a41cfc189aac8b4c4a6016a48)
+- [be55dd47](https://github.com/Cognis-Labs-HQ/Cognis/commit/be55dd4775bda31fb70926e64af09fb322fdd50d)

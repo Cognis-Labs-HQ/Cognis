@@ -65,25 +65,25 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     );
     assert.match(
         stylesheet,
-        /\.library-entry-minimal-content\s*\{[\s\S]*font-size:\s*clamp\([\s\S]*2\.8rem[\s\S]*18rem[\s\S]*4rem/,
+        /\.library-entry-minimal-content\s*\{[\s\S]*font-size:\s*clamp\([\s\S]*1\.8rem[\s\S]*12rem[\s\S]*2\.4rem/,
     );
     assert.match(
         stylesheet,
-        /\.library-entry-grid--minimal \.library-entry-card[\s\S]*calc\(20rem \/ var\(--library-grid-row-size, 5\)\)[\s\S]*text-align:\s*center/,
+        /\.library-entry-grid--minimal \.library-entry-card[\s\S]*width:\s*100%[\s\S]*height:\s*100%[\s\S]*border:\s*0[\s\S]*background:\s*transparent/,
     );
     assert.match(
         stylesheet,
-        /\.library-entry-grid--minimal\[style\][\s\S]*calc\(var\(--library-grid-row-size\) \* 10rem\)[\s\S]*margin-inline:\s*auto/,
+        /\.library-entry-grid--minimal\s*\{[\s\S]*width:\s*100%[\s\S]*border:\s*1px solid var\(--border\)[\s\S]*gap:\s*0/,
     );
     assert.match(
         stylesheet,
-        /\.library-entry-grid--minimal \.library-entry-card-shell[\s\S]*width:\s*fit-content[\s\S]*justify-self:\s*center/,
+        /\.library-entry-grid--minimal \.library-entry-card-shell[\s\S]*width:\s*100%[\s\S]*aspect-ratio:\s*2 \/ 1[\s\S]*border-block-end/,
     );
     assert.match(
         stylesheet,
-        /\.library-entry-grid--minimal \.library-entry-card-blank[\s\S]*visibility:\s*hidden[\s\S]*align-self:\s*stretch[\s\S]*justify-self:\s*stretch/,
+        /\.library-entry-grid--minimal \.library-entry-card-blank[\s\S]*place-items:\s*center[\s\S]*aspect-ratio:\s*2 \/ 1[\s\S]*color:\s*var\(--text-muted\)/,
     );
-    assert.match(source, /data-library-grid-blank[\s\S]*&nbsp;/);
+    assert.match(source, /data-library-grid-blank[\s\S]*—/);
     assert.match(
         stylesheet,
         /\.library-entry-grid:has\(\.library-entry-variants-open\)::before[\s\S]*z-index:\s*4[\s\S]*backdrop-filter:\s*blur\(0\.18rem\)[\s\S]*pointer-events:\s*none/,

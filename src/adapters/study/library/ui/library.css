@@ -93,24 +93,29 @@
 }
 
 .library-entry-grid--minimal {
+    overflow: hidden;
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 12px;
     justify-items: center;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 4rem), 1fr));
+    gap: 0;
 }
 
 .library-entry-grid--minimal[style] {
-    width: min(100%, calc(var(--library-grid-row-size) * 10rem));
-    margin-inline: auto;
+    width: 100%;
 }
 
 .library-entry-grid--minimal .library-entry-card {
     place-content: center;
-    min-height: clamp(
-        3rem,
-        calc(20rem / var(--library-grid-row-size, 5)),
-        4.5rem
-    );
-    padding: 0.55rem clamp(0.7rem, 1.2vw, 1.15rem);
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding: clamp(0.55rem, 1.5vw, 1rem);
     text-align: center;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
 }
 
 .library-entry-minimal-content {
@@ -119,9 +124,9 @@
     justify-content: center;
     gap: 0.4rem;
     font-size: clamp(
-        2.8rem,
-        calc(18rem / var(--library-grid-row-size, 5)),
-        4rem
+        1.8rem,
+        calc(12rem / var(--library-grid-row-size, 5)),
+        2.4rem
     );
     line-height: 1;
     white-space: nowrap;
@@ -191,25 +196,24 @@ body[data-theme="dark"] .library-entry-selection:checked {
 }
 
 .library-entry-grid--minimal .library-entry-card-shell {
-    width: fit-content;
-    max-width: 100%;
-    justify-self: center;
+    width: 100%;
+    aspect-ratio: 2 / 1;
+    border-block-end: 1px solid var(--border);
 }
 
 .library-entry-grid--minimal .library-entry-card-shell > .library-entry-card {
-    width: auto;
+    width: 100%;
     max-width: 100%;
 }
 
 .library-entry-grid--minimal .library-entry-card-blank {
-    visibility: hidden;
-    align-self: stretch;
-    justify-self: stretch;
-    min-height: clamp(
-        3rem,
-        calc(20rem / var(--library-grid-row-size, 5)),
-        4.5rem
-    );
+    display: grid;
+    place-items: center;
+    width: 100%;
+    aspect-ratio: 2 / 1;
+    border-block-end: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 1.15rem;
 }
 
 .library-entry-variant-shell {
