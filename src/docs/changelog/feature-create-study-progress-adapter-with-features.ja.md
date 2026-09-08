@@ -110,6 +110,10 @@
 
 分割されたライブラリ表示モジュールに言語コード解析の明示的な依存関係を復元し、ローカライズされたラベルや定義の解決時にライブラリルートが失敗しないようにしました。
 
+## 再利用可能な UI 契約を保護
+
+UI の所有権検査を、再利用可能なコアスタイルが出力するすべてのクラスへ拡張しました。完全なマニフェストとアーキテクチャ検査により、アダプター、ゲートウェイ、モジュールによる再利用コントロールの上書きを防ぎ、既存の上書きはコンポーネント所有のセレクターまたは汎用の再利用実装へ移しました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -147,3 +151,4 @@
 - [08110121](https://github.com/Cognis-Labs-HQ/Cognis/commit/08110121dca4e9ec80cf8d358c71e1b01212c2de)
 - [7f0e9fdb](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f0e9fdb)
 - [da4188fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/da4188fe99113db1a13c31e22d0703327fc7f540)
+- [abfaddbf](https://github.com/Cognis-Labs-HQ/Cognis/commit/abfaddbf0bafef8e9e08812cebdba2ee4557fbaf)

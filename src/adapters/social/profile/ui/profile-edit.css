@@ -14,8 +14,8 @@
 }
 
 .profile-field-input,
-.profile-edit-form .form-builder-input,
-.new-post-form .form-builder-input {
+.profile-edit-form :is(input, textarea, select),
+.new-post-form :is(input, textarea, select) {
     box-sizing: border-box;
     width: 100%;
     background: var(--input-bg);
@@ -30,8 +30,8 @@
 }
 
 .profile-field-input:focus,
-.profile-edit-form .form-builder-input:focus,
-.new-post-form .form-builder-input:focus {
+.profile-edit-form :is(input, textarea, select):focus,
+.new-post-form :is(input, textarea, select):focus {
     outline: none;
     border-color: var(--accent-2);
 }

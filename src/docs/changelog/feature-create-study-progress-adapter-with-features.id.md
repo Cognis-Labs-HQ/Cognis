@@ -110,6 +110,10 @@ Menetapkan daftar lengkap yang dapat dibaca mesin untuk kelas shell halaman, com
 
 Dependensi pengurai bahasa yang eksplisit dipulihkan dalam modul presentasi Pustaka yang telah dipisahkan, sehingga rute Pustaka tidak lagi gagal saat menyelesaikan label dan definisi yang dilokalkan.
 
+## Melindungi kontrak UI yang dapat digunakan kembali
+
+Penegakan kepemilikan UI diperluas ke setiap kelas yang dihasilkan oleh gaya inti yang dapat digunakan kembali. Manifest lengkap dan pemeriksaan arsitektur kini mencegah adapter, gateway, dan modul menimpa kontrol tersebut, sementara penimpaan lama dipindahkan ke selektor milik komponen atau implementasi reusable yang generik.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -147,3 +151,4 @@ Dependensi pengurai bahasa yang eksplisit dipulihkan dalam modul presentasi Pust
 - [08110121](https://github.com/Cognis-Labs-HQ/Cognis/commit/08110121dca4e9ec80cf8d358c71e1b01212c2de)
 - [7f0e9fdb](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f0e9fdb)
 - [da4188fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/da4188fe99113db1a13c31e22d0703327fc7f540)
+- [abfaddbf](https://github.com/Cognis-Labs-HQ/Cognis/commit/abfaddbf0bafef8e9e08812cebdba2ee4557fbaf)

@@ -36,8 +36,9 @@ test("Study submenu links use the user-dropdown button class", () => {
     );
     assert.match(
         stylesheet,
-        /\.study-page-subnav \.dropdown-item\s*\{\s*width: auto;/,
+        /\.study-page-subnav \[data-language-code\]\s*\{\s*width: auto;/,
     );
+    assert.doesNotMatch(stylesheet, /\.dropdown-item/);
     assert.match(source, /<ul class="page-subnav-list study-subnav-settings">/);
     assert.match(
         studyPage,

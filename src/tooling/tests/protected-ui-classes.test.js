@@ -10,7 +10,22 @@ const protectedClasses = JSON.parse(
         "utf8",
     ),
 );
+const protectedReuseClasses = JSON.parse(
+    await readFile(
+        path.join(repositoryRoot, "src/ui/styles/protected-reuse-classes.json"),
+        "utf8",
+    ),
+);
+const protectedStyleClasses = [
+    ...new Set([...protectedClasses, ...protectedReuseClasses]),
+];
 const componentRoots = ["src/adapters", "src/gateways", "src/modules"];
+const reusableStyleStateClasses = new Set([
+    "active",
+    "open",
+    "is-active",
+    "is-revealed",
+]);
 
 async function cssFiles(root) {
     const files = [];
@@ -75,7 +90,7 @@ function selectorSubjects(source) {
     return subjects;
 }
 
-test("component styles cannot override protected core UI classes", async () => {
+test("component styles cannot override protected core or reusable UI classes", async () => {
     const violations = [];
     for (const relativeRoot of componentRoots) {
         for (const file of await cssFiles(
@@ -87,7 +102,7 @@ test("component styles cannot override protected core UI classes", async () => {
                     ...subject.matchAll(/\.([a-zA-Z0-9_-]+)/g),
                 ].map(([, className]) => className);
                 const protectedClass = classes.find((className) =>
-                    protectedClasses.includes(className),
+                    protectedStyleClasses.includes(className),
                 );
                 if (protectedClass) {
                     violations.push(
@@ -98,6 +113,24 @@ test("component styles cannot override protected core UI classes", async () => {
         }
     }
     assert.deepEqual(violations, []);
+});
+
+test("the reusable style manifest covers every reusable UI class", async () => {
+    const discoveredClasses = new Set();
+    for (const file of await cssFiles(
+        path.join(repositoryRoot, "src/ui/styles/reuse"),
+    )) {
+        const source = await readFile(file, "utf8");
+        for (const { selector } of selectorSubjects(source)) {
+            for (const [, className] of selector.matchAll(
+                /\.([a-zA-Z0-9_-]+)/g,
+            )) {
+                if (!reusableStyleStateClasses.has(className))
+                    discoveredClasses.add(className);
+            }
+        }
+    }
+    assert.deepEqual([...discoveredClasses].sort(), protectedReuseClasses);
 });
 
 test("components cannot traverse protected core UI internals", async () => {

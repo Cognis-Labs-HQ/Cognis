@@ -110,6 +110,10 @@ Defined an exhaustive, machine-readable set of protected page-shell, composer, n
 
 Restored the explicit language parser dependency in the extracted Library presentation module, preventing the Library route from failing while resolving localized labels and definitions.
 
+## Protect reusable UI contracts
+
+Extended UI ownership enforcement to every class emitted by reusable core styles. A complete manifest and architecture check now prevent adapters, gateways, and modules from overriding reusable controls, while prior overrides were moved to component-owned selectors or the generic reusable implementation.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -147,3 +151,4 @@ Restored the explicit language parser dependency in the extracted Library presen
 - [08110121](https://github.com/Cognis-Labs-HQ/Cognis/commit/08110121dca4e9ec80cf8d358c71e1b01212c2de)
 - [7f0e9fdb](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f0e9fdb)
 - [da4188fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/da4188fe99113db1a13c31e22d0703327fc7f540)
+- [abfaddbf](https://github.com/Cognis-Labs-HQ/Cognis/commit/abfaddbf0bafef8e9e08812cebdba2ee4557fbaf)

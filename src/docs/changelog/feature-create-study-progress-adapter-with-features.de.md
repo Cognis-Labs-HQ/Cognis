@@ -110,6 +110,10 @@ Eine vollständige, maschinenlesbare Liste geschützter Klassen für Seitenhüll
 
 Die ausdrückliche Abhängigkeit vom Sprachcode-Parser wurde im ausgelagerten Darstellungsmodul der Bibliothek wiederhergestellt. Dadurch schlägt die Bibliotheksroute beim Auflösen lokalisierter Bezeichnungen und Definitionen nicht mehr fehl.
 
+## Wiederverwendbare UI-Verträge schützen
+
+Die Durchsetzung der UI-Zuständigkeit wurde auf jede Klasse aus wiederverwendbaren Kernstilen erweitert. Ein vollständiges Verzeichnis und eine Architekturprüfung verhindern nun, dass Adapter, Gateways und Module wiederverwendbare Steuerelemente überschreiben; bisherige Überschreibungen wurden in komponenteneigene Selektoren oder die allgemeine wiederverwendbare Implementierung verlagert.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -147,3 +151,4 @@ Die ausdrückliche Abhängigkeit vom Sprachcode-Parser wurde im ausgelagerten Da
 - [08110121](https://github.com/Cognis-Labs-HQ/Cognis/commit/08110121dca4e9ec80cf8d358c71e1b01212c2de)
 - [7f0e9fdb](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f0e9fdb)
 - [da4188fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/da4188fe99113db1a13c31e22d0703327fc7f540)
+- [abfaddbf](https://github.com/Cognis-Labs-HQ/Cognis/commit/abfaddbf0bafef8e9e08812cebdba2ee4557fbaf)

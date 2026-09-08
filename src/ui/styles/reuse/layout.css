@@ -21,7 +21,7 @@
     margin: 0 auto;
     border-bottom-left-radius: 9px;
     border-bottom-right-radius: 9px;
-    overflow: visible;
+    overflow: hidden;
     position: sticky;
     top: 0;
     z-index: 1200;
@@ -286,7 +286,7 @@
     font-size: 0.97rem;
     font-weight: 600;
     letter-spacing: 0.01em;
-    overflow: hidden;
+    overflow: visible;
 }
 .topnav a {
     color: var(--text);
@@ -383,7 +383,7 @@
         transform 0.16s ease;
     pointer-events: none;
     max-width: min(280px, calc(100vw - 32px));
-    overflow: hidden;
+    overflow: visible;
 }
 .dropdown li {
     display: flex;

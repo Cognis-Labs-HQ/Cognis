@@ -329,8 +329,8 @@
     gap: 0.75rem;
 }
 
-.share-password-result .btn-confirm {
-    justify-self: start;
+.share-password-result {
+    justify-items: start;
 }
 
 .share-links-row-created {
