@@ -150,6 +150,10 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 
 子カードのホバーおよびキーボードフォーカス規則の優先度を上げ、共通のニュートラルボタン用ホバー表示を確実に上書きします。表示中のバリアントは背景と位置を維持し、下にある隣接カードが透けて重ならないようにしました。
 
+## 表示中のバリアントを隣接カードから分離
+
+親カードの子要素を開いている間、カードグリッドは隣接カードの上、かつアクティブな親と子カードの下に、操作を妨げないぼかしと色調のレイヤーを表示します。これにより、半透明の子カード面と隣接カードの内容が視覚的に混ざることを防ぎます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -197,3 +201,4 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 - [b1e6e962](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1e6e96288911f324cc48952431887ce89246ae1)
 - [8a67d78e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a67d78e78cf9a52a989ebc56fb01b8f90b49193)
 - [8a4b37c5](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a4b37c5220db3e29036ba17d768910f7eb118cf)
+- [e4db7639](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4db7639cb19c88fef26ebd55f23eb6e6095ab17)

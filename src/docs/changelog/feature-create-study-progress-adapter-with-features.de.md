@@ -150,6 +150,10 @@ Eingeblendete untergeordnete Karten maskieren nun die darunterliegende Karte am 
 
 Die Hover- und Tastaturfokusregeln untergeordneter Karten überschreiben nun zuverlässig die gemeinsame Hover-Darstellung neutraler Schaltflächen. Eingeblendete Varianten behalten Oberfläche und Position, sodass die darunterliegende benachbarte Karte nicht durchscheint.
 
+## Eingeblendete Varianten von benachbarten Karten trennen
+
+Während die untergeordneten Karten eines Elternelements geöffnet sind, legt das Kartenraster nun eine nicht interaktive Unschärfe- und Tönungsebene über benachbarte Karten, jedoch unter das aktive Elternelement und dessen Kinder. Dadurch vermischen sich transparente Kindoberflächen nicht mehr optisch mit benachbarten Karteninhalten.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -197,3 +201,4 @@ Die Hover- und Tastaturfokusregeln untergeordneter Karten überschreiben nun zuv
 - [b1e6e962](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1e6e96288911f324cc48952431887ce89246ae1)
 - [8a67d78e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a67d78e78cf9a52a989ebc56fb01b8f90b49193)
 - [8a4b37c5](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a4b37c5220db3e29036ba17d768910f7eb118cf)
+- [e4db7639](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4db7639cb19c88fef26ebd55f23eb6e6095ab17)

@@ -150,6 +150,10 @@ Revealed child cards now mask cards beneath the pointer, detail headings are fif
 
 Child-card hover and keyboard-focus rules now have enough specificity to override the shared neutral-button hover treatment. Revealed variants retain their stable surface and position, preventing the adjacent card underneath from becoming visible through the child.
 
+## Isolate revealed variants from adjacent cards
+
+While a parent card's children are open, the card grid now places a non-interactive blur and tint layer above adjacent cards but below the active parent and its children. This prevents translucent child surfaces from visually combining with neighboring card content.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -197,3 +201,4 @@ Child-card hover and keyboard-focus rules now have enough specificity to overrid
 - [b1e6e962](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1e6e96288911f324cc48952431887ce89246ae1)
 - [8a67d78e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a67d78e78cf9a52a989ebc56fb01b8f90b49193)
 - [8a4b37c5](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a4b37c5220db3e29036ba17d768910f7eb118cf)
+- [e4db7639](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4db7639cb19c88fef26ebd55f23eb6e6095ab17)

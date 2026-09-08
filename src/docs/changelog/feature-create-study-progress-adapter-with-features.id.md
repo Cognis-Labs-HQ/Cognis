@@ -150,6 +150,10 @@ Kartu anak yang ditampilkan kini menutupi hitbox kartu di bawah penunjuk, judul 
 
 Aturan hover dan fokus papan ketik kartu anak kini cukup spesifik untuk mengesampingkan tampilan hover tombol netral bersama. Varian yang ditampilkan mempertahankan permukaan dan posisinya sehingga kartu bersebelahan di bawahnya tidak terlihat menembus kartu anak.
 
+## Pisahkan varian yang ditampilkan dari kartu bersebelahan
+
+Saat kartu anak dari induk terbuka, kisi kartu kini menempatkan lapisan buram dan warna noninteraktif di atas kartu bersebelahan tetapi di bawah induk aktif beserta anaknya. Ini mencegah permukaan kartu anak yang transparan bercampur secara visual dengan isi kartu tetangga.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -197,3 +201,4 @@ Aturan hover dan fokus papan ketik kartu anak kini cukup spesifik untuk mengesam
 - [b1e6e962](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1e6e96288911f324cc48952431887ce89246ae1)
 - [8a67d78e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a67d78e78cf9a52a989ebc56fb01b8f90b49193)
 - [8a4b37c5](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a4b37c5220db3e29036ba17d768910f7eb118cf)
+- [e4db7639](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4db7639cb19c88fef26ebd55f23eb6e6095ab17)

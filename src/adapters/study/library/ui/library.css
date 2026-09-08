@@ -54,9 +54,22 @@
 }
 
 .library-entry-grid {
+    position: relative;
+    isolation: isolate;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
     gap: var(--library-card-gap);
+}
+
+.library-entry-grid:has(.library-entry-variants-open)::before {
+    position: absolute;
+    z-index: 4;
+    inset: 0;
+    background: color-mix(in srgb, var(--surface-2) 38%, transparent);
+    backdrop-filter: blur(0.18rem);
+    -webkit-backdrop-filter: blur(0.18rem);
+    content: "";
+    pointer-events: none;
 }
 
 .library-entry-grid[style] {
