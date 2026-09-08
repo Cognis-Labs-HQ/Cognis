@@ -146,6 +146,10 @@ Tindakan Keluar kini memberi jarak antara ikon daya dan label, serta mewarnai ik
 
 Kartu anak yang ditampilkan kini menutupi hitbox kartu di bawah penunjuk, judul detail diperbesar lima puluh persen, dan tindakan pemilihan memiliki jarak yang konsisten. Penyusunan detail kini menerima posisi varian dengan benar sehingga popup detail untuk catatan bereferensi dari paket modul bahasa terbaru kembali terbuka. Preferensi ukuran font aplikasi kini menjadi dasar root, dan ukuran teks piksel/poin tetap telah diubah menjadi unit relatif.
 
+## Pertahankan pemisahan visual kartu anak
+
+Aturan hover dan fokus papan ketik kartu anak kini cukup spesifik untuk mengesampingkan tampilan hover tombol netral bersama. Varian yang ditampilkan mempertahankan permukaan dan posisinya sehingga kartu bersebelahan di bawahnya tidak terlihat menembus kartu anak.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -192,3 +196,4 @@ Kartu anak yang ditampilkan kini menutupi hitbox kartu di bawah penunjuk, judul 
 - [e4fa5f2a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4fa5f2ac0669a6ec93fe00b2a926283b2ac8ab4)
 - [b1e6e962](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1e6e96288911f324cc48952431887ce89246ae1)
 - [8a67d78e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a67d78e78cf9a52a989ebc56fb01b8f90b49193)
+- [8a4b37c5](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a4b37c5220db3e29036ba17d768910f7eb118cf)

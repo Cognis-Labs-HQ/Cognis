@@ -146,6 +146,10 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 
 表示された子カードがポインター下のカードのヒット領域を覆うようにし、詳細見出しを 50% 大きくし、選択操作ボタンの間隔を統一しました。詳細生成へバリアント配置を正しく渡すことで、最新の言語モジュールパックに含まれる参照付き項目の詳細ポップアップが再び開きます。アプリの文字サイズ設定をルート基準とし、固定ピクセル／ポイントの文字サイズを相対単位へ変更しました。
 
+## 表示した子カードを視覚的に分離
+
+子カードのホバーおよびキーボードフォーカス規則の優先度を上げ、共通のニュートラルボタン用ホバー表示を確実に上書きします。表示中のバリアントは背景と位置を維持し、下にある隣接カードが透けて重ならないようにしました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -192,3 +196,4 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 - [e4fa5f2a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4fa5f2ac0669a6ec93fe00b2a926283b2ac8ab4)
 - [b1e6e962](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1e6e96288911f324cc48952431887ce89246ae1)
 - [8a67d78e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a67d78e78cf9a52a989ebc56fb01b8f90b49193)
+- [8a4b37c5](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a4b37c5220db3e29036ba17d768910f7eb118cf)

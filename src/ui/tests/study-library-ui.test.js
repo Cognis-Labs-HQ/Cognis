@@ -63,11 +63,11 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
         source,
         /composeDetail\([\s\S]*languageCode,[\s\S]*variantPlacement,[\s\S]*\)/,
     );
-    assert.match(source, /document\s*\.elementsFromPoint\(/);
-    assert.match(source, /library-entry-card--variant-masked/);
+    assert.doesNotMatch(source, /document\s*\.elementsFromPoint\(/);
+    assert.doesNotMatch(source, /library-entry-card--variant-masked/);
     assert.match(
         stylesheet,
-        /\.library-entry-card--variant-masked[\s\S]*pointer-events:\s*none/,
+        /\.library-entry-variant\.library-entry-variant:is\(:hover, :focus-visible\)[\s\S]*background:\s*var\(--surface\);[\s\S]*transform:\s*none/,
     );
     assert.match(
         stylesheet,
@@ -188,7 +188,7 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(stylesheet, /var\(--color-success-outline-text/);
     assert.match(
         stylesheet,
-        /\.library-entry-variant:is\(:hover, :focus-visible\)/,
+        /\.library-entry-variant\.library-entry-variant:is\(:hover, :focus-visible\)/,
     );
     assert.match(stylesheet, /visibility 0s linear 180ms/);
     assert.match(variantArrowLight, /fill="#059669"/);

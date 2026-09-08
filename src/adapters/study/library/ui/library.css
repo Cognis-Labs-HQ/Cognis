@@ -168,18 +168,11 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     background: var(--surface);
 }
 
-.library-entry-variant:is(:hover, :focus-visible) {
+.library-entry-variant.library-entry-variant:is(:hover, :focus-visible) {
     border-color: var(
         --color-success-outline-text,
         var(--color-success-border)
     );
-    background: var(--surface);
-}
-
-.library-entry-card--variant-masked,
-.library-entry-card--variant-masked:is(:hover, :focus-visible) {
-    pointer-events: none;
-    border-color: var(--border);
     background: var(--surface);
     transform: none;
 }

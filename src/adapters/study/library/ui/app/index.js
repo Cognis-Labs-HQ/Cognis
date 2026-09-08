@@ -773,42 +773,6 @@ export async function mount(root, { signal } = {}) {
     );
     root.addEventListener("pointerup", cancelLongPress, { signal });
     root.addEventListener("pointercancel", cancelLongPress, { signal });
-    const clearVariantHitboxMasks = () => {
-        root.querySelectorAll(".library-entry-card--variant-masked").forEach(
-            (card) =>
-                card.classList.remove("library-entry-card--variant-masked"),
-        );
-    };
-    root.addEventListener(
-        "pointerover",
-        (event) => {
-            const variantShell = event.target.closest(
-                ".library-entry-variant-shell",
-            );
-            if (!variantShell) return;
-            clearVariantHitboxMasks();
-            const underlyingCard = document
-                .elementsFromPoint(event.clientX, event.clientY)
-                .find(
-                    (candidate) =>
-                        candidate.matches?.(".library-entry-card") &&
-                        !variantShell.contains(candidate),
-                );
-            underlyingCard?.classList.add("library-entry-card--variant-masked");
-        },
-        { signal },
-    );
-    root.addEventListener(
-        "pointerout",
-        (event) => {
-            const variantShell = event.target.closest(
-                ".library-entry-variant-shell",
-            );
-            if (variantShell?.contains(event.relatedTarget)) return;
-            clearVariantHitboxMasks();
-        },
-        { signal },
-    );
     root.addEventListener(
         "contextmenu",
         (event) => {
