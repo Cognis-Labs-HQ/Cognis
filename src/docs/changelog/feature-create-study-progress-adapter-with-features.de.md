@@ -106,6 +106,10 @@ Das umgebende Widget passt seine Breite jetzt an das Bibliotheksschema an und wi
 
 Eine vollständige, maschinenlesbare Liste geschützter Klassen für Seitenhülle, Composer, Navigation, Widgets und Pop-ups wurde festgelegt. Komponenten-CSS und -Skripte dürfen diese Interna nicht mehr überschreiben oder durchlaufen; bestehende Verstöße verwenden nun ausdrückliche Composer-Optionen, Pop-up-APIs und deklarierte Layoutvariablen des Kerns.
 
+## Sprachcode-Verarbeitung der Bibliothek wiederhergestellt
+
+Die ausdrückliche Abhängigkeit vom Sprachcode-Parser wurde im ausgelagerten Darstellungsmodul der Bibliothek wiederhergestellt. Dadurch schlägt die Bibliotheksroute beim Auflösen lokalisierter Bezeichnungen und Definitionen nicht mehr fehl.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -142,3 +146,4 @@ Eine vollständige, maschinenlesbare Liste geschützter Klassen für Seitenhüll
 - [84a349c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/84a349c7fc4c1efb389ffd09b2ddd6654c2ecaba)
 - [08110121](https://github.com/Cognis-Labs-HQ/Cognis/commit/08110121dca4e9ec80cf8d358c71e1b01212c2de)
 - [7f0e9fdb](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f0e9fdb)
+- [da4188fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/da4188fe99113db1a13c31e22d0703327fc7f540)

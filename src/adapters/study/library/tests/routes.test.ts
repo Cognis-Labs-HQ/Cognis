@@ -149,14 +149,14 @@ test("asset route keeps authenticated package bytes out of shared caches", async
 });
 
 test("Library browser resolves labels from localized schema metadata", async () => {
-    const source = await import("node:fs/promises").then(async ({ readFile }) =>
-        ["index.js", "presentation.js"]
-            .map((file) => new URL(`../ui/app/${file}`, import.meta.url))
-            .reduce(
-                async (contents, file) =>
-                    `${await contents}\n${await readFile(file, "utf8")}`,
-                Promise.resolve(""),
-            ),
+    const { readFile } = await import("node:fs/promises");
+    const source = await readFile(
+        new URL("../ui/app/index.js", import.meta.url),
+        "utf8",
+    );
+    const presentationSource = await readFile(
+        new URL("../ui/app/presentation.js", import.meta.url),
+        "utf8",
     );
     assert.match(
         source,
@@ -166,7 +166,11 @@ test("Library browser resolves labels from localized schema metadata", async () 
         source,
         /localizedLabel\(\s*layer\.metadata,\s*schema\.language,?\s*\)/,
     );
-    assert.match(source, /parseLanguageCode\(language\)/);
+    assert.match(presentationSource, /parseLanguageCode\(language\)/);
+    assert.match(
+        presentationSource,
+        /import \{ parseLanguageCode \} from "\/static\/gateways\/study\/ui\/language\.js"/,
+    );
 });
 
 test("remote audio cache remains behind authenticated entry access", async () => {

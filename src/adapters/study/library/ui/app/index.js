@@ -21,7 +21,6 @@ import {
 import {
     buildLibraryUrl,
     isAdminScope,
-    parseLanguageCode,
 } from "/static/gateways/study/ui/language.js";
 
 const LONG_PRESS_DURATION_MS = 550;

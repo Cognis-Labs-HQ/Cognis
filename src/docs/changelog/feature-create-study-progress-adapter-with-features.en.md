@@ -106,6 +106,10 @@ The containing widget now sizes itself to the Library schema while remaining cap
 
 Defined an exhaustive, machine-readable set of protected page-shell, composer, navigation, widget, and popup classes. Component CSS and scripts can no longer override or traverse those internals; existing violations now use explicit core composer options, popup APIs, and declared layout variables.
 
+## Restore Library language-code parsing
+
+Restored the explicit language parser dependency in the extracted Library presentation module, preventing the Library route from failing while resolving localized labels and definitions.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -142,3 +146,4 @@ Defined an exhaustive, machine-readable set of protected page-shell, composer, n
 - [84a349c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/84a349c7fc4c1efb389ffd09b2ddd6654c2ecaba)
 - [08110121](https://github.com/Cognis-Labs-HQ/Cognis/commit/08110121dca4e9ec80cf8d358c71e1b01212c2de)
 - [7f0e9fdb](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f0e9fdb)
+- [da4188fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/da4188fe99113db1a13c31e22d0703327fc7f540)

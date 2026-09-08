@@ -106,6 +106,10 @@
 
 ページシェル、コンポーザー、ナビゲーション、ウィジェット、ポップアップの保護対象クラスを網羅した機械可読リストを定義しました。コンポーネントの CSS とスクリプトはこれらの内部実装を上書き・走査できず、既存の違反は明示的なコアコンポーザー設定、ポップアップ API、宣言済みレイアウト変数へ移行しました。
 
+## ライブラリの言語コード解析を復元
+
+分割されたライブラリ表示モジュールに言語コード解析の明示的な依存関係を復元し、ローカライズされたラベルや定義の解決時にライブラリルートが失敗しないようにしました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -142,3 +146,4 @@
 - [84a349c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/84a349c7fc4c1efb389ffd09b2ddd6654c2ecaba)
 - [08110121](https://github.com/Cognis-Labs-HQ/Cognis/commit/08110121dca4e9ec80cf8d358c71e1b01212c2de)
 - [7f0e9fdb](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f0e9fdb)
+- [da4188fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/da4188fe99113db1a13c31e22d0703327fc7f540)
