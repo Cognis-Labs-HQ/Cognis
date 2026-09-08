@@ -118,6 +118,10 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 
 外部モジュールの有効化では、モジュールテストより前にホスト所有の境界検査を実行するようになりました。Cognis 内部への直接インポートや URL、および保護されたコアクラス・再利用クラスへの CSS 上書きを拒否し、スコープ付き `ctx` 機能を通じた連携だけを許可します。
 
+## ページ移動後のユーザードロップダウンを復元
+
+クライアント側のページ移動後に保持されたダッシュボードシェル全体を翻訳するようにし、学習ページおよびその他すべてのダッシュボードページでユーザーメニューの各操作ラベルが表示され続けるようにしました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -157,3 +161,4 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 - [da4188fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/da4188fe99113db1a13c31e22d0703327fc7f540)
 - [abfaddbf](https://github.com/Cognis-Labs-HQ/Cognis/commit/abfaddbf0bafef8e9e08812cebdba2ee4557fbaf)
 - [7f007d44](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f007d4430f88b1ae7d37fb3daf346adc5f2c9b3)
+- [8ce047ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ce047ac3710628db7b52b16bc0169ab7fadd583)

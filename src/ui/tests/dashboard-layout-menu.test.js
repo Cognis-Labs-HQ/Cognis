@@ -101,6 +101,22 @@ test("dashboard keeps shared control styles across SPA navigations", () => {
     assert.match(layoutSource, /ensurePersistentStylesheet\(SEARCH_BAR_CSS\)/);
 });
 
+test("dashboard retranslates the complete retained shell after SPA navigation", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+
+    assert.match(
+        layoutSource,
+        /applyStaticTranslations\(i18n, existingShell\);/,
+    );
+    assert.doesNotMatch(
+        layoutSource,
+        /applyStaticTranslations\([\s\S]{0,80}existingShell\.querySelector\("\.main-window"\)/,
+    );
+});
+
 test("global search toggle uses theme-specific SVG assets", () => {
     const popupSource = readFileSync(
         resolve(ROOT, "src/ui/reuse/search-util/popup.js"),

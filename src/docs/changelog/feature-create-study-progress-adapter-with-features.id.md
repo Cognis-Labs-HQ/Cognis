@@ -118,6 +118,10 @@ Penegakan kepemilikan UI diperluas ke setiap kelas yang dihasilkan oleh gaya int
 
 Aktivasi modul eksternal kini menjalankan pemindaian batas milik host sebelum pengujian modul. Impor dan URL langsung ke internal Cognis serta penimpaan CSS atas setiap kelas inti atau reusable yang dilindungi ditolak, sementara integrasi melalui kapabilitas `ctx` yang tercakup tetap diizinkan.
 
+## Pulihkan menu tarik-turun pengguna setelah navigasi halaman
+
+Seluruh kerangka dasbor yang dipertahankan kini diterjemahkan setelah navigasi sisi klien, sehingga setiap tindakan menu pengguna tetap memiliki label pada halaman Belajar dan semua halaman dasbor lainnya.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -157,3 +161,4 @@ Aktivasi modul eksternal kini menjalankan pemindaian batas milik host sebelum pe
 - [da4188fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/da4188fe99113db1a13c31e22d0703327fc7f540)
 - [abfaddbf](https://github.com/Cognis-Labs-HQ/Cognis/commit/abfaddbf0bafef8e9e08812cebdba2ee4557fbaf)
 - [7f007d44](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f007d4430f88b1ae7d37fb3daf346adc5f2c9b3)
+- [8ce047ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ce047ac3710628db7b52b16bc0169ab7fadd583)

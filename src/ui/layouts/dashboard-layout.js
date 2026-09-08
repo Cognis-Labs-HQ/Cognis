@@ -681,10 +681,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         } else {
             existingThemeToggle?.removeAttribute("hidden");
         }
-        applyStaticTranslations(
-            i18n,
-            existingShell.querySelector(".main-window") ?? existingShell,
-        );
+        applyStaticTranslations(i18n, existingShell);
         applyActiveNavigation();
         if (
             enableAccountEnhancements &&
