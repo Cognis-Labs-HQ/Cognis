@@ -1,0 +1,171 @@
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+import {
+    compositionReferenceGroups,
+    definitionText,
+    headingCompositionReference,
+    isMeaningLayer,
+    isWritingUnitLayer,
+    layerForEntry,
+    localizedLabel,
+    metadataFields,
+    relationSection,
+    renderAudio,
+    renderCompositionGroups,
+    renderMetadataPills,
+    renderPronunciation,
+    renderScope,
+    renderValue,
+    section,
+} from "./presentation.js";
+
+const DETAIL_FLOW = "study:library:composeEntryDetail";
+
+function coreSections(
+    detail,
+    schemas,
+    i18n,
+    languageCode,
+    resolvedDefinition,
+    variantPlacement,
+) {
+    const { entry, references = [], usedBy = [] } = detail;
+    const layer = layerForEntry(schemas, entry);
+    const definitions = references.filter((candidate) =>
+        isMeaningLayer(layerForEntry(schemas, candidate)),
+    );
+    const headingReference = headingCompositionReference(detail, schemas);
+    const compositions = compositionReferenceGroups(detail, schemas).filter(
+        (group) => !group.entries.includes(headingReference),
+    );
+    const relatedWords = isWritingUnitLayer(layer)
+        ? usedBy.filter(
+              (candidate) =>
+                  layerForEntry(schemas, candidate)?.semanticRole ===
+                  "lexicalUnit",
+          )
+        : [];
+    const variantChildren = usedBy.filter((candidate) => {
+        const placement = variantPlacement(candidate, schemas);
+        return placement?.parentId === entry.id;
+    });
+    const otherUsedBy = usedBy.filter(
+        (candidate) =>
+            !relatedWords.includes(candidate) &&
+            !variantChildren.includes(candidate) &&
+            layerForEntry(schemas, candidate)?.semanticRole !== "definition",
+    );
+    const wordLayer = relatedWords.length
+        ? layerForEntry(schemas, relatedWords[0])
+        : null;
+    const fields = entry.fields ?? {};
+    const metadataIds = new Set(metadataFields(layer).map(({ id }) => id));
+    const reserved = new Set(["pronunciation", "audio", ...metadataIds]);
+    const genericFields = Object.fromEntries(
+        (layer?.fields ?? [])
+            .filter(
+                (field) =>
+                    !reserved.has(field.id) &&
+                    !field.detail?.hidden &&
+                    field.detail?.renderer !== "badge" &&
+                    fields[field.id] !== undefined &&
+                    fields[field.id] !== null &&
+                    fields[field.id] !== "",
+            )
+            .map((field) => [
+                localizedLabel(field.metadata, entry.language) || field.id,
+                fields[field.id],
+            ]),
+    );
+    const definitionContent = resolvedDefinition
+        ? renderValue(resolvedDefinition)
+        : definitions.length
+          ? definitions
+                .map(
+                    (definition) =>
+                        `<span class="library-definition-text">${escapeHtml(
+                            definitionText(
+                                definition,
+                                layerForEntry(schemas, definition),
+                                languageCode,
+                            ),
+                        )}</span>`,
+                )
+                .join("")
+          : "";
+    return [
+        `<header class="library-detail-summary">${renderScope(entry, i18n)}${definitionContent}${renderPronunciation(entry, layer)}${renderAudio(entry, layer)}${renderCompositionGroups(compositions, i18n)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
+        section(i18n.t("gateway.study.library_fields"), genericFields),
+        relatedWords.length
+            ? relationSection(
+                  i18n
+                      .t("gateway.study.library_used_in_layer")
+                      .replace(
+                          "{{ layer }}",
+                          localizedLabel(wordLayer.metadata, entry.language) ||
+                              wordLayer.id,
+                      ),
+                  relatedWords,
+                  i18n.t("gateway.study.library_no_relationships"),
+              )
+            : "",
+        otherUsedBy.length || !relatedWords.length
+            ? relationSection(
+                  i18n.t("gateway.study.library_used_by"),
+                  otherUsedBy,
+                  i18n.t("gateway.study.library_no_relationships"),
+              )
+            : "",
+    ].filter(Boolean);
+}
+
+export async function composeDetail(
+    detail,
+    schemas,
+    i18n,
+    languageCode,
+    variantPlacement,
+) {
+    const flow = await uiCtx.runFlow(DETAIL_FLOW, {
+        detail,
+        i18n,
+        languageCode,
+    });
+    const sectionsFor = (stageId) =>
+        (flow.stageResults[stageId] ?? []).flatMap((contribution) =>
+            Array.isArray(contribution?.sections)
+                ? contribution.sections.filter(Boolean)
+                : [],
+        );
+    const layer = layerForEntry(schemas, detail.entry);
+    const actions =
+        layer?.semanticRole === "particle"
+            ? []
+            : (flow.stageResults.actions ?? []).flatMap((contribution) =>
+                  Array.isArray(contribution?.actions)
+                      ? contribution.actions
+                      : [],
+              );
+    const sections = [
+        ...sectionsFor("beforeCore"),
+        ...coreSections(
+            detail,
+            schemas,
+            i18n,
+            languageCode,
+            Object.values(flow.stageResults)
+                .flat()
+                .find(
+                    (contribution) =>
+                        typeof contribution?.displayDefinition === "string",
+                )?.displayDefinition,
+            variantPlacement,
+        ),
+        ...sectionsFor("core"),
+        ...sectionsFor("afterCore"),
+    ];
+    return {
+        body: `<div class="library-detail">${sections.join("")}</div>`,
+        actions,
+    };
+}

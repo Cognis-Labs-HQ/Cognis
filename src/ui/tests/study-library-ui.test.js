@@ -5,10 +5,14 @@ import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
-const source = readFileSync(
-    resolve(ROOT, "src/adapters/study/library/ui/app/index.js"),
-    "utf8",
-);
+const source = ["index.js", "detail.js", "presentation.js"]
+    .map((file) =>
+        readFileSync(
+            resolve(ROOT, `src/adapters/study/library/ui/app/${file}`),
+            "utf8",
+        ),
+    )
+    .join("\n");
 const stylesheet = readFileSync(
     resolve(ROOT, "src/adapters/study/library/ui/library.css"),
     "utf8",
@@ -55,10 +59,10 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(stylesheet, /\.library-filters/);
     assert.match(stylesheet, /\.library-filter-pill\.active/);
     assert.match(stylesheet, /\.library-entry-card\[hidden\]/);
-    assert.match(stylesheet, /\.widget-card:has\(> \.library-browser\)/);
-    assert.match(stylesheet, /width: fit-content/);
+    assert.match(source, /width: "fitContent"/);
+    assert.doesNotMatch(stylesheet, /\.widget-card/);
     assert.match(stylesheet, /max-width: 100%/);
-    assert.match(stylesheet, /\.study-subnav-language-options/);
+    assert.doesNotMatch(stylesheet, /\.study-subnav/);
     assert.match(adapterSource, /\/static\/gateways\/study\/study\.css/);
 });
 
@@ -85,14 +89,15 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.doesNotMatch(source, /library-definition-link/);
     assert.match(stylesheet, /\.library-definition-text/);
     assert.match(stylesheet, /\.library-composition-label/);
-    assert.match(stylesheet, /\.library-popup-title-link/);
+    assert.doesNotMatch(stylesheet, /\.popup-title/);
     assert.match(source, /layer\.displayDefinition/);
     assert.match(source, /data-library-preview/);
     assert.match(source, /function relationshipPresentationRole/);
     assert.match(source, /function headingCompositionReference/);
     assert.match(source, /const titleReference = headingCompositionReference/);
-    assert.match(source, /library-popup-title-link btn-neutral/);
-    assert.match(source, /title\?\.replaceChildren\(link\)/);
+    assert.match(source, /id: "open-title-reference"/);
+    assert.match(source, /titleAction:/);
+    assert.doesNotMatch(source, /querySelector\("\.popup-title"\)/);
     assert.match(source, /data-library-presentation-role/);
     assert.match(
         source,

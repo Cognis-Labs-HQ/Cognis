@@ -170,6 +170,14 @@ Bypassing the composer is always wrong, even when the page appears to work. Doin
 
 Every page must pass a `pageContext` object to `createPageComposer` with both a `title` and a `subtitle`. The title is the page name; the subtitle is a concise description of the page's purpose that appears in the global topbar below the title. Both fields must be resolved through i18n keys — never hardcode user-facing text. A page without a subtitle is non-compliant.
 
+### Protected core UI classes
+
+Page-shell, page-composer, navigation-shell, and popup infrastructure classes are protected implementation details owned exclusively by core UI code. Component stylesheets under `src/adapters/`, `src/gateways/`, and `src/modules/` must **never** target, qualify, restyle, resize, reposition, hide, or otherwise override a protected class. The canonical protected-class list is `src/ui/styles/protected-classes.json` and includes `widget-card` along with the app shell, workspace, main window, toolbar, content containers, composer grid/cells, page sub-navigation, and popup structure and controls.
+
+All behavior affecting those elements must be implemented through `createPageComposer`, another owning core UI abstraction, and core styles under `src/ui/styles/`. Components request generic behavior through explicit composer or core-component options such as element width; they must not work around this boundary with `:has()`, higher-specificity selectors, `!important`, ancestor qualification, aliases added to protected elements, DOM traversal that mutates their styles, or CSS variables that core has not explicitly declared as a public customization contract. Component-owned descendants may be styled normally, and a protected class may appear as an ancestor only when the selector's subject is exclusively component-owned.
+
+The `protected-ui-classes.test.js` architecture test scans every component stylesheet and must remain exhaustive. When adding or recognizing another sacrosanct core class, add it to the canonical manifest and keep all styling in its owning core stylesheet. Never weaken, bypass, or add component exceptions to this test; migrate the behavior to a generic core contract instead.
+
 ### UI page navigation must use the app router
 
 All navigation between dashboard-shell pages uses the client-side router in `src/ui/reuse/app-router.js`. The router intercepts clicks on internal navigation links, uses `history.pushState()` to update the URL, and mounts the new page's content in place via each page's `mount()` function — no full browser reload.

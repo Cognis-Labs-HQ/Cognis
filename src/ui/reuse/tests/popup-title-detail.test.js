@@ -19,3 +19,10 @@ test("popup title details are escaped and visually subordinate", () => {
     assert.match(stylesheet, /font-size: 0\.72em/);
     assert.match(stylesheet, /font-weight: 400/);
 });
+
+test("popup exposes core-owned title actions and body updates", () => {
+    assert.match(source, /titleAction/);
+    assert.match(source, /class="popup-title-action btn-neutral"/);
+    assert.match(source, /function updateBody\(nextBody\)/);
+    assert.match(stylesheet, /\.popup-title-action/);
+});

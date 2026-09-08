@@ -102,6 +102,10 @@ When a single composition link carries the same text as the current card, that l
 
 The containing widget now sizes itself to the Library schema while remaining capped to the available space, eliminating unused right-side width and horizontal page overflow.
 
+## Protected core page-shell contracts
+
+Defined an exhaustive, machine-readable set of protected page-shell, composer, navigation, widget, and popup classes. Component CSS and scripts can no longer override or traverse those internals; existing violations now use explicit core composer options, popup APIs, and declared layout variables.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -137,3 +141,4 @@ The containing widget now sizes itself to the Library schema while remaining cap
 - [c3a7f703](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3a7f703c729ca3490a6bc16ad01ae7eebe02674)
 - [84a349c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/84a349c7fc4c1efb389ffd09b2ddd6654c2ecaba)
 - [08110121](https://github.com/Cognis-Labs-HQ/Cognis/commit/08110121dca4e9ec80cf8d358c71e1b01212c2de)
+- [7f0e9fdb](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f0e9fdb)

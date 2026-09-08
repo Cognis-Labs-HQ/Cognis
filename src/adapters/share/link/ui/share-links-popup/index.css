@@ -77,6 +77,15 @@
     position: absolute;
     top: 0.625rem;
     right: 0.625rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
 }
 
 .share-links-row-main,

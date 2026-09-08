@@ -256,11 +256,11 @@ test("messages reactions and receipts include advanced interaction safeguards", 
     );
     assert.match(
         messagesCssSource,
-        /\.messages-page \.main-window--with-toolbar\s*\{[\s\S]*height:\s*min\(100%,\s*calc\(100dvh - 176px\)\);/,
+        /--page-main-height:\s*min\(100%,\s*calc\(100dvh - 176px\)\);/,
     );
     assert.match(
         messagesCssSource,
-        /@media \(max-width:\s*900px\)\s*\{[\s\S]*\.messages-page \.main-window--with-toolbar\s*\{[\s\S]*height:\s*min\(100%,\s*calc\(100dvh - 130px\)\);/,
+        /@media \(max-width:\s*900px\)\s*\{[\s\S]*--page-main-height-mobile:\s*min\(100%,\s*calc\(100dvh - 130px\)\);/,
     );
     assert.match(
         appSource,

@@ -102,6 +102,10 @@ Wenn ein einzelner Zusammensetzungslink denselben Text wie die aktuelle Karte tr
 
 Das umgebende Widget passt seine Breite jetzt an das Bibliotheksschema an und wird zugleich auf den verfügbaren Bereich begrenzt. Dadurch entsteht rechts kein ungenutzter Überhang oder horizontaler Seitenüberlauf.
 
+## Geschützte Verträge der zentralen Seitenhülle
+
+Eine vollständige, maschinenlesbare Liste geschützter Klassen für Seitenhülle, Composer, Navigation, Widgets und Pop-ups wurde festgelegt. Komponenten-CSS und -Skripte dürfen diese Interna nicht mehr überschreiben oder durchlaufen; bestehende Verstöße verwenden nun ausdrückliche Composer-Optionen, Pop-up-APIs und deklarierte Layoutvariablen des Kerns.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -137,3 +141,4 @@ Das umgebende Widget passt seine Breite jetzt an das Bibliotheksschema an und wi
 - [c3a7f703](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3a7f703c729ca3490a6bc16ad01ae7eebe02674)
 - [84a349c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/84a349c7fc4c1efb389ffd09b2ddd6654c2ecaba)
 - [08110121](https://github.com/Cognis-Labs-HQ/Cognis/commit/08110121dca4e9ec80cf8d358c71e1b01212c2de)
+- [7f0e9fdb](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f0e9fdb)

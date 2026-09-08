@@ -292,12 +292,6 @@
     line-height: 1;
 }
 
-.toolbar .calendar-pending-action.popup-action-btn--neutral {
-    border: 1px solid var(--border);
-    background: transparent;
-    color: inherit;
-}
-
 .calendar-toolbar-upcoming-scroll {
     overflow-y: auto;
     max-height: 18rem;
@@ -400,16 +394,6 @@
     border: 1px solid var(--field-border);
     border-radius: 8px;
     padding: 0.35rem 0.5rem;
-}
-
-.calendar-delete-event-popup .popup-footer {
-    display: grid;
-    grid-template-columns: 1fr;
-    justify-content: stretch;
-}
-
-.calendar-delete-event-popup .popup-footer .popup-action-btn {
-    width: 100%;
 }
 
 .calendar-slot-event--pending {

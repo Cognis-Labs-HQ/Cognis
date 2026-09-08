@@ -47,10 +47,14 @@ const ADAPTER_BACKED_SPA_ROUTES = [
 ];
 
 test("Study Library uses the authenticated direct-mount lifecycle", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/adapters/study/library/ui/app/index.js"),
-        "utf8",
-    );
+    const source = ["index.js", "detail.js"]
+        .map((file) =>
+            readFileSync(
+                resolve(ROOT, `src/adapters/study/library/ui/app/${file}`),
+                "utf8",
+            ),
+        )
+        .join("\n");
     assert.match(
         source,
         /import\s+\{[^}]*\bmountWhenDirect\b[^}]*\}\s+from\s+["']\/static\/reuse\/page-entry\.js["'];/,
@@ -538,10 +542,14 @@ test("direct SPA entry loads capability providers before the route module", () =
 });
 
 test("Library detail composition preserves stages and dispatches contributed actions", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/adapters/study/library/ui/app/index.js"),
-        "utf8",
-    );
+    const source = ["index.js", "detail.js"]
+        .map((file) =>
+            readFileSync(
+                resolve(ROOT, `src/adapters/study/library/ui/app/${file}`),
+                "utf8",
+            ),
+        )
+        .join("\n");
     assert.match(
         source,
         /\.\.\.sectionsFor\("beforeCore"\)[\s\S]*\.\.\.coreSections\([\s\S]*\.\.\.sectionsFor\("core"\)[\s\S]*\.\.\.sectionsFor\("afterCore"\)/,

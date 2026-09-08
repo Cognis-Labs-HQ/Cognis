@@ -36,6 +36,7 @@
  * Options:
  *   title    — heading text (rendered as plain text, HTML-escaped).
  *   titleDetail — optional secondary heading text rendered smaller beside the title.
+ *   titleAction — optional `{ id, label }` that renders the heading as an action.
  *   body     — body content: either an HTML string or a `() => string` render
  *              function. Rendered as innerHTML; callers must escape dynamic values.
  *   variant  — visual style hint: 'info' | 'warning' | 'danger' | 'confirm'.
@@ -73,12 +74,13 @@
  *
  * @param {{
  *   title: string,
+ *   titleAction?: { id: string, label: string },
  *   body: string | (() => string),
  *   variant?: 'info' | 'warning' | 'danger' | 'confirm',
  *   actions?: Array<{ id: string, label: string, variant?: string, disabled?: boolean }>,
  *   maxWidth?: string,
- *   onOpen?: (overlay: HTMLElement) => void,
- *   onAction?: (actionId: string | null, overlay: HTMLElement) => Promise<boolean | void> | boolean | void,
+ *   onOpen?: (overlay: HTMLElement, dismiss: () => void, api: { updateBody: (body: string) => HTMLElement | null }) => void,
+ *   onAction?: (actionId: string | null, overlay: HTMLElement, api: { updateBody: (body: string) => HTMLElement | null }) => Promise<boolean | void> | boolean | void,
  *   closeProtection?: boolean,
  *   timeoutMs?: number,
  *   timeoutActionId?: string | null,
@@ -375,6 +377,7 @@ function hasUnsavedFormChanges(overlayElement) {
 export async function openPopup({
     title,
     titleDetail,
+    titleAction,
     body,
     variant = "info",
     actions,
@@ -407,9 +410,12 @@ export async function openPopup({
                 .replaceAll("'", "&#39;");
         }
 
-        function renderPopupTitle(titleValue, detailValue) {
+        function renderPopupTitle(titleValue, detailValue, actionValue) {
             const detail = String(detailValue ?? "");
-            return `${escapeHtml(titleValue ?? "")}${detail ? `<span class="popup-title-detail">${escapeHtml(detail)}</span>` : ""}`;
+            const heading = actionValue
+                ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(actionValue.id)}" type="button">${escapeHtml(actionValue.label)}</button>`
+                : escapeHtml(titleValue ?? "");
+            return `${heading}${detail ? `<span class="popup-title-detail">${escapeHtml(detail)}</span>` : ""}`;
         }
 
         let dismissed = false;
@@ -516,7 +522,7 @@ export async function openPopup({
         overlay.innerHTML = `
       <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
         <div class="popup-header">
-          <h2 class="popup-title" id="popup-title">${renderPopupTitle(currentPage?.title ?? title, currentPage?.titleDetail ?? titleDetail)}</h2>
+          <h2 class="popup-title" id="popup-title">${renderPopupTitle(currentPage?.title ?? title, currentPage?.titleDetail ?? titleDetail, currentPage?.titleAction ?? titleAction)}</h2>
           <button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>
         </div>
         <div class="popup-body">${resolvedBody}</div>
@@ -544,6 +550,7 @@ export async function openPopup({
                 titleEl.innerHTML = renderPopupTitle(
                     currentPage.title ?? title,
                     currentPage.titleDetail ?? titleDetail,
+                    currentPage.titleAction ?? titleAction,
                 );
             if (bodyEl)
                 bodyEl.innerHTML = resolvePageValue(currentPage.body, body);
@@ -572,11 +579,20 @@ export async function openPopup({
             onOpen?.(overlay, () => dismiss(null), {
                 setPage: renderPopupPage,
                 pageId: currentPage.id,
+                updateBody,
                 markDirty: () => {
                     manuallyDirty = true;
                 },
             });
             return true;
+        }
+
+        function updateBody(nextBody) {
+            const bodyElement = overlay.querySelector(".popup-body");
+            if (!bodyElement) return null;
+            bodyElement.innerHTML =
+                typeof nextBody === "function" ? nextBody() : nextBody;
+            return bodyElement;
         }
 
         function bindActionButtons(root) {
@@ -594,6 +610,7 @@ export async function openPopup({
                                     setPage: renderPopupPage,
                                     pageId: currentPage?.id,
                                     requestClose: () => dismiss(null),
+                                    updateBody,
                                     markDirty: () => {
                                         manuallyDirty = true;
                                     },
@@ -638,6 +655,7 @@ export async function openPopup({
 
         if (typeof onOpen === "function") {
             onOpen(overlay, () => dismiss(null), {
+                updateBody,
                 setPage: renderPopupPage,
                 pageId: currentPage?.id,
                 markDirty: () => {

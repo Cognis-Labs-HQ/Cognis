@@ -215,6 +215,17 @@
     flex-wrap: wrap;
     margin-right: auto;
     flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+}
+
+.study-subnav-language-options {
+    margin-inline-start: auto;
+}
+
+.study-subnav-settings a {
+    min-width: 2.5rem;
+    justify-content: center;
 }
 
 .study-subnav-language-options {

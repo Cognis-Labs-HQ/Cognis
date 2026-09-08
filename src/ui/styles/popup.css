@@ -76,6 +76,22 @@
     font-weight: 400;
 }
 
+.popup-title-action {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--accent-2);
+    text-underline-offset: 0.18em;
+}
+
+.popup-title-action:is(:hover, :focus-visible) {
+    background: transparent;
+    color: var(--accent-2);
+}
+
 .popup-close-btn {
     flex-shrink: 0;
     border-radius: 6px;

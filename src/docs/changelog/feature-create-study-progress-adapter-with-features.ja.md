@@ -102,6 +102,10 @@
 
 外側のウィジェットをライブラリスキーマに合わせて縮めつつ、利用可能な領域を上限にしました。右側の不要な余白とページの横方向オーバーフローを解消します。
 
+## 保護されたコアページシェル契約
+
+ページシェル、コンポーザー、ナビゲーション、ウィジェット、ポップアップの保護対象クラスを網羅した機械可読リストを定義しました。コンポーネントの CSS とスクリプトはこれらの内部実装を上書き・走査できず、既存の違反は明示的なコアコンポーザー設定、ポップアップ API、宣言済みレイアウト変数へ移行しました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -137,3 +141,4 @@
 - [c3a7f703](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3a7f703c729ca3490a6bc16ad01ae7eebe02674)
 - [84a349c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/84a349c7fc4c1efb389ffd09b2ddd6654c2ecaba)
 - [08110121](https://github.com/Cognis-Labs-HQ/Cognis/commit/08110121dca4e9ec80cf8d358c71e1b01212c2de)
+- [7f0e9fdb](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f0e9fdb)
