@@ -38,7 +38,9 @@ import {
 
 capturePwaInstallPrompt();
 const BUTTON_STYLESHEET = "/static/styles/reuse/buttons.css";
+const PAGE_SHELL_STYLESHEET = "/static/styles/page-builder.css";
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
+void ensurePersistentStylesheet(PAGE_SHELL_STYLESHEET);
 void ensurePersistentStylesheet(BUTTON_STYLESHEET);
 
 function isAdminRole() {

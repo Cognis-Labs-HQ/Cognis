@@ -126,6 +126,10 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 
 ライブラリカードがページコンポーザーの割り当て幅全体を使用するようにしました。また、保存済みのカスタマイズによって固定されたアプリケーション領域が縮小または移動されないよう、レイアウト編集を無効にしました。
 
+## ユーザーメニューをページシェルで常時提供
+
+ユーザードロップダウン専用のコアページシェルスタイルシートを追加し、直接読み込んだ場合と SPA ページ移動のどちらでもダッシュボードレイアウトがコアシェル一式を明示的に保持するようにしました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -167,3 +171,4 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 - [7f007d44](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f007d4430f88b1ae7d37fb3daf346adc5f2c9b3)
 - [8ce047ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ce047ac3710628db7b52b16bc0169ab7fadd583)
 - [8373c151](https://github.com/Cognis-Labs-HQ/Cognis/commit/8373c15186eb49298e4d961f11d273d06b3146ef)
+- [a2da40bf](https://github.com/Cognis-Labs-HQ/Cognis/commit/a2da40bf07e7651088e6444259aa536755c14b8a)

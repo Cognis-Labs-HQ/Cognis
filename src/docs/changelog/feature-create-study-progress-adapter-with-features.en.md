@@ -126,6 +126,10 @@ The retained dashboard shell is now translated as a whole after client-side navi
 
 The Library card now fills its page-composer allocation, and layout editing is disabled so saved customization cannot shrink or reposition this fixed application surface.
 
+## Keep the user menu in the page shell
+
+The user dropdown now has a dedicated core page-shell stylesheet, and the dashboard layout explicitly keeps the core shell bundle loaded across direct loads and SPA navigation.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -167,3 +171,4 @@ The Library card now fills its page-composer allocation, and layout editing is d
 - [7f007d44](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f007d4430f88b1ae7d37fb3daf346adc5f2c9b3)
 - [8ce047ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ce047ac3710628db7b52b16bc0169ab7fadd583)
 - [8373c151](https://github.com/Cognis-Labs-HQ/Cognis/commit/8373c15186eb49298e4d961f11d273d06b3146ef)
+- [a2da40bf](https://github.com/Cognis-Labs-HQ/Cognis/commit/a2da40bf07e7651088e6444259aa536755c14b8a)

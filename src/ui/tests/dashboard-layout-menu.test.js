@@ -36,11 +36,12 @@ test("admin-only menu items carry the hidden attribute in the template", () => {
 
 test("layout CSS restores [hidden] visibility inside .dropdown", () => {
     const css = readFileSync(
-        resolve(ROOT, "src/ui/styles/reuse/layout.css"),
+        resolve(ROOT, "src/ui/styles/page-builder/user-menu.css"),
         "utf8",
     );
     assert.ok(
-        css.includes(".dropdown li[hidden]") && css.includes("display: none"),
+        css.includes(".page-shell-user-dropdown li[hidden]") &&
+            css.includes("display: none"),
         "layout.css must override .dropdown li display for [hidden] items",
     );
 });
@@ -61,12 +62,12 @@ test("profile menu keeps the current page link active", () => {
         "utf8",
     );
     const layoutCss = readFileSync(
-        resolve(ROOT, "src/ui/styles/reuse/layout.css"),
+        resolve(ROOT, "src/ui/styles/page-builder/user-menu.css"),
         "utf8",
     );
 
     assert.match(layoutSource, /\.user-dropdown-content a/);
-    assert.match(layoutCss, /\.dropdown-item\.active/);
+    assert.match(layoutCss, /\.page-shell-user-menu-item\.active/);
     assert.match(layoutSource, /activeDropdownLink/);
     assert.match(
         layoutSource,
@@ -74,16 +75,16 @@ test("profile menu keeps the current page link active", () => {
     );
     assert.match(
         layoutCss,
-        /\.app-shell \.dropdown-item\.active\s*{[^}]*border-bottom: 2px solid var\(--accent-2\)/,
+        /\.app-shell \.page-shell-user-menu-item\.active\s*{[^}]*border-bottom: 2px solid var\(--accent-2\)/,
     );
     assert.doesNotMatch(
         layoutCss,
         /\.dropdown-item:focus-visible,\s*\.dropdown-item\.active/,
     );
     assert.ok(
-        layoutCss.indexOf(".app-shell .dropdown-item.active") <
-            layoutCss.indexOf(".app-shell .dropdown-item {"),
-        "the more-specific active selector must override the later control reset",
+        layoutCss.indexOf(".app-shell .page-shell-user-menu-item.active") >
+            layoutCss.indexOf(".page-shell-user-menu-item {"),
+        "the active selector must follow the base user-menu control styles",
     );
 });
 
@@ -99,6 +100,10 @@ test("dashboard keeps shared control styles across SPA navigations", () => {
         /ensurePersistentStylesheet\(BUTTON_STYLESHEET\)/,
     );
     assert.match(layoutSource, /ensurePersistentStylesheet\(SEARCH_BAR_CSS\)/);
+    assert.match(
+        layoutSource,
+        /ensurePersistentStylesheet\(PAGE_SHELL_STYLESHEET\)/,
+    );
 });
 
 test("dashboard retranslates the complete retained shell after SPA navigation", () => {
@@ -335,12 +340,12 @@ test("profile dropdown opens on hover or click and closes only on click away", (
 
 test("user menu entries gain an outline on hover", () => {
     const styles = readFileSync(
-        resolve(ROOT, "src/ui/styles/reuse/layout.css"),
+        resolve(ROOT, "src/ui/styles/page-builder/user-menu.css"),
         "utf8",
     );
     assert.match(
         styles,
-        /\.dropdown-item:hover,[\s\S]+outline: 1px solid var\(--accent\);/,
+        /\.page-shell-user-menu-item:hover,[\s\S]+outline: 1px solid var\(--accent\);/,
     );
 });
 
