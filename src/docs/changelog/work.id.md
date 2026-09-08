@@ -50,6 +50,10 @@ Kartu Pustaka minimal kini menampilkan konten utamanya dua kali lebih besar dari
 
 Bagan Pustaka minimal kini menggunakan seluruh lebar yang tersedia dengan sel sama besar tanpa celah yang mempertahankan rasio aspek dua banding satu. Kartu membesar bersama selnya, baris memakai pemisah berkesinambungan, dan posisi kosong yang diminta menampilkan tanda pisah redup alih-alih menghilang.
 
+## Judul popup adaptif satu baris
+
+Detail judul popup kini dirender sebagai elemen h4 saudara, bukan berada di dalam judul h2. Popup bersama mengukur seluruh baris judul setelah dirender, terlebih dahulu mengecilkan teks detail hingga lima puluh persen, lalu mengecilkan judul utama paling banyak tiga puluh persen, dan mengulangi penyesuaian setelah font dimuat serta ukuran jendela berubah agar baris tidak pernah terbungkus.
+
 ## Commit
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -64,3 +68,4 @@ Bagan Pustaka minimal kini menggunakan seluruh lebar yang tersedia dengan sel sa
 - [92da28e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/92da28e2f01c823c14ca435c44d3f47cfebede9e)
 - [0e6be2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/0e6be2ce8afb587a41cfc189aac8b4c4a6016a48)
 - [be55dd47](https://github.com/Cognis-Labs-HQ/Cognis/commit/be55dd4775bda31fb70926e64af09fb322fdd50d)
+- [fc3379e4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc3379e48419678433fd00b250ff6bf45bf9a578)

@@ -50,6 +50,10 @@ Minimale Bibliothekskarten zeigen ihren Primärinhalt nun in der doppelten bishe
 
 Minimale Bibliotheksdiagramme nutzen nun die gesamte verfügbare Breite mit lückenlosen, gleich großen Zellen im Seitenverhältnis zwei zu eins. Karten wachsen mit ihren Zellen, Zeilen verwenden durchgehende Trennlinien und angeforderte Leerstellen zeigen gedämpfte Gedankenstriche, statt zu verschwinden.
 
+## Adaptive einzeilige Popup-Überschriften
+
+Popup-Titeldetails werden nun als benachbarte h4-Elemente statt innerhalb des h2-Titels gerendert. Das gemeinsame Popup misst nach dem Rendern die vollständige Überschrift, verkleinert zuerst den Titeldetailtext um bis zu fünfzig Prozent und danach den Haupttitel um höchstens dreißig Prozent. Nach dem Laden der Schrift und bei Größenänderungen wird die Anpassung wiederholt, damit die Zeile niemals umbricht.
+
 ## Commits
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -64,3 +68,4 @@ Minimale Bibliotheksdiagramme nutzen nun die gesamte verfügbare Breite mit lüc
 - [92da28e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/92da28e2f01c823c14ca435c44d3f47cfebede9e)
 - [0e6be2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/0e6be2ce8afb587a41cfc189aac8b4c4a6016a48)
 - [be55dd47](https://github.com/Cognis-Labs-HQ/Cognis/commit/be55dd4775bda31fb70926e64af09fb322fdd50d)
+- [fc3379e4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc3379e48419678433fd00b250ff6bf45bf9a578)

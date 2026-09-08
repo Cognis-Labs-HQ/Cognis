@@ -50,6 +50,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 最小表示のライブラリチャートは、利用可能な幅全体を使用し、隙間のない均等なセルを2対1の縦横比で維持するようになりました。カードはセルに合わせて拡大し、行には連続した区切り線を表示し、指定された空白位置は消えずに控えめなダッシュとして表示されます。
 
+## 単一行に適応するポップアップ見出し
+
+ポップアップのタイトル詳細を h2 タイトル内ではなく、隣接する h4 要素として描画するようにしました。共通ポップアップは描画後に見出し全体を測定し、まずタイトル詳細を最大50パーセント縮小し、それでも必要な場合は主要タイトルを最大30パーセント縮小します。フォント読み込み後とウィンドウサイズ変更時にも再調整し、行が折り返されないようにします。
+
 ## コミット
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -64,3 +68,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [92da28e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/92da28e2f01c823c14ca435c44d3f47cfebede9e)
 - [0e6be2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/0e6be2ce8afb587a41cfc189aac8b4c4a6016a48)
 - [be55dd47](https://github.com/Cognis-Labs-HQ/Cognis/commit/be55dd4775bda31fb70926e64af09fb322fdd50d)
+- [fc3379e4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc3379e48419678433fd00b250ff6bf45bf9a578)

@@ -414,12 +414,17 @@ export async function openPopup({
                 .replaceAll("'", "&#39;");
         }
 
-        function renderPopupTitle(titleValue, detailValue, actionValue) {
+        function renderPopupHeading(
+            titleValue,
+            detailValue,
+            actionValue,
+            leadingValue,
+        ) {
             const detail = String(detailValue ?? "");
-            const heading = actionValue
+            const titleContent = actionValue
                 ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(actionValue.id)}" type="button">${escapeHtml(actionValue.label)}</button>`
                 : escapeHtml(titleValue ?? "");
-            return `${heading}${detail ? `<span class="popup-title-detail">${escapeHtml(detail)}</span>` : ""}`;
+            return `${leadingValue ?? ""}<h2 class="popup-title" id="popup-title">${titleContent}</h2>${detail ? `<h4 class="popup-title-detail">${escapeHtml(detail)}</h4>` : ""}`;
         }
 
         function renderActionContent(action) {
@@ -473,6 +478,7 @@ export async function openPopup({
                 countdownInterval = null;
             }
             document.removeEventListener("keydown", onKeyDown);
+            window.removeEventListener("resize", fitPopupTitleRow);
             closeProtectionTracker?.destroy();
             closeProtectionTracker = null;
             let removed = false;
@@ -536,7 +542,7 @@ export async function openPopup({
         overlay.innerHTML = `
       <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
         <div class="popup-header">
-          <div class="popup-heading">${currentPage?.titleLeading ?? titleLeading ?? ""}<h2 class="popup-title" id="popup-title">${renderPopupTitle(currentPage?.title ?? title, currentPage?.titleDetail ?? titleDetail, currentPage?.titleAction ?? titleAction)}</h2></div>
+          <div class="popup-heading">${renderPopupHeading(currentPage?.title ?? title, currentPage?.titleDetail ?? titleDetail, currentPage?.titleAction ?? titleAction, currentPage?.titleLeading ?? titleLeading)}</div>
           <button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>
         </div>
         <div class="popup-body">${resolvedBody}</div>
@@ -557,15 +563,19 @@ export async function openPopup({
             const nextPage = popupPages.find((page) => page.id === pageId);
             if (!nextPage) return false;
             currentPage = nextPage;
-            const titleEl = overlay.querySelector(".popup-title");
+            const headingEl = overlay.querySelector(".popup-heading");
             const bodyEl = overlay.querySelector(".popup-body");
             const footerEl = overlay.querySelector(".popup-footer");
-            if (titleEl)
-                titleEl.innerHTML = renderPopupTitle(
+            if (headingEl) {
+                headingEl.innerHTML = renderPopupHeading(
                     currentPage.title ?? title,
                     currentPage.titleDetail ?? titleDetail,
                     currentPage.titleAction ?? titleAction,
+                    currentPage.titleLeading ?? titleLeading,
                 );
+                bindActionButtons(headingEl);
+                fitPopupTitleRow();
+            }
             if (bodyEl)
                 bodyEl.innerHTML = resolvePageValue(currentPage.body, body);
             if (closeProtection) {
@@ -639,6 +649,42 @@ export async function openPopup({
                 });
             });
         }
+
+        function fitPopupTitleRow() {
+            const heading = overlay.querySelector(".popup-heading");
+            const titleElement = heading?.querySelector(".popup-title");
+            const detailElement = heading?.querySelector(".popup-title-detail");
+            if (!heading || !titleElement) return;
+            heading.style.setProperty("--popup-title-scale", "1");
+            heading.style.setProperty("--popup-title-detail-scale", "1");
+            const style = window.getComputedStyle(heading);
+            const gap = Number.parseFloat(style.columnGap || style.gap) || 0;
+            const contentWidth = () =>
+                Array.from(heading.children).reduce(
+                    (width, element) => width + element.scrollWidth,
+                    gap * Math.max(0, heading.children.length - 1),
+                );
+            let detailScale = 1;
+            while (
+                detailElement &&
+                contentWidth() > heading.clientWidth &&
+                detailScale > 0.5
+            ) {
+                detailScale = Math.max(0.5, detailScale - 0.05);
+                heading.style.setProperty(
+                    "--popup-title-detail-scale",
+                    String(detailScale),
+                );
+            }
+            let titleScale = 1;
+            while (contentWidth() > heading.clientWidth && titleScale > 0.7) {
+                titleScale = Math.max(0.7, titleScale - 0.05);
+                heading.style.setProperty(
+                    "--popup-title-scale",
+                    String(titleScale),
+                );
+            }
+        }
         bindActionButtons(overlay);
 
         function onKeyDown(event) {
@@ -666,6 +712,9 @@ export async function openPopup({
 
         document.body.appendChild(overlay);
         lockPageScroll();
+        window.addEventListener("resize", fitPopupTitleRow);
+        fitPopupTitleRow();
+        document.fonts?.ready.then(fitPopupTitleRow);
 
         if (typeof onOpen === "function") {
             onOpen(overlay, () => dismiss(null), {

@@ -50,6 +50,10 @@ Minimal Library cards now render their primary content at twice the previous sca
 
 Minimal Library charts now use the full available width with gapless, equal cells that preserve a two-to-one aspect ratio. Cards grow with their cells, rows use continuous separators, and requested blank positions display muted dashes instead of disappearing.
 
+## Single-line adaptive popup headings
+
+Popup title details now render as sibling h4 elements instead of being nested inside the h2 title. The shared popup measures the complete heading after rendering, reduces title-detail text as far as fifty percent first, then reduces the main title by at most thirty percent, and repeats fitting after font loading and window resizing so the row never wraps.
+
 ## Commits
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -64,3 +68,4 @@ Minimal Library charts now use the full available width with gapless, equal cell
 - [92da28e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/92da28e2f01c823c14ca435c44d3f47cfebede9e)
 - [0e6be2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/0e6be2ce8afb587a41cfc189aac8b4c4a6016a48)
 - [be55dd47](https://github.com/Cognis-Labs-HQ/Cognis/commit/be55dd4775bda31fb70926e64af09fb322fdd50d)
+- [fc3379e4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc3379e48419678433fd00b250ff6bf45bf9a578)

@@ -12,11 +12,15 @@ const stylesheet = readFileSync(
 );
 
 test("popup title details are escaped and visually subordinate", () => {
-    assert.match(source, /function renderPopupTitle/);
+    assert.match(source, /function renderPopupHeading/);
     assert.match(source, /escapeHtml\(detail\)/);
-    assert.match(source, /class="popup-title-detail"/);
+    assert.match(source, /<h4 class="popup-title-detail"/);
+    assert.doesNotMatch(source, /<h2 class="popup-title"[^>]*>[^<]*\$\{detail/);
     assert.match(stylesheet, /\.popup-title-detail/);
-    assert.match(stylesheet, /font-size: 0\.936em/);
+    assert.match(
+        stylesheet,
+        /font-size: calc\(0\.936em \* var\(--popup-title-detail-scale, 1\)\)/,
+    );
     assert.match(stylesheet, /font-weight: 400/);
 });
 
@@ -44,6 +48,26 @@ test("popup typography scales from the user font-size preference", () => {
         stylesheet,
         /\.popup-body :where\(h3\)[\s\S]*font-size: 1\.5em/,
     );
-    assert.match(stylesheet, /\.popup-title[\s\S]*font-size: 3em/);
+    assert.match(
+        stylesheet,
+        /\.popup-title[\s\S]*font-size: calc\(3em \* var\(--popup-title-scale, 1\)\)/,
+    );
     assert.doesNotMatch(stylesheet, /font-size\s*:\s*[\d.]+(?:px|pt)\b/);
+});
+
+test("popup headings stay on one row and scale detail before title", () => {
+    assert.match(source, /function fitPopupTitleRow/);
+    assert.match(source, /detailScale > 0\.5/);
+    assert.match(source, /titleScale > 0\.7/);
+    assert.ok(
+        source.indexOf("detailScale > 0.5") <
+            source.indexOf("titleScale > 0.7"),
+    );
+    assert.match(
+        source,
+        /window\.addEventListener\("resize", fitPopupTitleRow\)/,
+    );
+    assert.match(source, /document\.fonts\?\.ready\.then\(fitPopupTitleRow\)/);
+    assert.match(stylesheet, /\.popup-heading[\s\S]*white-space: nowrap/);
+    assert.match(stylesheet, /\.popup-title-detail[\s\S]*white-space: nowrap/);
 });

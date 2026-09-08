@@ -67,22 +67,32 @@
     gap: 0.75rem;
     flex: 1;
     min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .popup-title {
     margin: 0;
-    font-size: 3em;
+    overflow: hidden;
+    font-size: calc(3em * var(--popup-title-scale, 1));
     font-weight: 700;
     color: var(--text);
-    flex: 1;
+    flex: 0 1 auto;
     min-width: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .popup-title-detail {
-    margin-inline-start: 0.5em;
+    overflow: hidden;
+    margin: 0;
     color: var(--text-muted);
-    font-size: 0.936em;
+    font-size: calc(0.936em * var(--popup-title-detail-scale, 1));
     font-weight: 400;
+    flex: 0 1 auto;
+    min-width: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .popup-title-action {
