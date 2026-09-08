@@ -71,6 +71,26 @@
     transform: translateX(3px);
 }
 
+.page-shell-user-menu-item--logout::before {
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 auto;
+    background: center / contain no-repeat
+        url("/static/assets/reuse/power-dark.svg");
+    content: "";
+}
+
+body[data-theme="light"] .page-shell-user-menu-item--logout::before {
+    background-image: url("/static/assets/reuse/power-light.svg");
+}
+
+.page-shell-user-menu-item--logout:hover:not(:disabled),
+.page-shell-user-menu-item--logout:focus-visible {
+    color: var(--color-danger-outline-text, var(--color-danger-text));
+    background: var(--color-danger-hover-bg);
+    border-color: var(--color-danger-outline-text, var(--color-danger-text));
+}
+
 .app-shell .page-shell-user-menu-item.active {
     border-bottom: 2px solid var(--accent-2);
     border-radius: 0;

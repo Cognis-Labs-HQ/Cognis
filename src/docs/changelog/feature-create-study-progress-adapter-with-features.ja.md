@@ -134,6 +134,10 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 
 固定ページシェルヘッダーがはみ出した内容を切り取らないようにし、シェルの重なり順を保ったままユーザードロップダウンをメインナビゲーションの境界より下に表示できるようにしました。
 
+## 共有とログアウトのメニュー表示を統一
+
+「共有」など非同期に追加されるユーザーメニュー項目へ、シェル所有のメニュークラスを自動付与するようにしました。ログアウトにはキャンセル操作のホバー表示とテーマ対応の電源アイコンを使用します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -177,3 +181,4 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 - [8373c151](https://github.com/Cognis-Labs-HQ/Cognis/commit/8373c15186eb49298e4d961f11d273d06b3146ef)
 - [a2da40bf](https://github.com/Cognis-Labs-HQ/Cognis/commit/a2da40bf07e7651088e6444259aa536755c14b8a)
 - [1d47e019](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d47e019124ef7e2e90c05f96a46ff0d3282912e)
+- [e4fa5f2a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4fa5f2ac0669a6ec93fe00b2a926283b2ac8ab4)

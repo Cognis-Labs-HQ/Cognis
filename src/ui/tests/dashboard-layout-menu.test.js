@@ -349,6 +349,36 @@ test("user menu entries gain an outline on hover", () => {
     );
 });
 
+test("provider entries and logout use the shell-owned menu presentation", () => {
+    const template = readFileSync(
+        resolve(ROOT, "src/ui/public/templates/dashboard-layout.html"),
+        "utf8",
+    );
+    const styles = readFileSync(
+        resolve(ROOT, "src/ui/styles/page-builder/user-menu.css"),
+        "utf8",
+    );
+    const integritySource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/user-menu.js"),
+        "utf8",
+    );
+
+    assert.match(
+        integritySource,
+        /control\?\.classList\?\.add\([\s\S]*"dropdown-item",[\s\S]*"page-shell-user-menu-item"/,
+    );
+    assert.match(
+        template,
+        /id="profile-logout"[\s\S]*class="[^"]*page-shell-user-menu-item--logout[^"]*btn-cancel[^"]*"/,
+    );
+    assert.match(styles, /power-dark\.svg/);
+    assert.match(styles, /power-light\.svg/);
+    assert.match(
+        styles,
+        /\.page-shell-user-menu-item--logout:hover:not\(:disabled\)[\s\S]*var\(--color-danger-hover-bg\)/,
+    );
+});
+
 test("dashboard navigation alphabetizes and redraws entries as plugins add them", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),

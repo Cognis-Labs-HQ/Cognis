@@ -70,6 +70,7 @@
     "page-shell-user-dropdown",
     "page-shell-user-menu",
     "page-shell-user-menu-item",
+    "page-shell-user-menu-item--logout",
     "page-subnav",
     "page-subnav-list",
     "popup-action-btn",

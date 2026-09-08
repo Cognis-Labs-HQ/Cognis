@@ -134,6 +134,10 @@ Das Benutzermenü besitzt nun ein eigenes Stylesheet der zentralen Seitenoberfl�
 
 Die fixierte Kopfzeile der Seitenoberfläche schneidet überlaufende Inhalte nicht mehr ab. Dadurch wird das Benutzermenü unterhalb des primären Navigationsrands mit seiner vorgesehenen Stapelreihenfolge angezeigt.
 
+## Menüaktionen „Freigaben“ und „Abmelden“ vereinheitlicht
+
+Asynchron hinzugefügte Einträge wie „Freigaben“ erhalten nun automatisch die Styles der Seitenoberfläche. „Abmelden“ verwendet beim Darüberfahren die Darstellung einer Abbruchaktion und ein themeabhängiges Ein-/Aus-Symbol.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -177,3 +181,4 @@ Die fixierte Kopfzeile der Seitenoberfläche schneidet überlaufende Inhalte nic
 - [8373c151](https://github.com/Cognis-Labs-HQ/Cognis/commit/8373c15186eb49298e4d961f11d273d06b3146ef)
 - [a2da40bf](https://github.com/Cognis-Labs-HQ/Cognis/commit/a2da40bf07e7651088e6444259aa536755c14b8a)
 - [1d47e019](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d47e019124ef7e2e90c05f96a46ff0d3282912e)
+- [e4fa5f2a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4fa5f2ac0669a6ec93fe00b2a926283b2ac8ab4)
