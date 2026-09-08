@@ -138,6 +138,10 @@ The sticky page-shell header no longer clips overflowing content, allowing the u
 
 Asynchronous user-menu contributions such as Shares now receive the shell-owned menu classes automatically. Logout uses the cancel-action hover treatment and a theme-aware power icon.
 
+## Refine themed action feedback
+
+Logout now spaces its power icon from the label and tints the icon with the cancel-action red on hover. Study page links use the lighter success treatment in light mode instead of the saturated dark-theme green.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -182,3 +186,4 @@ Asynchronous user-menu contributions such as Shares now receive the shell-owned 
 - [a2da40bf](https://github.com/Cognis-Labs-HQ/Cognis/commit/a2da40bf07e7651088e6444259aa536755c14b8a)
 - [1d47e019](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d47e019124ef7e2e90c05f96a46ff0d3282912e)
 - [e4fa5f2a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4fa5f2ac0669a6ec93fe00b2a926283b2ac8ab4)
+- [b1e6e962](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1e6e96288911f324cc48952431887ce89246ae1)

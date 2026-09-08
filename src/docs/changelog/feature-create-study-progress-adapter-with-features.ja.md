@@ -138,6 +138,10 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 
 「共有」など非同期に追加されるユーザーメニュー項目へ、シェル所有のメニュークラスを自動付与するようにしました。ログアウトにはキャンセル操作のホバー表示とテーマ対応の電源アイコンを使用します。
 
+## テーマに応じた操作フィードバックを改善
+
+ログアウトの電源アイコンとラベルの間隔を確保し、ホバー時にはキャンセル操作と同じ赤色でアイコンを表示します。学習ホームのページリンクは、ライトモードでダークテーマ向けの濃い緑色ではなく、明るい成功表示を使用します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -182,3 +186,4 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 - [a2da40bf](https://github.com/Cognis-Labs-HQ/Cognis/commit/a2da40bf07e7651088e6444259aa536755c14b8a)
 - [1d47e019](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d47e019124ef7e2e90c05f96a46ff0d3282912e)
 - [e4fa5f2a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4fa5f2ac0669a6ec93fe00b2a926283b2ac8ab4)
+- [b1e6e962](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1e6e96288911f324cc48952431887ce89246ae1)

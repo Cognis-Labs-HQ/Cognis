@@ -189,6 +189,12 @@
     color: #fff;
 }
 
+body[data-theme="light"] .study-hub-module-link:hover,
+body[data-theme="light"] .study-hub-module-link:focus-visible {
+    background: var(--color-success-hover-bg);
+    color: var(--color-success-outline-text);
+}
+
 .study-hub-no-modules {
     font-size: 0.85rem;
     color: var(--text-muted);

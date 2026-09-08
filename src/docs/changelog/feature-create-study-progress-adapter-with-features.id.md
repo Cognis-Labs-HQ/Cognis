@@ -138,6 +138,10 @@ Header kerangka halaman yang melekat tidak lagi memotong konten yang meluap, seh
 
 Kontribusi menu pengguna asinkron seperti Berbagi kini otomatis menerima kelas menu milik kerangka. Tindakan Keluar memakai tampilan hover tindakan batal dan ikon daya yang menyesuaikan tema.
 
+## Sempurnakan umpan balik tindakan bertema
+
+Tindakan Keluar kini memberi jarak antara ikon daya dan label, serta mewarnai ikon dengan merah tindakan batal saat diarahkan. Tautan halaman Belajar memakai tampilan sukses yang lebih terang dalam mode terang, bukan hijau pekat dari tema gelap.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -182,3 +186,4 @@ Kontribusi menu pengguna asinkron seperti Berbagi kini otomatis menerima kelas m
 - [a2da40bf](https://github.com/Cognis-Labs-HQ/Cognis/commit/a2da40bf07e7651088e6444259aa536755c14b8a)
 - [1d47e019](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d47e019124ef7e2e90c05f96a46ff0d3282912e)
 - [e4fa5f2a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4fa5f2ac0669a6ec93fe00b2a926283b2ac8ab4)
+- [b1e6e962](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1e6e96288911f324cc48952431887ce89246ae1)

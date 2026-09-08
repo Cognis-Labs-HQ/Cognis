@@ -375,6 +375,14 @@ test("provider entries and logout use the shell-owned menu presentation", () => 
     assert.match(styles, /power-light\.svg/);
     assert.match(
         styles,
+        /\.page-shell-user-menu-item--logout\s*\{[^}]*gap:\s*0\.5rem/,
+    );
+    assert.match(
+        styles,
+        /\.page-shell-user-menu-item--logout::before\s*\{[^}]*background-color:\s*currentColor/,
+    );
+    assert.match(
+        styles,
         /\.page-shell-user-menu-item--logout:hover:not\(:disabled\)[\s\S]*var\(--color-danger-hover-bg\)/,
     );
 });

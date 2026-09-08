@@ -90,3 +90,15 @@ test("Study sub-navigation normalizes language codes before resolving flags", ()
     );
     assert.match(source, /\$\{escapeHtml\(language\.flag\)\}/);
 });
+
+test("Study page links use light-theme success hover tokens", () => {
+    const stylesheet = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/study.css"),
+        "utf8",
+    );
+
+    assert.match(
+        stylesheet,
+        /body\[data-theme="light"\] \.study-hub-module-link:hover,[\s\S]*background: var\(--color-success-hover-bg\);[\s\S]*color: var\(--color-success-outline-text\);/,
+    );
+});
