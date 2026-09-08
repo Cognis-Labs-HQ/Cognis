@@ -22,6 +22,10 @@ Logout kini hanya mempertahankan tampilan batal berwarna merah saat diarahkan. K
 
 Rute SPA Study kini hanya ditawarkan selama setidaknya satu modul bahasa yang valid dan aktif tersedia. Permintaan langsung serta pemasangan SPA dari cache dialihkan ke `/error?code=503` ketika validasi bahasa membuat Study tidak tersedia, alih-alih merender kerangka Study yang kosong atau rusak.
 
+## Kartu minimal selebar konten dan judul popup lebih tegas
+
+Kisi Pustaka minimal tetap menyediakan jumlah kolom sama besar yang diminta modul, termasuk posisi kosong, sementara kartu yang terlihat kini menyusut sesuai konten beserta padding dan tetap berada di tengah setiap slot kisi yang diskalakan. Ukuran judul popup digandakan dan detail judul diperbesar tiga puluh persen.
+
 ## Commit
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -29,3 +33,4 @@ Rute SPA Study kini hanya ditawarkan selama setidaknya satu modul bahasa yang va
 - [dfbc9b22](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfbc9b22569c7f426d08f075c8ac79e80fa7e165)
 - [98eb5217](https://github.com/Cognis-Labs-HQ/Cognis/commit/98eb5217e93fcd9cf765f3461e78080d9e33fd74)
 - [a6bb913b](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6bb913bf18284dd5bd7f172994ec41fdacb78d6)
+- [8ec16aee](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ec16aee27bb9ba6e4d3b1461d30bb9b1003020f)

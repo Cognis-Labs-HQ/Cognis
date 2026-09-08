@@ -16,7 +16,7 @@ test("popup title details are escaped and visually subordinate", () => {
     assert.match(source, /escapeHtml\(detail\)/);
     assert.match(source, /class="popup-title-detail"/);
     assert.match(stylesheet, /\.popup-title-detail/);
-    assert.match(stylesheet, /font-size: 0\.72em/);
+    assert.match(stylesheet, /font-size: 0\.936em/);
     assert.match(stylesheet, /font-weight: 400/);
 });
 
@@ -34,6 +34,6 @@ test("popup typography scales from the user font-size preference", () => {
         stylesheet,
         /\.popup-body :where\(h3\)[\s\S]*font-size: 1\.5em/,
     );
-    assert.match(stylesheet, /\.popup-title[\s\S]*font-size: 1\.5em/);
+    assert.match(stylesheet, /\.popup-title[\s\S]*font-size: 3em/);
     assert.doesNotMatch(stylesheet, /font-size\s*:\s*[\d.]+(?:px|pt)\b/);
 });

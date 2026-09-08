@@ -63,7 +63,7 @@
 
 .popup-title {
     margin: 0;
-    font-size: 1.5em;
+    font-size: 3em;
     font-weight: 700;
     color: var(--text);
     flex: 1;
@@ -73,7 +73,7 @@
 .popup-title-detail {
     margin-inline-start: 0.5em;
     color: var(--text-muted);
-    font-size: 0.72em;
+    font-size: 0.936em;
     font-weight: 400;
 }
 

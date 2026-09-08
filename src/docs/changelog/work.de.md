@@ -22,6 +22,10 @@ Abmelden behält beim Darüberfahren ausschließlich die rote Abbrechen-Darstell
 
 Study-SPA-Routen werden nur noch angeboten, solange mindestens ein gültiges, aktiviertes Sprachmodul vorhanden ist. Direkte Anfragen und zwischengespeicherte SPA-Einbindungen werden zu `/error?code=503` umgeleitet, wenn Study nach der Sprachvalidierung nicht verfügbar ist, statt eine leere oder defekte Study-Oberfläche darzustellen.
 
+## Inhaltsbreite minimale Karten und deutlichere Popup-Titel
+
+Minimale Bibliotheksraster reservieren weiterhin die vom Modul angeforderte Anzahl gleich breiter Spalten einschließlich leerer Positionen. Sichtbare Karten schrumpfen nun auf ihren Inhalt zuzüglich Innenabstand und bleiben in jedem skalierten Rasterplatz zentriert. Popup-Titel sind doppelt so groß und Titeldetails dreißig Prozent größer.
+
 ## Commits
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -29,3 +33,4 @@ Study-SPA-Routen werden nur noch angeboten, solange mindestens ein gültiges, ak
 - [dfbc9b22](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfbc9b22569c7f426d08f075c8ac79e80fa7e165)
 - [98eb5217](https://github.com/Cognis-Labs-HQ/Cognis/commit/98eb5217e93fcd9cf765f3461e78080d9e33fd74)
 - [a6bb913b](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6bb913bf18284dd5bd7f172994ec41fdacb78d6)
+- [8ec16aee](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ec16aee27bb9ba6e4d3b1461d30bb9b1003020f)

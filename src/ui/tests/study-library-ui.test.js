@@ -69,6 +69,14 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     );
     assert.match(
         stylesheet,
+        /\.library-entry-grid--minimal \.library-entry-card-shell[\s\S]*width:\s*fit-content[\s\S]*justify-self:\s*center/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-entry-grid--minimal \.library-entry-card-blank[\s\S]*align-self:\s*stretch[\s\S]*justify-self:\s*stretch[\s\S]*min-height:\s*3\.5rem/,
+    );
+    assert.match(
+        stylesheet,
         /\.library-entry-grid:has\(\.library-entry-variants-open\)::before[\s\S]*z-index:\s*4[\s\S]*backdrop-filter:\s*blur\(0\.18rem\)[\s\S]*pointer-events:\s*none/,
     );
     assert.match(
