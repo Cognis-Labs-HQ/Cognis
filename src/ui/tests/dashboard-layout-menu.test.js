@@ -430,6 +430,23 @@ test("dashboard navigation alphabetizes and redraws entries as plugins add them"
     );
 });
 
+test("sub-navigation folding uses a stable header-height threshold", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    assert.match(layoutSource, /currentlyPrioritized/);
+    assert.match(layoutSource, /primaryNavigation\?\.scrollHeight/);
+    assert.match(
+        layoutSource,
+        /window\.scrollY > primaryNavigationHeight \+ 12/,
+    );
+    assert.match(
+        layoutSource,
+        /currentlyPrioritized[\s\S]*window\.scrollY > 12/,
+    );
+});
+
 test("core reconciles duplicate provider entries in the user menu", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),

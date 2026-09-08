@@ -172,28 +172,41 @@ export function compositionReferenceGroups(detail, schemas) {
     const entriesById = new Map(
         (detail.references ?? []).map((entry) => [entry.id, entry]),
     );
-    return (sourceLayer?.relationships ?? [])
-        .filter((relationship) => relationship.resolverRole)
-        .map((relationship) => ({
+    const relationshipsById = new Map(
+        (sourceLayer?.relationships ?? [])
+            .filter((relationship) => relationship.resolverRole)
+            .map((relationship) => [relationship.id, relationship]),
+    );
+    const groupsByRole = new Map();
+    for (const reference of detail.entry.references ?? []) {
+        const relationship = relationshipsById.get(reference.relation);
+        const entry = entriesById.get(reference.entryId);
+        if (
+            !relationship ||
+            !entry ||
+            isMeaningLayer(layerForEntry(schemas, entry))
+        )
+            continue;
+        const presentationRole = relationshipPresentationRole(
+            relationship,
+            sourceLayer,
+            schemas,
+        );
+        const group = groupsByRole.get(presentationRole) ?? {
             id: relationship.id,
-            presentationRole: relationshipPresentationRole(
-                relationship,
-                sourceLayer,
-                schemas,
-            ),
-            entries: (detail.entry.references ?? [])
-                .filter((reference) => reference.relation === relationship.id)
-                .sort(
-                    (left, right) =>
-                        (left.position ?? 0) - (right.position ?? 0),
-                )
-                .map((reference) => entriesById.get(reference.entryId))
-                .filter(
-                    (entry) =>
-                        entry && !isMeaningLayer(layerForEntry(schemas, entry)),
-                ),
-        }))
-        .filter((group) => group.entries.length);
+            presentationRole,
+            references: [],
+        };
+        group.references.push({ entry, position: reference.position ?? 0 });
+        groupsByRole.set(presentationRole, group);
+    }
+    return Array.from(groupsByRole.values(), (group) => ({
+        id: group.id,
+        presentationRole: group.presentationRole,
+        entries: group.references
+            .sort((left, right) => left.position - right.position)
+            .map(({ entry }) => entry),
+    }));
 }
 
 export function headingCompositionReference(detail, schemas) {

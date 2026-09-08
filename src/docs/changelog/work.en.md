@@ -30,6 +30,10 @@ Minimal Library grids continue to allocate the module-requested number of equal 
 
 Every Library layer now presents definitions through the shared popup title-detail structure, places scope beside the title, uses standard close controls and SVG navigation icons, and previews linked definitions consistently. Directional variants at grid edges fall back upward instead of overlapping the next or previous row.
 
+## Complete compositions and stable Study navigation
+
+Library composition references now merge by presentation role and preserve their declared positions, so particles remain in the same complete composition instead of appearing beneath a duplicate heading. Study sub-navigation folding now uses a header-height-aware hysteresis threshold that prevents layout-induced scroll changes from rapidly reopening and closing the primary navigation.
+
 ## Commits
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -39,3 +43,4 @@ Every Library layer now presents definitions through the shared popup title-deta
 - [a6bb913b](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6bb913bf18284dd5bd7f172994ec41fdacb78d6)
 - [8ec16aee](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ec16aee27bb9ba6e4d3b1461d30bb9b1003020f)
 - [c7a41d2c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7a41d2c3933afa6502a7633b1f6089c816e7c8e)
+- [c2b80b54](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2b80b5468ee6acfcb2e525fcdbcfd6df7865f5d)

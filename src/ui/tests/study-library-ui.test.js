@@ -124,6 +124,12 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /layer\?\.semanticRole === "particle"/);
     assert.match(source, /const compositions = compositionReferenceGroups/);
     assert.match(source, /function compositionReferenceGroups/);
+    assert.match(source, /const groupsByRole = new Map/);
+    assert.match(source, /groupsByRole\.get\(presentationRole\)/);
+    assert.match(
+        source,
+        /sort\(\(left, right\) => left\.position - right\.position\)/,
+    );
     assert.match(source, /function renderCompositionGroups/);
     assert.match(source, /relationship\.resolverRole/);
     assert.match(source, /library-composition-operator/);

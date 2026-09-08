@@ -30,6 +30,10 @@ Minimale Bibliotheksraster reservieren weiterhin die vom Modul angeforderte Anza
 
 Alle Bibliotheksebenen zeigen Definitionen nun über die gemeinsame Titel-Detail-Struktur des Popups, platzieren den Geltungsbereich neben dem Titel, verwenden standardisierte Schließen-Steuerelemente und SVG-Navigationssymbole und zeigen verknüpfte Definitionen einheitlich in der Vorschau. Gerichtete Varianten an Rasterrändern weichen nach oben aus, statt die nächste oder vorherige Zeile zu überlagern.
 
+## Vollständige Kompositionen und stabile Study-Navigation
+
+Kompositionsverweise der Bibliothek werden nun nach Darstellungsrolle zusammengeführt und behalten ihre festgelegten Positionen bei, sodass Partikel in derselben vollständigen Komposition bleiben, statt unter einer doppelten Überschrift zu erscheinen. Das Einklappen der Study-Unternavigation verwendet nun einen höhenabhängigen Hystereseschwellenwert, der verhindert, dass layoutbedingte Scrolländerungen die Hauptnavigation schnell öffnen und schließen.
+
 ## Commits
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -39,3 +43,4 @@ Alle Bibliotheksebenen zeigen Definitionen nun über die gemeinsame Titel-Detail
 - [a6bb913b](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6bb913bf18284dd5bd7f172994ec41fdacb78d6)
 - [8ec16aee](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ec16aee27bb9ba6e4d3b1461d30bb9b1003020f)
 - [c7a41d2c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7a41d2c3933afa6502a7633b1f6089c816e7c8e)
+- [c2b80b54](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2b80b5468ee6acfcb2e525fcdbcfd6df7865f5d)
