@@ -41,3 +41,5 @@ Die lokalisierten Metadaten jeder Ebene bestimmen ihren sichtbaren Namen. Nicht-
 Definitionseinträge können nie direkt geöffnet oder verlinkt werden; sie liefern ausschließlich lokalisierten Text für andere Einträge. Sichtbare Übersetzungen werden nur in der aktiven Oberflächensprache angezeigt. Resolver-Beziehungen unterscheiden mit `presentationRole` zwischen `composition`, `alternateSpelling` und `pronunciation`, sodass vollständige Wortlesungen nicht als mehrdeutige Zeichenfolge erscheinen.
 
 Enthält eine Zusammensetzung genau einen Eintrag mit derselben Bezeichnung wie der aktuelle Eintrag, wird der doppelte Zusammensetzungsblock ausgeblendet und dessen Deep-Link ersetzt stattdessen die Pop-up-Überschrift.
+
+Das Page-Composer-Widget umschließt nun das Bibliotheksschema passgenau und bleibt auf die verfügbare Breite begrenzt, sodass ungenutzte Widget-Breite keinen horizontalen Überlauf erzeugt.

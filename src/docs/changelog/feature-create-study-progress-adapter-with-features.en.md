@@ -98,6 +98,10 @@ Definition records can no longer be opened directly and only supply text to othe
 
 When a single composition link carries the same text as the current card, that link now replaces the popup heading and the duplicate Composition section is omitted.
 
+## Overflow-safe Library width
+
+The containing widget now sizes itself to the Library schema while remaining capped to the available space, eliminating unused right-side width and horizontal page overflow.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -132,3 +136,4 @@ When a single composition link carries the same text as the current card, that l
 - [7f34d0c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f34d0c98a4b693a14f5c864bed07ace40bf79da)
 - [c3a7f703](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3a7f703c729ca3490a6bc16ad01ae7eebe02674)
 - [84a349c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/84a349c7fc4c1efb389ffd09b2ddd6654c2ecaba)
+- [08110121](https://github.com/Cognis-Labs-HQ/Cognis/commit/08110121dca4e9ec80cf8d358c71e1b01212c2de)

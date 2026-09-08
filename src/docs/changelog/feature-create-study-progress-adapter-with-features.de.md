@@ -98,6 +98,10 @@ Definitionsdatensätze können nicht mehr direkt geöffnet werden und liefern au
 
 Wenn ein einzelner Zusammensetzungslink denselben Text wie die aktuelle Karte trägt, ersetzt der Link jetzt die Pop-up-Überschrift und der doppelte Zusammensetzungsabschnitt entfällt.
 
+## Bibliotheksbreite ohne Überlauf
+
+Das umgebende Widget passt seine Breite jetzt an das Bibliotheksschema an und wird zugleich auf den verfügbaren Bereich begrenzt. Dadurch entsteht rechts kein ungenutzter Überhang oder horizontaler Seitenüberlauf.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -132,3 +136,4 @@ Wenn ein einzelner Zusammensetzungslink denselben Text wie die aktuelle Karte tr
 - [7f34d0c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f34d0c98a4b693a14f5c864bed07ace40bf79da)
 - [c3a7f703](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3a7f703c729ca3490a6bc16ad01ae7eebe02674)
 - [84a349c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/84a349c7fc4c1efb389ffd09b2ddd6654c2ecaba)
+- [08110121](https://github.com/Cognis-Labs-HQ/Cognis/commit/08110121dca4e9ec80cf8d358c71e1b01212c2de)

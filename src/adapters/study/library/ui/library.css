@@ -4,6 +4,16 @@
 
     display: grid;
     gap: 1.5rem;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.widget-card:has(> .library-browser) {
+    box-sizing: border-box;
+    width: fit-content;
+    min-width: 0;
+    max-width: 100%;
+    justify-self: start;
 }
 
 .library-layer-tabs {
@@ -38,6 +48,9 @@
 }
 
 .library-schema {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
     padding: 1rem;
     border: 1px solid var(--border);
     border-radius: 14px;

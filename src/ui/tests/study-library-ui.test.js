@@ -55,6 +55,9 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(stylesheet, /\.library-filters/);
     assert.match(stylesheet, /\.library-filter-pill\.active/);
     assert.match(stylesheet, /\.library-entry-card\[hidden\]/);
+    assert.match(stylesheet, /\.widget-card:has\(> \.library-browser\)/);
+    assert.match(stylesheet, /width: fit-content/);
+    assert.match(stylesheet, /max-width: 100%/);
     assert.match(stylesheet, /\.study-subnav-language-options/);
     assert.match(adapterSource, /\/static\/gateways\/study\/study\.css/);
 });

@@ -41,3 +41,5 @@ Metadata terlokalisasi setiap lapisan menentukan nama yang ditampilkan. Lapisan 
 Entri definisi tidak pernah dapat dibuka atau ditautkan secara langsung; entri tersebut hanya menyediakan teks terlokalisasi bagi entri lain. Terjemahan yang terlihat hanya ditampilkan dalam bahasa antarmuka aktif. Relasi resolver memakai `presentationRole` untuk membedakan `composition`, `alternateSpelling`, dan `pronunciation`, sehingga pelafalan berupa kata lengkap tidak tampil sebagai rangkaian karakter yang ambigu.
 
 Jika komposisi hanya memuat satu entri dengan label yang sama seperti entri saat ini, blok komposisi duplikat disembunyikan dan tautan dalamnya menggantikan judul popup.
+
+Widget page composer kini menyesuaikan lebarnya dengan skema Perpustakaan dan tetap dibatasi oleh lebar yang tersedia, sehingga lebar widget yang tidak terpakai tidak menimbulkan luapan horizontal.

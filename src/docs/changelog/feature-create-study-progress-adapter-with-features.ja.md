@@ -98,6 +98,10 @@
 
 単一の構成リンクが現在のカードと同じ文字列を持つ場合、そのリンクをポップアップ見出しとして表示し、重複する構成セクションを省略します。
 
+## 横方向にはみ出さないライブラリ幅
+
+外側のウィジェットをライブラリスキーマに合わせて縮めつつ、利用可能な領域を上限にしました。右側の不要な余白とページの横方向オーバーフローを解消します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -132,3 +136,4 @@
 - [7f34d0c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f34d0c98a4b693a14f5c864bed07ace40bf79da)
 - [c3a7f703](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3a7f703c729ca3490a6bc16ad01ae7eebe02674)
 - [84a349c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/84a349c7fc4c1efb389ffd09b2ddd6654c2ecaba)
+- [08110121](https://github.com/Cognis-Labs-HQ/Cognis/commit/08110121dca4e9ec80cf8d358c71e1b01212c2de)
