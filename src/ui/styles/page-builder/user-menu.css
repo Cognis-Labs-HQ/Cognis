@@ -96,6 +96,7 @@ body[data-theme="light"] .page-shell-user-menu-item--logout::before {
     color: var(--color-danger-outline-text, var(--color-danger-text));
     background: var(--color-danger-hover-bg);
     border-color: var(--color-danger-outline-text, var(--color-danger-text));
+    outline: none;
 }
 
 .app-shell .page-shell-user-menu-item.active {

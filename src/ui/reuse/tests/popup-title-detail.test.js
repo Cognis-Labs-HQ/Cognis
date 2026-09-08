@@ -34,5 +34,6 @@ test("popup typography scales from the user font-size preference", () => {
         stylesheet,
         /\.popup-body :where\(h3\)[\s\S]*font-size: 1\.5em/,
     );
+    assert.match(stylesheet, /\.popup-title[\s\S]*font-size: 1\.5em/);
     assert.doesNotMatch(stylesheet, /font-size\s*:\s*[\d.]+(?:px|pt)\b/);
 });

@@ -14,8 +14,13 @@ Detail-Popups leiten ihre Typografie jetzt von der vom Benutzer gewählten Anwen
 
 Ausgeblendete gerichtete Variantenkarten tragen nicht mehr zum scrollbaren Überlauf bei. Sie werden bis zur gezielten Anzeige aus dem Layout entfernt. Dadurch verschwinden der leere kartenbreite Bereich und die horizontale Bildlaufleiste, während langes Drücken und die Anzeige über Direktlinks erhalten bleiben.
 
+## Einheitliche Bibliothekssteuerung und geprüfte Sätze
+
+Abmelden behält beim Darüberfahren ausschließlich die rote Abbrechen-Darstellung. Minimale Karten zeigen Aussprache und lokalisierte Definition neben dem Hauptwert; Detailtitel und Audiofehler verwenden korrigierte relative Größen. Die Inhaltspaketaufnahme weist geordnete Sätze zurück, deren Text nicht durch verknüpfte lexikalische Einheiten oder Partikeln belegt ist.
+
 ## Commits
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
 - [e1584351](https://github.com/Cognis-Labs-HQ/Cognis/commit/e1584351d43f0337d3aba919e5c369a50be4f69e)
 - [dfbc9b22](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfbc9b22569c7f426d08f075c8ac79e80fa7e165)
+- [98eb5217](https://github.com/Cognis-Labs-HQ/Cognis/commit/98eb5217e93fcd9cf765f3461e78080d9e33fd74)

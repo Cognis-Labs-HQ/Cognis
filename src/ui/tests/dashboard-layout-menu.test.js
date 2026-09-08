@@ -46,6 +46,17 @@ test("layout CSS restores [hidden] visibility inside .dropdown", () => {
     );
 });
 
+test("logout hover keeps the cancel treatment without an accent outline", () => {
+    const css = readFileSync(
+        resolve(ROOT, "src/ui/styles/page-builder/user-menu.css"),
+        "utf8",
+    );
+    assert.match(
+        css,
+        /\.page-shell-user-menu-item--logout:hover:not\(:disabled\)[\s\S]*background: var\(--color-danger-hover-bg\)[\s\S]*outline: none/,
+    );
+});
+
 test("profile menu toggle is active while its dropdown is open", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),

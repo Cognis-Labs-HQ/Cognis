@@ -103,8 +103,15 @@
 }
 
 .library-entry-minimal-content {
-    font-size: 1.5rem;
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.4rem;
     line-height: 1;
+}
+
+.library-entry-minimal-content > strong {
+    font-size: 1.5rem;
 }
 
 .library-entry-card-shell {
@@ -531,7 +538,7 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     margin: 0;
     padding: 1rem 1.25rem;
     color: var(--text-muted);
-    font-size: 0.75rem;
+    font-size: 0.75em;
 }
 
 body[data-theme="light"] .library-audio {

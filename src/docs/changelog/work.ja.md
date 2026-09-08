@@ -14,8 +14,13 @@
 
 非表示の方向付きバリアントカードがスクロール領域に含まれないようにしました。意図的に表示されるまでレイアウトから除外することで、カード幅の空白領域と横スクロールバーをなくし、長押しおよびディープリンクによる表示は維持します。
 
+## 一貫したライブラリ操作と文の検証
+
+ログアウトのホバー表示は赤いキャンセル表示だけになりました。最小表示カードでは主要値の横に発音とローカライズ済み定義を維持し、詳細タイトルと音声エラーには修正済みの相対サイズを使用します。コンテンツパックの取り込みでは、リンクされた語彙単位または助詞のエントリで裏付けられていないテキストを含む順序付き文を拒否します。
+
 ## コミット
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
 - [e1584351](https://github.com/Cognis-Labs-HQ/Cognis/commit/e1584351d43f0337d3aba919e5c369a50be4f69e)
 - [dfbc9b22](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfbc9b22569c7f426d08f075c8ac79e80fa7e165)
+- [98eb5217](https://github.com/Cognis-Labs-HQ/Cognis/commit/98eb5217e93fcd9cf765f3461e78080d9e33fd74)

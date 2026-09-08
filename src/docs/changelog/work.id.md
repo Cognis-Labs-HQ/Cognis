@@ -14,8 +14,13 @@ Popup detail kini menetapkan tipografi berdasarkan ukuran font aplikasi pilihan 
 
 Kartu varian berarah yang tersembunyi tidak lagi ikut membentuk luapan yang dapat digulir. Kartu tersebut dikeluarkan dari tata letak hingga sengaja ditampilkan, sehingga area kosong selebar kartu dan bilah gulir horizontal hilang tanpa mengubah tekan lama maupun penampilan melalui tautan langsung.
 
+## Kontrol Pustaka konsisten dan kalimat tervalidasi
+
+Logout kini hanya mempertahankan tampilan batal berwarna merah saat diarahkan. Kartu minimal tetap menampilkan pelafalan dan definisi terlokalisasi di samping nilai utama, sedangkan judul detail dan kegagalan audio memakai ukuran relatif yang diperbaiki. Penyerapan paket konten menolak kalimat berurutan yang memuat teks tanpa dukungan entri unit leksikal atau partikel tertaut.
+
 ## Commit
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
 - [e1584351](https://github.com/Cognis-Labs-HQ/Cognis/commit/e1584351d43f0337d3aba919e5c369a50be4f69e)
 - [dfbc9b22](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfbc9b22569c7f426d08f075c8ac79e80fa7e165)
+- [98eb5217](https://github.com/Cognis-Labs-HQ/Cognis/commit/98eb5217e93fcd9cf765f3461e78080d9e33fd74)

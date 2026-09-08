@@ -32,6 +32,10 @@ function canonicalJson(value: unknown): string {
     return JSON.stringify(value);
 }
 
+function normalizedSequenceText(value: string): string {
+    return value.normalize("NFC").replaceAll(/\s/gu, "");
+}
+
 async function readJson(file: string): Promise<unknown> {
     return JSON.parse(await readFile(file, "utf8"));
 }
@@ -304,6 +308,45 @@ async function validateContentRecords(
         }));
         validateReferences(schema, record.layer, references, entries);
         const layer = schema.layers.find(({ id }) => id === record.layer)!;
+        if (layer.semanticRole === "orderedLexicalSequence") {
+            const constituentLayers = new Set(
+                (layer.relationships ?? [])
+                    .filter((relationship) => {
+                        const target = schema.layers.find(
+                            ({ id }) => id === relationship.targetLayer,
+                        );
+                        return (
+                            target?.semanticRole === "lexicalUnit" ||
+                            target?.semanticRole === "particle"
+                        );
+                    })
+                    .map(({ targetLayer }) => targetLayer),
+            );
+            const constituents = references
+                .map((reference) => ({
+                    reference,
+                    target: entries.get(reference.entryId),
+                }))
+                .filter(
+                    ({ target }) =>
+                        target && constituentLayers.has(target.layer),
+                )
+                .sort(
+                    (left, right) =>
+                        left.reference.position! - right.reference.position!,
+                );
+            if (
+                !constituents.length ||
+                constituents.some(
+                    ({ reference }, index) => reference.position !== index,
+                ) ||
+                normalizedSequenceText(
+                    constituents.map(({ target }) => target!.label).join(""),
+                ) !== normalizedSequenceText(record.label)
+            ) {
+                throw new Error("ordered_sequence_content_unresolved");
+            }
+        }
         if (layer.displayDefinition) {
             const definitionRelations = new Set(
                 (layer.relationships ?? [])

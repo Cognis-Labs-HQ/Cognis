@@ -230,3 +230,100 @@ test("content packs reject dangling relationships", async (t) => {
 
     await assert.rejects(inspectContentPack(root), /reference_not_found/);
 });
+
+test("content packs reject ordered sequences with unlinked text", async (t) => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-library-pack-"));
+    t.after(() => rm(root, { recursive: true, force: true }));
+    for (const layer of ["words", "particles", "sentences"])
+        await mkdir(path.join(root, "content", layer), { recursive: true });
+    await writeJson(path.join(root, "manifest.json"), {
+        id: "sentences",
+        publisher: "Test Publisher",
+        version: "1.0.0",
+        contentRevision: "1",
+        namespace: "sentences",
+        schema: "schema.json",
+        content: "content",
+        license: { id: "test" },
+    });
+    await writeJson(path.join(root, "schema.json"), {
+        id: "sentences",
+        version: 1,
+        namespace: "sentences",
+        language: "ja",
+        metadata: { labels: { en: "Sentences" } },
+        layers: [
+            {
+                id: "words",
+                semanticRole: "lexicalUnit",
+                metadata: { labels: { en: "Words" } },
+            },
+            {
+                id: "particles",
+                semanticRole: "particle",
+                metadata: { labels: { en: "Particles" } },
+            },
+            {
+                id: "sentences",
+                semanticRole: "orderedLexicalSequence",
+                metadata: { labels: { en: "Sentences" } },
+                relationships: [
+                    {
+                        id: "words",
+                        targetLayer: "words",
+                        metadata: { labels: { en: "Words" } },
+                        ordered: true,
+                        onDelete: "restrict",
+                    },
+                    {
+                        id: "particles",
+                        targetLayer: "particles",
+                        metadata: { labels: { en: "Particles" } },
+                        ordered: true,
+                        onDelete: "restrict",
+                    },
+                ],
+            },
+        ],
+    });
+    await writeJson(path.join(root, "content", "words", "words.json"), [
+        { id: "sentences:word:japanese", label: "日本語" },
+    ]);
+    await writeJson(path.join(root, "content", "particles", "particles.json"), [
+        { id: "sentences:particle:ga", label: "が" },
+    ]);
+    const sentenceFile = path.join(
+        root,
+        "content",
+        "sentences",
+        "sentences.json",
+    );
+    const references = [
+        {
+            entryId: "sentences:word:japanese",
+            relation: "words",
+            position: 0,
+        },
+        {
+            entryId: "sentences:particle:ga",
+            relation: "particles",
+            position: 1,
+        },
+    ];
+    await writeJson(sentenceFile, [
+        { id: "sentences:sentence:valid", label: "日本語が", references },
+    ]);
+    await assert.doesNotReject(inspectContentPack(root));
+
+    await writeJson(sentenceFile, [
+        {
+            id: "sentences:sentence:invalid",
+            label: "日本語が好き",
+            references,
+        },
+    ]);
+    await assert.rejects(
+        inspectContentPack(root),
+        /ordered_sequence_content_unresolved/,
+    );
+});

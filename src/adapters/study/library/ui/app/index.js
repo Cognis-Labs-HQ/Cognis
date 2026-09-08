@@ -198,9 +198,6 @@ function cardDefinition(entry, layer, entries, schema) {
 }
 
 function renderCardContents(entry, layer, entries, schema, i18n) {
-    if (layer.minimal) {
-        return `<strong class="library-entry-minimal-content">${escapeHtml(entry.label)}</strong>`;
-    }
     const pronunciation = pronunciationValues(entry)
         .map((value) => escapeHtml(value))
         .join(" · ");
@@ -218,6 +215,9 @@ function renderCardContents(entry, layer, entries, schema, i18n) {
     const definitionDisplay = definition
         ? `<span class="library-card-definition">${escapeHtml(definitionLabel)}</span>`
         : "";
+    if (layer.minimal) {
+        return `<span class="library-entry-minimal-content"><strong>${escapeHtml(entry.label)}</strong>${pronunciation ? `<span class="library-card-pronunciation">${pronunciation}</span>` : ""}${definitionDisplay}</span>`;
+    }
     return `${heading}${definitionDisplay}<span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span>`;
 }
 

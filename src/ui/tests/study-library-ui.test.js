@@ -60,6 +60,10 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /library-entry-grid--minimal/);
     assert.match(source, /library-entry-minimal-content/);
     assert.match(
+        source,
+        /library-entry-minimal-content[\s\S]*library-card-pronunciation[\s\S]*definitionDisplay/,
+    );
+    assert.match(
         stylesheet,
         /\.library-entry-grid--minimal \.library-entry-card[\s\S]*min-height:\s*3\.5rem[\s\S]*text-align:\s*center/,
     );
@@ -262,7 +266,7 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(stylesheet, /body\[data-theme="dark"\] \.library-audio/);
     assert.match(stylesheet, /background: var\(--surface-2\)/);
     assert.match(stylesheet, /\.library-audio-error/);
-    assert.match(stylesheet, /font-size: 0\.75rem/);
+    assert.match(stylesheet, /font-size: 0\.75em/);
     assert.match(stylesheet, /forced-color-adjust: none/);
     assert.match(stylesheet, /::-webkit-slider-thumb/);
     assert.match(stylesheet, /::-moz-range-thumb/);
