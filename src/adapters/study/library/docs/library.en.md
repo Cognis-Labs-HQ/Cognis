@@ -16,6 +16,8 @@ Consumers can contribute lookup providers with `registerLookupProvider`. Provide
 
 Create, resolve, and lookup operations participate in named ctx flows so consumers can add removable normalization, proposal, validation, enrichment, or ranking hooks.
 
+Minimal grids derive a bounded chart width and proportional card scale from `grid.rowSize`; explicit blank items remain dimensioned grid cells so chart columns never collapse.
+
 ## API and UI
 
 The Study gateway exposes schema discovery, generic entry listing and creation, entry details, bidirectional tracing, resolution previews, and lookup suggestions. Browser requests are centralized in the Study gateway Library client.

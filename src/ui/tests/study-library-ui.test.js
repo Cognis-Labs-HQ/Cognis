@@ -65,7 +65,11 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     );
     assert.match(
         stylesheet,
-        /\.library-entry-grid--minimal \.library-entry-card[\s\S]*min-height:\s*3\.5rem[\s\S]*text-align:\s*center/,
+        /\.library-entry-grid--minimal \.library-entry-card[\s\S]*calc\(20rem \/ var\(--library-grid-row-size, 5\)\)[\s\S]*text-align:\s*center/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-entry-grid--minimal\[style\][\s\S]*calc\(var\(--library-grid-row-size\) \* 10rem\)[\s\S]*margin-inline:\s*auto/,
     );
     assert.match(
         stylesheet,
@@ -73,8 +77,9 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     );
     assert.match(
         stylesheet,
-        /\.library-entry-grid--minimal \.library-entry-card-blank[\s\S]*align-self:\s*stretch[\s\S]*justify-self:\s*stretch[\s\S]*min-height:\s*3\.5rem/,
+        /\.library-entry-grid--minimal \.library-entry-card-blank[\s\S]*visibility:\s*hidden[\s\S]*align-self:\s*stretch[\s\S]*justify-self:\s*stretch/,
     );
+    assert.match(source, /data-library-grid-blank[\s\S]*&nbsp;/);
     assert.match(
         stylesheet,
         /\.library-entry-grid:has\(\.library-entry-variants-open\)::before[\s\S]*z-index:\s*4[\s\S]*backdrop-filter:\s*blur\(0\.18rem\)[\s\S]*pointer-events:\s*none/,

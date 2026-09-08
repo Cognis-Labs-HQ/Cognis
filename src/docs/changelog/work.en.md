@@ -38,6 +38,10 @@ Library composition references now merge by presentation role and preserve their
 
 Library schemas and content packs can explicitly link one entry to another entry in the same layer. These links now default to composition presentation, while directional variants and relationships explicitly marked as alternate spellings retain alternate-spelling behavior.
 
+## Balanced minimal Library grids
+
+Minimal Library grids now constrain their overall chart width from the requested row size and scale card height, padding, and primary text proportionally. Explicit blank positions render as hidden, dimensioned grid cells so subsequent kana remain in their requested columns.
+
 ## Commits
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -49,3 +53,4 @@ Library schemas and content packs can explicitly link one entry to another entry
 - [c7a41d2c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7a41d2c3933afa6502a7633b1f6089c816e7c8e)
 - [c2b80b54](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2b80b5468ee6acfcb2e525fcdbcfd6df7865f5d)
 - [d07ce255](https://github.com/Cognis-Labs-HQ/Cognis/commit/d07ce255cc0f65d5402f264a21574155c11c853d)
+- [92da28e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/92da28e2f01c823c14ca435c44d3f47cfebede9e)

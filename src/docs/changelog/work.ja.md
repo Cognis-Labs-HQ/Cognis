@@ -38,6 +38,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 ライブラリスキーマとコンテンツパックで、同一レイヤー内の項目同士を明示的に参照できるようにしました。これらのリンクは既定で構成として表示され、方向付きバリアントと別表記として明示された関係は従来の別表記動作を維持します。
 
+## バランスの取れた最小ライブラリグリッド
+
+最小表示のライブラリグリッドは、要求された行サイズに基づいてチャート全体の幅を制限し、カードの高さ、余白、主要テキストを比例して拡大縮小するようになりました。明示的な空白位置は寸法を持つ非表示グリッドセルとして描画されるため、後続の仮名が指定された列に維持されます。
+
 ## コミット
 
 - [00072b1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/00072b1fcccbf14a647f48d5fb5b293f72e27332)
@@ -49,3 +53,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [c7a41d2c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7a41d2c3933afa6502a7633b1f6089c816e7c8e)
 - [c2b80b54](https://github.com/Cognis-Labs-HQ/Cognis/commit/c2b80b5468ee6acfcb2e525fcdbcfd6df7865f5d)
 - [d07ce255](https://github.com/Cognis-Labs-HQ/Cognis/commit/d07ce255cc0f65d5402f264a21574155c11c853d)
+- [92da28e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/92da28e2f01c823c14ca435c44d3f47cfebede9e)

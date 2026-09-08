@@ -309,7 +309,7 @@ function renderLayerCards(layer, entries, schema, i18n, allEntries = entries) {
     const positionedCards = layer.grid.items
         .map((itemId) => {
             if (itemId === null || typeof itemId === "object") {
-                return '<div class="library-entry-card-blank" aria-hidden="true"></div>';
+                return '<div class="library-entry-card-blank" data-library-grid-blank aria-hidden="true">&nbsp;</div>';
             }
             const entry = entriesByGridId.get(itemId);
             return entry
