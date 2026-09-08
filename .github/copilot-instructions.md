@@ -180,6 +180,8 @@ Reusable UI utilities and their rendered classes are protected by the same bound
 
 The `protected-ui-classes.test.js` architecture test scans every component stylesheet and must remain exhaustive. It also proves that every reusable stylesheet class is present in the reusable-class manifest, so a newly added utility class is protected automatically. When adding or recognizing another sacrosanct core class, add it to the canonical manifest and keep all styling in its owning core stylesheet. Never weaken, bypass, or add component exceptions to this test; migrate the behavior to a generic core contract instead.
 
+External modules are subject to the same ownership boundary before activation. Cognis must scan every installed module source and stylesheet before running its module-owned tests, reject direct imports or URLs into Cognis internals, reject selectors whose subject is a protected core or reusable class, and prevent enablement on any violation. External modules interact with the host only through deliberately exposed scoped `ctx`/`uiCtx` capabilities and removable flow hooks; installation, administrator acknowledgement, or module-owned tests never waive this validation.
+
 ### UI page navigation must use the app router
 
 All navigation between dashboard-shell pages uses the client-side router in `src/ui/reuse/app-router.js`. The router intercepts clicks on internal navigation links, uses `history.pushState()` to update the URL, and mounts the new page's content in place via each page's `mount()` function — no full browser reload.

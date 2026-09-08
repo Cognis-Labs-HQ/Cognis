@@ -114,6 +114,10 @@
 
 UI の所有権検査を、再利用可能なコアスタイルが出力するすべてのクラスへ拡張しました。完全なマニフェストとアーキテクチャ検査により、アダプター、ゲートウェイ、モジュールによる再利用コントロールの上書きを防ぎ、既存の上書きはコンポーネント所有のセレクターまたは汎用の再利用実装へ移しました。
 
+## 安全でない外部モジュールの有効化を拒否
+
+外部モジュールの有効化では、モジュールテストより前にホスト所有の境界検査を実行するようになりました。Cognis 内部への直接インポートや URL、および保護されたコアクラス・再利用クラスへの CSS 上書きを拒否し、スコープ付き `ctx` 機能を通じた連携だけを許可します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -152,3 +156,4 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 - [7f0e9fdb](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f0e9fdb)
 - [da4188fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/da4188fe99113db1a13c31e22d0703327fc7f540)
 - [abfaddbf](https://github.com/Cognis-Labs-HQ/Cognis/commit/abfaddbf0bafef8e9e08812cebdba2ee4557fbaf)
+- [7f007d44](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f007d4430f88b1ae7d37fb3daf346adc5f2c9b3)

@@ -73,6 +73,8 @@ Installation clones the selected HTTPS repository without an interactive credent
 
 Repository owners should sign releases, pin dependencies, publish checksums in `files`, avoid generated secrets, and document all requested capabilities. Screenshots must not contain credentials or personal data. Cognis administrators remain responsible for reviewing third-party code before enabling it.
 
+Before Cognis runs module-owned tests or activates an external module, it scans every JavaScript, TypeScript, and CSS file in the checkout. Activation is blocked when code imports Cognis internals, embeds internal static or API URLs, or styles a class owned by the core shell or reusable UI catalog. Modules must obtain all host interaction through deliberately exposed `ctx` or `uiCtx` capabilities.
+
 ### Extraction checklist
 
 Before moving a bundled module into its own repository, copy the module directory without changing its UUID, retain the readable ID, and preserve the root `manifest.json`, `package.json`, and `routes.json`. Make the repository URL, homepage, and support links point at the new project; keep manifest and package versions synchronized; ensure every declared entry point and asset exists with exact filename casing; regenerate `files` SHA-256 values after the final change; and run the module tests without relying on monorepo-relative imports. Runtime interaction with Cognis and other components must occur only through the bootstrap `ctx` capabilities and flows. Test enable-disable-enable and uninstall cycles so every contribution is demonstrably removable and repeatable.

@@ -114,6 +114,10 @@ Restored the explicit language parser dependency in the extracted Library presen
 
 Extended UI ownership enforcement to every class emitted by reusable core styles. A complete manifest and architecture check now prevent adapters, gateways, and modules from overriding reusable controls, while prior overrides were moved to component-owned selectors or the generic reusable implementation.
 
+## Block unsafe external-module activation
+
+External module enablement now performs a host-owned boundary scan before module tests run. It rejects direct Cognis-internal imports and URLs plus CSS overrides of every protected core or reusable class, while allowing integrations made through the scoped `ctx` capabilities.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -152,3 +156,4 @@ Extended UI ownership enforcement to every class emitted by reusable core styles
 - [7f0e9fdb](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f0e9fdb)
 - [da4188fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/da4188fe99113db1a13c31e22d0703327fc7f540)
 - [abfaddbf](https://github.com/Cognis-Labs-HQ/Cognis/commit/abfaddbf0bafef8e9e08812cebdba2ee4557fbaf)
+- [7f007d44](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f007d4430f88b1ae7d37fb3daf346adc5f2c9b3)

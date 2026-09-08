@@ -3,7 +3,11 @@ import assert from "node:assert/strict";
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { ModuleTestService, discoverTestFiles } from "../../index.js";
+import {
+    ModuleTestService,
+    discoverTestFiles,
+    validateModuleBoundaries,
+} from "../../index.js";
 
 async function createModule(testBody: string) {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-module-tests-"));
@@ -43,5 +47,44 @@ test("module enable tests pass only when every supplied test passes", async () =
     await assert.rejects(
         new ModuleTestService([failing.root]).run("example-module"),
         /module_tests_failed:example-module/,
+    );
+});
+
+test("external modules may extend Cognis only through supplied ctx capabilities", async () => {
+    const { root, moduleRoot } = await createModule("export {};\n");
+    await mkdir(path.join(moduleRoot, "ui"));
+    await writeFile(
+        path.join(moduleRoot, "local.js"),
+        "export const id = 1;\n",
+    );
+    await writeFile(
+        path.join(moduleRoot, "ui", "bootstrap.js"),
+        'import { id } from "../local.js";\nexport function bootstrap(ctx) { ctx.capabilities.contribute("module:example", { id }); }\n',
+    );
+    await validateModuleBoundaries(moduleRoot);
+    await new ModuleTestService([root]).run("example-module");
+});
+
+test("external module activation rejects imports and URLs into Cognis internals", async () => {
+    const { root, moduleRoot } = await createModule("export {};\n");
+    await writeFile(
+        path.join(moduleRoot, "bootstrap.js"),
+        'import { apiFetch } from "/static/reuse/api-client.js";\nexport const load = () => apiFetch("/api/v1/users");\n',
+    );
+    await assert.rejects(
+        new ModuleTestService([root]).run("example-module"),
+        /module_boundary_violation[\s\S]*internal_import[\s\S]*internal_url/,
+    );
+});
+
+test("external module activation rejects protected core and reuse CSS", async () => {
+    const { root, moduleRoot } = await createModule("export {};\n");
+    await writeFile(
+        path.join(moduleRoot, "module.css"),
+        ".module-card { display: grid; }\n.widget-card { width: 100%; }\n",
+    );
+    await assert.rejects(
+        new ModuleTestService([root]).run("example-module"),
+        /module_boundary_violation[\s\S]*protected_style_class/,
     );
 });

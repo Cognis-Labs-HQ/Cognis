@@ -114,6 +114,10 @@ Die ausdrückliche Abhängigkeit vom Sprachcode-Parser wurde im ausgelagerten Da
 
 Die Durchsetzung der UI-Zuständigkeit wurde auf jede Klasse aus wiederverwendbaren Kernstilen erweitert. Ein vollständiges Verzeichnis und eine Architekturprüfung verhindern nun, dass Adapter, Gateways und Module wiederverwendbare Steuerelemente überschreiben; bisherige Überschreibungen wurden in komponenteneigene Selektoren oder die allgemeine wiederverwendbare Implementierung verlagert.
 
+## Unsichere Aktivierung externer Module blockieren
+
+Beim Aktivieren externer Module führt der Host nun vor den Modultests eine Grenzprüfung durch. Direkte Importe und URLs zu Cognis-Interna sowie CSS-Überschreibungen aller geschützten Kern- oder Wiederverwendungsklassen werden abgelehnt; Integrationen über die bereichsgebundenen `ctx`-Fähigkeiten bleiben zulässig.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -152,3 +156,4 @@ Die Durchsetzung der UI-Zuständigkeit wurde auf jede Klasse aus wiederverwendba
 - [7f0e9fdb](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f0e9fdb)
 - [da4188fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/da4188fe99113db1a13c31e22d0703327fc7f540)
 - [abfaddbf](https://github.com/Cognis-Labs-HQ/Cognis/commit/abfaddbf0bafef8e9e08812cebdba2ee4557fbaf)
+- [7f007d44](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f007d4430f88b1ae7d37fb3daf346adc5f2c9b3)
