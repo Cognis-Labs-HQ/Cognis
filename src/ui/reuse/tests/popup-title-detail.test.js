@@ -26,3 +26,13 @@ test("popup exposes core-owned title actions and body updates", () => {
     assert.match(source, /function updateBody\(nextBody\)/);
     assert.match(stylesheet, /\.popup-title-action/);
 });
+
+test("popup typography scales from the user font-size preference", () => {
+    assert.match(stylesheet, /\.popup-dialog[\s\S]*font-size: 1rem/);
+    assert.match(stylesheet, /\.popup-body[\s\S]*font-size: 1em/);
+    assert.match(
+        stylesheet,
+        /\.popup-body :where\(h3\)[\s\S]*font-size: 1\.5em/,
+    );
+    assert.doesNotMatch(stylesheet, /font-size\s*:\s*[\d.]+(?:px|pt)\b/);
+});

@@ -73,7 +73,7 @@ Die Installation klont das ausgewählte HTTPS-Repository ohne interaktive Eingab
 
 Repository-Besitzer sollten Releases signieren, Abhängigkeiten pinnen, Prüfsummen in `files` veröffentlichen, generierte Geheimnisse vermeiden und alle angeforderten Funktionen dokumentieren. Screenshots dürfen keine Anmeldeinformationen oder persönlichen Daten enthalten. Cognis-Administratoren bleiben dafür verantwortlich, den Code von Drittanbietern zu überprüfen, bevor sie ihn aktivieren.
 
-Bevor Cognis moduleigene Tests ausführt oder ein externes Modul aktiviert, werden alle JavaScript-, TypeScript- und CSS-Dateien im Checkout geprüft. Die Aktivierung wird blockiert, wenn Code Cognis-Interna importiert, interne statische oder API-URLs einbettet oder eine Klasse der Kernhülle beziehungsweise des wiederverwendbaren UI-Katalogs gestaltet. Module müssen jede Host-Interaktion über ausdrücklich freigegebene `ctx`- oder `uiCtx`-Fähigkeiten beziehen.
+Bevor Cognis moduleigene Tests ausführt oder ein externes Modul aktiviert, werden alle JavaScript-, TypeScript- und CSS-Dateien im Checkout geprüft. Die Aktivierung wird blockiert, wenn Code Cognis-Interna importiert, interne statische oder API-URLs einbettet oder eine Klasse der Kernhülle beziehungsweise des wiederverwendbaren UI-Katalogs gestaltet. Module müssen jede Host-Interaktion über ausdrücklich freigegebene `ctx`- oder `uiCtx`-Fähigkeiten beziehen. Externe Styles müssen Schriftgrößen in relativen Einheiten angeben, damit Popup- und Seitentext weiterhin von der Schriftgrößeneinstellung des Benutzers skaliert wird; absolute CSS-Schriftgrößen blockieren die Aktivierung.
 
 ### Extraktionscheckliste
 

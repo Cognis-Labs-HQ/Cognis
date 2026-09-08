@@ -73,7 +73,7 @@ Instalasi mengkloning repositori HTTPS yang dipilih tanpa perintah kredensial in
 
 Pemilik repositori harus menandatangani rilis, menyematkan dependensi, menerbitkan checksum di `files`, menghindari rahasia yang dihasilkan, dan mendokumentasikan semua kemampuan yang diminta. Tangkapan layar tidak boleh berisi kredensial atau data pribadi. Administrator Cognis tetap bertanggung jawab untuk meninjau kode pihak ketiga sebelum mengaktifkannya.
 
-Sebelum Cognis menjalankan pengujian milik modul atau mengaktifkan modul eksternal, setiap berkas JavaScript, TypeScript, dan CSS dalam checkout dipindai. Aktivasi diblokir jika kode mengimpor bagian internal Cognis, menyematkan URL statis atau API internal, atau menata kelas milik shell inti maupun katalog UI reusable. Modul harus memperoleh semua interaksi host melalui kapabilitas `ctx` atau `uiCtx` yang sengaja diekspos.
+Sebelum Cognis menjalankan pengujian milik modul atau mengaktifkan modul eksternal, setiap berkas JavaScript, TypeScript, dan CSS dalam checkout dipindai. Aktivasi diblokir jika kode mengimpor bagian internal Cognis, menyematkan URL statis atau API internal, atau menata kelas milik shell inti maupun katalog UI reusable. Modul harus memperoleh semua interaksi host melalui kapabilitas `ctx` atau `uiCtx` yang sengaja diekspos. Gaya eksternal harus menyatakan ukuran font dalam satuan relatif agar teks popup dan halaman tetap mengikuti preferensi ukuran font pengguna; ukuran font CSS absolut akan memblokir aktivasi.
 
 ### Daftar periksa ekstraksi
 

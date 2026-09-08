@@ -13,6 +13,8 @@ const IMPORT_SPECIFIER_PATTERN =
     /\b(?:import|export)\s+(?:[\s\S]*?\s+from\s+)?["']([^"']+)["']|\bimport\(\s*["']([^"']+)["']\s*\)/g;
 const COGNIS_INTERNAL_URL_PATTERN =
     /["'`](?:\/static\/(?:reuse|gateways|adapters)|\/api\/v1\/)[^"'`]*/g;
+const ABSOLUTE_FONT_SIZE_PATTERN =
+    /font-size\s*:\s*[-+]?(?:\d*\.)?\d+(?:px|pt|pc|cm|mm|in)\b/gi;
 const PROTECTED_STYLE_CLASSES = new Set([
     ...protectedCoreClasses,
     ...protectedReuseClasses,
@@ -86,6 +88,10 @@ export async function validateModuleBoundaries(root: string): Promise<void> {
             if (className)
                 violations.push(
                     `${relativePath}:protected_style_class:${className}`,
+                );
+            for (const match of source.matchAll(ABSOLUTE_FONT_SIZE_PATTERN))
+                violations.push(
+                    `${relativePath}:absolute_font_size:${match[0]}`,
                 );
             continue;
         }

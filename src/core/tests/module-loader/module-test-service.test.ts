@@ -61,6 +61,10 @@ test("external modules may extend Cognis only through supplied ctx capabilities"
         path.join(moduleRoot, "ui", "bootstrap.js"),
         'import { id } from "../local.js";\nexport function bootstrap(ctx) { ctx.capabilities.contribute("module:example", { id }); }\n',
     );
+    await writeFile(
+        path.join(moduleRoot, "ui", "module.css"),
+        ".example-module-detail { font-size: 1.25rem; }\n",
+    );
     await validateModuleBoundaries(moduleRoot);
     await new ModuleTestService([root]).run("example-module");
 });
@@ -86,5 +90,17 @@ test("external module activation rejects protected core and reuse CSS", async ()
     await assert.rejects(
         new ModuleTestService([root]).run("example-module"),
         /module_boundary_violation[\s\S]*protected_style_class/,
+    );
+});
+
+test("external module activation rejects font sizes detached from user preferences", async () => {
+    const { root, moduleRoot } = await createModule("export {};\n");
+    await writeFile(
+        path.join(moduleRoot, "module.css"),
+        ".module-detail { font-size: 24px; }\n.module-note { font-size: 0.9rem; }\n",
+    );
+    await assert.rejects(
+        new ModuleTestService([root]).run("example-module"),
+        /module_boundary_violation[\s\S]*absolute_font_size:font-size: 24px/,
     );
 });

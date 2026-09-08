@@ -34,6 +34,7 @@
     overflow-y: auto;
     transform: translateY(8px);
     transition: transform 0.14s ease;
+    font-size: 1rem;
 }
 
 .popup-overlay--visible .popup-dialog {
@@ -108,8 +109,32 @@
 .popup-body {
     padding: 16px 20px;
     color: var(--text);
-    font-size: 0.95rem;
+    font-size: 1em;
     line-height: 1.55;
+}
+
+.popup-body :where(h1) {
+    font-size: 1.75em;
+}
+
+.popup-body :where(h2) {
+    font-size: 1.625em;
+}
+
+.popup-body :where(h3) {
+    font-size: 1.5em;
+}
+
+.popup-body :where(h4) {
+    font-size: 1.25em;
+}
+
+.popup-body :where(h5) {
+    font-size: 1.125em;
+}
+
+.popup-body :where(h6) {
+    font-size: 1em;
 }
 
 .reprompt-warning {

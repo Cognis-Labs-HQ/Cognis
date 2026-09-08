@@ -90,7 +90,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     );
     assert.match(
         stylesheet,
-        /\.library-detail-section h3[\s\S]*font-size:\s*1\.875rem/,
+        /\.library-detail-section h3[\s\S]*font-size:\s*1\.5em/,
     );
     assert.match(source, /allowCustomization: false/);
     assert.match(source, /width: "fill"/);
