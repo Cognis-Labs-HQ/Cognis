@@ -169,13 +169,9 @@ body[data-theme="dark"] .library-entry-selection:checked {
 .library-entry-variant-shell {
     position: absolute;
     z-index: 3;
+    display: none;
     width: 100%;
-    visibility: hidden;
-    opacity: 0;
     box-shadow: 0 0.8rem 2rem color-mix(in srgb, #000 24%, transparent);
-    transition:
-        opacity 180ms ease,
-        visibility 0s linear 180ms;
 }
 
 .library-entry-variant-shell::before {
@@ -209,9 +205,7 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
 .library-entry-card-shell.library-entry-variants-open
     .library-entry-variant-shell,
 .library-entry-variant-shell.library-entry-variant-revealed {
-    visibility: visible;
-    opacity: 1;
-    transition-delay: 0s;
+    display: block;
 }
 
 .library-entry-variant-hint {

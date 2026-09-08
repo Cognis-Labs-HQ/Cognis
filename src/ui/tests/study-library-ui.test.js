@@ -179,7 +179,6 @@ test("Study Library unfolds structured character variants", () => {
         source,
         /renderCardContents\(variant, layer, entries, schema, i18n\)/,
     );
-    assert.match(stylesheet, /opacity: 1/);
     assert.match(stylesheet, /box-shadow:/);
     assert.match(source, /gateway\.study\.library_variant_hint/);
     assert.match(source, /library-entry-variants-open/);
@@ -197,6 +196,22 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(stylesheet, /\.library-entry-variant-hint/);
     assert.match(stylesheet, /--library-card-gap: 0\.75rem/);
     assert.match(stylesheet, /\.library-entry-variant-shell::before/);
+    assert.match(
+        stylesheet,
+        /\.library-entry-variant-shell\s*\{[\s\S]*display:\s*none/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-entry-card-shell\.library-entry-variants-open[\s\S]*\.library-entry-variant-shell\.library-entry-variant-revealed\s*\{[\s\S]*display:\s*block/,
+    );
+    assert.doesNotMatch(
+        stylesheet,
+        /\.library-entry-variant-shell\s*\{[\s\S]*?visibility:\s*hidden/,
+    );
+    assert.doesNotMatch(
+        stylesheet,
+        /\.library-entry-variant-shell\s*\{[\s\S]*?opacity:\s*0/,
+    );
     assert.match(stylesheet, /variant-arrow-light\.svg/);
     assert.match(stylesheet, /variant-arrow-dark\.svg/);
     assert.match(stylesheet, /\.library-entry-variant \{/);
@@ -205,7 +220,6 @@ test("Study Library unfolds structured character variants", () => {
         stylesheet,
         /\.library-entry-variant\.library-entry-variant:is\(:hover, :focus-visible\)/,
     );
-    assert.match(stylesheet, /visibility 0s linear 180ms/);
     assert.match(variantArrowLight, /fill="#059669"/);
     assert.match(variantArrowDark, /fill="#34d399"/);
     assert.match(
