@@ -130,6 +130,10 @@ The Library card now fills its page-composer allocation, and layout editing is d
 
 The user dropdown now has a dedicated core page-shell stylesheet, and the dashboard layout explicitly keeps the core shell bundle loaded across direct loads and SPA navigation.
 
+## Allow the user menu past the navigation border
+
+The sticky page-shell header no longer clips overflowing content, allowing the user dropdown to render below the primary navigation border while retaining its shell-level stacking order.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -172,3 +176,4 @@ The user dropdown now has a dedicated core page-shell stylesheet, and the dashbo
 - [8ce047ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ce047ac3710628db7b52b16bc0169ab7fadd583)
 - [8373c151](https://github.com/Cognis-Labs-HQ/Cognis/commit/8373c15186eb49298e4d961f11d273d06b3146ef)
 - [a2da40bf](https://github.com/Cognis-Labs-HQ/Cognis/commit/a2da40bf07e7651088e6444259aa536755c14b8a)
+- [1d47e019](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d47e019124ef7e2e90c05f96a46ff0d3282912e)

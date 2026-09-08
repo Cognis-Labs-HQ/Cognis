@@ -46,3 +46,15 @@ test("user menu dropdown stacks above notification popups", () => {
         "user menu dropdown must render above toast notifications",
     );
 });
+
+test("page shell does not clip the user menu below navigation", () => {
+    const shellSource = readFileSync(
+        resolve(ROOT, "src/ui/styles/reuse/layout.css"),
+        "utf8",
+    );
+    const siteHeaderRule = shellSource.match(/\.site-header\s*\{[^}]*\}/)?.[0];
+
+    assert.ok(siteHeaderRule, "expected the core site-header rule");
+    assert.match(siteHeaderRule, /overflow:\s*visible/);
+    assert.doesNotMatch(siteHeaderRule, /overflow:\s*hidden/);
+});

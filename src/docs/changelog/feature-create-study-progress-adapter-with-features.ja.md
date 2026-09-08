@@ -130,6 +130,10 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 
 ユーザードロップダウン専用のコアページシェルスタイルシートを追加し、直接読み込んだ場合と SPA ページ移動のどちらでもダッシュボードレイアウトがコアシェル一式を明示的に保持するようにしました。
 
+## ユーザーメニューをナビゲーション境界の下まで表示
+
+固定ページシェルヘッダーがはみ出した内容を切り取らないようにし、シェルの重なり順を保ったままユーザードロップダウンをメインナビゲーションの境界より下に表示できるようにしました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -172,3 +176,4 @@ UI の所有権検査を、再利用可能なコアスタイルが出力する�
 - [8ce047ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ce047ac3710628db7b52b16bc0169ab7fadd583)
 - [8373c151](https://github.com/Cognis-Labs-HQ/Cognis/commit/8373c15186eb49298e4d961f11d273d06b3146ef)
 - [a2da40bf](https://github.com/Cognis-Labs-HQ/Cognis/commit/a2da40bf07e7651088e6444259aa536755c14b8a)
+- [1d47e019](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d47e019124ef7e2e90c05f96a46ff0d3282912e)
