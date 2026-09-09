@@ -263,6 +263,7 @@ test("Study Library unfolds structured character variants", () => {
         /if \(openShell !== shell\)[\s\S]*openShell\.classList\.remove\([\s\S]*"library-entry-variants-open"/,
     );
     assert.match(source, /function activateVariantBranch/);
+    assert.match(source, /function clearVariantBranch/);
     assert.match(source, /"pointerover"/);
     assert.match(source, /library-entry-branch-active/);
     assert.match(source, /library-entry-branch-path/);
@@ -275,6 +276,13 @@ test("Study Library unfolds structured character variants", () => {
         stylesheet,
         /\.library-entry-variant-shell\.library-entry-branch-path[\s\S]*\.library-entry-card-shell\.library-entry-branch-tip[\s\S]*display:\s*block/,
     );
+    assert.match(source, /dataset\.libraryVariantDepth === "0"/);
+    assert.match(
+        source,
+        /if \(!rootShell\.contains\(event\.relatedTarget\)\)[\s\S]*clearVariantBranch\(rootShell\)/,
+    );
+    assert.match(stylesheet, /@keyframes library-entry-focus-pulse/);
+    assert.match(stylesheet, /prefers-reduced-motion:\s*reduce/);
     assert.match(
         stylesheet,
         /\.library-entry-card-shell\.library-entry-variants-open/,

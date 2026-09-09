@@ -302,13 +302,7 @@ function closeUnrelatedVariantViews(root, control) {
     return closed;
 }
 
-function activateVariantBranch(root, card) {
-    const shell = card.closest(".library-entry-card-shell");
-    if (!shell || shell.dataset.libraryVariantDepth === "0") return;
-    const rootShell = shell.closest(
-        '.library-entry-card-shell[data-library-variant-depth="0"]',
-    );
-    if (!rootShell?.classList.contains("library-entry-variants-open")) return;
+function clearVariantBranch(root) {
     root.querySelectorAll(
         ".library-entry-branch-active, .library-entry-branch-path, .library-entry-branch-tip",
     ).forEach((element) => {
@@ -318,6 +312,22 @@ function activateVariantBranch(root, card) {
             "library-entry-branch-tip",
         );
     });
+}
+
+function activateVariantBranch(root, card) {
+    const shell = card.closest(".library-entry-card-shell");
+    if (!shell) return;
+    if (shell.dataset.libraryVariantDepth === "0") {
+        if (shell.classList.contains("library-entry-variants-open")) {
+            clearVariantBranch(root);
+        }
+        return;
+    }
+    const rootShell = shell.closest(
+        '.library-entry-card-shell[data-library-variant-depth="0"]',
+    );
+    if (!rootShell?.classList.contains("library-entry-variants-open")) return;
+    clearVariantBranch(root);
     rootShell.classList.add("library-entry-branch-active");
     shell.classList.add("library-entry-branch-tip");
     let branchShell = shell;
@@ -952,6 +962,7 @@ export async function mount(root, { signal } = {}) {
             cancelLongPress();
             longPressOrigin = { x: event.clientX, y: event.clientY };
             longPressTimer = window.setTimeout(() => {
+                clearVariantBranch(root);
                 root.querySelectorAll(".library-entry-variants-open").forEach(
                     (openShell) => {
                         if (openShell !== shell) {
@@ -1009,13 +1020,13 @@ export async function mount(root, { signal } = {}) {
     root.addEventListener(
         "focusout",
         (event) => {
-            const shell = event.target.closest(".library-entry-card-shell");
-            if (!shell?.classList.contains("library-entry-variants-open"))
-                return;
-            if (event.relatedTarget?.closest?.("button[data-library-entry]"))
-                return;
-            if (!shell.contains(event.relatedTarget)) {
-                shell.classList.remove("library-entry-variants-open");
+            const rootShell = event.target.closest(
+                ".library-entry-variants-open",
+            );
+            if (!rootShell) return;
+            if (!rootShell.contains(event.relatedTarget)) {
+                rootShell.classList.remove("library-entry-variants-open");
+                clearVariantBranch(rootShell);
             }
         },
         { signal },

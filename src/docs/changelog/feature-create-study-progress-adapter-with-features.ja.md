@@ -250,6 +250,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 入れ子の子カードへポインターを移動すると、祖先までの経路全体を開いたまま、その子カードの次の階層を表示するようにしました。別分岐の兄弟カードは一時的に隠して表示領域を確保し、カード間の隙間を移動してもツリーを閉じずに、移動先の分岐へフォーカス経路を更新します。
 
+## 安定して戻れる子カードフォーカス
+
+フォーカス中の子カードにアニメーション付きの輪郭を表示し、動きを減らす設定向けの代替表示も追加しました。祖先カードへ戻ると、その階層で一時的に隠されていた選択肢が再表示されます。親ツリー全体からフォーカスが外れると、すべての分岐状態を解除して子カードを再び非表示にします。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -322,3 +326,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [1490dd84](https://github.com/Cognis-Labs-HQ/Cognis/commit/1490dd848112eab3f7aa82465c5c5c297818b719)
 - [4c928d09](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c928d092a3a5dbc3589ea1dab0fbfc89bd35403)
 - [d1ce3c69](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1ce3c69bb04c5b061943a8e909350284d31e45d)
+- [20a8c29d](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a8c29d58e56c750f03f001d9aa050927135bfb)

@@ -250,6 +250,10 @@ Penempatan kartu anak kini mengutamakan atas, bawah, kiri, dan kanan sebelum slo
 
 Saat penunjuk masuk ke anak bertingkat, seluruh jalur induknya kini tetap terbuka sambil menampilkan tingkat berikutnya dari anak tersebut. Cabang saudara disembunyikan sementara untuk mendapatkan kembali ruang, dan kembali ke cabang lain memperbarui jalur fokus tanpa meruntuhkan pohon ketika penunjuk melintasi celah kartu.
 
+## Fokus anak stabil yang dapat ditelusuri balik
+
+Kartu anak yang difokuskan kini memperoleh garis tepi animasi dengan alternatif gerakan yang dikurangi. Kembali ke induk memulihkan pilihan tingkat tersebut yang sebelumnya disembunyikan, sedangkan meninggalkan seluruh pohon induk menghapus semua status cabang dan menyembunyikan kembali setiap anak.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -322,3 +326,4 @@ Saat penunjuk masuk ke anak bertingkat, seluruh jalur induknya kini tetap terbuk
 - [1490dd84](https://github.com/Cognis-Labs-HQ/Cognis/commit/1490dd848112eab3f7aa82465c5c5c297818b719)
 - [4c928d09](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c928d092a3a5dbc3589ea1dab0fbfc89bd35403)
 - [d1ce3c69](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1ce3c69bb04c5b061943a8e909350284d31e45d)
+- [20a8c29d](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a8c29d58e56c750f03f001d9aa050927135bfb)

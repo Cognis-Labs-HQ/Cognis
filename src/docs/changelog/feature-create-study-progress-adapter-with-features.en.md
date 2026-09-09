@@ -250,6 +250,10 @@ Child placement now prioritizes up, down, left, and right before diagonal slots.
 
 Hovering into a nested child now locks the complete ancestor path open while exposing that child’s next level. Sibling branches are temporarily hidden to reclaim space, and returning to another branch updates the focused path without collapsing the tree across card gaps.
 
+## Stable reversible child focus
+
+Focused child cards now receive an animated outline with a reduced-motion alternative. Moving back to an ancestor restores that level’s previously hidden choices, while leaving the complete parent tree removes all branch state and hides every child again.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -322,3 +326,4 @@ Hovering into a nested child now locks the complete ancestor path open while exp
 - [1490dd84](https://github.com/Cognis-Labs-HQ/Cognis/commit/1490dd848112eab3f7aa82465c5c5c297818b719)
 - [4c928d09](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c928d092a3a5dbc3589ea1dab0fbfc89bd35403)
 - [d1ce3c69](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1ce3c69bb04c5b061943a8e909350284d31e45d)
+- [20a8c29d](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a8c29d58e56c750f03f001d9aa050927135bfb)
