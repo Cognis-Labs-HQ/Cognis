@@ -222,6 +222,10 @@ Mengarahkan penunjuk ke kartu anak yang sudah terbuka kini menampilkan keturunan
 
 Pohon anak yang terbuka kini menggunakan klik pertama pada induk atau kartu di sebelahnya hanya untuk menutup pohon tanpa membuka detail secara tak terduga. Pratinjau kartu menggabungkan beberapa definisi dan memotongnya dengan elipsis saat ruang menyempit, sedangkan popup detail tetap menyimpan semua definisi. Detail judul popup diperbesar, dan judul entri komposisi menampilkan komponen berurutan sebagai deep link terpisah.
 
+## Tautan judul komposisi yang lebih jelas
+
+Item deep link di dalam judul popup tidak lagi memakai garis bawah. Status arah penunjuk dan fokus papan ketik kini menggunakan batas aksen yang lebih kuat, latar berwarna, serta lingkar fokus agar setiap komponen judul yang dapat diklik tampak jelas.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -287,3 +291,4 @@ Pohon anak yang terbuka kini menggunakan klik pertama pada induk atau kartu di s
 - [764c109d](https://github.com/Cognis-Labs-HQ/Cognis/commit/764c109dfa6530c33bddf8d8deaafff2e2ea7f48)
 - [5ab1b885](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ab1b8853aaf5253230f4ab535e5c68fd6ccc0aa)
 - [fff72d38](https://github.com/Cognis-Labs-HQ/Cognis/commit/fff72d38bc86a30fa95db9323f05494a747b43ea)
+- [26a42897](https://github.com/Cognis-Labs-HQ/Cognis/commit/26a428979ae39d94ffd502733fee6ad2306a618f)

@@ -31,6 +31,14 @@ test("popup exposes core-owned title actions and body updates", () => {
     assert.match(source, /class="popup-title-action btn-neutral"/);
     assert.match(source, /function updateBody\(nextBody\)/);
     assert.match(stylesheet, /\.popup-title-action/);
+    assert.match(
+        stylesheet,
+        /\.popup-title-action\s*\{[\s\S]*text-decoration:\s*none/,
+    );
+    assert.match(
+        stylesheet,
+        /\.popup-title-action:is\(:hover, :focus-visible\)[\s\S]*border-color:\s*var\(--accent-2\)[\s\S]*background:\s*color-mix[\s\S]*box-shadow:/,
+    );
 });
 
 test("popup supports leading title content, standard close controls, and action icons", () => {

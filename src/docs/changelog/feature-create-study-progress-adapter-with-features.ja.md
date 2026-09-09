@@ -222,6 +222,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 展開中の子ツリーでは、親または隣接カードへの最初のクリックをツリーを閉じるためだけに使用し、意図せず詳細を開かないようにしました。カードのプレビューは複数の定義を結合し、幅が足りない場合は省略記号で安全に切り詰めますが、詳細ポップアップにはすべての定義を表示します。ポップアップのタイトル詳細を拡大し、合成項目のタイトルでは順序付き構成要素を個別のディープリンクとして表示します。
 
+## 合成タイトルリンクの視認性向上
+
+ポップアップタイトル内のディープリンク項目から下線をなくしました。ホバー時とキーボードフォーカス時に、より明瞭なアクセント枠、色付き背景、フォーカスハローを表示し、クリック可能な各タイトル構成要素を判別しやすくしました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -287,3 +291,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [764c109d](https://github.com/Cognis-Labs-HQ/Cognis/commit/764c109dfa6530c33bddf8d8deaafff2e2ea7f48)
 - [5ab1b885](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ab1b8853aaf5253230f4ab535e5c68fd6ccc0aa)
 - [fff72d38](https://github.com/Cognis-Labs-HQ/Cognis/commit/fff72d38bc86a30fa95db9323f05494a747b43ea)
+- [26a42897](https://github.com/Cognis-Labs-HQ/Cognis/commit/26a428979ae39d94ffd502733fee6ad2306a618f)

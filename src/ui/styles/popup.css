@@ -96,18 +96,20 @@
 }
 
 .popup-title-action {
-    padding: 0;
-    border: 0;
+    padding: 0 0.08em;
+    border: 1px solid transparent;
+    border-radius: 0.12em;
     background: transparent;
     color: inherit;
     font: inherit;
-    text-decoration: underline;
-    text-decoration-color: var(--accent-2);
-    text-underline-offset: 0.18em;
+    text-decoration: none;
 }
 
 .popup-title-action:is(:hover, :focus-visible) {
-    background: transparent;
+    border-color: var(--accent-2);
+    background: color-mix(in srgb, var(--accent-2) 18%, transparent);
+    box-shadow: 0 0 0 0.08em
+        color-mix(in srgb, var(--accent-2) 22%, transparent);
     color: var(--accent-2);
 }
 

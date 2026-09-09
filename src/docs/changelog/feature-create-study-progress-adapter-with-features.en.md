@@ -222,6 +222,10 @@ Hovering an already revealed child card now exposes that child’s own descendan
 
 An expanded child tree now consumes the first click on its parent or an adjacent card so the tree closes without unexpectedly opening details. Card previews combine multiple definitions and ellipsize under width pressure while detail popups retain every definition. Popup title details are larger, and titles for composed entries render their ordered components as individual deep links.
 
+## Clearer compositional title links
+
+Deep-linked items inside popup titles no longer use underline decoration. Their hover and keyboard-focus states now use a stronger accent border, tinted background, and focus halo so each clickable title component is visibly distinct.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -287,3 +291,4 @@ An expanded child tree now consumes the first click on its parent or an adjacent
 - [764c109d](https://github.com/Cognis-Labs-HQ/Cognis/commit/764c109dfa6530c33bddf8d8deaafff2e2ea7f48)
 - [5ab1b885](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ab1b8853aaf5253230f4ab535e5c68fd6ccc0aa)
 - [fff72d38](https://github.com/Cognis-Labs-HQ/Cognis/commit/fff72d38bc86a30fa95db9323f05494a747b43ea)
+- [26a42897](https://github.com/Cognis-Labs-HQ/Cognis/commit/26a428979ae39d94ffd502733fee6ad2306a618f)
