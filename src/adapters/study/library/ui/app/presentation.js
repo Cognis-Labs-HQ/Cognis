@@ -210,13 +210,16 @@ export function compositionReferenceGroups(detail, schemas) {
     }));
 }
 
-export function headingCompositionReference(detail, schemas) {
-    return compositionReferenceGroups(detail, schemas).find(
-        (group) =>
-            group.presentationRole === "composition" &&
-            group.entries.length === 1 &&
-            group.entries[0].label === detail.entry.label,
-    )?.entries[0];
+export function headingCompositionReferences(detail, schemas) {
+    return (
+        compositionReferenceGroups(detail, schemas).find(
+            (group) =>
+                group.presentationRole === "composition" &&
+                group.entries.length > 0 &&
+                group.entries.map(({ label }) => label).join("") ===
+                    detail.entry.label,
+        )?.entries ?? []
+    );
 }
 
 export function renderCompositionGroups(groups, i18n) {

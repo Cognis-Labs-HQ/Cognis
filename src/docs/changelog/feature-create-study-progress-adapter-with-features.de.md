@@ -218,6 +218,10 @@ Bibliotheksinhalte nehmen nun am natürlichen Scrollen des Dokuments teil, statt
 
 Wenn eine bereits eingeblendete untergeordnete Karte mit dem Zeiger berührt wird, zeigt sie nun ihre eigenen Nachkommen über denselben gerichteten Kartenmechanismus. Verschachtelte Bäume lassen sich schrittweise durch alle vier unterstützten Ebenen erkunden, ohne jeden Zweig gleichzeitig zu öffnen.
 
+## Sichereres Erkunden von Karten und Popups
+
+Ein ausgeklappter Kindbaum verarbeitet nun den ersten Klick auf sein übergeordnetes Element oder eine benachbarte Karte ausschließlich zum Schließen, ohne unerwartet Details zu öffnen. Kartenvorschauen verbinden mehrere Definitionen und kürzen sie bei Platzmangel mit Auslassungspunkten, während Detail-Popups alle Definitionen behalten. Popup-Titeldetails sind größer, und Titel zusammengesetzter Einträge stellen ihre geordneten Bestandteile als einzelne Deep Links dar.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -282,3 +286,4 @@ Wenn eine bereits eingeblendete untergeordnete Karte mit dem Zeiger berührt wir
 - [e4b572ee](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4b572ee)
 - [764c109d](https://github.com/Cognis-Labs-HQ/Cognis/commit/764c109dfa6530c33bddf8d8deaafff2e2ea7f48)
 - [5ab1b885](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ab1b8853aaf5253230f4ab535e5c68fd6ccc0aa)
+- [fff72d38](https://github.com/Cognis-Labs-HQ/Cognis/commit/fff72d38bc86a30fa95db9323f05494a747b43ea)

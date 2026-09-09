@@ -218,6 +218,10 @@ Konten Pustaka kini mengikuti pengguliran dokumen alami, bukan menggunakan area 
 
 Mengarahkan penunjuk ke kartu anak yang sudah terbuka kini menampilkan keturunan kartu tersebut melalui mekanisme kartu berarah yang sama. Pohon bertingkat dapat dijelajahi secara bertahap melalui keempat tingkat yang didukung tanpa membuka semua cabang sekaligus.
 
+## Penjelajahan kartu dan popup yang lebih aman
+
+Pohon anak yang terbuka kini menggunakan klik pertama pada induk atau kartu di sebelahnya hanya untuk menutup pohon tanpa membuka detail secara tak terduga. Pratinjau kartu menggabungkan beberapa definisi dan memotongnya dengan elipsis saat ruang menyempit, sedangkan popup detail tetap menyimpan semua definisi. Detail judul popup diperbesar, dan judul entri komposisi menampilkan komponen berurutan sebagai deep link terpisah.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -282,3 +286,4 @@ Mengarahkan penunjuk ke kartu anak yang sudah terbuka kini menampilkan keturunan
 - [e4b572ee](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4b572ee)
 - [764c109d](https://github.com/Cognis-Labs-HQ/Cognis/commit/764c109dfa6530c33bddf8d8deaafff2e2ea7f48)
 - [5ab1b885](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ab1b8853aaf5253230f4ab535e5c68fd6ccc0aa)
+- [fff72d38](https://github.com/Cognis-Labs-HQ/Cognis/commit/fff72d38bc86a30fa95db9323f05494a747b43ea)

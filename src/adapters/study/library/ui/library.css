@@ -435,9 +435,13 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
 }
 
 .library-card-definition {
+    overflow: hidden;
+    min-width: 0;
     color: var(--text-muted);
     font-size: 0.9rem;
     font-weight: 400;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 [data-library-preview] {

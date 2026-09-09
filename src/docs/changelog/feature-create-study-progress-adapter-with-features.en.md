@@ -218,6 +218,10 @@ Library content now participates in natural document scrolling instead of using 
 
 Hovering an already revealed child card now exposes that child’s own descendants through the same directional card mechanism. Nested trees can be explored progressively through all four supported levels without opening every branch at once.
 
+## Safer card and popup exploration
+
+An expanded child tree now consumes the first click on its parent or an adjacent card so the tree closes without unexpectedly opening details. Card previews combine multiple definitions and ellipsize under width pressure while detail popups retain every definition. Popup title details are larger, and titles for composed entries render their ordered components as individual deep links.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -282,3 +286,4 @@ Hovering an already revealed child card now exposes that child’s own descendan
 - [e4b572ee](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4b572ee)
 - [764c109d](https://github.com/Cognis-Labs-HQ/Cognis/commit/764c109dfa6530c33bddf8d8deaafff2e2ea7f48)
 - [5ab1b885](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ab1b8853aaf5253230f4ab535e5c68fd6ccc0aa)
+- [fff72d38](https://github.com/Cognis-Labs-HQ/Cognis/commit/fff72d38bc86a30fa95db9323f05494a747b43ea)

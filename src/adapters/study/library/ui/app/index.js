@@ -31,7 +31,7 @@ import {
     detailTitlePronunciation,
     entryAttributes,
     entrySearchAttribute,
-    headingCompositionReference,
+    headingCompositionReferences,
     isMeaningLayer,
     isWritingUnitLayer,
     layerForEntry,
@@ -205,11 +205,17 @@ function canDeleteEntry(entry) {
 }
 
 function closeUnrelatedVariantViews(root, control) {
+    let closed = false;
     root.querySelectorAll(".library-entry-variants-open").forEach((shell) => {
-        if (!shell.contains(control)) {
+        const parentControl = shell.querySelector(
+            ":scope > button[data-library-entry]",
+        );
+        if (!shell.contains(control) || control === parentControl) {
             shell.classList.remove("library-entry-variants-open");
+            closed = true;
         }
     });
+    return closed;
 }
 
 function renderSelection(entry, i18n) {
@@ -220,7 +226,7 @@ function renderSelection(entry, i18n) {
     return `<input class="library-entry-selection" type="checkbox" data-library-select-entry="${escapeHtml(entry.id)}" aria-label="${escapeHtml(label)}">`;
 }
 
-function cardDefinition(entry, layer, entries, schema) {
+function cardDefinitions(entry, layer, entries, schema) {
     const definitionLayers = new Set(
         (layer.relationships ?? [])
             .filter((relationship) => {
@@ -231,14 +237,14 @@ function cardDefinition(entry, layer, entries, schema) {
             })
             .map(({ targetLayer }) => targetLayer),
     );
-    const referencedIds = new Set(
-        (entry.references ?? []).map(({ entryId }) => entryId),
-    );
-    return entries.find(
-        (candidate) =>
-            referencedIds.has(candidate.id) &&
-            definitionLayers.has(candidate.layer),
-    );
+    return (entry.references ?? []).flatMap((reference) => {
+        const definition = entries.find(
+            (candidate) => candidate.id === reference.entryId,
+        );
+        return definition && definitionLayers.has(definition.layer)
+            ? [definition]
+            : [];
+    });
 }
 
 function renderCardContents(entry, layer, entries, schema, i18n) {
@@ -248,15 +254,18 @@ function renderCardContents(entry, layer, entries, schema, i18n) {
     const heading = isWritingUnitLayer(layer)
         ? `<span class="library-entry-heading"><strong>${escapeHtml(entry.label)}</strong>${pronunciation ? `<span class="library-card-pronunciation">${pronunciation}</span>` : ""}</span>`
         : `<strong>${escapeHtml(entry.label)}</strong>${pronunciation ? `<span class="library-card-pronunciation library-card-pronunciation-below">${pronunciation}</span>` : ""}`;
-    const definition = cardDefinition(entry, layer, entries, schema);
-    const definitionLabel = definition
-        ? definitionText(
-              definition,
-              layerForEntry([schema], definition),
-              schema.language,
-          )
-        : "";
-    const definitionDisplay = definition
+    const definitions = cardDefinitions(entry, layer, entries, schema);
+    const definitionLabel = definitions
+        .map((definition) =>
+            definitionText(
+                definition,
+                layerForEntry([schema], definition),
+                schema.language,
+            ),
+        )
+        .filter(Boolean)
+        .join(" · ");
+    const definitionDisplay = definitionLabel
         ? `<span class="library-card-definition">${escapeHtml(definitionLabel)}</span>`
         : "";
     if (layer.minimal) {
@@ -548,7 +557,7 @@ async function openEntryPopup(
     let selectedEntry = initialEntry;
     while (selectedEntry && !signal?.aborted) {
         const detail = await fetchLibraryEntry(selectedEntry.id);
-        const titleReference = headingCompositionReference(detail, schemas);
+        const titleReferences = headingCompositionReferences(detail, schemas);
         const active = entries.filter(
             (entry) =>
                 entry.schemaId === selectedEntry.schemaId &&
@@ -574,9 +583,10 @@ async function openEntryPopup(
         const result = await openPopup({
             title: detail.entry.label,
             titleLeading: composed.titleLeading,
-            titleAction: titleReference
-                ? { id: "open-title-reference", label: detail.entry.label }
-                : undefined,
+            titleItems: titleReferences.map((entry) => ({
+                label: entry.label,
+                actionId: `open-title-reference:${entry.id}`,
+            })),
             titleDetail: [
                 detailTitlePronunciation(
                     detail.entry,
@@ -655,8 +665,10 @@ async function openEntryPopup(
             URL.revokeObjectURL(objectUrl);
         }
         signal?.removeEventListener("abort", abortPopup);
-        if (result === "open-title-reference") selectedEntry = titleReference;
-        else if (result === "previous") selectedEntry = active[index - 1];
+        if (result?.startsWith("open-title-reference:")) {
+            const entryId = result.slice("open-title-reference:".length);
+            selectedEntry = entries.find((entry) => entry.id === entryId);
+        } else if (result === "previous") selectedEntry = active[index - 1];
         else if (result === "next") selectedEntry = active[index + 1];
         else if (relatedEntry && focusLibraryEntry(root, relatedEntry, schemas))
             selectedEntry = null;
@@ -876,6 +888,8 @@ export async function mount(root, { signal } = {}) {
             const shell = event.target.closest(".library-entry-card-shell");
             if (!shell?.classList.contains("library-entry-variants-open"))
                 return;
+            if (event.relatedTarget?.closest?.("button[data-library-entry]"))
+                return;
             if (!shell.contains(event.relatedTarget)) {
                 shell.classList.remove("library-entry-variants-open");
             }
@@ -952,7 +966,7 @@ export async function mount(root, { signal } = {}) {
             }
             const control = event.target.closest("button[data-library-entry]");
             if (!control) return;
-            closeUnrelatedVariantViews(root, control);
+            if (closeUnrelatedVariantViews(root, control)) return;
             if (suppressEntryClick) {
                 suppressEntryClick = false;
                 return;

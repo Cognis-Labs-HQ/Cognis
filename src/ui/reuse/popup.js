@@ -38,6 +38,7 @@
  *   titleDetail — optional secondary heading text rendered smaller beside the title.
  *   titleLeading — optional trusted HTML rendered immediately before the title.
  *   titleAction — optional `{ id, label }` that renders the heading as an action.
+ *   titleItems — optional ordered `{ label, actionId? }` title fragments.
  *   body     — body content: either an HTML string or a `() => string` render
  *              function. Rendered as innerHTML; callers must escape dynamic values.
  *   variant  — visual style hint: 'info' | 'warning' | 'danger' | 'confirm'.
@@ -78,6 +79,7 @@
  *   titleDetail?: string,
  *   titleLeading?: string,
  *   titleAction?: { id: string, label: string },
+ *   titleItems?: Array<{ label: string, actionId?: string }>,
  *   body: string | (() => string),
  *   variant?: 'info' | 'warning' | 'danger' | 'confirm',
  *   actions?: Array<{ id: string, label: string, variant?: string, disabled?: boolean, icon?: { light: string, dark?: string, position?: 'before' | 'after', flip?: boolean } }>,
@@ -382,6 +384,7 @@ export async function openPopup({
     titleDetail,
     titleLeading,
     titleAction,
+    titleItems,
     body,
     variant = "info",
     actions,
@@ -419,11 +422,21 @@ export async function openPopup({
             detailValue,
             actionValue,
             leadingValue,
+            itemValues,
         ) {
             const detail = String(detailValue ?? "");
-            const titleContent = actionValue
-                ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(actionValue.id)}" type="button">${escapeHtml(actionValue.label)}</button>`
-                : escapeHtml(titleValue ?? "");
+            const titleContent =
+                Array.isArray(itemValues) && itemValues.length
+                    ? itemValues
+                          .map((item) =>
+                              item.actionId
+                                  ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(item.actionId)}" type="button">${escapeHtml(item.label)}</button>`
+                                  : escapeHtml(item.label),
+                          )
+                          .join("")
+                    : actionValue
+                      ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(actionValue.id)}" type="button">${escapeHtml(actionValue.label)}</button>`
+                      : escapeHtml(titleValue ?? "");
             return `${leadingValue ?? ""}<h2 class="popup-title" id="popup-title">${titleContent}</h2>${detail ? `<h4 class="popup-title-detail">${escapeHtml(detail)}</h4>` : ""}`;
         }
 
@@ -542,7 +555,7 @@ export async function openPopup({
         overlay.innerHTML = `
       <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
         <div class="popup-header">
-          <div class="popup-heading">${renderPopupHeading(currentPage?.title ?? title, currentPage?.titleDetail ?? titleDetail, currentPage?.titleAction ?? titleAction, currentPage?.titleLeading ?? titleLeading)}</div>
+          <div class="popup-heading">${renderPopupHeading(currentPage?.title ?? title, currentPage?.titleDetail ?? titleDetail, currentPage?.titleAction ?? titleAction, currentPage?.titleLeading ?? titleLeading, currentPage?.titleItems ?? titleItems)}</div>
           <button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>
         </div>
         <div class="popup-body">${resolvedBody}</div>
@@ -572,6 +585,7 @@ export async function openPopup({
                     currentPage.titleDetail ?? titleDetail,
                     currentPage.titleAction ?? titleAction,
                     currentPage.titleLeading ?? titleLeading,
+                    currentPage.titleItems ?? titleItems,
                 );
                 bindActionButtons(headingEl);
                 fitPopupTitleRow();

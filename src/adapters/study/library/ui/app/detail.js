@@ -2,7 +2,7 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
     compositionReferenceGroups,
     definitionText,
-    headingCompositionReference,
+    headingCompositionReferences,
     isMeaningLayer,
     isWritingUnitLayer,
     layerForEntry,
@@ -22,9 +22,11 @@ const DETAIL_FLOW = "study:library:composeEntryDetail";
 function coreSections(detail, schemas, i18n, variantPlacement) {
     const { entry, references = [], usedBy = [] } = detail;
     const layer = layerForEntry(schemas, entry);
-    const headingReference = headingCompositionReference(detail, schemas);
+    const headingReferences = headingCompositionReferences(detail, schemas);
     const compositions = compositionReferenceGroups(detail, schemas).filter(
-        (group) => !group.entries.includes(headingReference),
+        (group) =>
+            !headingReferences.length ||
+            !group.entries.every((entry) => headingReferences.includes(entry)),
     );
     const relatedWords = isWritingUnitLayer(layer)
         ? usedBy.filter(

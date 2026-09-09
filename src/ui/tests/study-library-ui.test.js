@@ -162,10 +162,13 @@ test("Study Library integrates definitions and particles into item details", () 
         source,
         /targetLayer\?\.id === sourceLayer\?\.id && relationship\.variant/,
     );
-    assert.match(source, /function headingCompositionReference/);
-    assert.match(source, /const titleReference = headingCompositionReference/);
-    assert.match(source, /id: "open-title-reference"/);
-    assert.match(source, /titleAction:/);
+    assert.match(source, /function headingCompositionReferences/);
+    assert.match(
+        source,
+        /const titleReferences = headingCompositionReferences/,
+    );
+    assert.match(source, /titleItems: titleReferences\.map/);
+    assert.match(source, /open-title-reference:\$\{entry\.id\}/);
     assert.doesNotMatch(source, /querySelector\("\.popup-title"\)/);
     assert.match(source, /data-library-presentation-role/);
     assert.match(
@@ -210,8 +213,15 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(stylesheet, /\.library-entry-variant-up/);
     assert.match(source, /function assignVariantPlacements/);
     assert.match(source, /function closeUnrelatedVariantViews/);
-    assert.match(source, /if \(!shell\.contains\(control\)\)/);
-    assert.match(source, /closeUnrelatedVariantViews\(root, control\)/);
+    assert.match(
+        source,
+        /!shell\.contains\(control\) \|\| control === parentControl/,
+    );
+    assert.match(
+        source,
+        /if \(closeUnrelatedVariantViews\(root, control\)\) return/,
+    );
+    assert.match(source, /control === parentControl/);
     assert.doesNotMatch(source, /relationship\.variantDirection/);
     assert.match(source, /const depthFor/);
     assert.match(source, /placement\.depth <= 4/);
@@ -274,6 +284,17 @@ test("Study Library unfolds structured character variants", () => {
         /\.library-entry-card-shell\.library-entry-variants-open[\s\S]*z-index:\s*7/,
     );
     assert.doesNotMatch(stylesheet, /backdrop-filter:\s*blur/);
+});
+
+test("Study Library card definitions truncate without dropping detail data", () => {
+    assert.match(source, /function cardDefinitions/);
+    assert.match(source, /definitions[\s\S]*\.map\(\(definition\)/);
+    assert.match(source, /\.join\(" · "\)/);
+    assert.match(
+        stylesheet,
+        /\.library-card-definition[\s\S]*overflow:\s*hidden[\s\S]*text-overflow:\s*ellipsis[\s\S]*white-space:\s*nowrap/,
+    );
+    assert.match(source, /const definitions = \(detail\.references/);
 });
 
 test("Study Library honors module-defined grid layouts", () => {
