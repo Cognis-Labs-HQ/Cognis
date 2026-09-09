@@ -134,27 +134,50 @@ function variantPlacement(entry, schema) {
 }
 
 const VARIANT_DIRECTIONS = [
-    "left",
-    "up-left",
     "up",
-    "up-right",
-    "right",
-    "down-right",
     "down",
+    "left",
+    "right",
+    "up-left",
+    "up-right",
+    "down-right",
     "down-left",
 ];
 
-function variantDirectionFitsGrid(direction, index, rowSize, itemCount) {
+const VARIANT_DIRECTION_OFFSETS = {
+    up: { column: 0, row: -1 },
+    down: { column: 0, row: 1 },
+    left: { column: -1, row: 0 },
+    right: { column: 1, row: 0 },
+    "up-left": { column: -1, row: -1 },
+    "up-right": { column: 1, row: -1 },
+    "down-right": { column: 1, row: 1 },
+    "down-left": { column: -1, row: 1 },
+};
+
+function variantDirectionFitsGrid(
+    direction,
+    index,
+    rowSize,
+    itemCount,
+    distance = 1,
+    origin = { column: 0, row: 0 },
+) {
     if (typeof direction !== "string") return false;
     if (!Number.isInteger(index) || !rowSize) return true;
+    const offset = VARIANT_DIRECTION_OFFSETS[direction];
+    if (!offset) return false;
     const column = index % rowSize;
     const row = Math.floor(index / rowSize);
     const lastRow = Math.ceil(itemCount / rowSize) - 1;
-    if (direction.includes("left") && column === 0) return false;
-    if (direction.includes("right") && column === rowSize - 1) return false;
-    if (direction.startsWith("up") && row === 0) return false;
-    if (direction.startsWith("down") && row === lastRow) return false;
-    return true;
+    const targetColumn = column + origin.column + offset.column * distance;
+    const targetRow = row + origin.row + offset.row * distance;
+    return (
+        targetColumn >= 0 &&
+        targetColumn < rowSize &&
+        targetRow >= 0 &&
+        targetRow <= lastRow
+    );
 }
 
 function assignVariantPlacements(entries, schema, layer) {
@@ -178,6 +201,27 @@ function assignVariantPlacements(entries, schema, layer) {
     const requestsByEntryId = new Map(
         requests.map((request) => [request.entry.id, request]),
     );
+    const childrenByParentId = requests.reduce((children, request) => {
+        const siblings = children.get(request.parentId) ?? [];
+        siblings.push(request);
+        children.set(request.parentId, siblings);
+        return children;
+    }, new Map());
+    const branchDepthFor = (entryId, trail = new Set()) => {
+        if (trail.has(entryId)) return 0;
+        const children = childrenByParentId.get(entryId) ?? [];
+        if (children.length === 0) return 1;
+        const nextTrail = new Set(trail).add(entryId);
+        return Math.min(
+            4,
+            1 +
+                Math.max(
+                    ...children.map(({ entry }) =>
+                        branchDepthFor(entry.id, nextTrail),
+                    ),
+                ),
+        );
+    };
     const depthFor = (request, trail = new Set()) => {
         if (trail.has(request.entry.id)) return Number.POSITIVE_INFINITY;
         const parentRequest = requestsByEntryId.get(request.parentId);
@@ -192,8 +236,11 @@ function assignVariantPlacements(entries, schema, layer) {
     for (const request of orderedRequests) {
         const { depth } = request;
         const parentPlacement = placements.get(request.parentId);
-        const index = gridPosition.get(request.parentId);
+        const index =
+            parentPlacement?.rootIndex ?? gridPosition.get(request.parentId);
         const rowSize = layer?.grid?.rowSize;
+        const origin = parentPlacement?.offset ?? { column: 0, row: 0 };
+        const distance = parentPlacement ? 1 : branchDepthFor(request.entry.id);
         const occupied = occupiedByParent.get(request.parentId) ?? new Set();
         const preferred = [
             ...(parentPlacement ? [parentPlacement.direction] : []),
@@ -202,15 +249,20 @@ function assignVariantPlacements(entries, schema, layer) {
             (candidate, candidateIndex, directions) =>
                 directions.indexOf(candidate) === candidateIndex,
         );
-        const direction = preferred.find((candidate) => {
+        const directionFits = (candidate, requiredDistance) => {
             if (occupied.has(candidate)) return false;
             return variantDirectionFitsGrid(
                 candidate,
                 index,
                 rowSize,
                 layer?.grid?.items?.length ?? entries.length,
+                requiredDistance,
+                origin,
             );
-        });
+        };
+        const direction =
+            preferred.find((candidate) => directionFits(candidate, distance)) ??
+            preferred.find((candidate) => directionFits(candidate, 1));
         if (!direction || !Number.isFinite(depth)) continue;
         occupied.add(direction);
         occupiedByParent.set(request.parentId, occupied);
@@ -218,6 +270,12 @@ function assignVariantPlacements(entries, schema, layer) {
             ...request,
             direction,
             depth,
+            rootIndex: index,
+            offset: {
+                column:
+                    origin.column + VARIANT_DIRECTION_OFFSETS[direction].column,
+                row: origin.row + VARIANT_DIRECTION_OFFSETS[direction].row,
+            },
         });
     }
     return placements;
@@ -864,6 +922,15 @@ export async function mount(root, { signal } = {}) {
             cancelLongPress();
             longPressOrigin = { x: event.clientX, y: event.clientY };
             longPressTimer = window.setTimeout(() => {
+                root.querySelectorAll(".library-entry-variants-open").forEach(
+                    (openShell) => {
+                        if (openShell !== shell) {
+                            openShell.classList.remove(
+                                "library-entry-variants-open",
+                            );
+                        }
+                    },
+                );
                 shell.classList.add("library-entry-variants-open");
                 card.focus();
                 suppressEntryClick = true;

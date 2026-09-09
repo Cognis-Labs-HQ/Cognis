@@ -242,6 +242,10 @@ Revealed Library child cards can now occupy every cardinal and diagonal slot aro
 
 Library mounting no longer passes an absent parent direction into grid-edge placement. Root child cards begin with the supported direction list, and the placement guard now rejects non-string direction values safely.
 
+## Bounded child-card trees
+
+Child placement now prioritizes up, down, left, and right before diagonal slots. The first level reserves enough grid clearance for its deepest branch when possible, descendants track their cumulative position to stay within the Library widget, and opening one card tree closes every previously pinned tree.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -312,3 +316,4 @@ Library mounting no longer passes an absent parent direction into grid-edge plac
 - [8c21c0d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c21c0d2380f55b3b7d5c235c8f894080ea7f0fa)
 - [16f02b7b](https://github.com/Cognis-Labs-HQ/Cognis/commit/16f02b7bf334a42884dc78ffc46ff7baec857722)
 - [1490dd84](https://github.com/Cognis-Labs-HQ/Cognis/commit/1490dd848112eab3f7aa82465c5c5c297818b719)
+- [4c928d09](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c928d092a3a5dbc3589ea1dab0fbfc89bd35403)

@@ -220,6 +220,12 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /const VARIANT_DIRECTIONS = \[/);
     assert.match(source, /function variantDirectionFitsGrid/);
     assert.match(source, /typeof direction !== "string"/);
+    assert.match(source, /"up",\s*"down",\s*"left",\s*"right",\s*"up-left"/);
+    assert.match(source, /const branchDepthFor/);
+    assert.match(source, /parentPlacement\?\.rootIndex/);
+    assert.match(source, /parentPlacement\?\.offset/);
+    assert.match(source, /directionFits\(candidate, distance\)/);
+    assert.match(source, /directionFits\(candidate, 1\)/);
     assert.match(
         source,
         /\.\.\.\(parentPlacement \? \[parentPlacement\.direction\] : \[\]\)/,
@@ -251,6 +257,10 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(
         source,
         /shell\.classList\.add\("library-entry-variants-open"\)/,
+    );
+    assert.match(
+        source,
+        /if \(openShell !== shell\)[\s\S]*openShell\.classList\.remove\([\s\S]*"library-entry-variants-open"/,
     );
     assert.match(
         stylesheet,

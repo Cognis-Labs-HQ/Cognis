@@ -242,6 +242,10 @@ Kartu anak Pustaka yang ditampilkan kini dapat menempati setiap slot arah utama 
 
 Pemuatan Pustaka tidak lagi meneruskan arah induk yang tidak tersedia ke penempatan tepi kisi. Kartu anak tingkat akar dimulai dengan daftar arah yang didukung, dan pelindung penempatan kini menolak nilai arah non-string dengan aman.
 
+## Pohon kartu anak yang tetap berbatas
+
+Penempatan kartu anak kini mengutamakan atas, bawah, kiri, dan kanan sebelum slot diagonal. Tingkat pertama menyediakan ruang kisi yang cukup untuk cabang terdalam jika memungkinkan, turunan melacak posisi kumulatif agar tetap berada di dalam widget Pustaka, dan membuka satu pohon kartu akan menutup setiap pohon yang sebelumnya disematkan.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -312,3 +316,4 @@ Pemuatan Pustaka tidak lagi meneruskan arah induk yang tidak tersedia ke penempa
 - [8c21c0d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c21c0d2380f55b3b7d5c235c8f894080ea7f0fa)
 - [16f02b7b](https://github.com/Cognis-Labs-HQ/Cognis/commit/16f02b7bf334a42884dc78ffc46ff7baec857722)
 - [1490dd84](https://github.com/Cognis-Labs-HQ/Cognis/commit/1490dd848112eab3f7aa82465c5c5c297818b719)
+- [4c928d09](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c928d092a3a5dbc3589ea1dab0fbfc89bd35403)

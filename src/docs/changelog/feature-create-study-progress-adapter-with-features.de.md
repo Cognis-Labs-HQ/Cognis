@@ -242,6 +242,10 @@ Eingeblendete untergeordnete Bibliothekskarten können nun jeden geraden und dia
 
 Beim Einbinden der Bibliothek wird keine fehlende Richtung der übergeordneten Karte mehr an die Rasterrandplatzierung übergeben. Untergeordnete Karten auf Wurzelebene beginnen mit der Liste unterstützter Richtungen, und die Platzierungsprüfung weist Richtungswerte, die keine Zeichenketten sind, nun sicher zurück.
 
+## Begrenzte Bäume untergeordneter Karten
+
+Die Platzierung untergeordneter Karten bevorzugt nun oben, unten, links und rechts vor diagonalen Plätzen. Die erste Ebene reserviert nach Möglichkeit genügend Rasterraum für ihren tiefsten Zweig, Nachfahren verfolgen ihre kumulative Position innerhalb des Bibliotheks-Widgets, und das Öffnen eines Kartenbaums schließt jeden zuvor angehefteten Baum.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -312,3 +316,4 @@ Beim Einbinden der Bibliothek wird keine fehlende Richtung der übergeordneten K
 - [8c21c0d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c21c0d2380f55b3b7d5c235c8f894080ea7f0fa)
 - [16f02b7b](https://github.com/Cognis-Labs-HQ/Cognis/commit/16f02b7bf334a42884dc78ffc46ff7baec857722)
 - [1490dd84](https://github.com/Cognis-Labs-HQ/Cognis/commit/1490dd848112eab3f7aa82465c5c5c297818b719)
+- [4c928d09](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c928d092a3a5dbc3589ea1dab0fbfc89bd35403)
