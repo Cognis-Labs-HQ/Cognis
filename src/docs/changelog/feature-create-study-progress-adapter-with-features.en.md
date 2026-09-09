@@ -254,6 +254,10 @@ Hovering into a nested child now locks the complete ancestor path open while exp
 
 Focused child cards now receive an animated outline with a reduced-motion alternative. Moving back to an ancestor restores that level’s previously hidden choices, while leaving the complete parent tree removes all branch state and hides every child again.
 
+## Opaque Library cards
+
+Every Library card now uses an explicitly opaque light or dark surface, including compact grid cards, revealed child cards, and hover, focus, and active states. Underlying grid labels can no longer bleed through overlapping cards.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -327,3 +331,4 @@ Focused child cards now receive an animated outline with a reduced-motion altern
 - [4c928d09](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c928d092a3a5dbc3589ea1dab0fbfc89bd35403)
 - [d1ce3c69](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1ce3c69bb04c5b061943a8e909350284d31e45d)
 - [20a8c29d](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a8c29d58e56c750f03f001d9aa050927135bfb)
+- [1463edb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/1463edb37a5708a75c1a4ce022f69b18813752ad)

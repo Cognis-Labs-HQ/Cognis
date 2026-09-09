@@ -254,6 +254,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 フォーカス中の子カードにアニメーション付きの輪郭を表示し、動きを減らす設定向けの代替表示も追加しました。祖先カードへ戻ると、その階層で一時的に隠されていた選択肢が再表示されます。親ツリー全体からフォーカスが外れると、すべての分岐状態を解除して子カードを再び非表示にします。
 
+## 不透明なライブラリカード
+
+コンパクトグリッドのカード、展開された子カード、ホバー、フォーカス、アクティブ状態を含むすべてのライブラリカードに、明示的に不透明なライトまたはダークの背景を使用するようにしました。重なったカードの下にあるグリッド文字が透けて見えることはありません。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -327,3 +331,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [4c928d09](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c928d092a3a5dbc3589ea1dab0fbfc89bd35403)
 - [d1ce3c69](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1ce3c69bb04c5b061943a8e909350284d31e45d)
 - [20a8c29d](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a8c29d58e56c750f03f001d9aa050927135bfb)
+- [1463edb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/1463edb37a5708a75c1a4ce022f69b18813752ad)

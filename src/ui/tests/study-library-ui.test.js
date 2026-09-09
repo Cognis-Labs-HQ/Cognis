@@ -71,7 +71,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     );
     assert.match(
         stylesheet,
-        /\.library-entry-grid--minimal \.library-entry-card[\s\S]*width:\s*100%[\s\S]*height:\s*100%[\s\S]*border:\s*0[\s\S]*background:\s*transparent/,
+        /\.library-entry-grid--minimal \.library-entry-card[\s\S]*width:\s*100%[\s\S]*height:\s*100%[\s\S]*border:\s*0[\s\S]*background:\s*var\(--library-card-surface\)/,
     );
     assert.match(
         stylesheet,
@@ -105,7 +105,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.doesNotMatch(source, /library-entry-card--variant-masked/);
     assert.match(
         stylesheet,
-        /\.library-entry-variant\.library-entry-variant:is\(:hover, :focus-visible\)[\s\S]*background:\s*var\(--surface\);[\s\S]*transform:\s*none/,
+        /\.library-entry-variant\.library-entry-variant:is\(:hover, :focus-visible\)[\s\S]*background:\s*var\(--library-card-surface-raised\);[\s\S]*transform:\s*none/,
     );
     assert.match(
         stylesheet,
@@ -312,7 +312,7 @@ test("Study Library unfolds structured character variants", () => {
     );
     assert.match(stylesheet, /variant-arrow-light\.svg/);
     assert.match(stylesheet, /variant-arrow-dark\.svg/);
-    assert.match(stylesheet, /\.library-entry-variant \{/);
+    assert.match(stylesheet, /\.library-entry-card\.library-entry-variant \{/);
     assert.match(stylesheet, /var\(--color-success-outline-text/);
     assert.match(
         stylesheet,
@@ -341,6 +341,35 @@ test("Study Library gives content safe edge spacing", () => {
         stylesheet,
         /\.library-entry-grid--minimal\s*\{[\s\S]*overflow:\s*visible/,
     );
+});
+
+test("Study Library cards use opaque theme surfaces", () => {
+    assert.match(stylesheet, /--library-card-surface:\s*rgb\(15, 23, 42\)/);
+    assert.match(
+        stylesheet,
+        /--library-card-surface-raised:\s*rgb\(19, 29, 51\)/,
+    );
+    assert.match(
+        stylesheet,
+        /body\[data-theme="light"\] \.library-browser[\s\S]*--library-card-surface:\s*rgb\(255, 255, 255\)/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-entry-grid--minimal \.library-entry-card[\s\S]*background:\s*var\(--library-card-surface\)/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-entry-card\.library-entry-variant\s*\{[\s\S]*background:\s*var\(--library-card-surface-raised\)/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-entry-card\.library-entry-card:is\(:hover, :focus-visible, :active\)[\s\S]*background:\s*var\(--library-card-surface\)/,
+    );
+    const minimalCardRule = stylesheet.match(
+        /\.library-entry-grid--minimal \.library-entry-card\s*\{([^}]*)\}/,
+    )?.[1];
+    assert.ok(minimalCardRule);
+    assert.doesNotMatch(minimalCardRule, /background:\s*transparent/);
 });
 
 test("Study Library card definitions truncate without dropping detail data", () => {

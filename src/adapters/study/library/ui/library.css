@@ -1,6 +1,8 @@
 .library-browser {
     --library-card-gap: 0.75rem;
     --library-card-half-gap: 0.375rem;
+    --library-card-surface: rgb(15, 23, 42);
+    --library-card-surface-raised: rgb(19, 29, 51);
 
     display: grid;
     box-sizing: border-box;
@@ -8,6 +10,11 @@
     min-width: 0;
     max-width: 100%;
     padding: var(--library-card-gap);
+}
+
+body[data-theme="light"] .library-browser {
+    --library-card-surface: rgb(255, 255, 255);
+    --library-card-surface-raised: rgb(248, 250, 255);
 }
 
 .library-layer-tabs {
@@ -89,7 +96,12 @@
     text-align: left;
     border-color: var(--border);
     border-radius: 12px;
-    background: var(--surface);
+    background: var(--library-card-surface);
+}
+
+.library-entry-card.library-entry-card,
+.library-entry-card.library-entry-card:is(:hover, :focus-visible, :active) {
+    background: var(--library-card-surface);
 }
 
 .library-entry-grid--minimal {
@@ -115,7 +127,7 @@
     text-align: center;
     border: 0;
     border-radius: 0;
-    background: transparent;
+    background: var(--library-card-surface);
 }
 
 .library-entry-minimal-content {
@@ -244,10 +256,10 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     background-image: url("./assets/variant-arrow-dark.svg");
 }
 
-.library-entry-variant {
+.library-entry-card.library-entry-variant {
     border: 2px solid
         var(--color-success-outline-text, var(--color-success-border));
-    background: var(--surface);
+    background: var(--library-card-surface-raised);
 }
 
 .library-entry-variant.library-entry-variant:is(:hover, :focus-visible) {
@@ -255,7 +267,7 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
         --color-success-outline-text,
         var(--color-success-border)
     );
-    background: var(--surface);
+    background: var(--library-card-surface-raised);
     transform: none;
 }
 
@@ -319,7 +331,7 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     border: 2px solid
         var(--color-success-outline-text, var(--color-success-border));
     border-radius: 10px;
-    background: var(--surface);
+    background: var(--library-card-surface-raised);
     box-shadow: 0 0.8rem 2rem color-mix(in srgb, #000 24%, transparent);
 }
 

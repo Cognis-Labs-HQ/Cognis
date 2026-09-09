@@ -254,6 +254,10 @@ Beim Bewegen des Mauszeigers auf eine verschachtelte untergeordnete Karte bleibt
 
 Fokussierte untergeordnete Karten erhalten nun eine animierte Kontur mit einer Alternative für reduzierte Bewegung. Beim Zurückkehren zu einer übergeordneten Karte werden die zuvor ausgeblendeten Auswahlmöglichkeiten dieser Ebene wiederhergestellt. Beim vollständigen Verlassen des übergeordneten Baums wird der gesamte Zweigzustand entfernt und alle untergeordneten Karten werden erneut ausgeblendet.
 
+## Undurchsichtige Bibliothekskarten
+
+Jede Bibliothekskarte verwendet nun eine ausdrücklich undurchsichtige helle oder dunkle Oberfläche. Dies gilt auch für kompakte Rasterkarten, eingeblendete untergeordnete Karten sowie Hover-, Fokus- und Aktivzustände. Darunterliegende Rasterbeschriftungen können nicht mehr durch überlappende Karten hindurchscheinen.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -327,3 +331,4 @@ Fokussierte untergeordnete Karten erhalten nun eine animierte Kontur mit einer A
 - [4c928d09](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c928d092a3a5dbc3589ea1dab0fbfc89bd35403)
 - [d1ce3c69](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1ce3c69bb04c5b061943a8e909350284d31e45d)
 - [20a8c29d](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a8c29d58e56c750f03f001d9aa050927135bfb)
+- [1463edb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/1463edb37a5708a75c1a4ce022f69b18813752ad)

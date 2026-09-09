@@ -254,6 +254,10 @@ Saat penunjuk masuk ke anak bertingkat, seluruh jalur induknya kini tetap terbuk
 
 Kartu anak yang difokuskan kini memperoleh garis tepi animasi dengan alternatif gerakan yang dikurangi. Kembali ke induk memulihkan pilihan tingkat tersebut yang sebelumnya disembunyikan, sedangkan meninggalkan seluruh pohon induk menghapus semua status cabang dan menyembunyikan kembali setiap anak.
 
+## Kartu Pustaka buram
+
+Setiap kartu Pustaka kini menggunakan permukaan terang atau gelap yang sepenuhnya buram, termasuk kartu kisi ringkas, kartu anak yang ditampilkan, serta status hover, fokus, dan aktif. Label kisi di bawahnya tidak lagi terlihat menembus kartu yang saling bertumpuk.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -327,3 +331,4 @@ Kartu anak yang difokuskan kini memperoleh garis tepi animasi dengan alternatif 
 - [4c928d09](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c928d092a3a5dbc3589ea1dab0fbfc89bd35403)
 - [d1ce3c69](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1ce3c69bb04c5b061943a8e909350284d31e45d)
 - [20a8c29d](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a8c29d58e56c750f03f001d9aa050927135bfb)
+- [1463edb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/1463edb37a5708a75c1a4ce022f69b18813752ad)
