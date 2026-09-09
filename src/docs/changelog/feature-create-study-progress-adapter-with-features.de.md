@@ -226,6 +226,10 @@ Ein ausgeklappter Kindbaum verarbeitet nun den ersten Klick auf sein übergeordn
 
 Deep-Links innerhalb von Popup-Titeln verwenden keine Unterstreichung mehr. Beim Darüberfahren und bei Tastaturfokus erhalten sie nun einen stärkeren Akzentrahmen, einen getönten Hintergrund und einen Fokusring, sodass jede anklickbare Titelkomponente klar erkennbar ist.
 
+## Einheitliche Bibliothekslinks und gemerkte Lernziele
+
+Beziehungslinks führen nun einheitlich direkt zu den Details des verknüpften Eintrags, einschließlich umgekehrter „Verwendet von“-Links. Sprachwechsel verwenden die zuletzt geöffnete untergeordnete Lernseite statt des mehrsprachigen Übersichtsbereichs, und in den Spracheinstellungen ist keine Sprachschaltfläche als aktiv markiert.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -292,3 +296,4 @@ Deep-Links innerhalb von Popup-Titeln verwenden keine Unterstreichung mehr. Beim
 - [5ab1b885](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ab1b8853aaf5253230f4ab535e5c68fd6ccc0aa)
 - [fff72d38](https://github.com/Cognis-Labs-HQ/Cognis/commit/fff72d38bc86a30fa95db9323f05494a747b43ea)
 - [26a42897](https://github.com/Cognis-Labs-HQ/Cognis/commit/26a428979ae39d94ffd502733fee6ad2306a618f)
+- [9d118560](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d118560c653e18847ed65945ddf363928cac172)

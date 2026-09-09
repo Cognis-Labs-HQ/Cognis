@@ -260,8 +260,7 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
 .library-entry-card-shell.library-entry-variants-open
     > .library-entry-variant-shell,
 .library-entry-card-shell:not([data-library-variant-depth="0"]):hover
-    > .library-entry-variant-shell,
-.library-entry-variant-shell.library-entry-variant-revealed {
+    > .library-entry-variant-shell {
     display: block;
 }
 

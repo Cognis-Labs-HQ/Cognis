@@ -5,7 +5,6 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { groupByToMap } from "/static/reuse/group-by.js";
-import { highlightSearchTarget } from "/static/reuse/search-util/indexing.js";
 import {
     bindStudySubNavigation,
     loadStudySubNavigationModel,
@@ -508,42 +507,6 @@ function activateLibraryLayer(schema, layerId) {
     });
 }
 
-function focusLibraryEntry(root, entry, schemas) {
-    const layer = layerForEntry(schemas, entry);
-    const schema = root.querySelector(
-        `[data-library-schema-id="${CSS.escape(entry.schemaId)}"]`,
-    );
-    const tab = schema?.querySelector(
-        `[data-library-tab="${CSS.escape(entry.layer)}"]`,
-    );
-    if (!schema || !tab || isMeaningLayer(layer)) return false;
-    activateLibraryLayer(schema, entry.layer);
-    const target = root.querySelector(
-        `.library-browser [data-library-entry="${CSS.escape(entry.id)}"]`,
-    );
-    const revealedShells = [];
-    let variantShell = target?.closest(".library-entry-variant-shell");
-    while (variantShell) {
-        variantShell.classList.add("library-entry-variant-revealed");
-        revealedShells.push(variantShell);
-        variantShell = variantShell.parentElement?.closest(
-            ".library-entry-variant-shell",
-        );
-    }
-    target?.focus();
-    window.requestAnimationFrame(() => {
-        highlightSearchTarget({ id: `library-entry-${entry.id}` });
-    });
-    if (revealedShells.length) {
-        window.setTimeout(() => {
-            revealedShells.forEach((shell) =>
-                shell.classList.remove("library-entry-variant-revealed"),
-            );
-        }, 2000);
-    }
-    return true;
-}
-
 async function openEntryPopup(
     root,
     initialEntry,
@@ -670,8 +633,6 @@ async function openEntryPopup(
             selectedEntry = entries.find((entry) => entry.id === entryId);
         } else if (result === "previous") selectedEntry = active[index - 1];
         else if (result === "next") selectedEntry = active[index + 1];
-        else if (relatedEntry && focusLibraryEntry(root, relatedEntry, schemas))
-            selectedEntry = null;
         else if (
             relatedEntry &&
             !isMeaningLayer(layerForEntry(schemas, relatedEntry))

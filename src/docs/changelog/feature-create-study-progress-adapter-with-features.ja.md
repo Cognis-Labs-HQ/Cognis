@@ -226,6 +226,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 ポップアップタイトル内のディープリンク項目から下線をなくしました。ホバー時とキーボードフォーカス時に、より明瞭なアクセント枠、色付き背景、フォーカスハローを表示し、クリック可能な各タイトル構成要素を判別しやすくしました。
 
+## 一貫したライブラリリンクと記憶される学習先
+
+関係リンクは、逆方向の「使用元」リンクを含め、リンク先項目の詳細へ一貫して直接移動するようになりました。言語切り替えでは複数言語の一覧へ戻らず、最後に開いた学習子ページを再利用し、言語設定画面では言語ボタンの選択状態を解除します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -292,3 +296,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [5ab1b885](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ab1b8853aaf5253230f4ab535e5c68fd6ccc0aa)
 - [fff72d38](https://github.com/Cognis-Labs-HQ/Cognis/commit/fff72d38bc86a30fa95db9323f05494a747b43ea)
 - [26a42897](https://github.com/Cognis-Labs-HQ/Cognis/commit/26a428979ae39d94ffd502733fee6ad2306a618f)
+- [9d118560](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d118560c653e18847ed65945ddf363928cac172)

@@ -363,14 +363,13 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(stylesheet, /place-content: center/);
 });
 
-test("Study Library deep links activate and highlight their entry", () => {
-    assert.match(source, /highlightSearchTarget/);
-    assert.match(source, /function activateLibraryLayer/);
-    assert.match(source, /function focusLibraryEntry/);
+test("Study Library relationship links consistently open entry details", () => {
+    assert.doesNotMatch(source, /function focusLibraryEntry/);
     assert.match(source, /data-search-id="library-entry-/);
-    assert.match(source, /focusLibraryEntry\(root, relatedEntry, schemas\)/);
-    assert.match(source, /library-entry-variant-revealed/);
-    assert.match(stylesheet, /\.library-entry-variant-revealed/);
+    assert.match(
+        source,
+        /relatedEntry &&[\s\S]*!isMeaningLayer[\s\S]*selectedEntry = relatedEntry/,
+    );
 });
 
 test("Study Library popup uses equal directional navigation controls", () => {

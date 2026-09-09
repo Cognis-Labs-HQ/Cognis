@@ -226,6 +226,10 @@ An expanded child tree now consumes the first click on its parent or an adjacent
 
 Deep-linked items inside popup titles no longer use underline decoration. Their hover and keyboard-focus states now use a stronger accent border, tinted background, and focus halo so each clickable title component is visibly distinct.
 
+## Consistent Library links and remembered Study destinations
+
+Relationship links now consistently continue directly into the linked entry detail, including inverse “used by” links. Language switches reuse the last child Study page instead of falling back to the multi-language hub, and the language-settings view clears the active language-button state.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -292,3 +296,4 @@ Deep-linked items inside popup titles no longer use underline decoration. Their 
 - [5ab1b885](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ab1b8853aaf5253230f4ab535e5c68fd6ccc0aa)
 - [fff72d38](https://github.com/Cognis-Labs-HQ/Cognis/commit/fff72d38bc86a30fa95db9323f05494a747b43ea)
 - [26a42897](https://github.com/Cognis-Labs-HQ/Cognis/commit/26a428979ae39d94ffd502733fee6ad2306a618f)
+- [9d118560](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d118560c653e18847ed65945ddf363928cac172)
