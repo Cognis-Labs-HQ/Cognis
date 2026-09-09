@@ -270,6 +270,24 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     z-index: 7;
 }
 
+.library-entry-card-shell.library-entry-branch-active
+    .library-entry-variant-shell {
+    display: none;
+}
+
+.library-entry-card-shell.library-entry-branch-active
+    .library-entry-variant-shell.library-entry-branch-path,
+.library-entry-card-shell.library-entry-branch-active
+    .library-entry-card-shell.library-entry-branch-tip
+    > .library-entry-variant-shell {
+    display: block;
+}
+
+.library-entry-card-shell.library-entry-branch-path,
+.library-entry-card-shell.library-entry-branch-tip {
+    z-index: 7;
+}
+
 .library-entry-grid--minimal .library-entry-variant {
     border: 2px solid
         var(--color-success-outline-text, var(--color-success-border));

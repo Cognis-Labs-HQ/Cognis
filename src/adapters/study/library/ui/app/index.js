@@ -302,6 +302,36 @@ function closeUnrelatedVariantViews(root, control) {
     return closed;
 }
 
+function activateVariantBranch(root, card) {
+    const shell = card.closest(".library-entry-card-shell");
+    if (!shell || shell.dataset.libraryVariantDepth === "0") return;
+    const rootShell = shell.closest(
+        '.library-entry-card-shell[data-library-variant-depth="0"]',
+    );
+    if (!rootShell?.classList.contains("library-entry-variants-open")) return;
+    root.querySelectorAll(
+        ".library-entry-branch-active, .library-entry-branch-path, .library-entry-branch-tip",
+    ).forEach((element) => {
+        element.classList.remove(
+            "library-entry-branch-active",
+            "library-entry-branch-path",
+            "library-entry-branch-tip",
+        );
+    });
+    rootShell.classList.add("library-entry-branch-active");
+    shell.classList.add("library-entry-branch-tip");
+    let branchShell = shell;
+    while (branchShell !== rootShell) {
+        branchShell.classList.add("library-entry-branch-path");
+        const variantSlot = branchShell.parentElement;
+        if (!variantSlot?.classList.contains("library-entry-variant-shell")) {
+            break;
+        }
+        variantSlot.classList.add("library-entry-branch-path");
+        branchShell = variantSlot.parentElement;
+    }
+}
+
 function renderSelection(entry, i18n) {
     if (!canDeleteEntry(entry)) return "";
     const label = i18n
@@ -953,6 +983,15 @@ export async function mount(root, { signal } = {}) {
     );
     root.addEventListener("pointerup", cancelLongPress, { signal });
     root.addEventListener("pointercancel", cancelLongPress, { signal });
+    root.addEventListener(
+        "pointerover",
+        (event) => {
+            const card = event.target.closest("button[data-library-entry]");
+            if (!card || card.contains(event.relatedTarget)) return;
+            activateVariantBranch(root, card);
+        },
+        { signal },
+    );
     root.addEventListener(
         "contextmenu",
         (event) => {

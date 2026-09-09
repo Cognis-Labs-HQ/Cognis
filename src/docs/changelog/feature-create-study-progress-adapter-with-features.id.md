@@ -246,6 +246,10 @@ Pemuatan Pustaka tidak lagi meneruskan arah induk yang tidak tersedia ke penempa
 
 Penempatan kartu anak kini mengutamakan atas, bawah, kiri, dan kanan sebelum slot diagonal. Tingkat pertama menyediakan ruang kisi yang cukup untuk cabang terdalam jika memungkinkan, turunan melacak posisi kumulatif agar tetap berada di dalam widget Pustaka, dan membuka satu pohon kartu akan menutup setiap pohon yang sebelumnya disematkan.
 
+## Cabang anak terfokus yang tetap terbuka
+
+Saat penunjuk masuk ke anak bertingkat, seluruh jalur induknya kini tetap terbuka sambil menampilkan tingkat berikutnya dari anak tersebut. Cabang saudara disembunyikan sementara untuk mendapatkan kembali ruang, dan kembali ke cabang lain memperbarui jalur fokus tanpa meruntuhkan pohon ketika penunjuk melintasi celah kartu.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -317,3 +321,4 @@ Penempatan kartu anak kini mengutamakan atas, bawah, kiri, dan kanan sebelum slo
 - [16f02b7b](https://github.com/Cognis-Labs-HQ/Cognis/commit/16f02b7bf334a42884dc78ffc46ff7baec857722)
 - [1490dd84](https://github.com/Cognis-Labs-HQ/Cognis/commit/1490dd848112eab3f7aa82465c5c5c297818b719)
 - [4c928d09](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c928d092a3a5dbc3589ea1dab0fbfc89bd35403)
+- [d1ce3c69](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1ce3c69bb04c5b061943a8e909350284d31e45d)

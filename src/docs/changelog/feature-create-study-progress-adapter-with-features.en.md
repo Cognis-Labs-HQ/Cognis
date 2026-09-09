@@ -246,6 +246,10 @@ Library mounting no longer passes an absent parent direction into grid-edge plac
 
 Child placement now prioritizes up, down, left, and right before diagonal slots. The first level reserves enough grid clearance for its deepest branch when possible, descendants track their cumulative position to stay within the Library widget, and opening one card tree closes every previously pinned tree.
 
+## Persistent focused child branches
+
+Hovering into a nested child now locks the complete ancestor path open while exposing that child’s next level. Sibling branches are temporarily hidden to reclaim space, and returning to another branch updates the focused path without collapsing the tree across card gaps.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -317,3 +321,4 @@ Child placement now prioritizes up, down, left, and right before diagonal slots.
 - [16f02b7b](https://github.com/Cognis-Labs-HQ/Cognis/commit/16f02b7bf334a42884dc78ffc46ff7baec857722)
 - [1490dd84](https://github.com/Cognis-Labs-HQ/Cognis/commit/1490dd848112eab3f7aa82465c5c5c297818b719)
 - [4c928d09](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c928d092a3a5dbc3589ea1dab0fbfc89bd35403)
+- [d1ce3c69](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1ce3c69bb04c5b061943a8e909350284d31e45d)

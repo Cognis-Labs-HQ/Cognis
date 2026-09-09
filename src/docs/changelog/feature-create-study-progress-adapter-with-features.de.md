@@ -246,6 +246,10 @@ Beim Einbinden der Bibliothek wird keine fehlende Richtung der übergeordneten K
 
 Die Platzierung untergeordneter Karten bevorzugt nun oben, unten, links und rechts vor diagonalen Plätzen. Die erste Ebene reserviert nach Möglichkeit genügend Rasterraum für ihren tiefsten Zweig, Nachfahren verfolgen ihre kumulative Position innerhalb des Bibliotheks-Widgets, und das Öffnen eines Kartenbaums schließt jeden zuvor angehefteten Baum.
 
+## Dauerhaft fokussierte untergeordnete Zweige
+
+Beim Bewegen des Mauszeigers auf eine verschachtelte untergeordnete Karte bleibt nun der vollständige Pfad der übergeordneten Karten geöffnet, während die nächste Ebene dieser Karte eingeblendet wird. Benachbarte Zweige werden vorübergehend ausgeblendet, um Platz zurückzugewinnen. Beim Zurückkehren zu einem anderen Zweig wird der fokussierte Pfad aktualisiert, ohne dass der Baum in den Abständen zwischen Karten zusammenklappt.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -317,3 +321,4 @@ Die Platzierung untergeordneter Karten bevorzugt nun oben, unten, links und rech
 - [16f02b7b](https://github.com/Cognis-Labs-HQ/Cognis/commit/16f02b7bf334a42884dc78ffc46ff7baec857722)
 - [1490dd84](https://github.com/Cognis-Labs-HQ/Cognis/commit/1490dd848112eab3f7aa82465c5c5c297818b719)
 - [4c928d09](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c928d092a3a5dbc3589ea1dab0fbfc89bd35403)
+- [d1ce3c69](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1ce3c69bb04c5b061943a8e909350284d31e45d)

@@ -246,6 +246,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 子カードの配置では、斜めの枠よりも上、下、左、右を優先するようにしました。可能な場合は第 1 階層で最深分岐に必要なグリッド余裕を確保し、子孫は累積位置を追跡してライブラリウィジェット内に収まります。また、1 つのカードツリーを開くと、それまで固定されていたほかのツリーをすべて閉じます。
 
+## 維持される子カードのフォーカス分岐
+
+入れ子の子カードへポインターを移動すると、祖先までの経路全体を開いたまま、その子カードの次の階層を表示するようにしました。別分岐の兄弟カードは一時的に隠して表示領域を確保し、カード間の隙間を移動してもツリーを閉じずに、移動先の分岐へフォーカス経路を更新します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -317,3 +321,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [16f02b7b](https://github.com/Cognis-Labs-HQ/Cognis/commit/16f02b7bf334a42884dc78ffc46ff7baec857722)
 - [1490dd84](https://github.com/Cognis-Labs-HQ/Cognis/commit/1490dd848112eab3f7aa82465c5c5c297818b719)
 - [4c928d09](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c928d092a3a5dbc3589ea1dab0fbfc89bd35403)
+- [d1ce3c69](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1ce3c69bb04c5b061943a8e909350284d31e45d)
