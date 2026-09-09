@@ -214,6 +214,10 @@ Child relationships are now direction-neutral. The Library assigns safe position
 
 Library content now participates in natural document scrolling instead of using a nested content viewport. Clicking a card outside an expanded child-card tree closes that child view before continuing the card action.
 
+## Progressive child-tree expansion
+
+Hovering an already revealed child card now exposes that child’s own descendants through the same directional card mechanism. Nested trees can be explored progressively through all four supported levels without opening every branch at once.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -277,3 +281,4 @@ Library content now participates in natural document scrolling instead of using 
 - [fc3379e4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc3379e48419678433fd00b250ff6bf45bf9a578)
 - [e4b572ee](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4b572ee)
 - [764c109d](https://github.com/Cognis-Labs-HQ/Cognis/commit/764c109dfa6530c33bddf8d8deaafff2e2ea7f48)
+- [5ab1b885](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ab1b8853aaf5253230f4ab535e5c68fd6ccc0aa)

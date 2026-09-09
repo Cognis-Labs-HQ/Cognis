@@ -214,6 +214,10 @@ Relasi anak kini tidak menentukan arah. Pustaka memilih posisi aman berdasarkan 
 
 Konten Pustaka kini mengikuti pengguliran dokumen alami, bukan menggunakan area pandang konten bertingkat. Mengeklik kartu di luar pohon kartu anak yang terbuka akan menutup tampilan anak tersebut sebelum tindakan kartu dilanjutkan.
 
+## Perluasan pohon anak bertahap
+
+Mengarahkan penunjuk ke kartu anak yang sudah terbuka kini menampilkan keturunan kartu tersebut melalui mekanisme kartu berarah yang sama. Pohon bertingkat dapat dijelajahi secara bertahap melalui keempat tingkat yang didukung tanpa membuka semua cabang sekaligus.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -277,3 +281,4 @@ Konten Pustaka kini mengikuti pengguliran dokumen alami, bukan menggunakan area 
 - [fc3379e4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc3379e48419678433fd00b250ff6bf45bf9a578)
 - [e4b572ee](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4b572ee)
 - [764c109d](https://github.com/Cognis-Labs-HQ/Cognis/commit/764c109dfa6530c33bddf8d8deaafff2e2ea7f48)
+- [5ab1b885](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ab1b8853aaf5253230f4ab535e5c68fd6ccc0aa)

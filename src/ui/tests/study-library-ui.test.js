@@ -242,6 +242,10 @@ test("Study Library unfolds structured character variants", () => {
         stylesheet,
         /\.library-entry-card-shell\.library-entry-variants-open[\s\S]*> \.library-entry-variant-shell[\s\S]*display:\s*block/,
     );
+    assert.match(
+        stylesheet,
+        /\.library-entry-card-shell:not\(\[data-library-variant-depth="0"\]\):hover[\s\S]*> \.library-entry-variant-shell/,
+    );
     assert.doesNotMatch(
         stylesheet,
         /\.library-entry-variant-shell\s*\{[\s\S]*?visibility:\s*hidden/,

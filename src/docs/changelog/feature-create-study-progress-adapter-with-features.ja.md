@@ -214,6 +214,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 ライブラリコンテンツは入れ子のコンテンツ表示領域ではなく、ドキュメントの自然なスクロールに従うようになりました。展開中の子カードツリー外にあるカードをクリックすると、カード操作を続ける前に子表示を閉じます。
 
+## 子ツリーの段階的な展開
+
+表示済みの子カードにポインターを重ねると、同じ方向付きカード機構でその子自身の子孫を表示するようになりました。すべての分岐を一度に開かず、対応する 4 階層すべてを段階的に探索できます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -277,3 +281,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [fc3379e4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc3379e48419678433fd00b250ff6bf45bf9a578)
 - [e4b572ee](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4b572ee)
 - [764c109d](https://github.com/Cognis-Labs-HQ/Cognis/commit/764c109dfa6530c33bddf8d8deaafff2e2ea7f48)
+- [5ab1b885](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ab1b8853aaf5253230f4ab535e5c68fd6ccc0aa)
