@@ -133,6 +133,29 @@ function variantPlacement(entry, schema) {
     return null;
 }
 
+const VARIANT_DIRECTIONS = [
+    "left",
+    "up-left",
+    "up",
+    "up-right",
+    "right",
+    "down-right",
+    "down",
+    "down-left",
+];
+
+function variantDirectionFitsGrid(direction, index, rowSize, itemCount) {
+    if (!Number.isInteger(index) || !rowSize) return true;
+    const column = index % rowSize;
+    const row = Math.floor(index / rowSize);
+    const lastRow = Math.ceil(itemCount / rowSize) - 1;
+    if (direction.includes("left") && column === 0) return false;
+    if (direction.includes("right") && column === rowSize - 1) return false;
+    if (direction.startsWith("up") && row === 0) return false;
+    if (direction.startsWith("down") && row === lastRow) return false;
+    return true;
+}
+
 function assignVariantPlacements(entries, schema, layer) {
     const placements = new Map();
     const occupiedByParent = new Map();
@@ -173,17 +196,19 @@ function assignVariantPlacements(entries, schema, layer) {
         const occupied = occupiedByParent.get(request.parentId) ?? new Set();
         const preferred = [
             parentPlacement?.direction,
-            "left",
-            "up",
-            "right",
-        ].filter(Boolean);
+            ...VARIANT_DIRECTIONS,
+        ].filter(
+            (candidate, candidateIndex, directions) =>
+                directions.indexOf(candidate) === candidateIndex,
+        );
         const direction = preferred.find((candidate) => {
             if (occupied.has(candidate)) return false;
-            if (!Number.isInteger(index) || !rowSize) return true;
-            if (candidate === "left" && index % rowSize === 0) return false;
-            if (candidate === "right" && (index + 1) % rowSize === 0)
-                return false;
-            return true;
+            return variantDirectionFitsGrid(
+                candidate,
+                index,
+                rowSize,
+                layer?.grid?.items?.length ?? entries.length,
+            );
         });
         if (!direction || !Number.isFinite(depth)) continue;
         occupied.add(direction);

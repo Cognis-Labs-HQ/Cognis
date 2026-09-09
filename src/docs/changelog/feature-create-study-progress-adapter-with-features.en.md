@@ -234,6 +234,10 @@ Relationship links now consistently continue directly into the linked entry deta
 
 Long-press release no longer collapses child cards before they can be reached, and popup opening is serialized to prevent duplicate dialogs. Content entries may now be hidden from direct browsing while remaining available to references and detail links; hiding a parent also hides its descendants. Child detail headings identify their parent entry.
 
+## Eight-direction child-card slots
+
+Revealed Library child cards can now occupy every cardinal and diagonal slot around their parent. Grid-edge-aware placement avoids sending children beyond the visible content when another slot is available, while added browser spacing and visible minimal-grid overflow keep card borders clear of surrounding edges.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -302,3 +306,4 @@ Long-press release no longer collapses child cards before they can be reached, a
 - [26a42897](https://github.com/Cognis-Labs-HQ/Cognis/commit/26a428979ae39d94ffd502733fee6ad2306a618f)
 - [9d118560](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d118560c653e18847ed65945ddf363928cac172)
 - [8c21c0d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c21c0d2380f55b3b7d5c235c8f894080ea7f0fa)
+- [16f02b7b](https://github.com/Cognis-Labs-HQ/Cognis/commit/16f02b7bf334a42884dc78ffc46ff7baec857722)

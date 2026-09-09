@@ -234,6 +234,10 @@ Tautan relasi kini secara konsisten langsung membuka detail entri tertaut, terma
 
 Pelepasan setelah tekan lama tidak lagi menutup kartu anak sebelum dapat dijangkau, dan pembukaan popup diserialkan untuk mencegah dialog ganda. Entri konten kini dapat disembunyikan dari penjelajahan langsung sambil tetap tersedia untuk referensi dan tautan detail; menyembunyikan induk juga menyembunyikan keturunannya. Judul detail anak mencantumkan entri induknya.
 
+## Slot kartu anak delapan arah
+
+Kartu anak Pustaka yang ditampilkan kini dapat menempati setiap slot arah utama dan diagonal di sekitar induknya. Penempatan yang memperhatikan tepi kisi mencegah anak keluar dari konten yang terlihat ketika slot lain tersedia, sedangkan jarak tambahan pada peramban dan luapan kisi minimal yang terlihat menjaga batas kartu tidak berbenturan dengan tepi sekitarnya.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -302,3 +306,4 @@ Pelepasan setelah tekan lama tidak lagi menutup kartu anak sebelum dapat dijangk
 - [26a42897](https://github.com/Cognis-Labs-HQ/Cognis/commit/26a428979ae39d94ffd502733fee6ad2306a618f)
 - [9d118560](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d118560c653e18847ed65945ddf363928cac172)
 - [8c21c0d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c21c0d2380f55b3b7d5c235c8f894080ea7f0fa)
+- [16f02b7b](https://github.com/Cognis-Labs-HQ/Cognis/commit/16f02b7bf334a42884dc78ffc46ff7baec857722)

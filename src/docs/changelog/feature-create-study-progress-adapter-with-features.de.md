@@ -234,6 +234,10 @@ Beziehungslinks führen nun einheitlich direkt zu den Details des verknüpften E
 
 Das Loslassen nach langem Drücken schließt untergeordnete Karten nicht mehr, bevor sie erreichbar sind, und das Öffnen von Popups wird serialisiert, um doppelte Dialoge zu verhindern. Inhaltseinträge können nun aus der direkten Ansicht ausgeblendet werden, bleiben aber für Verweise und Detaillinks verfügbar; ein ausgeblendetes übergeordnetes Element blendet auch seine Nachkommen aus. Detailüberschriften untergeordneter Elemente nennen ihren Elterneintrag.
 
+## Kartenplätze in acht Richtungen
+
+Eingeblendete untergeordnete Bibliothekskarten können nun jeden geraden und diagonalen Platz um ihre übergeordnete Karte belegen. Die rasterrandbewusste Platzierung verhindert nach Möglichkeit, dass Karten über den sichtbaren Inhalt hinausragen. Zusätzlicher Abstand im Browser und sichtbarer Überlauf im Minimalraster halten Kartenränder von den umgebenden Kanten fern.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -302,3 +306,4 @@ Das Loslassen nach langem Drücken schließt untergeordnete Karten nicht mehr, b
 - [26a42897](https://github.com/Cognis-Labs-HQ/Cognis/commit/26a428979ae39d94ffd502733fee6ad2306a618f)
 - [9d118560](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d118560c653e18847ed65945ddf363928cac172)
 - [8c21c0d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c21c0d2380f55b3b7d5c235c8f894080ea7f0fa)
+- [16f02b7b](https://github.com/Cognis-Labs-HQ/Cognis/commit/16f02b7bf334a42884dc78ffc46ff7baec857722)

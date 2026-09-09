@@ -211,7 +211,14 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(stylesheet, /\.library-entry-variant-left/);
     assert.match(stylesheet, /\.library-entry-variant-right/);
     assert.match(stylesheet, /\.library-entry-variant-up/);
+    assert.match(stylesheet, /\.library-entry-variant-up-left/);
+    assert.match(stylesheet, /\.library-entry-variant-up-right/);
+    assert.match(stylesheet, /\.library-entry-variant-down-right/);
+    assert.match(stylesheet, /\.library-entry-variant-down/);
+    assert.match(stylesheet, /\.library-entry-variant-down-left/);
     assert.match(source, /function assignVariantPlacements/);
+    assert.match(source, /const VARIANT_DIRECTIONS = \[/);
+    assert.match(source, /function variantDirectionFitsGrid/);
     assert.match(source, /function closeUnrelatedVariantViews/);
     assert.match(
         source,
@@ -287,6 +294,17 @@ test("Study Library unfolds structured character variants", () => {
         /\.library-entry-card-shell\.library-entry-variants-open[\s\S]*z-index:\s*7/,
     );
     assert.doesNotMatch(stylesheet, /backdrop-filter:\s*blur/);
+});
+
+test("Study Library gives content safe edge spacing", () => {
+    assert.match(
+        stylesheet,
+        /\.library-browser\s*\{[\s\S]*box-sizing:\s*border-box[\s\S]*padding:\s*var\(--library-card-gap\)/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-entry-grid--minimal\s*\{[\s\S]*overflow:\s*visible/,
+    );
 });
 
 test("Study Library card definitions truncate without dropping detail data", () => {

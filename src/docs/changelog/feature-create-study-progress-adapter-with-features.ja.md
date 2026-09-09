@@ -234,6 +234,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 長押し後にマウスを離しても、子カードへ移動する前に閉じなくなり、ポップアップを直列化して二重表示を防ぎます。コンテンツ項目は参照や詳細リンクで利用可能なまま直接表示から隠せるようになり、親を隠すとその子孫も非表示になります。子項目の詳細見出しには親項目を表示します。
 
+## 8 方向の子カード配置枠
+
+展開されたライブラリの子カードを、親カードの周囲にある上下左右と斜めを含むすべての配置枠へ置けるようにしました。グリッド端を考慮した配置により代替枠がある場合は表示領域外への展開を避け、ブラウザーの余白追加と最小グリッドの可視オーバーフローによりカード境界と周囲の端との衝突を防ぎます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -302,3 +306,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [26a42897](https://github.com/Cognis-Labs-HQ/Cognis/commit/26a428979ae39d94ffd502733fee6ad2306a618f)
 - [9d118560](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d118560c653e18847ed65945ddf363928cac172)
 - [8c21c0d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c21c0d2380f55b3b7d5c235c8f894080ea7f0fa)
+- [16f02b7b](https://github.com/Cognis-Labs-HQ/Cognis/commit/16f02b7bf334a42884dc78ffc46ff7baec857722)

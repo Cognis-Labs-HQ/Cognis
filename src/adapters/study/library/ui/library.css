@@ -3,9 +3,11 @@
     --library-card-half-gap: 0.375rem;
 
     display: grid;
+    box-sizing: border-box;
     gap: 1.5rem;
     min-width: 0;
     max-width: 100%;
+    padding: var(--library-card-gap);
 }
 
 .library-layer-tabs {
@@ -91,7 +93,7 @@
 }
 
 .library-entry-grid--minimal {
-    overflow: hidden;
+    overflow: visible;
     width: 100%;
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -347,6 +349,62 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     bottom: calc(-1 * var(--library-card-gap));
     left: calc(50% - var(--library-card-half-gap));
     transform: rotate(-90deg);
+}
+
+.library-entry-variant-up-left {
+    right: calc(100% + var(--library-card-gap));
+    bottom: calc(100% + var(--library-card-gap));
+}
+
+.library-entry-variant-up-left::before {
+    right: calc(-1 * var(--library-card-gap));
+    bottom: calc(-1 * var(--library-card-gap));
+    transform: rotate(-135deg);
+}
+
+.library-entry-variant-up-right {
+    bottom: calc(100% + var(--library-card-gap));
+    left: calc(100% + var(--library-card-gap));
+}
+
+.library-entry-variant-up-right::before {
+    bottom: calc(-1 * var(--library-card-gap));
+    left: calc(-1 * var(--library-card-gap));
+    transform: rotate(-45deg);
+}
+
+.library-entry-variant-down-right {
+    top: calc(100% + var(--library-card-gap));
+    left: calc(100% + var(--library-card-gap));
+}
+
+.library-entry-variant-down-right::before {
+    top: calc(-1 * var(--library-card-gap));
+    left: calc(-1 * var(--library-card-gap));
+    transform: rotate(45deg);
+}
+
+.library-entry-variant-down {
+    top: calc(100% + var(--library-card-gap));
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.library-entry-variant-down::before {
+    top: calc(-1 * var(--library-card-gap));
+    left: calc(50% - var(--library-card-half-gap));
+    transform: rotate(90deg);
+}
+
+.library-entry-variant-down-left {
+    top: calc(100% + var(--library-card-gap));
+    right: calc(100% + var(--library-card-gap));
+}
+
+.library-entry-variant-down-left::before {
+    top: calc(-1 * var(--library-card-gap));
+    right: calc(-1 * var(--library-card-gap));
+    transform: rotate(135deg);
 }
 
 .library-entry-card[hidden] {
