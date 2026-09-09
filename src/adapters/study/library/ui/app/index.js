@@ -145,6 +145,7 @@ const VARIANT_DIRECTIONS = [
 ];
 
 function variantDirectionFitsGrid(direction, index, rowSize, itemCount) {
+    if (typeof direction !== "string") return false;
     if (!Number.isInteger(index) || !rowSize) return true;
     const column = index % rowSize;
     const row = Math.floor(index / rowSize);
@@ -195,7 +196,7 @@ function assignVariantPlacements(entries, schema, layer) {
         const rowSize = layer?.grid?.rowSize;
         const occupied = occupiedByParent.get(request.parentId) ?? new Set();
         const preferred = [
-            parentPlacement?.direction,
+            ...(parentPlacement ? [parentPlacement.direction] : []),
             ...VARIANT_DIRECTIONS,
         ].filter(
             (candidate, candidateIndex, directions) =>

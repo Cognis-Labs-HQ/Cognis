@@ -219,6 +219,11 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /function assignVariantPlacements/);
     assert.match(source, /const VARIANT_DIRECTIONS = \[/);
     assert.match(source, /function variantDirectionFitsGrid/);
+    assert.match(source, /typeof direction !== "string"/);
+    assert.match(
+        source,
+        /\.\.\.\(parentPlacement \? \[parentPlacement\.direction\] : \[\]\)/,
+    );
     assert.match(source, /function closeUnrelatedVariantViews/);
     assert.match(
         source,

@@ -238,6 +238,10 @@ Das Loslassen nach langem Drücken schließt untergeordnete Karten nicht mehr, b
 
 Eingeblendete untergeordnete Bibliothekskarten können nun jeden geraden und diagonalen Platz um ihre übergeordnete Karte belegen. Die rasterrandbewusste Platzierung verhindert nach Möglichkeit, dass Karten über den sichtbaren Inhalt hinausragen. Zusätzlicher Abstand im Browser und sichtbarer Überlauf im Minimalraster halten Kartenränder von den umgebenden Kanten fern.
 
+## Zuverlässige Platzierung untergeordneter Karten
+
+Beim Einbinden der Bibliothek wird keine fehlende Richtung der übergeordneten Karte mehr an die Rasterrandplatzierung übergeben. Untergeordnete Karten auf Wurzelebene beginnen mit der Liste unterstützter Richtungen, und die Platzierungsprüfung weist Richtungswerte, die keine Zeichenketten sind, nun sicher zurück.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -307,3 +311,4 @@ Eingeblendete untergeordnete Bibliothekskarten können nun jeden geraden und dia
 - [9d118560](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d118560c653e18847ed65945ddf363928cac172)
 - [8c21c0d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c21c0d2380f55b3b7d5c235c8f894080ea7f0fa)
 - [16f02b7b](https://github.com/Cognis-Labs-HQ/Cognis/commit/16f02b7bf334a42884dc78ffc46ff7baec857722)
+- [1490dd84](https://github.com/Cognis-Labs-HQ/Cognis/commit/1490dd848112eab3f7aa82465c5c5c297818b719)

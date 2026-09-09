@@ -238,6 +238,10 @@ Pelepasan setelah tekan lama tidak lagi menutup kartu anak sebelum dapat dijangk
 
 Kartu anak Pustaka yang ditampilkan kini dapat menempati setiap slot arah utama dan diagonal di sekitar induknya. Penempatan yang memperhatikan tepi kisi mencegah anak keluar dari konten yang terlihat ketika slot lain tersedia, sedangkan jarak tambahan pada peramban dan luapan kisi minimal yang terlihat menjaga batas kartu tidak berbenturan dengan tepi sekitarnya.
 
+## Penempatan kartu anak yang andal
+
+Pemuatan Pustaka tidak lagi meneruskan arah induk yang tidak tersedia ke penempatan tepi kisi. Kartu anak tingkat akar dimulai dengan daftar arah yang didukung, dan pelindung penempatan kini menolak nilai arah non-string dengan aman.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -307,3 +311,4 @@ Kartu anak Pustaka yang ditampilkan kini dapat menempati setiap slot arah utama 
 - [9d118560](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d118560c653e18847ed65945ddf363928cac172)
 - [8c21c0d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c21c0d2380f55b3b7d5c235c8f894080ea7f0fa)
 - [16f02b7b](https://github.com/Cognis-Labs-HQ/Cognis/commit/16f02b7bf334a42884dc78ffc46ff7baec857722)
+- [1490dd84](https://github.com/Cognis-Labs-HQ/Cognis/commit/1490dd848112eab3f7aa82465c5c5c297818b719)

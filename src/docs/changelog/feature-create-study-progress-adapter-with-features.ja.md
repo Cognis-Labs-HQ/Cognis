@@ -238,6 +238,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 展開されたライブラリの子カードを、親カードの周囲にある上下左右と斜めを含むすべての配置枠へ置けるようにしました。グリッド端を考慮した配置により代替枠がある場合は表示領域外への展開を避け、ブラウザーの余白追加と最小グリッドの可視オーバーフローによりカード境界と周囲の端との衝突を防ぎます。
 
+## 信頼性の高い子カード配置
+
+ライブラリのマウント時に、存在しない親方向をグリッド端の配置処理へ渡さないようにしました。ルートの子カードは対応方向一覧から配置を開始し、配置ガードは文字列ではない方向値を安全に拒否します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -307,3 +311,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [9d118560](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d118560c653e18847ed65945ddf363928cac172)
 - [8c21c0d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c21c0d2380f55b3b7d5c235c8f894080ea7f0fa)
 - [16f02b7b](https://github.com/Cognis-Labs-HQ/Cognis/commit/16f02b7bf334a42884dc78ffc46ff7baec857722)
+- [1490dd84](https://github.com/Cognis-Labs-HQ/Cognis/commit/1490dd848112eab3f7aa82465c5c5c297818b719)
