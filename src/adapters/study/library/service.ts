@@ -431,6 +431,8 @@ export class LibraryService implements LibraryCapability {
         const schema = this.schema(input.schemaId, input.schemaVersion);
         if (!input.label?.trim() || input.label.length > 500)
             throw new Error("invalid_label");
+        if (input.hidden !== undefined && typeof input.hidden !== "boolean")
+            throw new Error("invalid_hidden");
         const layer = findLayer(schema, input.layer);
         const fields = structuredClone(input.fields ?? {});
         let entryId: string | undefined;

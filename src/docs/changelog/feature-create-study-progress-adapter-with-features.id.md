@@ -230,6 +230,10 @@ Item deep link di dalam judul popup tidak lagi memakai garis bawah. Status arah 
 
 Tautan relasi kini secara konsisten langsung membuka detail entri tertaut, termasuk tautan invers “digunakan oleh”. Pergantian bahasa memakai kembali halaman anak Belajar yang terakhir dibuka alih-alih kembali ke hub multibahasa, dan tampilan pengaturan bahasa menghapus status aktif dari tombol bahasa.
 
+## Tampilan anak stabil dan entri tersembunyi
+
+Pelepasan setelah tekan lama tidak lagi menutup kartu anak sebelum dapat dijangkau, dan pembukaan popup diserialkan untuk mencegah dialog ganda. Entri konten kini dapat disembunyikan dari penjelajahan langsung sambil tetap tersedia untuk referensi dan tautan detail; menyembunyikan induk juga menyembunyikan keturunannya. Judul detail anak mencantumkan entri induknya.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -297,3 +301,4 @@ Tautan relasi kini secara konsisten langsung membuka detail entri tertaut, terma
 - [fff72d38](https://github.com/Cognis-Labs-HQ/Cognis/commit/fff72d38bc86a30fa95db9323f05494a747b43ea)
 - [26a42897](https://github.com/Cognis-Labs-HQ/Cognis/commit/26a428979ae39d94ffd502733fee6ad2306a618f)
 - [9d118560](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d118560c653e18847ed65945ddf363928cac172)
+- [8c21c0d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c21c0d2380f55b3b7d5c235c8f894080ea7f0fa)

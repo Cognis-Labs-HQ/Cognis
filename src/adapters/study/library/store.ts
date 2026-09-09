@@ -27,6 +27,7 @@ function mapEntry(row: Record<string, unknown>): LibraryEntry {
             row.display_id === null || row.display_id === undefined
                 ? undefined
                 : Number(row.display_id),
+        hidden: row.hidden === true || Number(row.hidden) === 1,
         schemaId: String(row.schema_id),
         schemaVersion: Number(row.schema_version),
         layer: String(row.layer),
@@ -125,6 +126,12 @@ export class LibraryStore {
                 { name: "label", type: "text", notNull: true },
                 { name: "source_record_id", type: "text" },
                 { name: "display_id", type: "integer" },
+                {
+                    name: "hidden",
+                    type: "boolean",
+                    notNull: true,
+                    default: false,
+                },
                 {
                     name: "fields_json",
                     type: "text",
@@ -344,6 +351,7 @@ export class LibraryStore {
                         label: record.label.trim(),
                         source_record_id: record.id,
                         display_id: record.displayId ?? null,
+                        hidden: record.hidden === true,
                         fields_json: JSON.stringify(fields),
                         created_by: `content-pack:${manifest.id}`,
                     },
@@ -361,6 +369,7 @@ export class LibraryStore {
                     label: record.label.trim(),
                     source_record_id: record.id,
                     display_id: record.displayId ?? null,
+                    hidden: record.hidden === true,
                     fields_json: JSON.stringify(fields),
                     content_hash: contentHash,
                     created_by: `content-pack:${manifest.id}`,
@@ -701,6 +710,7 @@ export class LibraryStore {
                     layer: input.layer,
                     language,
                     label: input.label,
+                    hidden: input.hidden === true,
                     fields_json: JSON.stringify(input.fields ?? {}),
                     created_by: accountId,
                 },

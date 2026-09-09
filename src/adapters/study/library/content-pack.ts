@@ -127,6 +127,7 @@ export function contentRecordHash(
                 language: schema.language,
                 layer: record.layer,
                 label: record.label.trim(),
+                ...(record.hidden === true ? { hidden: true } : {}),
                 fields: record.fields ?? {},
                 references: record.references ?? [],
             }),
@@ -235,6 +236,8 @@ async function validateContentRecords(
             (!Number.isSafeInteger(record.displayId) || record.displayId < 0)
         )
             throw new Error("invalid_content_display_id");
+        if (record.hidden !== undefined && typeof record.hidden !== "boolean")
+            throw new Error("invalid_content_hidden");
         const id = contentEntryId(manifest, record.id);
         if (entries.has(id)) throw new Error("duplicate_content_record");
         validateFields(schema, record.layer, record.fields ?? {});

@@ -230,6 +230,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 関係リンクは、逆方向の「使用元」リンクを含め、リンク先項目の詳細へ一貫して直接移動するようになりました。言語切り替えでは複数言語の一覧へ戻らず、最後に開いた学習子ページを再利用し、言語設定画面では言語ボタンの選択状態を解除します。
 
+## 安定した子表示と非表示項目
+
+長押し後にマウスを離しても、子カードへ移動する前に閉じなくなり、ポップアップを直列化して二重表示を防ぎます。コンテンツ項目は参照や詳細リンクで利用可能なまま直接表示から隠せるようになり、親を隠すとその子孫も非表示になります。子項目の詳細見出しには親項目を表示します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -297,3 +301,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [fff72d38](https://github.com/Cognis-Labs-HQ/Cognis/commit/fff72d38bc86a30fa95db9323f05494a747b43ea)
 - [26a42897](https://github.com/Cognis-Labs-HQ/Cognis/commit/26a428979ae39d94ffd502733fee6ad2306a618f)
 - [9d118560](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d118560c653e18847ed65945ddf363928cac172)
+- [8c21c0d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c21c0d2380f55b3b7d5c235c8f894080ea7f0fa)

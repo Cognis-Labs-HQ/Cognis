@@ -230,6 +230,10 @@ Deep-linked items inside popup titles no longer use underline decoration. Their 
 
 Relationship links now consistently continue directly into the linked entry detail, including inverse “used by” links. Language switches reuse the last child Study page instead of falling back to the multi-language hub, and the language-settings view clears the active language-button state.
 
+## Stable child reveals and hidden entries
+
+Long-press release no longer collapses child cards before they can be reached, and popup opening is serialized to prevent duplicate dialogs. Content entries may now be hidden from direct browsing while remaining available to references and detail links; hiding a parent also hides its descendants. Child detail headings identify their parent entry.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -297,3 +301,4 @@ Relationship links now consistently continue directly into the linked entry deta
 - [fff72d38](https://github.com/Cognis-Labs-HQ/Cognis/commit/fff72d38bc86a30fa95db9323f05494a747b43ea)
 - [26a42897](https://github.com/Cognis-Labs-HQ/Cognis/commit/26a428979ae39d94ffd502733fee6ad2306a618f)
 - [9d118560](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d118560c653e18847ed65945ddf363928cac172)
+- [8c21c0d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c21c0d2380f55b3b7d5c235c8f894080ea7f0fa)

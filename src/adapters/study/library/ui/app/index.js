@@ -24,6 +24,7 @@ import {
 
 const LONG_PRESS_DURATION_MS = 550;
 const LONG_PRESS_MOVE_TOLERANCE_PX = 8;
+let activeEntryPopup = null;
 
 import {
     definitionText,
@@ -293,7 +294,9 @@ function renderEntryCard(
     );
     const variants = entries.flatMap((candidate) => {
         const placement = placements.get(candidate.id);
-        return placement?.parentId === entry.id && placement.depth <= 4
+        return placement?.parentId === entry.id &&
+            placement.depth <= 4 &&
+            isDirectlyVisible(candidate, entries, placements)
             ? [{ entry: candidate, direction: placement.direction }]
             : [];
     });
@@ -311,9 +314,28 @@ function renderEntryCard(
         .join("")}</div>`;
 }
 
+function isDirectlyVisible(entry, entries, placements) {
+    const entriesById = new Map(
+        entries.map((candidate) => [candidate.id, candidate]),
+    );
+    const visited = new Set();
+    let current = entry;
+    while (current) {
+        if (current.hidden === true || visited.has(current.id)) return false;
+        visited.add(current.id);
+        const parentId = placements.get(current.id)?.parentId;
+        current = parentId ? entriesById.get(parentId) : null;
+    }
+    return true;
+}
+
 function renderLayerCards(layer, entries, schema, i18n, allEntries = entries) {
     const placements = assignVariantPlacements(entries, schema, layer);
-    const baseEntries = entries.filter((entry) => !placements.has(entry.id));
+    const baseEntries = entries.filter(
+        (entry) =>
+            !placements.has(entry.id) &&
+            isDirectlyVisible(entry, entries, placements),
+    );
     if (!baseEntries.length) return "";
     if (!layer.grid) {
         return baseEntries
@@ -356,7 +378,7 @@ function renderLayerCards(layer, entries, schema, i18n, allEntries = entries) {
                       placements,
                       i18n,
                   )
-                : "";
+                : '<div class="library-entry-card-blank" data-library-grid-blank aria-hidden="true">—</div>';
         })
         .join("");
     const additionalCards = baseEntries
@@ -521,6 +543,10 @@ async function openEntryPopup(
     while (selectedEntry && !signal?.aborted) {
         const detail = await fetchLibraryEntry(selectedEntry.id);
         const titleReferences = headingCompositionReferences(detail, schemas);
+        const parentEntry = entries.find(
+            (entry) =>
+                entry.id === variantPlacement(detail.entry, schemas)?.parentId,
+        );
         const active = entries.filter(
             (entry) =>
                 entry.schemaId === selectedEntry.schemaId &&
@@ -556,6 +582,11 @@ async function openEntryPopup(
                     layerForEntry(schemas, detail.entry),
                 ),
                 composed.titleDefinition,
+                parentEntry
+                    ? i18n
+                          .t("gateway.study.library_from_parent")
+                          .replace("{{ parent }}", parentEntry.label)
+                    : "",
             ]
                 .filter(Boolean)
                 .join(" · "),
@@ -927,11 +958,11 @@ export async function mount(root, { signal } = {}) {
             }
             const control = event.target.closest("button[data-library-entry]");
             if (!control) return;
-            if (closeUnrelatedVariantViews(root, control)) return;
             if (suppressEntryClick) {
                 suppressEntryClick = false;
                 return;
             }
+            if (closeUnrelatedVariantViews(root, control)) return;
             if (root.classList.contains("library-selection-mode")) {
                 setSelectionMode(root, false, i18n);
             }
@@ -939,7 +970,8 @@ export async function mount(root, { signal } = {}) {
                 (candidate) => candidate.id === control.dataset.libraryEntry,
             );
             if (!entry) return;
-            void openEntryPopup(
+            if (activeEntryPopup) return;
+            activeEntryPopup = openEntryPopup(
                 root,
                 entry,
                 schemas,
@@ -947,11 +979,15 @@ export async function mount(root, { signal } = {}) {
                 i18n,
                 languageCode,
                 signal,
-            ).catch(() =>
-                showToast(i18n.t("gateway.study.library_load_error"), {
-                    type: "error",
-                }),
-            );
+            )
+                .catch(() =>
+                    showToast(i18n.t("gateway.study.library_load_error"), {
+                        type: "error",
+                    }),
+                )
+                .finally(() => {
+                    activeEntryPopup = null;
+                });
         },
         { signal },
     );

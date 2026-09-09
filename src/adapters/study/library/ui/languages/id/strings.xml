@@ -21,4 +21,5 @@
   <string name="gateway.study.library_relationship_composition">Komposisi</string>
   <string name="gateway.study.library_relationship_alternateSpelling">Ejaan alternatif</string>
   <string name="gateway.study.library_relationship_pronunciation">Pelafalan</string>
+  <string name="gateway.study.library_from_parent">(Dari: {{ parent }})</string>
 </resources>

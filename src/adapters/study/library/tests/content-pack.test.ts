@@ -90,6 +90,7 @@ test("declarative language packs are inspected deterministically", async (t) => 
         {
             id: "english:letter:a",
             label: "a",
+            hidden: true,
             fields: {
                 pronunciation: ["ay"],
                 audio: "audio/a.mp3",
@@ -115,6 +116,7 @@ test("declarative language packs are inspected deterministically", async (t) => 
     const second = await inspectContentPack(root);
     assert.equal(first.digest, second.digest);
     assert.equal(first.records.length, 2);
+    assert.equal(first.records[0].hidden, true);
     assert.deepEqual(first.schema.layers[0].grid, {
         rowSize: 5,
         items: [null, "english:letter:a"],

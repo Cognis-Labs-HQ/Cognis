@@ -117,6 +117,8 @@ export interface LibraryEntryInput {
     schemaVersion?: number;
     layer: string;
     label: string;
+    /** Exclude the entry and its descendants from direct browsing while retaining references. */
+    hidden?: boolean;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
     /** Languages requested by a definition form; used by an optional localization provider. */
@@ -195,6 +197,8 @@ export interface LibraryContentRecord {
     id: string;
     /** Optional module-owned numeric position identifier used by a layer grid. */
     displayId?: number;
+    /** Exclude the record and its descendants from direct Library browsing. */
+    hidden?: boolean;
     label: string;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];

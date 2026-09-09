@@ -225,6 +225,9 @@ test("Study Library unfolds structured character variants", () => {
     assert.doesNotMatch(source, /relationship\.variantDirection/);
     assert.match(source, /const depthFor/);
     assert.match(source, /placement\.depth <= 4/);
+    assert.match(source, /function isDirectlyVisible/);
+    assert.match(source, /current\.hidden === true/);
+    assert.match(source, /isDirectlyVisible\(candidate, entries, placements\)/);
     assert.match(source, /depth \+ 1, true/);
     assert.match(source, /:scope > \.library-entry-variant-shell/);
     assert.match(stylesheet, /box-shadow:/);
@@ -370,6 +373,18 @@ test("Study Library relationship links consistently open entry details", () => {
         source,
         /relatedEntry &&[\s\S]*!isMeaningLayer[\s\S]*selectedEntry = relatedEntry/,
     );
+});
+
+test("Study Library serializes popup opening and identifies child parents", () => {
+    assert.match(source, /let activeEntryPopup = null/);
+    assert.match(source, /if \(activeEntryPopup\) return/);
+    assert.match(source, /\.finally\(\(\) => \{[\s\S]*activeEntryPopup = null/);
+    assert.match(
+        source,
+        /if \(suppressEntryClick\)[\s\S]*closeUnrelatedVariantViews/,
+    );
+    assert.match(source, /gateway\.study\.library_from_parent/);
+    assert.match(source, /variantPlacement\(detail\.entry, schemas\)/);
 });
 
 test("Study Library popup uses equal directional navigation controls", () => {
