@@ -262,6 +262,10 @@ Every Library card now uses an explicitly opaque light or dark surface, includin
 
 Focused-branch pruning now has enough selector priority to override every nested hover disclosure, so alternate children really disappear at each depth. Long-press hints are suppressed across the grid whenever a child tree is open, preventing messages from adjacent cards appearing beneath the active branch.
 
+## Deep-linked parent in popup context
+
+The parent character inside a child popup’s “From” context is now an actionable deep link. Popup secondary headings accept escaped action fragments, letting users open the parent directly without turning surrounding context text into a link.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -337,3 +341,4 @@ Focused-branch pruning now has enough selector priority to override every nested
 - [20a8c29d](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a8c29d58e56c750f03f001d9aa050927135bfb)
 - [1463edb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/1463edb37a5708a75c1a4ce022f69b18813752ad)
 - [26c14c1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/26c14c1b63891f1a3115d3c69a17ae76e6f126d9)
+- [e6746196](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6746196dcf3aa7f1a4ae12acaf8b65db5e438f5)

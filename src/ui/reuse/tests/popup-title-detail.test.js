@@ -14,6 +14,9 @@ const stylesheet = readFileSync(
 test("popup title details are escaped and visually subordinate", () => {
     assert.match(source, /function renderPopupHeading/);
     assert.match(source, /escapeHtml\(detail\)/);
+    assert.match(source, /titleDetailItems/);
+    assert.match(source, /detailItemValues/);
+    assert.match(source, /renderHeadingItems\(detailItemValues\)/);
     assert.match(source, /<h4 class="popup-title-detail"/);
     assert.doesNotMatch(source, /<h2 class="popup-title"[^>]*>[^<]*\$\{detail/);
     assert.match(stylesheet, /\.popup-title-detail/);

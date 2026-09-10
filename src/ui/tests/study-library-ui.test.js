@@ -472,6 +472,12 @@ test("Study Library serializes popup opening and identifies child parents", () =
     );
     assert.match(source, /gateway\.study\.library_from_parent/);
     assert.match(source, /variantPlacement\(detail\.entry, schemas\)/);
+    assert.match(source, /const titleDetailItems = \[/);
+    assert.match(
+        source,
+        /label: parentEntry\.label,[\s\S]*actionId: `open-title-reference:\$\{parentEntry\.id\}`/,
+    );
+    assert.match(source, /titleDetailItems,/);
 });
 
 test("Study Library popup uses equal directional navigation controls", () => {

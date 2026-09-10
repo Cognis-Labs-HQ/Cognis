@@ -687,6 +687,32 @@ async function openEntryPopup(
             variantPlacement,
         );
         signal?.throwIfAborted();
+        const titleDetailItems = [
+            detailTitlePronunciation(
+                detail.entry,
+                layerForEntry(schemas, detail.entry),
+            ),
+            composed.titleDefinition,
+        ]
+            .filter(Boolean)
+            .flatMap((label, detailIndex) => [
+                ...(detailIndex ? [{ label: " · " }] : []),
+                { label },
+            ]);
+        if (parentEntry) {
+            const [parentPrefix, parentSuffix = ""] = i18n
+                .t("gateway.study.library_from_parent")
+                .split("{{ parent }}");
+            titleDetailItems.push(
+                ...(titleDetailItems.length ? [{ label: " · " }] : []),
+                { label: parentPrefix },
+                {
+                    label: parentEntry.label,
+                    actionId: `open-title-reference:${parentEntry.id}`,
+                },
+                { label: parentSuffix },
+            );
+        }
         let dismissPopup;
         let relatedEntry;
         const audioObjectUrls = new Set();
@@ -700,20 +726,7 @@ async function openEntryPopup(
                 label: entry.label,
                 actionId: `open-title-reference:${entry.id}`,
             })),
-            titleDetail: [
-                detailTitlePronunciation(
-                    detail.entry,
-                    layerForEntry(schemas, detail.entry),
-                ),
-                composed.titleDefinition,
-                parentEntry
-                    ? i18n
-                          .t("gateway.study.library_from_parent")
-                          .replace("{{ parent }}", parentEntry.label)
-                    : "",
-            ]
-                .filter(Boolean)
-                .join(" · "),
+            titleDetailItems,
             body: composed.body,
             maxWidth: "min(56rem, 94vw)",
             closeButtonVariant: "neutral",

@@ -36,6 +36,7 @@
  * Options:
  *   title    — heading text (rendered as plain text, HTML-escaped).
  *   titleDetail — optional secondary heading text rendered smaller beside the title.
+ *   titleDetailItems — optional ordered `{ label, actionId? }` secondary heading fragments.
  *   titleLeading — optional trusted HTML rendered immediately before the title.
  *   titleAction — optional `{ id, label }` that renders the heading as an action.
  *   titleItems — optional ordered `{ label, actionId? }` title fragments.
@@ -77,6 +78,7 @@
  * @param {{
  *   title: string,
  *   titleDetail?: string,
+ *   titleDetailItems?: Array<{ label: string, actionId?: string }>,
  *   titleLeading?: string,
  *   titleAction?: { id: string, label: string },
  *   titleItems?: Array<{ label: string, actionId?: string }>,
@@ -382,6 +384,7 @@ function hasUnsavedFormChanges(overlayElement) {
 export async function openPopup({
     title,
     titleDetail,
+    titleDetailItems,
     titleLeading,
     titleAction,
     titleItems,
@@ -423,21 +426,28 @@ export async function openPopup({
             actionValue,
             leadingValue,
             itemValues,
+            detailItemValues,
         ) {
             const detail = String(detailValue ?? "");
+            const renderHeadingItems = (items) =>
+                items
+                    .map((item) =>
+                        item.actionId
+                            ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(item.actionId)}" type="button">${escapeHtml(item.label)}</button>`
+                            : escapeHtml(item.label),
+                    )
+                    .join("");
             const titleContent =
                 Array.isArray(itemValues) && itemValues.length
-                    ? itemValues
-                          .map((item) =>
-                              item.actionId
-                                  ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(item.actionId)}" type="button">${escapeHtml(item.label)}</button>`
-                                  : escapeHtml(item.label),
-                          )
-                          .join("")
+                    ? renderHeadingItems(itemValues)
                     : actionValue
                       ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(actionValue.id)}" type="button">${escapeHtml(actionValue.label)}</button>`
                       : escapeHtml(titleValue ?? "");
-            return `${leadingValue ?? ""}<h2 class="popup-title" id="popup-title">${titleContent}</h2>${detail ? `<h4 class="popup-title-detail">${escapeHtml(detail)}</h4>` : ""}`;
+            const detailContent =
+                Array.isArray(detailItemValues) && detailItemValues.length
+                    ? renderHeadingItems(detailItemValues)
+                    : escapeHtml(detail);
+            return `${leadingValue ?? ""}<h2 class="popup-title" id="popup-title">${titleContent}</h2>${detailContent ? `<h4 class="popup-title-detail">${detailContent}</h4>` : ""}`;
         }
 
         function renderActionContent(action) {
@@ -555,7 +565,7 @@ export async function openPopup({
         overlay.innerHTML = `
       <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
         <div class="popup-header">
-          <div class="popup-heading">${renderPopupHeading(currentPage?.title ?? title, currentPage?.titleDetail ?? titleDetail, currentPage?.titleAction ?? titleAction, currentPage?.titleLeading ?? titleLeading, currentPage?.titleItems ?? titleItems)}</div>
+          <div class="popup-heading">${renderPopupHeading(currentPage?.title ?? title, currentPage?.titleDetail ?? titleDetail, currentPage?.titleAction ?? titleAction, currentPage?.titleLeading ?? titleLeading, currentPage?.titleItems ?? titleItems, currentPage?.titleDetailItems ?? titleDetailItems)}</div>
           <button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>
         </div>
         <div class="popup-body">${resolvedBody}</div>
@@ -586,6 +596,7 @@ export async function openPopup({
                     currentPage.titleAction ?? titleAction,
                     currentPage.titleLeading ?? titleLeading,
                     currentPage.titleItems ?? titleItems,
+                    currentPage.titleDetailItems ?? titleDetailItems,
                 );
                 bindActionButtons(headingEl);
                 fitPopupTitleRow();

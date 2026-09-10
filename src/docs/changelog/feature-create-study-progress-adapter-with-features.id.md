@@ -262,6 +262,10 @@ Setiap kartu Pustaka kini menggunakan permukaan terang atau gelap yang sepenuhny
 
 Pemangkasan cabang terfokus kini memiliki prioritas selektor yang cukup untuk mengalahkan setiap pengungkapan hover bertingkat, sehingga anak alternatif benar-benar menghilang pada setiap kedalaman. Petunjuk tekan lama disembunyikan di seluruh kisi saat pohon anak terbuka agar pesan dari kartu yang berdekatan tidak muncul di bawah cabang aktif.
 
+## Tautan dalam induk pada konteks popup
+
+Karakter induk di dalam konteks “Dari” pada popup anak kini menjadi tautan dalam yang dapat digunakan. Judul sekunder popup menerima fragmen tindakan yang di-escape, sehingga pengguna dapat membuka induk secara langsung tanpa menjadikan teks konteks di sekitarnya sebagai tautan.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -337,3 +341,4 @@ Pemangkasan cabang terfokus kini memiliki prioritas selektor yang cukup untuk me
 - [20a8c29d](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a8c29d58e56c750f03f001d9aa050927135bfb)
 - [1463edb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/1463edb37a5708a75c1a4ce022f69b18813752ad)
 - [26c14c1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/26c14c1b63891f1a3115d3c69a17ae76e6f126d9)
+- [e6746196](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6746196dcf3aa7f1a4ae12acaf8b65db5e438f5)

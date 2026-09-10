@@ -262,6 +262,10 @@ Jede Bibliothekskarte verwendet nun eine ausdrücklich undurchsichtige helle ode
 
 Die Bereinigung fokussierter Zweige hat nun eine ausreichende Selektorpriorität, um jede verschachtelte Hover-Einblendung zu überschreiben. Alternative untergeordnete Karten verschwinden dadurch tatsächlich auf jeder Ebene. Hinweise zum langen Drücken werden im gesamten Raster unterdrückt, solange ein untergeordneter Kartenbaum geöffnet ist, sodass keine Meldungen benachbarter Karten unter dem aktiven Zweig erscheinen.
 
+## Tiefenlink zum übergeordneten Eintrag im Popup-Kontext
+
+Das übergeordnete Zeichen im „Von“-Kontext eines untergeordneten Popups ist nun ein anklickbarer Tiefenlink. Sekundäre Popup-Überschriften akzeptieren maskierte Aktionsfragmente, sodass Benutzer den übergeordneten Eintrag direkt öffnen können, ohne den umgebenden Kontexttext in einen Link umzuwandeln.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -337,3 +341,4 @@ Die Bereinigung fokussierter Zweige hat nun eine ausreichende Selektorpriorität
 - [20a8c29d](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a8c29d58e56c750f03f001d9aa050927135bfb)
 - [1463edb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/1463edb37a5708a75c1a4ce022f69b18813752ad)
 - [26c14c1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/26c14c1b63891f1a3115d3c69a17ae76e6f126d9)
+- [e6746196](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6746196dcf3aa7f1a4ae12acaf8b65db5e438f5)

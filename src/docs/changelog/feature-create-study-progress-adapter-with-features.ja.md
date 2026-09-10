@@ -262,6 +262,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 フォーカス分岐の整理ルールがすべての入れ子ホバー表示を上書きできる優先度を持つようになり、各階層で別分岐の子カードが確実に非表示になります。子カードツリーが開いている間はグリッド全体の長押しヒントを抑制し、アクティブな分岐の下に隣接カードのメッセージが現れないようにしました。
 
+## ポップアップ文脈内の親ディープリンク
+
+子ポップアップの「元」文脈に含まれる親文字を操作可能なディープリンクにしました。ポップアップの副見出しがエスケープ済みのアクション断片を受け取れるため、周囲の説明文までリンクにすることなく親項目を直接開けます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -337,3 +341,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [20a8c29d](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a8c29d58e56c750f03f001d9aa050927135bfb)
 - [1463edb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/1463edb37a5708a75c1a4ce022f69b18813752ad)
 - [26c14c1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/26c14c1b63891f1a3115d3c69a17ae76e6f126d9)
+- [e6746196](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6746196dcf3aa7f1a4ae12acaf8b65db5e438f5)
