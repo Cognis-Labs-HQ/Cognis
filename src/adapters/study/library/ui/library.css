@@ -282,14 +282,14 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     z-index: 7;
 }
 
-.library-entry-card-shell.library-entry-branch-active
+.library-entry-card-shell.library-entry-branch-active[data-library-variant-depth="0"]
     .library-entry-variant-shell {
     display: none;
 }
 
-.library-entry-card-shell.library-entry-branch-active
+.library-entry-card-shell.library-entry-branch-active[data-library-variant-depth="0"]
     .library-entry-variant-shell.library-entry-branch-path,
-.library-entry-card-shell.library-entry-branch-active
+.library-entry-card-shell.library-entry-branch-active[data-library-variant-depth="0"]
     .library-entry-card-shell.library-entry-branch-tip
     > .library-entry-variant-shell {
     display: block;
@@ -357,6 +357,12 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
 .library-entry-card-shell:hover:not(.library-entry-variants-open)
     > .library-entry-variant-hint {
     display: block;
+}
+
+.library-entry-grid:has(.library-entry-variants-open)
+    .library-entry-card-shell
+    .library-entry-variant-hint {
+    display: none;
 }
 
 .library-delete-permanent {

@@ -270,7 +270,7 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /library-entry-branch-tip/);
     assert.match(
         stylesheet,
-        /\.library-entry-card-shell\.library-entry-branch-active[\s\S]*\.library-entry-variant-shell\s*\{[\s\S]*display:\s*none/,
+        /\.library-entry-card-shell\.library-entry-branch-active\[data-library-variant-depth="0"\][\s\S]*\.library-entry-variant-shell\s*\{[\s\S]*display:\s*none/,
     );
     assert.match(
         stylesheet,
@@ -288,6 +288,10 @@ test("Study Library unfolds structured character variants", () => {
         /\.library-entry-card-shell\.library-entry-variants-open/,
     );
     assert.match(stylesheet, /\.library-entry-variant-hint/);
+    assert.match(
+        stylesheet,
+        /\.library-entry-grid:has\(\.library-entry-variants-open\)[\s\S]*\.library-entry-card-shell[\s\S]*\.library-entry-variant-hint[\s\S]*display:\s*none/,
+    );
     assert.match(stylesheet, /--library-card-gap: 0\.75rem/);
     assert.match(stylesheet, /\.library-entry-variant-shell::before/);
     assert.match(

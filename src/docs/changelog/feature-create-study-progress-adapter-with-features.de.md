@@ -258,6 +258,10 @@ Fokussierte untergeordnete Karten erhalten nun eine animierte Kontur mit einer A
 
 Jede Bibliothekskarte verwendet nun eine ausdrücklich undurchsichtige helle oder dunkle Oberfläche. Dies gilt auch für kompakte Rasterkarten, eingeblendete untergeordnete Karten sowie Hover-, Fokus- und Aktivzustände. Darunterliegende Rasterbeschriftungen können nicht mehr durch überlappende Karten hindurchscheinen.
 
+## Verschachtelte Zweigbereinigung und ruhige Hinweise
+
+Die Bereinigung fokussierter Zweige hat nun eine ausreichende Selektorpriorität, um jede verschachtelte Hover-Einblendung zu überschreiben. Alternative untergeordnete Karten verschwinden dadurch tatsächlich auf jeder Ebene. Hinweise zum langen Drücken werden im gesamten Raster unterdrückt, solange ein untergeordneter Kartenbaum geöffnet ist, sodass keine Meldungen benachbarter Karten unter dem aktiven Zweig erscheinen.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -332,3 +336,4 @@ Jede Bibliothekskarte verwendet nun eine ausdrücklich undurchsichtige helle ode
 - [d1ce3c69](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1ce3c69bb04c5b061943a8e909350284d31e45d)
 - [20a8c29d](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a8c29d58e56c750f03f001d9aa050927135bfb)
 - [1463edb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/1463edb37a5708a75c1a4ce022f69b18813752ad)
+- [26c14c1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/26c14c1b63891f1a3115d3c69a17ae76e6f126d9)

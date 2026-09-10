@@ -258,6 +258,10 @@ Focused child cards now receive an animated outline with a reduced-motion altern
 
 Every Library card now uses an explicitly opaque light or dark surface, including compact grid cards, revealed child cards, and hover, focus, and active states. Underlying grid labels can no longer bleed through overlapping cards.
 
+## Nested branch pruning and quiet hints
+
+Focused-branch pruning now has enough selector priority to override every nested hover disclosure, so alternate children really disappear at each depth. Long-press hints are suppressed across the grid whenever a child tree is open, preventing messages from adjacent cards appearing beneath the active branch.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -332,3 +336,4 @@ Every Library card now uses an explicitly opaque light or dark surface, includin
 - [d1ce3c69](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1ce3c69bb04c5b061943a8e909350284d31e45d)
 - [20a8c29d](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a8c29d58e56c750f03f001d9aa050927135bfb)
 - [1463edb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/1463edb37a5708a75c1a4ce022f69b18813752ad)
+- [26c14c1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/26c14c1b63891f1a3115d3c69a17ae76e6f126d9)

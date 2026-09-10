@@ -258,6 +258,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 コンパクトグリッドのカード、展開された子カード、ホバー、フォーカス、アクティブ状態を含むすべてのライブラリカードに、明示的に不透明なライトまたはダークの背景を使用するようにしました。重なったカードの下にあるグリッド文字が透けて見えることはありません。
 
+## 入れ子分岐の整理とヒントの抑制
+
+フォーカス分岐の整理ルールがすべての入れ子ホバー表示を上書きできる優先度を持つようになり、各階層で別分岐の子カードが確実に非表示になります。子カードツリーが開いている間はグリッド全体の長押しヒントを抑制し、アクティブな分岐の下に隣接カードのメッセージが現れないようにしました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -332,3 +336,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [d1ce3c69](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1ce3c69bb04c5b061943a8e909350284d31e45d)
 - [20a8c29d](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a8c29d58e56c750f03f001d9aa050927135bfb)
 - [1463edb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/1463edb37a5708a75c1a4ce022f69b18813752ad)
+- [26c14c1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/26c14c1b63891f1a3115d3c69a17ae76e6f126d9)
