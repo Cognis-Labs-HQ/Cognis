@@ -60,6 +60,14 @@ test("content pack import ignores duplicate all-key references", async () => {
                 ],
             },
             { id: "i", layer: "characters", label: "I" },
+            {
+                id: "self",
+                layer: "characters",
+                label: "Self",
+                references: [
+                    { entryId: "self", relation: "related", position: 0 },
+                ],
+            },
         ],
         assets: [],
     };
@@ -101,6 +109,16 @@ test("content pack import ignores duplicate all-key references", async () => {
             ? referenceInsert.conflict
             : undefined,
         { action: "ignore" },
+    );
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "INSERT" &&
+                command.table === "study_library_references" &&
+                command.values.source_entry_id ===
+                    command.values.target_entry_id,
+        ),
+        false,
     );
 });
 

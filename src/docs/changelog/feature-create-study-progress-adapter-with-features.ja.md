@@ -274,6 +274,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 ライブラリの空状態メッセージを一つに統一し、自己参照するバリアント関係を無視し、削除対象に依存するエントリも推移的に削除するようにしました。削除確認では、影響を受けるすべてのエントリを高さ制限付きのスクロール可能な一覧に表示します。
 
+## 子カードの同一性判定を修正
+
+バリアント表示で、データベース ID に加えて安定したソースレコードの同一性を比較するようにしました。同じ論理カードの重複表現が親子として表示されなくなり、実際の子バリアントは引き続き利用できます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -352,3 +356,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [e6746196](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6746196dcf3aa7f1a4ae12acaf8b65db5e438f5)
 - [b1c8e514](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1c8e514d07ea1960ad3f47f83ff9fc0c4521a44)
 - [5d0451d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5d0451d4b3c387625ae0f37732e5ea50124ec006)
+- [93a3523a](https://github.com/Cognis-Labs-HQ/Cognis/commit/93a3523ad4226f15e9c768ffcee066d21ccf8dd8)

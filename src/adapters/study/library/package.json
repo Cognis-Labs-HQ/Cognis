@@ -1,6 +1,6 @@
 {
     "name": "@cognis/adapter-study-library",
-    "version": "2.6.60",
+    "version": "2.6.61",
     "description": "Scoped, deeply linked study and activity materials.",
     "type": "module",
     "main": "index.ts",

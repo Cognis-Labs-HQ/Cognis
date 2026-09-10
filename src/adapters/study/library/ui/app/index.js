@@ -115,7 +115,19 @@ function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
         .join("")}</div>`;
 }
 
-function variantPlacement(entry, schema) {
+function isSameLibraryRecord(left, right) {
+    if (!left || !right) return false;
+    if (left.id === right.id) return true;
+    return Boolean(
+        left.sourceRecordId &&
+        right.sourceRecordId &&
+        left.schemaId === right.schemaId &&
+        left.layer === right.layer &&
+        left.sourceRecordId === right.sourceRecordId,
+    );
+}
+
+function variantPlacement(entry, schema, entries = []) {
     const schemas = Array.isArray(schema) ? schema : [schema];
     for (const reference of entry.references ?? []) {
         const relationship = schemas
@@ -125,7 +137,15 @@ function variantPlacement(entry, schema) {
                 (candidate) => candidate.id === reference.relation,
             );
         if (relationship?.variant === true) {
-            if (reference.entryId === entry.id) continue;
+            const parent = entries.find(
+                (candidate) => candidate.id === reference.entryId,
+            );
+            if (
+                reference.entryId === entry.id ||
+                isSameLibraryRecord(entry, parent)
+            ) {
+                continue;
+            }
             return {
                 parentId: reference.entryId,
             };
@@ -185,7 +205,7 @@ function assignVariantPlacements(entries, schema, layer) {
     const placements = new Map();
     const occupiedByParent = new Map();
     const requests = entries.flatMap((entry) => {
-        const placement = variantPlacement(entry, schema);
+        const placement = variantPlacement(entry, schema, entries);
         return placement ? [{ entry, ...placement }] : [];
     });
     const gridPosition = new Map(
@@ -691,7 +711,8 @@ async function openEntryPopup(
         const titleReferences = headingCompositionReferences(detail, schemas);
         const parentEntry = entries.find(
             (entry) =>
-                entry.id === variantPlacement(detail.entry, schemas)?.parentId,
+                entry.id ===
+                variantPlacement(detail.entry, schemas, entries)?.parentId,
         );
         const active = entries.filter(
             (entry) =>

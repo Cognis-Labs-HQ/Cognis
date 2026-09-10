@@ -274,6 +274,10 @@ Ukuran dasar judul popup yang dapat digunakan kembali dikurangi 25 persen, sehin
 
 Pustaka kini hanya menampilkan satu pesan status kosong, mengabaikan tautan varian yang merujuk ke dirinya sendiri, dan secara transitif menghapus entri yang bergantung pada konten yang dihapus. Peringatan penghapusan mencantumkan semua entri terdampak dalam panel terbatas yang dapat digulir sebelum konfirmasi.
 
+## Deteksi identitas kartu anak yang tepat
+
+Perenderan varian kini membandingkan identitas rekaman sumber yang stabil selain ID basis data. Representasi duplikat dari kartu logis yang sama tidak lagi ditampilkan sebagai induk dan anak, sedangkan varian anak yang sebenarnya tetap tersedia.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -352,3 +356,4 @@ Pustaka kini hanya menampilkan satu pesan status kosong, mengabaikan tautan vari
 - [e6746196](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6746196dcf3aa7f1a4ae12acaf8b65db5e438f5)
 - [b1c8e514](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1c8e514d07ea1960ad3f47f83ff9fc0c4521a44)
 - [5d0451d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5d0451d4b3c387625ae0f37732e5ea50124ec006)
+- [93a3523a](https://github.com/Cognis-Labs-HQ/Cognis/commit/93a3523ad4226f15e9c768ffcee066d21ccf8dd8)

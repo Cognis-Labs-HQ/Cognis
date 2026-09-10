@@ -274,6 +274,10 @@ The reusable popup title baseline is reduced by 25 percent, giving long confirma
 
 The Library now shows a single empty-state message, ignores self-referential variant links, and transitively removes entries that depend on deleted content. The deletion warning lists every affected entry in a bounded, scrollable panel before confirmation.
 
+## Correct child identity detection
+
+Variant rendering now compares stable source-record identity as well as database IDs. Duplicate representations of the same logical card are no longer rendered as parent and child, while genuine child variants remain available.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -352,3 +356,4 @@ The Library now shows a single empty-state message, ignores self-referential var
 - [e6746196](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6746196dcf3aa7f1a4ae12acaf8b65db5e438f5)
 - [b1c8e514](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1c8e514d07ea1960ad3f47f83ff9fc0c4521a44)
 - [5d0451d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5d0451d4b3c387625ae0f37732e5ea50124ec006)
+- [93a3523a](https://github.com/Cognis-Labs-HQ/Cognis/commit/93a3523ad4226f15e9c768ffcee066d21ccf8dd8)

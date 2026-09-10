@@ -460,6 +460,8 @@ test("Study Library owners can select and delete multiple entries", () => {
     );
     assert.match(source, /filterableCards\.length === 0 \|\| visibleCount > 0/);
     assert.match(source, /reference\.entryId === entry\.id/);
+    assert.match(source, /function isSameLibraryRecord/);
+    assert.match(source, /isSameLibraryRecord\(entry, parent\)/);
 });
 
 test("Study Library relationship links consistently open entry details", () => {
@@ -480,7 +482,7 @@ test("Study Library serializes popup opening and identifies child parents", () =
         /if \(suppressEntryClick\)[\s\S]*closeUnrelatedVariantViews/,
     );
     assert.match(source, /gateway\.study\.library_from_parent/);
-    assert.match(source, /variantPlacement\(detail\.entry, schemas\)/);
+    assert.match(source, /variantPlacement\(detail\.entry, schemas, entries\)/);
     assert.match(source, /const titleDetailItems = \[/);
     assert.match(
         source,

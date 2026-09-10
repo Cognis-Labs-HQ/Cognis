@@ -399,7 +399,12 @@ export class LibraryStore {
                 ).entries()) {
                     const target = recordIdentity.get(reference.entryId);
                     if (!target) continue;
-                    if (source.canonicalId === target.canonicalId) continue;
+                    if (
+                        record.id === reference.entryId ||
+                        source.canonicalId === target.canonicalId
+                    ) {
+                        continue;
+                    }
                     const values = {
                         source_entry_id: source.canonicalId,
                         target_entry_id: target.canonicalId,
