@@ -77,7 +77,7 @@ export interface LibraryCapability {
         actor: LibraryActor,
         entryIds: readonly string[],
         blacklistContentHashes: boolean,
-    ): Promise<void>;
+    ): Promise<readonly string[]>;
     resolve(
         actor: LibraryActor,
         location: LibraryLocation,
@@ -501,15 +501,19 @@ export class LibraryService implements LibraryCapability {
         actor: LibraryActor,
         entryIds: readonly string[],
         blacklistContentHashes: boolean,
-    ): Promise<void> {
+    ): Promise<readonly string[]> {
         if (entryIds.length === 0 || entryIds.length > 500)
             throw new Error("invalid_entry_selection");
         if (new Set(entryIds).size !== entryIds.length)
             throw new Error("duplicate_entry_selection");
-        const entries: LibraryEntry[] = [];
         for (const entryId of entryIds) {
             if (!entryId.trim() || entryId.length > 200)
                 throw new Error("invalid_entry_id");
+        }
+        const cascadeEntryIds =
+            await this.store.resolveDeletionCascade(entryIds);
+        const entries: LibraryEntry[] = [];
+        for (const entryId of cascadeEntryIds) {
             const entry = await this.read(actor, entryId);
             if (!entry) throw new Error("not_found");
             if (
@@ -526,8 +530,8 @@ export class LibraryService implements LibraryCapability {
             entries,
             blacklistContentHashes,
         });
-        await this.store.deleteEntries(
-            entryIds,
+        const deletedEntryIds = await this.store.deleteEntries(
+            cascadeEntryIds,
             actor.accountId,
             blacklistContentHashes,
         );
@@ -535,9 +539,10 @@ export class LibraryService implements LibraryCapability {
             component: "study-library",
             operation: "delete-entries",
             accountId: actor.accountId,
-            entryIds,
+            entryIds: deletedEntryIds,
             blacklistContentHashes,
         });
+        return deletedEntryIds;
     }
 
     async trace(actor: LibraryActor, entryId: string) {

@@ -270,6 +270,10 @@ The parent character inside a child popup’s “From” context is now an actio
 
 The reusable popup title baseline is reduced by 25 percent, giving long confirmation and detail headings substantially more room before adaptive scaling or ellipsis is needed while preserving the user-configured typography scale.
 
+## Reliable empty, relationship, and deletion states
+
+The Library now shows a single empty-state message, ignores self-referential variant links, and transitively removes entries that depend on deleted content. The deletion warning lists every affected entry in a bounded, scrollable panel before confirmation.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -347,3 +351,4 @@ The reusable popup title baseline is reduced by 25 percent, giving long confirma
 - [26c14c1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/26c14c1b63891f1a3115d3c69a17ae76e6f126d9)
 - [e6746196](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6746196dcf3aa7f1a4ae12acaf8b65db5e438f5)
 - [b1c8e514](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1c8e514d07ea1960ad3f47f83ff9fc0c4521a44)
+- [5d0451d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5d0451d4b3c387625ae0f37732e5ea50124ec006)

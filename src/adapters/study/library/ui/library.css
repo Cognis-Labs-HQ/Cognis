@@ -371,6 +371,18 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     gap: 0.5rem;
 }
 
+.library-delete-cascade-list {
+    display: grid;
+    max-height: min(14rem, 35vh);
+    overflow-y: auto;
+    gap: 0.35rem;
+    margin: 0.75rem 0;
+    padding: 0.75rem 0.75rem 0.75rem 2rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-2);
+}
+
 .library-selection-close {
     min-width: 2.5rem;
 }

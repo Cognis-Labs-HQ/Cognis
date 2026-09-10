@@ -451,6 +451,15 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /function setSelectionMode/);
     assert.match(source, /function selectAllVisibleEntries/);
     assert.match(stylesheet, /place-content: center/);
+    assert.match(source, /const cascadeIds = new Set\(entryIds\)/);
+    assert.match(source, /entry\.references\?\.some/);
+    assert.match(source, /class="library-delete-cascade-list"/);
+    assert.match(
+        stylesheet,
+        /\.library-delete-cascade-list[\s\S]*overflow-y:\s*auto/,
+    );
+    assert.match(source, /filterableCards\.length === 0 \|\| visibleCount > 0/);
+    assert.match(source, /reference\.entryId === entry\.id/);
 });
 
 test("Study Library relationship links consistently open entry details", () => {

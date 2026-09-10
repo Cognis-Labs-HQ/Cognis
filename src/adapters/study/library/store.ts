@@ -399,6 +399,7 @@ export class LibraryStore {
                 ).entries()) {
                     const target = recordIdentity.get(reference.entryId);
                     if (!target) continue;
+                    if (source.canonicalId === target.canonicalId) continue;
                     const values = {
                         source_entry_id: source.canonicalId,
                         target_entry_id: target.canonicalId,
@@ -442,9 +443,11 @@ export class LibraryStore {
         entryIds: readonly string[],
         deletedBy: string,
         blacklistContentHashes: boolean,
-    ): Promise<void> {
+    ): Promise<readonly string[]> {
+        let deletedEntryIds: readonly string[] = [];
         await this.db.transaction(async (db) => {
-            for (const entryId of entryIds) {
+            deletedEntryIds = await this.resolveDeletionCascade(entryIds, db);
+            for (const entryId of deletedEntryIds) {
                 const result = await db.executeCommand({
                     option: "SELECT",
                     table: "study_library_entries",
@@ -477,6 +480,31 @@ export class LibraryStore {
                 });
             }
         });
+        return deletedEntryIds;
+    }
+
+    async resolveDeletionCascade(
+        entryIds: readonly string[],
+        db: DbExecutor = this.db,
+    ): Promise<readonly string[]> {
+        const cascadeIds = new Set(entryIds);
+        const pendingIds = [...entryIds];
+        while (pendingIds.length > 0) {
+            const targetEntryId = pendingIds.shift()!;
+            const dependents = await db.executeCommand({
+                option: "SELECT",
+                table: "study_library_references",
+                columns: ["source_entry_id"],
+                where: [{ column: "target_entry_id", value: targetEntryId }],
+            });
+            for (const row of dependents.rows ?? []) {
+                const dependentId = String(row.source_entry_id);
+                if (cascadeIds.has(dependentId)) continue;
+                cascadeIds.add(dependentId);
+                pendingIds.push(dependentId);
+            }
+        }
+        return Array.from(cascadeIds);
     }
 
     private async removeDuplicateContentEntries(

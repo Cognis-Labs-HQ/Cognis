@@ -220,11 +220,28 @@ test("permanent deletion blacklists content hashes and removes relationships", a
             ) {
                 return { rows: [{ content_hash: "hash-one" }] };
             }
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_references"
+            ) {
+                const target = command.where?.[0]?.value;
+                if (target === "entry-one")
+                    return { rows: [{ source_entry_id: "word-one" }] };
+                if (target === "word-one")
+                    return { rows: [{ source_entry_id: "sentence-one" }] };
+                return { rows: [] };
+            }
             return { rowCount: 1 };
         },
     };
 
-    await new LibraryStore(db).deleteEntries(["entry-one"], "admin", true);
+    const deleted = await new LibraryStore(db).deleteEntries(
+        ["entry-one"],
+        "admin",
+        true,
+    );
+
+    assert.deepEqual(deleted, ["entry-one", "word-one", "sentence-one"]);
 
     assert.equal(
         commands.some(
@@ -242,15 +259,15 @@ test("permanent deletion blacklists content hashes and removes relationships", a
                 command.option === "DELETE" &&
                 command.table === "study_library_references",
         ).length,
-        2,
+        6,
     );
     assert.equal(
-        commands.some(
+        commands.filter(
             (command) =>
                 command.option === "DELETE" &&
                 command.table === "study_library_entries",
-        ),
-        true,
+        ).length,
+        3,
     );
 });
 

@@ -125,6 +125,7 @@ function variantPlacement(entry, schema) {
                 (candidate) => candidate.id === reference.relation,
             );
         if (relationship?.variant === true) {
+            if (reference.entryId === entry.id) continue;
             return {
                 parentId: reference.entryId,
             };
@@ -567,13 +568,32 @@ function selectAllVisibleEntries(root, i18n) {
     updateDeleteSelectionButton(root, i18n);
 }
 
-async function confirmEntryDeletion(root, i18n) {
+async function confirmEntryDeletion(root, libraryEntries, i18n) {
     const entryIds = selectedEntryIds(root);
     if (entryIds.length === 0) return null;
+    const cascadeIds = new Set(entryIds);
+    let changed = true;
+    while (changed) {
+        changed = false;
+        for (const entry of libraryEntries) {
+            if (
+                !cascadeIds.has(entry.id) &&
+                entry.references?.some((reference) =>
+                    cascadeIds.has(reference.entryId),
+                )
+            ) {
+                cascadeIds.add(entry.id);
+                changed = true;
+            }
+        }
+    }
+    const cascadeEntries = libraryEntries.filter((entry) =>
+        cascadeIds.has(entry.id),
+    );
     let blacklistContentHashes = false;
     const action = await openPopup({
         title: i18n.t("gateway.study.library_delete_title"),
-        body: `<p>${escapeHtml(i18n.t("gateway.study.library_delete_warning"))}</p><label class="library-delete-permanent"><input type="checkbox" data-library-blacklist-content> ${escapeHtml(i18n.t("gateway.study.library_delete_permanent"))}</label>`,
+        body: `<p>${escapeHtml(i18n.t("gateway.study.library_delete_warning"))}</p><ul class="library-delete-cascade-list">${cascadeEntries.map((entry) => `<li>${escapeHtml(entry.label)}</li>`).join("")}</ul><label class="library-delete-permanent"><input type="checkbox" data-library-blacklist-content> ${escapeHtml(i18n.t("gateway.study.library_delete_permanent"))}</label>`,
         variant: "warning",
         actions: [
             {
@@ -594,7 +614,9 @@ async function confirmEntryDeletion(root, i18n) {
             ).checked;
         },
     });
-    return action === "delete" ? { entryIds, blacklistContentHashes } : null;
+    return action === "delete"
+        ? { entryIds: Array.from(cascadeIds), blacklistContentHashes }
+        : null;
 }
 
 function renderBrowser(schemas, entries, i18n) {
@@ -845,23 +867,26 @@ function refreshLibraryFilterResults(panel) {
         (item) => item.dataset.libraryFilter,
     );
     let visibleCount = 0;
-    panel
-        .querySelectorAll(".library-entry-card[data-library-filter-values]")
-        .forEach((card) => {
-            const values = JSON.parse(card.dataset.libraryFilterValues);
-            const visible = Array.from(selections.entries()).every(
-                ([fieldId, controls]) =>
-                    controls.some((control) =>
-                        values[fieldId]?.includes(
-                            control.dataset.libraryFilterValue,
-                        ),
-                    ),
-            );
-            card.hidden = !visible;
-            card.closest(".library-entry-card-shell").hidden = !visible;
-            if (visible) visibleCount += 1;
-        });
-    panel.querySelector(".library-filter-empty").hidden = visibleCount > 0;
+    const filterableCards = panel.querySelectorAll(
+        ".library-entry-card[data-library-filter-values]",
+    );
+    filterableCards.forEach((card) => {
+        const values = JSON.parse(card.dataset.libraryFilterValues);
+        const visible = Array.from(selections.entries()).every(
+            ([fieldId, controls]) =>
+                controls.some((control) =>
+                    (Array.isArray(values[fieldId])
+                        ? values[fieldId]
+                        : []
+                    ).includes(control.dataset.libraryFilterValue),
+                ),
+        );
+        card.hidden = !visible;
+        card.closest(".library-entry-card-shell").hidden = !visible;
+        if (visible) visibleCount += 1;
+    });
+    panel.querySelector(".library-filter-empty").hidden =
+        filterableCards.length === 0 || visibleCount > 0;
 }
 
 export async function mount(root, { signal } = {}) {
@@ -1074,30 +1099,32 @@ export async function mount(root, { signal } = {}) {
                 "[data-library-delete-selection]",
             );
             if (deleteSelection) {
-                void confirmEntryDeletion(root, i18n).then(async (request) => {
-                    if (!request) return;
-                    try {
-                        await deleteLibraryEntries(request.entryIds, {
-                            blacklistContentHashes:
-                                request.blacklistContentHashes,
-                        });
-                        entries = entries.filter(
-                            (entry) => !request.entryIds.includes(entry.id),
-                        );
-                        root.querySelector(".library-browser").innerHTML =
-                            renderBrowser(schemas, entries, i18n);
-                        setSelectionMode(root, false, i18n);
-                        showToast(
-                            i18n.t("gateway.study.library_delete_success"),
-                            { variant: "success" },
-                        );
-                    } catch {
-                        showToast(
-                            i18n.t("gateway.study.library_delete_error"),
-                            { variant: "error" },
-                        );
-                    }
-                });
+                void confirmEntryDeletion(root, entries, i18n).then(
+                    async (request) => {
+                        if (!request) return;
+                        try {
+                            await deleteLibraryEntries(request.entryIds, {
+                                blacklistContentHashes:
+                                    request.blacklistContentHashes,
+                            });
+                            entries = entries.filter(
+                                (entry) => !request.entryIds.includes(entry.id),
+                            );
+                            root.querySelector(".library-browser").innerHTML =
+                                renderBrowser(schemas, entries, i18n);
+                            setSelectionMode(root, false, i18n);
+                            showToast(
+                                i18n.t("gateway.study.library_delete_success"),
+                                { variant: "success" },
+                            );
+                        } catch {
+                            showToast(
+                                i18n.t("gateway.study.library_delete_error"),
+                                { variant: "error" },
+                            );
+                        }
+                    },
+                );
                 return;
             }
             if (event.target.matches("[data-library-select-entry]")) return;

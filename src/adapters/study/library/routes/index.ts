@@ -176,7 +176,7 @@ export function createLibraryRoutes(
                 ) {
                     throw new Error("invalid_delete_request");
                 }
-                await library.deleteEntries(
+                const deletedEntryIds = await library.deleteEntries(
                     actor,
                     body.entryIds,
                     body.blacklistContentHashes,
@@ -188,7 +188,12 @@ export function createLibraryRoutes(
                     entryCount: body.entryIds.length,
                     blacklistContentHashes: body.blacklistContentHashes,
                 });
-                sendJson(res, 200, { data: { deleted: body.entryIds.length } });
+                sendJson(res, 200, {
+                    data: {
+                        deleted: deletedEntryIds.length,
+                        entryIds: deletedEntryIds,
+                    },
+                });
                 return true;
             }
             const traceMatch = url.pathname.match(

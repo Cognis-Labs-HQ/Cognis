@@ -93,6 +93,7 @@ test("entry deletion passes validated selections to the Library capability", asy
         {
             deleteEntries: async (actor, entryIds, blacklistContentHashes) => {
                 request = { actor, entryIds, blacklistContentHashes };
+                return [...entryIds, "dependent"];
             },
         } as never,
         createAuthContext(
@@ -118,6 +119,10 @@ test("entry deletion passes validated selections to the Library capability", asy
         actor: { accountId: "ada", role: "admin" },
         entryIds: ["one", "two"],
         blacklistContentHashes: true,
+    });
+    assert.deepEqual(JSON.parse(response.payload).data, {
+        deleted: 3,
+        entryIds: ["one", "two", "dependent"],
     });
 });
 

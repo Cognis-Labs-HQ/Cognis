@@ -270,6 +270,10 @@ Das übergeordnete Zeichen im „Von“-Kontext eines untergeordneten Popups ist
 
 Die Ausgangsgröße wiederverwendbarer Popup-Titel wurde um 25 Prozent reduziert. Lange Bestätigungs- und Detailüberschriften erhalten dadurch deutlich mehr Platz, bevor adaptive Skalierung oder Auslassungspunkte erforderlich werden; die benutzerdefinierte Schriftskalierung bleibt erhalten.
 
+## Zuverlässige Leer-, Beziehungs- und Löschzustände
+
+Die Bibliothek zeigt jetzt nur noch einen Leerzustand an, ignoriert selbstreferenzierende Variantenverknüpfungen und entfernt transitiv Einträge, die von gelöschten Inhalten abhängen. Vor der Bestätigung listet die Löschwarnung alle betroffenen Einträge in einem begrenzten, scrollbareren Bereich auf.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -347,3 +351,4 @@ Die Ausgangsgröße wiederverwendbarer Popup-Titel wurde um 25 Prozent reduziert
 - [26c14c1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/26c14c1b63891f1a3115d3c69a17ae76e6f126d9)
 - [e6746196](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6746196dcf3aa7f1a4ae12acaf8b65db5e438f5)
 - [b1c8e514](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1c8e514d07ea1960ad3f47f83ff9fc0c4521a44)
+- [5d0451d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5d0451d4b3c387625ae0f37732e5ea50124ec006)

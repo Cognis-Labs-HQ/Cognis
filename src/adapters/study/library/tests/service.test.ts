@@ -111,11 +111,15 @@ test("content owners and administrators can delete selected entries", async () =
     ]);
     const store = {
         get: async (id: string) => entries.get(id) ?? null,
+        resolveDeletionCascade: async (ids: readonly string[]) => ids,
         deleteEntries: async (
             ids: readonly string[],
             accountId: string,
             blacklist: boolean,
-        ) => deleted.push({ ids, accountId, blacklist }),
+        ) => {
+            deleted.push({ ids, accountId, blacklist });
+            return ids;
+        },
     };
     const library = new LibraryService(store as never);
 
@@ -136,15 +140,16 @@ test("content owners and administrators can delete selected entries", async () =
     ]);
 });
 
-test("content deletion rejects actors who do not own every selection", async () => {
+test("content deletion rejects actors who do not own every cascaded entry", async () => {
     let deleteCalled = false;
     const store = {
-        get: async () => ({
-            id: "other",
+        get: async (id: string) => ({
+            id,
             scope: "global",
             scopeId: "global",
-            createdBy: "bob",
+            createdBy: id === "owned" ? "alice" : "bob",
         }),
+        resolveDeletionCascade: async () => ["owned", "dependent"],
         deleteEntries: async () => {
             deleteCalled = true;
         },
@@ -154,7 +159,7 @@ test("content deletion rejects actors who do not own every selection", async () 
     await assert.rejects(
         library.deleteEntries(
             { accountId: "alice", role: "user" },
-            ["other"],
+            ["owned"],
             false,
         ),
         /forbidden/,
