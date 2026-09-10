@@ -266,6 +266,10 @@ Die Bereinigung fokussierter Zweige hat nun eine ausreichende Selektorpriorität
 
 Das übergeordnete Zeichen im „Von“-Kontext eines untergeordneten Popups ist nun ein anklickbarer Tiefenlink. Sekundäre Popup-Überschriften akzeptieren maskierte Aktionsfragmente, sodass Benutzer den übergeordneten Eintrag direkt öffnen können, ohne den umgebenden Kontexttext in einen Link umzuwandeln.
 
+## Kleinere Popup-Überschriften
+
+Die Ausgangsgröße wiederverwendbarer Popup-Titel wurde um 25 Prozent reduziert. Lange Bestätigungs- und Detailüberschriften erhalten dadurch deutlich mehr Platz, bevor adaptive Skalierung oder Auslassungspunkte erforderlich werden; die benutzerdefinierte Schriftskalierung bleibt erhalten.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -342,3 +346,4 @@ Das übergeordnete Zeichen im „Von“-Kontext eines untergeordneten Popups ist
 - [1463edb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/1463edb37a5708a75c1a4ce022f69b18813752ad)
 - [26c14c1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/26c14c1b63891f1a3115d3c69a17ae76e6f126d9)
 - [e6746196](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6746196dcf3aa7f1a4ae12acaf8b65db5e438f5)
+- [b1c8e514](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1c8e514d07ea1960ad3f47f83ff9fc0c4521a44)

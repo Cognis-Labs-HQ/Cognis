@@ -74,7 +74,7 @@
 .popup-title {
     margin: 0;
     overflow: hidden;
-    font-size: calc(3em * var(--popup-title-scale, 1));
+    font-size: calc(2.25em * var(--popup-title-scale, 1));
     font-weight: 700;
     color: var(--text);
     flex: 0 1 auto;

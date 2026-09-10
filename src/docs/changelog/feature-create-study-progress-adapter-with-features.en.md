@@ -266,6 +266,10 @@ Focused-branch pruning now has enough selector priority to override every nested
 
 The parent character inside a child popup’s “From” context is now an actionable deep link. Popup secondary headings accept escaped action fragments, letting users open the parent directly without turning surrounding context text into a link.
 
+## Smaller popup headings
+
+The reusable popup title baseline is reduced by 25 percent, giving long confirmation and detail headings substantially more room before adaptive scaling or ellipsis is needed while preserving the user-configured typography scale.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -342,3 +346,4 @@ The parent character inside a child popup’s “From” context is now an actio
 - [1463edb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/1463edb37a5708a75c1a4ce022f69b18813752ad)
 - [26c14c1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/26c14c1b63891f1a3115d3c69a17ae76e6f126d9)
 - [e6746196](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6746196dcf3aa7f1a4ae12acaf8b65db5e438f5)
+- [b1c8e514](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1c8e514d07ea1960ad3f47f83ff9fc0c4521a44)

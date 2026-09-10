@@ -63,7 +63,7 @@ test("popup typography scales from the user font-size preference", () => {
     );
     assert.match(
         stylesheet,
-        /\.popup-title[\s\S]*font-size: calc\(3em \* var\(--popup-title-scale, 1\)\)/,
+        /\.popup-title[\s\S]*font-size: calc\(2\.25em \* var\(--popup-title-scale, 1\)\)/,
     );
     assert.doesNotMatch(stylesheet, /font-size\s*:\s*[\d.]+(?:px|pt)\b/);
 });

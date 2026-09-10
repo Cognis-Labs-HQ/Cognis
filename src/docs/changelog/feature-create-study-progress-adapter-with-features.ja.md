@@ -266,6 +266,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 子ポップアップの「元」文脈に含まれる親文字を操作可能なディープリンクにしました。ポップアップの副見出しがエスケープ済みのアクション断片を受け取れるため、周囲の説明文までリンクにすることなく親項目を直接開けます。
 
+## ポップアップ見出しの縮小
+
+再利用ポップアップのタイトル基準サイズを 25 パーセント縮小しました。ユーザー設定の文字スケールを維持しながら、長い確認見出しや詳細見出しで自動縮小や省略記号が必要になるまでの表示領域を大きく確保します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -342,3 +346,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [1463edb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/1463edb37a5708a75c1a4ce022f69b18813752ad)
 - [26c14c1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/26c14c1b63891f1a3115d3c69a17ae76e6f126d9)
 - [e6746196](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6746196dcf3aa7f1a4ae12acaf8b65db5e438f5)
+- [b1c8e514](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1c8e514d07ea1960ad3f47f83ff9fc0c4521a44)

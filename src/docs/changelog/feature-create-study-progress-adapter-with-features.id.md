@@ -266,6 +266,10 @@ Pemangkasan cabang terfokus kini memiliki prioritas selektor yang cukup untuk me
 
 Karakter induk di dalam konteks “Dari” pada popup anak kini menjadi tautan dalam yang dapat digunakan. Judul sekunder popup menerima fragmen tindakan yang di-escape, sehingga pengguna dapat membuka induk secara langsung tanpa menjadikan teks konteks di sekitarnya sebagai tautan.
 
+## Judul popup yang lebih kecil
+
+Ukuran dasar judul popup yang dapat digunakan kembali dikurangi 25 persen, sehingga judul konfirmasi dan detail yang panjang memiliki ruang jauh lebih besar sebelum memerlukan penskalaan adaptif atau elipsis, sekaligus tetap mengikuti skala tipografi pengguna.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -342,3 +346,4 @@ Karakter induk di dalam konteks “Dari” pada popup anak kini menjadi tautan d
 - [1463edb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/1463edb37a5708a75c1a4ce022f69b18813752ad)
 - [26c14c1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/26c14c1b63891f1a3115d3c69a17ae76e6f126d9)
 - [e6746196](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6746196dcf3aa7f1a4ae12acaf8b65db5e438f5)
+- [b1c8e514](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1c8e514d07ea1960ad3f47f83ff9fc0c4521a44)
