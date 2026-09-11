@@ -60,7 +60,12 @@ async function findFiles(
     for (const entry of entries) {
         if (entry.name === "node_modules" || entry.name === ".git") continue;
         const entryPath = path.join(root, entry.name);
-        if (entry.isDirectory()) {
+        if (
+            entry.isSymbolicLink() &&
+            (predicate(entryPath) || path.extname(entry.name) === "")
+        ) {
+            throw new Error(`module_boundary_violation\n${entryPath}:symlink`);
+        } else if (entry.isDirectory()) {
             files.push(...(await findFiles(entryPath, predicate)));
         } else if (entry.isFile() && predicate(entryPath)) {
             files.push(entryPath);

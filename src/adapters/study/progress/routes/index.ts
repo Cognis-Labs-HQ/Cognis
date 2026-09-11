@@ -10,6 +10,32 @@ import { createProjectionRoutes } from "./projections/index.js";
 import { createRebuildRoutes } from "./rebuild/index.js";
 import { sendJson } from "./http.js";
 
+const REQUEST_ERROR_CODES = new Set([
+    "correction_scope_mismatch",
+    "correction_target_invalid",
+    "invalid_activity",
+    "invalid_attempt",
+    "invalid_classroom_id",
+    "invalid_completion",
+    "invalid_content_id",
+    "invalid_content_revision",
+    "invalid_correctness",
+    "invalid_duration",
+    "invalid_event_id",
+    "invalid_from",
+    "invalid_hints",
+    "invalid_independent_correctness",
+    "invalid_interest_vein",
+    "invalid_language",
+    "invalid_layer",
+    "invalid_metadata",
+    "invalid_occurred_at",
+    "invalid_schema",
+    "invalid_time_window",
+    "invalid_until",
+    "unsafe_metadata",
+]);
+
 export function createProgressRoutes(
     progress: ProgressCapability,
     providedContext?: RouteContext,
@@ -51,8 +77,15 @@ export function createProgressRoutes(
                 ? 403
                 : code === "event_not_found"
                   ? 404
-                  : 400;
-            sendJson(response, status, { error: { code } });
+                  : code === "event_id_conflict" ||
+                      code === "event_already_corrected"
+                    ? 409
+                    : REQUEST_ERROR_CODES.has(code)
+                      ? 400
+                      : 500;
+            sendJson(response, status, {
+                error: { code: status === 500 ? "internal_error" : code },
+            });
             return true;
         }
     };

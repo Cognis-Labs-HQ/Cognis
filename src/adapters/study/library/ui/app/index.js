@@ -1169,12 +1169,16 @@ export async function mount(root, { signal } = {}) {
                     async (request) => {
                         if (!request) return;
                         try {
-                            await deleteLibraryEntries(request.entryIds, {
-                                blacklistContentHashes:
-                                    request.blacklistContentHashes,
-                            });
+                            const deletion = await deleteLibraryEntries(
+                                request.entryIds,
+                                {
+                                    blacklistContentHashes:
+                                        request.blacklistContentHashes,
+                                },
+                            );
                             entries = entries.filter(
-                                (entry) => !request.entryIds.includes(entry.id),
+                                (entry) =>
+                                    !deletion.entryIds.includes(entry.id),
                             );
                             root.querySelector(".library-browser").innerHTML =
                                 renderBrowser(schemas, entries, i18n);

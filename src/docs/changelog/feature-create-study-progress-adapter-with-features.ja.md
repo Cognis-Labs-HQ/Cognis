@@ -282,6 +282,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 詳細ポップアップはページを固定するときにスクロールバーの領域を確保するようになり、ダイアログの開閉時に背後のライブラリの幅が変わりません。また、正規化したラベルと定義関係の完全な組み合わせが一致する重複カードを統合しつつ、実際の同義語と多対多の意味関係を維持します。
 
+## 永続的な進捗と安全なモジュール
+
+進捗イベントとプロジェクションを DB ゲートウェイで永続化し、競合するイベント ID、不正な訂正範囲、無効な期間を拒否します。訂正用ルートを公開し、内部のルート障害は利用者に漏らしません。復元された外部モジュールにも新規有効化時と同じ検証を行い、シンボリックリンクによる境界検査の回避を防ぎます。さらに、コンテンツパックの古い参照を置換し、連鎖削除をブラウザーへ即時反映します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -362,3 +366,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [5d0451d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5d0451d4b3c387625ae0f37732e5ea50124ec006)
 - [93a3523a](https://github.com/Cognis-Labs-HQ/Cognis/commit/93a3523ad4226f15e9c768ffcee066d21ccf8dd8)
 - [bbc45581](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbc45581586a7979012bc1934ab75bd7d9f5b2ad)
+- [9ad5f1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ad5f1b7b3d715d58a01e00d1e5317f8b04c5df)

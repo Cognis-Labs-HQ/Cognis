@@ -436,6 +436,8 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /data-library-delete-selection/);
     assert.match(source, /data-library-blacklist-content/);
     assert.match(source, /deleteLibraryEntries/);
+    assert.match(source, /const deletion = await deleteLibraryEntries/);
+    assert.match(source, /!deletion\.entryIds\.includes\(entry\.id\)/);
     assert.match(clientSource, /export async function deleteLibraryEntries/);
     assert.match(clientSource, /method: "DELETE"/);
     assert.match(stylesheet, /\.library-entry-selection/);

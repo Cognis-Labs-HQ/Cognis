@@ -14,4 +14,6 @@ The service checks actor ownership before reading or writing. Administrators and
 
 Authenticated clients use `/api/v1/study/progress/events`, `/projections`, and `/aggregate`. Administrators can invoke `/rebuild`. Query filters support actor, schema, layer, language, activity, interest vein, classroom, event ID, and inclusive `from`/`until` timestamps. No result limit is imposed.
 
-Corrections append an event with `compensatesEventId`; stored history is never rewritten. Metadata must be a small JSON object and prototype-manipulation keys are rejected.
+Corrections are posted to `/api/v1/study/progress/events/corrections` and append an event with `compensatesEventId`; stored history is never rewritten. Metadata must be a small JSON object and prototype-manipulation keys are rejected.
+
+Events and rebuildable projections are persisted through the DB gateway so learning history survives adapter reloads and server restarts.

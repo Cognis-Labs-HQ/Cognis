@@ -7,6 +7,13 @@ import { bootstrapStudyAdapter, createStudyAdapter } from "../index.js";
 function bootstrapContext() {
     const systemCtx = createCtx();
     systemCtx.contributeCapability("system:ctx", systemCtx);
+    systemCtx.contributeCapability("db:executor", {
+        ensureTable: async () => {},
+        executeCommand: async () => ({ rows: [] }),
+        transaction: async (
+            callback: (executor: unknown) => Promise<unknown>,
+        ) => callback(systemCtx.getCapability("db:executor")),
+    });
     const routes: unknown[] = [];
     return {
         systemCtx,

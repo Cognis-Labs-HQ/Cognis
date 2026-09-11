@@ -73,6 +73,13 @@ test("records duplicate event ids idempotently", async () => {
         true,
     );
     assert.equal((await service.listEvents(user)).length, 1);
+    await assert.rejects(
+        service.recordEvent(
+            user,
+            event("event-duplicate", { durationMs: 1_200 }),
+        ),
+        /event_id_conflict/,
+    );
 });
 
 test("rebuilds projections and applies compensating corrections", async () => {
@@ -95,8 +102,32 @@ test("rebuilds projections and applies compensating corrections", async () => {
         }) as LearningEventInput & { compensatesEventId: string },
     );
     projections = await service.rebuild(user);
-    assert.equal(projections[0].attempted, 1);
+    assert.equal(projections[0].attempted, 2);
     assert.equal((await store.all()).length, 3);
+});
+
+test("rejects invalid aggregation windows and correction scope changes", async () => {
+    const service = new ProgressService(new MemoryProgressStore());
+    await service.recordEvent(user, event("event-corrected"));
+    await assert.rejects(
+        service.aggregate(user, { from: "not-a-date" }),
+        /invalid_from/,
+    );
+    await assert.rejects(
+        service.correctEvent(
+            user,
+            event("event-wrong-content", {
+                content: {
+                    schema: "language-v1",
+                    layer: "words",
+                    language: "ja",
+                    contentId: "word-2",
+                },
+                compensatesEventId: "event-corrected",
+            }) as LearningEventInput & { compensatesEventId: string },
+        ),
+        /correction_scope_mismatch/,
+    );
 });
 
 test("aggregates supported dimensions and time windows", async () => {

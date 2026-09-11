@@ -13,3 +13,5 @@ Der Dienst prüft die Eigentümerschaft des Akteurs vor jedem Lesen und Schreibe
 ## HTTP-API
 
 Authentifizierte Clients verwenden `/api/v1/study/progress/events`, `/projections` und `/aggregate`; Administratoren können `/rebuild` ausführen. Filter umfassen Akteur, Schema, Ebene, Sprache, Aktivität, Interessenader, Klassenraum, Ereignis und Zeitraum. Korrekturen werden angehängt und verändern niemals den Verlauf.
+
+Authentifizierte Clients senden Korrekturen an `/api/v1/study/progress/events/corrections`; sie werden angehängt und verändern niemals den Verlauf. Ereignisse und Projektionen werden über das DB-Gateway dauerhaft gespeichert und bleiben bei Neustarts erhalten.

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import {
@@ -78,6 +78,17 @@ test("external module activation rejects imports and URLs into Cognis internals"
     await assert.rejects(
         new ModuleTestService([root]).run("example-module"),
         /module_boundary_violation[\s\S]*internal_import[\s\S]*internal_url/,
+    );
+});
+
+test("external module activation rejects symlinked sources", async () => {
+    const { root, moduleRoot } = await createModule("export {};\n");
+    const externalSource = path.join(root, "external.js");
+    await writeFile(externalSource, "export const unsafe = true;\n");
+    await symlink(externalSource, path.join(moduleRoot, "bootstrap.js"));
+    await assert.rejects(
+        new ModuleTestService([root]).run("example-module"),
+        /module_boundary_violation[\s\S]*symlink/,
     );
 });
 

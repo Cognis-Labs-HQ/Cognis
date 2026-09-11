@@ -7,7 +7,8 @@ import type {
 } from "../../../gateways/study/gateway.js";
 import { createProgressRoutes } from "./routes/index.js";
 import { ProgressService } from "./service.js";
-import { MemoryProgressStore } from "./store.js";
+import { DbProgressStore } from "./store.js";
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 
 let adapterReady = false;
 
@@ -37,6 +38,19 @@ export async function bootstrapStudyAdapter(
         );
         return;
     }
+    const databaseExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    if (!databaseExecutor) {
+        await ctx.log?.(
+            "error",
+            "Study/progress adapter requires the DB gateway.",
+            {
+                component: "study-progress",
+                operation: "bootstrap",
+                fatal: true,
+            },
+        );
+        return;
+    }
     if (!systemCtx.hasFlow("study:progress:recordEvent")) {
         systemCtx.registerFlow({
             id: "study:progress:recordEvent",
@@ -45,8 +59,24 @@ export async function bootstrapStudyAdapter(
             stages: ["authorize", "validate", "observe", "persist", "project"],
         });
     }
+    const store = new DbProgressStore(databaseExecutor);
+    try {
+        await store.ensureSchema();
+    } catch (error) {
+        await ctx.log?.(
+            "error",
+            "Study/progress schema initialization failed.",
+            {
+                component: "study-progress",
+                operation: "ensureSchema",
+                error: error instanceof Error ? error.message : String(error),
+                fatal: true,
+            },
+        );
+        return;
+    }
     const service = new ProgressService(
-        new MemoryProgressStore(),
+        store,
         ctx.capabilities.get<StudyClassAccessCapability>(
             "study:classes:access",
         ),

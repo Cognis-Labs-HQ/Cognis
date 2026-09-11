@@ -104,6 +104,18 @@ test("content pack import ignores duplicate all-key references", async () => {
             command.option === "INSERT" &&
             command.table === "study_library_references",
     );
+    const referenceDeleteIndex = commands.findIndex(
+        (command) =>
+            command.option === "DELETE" &&
+            command.table === "study_library_references",
+    );
+    const referenceInsertIndex = commands.findIndex(
+        (command) =>
+            command.option === "INSERT" &&
+            command.table === "study_library_references",
+    );
+    assert.ok(referenceDeleteIndex >= 0);
+    assert.ok(referenceDeleteIndex < referenceInsertIndex);
     assert.deepEqual(
         referenceInsert.option === "INSERT"
             ? referenceInsert.conflict

@@ -282,6 +282,10 @@ Die Variantenanzeige vergleicht jetzt neben Datenbank-IDs auch die stabile Ident
 
 Detail-Pop-ups reservieren nun beim Sperren der Seite den Platz der Bildlaufleiste. Dadurch ändert die darunterliegende Bibliothek beim Öffnen oder Schließen von Dialogen nicht mehr ihre Breite. Bibliotheksebenen führen außerdem doppelte Karten zusammen, wenn normalisierte Beschriftungen und ihre vollständigen Definitionsbeziehungen übereinstimmen, während echte Synonyme und n:m-Bedeutungen erhalten bleiben.
 
+## Dauerhafter Fortschritt und sichere Module
+
+Fortschrittsereignisse und Projektionen werden nun über das DB-Gateway dauerhaft gespeichert. Widersprüchliche Ereignis-IDs, ungültige Korrekturbereiche und Zeitfenster werden abgelehnt; außerdem gibt es eine Korrekturroute und interne Routenfehler bleiben verborgen. Wiederhergestellte externe Module durchlaufen dieselbe Aktivierungsprüfung wie neu aktivierte Module, symbolisch verknüpfte Quellen können Grenzprüfungen nicht umgehen, Inhaltsimporte ersetzen veraltete Beziehungen und kaskadierte Bibliothekslöschungen aktualisieren sofort den Browser.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -362,3 +366,4 @@ Detail-Pop-ups reservieren nun beim Sperren der Seite den Platz der Bildlaufleis
 - [5d0451d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5d0451d4b3c387625ae0f37732e5ea50124ec006)
 - [93a3523a](https://github.com/Cognis-Labs-HQ/Cognis/commit/93a3523ad4226f15e9c768ffcee066d21ccf8dd8)
 - [bbc45581](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbc45581586a7979012bc1934ab75bd7d9f5b2ad)
+- [9ad5f1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ad5f1b7b3d715d58a01e00d1e5317f8b04c5df)

@@ -282,6 +282,10 @@ Perenderan varian kini membandingkan identitas rekaman sumber yang stabil selain
 
 Popup detail kini mempertahankan ruang bilah gulir saat mengunci halaman sehingga lebar Pustaka di bawahnya tidak berubah ketika dialog dibuka atau ditutup. Lapisan Pustaka juga menyatukan kartu duplikat saat label yang dinormalisasi dan seluruh hubungan definisinya sama, sekaligus mempertahankan sinonim asli serta makna banyak-ke-banyak.
 
+## Kemajuan persisten dan modul aman
+
+Peristiwa dan proyeksi kemajuan kini disimpan secara persisten melalui gateway DB, menolak ID peristiwa yang bertentangan, memvalidasi lingkup koreksi dan rentang waktu, menyediakan rute koreksi, serta menyembunyikan kegagalan rute internal. Modul eksternal yang dipulihkan menjalani validasi aktivasi yang sama dengan modul baru, sumber tautan simbolis tidak dapat melewati pemindaian batas, impor paket konten mengganti hubungan usang, dan penghapusan Pustaka berantai langsung memperbarui peramban.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -362,3 +366,4 @@ Popup detail kini mempertahankan ruang bilah gulir saat mengunci halaman sehingg
 - [5d0451d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5d0451d4b3c387625ae0f37732e5ea50124ec006)
 - [93a3523a](https://github.com/Cognis-Labs-HQ/Cognis/commit/93a3523ad4226f15e9c768ffcee066d21ccf8dd8)
 - [bbc45581](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbc45581586a7979012bc1934ab75bd7d9f5b2ad)
+- [9ad5f1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ad5f1b7b3d715d58a01e00d1e5317f8b04c5df)

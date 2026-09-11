@@ -55,14 +55,20 @@ function requireIdentifier(value: unknown, code: string): string {
 function safeMetadata(value: unknown): Readonly<Record<string, unknown>> {
     if (!value || typeof value !== "object" || Array.isArray(value))
         throw new Error("invalid_metadata");
-    const serialized = JSON.stringify(value);
+    let serialized: string;
+    try {
+        serialized = JSON.stringify(value);
+    } catch {
+        throw new Error("invalid_metadata");
+    }
     if (
+        !serialized ||
         serialized.length > 4096 ||
         /"(?:__proto__|constructor|prototype)"\s*:/.test(serialized)
     ) {
         throw new Error("unsafe_metadata");
     }
-    return Object.freeze(structuredClone(value as Record<string, unknown>));
+    return Object.freeze(JSON.parse(serialized) as Record<string, unknown>);
 }
 
 function normalizeEvent(
@@ -78,6 +84,12 @@ function normalizeEvent(
         throw new Error("invalid_hints");
     if (!Number.isFinite(input.durationMs) || input.durationMs < 0)
         throw new Error("invalid_duration");
+    if (
+        typeof input.correct !== "boolean" ||
+        typeof input.independentCorrect !== "boolean"
+    ) {
+        throw new Error("invalid_correctness");
+    }
     if (
         !["started", "inProgress", "completed", "abandoned"].includes(
             input.completion,
@@ -152,6 +164,24 @@ function applies(event: LearningEvent, filters: ProgressFilters): boolean {
     );
 }
 
+function validateFilters(filters: ProgressFilters): void {
+    for (const [value, code] of [
+        [filters.from, "invalid_from"],
+        [filters.until, "invalid_until"],
+    ] as const) {
+        if (value !== undefined && !Number.isFinite(Date.parse(value))) {
+            throw new Error(code);
+        }
+    }
+    if (
+        filters.from &&
+        filters.until &&
+        Date.parse(filters.from) > Date.parse(filters.until)
+    ) {
+        throw new Error("invalid_time_window");
+    }
+}
+
 function buildProjections(events: LearningEvent[]): ProgressProjection[] {
     const compensated = new Set(
         events.flatMap((event) =>
@@ -160,7 +190,7 @@ function buildProjections(events: LearningEvent[]): ProgressProjection[] {
     );
     const groups = new Map<string, LearningEvent[]>();
     for (const event of events) {
-        if (event.compensatesEventId || compensated.has(event.id)) continue;
+        if (compensated.has(event.id)) continue;
         const key = `${event.actorId}\u0000${event.content.schema}\u0000${event.content.layer}\u0000${event.content.language}\u0000${event.content.contentId}`;
         groups.set(key, [...(groups.get(key) ?? []), event]);
     }
@@ -261,16 +291,16 @@ export class ProgressService implements ProgressCapability {
             true,
         );
         await this.flow?.run("study:progress:recordEvent", event);
-        const appended = await this.store.append(event);
-        if (appended) await this.rebuildInternal();
+        const appendResult = await this.store.append(event);
+        if (appendResult === "inserted") await this.rebuildInternal();
         await this.log?.("info", "Recorded immutable learning event.", {
             component: "study-progress",
             operation: "recordEvent",
             actorId: event.actorId,
             eventId: event.id,
-            duplicate: !appended,
+            duplicate: appendResult === "duplicate",
         });
-        return { event, duplicate: !appended };
+        return { event, duplicate: appendResult === "duplicate" };
     }
 
     async correctEvent(
@@ -284,6 +314,24 @@ export class ProgressService implements ProgressCapability {
         if (!target) throw new Error("event_not_found");
         if (target.compensatesEventId)
             throw new Error("correction_target_invalid");
+        const existingCorrection = events.find(
+            (event) => event.compensatesEventId === target.id,
+        );
+        if (existingCorrection && existingCorrection.id !== input.id) {
+            throw new Error("event_already_corrected");
+        }
+        await this.authorize(
+            actor,
+            target.actorId,
+            target.context.classroomId,
+            true,
+        );
+        if (
+            JSON.stringify(input.content) !== JSON.stringify(target.content) ||
+            input.context?.classroomId !== target.context.classroomId
+        ) {
+            throw new Error("correction_scope_mismatch");
+        }
         return this.recordEvent(actor, { ...input, actorId: target.actorId });
     }
 
@@ -291,6 +339,7 @@ export class ProgressService implements ProgressCapability {
         actor: ProgressActor,
         filters: ProgressFilters = {},
     ): Promise<LearningEvent[]> {
+        validateFilters(filters);
         const actorId = filters.actorId ?? actor.accountId;
         await this.authorize(actor, actorId, filters.classroomId);
         return (await this.store.all()).filter((event) =>
@@ -316,9 +365,7 @@ export class ProgressService implements ProgressCapability {
                 event.compensatesEventId ? [event.compensatesEventId] : [],
             ),
         );
-        const active = events.filter(
-            (event) => !event.compensatesEventId && !compensated.has(event.id),
-        );
+        const active = events.filter((event) => !compensated.has(event.id));
         const attempts = active.filter((event) => event.attempt > 0);
         const independentCorrect = attempts.filter(
             (event) => event.independentCorrect,
@@ -350,9 +397,17 @@ export class ProgressService implements ProgressCapability {
     ): Promise<ProgressProjection[]> {
         await this.authorize(actor, targetActorId);
         await this.rebuildInternal();
-        return (await this.store.projections()).filter(
+        const projections = (await this.store.projections()).filter(
             (projection) => projection.actorId === targetActorId,
         );
+        await this.log?.("info", "Rebuilt learning progress projections.", {
+            component: "study-progress",
+            operation: "rebuild",
+            requestedBy: actor.accountId,
+            actorId: targetActorId,
+            projectionCount: projections.length,
+        });
+        return projections;
     }
 
     private async rebuildInternal(): Promise<void> {

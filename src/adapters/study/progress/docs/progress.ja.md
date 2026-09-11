@@ -13,3 +13,5 @@
 ## HTTP API
 
 認証済みクライアントは `/api/v1/study/progress/events`、`/projections`、`/aggregate` を使用し、管理者は `/rebuild` を実行できます。実行者、スキーマ、層、言語、活動、関心領域、教室、イベント、期間で絞り込めます。訂正は履歴を書き換えず追加されます。
+
+認証済みクライアントは訂正を `/api/v1/study/progress/events/corrections` に送信します。訂正は履歴を書き換えず追加されます。イベントとプロジェクションは DB ゲートウェイを通じて永続化され、再起動後も保持されます。

@@ -317,6 +317,21 @@ export class LibraryStore {
                     },
                 });
             }
+            const importedSourceIds = new Set(
+                Array.from(
+                    recordIdentity.values(),
+                    ({ canonicalId }) => canonicalId,
+                ),
+            );
+            for (const sourceEntryId of importedSourceIds) {
+                await db.executeCommand({
+                    option: "DELETE",
+                    table: "study_library_references",
+                    where: [
+                        { column: "source_entry_id", value: sourceEntryId },
+                    ],
+                });
+            }
             for (const record of records) {
                 const identity = recordIdentity.get(record.id);
                 if (!identity) continue;
