@@ -326,6 +326,26 @@ Gateway Berkas kini menyumbangkan bagian Administrasi untuk mengubah kuota bawaa
 
 Alias TODO yang tersisa telah dihapus, pengujian dokumentasi kini memperlakukan dokumen TODO sebagai opsional, dan kontrak tata letak menu profil pakai ulang yang hilang telah dipulihkan. Modul Pustaka dan popup yang terlalu besar dipecah menjadi modul filter dan formulir konfigurasi yang terfokus, sehingga keduanya berada di bawah batas ukuran sumber tanpa mengubah API publik. Seluruh 1.999 pengujian repositori dan pipeline lint kini lulus.
 
+## Patuhi Kebijakan Penghapusan Relasi Library
+
+Perencanaan penghapusan Library kini mengikuti kebijakan `restrict`, `detach`, atau `cascade` pada setiap relasi skema, bukan menganggap semua referensi masuk sebagai kaskade.
+
+## Jalankan Persistensi Progress di Dalam Flow
+
+Adapter Progress kini menyimpan event secara permanen dan membangun ulang proyeksi pada tahap `persist` dan `project`, sehingga ekstensi berikutnya melihat status yang sudah tersimpan.
+
+## Tutup Celah Validasi Modul
+
+Validasi batas kini mendeteksi pemanggilan CommonJS `require()` statis dan memindai seluruh modul sebelum entrypoint API yang dinonaktifkan dimuat.
+
+## Pertahankan Navigasi Bahasa Study yang Kanonis
+
+Tujuan Study yang diingat hanya digunakan kembali bila bahasa tujuan benar-benar mendaftarkan halaman tersebut; jika tidak, navigasi memakai tujuan bawaan yang dideklarasikan bahasa itu.
+
+## Evaluasi Perlindungan Infrastruktur UI Core Baru
+
+Instruksi kontribusi AI kini mewajibkan evaluasi perlindungan secara eksplisit saat fungsi, objek hasil render, komponen, atau kelas UI core dibuat atau diperluas.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -417,3 +437,4 @@ Alias TODO yang tersisa telah dihapus, pengujian dokumentasi kini memperlakukan 
 - [90ff0ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/90ff0ae13fb1b81ed003dc4fae6ba56e63194610)
 - [a7513e45](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7513e45b56ebbc8872f1798f7da4ce9e3f9b739)
 - [d3d4ff25](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d4ff25aa3b11883df67844b0204ac62d211f00)
+- [3dadb7fd](https://github.com/Cognis-Labs-HQ/Cognis/commit/3dadb7fdb2f6269d735e6b8f7d0cdf8991ac5808)

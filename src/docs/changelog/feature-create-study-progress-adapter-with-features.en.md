@@ -326,6 +326,26 @@ The Files gateway now contributes an Administration section for editing the glob
 
 The remaining TODO aliases were removed, documentation tests now treat TODO documents as optional, and missing reusable profile-menu layout contracts were restored. Oversized Library and popup modules were split into focused filter and configuration-form modules, bringing both below the source-size guardrail while preserving their public APIs. All 1,999 repository tests and the full lint pipeline now pass.
 
+## Respect Library Relationship Deletion Policies
+
+Library deletion planning now follows each schema relationship's `restrict`, `detach`, or `cascade` policy instead of treating every incoming reference as a cascade.
+
+## Keep Progress Persistence Inside Its Flow
+
+The Progress adapter now performs durable event persistence and projection rebuilding in the advertised `persist` and `project` stages, so later extensions observe committed state.
+
+## Close Module Validation Gaps
+
+Boundary validation now detects static CommonJS `require()` calls and scans the complete module before a disabled API entrypoint is loaded.
+
+## Keep Study Language Navigation Canonical
+
+Remembered Study destinations are reused only when the target language actually registers that page; otherwise navigation uses the target language's declared default.
+
+## Evaluate New Core UI Infrastructure for Protection
+
+AI contribution instructions now require explicit protection evaluation whenever core UI functions, rendered objects, components, or classes are created or expanded.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -417,3 +437,4 @@ The remaining TODO aliases were removed, documentation tests now treat TODO docu
 - [90ff0ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/90ff0ae13fb1b81ed003dc4fae6ba56e63194610)
 - [a7513e45](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7513e45b56ebbc8872f1798f7da4ce9e3f9b739)
 - [d3d4ff25](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d4ff25aa3b11883df67844b0204ac62d211f00)
+- [3dadb7fd](https://github.com/Cognis-Labs-HQ/Cognis/commit/3dadb7fdb2f6269d735e6b8f7d0cdf8991ac5808)

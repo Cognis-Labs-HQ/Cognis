@@ -326,6 +326,26 @@ Das Datei-Gateway trägt jetzt einen Administrationsabschnitt bei, in dem das gl
 
 Die verbleibenden TODO-Aliase wurden entfernt, Dokumentationstests behandeln TODO-Dokumente jetzt als optional und fehlende wiederverwendbare Layoutverträge für das Profilmenü wurden wiederhergestellt. Übergroße Bibliotheks- und Popupmodule wurden in gezielte Filter- und Konfigurationsformularmodule aufgeteilt, sodass beide die Quellgrößenbegrenzung einhalten und ihre öffentlichen APIs beibehalten. Alle 1.999 Repository-Tests und die vollständige Lint-Pipeline bestehen jetzt.
 
+## Löschregeln Für Bibliotheksbeziehungen Beachten
+
+Die Löschplanung der Bibliothek beachtet nun die Schema-Regel `restrict`, `detach` oder `cascade` jeder Beziehung, statt jeden eingehenden Verweis als Kaskade zu behandeln.
+
+## Progress-Persistenz Innerhalb Des Flows Ausführen
+
+Der Progress-Adapter speichert Ereignisse dauerhaft und baut Projektionen in den vorgesehenen Stufen `persist` und `project` neu auf, sodass spätere Erweiterungen bestätigten Zustand sehen.
+
+## Lücken In Der Modulvalidierung Schließen
+
+Die Grenzprüfung erkennt nun statische CommonJS-Aufrufe von `require()` und prüft das gesamte Modul, bevor ein deaktivierter API-Einstiegspunkt geladen wird.
+
+## Kanonische Study-Sprachnavigation Beibehalten
+
+Ein gemerktes Study-Ziel wird nur wiederverwendet, wenn die Zielsprache diese Seite tatsächlich registriert; andernfalls wird ihr deklarierter Standard verwendet.
+
+## Neue Core-UI-Infrastruktur Auf Schutz Prüfen
+
+Die KI-Anweisungen verlangen nun bei neuen oder erweiterten Core-UI-Funktionen, gerenderten Objekten, Komponenten und Klassen ausdrücklich eine Prüfung auf erforderlichen Schutz.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -417,3 +437,4 @@ Die verbleibenden TODO-Aliase wurden entfernt, Dokumentationstests behandeln TOD
 - [90ff0ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/90ff0ae13fb1b81ed003dc4fae6ba56e63194610)
 - [a7513e45](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7513e45b56ebbc8872f1798f7da4ce9e3f9b739)
 - [d3d4ff25](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d4ff25aa3b11883df67844b0204ac62d211f00)
+- [3dadb7fd](https://github.com/Cognis-Labs-HQ/Cognis/commit/3dadb7fdb2f6269d735e6b8f7d0cdf8991ac5808)

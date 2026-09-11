@@ -326,6 +326,26 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 残っていた TODO エイリアスを削除し、ドキュメントテストは TODO 文書を任意として扱うようにしました。また、欠けていた再利用可能なプロフィールメニューのレイアウト契約を復元しました。肥大化していたライブラリとポップアップのモジュールを、専用のフィルターおよび設定フォームモジュールへ分割し、公開 API を維持したままソースサイズ制限内に収めました。リポジトリの全 1,999 テストと lint パイプラインが通過します。
 
+## Library の関係削除ポリシーを尊重
+
+Library の削除計画は、すべての受信参照をカスケードとして扱わず、各スキーマ関係の `restrict`、`detach`、`cascade` ポリシーに従うようになりました。
+
+## Progress の永続化を Flow 内で実行
+
+Progress アダプターは、公開された `persist` と `project` ステージ内でイベントの永続化とプロジェクションの再構築を行い、後続の拡張が保存済み状態を参照できるようになりました。
+
+## モジュール検証の抜け道を解消
+
+境界検証は静的な CommonJS `require()` を検出し、無効時 API エントリーポイントを読み込む前にモジュール全体を走査するようになりました。
+
+## Study の言語ナビゲーションを正規化
+
+記憶された Study の遷移先は対象言語がそのページを実際に登録している場合だけ再利用し、それ以外では対象言語が宣言した既定ページを使用します。
+
+## 新しい Core UI 基盤の保護要否を評価
+
+AI 向けの貢献手順に、Core UI の関数、描画オブジェクト、コンポーネント、クラスを作成または拡張するとき、保護対象にすべきか明示的に評価する要件を追加しました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -417,3 +437,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [90ff0ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/90ff0ae13fb1b81ed003dc4fae6ba56e63194610)
 - [a7513e45](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7513e45b56ebbc8872f1798f7da4ce9e3f9b739)
 - [d3d4ff25](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d4ff25aa3b11883df67844b0204ac62d211f00)
+- [3dadb7fd](https://github.com/Cognis-Labs-HQ/Cognis/commit/3dadb7fdb2f6269d735e6b8f7d0cdf8991ac5808)
