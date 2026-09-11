@@ -290,6 +290,10 @@ Peristiwa dan proyeksi kemajuan kini disimpan secara persisten melalui gateway D
 
 Modul eksternal kini dapat memakai ruang nama `/api/v1/modules/<id>` miliknya sendiri tanpa kegagalan batas positif palsu, sedangkan URL lintas modul dan internal Cognis tetap diblokir. Rute konfigurasi nonaktif yang tidak tersedia mengembalikan `module_config_unavailable`, bukan 404. Validasi Nextcloud Whiteboard kini hanya menunjukkan impor inti dan penimpaan kelas terlindungi yang benar-benar tidak kompatibel; modul harus menerbitkan pembaruan yang sesuai sebelum dapat diaktifkan dengan aman.
 
+## Konfigurasi sebelum aktivasi
+
+Modul nonaktif kini memuat titik masuk API yang dideklarasikan melalui konteks terbatas khusus server setelah validasi batas sumber API. Hanya rute yang secara eksplisit diizinkan saat nonaktif yang dipasang, sehingga konfigurasi Jitsi Meet dan Nextcloud Whiteboard dapat diselesaikan sebelum aktivasi tanpa mengaktifkan rute fitur, kontribusi UI, alur, atau kapabilitas. UI aktivasi juga memperlakukan kontrak konfigurasi nonaktif yang tidak tersedia sebagai jalur praaktivasi, bukan kegagalan melingkar.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -372,3 +376,4 @@ Modul eksternal kini dapat memakai ruang nama `/api/v1/modules/<id>` miliknya se
 - [bbc45581](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbc45581586a7979012bc1934ab75bd7d9f5b2ad)
 - [9ad5f1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ad5f1b7b3d715d58a01e00d1e5317f8b04c5df)
 - [d469f73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d469f7323cb49ca8670fd22ca026bc830f9a38cf)
+- [df9e46be](https://github.com/Cognis-Labs-HQ/Cognis/commit/df9e46be6f840f6fe00298e62dc179e7d5d83e06)

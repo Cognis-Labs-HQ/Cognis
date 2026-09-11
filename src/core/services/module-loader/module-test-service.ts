@@ -82,10 +82,20 @@ export async function discoverTestFiles(root: string): Promise<string[]> {
 
 export async function validateModuleBoundaries(
     root: string,
-    options: { moduleId?: string } = {},
+    options: { moduleId?: string; sourceRoot?: string } = {},
 ): Promise<void> {
     const violations: string[] = [];
-    const sourceFiles = await findFiles(root, (filePath) =>
+    const sourceRoot = path.resolve(options.sourceRoot ?? root);
+    const relativeSourceRoot = path.relative(path.resolve(root), sourceRoot);
+    if (
+        relativeSourceRoot.startsWith("..") ||
+        path.isAbsolute(relativeSourceRoot)
+    ) {
+        throw new Error(
+            "module_boundary_violation\nsource_root:outside_module",
+        );
+    }
+    const sourceFiles = await findFiles(sourceRoot, (filePath) =>
         MODULE_SOURCE_PATTERN.test(filePath),
     );
     for (const filePath of sourceFiles) {

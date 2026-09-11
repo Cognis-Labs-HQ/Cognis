@@ -7,6 +7,7 @@ import type {
     RoleAccessPolicy,
     FlowApi,
 } from "@cognis/core";
+import { validateModuleBoundaries } from "@cognis/core";
 import path from "node:path";
 import { stat } from "node:fs/promises";
 import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
@@ -584,12 +585,18 @@ export function createModuleExtensionRoutes(
         return null;
     }
 
-    function resolveDisabledApiEntrypointPath(
+    function resolveDisabledApiEntrypoint(
         moduleRoot: string,
-        entrypoints: { disabledApi?: string } | undefined,
-    ): string | null {
-        return entrypoints?.disabledApi
-            ? path.join(moduleRoot, entrypoints.disabledApi)
+        entrypoints: { disabledApi?: string; api?: string } | undefined,
+    ): { path: string; dedicated: boolean } | null {
+        if (entrypoints?.disabledApi) {
+            return {
+                path: path.join(moduleRoot, entrypoints.disabledApi),
+                dedicated: true,
+            };
+        }
+        return entrypoints?.api
+            ? { path: path.join(moduleRoot, entrypoints.api), dedicated: false }
             : null;
     }
 
@@ -701,17 +708,25 @@ export function createModuleExtensionRoutes(
                 moduleRoot,
                 manifest.entrypoints,
             );
-            const disabledApiEntrypoint = resolveDisabledApiEntrypointPath(
+            const disabledApiEntrypoint = resolveDisabledApiEntrypoint(
                 moduleRoot,
                 manifest.entrypoints,
             );
             if (!moduleEnabled) {
                 if (!disabledApiEntrypoint) continue;
                 try {
+                    await validateModuleBoundaries(moduleRoot, {
+                        moduleId: manifest.id,
+                        sourceRoot: path.dirname(disabledApiEntrypoint.path),
+                    });
                     const plugin = (await import(
-                        `${disabledApiEntrypoint}?t=${Date.now()}`
-                    )) as ModuleDisabledApiPlugin;
-                    await plugin.registerDisabledApiRoutes?.(moduleCtx);
+                        `${disabledApiEntrypoint.path}?t=${Date.now()}`
+                    )) as ModuleDisabledApiPlugin & ModulePlugin;
+                    if (disabledApiEntrypoint.dedicated) {
+                        await plugin.registerDisabledApiRoutes?.(moduleCtx);
+                    } else {
+                        plugin.registerApiRoutes?.(moduleCtx.router, moduleCtx);
+                    }
                     scope.active = false;
                     loadedModules.set(manifest.id, {
                         ctx: moduleCtx,

@@ -87,6 +87,28 @@ test("external modules may address only their own API namespace", async () => {
     );
 });
 
+test("restricted API validation does not activate unrelated UI sources", async () => {
+    const { moduleRoot } = await createModule("export {};\n");
+    await mkdir(path.join(moduleRoot, "api"));
+    await mkdir(path.join(moduleRoot, "ui"));
+    await writeFile(
+        path.join(moduleRoot, "api", "index.js"),
+        'export const configUrl = "/api/v1/modules/example-module/config";\n',
+    );
+    await writeFile(
+        path.join(moduleRoot, "ui", "app.js"),
+        'import "/static/reuse/ui-ctx.js";\n',
+    );
+    await validateModuleBoundaries(moduleRoot, {
+        moduleId: "example-module",
+        sourceRoot: path.join(moduleRoot, "api"),
+    });
+    await assert.rejects(
+        validateModuleBoundaries(moduleRoot, { moduleId: "example-module" }),
+        /internal_import:\/static\/reuse\/ui-ctx\.js/,
+    );
+});
+
 test("external module activation rejects imports and URLs into Cognis internals", async () => {
     const { root, moduleRoot } = await createModule("export {};\n");
     await writeFile(

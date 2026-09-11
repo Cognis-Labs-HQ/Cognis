@@ -19,6 +19,22 @@ const modulePreferencesSource = readFileSync(
     "utf8",
 );
 
+test("unavailable disabled configuration allows activation to continue", async () => {
+    const available = await assertRequiredModulePreferences(
+        {
+            id: "configurable",
+            ui: { preferences: [{ key: "server", required: true }] },
+        },
+        "Configuration required",
+        async () => {
+            const error = new Error("Unavailable");
+            error.code = "module_config_unavailable";
+            throw error;
+        },
+    );
+    assert.equal(available, false);
+});
+
 test("required module configuration distinguishes unset values from valid false values", () => {
     const definitions = [
         { key: "instanceUrl", type: "string", required: true },

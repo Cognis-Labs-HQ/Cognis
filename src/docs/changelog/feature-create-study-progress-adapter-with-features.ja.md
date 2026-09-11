@@ -290,6 +290,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 外部モジュールは、自身の `/api/v1/modules/<id>` 名前空間を誤検知なく使用できるようになりました。他のモジュールや Cognis 内部の URL は引き続き拒否します。無効時の設定ルートがない場合は 404 ではなく `module_config_unavailable` を返します。Nextcloud Whiteboard の検証結果は、実際に互換性がない Core インポートと保護クラスの上書きだけになりました。安全に有効化するには、モジュール側で準拠した更新版を公開する必要があります。
 
+## 有効化前の設定
+
+無効なモジュールは、API ソースの境界検証後に、サーバー専用の制限付きコンテキストで宣言済み API エントリーポイントを読み込むようになりました。無効時の利用を明示したルートだけを登録するため、機能ルート、UI 提供、フロー、ケイパビリティを有効化せずに Jitsi Meet と Nextcloud Whiteboard を事前設定できます。有効化 UI も、無効時設定コントラクトが利用できない場合を循環エラーではなく有効化前の代替経路として扱います。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -372,3 +376,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [bbc45581](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbc45581586a7979012bc1934ab75bd7d9f5b2ad)
 - [9ad5f1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ad5f1b7b3d715d58a01e00d1e5317f8b04c5df)
 - [d469f73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d469f7323cb49ca8670fd22ca026bc830f9a38cf)
+- [df9e46be](https://github.com/Cognis-Labs-HQ/Cognis/commit/df9e46be6f840f6fe00298e62dc179e7d5d83e06)

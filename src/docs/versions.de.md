@@ -82,13 +82,13 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente   | Pfad        | Version   |
 | ------------ | ----------- | --------- |
-| Core Package | `src/core/` | `0.3.100` |
+| Core Package | `src/core/` | `0.3.101` |
 
 ## API
 
 | Komponente | Pfad       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.5.5` |
+| API Server | `src/api/` | `0.5.6` |
 
 ## Werkzeuge
 

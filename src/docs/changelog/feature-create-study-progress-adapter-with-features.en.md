@@ -290,6 +290,10 @@ Progress events and projections now persist through the DB gateway, reject confl
 
 External modules may now use only their own `/api/v1/modules/<id>` namespace without false-positive boundary failures, while cross-module and Cognis-internal URLs remain blocked. Missing disabled configuration routes return `module_config_unavailable` instead of falling through to 404. Validation of Nextcloud Whiteboard now identifies only its genuine incompatible core import and protected-class override; the module must publish a compliant update before it can be enabled safely.
 
+## Configuration before activation
+
+Disabled modules now load their declared API entrypoint through a server-only restricted context after API-source boundary validation. Only routes explicitly marked for disabled operation are mounted, allowing Jitsi Meet and Nextcloud Whiteboard configuration to be completed before enablement without activating feature routes, UI contributions, flows, or capabilities. The activation UI also treats an unavailable disabled configuration contract as a pre-enable fallback instead of creating a circular failure.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -372,3 +376,4 @@ External modules may now use only their own `/api/v1/modules/<id>` namespace wit
 - [bbc45581](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbc45581586a7979012bc1934ab75bd7d9f5b2ad)
 - [9ad5f1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ad5f1b7b3d715d58a01e00d1e5317f8b04c5df)
 - [d469f73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d469f7323cb49ca8670fd22ca026bc830f9a38cf)
+- [df9e46be](https://github.com/Cognis-Labs-HQ/Cognis/commit/df9e46be6f840f6fe00298e62dc179e7d5d83e06)
