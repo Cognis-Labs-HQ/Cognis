@@ -310,6 +310,10 @@ Kisi Pustaka kini menyisakan kartu kosong hanya untuk penampung tempat yang diny
 
 Jejak entri Pustaka kini mengabaikan relasi yang sumbernya mengarah kembali ke entri itu sendiri dan menggabungkan entri dependen berulang berdasarkan ID entri. Karena itu, popup rincian hanya menampilkan rekaman eksternal yang unik pada bagian Digunakan Oleh.
 
+## Tautkan setiap ejaan komposit secara mendalam
+
+Rincian kata Pustaka kini menguraikan ejaan lengkap menjadi entri unit tulisan atomik dan majemuk kanonis ketika referensi komposisi eksplisit tidak tersedia. Judul seperti 好き menautkan 好 ke karakter alternatifnya dan き ke karakternya, sedangkan pelafalan sekunder seperti すき memperoleh tautan komposisi lengkap yang sama tanpa menyajikan teks yang hanya terurai sebagian sebagai hasil resmi.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -397,3 +401,4 @@ Jejak entri Pustaka kini mengabaikan relasi yang sumbernya mengarah kembali ke e
 - [e95559ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/e95559ce6df3718d0f231f5ed8563d74b17b7b03)
 - [2b3d8bdd](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b3d8bdd2d0016aacb221e26f21b79a347d2a57c)
 - [fbd2c62e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fbd2c62eac84d9ab568b8be7594e9ba590e68d48)
+- [2b62938c](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b62938cd6e77515e161240f8de4e15b273177fd)

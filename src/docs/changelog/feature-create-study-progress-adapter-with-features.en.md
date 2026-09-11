@@ -310,6 +310,10 @@ Library grids now reserve blank cards only for explicit schema placeholders. Sta
 
 Library entry traces now omit relationships whose source resolves to the entry itself and collapse repeated dependants by entry ID. Detail popups therefore show only distinct external records under Used By.
 
+## Deep-link every composite spelling
+
+Library word details now resolve complete spellings into canonical atomic and compound writing-unit entries when explicit composition references are absent. Headings such as 好き link 好 to its alternate character and き to its character, while secondary pronunciations such as すき receive the same complete composition links without presenting partially resolved text as authoritative.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -397,3 +401,4 @@ Library entry traces now omit relationships whose source resolves to the entry i
 - [e95559ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/e95559ce6df3718d0f231f5ed8563d74b17b7b03)
 - [2b3d8bdd](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b3d8bdd2d0016aacb221e26f21b79a347d2a57c)
 - [fbd2c62e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fbd2c62eac84d9ab568b8be7594e9ba590e68d48)
+- [2b62938c](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b62938cd6e77515e161240f8de4e15b273177fd)

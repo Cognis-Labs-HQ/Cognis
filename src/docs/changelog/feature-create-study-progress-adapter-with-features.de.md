@@ -310,6 +310,10 @@ Bibliotheksraster reservieren leere Karten jetzt nur noch für ausdrücklich im 
 
 Bibliothekseintragsspuren lassen jetzt Beziehungen aus, deren Quelle auf den Eintrag selbst aufgelöst wird, und fassen wiederholte abhängige Einträge anhand ihrer Eintrags-ID zusammen. Detailfenster zeigen unter „Verwendet von“ daher nur unterschiedliche externe Datensätze.
 
+## Jede zusammengesetzte Schreibweise tief verlinken
+
+Wortdetails der Bibliothek lösen vollständige Schreibweisen jetzt in kanonische atomare und zusammengesetzte Schreibeinträge auf, wenn ausdrückliche Zusammensetzungsverweise fehlen. Überschriften wie 好き verlinken 好 mit seinem alternativen Zeichen und き mit seinem Zeichen; sekundäre Aussprachen wie すき erhalten dieselben vollständigen Zusammensetzungslinks, ohne teilweise aufgelösten Text als maßgeblich darzustellen.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -397,3 +401,4 @@ Bibliothekseintragsspuren lassen jetzt Beziehungen aus, deren Quelle auf den Ein
 - [e95559ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/e95559ce6df3718d0f231f5ed8563d74b17b7b03)
 - [2b3d8bdd](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b3d8bdd2d0016aacb221e26f21b79a347d2a57c)
 - [fbd2c62e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fbd2c62eac84d9ab568b8be7594e9ba590e68d48)
+- [2b62938c](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b62938cd6e77515e161240f8de4e15b273177fd)

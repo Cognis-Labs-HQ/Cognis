@@ -182,8 +182,10 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /function headingCompositionReferences/);
     assert.match(
         source,
-        /const titleReferences = headingCompositionReferences/,
+        /const explicitTitleReferences = headingCompositionReferences/,
     );
+    assert.match(source, /resolveLabelComposition\(/);
+    assert.match(source, /pronunciationValues\(entry\)\.forEach/);
     assert.match(source, /titleItems: titleReferences\.map/);
     assert.match(source, /open-title-reference:\$\{entry\.id\}/);
     assert.doesNotMatch(source, /querySelector\("\.popup-title"\)/);

@@ -14,12 +14,14 @@ import {
     renderMetadataPills,
     renderPronunciation,
     renderScope,
+    pronunciationValues,
     section,
 } from "./presentation.js";
+import { resolveLabelComposition } from "./composition-links.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
 
-function coreSections(detail, schemas, i18n, variantPlacement) {
+function coreSections(detail, schemas, entries, i18n, variantPlacement) {
     const { entry, references = [], usedBy = [] } = detail;
     const layer = layerForEntry(schemas, entry);
     const headingReferences = headingCompositionReferences(detail, schemas);
@@ -28,6 +30,27 @@ function coreSections(detail, schemas, i18n, variantPlacement) {
             !headingReferences.length ||
             !group.entries.every((entry) => headingReferences.includes(entry)),
     );
+    const compositionLabels = new Set(
+        compositions.map((group) =>
+            group.entries.map(({ label }) => label).join(""),
+        ),
+    );
+    pronunciationValues(entry).forEach((label, index) => {
+        if (compositionLabels.has(label)) return;
+        const components = resolveLabelComposition(
+            label,
+            entry,
+            schemas,
+            entries,
+        );
+        if (components.length) {
+            compositions.push({
+                id: `inferred-pronunciation-${index}`,
+                presentationRole: "composition",
+                entries: components,
+            });
+        }
+    });
     const relatedWords = isWritingUnitLayer(layer)
         ? usedBy.filter(
               (candidate) =>
@@ -96,6 +119,7 @@ function coreSections(detail, schemas, i18n, variantPlacement) {
 export async function composeDetail(
     detail,
     schemas,
+    entries,
     i18n,
     languageCode,
     variantPlacement,
@@ -143,7 +167,7 @@ export async function composeDetail(
               );
     const sections = [
         ...sectionsFor("beforeCore"),
-        ...coreSections(detail, schemas, i18n, variantPlacement),
+        ...coreSections(detail, schemas, entries, i18n, variantPlacement),
         ...sectionsFor("core"),
         ...sectionsFor("afterCore"),
     ];

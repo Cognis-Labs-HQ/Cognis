@@ -46,6 +46,7 @@ import {
 } from "./presentation.js";
 
 import { composeDetail } from "./detail.js";
+import { resolveLabelComposition } from "./composition-links.js";
 import {
     assignVariantPlacements,
     isSameLibraryRecord,
@@ -576,7 +577,18 @@ async function openEntryPopup(
     let selectedEntry = initialEntry;
     while (selectedEntry && !signal?.aborted) {
         const detail = await fetchLibraryEntry(selectedEntry.id);
-        const titleReferences = headingCompositionReferences(detail, schemas);
+        const explicitTitleReferences = headingCompositionReferences(
+            detail,
+            schemas,
+        );
+        const titleReferences = explicitTitleReferences.length
+            ? explicitTitleReferences
+            : resolveLabelComposition(
+                  detail.entry.label,
+                  detail.entry,
+                  schemas,
+                  entries,
+              );
         const parentEntry = entries.find(
             (entry) =>
                 entry.id ===
@@ -593,6 +605,7 @@ async function openEntryPopup(
         const composed = await composeDetail(
             detail,
             schemas,
+            entries,
             i18n,
             languageCode,
             variantPlacement,
