@@ -322,6 +322,10 @@ Fortschrittsabfragen lösen ausgleichende Ereignisse jetzt anhand des vollständ
 
 Das Datei-Gateway trägt jetzt einen Administrationsabschnitt bei, in dem das globale Standardkontingent und die Standardkontingente aller registrierten Namensräume über den gatewayeigenen UI-Client bearbeitet werden können. Der Abschnitt ist vollständig lokalisiert, gehört dem Gateway und wird durch Anfrage- und Registrierungstests abgedeckt. Die abgeschlossene TODO-Datei des Repositorys wurde entfernt.
 
+## Vollständigen Test- und Lint-Lauf wiederherstellen
+
+Die verbleibenden TODO-Aliase wurden entfernt, Dokumentationstests behandeln TODO-Dokumente jetzt als optional und fehlende wiederverwendbare Layoutverträge für das Profilmenü wurden wiederhergestellt. Übergroße Bibliotheks- und Popupmodule wurden in gezielte Filter- und Konfigurationsformularmodule aufgeteilt, sodass beide die Quellgrößenbegrenzung einhalten und ihre öffentlichen APIs beibehalten. Alle 1.999 Repository-Tests und die vollständige Lint-Pipeline bestehen jetzt.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -412,3 +416,4 @@ Das Datei-Gateway trägt jetzt einen Administrationsabschnitt bei, in dem das gl
 - [2b62938c](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b62938cd6e77515e161240f8de4e15b273177fd)
 - [90ff0ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/90ff0ae13fb1b81ed003dc4fae6ba56e63194610)
 - [a7513e45](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7513e45b56ebbc8872f1798f7da4ce9e3f9b739)
+- [d3d4ff25](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d4ff25aa3b11883df67844b0204ac62d211f00)

@@ -322,6 +322,10 @@ Progress queries now resolve compensating events against the complete authorized
 
 The Files gateway now contributes an Administration section for editing the global default and every registered namespace's default quota through its owning UI client. The section is fully localized, gateway-owned, and covered by request and registration tests. The completed repository TODO file has been removed.
 
+## Restore a clean full test and lint run
+
+The remaining TODO aliases were removed, documentation tests now treat TODO documents as optional, and missing reusable profile-menu layout contracts were restored. Oversized Library and popup modules were split into focused filter and configuration-form modules, bringing both below the source-size guardrail while preserving their public APIs. All 1,999 repository tests and the full lint pipeline now pass.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -412,3 +416,4 @@ The Files gateway now contributes an Administration section for editing the glob
 - [2b62938c](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b62938cd6e77515e161240f8de4e15b273177fd)
 - [90ff0ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/90ff0ae13fb1b81ed003dc4fae6ba56e63194610)
 - [a7513e45](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7513e45b56ebbc8872f1798f7da4ce9e3f9b739)
+- [d3d4ff25](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d4ff25aa3b11883df67844b0204ac62d211f00)

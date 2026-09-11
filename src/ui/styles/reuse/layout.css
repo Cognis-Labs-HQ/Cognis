@@ -422,6 +422,13 @@
     background: transparent;
     border: 0;
 }
+.profile-menu {
+    position: relative;
+    overflow: visible;
+}
+.dropdown {
+    overflow: visible;
+}
 .app-shell .avatar-button {
     border: 1px solid var(--border);
 }

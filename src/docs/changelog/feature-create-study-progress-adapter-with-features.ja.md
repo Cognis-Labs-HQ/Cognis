@@ -322,6 +322,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 ファイルゲートウェイは、ゲートウェイ所有の UI クライアントを通じて、グローバル既定クォータと登録済みの各名前空間の既定クォータを編集できる管理セクションを提供するようになりました。このセクションは全対応言語にローカライズされ、リクエストと登録のテストで検証されています。完了したリポジトリの TODO ファイルは削除しました。
 
+## 全テストと lint の正常実行を復元
+
+残っていた TODO エイリアスを削除し、ドキュメントテストは TODO 文書を任意として扱うようにしました。また、欠けていた再利用可能なプロフィールメニューのレイアウト契約を復元しました。肥大化していたライブラリとポップアップのモジュールを、専用のフィルターおよび設定フォームモジュールへ分割し、公開 API を維持したままソースサイズ制限内に収めました。リポジトリの全 1,999 テストと lint パイプラインが通過します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -412,3 +416,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [2b62938c](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b62938cd6e77515e161240f8de4e15b273177fd)
 - [90ff0ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/90ff0ae13fb1b81ed003dc4fae6ba56e63194610)
 - [a7513e45](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7513e45b56ebbc8872f1798f7da4ce9e3f9b739)
+- [d3d4ff25](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d4ff25aa3b11883df67844b0204ac62d211f00)

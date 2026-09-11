@@ -8,6 +8,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const source = [
     "index.js",
     "detail.js",
+    "filters.js",
     "presentation.js",
     "variant-placement.js",
 ]
