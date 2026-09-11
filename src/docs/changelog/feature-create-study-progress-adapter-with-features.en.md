@@ -278,6 +278,10 @@ The Library now shows a single empty-state message, ignores self-referential var
 
 Variant rendering now compares stable source-record identity as well as database IDs. Duplicate representations of the same logical card are no longer rendered as parent and child, while genuine child variants remain available.
 
+## Stable detail popups and consolidated Library cards
+
+Detail popups now reserve scrollbar space while locking the page, preventing the Library beneath them from changing width when dialogs open or close. Library layers also consolidate duplicate cards when normalized labels and their complete definition relationships match, while preserving genuine synonyms and many-to-many meanings.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -357,3 +361,4 @@ Variant rendering now compares stable source-record identity as well as database
 - [b1c8e514](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1c8e514d07ea1960ad3f47f83ff9fc0c4521a44)
 - [5d0451d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5d0451d4b3c387625ae0f37732e5ea50124ec006)
 - [93a3523a](https://github.com/Cognis-Labs-HQ/Cognis/commit/93a3523ad4226f15e9c768ffcee066d21ccf8dd8)
+- [bbc45581](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbc45581586a7979012bc1934ab75bd7d9f5b2ad)

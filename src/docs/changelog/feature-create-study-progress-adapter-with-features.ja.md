@@ -278,6 +278,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 バリアント表示で、データベース ID に加えて安定したソースレコードの同一性を比較するようにしました。同じ論理カードの重複表現が親子として表示されなくなり、実際の子バリアントは引き続き利用できます。
 
+## 安定した詳細ポップアップと統合されたライブラリカード
+
+詳細ポップアップはページを固定するときにスクロールバーの領域を確保するようになり、ダイアログの開閉時に背後のライブラリの幅が変わりません。また、正規化したラベルと定義関係の完全な組み合わせが一致する重複カードを統合しつつ、実際の同義語と多対多の意味関係を維持します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -357,3 +361,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [b1c8e514](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1c8e514d07ea1960ad3f47f83ff9fc0c4521a44)
 - [5d0451d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5d0451d4b3c387625ae0f37732e5ea50124ec006)
 - [93a3523a](https://github.com/Cognis-Labs-HQ/Cognis/commit/93a3523ad4226f15e9c768ffcee066d21ccf8dd8)
+- [bbc45581](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbc45581586a7979012bc1934ab75bd7d9f5b2ad)

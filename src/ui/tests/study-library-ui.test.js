@@ -54,6 +54,10 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /filter\.detail\?\.defaultTag/);
     assert.match(source, /required \|\| tags\.length === 1/);
     assert.match(source, /function refreshLibraryFilterResults/);
+    assert.match(source, /function deduplicateDisplayEntries/);
+    assert.match(source, /new Set\([\s\S]*meaningRelations\.has/);
+    assert.match(source, /meaningIds\.join\("\\u0000"\)/);
+    assert.match(source, /const baseEntries = deduplicateDisplayEntries/);
     assert.match(source, /group\?\.dataset\.libraryFilterRequired === "true"/);
     assert.match(source, /classList\.toggle\("active", willActivate\)/);
     assert.match(stylesheet, /\.library-entry-grid/);

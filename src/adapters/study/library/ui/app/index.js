@@ -474,12 +474,57 @@ function isDirectlyVisible(entry, entries, placements) {
     return true;
 }
 
+function meaningReferenceIds(entry, schema) {
+    const meaningLayers = new Set(
+        schema.layers
+            .filter((candidate) => isMeaningLayer(candidate))
+            .map((candidate) => candidate.id),
+    );
+    const sourceLayer = layerForEntry([schema], entry);
+    const meaningRelations = new Set(
+        (sourceLayer?.relationships ?? [])
+            .filter((relationship) =>
+                meaningLayers.has(relationship.targetLayer),
+            )
+            .map((relationship) => relationship.id),
+    );
+    return Array.from(
+        new Set(
+            (entry.references ?? [])
+                .filter((reference) => meaningRelations.has(reference.relation))
+                .map((reference) => reference.entryId),
+        ),
+    ).sort();
+}
+
+function deduplicateDisplayEntries(entries, schema) {
+    const displayed = new Map();
+    for (const entry of entries) {
+        const meaningIds = meaningReferenceIds(entry, schema);
+        // A shared definition is not enough to merge genuine synonyms. Treat
+        // records as the same display item only when both their visible label
+        // and their complete, order-independent set of meanings agree.
+        const normalizedLabel = entry.label
+            .trim()
+            .normalize()
+            .toLocaleLowerCase();
+        const key = meaningIds.length
+            ? `${normalizedLabel}\u0000${meaningIds.join("\u0000")}`
+            : `entry:${entry.id}`;
+        if (!displayed.has(key)) displayed.set(key, entry);
+    }
+    return Array.from(displayed.values());
+}
+
 function renderLayerCards(layer, entries, schema, i18n, allEntries = entries) {
     const placements = assignVariantPlacements(entries, schema, layer);
-    const baseEntries = entries.filter(
-        (entry) =>
-            !placements.has(entry.id) &&
-            isDirectlyVisible(entry, entries, placements),
+    const baseEntries = deduplicateDisplayEntries(
+        entries.filter(
+            (entry) =>
+                !placements.has(entry.id) &&
+                isDirectlyVisible(entry, entries, placements),
+        ),
+        schema,
     );
     if (!baseEntries.length) return "";
     if (!layer.grid) {

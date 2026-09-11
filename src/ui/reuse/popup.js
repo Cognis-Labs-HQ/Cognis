@@ -118,6 +118,7 @@ function getI18n() {
 const scrollLockState = {
     count: 0,
     bodyOverflow: null,
+    bodyScrollbarGutter: null,
     mainOverflowValues: [],
 };
 
@@ -128,14 +129,22 @@ function getScrollableMainElements() {
 function lockPageScroll() {
     if (scrollLockState.count === 0) {
         scrollLockState.bodyOverflow = document.body.style.overflow;
+        scrollLockState.bodyScrollbarGutter =
+            document.body.style.scrollbarGutter;
         scrollLockState.mainOverflowValues = getScrollableMainElements().map(
             (element) => ({
                 element,
                 overflow: element.style.overflow,
+                scrollbarGutter: element.style.scrollbarGutter,
             }),
         );
+        // Reserve each scrolling surface's gutter before hiding its scrollbar.
+        // Without this, opening or closing a modal changes the available inline
+        // space and forces the page beneath it to redraw at a different width.
+        document.body.style.scrollbarGutter = "stable";
         document.body.style.overflow = "hidden";
         scrollLockState.mainOverflowValues.forEach(({ element }) => {
+            element.style.scrollbarGutter = "stable";
             element.style.overflow = "hidden";
         });
     }
@@ -147,10 +156,16 @@ function unlockPageScroll() {
     if (scrollLockState.count > 0) return;
 
     document.body.style.overflow = scrollLockState.bodyOverflow ?? "";
-    scrollLockState.mainOverflowValues.forEach(({ element, overflow }) => {
-        element.style.overflow = overflow;
-    });
+    document.body.style.scrollbarGutter =
+        scrollLockState.bodyScrollbarGutter ?? "";
+    scrollLockState.mainOverflowValues.forEach(
+        ({ element, overflow, scrollbarGutter }) => {
+            element.style.overflow = overflow;
+            element.style.scrollbarGutter = scrollbarGutter;
+        },
+    );
     scrollLockState.bodyOverflow = null;
+    scrollLockState.bodyScrollbarGutter = null;
     scrollLockState.mainOverflowValues = [];
 }
 

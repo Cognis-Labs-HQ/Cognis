@@ -278,6 +278,10 @@ Pustaka kini hanya menampilkan satu pesan status kosong, mengabaikan tautan vari
 
 Perenderan varian kini membandingkan identitas rekaman sumber yang stabil selain ID basis data. Representasi duplikat dari kartu logis yang sama tidak lagi ditampilkan sebagai induk dan anak, sedangkan varian anak yang sebenarnya tetap tersedia.
 
+## Popup detail stabil dan kartu Pustaka terpadu
+
+Popup detail kini mempertahankan ruang bilah gulir saat mengunci halaman sehingga lebar Pustaka di bawahnya tidak berubah ketika dialog dibuka atau ditutup. Lapisan Pustaka juga menyatukan kartu duplikat saat label yang dinormalisasi dan seluruh hubungan definisinya sama, sekaligus mempertahankan sinonim asli serta makna banyak-ke-banyak.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -357,3 +361,4 @@ Perenderan varian kini membandingkan identitas rekaman sumber yang stabil selain
 - [b1c8e514](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1c8e514d07ea1960ad3f47f83ff9fc0c4521a44)
 - [5d0451d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5d0451d4b3c387625ae0f37732e5ea50124ec006)
 - [93a3523a](https://github.com/Cognis-Labs-HQ/Cognis/commit/93a3523ad4226f15e9c768ffcee066d21ccf8dd8)
+- [bbc45581](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbc45581586a7979012bc1934ab75bd7d9f5b2ad)
