@@ -458,6 +458,9 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /function selectAllVisibleEntries/);
     assert.match(stylesheet, /place-content: center/);
     assert.match(source, /const cascadeIds = new Set\(entryIds\)/);
+    assert.match(source, /const selectedIds = new Set\(entryIds\)/);
+    assert.match(source, /cascadeIds\.has\(entry\.id\) && !selectedIds\.has/);
+    assert.match(source, /const cascadeWarning = cascadeEntries\.length/);
     assert.match(source, /entry\.references\?\.some/);
     assert.match(source, /class="library-delete-cascade-list"/);
     assert.match(

@@ -294,6 +294,10 @@ Externe Module dürfen nun ihren eigenen Namensraum `/api/v1/modules/<id>` ohne 
 
 Deaktivierte Module laden ihren deklarierten API-Einstiegspunkt nun nach der Grenzprüfung der API-Quellen in einem ausschließlich serverseitigen, eingeschränkten Kontext. Nur ausdrücklich für den deaktivierten Betrieb freigegebene Routen werden eingebunden. Dadurch können Jitsi Meet und Nextcloud Whiteboard vor der Aktivierung konfiguriert werden, ohne Funktionsrouten, UI-Beiträge, Abläufe oder Fähigkeiten zu aktivieren. Die Aktivierungsoberfläche behandelt einen nicht verfügbaren deaktivierten Konfigurationsvertrag außerdem als Voraktivierungsalternative statt als zirkulären Fehler.
 
+## Löschwarnungen nur für Kaskaden
+
+Die Löschbestätigung der Bibliothek nimmt direkt ausgewählte Einträge nicht mehr in die Kaskadenwarnung auf. Warnung und Liste betroffener Inhalte erscheinen nur, wenn zusätzliche zugehörige Einträge transitiv gelöscht werden; die dauerhafte Wiederherstellungssperre bleibt für die ausgewählten Inhalte verfügbar.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -377,3 +381,4 @@ Deaktivierte Module laden ihren deklarierten API-Einstiegspunkt nun nach der Gre
 - [9ad5f1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ad5f1b7b3d715d58a01e00d1e5317f8b04c5df)
 - [d469f73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d469f7323cb49ca8670fd22ca026bc830f9a38cf)
 - [df9e46be](https://github.com/Cognis-Labs-HQ/Cognis/commit/df9e46be6f840f6fe00298e62dc179e7d5d83e06)
+- [0db0f1b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/0db0f1b1771af5af2f36fe618269280dfbeab96c)

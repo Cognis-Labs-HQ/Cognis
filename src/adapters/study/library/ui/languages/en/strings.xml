@@ -13,7 +13,7 @@
   <string name="gateway.study.library_audio_load_error">Could not load audio.</string>
   <string name="gateway.study.library_select_entry">Select {{ entry }}</string>
   <string name="gateway.study.library_delete_title">Delete Library Content</string>
-  <string name="gateway.study.library_delete_warning">The selected content and its relationships will be permanently deleted. Module content will return the next time its module is enabled unless restoration is prevented below.</string>
+  <string name="gateway.study.library_delete_warning">The following related content will also be deleted:</string>
   <string name="gateway.study.library_delete_permanent">Prevent modules from restoring this exact content again</string>
   <string name="gateway.study.library_delete_success">The selected Library content was deleted.</string>
   <string name="gateway.study.library_delete_error">Could not delete the selected Library content.</string>

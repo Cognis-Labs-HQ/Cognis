@@ -13,7 +13,7 @@
   <string name="gateway.study.library_audio_load_error">音声を読み込めませんでした。</string>
   <string name="gateway.study.library_select_entry">{{ entry }}を選択</string>
   <string name="gateway.study.library_delete_title">ライブラリ内容を削除</string>
-  <string name="gateway.study.library_delete_warning">選択した内容とその関係は完全に削除されます。下の復元防止を選ばない場合、モジュールを次回有効化したときにモジュール内容が復元されます。</string>
+  <string name="gateway.study.library_delete_warning">次の関連コンテンツも削除されます:</string>
   <string name="gateway.study.library_delete_permanent">モジュールがこの同一内容を再び復元しないようにする</string>
   <string name="gateway.study.library_delete_success">選択したライブラリ内容を削除しました。</string>
   <string name="gateway.study.library_delete_error">選択したライブラリ内容を削除できませんでした。</string>

@@ -294,6 +294,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 無効なモジュールは、API ソースの境界検証後に、サーバー専用の制限付きコンテキストで宣言済み API エントリーポイントを読み込むようになりました。無効時の利用を明示したルートだけを登録するため、機能ルート、UI 提供、フロー、ケイパビリティを有効化せずに Jitsi Meet と Nextcloud Whiteboard を事前設定できます。有効化 UI も、無効時設定コントラクトが利用できない場合を循環エラーではなく有効化前の代替経路として扱います。
 
+## 連鎖削除だけの警告
+
+ライブラリの削除確認では、直接選択した項目を連鎖削除の警告に含めないようになりました。追加の関連項目が推移的に削除される場合だけ警告と対象一覧を表示し、選択したコンテンツには恒久的な復元防止コントロールを引き続き提供します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -377,3 +381,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [9ad5f1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ad5f1b7b3d715d58a01e00d1e5317f8b04c5df)
 - [d469f73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d469f7323cb49ca8670fd22ca026bc830f9a38cf)
 - [df9e46be](https://github.com/Cognis-Labs-HQ/Cognis/commit/df9e46be6f840f6fe00298e62dc179e7d5d83e06)
+- [0db0f1b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/0db0f1b1771af5af2f36fe618269280dfbeab96c)

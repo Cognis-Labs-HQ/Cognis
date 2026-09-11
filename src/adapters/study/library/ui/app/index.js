@@ -652,13 +652,17 @@ async function confirmEntryDeletion(root, libraryEntries, i18n) {
             }
         }
     }
-    const cascadeEntries = libraryEntries.filter((entry) =>
-        cascadeIds.has(entry.id),
+    const selectedIds = new Set(entryIds);
+    const cascadeEntries = libraryEntries.filter(
+        (entry) => cascadeIds.has(entry.id) && !selectedIds.has(entry.id),
     );
+    const cascadeWarning = cascadeEntries.length
+        ? `<p>${escapeHtml(i18n.t("gateway.study.library_delete_warning"))}</p><ul class="library-delete-cascade-list">${cascadeEntries.map((entry) => `<li>${escapeHtml(entry.label)}</li>`).join("")}</ul>`
+        : "";
     let blacklistContentHashes = false;
     const action = await openPopup({
         title: i18n.t("gateway.study.library_delete_title"),
-        body: `<p>${escapeHtml(i18n.t("gateway.study.library_delete_warning"))}</p><ul class="library-delete-cascade-list">${cascadeEntries.map((entry) => `<li>${escapeHtml(entry.label)}</li>`).join("")}</ul><label class="library-delete-permanent"><input type="checkbox" data-library-blacklist-content> ${escapeHtml(i18n.t("gateway.study.library_delete_permanent"))}</label>`,
+        body: `${cascadeWarning}<label class="library-delete-permanent"><input type="checkbox" data-library-blacklist-content> ${escapeHtml(i18n.t("gateway.study.library_delete_permanent"))}</label>`,
         variant: "warning",
         actions: [
             {
