@@ -69,6 +69,24 @@ test("external modules may extend Cognis only through supplied ctx capabilities"
     await new ModuleTestService([root]).run("example-module");
 });
 
+test("external modules may address only their own API namespace", async () => {
+    const { root, moduleRoot } = await createModule("export {};\n");
+    await writeFile(
+        path.join(moduleRoot, "api-client.js"),
+        'export const configUrl = "/api/v1/modules/example-module/config";\n',
+    );
+    await new ModuleTestService([root]).run("example-module");
+
+    await writeFile(
+        path.join(moduleRoot, "api-client.js"),
+        'export const configUrl = "/api/v1/modules/another-module/config";\n',
+    );
+    await assert.rejects(
+        new ModuleTestService([root]).run("example-module"),
+        /internal_url:\/api\/v1\/modules\/another-module\/config/,
+    );
+});
+
 test("external module activation rejects imports and URLs into Cognis internals", async () => {
     const { root, moduleRoot } = await createModule("export {};\n");
     await writeFile(

@@ -33,6 +33,42 @@ test("core manifests are not loaded from the external module directory", async (
     assert.deepEqual(errors, []);
 });
 
+test("installed modules without a disabled config route return a clear response", async () => {
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "config-module",
+                    uuid: "2b706159-269c-4fa9-a0e1-9227f4d5428f",
+                    class: "extension",
+                    entrypoints: {},
+                },
+            ],
+        } as any,
+        () => false,
+        undefined,
+        { routeContext: createDefaultRouteContext() },
+    );
+    let status = 0;
+    let payload = "";
+    await extensions.refresh();
+    const handled = await extensions.handle(
+        { method: "GET" } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(body: string) {
+                payload = body;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/modules/config-module/config"),
+    );
+    assert.equal(handled, true);
+    assert.equal(status, 503);
+    assert.equal(JSON.parse(payload).error.code, "module_config_unavailable");
+});
+
 test("a timed-out module bootstrap is disabled without blocking refresh", async () => {
     const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
     const moduleUuid = "41ad9d2b-463e-4f50-8a62-f02d02d5e303";

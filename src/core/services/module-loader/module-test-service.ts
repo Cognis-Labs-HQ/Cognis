@@ -12,7 +12,7 @@ const MODULE_SOURCE_PATTERN = /\.(?:[cm]?[jt]s|css)$/;
 const IMPORT_SPECIFIER_PATTERN =
     /\b(?:import|export)\s+(?:[\s\S]*?\s+from\s+)?["']([^"']+)["']|\bimport\(\s*["']([^"']+)["']\s*\)/g;
 const COGNIS_INTERNAL_URL_PATTERN =
-    /["'`](?:\/static\/(?:reuse|gateways|adapters)|\/api\/v1\/)[^"'`]*/g;
+    /["'`]((?:\/static\/(?:reuse|gateways|adapters)|\/api\/v1\/)[^"'`]*)/g;
 const ABSOLUTE_FONT_SIZE_PATTERN =
     /font-size\s*:\s*[-+]?(?:\d*\.)?\d+(?:px|pt|pc|cm|mm|in)\b/gi;
 const PROTECTED_STYLE_CLASSES = new Set([
@@ -80,7 +80,10 @@ export async function discoverTestFiles(root: string): Promise<string[]> {
     ).sort((left, right) => left.localeCompare(right));
 }
 
-export async function validateModuleBoundaries(root: string): Promise<void> {
+export async function validateModuleBoundaries(
+    root: string,
+    options: { moduleId?: string } = {},
+): Promise<void> {
     const violations: string[] = [];
     const sourceFiles = await findFiles(root, (filePath) =>
         MODULE_SOURCE_PATTERN.test(filePath),
@@ -100,8 +103,10 @@ export async function validateModuleBoundaries(root: string): Promise<void> {
                 );
             continue;
         }
+        const importedSpecifiers = new Set<string>();
         for (const match of source.matchAll(IMPORT_SPECIFIER_PATTERN)) {
             const specifier = match[1] ?? match[2] ?? "";
+            importedSpecifiers.add(specifier);
             const resolvedRelativeImport = specifier.startsWith(".")
                 ? path.relative(
                       root,
@@ -118,9 +123,20 @@ export async function validateModuleBoundaries(root: string): Promise<void> {
                 violations.push(`${relativePath}:internal_import:${specifier}`);
             }
         }
-        if (COGNIS_INTERNAL_URL_PATTERN.test(source))
-            violations.push(`${relativePath}:internal_url`);
-        COGNIS_INTERNAL_URL_PATTERN.lastIndex = 0;
+        for (const match of source.matchAll(COGNIS_INTERNAL_URL_PATTERN)) {
+            const url = match[1];
+            if (importedSpecifiers.has(url)) continue;
+            const ownedApiPrefix = options.moduleId
+                ? `/api/v1/modules/${options.moduleId}`
+                : "";
+            if (
+                ownedApiPrefix &&
+                (url === ownedApiPrefix || url.startsWith(`${ownedApiPrefix}/`))
+            ) {
+                continue;
+            }
+            violations.push(`${relativePath}:internal_url:${url}`);
+        }
     }
     if (violations.length > 0) {
         throw new Error(`module_boundary_violation\n${violations.join("\n")}`);
@@ -133,7 +149,7 @@ export class ModuleTestService {
     async run(moduleId: string): Promise<void> {
         const moduleRoot = await this.findModuleRoot(moduleId);
         if (!moduleRoot) return;
-        await validateModuleBoundaries(moduleRoot);
+        await validateModuleBoundaries(moduleRoot, { moduleId });
         const testFiles = await discoverTestFiles(moduleRoot);
         if (testFiles.length === 0) return;
         try {

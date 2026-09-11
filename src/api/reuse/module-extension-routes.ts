@@ -241,6 +241,7 @@ export function createModuleExtensionRoutes(
             flows: string[];
         }
     >();
+    let installedModuleIds = new Set<string>();
     const externalModulesRoot =
         process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
         path.resolve(process.cwd(), "external-modules");
@@ -657,6 +658,7 @@ export function createModuleExtensionRoutes(
         loadedModules.clear();
         const nextHandlers: RouteHandler[] = [];
         const manifests = await runtime.listManifests();
+        installedModuleIds = new Set(manifests.map((manifest) => manifest.id));
 
         for (const manifest of manifests) {
             if (manifest.class === "core") continue;
@@ -853,7 +855,30 @@ export function createModuleExtensionRoutes(
                 (entry) =>
                     entry.method === method && entry.routePath === url.pathname,
             );
-            if (!match) return false;
+            if (!match) {
+                const configMatch = url.pathname.match(
+                    /^\/api\/v1\/modules\/([^/]+)\/config$/,
+                );
+                const moduleId = configMatch
+                    ? decodeURIComponent(configMatch[1])
+                    : "";
+                if (moduleId && installedModuleIds.has(moduleId)) {
+                    res.writeHead(503, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "module_config_unavailable",
+                                message:
+                                    "Module configuration is unavailable while its disabled API is not registered.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                return false;
+            }
             if (!isModuleEnabled(match.moduleId) && !match.allowWhenDisabled) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(

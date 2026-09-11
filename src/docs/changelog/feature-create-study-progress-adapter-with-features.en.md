@@ -286,6 +286,10 @@ Detail popups now reserve scrollbar space while locking the page, preventing the
 
 Progress events and projections now persist through the DB gateway, reject conflicting event IDs, validate correction scope and time windows, expose a correction route, and conceal internal route failures. Restored external modules receive the same activation validation as newly enabled modules, symlinked sources cannot bypass boundary scans, content-pack imports replace obsolete references, and cascaded Library deletions update the browser immediately.
 
+## Actionable module validation
+
+External modules may now use only their own `/api/v1/modules/<id>` namespace without false-positive boundary failures, while cross-module and Cognis-internal URLs remain blocked. Missing disabled configuration routes return `module_config_unavailable` instead of falling through to 404. Validation of Nextcloud Whiteboard now identifies only its genuine incompatible core import and protected-class override; the module must publish a compliant update before it can be enabled safely.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -367,3 +371,4 @@ Progress events and projections now persist through the DB gateway, reject confl
 - [93a3523a](https://github.com/Cognis-Labs-HQ/Cognis/commit/93a3523ad4226f15e9c768ffcee066d21ccf8dd8)
 - [bbc45581](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbc45581586a7979012bc1934ab75bd7d9f5b2ad)
 - [9ad5f1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ad5f1b7b3d715d58a01e00d1e5317f8b04c5df)
+- [d469f73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d469f7323cb49ca8670fd22ca026bc830f9a38cf)

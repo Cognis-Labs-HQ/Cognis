@@ -286,6 +286,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 進捗イベントとプロジェクションを DB ゲートウェイで永続化し、競合するイベント ID、不正な訂正範囲、無効な期間を拒否します。訂正用ルートを公開し、内部のルート障害は利用者に漏らしません。復元された外部モジュールにも新規有効化時と同じ検証を行い、シンボリックリンクによる境界検査の回避を防ぎます。さらに、コンテンツパックの古い参照を置換し、連鎖削除をブラウザーへ即時反映します。
 
+## 明確なモジュール検証
+
+外部モジュールは、自身の `/api/v1/modules/<id>` 名前空間を誤検知なく使用できるようになりました。他のモジュールや Cognis 内部の URL は引き続き拒否します。無効時の設定ルートがない場合は 404 ではなく `module_config_unavailable` を返します。Nextcloud Whiteboard の検証結果は、実際に互換性がない Core インポートと保護クラスの上書きだけになりました。安全に有効化するには、モジュール側で準拠した更新版を公開する必要があります。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -367,3 +371,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [93a3523a](https://github.com/Cognis-Labs-HQ/Cognis/commit/93a3523ad4226f15e9c768ffcee066d21ccf8dd8)
 - [bbc45581](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbc45581586a7979012bc1934ab75bd7d9f5b2ad)
 - [9ad5f1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ad5f1b7b3d715d58a01e00d1e5317f8b04c5df)
+- [d469f73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d469f7323cb49ca8670fd22ca026bc830f9a38cf)
