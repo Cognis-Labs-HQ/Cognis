@@ -553,8 +553,11 @@ export class LibraryService implements LibraryCapability {
             const target = await this.read(actor, reference.entryId);
             if (target) references.push(target);
         }
-        const usedBy = [];
+        const usedBy: LibraryEntry[] = [];
+        const usedByIds = new Set<string>();
         for (const candidate of await this.store.referencesFor(entryId)) {
+            if (candidate.id === entry.id || usedByIds.has(candidate.id))
+                continue;
             try {
                 await this.authorize(
                     actor,
@@ -562,6 +565,7 @@ export class LibraryService implements LibraryCapability {
                     false,
                 );
                 usedBy.push(candidate);
+                usedByIds.add(candidate.id);
             } catch (error) {
                 if (!(error instanceof Error) || error.message !== "forbidden")
                     throw error;

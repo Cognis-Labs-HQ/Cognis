@@ -306,6 +306,10 @@ Penempatan varian Pustaka kini membandingkan konten kartu stabil secara lengkap 
 
 Kisi Pustaka kini menyisakan kartu kosong hanya untuk penampung tempat yang dinyatakan secara eksplisit dalam skema. ID kisi statis yang rekamannya telah dihapus tidak lagi dibuat menjadi kartu anonim, sehingga filter metadata seperti Katakana tidak menyisakan posisi Hiragana kosong yang terlihat.
 
+## Hapus referensi diri dari rincian penggunaan
+
+Jejak entri Pustaka kini mengabaikan relasi yang sumbernya mengarah kembali ke entri itu sendiri dan menggabungkan entri dependen berulang berdasarkan ID entri. Karena itu, popup rincian hanya menampilkan rekaman eksternal yang unik pada bagian Digunakan Oleh.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -392,3 +396,4 @@ Kisi Pustaka kini menyisakan kartu kosong hanya untuk penampung tempat yang diny
 - [0db0f1b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/0db0f1b1771af5af2f36fe618269280dfbeab96c)
 - [e95559ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/e95559ce6df3718d0f231f5ed8563d74b17b7b03)
 - [2b3d8bdd](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b3d8bdd2d0016aacb221e26f21b79a347d2a57c)
+- [fbd2c62e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fbd2c62eac84d9ab568b8be7594e9ba590e68d48)

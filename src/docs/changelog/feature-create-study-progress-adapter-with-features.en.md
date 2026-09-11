@@ -306,6 +306,10 @@ Library variant placement now compares complete stable card content as well as d
 
 Library grids now reserve blank cards only for explicit schema placeholders. Static grid IDs whose records were deleted are omitted instead of becoming anonymous cards, so metadata filters such as Katakana no longer leave blank Hiragana positions visible.
 
+## Remove self-references from usage details
+
+Library entry traces now omit relationships whose source resolves to the entry itself and collapse repeated dependants by entry ID. Detail popups therefore show only distinct external records under Used By.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -392,3 +396,4 @@ Library grids now reserve blank cards only for explicit schema placeholders. Sta
 - [0db0f1b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/0db0f1b1771af5af2f36fe618269280dfbeab96c)
 - [e95559ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/e95559ce6df3718d0f231f5ed8563d74b17b7b03)
 - [2b3d8bdd](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b3d8bdd2d0016aacb221e26f21b79a347d2a57c)
+- [fbd2c62e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fbd2c62eac84d9ab568b8be7594e9ba590e68d48)

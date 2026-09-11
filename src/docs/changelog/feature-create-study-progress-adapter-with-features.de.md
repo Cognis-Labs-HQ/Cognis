@@ -306,6 +306,10 @@ Die Variantenplatzierung der Bibliothek vergleicht nun neben Datenbank- und Quel
 
 Bibliotheksraster reservieren leere Karten jetzt nur noch für ausdrücklich im Schema definierte Platzhalter. Statische Raster-IDs, deren Datensätze gelöscht wurden, werden ausgelassen, statt anonyme Karten zu erzeugen. Dadurch lassen Metadatenfilter wie Katakana keine leeren Hiragana-Positionen mehr sichtbar.
 
+## Selbstverweise aus Nutzungsdetails entfernen
+
+Bibliothekseintragsspuren lassen jetzt Beziehungen aus, deren Quelle auf den Eintrag selbst aufgelöst wird, und fassen wiederholte abhängige Einträge anhand ihrer Eintrags-ID zusammen. Detailfenster zeigen unter „Verwendet von“ daher nur unterschiedliche externe Datensätze.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -392,3 +396,4 @@ Bibliotheksraster reservieren leere Karten jetzt nur noch für ausdrücklich im 
 - [0db0f1b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/0db0f1b1771af5af2f36fe618269280dfbeab96c)
 - [e95559ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/e95559ce6df3718d0f231f5ed8563d74b17b7b03)
 - [2b3d8bdd](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b3d8bdd2d0016aacb221e26f21b79a347d2a57c)
+- [fbd2c62e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fbd2c62eac84d9ab568b8be7594e9ba590e68d48)

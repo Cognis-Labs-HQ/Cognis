@@ -83,6 +83,33 @@ test("lookup providers are ranked and cleanly removable", async () => {
     );
 });
 
+test("entry traces exclude self-references and duplicate dependants", async () => {
+    const entry = {
+        id: "character-i",
+        scope: "global",
+        scopeId: "global",
+        references: [],
+    };
+    const dependant = {
+        id: "word-i",
+        scope: "global",
+        scopeId: "global",
+        references: [{ entryId: entry.id, relation: "characters" }],
+    };
+    const store = {
+        get: async (id: string) => (id === entry.id ? entry : null),
+        referencesFor: async () => [entry, entry, dependant, dependant],
+    };
+    const library = new LibraryService(store as never);
+
+    const detail = await library.trace(
+        { accountId: "owner", role: "owner" },
+        entry.id,
+    );
+
+    assert.deepEqual(detail.usedBy, [dependant]);
+});
+
 test("content owners and administrators can delete selected entries", async () => {
     const deleted: Array<{
         ids: readonly string[];

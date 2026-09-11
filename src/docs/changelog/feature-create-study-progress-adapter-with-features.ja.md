@@ -306,6 +306,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 ライブラリのグリッドは、スキーマで明示したプレースホルダーにだけ空白カードを確保するようになりました。削除済みレコードを指す静的グリッド ID は匿名カードに変換せず省略するため、カタカナなどのメタデータフィルターで空のひらがな位置が残りません。
 
+## 利用詳細から自己参照を除外
+
+ライブラリエントリの追跡では、参照元が対象エントリ自身に解決される関係を除外し、同じエントリ ID の依存元を一つにまとめるようになりました。これにより、詳細ポップアップの「使用元」には重複しない外部レコードだけが表示されます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -392,3 +396,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [0db0f1b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/0db0f1b1771af5af2f36fe618269280dfbeab96c)
 - [e95559ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/e95559ce6df3718d0f231f5ed8563d74b17b7b03)
 - [2b3d8bdd](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b3d8bdd2d0016aacb221e26f21b79a347d2a57c)
+- [fbd2c62e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fbd2c62eac84d9ab568b8be7594e9ba590e68d48)
