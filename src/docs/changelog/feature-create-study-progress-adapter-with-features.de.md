@@ -302,6 +302,10 @@ Die Löschbestätigung der Bibliothek nimmt direkt ausgewählte Einträge nicht 
 
 Die Variantenplatzierung der Bibliothek vergleicht nun neben Datenbank- und Quelldatensatz-IDs auch den vollständigen stabilen Karteninhalt, weist fehlende Eltern zurück und filtert doppelte Darstellungen beim Rendern erneut. Neu aufgebaute Bibliotheken zeigen eine Karte daher nicht mehr als ihr eigenes Kind, während tatsächlich unterschiedliche Varianten ihre gerichtete Platzierung behalten.
 
+## Veraltete Raster-IDs ignorieren
+
+Bibliotheksraster reservieren leere Karten jetzt nur noch für ausdrücklich im Schema definierte Platzhalter. Statische Raster-IDs, deren Datensätze gelöscht wurden, werden ausgelassen, statt anonyme Karten zu erzeugen. Dadurch lassen Metadatenfilter wie Katakana keine leeren Hiragana-Positionen mehr sichtbar.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -387,3 +391,4 @@ Die Variantenplatzierung der Bibliothek vergleicht nun neben Datenbank- und Quel
 - [df9e46be](https://github.com/Cognis-Labs-HQ/Cognis/commit/df9e46be6f840f6fe00298e62dc179e7d5d83e06)
 - [0db0f1b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/0db0f1b1771af5af2f36fe618269280dfbeab96c)
 - [e95559ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/e95559ce6df3718d0f231f5ed8563d74b17b7b03)
+- [2b3d8bdd](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b3d8bdd2d0016aacb221e26f21b79a347d2a57c)

@@ -302,6 +302,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 ライブラリの派生配置では、データベース ID とソースレコード ID に加えて安定したカード内容全体を比較し、存在しない親を拒否し、描画時にも重複表現を再確認します。再構築直後のライブラリでカードが自分自身の子として表示されず、実際に異なる派生だけが方向付き配置を維持します。
 
+## 古いグリッド ID を無視
+
+ライブラリのグリッドは、スキーマで明示したプレースホルダーにだけ空白カードを確保するようになりました。削除済みレコードを指す静的グリッド ID は匿名カードに変換せず省略するため、カタカナなどのメタデータフィルターで空のひらがな位置が残りません。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -387,3 +391,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [df9e46be](https://github.com/Cognis-Labs-HQ/Cognis/commit/df9e46be6f840f6fe00298e62dc179e7d5d83e06)
 - [0db0f1b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/0db0f1b1771af5af2f36fe618269280dfbeab96c)
 - [e95559ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/e95559ce6df3718d0f231f5ed8563d74b17b7b03)
+- [2b3d8bdd](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b3d8bdd2d0016aacb221e26f21b79a347d2a57c)

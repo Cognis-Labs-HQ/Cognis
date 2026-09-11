@@ -96,6 +96,14 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     );
     assert.match(source, /data-library-grid-blank[\s\S]*—/);
     assert.match(
+        source,
+        /if \(itemId === null \|\| typeof itemId === "object"\)[\s\S]*data-library-grid-blank/,
+    );
+    assert.match(
+        source,
+        /const entry = entriesByGridId\.get\(itemId\);[\s\S]*\? renderEntryCard\([\s\S]*: "";/,
+    );
+    assert.match(
         stylesheet,
         /\.library-entry-grid:has\(\.library-entry-variants-open\)::before[\s\S]*z-index:\s*4[\s\S]*background:\s*color-mix[\s\S]*pointer-events:\s*none/,
     );

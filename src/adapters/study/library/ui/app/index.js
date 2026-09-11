@@ -387,7 +387,7 @@ function renderLayerCards(layer, entries, schema, i18n, allEntries = entries) {
                       placements,
                       i18n,
                   )
-                : '<div class="library-entry-card-blank" data-library-grid-blank aria-hidden="true">—</div>';
+                : "";
         })
         .join("");
     const additionalCards = baseEntries

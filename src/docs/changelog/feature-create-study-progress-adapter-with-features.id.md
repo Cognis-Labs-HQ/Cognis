@@ -302,6 +302,10 @@ Konfirmasi penghapusan Pustaka kini tidak menyertakan entri yang dipilih langsun
 
 Penempatan varian Pustaka kini membandingkan konten kartu stabil secara lengkap selain ID basis data dan rekaman sumber, menolak induk yang tidak tersedia, serta menyaring kembali representasi duplikat saat perenderan. Pustaka yang baru dibangun tidak lagi menampilkan kartu sebagai anaknya sendiri, sementara varian yang benar-benar berbeda tetap mempertahankan penempatan arahnya.
 
+## Abaikan ID kisi usang
+
+Kisi Pustaka kini menyisakan kartu kosong hanya untuk penampung tempat yang dinyatakan secara eksplisit dalam skema. ID kisi statis yang rekamannya telah dihapus tidak lagi dibuat menjadi kartu anonim, sehingga filter metadata seperti Katakana tidak menyisakan posisi Hiragana kosong yang terlihat.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -387,3 +391,4 @@ Penempatan varian Pustaka kini membandingkan konten kartu stabil secara lengkap 
 - [df9e46be](https://github.com/Cognis-Labs-HQ/Cognis/commit/df9e46be6f840f6fe00298e62dc179e7d5d83e06)
 - [0db0f1b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/0db0f1b1771af5af2f36fe618269280dfbeab96c)
 - [e95559ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/e95559ce6df3718d0f231f5ed8563d74b17b7b03)
+- [2b3d8bdd](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b3d8bdd2d0016aacb221e26f21b79a347d2a57c)
