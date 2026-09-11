@@ -717,7 +717,6 @@ export function createModuleExtensionRoutes(
                 try {
                     await validateModuleBoundaries(moduleRoot, {
                         moduleId: manifest.id,
-                        sourceRoot: path.dirname(disabledApiEntrypoint.path),
                     });
                     const plugin = (await import(
                         `${disabledApiEntrypoint.path}?t=${Date.now()}`

@@ -68,6 +68,10 @@ test("Study navigation stores language selection on buttons instead of URLs", ()
     assert.match(navigationSource, /readSelectedStudyLanguageCode/);
     assert.match(navigationSource, /bindStudySubNavigation/);
     assert.match(navigationSource, /resolveRememberedStudyPageUrl/);
+    assert.match(
+        navigationSource,
+        /registeredPageUrls\.has\(rememberedPageUrl\)/,
+    );
     assert.match(navigationSource, /studyLastPageUrl/);
     assert.match(navigationSource, /data-study-settings/);
     assert.match(navigationSource, /currentPath !== "\/study\/settings"/);

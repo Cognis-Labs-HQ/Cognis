@@ -508,18 +508,59 @@ export class LibraryStore {
         db: DbExecutor = this.db,
     ): Promise<readonly string[]> {
         const cascadeIds = new Set(entryIds);
+        const selectedIds = new Set(entryIds);
         const pendingIds = [...entryIds];
+        const schemaCache = new Map<string, LibrarySchema>();
         while (pendingIds.length > 0) {
             const targetEntryId = pendingIds.shift()!;
             const dependents = await db.executeCommand({
                 option: "SELECT",
                 table: "study_library_references",
-                columns: ["source_entry_id"],
+                columns: ["source_entry_id", "relation"],
                 where: [{ column: "target_entry_id", value: targetEntryId }],
             });
             for (const row of dependents.rows ?? []) {
                 const dependentId = String(row.source_entry_id);
                 if (cascadeIds.has(dependentId)) continue;
+                const sourceResult = await db.executeCommand({
+                    option: "SELECT",
+                    table: "study_library_entries",
+                    columns: ["schema_id", "schema_version", "layer"],
+                    where: [{ column: "id", value: dependentId }],
+                });
+                const source = sourceResult.rows?.[0];
+                if (!source) continue;
+                const schemaKey = `${String(source.schema_id)}:${Number(source.schema_version)}`;
+                let schema = schemaCache.get(schemaKey);
+                if (!schema) {
+                    const schemaResult = await db.executeCommand({
+                        option: "SELECT",
+                        table: "study_library_schemas",
+                        columns: ["schema_json"],
+                        where: [
+                            { column: "schema_id", value: source.schema_id },
+                            { column: "version", value: source.schema_version },
+                        ],
+                    });
+                    if (!schemaResult.rows?.[0]?.schema_json)
+                        throw new Error("schema_not_found");
+                    schema = JSON.parse(
+                        String(schemaResult.rows[0].schema_json),
+                    ) as LibrarySchema;
+                    schemaCache.set(schemaKey, schema);
+                }
+                const relationship = schema.layers
+                    .find((layer) => layer.id === String(source.layer))
+                    ?.relationships?.find(
+                        (candidate) => candidate.id === String(row.relation),
+                    );
+                if (!relationship) throw new Error("relationship_not_found");
+                if (relationship.onDelete === "restrict") {
+                    if (!selectedIds.has(dependentId))
+                        throw new Error("relationship_delete_restricted");
+                    continue;
+                }
+                if (relationship.onDelete === "detach") continue;
                 cascadeIds.add(dependentId);
                 pendingIds.push(dependentId);
             }

@@ -121,6 +121,18 @@ test("external module activation rejects imports and URLs into Cognis internals"
     );
 });
 
+test("external module activation rejects CommonJS requires into Cognis internals", async () => {
+    const { root, moduleRoot } = await createModule("export {};\n");
+    await writeFile(
+        path.join(moduleRoot, "bootstrap.cjs"),
+        'const core = require("@cognis/core");\nmodule.exports = core;\n',
+    );
+    await assert.rejects(
+        new ModuleTestService([root]).run("example-module"),
+        /internal_import:@cognis\/core/,
+    );
+});
+
 test("external module activation rejects symlinked sources", async () => {
     const { root, moduleRoot } = await createModule("export {};\n");
     const externalSource = path.join(root, "external.js");

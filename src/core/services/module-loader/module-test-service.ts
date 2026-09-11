@@ -10,7 +10,7 @@ const TEST_FILE_PATTERN = /\.test\.(?:[cm]?[jt]s)$/;
 const TSX_IMPORT_URL = import.meta.resolve("tsx");
 const MODULE_SOURCE_PATTERN = /\.(?:[cm]?[jt]s|css)$/;
 const IMPORT_SPECIFIER_PATTERN =
-    /\b(?:import|export)\s+(?:[\s\S]*?\s+from\s+)?["']([^"']+)["']|\bimport\(\s*["']([^"']+)["']\s*\)/g;
+    /\b(?:import|export)\s+(?:[\s\S]*?\s+from\s+)?["']([^"']+)["']|\bimport\(\s*["']([^"']+)["']\s*\)|\brequire\(\s*["']([^"']+)["']\s*\)/g;
 const COGNIS_INTERNAL_URL_PATTERN =
     /["'`]((?:\/static\/(?:reuse|gateways|adapters)|\/api\/v1\/)[^"'`]*)/g;
 const ABSOLUTE_FONT_SIZE_PATTERN =
@@ -115,7 +115,7 @@ export async function validateModuleBoundaries(
         }
         const importedSpecifiers = new Set<string>();
         for (const match of source.matchAll(IMPORT_SPECIFIER_PATTERN)) {
-            const specifier = match[1] ?? match[2] ?? "";
+            const specifier = match[1] ?? match[2] ?? match[3] ?? "";
             importedSpecifiers.add(specifier);
             const resolvedRelativeImport = specifier.startsWith(".")
                 ? path.relative(

@@ -16,6 +16,16 @@ type Log = (
     metadata?: Record<string, unknown>,
 ) => void | Promise<void>;
 
+export interface ProgressRecordFlowData extends Record<string, unknown> {
+    appendResult?: "inserted" | "duplicate";
+}
+
+export async function rebuildProgressProjections(
+    store: ProgressStore,
+): Promise<void> {
+    await store.replaceProjections(buildProjections(await store.all()));
+}
+
 export interface ProgressCapability {
     recordEvent(
         actor: ProgressActor,
@@ -293,9 +303,17 @@ export class ProgressService implements ProgressCapability {
             event.context.classroomId,
             true,
         );
-        await this.flow?.run("study:progress:recordEvent", event);
-        const appendResult = await this.store.append(event);
-        if (appendResult === "inserted") await this.rebuildInternal();
+        let appendResult: "inserted" | "duplicate";
+        if (this.flow) {
+            const data: ProgressRecordFlowData = {};
+            await this.flow.run("study:progress:recordEvent", event, { data });
+            if (!data.appendResult)
+                throw new Error("progress_flow_persistence_missing");
+            appendResult = data.appendResult;
+        } else {
+            appendResult = await this.store.append(event);
+            if (appendResult === "inserted") await this.rebuildInternal();
+        }
         await this.log?.("info", "Recorded immutable learning event.", {
             component: "study-progress",
             operation: "recordEvent",
@@ -461,8 +479,6 @@ export class ProgressService implements ProgressCapability {
     }
 
     private async rebuildInternal(): Promise<void> {
-        await this.store.replaceProjections(
-            buildProjections(await this.store.all()),
-        );
+        await rebuildProgressProjections(this.store);
     }
 }

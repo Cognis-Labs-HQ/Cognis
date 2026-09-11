@@ -6,9 +6,14 @@ import type {
     StudyClassAccessCapability,
 } from "../../../gateways/study/gateway.js";
 import { createProgressRoutes } from "./routes/index.js";
-import { ProgressService } from "./service.js";
+import {
+    ProgressService,
+    rebuildProgressProjections,
+    type ProgressRecordFlowData,
+} from "./service.js";
 import { DbProgressStore } from "./store.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { LearningEvent } from "./types.js";
 
 let adapterReady = false;
 
@@ -75,6 +80,28 @@ export async function bootstrapStudyAdapter(
         );
         return;
     }
+    ctx.flow.extend(
+        "study:progress:recordEvent",
+        "persist",
+        { id: "study-progress:persist", order: -100 },
+        async ({ input, data }) => {
+            const appendResult = await store.append(input as LearningEvent);
+            (data as ProgressRecordFlowData).appendResult = appendResult;
+            return appendResult;
+        },
+    );
+    ctx.flow.extend(
+        "study:progress:recordEvent",
+        "project",
+        { id: "study-progress:project", order: -100 },
+        async ({ data }) => {
+            if ((data as ProgressRecordFlowData).appendResult === "inserted") {
+                await rebuildProgressProjections(store);
+                return "rebuilt";
+            }
+            return "unchanged";
+        },
+    );
     const service = new ProgressService(
         store,
         ctx.capabilities.get<StudyClassAccessCapability>(

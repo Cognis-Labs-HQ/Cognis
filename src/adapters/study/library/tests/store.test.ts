@@ -248,7 +248,42 @@ test("permanent deletion blacklists content hashes and removes relationships", a
                 command.option === "SELECT" &&
                 command.table === "study_library_entries"
             ) {
+                if (command.columns?.includes("schema_id")) {
+                    return {
+                        rows: [
+                            {
+                                schema_id: "japanese",
+                                schema_version: 1,
+                                layer: "words",
+                            },
+                        ],
+                    };
+                }
                 return { rows: [{ content_hash: "hash-one" }] };
+            }
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_schemas"
+            ) {
+                return {
+                    rows: [
+                        {
+                            schema_json: JSON.stringify({
+                                layers: [
+                                    {
+                                        id: "words",
+                                        relationships: [
+                                            {
+                                                id: "contains",
+                                                onDelete: "cascade",
+                                            },
+                                        ],
+                                    },
+                                ],
+                            }),
+                        },
+                    ],
+                };
             }
             if (
                 command.option === "SELECT" &&
@@ -256,9 +291,23 @@ test("permanent deletion blacklists content hashes and removes relationships", a
             ) {
                 const target = command.where?.[0]?.value;
                 if (target === "entry-one")
-                    return { rows: [{ source_entry_id: "word-one" }] };
+                    return {
+                        rows: [
+                            {
+                                source_entry_id: "word-one",
+                                relation: "contains",
+                            },
+                        ],
+                    };
                 if (target === "word-one")
-                    return { rows: [{ source_entry_id: "sentence-one" }] };
+                    return {
+                        rows: [
+                            {
+                                source_entry_id: "sentence-one",
+                                relation: "contains",
+                            },
+                        ],
+                    };
                 return { rows: [] };
             }
             return { rowCount: 1 };
@@ -298,6 +347,65 @@ test("permanent deletion blacklists content hashes and removes relationships", a
                 command.table === "study_library_entries",
         ).length,
         3,
+    );
+});
+
+test("deletion traversal honors restrict and detach relationship policies", async () => {
+    const policy = { value: "detach" };
+    const db: DbExecutor = {
+        ensureTable: async () => {},
+        transaction: async (callback) => callback(db),
+        executeCommand: async (command) => {
+            if (command.table === "study_library_references") {
+                return {
+                    rows: [
+                        { source_entry_id: "word-one", relation: "meaning" },
+                    ],
+                };
+            }
+            if (command.table === "study_library_entries") {
+                return {
+                    rows: [
+                        {
+                            schema_id: "japanese",
+                            schema_version: 1,
+                            layer: "words",
+                        },
+                    ],
+                };
+            }
+            if (command.table === "study_library_schemas") {
+                return {
+                    rows: [
+                        {
+                            schema_json: JSON.stringify({
+                                layers: [
+                                    {
+                                        id: "words",
+                                        relationships: [
+                                            {
+                                                id: "meaning",
+                                                onDelete: policy.value,
+                                            },
+                                        ],
+                                    },
+                                ],
+                            }),
+                        },
+                    ],
+                };
+            }
+            return { rows: [] };
+        },
+    };
+    const store = new LibraryStore(db);
+    assert.deepEqual(await store.resolveDeletionCascade(["definition-one"]), [
+        "definition-one",
+    ]);
+    policy.value = "restrict";
+    await assert.rejects(
+        store.resolveDeletionCascade(["definition-one"]),
+        /relationship_delete_restricted/,
     );
 });
 

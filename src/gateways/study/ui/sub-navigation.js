@@ -226,11 +226,20 @@ export async function loadStudySubNavigationModel({
         window.location.pathname,
     );
     const languagePageUrlsByCode = new Map(
-        activeLanguageCodes.map((languageCode) => [
-            languageCode,
-            rememberedPageUrl ??
-                resolveDefaultChildPageUrl(modulesByLanguage.get(languageCode)),
-        ]),
+        activeLanguageCodes.map((languageCode) => {
+            const languageModules = modulesByLanguage.get(languageCode) ?? [];
+            const registeredPageUrls = new Set(
+                languageModules.map((component) =>
+                    String(component?.pageUrl ?? "").trim(),
+                ),
+            );
+            return [
+                languageCode,
+                rememberedPageUrl && registeredPageUrls.has(rememberedPageUrl)
+                    ? rememberedPageUrl
+                    : resolveDefaultChildPageUrl(languageModules),
+            ];
+        }),
     );
 
     return {
