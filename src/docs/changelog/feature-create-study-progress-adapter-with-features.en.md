@@ -298,6 +298,10 @@ Disabled modules now load their declared API entrypoint through a server-only re
 
 Library deletion confirmation now keeps directly selected entries out of the cascade warning. The warning and affected-content list appear only when additional related entries will be deleted transitively, while permanent restoration controls remain available for the selected content.
 
+## No self-referential variants
+
+Library variant placement now compares complete stable card content as well as database and source-record IDs, rejects missing parents, and filters duplicate representations again while rendering. Freshly rebuilt libraries therefore no longer show a card as its own child, while genuinely different variants retain their directional placement.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -382,3 +386,4 @@ Library deletion confirmation now keeps directly selected entries out of the cas
 - [d469f73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d469f7323cb49ca8670fd22ca026bc830f9a38cf)
 - [df9e46be](https://github.com/Cognis-Labs-HQ/Cognis/commit/df9e46be6f840f6fe00298e62dc179e7d5d83e06)
 - [0db0f1b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/0db0f1b1771af5af2f36fe618269280dfbeab96c)
+- [e95559ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/e95559ce6df3718d0f231f5ed8563d74b17b7b03)

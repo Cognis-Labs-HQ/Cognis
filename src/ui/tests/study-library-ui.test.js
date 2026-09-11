@@ -5,7 +5,12 @@ import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
-const source = ["index.js", "detail.js", "presentation.js"]
+const source = [
+    "index.js",
+    "detail.js",
+    "presentation.js",
+    "variant-placement.js",
+]
     .map((file) =>
         readFileSync(
             resolve(ROOT, `src/adapters/study/library/ui/app/${file}`),

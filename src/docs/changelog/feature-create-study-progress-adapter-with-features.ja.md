@@ -298,6 +298,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 ライブラリの削除確認では、直接選択した項目を連鎖削除の警告に含めないようになりました。追加の関連項目が推移的に削除される場合だけ警告と対象一覧を表示し、選択したコンテンツには恒久的な復元防止コントロールを引き続き提供します。
 
+## 自己参照する派生を除去
+
+ライブラリの派生配置では、データベース ID とソースレコード ID に加えて安定したカード内容全体を比較し、存在しない親を拒否し、描画時にも重複表現を再確認します。再構築直後のライブラリでカードが自分自身の子として表示されず、実際に異なる派生だけが方向付き配置を維持します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -382,3 +386,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [d469f73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d469f7323cb49ca8670fd22ca026bc830f9a38cf)
 - [df9e46be](https://github.com/Cognis-Labs-HQ/Cognis/commit/df9e46be6f840f6fe00298e62dc179e7d5d83e06)
 - [0db0f1b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/0db0f1b1771af5af2f36fe618269280dfbeab96c)
+- [e95559ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/e95559ce6df3718d0f231f5ed8563d74b17b7b03)

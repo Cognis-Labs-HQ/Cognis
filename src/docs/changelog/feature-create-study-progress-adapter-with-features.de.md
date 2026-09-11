@@ -298,6 +298,10 @@ Deaktivierte Module laden ihren deklarierten API-Einstiegspunkt nun nach der Gre
 
 Die Löschbestätigung der Bibliothek nimmt direkt ausgewählte Einträge nicht mehr in die Kaskadenwarnung auf. Warnung und Liste betroffener Inhalte erscheinen nur, wenn zusätzliche zugehörige Einträge transitiv gelöscht werden; die dauerhafte Wiederherstellungssperre bleibt für die ausgewählten Inhalte verfügbar.
 
+## Keine selbstbezogenen Varianten
+
+Die Variantenplatzierung der Bibliothek vergleicht nun neben Datenbank- und Quelldatensatz-IDs auch den vollständigen stabilen Karteninhalt, weist fehlende Eltern zurück und filtert doppelte Darstellungen beim Rendern erneut. Neu aufgebaute Bibliotheken zeigen eine Karte daher nicht mehr als ihr eigenes Kind, während tatsächlich unterschiedliche Varianten ihre gerichtete Platzierung behalten.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -382,3 +386,4 @@ Die Löschbestätigung der Bibliothek nimmt direkt ausgewählte Einträge nicht 
 - [d469f73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d469f7323cb49ca8670fd22ca026bc830f9a38cf)
 - [df9e46be](https://github.com/Cognis-Labs-HQ/Cognis/commit/df9e46be6f840f6fe00298e62dc179e7d5d83e06)
 - [0db0f1b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/0db0f1b1771af5af2f36fe618269280dfbeab96c)
+- [e95559ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/e95559ce6df3718d0f231f5ed8563d74b17b7b03)

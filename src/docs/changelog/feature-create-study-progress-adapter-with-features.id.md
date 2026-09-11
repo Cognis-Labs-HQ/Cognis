@@ -298,6 +298,10 @@ Modul nonaktif kini memuat titik masuk API yang dideklarasikan melalui konteks t
 
 Konfirmasi penghapusan Pustaka kini tidak menyertakan entri yang dipilih langsung dalam peringatan kaskade. Peringatan dan daftar konten terdampak hanya muncul ketika entri terkait tambahan akan dihapus secara transitif, sedangkan kontrol pencegahan pemulihan permanen tetap tersedia untuk konten terpilih.
 
+## Tanpa varian yang merujuk diri
+
+Penempatan varian Pustaka kini membandingkan konten kartu stabil secara lengkap selain ID basis data dan rekaman sumber, menolak induk yang tidak tersedia, serta menyaring kembali representasi duplikat saat perenderan. Pustaka yang baru dibangun tidak lagi menampilkan kartu sebagai anaknya sendiri, sementara varian yang benar-benar berbeda tetap mempertahankan penempatan arahnya.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -382,3 +386,4 @@ Konfirmasi penghapusan Pustaka kini tidak menyertakan entri yang dipilih langsun
 - [d469f73](https://github.com/Cognis-Labs-HQ/Cognis/commit/d469f7323cb49ca8670fd22ca026bc830f9a38cf)
 - [df9e46be](https://github.com/Cognis-Labs-HQ/Cognis/commit/df9e46be6f840f6fe00298e62dc179e7d5d83e06)
 - [0db0f1b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/0db0f1b1771af5af2f36fe618269280dfbeab96c)
+- [e95559ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/e95559ce6df3718d0f231f5ed8563d74b17b7b03)
