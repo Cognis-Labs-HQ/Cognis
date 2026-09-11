@@ -36,6 +36,8 @@ import {
     layerForEntry,
     loadLibraryAudio,
     localizedLabel,
+    metadataFields,
+    metadataValues,
     pronunciationValues,
     relationSection,
     renderMetadataPills,

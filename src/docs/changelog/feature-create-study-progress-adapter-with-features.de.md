@@ -350,6 +350,10 @@ Die KI-Anweisungen verlangen nun bei neuen oder erweiterten Core-UI-Funktionen, 
 
 Der Study-Library-Browser importiert seine Auflösung lokalisierter Beschriftungen jetzt direkt. Dadurch schlägt die Library-Route beim Rendern von Schema- und Ebenenreitern nicht mehr fehl.
 
+## Metadatenfunktionen der Library wiederherstellen
+
+Der Study-Library-Browser importiert jetzt beide Metadatenfunktionen, die zum Erstellen der Filterwerte verwendet werden. Eine Prüfung auf nicht aufgelöste Bezeichner im Quellcode bestätigte außerdem, dass bei der früheren Modulaufteilung keine weiteren Darstellungsverweise verloren gingen.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -443,3 +447,4 @@ Der Study-Library-Browser importiert seine Auflösung lokalisierter Beschriftung
 - [d3d4ff25](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d4ff25aa3b11883df67844b0204ac62d211f00)
 - [3dadb7fd](https://github.com/Cognis-Labs-HQ/Cognis/commit/3dadb7fdb2f6269d735e6b8f7d0cdf8991ac5808)
 - [695e05e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/695e05e157a4fcf279b71f22ba98dec8420f85e1)
+- [4c057009](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c05700902ed81591fedc4e86e5bdd886eabd334)

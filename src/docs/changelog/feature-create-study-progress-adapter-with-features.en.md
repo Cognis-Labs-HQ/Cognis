@@ -350,6 +350,10 @@ AI contribution instructions now require explicit protection evaluation whenever
 
 The Study Library browser now imports its localized-label resolver directly, preventing the Library route from failing while rendering schema and layer tabs.
 
+## Restore Library metadata helpers
+
+The Study Library browser now imports both metadata helper functions used to construct filter values. A source-level unresolved-identifier audit also confirmed that no other presentation references were lost during the earlier module split.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -443,3 +447,4 @@ The Study Library browser now imports its localized-label resolver directly, pre
 - [d3d4ff25](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d4ff25aa3b11883df67844b0204ac62d211f00)
 - [3dadb7fd](https://github.com/Cognis-Labs-HQ/Cognis/commit/3dadb7fdb2f6269d735e6b8f7d0cdf8991ac5808)
 - [695e05e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/695e05e157a4fcf279b71f22ba98dec8420f85e1)
+- [4c057009](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c05700902ed81591fedc4e86e5bdd886eabd334)

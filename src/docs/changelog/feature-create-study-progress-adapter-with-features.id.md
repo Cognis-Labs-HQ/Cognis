@@ -350,6 +350,10 @@ Instruksi kontribusi AI kini mewajibkan evaluasi perlindungan secara eksplisit s
 
 Browser Study Library kini mengimpor resolver label terlokalisasinya secara langsung, sehingga rute Library tidak lagi gagal saat merender tab skema dan lapisan.
 
+## Pulihkan fungsi metadata Library
+
+Browser Study Library kini mengimpor kedua fungsi metadata yang digunakan untuk menyusun nilai filter. Audit pengenal yang tidak terselesaikan pada tingkat sumber juga memastikan tidak ada referensi presentasi lain yang hilang selama pemisahan modul sebelumnya.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -443,3 +447,4 @@ Browser Study Library kini mengimpor resolver label terlokalisasinya secara lang
 - [d3d4ff25](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d4ff25aa3b11883df67844b0204ac62d211f00)
 - [3dadb7fd](https://github.com/Cognis-Labs-HQ/Cognis/commit/3dadb7fdb2f6269d735e6b8f7d0cdf8991ac5808)
 - [695e05e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/695e05e157a4fcf279b71f22ba98dec8420f85e1)
+- [4c057009](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c05700902ed81591fedc4e86e5bdd886eabd334)

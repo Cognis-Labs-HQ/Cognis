@@ -53,7 +53,7 @@ const variantArrowDark = readFileSync(
 test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(
         indexSource,
-        /localizedLabel,[\s\S]*from "\.\/presentation\.js"/,
+        /localizedLabel,[\s\S]*metadataFields,[\s\S]*metadataValues,[\s\S]*from "\.\/presentation\.js"/,
     );
     assert.match(source, /role="tablist"/);
     assert.match(source, /role="tabpanel"/);

@@ -350,6 +350,10 @@ AI 向けの貢献手順に、Core UI の関数、描画オブジェクト、コ
 
 Study Library ブラウザーがローカライズ済みラベルのリゾルバーを直接インポートするようになり、スキーマとレイヤーのタブ描画時に Library ルートが失敗しなくなりました。
 
+## Library のメタデータ関数を復元
+
+Study Library ブラウザーがフィルター値の構築に使用する両方のメタデータ関数をインポートするようになりました。ソースレベルの未解決識別子監査でも、以前のモジュール分割で他の表示用参照が失われていないことを確認しました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -443,3 +447,4 @@ Study Library ブラウザーがローカライズ済みラベルのリゾルバ
 - [d3d4ff25](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d4ff25aa3b11883df67844b0204ac62d211f00)
 - [3dadb7fd](https://github.com/Cognis-Labs-HQ/Cognis/commit/3dadb7fdb2f6269d735e6b8f7d0cdf8991ac5808)
 - [695e05e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/695e05e157a4fcf279b71f22ba98dec8420f85e1)
+- [4c057009](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c05700902ed81591fedc4e86e5bdd886eabd334)
