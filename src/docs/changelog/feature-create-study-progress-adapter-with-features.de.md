@@ -318,6 +318,10 @@ Wortdetails der Bibliothek lösen vollständige Schreibweisen jetzt in kanonisch
 
 Fortschrittsabfragen lösen ausgleichende Ereignisse jetzt anhand des vollständigen berechtigten Verlaufs auf, bevor Aggregations- oder Projektionsfilter angewendet werden. Breite Lesezugriffe lassen Klassenraumereignisse nach einem Berechtigungsentzug aus. Die Abdeckung prüft nun jedes Ereignisfeld, jede Projektionsmetrik, jede Aggregationsdimension, alle granularen Routen, unveränderliche Korrekturzeiträume, Persistenz und die Deaktivierung des Adapters.
 
+## Verwaltung der Namensraumkontingente abschließen
+
+Das Datei-Gateway trägt jetzt einen Administrationsabschnitt bei, in dem das globale Standardkontingent und die Standardkontingente aller registrierten Namensräume über den gatewayeigenen UI-Client bearbeitet werden können. Der Abschnitt ist vollständig lokalisiert, gehört dem Gateway und wird durch Anfrage- und Registrierungstests abgedeckt. Die abgeschlossene TODO-Datei des Repositorys wurde entfernt.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -407,3 +411,4 @@ Fortschrittsabfragen lösen ausgleichende Ereignisse jetzt anhand des vollständ
 - [fbd2c62e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fbd2c62eac84d9ab568b8be7594e9ba590e68d48)
 - [2b62938c](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b62938cd6e77515e161240f8de4e15b273177fd)
 - [90ff0ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/90ff0ae13fb1b81ed003dc4fae6ba56e63194610)
+- [a7513e45](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7513e45b56ebbc8872f1798f7da4ce9e3f9b739)

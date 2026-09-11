@@ -318,6 +318,10 @@ Library word details now resolve complete spellings into canonical atomic and co
 
 Progress queries now resolve compensating events against the complete authorized history before applying aggregation or projection filters, and broad reads omit classroom events after access is revoked. Coverage now verifies every event field, projection metric, aggregation dimension, granular route, immutable correction window, persistence behavior, and adapter disablement contract.
 
+## Complete namespace quota administration
+
+The Files gateway now contributes an Administration section for editing the global default and every registered namespace's default quota through its owning UI client. The section is fully localized, gateway-owned, and covered by request and registration tests. The completed repository TODO file has been removed.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -407,3 +411,4 @@ Progress queries now resolve compensating events against the complete authorized
 - [fbd2c62e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fbd2c62eac84d9ab568b8be7594e9ba590e68d48)
 - [2b62938c](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b62938cd6e77515e161240f8de4e15b273177fd)
 - [90ff0ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/90ff0ae13fb1b81ed003dc4fae6ba56e63194610)
+- [a7513e45](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7513e45b56ebbc8872f1798f7da4ce9e3f9b739)

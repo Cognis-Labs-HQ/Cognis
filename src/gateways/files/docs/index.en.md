@@ -86,7 +86,7 @@ Components should prefer `files:namespace` for routine ctx file operations: bind
 
 - `PUT/GET/DELETE /api/v1/files/:namespace/*key` — generic namespace-scoped file operations; requires authentication, actor identity comes from the session.
 - `GET /api/v1/files/:namespace` — list.
-- `GET/PUT /api/v1/files/admin/namespace-defaults[/:namespaceId]`, `PUT /api/v1/files/admin/global-default`, `GET /api/v1/files/admin/users/:username/quotas`, `PUT /api/v1/files/admin/users/:username/quotas/:namespaceId` — admin-only quota administration (`namespaceId: "global"` addresses the user's global quota).
+- `GET/PUT /api/v1/files/admin/namespace-defaults[/:namespaceId]`, `PUT /api/v1/files/admin/global-default`, `GET /api/v1/files/admin/users/:username/quotas`, `PUT /api/v1/files/admin/users/:username/quotas/:namespaceId` — admin-only quota administration (`namespaceId: "global"` addresses the user's global quota). Administration also exposes these registered namespace and global defaults as an editable Files section.
 
 ### Bootstrap ordering constraint
 

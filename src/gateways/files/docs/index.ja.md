@@ -86,7 +86,7 @@ ctx.capabilities.get("files:registerNamespace")?.({
 
 - `PUT/GET/DELETE /api/v1/files/:namespace/*key` — 汎用的な名前空間ベースのファイル操作。認証が必要で、アクターIDはセッションから取得されます。
 - `GET /api/v1/files/:namespace` — 一覧表示。
-- `GET/PUT /api/v1/files/admin/namespace-defaults[/:namespaceId]`、`PUT /api/v1/files/admin/global-default`、`GET /api/v1/files/admin/users/:username/quotas`、`PUT /api/v1/files/admin/users/:username/quotas/:namespaceId` — 管理者専用のクォータ管理（`namespaceId: "global"` はユーザーのグローバルクォータを対象とします）。
+- `GET/PUT /api/v1/files/admin/namespace-defaults[/:namespaceId]`、`PUT /api/v1/files/admin/global-default`、`GET /api/v1/files/admin/users/:username/quotas`、`PUT /api/v1/files/admin/users/:username/quotas/:namespaceId` — 管理者専用のクォータ管理（`namespaceId: "global"` はユーザーのグローバルクォータを対象とします）。管理画面では、登録済み名前空間の既定値とグローバル既定値を編集可能なファイルセクションとして表示します。
 
 ### ブートストラップ順序の制約
 

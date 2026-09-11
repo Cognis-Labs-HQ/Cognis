@@ -318,6 +318,10 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 
 進捗クエリは、集計またはプロジェクションのフィルターを適用する前に、認可済みの全履歴に対して補償イベントを解決するようになりました。広範な読み取りでは、アクセス権の取り消し後に教室イベントを除外します。すべてのイベント項目、プロジェクション指標、集計ディメンション、個別ルート、不変な訂正期間、永続化動作、アダプター無効化契約をテストで網羅しています。
 
+## 名前空間クォータ管理を完成
+
+ファイルゲートウェイは、ゲートウェイ所有の UI クライアントを通じて、グローバル既定クォータと登録済みの各名前空間の既定クォータを編集できる管理セクションを提供するようになりました。このセクションは全対応言語にローカライズされ、リクエストと登録のテストで検証されています。完了したリポジトリの TODO ファイルは削除しました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -407,3 +411,4 @@ Study の SPA ルートは、有効かつ検証済みの言語モジュールが
 - [fbd2c62e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fbd2c62eac84d9ab568b8be7594e9ba590e68d48)
 - [2b62938c](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b62938cd6e77515e161240f8de4e15b273177fd)
 - [90ff0ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/90ff0ae13fb1b81ed003dc4fae6ba56e63194610)
+- [a7513e45](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7513e45b56ebbc8872f1798f7da4ce9e3f9b739)
