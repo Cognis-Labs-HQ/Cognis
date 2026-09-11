@@ -5,6 +5,10 @@ import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const indexSource = readFileSync(
+    resolve(ROOT, "src/adapters/study/library/ui/app/index.js"),
+    "utf8",
+);
 const source = [
     "index.js",
     "detail.js",
@@ -47,6 +51,10 @@ const variantArrowDark = readFileSync(
 );
 
 test("Study Library presents browsable layers as filterable card tabs", () => {
+    assert.match(
+        indexSource,
+        /localizedLabel,[\s\S]*from "\.\/presentation\.js"/,
+    );
     assert.match(source, /role="tablist"/);
     assert.match(source, /role="tabpanel"/);
     assert.match(source, /class="library-entry-card\$\{variant/);

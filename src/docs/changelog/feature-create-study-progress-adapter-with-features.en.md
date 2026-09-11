@@ -346,6 +346,10 @@ Remembered Study destinations are reused only when the target language actually 
 
 AI contribution instructions now require explicit protection evaluation whenever core UI functions, rendered objects, components, or classes are created or expanded.
 
+## Restore Library localized labels
+
+The Study Library browser now imports its localized-label resolver directly, preventing the Library route from failing while rendering schema and layer tabs.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -438,3 +442,4 @@ AI contribution instructions now require explicit protection evaluation whenever
 - [a7513e45](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7513e45b56ebbc8872f1798f7da4ce9e3f9b739)
 - [d3d4ff25](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d4ff25aa3b11883df67844b0204ac62d211f00)
 - [3dadb7fd](https://github.com/Cognis-Labs-HQ/Cognis/commit/3dadb7fdb2f6269d735e6b8f7d0cdf8991ac5808)
+- [695e05e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/695e05e157a4fcf279b71f22ba98dec8420f85e1)

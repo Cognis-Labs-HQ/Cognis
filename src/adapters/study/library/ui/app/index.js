@@ -35,6 +35,7 @@ import {
     isWritingUnitLayer,
     layerForEntry,
     loadLibraryAudio,
+    localizedLabel,
     pronunciationValues,
     relationSection,
     renderMetadataPills,

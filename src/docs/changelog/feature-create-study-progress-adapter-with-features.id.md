@@ -346,6 +346,10 @@ Tujuan Study yang diingat hanya digunakan kembali bila bahasa tujuan benar-benar
 
 Instruksi kontribusi AI kini mewajibkan evaluasi perlindungan secara eksplisit saat fungsi, objek hasil render, komponen, atau kelas UI core dibuat atau diperluas.
 
+## Pulihkan label terlokalisasi Library
+
+Browser Study Library kini mengimpor resolver label terlokalisasinya secara langsung, sehingga rute Library tidak lagi gagal saat merender tab skema dan lapisan.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -438,3 +442,4 @@ Instruksi kontribusi AI kini mewajibkan evaluasi perlindungan secara eksplisit s
 - [a7513e45](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7513e45b56ebbc8872f1798f7da4ce9e3f9b739)
 - [d3d4ff25](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d4ff25aa3b11883df67844b0204ac62d211f00)
 - [3dadb7fd](https://github.com/Cognis-Labs-HQ/Cognis/commit/3dadb7fdb2f6269d735e6b8f7d0cdf8991ac5808)
+- [695e05e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/695e05e157a4fcf279b71f22ba98dec8420f85e1)
