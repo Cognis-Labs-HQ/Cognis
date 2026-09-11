@@ -182,15 +182,18 @@ function validateFilters(filters: ProgressFilters): void {
     }
 }
 
-function buildProjections(events: LearningEvent[]): ProgressProjection[] {
+function withoutCompensatedEvents(events: LearningEvent[]): LearningEvent[] {
     const compensated = new Set(
         events.flatMap((event) =>
             event.compensatesEventId ? [event.compensatesEventId] : [],
         ),
     );
+    return events.filter((event) => !compensated.has(event.id));
+}
+
+function buildProjections(events: LearningEvent[]): ProgressProjection[] {
     const groups = new Map<string, LearningEvent[]>();
-    for (const event of events) {
-        if (compensated.has(event.id)) continue;
+    for (const event of withoutCompensatedEvents(events)) {
         const key = `${event.actorId}\u0000${event.content.schema}\u0000${event.content.layer}\u0000${event.content.language}\u0000${event.content.contentId}`;
         groups.set(key, [...(groups.get(key) ?? []), event]);
     }
@@ -342,7 +345,31 @@ export class ProgressService implements ProgressCapability {
         validateFilters(filters);
         const actorId = filters.actorId ?? actor.accountId;
         await this.authorize(actor, actorId, filters.classroomId);
-        return (await this.store.all()).filter((event) =>
+        const accessible: LearningEvent[] = [];
+        const classroomAccess = new Map<string, boolean>();
+        for (const event of (await this.store.all()).filter(
+            (candidate) => candidate.actorId === actorId,
+        )) {
+            const classroomId = event.context.classroomId;
+            if (classroomId && classroomAccess.get(classroomId) === false) {
+                continue;
+            }
+            try {
+                if (!classroomId || classroomAccess.get(classroomId) !== true) {
+                    await this.authorize(actor, actorId, classroomId);
+                    if (classroomId) classroomAccess.set(classroomId, true);
+                }
+                accessible.push(event);
+            } catch (error) {
+                if (
+                    !(error instanceof Error) ||
+                    error.message !== "forbidden_scope"
+                )
+                    throw error;
+                if (classroomId) classroomAccess.set(classroomId, false);
+            }
+        }
+        return accessible.filter((event) =>
             applies(event, { ...filters, actorId }),
         );
     }
@@ -351,21 +378,44 @@ export class ProgressService implements ProgressCapability {
         actor: ProgressActor,
         filters: ProgressFilters = {},
     ): Promise<ProgressProjection[]> {
-        const events = await this.listEvents(actor, filters);
-        return buildProjections(events);
+        validateFilters(filters);
+        await this.authorize(
+            actor,
+            filters.actorId ?? actor.accountId,
+            filters.classroomId,
+        );
+        const events = await this.listEvents(actor, {
+            actorId: filters.actorId,
+        });
+        return buildProjections(
+            withoutCompensatedEvents(events).filter((event) =>
+                applies(event, {
+                    ...filters,
+                    actorId: filters.actorId ?? actor.accountId,
+                }),
+            ),
+        );
     }
 
     async aggregate(
         actor: ProgressActor,
         filters: ProgressFilters = {},
     ): Promise<ProgressAggregate> {
-        const events = await this.listEvents(actor, filters);
-        const compensated = new Set(
-            events.flatMap((event) =>
-                event.compensatesEventId ? [event.compensatesEventId] : [],
-            ),
+        validateFilters(filters);
+        await this.authorize(
+            actor,
+            filters.actorId ?? actor.accountId,
+            filters.classroomId,
         );
-        const active = events.filter((event) => !compensated.has(event.id));
+        const events = await this.listEvents(actor, {
+            actorId: filters.actorId,
+        });
+        const active = withoutCompensatedEvents(events).filter((event) =>
+            applies(event, {
+                ...filters,
+                actorId: filters.actorId ?? actor.accountId,
+            }),
+        );
         const attempts = active.filter((event) => event.attempt > 0);
         const independentCorrect = attempts.filter(
             (event) => event.independentCorrect,

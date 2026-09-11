@@ -314,6 +314,10 @@ Jejak entri Pustaka kini mengabaikan relasi yang sumbernya mengarah kembali ke e
 
 Rincian kata Pustaka kini menguraikan ejaan lengkap menjadi entri unit tulisan atomik dan majemuk kanonis ketika referensi komposisi eksplisit tidak tersedia. Judul seperti 好き menautkan 好 ke karakter alternatifnya dan き ke karakternya, sedangkan pelafalan sekunder seperti すき memperoleh tautan komposisi lengkap yang sama tanpa menyajikan teks yang hanya terurai sebagian sebagai hasil resmi.
 
+## Lengkapi cakupan data Study Progress
+
+Kueri kemajuan kini menyelesaikan peristiwa kompensasi terhadap seluruh riwayat yang diizinkan sebelum menerapkan filter agregasi atau proyeksi, dan pembacaan luas mengabaikan peristiwa ruang kelas setelah akses dicabut. Cakupan kini memverifikasi setiap bidang peristiwa, metrik proyeksi, dimensi agregasi, rute terperinci, jendela koreksi yang tidak dapat diubah, perilaku persistensi, dan kontrak penonaktifan adaptor.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -402,3 +406,4 @@ Rincian kata Pustaka kini menguraikan ejaan lengkap menjadi entri unit tulisan a
 - [2b3d8bdd](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b3d8bdd2d0016aacb221e26f21b79a347d2a57c)
 - [fbd2c62e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fbd2c62eac84d9ab568b8be7594e9ba590e68d48)
 - [2b62938c](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b62938cd6e77515e161240f8de4e15b273177fd)
+- [90ff0ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/90ff0ae13fb1b81ed003dc4fae6ba56e63194610)

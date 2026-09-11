@@ -57,7 +57,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.11` |
 | Library (Study)       | `src/adapters/study/library/`       | `2.6.68` |
-| Progress (Study)      | `src/adapters/study/progress/`      | `1.1.0`  |
+| Progress (Study)      | `src/adapters/study/progress/`      | `1.1.1`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
 | File Logging          | `src/adapters/logging/file/`        | `1.1.5`  |
 

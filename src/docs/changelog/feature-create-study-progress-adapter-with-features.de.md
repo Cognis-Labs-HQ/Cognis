@@ -314,6 +314,10 @@ Bibliothekseintragsspuren lassen jetzt Beziehungen aus, deren Quelle auf den Ein
 
 Wortdetails der Bibliothek lösen vollständige Schreibweisen jetzt in kanonische atomare und zusammengesetzte Schreibeinträge auf, wenn ausdrückliche Zusammensetzungsverweise fehlen. Überschriften wie 好き verlinken 好 mit seinem alternativen Zeichen und き mit seinem Zeichen; sekundäre Aussprachen wie すき erhalten dieselben vollständigen Zusammensetzungslinks, ohne teilweise aufgelösten Text als maßgeblich darzustellen.
 
+## Vollständige Datenabdeckung für Study Progress
+
+Fortschrittsabfragen lösen ausgleichende Ereignisse jetzt anhand des vollständigen berechtigten Verlaufs auf, bevor Aggregations- oder Projektionsfilter angewendet werden. Breite Lesezugriffe lassen Klassenraumereignisse nach einem Berechtigungsentzug aus. Die Abdeckung prüft nun jedes Ereignisfeld, jede Projektionsmetrik, jede Aggregationsdimension, alle granularen Routen, unveränderliche Korrekturzeiträume, Persistenz und die Deaktivierung des Adapters.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -402,3 +406,4 @@ Wortdetails der Bibliothek lösen vollständige Schreibweisen jetzt in kanonisch
 - [2b3d8bdd](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b3d8bdd2d0016aacb221e26f21b79a347d2a57c)
 - [fbd2c62e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fbd2c62eac84d9ab568b8be7594e9ba590e68d48)
 - [2b62938c](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b62938cd6e77515e161240f8de4e15b273177fd)
+- [90ff0ae1](https://github.com/Cognis-Labs-HQ/Cognis/commit/90ff0ae13fb1b81ed003dc4fae6ba56e63194610)

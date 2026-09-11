@@ -4,7 +4,7 @@ Adaptor Kemajuan mencatat peristiwa belajar yang tidak dapat diubah dan idempote
 
 ## Privasi dan otorisasi
 
-Layanan memeriksa kepemilikan pelaku sebelum membaca atau menulis. Administrator dan pemilik dapat meninjau pelaku lain; operasi ruang kelas juga memerlukan kemampuan akses adaptor Kelas.
+Layanan memeriksa kepemilikan pelaku sebelum membaca atau menulis. Administrator dan pemilik dapat meninjau pelaku lain; operasi ruang kelas juga memerlukan kemampuan akses adaptor Kelas. Kueri luas mengabaikan peristiwa ruang kelas ketika akses saat ini telah dicabut.
 
 ## Kapabilitas dan alur
 
@@ -14,4 +14,4 @@ Layanan memeriksa kepemilikan pelaku sebelum membaca atau menulis. Administrator
 
 Klien terautentikasi memakai `/api/v1/study/progress/events`, `/projections`, dan `/aggregate`; administrator dapat menjalankan `/rebuild`. Filter mencakup pelaku, skema, lapisan, bahasa, aktivitas, jalur minat, ruang kelas, peristiwa, dan rentang waktu. Koreksi selalu ditambahkan tanpa mengubah riwayat.
 
-Klien terautentikasi mengirim koreksi ke `/api/v1/study/progress/events/corrections`; koreksi selalu ditambahkan tanpa mengubah riwayat. Peristiwa dan proyeksi disimpan secara persisten melalui gateway DB sehingga tetap tersedia setelah mulai ulang.
+Klien terautentikasi mengirim koreksi ke `/api/v1/study/progress/events/corrections`; koreksi selalu ditambahkan tanpa mengubah riwayat. Kompensasi diselesaikan terhadap seluruh riwayat yang diizinkan sebelum filter dimensi atau waktu diterapkan. Peristiwa dan proyeksi disimpan secara persisten melalui gateway DB sehingga tetap tersedia setelah mulai ulang.
