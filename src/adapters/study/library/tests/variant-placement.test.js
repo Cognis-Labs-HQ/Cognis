@@ -140,3 +140,43 @@ test("variant branches choose a direction with visible room for descendants", ()
         row: 0,
     });
 });
+
+test("nested branches can reuse a pruned alternate branch slot", () => {
+    const parent = entry("parent", { sourceRecordId: "parent" });
+    const firstChild = entry("first-child", {
+        label: "first child",
+        references: [{ entryId: parent.id, relation: "variant-of" }],
+    });
+    const alternateChildren = Array.from({ length: 4 }, (_, index) =>
+        entry(`alternate-child-${index}`, {
+            label: `alternate child ${index}`,
+            references: [{ entryId: parent.id, relation: "variant-of" }],
+        }),
+    );
+    const grandchild = entry("grandchild", {
+        label: "grandchild",
+        references: [{ entryId: firstChild.id, relation: "variant-of" }],
+    });
+    const gridLayer = {
+        ...layer,
+        grid: {
+            rowSize: 3,
+            items: [null, null, null, null, "parent", null, null, null, null],
+        },
+    };
+    const placements = assignVariantPlacements(
+        [parent, firstChild, ...alternateChildren, grandchild],
+        { ...schema, layers: [gridLayer] },
+        gridLayer,
+    );
+
+    assert.equal(placements.get(firstChild.id)?.direction, "up");
+    assert.deepEqual(placements.get(grandchild.id)?.offset, {
+        column: -1,
+        row: -1,
+    });
+    assert.deepEqual(
+        placements.get(grandchild.id)?.offset,
+        placements.get(alternateChildren[3].id)?.offset,
+    );
+});

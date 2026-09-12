@@ -127,7 +127,6 @@ function offsetKey(offset) {
 export function assignVariantPlacements(entries, schema, layer) {
     const placements = new Map();
     const occupiedByParent = new Map();
-    const occupiedByRoot = new Map();
     const requests = entries.flatMap((entry) => {
         const placement = variantPlacement(entry, schema, entries);
         return placement ? [{ entry, ...placement }] : [];
@@ -187,9 +186,12 @@ export function assignVariantPlacements(entries, schema, layer) {
         const origin = parentPlacement?.offset ?? { column: 0, row: 0 };
         const requiredCapacity = branchDepthFor(request.entry.id);
         const rootId = parentPlacement?.rootId ?? request.parentId;
-        const occupiedOffsets =
-            occupiedByRoot.get(rootId) ??
-            new Set([offsetKey({ column: 0, row: 0 })]);
+        const occupiedOffsets = new Set([offsetKey({ column: 0, row: 0 })]);
+        let ancestorPlacement = parentPlacement;
+        while (ancestorPlacement) {
+            occupiedOffsets.add(offsetKey(ancestorPlacement.offset));
+            ancestorPlacement = placements.get(ancestorPlacement.parentId);
+        }
         const occupied = occupiedByParent.get(request.parentId) ?? new Set();
         const preferred = [
             ...(parentPlacement ? [parentPlacement.direction] : []),
@@ -232,8 +234,6 @@ export function assignVariantPlacements(entries, schema, layer) {
         const { direction, targetOffset } = selected;
         occupied.add(direction);
         occupiedByParent.set(request.parentId, occupied);
-        occupiedOffsets.add(offsetKey(targetOffset));
-        occupiedByRoot.set(rootId, occupiedOffsets);
         placements.set(request.entry.id, {
             ...request,
             direction,

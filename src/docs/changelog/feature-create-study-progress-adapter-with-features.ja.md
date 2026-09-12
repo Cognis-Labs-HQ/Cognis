@@ -382,6 +382,10 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 
 展開したツリーをカーソル位置の有効な分岐へ再び絞り込みつつ、選択した子項目の次の階層は維持するようにしました。欠落していたクリーンアップ関数を復元してライブラリの実行時エラーを解消し、学習者向けレイアウトと永続的なデータ中心の管理エディターを分離する計画を明示的な TODO として記録しました。
 
+## 非表示分岐の空間を再利用
+
+入れ子のライブラリ子項目が予約する範囲を、有効な祖先経路だけに変更しました。カーソルによって非表示になった代替分岐のグリッドスロットを利用できるため、表示中の分岐は自身の祖先と重なることなく、より広い空間を使用できます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -486,3 +490,4 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 - [79b6e2e9](https://github.com/Cognis-Labs-HQ/Cognis/commit/79b6e2e9)
 - [b2becb7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2becb7d)
 - [730f448e](https://github.com/Cognis-Labs-HQ/Cognis/commit/730f448e)
+- [3b863171](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b863171)

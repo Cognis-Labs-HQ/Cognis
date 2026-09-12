@@ -1,6 +1,6 @@
 # Adapter Pustaka
 
-Kisi bagan menyediakan inset sebesar jarak kartu agar garis tepi kartu dan fokus tetap terlihat sepenuhnya. Penempatan anak spasial mengukur kapasitas tersisa pada setiap arah, mencadangkan koordinat yang telah dipakai pohon aktif, dan mengutamakan arah yang dapat memuat cabang turunan sebelum memakai kapasitas terlihat terbesar sebagai pilihan cadangan.
+Kisi bagan menyediakan inset sebesar jarak kartu agar garis tepi kartu dan fokus tetap terlihat sepenuhnya. Penempatan anak spasial mengukur kapasitas tersisa pada setiap arah, hanya mencadangkan koordinat yang dipakai jalur leluhur aktif sehingga turunan dapat memakai kembali slot cabang alternatif yang dipangkas oleh kursor, dan mengutamakan arah yang dapat memuat cabang turunan sebelum memakai kapasitas terlihat terbesar sebagai pilihan cadangan.
 
 ## Skema milik konsumen
 

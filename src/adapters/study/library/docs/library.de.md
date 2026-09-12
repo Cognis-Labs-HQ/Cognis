@@ -1,6 +1,6 @@
 # Bibliotheksadapter
 
-Diagrammraster reservieren innen einen Kartenabstand, damit Karten- und Fokusrahmen vollständig sichtbar bleiben. Die räumliche Kindplatzierung misst die verbleibende Kapazität in jeder Richtung, reserviert bereits vom aktiven Baum belegte Koordinaten und bevorzugt eine Richtung, die den Nachkommenzweig aufnehmen kann, bevor sie auf die größte sichtbare Kapazität zurückfällt.
+Diagrammraster reservieren innen einen Kartenabstand, damit Karten- und Fokusrahmen vollständig sichtbar bleiben. Die räumliche Kindplatzierung misst die verbleibende Kapazität in jeder Richtung, reserviert nur die vom aktiven Vorfahrenpfad belegten Koordinaten, sodass Nachkommen die Plätze cursorbedingt ausgeblendeter Alternativzweige wiederverwenden können und bevorzugt eine Richtung, die den Nachkommenzweig aufnehmen kann, bevor sie auf die größte sichtbare Kapazität zurückfällt.
 
 ## Verbraucherdefinierte Schemata
 

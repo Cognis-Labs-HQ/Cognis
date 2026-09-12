@@ -276,7 +276,11 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /parentPlacement\?\.offset/);
     assert.match(source, /function variantDirectionCapacity/);
     assert.match(source, /capacity >= requiredCapacity/);
-    assert.match(source, /const occupiedByRoot = new Map/);
+    assert.match(source, /let ancestorPlacement = parentPlacement/);
+    assert.match(
+        source,
+        /while \(ancestorPlacement\)[\s\S]*occupiedOffsets\.add\(offsetKey\(ancestorPlacement\.offset\)\)/,
+    );
     assert.match(source, /occupiedOffsets\.has\(offsetKey\(targetOffset\)\)/);
     assert.match(
         source,

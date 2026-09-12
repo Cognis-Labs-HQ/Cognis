@@ -382,6 +382,10 @@ Cabang Pustaka yang dibuka tidak lagi memangkas saudara atau turunan yang lebih 
 
 Pergerakan kursor kembali mempersempit pohon yang dibuka ke cabang aktif sambil mempertahankan tingkat berikutnya milik anak terpilih. Fungsi pembersihan yang hilang dipulihkan sehingga galat runtime Pustaka terselesaikan, dan TODO eksplisit mencatat rencana pemisahan tata letak pelajar dari editor administrasi berorientasi data yang persisten.
 
+## Gunakan kembali ruang cabang terpangkas
+
+Anak Pustaka bertingkat kini hanya mencadangkan jalur leluhur aktifnya. Anak dapat menempati slot kisi yang ditetapkan kepada cabang alternatif yang dipangkas oleh kursor, sehingga cabang terlihat memperoleh lebih banyak ruang tanpa bertabrakan dengan leluhurnya sendiri.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -486,3 +490,4 @@ Pergerakan kursor kembali mempersempit pohon yang dibuka ke cabang aktif sambil 
 - [79b6e2e9](https://github.com/Cognis-Labs-HQ/Cognis/commit/79b6e2e9)
 - [b2becb7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2becb7d)
 - [730f448e](https://github.com/Cognis-Labs-HQ/Cognis/commit/730f448e)
+- [3b863171](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b863171)

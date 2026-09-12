@@ -382,6 +382,10 @@ Unfolded Library branches no longer prune siblings or deeper descendants. Hoveri
 
 Cursor traversal once again narrows an unfolded tree to the active branch while retaining the selected child’s next level. The missing cleanup function is restored, eliminating the Library runtime error, and explicit TODOs record the planned separation of learner layouts from the durable data-first administration editor.
 
+## Reuse space from pruned branches
+
+Nested Library children now reserve only their active ancestor path. They can occupy a grid slot assigned to a cursor-pruned alternate branch, giving the visible branch more usable room without colliding with its own ancestors.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -486,3 +490,4 @@ Cursor traversal once again narrows an unfolded tree to the active branch while 
 - [79b6e2e9](https://github.com/Cognis-Labs-HQ/Cognis/commit/79b6e2e9)
 - [b2becb7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2becb7d)
 - [730f448e](https://github.com/Cognis-Labs-HQ/Cognis/commit/730f448e)
+- [3b863171](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b863171)

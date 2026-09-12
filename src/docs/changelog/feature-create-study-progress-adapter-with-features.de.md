@@ -382,6 +382,10 @@ Aufgeklappte Bibliothekszweige blenden weder Geschwister noch tiefer verschachte
 
 Beim Bewegen des Cursors wird ein aufgeklappter Baum wieder auf den aktiven Zweig eingegrenzt, während die nächste Ebene des ausgewählten Kindes sichtbar bleibt. Die fehlende Bereinigungsfunktion wurde wiederhergestellt und beseitigt den Laufzeitfehler der Bibliothek. Explizite TODOs halten außerdem die geplante Trennung der Lernansichten vom dauerhaften, datenorientierten Verwaltungseditor fest.
 
+## Platz ausgeblendeter Zweige wiederverwenden
+
+Verschachtelte Bibliothekskinder reservieren jetzt nur noch ihren aktiven Vorfahrenpfad. Sie können einen Rasterplatz belegen, der einem cursorbedingt ausgeblendeten Alternativzweig zugewiesen ist. Dadurch erhält der sichtbare Zweig mehr nutzbaren Raum, ohne seine eigenen Vorfahren zu überlagern.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -486,3 +490,4 @@ Beim Bewegen des Cursors wird ein aufgeklappter Baum wieder auf den aktiven Zwei
 - [79b6e2e9](https://github.com/Cognis-Labs-HQ/Cognis/commit/79b6e2e9)
 - [b2becb7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2becb7d)
 - [730f448e](https://github.com/Cognis-Labs-HQ/Cognis/commit/730f448e)
+- [3b863171](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b863171)
