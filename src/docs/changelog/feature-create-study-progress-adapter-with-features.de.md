@@ -362,6 +362,10 @@ Direkte Aktualisierungen von `/study` werden jetzt sicher vom untergeordneten La
 
 Sprachmodule können jetzt eigene Ebenenziele wie Alphabet, Wortschatz, Sätze und Diagramme alternativer Zeichen unter `/study/library/<schema>/<layer>` registrieren, während der datenorientierte Browser mit allen Ebenen und Reitern Administratoren vorbehalten ist. Eintragsdetails verwenden kompakte Fakten und tief verlinkte Felder; Satzbeispiele werden unter der verwendeten lexikalischen Lesung gruppiert, sodass mehrere Lesungen und Viele-zu-viele-Zeichenzuordnungen unterscheidbar bleiben.
 
+## Strukturelle Kinder von Verwendungslinks trennen
+
+Bibliotheksschemas aktivieren räumliche Kindkarten jetzt ausdrücklich mit `child: true`; alternative Formen werden nicht mehr stillschweigend zu Kindern, und `hidden: true` hält reine Referenzdatensätze aus Diagrammen heraus. Eingehende strukturelle Beziehungen erscheinen nicht mehr unter allgemeinen Verwendungsüberschriften, Detailkompositionen verwenden Tiefenlink-Felder ohne doppelte Bezeichnungen oder Operatoren, und aufgeklappte Kartenüberlagerungen bleiben an die Diagrammgrenze gebunden.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -458,3 +462,5 @@ Sprachmodule können jetzt eigene Ebenenziele wie Alphabet, Wortschatz, Sätze u
 - [4c057009](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c05700902ed81591fedc4e86e5bdd886eabd334)
 - [770ca249](https://github.com/Cognis-Labs-HQ/Cognis/commit/770ca249d79ddba91f450f82c916fccd923107dd)
 - [1a2fafce](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a2fafceced4061dca8bbd9272274f8d4ee8877d)
+- [2b29614](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b29614)
+- [a7f7866](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f7866)

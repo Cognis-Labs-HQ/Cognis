@@ -362,6 +362,10 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 
 言語モジュールは `/study/library/<schema>/<layer>` にアルファベット、語彙、文、代替文字表などの専用レイヤー画面を登録できるようになり、全レイヤーをタブ表示するデータ中心のブラウザーは管理者専用になりました。詳細表示は簡潔な情報と深いリンク付きボックスを使い、例文を実際に使う語彙の読みの下へまとめるため、複数の読みと文字の多対多対応を区別できます。
 
+## 構造上の子と使用関係のリンクを分離
+
+ライブラリスキーマでは、空間的な子カードを `child: true` で明示的に有効化するようになりました。代替形が暗黙に子になることはなく、`hidden: true` により参照専用レコードを表から除外できます。入力側の構造関係は一般的な使用見出しに表示せず、詳細の構成は重複ラベルや演算子のない深層リンクボックスで示し、展開カードのオーバーレイは表の境界内に収めます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -458,3 +462,5 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 - [4c057009](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c05700902ed81591fedc4e86e5bdd886eabd334)
 - [770ca249](https://github.com/Cognis-Labs-HQ/Cognis/commit/770ca249d79ddba91f450f82c916fccd923107dd)
 - [1a2fafce](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a2fafceced4061dca8bbd9272274f8d4ee8877d)
+- [2b29614](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b29614)
+- [a7f7866](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f7866)

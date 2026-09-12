@@ -256,12 +256,14 @@ export function renderCompositionGroups(groups, i18n) {
     return groups
         .map(
             (group) =>
-                `<section class="library-composition" data-library-composition="${escapeHtml(group.id)}" data-library-presentation-role="${escapeHtml(group.presentationRole)}"><span class="library-composition-label">${escapeHtml(i18n.t(`gateway.study.library_relationship_${group.presentationRole}`))}</span><div class="library-component-boxes">${group.entries
-                    .map(
-                        (entry, index) =>
-                            `${index ? `<span class="library-composition-operator" aria-hidden="true">${group.presentationRole === "composition" ? "+" : "·"}</span>` : ""}${renderEntryLink(entry, "library-component-box btn-neutral")}`,
+                `<div class="library-component-boxes" data-library-composition="${escapeHtml(group.id)}" data-library-presentation-role="${escapeHtml(group.presentationRole)}" aria-label="${escapeHtml(i18n.t(`gateway.study.library_relationship_${group.presentationRole}`))}">${group.entries
+                    .map((entry) =>
+                        renderEntryLink(
+                            entry,
+                            "library-component-box btn-neutral",
+                        ),
                     )
-                    .join("")}</div></section>`,
+                    .join("")}</div>`,
         )
         .join("");
 }

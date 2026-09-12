@@ -166,7 +166,7 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /class="library-detail-summary"/);
     assert.match(
         source,
-        /renderEntryLink\(entry, "library-component-box btn-neutral"\)/,
+        /renderEntryLink\([\s\S]*entry,[\s\S]*"library-component-box btn-neutral"/,
     );
     assert.match(source, /layer\?\.semanticRole === "particle"/);
     assert.match(source, /const compositions = compositionReferenceGroups/);
@@ -179,7 +179,7 @@ test("Study Library integrates definitions and particles into item details", () 
     );
     assert.match(source, /function renderCompositionGroups/);
     assert.match(source, /relationship\.resolverRole/);
-    assert.match(source, /library-composition-operator/);
+    assert.doesNotMatch(source, /library-composition-operator/);
     assert.match(source, /const variantChildren = usedBy\.filter/);
     assert.doesNotMatch(
         source,
@@ -189,7 +189,7 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /titleLeading: renderScope/);
     assert.doesNotMatch(source, /library-definition-link/);
     assert.doesNotMatch(stylesheet, /\.library-definition-text/);
-    assert.match(stylesheet, /\.library-composition-label/);
+    assert.doesNotMatch(stylesheet, /\.library-composition-label/);
     assert.doesNotMatch(stylesheet, /\.popup-title/);
     assert.doesNotMatch(source, /if \(!layer\.displayDefinition\)/);
     assert.match(source, /data-library-preview/);
@@ -257,7 +257,7 @@ test("Study Library positions pronunciations by semantic role", () => {
 
 test("Study Library unfolds structured character variants", () => {
     assert.match(source, /function variantPlacement/);
-    assert.match(source, /relationship\?\.variant === true/);
+    assert.match(source, /relationship\?\.child === true/);
     assert.match(source, /library-entry-variant-\$\{direction\}/);
     assert.match(stylesheet, /\.library-entry-variant-left/);
     assert.match(stylesheet, /\.library-entry-variant-right/);
@@ -394,7 +394,11 @@ test("Study Library gives content safe edge spacing", () => {
     );
     assert.match(
         stylesheet,
-        /\.library-entry-grid--minimal\s*\{[\s\S]*overflow:\s*visible/,
+        /\.library-entry-grid--minimal\s*\{[\s\S]*overflow:\s*clip/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-entry-grid\s*\{[\s\S]*overflow:\s*clip/,
     );
 });
 

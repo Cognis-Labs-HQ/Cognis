@@ -469,6 +469,7 @@ test("writing layers declare direction-neutral child relationships", () => {
                         metadata: { labels: { en: "Variant Of" } },
                         onDelete: "detach",
                         variant: true,
+                        child: true,
                     },
                 ],
             },
@@ -479,6 +480,26 @@ test("writing layers declare direction-neutral child relationships", () => {
         validateLibrarySchema(schema).layers[0].relationships?.[0].variant,
         true,
     );
+    assert.equal(
+        validateLibrarySchema(schema).layers[0].relationships?.[0].child,
+        true,
+    );
+});
+
+test("child relationship presentation must be explicitly boolean", () => {
+    const schema = structuredClone(english) as LibrarySchema;
+    schema.layers[0].relationships = [
+        {
+            id: "parent",
+            targetLayer: schema.layers[0].id,
+            metadata: { labels: { en: "Parent" } },
+            onDelete: "detach",
+            child: "yes" as never,
+        },
+    ];
+    assert.throws(() => validateLibrarySchema(schema), {
+        message: "invalid_child_relationship",
+    });
 });
 
 test("layers can request a validated grid row and item layout", () => {

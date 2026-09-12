@@ -62,13 +62,27 @@ function coreSections(detail, schemas, entries, i18n, variantPlacement) {
           )
         : [];
     const variantChildren = usedBy.filter((candidate) => {
-        const placement = variantPlacement(candidate, schemas);
+        const placement = variantPlacement(candidate, schemas, entries);
         return placement?.parentId === entry.id;
+    });
+    const structuralDependants = usedBy.filter((candidate) => {
+        const candidateLayer = layerForEntry(schemas, candidate);
+        return (candidate.references ?? []).some((reference) => {
+            if (reference.entryId !== entry.id) return false;
+            const relationship = (candidateLayer?.relationships ?? []).find(
+                ({ id }) => id === reference.relation,
+            );
+            return (
+                relationship?.child === true ||
+                relationship?.variant === true ||
+                relationship?.presentationRole === "alternateSpelling"
+            );
+        });
     });
     const otherUsedBy = usedBy.filter(
         (candidate) =>
             !relatedWords.includes(candidate) &&
-            !variantChildren.includes(candidate) &&
+            !structuralDependants.includes(candidate) &&
             layerForEntry(schemas, candidate)?.semanticRole !== "definition",
     );
     const wordLayer = relatedWords.length

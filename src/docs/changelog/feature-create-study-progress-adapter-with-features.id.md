@@ -362,6 +362,10 @@ Pemuatan ulang langsung pada `/study` kini didelegasikan dengan aman dari pemuat
 
 Modul bahasa kini dapat mendaftarkan tujuan lapisan khusus seperti Alfabet, Kosakata, Kalimat, dan bagan karakter alternatif pada `/study/library/<schema>/<layer>`, sedangkan browser data bertab untuk seluruh lapisan dibatasi bagi administrator. Detail entri memakai fakta ringkas dan kotak bertaut dalam, serta mengelompokkan contoh kalimat di bawah bacaan leksikal yang digunakan agar beberapa bacaan dan pemetaan karakter banyak-ke-banyak tetap terpisah.
 
+## Pisahkan anak struktural dari tautan penggunaan
+
+Skema Pustaka kini mengaktifkan kartu anak spasial secara eksplisit dengan `child: true`; bentuk alternatif tidak lagi menjadi anak secara implisit, dan `hidden: true` mencegah rekaman khusus referensi tampil dalam bagan. Relasi masuk struktural tidak lagi muncul di bawah judul penggunaan umum, komposisi detail memakai kotak tautan mendalam tanpa label atau operator duplikat, dan overlay kartu yang dibuka dipotong pada batas bagan.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -458,3 +462,5 @@ Modul bahasa kini dapat mendaftarkan tujuan lapisan khusus seperti Alfabet, Kosa
 - [4c057009](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c05700902ed81591fedc4e86e5bdd886eabd334)
 - [770ca249](https://github.com/Cognis-Labs-HQ/Cognis/commit/770ca249d79ddba91f450f82c916fccd923107dd)
 - [1a2fafce](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a2fafceced4061dca8bbd9272274f8d4ee8877d)
+- [2b29614](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b29614)
+- [a7f7866](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f7866)

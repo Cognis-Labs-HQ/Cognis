@@ -68,6 +68,7 @@ body[data-theme="light"] .library-browser {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
     gap: var(--library-card-gap);
+    overflow: clip;
 }
 
 .library-entry-grid:has(.library-entry-variants-open)::before {
@@ -105,7 +106,7 @@ body[data-theme="light"] .library-browser {
 }
 
 .library-entry-grid--minimal {
-    overflow: visible;
+    overflow: clip;
     width: 100%;
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -772,23 +773,6 @@ body[data-theme="dark"] .library-audio {
     align-items: center;
     flex-wrap: wrap;
     gap: 0.5rem;
-}
-
-.library-composition {
-    display: grid;
-    gap: 0.4rem;
-}
-
-.library-composition-label {
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.library-composition-operator {
-    align-self: center;
-    color: var(--text-muted);
-    font-weight: 700;
 }
 
 .library-component-box {

@@ -123,6 +123,11 @@ function validateRelationship(
     )
         throw new Error("invalid_variant_relationship");
     if (
+        relationship.child !== undefined &&
+        typeof relationship.child !== "boolean"
+    )
+        throw new Error("invalid_child_relationship");
+    if (
         relationship.presentationRole !== undefined &&
         !["composition", "alternateSpelling", "pronunciation"].includes(
             relationship.presentationRole,

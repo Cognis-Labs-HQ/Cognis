@@ -65,6 +65,8 @@ export interface LibraryRelationshipSchema {
     resolverRole?: "grapheme" | "token" | "longestMatch" | "explicit";
     presentationRole?: "composition" | "alternateSpelling" | "pronunciation";
     variant?: boolean;
+    /** Unfold this relationship as a spatial parent/child card hierarchy. */
+    child?: boolean;
 }
 
 export interface LibraryLayerSchema {

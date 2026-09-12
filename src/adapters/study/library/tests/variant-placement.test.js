@@ -9,7 +9,12 @@ import {
 const layer = {
     id: "characters",
     relationships: [
-        { id: "variant-of", targetLayer: "characters", variant: true },
+        {
+            id: "variant-of",
+            targetLayer: "characters",
+            variant: true,
+            child: true,
+        },
     ],
 };
 const schema = { id: "japanese", layers: [layer] };
@@ -64,4 +69,28 @@ test("orphaned variant references do not create phantom children", () => {
         references: [{ entryId: "missing", relation: "variant-of" }],
     });
     assert.equal(variantPlacement(orphan, schema, [orphan]), null);
+});
+
+test("variants do not become child cards unless the schema opts in", () => {
+    const parent = entry("canonical-i", { sourceRecordId: "i" });
+    const alternative = entry("alternative-i", {
+        label: "ぃ",
+        references: [{ entryId: parent.id, relation: "variant-of" }],
+    });
+    const withoutChildren = {
+        ...schema,
+        layers: [
+            {
+                ...layer,
+                relationships: layer.relationships.map((relationship) => ({
+                    ...relationship,
+                    child: false,
+                })),
+            },
+        ],
+    };
+    assert.equal(
+        variantPlacement(alternative, withoutChildren, [parent, alternative]),
+        null,
+    );
 });
