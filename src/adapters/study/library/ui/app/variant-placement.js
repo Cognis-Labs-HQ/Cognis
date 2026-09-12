@@ -31,7 +31,7 @@ export function variantPlacement(entry, schema, entries = []) {
             ?.relationships?.find(
                 (candidate) => candidate.id === reference.relation,
             );
-        if (relationship?.child === true && relationship.variant !== true) {
+        if (relationship?.child === true) {
             const parent = entries.find(
                 (candidate) => candidate.id === reference.entryId,
             );

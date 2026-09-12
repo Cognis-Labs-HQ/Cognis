@@ -394,6 +394,10 @@ Rekaman dengan `hidden: true` tidak lagi menerima penempatan anak struktural, se
 
 Relasi bentuk alternatif kini selalu menjadi tautan mendalam, bukan anak spasial, bahkan saat penyedia juga menandai relasi tersebut sebagai anak. Hanya relasi anak khusus yang bukan varian yang mengalokasikan dan membuka slot bagan, sehingga bentuk tulisan alternatif tidak memakai ruang kisi kosong.
 
+## Pulihkan anak yang dideklarasikan
+
+Perubahan sebelumnya secara keliru membuat `variant` mengesampingkan `child`, sehingga semua relasi penyedia yang sengaja memakai kedua penanda disembunyikan. Pembukaan spasial kembali mengikuti `child: true`; `variant` tetap menjadi metadata penyajian independen, sedangkan `hidden: true` menjadi mekanisme eksplisit untuk mengeluarkan bentuk khusus referensi dari pohon dan membebaskan slotnya.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -501,3 +505,4 @@ Relasi bentuk alternatif kini selalu menjadi tautan mendalam, bukan anak spasial
 - [3b863171](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b863171)
 - [9aa724ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aa724ac)
 - [4ad30587](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ad30587)
+- [c8b5d5f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/c8b5d5f7)

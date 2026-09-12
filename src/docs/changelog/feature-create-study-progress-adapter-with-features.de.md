@@ -394,6 +394,10 @@ Mit `hidden: true` markierte Datensätze erhalten keine räumliche Kindplatzieru
 
 Beziehungen zu alternativen Formen sind jetzt stets Tiefenlinks statt räumlicher Kinder, selbst wenn ein Anbieter die Beziehung zusätzlich als Kind markiert. Nur eigenständige Nicht-Varianten-Kindbeziehungen belegen und öffnen Diagrammplätze. Dadurch verbrauchen alternative Schriftformen keinen leeren Rasterraum.
 
+## Ausdrücklich deklarierte Kinder wiederherstellen
+
+Die vorherige Änderung ließ `variant` fälschlich `child` überschreiben und unterdrückte dadurch jede Anbieterbeziehung, die beide Merkmale absichtlich verwendete. Das räumliche Aufklappen folgt wieder `child: true`; `variant` bleibt unabhängige Darstellungsmetadaten, während `hidden: true` ausdrücklich reine Referenzformen aus dem Baum heraushält und ihre Plätze freigibt.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -501,3 +505,4 @@ Beziehungen zu alternativen Formen sind jetzt stets Tiefenlinks statt räumliche
 - [3b863171](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b863171)
 - [9aa724ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aa724ac)
 - [4ad30587](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ad30587)
+- [c8b5d5f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/c8b5d5f7)

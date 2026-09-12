@@ -13,10 +13,6 @@ const layer = {
             id: "variant-of",
             targetLayer: "characters",
             variant: true,
-        },
-        {
-            id: "child-of",
-            targetLayer: "characters",
             child: true,
         },
     ],
@@ -39,7 +35,7 @@ function entry(id, overrides = {}) {
 test("duplicate representations cannot become variants of themselves", () => {
     const parent = entry("canonical-i", { sourceRecordId: "i" });
     const duplicate = entry("duplicate-i", {
-        references: [{ entryId: parent.id, relation: "child-of" }],
+        references: [{ entryId: parent.id, relation: "variant-of" }],
     });
     assert.equal(isSameLibraryRecord(duplicate, parent), true);
     assert.equal(
@@ -57,7 +53,7 @@ test("visible structural children retain placement when their content differs", 
     const child = entry("combined-i", {
         label: "combined i",
         fields: { pronunciation: "combined-i" },
-        references: [{ entryId: parent.id, relation: "child-of" }],
+        references: [{ entryId: parent.id, relation: "variant-of" }],
     });
     assert.deepEqual(variantPlacement(child, schema, [parent, child]), {
         parentId: parent.id,
@@ -89,22 +85,9 @@ test("hidden composition targets never become structural child cards", () => {
     );
 });
 
-test("alternate forms never become structural children", () => {
-    const parent = entry("canonical-e", { sourceRecordId: "e" });
-    const alternateForm = entry("small-e", {
-        label: "ぇ",
-        references: [{ entryId: parent.id, relation: "variant-of" }],
-    });
-
-    assert.equal(
-        variantPlacement(alternateForm, schema, [parent, alternateForm]),
-        null,
-    );
-});
-
 test("orphaned variant references do not create phantom children", () => {
     const orphan = entry("orphan", {
-        references: [{ entryId: "missing", relation: "child-of" }],
+        references: [{ entryId: "missing", relation: "variant-of" }],
     });
     assert.equal(variantPlacement(orphan, schema, [orphan]), null);
 });
@@ -113,18 +96,17 @@ test("variants do not become child cards unless the schema opts in", () => {
     const parent = entry("canonical-i", { sourceRecordId: "i" });
     const alternative = entry("alternative-i", {
         label: "ぃ",
-        references: [{ entryId: parent.id, relation: "child-of" }],
+        references: [{ entryId: parent.id, relation: "variant-of" }],
     });
     const withoutChildren = {
         ...schema,
         layers: [
             {
                 ...layer,
-                relationships: layer.relationships.map((relationship) =>
-                    relationship.id === "child-of"
-                        ? { ...relationship, child: false }
-                        : relationship,
-                ),
+                relationships: layer.relationships.map((relationship) => ({
+                    ...relationship,
+                    child: false,
+                })),
             },
         ],
     };
@@ -138,11 +120,11 @@ test("variant branches choose a direction with visible room for descendants", ()
     const parent = entry("parent", { sourceRecordId: "parent" });
     const child = entry("child", {
         label: "child",
-        references: [{ entryId: parent.id, relation: "child-of" }],
+        references: [{ entryId: parent.id, relation: "variant-of" }],
     });
     const grandchild = entry("grandchild", {
         label: "grandchild",
-        references: [{ entryId: child.id, relation: "child-of" }],
+        references: [{ entryId: child.id, relation: "variant-of" }],
     });
     const gridLayer = {
         ...layer,
@@ -184,17 +166,17 @@ test("nested branches can reuse a pruned alternate branch slot", () => {
     const parent = entry("parent", { sourceRecordId: "parent" });
     const firstChild = entry("first-child", {
         label: "first child",
-        references: [{ entryId: parent.id, relation: "child-of" }],
+        references: [{ entryId: parent.id, relation: "variant-of" }],
     });
     const alternateChildren = Array.from({ length: 4 }, (_, index) =>
         entry(`alternate-child-${index}`, {
             label: `alternate child ${index}`,
-            references: [{ entryId: parent.id, relation: "child-of" }],
+            references: [{ entryId: parent.id, relation: "variant-of" }],
         }),
     );
     const grandchild = entry("grandchild", {
         label: "grandchild",
-        references: [{ entryId: firstChild.id, relation: "child-of" }],
+        references: [{ entryId: firstChild.id, relation: "variant-of" }],
     });
     const gridLayer = {
         ...layer,

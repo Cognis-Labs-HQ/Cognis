@@ -394,6 +394,10 @@ Records marked `hidden: true` no longer receive structural child placement, so r
 
 Alternate-form relationships are now always deep links rather than spatial children, even when a provider also marks the relationship as a child. Only dedicated non-variant child relationships allocate and unfold chart slots, preventing alternate writing forms from consuming empty grid space.
 
+## Restore explicitly declared children
+
+The previous change incorrectly made `variant` override `child`, suppressing every provider relationship that intentionally used both flags. Spatial unfolding once again follows `child: true`; `variant` remains independent presentation metadata, while `hidden: true` is the explicit mechanism that keeps reference-only forms out of the tree and frees their slots.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -501,3 +505,4 @@ Alternate-form relationships are now always deep links rather than spatial child
 - [3b863171](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b863171)
 - [9aa724ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aa724ac)
 - [4ad30587](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ad30587)
+- [c8b5d5f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/c8b5d5f7)

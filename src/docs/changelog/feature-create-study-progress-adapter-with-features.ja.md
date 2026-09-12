@@ -394,6 +394,10 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 
 代替形の関係は、提供元が子としても指定している場合を含め、常に空間的な子ではなく深層リンクとして扱います。チャートのスロットを確保して展開するのは、バリアントではない専用の子関係だけです。これにより、代替の表記形が空のグリッド領域を占有しません。
 
+## 明示された子項目を復元
+
+直前の変更では `variant` が `child` を誤って上書きし、両方のフラグを意図的に使う提供元の関係をすべて非表示にしていました。空間的な展開は再び `child: true` に従い、`variant` は独立した表示メタデータとして扱います。参照専用の形をツリーから除外してスロットを空ける明示的な仕組みは `hidden: true` です。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -501,3 +505,4 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 - [3b863171](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b863171)
 - [9aa724ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aa724ac)
 - [4ad30587](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ad30587)
+- [c8b5d5f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/c8b5d5f7)
