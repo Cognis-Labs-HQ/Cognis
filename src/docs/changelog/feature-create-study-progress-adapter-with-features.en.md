@@ -378,6 +378,10 @@ Library grids now reserve inner card-gap padding so card and focus borders remai
 
 Unfolded Library branches no longer prune siblings or deeper descendants. Hovering or focusing any visible child exposes its complete next level, while the long-press instruction now stays at the bottom inside its owning card.
 
+## Restore cursor-focused branch pruning
+
+Cursor traversal once again narrows an unfolded tree to the active branch while retaining the selected child’s next level. The missing cleanup function is restored, eliminating the Library runtime error, and explicit TODOs record the planned separation of learner layouts from the durable data-first administration editor.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -481,3 +485,4 @@ Unfolded Library branches no longer prune siblings or deeper descendants. Hoveri
 - [a12b60f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/a12b60f1)
 - [79b6e2e9](https://github.com/Cognis-Labs-HQ/Cognis/commit/79b6e2e9)
 - [b2becb7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2becb7d)
+- [730f448e](https://github.com/Cognis-Labs-HQ/Cognis/commit/730f448e)

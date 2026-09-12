@@ -378,6 +378,10 @@ Kisi Pustaka kini menyediakan padding dalam sebesar jarak kartu agar garis tepi 
 
 Cabang Pustaka yang dibuka tidak lagi memangkas saudara atau turunan yang lebih dalam. Mengarahkan penunjuk atau memfokuskan anak yang terlihat menampilkan seluruh tingkat berikutnya, sedangkan petunjuk tekan lama kini tetap di bagian bawah dalam kartu pemiliknya.
 
+## Pulihkan pemangkasan cabang berfokus kursor
+
+Pergerakan kursor kembali mempersempit pohon yang dibuka ke cabang aktif sambil mempertahankan tingkat berikutnya milik anak terpilih. Fungsi pembersihan yang hilang dipulihkan sehingga galat runtime Pustaka terselesaikan, dan TODO eksplisit mencatat rencana pemisahan tata letak pelajar dari editor administrasi berorientasi data yang persisten.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -481,3 +485,4 @@ Cabang Pustaka yang dibuka tidak lagi memangkas saudara atau turunan yang lebih 
 - [a12b60f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/a12b60f1)
 - [79b6e2e9](https://github.com/Cognis-Labs-HQ/Cognis/commit/79b6e2e9)
 - [b2becb7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2becb7d)
+- [730f448e](https://github.com/Cognis-Labs-HQ/Cognis/commit/730f448e)

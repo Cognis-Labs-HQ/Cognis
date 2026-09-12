@@ -378,6 +378,10 @@ Bibliotheksraster reservieren nun innen einen Kartenabstand, damit Karten- und F
 
 Aufgeklappte Bibliothekszweige blenden weder Geschwister noch tiefer verschachtelte Nachfolger aus. Wenn ein sichtbares Kind fokussiert oder mit dem Zeiger berührt wird, erscheint seine vollständige nächste Ebene; der Hinweis zum langen Drücken bleibt nun unten innerhalb der zugehörigen Karte.
 
+## Cursor-fokussierte Zweigreduzierung wiederherstellen
+
+Beim Bewegen des Cursors wird ein aufgeklappter Baum wieder auf den aktiven Zweig eingegrenzt, während die nächste Ebene des ausgewählten Kindes sichtbar bleibt. Die fehlende Bereinigungsfunktion wurde wiederhergestellt und beseitigt den Laufzeitfehler der Bibliothek. Explizite TODOs halten außerdem die geplante Trennung der Lernansichten vom dauerhaften, datenorientierten Verwaltungseditor fest.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -481,3 +485,4 @@ Aufgeklappte Bibliothekszweige blenden weder Geschwister noch tiefer verschachte
 - [a12b60f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/a12b60f1)
 - [79b6e2e9](https://github.com/Cognis-Labs-HQ/Cognis/commit/79b6e2e9)
 - [b2becb7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2becb7d)
+- [730f448e](https://github.com/Cognis-Labs-HQ/Cognis/commit/730f448e)

@@ -288,6 +288,51 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     z-index: 7;
 }
 
+.library-entry-card-shell.library-entry-branch-active[data-library-variant-depth="0"]
+    .library-entry-variant-shell {
+    display: none;
+}
+
+.library-entry-card-shell.library-entry-branch-active[data-library-variant-depth="0"]
+    .library-entry-variant-shell.library-entry-branch-path,
+.library-entry-card-shell.library-entry-branch-active[data-library-variant-depth="0"]
+    .library-entry-card-shell.library-entry-branch-tip
+    > .library-entry-variant-shell {
+    display: block;
+}
+
+.library-entry-card-shell.library-entry-branch-path,
+.library-entry-card-shell.library-entry-branch-tip {
+    z-index: 7;
+}
+
+.library-entry-card-shell.library-entry-branch-tip > .library-entry-card {
+    border-color: var(
+        --color-success-outline-text,
+        var(--color-success-border)
+    );
+    animation: library-entry-focus-pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes library-entry-focus-pulse {
+    from {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-2) 25%, transparent);
+    }
+
+    to {
+        box-shadow: 0 0 0 0.25rem
+            color-mix(in srgb, var(--accent-2) 55%, transparent);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .library-entry-card-shell.library-entry-branch-tip > .library-entry-card {
+        animation: none;
+        box-shadow: 0 0 0 0.2rem
+            color-mix(in srgb, var(--accent-2) 45%, transparent);
+    }
+}
+
 .library-entry-grid--minimal .library-entry-variant {
     border: 2px solid
         var(--color-success-outline-text, var(--color-success-border));

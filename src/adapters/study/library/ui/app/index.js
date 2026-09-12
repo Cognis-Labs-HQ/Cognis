@@ -78,6 +78,46 @@ function closeUnrelatedVariantViews(root, control) {
     return closed;
 }
 
+function clearVariantBranch(root) {
+    root.querySelectorAll(
+        ".library-entry-branch-active, .library-entry-branch-path, .library-entry-branch-tip",
+    ).forEach((element) => {
+        element.classList.remove(
+            "library-entry-branch-active",
+            "library-entry-branch-path",
+            "library-entry-branch-tip",
+        );
+    });
+}
+
+function activateVariantBranch(root, card) {
+    const shell = card.closest(".library-entry-card-shell");
+    if (!shell) return;
+    if (shell.dataset.libraryVariantDepth === "0") {
+        if (shell.classList.contains("library-entry-variants-open")) {
+            clearVariantBranch(root);
+        }
+        return;
+    }
+    const rootShell = shell.closest(
+        '.library-entry-card-shell[data-library-variant-depth="0"]',
+    );
+    if (!rootShell?.classList.contains("library-entry-variants-open")) return;
+    clearVariantBranch(root);
+    rootShell.classList.add("library-entry-branch-active");
+    shell.classList.add("library-entry-branch-tip");
+    let branchShell = shell;
+    while (branchShell !== rootShell) {
+        branchShell.classList.add("library-entry-branch-path");
+        const variantSlot = branchShell.parentElement;
+        if (!variantSlot?.classList.contains("library-entry-variant-shell")) {
+            break;
+        }
+        variantSlot.classList.add("library-entry-branch-path");
+        branchShell = variantSlot.parentElement;
+    }
+}
+
 function renderSelection(entry, i18n) {
     if (!canDeleteEntry(entry)) return "";
     const label = i18n
@@ -404,6 +444,7 @@ async function confirmEntryDeletion(root, libraryEntries, i18n) {
         : null;
 }
 
+// TODO(character, alt-character, words, and sentences pages): Move each learner-facing layout and its styles into a dedicated adapter, faithfully reuse the current presentation there, and replace each surface with a sleek data-first relationship editor for administrators. TODO(library administration): Reduce the remaining Library UI to a standard data-first editor for creating, modifying, and deleting cards and freely editing cross-layer relationships; persist administrator overrides so provider restarts and content updates cannot clobber them.
 function renderBrowser(schemas, entries, i18n, requestedLayer = null) {
     if (!schemas.length)
         return `<p>${escapeHtml(i18n.t("gateway.study.library_empty"))}</p>`;
@@ -807,6 +848,15 @@ export async function mount(root, { signal } = {}) {
     root.addEventListener("pointerup", cancelLongPress, { signal });
     root.addEventListener("pointercancel", cancelLongPress, { signal });
     root.addEventListener(
+        "pointerover",
+        (event) => {
+            const card = event.target.closest("button[data-library-entry]");
+            if (!card || card.contains(event.relatedTarget)) return;
+            activateVariantBranch(root, card);
+        },
+        { signal },
+    );
+    root.addEventListener(
         "contextmenu",
         (event) => {
             const card = event.target.closest("button[data-library-entry]");
@@ -829,6 +879,7 @@ export async function mount(root, { signal } = {}) {
             if (!rootShell) return;
             if (!rootShell.contains(event.relatedTarget)) {
                 rootShell.classList.remove("library-entry-variants-open");
+                clearVariantBranch(rootShell);
             }
         },
         { signal },

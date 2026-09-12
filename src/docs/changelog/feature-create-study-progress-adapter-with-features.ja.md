@@ -378,6 +378,10 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 
 展開したライブラリの分岐で、同階層の項目やさらに深い子項目が非表示にならないようにしました。表示中の子項目にポインターを合わせるかフォーカスすると次の階層全体が表示され、長押しの案内は対象カード内の下部に収まります。
 
+## カーソルに追従する分岐の絞り込みを復元
+
+展開したツリーをカーソル位置の有効な分岐へ再び絞り込みつつ、選択した子項目の次の階層は維持するようにしました。欠落していたクリーンアップ関数を復元してライブラリの実行時エラーを解消し、学習者向けレイアウトと永続的なデータ中心の管理エディターを分離する計画を明示的な TODO として記録しました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -481,3 +485,4 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 - [a12b60f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/a12b60f1)
 - [79b6e2e9](https://github.com/Cognis-Labs-HQ/Cognis/commit/79b6e2e9)
 - [b2becb7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2becb7d)
+- [730f448e](https://github.com/Cognis-Labs-HQ/Cognis/commit/730f448e)
