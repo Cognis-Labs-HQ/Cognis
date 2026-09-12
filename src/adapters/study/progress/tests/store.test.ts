@@ -25,7 +25,13 @@ function persistentExecutor(): DbExecutor {
             if (command.option === "INSERT") {
                 if (
                     command.conflict?.action === "ignore" &&
-                    rows.some((row) => row.event_id === command.values.event_id)
+                    rows.some(
+                        (row) =>
+                            row.event_id === command.values.event_id ||
+                            (command.values.compensates_event_id !== null &&
+                                row.compensates_event_id ===
+                                    command.values.compensates_event_id),
+                    )
                 ) {
                     return { rowCount: 0 };
                 }
@@ -103,4 +109,24 @@ test("DB progress atomically replaces rebuildable projections", async () => {
     };
     await store.replaceProjections([projection]);
     assert.deepEqual(await store.projections(), [projection]);
+});
+
+test("DB progress atomically permits one correction per target", async () => {
+    const databaseExecutor = persistentExecutor();
+    const store = new DbProgressStore(databaseExecutor);
+    await store.ensureSchema();
+    const firstCorrection = {
+        ...learningEvent(),
+        id: "correction-one",
+        compensatesEventId: "persistent-event",
+    };
+    const secondCorrection = {
+        ...firstCorrection,
+        id: "correction-two",
+    };
+    assert.equal(await store.append(firstCorrection), "inserted");
+    await assert.rejects(
+        store.append(secondCorrection),
+        /event_already_corrected/,
+    );
 });

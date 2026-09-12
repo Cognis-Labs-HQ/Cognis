@@ -463,10 +463,25 @@ export class LibraryStore {
         entryIds: readonly string[],
         deletedBy: string,
         blacklistContentHashes: boolean,
+        authorize: (
+            entries: readonly LibraryEntry[],
+        ) => Promise<void> = async () => {},
     ): Promise<readonly string[]> {
         let deletedEntryIds: readonly string[] = [];
         await this.db.transaction(async (db) => {
             deletedEntryIds = await this.resolveDeletionCascade(entryIds, db);
+            const entries: LibraryEntry[] = [];
+            for (const entryId of deletedEntryIds) {
+                const entryResult = await db.executeCommand({
+                    option: "SELECT",
+                    table: "study_library_entries",
+                    where: [{ column: "id", value: entryId }],
+                });
+                const row = entryResult.rows?.[0];
+                if (!row) throw new Error("not_found");
+                entries.push(mapEntry(row));
+            }
+            await authorize(entries);
             for (const entryId of deletedEntryIds) {
                 const result = await db.executeCommand({
                     option: "SELECT",

@@ -20,6 +20,15 @@ export class MemoryProgressStore implements ProgressStore {
             }
             return "duplicate";
         }
+        if (
+            event.compensatesEventId &&
+            Array.from(this.events.values()).some(
+                (candidate) =>
+                    candidate.compensatesEventId === event.compensatesEventId,
+            )
+        ) {
+            throw new Error("event_already_corrected");
+        }
         this.events.set(event.id, structuredClone(event));
         return "inserted";
     }
@@ -53,6 +62,7 @@ export class DbProgressStore implements ProgressStore {
                 { name: "event_id", type: "text", primaryKey: true },
                 { name: "actor_id", type: "text", notNull: true },
                 { name: "occurred_at", type: "timestamp", notNull: true },
+                { name: "compensates_event_id", type: "text", unique: true },
                 { name: "event_json", type: "text", notNull: true },
             ],
         });
@@ -75,6 +85,7 @@ export class DbProgressStore implements ProgressStore {
                     event_id: event.id,
                     actor_id: event.actorId,
                     occurred_at: event.occurredAt,
+                    compensates_event_id: event.compensatesEventId ?? null,
                     event_json: JSON.stringify(event),
                 },
                 conflict: { action: "ignore" },
@@ -86,6 +97,22 @@ export class DbProgressStore implements ProgressStore {
                 where: [{ column: "event_id", value: event.id }],
             });
             const stored = existing.rows?.[0];
+            if (!stored && event.compensatesEventId) {
+                const correction = await databaseExecutor.executeCommand({
+                    option: "SELECT",
+                    table: "study_progress_events",
+                    columns: ["event_id"],
+                    where: [
+                        {
+                            column: "compensates_event_id",
+                            value: event.compensatesEventId,
+                        },
+                    ],
+                });
+                if (correction.rows?.length) {
+                    throw new Error("event_already_corrected");
+                }
+            }
             if (
                 !stored ||
                 JSON.stringify(parseJson<LearningEvent>(stored.event_json)) !==

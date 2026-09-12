@@ -2,20 +2,15 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const indexSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/ui/app/index.js"),
     "utf8",
 );
-const source = [
-    "index.js",
-    "detail.js",
-    "filters.js",
-    "presentation.js",
-    "variant-placement.js",
-]
+const source = readdirSync(resolve(ROOT, "src/adapters/study/library/ui/app"))
+    .filter((file) => file.endsWith(".js"))
     .map((file) =>
         readFileSync(
             resolve(ROOT, `src/adapters/study/library/ui/app/${file}`),
@@ -50,9 +45,27 @@ const variantArrowDark = readFileSync(
     "utf8",
 );
 
+test("Study Library keeps its page modules focused", () => {
+    for (const file of [
+        "cards.js",
+        "entry-popup.js",
+        "index.js",
+        "interactions.js",
+        "layer-cards.js",
+        "selection.js",
+        "variants.js",
+    ]) {
+        const lineCount = readFileSync(
+            resolve(ROOT, `src/adapters/study/library/ui/app/${file}`),
+            "utf8",
+        ).split("\n").length;
+        assert.ok(lineCount <= 200, `${file} has ${lineCount} lines`);
+    }
+});
+
 test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(
-        indexSource,
+        source,
         /localizedLabel,[\s\S]*metadataFields,[\s\S]*metadataValues,[\s\S]*from "\.\/presentation\.js"/,
     );
     assert.match(source, /role="tablist"/);
@@ -515,7 +528,7 @@ test("Study Library owners can select and delete multiple entries", () => {
     );
     assert.match(
         source,
-        /floatingMenu:\s*isAdminDataView && entries\.some\(canDeleteEntry\)/,
+        /if \(!isAdminDataView \|\| !entries\.some\(canDeleteEntry\)\)/,
     );
     assert.match(source, /data-library-select-all/);
     assert.match(source, /data-library-selection-close/);
@@ -549,7 +562,7 @@ test("Study Library relationship links consistently open entry details", () => {
 
 test("Study Library serializes popup opening and identifies child parents", () => {
     assert.match(source, /let activeEntryPopup = null/);
-    assert.match(source, /if \(activeEntryPopup\) return/);
+    assert.match(source, /if \(!entry \|\| activeEntryPopup\) return/);
     assert.match(source, /\.finally\(\(\) => \{[\s\S]*activeEntryPopup = null/);
     assert.match(
         source,

@@ -17,3 +17,5 @@ Authenticated clients use `/api/v1/study/progress/events`, `/projections`, and `
 Corrections are posted to `/api/v1/study/progress/events/corrections` and append an event with `compensatesEventId`; stored history is never rewritten. Compensation is resolved against the complete authorized history before query dimensions or time windows are applied. Metadata must be a small JSON object and prototype-manipulation keys are rejected.
 
 Events and rebuildable projections are persisted through the DB gateway so learning history survives adapter reloads and server restarts.
+
+The ordinary event endpoint rejects `compensatesEventId`; clients must use the corrections endpoint so target authorization and scope validation always run. The persistent store enforces one correction per target atomically, including when correction requests arrive concurrently.

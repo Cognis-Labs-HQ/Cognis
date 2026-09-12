@@ -144,6 +144,25 @@ test("external module activation rejects symlinked sources", async () => {
     );
 });
 
+test("external module activation rejects dotted symlink directories", async () => {
+    const { root, moduleRoot } = await createModule("export {};\n");
+    const externalDirectory = path.join(root, "external-directory");
+    await mkdir(externalDirectory);
+    await writeFile(
+        path.join(externalDirectory, "bootstrap.js"),
+        "export const unsafe = true;\n",
+    );
+    await symlink(
+        externalDirectory,
+        path.join(moduleRoot, "vendor.bundle"),
+        "dir",
+    );
+    await assert.rejects(
+        new ModuleTestService([root]).run("example-module"),
+        /module_boundary_violation[\s\S]*vendor\.bundle:symlink/,
+    );
+});
+
 test("external module activation rejects protected core and reuse CSS", async () => {
     const { root, moduleRoot } = await createModule("export {};\n");
     await writeFile(
@@ -153,6 +172,18 @@ test("external module activation rejects protected core and reuse CSS", async ()
     await assert.rejects(
         new ModuleTestService([root]).run("example-module"),
         /module_boundary_violation[\s\S]*protected_style_class/,
+    );
+});
+
+test("external module activation rejects protected class attribute selectors", async () => {
+    const { root, moduleRoot } = await createModule("export {};\n");
+    await writeFile(
+        path.join(moduleRoot, "module.css"),
+        '[class~="widget-card"] { display: none; }\n',
+    );
+    await assert.rejects(
+        new ModuleTestService([root]).run("example-module"),
+        /protected_style_class:widget-card/,
     );
 });
 

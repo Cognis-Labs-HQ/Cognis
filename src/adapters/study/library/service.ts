@@ -510,30 +510,24 @@ export class LibraryService implements LibraryCapability {
             if (!entryId.trim() || entryId.length > 200)
                 throw new Error("invalid_entry_id");
         }
-        const cascadeEntryIds =
-            await this.store.resolveDeletionCascade(entryIds);
-        const entries: LibraryEntry[] = [];
-        for (const entryId of cascadeEntryIds) {
-            const entry = await this.read(actor, entryId);
-            if (!entry) throw new Error("not_found");
-            if (
-                actor.role !== "admin" &&
-                actor.role !== "owner" &&
-                entry.createdBy !== actor.accountId
-            ) {
-                throw new Error("forbidden");
-            }
-            entries.push(entry);
-        }
-        await this.flow?.run("study:library:delete", {
-            actor,
-            entries,
-            blacklistContentHashes,
-        });
         const deletedEntryIds = await this.store.deleteEntries(
-            cascadeEntryIds,
+            entryIds,
             actor.accountId,
             blacklistContentHashes,
+            async (entries) => {
+                if (
+                    actor.role !== "admin" &&
+                    actor.role !== "owner" &&
+                    entries.some((entry) => entry.createdBy !== actor.accountId)
+                ) {
+                    throw new Error("forbidden");
+                }
+                await this.flow?.run("study:library:delete", {
+                    actor,
+                    entries,
+                    blacklistContentHashes,
+                });
+            },
         );
         await this.log?.("info", "Deleted Study Library entries.", {
             component: "study-library",

@@ -47,7 +47,7 @@ const ADAPTER_BACKED_SPA_ROUTES = [
 ];
 
 test("Study Library uses the authenticated direct-mount lifecycle", () => {
-    const source = ["index.js", "detail.js"]
+    const source = ["index.js"]
         .map((file) =>
             readFileSync(
                 resolve(ROOT, `src/adapters/study/library/ui/app/${file}`),
@@ -542,7 +542,7 @@ test("direct SPA entry loads capability providers before the route module", () =
 });
 
 test("Library detail composition preserves stages and dispatches contributed actions", () => {
-    const source = ["index.js", "detail.js"]
+    const source = ["cards.js", "detail.js", "entry-popup.js"]
         .map((file) =>
             readFileSync(
                 resolve(ROOT, `src/adapters/study/library/ui/app/${file}`),

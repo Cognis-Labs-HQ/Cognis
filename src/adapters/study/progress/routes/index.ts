@@ -11,6 +11,7 @@ import { createRebuildRoutes } from "./rebuild/index.js";
 import { sendJson } from "./http.js";
 
 const REQUEST_ERROR_CODES = new Set([
+    "correction_route_required",
     "correction_scope_mismatch",
     "correction_target_invalid",
     "invalid_activity",

@@ -82,6 +82,19 @@ test("records duplicate event ids idempotently", async () => {
     );
 });
 
+test("reserves compensation events for the correction operation", async () => {
+    const service = new ProgressService(new MemoryProgressStore());
+    await assert.rejects(
+        service.recordEvent(
+            user,
+            event("ordinary-compensation", {
+                compensatesEventId: "event-target",
+            }),
+        ),
+        /correction_route_required/,
+    );
+});
+
 test("rebuilds projections and applies compensating corrections", async () => {
     const store = new MemoryProgressStore();
     const service = new ProgressService(store);
@@ -128,6 +141,28 @@ test("rejects invalid aggregation windows and correction scope changes", async (
         ),
         /correction_scope_mismatch/,
     );
+});
+
+test("allows only one immutable correction for each target", async () => {
+    const service = new ProgressService(new MemoryProgressStore());
+    await service.recordEvent(user, event("event-correction-target"));
+    await Promise.all([
+        service.correctEvent(
+            user,
+            event("event-correction-one", {
+                compensatesEventId: "event-correction-target",
+            }) as LearningEventInput & { compensatesEventId: string },
+        ),
+        assert.rejects(
+            service.correctEvent(
+                user,
+                event("event-correction-two", {
+                    compensatesEventId: "event-correction-target",
+                }) as LearningEventInput & { compensatesEventId: string },
+            ),
+            /event_already_corrected/,
+        ),
+    ]);
 });
 
 test("aggregates supported dimensions and time windows", async () => {

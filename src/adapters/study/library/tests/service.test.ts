@@ -143,7 +143,9 @@ test("content owners and administrators can delete selected entries", async () =
             ids: readonly string[],
             accountId: string,
             blacklist: boolean,
+            authorize: (entries: readonly unknown[]) => Promise<void>,
         ) => {
+            await authorize(ids.map((id) => entries.get(id)));
             deleted.push({ ids, accountId, blacklist });
             return ids;
         },
@@ -177,7 +179,16 @@ test("content deletion rejects actors who do not own every cascaded entry", asyn
             createdBy: id === "owned" ? "alice" : "bob",
         }),
         resolveDeletionCascade: async () => ["owned", "dependent"],
-        deleteEntries: async () => {
+        deleteEntries: async (
+            _ids: readonly string[],
+            _accountId: string,
+            _blacklist: boolean,
+            authorize: (entries: readonly unknown[]) => Promise<void>,
+        ) => {
+            await authorize([
+                await store.get("owned"),
+                await store.get("dependent"),
+            ]);
             deleteCalled = true;
         },
     };

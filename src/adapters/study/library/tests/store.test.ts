@@ -259,6 +259,27 @@ test("permanent deletion blacklists content hashes and removes relationships", a
                         ],
                     };
                 }
+                if (!command.columns) {
+                    const id = String(command.where?.[0]?.value);
+                    return {
+                        rows: [
+                            {
+                                id,
+                                scope: "global",
+                                scope_id: "global",
+                                schema_id: "japanese",
+                                schema_version: 1,
+                                layer: "words",
+                                language: "ja",
+                                label: id,
+                                fields_json: "{}",
+                                created_by: "admin",
+                                created_at: "2026-09-12T00:00:00.000Z",
+                                updated_at: "2026-09-12T00:00:00.000Z",
+                            },
+                        ],
+                    };
+                }
                 return { rows: [{ content_hash: "hash-one" }] };
             }
             if (
@@ -314,13 +335,18 @@ test("permanent deletion blacklists content hashes and removes relationships", a
         },
     };
 
+    let authorizedIds: string[] = [];
     const deleted = await new LibraryStore(db).deleteEntries(
         ["entry-one"],
         "admin",
         true,
+        async (entries) => {
+            authorizedIds = entries.map((entry) => entry.id);
+        },
     );
 
     assert.deepEqual(deleted, ["entry-one", "word-one", "sentence-one"]);
+    assert.deepEqual(authorizedIds, deleted);
 
     assert.equal(
         commands.some(

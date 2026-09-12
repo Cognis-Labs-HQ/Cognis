@@ -51,3 +51,5 @@ Entri definisi tidak pernah dapat dibuka atau ditautkan secara langsung; entri t
 Jika komposisi hanya memuat satu entri dengan label yang sama seperti entri saat ini, blok komposisi duplikat disembunyikan dan tautan dalamnya menggantikan judul popup.
 
 Widget page composer kini menyesuaikan lebarnya dengan skema Perpustakaan dan tetap dibatasi oleh lebar yang tersedia, sehingga lebar widget yang tidak terpakai tidak menimbulkan luapan horizontal.
+
+Penghapusan menyelesaikan kaskade relasi akhir dan mengotorisasi setiap entri yang terdampak dalam transaksi yang sama. Karena itu, relasi yang ditambahkan secara bersamaan tidak dapat memperluas penghapusan melampaui konten yang diizinkan bagi pelaku.

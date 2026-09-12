@@ -51,3 +51,5 @@ Definitionseinträge können nie direkt geöffnet oder verlinkt werden; sie lief
 Enthält eine Zusammensetzung genau einen Eintrag mit derselben Bezeichnung wie der aktuelle Eintrag, wird der doppelte Zusammensetzungsblock ausgeblendet und dessen Deep-Link ersetzt stattdessen die Pop-up-Überschrift.
 
 Das Page-Composer-Widget umschließt nun das Bibliotheksschema passgenau und bleibt auf die verfügbare Breite begrenzt, sodass ungenutzte Widget-Breite keinen horizontalen Überlauf erzeugt.
+
+Beim Löschen werden die endgültige Beziehungskaskade ermittelt und alle betroffenen Einträge innerhalb derselben Transaktion autorisiert. Eine gleichzeitig hinzugefügte Beziehung kann die Löschung daher nicht über die für den Akteur autorisierten Inhalte hinaus erweitern.

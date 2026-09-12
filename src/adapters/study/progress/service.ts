@@ -296,7 +296,17 @@ export class ProgressService implements ProgressCapability {
         actor: ProgressActor,
         input: LearningEventInput,
     ): Promise<{ event: LearningEvent; duplicate: boolean }> {
+        if (input.compensatesEventId !== undefined) {
+            throw new Error("correction_route_required");
+        }
         const event = normalizeEvent(actor, input);
+        return this.persistEvent(actor, event);
+    }
+
+    private async persistEvent(
+        actor: ProgressActor,
+        event: LearningEvent,
+    ): Promise<{ event: LearningEvent; duplicate: boolean }> {
         await this.authorize(
             actor,
             event.actorId,
@@ -353,7 +363,11 @@ export class ProgressService implements ProgressCapability {
         ) {
             throw new Error("correction_scope_mismatch");
         }
-        return this.recordEvent(actor, { ...input, actorId: target.actorId });
+        const correction = normalizeEvent(actor, {
+            ...input,
+            actorId: target.actorId,
+        });
+        return this.persistEvent(actor, correction);
     }
 
     async listEvents(

@@ -65,3 +65,5 @@ The Study gateway client fetches entry audio through the authenticated API clien
 When a composition contains exactly one entry whose label matches the current entry, the duplicate composition block is suppressed and that deep link replaces the popup heading instead.
 
 The page-composer widget now shrink-wraps the Library schema and remains capped to the available width, preventing unused widget width from creating horizontal overflow.
+
+Deletion resolves the final relationship cascade and authorizes every affected entry within the same transaction. A relationship added concurrently therefore cannot expand a deletion beyond the actor's authorized content.

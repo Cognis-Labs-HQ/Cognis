@@ -15,3 +15,5 @@ Layanan memeriksa kepemilikan pelaku sebelum membaca atau menulis. Administrator
 Klien terautentikasi memakai `/api/v1/study/progress/events`, `/projections`, dan `/aggregate`; administrator dapat menjalankan `/rebuild`. Filter mencakup pelaku, skema, lapisan, bahasa, aktivitas, jalur minat, ruang kelas, peristiwa, dan rentang waktu. Koreksi selalu ditambahkan tanpa mengubah riwayat.
 
 Klien terautentikasi mengirim koreksi ke `/api/v1/study/progress/events/corrections`; koreksi selalu ditambahkan tanpa mengubah riwayat. Kompensasi diselesaikan terhadap seluruh riwayat yang diizinkan sebelum filter dimensi atau waktu diterapkan. Peristiwa dan proyeksi disimpan secara persisten melalui gateway DB sehingga tetap tersedia setelah mulai ulang.
+
+Endpoint peristiwa biasa menolak `compensatesEventId`; klien harus memakai endpoint koreksi agar otorisasi target dan validasi cakupan selalu dijalankan. Penyimpanan persisten memberlakukan satu koreksi per target secara atomik, termasuk ketika permintaan koreksi tiba bersamaan.

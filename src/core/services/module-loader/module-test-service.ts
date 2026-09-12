@@ -33,10 +33,15 @@ function protectedStyleClass(source: string): string | undefined {
             const subject =
                 selector
                     .trim()
-                    .split(/[\s>+~]+/)
+                    .split(/\s+|>|\+(?!=)|~(?!=)/)
                     .at(-1) ?? "";
             for (const [, className] of subject.matchAll(
                 /\.([a-zA-Z0-9_-]+)/g,
+            )) {
+                if (PROTECTED_STYLE_CLASSES.has(className)) return className;
+            }
+            for (const [, className] of subject.matchAll(
+                /\[class\s*~=\s*["']([a-zA-Z0-9_-]+)["']\s*\]/gi,
             )) {
                 if (PROTECTED_STYLE_CLASSES.has(className)) return className;
             }
@@ -60,10 +65,7 @@ async function findFiles(
     for (const entry of entries) {
         if (entry.name === "node_modules" || entry.name === ".git") continue;
         const entryPath = path.join(root, entry.name);
-        if (
-            entry.isSymbolicLink() &&
-            (predicate(entryPath) || path.extname(entry.name) === "")
-        ) {
+        if (entry.isSymbolicLink()) {
             throw new Error(`module_boundary_violation\n${entryPath}:symlink`);
         } else if (entry.isDirectory()) {
             files.push(...(await findFiles(entryPath, predicate)));
