@@ -60,7 +60,6 @@ export async function openEntryPopup(
         const titleDetailItems = popupTitleDetailItems(
             detail,
             schemas,
-            entries,
             composed.titleDefinition,
         );
         if (parentEntry) {

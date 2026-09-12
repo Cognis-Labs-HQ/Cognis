@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { resolveLabelComposition } from "../ui/app/composition-links.js";
+import {
+    distinctPronunciationLabels,
+    resolveLabelComposition,
+} from "../ui/app/composition-links.js";
 
 const schemas = [
     {
@@ -62,5 +65,25 @@ test("partially resolvable spellings do not produce misleading links", () => {
     assert.deepEqual(
         resolveLabelComposition("未知", word, schemas, entries),
         [],
+    );
+});
+
+test("title pronunciations do not duplicate primary or secondary spellings", () => {
+    assert.deepEqual(
+        distinctPronunciationLabels({
+            label: "じん",
+            fields: { pronunciation: ["じん"] },
+        }),
+        [],
+    );
+    assert.deepEqual(
+        distinctPronunciationLabels(
+            {
+                label: "人",
+                fields: { pronunciation: ["じん", "にん", "ひと"] },
+            },
+            ["ひと"],
+        ),
+        ["じん", "にん"],
     );
 });

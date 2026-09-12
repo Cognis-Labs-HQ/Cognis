@@ -219,7 +219,11 @@ test("Study Library integrates definitions and particles into item details", () 
         /const explicitTitleReferences = headingCompositionReferences/,
     );
     assert.match(source, /resolveLabelComposition\(/);
-    assert.match(source, /const pronunciationItems = pronunciationValues/);
+    assert.match(source, /distinctPronunciationLabels\(/);
+    assert.match(
+        source,
+        /const pronunciationItems = distinctPronunciationLabels\([\s\S]*\{ label \}/,
+    );
     assert.match(source, /const spellingItems = spellingGroups\.flatMap/);
     assert.match(source, /const titleDetailItems = popupTitleDetailItems/);
     assert.match(source, /function linkedItems\(entries\)/);
@@ -262,7 +266,10 @@ test("Study Library positions pronunciations by semantic role", () => {
     assert.match(source, /function isWritingUnitLayer/);
     assert.match(source, /function pronunciationValues/);
     assert.doesNotMatch(source, /function detailTitlePronunciation/);
-    assert.match(source, /const pronunciationItems = pronunciationValues/);
+    assert.match(
+        source,
+        /const pronunciationItems = distinctPronunciationLabels/,
+    );
     assert.match(source, /open-title-reference:\$\{entry\.id\}/);
     assert.match(source, /composed\.titleDefinition/);
     assert.match(source, /class="library-entry-heading"/);

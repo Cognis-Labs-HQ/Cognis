@@ -22,7 +22,12 @@ Study Libraryブラウザーのエントリポイントを小さなページ調�
 
 単語と文の別表記を、主要な表記の直下に移動可能な副タイトル内容として表示するようにしました。文字のような構造上のバリアントは、詳細本文に重複表示されません。
 
+## 明確な発音タイトル
+
+主要表記と副表記を発音メタデータとして重複表示しないようにしました。発音は通常のタイトルテキストのままとし、表記単位へのリンクへ推測変換しません。これにより、表示される関係はモジュールが提供したライブラリグラフだけを反映します。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
 - [458c6bea](https://github.com/Cognis-Labs-HQ/Cognis/commit/458c6bea)
+- [a009f770](https://github.com/Cognis-Labs-HQ/Cognis/commit/a009f770)

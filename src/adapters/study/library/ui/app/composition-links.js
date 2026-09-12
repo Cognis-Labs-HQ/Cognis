@@ -39,3 +39,25 @@ export function resolveLabelComposition(label, entry, schemas, entries) {
     }
     return resolved.get(0) ?? [];
 }
+
+function normalizedLabel(value) {
+    return String(value).trim().normalize();
+}
+
+export function distinctPronunciationLabels(entry, secondaryLabels = []) {
+    const blocked = new Set(
+        [entry.label, ...secondaryLabels].map(normalizedLabel),
+    );
+    const pronunciation = entry.fields?.pronunciation;
+    if (!pronunciation) return [];
+    const labels = Array.isArray(pronunciation)
+        ? pronunciation
+        : [pronunciation];
+    return Array.from(
+        new Set(
+            labels
+                .map(normalizedLabel)
+                .filter((label) => label && !blocked.has(label)),
+        ),
+    );
+}

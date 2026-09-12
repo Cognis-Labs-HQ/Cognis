@@ -22,7 +22,12 @@ External module validation rejects every symbolic link, including dotted directo
 
 Word and sentence alternate spellings now appear as navigable secondary title content directly beneath the primary spelling. Character-style structural variants are no longer repeated in detail content.
 
+## Unambiguous pronunciation titles
+
+Primary and secondary spellings are no longer repeated as pronunciation metadata. Pronunciations remain plain title text and are never heuristically turned into writing-unit links, so displayed relationships continue to reflect only the module-provided Library graph.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
 - [458c6bea](https://github.com/Cognis-Labs-HQ/Cognis/commit/458c6bea)
+- [a009f770](https://github.com/Cognis-Labs-HQ/Cognis/commit/a009f770)

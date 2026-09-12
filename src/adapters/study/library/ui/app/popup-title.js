@@ -1,10 +1,9 @@
 import {
     compositionReferenceGroups,
     layerForEntry,
-    pronunciationValues,
     relationshipPresentationRole,
 } from "./presentation.js";
-import { resolveLabelComposition } from "./composition-links.js";
+import { distinctPronunciationLabels } from "./composition-links.js";
 
 function linkedItems(entries) {
     return entries.map((entry) => ({
@@ -61,12 +60,7 @@ export function secondarySpellingGroups(detail, schemas) {
     });
 }
 
-export function popupTitleDetailItems(
-    detail,
-    schemas,
-    entries,
-    titleDefinition,
-) {
+export function popupTitleDetailItems(detail, schemas, titleDefinition) {
     const spellingGroups = secondarySpellingGroups(detail, schemas);
     const spellingLabels = new Set(
         spellingGroups.map((group) =>
@@ -77,23 +71,15 @@ export function popupTitleDetailItems(
         ...(groupIndex ? [{ label: " · " }] : []),
         ...linkedItems(group),
     ]);
-    const pronunciationItems = pronunciationValues(detail.entry).flatMap(
-        (label, pronunciationIndex) => {
-            if (spellingLabels.has(label)) return [];
-            const references = resolveLabelComposition(
-                label,
-                detail.entry,
-                schemas,
-                entries,
-            );
-            return [
-                ...(pronunciationIndex || spellingItems.length
-                    ? [{ label: " · " }]
-                    : []),
-                ...(references.length ? linkedItems(references) : [{ label }]),
-            ];
-        },
-    );
+    const pronunciationItems = distinctPronunciationLabels(
+        detail.entry,
+        spellingLabels,
+    ).flatMap((label, pronunciationIndex) => [
+        ...(pronunciationIndex || spellingItems.length
+            ? [{ label: " · " }]
+            : []),
+        { label },
+    ]);
     const items = [...spellingItems, ...pronunciationItems];
     if (titleDefinition) {
         items.push(...(items.length ? [{ label: " · " }] : []), {

@@ -55,3 +55,5 @@ Widget page composer kini menyesuaikan lebarnya dengan skema Perpustakaan dan te
 Penghapusan menyelesaikan kaskade relasi akhir dan mengotorisasi setiap entri yang terdampak dalam transaksi yang sama. Karena itu, relasi yang ditambahkan secara bersamaan tidak dapat memperluas penghapusan melampaui konten yang diizinkan bagi pelaku.
 
 Untuk unit leksikal dan urutan leksikal terurut, relasi dengan tampilan `alternateSpelling` muncul sebagai ejaan sekunder yang dapat dinavigasi tepat di bawah judul detail utama. Anak struktural atau anak varian tidak diulang sebagai bagian ejaan alternatif dalam konten detail.
+
+Pelafalan yang sama dengan ejaan utama atau sekunder hanya ditampilkan sekali. Teks pelafalan tetap menjadi metadata judul biasa dan tidak diubah secara heuristik menjadi tautan ke catatan unit tulisan dengan label serupa; tautan relasi tetap hanya berasal dari referensi Pustaka yang dideklarasikan.
