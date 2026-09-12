@@ -16,7 +16,7 @@ Penghapusan Pustaka kini menyelesaikan kaskade akhir dan mengotorisasi setiap en
 
 ## Batas modul yang lebih kuat
 
-Validasi modul eksternal menolak semua tautan simbolis, termasuk nama direktori bertitik, dan mengenali kelas UI terlindungi yang ditargetkan melalui pemilih atribut kelas.
+Validasi modul eksternal menolak tautan simbolis sumber, tautan direktori (termasuk nama bertitik), dan tautan aset yang keluar dari batas modul. Tautan aset lokal modul yang aman tetap dapat digunakan. Kelas UI terlindungi yang ditargetkan melalui pemilih atribut kelas juga dikenali.
 
 ## Ejaan sekunder pada judul
 
@@ -31,3 +31,4 @@ Ejaan utama dan sekunder tidak lagi diulang sebagai metadata pelafalan. Pelafala
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
 - [458c6bea](https://github.com/Cognis-Labs-HQ/Cognis/commit/458c6bea)
 - [a009f770](https://github.com/Cognis-Labs-HQ/Cognis/commit/a009f770)
+- [799fc33d](https://github.com/Cognis-Labs-HQ/Cognis/commit/799fc33d)

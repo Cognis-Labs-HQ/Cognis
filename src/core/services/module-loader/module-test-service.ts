@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { readFile, readdir } from "node:fs/promises";
+import { readFile, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import protectedCoreClasses from "../../../ui/styles/protected-classes.json" with { type: "json" };
@@ -53,6 +53,7 @@ function protectedStyleClass(source: string): string | undefined {
 async function findFiles(
     root: string,
     predicate: (filePath: string) => boolean,
+    boundaryRoot = root,
 ): Promise<string[]> {
     let entries: Awaited<ReturnType<typeof readdir>>;
     try {
@@ -66,9 +67,22 @@ async function findFiles(
         if (entry.name === "node_modules" || entry.name === ".git") continue;
         const entryPath = path.join(root, entry.name);
         if (entry.isSymbolicLink()) {
-            throw new Error(`module_boundary_violation\n${entryPath}:symlink`);
+            const targetPath = await realpath(entryPath);
+            const relativeTarget = path.relative(boundaryRoot, targetPath);
+            if (
+                relativeTarget.startsWith("..") ||
+                path.isAbsolute(relativeTarget) ||
+                (await stat(entryPath)).isDirectory() ||
+                predicate(entryPath)
+            ) {
+                throw new Error(
+                    `module_boundary_violation\n${entryPath}:symlink`,
+                );
+            }
         } else if (entry.isDirectory()) {
-            files.push(...(await findFiles(entryPath, predicate)));
+            files.push(
+                ...(await findFiles(entryPath, predicate, boundaryRoot)),
+            );
         } else if (entry.isFile() && predicate(entryPath)) {
             files.push(entryPath);
         }

@@ -16,7 +16,7 @@ Library deletion now resolves the final cascade and authorizes every affected en
 
 ## Stronger module boundaries
 
-External module validation rejects every symbolic link, including dotted directory names, and recognizes protected UI classes targeted through class attribute selectors.
+External module validation rejects source symlinks, directory symlinks (including dotted names), and asset symlinks that escape the module boundary. Safe module-local asset symlinks remain usable. Protected UI classes targeted through class attribute selectors are also recognized.
 
 ## Secondary spellings in titles
 
@@ -31,3 +31,4 @@ Primary and secondary spellings are no longer repeated as pronunciation metadata
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
 - [458c6bea](https://github.com/Cognis-Labs-HQ/Cognis/commit/458c6bea)
 - [a009f770](https://github.com/Cognis-Labs-HQ/Cognis/commit/a009f770)
+- [799fc33d](https://github.com/Cognis-Labs-HQ/Cognis/commit/799fc33d)

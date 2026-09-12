@@ -16,7 +16,7 @@ Study Libraryブラウザーのエントリポイントを小さなページ調�
 
 ## 強化されたモジュール境界
 
-外部モジュール検証は、ピリオドを含むディレクトリ名を含め、すべてのシンボリックリンクを拒否します。また、クラス属性セレクターで指定された保護対象UIクラスも検出します。
+外部モジュール検証は、ソースのシンボリックリンク、ピリオドを含む名前のディレクトリリンク、モジュール境界外を指すアセットリンクを拒否します。安全なモジュール内アセットリンクは引き続き利用できます。クラス属性セレクターで指定された保護対象UIクラスも検出します。
 
 ## タイトル内の副表記
 
@@ -31,3 +31,4 @@ Study Libraryブラウザーのエントリポイントを小さなページ調�
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
 - [458c6bea](https://github.com/Cognis-Labs-HQ/Cognis/commit/458c6bea)
 - [a009f770](https://github.com/Cognis-Labs-HQ/Cognis/commit/a009f770)
+- [799fc33d](https://github.com/Cognis-Labs-HQ/Cognis/commit/799fc33d)

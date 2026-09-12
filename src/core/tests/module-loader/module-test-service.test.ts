@@ -135,9 +135,9 @@ test("external module activation rejects CommonJS requires into Cognis internals
 
 test("external module activation rejects symlinked sources", async () => {
     const { root, moduleRoot } = await createModule("export {};\n");
-    const externalSource = path.join(root, "external.js");
-    await writeFile(externalSource, "export const unsafe = true;\n");
-    await symlink(externalSource, path.join(moduleRoot, "bootstrap.js"));
+    const moduleSource = path.join(moduleRoot, "source.js");
+    await writeFile(moduleSource, "export const unsafe = true;\n");
+    await symlink(moduleSource, path.join(moduleRoot, "bootstrap.js"));
     await assert.rejects(
         new ModuleTestService([root]).run("example-module"),
         /module_boundary_violation[\s\S]*symlink/,
@@ -146,20 +146,44 @@ test("external module activation rejects symlinked sources", async () => {
 
 test("external module activation rejects dotted symlink directories", async () => {
     const { root, moduleRoot } = await createModule("export {};\n");
-    const externalDirectory = path.join(root, "external-directory");
-    await mkdir(externalDirectory);
+    const moduleDirectory = path.join(moduleRoot, "module-directory");
+    await mkdir(moduleDirectory);
     await writeFile(
-        path.join(externalDirectory, "bootstrap.js"),
+        path.join(moduleDirectory, "bootstrap.js"),
         "export const unsafe = true;\n",
     );
     await symlink(
-        externalDirectory,
+        moduleDirectory,
         path.join(moduleRoot, "vendor.bundle"),
         "dir",
     );
     await assert.rejects(
         new ModuleTestService([root]).run("example-module"),
         /module_boundary_violation[\s\S]*vendor\.bundle:symlink/,
+    );
+});
+
+test("external module validation permits non-source asset symlinks", async () => {
+    const { root, moduleRoot } = await createModule("export {};\n");
+    const assetDirectory = path.join(moduleRoot, "assets");
+    await mkdir(assetDirectory);
+    const moduleAsset = path.join(assetDirectory, "source.svg");
+    await writeFile(moduleAsset, '<svg xmlns="http://www.w3.org/2000/svg"/>\n');
+    await symlink(moduleAsset, path.join(moduleRoot, "icon.svg"));
+    await new ModuleTestService([root]).run("example-module");
+});
+
+test("external module activation rejects asset symlinks outside its boundary", async () => {
+    const { root, moduleRoot } = await createModule("export {};\n");
+    const externalAsset = path.join(root, "external.svg");
+    await writeFile(
+        externalAsset,
+        '<svg xmlns="http://www.w3.org/2000/svg"/>\n',
+    );
+    await symlink(externalAsset, path.join(moduleRoot, "icon.svg"));
+    await assert.rejects(
+        new ModuleTestService([root]).run("example-module"),
+        /module_boundary_violation[\s\S]*icon\.svg:symlink/,
     );
 });
 

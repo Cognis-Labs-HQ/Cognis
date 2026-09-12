@@ -16,7 +16,7 @@ Beim Löschen aus der Bibliothek werden nun die endgültige Kaskade ermittelt un
 
 ## Stärkere Modulgrenzen
 
-Die Prüfung externer Module lehnt alle symbolischen Verknüpfungen einschließlich Verzeichnisnamen mit Punkten ab und erkennt geschützte UI-Klassen auch in Klassenattributselektoren.
+Die Prüfung externer Module lehnt symbolische Verknüpfungen für Quellcode, Verzeichnisse (einschließlich Namen mit Punkten) und Assets außerhalb der Modulgrenze ab. Sichere modulinterne Asset-Verknüpfungen bleiben nutzbar. Geschützte UI-Klassen in Klassenattributselektoren werden ebenfalls erkannt.
 
 ## Zweitschreibweisen im Titel
 
@@ -31,3 +31,4 @@ Primäre und sekundäre Schreibweisen werden nicht mehr als Aussprachemetadaten 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
 - [458c6bea](https://github.com/Cognis-Labs-HQ/Cognis/commit/458c6bea)
 - [a009f770](https://github.com/Cognis-Labs-HQ/Cognis/commit/a009f770)
+- [799fc33d](https://github.com/Cognis-Labs-HQ/Cognis/commit/799fc33d)
