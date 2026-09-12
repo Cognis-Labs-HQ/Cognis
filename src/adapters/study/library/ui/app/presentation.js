@@ -146,17 +146,6 @@ export function relationSection(title, entries, emptyLabel) {
     return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${entries.length ? `<div class="library-related-entries">${entries.map((entry) => renderEntryLink(entry, "library-related-entry btn-neutral")).join("")}</div>` : `<p>${escapeHtml(emptyLabel)}</p>`}</section>`;
 }
 
-export function usageExampleSection(title, groups) {
-    const visible = groups.filter((group) => group.examples.length);
-    if (!visible.length) return "";
-    return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3><div class="library-usage-groups">${visible
-        .map(
-            ({ reading, examples }) =>
-                `<div class="library-usage-group">${renderEntryLink(reading, "library-related-entry library-usage-reading btn-neutral")}<span aria-hidden="true">→</span><div class="library-related-entries">${examples.map((entry) => renderEntryLink(entry, "library-related-entry btn-neutral")).join("")}</div></div>`,
-        )
-        .join("")}</div></section>`;
-}
-
 export function renderEntryLink(entry, className, label = entry.label) {
     return `<button class="${className}" type="button" ${entryAttributes(entry)} data-library-preview="${escapeHtml(label)}">${escapeHtml(label)}</button>`;
 }
@@ -250,35 +239,6 @@ export function headingCompositionReferences(detail, schemas) {
                     detail.entry.label,
         )?.entries ?? []
     );
-}
-
-export function renderCompositionGroups(groups, i18n) {
-    return groups
-        .map(
-            (group) =>
-                `<div class="library-component-boxes" data-library-composition="${escapeHtml(group.id)}" data-library-presentation-role="${escapeHtml(group.presentationRole)}" aria-label="${escapeHtml(i18n.t(`gateway.study.library_relationship_${group.presentationRole}`))}">${group.entries
-                    .map((entry) =>
-                        renderEntryLink(
-                            entry,
-                            "library-component-box btn-neutral",
-                        ),
-                    )
-                    .join("")}</div>`,
-        )
-        .join("");
-}
-
-export function renderPronunciation(entry, layer) {
-    const values = pronunciationValues(entry);
-    if (!values.length || isWritingUnitLayer(layer)) return "";
-    return `<p class="library-pronunciation">${values.map((value) => escapeHtml(value)).join(" · ")}</p>`;
-}
-
-export function detailTitlePronunciation(entry, layer) {
-    const pronunciations = pronunciationValues(entry);
-    return layer?.semanticRole === "atomicWritingUnit" && pronunciations.length
-        ? pronunciations.join(" · ")
-        : "";
 }
 
 export function renderAudio(entry, layer) {

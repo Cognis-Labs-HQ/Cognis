@@ -1,8 +1,6 @@
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
-    compositionReferenceGroups,
     definitionText,
-    headingCompositionReferences,
     isMeaningLayer,
     isWritingUnitLayer,
     layerForEntry,
@@ -11,49 +9,17 @@ import {
     metadataFields,
     relationSection,
     renderAudio,
-    renderCompositionGroups,
     renderDetailFields,
     renderMetadataPills,
-    renderPronunciation,
     renderScope,
-    usageExampleSection,
-    pronunciationValues,
     section,
 } from "./presentation.js";
-import { resolveLabelComposition } from "./composition-links.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
 
 function coreSections(detail, schemas, entries, i18n, variantPlacement) {
     const { entry, references = [], usedBy = [] } = detail;
     const layer = layerForEntry(schemas, entry);
-    const headingReferences = headingCompositionReferences(detail, schemas);
-    const compositions = compositionReferenceGroups(detail, schemas).filter(
-        (group) =>
-            !headingReferences.length ||
-            !group.entries.every((entry) => headingReferences.includes(entry)),
-    );
-    const compositionLabels = new Set(
-        compositions.map((group) =>
-            group.entries.map(({ label }) => label).join(""),
-        ),
-    );
-    pronunciationValues(entry).forEach((label, index) => {
-        if (compositionLabels.has(label)) return;
-        const components = resolveLabelComposition(
-            label,
-            entry,
-            schemas,
-            entries,
-        );
-        if (components.length) {
-            compositions.push({
-                id: `inferred-pronunciation-${index}`,
-                presentationRole: "composition",
-                entries: components,
-            });
-        }
-    });
     const relatedWords = isWritingUnitLayer(layer)
         ? usedBy.filter(
               (candidate) =>
@@ -79,27 +45,21 @@ function coreSections(detail, schemas, entries, i18n, variantPlacement) {
             );
         });
     });
+    const directExamples = usedBy.filter(
+        (candidate) =>
+            layerForEntry(schemas, candidate)?.semanticRole ===
+            "orderedLexicalSequence",
+    );
     const otherUsedBy = usedBy.filter(
         (candidate) =>
             !relatedWords.includes(candidate) &&
+            !directExamples.includes(candidate) &&
             !structuralDependants.includes(candidate) &&
             layerForEntry(schemas, candidate)?.semanticRole !== "definition",
     );
     const wordLayer = relatedWords.length
         ? layerForEntry(schemas, relatedWords[0])
         : null;
-    const readingExamples = relatedWords.map((reading) => ({
-        reading,
-        examples: entries.filter((candidate) => {
-            const candidateLayer = layerForEntry(schemas, candidate);
-            return (
-                candidateLayer?.semanticRole === "orderedLexicalSequence" &&
-                (candidate.references ?? []).some(
-                    (reference) => reference.entryId === reading.id,
-                )
-            );
-        }),
-    }));
     const fields = entry.fields ?? {};
     const metadataIds = new Set(metadataFields(layer).map(({ id }) => id));
     const reserved = new Set(["pronunciation", "audio", ...metadataIds]);
@@ -131,7 +91,7 @@ function coreSections(detail, schemas, entries, i18n, variantPlacement) {
             }),
     );
     return [
-        `<header class="library-detail-summary">${renderPronunciation(entry, layer)}${renderAudio(entry, layer)}${renderCompositionGroups(compositions, i18n)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
+        `<header class="library-detail-summary">${renderAudio(entry, layer)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
         renderDetailFields(genericFields),
         relatedWords.length
             ? relationSection(
@@ -146,10 +106,13 @@ function coreSections(detail, schemas, entries, i18n, variantPlacement) {
                   i18n.t("gateway.study.library_no_relationships"),
               )
             : "",
-        usageExampleSection(
-            i18n.t("gateway.study.library_usage_examples"),
-            readingExamples,
-        ),
+        directExamples.length
+            ? relationSection(
+                  i18n.t("gateway.study.library_usage_examples"),
+                  directExamples,
+                  i18n.t("gateway.study.library_no_relationships"),
+              )
+            : "",
         variantChildren.length
             ? relationSection(
                   i18n.t(

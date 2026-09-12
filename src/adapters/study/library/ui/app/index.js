@@ -28,7 +28,6 @@ let activeEntryPopup = null;
 
 import {
     definitionText,
-    detailTitlePronunciation,
     entryAttributes,
     entrySearchAttribute,
     headingCompositionReferences,
@@ -553,18 +552,35 @@ async function openEntryPopup(
             variantPlacement,
         );
         signal?.throwIfAborted();
+        const pronunciationItems = pronunciationValues(detail.entry).flatMap(
+            (label, pronunciationIndex) => {
+                const references = resolveLabelComposition(
+                    label,
+                    detail.entry,
+                    schemas,
+                    entries,
+                );
+                const items = references.length
+                    ? references.map((entry) => ({
+                          label: entry.label,
+                          actionId: `open-title-reference:${entry.id}`,
+                      }))
+                    : [{ label }];
+                return [
+                    ...(pronunciationIndex ? [{ label: " · " }] : []),
+                    ...items,
+                ];
+            },
+        );
         const titleDetailItems = [
-            detailTitlePronunciation(
-                detail.entry,
-                layerForEntry(schemas, detail.entry),
-            ),
-            composed.titleDefinition,
-        ]
-            .filter(Boolean)
-            .flatMap((label, detailIndex) => [
-                ...(detailIndex ? [{ label: " · " }] : []),
-                { label },
-            ]);
+            ...pronunciationItems,
+            ...(pronunciationItems.length && composed.titleDefinition
+                ? [{ label: " · " }]
+                : []),
+            ...(composed.titleDefinition
+                ? [{ label: composed.titleDefinition }]
+                : []),
+        ];
         if (parentEntry) {
             const [parentPrefix, parentSuffix = ""] = i18n
                 .t("gateway.study.library_from_parent")

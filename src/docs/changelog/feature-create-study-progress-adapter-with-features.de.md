@@ -366,6 +366,10 @@ Sprachmodule können jetzt eigene Ebenenziele wie Alphabet, Wortschatz, Sätze u
 
 Bibliotheksschemas aktivieren räumliche Kindkarten jetzt ausdrücklich mit `child: true`; alternative Formen werden nicht mehr stillschweigend zu Kindern, und `hidden: true` hält reine Referenzdatensätze aus Diagrammen heraus. Eingehende strukturelle Beziehungen erscheinen nicht mehr unter allgemeinen Verwendungsüberschriften, Detailkompositionen verwenden Tiefenlink-Felder ohne doppelte Bezeichnungen oder Operatoren, und aufgeklappte Kartenüberlagerungen bleiben an die Diagrammgrenze gebunden.
 
+## Bibliotheks-Tiefenlinks in Pop-up-Titeln halten
+
+Schreibweisen und Aussprachen von Einträgen verwenden jetzt ausschließlich den Linkstil für Titel und Sekundärtitel des Pop-ups; der Detailinhalt dupliziert sie nicht mehr in Aussprache- oder Komponentencontainern. Verwendungsbeispiele erscheinen nur noch bei Einträgen, auf die ein geordneter Datensatz direkt verweist, sodass eine atomare Komponente keine Beispiele über einen enthaltenen lexikalischen Eintrag erbt.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -464,3 +468,6 @@ Bibliotheksschemas aktivieren räumliche Kindkarten jetzt ausdrücklich mit `chi
 - [1a2fafce](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a2fafceced4061dca8bbd9272274f8d4ee8877d)
 - [2b29614](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b29614)
 - [a7f7866](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f7866)
+- [f9d2be18](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9d2be18)
+- [81546618](https://github.com/Cognis-Labs-HQ/Cognis/commit/81546618)
+- [a12b60f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/a12b60f1)

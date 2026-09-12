@@ -159,17 +159,15 @@ test("Study Library integrates definitions and particles into item details", () 
     );
     assert.match(source, /renderDetailFields\(genericFields\)/);
     assert.match(source, /orderedLexicalSequence/);
-    assert.match(source, /usageExampleSection/);
-    assert.match(source, /reference\.entryId === reading\.id/);
+    assert.match(source, /const directExamples = usedBy\.filter/);
+    assert.match(source, /!directExamples\.includes\(candidate\)/);
+    assert.match(source, /library_usage_examples[\s\S]*directExamples/);
     assert.match(source, /function isMeaningLayer/);
     assert.match(source, /layer\.semanticRole !== "particle"/);
     assert.match(source, /class="library-detail-summary"/);
-    assert.match(
-        source,
-        /renderEntryLink\([\s\S]*entry,[\s\S]*"library-component-box btn-neutral"/,
-    );
+    assert.doesNotMatch(source, /library-component-box/);
+    assert.doesNotMatch(source, /library-component-boxes/);
     assert.match(source, /layer\?\.semanticRole === "particle"/);
-    assert.match(source, /const compositions = compositionReferenceGroups/);
     assert.match(source, /function compositionReferenceGroups/);
     assert.match(source, /const groupsByRole = new Map/);
     assert.match(source, /groupsByRole\.get\(presentationRole\)/);
@@ -177,7 +175,7 @@ test("Study Library integrates definitions and particles into item details", () 
         source,
         /sort\(\(left, right\) => left\.position - right\.position\)/,
     );
-    assert.match(source, /function renderCompositionGroups/);
+    assert.doesNotMatch(source, /function renderCompositionGroups/);
     assert.match(source, /relationship\.resolverRole/);
     assert.doesNotMatch(source, /library-composition-operator/);
     assert.match(source, /const variantChildren = usedBy\.filter/);
@@ -204,11 +202,11 @@ test("Study Library integrates definitions and particles into item details", () 
         /const explicitTitleReferences = headingCompositionReferences/,
     );
     assert.match(source, /resolveLabelComposition\(/);
-    assert.match(source, /pronunciationValues\(entry\)\.forEach/);
+    assert.match(source, /const pronunciationItems = pronunciationValues/);
+    assert.match(source, /references\.map\(\(entry\) =>/);
     assert.match(source, /titleItems: titleReferences\.map/);
     assert.match(source, /open-title-reference:\$\{entry\.id\}/);
     assert.doesNotMatch(source, /querySelector\("\.popup-title"\)/);
-    assert.match(source, /data-library-presentation-role/);
     assert.match(
         source,
         /if \(isMeaningLayer\(layerForEntry\(schemas, initialEntry\)\)\)/,
@@ -244,8 +242,9 @@ test("Study Library renders metadata and scope indicators", () => {
 test("Study Library positions pronunciations by semantic role", () => {
     assert.match(source, /function isWritingUnitLayer/);
     assert.match(source, /function pronunciationValues/);
-    assert.match(source, /function detailTitlePronunciation/);
-    assert.match(source, /detailTitlePronunciation\(/);
+    assert.doesNotMatch(source, /function detailTitlePronunciation/);
+    assert.match(source, /const pronunciationItems = pronunciationValues/);
+    assert.match(source, /open-title-reference:\$\{entry\.id\}/);
     assert.match(source, /composed\.titleDefinition/);
     assert.match(source, /class="library-entry-heading"/);
     assert.match(source, /library-card-pronunciation-below/);
@@ -452,7 +451,8 @@ test("Study Library honors module-defined grid layouts", () => {
 });
 
 test("Study Library renders writing-unit pronunciation and audio", () => {
-    assert.match(source, /function renderPronunciation/);
+    assert.doesNotMatch(source, /function renderPronunciation/);
+    assert.doesNotMatch(source, /library-pronunciation/);
     assert.match(source, /function renderAudio/);
     assert.match(source, /data-library-audio-player/);
     assert.match(source, /data-library-audio-toggle/);

@@ -366,6 +366,10 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 
 ライブラリスキーマでは、空間的な子カードを `child: true` で明示的に有効化するようになりました。代替形が暗黙に子になることはなく、`hidden: true` により参照専用レコードを表から除外できます。入力側の構造関係は一般的な使用見出しに表示せず、詳細の構成は重複ラベルや演算子のない深層リンクボックスで示し、展開カードのオーバーレイは表の境界内に収めます。
 
+## ライブラリの深層リンクをポップアップタイトルに統一
+
+項目の綴りと発音は、ポップアップのタイトルおよび副タイトルのリンクスタイルだけで表示するようになり、詳細本文の発音コンテナや構成要素コンテナには重複表示しません。使用例は順序付きレコードから直接参照される項目にだけ表示するため、原子的な構成要素が、それを含む語彙項目を介して使用例を継承することはありません。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -464,3 +468,6 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 - [1a2fafce](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a2fafceced4061dca8bbd9272274f8d4ee8877d)
 - [2b29614](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b29614)
 - [a7f7866](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f7866)
+- [f9d2be18](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9d2be18)
+- [81546618](https://github.com/Cognis-Labs-HQ/Cognis/commit/81546618)
+- [a12b60f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/a12b60f1)

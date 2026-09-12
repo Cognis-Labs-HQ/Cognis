@@ -366,6 +366,10 @@ Modul bahasa kini dapat mendaftarkan tujuan lapisan khusus seperti Alfabet, Kosa
 
 Skema Pustaka kini mengaktifkan kartu anak spasial secara eksplisit dengan `child: true`; bentuk alternatif tidak lagi menjadi anak secara implisit, dan `hidden: true` mencegah rekaman khusus referensi tampil dalam bagan. Relasi masuk struktural tidak lagi muncul di bawah judul penggunaan umum, komposisi detail memakai kotak tautan mendalam tanpa label atau operator duplikat, dan overlay kartu yang dibuka dipotong pada batas bagan.
 
+## Pertahankan tautan mendalam Pustaka dalam judul popup
+
+Ejaan dan pelafalan entri kini hanya memakai gaya tautan judul dan judul sekunder popup; isi detail tidak lagi menggandakannya dalam wadah pelafalan atau komponen. Contoh penggunaan kini hanya muncul pada entri yang dirujuk langsung oleh rekaman berurutan, sehingga komponen atomik tidak mewarisi contoh melalui entri leksikal yang memuatnya.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -464,3 +468,6 @@ Skema Pustaka kini mengaktifkan kartu anak spasial secara eksplisit dengan `chil
 - [1a2fafce](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a2fafceced4061dca8bbd9272274f8d4ee8877d)
 - [2b29614](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b29614)
 - [a7f7866](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f7866)
+- [f9d2be18](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9d2be18)
+- [81546618](https://github.com/Cognis-Labs-HQ/Cognis/commit/81546618)
+- [a12b60f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/a12b60f1)
