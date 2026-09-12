@@ -374,6 +374,10 @@ Ejaan dan pelafalan entri kini hanya memakai gaya tautan judul dan judul sekunde
 
 Kisi Pustaka kini menyediakan padding dalam sebesar jarak kartu agar garis tepi kartu dan fokus tetap terlihat pada setiap sisi. Penyusun pohon berarah mengukur kapasitas yang tersedia, melacak koordinat yang sudah ditempati cabang aktif, dan memilih arah yang dapat memuat turunan sebelum memakai arah terlihat terbaik yang tersisa.
 
+## Pertahankan semua anak Pustaka bertingkat tetap terlihat
+
+Cabang Pustaka yang dibuka tidak lagi memangkas saudara atau turunan yang lebih dalam. Mengarahkan penunjuk atau memfokuskan anak yang terlihat menampilkan seluruh tingkat berikutnya, sedangkan petunjuk tekan lama kini tetap di bagian bawah dalam kartu pemiliknya.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -476,3 +480,4 @@ Kisi Pustaka kini menyediakan padding dalam sebesar jarak kartu agar garis tepi 
 - [81546618](https://github.com/Cognis-Labs-HQ/Cognis/commit/81546618)
 - [a12b60f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/a12b60f1)
 - [79b6e2e9](https://github.com/Cognis-Labs-HQ/Cognis/commit/79b6e2e9)
+- [b2becb7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2becb7d)

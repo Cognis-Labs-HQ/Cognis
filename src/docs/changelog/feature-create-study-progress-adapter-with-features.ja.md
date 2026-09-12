@@ -374,6 +374,10 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 
 ライブラリのグリッドはカード間隔分の内側余白を確保し、すべての端でカード枠とフォーカス枠が見えるようになりました。方向ツリーの構築処理は利用可能な容量を測定し、現在の枝が使用済みの座標を追跡して、子孫を収容できる方向を優先した後、残る方向のうち表示可能容量が最大のものを選びます。
 
+## 入れ子になったライブラリの子項目をすべて表示
+
+展開したライブラリの分岐で、同階層の項目やさらに深い子項目が非表示にならないようにしました。表示中の子項目にポインターを合わせるかフォーカスすると次の階層全体が表示され、長押しの案内は対象カード内の下部に収まります。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -476,3 +480,4 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 - [81546618](https://github.com/Cognis-Labs-HQ/Cognis/commit/81546618)
 - [a12b60f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/a12b60f1)
 - [79b6e2e9](https://github.com/Cognis-Labs-HQ/Cognis/commit/79b6e2e9)
+- [b2becb7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2becb7d)

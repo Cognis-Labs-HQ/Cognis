@@ -314,27 +314,8 @@ test("Study Library unfolds structured character variants", () => {
         source,
         /if \(openShell !== shell\)[\s\S]*openShell\.classList\.remove\([\s\S]*"library-entry-variants-open"/,
     );
-    assert.match(source, /function activateVariantBranch/);
-    assert.match(source, /function clearVariantBranch/);
-    assert.match(source, /"pointerover"/);
-    assert.match(source, /library-entry-branch-active/);
-    assert.match(source, /library-entry-branch-path/);
-    assert.match(source, /library-entry-branch-tip/);
-    assert.match(
-        stylesheet,
-        /\.library-entry-card-shell\.library-entry-branch-active\[data-library-variant-depth="0"\][\s\S]*\.library-entry-variant-shell\s*\{[\s\S]*display:\s*none/,
-    );
-    assert.match(
-        stylesheet,
-        /\.library-entry-variant-shell\.library-entry-branch-path[\s\S]*\.library-entry-card-shell\.library-entry-branch-tip[\s\S]*display:\s*block/,
-    );
-    assert.match(source, /dataset\.libraryVariantDepth === "0"/);
-    assert.match(
-        source,
-        /if \(!rootShell\.contains\(event\.relatedTarget\)\)[\s\S]*clearVariantBranch\(rootShell\)/,
-    );
-    assert.match(stylesheet, /@keyframes library-entry-focus-pulse/);
-    assert.match(stylesheet, /prefers-reduced-motion:\s*reduce/);
+    assert.doesNotMatch(source, /function activateVariantBranch/);
+    assert.doesNotMatch(source, /library-entry-branch-active/);
     assert.match(
         stylesheet,
         /\.library-entry-card-shell\.library-entry-variants-open/,
@@ -356,7 +337,11 @@ test("Study Library unfolds structured character variants", () => {
     );
     assert.match(
         stylesheet,
-        /\.library-entry-card-shell:not\(\[data-library-variant-depth="0"\]\):hover[\s\S]*> \.library-entry-variant-shell/,
+        /\.library-entry-card-shell:not\(\[data-library-variant-depth="0"\]\):is\([\s\S]*:hover,[\s\S]*:focus-within[\s\S]*\)[\s\S]*> \.library-entry-variant-shell/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-entry-variant-hint\s*\{[\s\S]*bottom:\s*0\.4rem/,
     );
     assert.doesNotMatch(
         stylesheet,

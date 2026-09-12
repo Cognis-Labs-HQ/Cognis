@@ -374,6 +374,10 @@ Schreibweisen und Aussprachen von Einträgen verwenden jetzt ausschließlich den
 
 Bibliotheksraster reservieren nun innen einen Kartenabstand, damit Karten- und Fokusrahmen an jeder Kante sichtbar bleiben. Der gerichtete Baumaufbau misst die verfügbare Kapazität, verfolgt bereits vom aktiven Zweig belegte Koordinaten und wählt zuerst eine Richtung, die die Nachkommen aufnehmen kann, bevor er die beste verbleibende sichtbare Richtung verwendet.
 
+## Alle verschachtelten Bibliothekskinder sichtbar halten
+
+Aufgeklappte Bibliothekszweige blenden weder Geschwister noch tiefer verschachtelte Nachfolger aus. Wenn ein sichtbares Kind fokussiert oder mit dem Zeiger berührt wird, erscheint seine vollständige nächste Ebene; der Hinweis zum langen Drücken bleibt nun unten innerhalb der zugehörigen Karte.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -476,3 +480,4 @@ Bibliotheksraster reservieren nun innen einen Kartenabstand, damit Karten- und F
 - [81546618](https://github.com/Cognis-Labs-HQ/Cognis/commit/81546618)
 - [a12b60f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/a12b60f1)
 - [79b6e2e9](https://github.com/Cognis-Labs-HQ/Cognis/commit/79b6e2e9)
+- [b2becb7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2becb7d)

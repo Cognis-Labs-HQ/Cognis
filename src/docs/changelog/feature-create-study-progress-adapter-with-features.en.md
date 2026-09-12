@@ -374,6 +374,10 @@ Entry spellings and pronunciations now use the popup title and secondary-title l
 
 Library grids now reserve inner card-gap padding so card and focus borders remain visible at every edge. The directional tree builder measures available capacity, tracks coordinates already occupied by the active branch, and chooses a direction that can fit descendants before using the best remaining visible direction.
 
+## Keep every nested Library child visible
+
+Unfolded Library branches no longer prune siblings or deeper descendants. Hovering or focusing any visible child exposes its complete next level, while the long-press instruction now stays at the bottom inside its owning card.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -476,3 +480,4 @@ Library grids now reserve inner card-gap padding so card and focus borders remai
 - [81546618](https://github.com/Cognis-Labs-HQ/Cognis/commit/81546618)
 - [a12b60f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/a12b60f1)
 - [79b6e2e9](https://github.com/Cognis-Labs-HQ/Cognis/commit/79b6e2e9)
+- [b2becb7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2becb7d)
