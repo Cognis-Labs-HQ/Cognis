@@ -357,7 +357,7 @@ test("Study Library unfolds structured character variants", () => {
     );
     assert.match(
         stylesheet,
-        /\.library-entry-variant-hint\s*\{[\s\S]*bottom:\s*0\.4rem/,
+        /\.library-entry-variant-hint\s*\{[\s\S]*top:\s*calc\(100% \+ 0\.4rem\)/,
     );
     assert.doesNotMatch(
         stylesheet,

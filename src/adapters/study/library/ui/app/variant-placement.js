@@ -22,6 +22,7 @@ export function isSameLibraryRecord(left, right) {
 }
 
 export function variantPlacement(entry, schema, entries = []) {
+    if (entry.hidden === true) return null;
     const schemas = Array.isArray(schema) ? schema : [schema];
     for (const reference of entry.references ?? []) {
         const relationship = schemas

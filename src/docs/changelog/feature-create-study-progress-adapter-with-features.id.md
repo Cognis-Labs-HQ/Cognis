@@ -386,6 +386,10 @@ Pergerakan kursor kembali mempersempit pohon yang dibuka ke cabang aktif sambil 
 
 Anak Pustaka bertingkat kini hanya mencadangkan jalur leluhur aktifnya. Anak dapat menempati slot kisi yang ditetapkan kepada cabang alternatif yang dipangkas oleh kursor, sehingga cabang terlihat memperoleh lebih banyak ruang tanpa bertabrakan dengan leluhurnya sendiri.
 
+## Kecualikan target tersembunyi dari pohon anak
+
+Rekaman dengan `hidden: true` tidak lagi menerima penempatan anak struktural, sehingga bentuk khusus referensi tetap tersedia melalui tautan mendalam tanpa terbuka di bawah kartu yang terlihat. Petunjuk tekan lama kembali menjadi elemen mengambang di bawah kartu yang hanya tampil saat diarahkan.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -491,3 +495,4 @@ Anak Pustaka bertingkat kini hanya mencadangkan jalur leluhur aktifnya. Anak dap
 - [b2becb7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2becb7d)
 - [730f448e](https://github.com/Cognis-Labs-HQ/Cognis/commit/730f448e)
 - [3b863171](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b863171)
+- [9aa724ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aa724ac)

@@ -48,11 +48,11 @@ test("duplicate representations cannot become variants of themselves", () => {
     );
 });
 
-test("genuine variants retain placement when their content differs", () => {
+test("visible structural children retain placement when their content differs", () => {
     const parent = entry("canonical-i", { sourceRecordId: "i" });
-    const child = entry("small-i", {
-        label: "ぃ",
-        fields: { pronunciation: "xi" },
+    const child = entry("combined-i", {
+        label: "combined i",
+        fields: { pronunciation: "combined-i" },
         references: [{ entryId: parent.id, relation: "variant-of" }],
     });
     assert.deepEqual(variantPlacement(child, schema, [parent, child]), {
@@ -61,6 +61,27 @@ test("genuine variants retain placement when their content differs", () => {
     assert.equal(
         assignVariantPlacements([parent, child], schema, layer).has(child.id),
         true,
+    );
+});
+
+test("hidden composition targets never become structural child cards", () => {
+    const parent = entry("canonical-i", { sourceRecordId: "i" });
+    const hiddenTarget = entry("small-i", {
+        hidden: true,
+        label: "ぃ",
+        fields: { pronunciation: "xi" },
+        references: [{ entryId: parent.id, relation: "variant-of" }],
+    });
+
+    assert.equal(
+        variantPlacement(hiddenTarget, schema, [parent, hiddenTarget]),
+        null,
+    );
+    assert.equal(
+        assignVariantPlacements([parent, hiddenTarget], schema, layer).has(
+            hiddenTarget.id,
+        ),
+        false,
     );
 });
 

@@ -386,6 +386,10 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 
 入れ子のライブラリ子項目が予約する範囲を、有効な祖先経路だけに変更しました。カーソルによって非表示になった代替分岐のグリッドスロットを利用できるため、表示中の分岐は自身の祖先と重なることなく、より広い空間を使用できます。
 
+## 非表示対象を子ツリーから除外
+
+`hidden: true` のレコードには空間的な子配置を行わないようにしました。参照専用の形は深層リンクから引き続き利用できますが、表示カードの下には展開されません。長押しの案内は、ホバー時だけカード下に表示される浮動要素へ戻しました。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -491,3 +495,4 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 - [b2becb7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2becb7d)
 - [730f448e](https://github.com/Cognis-Labs-HQ/Cognis/commit/730f448e)
 - [3b863171](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b863171)
+- [9aa724ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aa724ac)

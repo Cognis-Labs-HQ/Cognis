@@ -386,6 +386,10 @@ Cursor traversal once again narrows an unfolded tree to the active branch while 
 
 Nested Library children now reserve only their active ancestor path. They can occupy a grid slot assigned to a cursor-pruned alternate branch, giving the visible branch more usable room without colliding with its own ancestors.
 
+## Keep hidden targets out of child trees
+
+Records marked `hidden: true` no longer receive structural child placement, so reference-only forms remain available through deep links without unfolding beneath visible cards. The long-press instruction is again a hover-only floating element below its card.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -491,3 +495,4 @@ Nested Library children now reserve only their active ancestor path. They can oc
 - [b2becb7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2becb7d)
 - [730f448e](https://github.com/Cognis-Labs-HQ/Cognis/commit/730f448e)
 - [3b863171](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b863171)
+- [9aa724ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aa724ac)

@@ -12,7 +12,7 @@ Ebenen können sich in einer Beziehung selbst als Ziel verwenden, sodass ein Ein
 
 ## Auflösung, API und UI
 
-Verschachtelte Kinder bleiben als vollständiger Teilbaum verfügbar: Beim Überfahren oder Fokussieren eines aufgeklappten Kindes werden alle direkten Kinder angezeigt, ohne Geschwisterpfade einzuklappen. Der Hinweis zum langen Drücken bleibt innerhalb des unteren Kartenbereichs und verdeckt keine Karten in der darüberliegenden Zeile.
+Verschachtelte Kinder bleiben als vollständiger Teilbaum verfügbar: Beim Überfahren oder Fokussieren eines aufgeklappten Kindes werden alle direkten Kinder angezeigt, ohne Geschwisterpfade einzuklappen. Der Hinweis zum langen Drücken erscheint nur beim Darüberfahren als schwebendes Element unterhalb seiner Karte.
 
 Der `grapheme`-Resolver nutzt Unicode-Grapheme; `longest-match` verarbeitet ausdrücklich getrennte Blöcke. Beide liefern Vorschläge und ungelöste Einheiten, ohne still Einträge anzulegen. Lookup-Anbieter werden über `registerLookupProvider` beigetragen, liefern gewichtete Vorschläge mit Herkunft und lassen sich über den zurückgegebenen Callback entfernen. Erstellen, Auflösen und Nachschlagen laufen durch benannte ctx-Flows.
 

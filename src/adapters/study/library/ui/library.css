@@ -344,7 +344,7 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
 .library-entry-variant-hint {
     position: absolute;
     z-index: 6;
-    bottom: 0.4rem;
+    top: calc(100% + 0.4rem);
     left: 50%;
     display: none;
     width: max-content;

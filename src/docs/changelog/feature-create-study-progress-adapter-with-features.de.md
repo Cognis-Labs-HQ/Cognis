@@ -386,6 +386,10 @@ Beim Bewegen des Cursors wird ein aufgeklappter Baum wieder auf den aktiven Zwei
 
 Verschachtelte Bibliothekskinder reservieren jetzt nur noch ihren aktiven Vorfahrenpfad. Sie können einen Rasterplatz belegen, der einem cursorbedingt ausgeblendeten Alternativzweig zugewiesen ist. Dadurch erhält der sichtbare Zweig mehr nutzbaren Raum, ohne seine eigenen Vorfahren zu überlagern.
 
+## Verborgene Ziele aus Kindbäumen fernhalten
+
+Mit `hidden: true` markierte Datensätze erhalten keine räumliche Kindplatzierung mehr. Reine Referenzformen bleiben dadurch über Tiefenlinks erreichbar, ohne unter sichtbaren Karten aufzuklappen. Der Hinweis zum langen Drücken ist wieder ein ausschließlich beim Darüberfahren sichtbares, schwebendes Element unterhalb der Karte.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -491,3 +495,4 @@ Verschachtelte Bibliothekskinder reservieren jetzt nur noch ihren aktiven Vorfah
 - [b2becb7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2becb7d)
 - [730f448e](https://github.com/Cognis-Labs-HQ/Cognis/commit/730f448e)
 - [3b863171](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b863171)
+- [9aa724ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aa724ac)
