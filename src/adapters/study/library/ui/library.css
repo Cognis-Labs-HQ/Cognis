@@ -265,7 +265,12 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     background: var(--library-card-surface-raised);
 }
 
-.library-entry-variant.library-entry-variant:is(:hover, :focus-visible) {
+.library-entry-card.library-entry-card.library-entry-variant:is(
+        :hover,
+        :focus-visible,
+        :active
+    ) {
+    opacity: 1;
     border-color: var(
         --color-success-outline-text,
         var(--color-success-border)

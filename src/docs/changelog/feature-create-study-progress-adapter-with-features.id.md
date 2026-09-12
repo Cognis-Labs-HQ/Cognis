@@ -398,6 +398,10 @@ Relasi bentuk alternatif kini selalu menjadi tautan mendalam, bukan anak spasial
 
 Perubahan sebelumnya secara keliru membuat `variant` mengesampingkan `child`, sehingga semua relasi penyedia yang sengaja memakai kedua penanda disembunyikan. Pembukaan spasial kembali mengikuti `child: true`; `variant` tetap menjadi metadata penyajian independen, sedangkan `hidden: true` menjadi mekanisme eksplisit untuk mengeluarkan bentuk khusus referensi dari pohon dan membebaskan slotnya.
 
+## Pertahankan kartu anak tetap opak saat diarahkan
+
+Kartu anak yang diarahkan, difokuskan, atau diaktifkan kini memakai permukaan terangkat opak dengan spesifisitas lebih tinggi serta opasitas penuh eksplisit. Gaya arah kartu induk tidak berubah, sedangkan kartu anak bertumpuk tidak lagi memperlihatkan label atau bentuk kartu di bawahnya.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -506,3 +510,4 @@ Perubahan sebelumnya secara keliru membuat `variant` mengesampingkan `child`, se
 - [9aa724ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aa724ac)
 - [4ad30587](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ad30587)
 - [c8b5d5f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/c8b5d5f7)
+- [60354a9b](https://github.com/Cognis-Labs-HQ/Cognis/commit/60354a9b)

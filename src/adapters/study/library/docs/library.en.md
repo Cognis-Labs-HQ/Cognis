@@ -20,7 +20,7 @@ Minimal grids derive a bounded chart width and proportional card scale from `gri
 
 ## API and UI
 
-Nested children remain available as a complete subtree: hovering or focusing any unfolded child reveals all of its direct children without collapsing sibling paths. The long-press hint appears only on hover as a floating element below its card.
+Nested children remain available as a complete subtree: hovering or focusing any unfolded child reveals all of its direct children without collapsing sibling paths. The long-press hint appears only on hover as a floating element below its card. Hovered child cards keep a fully opaque raised surface so cards beneath them cannot show through.
 
 Chart grids reserve an internal card-gap inset so card and focus borders remain fully visible. Spatial child placement measures the remaining capacity in every direction, reserves only coordinates used by the active ancestor path so descendants can reuse slots belonging to cursor-pruned alternate branches, and prefers a direction that can contain the descendant branch before falling back to the greatest visible capacity.
 

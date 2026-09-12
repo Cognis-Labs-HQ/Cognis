@@ -12,7 +12,7 @@ Lapisan dapat menargetkan dirinya sendiri dalam suatu hubungan sehingga satu ent
 
 ## Resolusi, API, dan UI
 
-Anak bersarang tetap tersedia sebagai subpohon lengkap: mengarahkan penunjuk atau memfokuskan anak yang terbuka menampilkan semua anak langsungnya tanpa menutup jalur saudara. Petunjuk tekan lama hanya muncul saat diarahkan sebagai elemen mengambang di bawah kartunya.
+Anak bersarang tetap tersedia sebagai subpohon lengkap: mengarahkan penunjuk atau memfokuskan anak yang terbuka menampilkan semua anak langsungnya tanpa menutup jalur saudara. Petunjuk tekan lama hanya muncul saat diarahkan sebagai elemen mengambang di bawah kartunya. Kartu anak yang diarahkan mempertahankan permukaan terangkat yang sepenuhnya opak agar kartu di bawahnya tidak terlihat menembus.
 
 Resolver `grapheme` memakai grafem Unicode, sedangkan `longest-match` memakai blok yang dipisahkan secara eksplisit. Keduanya mengembalikan usulan dan unit yang belum terselesaikan tanpa membuat entri diam-diam. Penyedia lookup dipasang melalui `registerLookupProvider`, mengembalikan saran berperingkat beserta asalnya, dan dapat dilepas melalui callback registrasi. Pembuatan, resolusi, dan lookup mengikuti flow ctx bernama.
 

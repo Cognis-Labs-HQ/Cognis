@@ -398,6 +398,10 @@ Alternate-form relationships are now always deep links rather than spatial child
 
 The previous change incorrectly made `variant` override `child`, suppressing every provider relationship that intentionally used both flags. Spatial unfolding once again follows `child: true`; `variant` remains independent presentation metadata, while `hidden: true` is the explicit mechanism that keeps reference-only forms out of the tree and frees their slots.
 
+## Keep hovered child cards opaque
+
+Hovered, focused, and active child cards now use a higher-specificity opaque raised surface and explicit full opacity. Parent-card hover styling remains unchanged, while stacked child cards no longer reveal labels or shapes from cards beneath them.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -506,3 +510,4 @@ The previous change incorrectly made `variant` override `child`, suppressing eve
 - [9aa724ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aa724ac)
 - [4ad30587](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ad30587)
 - [c8b5d5f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/c8b5d5f7)
+- [60354a9b](https://github.com/Cognis-Labs-HQ/Cognis/commit/60354a9b)

@@ -131,7 +131,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.doesNotMatch(source, /library-entry-card--variant-masked/);
     assert.match(
         stylesheet,
-        /\.library-entry-variant\.library-entry-variant:is\(:hover, :focus-visible\)[\s\S]*background:\s*var\(--library-card-surface-raised\);[\s\S]*transform:\s*none/,
+        /\.library-entry-card\.library-entry-card\.library-entry-variant:is\([\s\S]*:hover,[\s\S]*:focus-visible,[\s\S]*:active[\s\S]*\)[\s\S]*opacity:\s*1[\s\S]*background:\s*var\(--library-card-surface-raised\);[\s\S]*transform:\s*none/,
     );
     assert.match(
         stylesheet,
@@ -373,7 +373,7 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(stylesheet, /var\(--color-success-outline-text/);
     assert.match(
         stylesheet,
-        /\.library-entry-variant\.library-entry-variant:is\(:hover, :focus-visible\)/,
+        /\.library-entry-card\.library-entry-card\.library-entry-variant:is\(/,
     );
     assert.match(variantArrowLight, /fill="#059669"/);
     assert.match(variantArrowDark, /fill="#34d399"/);
@@ -425,6 +425,10 @@ test("Study Library cards use opaque theme surfaces", () => {
     assert.match(
         stylesheet,
         /\.library-entry-card\.library-entry-variant\s*\{[\s\S]*background:\s*var\(--library-card-surface-raised\)/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-entry-card\.library-entry-card\.library-entry-variant:is\([\s\S]*opacity:\s*1/,
     );
     assert.match(
         stylesheet,

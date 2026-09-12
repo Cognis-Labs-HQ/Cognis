@@ -398,6 +398,10 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 
 直前の変更では `variant` が `child` を誤って上書きし、両方のフラグを意図的に使う提供元の関係をすべて非表示にしていました。空間的な展開は再び `child: true` に従い、`variant` は独立した表示メタデータとして扱います。参照専用の形をツリーから除外してスロットを空ける明示的な仕組みは `hidden: true` です。
 
+## ホバー中の子カードを不透明に維持
+
+ホバー、フォーカス、または操作中の子カードに、詳細度の高いセレクターで不透明な浮き上がった表面と明示的な完全不透明度を適用しました。親カードのホバー表示は変更せず、重なった子カードから下のカードのラベルや形が透けないようにします。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -506,3 +510,4 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 - [9aa724ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aa724ac)
 - [4ad30587](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ad30587)
 - [c8b5d5f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/c8b5d5f7)
+- [60354a9b](https://github.com/Cognis-Labs-HQ/Cognis/commit/60354a9b)

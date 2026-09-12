@@ -398,6 +398,10 @@ Beziehungen zu alternativen Formen sind jetzt stets Tiefenlinks statt räumliche
 
 Die vorherige Änderung ließ `variant` fälschlich `child` überschreiben und unterdrückte dadurch jede Anbieterbeziehung, die beide Merkmale absichtlich verwendete. Das räumliche Aufklappen folgt wieder `child: true`; `variant` bleibt unabhängige Darstellungsmetadaten, während `hidden: true` ausdrücklich reine Referenzformen aus dem Baum heraushält und ihre Plätze freigibt.
 
+## Untergeordnete Karten beim Darüberfahren deckend halten
+
+Untergeordnete Karten verwenden beim Darüberfahren, Fokussieren und Aktivieren jetzt mit höherer Spezifität eine deckende, erhöhte Oberfläche und ausdrücklich volle Deckkraft. Die Darstellung überfahrener Elternkarten bleibt unverändert, während gestapelte Kindkarten keine Beschriftungen oder Formen darunterliegender Karten mehr durchscheinen lassen.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -506,3 +510,4 @@ Die vorherige Änderung ließ `variant` fälschlich `child` überschreiben und u
 - [9aa724ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aa724ac)
 - [4ad30587](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ad30587)
 - [c8b5d5f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/c8b5d5f7)
+- [60354a9b](https://github.com/Cognis-Labs-HQ/Cognis/commit/60354a9b)
