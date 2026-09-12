@@ -52,6 +52,7 @@ test("Study Library keeps its page modules focused", () => {
         "index.js",
         "interactions.js",
         "layer-cards.js",
+        "popup-title.js",
         "selection.js",
         "variants.js",
     ]) {
@@ -136,10 +137,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(stylesheet, /\.library-filters/);
     assert.match(stylesheet, /\.library-filter-pill\.active/);
     assert.match(stylesheet, /\.library-entry-card\[hidden\]/);
-    assert.match(
-        source,
-        /composeDetail\([\s\S]*languageCode,[\s\S]*variantPlacement,[\s\S]*\)/,
-    );
+    assert.match(source, /composeDetail\([\s\S]*languageCode,[\s\S]*\)/);
     assert.doesNotMatch(source, /document\s*\.elementsFromPoint\(/);
     assert.doesNotMatch(source, /library-entry-card--variant-masked/);
     assert.match(
@@ -166,9 +164,16 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
 test("Study Library integrates definitions and particles into item details", () => {
     assert.match(source, /field\.type === "localizedText"/);
     assert.match(source, /localizedTextValue\(fields\[field\.id\]\)/);
+    assert.match(source, /function secondarySpellingGroups/);
+    assert.match(source, /group\.presentationRole === "alternateSpelling"/);
     assert.match(
         source,
-        /library_relationship_alternateSpelling[\s\S]*variantChildren/,
+        /const dependentSpellings = \(detail\.usedBy \?\? \[\]\)/,
+    );
+    assert.match(source, /reference\.entryId !== detail\.entry\.id/);
+    assert.match(
+        source,
+        /semanticRole !== "lexicalUnit"[\s\S]*semanticRole !== "orderedLexicalSequence"/,
     );
     assert.match(source, /renderDetailFields\(genericFields\)/);
     assert.match(source, /orderedLexicalSequence/);
@@ -191,7 +196,6 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.doesNotMatch(source, /function renderCompositionGroups/);
     assert.match(source, /relationship\.resolverRole/);
     assert.doesNotMatch(source, /library-composition-operator/);
-    assert.match(source, /const variantChildren = usedBy\.filter/);
     assert.doesNotMatch(
         source,
         /i18n\.t\("gateway\.study\.library_variants"\)/,
@@ -216,7 +220,9 @@ test("Study Library integrates definitions and particles into item details", () 
     );
     assert.match(source, /resolveLabelComposition\(/);
     assert.match(source, /const pronunciationItems = pronunciationValues/);
-    assert.match(source, /references\.map\(\(entry\) =>/);
+    assert.match(source, /const spellingItems = spellingGroups\.flatMap/);
+    assert.match(source, /const titleDetailItems = popupTitleDetailItems/);
+    assert.match(source, /function linkedItems\(entries\)/);
     assert.match(source, /titleItems: titleReferences\.map/);
     assert.match(source, /open-title-reference:\$\{entry\.id\}/);
     assert.doesNotMatch(source, /querySelector\("\.popup-title"\)/);
@@ -570,7 +576,7 @@ test("Study Library serializes popup opening and identifies child parents", () =
     );
     assert.match(source, /gateway\.study\.library_from_parent/);
     assert.match(source, /variantPlacement\(detail\.entry, schemas, entries\)/);
-    assert.match(source, /const titleDetailItems = \[/);
+    assert.match(source, /const titleDetailItems = popupTitleDetailItems\(/);
     assert.match(
         source,
         /label: parentEntry\.label,[\s\S]*actionId: `open-title-reference:\$\{parentEntry\.id\}`/,

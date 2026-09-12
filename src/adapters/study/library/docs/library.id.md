@@ -53,3 +53,5 @@ Jika komposisi hanya memuat satu entri dengan label yang sama seperti entri saat
 Widget page composer kini menyesuaikan lebarnya dengan skema Perpustakaan dan tetap dibatasi oleh lebar yang tersedia, sehingga lebar widget yang tidak terpakai tidak menimbulkan luapan horizontal.
 
 Penghapusan menyelesaikan kaskade relasi akhir dan mengotorisasi setiap entri yang terdampak dalam transaksi yang sama. Karena itu, relasi yang ditambahkan secara bersamaan tidak dapat memperluas penghapusan melampaui konten yang diizinkan bagi pelaku.
+
+Untuk unit leksikal dan urutan leksikal terurut, relasi dengan tampilan `alternateSpelling` muncul sebagai ejaan sekunder yang dapat dinavigasi tepat di bawah judul detail utama. Anak struktural atau anak varian tidak diulang sebagai bagian ejaan alternatif dalam konten detail.

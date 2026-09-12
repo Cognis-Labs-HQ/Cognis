@@ -1,4 +1,5 @@
 import { openPopup } from "/static/reuse/popup.js";
+import { fetchLibraryEntry } from "/static/gateways/study/ui/library-client.js";
 import { composeDetail } from "./detail.js";
 import { resolveLabelComposition } from "./composition-links.js";
 import {
@@ -6,8 +7,8 @@ import {
     isMeaningLayer,
     layerForEntry,
     loadLibraryAudio,
-    pronunciationValues,
 } from "./presentation.js";
+import { popupTitleDetailItems } from "./popup-title.js";
 import { variantPlacement } from "./variant-placement.js";
 
 export async function openEntryPopup(
@@ -54,38 +55,14 @@ export async function openEntryPopup(
             entries,
             i18n,
             languageCode,
-            variantPlacement,
         );
         signal?.throwIfAborted();
-        const pronunciationItems = pronunciationValues(detail.entry).flatMap(
-            (label, pronunciationIndex) => {
-                const references = resolveLabelComposition(
-                    label,
-                    detail.entry,
-                    schemas,
-                    entries,
-                );
-                const items = references.length
-                    ? references.map((entry) => ({
-                          label: entry.label,
-                          actionId: `open-title-reference:${entry.id}`,
-                      }))
-                    : [{ label }];
-                return [
-                    ...(pronunciationIndex ? [{ label: " · " }] : []),
-                    ...items,
-                ];
-            },
+        const titleDetailItems = popupTitleDetailItems(
+            detail,
+            schemas,
+            entries,
+            composed.titleDefinition,
         );
-        const titleDetailItems = [
-            ...pronunciationItems,
-            ...(pronunciationItems.length && composed.titleDefinition
-                ? [{ label: " · " }]
-                : []),
-            ...(composed.titleDefinition
-                ? [{ label: composed.titleDefinition }]
-                : []),
-        ];
         if (parentEntry) {
             const [parentPrefix, parentSuffix = ""] = i18n
                 .t("gateway.study.library_from_parent")

@@ -53,3 +53,5 @@ Enthält eine Zusammensetzung genau einen Eintrag mit derselben Bezeichnung wie 
 Das Page-Composer-Widget umschließt nun das Bibliotheksschema passgenau und bleibt auf die verfügbare Breite begrenzt, sodass ungenutzte Widget-Breite keinen horizontalen Überlauf erzeugt.
 
 Beim Löschen werden die endgültige Beziehungskaskade ermittelt und alle betroffenen Einträge innerhalb derselben Transaktion autorisiert. Eine gleichzeitig hinzugefügte Beziehung kann die Löschung daher nicht über die für den Akteur autorisierten Inhalte hinaus erweitern.
+
+Bei lexikalischen Einheiten und geordneten lexikalischen Folgen erscheinen Beziehungen mit der Darstellung `alternateSpelling` als navigierbare Zweitschreibweisen direkt unter der primären Detailüberschrift. Strukturelle Kinder oder Variantenkinder werden im Detailinhalt nicht erneut als Abschnitt für alternative Schreibweisen aufgeführt.

@@ -18,6 +18,11 @@ Penghapusan Pustaka kini menyelesaikan kaskade akhir dan mengotorisasi setiap en
 
 Validasi modul eksternal menolak semua tautan simbolis, termasuk nama direktori bertitik, dan mengenali kelas UI terlindungi yang ditargetkan melalui pemilih atribut kelas.
 
+## Ejaan sekunder pada judul
+
+Ejaan alternatif kata dan kalimat kini muncul sebagai konten judul sekunder yang dapat dinavigasi tepat di bawah ejaan utama. Varian struktural seperti karakter tidak lagi diulang dalam konten detail.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
+- [458c6bea](https://github.com/Cognis-Labs-HQ/Cognis/commit/458c6bea)

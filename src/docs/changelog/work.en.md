@@ -18,6 +18,11 @@ Library deletion now resolves the final cascade and authorizes every affected en
 
 External module validation rejects every symbolic link, including dotted directory names, and recognizes protected UI classes targeted through class attribute selectors.
 
+## Secondary spellings in titles
+
+Word and sentence alternate spellings now appear as navigable secondary title content directly beneath the primary spelling. Character-style structural variants are no longer repeated in detail content.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
+- [458c6bea](https://github.com/Cognis-Labs-HQ/Cognis/commit/458c6bea)

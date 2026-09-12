@@ -17,7 +17,7 @@ import {
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
 
-function coreSections(detail, schemas, entries, i18n, variantPlacement) {
+function coreSections(detail, schemas, entries, i18n) {
     const { entry, references = [], usedBy = [] } = detail;
     const layer = layerForEntry(schemas, entry);
     const relatedWords = isWritingUnitLayer(layer)
@@ -27,10 +27,6 @@ function coreSections(detail, schemas, entries, i18n, variantPlacement) {
                   "lexicalUnit",
           )
         : [];
-    const variantChildren = usedBy.filter((candidate) => {
-        const placement = variantPlacement(candidate, schemas, entries);
-        return placement?.parentId === entry.id;
-    });
     const structuralDependants = usedBy.filter((candidate) => {
         const candidateLayer = layerForEntry(schemas, candidate);
         return (candidate.references ?? []).some((reference) => {
@@ -113,15 +109,6 @@ function coreSections(detail, schemas, entries, i18n, variantPlacement) {
                   i18n.t("gateway.study.library_no_relationships"),
               )
             : "",
-        variantChildren.length
-            ? relationSection(
-                  i18n.t(
-                      "gateway.study.library_relationship_alternateSpelling",
-                  ),
-                  variantChildren,
-                  i18n.t("gateway.study.library_no_relationships"),
-              )
-            : "",
         otherUsedBy.length
             ? relationSection(
                   i18n.t("gateway.study.library_used_by"),
@@ -138,7 +125,6 @@ export async function composeDetail(
     entries,
     i18n,
     languageCode,
-    variantPlacement,
 ) {
     const flow = await uiCtx.runFlow(DETAIL_FLOW, {
         detail,
@@ -183,7 +169,7 @@ export async function composeDetail(
               );
     const sections = [
         ...sectionsFor("beforeCore"),
-        ...coreSections(detail, schemas, entries, i18n, variantPlacement),
+        ...coreSections(detail, schemas, entries, i18n),
         ...sectionsFor("core"),
         ...sectionsFor("afterCore"),
     ];

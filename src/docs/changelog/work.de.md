@@ -18,6 +18,11 @@ Beim Löschen aus der Bibliothek werden nun die endgültige Kaskade ermittelt un
 
 Die Prüfung externer Module lehnt alle symbolischen Verknüpfungen einschließlich Verzeichnisnamen mit Punkten ab und erkennt geschützte UI-Klassen auch in Klassenattributselektoren.
 
+## Zweitschreibweisen im Titel
+
+Alternative Schreibweisen von Wörtern und Sätzen erscheinen nun als navigierbarer sekundärer Titelinhalt direkt unter der primären Schreibweise. Zeichenartige strukturelle Varianten werden im Detailinhalt nicht mehr wiederholt.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
+- [458c6bea](https://github.com/Cognis-Labs-HQ/Cognis/commit/458c6bea)
