@@ -370,6 +370,10 @@ Library schemas now opt spatial child cards in with `child: true`; alternate for
 
 Entry spellings and pronunciations now use the popup title and secondary-title link style exclusively; the detail body no longer duplicates them in pronunciation or component containers. Usage examples now appear only on entries directly referenced by an ordered record, so an atomic component does not inherit examples through a containing lexical entry.
 
+## Keep unfolded Library branches inside the chart
+
+Library grids now reserve inner card-gap padding so card and focus borders remain visible at every edge. The directional tree builder measures available capacity, tracks coordinates already occupied by the active branch, and chooses a direction that can fit descendants before using the best remaining visible direction.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -471,3 +475,4 @@ Entry spellings and pronunciations now use the popup title and secondary-title l
 - [f9d2be18](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9d2be18)
 - [81546618](https://github.com/Cognis-Labs-HQ/Cognis/commit/81546618)
 - [a12b60f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/a12b60f1)
+- [79b6e2e9](https://github.com/Cognis-Labs-HQ/Cognis/commit/79b6e2e9)

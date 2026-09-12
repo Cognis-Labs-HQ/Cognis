@@ -96,9 +96,38 @@ function variantDirectionFitsGrid(
     );
 }
 
+function variantDirectionCapacity(
+    direction,
+    index,
+    rowSize,
+    itemCount,
+    origin,
+) {
+    if (!Number.isInteger(index) || !rowSize) return Number.POSITIVE_INFINITY;
+    let capacity = 0;
+    while (
+        variantDirectionFitsGrid(
+            direction,
+            index,
+            rowSize,
+            itemCount,
+            capacity + 1,
+            origin,
+        )
+    ) {
+        capacity += 1;
+    }
+    return capacity;
+}
+
+function offsetKey(offset) {
+    return `${offset.column}:${offset.row}`;
+}
+
 export function assignVariantPlacements(entries, schema, layer) {
     const placements = new Map();
     const occupiedByParent = new Map();
+    const occupiedByRoot = new Map();
     const requests = entries.flatMap((entry) => {
         const placement = variantPlacement(entry, schema, entries);
         return placement ? [{ entry, ...placement }] : [];
@@ -156,7 +185,11 @@ export function assignVariantPlacements(entries, schema, layer) {
             parentPlacement?.rootIndex ?? gridPosition.get(request.parentId);
         const rowSize = layer?.grid?.rowSize;
         const origin = parentPlacement?.offset ?? { column: 0, row: 0 };
-        const distance = parentPlacement ? 1 : branchDepthFor(request.entry.id);
+        const requiredCapacity = branchDepthFor(request.entry.id);
+        const rootId = parentPlacement?.rootId ?? request.parentId;
+        const occupiedOffsets =
+            occupiedByRoot.get(rootId) ??
+            new Set([offsetKey({ column: 0, row: 0 })]);
         const occupied = occupiedByParent.get(request.parentId) ?? new Set();
         const preferred = [
             ...(parentPlacement ? [parentPlacement.direction] : []),
@@ -165,33 +198,49 @@ export function assignVariantPlacements(entries, schema, layer) {
             (candidate, candidateIndex, directions) =>
                 directions.indexOf(candidate) === candidateIndex,
         );
-        const directionFits = (candidate, requiredDistance) => {
-            if (occupied.has(candidate)) return false;
-            return variantDirectionFitsGrid(
+        const candidateDetails = preferred.flatMap((candidate) => {
+            if (occupied.has(candidate)) return [];
+            const directionOffset = VARIANT_DIRECTION_OFFSETS[candidate];
+            const targetOffset = {
+                column: origin.column + directionOffset.column,
+                row: origin.row + directionOffset.row,
+            };
+            if (occupiedOffsets.has(offsetKey(targetOffset))) return [];
+            const capacity = variantDirectionCapacity(
                 candidate,
                 index,
                 rowSize,
                 layer?.grid?.items?.length ?? entries.length,
-                requiredDistance,
                 origin,
             );
-        };
-        const direction =
-            preferred.find((candidate) => directionFits(candidate, distance)) ??
-            preferred.find((candidate) => directionFits(candidate, 1));
-        if (!direction || !Number.isFinite(depth)) continue;
+            return capacity > 0
+                ? [{ direction: candidate, capacity, targetOffset }]
+                : [];
+        });
+        const selected =
+            candidateDetails.find(
+                ({ capacity }) => capacity >= requiredCapacity,
+            ) ??
+            candidateDetails.reduce(
+                (best, candidate) =>
+                    !best || candidate.capacity > best.capacity
+                        ? candidate
+                        : best,
+                null,
+            );
+        if (!selected || !Number.isFinite(depth)) continue;
+        const { direction, targetOffset } = selected;
         occupied.add(direction);
         occupiedByParent.set(request.parentId, occupied);
+        occupiedOffsets.add(offsetKey(targetOffset));
+        occupiedByRoot.set(rootId, occupiedOffsets);
         placements.set(request.entry.id, {
             ...request,
             direction,
             depth,
             rootIndex: index,
-            offset: {
-                column:
-                    origin.column + VARIANT_DIRECTION_OFFSETS[direction].column,
-                row: origin.row + VARIANT_DIRECTION_OFFSETS[direction].row,
-            },
+            rootId,
+            offset: targetOffset,
         });
     }
     return placements;

@@ -370,6 +370,10 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 
 項目の綴りと発音は、ポップアップのタイトルおよび副タイトルのリンクスタイルだけで表示するようになり、詳細本文の発音コンテナや構成要素コンテナには重複表示しません。使用例は順序付きレコードから直接参照される項目にだけ表示するため、原子的な構成要素が、それを含む語彙項目を介して使用例を継承することはありません。
 
+## 展開したライブラリの枝を表内に保持
+
+ライブラリのグリッドはカード間隔分の内側余白を確保し、すべての端でカード枠とフォーカス枠が見えるようになりました。方向ツリーの構築処理は利用可能な容量を測定し、現在の枝が使用済みの座標を追跡して、子孫を収容できる方向を優先した後、残る方向のうち表示可能容量が最大のものを選びます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -471,3 +475,4 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 - [f9d2be18](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9d2be18)
 - [81546618](https://github.com/Cognis-Labs-HQ/Cognis/commit/81546618)
 - [a12b60f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/a12b60f1)
+- [79b6e2e9](https://github.com/Cognis-Labs-HQ/Cognis/commit/79b6e2e9)

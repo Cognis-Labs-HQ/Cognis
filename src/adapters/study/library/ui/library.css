@@ -69,6 +69,8 @@ body[data-theme="light"] .library-browser {
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
     gap: var(--library-card-gap);
     overflow: clip;
+    box-sizing: border-box;
+    padding: var(--library-card-gap);
 }
 
 .library-entry-grid:has(.library-entry-variants-open)::before {

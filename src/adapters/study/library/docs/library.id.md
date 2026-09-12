@@ -1,5 +1,7 @@
 # Adapter Pustaka
 
+Kisi bagan menyediakan inset sebesar jarak kartu agar garis tepi kartu dan fokus tetap terlihat sepenuhnya. Penempatan anak spasial mengukur kapasitas tersisa pada setiap arah, mencadangkan koordinat yang telah dipakai pohon aktif, dan mengutamakan arah yang dapat memuat cabang turunan sebelum memakai kapasitas terlihat terbesar sebagai pilihan cadangan.
+
 ## Skema milik konsumen
 
 Adapter Pustaka menyimpan materi studi generik yang saling terhubung. Konsumen mendaftarkan skema berversi dan tetap melalui kapabilitas ctx `study:library`. Skema mendefinisikan bahasa, lapisan, bidang bertipe, dan relasi terarah; istilah seperti alfabet, kata, atau kalimat tidak ditetapkan adapter.

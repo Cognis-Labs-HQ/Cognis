@@ -274,8 +274,10 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /const branchDepthFor/);
     assert.match(source, /parentPlacement\?\.rootIndex/);
     assert.match(source, /parentPlacement\?\.offset/);
-    assert.match(source, /directionFits\(candidate, distance\)/);
-    assert.match(source, /directionFits\(candidate, 1\)/);
+    assert.match(source, /function variantDirectionCapacity/);
+    assert.match(source, /capacity >= requiredCapacity/);
+    assert.match(source, /const occupiedByRoot = new Map/);
+    assert.match(source, /occupiedOffsets\.has\(offsetKey\(targetOffset\)\)/);
     assert.match(
         source,
         /\.\.\.\(parentPlacement \? \[parentPlacement\.direction\] : \[\]\)/,
@@ -398,6 +400,10 @@ test("Study Library gives content safe edge spacing", () => {
     assert.match(
         stylesheet,
         /\.library-entry-grid\s*\{[\s\S]*overflow:\s*clip/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-entry-grid\s*\{[\s\S]*padding:\s*var\(--library-card-gap\)/,
     );
 });
 

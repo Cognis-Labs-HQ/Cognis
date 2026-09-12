@@ -1,5 +1,7 @@
 # Bibliotheksadapter
 
+Diagrammraster reservieren innen einen Kartenabstand, damit Karten- und Fokusrahmen vollständig sichtbar bleiben. Die räumliche Kindplatzierung misst die verbleibende Kapazität in jeder Richtung, reserviert bereits vom aktiven Baum belegte Koordinaten und bevorzugt eine Richtung, die den Nachkommenzweig aufnehmen kann, bevor sie auf die größte sichtbare Kapazität zurückfällt.
+
 ## Verbraucherdefinierte Schemata
 
 Der Bibliotheksadapter speichert generische, verknüpfte Lerninhalte. Verbraucher registrieren unveränderliche, versionierte Schemata über die ctx-Fähigkeit `study:library`. Ein Schema beschreibt Sprache, Ebenen, typisierte Felder und gerichtete Beziehungen; Begriffe wie Alphabet, Wort oder Satz sind nicht im Adapter festgelegt.

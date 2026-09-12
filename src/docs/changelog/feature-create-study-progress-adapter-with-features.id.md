@@ -370,6 +370,10 @@ Skema Pustaka kini mengaktifkan kartu anak spasial secara eksplisit dengan `chil
 
 Ejaan dan pelafalan entri kini hanya memakai gaya tautan judul dan judul sekunder popup; isi detail tidak lagi menggandakannya dalam wadah pelafalan atau komponen. Contoh penggunaan kini hanya muncul pada entri yang dirujuk langsung oleh rekaman berurutan, sehingga komponen atomik tidak mewarisi contoh melalui entri leksikal yang memuatnya.
 
+## Pertahankan cabang Pustaka yang dibuka di dalam bagan
+
+Kisi Pustaka kini menyediakan padding dalam sebesar jarak kartu agar garis tepi kartu dan fokus tetap terlihat pada setiap sisi. Penyusun pohon berarah mengukur kapasitas yang tersedia, melacak koordinat yang sudah ditempati cabang aktif, dan memilih arah yang dapat memuat turunan sebelum memakai arah terlihat terbaik yang tersisa.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -471,3 +475,4 @@ Ejaan dan pelafalan entri kini hanya memakai gaya tautan judul dan judul sekunde
 - [f9d2be18](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9d2be18)
 - [81546618](https://github.com/Cognis-Labs-HQ/Cognis/commit/81546618)
 - [a12b60f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/a12b60f1)
+- [79b6e2e9](https://github.com/Cognis-Labs-HQ/Cognis/commit/79b6e2e9)

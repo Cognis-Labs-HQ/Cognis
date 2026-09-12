@@ -94,3 +94,49 @@ test("variants do not become child cards unless the schema opts in", () => {
         null,
     );
 });
+
+test("variant branches choose a direction with visible room for descendants", () => {
+    const parent = entry("parent", { sourceRecordId: "parent" });
+    const child = entry("child", {
+        label: "child",
+        references: [{ entryId: parent.id, relation: "variant-of" }],
+    });
+    const grandchild = entry("grandchild", {
+        label: "grandchild",
+        references: [{ entryId: child.id, relation: "variant-of" }],
+    });
+    const gridLayer = {
+        ...layer,
+        grid: {
+            rowSize: 5,
+            items: [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "parent",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+            ],
+        },
+    };
+    const placements = assignVariantPlacements(
+        [parent, child, grandchild],
+        { ...schema, layers: [gridLayer] },
+        gridLayer,
+    );
+    assert.equal(placements.get(child.id)?.direction, "right");
+    assert.equal(placements.get(grandchild.id)?.direction, "right");
+    assert.deepEqual(placements.get(grandchild.id)?.offset, {
+        column: 2,
+        row: 0,
+    });
+});

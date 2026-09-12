@@ -370,6 +370,10 @@ Bibliotheksschemas aktivieren räumliche Kindkarten jetzt ausdrücklich mit `chi
 
 Schreibweisen und Aussprachen von Einträgen verwenden jetzt ausschließlich den Linkstil für Titel und Sekundärtitel des Pop-ups; der Detailinhalt dupliziert sie nicht mehr in Aussprache- oder Komponentencontainern. Verwendungsbeispiele erscheinen nur noch bei Einträgen, auf die ein geordneter Datensatz direkt verweist, sodass eine atomare Komponente keine Beispiele über einen enthaltenen lexikalischen Eintrag erbt.
 
+## Aufgeklappte Bibliothekszweige im Diagramm halten
+
+Bibliotheksraster reservieren nun innen einen Kartenabstand, damit Karten- und Fokusrahmen an jeder Kante sichtbar bleiben. Der gerichtete Baumaufbau misst die verfügbare Kapazität, verfolgt bereits vom aktiven Zweig belegte Koordinaten und wählt zuerst eine Richtung, die die Nachkommen aufnehmen kann, bevor er die beste verbleibende sichtbare Richtung verwendet.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -471,3 +475,4 @@ Schreibweisen und Aussprachen von Einträgen verwenden jetzt ausschließlich den
 - [f9d2be18](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9d2be18)
 - [81546618](https://github.com/Cognis-Labs-HQ/Cognis/commit/81546618)
 - [a12b60f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/a12b60f1)
+- [79b6e2e9](https://github.com/Cognis-Labs-HQ/Cognis/commit/79b6e2e9)
