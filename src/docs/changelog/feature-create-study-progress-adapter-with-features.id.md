@@ -390,6 +390,10 @@ Anak Pustaka bertingkat kini hanya mencadangkan jalur leluhur aktifnya. Anak dap
 
 Rekaman dengan `hidden: true` tidak lagi menerima penempatan anak struktural, sehingga bentuk khusus referensi tetap tersedia melalui tautan mendalam tanpa terbuka di bawah kartu yang terlihat. Petunjuk tekan lama kembali menjadi elemen mengambang di bawah kartu yang hanya tampil saat diarahkan.
 
+## Kecualikan bentuk alternatif dari slot anak
+
+Relasi bentuk alternatif kini selalu menjadi tautan mendalam, bukan anak spasial, bahkan saat penyedia juga menandai relasi tersebut sebagai anak. Hanya relasi anak khusus yang bukan varian yang mengalokasikan dan membuka slot bagan, sehingga bentuk tulisan alternatif tidak memakai ruang kisi kosong.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -496,3 +500,4 @@ Rekaman dengan `hidden: true` tidak lagi menerima penempatan anak struktural, se
 - [730f448e](https://github.com/Cognis-Labs-HQ/Cognis/commit/730f448e)
 - [3b863171](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b863171)
 - [9aa724ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aa724ac)
+- [4ad30587](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ad30587)

@@ -390,6 +390,10 @@ Verschachtelte Bibliothekskinder reservieren jetzt nur noch ihren aktiven Vorfah
 
 Mit `hidden: true` markierte Datensätze erhalten keine räumliche Kindplatzierung mehr. Reine Referenzformen bleiben dadurch über Tiefenlinks erreichbar, ohne unter sichtbaren Karten aufzuklappen. Der Hinweis zum langen Drücken ist wieder ein ausschließlich beim Darüberfahren sichtbares, schwebendes Element unterhalb der Karte.
 
+## Alternative Formen aus Kindplätzen fernhalten
+
+Beziehungen zu alternativen Formen sind jetzt stets Tiefenlinks statt räumlicher Kinder, selbst wenn ein Anbieter die Beziehung zusätzlich als Kind markiert. Nur eigenständige Nicht-Varianten-Kindbeziehungen belegen und öffnen Diagrammplätze. Dadurch verbrauchen alternative Schriftformen keinen leeren Rasterraum.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -496,3 +500,4 @@ Mit `hidden: true` markierte Datensätze erhalten keine räumliche Kindplatzieru
 - [730f448e](https://github.com/Cognis-Labs-HQ/Cognis/commit/730f448e)
 - [3b863171](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b863171)
 - [9aa724ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aa724ac)
+- [4ad30587](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ad30587)

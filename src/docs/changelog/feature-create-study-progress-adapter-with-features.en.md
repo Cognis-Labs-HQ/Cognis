@@ -390,6 +390,10 @@ Nested Library children now reserve only their active ancestor path. They can oc
 
 Records marked `hidden: true` no longer receive structural child placement, so reference-only forms remain available through deep links without unfolding beneath visible cards. The long-press instruction is again a hover-only floating element below its card.
 
+## Keep alternate forms out of child slots
+
+Alternate-form relationships are now always deep links rather than spatial children, even when a provider also marks the relationship as a child. Only dedicated non-variant child relationships allocate and unfold chart slots, preventing alternate writing forms from consuming empty grid space.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -496,3 +500,4 @@ Records marked `hidden: true` no longer receive structural child placement, so r
 - [730f448e](https://github.com/Cognis-Labs-HQ/Cognis/commit/730f448e)
 - [3b863171](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b863171)
 - [9aa724ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aa724ac)
+- [4ad30587](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ad30587)

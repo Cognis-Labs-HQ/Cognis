@@ -390,6 +390,10 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 
 `hidden: true` のレコードには空間的な子配置を行わないようにしました。参照専用の形は深層リンクから引き続き利用できますが、表示カードの下には展開されません。長押しの案内は、ホバー時だけカード下に表示される浮動要素へ戻しました。
 
+## 代替形を子スロットから除外
+
+代替形の関係は、提供元が子としても指定している場合を含め、常に空間的な子ではなく深層リンクとして扱います。チャートのスロットを確保して展開するのは、バリアントではない専用の子関係だけです。これにより、代替の表記形が空のグリッド領域を占有しません。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -496,3 +500,4 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 - [730f448e](https://github.com/Cognis-Labs-HQ/Cognis/commit/730f448e)
 - [3b863171](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b863171)
 - [9aa724ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aa724ac)
+- [4ad30587](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ad30587)
