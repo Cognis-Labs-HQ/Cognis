@@ -7,6 +7,7 @@ import {
     isWritingUnitLayer,
     layerForEntry,
     localizedLabel,
+    localizedTextValue,
     metadataFields,
     relationSection,
     renderAudio,
@@ -85,10 +86,21 @@ function coreSections(detail, schemas, entries, i18n, variantPlacement) {
                     fields[field.id] !== null &&
                     fields[field.id] !== "",
             )
-            .map((field) => [
-                localizedLabel(field.metadata, entry.language) || field.id,
-                fields[field.id],
-            ]),
+            .flatMap((field) => {
+                const value =
+                    field.type === "localizedText"
+                        ? localizedTextValue(fields[field.id])
+                        : fields[field.id];
+                return value === ""
+                    ? []
+                    : [
+                          [
+                              localizedLabel(field.metadata, entry.language) ||
+                                  field.id,
+                              value,
+                          ],
+                      ];
+            }),
     );
     return [
         `<header class="library-detail-summary">${renderPronunciation(entry, layer)}${renderAudio(entry, layer)}${renderCompositionGroups(compositions, i18n)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
@@ -106,7 +118,16 @@ function coreSections(detail, schemas, entries, i18n, variantPlacement) {
                   i18n.t("gateway.study.library_no_relationships"),
               )
             : "",
-        otherUsedBy.length || !relatedWords.length
+        variantChildren.length
+            ? relationSection(
+                  i18n.t(
+                      "gateway.study.library_relationship_alternateSpelling",
+                  ),
+                  variantChildren,
+                  i18n.t("gateway.study.library_no_relationships"),
+              )
+            : "",
+        otherUsedBy.length
             ? relationSection(
                   i18n.t("gateway.study.library_used_by"),
                   otherUsedBy,

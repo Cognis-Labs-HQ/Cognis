@@ -151,6 +151,12 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
 });
 
 test("Study Library integrates definitions and particles into item details", () => {
+    assert.match(source, /field\.type === "localizedText"/);
+    assert.match(source, /localizedTextValue\(fields\[field\.id\]\)/);
+    assert.match(
+        source,
+        /library_relationship_alternateSpelling[\s\S]*variantChildren/,
+    );
     assert.match(source, /function isMeaningLayer/);
     assert.match(source, /layer\.semanticRole !== "particle"/);
     assert.match(source, /class="library-detail-summary"/);

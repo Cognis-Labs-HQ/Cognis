@@ -354,6 +354,10 @@ Browser Study Library kini mengimpor resolver label terlokalisasinya secara lang
 
 Browser Study Library kini mengimpor kedua fungsi metadata yang digunakan untuk menyusun nilai filter. Audit pengenal yang tidak terselesaikan pada tingkat sumber juga memastikan tidak ada referensi presentasi lain yang hilang selama pemisahan modul sebelumnya.
 
+## Stabilkan pemuatan ulang Study dan perjelas detail Library
+
+Pemuatan ulang langsung pada `/study` kini didelegasikan dengan aman dari pemuat turunan ke hub Study. Turunan varian Library ditampilkan sebagai ejaan alternatif, bukan entri “Digunakan Oleh” umum, dan bidang `localizedText` hanya merender nilai bahasa antarmuka aktif.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -448,3 +452,4 @@ Browser Study Library kini mengimpor kedua fungsi metadata yang digunakan untuk 
 - [3dadb7fd](https://github.com/Cognis-Labs-HQ/Cognis/commit/3dadb7fdb2f6269d735e6b8f7d0cdf8991ac5808)
 - [695e05e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/695e05e157a4fcf279b71f22ba98dec8420f85e1)
 - [4c057009](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c05700902ed81591fedc4e86e5bdd886eabd334)
+- [770ca249](https://github.com/Cognis-Labs-HQ/Cognis/commit/770ca249d79ddba91f450f82c916fccd923107dd)

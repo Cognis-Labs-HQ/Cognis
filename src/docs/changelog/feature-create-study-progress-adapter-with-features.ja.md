@@ -354,6 +354,10 @@ Study Library ブラウザーがローカライズ済みラベルのリゾルバ
 
 Study Library ブラウザーがフィルター値の構築に使用する両方のメタデータ関数をインポートするようになりました。ソースレベルの未解決識別子監査でも、以前のモジュール分割で他の表示用参照が失われていないことを確認しました。
 
+## Study の再読み込みを安定化し Library 詳細を明確化
+
+`/study` の直接再読み込みは、子ルートローダーから Study ハブへ安全に委譲されるようになりました。Library の派生バリアントは一般的な「使用元」ではなく別表記として表示され、`localizedText` フィールドは有効なインターフェース言語の値だけを描画します。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -448,3 +452,4 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 - [3dadb7fd](https://github.com/Cognis-Labs-HQ/Cognis/commit/3dadb7fdb2f6269d735e6b8f7d0cdf8991ac5808)
 - [695e05e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/695e05e157a4fcf279b71f22ba98dec8420f85e1)
 - [4c057009](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c05700902ed81591fedc4e86e5bdd886eabd334)
+- [770ca249](https://github.com/Cognis-Labs-HQ/Cognis/commit/770ca249d79ddba91f450f82c916fccd923107dd)

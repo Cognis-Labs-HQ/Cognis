@@ -354,6 +354,10 @@ Der Study-Library-Browser importiert seine Auflösung lokalisierter Beschriftung
 
 Der Study-Library-Browser importiert jetzt beide Metadatenfunktionen, die zum Erstellen der Filterwerte verwendet werden. Eine Prüfung auf nicht aufgelöste Bezeichner im Quellcode bestätigte außerdem, dass bei der früheren Modulaufteilung keine weiteren Darstellungsverweise verloren gingen.
 
+## Study-Aktualisierung stabilisieren und Library-Details verdeutlichen
+
+Direkte Aktualisierungen von `/study` werden jetzt sicher vom untergeordneten Lader an den Study-Hub übergeben. Variantenabhängige Library-Einträge erscheinen als alternative Schreibweisen statt als allgemeine „Verwendet von“-Einträge, und Felder vom Typ `localizedText` zeigen nur den Wert der aktiven Oberflächensprache.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -448,3 +452,4 @@ Der Study-Library-Browser importiert jetzt beide Metadatenfunktionen, die zum Er
 - [3dadb7fd](https://github.com/Cognis-Labs-HQ/Cognis/commit/3dadb7fdb2f6269d735e6b8f7d0cdf8991ac5808)
 - [695e05e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/695e05e157a4fcf279b71f22ba98dec8420f85e1)
 - [4c057009](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c05700902ed81591fedc4e86e5bdd886eabd334)
+- [770ca249](https://github.com/Cognis-Labs-HQ/Cognis/commit/770ca249d79ddba91f450f82c916fccd923107dd)

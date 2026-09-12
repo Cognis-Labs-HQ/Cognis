@@ -354,6 +354,10 @@ The Study Library browser now imports its localized-label resolver directly, pre
 
 The Study Library browser now imports both metadata helper functions used to construct filter values. A source-level unresolved-identifier audit also confirmed that no other presentation references were lost during the earlier module split.
 
+## Stabilize Study refresh and clarify Library details
+
+Direct refreshes of `/study` now delegate safely from the child loader to the Study hub. Library variant dependants are presented as alternate spellings rather than generic “Used By” entries, and `localizedText` fields render only the active interface-language value.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -448,3 +452,4 @@ The Study Library browser now imports both metadata helper functions used to con
 - [3dadb7fd](https://github.com/Cognis-Labs-HQ/Cognis/commit/3dadb7fdb2f6269d735e6b8f7d0cdf8991ac5808)
 - [695e05e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/695e05e157a4fcf279b71f22ba98dec8420f85e1)
 - [4c057009](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c05700902ed81591fedc4e86e5bdd886eabd334)
+- [770ca249](https://github.com/Cognis-Labs-HQ/Cognis/commit/770ca249d79ddba91f450f82c916fccd923107dd)

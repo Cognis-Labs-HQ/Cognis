@@ -47,6 +47,17 @@ async function loadChildComponents() {
 }
 
 export async function mount(root, options = {}) {
+    if (
+        ["/study", "/study/", "/study/welcome", "/study/settings"].includes(
+            window.location.pathname,
+        )
+    ) {
+        const hub = await loadWithSpaImportGuard(
+            () => import("/static/gateways/study/study.js"),
+        );
+        await hub.mount(root, options);
+        return;
+    }
     const { languages, components } = await loadChildComponents();
     if (languages.length === 0) {
         await navigateTo("/error?code=503");

@@ -26,6 +26,20 @@ export function localizedLabel(metadata, contentLanguage) {
     return "";
 }
 
+export function localizedTextValue(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return "";
+    const localized = new Map(
+        Object.entries(value).map(([key, text]) => [
+            parseLanguageCode(key),
+            text,
+        ]),
+    );
+    const language = parseLanguageCode(document.documentElement.lang);
+    const text =
+        localized.get(language) ?? localized.get(language?.split("-")[0]);
+    return typeof text === "string" ? text : "";
+}
+
 export function renderValue(value) {
     if (value === null || value === undefined) return "";
     if (Array.isArray(value))
@@ -61,13 +75,7 @@ export function definitionText(entry, layer, languageCode) {
     const translationsField = layer?.definitionLocalization?.translationsField;
     const translations = entry.fields?.[translationsField];
     if (!translations || typeof translations !== "object") return "";
-    return (
-        translations[parseLanguageCode(document.documentElement.lang)] ??
-        translations[
-            parseLanguageCode(document.documentElement.lang)?.split("-")[0]
-        ] ??
-        ""
-    );
+    return localizedTextValue(translations);
 }
 
 export function metadataFields(layer) {

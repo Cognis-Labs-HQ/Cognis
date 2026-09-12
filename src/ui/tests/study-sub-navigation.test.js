@@ -104,6 +104,16 @@ test("Study pages redirect to the unavailable page without valid languages", () 
     );
 });
 
+test("Study child loader delegates hub paths after a direct refresh", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/route.js"),
+        "utf8",
+    );
+    assert.match(source, /\["\/study", "\/study\/"/);
+    assert.match(source, /import\("\/static\/gateways\/study\/study\.js"\)/);
+    assert.match(source, /await hub\.mount\(root, options\)/);
+});
+
 test("Study sub-navigation normalizes language codes before resolving flags", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/study/ui/sub-navigation.js"),
