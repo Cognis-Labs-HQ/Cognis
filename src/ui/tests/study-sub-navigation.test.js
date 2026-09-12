@@ -128,6 +128,7 @@ test("Study sub-navigation normalizes language codes before resolving flags", ()
         /\.map\(\(languageCode\) => parseLanguageCode\(languageCode\)\)/,
     );
     assert.match(source, /\$\{escapeHtml\(language\.flag\)\}/);
+    assert.match(source, /isAdminScope\(\) && !hasLibraryModule/);
 });
 
 test("Study page links use light-theme success hover tokens", () => {

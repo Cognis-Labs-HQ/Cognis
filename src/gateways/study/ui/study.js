@@ -27,6 +27,7 @@ import {
 } from "/static/gateways/study/ui/sub-navigation.js";
 import {
     resolveLanguageLabel,
+    isAdminScope,
     isStudentScope,
     buildLibraryUrl,
 } from "/static/gateways/study/ui/language.js";
@@ -358,7 +359,7 @@ async function mountHub(
             })
             .join("");
         const libraryLink =
-            isStudentScope() && !hasLibraryModule
+            isAdminScope() && !hasLibraryModule
                 ? `
                 <li>
                     <a class="dropdown-item${window.location.pathname === "/study/library" ? " active" : ""}" href="${escapeHtml(buildLibraryUrl(selectedLanguageCode))}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">

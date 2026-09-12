@@ -157,6 +157,10 @@ test("Study Library integrates definitions and particles into item details", () 
         source,
         /library_relationship_alternateSpelling[\s\S]*variantChildren/,
     );
+    assert.match(source, /renderDetailFields\(genericFields\)/);
+    assert.match(source, /orderedLexicalSequence/);
+    assert.match(source, /usageExampleSection/);
+    assert.match(source, /reference\.entryId === reading\.id/);
     assert.match(source, /function isMeaningLayer/);
     assert.match(source, /layer\.semanticRole !== "particle"/);
     assert.match(source, /class="library-detail-summary"/);
@@ -213,6 +217,19 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.doesNotMatch(
         source,
         /i18n\.t\("gateway\.study\.library_alternate_definitions"\)/,
+    );
+});
+
+test("Study Library separates admin data browsing from learner layer pages", () => {
+    assert.match(source, /const isAdminDataView = routeParts\.length === 2/);
+    assert.match(source, /isAdminDataView && !isAdminScope\(\)/);
+    assert.match(
+        source,
+        /requestedLayer \? "" : `<div class="library-layer-tabs"/,
+    );
+    assert.match(
+        adapterSource,
+        /\/study\/library\(\?:\/\[\^\/\]\+\/\[\^\/\]\+\(\?:\/\[\^\/\]\+\)\?\)\?/,
     );
 });
 
@@ -481,7 +498,10 @@ test("Study Library owners can select and delete multiple entries", () => {
         stylesheet,
         /body\[data-theme="dark"\] \.library-entry-selection/,
     );
-    assert.match(source, /floatingMenu: entries\.some\(canDeleteEntry\)/);
+    assert.match(
+        source,
+        /floatingMenu:\s*isAdminDataView && entries\.some\(canDeleteEntry\)/,
+    );
     assert.match(source, /data-library-select-all/);
     assert.match(source, /data-library-selection-close/);
     assert.match(source, /function setSelectionMode/);

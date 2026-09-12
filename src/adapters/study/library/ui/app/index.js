@@ -4,6 +4,7 @@ import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
+import { navigateTo } from "/static/reuse/app-router.js";
 import {
     bindStudySubNavigation,
     loadStudySubNavigationModel,
@@ -444,7 +445,7 @@ async function confirmEntryDeletion(root, libraryEntries, i18n) {
         : null;
 }
 
-function renderBrowser(schemas, entries, i18n) {
+function renderBrowser(schemas, entries, i18n, requestedLayer = null) {
     if (!schemas.length)
         return `<p>${escapeHtml(i18n.t("gateway.study.library_empty"))}</p>`;
     return schemas
@@ -453,7 +454,11 @@ function renderBrowser(schemas, entries, i18n) {
                 localizedLabel(schema.metadata, schema.language) || schema.id;
             const visibleLayers = schema.layers.filter(
                 (layer) =>
-                    !isMeaningLayer(layer) && layer.semanticRole !== "particle",
+                    !isMeaningLayer(layer) &&
+                    layer.semanticRole !== "particle" &&
+                    (!requestedLayer ||
+                        (schema.id === requestedLayer.schemaId &&
+                            layer.id === requestedLayer.layerId)),
             );
             const tabs = visibleLayers
                 .map((layer, layerIndex) => {
@@ -484,7 +489,8 @@ function renderBrowser(schemas, entries, i18n) {
                     return `<section class="library-layer-panel" role="tabpanel" id="library-panel-${schemaIndex}-${layerIndex}" aria-labelledby="library-tab-${schemaIndex}-${layerIndex}" data-library-panel="${escapeHtml(layer.id)}"${layerIndex === 0 ? "" : " hidden"}>${renderLayerFilters(layer, layerEntries, i18n, schema.language)}<div class="library-entry-grid${layer.minimal ? " library-entry-grid--minimal" : ""}"${rowSize ? ` style="--library-grid-row-size: ${rowSize}"` : ""}>${contents}</div><p class="library-filter-empty" hidden>${escapeHtml(i18n.t("gateway.study.library_filter_empty"))}</p></section>`;
                 })
                 .join("");
-            return `<section class="library-schema" data-library-schema-id="${escapeHtml(schema.id)}"><h2>${escapeHtml(schemaLabel)}</h2><div class="library-layer-tabs" role="tablist" aria-label="${escapeHtml(i18n.t("gateway.study.library_layers"))}">${tabs}</div>${panels}</section>`;
+            if (!visibleLayers.length) return "";
+            return `<section class="library-schema${requestedLayer ? " library-schema--layer-page" : ""}" data-library-schema-id="${escapeHtml(schema.id)}"><h2>${escapeHtml(requestedLayer ? localizedLabel(visibleLayers[0].metadata, schema.language) || visibleLayers[0].id : schemaLabel)}</h2>${requestedLayer ? "" : `<div class="library-layer-tabs" role="tablist" aria-label="${escapeHtml(i18n.t("gateway.study.library_layers"))}">${tabs}</div>`}${panels}</section>`;
         })
         .join("");
 }
@@ -678,6 +684,16 @@ export async function mount(root, { signal } = {}) {
         ],
     });
     applyDocumentTitle(i18n, "gateway.study.library_label");
+    const routeParts = window.location.pathname.split("/").filter(Boolean);
+    const requestedLayer =
+        routeParts.length >= 4
+            ? { schemaId: routeParts[2], layerId: routeParts[3] }
+            : null;
+    const isAdminDataView = routeParts.length === 2;
+    if (isAdminDataView && !isAdminScope()) {
+        await navigateTo("/study");
+        return;
+    }
     const requestedLanguageCode = readSelectedStudyLanguageCode();
     const model = await loadStudySubNavigationModel({
         fallbackLanguageCode: requestedLanguageCode,
@@ -720,7 +736,7 @@ export async function mount(root, { signal } = {}) {
                 width: "fill",
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
                 render: () =>
-                    `<section class="library-browser">${renderBrowser(schemas, entries, i18n)}</section>`,
+                    `<section class="library-browser">${renderBrowser(schemas, entries, i18n, requestedLayer)}</section>`,
             },
         ],
         preferenceKey: "study-library-layout",
@@ -730,16 +746,17 @@ export async function mount(root, { signal } = {}) {
             subtitle: i18n.t("gateway.study.library_subtitle"),
         },
         toolbar: [],
-        floatingMenu: entries.some(canDeleteEntry)
-            ? [
-                  {
-                      id: "library-selection-actions",
-                      label: i18n.t("ui.reuse.actions"),
-                      render: () =>
-                          `<button class="btn-neutral library-selection-action" type="button" data-library-select-all>${escapeHtml(i18n.t("ui.reuse.select_all"))}</button><button class="btn-cancel library-selection-action" type="button" data-library-delete-selection disabled>${escapeHtml(i18n.t("ui.reuse.delete"))}</button><button class="btn-neutral library-selection-action library-selection-close" type="button" data-library-selection-close aria-label="${escapeHtml(i18n.t("ui.reuse.close"))}">X</button>`,
-                  },
-              ]
-            : [],
+        floatingMenu:
+            isAdminDataView && entries.some(canDeleteEntry)
+                ? [
+                      {
+                          id: "library-selection-actions",
+                          label: i18n.t("ui.reuse.actions"),
+                          render: () =>
+                              `<button class="btn-neutral library-selection-action" type="button" data-library-select-all>${escapeHtml(i18n.t("ui.reuse.select_all"))}</button><button class="btn-cancel library-selection-action" type="button" data-library-delete-selection disabled>${escapeHtml(i18n.t("ui.reuse.delete"))}</button><button class="btn-neutral library-selection-action library-selection-close" type="button" data-library-selection-close aria-label="${escapeHtml(i18n.t("ui.reuse.close"))}">X</button>`,
+                      },
+                  ]
+                : [],
         subNavigation: [
             {
                 id: "study-subnav",
@@ -747,7 +764,7 @@ export async function mount(root, { signal } = {}) {
                 render: () =>
                     renderStudySubNavigation({
                         model,
-                        currentPath: "/study/library",
+                        currentPath: window.location.pathname,
                         i18n,
                     }),
             },

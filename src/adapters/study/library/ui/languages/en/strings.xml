@@ -22,4 +22,5 @@
   <string name="gateway.study.library_relationship_alternateSpelling">Alternate spellings</string>
   <string name="gateway.study.library_relationship_pronunciation">Pronunciations</string>
   <string name="gateway.study.library_from_parent">(From: {{ parent }})</string>
+  <string name="gateway.study.library_usage_examples">Usage examples</string>
 </resources>

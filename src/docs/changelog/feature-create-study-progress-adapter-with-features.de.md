@@ -358,6 +358,10 @@ Der Study-Library-Browser importiert jetzt beide Metadatenfunktionen, die zum Er
 
 Direkte Aktualisierungen von `/study` werden jetzt sicher vom untergeordneten Lader an den Study-Hub übergeben. Variantenabhängige Library-Einträge erscheinen als alternative Schreibweisen statt als allgemeine „Verwendet von“-Einträge, und Felder vom Typ `localizedText` zeigen nur den Wert der aktiven Oberflächensprache.
 
+## Lernorientierte Library-Ebenenseiten hinzufügen
+
+Sprachmodule können jetzt eigene Ebenenziele wie Alphabet, Wortschatz, Sätze und Diagramme alternativer Zeichen unter `/study/library/<schema>/<layer>` registrieren, während der datenorientierte Browser mit allen Ebenen und Reitern Administratoren vorbehalten ist. Eintragsdetails verwenden kompakte Fakten und tief verlinkte Felder; Satzbeispiele werden unter der verwendeten lexikalischen Lesung gruppiert, sodass mehrere Lesungen und Viele-zu-viele-Zeichenzuordnungen unterscheidbar bleiben.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -453,3 +457,4 @@ Direkte Aktualisierungen von `/study` werden jetzt sicher vom untergeordneten La
 - [695e05e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/695e05e157a4fcf279b71f22ba98dec8420f85e1)
 - [4c057009](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c05700902ed81591fedc4e86e5bdd886eabd334)
 - [770ca249](https://github.com/Cognis-Labs-HQ/Cognis/commit/770ca249d79ddba91f450f82c916fccd923107dd)
+- [1a2fafce](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a2fafceced4061dca8bbd9272274f8d4ee8877d)

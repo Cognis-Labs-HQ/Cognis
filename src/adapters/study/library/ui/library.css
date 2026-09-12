@@ -811,6 +811,30 @@ body[data-theme="dark"] .library-audio {
     padding: 0.5rem 0.75rem;
 }
 
+.library-detail-facts,
+.library-usage-groups {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.library-detail-fact {
+    display: grid;
+    grid-template-columns: minmax(7rem, max-content) 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+.library-usage-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.library-usage-reading {
+    font-weight: 700;
+}
+
 .library-entry-popup [data-popup-action="previous"],
 .library-entry-popup [data-popup-action="next"] {
     flex: 1 1 calc(50% - 0.5rem);

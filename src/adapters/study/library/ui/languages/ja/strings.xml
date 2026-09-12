@@ -22,4 +22,5 @@
   <string name="gateway.study.library_relationship_alternateSpelling">別表記</string>
   <string name="gateway.study.library_relationship_pronunciation">読み方</string>
   <string name="gateway.study.library_from_parent">（元: {{ parent }}）</string>
+  <string name="gateway.study.library_usage_examples">使用例</string>
 </resources>

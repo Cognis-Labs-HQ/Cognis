@@ -4,7 +4,7 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
     resolveLanguageLabel,
     buildLibraryUrl,
-    isStudentScope,
+    isAdminScope,
     parseLanguageCode,
 } from "/static/gateways/study/ui/language.js";
 
@@ -296,7 +296,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         })
         .join("");
     const libraryLink =
-        isStudentScope() && !hasLibraryModule
+        isAdminScope() && !hasLibraryModule
             ? `
             <li>
                 <a class="dropdown-item${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(libraryUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">

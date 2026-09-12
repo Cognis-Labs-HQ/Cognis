@@ -358,6 +358,10 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 
 `/study` の直接再読み込みは、子ルートローダーから Study ハブへ安全に委譲されるようになりました。Library の派生バリアントは一般的な「使用元」ではなく別表記として表示され、`localizedText` フィールドは有効なインターフェース言語の値だけを描画します。
 
+## 学習者向けの Library レイヤーページを追加
+
+言語モジュールは `/study/library/<schema>/<layer>` にアルファベット、語彙、文、代替文字表などの専用レイヤー画面を登録できるようになり、全レイヤーをタブ表示するデータ中心のブラウザーは管理者専用になりました。詳細表示は簡潔な情報と深いリンク付きボックスを使い、例文を実際に使う語彙の読みの下へまとめるため、複数の読みと文字の多対多対応を区別できます。
+
 ## コミット
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -453,3 +457,4 @@ Study Library ブラウザーがフィルター値の構築に使用する両方
 - [695e05e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/695e05e157a4fcf279b71f22ba98dec8420f85e1)
 - [4c057009](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c05700902ed81591fedc4e86e5bdd886eabd334)
 - [770ca249](https://github.com/Cognis-Labs-HQ/Cognis/commit/770ca249d79ddba91f450f82c916fccd923107dd)
+- [1a2fafce](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a2fafceced4061dca8bbd9272274f8d4ee8877d)

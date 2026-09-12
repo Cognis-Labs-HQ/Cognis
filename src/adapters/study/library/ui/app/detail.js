@@ -12,9 +12,11 @@ import {
     relationSection,
     renderAudio,
     renderCompositionGroups,
+    renderDetailFields,
     renderMetadataPills,
     renderPronunciation,
     renderScope,
+    usageExampleSection,
     pronunciationValues,
     section,
 } from "./presentation.js";
@@ -72,6 +74,18 @@ function coreSections(detail, schemas, entries, i18n, variantPlacement) {
     const wordLayer = relatedWords.length
         ? layerForEntry(schemas, relatedWords[0])
         : null;
+    const readingExamples = relatedWords.map((reading) => ({
+        reading,
+        examples: entries.filter((candidate) => {
+            const candidateLayer = layerForEntry(schemas, candidate);
+            return (
+                candidateLayer?.semanticRole === "orderedLexicalSequence" &&
+                (candidate.references ?? []).some(
+                    (reference) => reference.entryId === reading.id,
+                )
+            );
+        }),
+    }));
     const fields = entry.fields ?? {};
     const metadataIds = new Set(metadataFields(layer).map(({ id }) => id));
     const reserved = new Set(["pronunciation", "audio", ...metadataIds]);
@@ -104,7 +118,7 @@ function coreSections(detail, schemas, entries, i18n, variantPlacement) {
     );
     return [
         `<header class="library-detail-summary">${renderPronunciation(entry, layer)}${renderAudio(entry, layer)}${renderCompositionGroups(compositions, i18n)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
-        section(i18n.t("gateway.study.library_fields"), genericFields),
+        renderDetailFields(genericFields),
         relatedWords.length
             ? relationSection(
                   i18n
@@ -118,6 +132,10 @@ function coreSections(detail, schemas, entries, i18n, variantPlacement) {
                   i18n.t("gateway.study.library_no_relationships"),
               )
             : "",
+        usageExampleSection(
+            i18n.t("gateway.study.library_usage_examples"),
+            readingExamples,
+        ),
         variantChildren.length
             ? relationSection(
                   i18n.t(

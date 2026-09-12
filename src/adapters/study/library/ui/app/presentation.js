@@ -65,6 +65,17 @@ export function section(title, value) {
     return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${renderValue(value)}</section>`;
 }
 
+export function renderDetailFields(fields) {
+    const items = Object.entries(fields ?? {});
+    if (!items.length) return "";
+    return `<div class="library-detail-facts">${items
+        .map(
+            ([label, value]) =>
+                `<div class="library-detail-fact"><strong>${escapeHtml(label)}</strong><span>${renderValue(value)}</span></div>`,
+        )
+        .join("")}</div>`;
+}
+
 export function layerForEntry(schemas, entry) {
     return schemas
         .find((schema) => schema.id === entry.schemaId)
@@ -133,6 +144,17 @@ export function renderScope(entry, i18n) {
 
 export function relationSection(title, entries, emptyLabel) {
     return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${entries.length ? `<div class="library-related-entries">${entries.map((entry) => renderEntryLink(entry, "library-related-entry btn-neutral")).join("")}</div>` : `<p>${escapeHtml(emptyLabel)}</p>`}</section>`;
+}
+
+export function usageExampleSection(title, groups) {
+    const visible = groups.filter((group) => group.examples.length);
+    if (!visible.length) return "";
+    return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3><div class="library-usage-groups">${visible
+        .map(
+            ({ reading, examples }) =>
+                `<div class="library-usage-group">${renderEntryLink(reading, "library-related-entry library-usage-reading btn-neutral")}<span aria-hidden="true">→</span><div class="library-related-entries">${examples.map((entry) => renderEntryLink(entry, "library-related-entry btn-neutral")).join("")}</div></div>`,
+        )
+        .join("")}</div></section>`;
 }
 
 export function renderEntryLink(entry, className, label = entry.label) {

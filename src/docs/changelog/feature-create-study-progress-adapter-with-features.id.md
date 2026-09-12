@@ -358,6 +358,10 @@ Browser Study Library kini mengimpor kedua fungsi metadata yang digunakan untuk 
 
 Pemuatan ulang langsung pada `/study` kini didelegasikan dengan aman dari pemuat turunan ke hub Study. Turunan varian Library ditampilkan sebagai ejaan alternatif, bukan entri “Digunakan Oleh” umum, dan bidang `localizedText` hanya merender nilai bahasa antarmuka aktif.
 
+## Tambahkan halaman lapisan Library yang berfokus pada pelajar
+
+Modul bahasa kini dapat mendaftarkan tujuan lapisan khusus seperti Alfabet, Kosakata, Kalimat, dan bagan karakter alternatif pada `/study/library/<schema>/<layer>`, sedangkan browser data bertab untuk seluruh lapisan dibatasi bagi administrator. Detail entri memakai fakta ringkas dan kotak bertaut dalam, serta mengelompokkan contoh kalimat di bawah bacaan leksikal yang digunakan agar beberapa bacaan dan pemetaan karakter banyak-ke-banyak tetap terpisah.
+
 ## Commit
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -453,3 +457,4 @@ Pemuatan ulang langsung pada `/study` kini didelegasikan dengan aman dari pemuat
 - [695e05e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/695e05e157a4fcf279b71f22ba98dec8420f85e1)
 - [4c057009](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c05700902ed81591fedc4e86e5bdd886eabd334)
 - [770ca249](https://github.com/Cognis-Labs-HQ/Cognis/commit/770ca249d79ddba91f450f82c916fccd923107dd)
+- [1a2fafce](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a2fafceced4061dca8bbd9272274f8d4ee8877d)

@@ -358,6 +358,10 @@ The Study Library browser now imports both metadata helper functions used to con
 
 Direct refreshes of `/study` now delegate safely from the child loader to the Study hub. Library variant dependants are presented as alternate spellings rather than generic “Used By” entries, and `localizedText` fields render only the active interface-language value.
 
+## Add learner-focused Library layer pages
+
+Language modules can now register dedicated layer destinations such as Alphabet, Vocabulary, Sentences, and alternate-character charts at `/study/library/<schema>/<layer>`, while the tabbed all-layer data browser is reserved for administrators. Entry details use compact facts and deep-linked boxes, and group sentence examples beneath the lexical reading they use so multiple readings and many-to-many character mappings remain distinct.
+
 ## Commits
 
 - [1d65413](https://github.com/Cognis-Labs-HQ/Cognis/commit/1d65413154f89efbd91422bbfdc94bc8196e9f16)
@@ -453,3 +457,4 @@ Direct refreshes of `/study` now delegate safely from the child loader to the St
 - [695e05e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/695e05e157a4fcf279b71f22ba98dec8420f85e1)
 - [4c057009](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c05700902ed81591fedc4e86e5bdd886eabd334)
 - [770ca249](https://github.com/Cognis-Labs-HQ/Cognis/commit/770ca249d79ddba91f450f82c916fccd923107dd)
+- [1a2fafce](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a2fafceced4061dca8bbd9272274f8d4ee8877d)
