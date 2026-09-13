@@ -3,12 +3,14 @@ import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import {
     DEFAULT_LOCALE,
     createI18n,
+    extendI18n,
     applyDocumentTitle,
     readPreferredLanguages,
     sanitizeLanguagePriority,
     selectSupportedLanguage,
     setPreferredLanguages,
 } from "/static/reuse/i18n.js";
+import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -132,6 +134,8 @@ export async function mount(root, { signal } = {}) {
     const hadStoredSession = await resetAuthSessionForRegister();
 
     const i18n = await createI18n();
+    const registrationIntegrations = [];
+    let registrationIntegrationsReady = false;
     applyDocumentTitle(i18n, "ui.page.title.register");
     if (hadStoredSession) {
         showToast(i18n.t("ui.app.register.reason.session_cleared"), {
@@ -205,6 +209,17 @@ export async function mount(root, { signal } = {}) {
             userValidationMode = String(
                 regConfigPayload?.data?.userValidationMode ?? "none",
             );
+            for (const descriptor of regConfigPayload?.data?.integrations ??
+                []) {
+                if (!descriptor?.id || !descriptor?.scriptUrl) continue;
+                const integrationModule = await import(descriptor.scriptUrl);
+                registrationIntegrations.push({
+                    descriptor,
+                    module: integrationModule,
+                    i18n: await extendI18n(i18n, descriptor.stringsBaseUrl),
+                });
+            }
+            registrationIntegrationsReady = true;
         }
     } catch {
         if (!token && !hasTokenParam) openRegistrationsEnabled = false;
@@ -348,6 +363,12 @@ export async function mount(root, { signal } = {}) {
                 })),
             });
         }
+        for (const integration of registrationIntegrations) {
+            const field = integration.module.createRegistrationField?.({
+                i18n: integration.i18n,
+            });
+            if (field) registerFormFields.push(field);
+        }
         return createFormBuilder(
             { i18n, escapeHtml },
             {
@@ -363,9 +384,11 @@ export async function mount(root, { signal } = {}) {
         const isInviteFlow = Boolean(token);
         const isInvalid =
             isInviteFlow && tokenInvalid && !inviteAdapterDisabled;
-        const canRenderForm = isInviteFlow
-            ? Boolean(inviteData) && !isInvalid && !inviteAdapterDisabled
-            : openRegistrationsEnabled;
+        const canRenderForm =
+            registrationIntegrationsReady &&
+            (isInviteFlow
+                ? Boolean(inviteData) && !isInvalid && !inviteAdapterDisabled
+                : openRegistrationsEnabled);
 
         let formHtml = "";
         let messageHtml = "";
@@ -668,6 +691,23 @@ export async function mount(root, { signal } = {}) {
                             );
                             const chosenLanguage =
                                 form.language?.value ?? selectedLanguage;
+                            const registrationValues = Object.fromEntries(
+                                new FormData(form).entries(),
+                            );
+                            for (const integration of registrationIntegrations) {
+                                const validationMessage =
+                                    integration.module.validateRegistration?.({
+                                        values: registrationValues,
+                                        i18n: integration.i18n,
+                                    });
+                                if (validationMessage) {
+                                    showToast(validationMessage, {
+                                        variant: "error",
+                                    });
+                                    return;
+                                }
+                            }
+                            let authenticatedToken = "";
                             if (password !== confirmPassword) {
                                 showToast(
                                     i18n.t(
@@ -713,6 +753,9 @@ export async function mount(root, { signal } = {}) {
                                         );
                                         return;
                                     }
+                                    authenticatedToken = String(
+                                        body?.data?.verifyToken ?? "",
+                                    );
                                 } else {
                                     const response = await fetch(
                                         "/api/v1/auth/register",
@@ -777,6 +820,7 @@ export async function mount(root, { signal } = {}) {
                                     const verifyToken = String(
                                         regPayload?.data?.verifyToken ?? "",
                                     );
+                                    authenticatedToken = verifyToken;
                                     const registeredUsername = String(
                                         regPayload?.data?.username ?? username,
                                     );
@@ -787,6 +831,27 @@ export async function mount(root, { signal } = {}) {
                                             verifyToken,
                                         );
                                     }
+                                }
+                                for (const integration of registrationIntegrations) {
+                                    if (
+                                        !integration.module.completeRegistration
+                                    )
+                                        continue;
+                                    if (!authenticatedToken) {
+                                        throw new Error(
+                                            "registration_session_unavailable",
+                                        );
+                                    }
+                                    await integration.module.completeRegistration(
+                                        {
+                                            apiFetch: (path, options = {}) =>
+                                                apiFetch(path, {
+                                                    ...options,
+                                                    accessToken:
+                                                        authenticatedToken,
+                                                }),
+                                        },
+                                    );
                                 }
                                 setPreferredLanguages(
                                     sanitizeLanguagePriority([
@@ -803,7 +868,18 @@ export async function mount(root, { signal } = {}) {
                                 window.setTimeout(() => {
                                     window.location.href = "/login";
                                 }, 1200);
-                            } catch {
+                            } catch (error) {
+                                console.error(
+                                    JSON.stringify({
+                                        level: "error",
+                                        component: "register-page",
+                                        operation: "complete-registration",
+                                        error:
+                                            error instanceof Error
+                                                ? error.message
+                                                : String(error),
+                                    }),
+                                );
                                 showToast(
                                     i18n.t("ui.app.register.error.generic"),
                                     {

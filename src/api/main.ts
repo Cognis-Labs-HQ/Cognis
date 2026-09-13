@@ -39,6 +39,7 @@ import {
     generatePassphrase,
     PASSPHRASE_CAPABILITY,
 } from "./reuse/passphrase.js";
+import { createDocumentVersionStoreCapability } from "./routes/docs/version-store.js";
 
 requirePublicEnvironment();
 
@@ -399,6 +400,9 @@ if (flowCtx.flow.exists("bootstrap-platform")) {
 }
 
 const dbExecutor = capabilities.get<DbExecutor>("db:executor")!;
+const documentVersionStore = createDocumentVersionStoreCapability();
+capabilities.contribute("docs:versionStore", documentVersionStore);
+systemCtx.contributeCapability("docs:versionStore", documentVersionStore);
 const dbDialect = capabilities.get<DbDialectHelper>("db:dialect")!;
 await dbExecutor.ensureTable({
     name: "gateways",

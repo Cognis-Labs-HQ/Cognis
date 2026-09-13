@@ -4,6 +4,7 @@ import {
     type CapabilityStore,
 } from "../../../shared.js";
 import type { GatewayBootstrapContext } from "../../../shared.js";
+import type { Ctx } from "@cognis/core";
 import type { UserPreferenceStore } from "../../../../api/reuse/preference-store.js";
 import {
     AUTH_PASSWORD_POLICY_KEY,
@@ -103,6 +104,24 @@ export function createSecurityRoutes({
         ) {
             const enabled = await registrationsEnabled();
             const { userValidationMode } = await readSecuritySettings();
+            const registrationCtx = capabilities.get<Ctx>("system:ctx");
+            const flowResult = registrationCtx?.flow.exists(
+                "construct-registration-ui",
+            )
+                ? await registrationCtx.flow.run(
+                      "construct-registration-ui",
+                      {},
+                  )
+                : null;
+            const integrations = (
+                flowResult?.stageResults["compose-form"] ?? []
+            ).flatMap((result) => {
+                if (!result || typeof result !== "object") return [];
+                const value = result as { integrations?: unknown };
+                return Array.isArray(value.integrations)
+                    ? value.integrations
+                    : [];
+            });
             log?.("debug", "Read registration config.", {
                 ...logMeta,
                 registrationsEnabled: enabled,
@@ -114,6 +133,7 @@ export function createSecurityRoutes({
                     data: {
                         registrationsEnabled: enabled,
                         userValidationMode,
+                        integrations,
                     },
                 }),
             );
