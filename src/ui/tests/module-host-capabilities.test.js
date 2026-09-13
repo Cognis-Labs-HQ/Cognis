@@ -46,6 +46,7 @@ for (const capability of [
     "component-pages:spawn",
     "component-pages:discard",
     "ui:makeFloatingWindow",
+    "ui:navigate",
 ]) {
     test(`host registers the module UI capability ${capability}`, () => {
         assert.match(

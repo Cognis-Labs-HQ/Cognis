@@ -244,6 +244,7 @@ uiRegistry.registerCapabilityProvider({
         "component-pages:spawn",
         "component-pages:discard",
         "ui:makeFloatingWindow",
+        "ui:navigate",
     ],
 });
 const healthService = new HealthService();

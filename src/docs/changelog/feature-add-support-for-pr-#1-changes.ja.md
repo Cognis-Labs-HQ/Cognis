@@ -14,9 +14,14 @@ Core は、独立して配布されるモジュール向けに、追記専用の
 
 壊れている、または無効なモジュールアイコンとバナーは、実行時エラーのポップアップを開かずに標準の不明モジュール画像へ切り替わるようになりました。
 
+## ホストナビゲーション Capability
+
+モジュールのライフサイクルはアプリルーターを `ui:navigate` の提供元として認識し、ホストナビゲーションを必要とするモジュールを有効化できるようになりました。
+
 ## コミット
 
 - [9d24852](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d248526)
 - [8b480faf](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b480fafbceca1dd52b9c693dc1f0d4381d473b8)
 - [84f84a43](https://github.com/Cognis-Labs-HQ/Cognis/commit/84f84a43659185eb65e48004cc9a898b69aa4458)
 - [2ad50da](https://github.com/Cognis-Labs-HQ/Cognis/commit/2ad50dacc8f0a73aa965b85410054a881a05cd17)
+- [1b13f90](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b13f90326737588d470ac1e4919e36ed9fba4dd)
