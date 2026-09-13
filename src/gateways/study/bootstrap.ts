@@ -208,20 +208,24 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
     for (const flow of [
         {
-            id: "study-library-create",
+            id: "study:library:create",
             stages: ["normalize", "resolve", "validate", "persist"],
         },
         {
-            id: "study-library-resolve",
+            id: "study:library:resolve",
             stages: ["normalize", "propose", "rank"],
         },
         {
-            id: "study-library-lookup",
+            id: "study:library:lookup",
             stages: ["discover", "lookup", "rank"],
         },
         {
-            id: "study-library-ingest",
+            id: "study:library:ingest",
             stages: ["inspect", "validate", "stage", "persist", "audit"],
+        },
+        {
+            id: "study:library:delete",
+            stages: ["authorize", "validate", "delete", "audit"],
         },
     ]) {
         if (!systemCtx?.hasFlow(flow.id)) {
@@ -373,14 +377,22 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "/static/styles/reuse/page-sections.css",
         "/static/gateways/study/study.css",
     ];
+    const isStudyAvailable = (): boolean => {
+        syncLanguageCapabilities();
+        return (
+            ctx.gatewayRegistry.get("study")?.status !== "disabled" &&
+            gateway
+                .listRegisteredLanguageModules()
+                .some((language) => language.enabled)
+        );
+    };
     ctx.uiRegistry?.registerSpaRoute({
         id: "gateway.study",
         pattern: "^/study(?:/welcome|/settings)?$",
         base: "/study",
         scriptUrl: "/static/gateways/study/study.js",
         stylesheets: studyStylesheets,
-        isEnabled: () =>
-            ctx.gatewayRegistry.get("study")?.status !== "disabled",
+        isEnabled: isStudyAvailable,
     });
     ctx.uiRegistry?.registerSpaRoute({
         id: "gateway.study.child",
@@ -388,8 +400,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         base: "/study",
         scriptUrl: "/static/gateways/study/route.js",
         stylesheets: studyStylesheets,
-        isEnabled: () =>
-            ctx.gatewayRegistry.get("study")?.status !== "disabled",
+        isEnabled: isStudyAvailable,
     });
 
     const serveStudyHtml = async (
@@ -398,17 +409,24 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         url: URL,
     ): Promise<boolean> => {
         if (req.method !== "GET") return false;
-        if (
-            url.pathname !== "/study" &&
-            url.pathname !== "/study/welcome" &&
-            url.pathname !== "/study/settings"
-        )
+        if (url.pathname !== "/study" && !url.pathname.startsWith("/study/"))
             return false;
         if (!routeHelpers.getCookieSession(req)) {
             res.writeHead(302, { location: "/login" });
             res.end();
             return true;
         }
+        if (!isStudyAvailable()) {
+            res.writeHead(302, { location: "/error?code=503" });
+            res.end();
+            return true;
+        }
+        if (
+            url.pathname !== "/study" &&
+            url.pathname !== "/study/welcome" &&
+            url.pathname !== "/study/settings"
+        )
+            return false;
         routeHelpers.setPageSecurityHeaders(res);
         const html = await readFile(
             path.join(GATEWAY_ROOT, "ui", "study.html"),

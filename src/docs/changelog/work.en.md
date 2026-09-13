@@ -1,0 +1,34 @@
+# Library and Safety Fixes
+
+**Feature Branch:** work
+
+## Focused Library UI modules
+
+The Study Library browser entry point is now a small page coordinator. Card rendering, layered grids, detail popups, selection, browser interactions, and variant interactions live in focused modules of approximately 100–200 lines while preserving the existing UI behavior.
+
+## Atomic progress corrections
+
+Ordinary progress events can no longer inject compensation identifiers. Corrections use the dedicated operation, and the persistent event store atomically guarantees that each target has at most one correction.
+
+## Authorized Library deletion
+
+Library deletion now resolves the final cascade and authorizes every affected entry inside the deletion transaction, closing the race between authorization and relationship changes.
+
+## Stronger module boundaries
+
+External module validation rejects source symlinks, directory symlinks (including dotted names), and asset symlinks that escape the module boundary. Safe module-local asset symlinks remain usable. Protected UI classes targeted through class attribute selectors are also recognized.
+
+## Secondary spellings in titles
+
+Word and sentence alternate spellings now appear as navigable secondary title content directly beneath the primary spelling. Character-style structural variants are no longer repeated in detail content.
+
+## Unambiguous pronunciation titles
+
+Primary and secondary spellings are no longer repeated as pronunciation metadata. Pronunciations remain plain title text and are never heuristically turned into writing-unit links, so displayed relationships continue to reflect only the module-provided Library graph.
+
+## Commits
+
+- [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
+- [458c6bea](https://github.com/Cognis-Labs-HQ/Cognis/commit/458c6bea)
+- [a009f770](https://github.com/Cognis-Labs-HQ/Cognis/commit/a009f770)
+- [799fc33d](https://github.com/Cognis-Labs-HQ/Cognis/commit/799fc33d)

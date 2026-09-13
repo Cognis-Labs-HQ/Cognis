@@ -299,13 +299,13 @@
     border-color: var(--accent);
 }
 
-.profile-hero-follow-btn.btn-cancel {
+.profile-hero-follow-btn[data-following="true"] {
     background: transparent;
     border-color: var(--color-danger-border);
     color: var(--color-danger-outline-text, var(--color-danger-text));
 }
 
-.profile-hero-follow-btn.btn-cancel:hover {
+.profile-hero-follow-btn[data-following="true"]:hover {
     background: var(--color-danger-hover-bg);
     border-color: var(--color-danger-outline-text, var(--color-danger-text));
     color: var(--color-danger-outline-text, var(--color-danger-text));

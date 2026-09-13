@@ -37,3 +37,7 @@ Jedes unmittelbare Unterverzeichnis des Inhalts entspricht genau einer deklarier
 - Metadaten für Schema, Ebene, Feld, Beziehung und Dokumentation lokalisieren.
 - Lizenz, Attribution, Löschverhalten von Beziehungen und genaue Bedingungen deklarieren.
 - Vor der Veröffentlichung die Prüfung ausführen und nie von der Aufzählungsreihenfolge der Inhaltsteile abhängen.
+
+## Beziehungsdarstellung und Sichtbarkeit
+
+Die Darstellung von Beziehungen ist ausdrücklich festgelegt. `presentationRole` wird auf `composition`, `alternateSpelling` oder `pronunciation` gesetzt, um die Darstellung einer resolvergestützten Referenz zu beschreiben. `variant: true` kennzeichnet ausschließlich eine alternative Form und erzeugt kein visuelles Elternelement. `child: true` wird nur gesetzt, wenn das referenzierte Ziel das tatsächliche konzeptionelle Elternelement ist, dessen Diagrammkarte den Quelldatensatz aufklappen soll. Für gemeinsame Ursprünge, Umformungen, Aussprachen oder andere Verknüpfungen darf `child` nicht verwendet werden. Mit dem obersten Datensatzfeld `hidden: true` bleibt ein Datensatz auflösbar und über Tiefenlinks erreichbar, erscheint aber nicht als Diagrammkarte. Eingehende Varianten- und Kindbeziehungen sind strukturell und werden aus allgemeinen Verwendungslisten ausgeschlossen; dort erscheinen nur nicht strukturelle eingehende Referenzen.

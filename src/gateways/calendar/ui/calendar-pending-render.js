@@ -8,7 +8,7 @@ const PENDING_ACTION_BASE_CLASS = "btn-animated calendar-pending-action";
 
 const PENDING_ACTION_CLASSES = {
     accepted: `btn-confirm ${PENDING_ACTION_BASE_CLASS}`,
-    tentative: `popup-action-btn--neutral ${PENDING_ACTION_BASE_CLASS}`,
+    tentative: `btn-neutral ${PENDING_ACTION_BASE_CLASS}`,
     declined: `btn-cancel ${PENDING_ACTION_BASE_CLASS}`,
 };
 

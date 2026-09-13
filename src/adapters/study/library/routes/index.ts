@@ -159,6 +159,43 @@ export function createLibraryRoutes(
                 sendJson(res, 201, { data: entry });
                 return true;
             }
+            if (
+                url.pathname === "/api/v1/study/library/entries" &&
+                req.method === "DELETE"
+            ) {
+                const body = (await readJson(req)) as {
+                    entryIds?: unknown;
+                    blacklistContentHashes?: unknown;
+                };
+                if (
+                    !Array.isArray(body.entryIds) ||
+                    !body.entryIds.every(
+                        (entryId) => typeof entryId === "string",
+                    ) ||
+                    typeof body.blacklistContentHashes !== "boolean"
+                ) {
+                    throw new Error("invalid_delete_request");
+                }
+                const deletedEntryIds = await library.deleteEntries(
+                    actor,
+                    body.entryIds,
+                    body.blacklistContentHashes,
+                );
+                await log?.("info", "Deleted library entries.", {
+                    component: "study-library",
+                    operation: "delete-entries-route",
+                    accountId: actor.accountId,
+                    entryCount: body.entryIds.length,
+                    blacklistContentHashes: body.blacklistContentHashes,
+                });
+                sendJson(res, 200, {
+                    data: {
+                        deleted: deletedEntryIds.length,
+                        entryIds: deletedEntryIds,
+                    },
+                });
+                return true;
+            }
             const traceMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/entries\/([^/]+)\/trace$/,
             );

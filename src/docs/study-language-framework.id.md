@@ -37,3 +37,7 @@ Setiap subdirektori langsung di bawah konten harus sama dengan satu ID lapisan y
 - Lokalkan metadata skema, lapisan, bidang, relasi, dan dokumentasi.
 - Nyatakan lisensi, atribusi, perilaku penghapusan relasi, dan batas yang tepat.
 - Jalankan pemeriksaan sebelum penerbitan dan jangan bergantung pada urutan pencacahan pecahan konten.
+
+## Penyajian dan visibilitas relasi
+
+Penyajian relasi harus eksplisit. Tetapkan `presentationRole` ke `composition`, `alternateSpelling`, atau `pronunciation` untuk menjelaskan penyajian referensi berbasis resolver. Gunakan `variant: true` hanya untuk menandai bentuk alternatif; nilai ini tidak membuat induk visual. Gunakan `child: true` hanya ketika target rujukan benar-benar merupakan induk konseptual yang kartu bagannya harus membuka rekaman sumber. Jangan gunakan `child` untuk asal bersama, transformasi, pelafalan, atau asosiasi lain. Tetapkan `hidden: true` pada tingkat teratas rekaman jika rekaman harus tetap dapat diresolusi dan tersedia melalui tautan mendalam tetapi tidak boleh tampil sebagai kartu bagan. Relasi masuk yang ditandai sebagai varian atau anak bersifat struktural dan dikecualikan dari daftar penggunaan umum; hanya referensi masuk nonstruktural yang tampil di sana.

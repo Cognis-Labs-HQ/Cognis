@@ -37,27 +37,27 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.17` |
 | Dateikontingent       | `src/adapters/file/quota/`          | `1.0.15` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.17` |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.48` |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.49` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.29` |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.15` |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.15` |
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.28` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.18` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.17` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.23` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.19` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.25` |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.19` |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.16` |
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.17` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.16` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.14` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.4`  |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.8`  |
-| Calls (Social)        | `src/adapters/social/call/`         | `0.5.19` |
-| Link Share            | `src/adapters/share/link/`          | `1.1.34` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.5`  |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.10` |
+| Calls (Social)        | `src/adapters/social/call/`         | `0.5.21` |
+| Link Share            | `src/adapters/share/link/`          | `1.1.36` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.11` |
-| Library (Study)       | `src/adapters/study/library/`       | `2.5.1`  |
-| Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
+| Library (Study)       | `src/adapters/study/library/`       | `2.7.13` |
+| Fortschritt (Study)   | `src/adapters/study/progress/`      | `1.1.3`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
 | File Logging          | `src/adapters/logging/file/`        | `1.1.5`  |
 
@@ -67,28 +67,28 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`   |
 | Authentication (auth) | `src/gateways/auth/`          | `1.9.23`  |
-| Share                 | `src/gateways/share/`         | `1.7.46`  |
+| Share                 | `src/gateways/share/`         | `1.7.47`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.19`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.11`  |
 | Social                | `src/gateways/social/`        | `1.3.5`   |
-| File Storage (files)  | `src/gateways/files/`         | `2.1.10`  |
+| File Storage (files)  | `src/gateways/files/`         | `2.1.11`  |
 | Registration          | `src/gateways/registration/`  | `1.1.15`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
-| Study                 | `src/gateways/study/`         | `1.8.7`   |
-| Calendar              | `src/gateways/calendar/`      | `1.4.108` |
+| Study                 | `src/gateways/study/`         | `1.8.17`  |
+| Calendar              | `src/gateways/calendar/`      | `1.4.110` |
 
 ## Kernverträge
 
-| Komponente   | Pfad        | Version  |
-| ------------ | ----------- | -------- |
-| Core Package | `src/core/` | `0.3.89` |
+| Komponente   | Pfad        | Version   |
+| ------------ | ----------- | --------- |
+| Core Package | `src/core/` | `0.3.105` |
 
 ## API
 
 | Komponente | Pfad       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.5.3` |
+| API Server | `src/api/` | `0.5.7` |
 
 ## Werkzeuge
 

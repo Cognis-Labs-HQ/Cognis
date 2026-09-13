@@ -1,6 +1,10 @@
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import { contentEntryId } from "./content-pack.js";
+import {
+    contentEntryId,
+    contentRecordHash,
+    versionedContentEntryId,
+} from "./content-pack.js";
 import type {
     LibraryAsset,
     LibraryContentPackPlan,
@@ -15,6 +19,15 @@ import type {
 function mapEntry(row: Record<string, unknown>): LibraryEntry {
     return {
         id: String(row.id),
+        sourceRecordId:
+            row.source_record_id === null || row.source_record_id === undefined
+                ? undefined
+                : String(row.source_record_id),
+        displayId:
+            row.display_id === null || row.display_id === undefined
+                ? undefined
+                : Number(row.display_id),
+        hidden: row.hidden === true || Number(row.hidden) === 1,
         schemaId: String(row.schema_id),
         schemaVersion: Number(row.schema_version),
         layer: String(row.layer),
@@ -32,6 +45,24 @@ function mapEntry(row: Record<string, unknown>): LibraryEntry {
 
 export class LibraryStore {
     constructor(private readonly db: DbExecutor) {}
+
+    private async upsert(
+        db: DbExecutor,
+        table: string,
+        conflictTarget: string[],
+        values: Record<string, unknown>,
+    ): Promise<void> {
+        await db.executeCommand({
+            option: "INSERT",
+            table,
+            values,
+            conflict: {
+                action: "update",
+                target: conflictTarget,
+                update: values,
+            },
+        });
+    }
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({
@@ -93,12 +124,21 @@ export class LibraryStore {
                 { name: "layer", type: "text", notNull: true },
                 { name: "language", type: "text", notNull: true },
                 { name: "label", type: "text", notNull: true },
+                { name: "source_record_id", type: "text" },
+                { name: "display_id", type: "integer" },
+                {
+                    name: "hidden",
+                    type: "boolean",
+                    notNull: true,
+                    default: false,
+                },
                 {
                     name: "fields_json",
                     type: "text",
                     notNull: true,
                     default: "{}",
                 },
+                { name: "content_hash", type: "text", unique: true },
                 { name: "created_by", type: "text", notNull: true },
                 {
                     name: "created_at",
@@ -108,6 +148,19 @@ export class LibraryStore {
                 },
                 {
                     name: "updated_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+        });
+        await this.db.ensureTable({
+            name: "study_library_content_hash_blacklist",
+            columns: [
+                { name: "content_hash", type: "text", primaryKey: true },
+                { name: "deleted_by", type: "text", notNull: true },
+                {
+                    name: "deleted_at",
                     type: "timestamp",
                     notNull: true,
                     default: "now",
@@ -208,12 +261,36 @@ export class LibraryStore {
                 { column: "version", value: manifest.version },
             ],
         });
-        if (existing.rows?.length) {
+        const unchanged = Boolean(existing.rows?.length);
+        if (unchanged) {
             if (String(existing.rows[0].digest) !== digest)
                 throw new Error("content_pack_version_conflict");
-            return this.contentPackReceipt(plan, true);
         }
         await this.db.transaction(async (db) => {
+            const blacklist = await db.executeCommand({
+                option: "SELECT",
+                table: "study_library_content_hash_blacklist",
+                columns: ["content_hash"],
+            });
+            const blockedHashes = new Set(
+                (blacklist.rows ?? []).map((row) => String(row.content_hash)),
+            );
+            const canonicalIdsByHash = new Map<string, string>();
+            const recordIdentity = new Map(
+                records.flatMap((record) => {
+                    const contentHash = contentRecordHash(
+                        manifest,
+                        schema,
+                        record,
+                    );
+                    if (blockedHashes.has(contentHash)) return [];
+                    const canonicalId =
+                        canonicalIdsByHash.get(contentHash) ??
+                        contentEntryId(manifest, record.id);
+                    canonicalIdsByHash.set(contentHash, canonicalId);
+                    return [[record.id, { canonicalId, contentHash }] as const];
+                }),
+            );
             const registeredSchema = await db.executeCommand({
                 option: "SELECT",
                 table: "study_library_schemas",
@@ -240,7 +317,24 @@ export class LibraryStore {
                     },
                 });
             }
+            const importedSourceIds = new Set(
+                Array.from(
+                    recordIdentity.values(),
+                    ({ canonicalId }) => canonicalId,
+                ),
+            );
+            for (const sourceEntryId of importedSourceIds) {
+                await db.executeCommand({
+                    option: "DELETE",
+                    table: "study_library_references",
+                    where: [
+                        { column: "source_entry_id", value: sourceEntryId },
+                    ],
+                });
+            }
             for (const record of records) {
+                const identity = recordIdentity.get(record.id);
+                if (!identity) continue;
                 const layer = schema.layers.find(
                     ({ id }) => id === record.layer,
                 )!;
@@ -259,28 +353,50 @@ export class LibraryStore {
                         );
                     }
                 }
-                await db.executeCommand({
-                    option: "INSERT",
-                    table: "study_library_entries",
-                    values: {
-                        id: contentEntryId(manifest, record.id),
-                        scope: "global",
-                        scope_id: "global",
+                const { canonicalId: id, contentHash } = identity;
+                await this.removeDuplicateContentEntries(
+                    db,
+                    id,
+                    contentHash,
+                    {
                         schema_id: schema.id,
                         schema_version: schema.version,
                         layer: record.layer,
                         language: schema.language,
                         label: record.label.trim(),
+                        source_record_id: record.id,
+                        display_id: record.displayId ?? null,
+                        hidden: record.hidden === true,
                         fields_json: JSON.stringify(fields),
                         created_by: `content-pack:${manifest.id}`,
                     },
+                    manifest,
+                    record.id,
+                );
+                await this.upsert(db, "study_library_entries", ["id"], {
+                    id,
+                    scope: "global",
+                    scope_id: "global",
+                    schema_id: schema.id,
+                    schema_version: schema.version,
+                    layer: record.layer,
+                    language: schema.language,
+                    label: record.label.trim(),
+                    source_record_id: record.id,
+                    display_id: record.displayId ?? null,
+                    hidden: record.hidden === true,
+                    fields_json: JSON.stringify(fields),
+                    content_hash: contentHash,
+                    created_by: `content-pack:${manifest.id}`,
+                    updated_at: new Date().toISOString(),
                 });
             }
             for (const asset of plan.assets) {
-                await db.executeCommand({
-                    option: "INSERT",
-                    table: "study_library_content_pack_assets",
-                    values: {
+                await this.upsert(
+                    db,
+                    "study_library_content_pack_assets",
+                    ["publisher", "pack_id", "version", "asset_path"],
+                    {
                         publisher: manifest.publisher,
                         pack_id: manifest.id,
                         version: manifest.version,
@@ -288,51 +404,289 @@ export class LibraryStore {
                         media_type: asset.mediaType,
                         data_base64: asset.data,
                     },
-                });
+                );
             }
             for (const record of records) {
+                const source = recordIdentity.get(record.id);
+                if (!source) continue;
                 for (const [index, reference] of (
                     record.references ?? []
                 ).entries()) {
+                    const target = recordIdentity.get(reference.entryId);
+                    if (!target) continue;
+                    if (
+                        record.id === reference.entryId ||
+                        source.canonicalId === target.canonicalId
+                    ) {
+                        continue;
+                    }
+                    const values = {
+                        source_entry_id: source.canonicalId,
+                        target_entry_id: target.canonicalId,
+                        relation: reference.relation,
+                        position: reference.position ?? index,
+                    };
+                    await db.executeCommand({
+                        option: "INSERT",
+                        table: "study_library_references",
+                        values,
+                        conflict: { action: "ignore" },
+                    });
+                }
+            }
+            if (!unchanged) {
+                await db.executeCommand({
+                    option: "INSERT",
+                    table: "study_library_content_packs",
+                    values: {
+                        pack_id: manifest.id,
+                        publisher: manifest.publisher,
+                        version: manifest.version,
+                        content_revision: manifest.contentRevision,
+                        schema_id: schema.id,
+                        schema_version: schema.version,
+                        digest,
+                        record_count: records.length,
+                        relationship_count: records.reduce(
+                            (count, record) =>
+                                count + (record.references?.length ?? 0),
+                            0,
+                        ),
+                    },
+                });
+            }
+        });
+        return this.contentPackReceipt(plan, unchanged);
+    }
+
+    async deleteEntries(
+        entryIds: readonly string[],
+        deletedBy: string,
+        blacklistContentHashes: boolean,
+        authorize: (
+            entries: readonly LibraryEntry[],
+        ) => Promise<void> = async () => {},
+    ): Promise<readonly string[]> {
+        let deletedEntryIds: readonly string[] = [];
+        await this.db.transaction(async (db) => {
+            deletedEntryIds = await this.resolveDeletionCascade(entryIds, db);
+            const entries: LibraryEntry[] = [];
+            for (const entryId of deletedEntryIds) {
+                const entryResult = await db.executeCommand({
+                    option: "SELECT",
+                    table: "study_library_entries",
+                    where: [{ column: "id", value: entryId }],
+                });
+                const row = entryResult.rows?.[0];
+                if (!row) throw new Error("not_found");
+                entries.push(mapEntry(row));
+            }
+            await authorize(entries);
+            for (const entryId of deletedEntryIds) {
+                const result = await db.executeCommand({
+                    option: "SELECT",
+                    table: "study_library_entries",
+                    columns: ["content_hash"],
+                    where: [{ column: "id", value: entryId }],
+                });
+                const contentHash = result.rows?.[0]?.content_hash;
+                if (blacklistContentHashes && typeof contentHash === "string") {
+                    await db.executeCommand({
+                        option: "INSERT",
+                        table: "study_library_content_hash_blacklist",
+                        values: {
+                            content_hash: contentHash,
+                            deleted_by: deletedBy,
+                        },
+                        conflict: { action: "ignore" },
+                    });
+                }
+                for (const column of ["source_entry_id", "target_entry_id"]) {
+                    await db.executeCommand({
+                        option: "DELETE",
+                        table: "study_library_references",
+                        where: [{ column, value: entryId }],
+                    });
+                }
+                await db.executeCommand({
+                    option: "DELETE",
+                    table: "study_library_entries",
+                    where: [{ column: "id", value: entryId }],
+                });
+            }
+        });
+        return deletedEntryIds;
+    }
+
+    async resolveDeletionCascade(
+        entryIds: readonly string[],
+        db: DbExecutor = this.db,
+    ): Promise<readonly string[]> {
+        const cascadeIds = new Set(entryIds);
+        const selectedIds = new Set(entryIds);
+        const pendingIds = [...entryIds];
+        const schemaCache = new Map<string, LibrarySchema>();
+        while (pendingIds.length > 0) {
+            const targetEntryId = pendingIds.shift()!;
+            const dependents = await db.executeCommand({
+                option: "SELECT",
+                table: "study_library_references",
+                columns: ["source_entry_id", "relation"],
+                where: [{ column: "target_entry_id", value: targetEntryId }],
+            });
+            for (const row of dependents.rows ?? []) {
+                const dependentId = String(row.source_entry_id);
+                if (cascadeIds.has(dependentId)) continue;
+                const sourceResult = await db.executeCommand({
+                    option: "SELECT",
+                    table: "study_library_entries",
+                    columns: ["schema_id", "schema_version", "layer"],
+                    where: [{ column: "id", value: dependentId }],
+                });
+                const source = sourceResult.rows?.[0];
+                if (!source) continue;
+                const schemaKey = `${String(source.schema_id)}:${Number(source.schema_version)}`;
+                let schema = schemaCache.get(schemaKey);
+                if (!schema) {
+                    const schemaResult = await db.executeCommand({
+                        option: "SELECT",
+                        table: "study_library_schemas",
+                        columns: ["schema_json"],
+                        where: [
+                            { column: "schema_id", value: source.schema_id },
+                            { column: "version", value: source.schema_version },
+                        ],
+                    });
+                    if (!schemaResult.rows?.[0]?.schema_json)
+                        throw new Error("schema_not_found");
+                    schema = JSON.parse(
+                        String(schemaResult.rows[0].schema_json),
+                    ) as LibrarySchema;
+                    schemaCache.set(schemaKey, schema);
+                }
+                const relationship = schema.layers
+                    .find((layer) => layer.id === String(source.layer))
+                    ?.relationships?.find(
+                        (candidate) => candidate.id === String(row.relation),
+                    );
+                if (!relationship) throw new Error("relationship_not_found");
+                if (relationship.onDelete === "restrict") {
+                    if (!selectedIds.has(dependentId))
+                        throw new Error("relationship_delete_restricted");
+                    continue;
+                }
+                if (relationship.onDelete === "detach") continue;
+                cascadeIds.add(dependentId);
+                pendingIds.push(dependentId);
+            }
+        }
+        return Array.from(cascadeIds);
+    }
+
+    private async removeDuplicateContentEntries(
+        db: DbExecutor,
+        canonicalId: string,
+        contentHash: string,
+        legacyIdentity: Record<string, unknown>,
+        manifest: LibraryContentPackPlan["manifest"],
+        recordId: string,
+    ): Promise<void> {
+        const installedVersions = await db.executeCommand({
+            option: "SELECT",
+            table: "study_library_content_packs",
+            columns: ["version"],
+            where: [
+                { column: "publisher", value: manifest.publisher },
+                { column: "pack_id", value: manifest.id },
+            ],
+        });
+        const versionedIds = (installedVersions.rows ?? []).map((row) =>
+            versionedContentEntryId(
+                { ...manifest, version: String(row.version) },
+                recordId,
+            ),
+        );
+        const matches = await Promise.all([
+            db.executeCommand({
+                option: "SELECT",
+                table: "study_library_entries",
+                columns: ["id", "updated_at"],
+                where: [{ column: "content_hash", value: contentHash }],
+            }),
+            db.executeCommand({
+                option: "SELECT",
+                table: "study_library_entries",
+                columns: ["id", "updated_at"],
+                where: Object.entries(legacyIdentity).map(
+                    ([column, value]) => ({ column, value }),
+                ),
+            }),
+            ...(versionedIds.length > 0
+                ? [
+                      db.executeCommand({
+                          option: "SELECT",
+                          table: "study_library_entries",
+                          columns: ["id", "updated_at"],
+                          where: [
+                              {
+                                  column: "id",
+                                  operator: "IN",
+                                  value: versionedIds,
+                              },
+                          ],
+                      }),
+                  ]
+                : []),
+        ]);
+        const duplicateIds = new Set(
+            matches
+                .flatMap((result) => result.rows ?? [])
+                .sort(
+                    (left, right) =>
+                        Date.parse(String(right.updated_at ?? "")) -
+                        Date.parse(String(left.updated_at ?? "")),
+                )
+                .map((row) => String(row.id)),
+        );
+        duplicateIds.delete(canonicalId);
+        for (const duplicateId of duplicateIds) {
+            for (const column of ["source_entry_id", "target_entry_id"]) {
+                const references = await db.executeCommand({
+                    option: "SELECT",
+                    table: "study_library_references",
+                    where: [{ column, value: duplicateId }],
+                });
+                for (const reference of references.rows ?? []) {
                     await db.executeCommand({
                         option: "INSERT",
                         table: "study_library_references",
                         values: {
-                            source_entry_id: contentEntryId(
-                                manifest,
-                                record.id,
-                            ),
-                            target_entry_id: contentEntryId(
-                                manifest,
-                                reference.entryId,
-                            ),
+                            source_entry_id:
+                                column === "source_entry_id"
+                                    ? canonicalId
+                                    : reference.source_entry_id,
+                            target_entry_id:
+                                column === "target_entry_id"
+                                    ? canonicalId
+                                    : reference.target_entry_id,
                             relation: reference.relation,
-                            position: reference.position ?? index,
+                            position: reference.position,
                         },
+                        conflict: { action: "ignore" },
                     });
                 }
+                await db.executeCommand({
+                    option: "DELETE",
+                    table: "study_library_references",
+                    where: [{ column, value: duplicateId }],
+                });
             }
             await db.executeCommand({
-                option: "INSERT",
-                table: "study_library_content_packs",
-                values: {
-                    pack_id: manifest.id,
-                    publisher: manifest.publisher,
-                    version: manifest.version,
-                    content_revision: manifest.contentRevision,
-                    schema_id: schema.id,
-                    schema_version: schema.version,
-                    digest,
-                    record_count: records.length,
-                    relationship_count: records.reduce(
-                        (count, record) =>
-                            count + (record.references?.length ?? 0),
-                        0,
-                    ),
-                },
+                option: "DELETE",
+                table: "study_library_entries",
+                where: [{ column: "id", value: duplicateId }],
             });
-        });
-        return this.contentPackReceipt(plan, false);
+        }
     }
 
     private contentPackAssetUrl(
@@ -460,6 +814,7 @@ export class LibraryStore {
                     layer: input.layer,
                     language,
                     label: input.label,
+                    hidden: input.hidden === true,
                     fields_json: JSON.stringify(input.fields ?? {}),
                     created_by: accountId,
                 },

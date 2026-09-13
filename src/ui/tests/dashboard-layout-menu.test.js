@@ -36,12 +36,24 @@ test("admin-only menu items carry the hidden attribute in the template", () => {
 
 test("layout CSS restores [hidden] visibility inside .dropdown", () => {
     const css = readFileSync(
-        resolve(ROOT, "src/ui/styles/reuse/layout.css"),
+        resolve(ROOT, "src/ui/styles/page-builder/user-menu.css"),
         "utf8",
     );
     assert.ok(
-        css.includes(".dropdown li[hidden]") && css.includes("display: none"),
+        css.includes(".page-shell-user-dropdown li[hidden]") &&
+            css.includes("display: none"),
         "layout.css must override .dropdown li display for [hidden] items",
+    );
+});
+
+test("logout hover keeps the cancel treatment without an accent outline", () => {
+    const css = readFileSync(
+        resolve(ROOT, "src/ui/styles/page-builder/user-menu.css"),
+        "utf8",
+    );
+    assert.match(
+        css,
+        /\.page-shell-user-menu-item--logout:hover:not\(:disabled\)[\s\S]*background: var\(--color-danger-hover-bg\)[\s\S]*outline: none/,
     );
 });
 
@@ -61,12 +73,12 @@ test("profile menu keeps the current page link active", () => {
         "utf8",
     );
     const layoutCss = readFileSync(
-        resolve(ROOT, "src/ui/styles/reuse/layout.css"),
+        resolve(ROOT, "src/ui/styles/page-builder/user-menu.css"),
         "utf8",
     );
 
     assert.match(layoutSource, /\.user-dropdown-content a/);
-    assert.match(layoutCss, /\.dropdown-item\.active/);
+    assert.match(layoutCss, /\.page-shell-user-menu-item\.active/);
     assert.match(layoutSource, /activeDropdownLink/);
     assert.match(
         layoutSource,
@@ -74,16 +86,16 @@ test("profile menu keeps the current page link active", () => {
     );
     assert.match(
         layoutCss,
-        /\.app-shell \.dropdown-item\.active\s*{[^}]*border-bottom: 2px solid var\(--accent-2\)/,
+        /\.app-shell \.page-shell-user-menu-item\.active\s*{[^}]*border-bottom: 2px solid var\(--accent-2\)/,
     );
     assert.doesNotMatch(
         layoutCss,
         /\.dropdown-item:focus-visible,\s*\.dropdown-item\.active/,
     );
     assert.ok(
-        layoutCss.indexOf(".app-shell .dropdown-item.active") <
-            layoutCss.indexOf(".app-shell .dropdown-item {"),
-        "the more-specific active selector must override the later control reset",
+        layoutCss.indexOf(".app-shell .page-shell-user-menu-item.active") >
+            layoutCss.indexOf(".page-shell-user-menu-item {"),
+        "the active selector must follow the base user-menu control styles",
     );
 });
 
@@ -99,6 +111,26 @@ test("dashboard keeps shared control styles across SPA navigations", () => {
         /ensurePersistentStylesheet\(BUTTON_STYLESHEET\)/,
     );
     assert.match(layoutSource, /ensurePersistentStylesheet\(SEARCH_BAR_CSS\)/);
+    assert.match(
+        layoutSource,
+        /ensurePersistentStylesheet\(PAGE_SHELL_STYLESHEET\)/,
+    );
+});
+
+test("dashboard retranslates the complete retained shell after SPA navigation", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+
+    assert.match(
+        layoutSource,
+        /applyStaticTranslations\(i18n, existingShell\);/,
+    );
+    assert.doesNotMatch(
+        layoutSource,
+        /applyStaticTranslations\([\s\S]{0,80}existingShell\.querySelector\("\.main-window"\)/,
+    );
 });
 
 test("global search toggle uses theme-specific SVG assets", () => {
@@ -289,8 +321,6 @@ test("built-in dashboard pages expose UUID-owned component page metadata", () =>
         "core.changelogs",
         "core.license",
         "core.error",
-        "gateway.study",
-        "gateway.study.child",
     ]) {
         assert.match(
             routerSource,
@@ -321,12 +351,50 @@ test("profile dropdown opens on hover or click and closes only on click away", (
 
 test("user menu entries gain an outline on hover", () => {
     const styles = readFileSync(
-        resolve(ROOT, "src/ui/styles/reuse/layout.css"),
+        resolve(ROOT, "src/ui/styles/page-builder/user-menu.css"),
         "utf8",
     );
     assert.match(
         styles,
-        /\.dropdown-item:hover,[\s\S]+outline: 1px solid var\(--accent\);/,
+        /\.page-shell-user-menu-item:hover,[\s\S]+outline: 1px solid var\(--accent\);/,
+    );
+});
+
+test("provider entries and logout use the shell-owned menu presentation", () => {
+    const template = readFileSync(
+        resolve(ROOT, "src/ui/public/templates/dashboard-layout.html"),
+        "utf8",
+    );
+    const styles = readFileSync(
+        resolve(ROOT, "src/ui/styles/page-builder/user-menu.css"),
+        "utf8",
+    );
+    const integritySource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/user-menu.js"),
+        "utf8",
+    );
+
+    assert.match(
+        integritySource,
+        /control\?\.classList\?\.add\([\s\S]*"dropdown-item",[\s\S]*"page-shell-user-menu-item"/,
+    );
+    assert.match(
+        template,
+        /id="profile-logout"[\s\S]*class="[^"]*page-shell-user-menu-item--logout[^"]*btn-cancel[^"]*"/,
+    );
+    assert.match(styles, /power-dark\.svg/);
+    assert.match(styles, /power-light\.svg/);
+    assert.match(
+        styles,
+        /\.page-shell-user-menu-item--logout\s*\{[^}]*gap:\s*0\.5rem/,
+    );
+    assert.match(
+        styles,
+        /\.page-shell-user-menu-item--logout::before\s*\{[^}]*background-color:\s*currentColor/,
+    );
+    assert.match(
+        styles,
+        /\.page-shell-user-menu-item--logout:hover:not\(:disabled\)[\s\S]*var\(--color-danger-hover-bg\)/,
     );
 });
 
@@ -359,6 +427,23 @@ test("dashboard navigation alphabetizes and redraws entries as plugins add them"
     assert.match(
         layoutSource,
         /navigationEntryRank\(left\) - navigationEntryRank\(right\)[\s\S]*rankDifference \|\|[\s\S]*collator\.compare/,
+    );
+});
+
+test("sub-navigation folding uses a stable header-height threshold", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    assert.match(layoutSource, /currentlyPrioritized/);
+    assert.match(layoutSource, /primaryNavigation\?\.scrollHeight/);
+    assert.match(
+        layoutSource,
+        /window\.scrollY > primaryNavigationHeight \+ 12/,
+    );
+    assert.match(
+        layoutSource,
+        /currentlyPrioritized[\s\S]*window\.scrollY > 12/,
     );
 });
 

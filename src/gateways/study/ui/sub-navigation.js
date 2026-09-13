@@ -4,7 +4,7 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
     resolveLanguageLabel,
     buildLibraryUrl,
-    isStudentScope,
+    isAdminScope,
     parseLanguageCode,
 } from "/static/gateways/study/ui/language.js";
 
@@ -71,14 +71,24 @@ export function bindStudySubNavigation(root, { signal } = {}) {
     root.addEventListener(
         "click",
         (event) => {
+            const settingsLink = event.target.closest("a[data-study-settings]");
             const link = event.target.closest("a[data-language-code]");
-            if (!link) return;
+            if (!link && !settingsLink) return;
             const navigate = uiCtx.capabilities.get("ui:navigate");
             if (typeof navigate !== "function") return;
             event.preventDefault();
             event.stopPropagation();
-            navigate(link.getAttribute("href"), {
-                state: { studyLanguageCode: link.dataset.languageCode },
+            const destination = link ?? settingsLink;
+            const currentPageUrl = resolveRememberedStudyPageUrl(
+                window.location.pathname,
+            );
+            navigate(destination.getAttribute("href"), {
+                state: {
+                    studyLanguageCode:
+                        link?.dataset.languageCode ??
+                        readSelectedStudyLanguageCode(),
+                    studyLastPageUrl: currentPageUrl,
+                },
             });
         },
         { signal },
@@ -103,6 +113,19 @@ function resolveDefaultChildPageUrl(modules) {
         .map((component) => String(component?.pageUrl ?? "").trim())
         .find(Boolean);
     return firstModulePageUrl || "/study";
+}
+
+function resolveRememberedStudyPageUrl(currentPath) {
+    return [
+        currentPath,
+        history.state?.studyLastPageUrl,
+        history.state?.previousRouterPage,
+    ].find(
+        (path) =>
+            typeof path === "string" &&
+            path.startsWith("/study/") &&
+            !["/study/settings", "/study/welcome"].includes(path),
+    );
 }
 
 /**
@@ -199,11 +222,24 @@ export async function loadStudySubNavigationModel({
     );
 
     const modules = modulesByLanguage.get(selectedLanguageCode) ?? [];
+    const rememberedPageUrl = resolveRememberedStudyPageUrl(
+        window.location.pathname,
+    );
     const languagePageUrlsByCode = new Map(
-        activeLanguageCodes.map((languageCode) => [
-            languageCode,
-            resolveDefaultChildPageUrl(modulesByLanguage.get(languageCode)),
-        ]),
+        activeLanguageCodes.map((languageCode) => {
+            const languageModules = modulesByLanguage.get(languageCode) ?? [];
+            const registeredPageUrls = new Set(
+                languageModules.map((component) =>
+                    String(component?.pageUrl ?? "").trim(),
+                ),
+            );
+            return [
+                languageCode,
+                rememberedPageUrl && registeredPageUrls.has(rememberedPageUrl)
+                    ? rememberedPageUrl
+                    : resolveDefaultChildPageUrl(languageModules),
+            ];
+        }),
     );
 
     return {
@@ -260,7 +296,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         })
         .join("");
     const libraryLink =
-        isStudentScope() && !hasLibraryModule
+        isAdminScope() && !hasLibraryModule
             ? `
             <li>
                 <a class="dropdown-item${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(libraryUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
@@ -278,7 +314,10 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                 name: resolveLanguageLabel(languageCode),
             };
             const activeClass =
-                languageCode === model.selectedLanguageCode ? " active" : "";
+                currentPath !== "/study/settings" &&
+                languageCode === model.selectedLanguageCode
+                    ? " active"
+                    : "";
             const languageHubUrl =
                 model.languagePageUrlsByCode?.get(languageCode) || "/study";
             return `
@@ -309,6 +348,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                     <a
                         class="dropdown-item${settingsActiveClass}"
                         href="${escapeHtml(settingsUrl)}"
+                        data-study-settings
                         data-search-category="Pages"
                         data-search-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
                         data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}"

@@ -32,6 +32,10 @@ function canonicalJson(value: unknown): string {
     return JSON.stringify(value);
 }
 
+function normalizedSequenceText(value: string): string {
+    return value.normalize("NFC").replaceAll(/\s/gu, "");
+}
+
 async function readJson(file: string): Promise<unknown> {
     return JSON.parse(await readFile(file, "utf8"));
 }
@@ -85,7 +89,7 @@ function externalKey(
     manifest: LibraryContentPackManifest,
     recordId: string,
 ): string {
-    return `${manifest.publisher}:${manifest.id}:${manifest.version}:${recordId}`;
+    return `${manifest.publisher}:${manifest.id}:${recordId}`;
 }
 
 export function contentEntryId(
@@ -94,6 +98,40 @@ export function contentEntryId(
 ): string {
     return createHash("sha256")
         .update(externalKey(manifest, recordId))
+        .digest("hex");
+}
+
+export function versionedContentEntryId(
+    manifest: LibraryContentPackManifest,
+    recordId: string,
+): string {
+    return createHash("sha256")
+        .update(
+            `${manifest.publisher}:${manifest.id}:${manifest.version}:${recordId}`,
+        )
+        .digest("hex");
+}
+
+export function contentRecordHash(
+    manifest: LibraryContentPackManifest,
+    schema: LibraryContentPackPlan["schema"],
+    record: LibraryContentPackPlan["records"][number],
+): string {
+    return createHash("sha256")
+        .update(
+            canonicalJson({
+                publisher: manifest.publisher,
+                packId: manifest.id,
+                schemaId: schema.id,
+                schemaVersion: schema.version,
+                language: schema.language,
+                layer: record.layer,
+                label: record.label.trim(),
+                ...(record.hidden === true ? { hidden: true } : {}),
+                fields: record.fields ?? {},
+                references: record.references ?? [],
+            }),
+        )
         .digest("hex");
 }
 
@@ -166,6 +204,25 @@ async function validateContentRecords(
     digest: ReturnType<typeof createHash>,
     assetsRoot?: string,
 ): Promise<void> {
+    const recordsById = new Map(records.map((record) => [record.id, record]));
+    for (const layer of schema.layers) {
+        for (const itemId of layer.grid?.items ?? []) {
+            if (
+                itemId === null ||
+                (typeof itemId === "object" && itemId.blank === true)
+            )
+                continue;
+            const record =
+                typeof itemId === "number"
+                    ? records.find(
+                          (candidate) => candidate.displayId === itemId,
+                      )
+                    : recordsById.get(itemId);
+            if (!record || record.layer !== layer.id) {
+                throw new Error("layer_grid_item_not_found");
+            }
+        }
+    }
     const entries = new Map<string, LibraryEntry>();
     for (const record of records) {
         if (
@@ -174,6 +231,13 @@ async function validateContentRecords(
             !record.label?.trim()
         )
             throw new Error("invalid_content_record");
+        if (
+            record.displayId !== undefined &&
+            (!Number.isSafeInteger(record.displayId) || record.displayId < 0)
+        )
+            throw new Error("invalid_content_display_id");
+        if (record.hidden !== undefined && typeof record.hidden !== "boolean")
+            throw new Error("invalid_content_hidden");
         const id = contentEntryId(manifest, record.id);
         if (entries.has(id)) throw new Error("duplicate_content_record");
         validateFields(schema, record.layer, record.fields ?? {});
@@ -246,5 +310,66 @@ async function validateContentRecords(
             entryId: contentEntryId(manifest, reference.entryId),
         }));
         validateReferences(schema, record.layer, references, entries);
+        const layer = schema.layers.find(({ id }) => id === record.layer)!;
+        if (layer.semanticRole === "orderedLexicalSequence") {
+            const constituentLayers = new Set(
+                (layer.relationships ?? [])
+                    .filter((relationship) => {
+                        const target = schema.layers.find(
+                            ({ id }) => id === relationship.targetLayer,
+                        );
+                        return (
+                            target?.semanticRole === "lexicalUnit" ||
+                            target?.semanticRole === "particle"
+                        );
+                    })
+                    .map(({ targetLayer }) => targetLayer),
+            );
+            const constituents = references
+                .map((reference) => ({
+                    reference,
+                    target: entries.get(reference.entryId),
+                }))
+                .filter(
+                    ({ target }) =>
+                        target && constituentLayers.has(target.layer),
+                )
+                .sort(
+                    (left, right) =>
+                        left.reference.position! - right.reference.position!,
+                );
+            if (
+                !constituents.length ||
+                constituents.some(
+                    ({ reference }, index) => reference.position !== index,
+                ) ||
+                normalizedSequenceText(
+                    constituents.map(({ target }) => target!.label).join(""),
+                ) !== normalizedSequenceText(record.label)
+            ) {
+                throw new Error("ordered_sequence_content_unresolved");
+            }
+        }
+        if (layer.displayDefinition) {
+            const definitionRelations = new Set(
+                (layer.relationships ?? [])
+                    .filter((relationship) => {
+                        const target = schema.layers.find(
+                            ({ id }) => id === relationship.targetLayer,
+                        );
+                        return (
+                            target?.semanticRole === "definition" ||
+                            target?.semanticRole === "meaning"
+                        );
+                    })
+                    .map(({ id }) => id),
+            );
+            if (
+                !references.some(({ relation }) =>
+                    definitionRelations.has(relation),
+                )
+            )
+                throw new Error("display_definition_reference_required");
+        }
     }
 }

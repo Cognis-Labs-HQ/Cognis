@@ -1,0 +1,12 @@
+<resources>
+  <string name="gateway.files.admin.title">ファイル名前空間のクォータ</string>
+  <string name="gateway.files.admin.description">登録済みの各ファイル名前空間について、新しく作成されるユーザーの既定ストレージクォータを設定します。</string>
+  <string name="gateway.files.admin.global_default">グローバル既定クォータ（バイト）</string>
+  <string name="gateway.files.admin.namespace">名前空間</string>
+  <string name="gateway.files.admin.owner">所有コンポーネント</string>
+  <string name="gateway.files.admin.visibility">可視性</string>
+  <string name="gateway.files.admin.quota_bytes">既定クォータ（バイト）</string>
+  <string name="gateway.files.admin.save">保存</string>
+  <string name="gateway.files.admin.saved">既定クォータを保存しました。</string>
+  <string name="gateway.files.admin.save_failed">既定クォータを保存できませんでした。</string>
+</resources>

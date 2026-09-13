@@ -9,6 +9,7 @@ import type {
 import { canonicalizeLanguageTag } from "./language.js";
 
 const ID_PATTERN = /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/;
+const CONTENT_RECORD_ID_PATTERN = /^[a-z0-9]+(?:[-_.:][a-z0-9]+)*$/i;
 const ROLE_PATTERN = /^[a-z][a-zA-Z0-9]*(?::[a-z][a-zA-Z0-9]*)*$/;
 
 function validateLocalizedText(value: unknown, code: string): void {
@@ -42,7 +43,60 @@ function validateField(field: LibraryFieldSchema, ids: Set<string>): void {
     assertIdentifier(field.id, "invalid_field_id");
     if (ids.has(field.id)) throw new Error("duplicate_field");
     validateMetadata(field.metadata, "field_metadata_required");
+    if (
+        field.detail?.exclusive !== undefined &&
+        typeof field.detail.exclusive !== "boolean"
+    )
+        throw new Error("invalid_filter_group_exclusivity");
+    if (
+        field.detail?.required !== undefined &&
+        typeof field.detail.required !== "boolean"
+    )
+        throw new Error("invalid_filter_group_requirement");
+    if (
+        field.detail?.defaultTag !== undefined &&
+        (typeof field.detail.defaultTag !== "string" ||
+            !field.detail.defaultTag.trim())
+    )
+        throw new Error("invalid_filter_group_default_tag");
     ids.add(field.id);
+}
+
+function validateFilterGroups(fields: readonly LibraryFieldSchema[]): void {
+    const groupSettings = new Map<
+        string,
+        { exclusive: boolean; required: boolean; defaultTag?: string }
+    >();
+    for (const field of fields) {
+        if (
+            !field.detail?.group &&
+            field.detail?.exclusive === undefined &&
+            field.detail?.required === undefined &&
+            field.detail?.defaultTag === undefined
+        )
+            continue;
+        const groupId = field.detail.group ?? field.id;
+        const exclusive = field.detail.exclusive ?? false;
+        const required = field.detail.required ?? false;
+        const defaultTag = field.detail.defaultTag?.trim();
+        const established = groupSettings.get(groupId);
+        if (established) {
+            if (established.exclusive !== exclusive)
+                throw new Error("inconsistent_filter_group_exclusivity");
+            if (established.required !== required)
+                throw new Error("inconsistent_filter_group_requirement");
+            if (
+                established.defaultTag &&
+                defaultTag &&
+                established.defaultTag !== defaultTag
+            )
+                throw new Error("multiple_filter_group_defaults");
+            if (!established.defaultTag && defaultTag)
+                established.defaultTag = defaultTag;
+            continue;
+        }
+        groupSettings.set(groupId, { exclusive, required, defaultTag });
+    }
 }
 
 function validateRelationship(
@@ -63,6 +117,23 @@ function validateRelationship(
         throw new Error("required_target_needs_minimum");
     if (!["restrict", "detach", "cascade"].includes(relationship.onDelete))
         throw new Error("invalid_deletion_behavior");
+    if (
+        relationship.variant !== undefined &&
+        typeof relationship.variant !== "boolean"
+    )
+        throw new Error("invalid_variant_relationship");
+    if (
+        relationship.child !== undefined &&
+        typeof relationship.child !== "boolean"
+    )
+        throw new Error("invalid_child_relationship");
+    if (
+        relationship.presentationRole !== undefined &&
+        !["composition", "alternateSpelling", "pronunciation"].includes(
+            relationship.presentationRole,
+        )
+    )
+        throw new Error("invalid_relationship_presentation_role");
     ids.add(relationship.id);
 }
 
@@ -79,6 +150,44 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
         assertIdentifier(layer.id, "invalid_layer_id");
         if (layerIds.has(layer.id)) throw new Error("duplicate_layer");
         validateMetadata(layer.metadata, "layer_metadata_required");
+        if (
+            layer.displayDefinition !== undefined &&
+            typeof layer.displayDefinition !== "boolean"
+        )
+            throw new Error("invalid_display_definition");
+        if (layer.minimal !== undefined && typeof layer.minimal !== "boolean")
+            throw new Error("invalid_minimal_layer");
+        if (layer.grid) {
+            if (
+                !Number.isSafeInteger(layer.grid.rowSize) ||
+                layer.grid.rowSize < 1 ||
+                layer.grid.rowSize > 24 ||
+                !Array.isArray(layer.grid.items)
+            ) {
+                throw new Error("invalid_layer_grid");
+            }
+            const itemIds = layer.grid.items.filter(
+                (item): item is string | number =>
+                    typeof item === "string" || typeof item === "number",
+            );
+            if (
+                layer.grid.items.some(
+                    (item) =>
+                        item !== null &&
+                        typeof item !== "string" &&
+                        typeof item !== "number" &&
+                        (typeof item !== "object" || item.blank !== true),
+                ) ||
+                itemIds.some((item) =>
+                    typeof item === "string"
+                        ? !CONTENT_RECORD_ID_PATTERN.test(item)
+                        : !Number.isSafeInteger(item) || item < 0,
+                ) ||
+                new Set(itemIds.map(String)).size !== itemIds.length
+            ) {
+                throw new Error("invalid_layer_grid_items");
+            }
+        }
         for (const role of layer.activityCompatibility ?? []) {
             if (!ROLE_PATTERN.test(role))
                 throw new Error("invalid_activity_role");
@@ -92,6 +201,7 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
     for (const layer of schema.layers) {
         const fieldIds = new Set<string>();
         for (const field of layer.fields ?? []) validateField(field, fieldIds);
+        validateFilterGroups(layer.fields ?? []);
         for (const fieldId of layer.detail?.fieldOrder ?? []) {
             if (!fieldIds.has(fieldId))
                 throw new Error("detail_field_not_found");
@@ -140,6 +250,28 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
         const relationshipIds = new Set<string>();
         for (const relationship of layer.relationships ?? []) {
             validateRelationship(relationship, layerIds, relationshipIds);
+        }
+        if (layer.displayDefinition) {
+            if (
+                layer.semanticRole === "atomicWritingUnit" ||
+                layer.semanticRole === "definition" ||
+                layer.semanticRole === "meaning"
+            )
+                throw new Error("display_definition_not_supported");
+            const hasDefinitionRelationship = (layer.relationships ?? []).some(
+                (relationship) => {
+                    const target = schema.layers.find(
+                        ({ id }) => id === relationship.targetLayer,
+                    );
+                    return target &&
+                        (target.semanticRole === "definition" ||
+                            target.semanticRole === "meaning")
+                        ? (relationship.minimum ?? 0) >= 1
+                        : false;
+                },
+            );
+            if (!hasDefinitionRelationship)
+                throw new Error("display_definition_relationship_required");
         }
     }
     return structuredClone({

@@ -28,6 +28,12 @@ export interface LibraryDetailHint {
     renderer: "text" | "number" | "boolean" | "badge" | "media" | "stroke";
     order?: number;
     group?: string;
+    /** When true, selecting a filter in this group clears its other filters. */
+    exclusive?: boolean;
+    /** When true, the filter group must retain at least one selected tag. */
+    required?: boolean;
+    /** A tag value that the module requests be selected initially. */
+    defaultTag?: string;
     hidden?: boolean;
 }
 
@@ -57,12 +63,20 @@ export interface LibraryRelationshipSchema {
     requiredTarget?: boolean;
     onDelete: "restrict" | "detach" | "cascade";
     resolverRole?: "grapheme" | "token" | "longestMatch" | "explicit";
+    presentationRole?: "composition" | "alternateSpelling" | "pronunciation";
+    variant?: boolean;
+    /** Unfold this relationship as a spatial parent/child card hierarchy. */
+    child?: boolean;
 }
 
 export interface LibraryLayerSchema {
     id: string;
     metadata: { labels: LocalizedText; descriptions?: LocalizedText };
     semanticRole?: LibrarySemanticRole;
+    /** Prefer the localized definition referenced by each entry as its display text. */
+    displayDefinition?: boolean;
+    /** Render entry cards using only their primary display content. */
+    minimal?: boolean;
     definitionLocalization?: {
         /** Module-owned prefix used to generate a stable key for each definition. */
         stringKeyPrefix: string;
@@ -72,6 +86,10 @@ export interface LibraryLayerSchema {
     fields?: readonly LibraryFieldSchema[];
     relationships?: readonly LibraryRelationshipSchema[];
     detail?: { titleField?: string; fieldOrder?: readonly string[] };
+    grid?: {
+        rowSize: number;
+        items: readonly (string | number | { blank: true } | null)[];
+    };
     activityCompatibility?: readonly string[];
     interestVeins?: readonly string[];
     strokeAsset?: {
@@ -101,6 +119,8 @@ export interface LibraryEntryInput {
     schemaVersion?: number;
     layer: string;
     label: string;
+    /** Exclude the entry and its descendants from direct browsing while retaining references. */
+    hidden?: boolean;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
     /** Languages requested by a definition form; used by an optional localization provider. */
@@ -109,6 +129,8 @@ export interface LibraryEntryInput {
 
 export interface LibraryEntry extends LibraryEntryInput {
     id: string;
+    sourceRecordId?: string;
+    displayId?: number;
     schemaVersion: number;
     language: string;
     scope: LibraryScope;
@@ -175,6 +197,10 @@ export interface LibraryContentPackManifest {
 
 export interface LibraryContentRecord {
     id: string;
+    /** Optional module-owned numeric position identifier used by a layer grid. */
+    displayId?: number;
+    /** Exclude the record and its descendants from direct Library browsing. */
+    hidden?: boolean;
     label: string;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];

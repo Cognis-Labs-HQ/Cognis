@@ -5,7 +5,22 @@
   <string name="gateway.study.library_next">次へ</string>
   <string name="gateway.study.library_filters">ライブラリ項目を絞り込む</string>
   <string name="gateway.study.library_filter_empty">選択した絞り込み条件に一致する項目はありません。</string>
+  <string name="gateway.study.library_variant_hint">長押しして他のカードを表示</string>
+  <string name="gateway.study.library_variants">バリエーション</string>
   <string name="gateway.study.library_scope_global">範囲: グローバル</string>
   <string name="gateway.study.library_scope_class">範囲: クラス {{ class name }}</string>
   <string name="gateway.study.library_scope_user">範囲: ユーザー</string>
+  <string name="gateway.study.library_audio_load_error">音声を読み込めませんでした。</string>
+  <string name="gateway.study.library_select_entry">{{ entry }}を選択</string>
+  <string name="gateway.study.library_delete_title">ライブラリ内容を削除</string>
+  <string name="gateway.study.library_delete_warning">次の関連コンテンツも削除されます:</string>
+  <string name="gateway.study.library_delete_permanent">モジュールがこの同一内容を再び復元しないようにする</string>
+  <string name="gateway.study.library_delete_success">選択したライブラリ内容を削除しました。</string>
+  <string name="gateway.study.library_delete_error">選択したライブラリ内容を削除できませんでした。</string>
+  <string name="gateway.study.library_used_in_layer">{{ layer }} で使用</string>
+  <string name="gateway.study.library_relationship_composition">構成</string>
+  <string name="gateway.study.library_relationship_alternateSpelling">別表記</string>
+  <string name="gateway.study.library_relationship_pronunciation">読み方</string>
+  <string name="gateway.study.library_from_parent">（元: {{ parent }}）</string>
+  <string name="gateway.study.library_usage_examples">使用例</string>
 </resources>

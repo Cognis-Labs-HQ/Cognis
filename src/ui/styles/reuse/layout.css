@@ -286,7 +286,7 @@
     font-size: 0.97rem;
     font-weight: 600;
     letter-spacing: 0.01em;
-    overflow: hidden;
+    overflow: visible;
 }
 .topnav a {
     color: var(--text);
@@ -325,9 +325,6 @@
 .global-search-wrap {
     display: contents;
 }
-.profile-menu {
-    position: relative;
-}
 .avatar-button {
     border-radius: 999px;
     width: 38px;
@@ -362,74 +359,6 @@
     font-weight: 700;
     color: #fff;
     user-select: none;
-}
-.dropdown {
-    position: absolute;
-    right: 0;
-    top: 36px;
-    z-index: 3000;
-    list-style: none;
-    margin: 0;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 8px;
-    min-width: 170px;
-    box-shadow: var(--shadow);
-    opacity: 0;
-    transform: translateY(-6px);
-    transition:
-        opacity 0.16s ease,
-        transform 0.16s ease;
-    pointer-events: none;
-    max-width: min(280px, calc(100vw - 32px));
-    overflow: hidden;
-}
-.dropdown li {
-    display: flex;
-}
-.dropdown li[hidden] {
-    display: none;
-}
-.profile-menu.open .dropdown {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-}
-.dropdown-item {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100%;
-    text-align: left;
-    padding: 8px;
-    color: var(--text);
-    text-decoration: none;
-    border-radius: 6px;
-    font: inherit;
-    font-size: 0.95rem;
-    font-weight: 500;
-    line-height: 1.25;
-    min-width: 0;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    transition:
-        background 0.15s ease,
-        transform 0.15s ease;
-}
-.dropdown-item:hover,
-.dropdown-item:focus-visible {
-    background: var(--surface-soft);
-    outline: 1px solid var(--accent);
-    outline-offset: -1px;
-}
-.dropdown-item:hover,
-.dropdown-item:focus-visible {
-    transform: translateX(3px);
-}
-.app-shell .dropdown-item.active {
-    border-bottom: 2px solid var(--accent-2);
-    border-radius: 0;
 }
 .hidden {
     display: none;
@@ -489,10 +418,16 @@
     color: var(--control-text);
     border: 1px solid var(--control-border);
 }
-.app-shell .avatar-button,
-.app-shell .dropdown-item {
+.app-shell .avatar-button {
     background: transparent;
     border: 0;
+}
+.profile-menu {
+    position: relative;
+    overflow: visible;
+}
+.dropdown {
+    overflow: visible;
 }
 .app-shell .avatar-button {
     border: 1px solid var(--border);
@@ -500,10 +435,6 @@
 .app-shell .theme-toggle {
     background: var(--theme-toggle-bg);
     border: 1px solid var(--border);
-}
-button.dropdown-item {
-    -webkit-appearance: none;
-    appearance: none;
 }
 .app-shell
     button:hover:not(.dropdown-item):not([class*="btn-"]):not(
@@ -598,15 +529,6 @@ button.dropdown-item {
     }
     .user-greeting {
         display: none;
-    }
-    .dropdown {
-        width: min(240px, calc(100vw - 28px));
-        max-width: calc(100vw - 28px);
-        padding: 6px;
-    }
-    .dropdown-item {
-        align-items: flex-start;
-        padding: 10px 12px;
     }
 }
 .theme-toggle {

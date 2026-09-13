@@ -563,21 +563,18 @@
     }
 }
 
-.messages-page .main-window--with-toolbar {
-    grid-template-columns: minmax(220px, min(320px, 30vw)) minmax(0, 1fr);
-    height: min(100%, calc(100dvh - 176px));
-    min-height: 0;
+.messages-page {
+    --page-toolbar-columns: minmax(220px, min(320px, 30vw)) minmax(0, 1fr);
+    --page-main-height: min(100%, calc(100dvh - 176px));
+    --page-main-min-height: 0;
+    --page-toolbar-width: min(320px, 30vw);
+    --page-toolbar-min-width: 220px;
+    --page-toolbar-min-height: 0;
+    --page-content-min-height: 0;
+    --page-content-height: 100%;
+    --page-content-overflow: hidden;
 }
 
-.messages-page .main-window--with-toolbar .toolbar {
-    width: min(320px, 30vw);
-    min-width: 220px;
-    box-sizing: border-box;
-    min-height: 0;
-}
-
-.messages-page .content-panel,
-.messages-page .content-grid,
 .messages-page .messages-sidebar-content {
     min-height: 0;
     height: 100%;
@@ -585,23 +582,15 @@
 }
 
 @media (max-width: 900px) {
-    .messages-page .main-window--with-toolbar {
-        grid-template-columns: 1fr;
-        height: min(100%, calc(100dvh - 130px));
-    }
-
-    .messages-page .content-panel,
-    .messages-page .content-grid {
-        height: 100%;
+    .messages-page {
+        --page-toolbar-columns-mobile: 1fr;
+        --page-main-height-mobile: min(100%, calc(100dvh - 130px));
+        --page-toolbar-width-mobile: min(100vw, 360px);
     }
 
     .messages-page .messages-sidebar-content,
     .messages-page .messages-thread {
         height: 100%;
-    }
-
-    .messages-page .main-window--with-toolbar .toolbar {
-        width: min(100vw, 360px);
     }
 
     .messages-message-wrap {

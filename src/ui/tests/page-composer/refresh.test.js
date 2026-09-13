@@ -106,6 +106,20 @@ test("page composer parks media DOM only when explicitly enabled", () => {
     assert.match(composerStyles, /\.composer-preserved-element-content/);
 });
 
+test("page composer owns intrinsic widget sizing", () => {
+    const source = readPageComposerBundle();
+    const composerStyles = readFileSync(
+        resolve(ROOT, "src/ui/styles/page-builder/composer.css"),
+        "utf8",
+    );
+
+    assert.match(source, /element\.width === "fitContent"/);
+    assert.match(source, /widget-card--fit-content/);
+    assert.match(composerStyles, /\.widget-card--fit-content/);
+    assert.match(composerStyles, /width: fit-content/);
+    assert.match(composerStyles, /max-width: 100%/);
+});
+
 test("page composer includes mobile toolbar drawer behavior", () => {
     const source = readPageComposerBundle();
 

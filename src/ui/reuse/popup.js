@@ -35,11 +35,16 @@
  *
  * Options:
  *   title    — heading text (rendered as plain text, HTML-escaped).
+ *   titleDetail — optional secondary heading text rendered smaller beside the title.
+ *   titleDetailItems — optional ordered `{ label, actionId? }` secondary heading fragments.
+ *   titleLeading — optional trusted HTML rendered immediately before the title.
+ *   titleAction — optional `{ id, label }` that renders the heading as an action.
+ *   titleItems — optional ordered `{ label, actionId? }` title fragments.
  *   body     — body content: either an HTML string or a `() => string` render
  *              function. Rendered as innerHTML; callers must escape dynamic values.
  *   variant  — visual style hint: 'info' | 'warning' | 'danger' | 'confirm'.
  *              Defaults to 'info'.
- *   actions  — Array<{ id: string, label: string, variant?: 'confirm' | 'cancel' | 'neutral', disabled?: boolean }>.
+ *   actions  — Array<{ id: string, label: string, variant?: 'confirm' | 'cancel' | 'neutral', disabled?: boolean, icon?: { light: string, dark?: string, position?: 'before' | 'after', flip?: boolean } }>.
  *              When omitted, a single green 'Done' (confirm) button is rendered.
  *   closeButtonVariant — Optional variant for the × header close button.
  *   maxWidth — CSS max-width value (e.g. '40%', '600px') applied to the dialog
@@ -72,12 +77,17 @@
  *
  * @param {{
  *   title: string,
+ *   titleDetail?: string,
+ *   titleDetailItems?: Array<{ label: string, actionId?: string }>,
+ *   titleLeading?: string,
+ *   titleAction?: { id: string, label: string },
+ *   titleItems?: Array<{ label: string, actionId?: string }>,
  *   body: string | (() => string),
  *   variant?: 'info' | 'warning' | 'danger' | 'confirm',
- *   actions?: Array<{ id: string, label: string, variant?: string, disabled?: boolean }>,
+ *   actions?: Array<{ id: string, label: string, variant?: string, disabled?: boolean, icon?: { light: string, dark?: string, position?: 'before' | 'after', flip?: boolean } }>,
  *   maxWidth?: string,
- *   onOpen?: (overlay: HTMLElement) => void,
- *   onAction?: (actionId: string | null, overlay: HTMLElement) => Promise<boolean | void> | boolean | void,
+ *   onOpen?: (overlay: HTMLElement, dismiss: () => void, api: { updateBody: (body: string) => HTMLElement | null }) => void,
+ *   onAction?: (actionId: string | null, overlay: HTMLElement, api: { updateBody: (body: string) => HTMLElement | null }) => Promise<boolean | void> | boolean | void,
  *   closeProtection?: boolean,
  *   timeoutMs?: number,
  *   timeoutActionId?: string | null,
@@ -87,7 +97,6 @@
  */
 
 import { createI18n } from "./i18n.js";
-import { renderInfoTooltip } from "./info-tooltip.js";
 import { createFormDirtyTracker } from "./unsaved-changes.js";
 
 let stylesheetReady = null;
@@ -108,6 +117,7 @@ function getI18n() {
 const scrollLockState = {
     count: 0,
     bodyOverflow: null,
+    bodyScrollbarGutter: null,
     mainOverflowValues: [],
 };
 
@@ -118,14 +128,22 @@ function getScrollableMainElements() {
 function lockPageScroll() {
     if (scrollLockState.count === 0) {
         scrollLockState.bodyOverflow = document.body.style.overflow;
+        scrollLockState.bodyScrollbarGutter =
+            document.body.style.scrollbarGutter;
         scrollLockState.mainOverflowValues = getScrollableMainElements().map(
             (element) => ({
                 element,
                 overflow: element.style.overflow,
+                scrollbarGutter: element.style.scrollbarGutter,
             }),
         );
+        // Reserve each scrolling surface's gutter before hiding its scrollbar.
+        // Without this, opening or closing a modal changes the available inline
+        // space and forces the page beneath it to redraw at a different width.
+        document.body.style.scrollbarGutter = "stable";
         document.body.style.overflow = "hidden";
         scrollLockState.mainOverflowValues.forEach(({ element }) => {
+            element.style.scrollbarGutter = "stable";
             element.style.overflow = "hidden";
         });
     }
@@ -137,10 +155,16 @@ function unlockPageScroll() {
     if (scrollLockState.count > 0) return;
 
     document.body.style.overflow = scrollLockState.bodyOverflow ?? "";
-    scrollLockState.mainOverflowValues.forEach(({ element, overflow }) => {
-        element.style.overflow = overflow;
-    });
+    document.body.style.scrollbarGutter =
+        scrollLockState.bodyScrollbarGutter ?? "";
+    scrollLockState.mainOverflowValues.forEach(
+        ({ element, overflow, scrollbarGutter }) => {
+            element.style.overflow = overflow;
+            element.style.scrollbarGutter = scrollbarGutter;
+        },
+    );
     scrollLockState.bodyOverflow = null;
+    scrollLockState.bodyScrollbarGutter = null;
     scrollLockState.mainOverflowValues = [];
 }
 
@@ -373,6 +397,11 @@ function hasUnsavedFormChanges(overlayElement) {
 
 export async function openPopup({
     title,
+    titleDetail,
+    titleDetailItems,
+    titleLeading,
+    titleAction,
+    titleItems,
     body,
     variant = "info",
     actions,
@@ -403,6 +432,46 @@ export async function openPopup({
                 .replaceAll(">", "&gt;")
                 .replaceAll('"', "&quot;")
                 .replaceAll("'", "&#39;");
+        }
+
+        function renderPopupHeading(
+            titleValue,
+            detailValue,
+            actionValue,
+            leadingValue,
+            itemValues,
+            detailItemValues,
+        ) {
+            const detail = String(detailValue ?? "");
+            const renderHeadingItems = (items) =>
+                items
+                    .map((item) =>
+                        item.actionId
+                            ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(item.actionId)}" type="button">${escapeHtml(item.label)}</button>`
+                            : escapeHtml(item.label),
+                    )
+                    .join("");
+            const titleContent =
+                Array.isArray(itemValues) && itemValues.length
+                    ? renderHeadingItems(itemValues)
+                    : actionValue
+                      ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(actionValue.id)}" type="button">${escapeHtml(actionValue.label)}</button>`
+                      : escapeHtml(titleValue ?? "");
+            const detailContent =
+                Array.isArray(detailItemValues) && detailItemValues.length
+                    ? renderHeadingItems(detailItemValues)
+                    : escapeHtml(detail);
+            return `${leadingValue ?? ""}<h2 class="popup-title" id="popup-title">${titleContent}</h2>${detailContent ? `<h4 class="popup-title-detail">${detailContent}</h4>` : ""}`;
+        }
+
+        function renderActionContent(action) {
+            const label = escapeHtml(action.label);
+            if (!action.icon?.light) return label;
+            const dark = action.icon.dark ?? action.icon.light;
+            const icon = `<picture class="popup-action-icon${action.icon.flip ? " popup-action-icon--flip" : ""}" aria-hidden="true"><source media="(prefers-color-scheme: dark)" srcset="${escapeHtml(dark)}"><img src="${escapeHtml(action.icon.light)}" alt=""></picture>`;
+            return action.icon.position === "after"
+                ? `${label}${icon}`
+                : `${icon}${label}`;
         }
 
         let dismissed = false;
@@ -446,6 +515,7 @@ export async function openPopup({
                 countdownInterval = null;
             }
             document.removeEventListener("keydown", onKeyDown);
+            window.removeEventListener("resize", fitPopupTitleRow);
             closeProtectionTracker?.destroy();
             closeProtectionTracker = null;
             let removed = false;
@@ -490,8 +560,8 @@ export async function openPopup({
 
         const closeButtonClass =
             closeButtonVariant === "neutral"
-                ? "popup-close-btn btn-neutral btn-animated"
-                : "popup-close-btn btn-cancel btn-animated";
+                ? "popup-close-btn btn-close btn-neutral"
+                : "popup-close-btn btn-close btn-cancel";
 
         const actionButtons = effectiveActions
             .map((action) => {
@@ -502,14 +572,14 @@ export async function openPopup({
                         : btnVariant === "cancel"
                           ? "btn-cancel btn-animated popup-action-btn"
                           : "popup-action-btn popup-action-btn--neutral btn-animated";
-                return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${escapeHtml(action.label)}</button>`;
+                return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${renderActionContent(action)}</button>`;
             })
             .join("");
 
         overlay.innerHTML = `
       <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
         <div class="popup-header">
-          <h2 class="popup-title" id="popup-title">${escapeHtml(currentPage?.title ?? title ?? "")}</h2>
+          <div class="popup-heading">${renderPopupHeading(currentPage?.title ?? title, currentPage?.titleDetail ?? titleDetail, currentPage?.titleAction ?? titleAction, currentPage?.titleLeading ?? titleLeading, currentPage?.titleItems ?? titleItems, currentPage?.titleDetailItems ?? titleDetailItems)}</div>
           <button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>
         </div>
         <div class="popup-body">${resolvedBody}</div>
@@ -530,11 +600,21 @@ export async function openPopup({
             const nextPage = popupPages.find((page) => page.id === pageId);
             if (!nextPage) return false;
             currentPage = nextPage;
-            const titleEl = overlay.querySelector(".popup-title");
+            const headingEl = overlay.querySelector(".popup-heading");
             const bodyEl = overlay.querySelector(".popup-body");
             const footerEl = overlay.querySelector(".popup-footer");
-            if (titleEl)
-                titleEl.textContent = String(currentPage.title ?? title ?? "");
+            if (headingEl) {
+                headingEl.innerHTML = renderPopupHeading(
+                    currentPage.title ?? title,
+                    currentPage.titleDetail ?? titleDetail,
+                    currentPage.titleAction ?? titleAction,
+                    currentPage.titleLeading ?? titleLeading,
+                    currentPage.titleItems ?? titleItems,
+                    currentPage.titleDetailItems ?? titleDetailItems,
+                );
+                bindActionButtons(headingEl);
+                fitPopupTitleRow();
+            }
             if (bodyEl)
                 bodyEl.innerHTML = resolvePageValue(currentPage.body, body);
             if (closeProtection) {
@@ -554,7 +634,7 @@ export async function openPopup({
                                 : btnVariant === "cancel"
                                   ? "btn-cancel btn-animated popup-action-btn"
                                   : "popup-action-btn popup-action-btn--neutral btn-animated";
-                        return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${escapeHtml(action.label)}</button>`;
+                        return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${renderActionContent(action)}</button>`;
                     })
                     .join("");
                 bindActionButtons(footerEl);
@@ -562,11 +642,20 @@ export async function openPopup({
             onOpen?.(overlay, () => dismiss(null), {
                 setPage: renderPopupPage,
                 pageId: currentPage.id,
+                updateBody,
                 markDirty: () => {
                     manuallyDirty = true;
                 },
             });
             return true;
+        }
+
+        function updateBody(nextBody) {
+            const bodyElement = overlay.querySelector(".popup-body");
+            if (!bodyElement) return null;
+            bodyElement.innerHTML =
+                typeof nextBody === "function" ? nextBody() : nextBody;
+            return bodyElement;
         }
 
         function bindActionButtons(root) {
@@ -584,6 +673,7 @@ export async function openPopup({
                                     setPage: renderPopupPage,
                                     pageId: currentPage?.id,
                                     requestClose: () => dismiss(null),
+                                    updateBody,
                                     markDirty: () => {
                                         manuallyDirty = true;
                                     },
@@ -597,6 +687,42 @@ export async function openPopup({
                     await dismiss(resolvedActionId);
                 });
             });
+        }
+
+        function fitPopupTitleRow() {
+            const heading = overlay.querySelector(".popup-heading");
+            const titleElement = heading?.querySelector(".popup-title");
+            const detailElement = heading?.querySelector(".popup-title-detail");
+            if (!heading || !titleElement) return;
+            heading.style.setProperty("--popup-title-scale", "1");
+            heading.style.setProperty("--popup-title-detail-scale", "1");
+            const style = window.getComputedStyle(heading);
+            const gap = Number.parseFloat(style.columnGap || style.gap) || 0;
+            const contentWidth = () =>
+                Array.from(heading.children).reduce(
+                    (width, element) => width + element.scrollWidth,
+                    gap * Math.max(0, heading.children.length - 1),
+                );
+            let detailScale = 1;
+            while (
+                detailElement &&
+                contentWidth() > heading.clientWidth &&
+                detailScale > 0.5
+            ) {
+                detailScale = Math.max(0.5, detailScale - 0.05);
+                heading.style.setProperty(
+                    "--popup-title-detail-scale",
+                    String(detailScale),
+                );
+            }
+            let titleScale = 1;
+            while (contentWidth() > heading.clientWidth && titleScale > 0.7) {
+                titleScale = Math.max(0.7, titleScale - 0.05);
+                heading.style.setProperty(
+                    "--popup-title-scale",
+                    String(titleScale),
+                );
+            }
         }
         bindActionButtons(overlay);
 
@@ -625,9 +751,13 @@ export async function openPopup({
 
         document.body.appendChild(overlay);
         lockPageScroll();
+        window.addEventListener("resize", fitPopupTitleRow);
+        fitPopupTitleRow();
+        document.fonts?.ready.then(fitPopupTitleRow);
 
         if (typeof onOpen === "function") {
             onOpen(overlay, () => dismiss(null), {
+                updateBody,
                 setPage: renderPopupPage,
                 pageId: currentPage?.id,
                 markDirty: () => {
@@ -680,238 +810,8 @@ export async function openPopup({
     });
 }
 
-/**
- * Opens a reusable configuration form popup backed by load/save endpoints.
- * Callers provide translated labels, field descriptors, request helpers, and
- * toast callbacks so module and gateway settings can share one popup flow.
- */
-
-export function resolveFieldErrorId(payload) {
-    const error = payload?.error;
-    const fieldId = String(error?.fieldId ?? error?.field ?? "").trim();
-    return fieldId || null;
-}
-
-export function markPopupFieldInvalid(overlay, fieldId, message) {
-    if (!(overlay instanceof HTMLElement) || !fieldId) return false;
-    const field = overlay.querySelector(`#${CSS.escape(fieldId)}`);
-    if (!(field instanceof HTMLElement)) return false;
-    const fieldWrapper = field.closest("label") ?? field.parentElement;
-    if (!(fieldWrapper instanceof HTMLElement)) return false;
-    const errorId = `${fieldId}-form-error`;
-    let alert = fieldWrapper.querySelector(`#${CSS.escape(errorId)}`);
-    if (!(alert instanceof HTMLElement)) {
-        alert = document.createElement("div");
-        alert.id = errorId;
-        alert.className =
-            "form-builder-floating-alert module-settings-popup-field-error";
-        alert.setAttribute("aria-live", "polite");
-        alert.innerHTML =
-            '<ul class="form-builder-criteria-list"><li class="form-builder-criterion-item form-builder-criterion-item--unmet"></li></ul>';
-        fieldWrapper.appendChild(alert);
-    }
-    const messageItem = alert.querySelector(".form-builder-criterion-item");
-    if (messageItem instanceof HTMLElement) {
-        messageItem.textContent = String(message ?? "");
-    }
-    fieldWrapper.classList.add(
-        "form-builder-field",
-        "form-builder-field--invalid",
-    );
-    field.classList.add("form-builder-input--invalid");
-    field.setAttribute("aria-invalid", "true");
-    field.setAttribute("aria-describedby", errorId);
-    field.focus();
-    field.addEventListener(
-        "input",
-        () => {
-            field.removeAttribute("aria-invalid");
-            field.removeAttribute("aria-describedby");
-            field.classList.remove("form-builder-input--invalid");
-            fieldWrapper.classList.remove("form-builder-field--invalid");
-            alert.remove();
-        },
-        { once: true },
-    );
-    return true;
-}
-
-export async function openConfigFormPopup({
-    i18n,
-    apiFetch,
-    showToast,
-    escapeHtml,
-    loadUrl,
-    saveUrl,
-    titleKey,
-    fields,
-    noteKey,
-    loadFailedKey,
-    successKey,
-    failedKey,
-    powerState,
-    enableTest,
-}) {
-    const loadResponse = await apiFetch(loadUrl);
-    if (!loadResponse.ok) {
-        showToast(i18n.t(loadFailedKey ?? failedKey), { variant: "error" });
-        return false;
-    }
-    const loadPayload = await loadResponse.json().catch(() => ({ data: {} }));
-    const config = loadPayload?.data ?? {};
-
-    let popupOverlay = null;
-    let didSave = false;
-    const fieldRows = (Array.isArray(fields) ? fields : [])
-        .map((field) => {
-            const fieldId = String(field.id ?? "").trim();
-            if (!fieldId) return "";
-            const label = i18n.t(field.labelKey);
-            const rawValue = config?.[field.configKey];
-            const value = rawValue == null ? "" : String(rawValue);
-            const placeholder = field.placeholderKey
-                ? i18n.t(field.placeholderKey)
-                : "";
-            const description = field.descriptionKey
-                ? i18n.t(field.descriptionKey)
-                : "";
-            const descriptorTooltip = description
-                ? renderInfoTooltip(
-                      description,
-                      i18n.t("ui.reuse.more_information"),
-                      `${fieldId}-descriptor`,
-                  )
-                : "";
-            const inputType = ["url", "number", "password"].includes(field.type)
-                ? field.type
-                : "text";
-            return `
-      <label class="module-settings-popup-field">
-        <span class="module-settings-popup-label-row"><span class="module-settings-popup-label">${escapeHtml(label)}</span>${descriptorTooltip}</span>
-        <input id="${escapeHtml(fieldId)}" type="${escapeHtml(inputType)}" value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" />
-      </label>
-    `;
-        })
-        .join("");
-    const noteBlock = noteKey
-        ? `<p class="module-settings-popup-note">${escapeHtml(i18n.t(noteKey))}</p>`
-        : "";
-    const powerStateEnabled = powerState?.enabled === true;
-    const powerToggleBlock = powerState
-        ? `<div class="provider-popup-toggle-row module-settings-popup-power-row">
-        <span class="provider-popup-toggle-label">${escapeHtml(i18n.t(powerState.labelKey ?? "ui.reuse.enable"))}</span>
-        <label class="switch provider-popup-switch">
-          <input type="checkbox" class="module-settings-popup-power-toggle"${powerStateEnabled ? " checked" : ""} />
-          <span class="slider"></span>
-        </label>
-      </div>`
-        : "";
-
-    await openPopup({
-        title: i18n.t(titleKey),
-        body: () => `
-      <div class="module-settings-popup-fields">
-        ${powerToggleBlock}
-        ${fieldRows}
-      </div>
-      ${noteBlock}
-    `,
-        actions: [
-            { id: "save", label: i18n.t("ui.reuse.save"), variant: "confirm" },
-            {
-                id: "cancel",
-                label: i18n.t("ui.reuse.cancel"),
-                variant: "cancel",
-            },
-        ],
-        closeProtection: true,
-        onOpen: (overlay) => {
-            popupOverlay = overlay;
-        },
-        onAction: async (action) => {
-            if (action !== "save") return true;
-            if (!(popupOverlay instanceof HTMLElement)) return false;
-
-            const values = {};
-            for (const field of fields ?? []) {
-                const fieldId = String(field.id ?? "").trim();
-                if (!fieldId) continue;
-                const input = popupOverlay.querySelector(
-                    `#${CSS.escape(fieldId)}`,
-                );
-                const rawValue =
-                    input instanceof HTMLInputElement ? input.value.trim() : "";
-                values[field.configKey] =
-                    typeof field.serialize === "function"
-                        ? field.serialize(rawValue)
-                        : rawValue;
-            }
-
-            const saveResponse = await apiFetch(saveUrl, {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify(values),
-            });
-            const savePayload = await (typeof saveResponse.clone === "function"
-                ? saveResponse
-                      .clone()
-                      .json()
-                      .catch(() => ({}))
-                : saveResponse.json().catch(() => ({})));
-
-            if (!saveResponse.ok) {
-                const message =
-                    savePayload?.error?.message ?? i18n.t(failedKey);
-                if (saveResponse.status === 400) {
-                    const fieldId = resolveFieldErrorId(savePayload);
-                    if (markPopupFieldInvalid(popupOverlay, fieldId, message)) {
-                        return false;
-                    }
-                }
-                showToast(i18n.t(failedKey), { variant: "error" });
-                return false;
-            }
-
-            if (powerState && typeof powerState.onChange === "function") {
-                const powerToggle = popupOverlay.querySelector(
-                    ".module-settings-popup-power-toggle",
-                );
-                const requestedPower =
-                    powerToggle instanceof HTMLInputElement
-                        ? powerToggle.checked
-                        : powerStateEnabled;
-                if (
-                    requestedPower !== powerStateEnabled &&
-                    requestedPower &&
-                    enableTest?.url
-                ) {
-                    const testResponse = await apiFetch(enableTest.url, {
-                        method: enableTest.method ?? "POST",
-                    });
-                    if (!testResponse.ok) {
-                        const testPayload = await testResponse
-                            .json()
-                            .catch(() => ({}));
-                        showToast(
-                            testPayload?.error?.message ??
-                                i18n.t(enableTest.failedKey ?? failedKey),
-                            { variant: "error" },
-                        );
-                        return false;
-                    }
-                }
-                if (requestedPower !== powerStateEnabled) {
-                    const powerChanged =
-                        await powerState.onChange(requestedPower);
-                    if (powerChanged === false) return false;
-                }
-            }
-
-            didSave = true;
-            showToast(i18n.t(successKey), { variant: "success" });
-            return true;
-        },
-    });
-
-    return didSave;
-}
+export {
+    markPopupFieldInvalid,
+    openConfigFormPopup,
+    resolveFieldErrorId,
+} from "./popup/config-form.js";
