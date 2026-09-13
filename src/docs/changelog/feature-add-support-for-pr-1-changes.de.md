@@ -34,6 +34,10 @@ Der Registrierungsablauf folgt nun der Camel-Case-Namenskonvention für ctx, iso
 
 Änderungsverfolgungen schützen nun sowohl Browser-Ausgänge als auch SPA-Navigation, veraltete Sub-Composer-Beobachter stoppen nach dem Aushängen und ein nutzdatenbasierter Composer für Klappbereiche stellt gleich breite Aktionszeilen für Administration und externe Module bereit.
 
+## Verbindliche Popups und gemeinsames Abmelden
+
+Popups können nun eine verbindliche Interaktion ohne Schließen-Schaltfläche sowie ohne Hintergrund- oder Escape-Schließen anfordern. Der Browser-ctx stellt außerdem einen gestuften Abmeldeablauf bereit, der die Sitzung widerruft, den Schlüsselbund sperrt, lokale Kontodaten löscht und zur Anmeldung weiterleitet.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -47,3 +51,4 @@ Der Registrierungsablauf folgt nun der Camel-Case-Namenskonvention für ctx, iso
 - [3f80ad56](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f80ad56eb500d81031d7c3001bc1b5c246f84a1)
 - [8f67ef9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f67ef9eb42910f9597f694d2d7b819b1ab00940)
 - [f7cfe49a](https://github.com/Cognis-Labs-HQ/Cognis/commit/f7cfe49a74f4e104348eae5938747f0d601b2b60)
+- [7c16485f](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c16485f5abf7b260cf6bf6311dbf80725e4fb05)

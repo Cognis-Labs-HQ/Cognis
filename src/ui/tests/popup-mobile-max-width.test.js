@@ -52,6 +52,15 @@ test("popup close protection uses the silent dirty tracker before warning", () =
     assert.equal(source.includes("hasUnsavedFormChanges(overlay)"), true);
 });
 
+test("popup supports mandatory dialogs without implicit close controls", () => {
+    const source = readFileSync(resolve(ROOT, "src/ui/reuse/popup.js"), "utf8");
+
+    assert.match(source, /mandatory = false/);
+    assert.match(source, /mandatory \? "" : `<button/);
+    assert.match(source, /if \(!mandatory && event\.target === overlay\)/);
+    assert.match(source, /if \(mandatory\) return;/);
+});
+
 test("createAnchoredPopup creates, positions, and tears down anchored popups", () => {
     class FakeHTMLElement {
         constructor(tagName = "div") {

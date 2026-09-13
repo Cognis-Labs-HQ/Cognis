@@ -34,6 +34,10 @@ Alur pendaftaran kini mengikuti aturan penamaan camel case untuk ctx, mengisolas
 
 Pelacak perubahan kini melindungi keluar dari peramban serta navigasi SPA, pengamat sub-composer yang usang berhenti setelah pelepasan, dan composer bagian lipat berbasis payload menyediakan baris tindakan selebar sama bagi Administrasi dan modul eksternal.
 
+## Popup wajib dan alur keluar bersama
+
+Popup kini dapat memilih interaksi wajib tanpa tombol tutup, penutupan melalui latar, atau tombol Escape. ctx peramban juga menyediakan alur keluar bertahap yang mencabut sesi, mengunci keyring, membersihkan status akun lokal, dan mengalihkan ke halaman masuk.
+
 ## Commit
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -47,3 +51,4 @@ Pelacak perubahan kini melindungi keluar dari peramban serta navigasi SPA, penga
 - [3f80ad56](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f80ad56eb500d81031d7c3001bc1b5c246f84a1)
 - [8f67ef9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f67ef9eb42910f9597f694d2d7b819b1ab00940)
 - [f7cfe49a](https://github.com/Cognis-Labs-HQ/Cognis/commit/f7cfe49a74f4e104348eae5938747f0d601b2b60)
+- [7c16485f](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c16485f5abf7b260cf6bf6311dbf80725e4fb05)

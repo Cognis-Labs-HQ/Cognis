@@ -34,6 +34,10 @@ The registration flow now follows the camel-case ctx naming contract, isolates b
 
 Dirty trackers now protect both browser exits and SPA navigation, stale sub-composer observers stop after unmount, and a payload-driven collapsible section composer provides equal-width action rows shared by Administration and external modules.
 
+## Mandatory popups and shared logout
+
+Popups can now opt into mandatory interaction without close, backdrop, or Escape dismissal. The browser ctx also exposes a staged logout flow that revokes the session, locks the keyring, clears local account state, and redirects to login.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -47,3 +51,4 @@ Dirty trackers now protect both browser exits and SPA navigation, stale sub-comp
 - [3f80ad56](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f80ad56eb500d81031d7c3001bc1b5c246f84a1)
 - [8f67ef9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f67ef9eb42910f9597f694d2d7b819b1ab00940)
 - [f7cfe49a](https://github.com/Cognis-Labs-HQ/Cognis/commit/f7cfe49a74f4e104348eae5938747f0d601b2b60)
+- [7c16485f](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c16485f5abf7b260cf6bf6311dbf80725e4fb05)

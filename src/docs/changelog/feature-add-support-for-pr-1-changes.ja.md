@@ -34,6 +34,10 @@ Core は、独立して配布されるモジュール向けに、中立的で追
 
 変更追跡はブラウザー離脱と SPA ナビゲーションの両方を保護し、古いサブ Composer の監視はアンマウント後に停止します。また、ペイロード駆動の折りたたみセクション Composer が管理画面と外部モジュールで共有できる等幅の操作行を提供します。
 
+## 必須ポップアップと共有ログアウト
+
+ポップアップは閉じるボタン、背景クリック、Escape キーによる終了を無効にする必須操作を選択できるようになりました。ブラウザー ctx は、セッション無効化、キーリングのロック、ローカルアカウント状態の消去、ログイン画面への移動を行う段階的なログアウトフローも提供します。
+
 ## コミット
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -47,3 +51,4 @@ Core は、独立して配布されるモジュール向けに、中立的で追
 - [3f80ad56](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f80ad56eb500d81031d7c3001bc1b5c246f84a1)
 - [8f67ef9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f67ef9eb42910f9597f694d2d7b819b1ab00940)
 - [f7cfe49a](https://github.com/Cognis-Labs-HQ/Cognis/commit/f7cfe49a74f4e104348eae5938747f0d601b2b60)
+- [7c16485f](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c16485f5abf7b260cf6bf6311dbf80725e4fb05)
