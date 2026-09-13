@@ -239,6 +239,10 @@ uiRegistry.registerCapabilityProvider({
     providesCapabilities: ["ui:reuse"],
 });
 uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/footer-links.js",
+    providesCapabilities: ["ui:footerLinks"],
+});
+uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/app-router.js",
     providesCapabilities: [
         "component-pages:spawn",

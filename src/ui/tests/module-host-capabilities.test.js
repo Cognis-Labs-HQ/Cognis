@@ -43,6 +43,7 @@ for (const capability of [
     "ui:openErrorPopup",
     "ui:resourceLoader",
     "ui:reuse",
+    "ui:footerLinks",
     "component-pages:spawn",
     "component-pages:discard",
     "ui:makeFloatingWindow",

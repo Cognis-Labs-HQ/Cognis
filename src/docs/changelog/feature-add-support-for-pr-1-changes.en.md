@@ -38,6 +38,10 @@ Dirty trackers now protect both browser exits and SPA navigation, stale sub-comp
 
 Popups can now opt into mandatory interaction without close, backdrop, or Escape dismissal. The browser ctx also exposes a staged logout flow that revokes the session, locks the keyring, clears local account state, and redirects to login.
 
+## Extensible page footer links
+
+The page shell now exposes `ui:footerLinks`, allowing scoped link contributions on the left or right side of the footer while the host uses the same registry for License and Changelogs.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -52,3 +56,4 @@ Popups can now opt into mandatory interaction without close, backdrop, or Escape
 - [8f67ef9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f67ef9eb42910f9597f694d2d7b819b1ab00940)
 - [f7cfe49a](https://github.com/Cognis-Labs-HQ/Cognis/commit/f7cfe49a74f4e104348eae5938747f0d601b2b60)
 - [7c16485f](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c16485f5abf7b260cf6bf6311dbf80725e4fb05)
+- [e240270a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e240270a5a597aeb07cd3e905343be1f2c2ef4f5)

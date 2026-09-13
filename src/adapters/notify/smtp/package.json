@@ -1,11 +1,11 @@
 {
     "name": "@cognis/adapter-notify-smtp",
-    "version": "0.2.30",
+    "version": "0.2.31",
     "private": true,
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.3.93",
+        "@cognis/core": "<=0.3.94",
         "@cognis/gateways": "<=0.1.10"
     },
     "entrypoints": {

@@ -123,8 +123,14 @@ test("dashboard footer renders license and changelogs links", () => {
         resolve(ROOT, "src/ui/public/templates/dashboard-layout.html"),
         "utf8",
     );
-    const licenseLinkIndex = template.indexOf('href="/license"');
-    const changelogsLinkIndex = template.indexOf('href="/changelogs"');
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    assert.match(template, /data-footer-links="left"/);
+    assert.match(template, /data-footer-links="right"/);
+    const licenseLinkIndex = layoutSource.indexOf('href: "/license"');
+    const changelogsLinkIndex = layoutSource.indexOf('href: "/changelogs"');
     assert.ok(
         licenseLinkIndex !== -1 && changelogsLinkIndex !== -1,
         "dashboard footer should include license and changelogs links",

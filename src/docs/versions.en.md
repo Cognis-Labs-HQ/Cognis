@@ -32,27 +32,27 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component             | Path                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.30` |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.31` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.29` |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.20` |
-| File Quota            | `src/adapters/file/quota/`          | `1.0.18` |
-| Local Auth            | `src/adapters/auth/local/`          | `0.3.20` |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.21` |
+| File Quota            | `src/adapters/file/quota/`          | `1.0.19` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.3.21` |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.48` |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.32` |
-| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.18` |
-| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.18` |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.31` |
-| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.21` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.20` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.26` |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.22` |
-| Memory Database       | `src/adapters/db/memory/`           | `0.1.19` |
-| Registration Invite   | `src/adapters/registration/invite/` | `0.1.20` |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.19` |
-| Public Registration   | `src/adapters/registration/public/` | `0.1.17` |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.33` |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.19` |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.19` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.32` |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.22` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.21` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.27` |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.23` |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.20` |
+| Registration Invite   | `src/adapters/registration/invite/` | `0.1.21` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.20` |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.18` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `2.0.4`  |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.7.8`  |
-| Calls (Social)        | `src/adapters/social/call/`         | `0.5.22` |
+| Calls (Social)        | `src/adapters/social/call/`         | `0.5.23` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10` |
@@ -81,13 +81,13 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component    | Path        | Version  |
 | ------------ | ----------- | -------- |
-| Core Package | `src/core/` | `0.3.93` |
+| Core Package | `src/core/` | `0.3.94` |
 
 ## API
 
 | Component  | Path       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.5.7` |
+| API Server | `src/api/` | `0.5.8` |
 
 ## Tooling
 

@@ -28,6 +28,7 @@ import { uiCtx } from "../reuse/ui-ctx.js";
 import { showToast } from "../reuse/toast.js";
 import { bindLanguageToggle } from "../reuse/language-toggle.js";
 import { bindUserMenuIntegrity } from "./user-menu.js";
+import { footerLinks, mountFooterLinks } from "../reuse/footer-links.js";
 import { ensurePersistentStylesheet } from "../reuse/page-styles.js";
 import {
     ensureNavbarPluginsLoaded as loadNavbarPlugins,
@@ -40,6 +41,19 @@ capturePwaInstallPrompt();
 const BUTTON_STYLESHEET = "/static/styles/reuse/buttons.css";
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
 void ensurePersistentStylesheet(BUTTON_STYLESHEET);
+
+footerLinks.add({
+    id: "core:license",
+    side: "left",
+    href: "/license",
+    labelKey: "ui.layout.footer.license",
+});
+footerLinks.add({
+    id: "core:changelogs",
+    side: "left",
+    href: "/changelogs",
+    labelKey: "ui.layout.footer.changelogs",
+});
 
 function isAdminRole() {
     const role = localStorage.getItem("cognis_role");
@@ -665,6 +679,7 @@ export async function renderDashboardLayout(root, slots = {}) {
             i18n,
             existingShell.querySelector(".main-window") ?? existingShell,
         );
+        mountFooterLinks(existingShell, { i18n });
         applyActiveNavigation();
         if (
             enableAccountEnhancements &&
@@ -724,6 +739,7 @@ export async function renderDashboardLayout(root, slots = {}) {
     if (!showFooter) root.querySelector(".global-footer")?.remove();
 
     applyStaticTranslations(i18n, root);
+    mountFooterLinks(root.querySelector(".app-shell"), { i18n });
     if (
         enableAccountEnhancements &&
         (showTopbar || showNavbar) &&

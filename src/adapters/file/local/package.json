@@ -1,10 +1,10 @@
 {
     "name": "@cognis/adapter-file-local",
-    "version": "0.1.20",
+    "version": "0.1.21",
     "private": true,
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.3.93"
+        "@cognis/core": "<=0.3.94"
     }
 }

@@ -460,9 +460,15 @@
 }
 .global-footer-inner {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
     gap: 6px;
+}
+.global-footer-links {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
 }
 .global-footer-link {
     color: var(--text-muted);
