@@ -1,10 +1,10 @@
 # 登録インテグレーション
 
-**機能ブランチ:** feature-add-support-for-pr-#1-changes
+**機能ブランチ:** feature-add-support-for-pr-1-changes
 
 ## バージョン付き文書保存
 
-Core は、独立して配布されるモジュール向けに、追記専用のデータベース対応文書バージョン Capability を公開するようになりました。
+Core は、独立して配布されるモジュール向けに、中立的で追記専用のデータベース対応文書バージョンストアを公開するようになりました。既存のドキュメントと変更履歴のアーカイブは、多言語かつコンポーネントバージョン単位のファイルシステムスナップショットを維持します。これらの静的ソースをデータベースレコードへ変換しても、バージョンモデルを改善せず保存を重複させるためです。
 
 ## 登録拡張
 
@@ -30,3 +30,4 @@ Core は、独立して配布されるモジュール向けに、追記専用の
 - [2ad50da](https://github.com/Cognis-Labs-HQ/Cognis/commit/2ad50dacc8f0a73aa965b85410054a881a05cd17)
 - [1b13f90](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b13f90326737588d470ac1e4919e36ed9fba4dd)
 - [082e5f2](https://github.com/Cognis-Labs-HQ/Cognis/commit/082e5f2ab7fc36c948c2da97539d1b56cd7fdae0)
+- [2be280e](https://github.com/Cognis-Labs-HQ/Cognis/commit/2be280efacce0abf81d80ad3aae9bd23c8db921a)

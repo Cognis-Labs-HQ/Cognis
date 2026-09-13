@@ -1,10 +1,10 @@
 # Registrierungsintegrationen
 
-**Feature-Zweig:** feature-add-support-for-pr-#1-changes
+**Feature-Zweig:** feature-add-support-for-pr-1-changes
 
 ## Versionierte Dokumentspeicherung
 
-Core stellt nun eine ausschließlich erweiterbare, datenbankgestützte Capability zur Dokumentversionierung für unabhängig ausgelieferte Module bereit.
+Core stellt nun einen neutralen, ausschließlich erweiterbaren und datenbankgestützten Dokumentversionsspeicher für unabhängig ausgelieferte Module bereit. Die bestehenden Dokumentations- und Änderungsprotokollarchive behalten ihre mehrsprachigen, komponentenversionierten Dateisystem-Schnappschüsse, da eine Umwandlung dieser statischen Quellen in Datenbanksätze den Speicher nur duplizieren würde, ohne ihr Versionsmodell zu verbessern.
 
 ## Registrierungserweiterungen
 
@@ -30,3 +30,4 @@ Die Administration importiert beigesteuerte UI-Module nun unter dem SPA-Schutz, 
 - [2ad50da](https://github.com/Cognis-Labs-HQ/Cognis/commit/2ad50dacc8f0a73aa965b85410054a881a05cd17)
 - [1b13f90](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b13f90326737588d470ac1e4919e36ed9fba4dd)
 - [082e5f2](https://github.com/Cognis-Labs-HQ/Cognis/commit/082e5f2ab7fc36c948c2da97539d1b56cd7fdae0)
+- [2be280e](https://github.com/Cognis-Labs-HQ/Cognis/commit/2be280efacce0abf81d80ad3aae9bd23c8db921a)

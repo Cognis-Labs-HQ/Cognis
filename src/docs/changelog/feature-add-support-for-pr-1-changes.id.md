@@ -1,10 +1,10 @@
 # Integrasi Pendaftaran
 
-**Cabang Fitur:** feature-add-support-for-pr-#1-changes
+**Cabang Fitur:** feature-add-support-for-pr-1-changes
 
 ## Penyimpanan dokumen berversi
 
-Core kini menyediakan kapabilitas versi dokumen berbasis basis data yang hanya dapat ditambahkan untuk modul yang dikirimkan secara mandiri.
+Core kini menyediakan penyimpanan versi dokumen netral berbasis basis data yang hanya dapat ditambahkan untuk modul yang dikirimkan secara mandiri. Arsip Dokumentasi dan Catatan Perubahan yang ada tetap menggunakan snapshot sistem berkas multibahasa berversi komponen karena mengubah sumber statis tersebut menjadi rekaman basis data hanya akan menggandakan penyimpanan tanpa memperbaiki model versinya.
 
 ## Ekstensi pendaftaran
 
@@ -30,3 +30,4 @@ Administrasi kini mengimpor modul UI kontribusi di bawah pelindung SPA, sehingga
 - [2ad50da](https://github.com/Cognis-Labs-HQ/Cognis/commit/2ad50dacc8f0a73aa965b85410054a881a05cd17)
 - [1b13f90](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b13f90326737588d470ac1e4919e36ed9fba4dd)
 - [082e5f2](https://github.com/Cognis-Labs-HQ/Cognis/commit/082e5f2ab7fc36c948c2da97539d1b56cd7fdae0)
+- [2be280e](https://github.com/Cognis-Labs-HQ/Cognis/commit/2be280efacce0abf81d80ad3aae9bd23c8db921a)

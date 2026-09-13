@@ -39,7 +39,7 @@ import {
     generatePassphrase,
     PASSPHRASE_CAPABILITY,
 } from "./reuse/passphrase.js";
-import { createDocumentVersionStoreCapability } from "./routes/docs/version-store.js";
+import { createDocumentVersionStoreCapability } from "./reuse/document-version-store.js";
 
 requirePublicEnvironment();
 

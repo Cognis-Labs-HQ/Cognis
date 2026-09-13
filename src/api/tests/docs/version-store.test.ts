@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createDocumentVersionStoreCapability } from "../../routes/docs/version-store.js";
+import { createDocumentVersionStoreCapability } from "../../reuse/document-version-store.js";
 import { InMemoryTestExecutor } from "../../../gateways/db/tests/in-memory-test-executor.js";
 
 test("document version store appends immutable cryptographic versions", async () => {
