@@ -106,12 +106,24 @@ export function createSecurityRoutes({
             const { userValidationMode } = await readSecuritySettings();
             const registrationCtx = capabilities.get<Ctx>("system:ctx");
             const flowResult = registrationCtx?.flow.exists(
-                "construct-registration-ui",
+                "constructRegistrationUi",
             )
-                ? await registrationCtx.flow.run(
-                      "construct-registration-ui",
-                      {},
-                  )
+                ? await registrationCtx.flow
+                      .run("constructRegistrationUi", {})
+                      .catch((error: unknown) => {
+                          log?.(
+                              "warn",
+                              "Registration UI composition failed; serving the base registration configuration.",
+                              {
+                                  ...logMeta,
+                                  error:
+                                      error instanceof Error
+                                          ? error.message
+                                          : String(error),
+                              },
+                          );
+                          return null;
+                      })
                 : null;
             const integrations = (
                 flowResult?.stageResults["compose-form"] ?? []

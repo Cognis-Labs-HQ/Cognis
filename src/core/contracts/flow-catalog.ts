@@ -42,7 +42,7 @@ export const BOOTSTRAP_FLOW_CATALOG = Object.freeze([
 
 export const AUTH_FLOW_CATALOG = Object.freeze([
     createFlowContract({
-        id: "construct-registration-ui",
+        id: "constructRegistrationUi",
         owner: "auth",
         description:
             "Builds the registration form from host and integration contributions.",

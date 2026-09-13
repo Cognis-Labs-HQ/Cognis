@@ -26,6 +26,10 @@ Administration now imports contributed UI modules under the SPA guard, preventin
 
 Module artwork now uses the canonical public fallback asset route, and an unavailable fallback is hidden without opening a runtime error popup.
 
+## Reliable registration composition
+
+The registration flow now follows the camel-case ctx naming contract, isolates broken integration hooks so base registration remains available, and documents trusted HTML labels for contributors.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -37,3 +41,4 @@ Module artwork now uses the canonical public fallback asset route, and an unavai
 - [2be280e](https://github.com/Cognis-Labs-HQ/Cognis/commit/2be280efacce0abf81d80ad3aae9bd23c8db921a)
 - [fb19c34e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb19c34e1ad6b7de4b7c0dd2c6bb8e0fad171484)
 - [3f80ad56](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f80ad56eb500d81031d7c3001bc1b5c246f84a1)
+- [8f67ef9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f67ef9eb42910f9597f694d2d7b819b1ab00940)

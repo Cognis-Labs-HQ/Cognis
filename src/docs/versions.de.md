@@ -32,27 +32,27 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente            | Pfad                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.27` |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.28` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.29` |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.17` |
-| Dateikontingent       | `src/adapters/file/quota/`          | `1.0.15` |
-| Local Auth            | `src/adapters/auth/local/`          | `0.3.17` |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.18` |
+| Dateikontingent       | `src/adapters/file/quota/`          | `1.0.16` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.3.18` |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.48` |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.29` |
-| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.15` |
-| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.15` |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.28` |
-| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.18` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.17` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.23` |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.19` |
-| Memory Database       | `src/adapters/db/memory/`           | `0.1.16` |
-| Registration Invite   | `src/adapters/registration/invite/` | `0.1.17` |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.16` |
-| Public Registration   | `src/adapters/registration/public/` | `0.1.14` |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.30` |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.16` |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.16` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.29` |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.19` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.18` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.24` |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.20` |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.17` |
+| Registration Invite   | `src/adapters/registration/invite/` | `0.1.18` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.17` |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.15` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `2.0.4`  |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.7.8`  |
-| Calls (Social)        | `src/adapters/social/call/`         | `0.5.19` |
+| Calls (Social)        | `src/adapters/social/call/`         | `0.5.20` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10` |
@@ -65,7 +65,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                          | Version   |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.24`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.25`  |
 | Share                 | `src/gateways/share/`         | `1.7.46`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.19`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.11`  |
@@ -81,13 +81,13 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente   | Pfad        | Version  |
 | ------------ | ----------- | -------- |
-| Core Package | `src/core/` | `0.3.90` |
+| Core Package | `src/core/` | `0.3.91` |
 
 ## API
 
 | Komponente | Pfad       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.5.4` |
+| API Server | `src/api/` | `0.5.5` |
 
 ## Werkzeuge
 

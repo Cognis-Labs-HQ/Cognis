@@ -26,6 +26,10 @@ Administrasi kini mengimpor modul UI kontribusi di bawah pelindung SPA, sehingga
 
 Gambar modul kini menggunakan rute aset fallback publik kanonis; fallback yang tidak tersedia disembunyikan tanpa membuka popup galat runtime.
 
+## Komposisi pendaftaran yang andal
+
+Alur pendaftaran kini mengikuti aturan penamaan camel case untuk ctx, mengisolasi hook integrasi yang rusak agar pendaftaran dasar tetap tersedia, serta mendokumentasikan label HTML tepercaya bagi kontributor.
+
 ## Commit
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -37,3 +41,4 @@ Gambar modul kini menggunakan rute aset fallback publik kanonis; fallback yang t
 - [2be280e](https://github.com/Cognis-Labs-HQ/Cognis/commit/2be280efacce0abf81d80ad3aae9bd23c8db921a)
 - [fb19c34e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb19c34e1ad6b7de4b7c0dd2c6bb8e0fad171484)
 - [3f80ad56](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f80ad56eb500d81031d7c3001bc1b5c246f84a1)
+- [8f67ef9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f67ef9eb42910f9597f694d2d7b819b1ab00940)

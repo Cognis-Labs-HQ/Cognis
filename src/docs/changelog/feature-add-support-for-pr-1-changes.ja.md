@@ -26,6 +26,10 @@ Core は、独立して配布されるモジュール向けに、中立的で追
 
 モジュール画像は標準の公開フォールバックアセット経路を使用し、フォールバックも読み込めない場合は実行時エラーのポップアップを開かず非表示にするようになりました。
 
+## 信頼性の高い登録構成
+
+登録フローは ctx のキャメルケース命名規則に従い、壊れた統合フックを分離して基本登録を利用可能なまま保ち、コントリビューター向けに信頼済み HTML ラベルを文書化するようになりました。
+
 ## コミット
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -37,3 +41,4 @@ Core は、独立して配布されるモジュール向けに、中立的で追
 - [2be280e](https://github.com/Cognis-Labs-HQ/Cognis/commit/2be280efacce0abf81d80ad3aae9bd23c8db921a)
 - [fb19c34e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb19c34e1ad6b7de4b7c0dd2c6bb8e0fad171484)
 - [3f80ad56](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f80ad56eb500d81031d7c3001bc1b5c246f84a1)
+- [8f67ef9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f67ef9eb42910f9597f694d2d7b819b1ab00940)

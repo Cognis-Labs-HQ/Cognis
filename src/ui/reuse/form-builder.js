@@ -46,6 +46,7 @@
  *     name: string,
  *     labelKey?: string,
  *     label?: string,
+ *     labelHtml?: string, // trusted markup; callers must sanitize untrusted content
  *     type?: 'text'|'email'|'password'|'number'|'url'|'select'|'textarea'|'checkbox',
  *     secret?: boolean,
  *     slider?: boolean,
