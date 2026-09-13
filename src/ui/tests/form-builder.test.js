@@ -44,6 +44,31 @@ test("form builder applies theme styling to every select control", () => {
     assert.match(builder.render(), /class="form-builder-input theme-select"/);
 });
 
+test("form builder renders trusted integration label markup", () => {
+    const builder = createFormBuilder(
+        {
+            i18n: { t: (key) => key },
+            escapeHtml: (value) => String(value),
+        },
+        {
+            formId: "registration-form",
+            submitLabelKey: "submit",
+            fields: [
+                {
+                    name: "consent",
+                    type: "checkbox",
+                    labelHtml: 'Accept the <a href="/terms">terms</a>',
+                },
+            ],
+        },
+    );
+
+    assert.match(
+        builder.render(),
+        /<label for="form-builder-consent">Accept the <a href="\/terms">terms<\/a><\/label>/,
+    );
+});
+
 test("form builder keeps tooltip buttons outside field labels", () => {
     const builder = createFormBuilder(
         {

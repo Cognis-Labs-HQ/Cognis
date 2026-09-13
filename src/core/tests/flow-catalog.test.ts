@@ -33,6 +33,12 @@ test("core flow catalog keeps unique flow and stage ids", () => {
 
 test("core flow catalog exposes canonical auth flow contracts", () => {
     assert.deepEqual(
+        getCanonicalFlowContract("constructRegistrationUi")?.stages.map(
+            (stage) => stage.id,
+        ),
+        ["compose-form"],
+    );
+    assert.deepEqual(
         getCanonicalFlowContract("construct-login-ui")?.stages.map(
             (stage) => stage.id,
         ),

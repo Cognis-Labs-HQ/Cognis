@@ -54,6 +54,28 @@ test("register page clears stored auth instead of redirecting authenticated user
     assert.doesNotMatch(source, /redirectToDashboardIfAuthenticated/);
 });
 
+test("registration completion failure sends created accounts to recover through login", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/auth/ui/register.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /if \(accountCreated\)[\s\S]*window\.location\.href = "\/login"/,
+    );
+});
+
+test("registration integration load failures do not disable the base form", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/auth/ui/register.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /for \(const descriptor[\s\S]*try \{[\s\S]*import\([\s\S]*catch \(error\)[\s\S]*registrationIntegrationsReady = true/,
+    );
+});
+
 test("register page uses shared auth intro copy and class", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/auth/ui/register.js"),

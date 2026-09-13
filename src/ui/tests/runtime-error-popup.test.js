@@ -867,9 +867,17 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
 
     const listeners = new Map();
     const openPopupCalls = [];
+    class TestImageElement {
+        constructor() {
+            this.dataset = {};
+            this.src = "";
+            this.hidden = false;
+        }
+    }
     const context = {
         console,
         Date,
+        HTMLImageElement: TestImageElement,
         applyTheme() {},
         getStoredTheme() {
             return "light";
@@ -941,5 +949,18 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
         await Promise.resolve();
         await Promise.resolve();
     }
+    assert.equal(openPopupCalls.length, 0);
+
+    const brokenModuleImage = new TestImageElement();
+    brokenModuleImage.dataset.resourceFallback = "/fallback.svg";
+    brokenModuleImage.src = "blob:https://example.com/broken";
+    errorHandler({ target: brokenModuleImage });
+    await Promise.resolve();
+    assert.equal(brokenModuleImage.src, "/fallback.svg");
+    assert.equal(openPopupCalls.length, 0);
+
+    errorHandler({ target: brokenModuleImage });
+    await Promise.resolve();
+    assert.equal(brokenModuleImage.hidden, true);
     assert.equal(openPopupCalls.length, 0);
 });
