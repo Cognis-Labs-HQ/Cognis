@@ -181,7 +181,15 @@ function buildResourceLoadError(event) {
     ) {
         const fallbackUrl = eventTarget.dataset.resourceFallback;
         delete eventTarget.dataset.resourceFallback;
+        eventTarget.dataset.resourceFallbackActive = "true";
         eventTarget.src = fallbackUrl;
+        return HANDLED_RESOURCE_FALLBACK;
+    }
+    if (
+        eventTarget instanceof HTMLImageElement &&
+        eventTarget.dataset.resourceFallbackActive === "true"
+    ) {
+        eventTarget.hidden = true;
         return HANDLED_RESOURCE_FALLBACK;
     }
     const resourceUrl =

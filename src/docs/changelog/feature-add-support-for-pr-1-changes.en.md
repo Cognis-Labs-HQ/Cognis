@@ -22,6 +22,10 @@ The module lifecycle now recognizes the app router as the provider of `ui:naviga
 
 Administration now imports contributed UI modules under the SPA guard, preventing page entry points from mounting themselves against the Administration URL.
 
+## Resilient artwork fallback
+
+Module artwork now uses the canonical public fallback asset route, and an unavailable fallback is hidden without opening a runtime error popup.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -32,3 +36,4 @@ Administration now imports contributed UI modules under the SPA guard, preventin
 - [082e5f2](https://github.com/Cognis-Labs-HQ/Cognis/commit/082e5f2ab7fc36c948c2da97539d1b56cd7fdae0)
 - [2be280e](https://github.com/Cognis-Labs-HQ/Cognis/commit/2be280efacce0abf81d80ad3aae9bd23c8db921a)
 - [fb19c34e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb19c34e1ad6b7de4b7c0dd2c6bb8e0fad171484)
+- [3f80ad56](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f80ad56eb500d81031d7c3001bc1b5c246f84a1)

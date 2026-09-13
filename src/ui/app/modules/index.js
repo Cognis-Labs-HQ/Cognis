@@ -83,7 +83,7 @@ const selectedBranches = new Map();
 const pendingModuleActions = new Map();
 const pendingDependencyChecks = new Set();
 const screenshotIndexes = new Map();
-const MODULE_ICON_FALLBACK_URL = "/static/assets/reuse/module-icon-unknown.svg";
+const MODULE_ICON_FALLBACK_URL = "/assets/reuse/module-icon-unknown.svg";
 const MARKETPLACE_POLL_INTERVAL_MS = 15_000;
 const PRIVATE_SOURCE_FAILURE_KEYS = new Set([
     "private_repository_credential_missing",

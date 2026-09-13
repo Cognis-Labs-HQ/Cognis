@@ -22,6 +22,10 @@ Siklus hidup modul kini mengenali router aplikasi sebagai penyedia `ui:navigate`
 
 Administrasi kini mengimpor modul UI kontribusi di bawah pelindung SPA, sehingga titik masuk halaman tidak memasang dirinya sendiri pada URL Administrasi.
 
+## Fallback gambar yang tangguh
+
+Gambar modul kini menggunakan rute aset fallback publik kanonis; fallback yang tidak tersedia disembunyikan tanpa membuka popup galat runtime.
+
 ## Commit
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -32,3 +36,4 @@ Administrasi kini mengimpor modul UI kontribusi di bawah pelindung SPA, sehingga
 - [082e5f2](https://github.com/Cognis-Labs-HQ/Cognis/commit/082e5f2ab7fc36c948c2da97539d1b56cd7fdae0)
 - [2be280e](https://github.com/Cognis-Labs-HQ/Cognis/commit/2be280efacce0abf81d80ad3aae9bd23c8db921a)
 - [fb19c34e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb19c34e1ad6b7de4b7c0dd2c6bb8e0fad171484)
+- [3f80ad56](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f80ad56eb500d81031d7c3001bc1b5c246f84a1)

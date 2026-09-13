@@ -871,6 +871,7 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
         constructor() {
             this.dataset = {};
             this.src = "";
+            this.hidden = false;
         }
     }
     const context = {
@@ -956,5 +957,10 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
     errorHandler({ target: brokenModuleImage });
     await Promise.resolve();
     assert.equal(brokenModuleImage.src, "/fallback.svg");
+    assert.equal(openPopupCalls.length, 0);
+
+    errorHandler({ target: brokenModuleImage });
+    await Promise.resolve();
+    assert.equal(brokenModuleImage.hidden, true);
     assert.equal(openPopupCalls.length, 0);
 });

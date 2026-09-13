@@ -22,6 +22,10 @@ Core は、独立して配布されるモジュール向けに、中立的で追
 
 管理画面は SPA ガード下で提供された UI モジュールを読み込み、ページエントリーポイントが管理画面の URL に対して自己マウントすることを防ぐようになりました。
 
+## 堅牢な画像フォールバック
+
+モジュール画像は標準の公開フォールバックアセット経路を使用し、フォールバックも読み込めない場合は実行時エラーのポップアップを開かず非表示にするようになりました。
+
 ## コミット
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -32,3 +36,4 @@ Core は、独立して配布されるモジュール向けに、中立的で追
 - [082e5f2](https://github.com/Cognis-Labs-HQ/Cognis/commit/082e5f2ab7fc36c948c2da97539d1b56cd7fdae0)
 - [2be280e](https://github.com/Cognis-Labs-HQ/Cognis/commit/2be280efacce0abf81d80ad3aae9bd23c8db921a)
 - [fb19c34e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb19c34e1ad6b7de4b7c0dd2c6bb8e0fad171484)
+- [3f80ad56](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f80ad56eb500d81031d7c3001bc1b5c246f84a1)
