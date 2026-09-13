@@ -127,7 +127,12 @@ export function createFormBuilder(ctx, options) {
         }
         const type = String(fieldConfig?.type ?? "text").trim();
         const inputId = `form-builder-${fieldName}`;
-        const label = fieldConfig.label ?? i18n.t(fieldConfig.labelKey);
+        const label = fieldConfig.labelHtml
+            ? ""
+            : (fieldConfig.label ?? i18n.t(fieldConfig.labelKey));
+        const labelMarkup = fieldConfig.labelHtml
+            ? String(fieldConfig.labelHtml)
+            : escapeHtml(label);
         const required = fieldConfig.required === true;
         const disabled = fieldConfig.disabled === true;
         const maxCharacters = Number(fieldConfig.maxCharacters ?? 0);
@@ -253,7 +258,7 @@ export function createFormBuilder(ctx, options) {
 
         return `
       <div class="${fieldClassName}" data-form-builder-field="${escapeHtml(fieldName)}">
-        <span class="form-builder-label-text"><label for="${escapeHtml(inputId)}">${escapeHtml(label)}${requiredFlagInline}</label>${infoTooltip}</span>
+        <span class="form-builder-label-text"><label for="${escapeHtml(inputId)}">${labelMarkup}${requiredFlagInline}</label>${infoTooltip}</span>
         ${inputMarkup}
         ${counterMarkup}
         ${inlineCriteria}
