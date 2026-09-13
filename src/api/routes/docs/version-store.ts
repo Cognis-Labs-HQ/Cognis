@@ -13,6 +13,7 @@ interface DocumentDatabase {
 
 const TABLE_NAME = "core_document_versions";
 const IDENTIFIER_PATTERN = /^[a-z0-9][a-z0-9._-]{0,127}$/;
+let lastPublishedAt = 0;
 
 export interface DocumentVersionRow {
     id: string;
@@ -22,6 +23,24 @@ export interface DocumentVersionRow {
     markdown: string;
     actor_id: string;
     published_at: string;
+}
+
+function publicationTime(value: unknown): number {
+    const milliseconds =
+        value instanceof Date ? value.getTime() : Date.parse(String(value));
+    return Number.isFinite(milliseconds) ? milliseconds : 0;
+}
+
+function normalizeVersionRow(row: Record<string, unknown>): DocumentVersionRow {
+    return {
+        id: String(row.id),
+        namespace: String(row.namespace),
+        slug: String(row.slug),
+        version: String(row.version),
+        markdown: String(row.markdown),
+        actor_id: String(row.actor_id),
+        published_at: new Date(publicationTime(row.published_at)).toISOString(),
+    };
 }
 
 export interface DocumentVersionStore {
@@ -56,7 +75,6 @@ export function createDocumentVersionStoreCapability(): DocumentVersionStoreCapa
         createStore({ namespace, database, documents }) {
             const scopedNamespace = requireIdentifier(namespace, "namespace");
             const supportedSlugs = new Set(Object.keys(documents));
-            let lastPublishedAt = 0;
             const requireSlug = (slug: unknown): string => {
                 const normalized = requireIdentifier(slug, "slug");
                 if (!supportedSlugs.has(normalized)) {
@@ -83,7 +101,7 @@ export function createDocumentVersionStoreCapability(): DocumentVersionStoreCapa
                             { name: "actor_id", type: "text", notNull: true },
                             {
                                 name: "published_at",
-                                type: "timestamp",
+                                type: "text",
                                 notNull: true,
                             },
                         ],
@@ -100,12 +118,22 @@ export function createDocumentVersionStoreCapability(): DocumentVersionStoreCapa
                             { column: "namespace", value: scopedNamespace },
                             { column: "slug", value: requireSlug(slug) },
                         ],
+                        orderBy: [
+                            { column: "published_at", direction: "DESC" },
+                            { column: "id", direction: "DESC" },
+                        ],
                     });
-                    const rows = (result.rows ?? []) as DocumentVersionRow[];
+                    const rows = (result.rows ?? []).map(normalizeVersionRow);
                     return (
-                        rows.sort((left, right) =>
-                            right.published_at.localeCompare(left.published_at),
-                        )[0] ?? null
+                        rows.sort((left, right) => {
+                            const timeDifference =
+                                publicationTime(right.published_at) -
+                                publicationTime(left.published_at);
+                            return (
+                                timeDifference ||
+                                right.id.localeCompare(left.id)
+                            );
+                        })[0] ?? null
                     );
                 },
                 async publish({ slug, content, actorId }) {

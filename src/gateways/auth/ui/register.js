@@ -708,6 +708,7 @@ export async function mount(root, { signal } = {}) {
                                 }
                             }
                             let authenticatedToken = "";
+                            let accountCreated = false;
                             if (password !== confirmPassword) {
                                 showToast(
                                     i18n.t(
@@ -756,6 +757,7 @@ export async function mount(root, { signal } = {}) {
                                     authenticatedToken = String(
                                         body?.data?.verifyToken ?? "",
                                     );
+                                    accountCreated = true;
                                 } else {
                                     const response = await fetch(
                                         "/api/v1/auth/register",
@@ -821,6 +823,7 @@ export async function mount(root, { signal } = {}) {
                                         regPayload?.data?.verifyToken ?? "",
                                     );
                                     authenticatedToken = verifyToken;
+                                    accountCreated = true;
                                     const registeredUsername = String(
                                         regPayload?.data?.username ?? username,
                                     );
@@ -886,6 +889,11 @@ export async function mount(root, { signal } = {}) {
                                         variant: "error",
                                     },
                                 );
+                                if (accountCreated) {
+                                    window.setTimeout(() => {
+                                        window.location.href = "/login";
+                                    }, 1200);
+                                }
                             }
                         },
                         signal ? { signal } : undefined,

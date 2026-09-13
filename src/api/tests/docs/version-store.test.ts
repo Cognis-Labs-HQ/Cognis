@@ -35,3 +35,34 @@ test("document version store appends immutable cryptographic versions", async ()
     await store.deleteAll();
     assert.equal(await store.getLatest("terms"), null);
 });
+
+test("document version store normalizes driver-native dates", async () => {
+    const rows: Array<Record<string, unknown>> = [];
+    const database = {
+        async ensureTable() {},
+        async executeCommand(command: Record<string, unknown>) {
+            if (command.option === "INSERT") {
+                rows.push(command.values as Record<string, unknown>);
+                return {};
+            }
+            return {
+                rows: rows.map((row) => ({
+                    ...row,
+                    published_at: new Date(String(row.published_at)),
+                })),
+            };
+        },
+    };
+    const store = createDocumentVersionStoreCapability().createStore({
+        namespace: "legal-date-driver",
+        database,
+        documents: { terms: "/terms" },
+    });
+    await store.publish({
+        slug: "terms",
+        content: "driver date",
+        actorId: "admin",
+    });
+
+    assert.equal((await store.getLatest("terms"))?.markdown, "driver date");
+});

@@ -14,3 +14,4 @@ Alur pendaftaran milik host kini menyusun bidang modul, memvalidasi nilainya, da
 
 - [9d24852](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d248526)
 - [8b480faf](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b480fafbceca1dd52b9c693dc1f0d4381d473b8)
+- [84f84a43](https://github.com/Cognis-Labs-HQ/Cognis/commit/84f84a43659185eb65e48004cc9a898b69aa4458)
