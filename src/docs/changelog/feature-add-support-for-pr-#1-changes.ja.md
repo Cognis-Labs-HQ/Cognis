@@ -1,6 +1,6 @@
 # 登録インテグレーション
 
-**機能ブランチ:** work
+**機能ブランチ:** feature-add-support-for-pr-#1-changes
 
 ## バージョン付き文書保存
 
