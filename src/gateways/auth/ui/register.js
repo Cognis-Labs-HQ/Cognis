@@ -212,12 +212,32 @@ export async function mount(root, { signal } = {}) {
             for (const descriptor of regConfigPayload?.data?.integrations ??
                 []) {
                 if (!descriptor?.id || !descriptor?.scriptUrl) continue;
-                const integrationModule = await import(descriptor.scriptUrl);
-                registrationIntegrations.push({
-                    descriptor,
-                    module: integrationModule,
-                    i18n: await extendI18n(i18n, descriptor.stringsBaseUrl),
-                });
+                try {
+                    const integrationModule = await import(
+                        descriptor.scriptUrl
+                    );
+                    registrationIntegrations.push({
+                        descriptor,
+                        module: integrationModule,
+                        i18n: await extendI18n(i18n, descriptor.stringsBaseUrl),
+                    });
+                } catch (error) {
+                    console.error(
+                        JSON.stringify({
+                            level: "error",
+                            component: "register-page",
+                            operation: "load-registration-integration",
+                            integrationId: String(descriptor.id),
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        }),
+                    );
+                    showToast(i18n.t("ui.app.register.error.generic"), {
+                        variant: "error",
+                    });
+                }
             }
             registrationIntegrationsReady = true;
         }
