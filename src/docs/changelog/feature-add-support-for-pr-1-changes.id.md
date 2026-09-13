@@ -42,6 +42,10 @@ Popup kini dapat memilih interaksi wajib tanpa tombol tutup, penutupan melalui l
 
 Shell halaman kini menyediakan `ui:footerLinks` agar kontribusi tautan berskop dapat ditempatkan di sisi kiri atau kanan footer; host memakai registri yang sama untuk Lisensi dan Catatan Perubahan.
 
+## Paginasi terstruktur yang dapat digunakan ulang
+
+Riwayat peristiwa Keyring kini memakai paginator bersama dengan ukuran halaman pilihan pemanggil, hasil halaman terstruktur, kontrol yang dilokalkan, pembaruan data, dan kapabilitas ctx `ui:pagination` yang tersedia bagi modul.
+
 ## Commit
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -57,3 +61,4 @@ Shell halaman kini menyediakan `ui:footerLinks` agar kontribusi tautan berskop d
 - [f7cfe49a](https://github.com/Cognis-Labs-HQ/Cognis/commit/f7cfe49a74f4e104348eae5938747f0d601b2b60)
 - [7c16485f](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c16485f5abf7b260cf6bf6311dbf80725e4fb05)
 - [e240270a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e240270a5a597aeb07cd3e905343be1f2c2ef4f5)
+- [c63e7c8f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c63e7c8f0aab5c4e1e38d5963fd64ab7036a40e5)

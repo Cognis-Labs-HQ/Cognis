@@ -617,6 +617,13 @@ body:not([data-theme="light"]) .markdown-code-inline code {
     transform: rotate(180deg);
 }
 
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
 @media (max-width: 900px) {
     .provider-fields,
     .provider-auth-fields,

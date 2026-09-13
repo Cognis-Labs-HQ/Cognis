@@ -42,6 +42,10 @@ Popups können nun eine verbindliche Interaktion ohne Schließen-Schaltfläche s
 
 Die Seitenhülle stellt nun `ui:footerLinks` bereit. Damit können bereichsgebundene Links auf der linken oder rechten Seite der Fußzeile beigesteuert werden; der Host verwendet dieselbe Registrierung für Lizenz und Änderungsprotokolle.
 
+## Wiederverwendbare strukturierte Seitennavigation
+
+Der Keyring-Ereignisverlauf verwendet nun eine gemeinsame Seitennavigation mit vom Aufrufer gewählter Seitengröße, strukturierten Seitenergebnissen, lokalisierten Bedienelementen, Datenaktualisierungen und einer für Module verfügbaren ctx-Fähigkeit `ui:pagination`.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -57,3 +61,4 @@ Die Seitenhülle stellt nun `ui:footerLinks` bereit. Damit können bereichsgebun
 - [f7cfe49a](https://github.com/Cognis-Labs-HQ/Cognis/commit/f7cfe49a74f4e104348eae5938747f0d601b2b60)
 - [7c16485f](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c16485f5abf7b260cf6bf6311dbf80725e4fb05)
 - [e240270a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e240270a5a597aeb07cd3e905343be1f2c2ef4f5)
+- [c63e7c8f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c63e7c8f0aab5c4e1e38d5963fd64ab7036a40e5)

@@ -42,6 +42,10 @@ Core は、独立して配布されるモジュール向けに、中立的で追
 
 ページシェルは `ui:footerLinks` を公開し、スコープ付きリンクをフッターの左側または右側へ追加できるようになりました。ホストもライセンスと変更履歴に同じレジストリを使用します。
 
+## 再利用可能な構造化ページネーション
+
+Keyring のイベント履歴は、呼び出し側が選択するページ件数、構造化されたページ結果、ローカライズ済み操作、データ更新、およびモジュールから利用可能な ctx 機能 `ui:pagination` を備えた共有ページネーターを使用するようになりました。
+
 ## コミット
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -57,3 +61,4 @@ Core は、独立して配布されるモジュール向けに、中立的で追
 - [f7cfe49a](https://github.com/Cognis-Labs-HQ/Cognis/commit/f7cfe49a74f4e104348eae5938747f0d601b2b60)
 - [7c16485f](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c16485f5abf7b260cf6bf6311dbf80725e4fb05)
 - [e240270a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e240270a5a597aeb07cd3e905343be1f2c2ef4f5)
+- [c63e7c8f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c63e7c8f0aab5c4e1e38d5963fd64ab7036a40e5)
