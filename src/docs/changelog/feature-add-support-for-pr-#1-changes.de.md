@@ -18,6 +18,10 @@ Beschädigte oder ungültige Modulsymbole und Banner wechseln nun zum standardm�
 
 Der Modul-Lebenszyklus erkennt den App-Router nun als Anbieter von `ui:navigate`, sodass Module aktiviert werden können, die die Host-Navigation benötigen.
 
+## Sicheres Laden von Beiträgen
+
+Die Administration importiert beigesteuerte UI-Module nun unter dem SPA-Schutz, damit Seiteneinstiegspunkte sich nicht selbst unter der Administrations-URL einhängen.
+
 ## Commits
 
 - [9d24852](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d248526)
@@ -25,3 +29,4 @@ Der Modul-Lebenszyklus erkennt den App-Router nun als Anbieter von `ui:navigate`
 - [84f84a43](https://github.com/Cognis-Labs-HQ/Cognis/commit/84f84a43659185eb65e48004cc9a898b69aa4458)
 - [2ad50da](https://github.com/Cognis-Labs-HQ/Cognis/commit/2ad50dacc8f0a73aa965b85410054a881a05cd17)
 - [1b13f90](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b13f90326737588d470ac1e4919e36ed9fba4dd)
+- [082e5f2](https://github.com/Cognis-Labs-HQ/Cognis/commit/082e5f2ab7fc36c948c2da97539d1b56cd7fdae0)

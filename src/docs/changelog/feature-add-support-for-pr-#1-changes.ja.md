@@ -18,6 +18,10 @@ Core は、独立して配布されるモジュール向けに、追記専用の
 
 モジュールのライフサイクルはアプリルーターを `ui:navigate` の提供元として認識し、ホストナビゲーションを必要とするモジュールを有効化できるようになりました。
 
+## 安全なコントリビューション読込
+
+管理画面は SPA ガード下で提供された UI モジュールを読み込み、ページエントリーポイントが管理画面の URL に対して自己マウントすることを防ぐようになりました。
+
 ## コミット
 
 - [9d24852](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d248526)
@@ -25,3 +29,4 @@ Core は、独立して配布されるモジュール向けに、追記専用の
 - [84f84a43](https://github.com/Cognis-Labs-HQ/Cognis/commit/84f84a43659185eb65e48004cc9a898b69aa4458)
 - [2ad50da](https://github.com/Cognis-Labs-HQ/Cognis/commit/2ad50dacc8f0a73aa965b85410054a881a05cd17)
 - [1b13f90](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b13f90326737588d470ac1e4919e36ed9fba4dd)
+- [082e5f2](https://github.com/Cognis-Labs-HQ/Cognis/commit/082e5f2ab7fc36c948c2da97539d1b56cd7fdae0)
