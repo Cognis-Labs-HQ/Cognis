@@ -631,6 +631,11 @@ export async function navigateTo(path) {
         const component = await resolveStudyChildComponent(path);
         if (!component) return false;
     }
+    const navigationEvent = new CustomEvent("cognis:route-before-navigate", {
+        cancelable: true,
+        detail: { path },
+    });
+    if (!window.dispatchEvent(navigationEvent)) return false;
     const previousRouterPage = getCurrentRoutePath();
     history.pushState({ routerPage: path, previousRouterPage }, "", path);
     return loadRoute(path);

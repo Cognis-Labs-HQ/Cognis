@@ -138,3 +138,37 @@ test("form dirty tracker re-syncs radio groups when a selection is reverted", ()
     firstOption.dispatch("change");
     assert.equal(tracker.isAnyDirty(), false);
 });
+
+test("unsaved changes bar protects browser and SPA navigation while dirty", () => {
+    const listeners = new Map();
+    const previousWindow = globalThis.window;
+    globalThis.window = {
+        addEventListener: (name, handler) => listeners.set(name, handler),
+        removeEventListener: (name) => listeners.delete(name),
+        confirm: () => false,
+    };
+    try {
+        const changesBar = createUnsavedChangesBar(null, {
+            quiet: true,
+            confirmMessage: "Unsaved",
+        });
+        changesBar.markDirty("legal", true);
+
+        const unloadEvent = { preventDefault() {}, returnValue: undefined };
+        listeners.get("beforeunload")(unloadEvent);
+        assert.equal(unloadEvent.returnValue, "");
+
+        let prevented = false;
+        listeners.get("cognis:route-before-navigate")({
+            preventDefault: () => {
+                prevented = true;
+            },
+        });
+        assert.equal(prevented, true);
+
+        changesBar.destroy();
+        assert.equal(listeners.size, 0);
+    } finally {
+        globalThis.window = previousWindow;
+    }
+});

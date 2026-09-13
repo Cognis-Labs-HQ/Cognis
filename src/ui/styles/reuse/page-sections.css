@@ -567,6 +567,56 @@ body:not([data-theme="light"]) .markdown-code-inline code {
     min-width: 0;
 }
 
+.collapsible-section {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin: 16px 8px;
+    background: var(--surface-2);
+}
+
+.collapsible-section-summary {
+    list-style: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 12px;
+    align-items: center;
+    cursor: pointer;
+    padding: 16px;
+}
+
+.collapsible-section-title {
+    min-width: 0;
+}
+
+.collapsible-section-action-row {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.collapsible-section-action-row > button,
+.collapsible-section-action-row > a {
+    width: 100%;
+}
+
+.collapsible-section-content {
+    padding: 0 16px 16px;
+}
+
+.collapsible-section-chevron {
+    display: inline-grid;
+    place-items: center;
+    min-width: 32px;
+    min-height: 32px;
+    transition: transform 0.2s ease;
+}
+
+.collapsible-section[open] > summary .collapsible-section-chevron {
+    transform: rotate(180deg);
+}
+
 @media (max-width: 900px) {
     .provider-fields,
     .provider-auth-fields,

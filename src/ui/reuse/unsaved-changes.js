@@ -22,14 +22,43 @@
  *   bar.markDirty('font', false);
  *
  * @param {HTMLElement|null} floatingEl
- * @param {{ onSave?: () => Promise<void>, onDiscard?: () => void, quiet?: boolean }} options
- * @returns {{ markDirty(id: string, dirty: boolean): void, isAnyDirty(): boolean, sync: () => void }}
+ * @param {{ onSave?: () => Promise<void>, onDiscard?: () => void, quiet?: boolean, confirmMessage?: string }} options
+ * @returns {{ markDirty(id: string, dirty: boolean): void, isAnyDirty(): boolean, sync: () => void, destroy: () => void }}
  */
 export function createUnsavedChangesBar(
     floatingEl,
-    { onSave, onDiscard, quiet = false } = {},
+    { onSave, onDiscard, quiet = false, confirmMessage } = {},
 ) {
     const dirtyMap = new Map();
+
+    const confirmNavigation = (event) => {
+        if (!isAnyDirty()) return;
+        event.preventDefault();
+        event.returnValue = "";
+    };
+
+    const confirmSpaNavigation = (event) => {
+        if (!isAnyDirty()) {
+            destroy();
+            return;
+        }
+        const message =
+            confirmMessage ??
+            globalThis.cognis?.i18n?.t?.("ui.reuse.unsaved_changes") ??
+            "Unsaved changes";
+        if (!window.confirm?.(message)) {
+            event.preventDefault();
+            return;
+        }
+        dirtyMap.clear();
+        sync();
+        destroy();
+    };
+    globalThis.window?.addEventListener?.("beforeunload", confirmNavigation);
+    globalThis.window?.addEventListener?.(
+        "cognis:route-before-navigate",
+        confirmSpaNavigation,
+    );
 
     function isAnyDirty() {
         for (const isDirty of dirtyMap.values()) {
@@ -72,7 +101,18 @@ export function createUnsavedChangesBar(
             sync();
         });
 
-    return { markDirty, isAnyDirty, sync };
+    function destroy() {
+        globalThis.window?.removeEventListener?.(
+            "beforeunload",
+            confirmNavigation,
+        );
+        globalThis.window?.removeEventListener?.(
+            "cognis:route-before-navigate",
+            confirmSpaNavigation,
+        );
+    }
+
+    return { markDirty, isAnyDirty, sync, destroy };
 }
 
 /**
@@ -201,6 +241,7 @@ export function createFormDirtyTracker(
         isAnyDirty: changesBar.isAnyDirty,
         sync,
         destroy() {
+            changesBar.destroy();
             cleanupEntries.forEach(([field, eventName, handler]) => {
                 field.removeEventListener?.(eventName, handler);
             });

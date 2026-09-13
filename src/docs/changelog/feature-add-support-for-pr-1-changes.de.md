@@ -30,6 +30,10 @@ Modulbilder verwenden nun die kanonische öffentliche Route für das Ersatzbild;
 
 Der Registrierungsablauf folgt nun der Camel-Case-Namenskonvention für ctx, isoliert fehlerhafte Integrations-Hooks, damit die Basisregistrierung verfügbar bleibt, und dokumentiert vertrauenswürdige HTML-Beschriftungen für Beitragende.
 
+## Geschützte Bearbeitungen und wiederverwendbare Klappbereiche
+
+Änderungsverfolgungen schützen nun sowohl Browser-Ausgänge als auch SPA-Navigation, veraltete Sub-Composer-Beobachter stoppen nach dem Aushängen und ein nutzdatenbasierter Composer für Klappbereiche stellt gleich breite Aktionszeilen für Administration und externe Module bereit.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -42,3 +46,4 @@ Der Registrierungsablauf folgt nun der Camel-Case-Namenskonvention für ctx, iso
 - [fb19c34e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb19c34e1ad6b7de4b7c0dd2c6bb8e0fad171484)
 - [3f80ad56](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f80ad56eb500d81031d7c3001bc1b5c246f84a1)
 - [8f67ef9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f67ef9eb42910f9597f694d2d7b819b1ab00940)
+- [f7cfe49a](https://github.com/Cognis-Labs-HQ/Cognis/commit/f7cfe49a74f4e104348eae5938747f0d601b2b60)

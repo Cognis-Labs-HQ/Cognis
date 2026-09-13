@@ -30,6 +30,10 @@ Core は、独立して配布されるモジュール向けに、中立的で追
 
 登録フローは ctx のキャメルケース命名規則に従い、壊れた統合フックを分離して基本登録を利用可能なまま保ち、コントリビューター向けに信頼済み HTML ラベルを文書化するようになりました。
 
+## 編集保護と再利用可能な折りたたみセクション
+
+変更追跡はブラウザー離脱と SPA ナビゲーションの両方を保護し、古いサブ Composer の監視はアンマウント後に停止します。また、ペイロード駆動の折りたたみセクション Composer が管理画面と外部モジュールで共有できる等幅の操作行を提供します。
+
 ## コミット
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -42,3 +46,4 @@ Core は、独立して配布されるモジュール向けに、中立的で追
 - [fb19c34e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb19c34e1ad6b7de4b7c0dd2c6bb8e0fad171484)
 - [3f80ad56](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f80ad56eb500d81031d7c3001bc1b5c246f84a1)
 - [8f67ef9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f67ef9eb42910f9597f694d2d7b819b1ab00940)
+- [f7cfe49a](https://github.com/Cognis-Labs-HQ/Cognis/commit/f7cfe49a74f4e104348eae5938747f0d601b2b60)
