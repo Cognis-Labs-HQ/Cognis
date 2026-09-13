@@ -46,6 +46,10 @@ Die Seitenhülle stellt nun `ui:footerLinks` bereit. Damit können bereichsgebun
 
 Der Keyring-Ereignisverlauf verwendet nun eine gemeinsame Seitennavigation mit vom Aufrufer gewählter Seitengröße, strukturierten Seitenergebnissen, lokalisierten Bedienelementen, Datenaktualisierungen und einer für Module verfügbaren ctx-Fähigkeit `ui:pagination`.
 
+## Vollständige Navigations- und Registrierungsisolierung
+
+Ungespeicherte Änderungen schützen nun auch die Vor- und Zurücknavigation und stellen bei Ablehnung den aktiven Verlaufseintrag wieder her. Fabriken für Registrierungsfelder schlagen unabhängig fehl, Abschluss-Hooks erhalten übermittelte Werte und Integrationskontext und Keyring löst die Seitennavigation über ctx auf.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -62,3 +66,4 @@ Der Keyring-Ereignisverlauf verwendet nun eine gemeinsame Seitennavigation mit v
 - [7c16485f](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c16485f5abf7b260cf6bf6311dbf80725e4fb05)
 - [e240270a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e240270a5a597aeb07cd3e905343be1f2c2ef4f5)
 - [c63e7c8f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c63e7c8f0aab5c4e1e38d5963fd64ab7036a40e5)
+- [672104a0](https://github.com/Cognis-Labs-HQ/Cognis/commit/672104a008171509ff08eb522d85c90dc70ac045)

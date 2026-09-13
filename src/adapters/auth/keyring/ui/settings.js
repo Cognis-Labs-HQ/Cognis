@@ -7,17 +7,21 @@ import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
-    bindPaginationControls,
-    createPagination,
-    renderPaginationControls,
-} from "/static/reuse/pagination.js";
-import {
     bindSecretVisibilityToggles,
     renderSecretVisibilityField,
 } from "/static/reuse/secret-visibility-toggle.js";
 import { KEYRING_RELOCK_OPTIONS } from "./relock-options.js";
 export function createSettingsSection({ i18n, root }) {
     const settingsRoot = root ?? document;
+    const pagination = uiCtx.capabilities.get("ui:pagination");
+    if (!pagination) {
+        throw new Error("Required UI capability unavailable: ui:pagination");
+    }
+    const {
+        bindPaginationControls,
+        createPagination,
+        renderPaginationControls,
+    } = pagination;
     const createKeyringScope = uiCtx.capabilities.get("keyring:forComponent");
     const deleteKeyringValue = uiCtx.capabilities.get("keyring:delete");
     const getKeyringRelockMinutes = uiCtx.capabilities.get(

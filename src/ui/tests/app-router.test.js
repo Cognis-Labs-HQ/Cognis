@@ -180,6 +180,26 @@ test("router uses history.pushState for navigation", () => {
     );
 });
 
+test("router protects and restores cancelled history traversal", () => {
+    const src = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    const popstateIndex = src.indexOf('addEventListener("popstate"');
+    const guardIndex = src.indexOf(
+        "requestRouteNavigation(pathWithHash)",
+        popstateIndex,
+    );
+    const restoreIndex = src.indexOf(
+        "history.go(_historyIndex - targetIndex)",
+        guardIndex,
+    );
+
+    assert.ok(popstateIndex >= 0);
+    assert.ok(guardIndex > popstateIndex);
+    assert.ok(restoreIndex > guardIndex);
+});
+
 test("router rechecks navigation freshness after authentication", () => {
     const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),

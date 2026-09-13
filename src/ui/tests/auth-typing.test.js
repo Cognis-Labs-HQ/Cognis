@@ -76,6 +76,30 @@ test("registration integration load failures do not disable the base form", () =
     );
 });
 
+test("registration field factories fail independently", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/auth/ui/register.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /try \{[\s\S]*createRegistrationField\?\.\([\s\S]*operation: "create-registration-field"/,
+    );
+});
+
+test("registration completion receives submitted values and integration context", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/auth/ui/register.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /completeRegistration\([\s\S]*values: registrationValues,[\s\S]*i18n: integration\.i18n,[\s\S]*descriptor:/,
+    );
+});
+
 test("register page uses shared auth intro copy and class", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/auth/ui/register.js"),

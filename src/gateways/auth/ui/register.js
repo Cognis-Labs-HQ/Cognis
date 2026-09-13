@@ -384,10 +384,26 @@ export async function mount(root, { signal } = {}) {
             });
         }
         for (const integration of registrationIntegrations) {
-            const field = integration.module.createRegistrationField?.({
-                i18n: integration.i18n,
-            });
-            if (field) registerFormFields.push(field);
+            try {
+                const field = integration.module.createRegistrationField?.({
+                    i18n: integration.i18n,
+                    descriptor: integration.descriptor,
+                });
+                if (field) registerFormFields.push(field);
+            } catch (error) {
+                console.error(
+                    JSON.stringify({
+                        level: "error",
+                        component: "register-page",
+                        operation: "create-registration-field",
+                        integrationId: String(integration.descriptor.id),
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    }),
+                );
+            }
         }
         return createFormBuilder(
             { i18n, escapeHtml },
@@ -867,6 +883,9 @@ export async function mount(root, { signal } = {}) {
                                     }
                                     await integration.module.completeRegistration(
                                         {
+                                            values: registrationValues,
+                                            i18n: integration.i18n,
+                                            descriptor: integration.descriptor,
                                             apiFetch: (path, options = {}) =>
                                                 apiFetch(path, {
                                                     ...options,
