@@ -46,6 +46,7 @@ function normalizeRoute(rawRoute) {
                 .trim()
                 .toLowerCase(),
             componentPage: rawRoute.componentPage ?? null,
+            public: rawRoute.public === true,
             pattern: routePattern,
             base: basePath,
             stylesheets,

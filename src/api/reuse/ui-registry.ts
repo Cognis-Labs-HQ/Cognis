@@ -89,6 +89,8 @@ export interface SpaRoute {
     capabilityScripts?: string[];
     /** Optional role access policy for this route. */
     access?: RoleAccessPolicy;
+    /** Allows the route shell and descriptor to be served without a session. */
+    public?: boolean;
     /** Optional runtime predicate used to hide routes while owner is disabled. */
     isEnabled?: () => boolean;
     ownerId?: string;
@@ -231,6 +233,9 @@ export class UIRegistry {
     }
 
     registerSpaRoute(route: SpaRoute): void {
+        if (route.public === true && route.access) {
+            throw new TypeError("public_spa_route_cannot_require_role");
+        }
         if (route.componentPage) {
             const { labelKey, descriptionKey, modes } = route.componentPage;
             if (

@@ -103,7 +103,7 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
             ctx.flow.extend("host-flow", "extensions", { id: "owned-module:hook" }, () => "active");
             ctx.registerAdminSection({ id: "owned-module", label: "Owned", scriptUrl: "/static/modules/owned-module/admin.js" });
             ctx.registerNavbarPlugin({ scriptUrl: "/static/modules/owned-module/navbar.js" });
-            ctx.registerSpaRoute({ id: "owned-module-page", pattern: "^/owned$", base: "/owned", scriptUrl: "/static/modules/owned-module/app.js", componentPage: { labelKey: "module.owned.page", descriptionKey: "module.owned.description", modes: ["fullscreen"] } });
+            ctx.registerSpaRoute({ id: "owned-module-page", pattern: "^/owned$", base: "/owned", scriptUrl: "/static/modules/owned-module/app.js", public: true, componentPage: { labelKey: "module.owned.page", descriptionKey: "module.owned.description", modes: ["fullscreen"] } });
             ctx.registerApiGet("/api/v1/modules/owned", (_req, res) => { res.writeHead(200); res.end("ok"); });
             ctx.registerApiGet("/api/v1/modules/owned/config", (_req, res) => { res.writeHead(ctx.getCapability("system:ctx") ? 500 : 200); res.end("config"); }, { allowWhenDisabled: true });
             return () => { throw new Error("expected teardown failure"); };
@@ -160,6 +160,7 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
         assert.equal(uiRegistry.listNavbarPlugins().length, 1);
         assert.equal(uiRegistry.listSpaRoutes().length, 1);
         assert.equal(uiRegistry.listSpaRoutes()[0].ownerUuid, moduleUuid);
+        assert.equal(uiRegistry.listSpaRoutes()[0].public, true);
         assert.deepEqual(
             (await systemCtx.runFlow("host-flow")).stageResults.extensions,
             ["active"],

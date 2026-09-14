@@ -170,6 +170,22 @@ test("UIRegistry registers and lists SPA routes", () => {
     assert.equal(reg.resolveSpaRoute("/settings"), undefined);
 });
 
+test("UIRegistry rejects role restrictions on public SPA routes", () => {
+    const reg = new UIRegistry();
+    assert.throws(
+        () =>
+            reg.registerSpaRoute({
+                id: "invalid-public-page",
+                pattern: "^/public$",
+                base: "/public",
+                scriptUrl: "/public.js",
+                public: true,
+                access: { minRole: "user" },
+            }),
+        /public_spa_route_cannot_require_role/,
+    );
+});
+
 test("UIRegistry selects only declared UI capability provider scripts", () => {
     const reg = new UIRegistry();
     reg.registerNavbarPlugin({

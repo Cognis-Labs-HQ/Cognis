@@ -79,6 +79,7 @@ interface ModuleUiRegistrationContext {
         scriptUrl: string;
         stylesheets?: string[];
         access?: RoleAccessPolicy;
+        public?: boolean;
         requiredCapabilities?: string[];
         componentPage?: {
             labelKey: string;

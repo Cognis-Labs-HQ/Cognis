@@ -45,6 +45,8 @@ export async function bootstrapModule(ctx) {
 
 すべての外部モジュールは `entrypoints.bootstrap` を宣言します。 Cognis はそのファイルのみをインポートし、モジュールが有効な場合に `bootstrapModule(ctx)` を呼び出します。スコープ付きコンテキストは、API ルート登録、モジュール静的ディレクトリ、SPA ルート、ナビゲーション、設定とページ拡張、機能貢献、フロー作成、ステージ インジェクションを提供します。ローカライズされたドキュメントは `docs/` に、モジュール リリース ノートは `docs/changelog/` に配置します。どちらも、コア パスの登録なしで、インストールされたリポジトリから検出されます。ブラウザー アセットはモジュール所有のままであり、`ctx.registerStaticDir` を通じてのみ公開されます。
 
+有効なモジュールは、`ctx.registerSpaRoute` に `public: true` を渡すことで、匿名訪問者とログイン済み訪問者の両方へ意図的にページを提供できます。公開ルートにはロールベースの `access` ポリシーを宣言できません。Cognis は明示的に公開されたルート記述子だけを匿名ブラウザークライアントへ公開し、`/login` へリダイレクトせずに SPA シェルを提供します。既定ではすべてのルートに認証が必要です。
+
 `bootstrapModule` はディスポーザーを返すことができ、モジュールは追加で `teardownModule(ctx)` をエクスポートすることもできます。無効化またはアンインストールすると、Cognis はこれらのフックを呼び出して、スコープ指定されたコンテキストによって記録されたすべてのルート、静的ディレクトリ、UI コントリビューション、機能、作成されたフロー、および挿入されたフロー ステージを削除します。モジュールは、ディスポーザーの完了後にタイマー、リスナー、ソケット、またはその他の作業を保持してはなりません。コア内部のインポート、または提供された `ctx` のバイパスによって行われた貢献は追跡できず、サポートされていません。
 
 マニフェストは、`uuid`、`id`、`name`、`version`、`publisher`、`class`、`coreApiVersion`、`summary`、`description`、`categories`、`recommended`、`license`、`homepage`、を宣言します。 `repository`、`support`、`capabilities`、UUID ベースの `requires`、`entrypoints`、および `assets`。アセット パスはリポジトリ相対です。 `assets.icon` は正方形のストア アイコンを示し、`assets.banner` は詳細ヒーローを示し、`assets.screenshots` は注文されたギャラリーを示します。パスはリポジトリ内に残す必要があります。

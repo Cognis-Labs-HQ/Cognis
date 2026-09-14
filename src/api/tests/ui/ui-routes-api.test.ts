@@ -378,6 +378,29 @@ test("GET registered SPA route serves the dashboard shell on refresh", async () 
     );
 });
 
+test("GET public registered SPA route serves its shell without a session", async () => {
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerSpaRoute({
+        id: "terms-page",
+        pattern: "^/terms$",
+        base: "/terms",
+        scriptUrl: "/static/modules/terms/ui/app.js",
+        public: true,
+    });
+    const route = createUiRoutes(undefined, uiRegistry);
+    const recorder = createResponseRecorder();
+
+    await route(
+        { method: "GET", headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/terms"),
+    );
+
+    assert.equal(recorder.status, 200);
+    assert.match(recorder.body, /<div id="app"/);
+    assert.match(recorder.body, /modules\/terms\/ui\/app\.js/);
+});
+
 test("GET /api/v1/ui/app-routes filters disabled and protected routes", async () => {
     const uiRegistry = new UIRegistry();
     uiRegistry.registerSpaRoute({
@@ -386,6 +409,7 @@ test("GET /api/v1/ui/app-routes filters disabled and protected routes", async ()
         base: "/messages",
         scriptUrl: "/static/adapters/social/messages/app.js",
         isEnabled: () => true,
+        public: true,
     });
     uiRegistry.registerSpaRoute({
         id: "disabled-route",
@@ -402,6 +426,18 @@ test("GET /api/v1/ui/app-routes filters disabled and protected routes", async ()
         access: { minRole: "admin" },
     });
     const route = createUiRoutes(undefined, uiRegistry);
+
+    const anonymousRecorder = createResponseRecorder();
+    await route(
+        { method: "GET", headers: {} } as any,
+        anonymousRecorder.res as any,
+        new URL("http://localhost/api/v1/ui/app-routes"),
+    );
+    const anonymousPayload = JSON.parse(anonymousRecorder.body);
+    assert.deepEqual(
+        anonymousPayload.data.map((entry: { id: string }) => entry.id),
+        ["enabled-public"],
+    );
 
     const userToken = issueAccessToken("u1", "user", 60);
     const userRecorder = createResponseRecorder();

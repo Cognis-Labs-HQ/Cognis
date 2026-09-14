@@ -717,12 +717,13 @@ export function createUiRoutes(
             return true;
 
         if (url.pathname === "/api/v1/ui/app-routes" && req.method === "GET") {
-            const claims = ctx.requireAuth(req, res, "user");
-            if (!claims) return true;
+            const claims = ctx.getAuthClaims(req);
             const routes = (uiRegistry?.listSpaRoutes() ?? []).filter(
                 (route) =>
                     (!route.isEnabled || route.isEnabled()) &&
-                    isRoleAllowed(claims.role, route.access),
+                    (claims
+                        ? isRoleAllowed(claims.role, route.access)
+                        : route.public === true),
             );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
