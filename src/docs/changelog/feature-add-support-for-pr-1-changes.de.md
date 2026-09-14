@@ -78,6 +78,10 @@ Dokumentvergleiche zeigen jetzt neben der Diff-Bildlaufleiste eine kompakte, far
 
 Die Dokument-Diff-Capability kann jetzt ein vollständiges Markdown-Dokument mit seiner normalen Typografie darstellen und hinzugefügte, geänderte sowie entfernte Inhalte grün, orangefarben und rot überlagern. Dadurch können Zustimmungslinks einen Vergleich in voller Größe öffnen, ohne gewöhnliche Dokumentlinks zu verändern.
 
+## Zuverlässigkeitskorrekturen aus der Prüfung
+
+Fehler in Registrierungsvalidatoren werden vom grundlegenden Registrierungsablauf isoliert, bei ungespeicherter SPA-Navigation wird jetzt die lokalisierte Popup-Entscheidungsoberfläche verwendet, einklappbare Offenlegungen benötigen lokalisierte Beschriftungen und Markdown-Vergleiche behalten den gemeinsamen Blockkontext über geänderte Zeilen hinweg bei.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -102,3 +106,4 @@ Die Dokument-Diff-Capability kann jetzt ein vollständiges Markdown-Dokument mit
 - [ea7bf233](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea7bf23385e3e32b39f42533c169eb2d483be775)
 - [b9b8eb2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/b9b8eb2f9210e59397552d936853f434861c4f16)
 - [c07485bc](https://github.com/Cognis-Labs-HQ/Cognis/commit/c07485bc1e502bda3d5f28050a3495825a777707)
+- [36047ecc](https://github.com/Cognis-Labs-HQ/Cognis/commit/36047ecc834677d8db2bb7da057d7ea982067463)

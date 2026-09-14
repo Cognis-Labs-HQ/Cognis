@@ -98,8 +98,24 @@ export function renderDocumentDiff(diff) {
     return `<div class="document-diff-shell"><div class="document-diff">${rows.join("")}</div><nav class="document-diff-overview" aria-label="±">${overview}</nav></div>`;
 }
 
-function renderMarkdownOverlay(type, content, id) {
-    return `<section id="${id}" class="document-diff-markdown-overlay document-diff-markdown-overlay--${type}" data-document-diff-line="${type}">${renderMarkdown(String(content ?? ""))}</section>`;
+function annotatedMarkdownLine(content, annotationId) {
+    const source = String(content ?? "");
+    const prefix =
+        source.match(/^(#{1,6}\s+|>\s?|[-+]\s+|\d+[.)]\s+)/)?.[0] ?? "";
+    return `${prefix}COGNISDIFFSTART${annotationId}TOKEN${source.slice(prefix.length)}COGNISDIFFEND${annotationId}TOKEN`;
+}
+
+function applyMarkdownAnnotations(html, annotations) {
+    return annotations.reduce((rendered, { id, type, token }) => {
+        const start = `COGNISDIFFSTART${token}TOKEN`;
+        const end = `COGNISDIFFEND${token}TOKEN`;
+        return rendered
+            .replace(
+                start,
+                `<span id="${id}" class="document-diff-markdown-overlay document-diff-markdown-overlay--${type}" data-document-diff-line="${type}">`,
+            )
+            .replace(end, "</span>");
+    }, html);
 }
 
 /**
@@ -114,14 +130,30 @@ export function renderMarkdownDocumentDiff(diff) {
     const instanceId = `document-diff-markdown-${++diffInstance}`;
     const lines = Array.isArray(diff?.lines) ? diff.lines : [];
     const markers = [];
-    const segments = [];
-    const appendSegment = (type, content, lineIndex) => {
-        const previous = segments.at(-1);
-        if (previous?.type === type && type !== "changed-previous") {
-            previous.content.push(String(content ?? ""));
+    const annotations = [];
+    const markdownLines = [];
+    const appendLine = (type, content, lineIndex) => {
+        if (type === "unchanged") {
+            markdownLines.push(String(content ?? ""));
             return;
         }
-        segments.push({ type, content: [String(content ?? "")], lineIndex });
+        const token = String(annotations.length + 1);
+        const id = `${instanceId}-change-${token}`;
+        annotations.push({ id, type, token });
+        markdownLines.push(annotatedMarkdownLine(content, token));
+        if (type === "changed-next") return;
+        const markerType = type.startsWith("changed") ? "changed" : type;
+        markers.push({
+            type: markerType,
+            rowId: id,
+            position: markerPosition(lineIndex, lines.length),
+            label:
+                markerType === "added"
+                    ? "+"
+                    : markerType === "removed"
+                      ? "−"
+                      : "±",
+        });
     };
     lines.forEach((line, lineIndex) => {
         const type = ["unchanged", "added", "removed", "changed"].includes(
@@ -130,33 +162,17 @@ export function renderMarkdownDocumentDiff(diff) {
             ? line.type
             : "unchanged";
         if (type === "changed") {
-            appendSegment("changed-previous", line.oldContent, lineIndex);
-            appendSegment("changed-next", line.newContent, lineIndex);
+            appendLine("changed-previous", line.oldContent, lineIndex);
+            appendLine("changed-next", line.newContent, lineIndex);
             return;
         }
-        appendSegment(type, line.content, lineIndex);
+        appendLine(type, line.content, lineIndex);
     });
-    const overlays = segments.map(
-        ({ type, content, lineIndex }, segmentIndex) => {
-            const rowId = `${instanceId}-segment-${segmentIndex + 1}`;
-            const markerType = type.startsWith("changed") ? "changed" : type;
-            if (type !== "unchanged" && type !== "changed-next") {
-                markers.push({
-                    type: markerType,
-                    rowId,
-                    position: markerPosition(lineIndex, lines.length),
-                    label:
-                        markerType === "added"
-                            ? "+"
-                            : markerType === "removed"
-                              ? "−"
-                              : "±",
-                });
-            }
-            return renderMarkdownOverlay(type, content.join("\n"), rowId);
-        },
+    const renderedMarkdown = applyMarkdownAnnotations(
+        renderMarkdown(markdownLines.join("\n")),
+        annotations,
     );
-    return `<div class="document-diff-shell document-diff-shell--markdown"><article class="document-diff-markdown">${overlays.join("")}</article><nav class="document-diff-overview" aria-label="±">${renderOverview(markers)}</nav></div>`;
+    return `<div class="document-diff-shell document-diff-shell--markdown"><article class="document-diff-markdown">${renderedMarkdown}</article><nav class="document-diff-overview" aria-label="±">${renderOverview(markers)}</nav></div>`;
 }
 
 export const documentDiff = Object.freeze({

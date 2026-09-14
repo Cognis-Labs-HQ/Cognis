@@ -78,6 +78,10 @@ Document comparisons now place a compact, color-coded overview rail beside the d
 
 The document diff capability can now render a complete Markdown document with its normal typography while applying green, orange, and red overlays to added, changed, and removed content. This lets consent links open a full-size comparison without changing ordinary document links.
 
+## Review reliability fixes
+
+Registration validator failures are isolated from the base registration flow, dirty SPA navigation now uses the localized popup decision surface, collapsible disclosures require localized labels, and Markdown comparisons retain shared block context across changed lines.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -102,3 +106,4 @@ The document diff capability can now render a complete Markdown document with it
 - [ea7bf233](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea7bf23385e3e32b39f42533c169eb2d483be775)
 - [b9b8eb2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/b9b8eb2f9210e59397552d936853f434861c4f16)
 - [c07485bc](https://github.com/Cognis-Labs-HQ/Cognis/commit/c07485bc1e502bda3d5f28050a3495825a777707)
+- [36047ecc](https://github.com/Cognis-Labs-HQ/Cognis/commit/36047ecc834677d8db2bb7da057d7ea982067463)

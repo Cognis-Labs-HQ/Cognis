@@ -195,7 +195,10 @@ function renderInlineAdapters(
     componentResolver,
 ) {
     if (!adapters || adapters.length === 0) return "";
-    const sectionComposer = createCollapsibleSectionComposer({ escapeHtml });
+    const sectionComposer = createCollapsibleSectionComposer({
+        escapeHtml,
+        detailsLabel: i18n.t("ui.reuse.details"),
+    });
     const rows = sectionComposer.render(
         adapters.map((adapter) => {
             const adapterId = resolveAdapterId(adapter);
@@ -248,7 +251,10 @@ function renderGatewaysContent(gateways, allAdapters, deps) {
         }
         adaptersByGatewayId.get(gatewayId).push(adapter);
     }
-    const sectionComposer = createCollapsibleSectionComposer({ escapeHtml });
+    const sectionComposer = createCollapsibleSectionComposer({
+        escapeHtml,
+        detailsLabel: i18n.t("ui.reuse.details"),
+    });
     return sectionComposer.render(
         gateways.map((gateway) => {
             const pill = getStatePill(gateway.status ?? "active", i18n);

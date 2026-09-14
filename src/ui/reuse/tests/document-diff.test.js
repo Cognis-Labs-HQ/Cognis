@@ -70,6 +70,24 @@ test("document diff renders full Markdown with semantic overlays", () => {
     assert.match(html, /document-diff-marker--changed/);
 });
 
+test("Markdown diff preserves fenced code context across changed lines", () => {
+    const html = renderMarkdownDocumentDiff({
+        lines: [
+            { type: "unchanged", content: "```js" },
+            { type: "unchanged", content: "const before = true;" },
+            { type: "added", content: "const after = true;" },
+            { type: "unchanged", content: "```" },
+        ],
+    });
+
+    assert.equal(html.match(/markdown-code-block/g)?.length, 1);
+    assert.match(
+        html,
+        /<pre class="markdown-code-block"><code[\s\S]*document-diff-markdown-overlay--added[\s\S]*const after/,
+    );
+    assert.doesNotMatch(html, /<p>const after/);
+});
+
 test("document diff styles use semantic git-style change colors", () => {
     const styles = readFileSync(
         resolve(import.meta.dirname, "../../styles/reuse/document-diff.css"),

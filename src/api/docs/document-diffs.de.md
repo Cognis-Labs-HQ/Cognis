@@ -14,4 +14,4 @@ Der Browser-Renderer maskiert dynamischen Text und stellt hinzugefügte Zeilen g
 
 ## Markdown-Vergleichsansichten
 
-Verwenden Sie `renderMarkdownDocumentDiff(diff)` aus der Browser-Capability `ui:documentDiff`, um das vollständige Zieldokument mit dem Markdown-Renderer des Hosts darzustellen. Unveränderte Inhalte behalten ihre normale Dokumentdarstellung, während Ergänzungen, Ersetzungen und Entfernungen grüne, orangefarbene und rote Überlagerungen mit Navigation über die Übersichtsleiste erhalten.
+Verwenden Sie `renderMarkdownDocumentDiff(diff)` aus der Browser-Capability `ui:documentDiff`, um das vollständige Zieldokument mit dem Markdown-Renderer des Hosts darzustellen. Unveränderte Inhalte behalten ihre normale Dokumentdarstellung, während Ergänzungen, Ersetzungen und Entfernungen grüne, orangefarbene und rote Überlagerungen mit Navigation über die Übersichtsleiste erhalten. Der Renderer verarbeitet den zusammengesetzten Vergleich in einem einzigen Markdown-Durchlauf, sodass Codeblöcke, Listen, Zitate und andere Strukturen über geänderte Zeilen hinweg erhalten bleiben.

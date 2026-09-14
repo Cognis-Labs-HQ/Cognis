@@ -492,11 +492,12 @@ let _initialized = false;
 let _historyIndex = 0;
 let _committedPath = "";
 let _restoringHistory = false;
+let _guardBypassPath = null;
 
-function requestRouteNavigation(path) {
+function requestRouteNavigation(path, resume) {
     const navigationEvent = new CustomEvent("cognis:route-before-navigate", {
         cancelable: true,
-        detail: { path },
+        detail: { path, resume },
     });
     return window.dispatchEvent(navigationEvent);
 }
@@ -635,14 +636,20 @@ async function loadRoute(path) {
     }
 }
 
-export async function navigateTo(path) {
+export async function navigateTo(path, { bypassGuard = false } = {}) {
     const route = await resolveRoute(path);
     if (!route) return false;
     if (isPotentialStudyChildPath(path)) {
         const component = await resolveStudyChildComponent(path);
         if (!component) return false;
     }
-    if (!requestRouteNavigation(path)) return false;
+    if (
+        !bypassGuard &&
+        !requestRouteNavigation(path, () =>
+            navigateTo(path, { bypassGuard: true }),
+        )
+    )
+        return false;
     const previousRouterPage = getCurrentRoutePath();
     _historyIndex += 1;
     _committedPath = path;
@@ -758,8 +765,21 @@ export function initRouter(root) {
         // so its presence means the router itself triggered this history entry and
         // must handle the transition even if the base path hasn't changed.
         if (route.base === _currentBase && !event.state?.routerPage) return;
-        if (!requestRouteNavigation(pathWithHash)) {
-            const targetIndex = event.state?.routerIndex;
+        const targetIndex = event.state?.routerIndex;
+        const bypassGuard = _guardBypassPath === pathWithHash;
+        if (bypassGuard) _guardBypassPath = null;
+        const resume = () => {
+            if (
+                Number.isInteger(targetIndex) &&
+                targetIndex !== _historyIndex
+            ) {
+                _guardBypassPath = pathWithHash;
+                history.go(targetIndex - _historyIndex);
+                return;
+            }
+            return navigateTo(pathWithHash, { bypassGuard: true });
+        };
+        if (!bypassGuard && !requestRouteNavigation(pathWithHash, resume)) {
             if (
                 Number.isInteger(targetIndex) &&
                 targetIndex !== _historyIndex

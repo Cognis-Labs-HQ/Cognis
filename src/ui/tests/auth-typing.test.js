@@ -88,6 +88,18 @@ test("registration field factories fail independently", () => {
     );
 });
 
+test("registration validators fail independently", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/auth/ui/register.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /try \{[\s\S]*await integration\.module\.validateRegistration[\s\S]*catch \(error\)[\s\S]*showToast[\s\S]*continue;/,
+    );
+});
+
 test("registration completion receives submitted values and integration context", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/auth/ui/register.js"),

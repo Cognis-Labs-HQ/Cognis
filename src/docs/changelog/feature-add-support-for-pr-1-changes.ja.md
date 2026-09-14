@@ -78,6 +78,10 @@ Keyring とルーターの回帰アサーションを、共通ページネーシ
 
 文書 Diff Capability は、通常の書式を保った Markdown 文書全体を描画しながら、追加、変更、削除された内容に緑、オレンジ、赤の Overlay を適用できるようになりました。これにより、通常の文書リンクを変更せずに、同意リンクから全画面の比較を開けます。
 
+## レビューによる信頼性の修正
+
+登録 Validator の失敗を基本の登録 Flow から分離し、未保存の変更がある SPA Navigation ではローカライズされた Popup の判断画面を使用するようにしました。また、折りたたみ式の開示にはローカライズされた Label を必須とし、Markdown 比較では変更行をまたぐ共通の Block Context を維持します。
+
 ## コミット
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -102,3 +106,4 @@ Keyring とルーターの回帰アサーションを、共通ページネーシ
 - [ea7bf233](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea7bf23385e3e32b39f42533c169eb2d483be775)
 - [b9b8eb2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/b9b8eb2f9210e59397552d936853f434861c4f16)
 - [c07485bc](https://github.com/Cognis-Labs-HQ/Cognis/commit/c07485bc1e502bda3d5f28050a3495825a777707)
+- [36047ecc](https://github.com/Cognis-Labs-HQ/Cognis/commit/36047ecc834677d8db2bb7da057d7ea982067463)

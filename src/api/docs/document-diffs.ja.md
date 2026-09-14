@@ -14,4 +14,4 @@
 
 ## Markdown 比較ビュー
 
-ブラウザーの `ui:documentDiff` Capability が提供する `renderMarkdownDocumentDiff(diff)` を使用すると、変更後の文書全体を Host の Markdown Renderer で描画できます。変更されていない内容は通常の文書表示を維持し、追加、置換、削除には緑、オレンジ、赤の Overlay と概要バーのナビゲーションが適用されます。
+ブラウザーの `ui:documentDiff` Capability が提供する `renderMarkdownDocumentDiff(diff)` を使用すると、変更後の文書全体を Host の Markdown Renderer で描画できます。変更されていない内容は通常の文書表示を維持し、追加、置換、削除には緑、オレンジ、赤の Overlay と概要バーのナビゲーションが適用されます。 Renderer は比較内容全体を 1 回の Markdown 処理で描画するため、変更行をまたぐ Fenced Code Block、リスト、引用などの構造が維持されます。

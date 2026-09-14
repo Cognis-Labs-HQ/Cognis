@@ -187,7 +187,7 @@ test("router protects and restores cancelled history traversal", () => {
     );
     const popstateIndex = src.indexOf('addEventListener("popstate"');
     const guardIndex = src.indexOf(
-        "requestRouteNavigation(pathWithHash)",
+        "requestRouteNavigation(pathWithHash, resume)",
         popstateIndex,
     );
     const restoreIndex = src.indexOf(
@@ -198,6 +198,8 @@ test("router protects and restores cancelled history traversal", () => {
     assert.ok(popstateIndex >= 0);
     assert.ok(guardIndex > popstateIndex);
     assert.ok(restoreIndex > guardIndex);
+    assert.match(src, /detail: \{ path, resume \}/);
+    assert.match(src, /_guardBypassPath === pathWithHash/);
 });
 
 test("router rechecks navigation freshness after authentication", () => {

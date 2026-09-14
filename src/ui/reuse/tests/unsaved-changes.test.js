@@ -139,18 +139,19 @@ test("form dirty tracker re-syncs radio groups when a selection is reverted", ()
     assert.equal(tracker.isAnyDirty(), false);
 });
 
-test("unsaved changes bar protects browser and SPA navigation while dirty", () => {
+test("unsaved changes bar uses the popup decision surface for SPA navigation", async () => {
     const listeners = new Map();
     const previousWindow = globalThis.window;
     globalThis.window = {
         addEventListener: (name, handler) => listeners.set(name, handler),
         removeEventListener: (name) => listeners.delete(name),
-        confirm: () => false,
     };
     try {
+        let resumed = false;
         const changesBar = createUnsavedChangesBar(null, {
             quiet: true,
             confirmMessage: "Unsaved",
+            openConfirmation: async () => "stay",
         });
         changesBar.markDirty("legal", true);
 
@@ -160,14 +161,44 @@ test("unsaved changes bar protects browser and SPA navigation while dirty", () =
 
         let prevented = false;
         listeners.get("cognis:route-before-navigate")({
+            detail: { resume: () => (resumed = true) },
             preventDefault: () => {
                 prevented = true;
             },
         });
+        await new Promise((resolve) => setImmediate(resolve));
         assert.equal(prevented, true);
+        assert.equal(resumed, false);
 
         changesBar.destroy();
         assert.equal(listeners.size, 0);
+    } finally {
+        globalThis.window = previousWindow;
+    }
+});
+
+test("discarding through the popup resumes SPA navigation", async () => {
+    const listeners = new Map();
+    const previousWindow = globalThis.window;
+    globalThis.window = {
+        addEventListener: (name, handler) => listeners.set(name, handler),
+        removeEventListener: (name) => listeners.delete(name),
+    };
+    try {
+        let resumed = false;
+        const changesBar = createUnsavedChangesBar(null, {
+            quiet: true,
+            openConfirmation: async () => "discard",
+        });
+        changesBar.markDirty("legal", true);
+        listeners.get("cognis:route-before-navigate")({
+            detail: { resume: () => (resumed = true) },
+            preventDefault() {},
+        });
+        await new Promise((resolve) => setImmediate(resolve));
+
+        assert.equal(resumed, true);
+        assert.equal(changesBar.isAnyDirty(), false);
     } finally {
         globalThis.window = previousWindow;
     }

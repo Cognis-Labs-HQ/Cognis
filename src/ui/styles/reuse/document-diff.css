@@ -63,25 +63,25 @@
 }
 
 .document-diff-markdown-overlay {
-    position: relative;
-    margin: 0;
-    padding: 0.25rem 0.75rem;
-    border-inline-start: 3px solid transparent;
+    padding: 0.12em 0.2em;
+    border-radius: 0.2em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
 }
 
 .document-diff-markdown-overlay--added {
-    border-inline-start-color: var(--color-success-outline-text);
     background: var(--color-success-hover-bg);
+    box-shadow: inset 3px 0 var(--color-success-outline-text);
 }
 
 .document-diff-markdown-overlay--changed-previous,
 .document-diff-markdown-overlay--changed-next {
-    border-inline-start-color: var(--color-warning-outline-text);
     background: color-mix(
         in srgb,
         var(--color-warning-outline-text) 12%,
         transparent
     );
+    box-shadow: inset 3px 0 var(--color-warning-outline-text);
 }
 
 .document-diff-markdown-overlay--changed-previous {
@@ -89,8 +89,8 @@
 }
 
 .document-diff-markdown-overlay--removed {
-    border-inline-start-color: var(--color-danger-outline-text);
     background: var(--color-danger-hover-bg);
+    box-shadow: inset 3px 0 var(--color-danger-outline-text);
     text-decoration: line-through;
 }
 

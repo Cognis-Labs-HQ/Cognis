@@ -7,17 +7,24 @@
  *     load method resolves asynchronous payload providers before rendering.
  *
  * Usage:
- *   const composer = createCollapsibleSectionComposer({ escapeHtml });
+ *   const composer = createCollapsibleSectionComposer({ escapeHtml, detailsLabel: i18n.t('ui.reuse.details') });
  *   root.innerHTML = composer.render([{ id: 'privacy', title: 'Privacy', contentHtml: '<p>Policy</p>' }]);
  *
  * Descriptor HTML properties are trusted markup and must be sanitized by the
  * caller when they contain untrusted values.
  *
- * @param {{ escapeHtml?: (value: string) => string }} options
+ * @param {{ escapeHtml?: (value: string) => string, detailsLabel: string }} options
  * @returns {{ render: (payloads: Array<object>) => string, load: (provider: Array<object>|Promise<Array<object>>|(() => Array<object>|Promise<Array<object>>)) => Promise<string> }}
  */
-export function createCollapsibleSectionComposer({ escapeHtml } = {}) {
+export function createCollapsibleSectionComposer({
+    escapeHtml,
+    detailsLabel,
+} = {}) {
     const escape = escapeHtml ?? ((value) => String(value));
+    const defaultDetailsLabel = String(detailsLabel ?? "").trim();
+    if (!defaultDetailsLabel) {
+        throw new TypeError("detailsLabel is required");
+    }
 
     function render(payloads = []) {
         return payloads
@@ -38,7 +45,7 @@ export function createCollapsibleSectionComposer({ escapeHtml } = {}) {
                     <summary class="${payload.summaryClassName ?? ""} collapsible-section-summary">
                         <span class="collapsible-section-title">${titleMarkup}</span>
                         ${controls}
-                        <span class="module-chevron collapsible-section-chevron" role="button" tabindex="0" data-details-toggle aria-label="${escape(String(payload.detailsLabel ?? "Details"))}">▾</span>
+                        <span class="module-chevron collapsible-section-chevron" role="button" tabindex="0" data-details-toggle aria-label="${escape(String(payload.detailsLabel ?? defaultDetailsLabel))}">▾</span>
                     </summary>
                     <div class="collapsible-section-content ${payload.contentClassName ?? ""}">${payload.contentHtml ?? ""}</div>
                 </details>`;

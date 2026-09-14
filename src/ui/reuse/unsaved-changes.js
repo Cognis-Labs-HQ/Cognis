@@ -22,14 +22,42 @@
  *   bar.markDirty('font', false);
  *
  * @param {HTMLElement|null} floatingEl
- * @param {{ onSave?: () => Promise<void>, onDiscard?: () => void, quiet?: boolean, confirmMessage?: string }} options
+ * @param {{ onSave?: () => Promise<void>, onDiscard?: () => void, quiet?: boolean, confirmMessage?: string, openConfirmation?: () => Promise<string|null> }} options
  * @returns {{ markDirty(id: string, dirty: boolean): void, isAnyDirty(): boolean, sync: () => void, destroy: () => void }}
  */
+import { escapeHtml } from "./escape-html.js";
+import { createI18n } from "./i18n.js";
+
+async function openDefaultNavigationConfirmation(confirmMessage) {
+    const [{ openPopup }, i18n] = await Promise.all([
+        import("./popup.js"),
+        createI18n(),
+    ]);
+    return openPopup({
+        title: i18n.t("ui.reuse.unsaved_changes"),
+        body: `<p>${escapeHtml(confirmMessage ?? i18n.t("ui.reuse.leave_page_warning"))}</p>`,
+        variant: "warning",
+        actions: [
+            {
+                id: "stay",
+                label: i18n.t("ui.reuse.cancel"),
+                variant: "neutral",
+            },
+            {
+                id: "discard",
+                label: i18n.t("ui.reuse.discard_and_leave"),
+                variant: "cancel",
+            },
+        ],
+    });
+}
+
 export function createUnsavedChangesBar(
     floatingEl,
-    { onSave, onDiscard, quiet = false, confirmMessage } = {},
+    { onSave, onDiscard, quiet = false, confirmMessage, openConfirmation } = {},
 ) {
     const dirtyMap = new Map();
+    let navigationDecisionPending = false;
 
     const confirmNavigation = (event) => {
         if (!isAnyDirty()) return;
@@ -37,22 +65,30 @@ export function createUnsavedChangesBar(
         event.returnValue = "";
     };
 
+    const showSpaNavigationDecision = async (resumeNavigation) => {
+        try {
+            const action = openConfirmation
+                ? await openConfirmation()
+                : await openDefaultNavigationConfirmation(confirmMessage);
+            if (action !== "discard") return;
+            dirtyMap.clear();
+            sync();
+            destroy();
+            await resumeNavigation?.();
+        } finally {
+            navigationDecisionPending = false;
+        }
+    };
+
     const confirmSpaNavigation = (event) => {
         if (!isAnyDirty()) {
             destroy();
             return;
         }
-        const message =
-            confirmMessage ??
-            globalThis.cognis?.i18n?.t?.("ui.reuse.unsaved_changes") ??
-            "Unsaved changes";
-        if (!window.confirm?.(message)) {
-            event.preventDefault();
-            return;
-        }
-        dirtyMap.clear();
-        sync();
-        destroy();
+        event.preventDefault();
+        if (navigationDecisionPending) return;
+        navigationDecisionPending = true;
+        void showSpaNavigationDecision(event.detail?.resume);
     };
     globalThis.window?.addEventListener?.("beforeunload", confirmNavigation);
     globalThis.window?.addEventListener?.(

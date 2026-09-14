@@ -731,11 +731,35 @@ export async function mount(root, { signal } = {}) {
                                 new FormData(form).entries(),
                             );
                             for (const integration of registrationIntegrations) {
-                                const validationMessage =
-                                    integration.module.validateRegistration?.({
-                                        values: registrationValues,
-                                        i18n: integration.i18n,
-                                    });
+                                let validationMessage;
+                                try {
+                                    validationMessage =
+                                        await integration.module.validateRegistration?.(
+                                            {
+                                                values: registrationValues,
+                                                i18n: integration.i18n,
+                                            },
+                                        );
+                                } catch (error) {
+                                    showToast(
+                                        i18n.t("ui.app.register.error.generic"),
+                                        { variant: "error" },
+                                    );
+                                    console.error(
+                                        JSON.stringify({
+                                            level: "error",
+                                            component: "auth",
+                                            operation:
+                                                "validateRegistrationIntegration",
+                                            integrationId: integration.id,
+                                            error:
+                                                error instanceof Error
+                                                    ? error.message
+                                                    : String(error),
+                                        }),
+                                    );
+                                    continue;
+                                }
                                 if (validationMessage) {
                                     showToast(validationMessage, {
                                         variant: "error",
