@@ -62,6 +62,10 @@ Footer links now identify the active route and its descendants. Documentation an
 
 Administration adapter rows now reserve separate summary columns for the action controls and disclosure arrow. Removing the obsolete arrow-sized control column keeps the arrow directly after the power switch on the same row.
 
+## Heading-aligned side menu scrolling
+
+Side-menu items can now name a target heading. Selecting one scrolls smoothly with start alignment, keeping the requested heading at the top instead of centering partway through its content.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -82,3 +86,4 @@ Administration adapter rows now reserve separate summary columns for the action 
 - [957a4c49](https://github.com/Cognis-Labs-HQ/Cognis/commit/957a4c4987bbac8d259942e134c33b783e8eb4e5)
 - [182a22ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/182a22ef86b98848185f6a73e622bf31845aee2f)
 - [5a67fcd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a67fcd2562b01e10cf7907158de6d657bd3ec5d)
+- [3885aa11](https://github.com/Cognis-Labs-HQ/Cognis/commit/3885aa1123f324422fe756b150957f2a00b6a305)

@@ -62,6 +62,10 @@ Fußzeilenlinks kennzeichnen nun die aktive Route und deren Unterseiten. Die Nav
 
 Adapterzeilen in der Administration reservieren nun getrennte Zusammenfassungs-Spalten für Aktionssteuerungen und den Aufklapppfeil. Durch das Entfernen der veralteten pfeilbreiten Steuerungsspalte bleibt der Pfeil direkt nach dem Ein-/Ausschalter in derselben Zeile.
 
+## An Überschriften ausgerichtetes Scrollen
+
+Seitenmenü-Einträge können nun eine Zielüberschrift angeben. Bei der Auswahl wird sanft und am Anfang ausgerichtet gescrollt, sodass die gewünschte Überschrift oben statt mitten im Inhalt erscheint.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -82,3 +86,4 @@ Adapterzeilen in der Administration reservieren nun getrennte Zusammenfassungs-S
 - [957a4c49](https://github.com/Cognis-Labs-HQ/Cognis/commit/957a4c4987bbac8d259942e134c33b783e8eb4e5)
 - [182a22ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/182a22ef86b98848185f6a73e622bf31845aee2f)
 - [5a67fcd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a67fcd2562b01e10cf7907158de6d657bd3ec5d)
+- [3885aa11](https://github.com/Cognis-Labs-HQ/Cognis/commit/3885aa1123f324422fe756b150957f2a00b6a305)

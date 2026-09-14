@@ -46,3 +46,57 @@ test("side menu validates its structured payload", () => {
         /require groups/,
     );
 });
+
+test("side menu scrolls section targets to their heading", () => {
+    globalThis.localStorage = {
+        getItem: () => null,
+        setItem: () => undefined,
+    };
+    let clickHandler = null;
+    let scrollOptions = null;
+    const target = {
+        scrollIntoView: (options) => {
+            scrollOptions = options;
+        },
+    };
+    const button = {
+        dataset: {
+            sideMenuItem: "availability",
+            sideMenuTarget: "availability-heading",
+        },
+        addEventListener: (_eventName, handler) => {
+            clickHandler = handler;
+        },
+        classList: { toggle: () => undefined },
+        removeAttribute: () => undefined,
+    };
+    const root = {
+        ownerDocument: {
+            getElementById: (id) =>
+                id === "availability-heading" ? target : null,
+        },
+        querySelectorAll: (selector) =>
+            selector === "[data-side-menu-item]" ? [button] : [],
+    };
+    const menu = createSideMenu({
+        groups: [
+            {
+                id: "terms",
+                label: "Terms",
+                items: [
+                    {
+                        id: "availability",
+                        label: "Availability",
+                        targetId: "availability-heading",
+                    },
+                ],
+            },
+        ],
+        storageKeyPrefix: "terms-menu",
+    });
+
+    assert.match(menu.render(), /data-side-menu-target="availability-heading"/);
+    menu.mount(root);
+    clickHandler();
+    assert.deepEqual(scrollOptions, { behavior: "smooth", block: "start" });
+});

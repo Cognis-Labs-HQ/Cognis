@@ -62,6 +62,10 @@ Keyring とルーターの回帰アサーションを、共通ページネーシ
 
 管理画面のアダプター行で、操作コントロールと開閉矢印に別々のサマリー列を確保しました。不要になった矢印幅のコントロール列を削除し、矢印が電源スイッチの直後に同じ行で表示されるようにしました。
 
+## 見出しに揃えるスクロール
+
+サイドメニュー項目で対象見出しを指定できるようになりました。選択時は先頭位置へ滑らかにスクロールし、内容の途中ではなく指定した見出しが上端に表示されます。
+
 ## コミット
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -82,3 +86,4 @@ Keyring とルーターの回帰アサーションを、共通ページネーシ
 - [957a4c49](https://github.com/Cognis-Labs-HQ/Cognis/commit/957a4c4987bbac8d259942e134c33b783e8eb4e5)
 - [182a22ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/182a22ef86b98848185f6a73e622bf31845aee2f)
 - [5a67fcd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a67fcd2562b01e10cf7907158de6d657bd3ec5d)
+- [3885aa11](https://github.com/Cognis-Labs-HQ/Cognis/commit/3885aa1123f324422fe756b150957f2a00b6a305)
