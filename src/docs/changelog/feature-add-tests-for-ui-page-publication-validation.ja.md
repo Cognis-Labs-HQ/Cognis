@@ -14,7 +14,11 @@
 ## 匿名向けモジュールページを公開
 有効なモジュールは、利用規約などのコンテンツ用に公開 SPA ルートを明示的に登録できるようになりました。匿名クライアントには公開ルート記述子だけが提供され、認証済みルートは保護されたままです。また、公開ルートで匿名アクセスとロール制限を併用することはできません。
 
+## 完全なテスト範囲を復元
+パスワード確認フォームビルダーをブラウザー統合から注入することで、Node ベースのゲートウェイテストがプロバイダー中立のガードを実行できるようにしました。ログインレイアウトのテストは、ソース宣言順ではなく、構成済みフォームの配置を検証するようになりました。
+
 ## コミット
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
 - [6ce9fafe](https://github.com/Cognis-Labs-HQ/Cognis/commit/6ce9fafe)
 - [e0f8bc49](https://github.com/Cognis-Labs-HQ/Cognis/commit/e0f8bc49)
+- [5c3df5a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c3df5a3)

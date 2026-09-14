@@ -14,17 +14,17 @@
  *   });
  *   await guard.runWithReprompt(saveSecret, { alwaysPrompt: true });
  *
- * @param {{ i18n: { t: (key: string) => string }, confirmPasswordImpl: (password?: string) => Promise<boolean>, openPopupImpl: Function, escapeHtmlImpl: (value: unknown) => string }} options
+ * @param {{ i18n: { t: (key: string) => string }, confirmPasswordImpl: (password?: string) => Promise<boolean>, openPopupImpl: Function, escapeHtmlImpl: (value: unknown) => string, createFormBuilderImpl: Function }} options
  * @returns {{ requestPasswordConfirmation: (config?: { title?: string, message?: string, alwaysPrompt?: boolean }) => Promise<{ password: string | null } | null>, runWithReprompt: (action: () => Promise<void> | void, config?: { title?: string, message?: string, alwaysPrompt?: boolean }) => Promise<boolean> }}
  */
-import { createFormBuilder } from "/static/reuse/form-builder.js";
-
 export function createPasswordConfirmationGuard({
     i18n,
     confirmPasswordImpl,
     openPopupImpl,
     escapeHtmlImpl,
+    createFormBuilderImpl,
 }) {
+    const createFormBuilder = createFormBuilderImpl;
     async function requestPasswordConfirmation(config = {}) {
         const title = config.title ?? i18n.t("ui.reuse.reconfirm_action");
         const message =

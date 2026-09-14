@@ -41,6 +41,14 @@ function createI18nStub() {
     };
 }
 
+function createFormBuilderStub(_ctx, options) {
+    return {
+        render() {
+            return `<form id="${options.formId}">${options.trustedContentHtml}</form>`;
+        },
+    };
+}
+
 test("reprompt guard reuses fresh verification without opening popup", async () => {
     let popupOpened = false;
     let actionRan = false;
@@ -52,6 +60,7 @@ test("reprompt guard reuses fresh verification without opening popup", async () 
             return true;
         },
         escapeHtmlImpl: String,
+        createFormBuilderImpl: createFormBuilderStub,
         async openPopupImpl() {
             popupOpened = true;
             return "confirm";
@@ -79,6 +88,7 @@ test("reprompt guard opens popup when silent verification is stale", async () =>
             return false;
         },
         escapeHtmlImpl: String,
+        createFormBuilderImpl: createFormBuilderStub,
         async openPopupImpl() {
             popupOpened = true;
             return "cancel";
@@ -99,6 +109,7 @@ test("password request returns the provider-confirmed password", async () => {
             return password === "directory-password";
         },
         escapeHtmlImpl: String,
+        createFormBuilderImpl: createFormBuilderStub,
         async openPopupImpl(options) {
             const input = {
                 value: "directory-password",

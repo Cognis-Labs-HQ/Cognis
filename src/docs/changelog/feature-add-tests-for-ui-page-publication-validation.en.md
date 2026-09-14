@@ -14,7 +14,11 @@ Core and external-module browser code must use the Cognis form builder whenever 
 ## Publish anonymous module pages
 Enabled modules can now explicitly register a public SPA route for content such as terms of service. Anonymous clients receive only public route descriptors, while authenticated routes remain protected and public routes cannot combine anonymous access with role restrictions.
 
+## Restore complete test coverage
+The password-confirmation form builder is now injected by its browser integration so Node-based gateway tests can exercise the provider-neutral guard. Login layout coverage now verifies the composed form placement rather than relying on source declaration order.
+
 ## Commits
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
 - [6ce9fafe](https://github.com/Cognis-Labs-HQ/Cognis/commit/6ce9fafe)
 - [e0f8bc49](https://github.com/Cognis-Labs-HQ/Cognis/commit/e0f8bc49)
+- [5c3df5a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c3df5a3)

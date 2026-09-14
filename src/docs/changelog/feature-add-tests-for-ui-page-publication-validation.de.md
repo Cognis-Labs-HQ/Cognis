@@ -14,7 +14,11 @@ Browsercode des Kerns und externer Module muss den Cognis-Formularersteller verw
 ## Anonyme Modulseiten veröffentlichen
 Aktivierte Module können nun ausdrücklich eine öffentliche SPA-Route für Inhalte wie Nutzungsbedingungen registrieren. Anonyme Clients erhalten nur öffentliche Routenbeschreibungen, während authentifizierte Routen geschützt bleiben und öffentliche Routen den anonymen Zugriff nicht mit Rollenbeschränkungen kombinieren können.
 
+## Vollständige Testabdeckung wiederherstellen
+Der Formularersteller für die Passwortbestätigung wird nun durch seine Browserintegration injiziert, damit Node-basierte Gateway-Tests die anbieterneutrale Schutzlogik ausführen können. Die Abdeckung des Anmeldelayouts prüft jetzt die Platzierung des zusammengesetzten Formulars statt der Reihenfolge von Quelldeklarationen.
+
 ## Commits
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
 - [6ce9fafe](https://github.com/Cognis-Labs-HQ/Cognis/commit/6ce9fafe)
 - [e0f8bc49](https://github.com/Cognis-Labs-HQ/Cognis/commit/e0f8bc49)
+- [5c3df5a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c3df5a3)

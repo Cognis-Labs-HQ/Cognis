@@ -14,7 +14,11 @@ Kode peramban inti dan modul eksternal wajib memakai pembangun formulir Cognis s
 ## Terbitkan halaman modul anonim
 Modul aktif kini dapat mendaftarkan rute SPA publik secara tegas untuk konten seperti ketentuan layanan. Klien anonim hanya menerima deskriptor rute publik, sedangkan rute terautentikasi tetap terlindungi dan rute publik tidak dapat menggabungkan akses anonim dengan pembatasan peran.
 
+## Pulihkan cakupan pengujian penuh
+Pembangun formulir konfirmasi kata sandi kini disuntikkan oleh integrasi perambannya agar pengujian gateway berbasis Node dapat menjalankan pelindung yang netral terhadap penyedia. Cakupan tata letak masuk kini memeriksa penempatan formulir tersusun, bukan urutan deklarasi sumber.
+
 ## Commit
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
 - [6ce9fafe](https://github.com/Cognis-Labs-HQ/Cognis/commit/6ce9fafe)
 - [e0f8bc49](https://github.com/Cognis-Labs-HQ/Cognis/commit/e0f8bc49)
+- [5c3df5a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c3df5a3)
