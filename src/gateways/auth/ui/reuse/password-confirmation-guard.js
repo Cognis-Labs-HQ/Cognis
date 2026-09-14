@@ -17,6 +17,8 @@
  * @param {{ i18n: { t: (key: string) => string }, confirmPasswordImpl: (password?: string) => Promise<boolean>, openPopupImpl: Function, escapeHtmlImpl: (value: unknown) => string }} options
  * @returns {{ requestPasswordConfirmation: (config?: { title?: string, message?: string, alwaysPrompt?: boolean }) => Promise<{ password: string | null } | null>, runWithReprompt: (action: () => Promise<void> | void, config?: { title?: string, message?: string, alwaysPrompt?: boolean }) => Promise<boolean> }}
  */
+import { createFormBuilder } from "/static/reuse/form-builder.js";
+
 export function createPasswordConfirmationGuard({
     i18n,
     confirmPasswordImpl,
@@ -40,18 +42,25 @@ export function createPasswordConfirmationGuard({
         }
 
         let confirmedPassword = null;
-        const result = await openPopupImpl({
-            title,
-            body: () => `
-        <form id="reprompt-form">
+        const confirmationFormBuilder = createFormBuilder(
+            { i18n, escapeHtml: escapeHtmlImpl },
+            {
+                formId: "reprompt-form",
+                includeSubmitButton: false,
+                fields: [],
+                trustedContentHtml: `
           <p>${escapeHtmlImpl(message)}</p>
           <label class="stack">
             <span>${escapeHtmlImpl(i18n.t("ui.reuse.enter_password_prompt"))}</span>
             <input id="reprompt-password" type="password" autocomplete="current-password" />
           </label>
           <p id="reprompt-warning" class="reprompt-warning" role="alert" aria-live="polite" hidden></p>
-        </form>
-      `,
+        `,
+            },
+        );
+        const result = await openPopupImpl({
+            title,
+            body: () => confirmationFormBuilder.render(),
             actions: [
                 {
                     id: "confirm",

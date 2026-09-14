@@ -3,6 +3,7 @@ import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { createFormBuilder } from "../../reuse/form-builder.js";
 import { showToast } from "../../reuse/toast.js";
 import { openPopup } from "../../reuse/popup.js";
 import {
@@ -737,17 +738,27 @@ export async function mount(root) {
                   footerHtml: `<a href="/register" class="in-page-callout__link">${escapeHtml(i18n.t("ui.app.login.not_registered.link"))}</a>`,
               })}</div>`
             : "";
-        const formPanelHtml = `
-      ${mobileBrandlineHtml}
-      <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
-      <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
-      <form id="login-form" class="stack auth-form" method="POST">
+        const loginFormBuilder = createFormBuilder(
+            { i18n, escapeHtml },
+            {
+                formId: "login-form",
+                formClassName: "auth-form",
+                includeSubmitButton: false,
+                fields: [],
+                trustedContentHtml: `
         <input type="hidden" id="login-provider" value="local" />
         <div id="login-credential-fields">${renderCredentialFields()}</div>
         <div id="login-tfa-fields" hidden></div>
         ${signupCalloutHtml}
         <button type="submit" id="login-form-submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
-      </form>
+      `,
+            },
+        );
+        const formPanelHtml = `
+      ${mobileBrandlineHtml}
+      <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
+      <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
+      ${loginFormBuilder.render()}
       <div id="sso-buttons" class="sso-buttons"></div>
     `;
         return renderAuthLayout({

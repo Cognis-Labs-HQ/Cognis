@@ -12,6 +12,7 @@
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import {
     createFormDraftManager,
@@ -294,18 +295,17 @@ export async function mount(root, { signal } = {}) {
     </section>
   </div>`;
 
-    const elements = [
+    const messageFormBuilder = createFormBuilder(
+        { i18n, escapeHtml },
         {
-            id: "messages-thread",
-            label: i18n.t("ui.reuse.messages"),
-            gridSize: { default: [12, 8], min: [4, 4], max: "full" },
-            render: () =>
-                `<section class="messages-thread">
-          <div id="messages-thread-header-slot"></div>
-          <div id="messages-request-banner-slot"></div>
-          <div class="messages-thread-list" id="messages-thread-list"></div>
-          <div class="messages-typing-status" id="messages-typing-status"></div>
-          <form class="messages-composer" id="messages-composer" data-composer-include-form-memory="true">
+            formId: "messages-composer",
+            formClassName: "messages-composer",
+            includeSubmitButton: false,
+            fields: [],
+            formAttributes: {
+                "data-composer-include-form-memory": "true",
+            },
+            trustedContentHtml: `
             <div class="messages-composer-mode-row">
               <button type="button" class="messages-composer-mode-toggle" id="messages-composer-compose-toggle" aria-pressed="true">${escapeHtml(i18n.t("module.social.messages.compose"))}</button>
               <button type="button" class="messages-composer-mode-toggle" id="messages-composer-preview-toggle" aria-pressed="false">${escapeHtml(i18n.t("module.social.messages.preview"))}</button>
@@ -319,7 +319,21 @@ export async function mount(root, { signal } = {}) {
                 <div id="messages-composer-preview" class="messages-composer-preview messages-message-body" aria-live="polite">${renderComposerPreviewMarkup("", i18n.t("module.social.messages.preview_placeholder"))}</div>
               </div>
             </div>
-          </form>
+          `,
+        },
+    );
+    const elements = [
+        {
+            id: "messages-thread",
+            label: i18n.t("ui.reuse.messages"),
+            gridSize: { default: [12, 8], min: [4, 4], max: "full" },
+            render: () =>
+                `<section class="messages-thread">
+          <div id="messages-thread-header-slot"></div>
+          <div id="messages-request-banner-slot"></div>
+          <div class="messages-thread-list" id="messages-thread-list"></div>
+          <div class="messages-typing-status" id="messages-typing-status"></div>
+          ${messageFormBuilder.render()}
         </section>`,
             onRender: () => {
                 const threadList = document.getElementById(

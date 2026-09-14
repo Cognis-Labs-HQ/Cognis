@@ -6,6 +6,7 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createCalendarPopupManager } from "./popup-manager.js";
 import { mount as mountSharedCalendar } from "../share-renderer.js";
@@ -718,10 +719,14 @@ export async function mount(root, { signal, shareContext = null } = {}) {
         let popupNameValue = "";
         let popupVisibilityValue = "private";
         let popupColorValue = calendarUi.createRandomCalendarColor();
-        await openPopup({
-            title: i18n.t("gateway.calendar.create_calendar"),
-            body: () => `
-        <form id="calendar-create-popup-form" class="calendar-create-form">
+        const calendarFormBuilder = createFormBuilder(
+            { i18n, escapeHtml },
+            {
+                formId: "calendar-create-popup-form",
+                formClassName: "calendar-create-form",
+                includeSubmitButton: false,
+                fields: [],
+                trustedContentHtml: `
           <div class="calendar-create-row">
             <input id="calendar-popup-color" type="color" value="${popupColorValue}" class="calendar-color-picker-bare" />
             <input id="calendar-popup-name" type="text" maxlength="30" placeholder="${i18n.t("gateway.calendar.calendar_name_placeholder")}" value="${popupNameValue}" required />
@@ -733,8 +738,12 @@ export async function mount(root, { signal, shareContext = null } = {}) {
               <option value="public"${popupVisibilityValue === "public" ? " selected" : ""}>${i18n.t("gateway.calendar.visibility_public")}</option>
             </select>
           </div>
-        </form>
-      `,
+        `,
+            },
+        );
+        await openPopup({
+            title: i18n.t("gateway.calendar.create_calendar"),
+            body: () => calendarFormBuilder.render(),
             closeProtection: false,
             actions: [
                 {
