@@ -2,7 +2,7 @@
  * Renders structured document-version differences with git-style semantics.
  *
  * Public exports:
- *   renderDocumentDiff(diff) — renders escaped line changes as accessible HTML.
+ *   renderDocumentDiff(diff) — renders escaped line changes with a change overview.
  *   documentDiff — ctx capability exposing the document diff renderer.
  *
  * Usage:
@@ -20,14 +20,22 @@ function renderLineNumber(value) {
     return value == null ? "" : escapeHtml(String(value));
 }
 
-function renderRow(type, oldLine, newLine, prefix, content) {
-    return `<div class="document-diff-line document-diff-line--${type}" data-document-diff-line="${type}"><span class="document-diff-line-number">${renderLineNumber(oldLine)}</span><span class="document-diff-line-number">${renderLineNumber(newLine)}</span><span class="document-diff-prefix" aria-hidden="true">${prefix}</span><pre>${escapeHtml(String(content ?? ""))}</pre></div>`;
+let diffInstance = 0;
+
+function renderRow(type, oldLine, newLine, prefix, content, id) {
+    return `<div id="${id}" class="document-diff-line document-diff-line--${type}" data-document-diff-line="${type}"><span class="document-diff-line-number">${renderLineNumber(oldLine)}</span><span class="document-diff-line-number">${renderLineNumber(newLine)}</span><span class="document-diff-prefix" aria-hidden="true">${prefix}</span><pre>${escapeHtml(String(content ?? ""))}</pre></div>`;
 }
 
 export function renderDocumentDiff(diff) {
+    const instanceId = `document-diff-${++diffInstance}`;
+    const markers = [];
     const rows = (Array.isArray(diff?.lines) ? diff.lines : []).flatMap(
-        (line) => {
+        (line, lineIndex, lines) => {
+            const rowId = `${instanceId}-line-${lineIndex + 1}`;
+            const position =
+                lines.length <= 1 ? 0 : (lineIndex / (lines.length - 1)) * 100;
             if (line?.type === "changed") {
+                markers.push({ type: "changed", rowId, position, label: "±" });
                 return [
                     renderRow(
                         "changed-previous",
@@ -35,6 +43,7 @@ export function renderDocumentDiff(diff) {
                         null,
                         "−",
                         line.oldContent,
+                        rowId,
                     ),
                     renderRow(
                         "changed-next",
@@ -42,6 +51,7 @@ export function renderDocumentDiff(diff) {
                         line.newLine,
                         "+",
                         line.newContent,
+                        `${rowId}-next`,
                     ),
                 ];
             }
@@ -49,6 +59,14 @@ export function renderDocumentDiff(diff) {
             const type = ["unchanged", "added", "removed"].includes(line?.type)
                 ? line.type
                 : "unchanged";
+            if (type !== "unchanged") {
+                markers.push({
+                    type,
+                    rowId,
+                    position,
+                    label: type === "added" ? "+" : "−",
+                });
+            }
             return [
                 renderRow(
                     type,
@@ -56,11 +74,18 @@ export function renderDocumentDiff(diff) {
                     line?.newLine,
                     prefixes[type],
                     line?.content,
+                    rowId,
                 ),
             ];
         },
     );
-    return `<div class="document-diff">${rows.join("")}</div>`;
+    const overview = markers
+        .map(
+            ({ type, rowId, position, label }) =>
+                `<a class="document-diff-marker document-diff-marker--${type}" href="#${rowId}" style="--document-diff-marker-position:${position.toFixed(3)}%" aria-label="${label}"></a>`,
+        )
+        .join("");
+    return `<div class="document-diff-shell"><div class="document-diff">${rows.join("")}</div><nav class="document-diff-overview" aria-label="±">${overview}</nav></div>`;
 }
 
 export const documentDiff = Object.freeze({ renderDocumentDiff });

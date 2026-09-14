@@ -35,6 +35,11 @@ test("document diff renders additions changes and removals safely", () => {
     assert.match(html, /document-diff-line--changed-next/);
     assert.match(html, /document-diff-line--added/);
     assert.match(html, /Old &lt;clause&gt;/);
+    assert.match(html, /document-diff-overview/);
+    assert.match(html, /document-diff-marker--removed/);
+    assert.match(html, /document-diff-marker--changed/);
+    assert.match(html, /document-diff-marker--added/);
+    assert.match(html, /href="#document-diff-\d+-line-1"/);
 });
 
 test("document diff styles use semantic git-style change colors", () => {
@@ -54,5 +59,9 @@ test("document diff styles use semantic git-style change colors", () => {
     assert.match(
         styles,
         /document-diff-line--removed[^}]*color-danger-outline-text/,
+    );
+    assert.match(
+        styles,
+        /document-diff-marker--changed[^}]*color-warning-outline-text/,
     );
 });

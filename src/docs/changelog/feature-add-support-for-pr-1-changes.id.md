@@ -70,6 +70,10 @@ Item menu samping kini dapat menentukan judul tujuan. Saat dipilih, halaman berg
 
 Penyimpanan versi kini dapat membandingkan dua hash yang tidak dapat diubah dan menghasilkan baris tidak berubah, ditambahkan, diubah, serta dihapus secara berurutan. Renderer browser yang tersedia melalui ctx menyajikan perbedaan dengan aman menggunakan warna hijau untuk tambahan, oranye untuk perubahan, dan merah untuk penghapusan agar modul hukum dapat menjelaskan dokumen terbaru sebelum meminta persetujuan.
 
+## Ikhtisar perubahan dokumen
+
+Perbandingan dokumen kini menampilkan bilah ikhtisar ringkas berkode warna di samping bilah gulir diff. Setiap penanda hijau, oranye, atau merah tertaut langsung ke baris yang ditambahkan, diubah, atau dihapus agar pembaca dapat menelusuri revisi panjang dengan cepat.
+
 ## Commit
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -92,3 +96,4 @@ Penyimpanan versi kini dapat membandingkan dua hash yang tidak dapat diubah dan 
 - [5a67fcd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a67fcd2562b01e10cf7907158de6d657bd3ec5d)
 - [3885aa11](https://github.com/Cognis-Labs-HQ/Cognis/commit/3885aa1123f324422fe756b150957f2a00b6a305)
 - [ea7bf233](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea7bf23385e3e32b39f42533c169eb2d483be775)
+- [b9b8eb2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/b9b8eb2f9210e59397552d936853f434861c4f16)

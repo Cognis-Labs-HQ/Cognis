@@ -70,6 +70,10 @@ Keyring とルーターの回帰アサーションを、共通ページネーシ
 
 バージョンストアで二つの変更不可能なハッシュを比較し、未変更、追加、変更、削除の各行を順序付きで返せるようになりました。ctx で公開されるブラウザレンダラーが、追加を緑、変更をオレンジ、削除を赤で安全に表示するため、法的文書モジュールは同意を求める前に更新内容を説明できます。
 
+## 文書変更の概要
+
+文書比較では、Diff のスクロールバーの横に、色分けされたコンパクトな概要バーが表示されるようになりました。緑、オレンジ、赤の各マーカーから、追加、変更、削除された行へ直接移動できるため、長い改訂内容をすばやく確認できます。
+
 ## コミット
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -92,3 +96,4 @@ Keyring とルーターの回帰アサーションを、共通ページネーシ
 - [5a67fcd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a67fcd2562b01e10cf7907158de6d657bd3ec5d)
 - [3885aa11](https://github.com/Cognis-Labs-HQ/Cognis/commit/3885aa1123f324422fe756b150957f2a00b6a305)
 - [ea7bf233](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea7bf23385e3e32b39f42533c169eb2d483be775)
+- [b9b8eb2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/b9b8eb2f9210e59397552d936853f434861c4f16)

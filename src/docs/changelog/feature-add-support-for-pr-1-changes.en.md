@@ -70,6 +70,10 @@ Side-menu items can now name a target heading. Selecting one scrolls smoothly wi
 
 Version stores can now compare two immutable hashes and return ordered unchanged, added, changed, and removed lines. A ctx-exposed browser renderer safely presents these differences with green additions, orange changes, and red removals so legal modules can explain an updated document before requesting consent.
 
+## Document change overview
+
+Document comparisons now place a compact, color-coded overview rail beside the diff scrollbar. Each green, orange, or red marker links directly to its added, changed, or removed line so readers can move through long revisions quickly.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -92,3 +96,4 @@ Version stores can now compare two immutable hashes and return ordered unchanged
 - [5a67fcd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a67fcd2562b01e10cf7907158de6d657bd3ec5d)
 - [3885aa11](https://github.com/Cognis-Labs-HQ/Cognis/commit/3885aa1123f324422fe756b150957f2a00b6a305)
 - [ea7bf233](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea7bf23385e3e32b39f42533c169eb2d483be775)
+- [b9b8eb2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/b9b8eb2f9210e59397552d936853f434861c4f16)

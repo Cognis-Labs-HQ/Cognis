@@ -70,6 +70,10 @@ Seitenmenü-Einträge können nun eine Zielüberschrift angeben. Bei der Auswahl
 
 Versionsspeicher können nun zwei unveränderliche Hashes vergleichen und geordnete unveränderte, hinzugefügte, geänderte und entfernte Zeilen zurückgeben. Ein über ctx verfügbarer Browser-Renderer stellt diese Unterschiede sicher mit grünen Ergänzungen, orangefarbenen Änderungen und roten Entfernungen dar, damit Rechtsmodule ein aktualisiertes Dokument vor der Zustimmung erklären können.
 
+## Übersicht der Dokumentänderungen
+
+Dokumentvergleiche zeigen jetzt neben der Diff-Bildlaufleiste eine kompakte, farbcodierte Übersichtsleiste. Jede grüne, orangefarbene oder rote Markierung führt direkt zur hinzugefügten, geänderten oder entfernten Zeile, sodass lange Überarbeitungen schnell durchsucht werden können.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -92,3 +96,4 @@ Versionsspeicher können nun zwei unveränderliche Hashes vergleichen und geordn
 - [5a67fcd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a67fcd2562b01e10cf7907158de6d657bd3ec5d)
 - [3885aa11](https://github.com/Cognis-Labs-HQ/Cognis/commit/3885aa1123f324422fe756b150957f2a00b6a305)
 - [ea7bf233](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea7bf23385e3e32b39f42533c169eb2d483be775)
+- [b9b8eb2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/b9b8eb2f9210e59397552d936853f434861c4f16)
