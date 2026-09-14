@@ -137,7 +137,7 @@
 }
 
 .adapter-inline-row summary.adapter-inline-summary {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     padding: 0;
 }
 
@@ -160,7 +160,7 @@
 
 .adapter-inline-controls {
     flex: 0 0 auto;
-    grid-template-columns: 100px 10px 52px 32px;
+    grid-template-columns: 100px 10px 52px;
 }
 
 .adapter-inline-meta {

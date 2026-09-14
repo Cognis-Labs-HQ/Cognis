@@ -58,6 +58,10 @@ Keyring とルーターの回帰アサーションを、共通ページネーシ
 
 フッターリンクが現在のルートとその配下を有効状態として示すようになりました。ドキュメントと変更履歴のナビゲーションは、ctx 機能 `ui:sideMenu` を通じてランタイムモジュールにも公開される、再利用可能な構造化サイドメニュービルダーを使用します。
 
+## アダプター開閉矢印を同じ行に配置
+
+管理画面のアダプター行で、操作コントロールと開閉矢印に別々のサマリー列を確保しました。不要になった矢印幅のコントロール列を削除し、矢印が電源スイッチの直後に同じ行で表示されるようにしました。
+
 ## コミット
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -77,3 +81,4 @@ Keyring とルーターの回帰アサーションを、共通ページネーシ
 - [672104a0](https://github.com/Cognis-Labs-HQ/Cognis/commit/672104a008171509ff08eb522d85c90dc70ac045)
 - [957a4c49](https://github.com/Cognis-Labs-HQ/Cognis/commit/957a4c4987bbac8d259942e134c33b783e8eb4e5)
 - [182a22ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/182a22ef86b98848185f6a73e622bf31845aee2f)
+- [5a67fcd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a67fcd2562b01e10cf7907158de6d657bd3ec5d)

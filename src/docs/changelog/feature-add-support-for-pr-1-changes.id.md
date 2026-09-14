@@ -58,6 +58,10 @@ Pemeriksaan regresi Keyring dan router diperbarui agar sesuai dengan kontrol pag
 
 Tautan footer kini menandai rute aktif beserta turunannya. Navigasi dokumentasi dan catatan perubahan sekarang menggunakan pembuat menu samping terstruktur yang dapat digunakan kembali dan tersedia bagi modul runtime melalui kapabilitas ctx `ui:sideMenu`.
 
+## Panah pengungkapan adapter sebaris
+
+Baris adapter Administrasi kini menyediakan kolom ringkasan terpisah untuk kontrol tindakan dan panah pengungkapan. Penghapusan kolom kontrol lama selebar panah membuat panah tetap berada tepat setelah sakelar daya pada baris yang sama.
+
 ## Commit
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -77,3 +81,4 @@ Tautan footer kini menandai rute aktif beserta turunannya. Navigasi dokumentasi 
 - [672104a0](https://github.com/Cognis-Labs-HQ/Cognis/commit/672104a008171509ff08eb522d85c90dc70ac045)
 - [957a4c49](https://github.com/Cognis-Labs-HQ/Cognis/commit/957a4c4987bbac8d259942e134c33b783e8eb4e5)
 - [182a22ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/182a22ef86b98848185f6a73e622bf31845aee2f)
+- [5a67fcd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a67fcd2562b01e10cf7907158de6d657bd3ec5d)
