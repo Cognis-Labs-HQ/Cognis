@@ -66,3 +66,67 @@ test("document version store normalizes driver-native dates", async () => {
 
     assert.equal((await store.getLatest("terms"))?.markdown, "driver date");
 });
+
+test("document version store compares two immutable version hashes", async () => {
+    const database = new InMemoryTestExecutor();
+    const store = createDocumentVersionStoreCapability().createStore({
+        namespace: "legal-diff",
+        database,
+        documents: { terms: "/terms", privacy: "/privacy" },
+    });
+    await store.ensureSchema();
+    const previous = await store.publish({
+        slug: "terms",
+        content: "Heading\nRemoved\nAnchor\nOld wording\nEnd",
+        actorId: "admin",
+    });
+    const next = await store.publish({
+        slug: "terms",
+        content: "Heading\nAnchor\nNew wording\nEnd\nAdded",
+        actorId: "admin",
+    });
+
+    assert.equal((await store.getVersion(previous.version))?.id, previous.id);
+    const comparison = await store.diff(previous.version, next.version);
+    assert.equal(comparison.slug, "terms");
+    assert.deepEqual(
+        comparison.lines.map((line) => line.type),
+        ["unchanged", "removed", "unchanged", "changed", "unchanged", "added"],
+    );
+    assert.deepEqual(comparison.lines[3], {
+        type: "changed",
+        oldContent: "Old wording",
+        newContent: "New wording",
+        oldLine: 4,
+        newLine: 3,
+    });
+});
+
+test("document version store rejects missing and unrelated version hashes", async () => {
+    const database = new InMemoryTestExecutor();
+    const store = createDocumentVersionStoreCapability().createStore({
+        namespace: "legal-diff-validation",
+        database,
+        documents: { terms: "/terms", privacy: "/privacy" },
+    });
+    await store.ensureSchema();
+    const terms = await store.publish({
+        slug: "terms",
+        content: "Terms",
+        actorId: "admin",
+    });
+    const privacy = await store.publish({
+        slug: "privacy",
+        content: "Privacy",
+        actorId: "admin",
+    });
+
+    await assert.rejects(
+        store.diff(terms.version, "missing-version"),
+        /document_version_not_found/,
+    );
+    await assert.rejects(
+        store.diff(terms.version, privacy.version),
+        /document_versions_do_not_match/,
+    );
+});

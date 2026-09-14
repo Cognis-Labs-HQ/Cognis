@@ -66,6 +66,10 @@ Keyring とルーターの回帰アサーションを、共通ページネーシ
 
 サイドメニュー項目で対象見出しを指定できるようになりました。選択時は先頭位置へ滑らかにスクロールし、内容の途中ではなく指定した見出しが上端に表示されます。
 
+## バージョン付き文書の比較
+
+バージョンストアで二つの変更不可能なハッシュを比較し、未変更、追加、変更、削除の各行を順序付きで返せるようになりました。ctx で公開されるブラウザレンダラーが、追加を緑、変更をオレンジ、削除を赤で安全に表示するため、法的文書モジュールは同意を求める前に更新内容を説明できます。
+
 ## コミット
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -87,3 +91,4 @@ Keyring とルーターの回帰アサーションを、共通ページネーシ
 - [182a22ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/182a22ef86b98848185f6a73e622bf31845aee2f)
 - [5a67fcd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a67fcd2562b01e10cf7907158de6d657bd3ec5d)
 - [3885aa11](https://github.com/Cognis-Labs-HQ/Cognis/commit/3885aa1123f324422fe756b150957f2a00b6a305)
+- [ea7bf233](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea7bf23385e3e32b39f42533c169eb2d483be775)

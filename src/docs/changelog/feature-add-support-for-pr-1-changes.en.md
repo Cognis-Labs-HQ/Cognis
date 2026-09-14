@@ -66,6 +66,10 @@ Administration adapter rows now reserve separate summary columns for the action 
 
 Side-menu items can now name a target heading. Selecting one scrolls smoothly with start alignment, keeping the requested heading at the top instead of centering partway through its content.
 
+## Versioned document comparisons
+
+Version stores can now compare two immutable hashes and return ordered unchanged, added, changed, and removed lines. A ctx-exposed browser renderer safely presents these differences with green additions, orange changes, and red removals so legal modules can explain an updated document before requesting consent.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -87,3 +91,4 @@ Side-menu items can now name a target heading. Selecting one scrolls smoothly wi
 - [182a22ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/182a22ef86b98848185f6a73e622bf31845aee2f)
 - [5a67fcd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a67fcd2562b01e10cf7907158de6d657bd3ec5d)
 - [3885aa11](https://github.com/Cognis-Labs-HQ/Cognis/commit/3885aa1123f324422fe756b150957f2a00b6a305)
+- [ea7bf233](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea7bf23385e3e32b39f42533c169eb2d483be775)

@@ -858,3 +858,55 @@ body:not([data-theme="light"]) .markdown-code-inline code {
     display: block;
     text-align: left;
 }
+
+.document-diff {
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: monospace;
+}
+
+.document-diff-line {
+    display: grid;
+    grid-template-columns: 3.5rem 3.5rem 1.5rem minmax(0, 1fr);
+    min-width: max-content;
+    border-left: 3px solid transparent;
+}
+
+.document-diff-line > span,
+.document-diff-line > pre {
+    padding: 3px 6px;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.document-diff-prefix {
+    text-align: center;
+    user-select: none;
+}
+
+.document-diff-line-number {
+    color: var(--text-muted);
+    text-align: right;
+    user-select: none;
+}
+
+.document-diff-line--added {
+    border-left-color: var(--color-success-outline-text);
+    background: var(--color-success-hover-bg);
+}
+
+.document-diff-line--changed-previous,
+.document-diff-line--changed-next {
+    border-left-color: var(--color-warning-outline-text);
+    background: color-mix(
+        in srgb,
+        var(--color-warning-outline-text) 12%,
+        transparent
+    );
+}
+
+.document-diff-line--removed {
+    border-left-color: var(--color-danger-outline-text);
+    background: var(--color-danger-hover-bg);
+}

@@ -25,6 +25,143 @@ export interface DocumentVersionRow {
     published_at: string;
 }
 
+export type DocumentDiffLine =
+    | {
+          type: "unchanged" | "added" | "removed";
+          content: string;
+          oldLine: number | null;
+          newLine: number | null;
+      }
+    | {
+          type: "changed";
+          oldContent: string;
+          newContent: string;
+          oldLine: number;
+          newLine: number;
+      };
+
+export interface DocumentVersionDiff {
+    slug: string;
+    fromVersion: string;
+    toVersion: string;
+    lines: DocumentDiffLine[];
+}
+
+type PrimitiveDiffLine = Exclude<DocumentDiffLine, { type: "changed" }>;
+
+export function createDocumentLineDiff(
+    previousMarkdown: string,
+    nextMarkdown: string,
+): DocumentDiffLine[] {
+    const previousLines = String(previousMarkdown).split("\n");
+    const nextLines = String(nextMarkdown).split("\n");
+    const matrix = Array.from(
+        { length: previousLines.length + 1 },
+        () => new Uint32Array(nextLines.length + 1),
+    );
+    for (
+        let previousIndex = previousLines.length - 1;
+        previousIndex >= 0;
+        previousIndex -= 1
+    ) {
+        for (
+            let nextIndex = nextLines.length - 1;
+            nextIndex >= 0;
+            nextIndex -= 1
+        ) {
+            matrix[previousIndex][nextIndex] =
+                previousLines[previousIndex] === nextLines[nextIndex]
+                    ? matrix[previousIndex + 1][nextIndex + 1] + 1
+                    : Math.max(
+                          matrix[previousIndex + 1][nextIndex],
+                          matrix[previousIndex][nextIndex + 1],
+                      );
+        }
+    }
+
+    const primitiveLines: PrimitiveDiffLine[] = [];
+    let previousIndex = 0;
+    let nextIndex = 0;
+    while (
+        previousIndex < previousLines.length ||
+        nextIndex < nextLines.length
+    ) {
+        if (
+            previousIndex < previousLines.length &&
+            nextIndex < nextLines.length &&
+            previousLines[previousIndex] === nextLines[nextIndex]
+        ) {
+            primitiveLines.push({
+                type: "unchanged",
+                content: previousLines[previousIndex],
+                oldLine: previousIndex + 1,
+                newLine: nextIndex + 1,
+            });
+            previousIndex += 1;
+            nextIndex += 1;
+        } else if (
+            nextIndex >= nextLines.length ||
+            (previousIndex < previousLines.length &&
+                matrix[previousIndex + 1][nextIndex] >=
+                    matrix[previousIndex][nextIndex + 1])
+        ) {
+            primitiveLines.push({
+                type: "removed",
+                content: previousLines[previousIndex],
+                oldLine: previousIndex + 1,
+                newLine: null,
+            });
+            previousIndex += 1;
+        } else {
+            primitiveLines.push({
+                type: "added",
+                content: nextLines[nextIndex],
+                oldLine: null,
+                newLine: nextIndex + 1,
+            });
+            nextIndex += 1;
+        }
+    }
+
+    const lines: DocumentDiffLine[] = [];
+    for (let index = 0; index < primitiveLines.length;) {
+        if (primitiveLines[index].type === "unchanged") {
+            lines.push(primitiveLines[index]);
+            index += 1;
+            continue;
+        }
+        const changeBlock: PrimitiveDiffLine[] = [];
+        while (
+            index < primitiveLines.length &&
+            primitiveLines[index].type !== "unchanged"
+        ) {
+            changeBlock.push(primitiveLines[index]);
+            index += 1;
+        }
+        const removed = changeBlock.filter((line) => line.type === "removed");
+        const added = changeBlock.filter((line) => line.type === "added");
+        const changedCount = Math.min(removed.length, added.length);
+        for (
+            let changedIndex = 0;
+            changedIndex < changedCount;
+            changedIndex += 1
+        ) {
+            lines.push({
+                type: "changed",
+                oldContent: removed[changedIndex].content,
+                newContent: added[changedIndex].content,
+                oldLine: removed[changedIndex].oldLine as number,
+                newLine: added[changedIndex].newLine as number,
+            });
+        }
+        lines.push(
+            ...removed.slice(changedCount),
+            ...added.slice(changedCount),
+        );
+    }
+    return lines;
+}
+
 function publicationTime(value: unknown): number {
     const milliseconds =
         value instanceof Date ? value.getTime() : Date.parse(String(value));
@@ -46,6 +183,8 @@ function normalizeVersionRow(row: Record<string, unknown>): DocumentVersionRow {
 export interface DocumentVersionStore {
     ensureSchema(): Promise<void>;
     getLatest(slug: string): Promise<DocumentVersionRow | null>;
+    getVersion(version: string): Promise<DocumentVersionRow | null>;
+    diff(fromVersion: string, toVersion: string): Promise<DocumentVersionDiff>;
     publish(input: {
         slug: string;
         content: string;
@@ -81,6 +220,24 @@ export function createDocumentVersionStoreCapability(): DocumentVersionStoreCapa
                     throw new TypeError("unsupported_document_slug");
                 }
                 return normalized;
+            };
+            const getVersion = async (
+                version: string,
+            ): Promise<DocumentVersionRow | null> => {
+                const result = await database.executeCommand({
+                    option: "SELECT",
+                    table: TABLE_NAME,
+                    where: [
+                        { column: "namespace", value: scopedNamespace },
+                        {
+                            column: "version",
+                            value: requireIdentifier(version, "version"),
+                        },
+                    ],
+                });
+                return result.rows?.[0]
+                    ? normalizeVersionRow(result.rows[0])
+                    : null;
             };
 
             return Object.freeze({
@@ -135,6 +292,28 @@ export function createDocumentVersionStoreCapability(): DocumentVersionStoreCapa
                             );
                         })[0] ?? null
                     );
+                },
+                getVersion,
+                async diff(fromVersion, toVersion) {
+                    const [previous, next] = await Promise.all([
+                        getVersion(fromVersion),
+                        getVersion(toVersion),
+                    ]);
+                    if (!previous || !next) {
+                        throw new TypeError("document_version_not_found");
+                    }
+                    if (previous.slug !== next.slug) {
+                        throw new TypeError("document_versions_do_not_match");
+                    }
+                    return {
+                        slug: previous.slug,
+                        fromVersion: previous.version,
+                        toVersion: next.version,
+                        lines: createDocumentLineDiff(
+                            previous.markdown,
+                            next.markdown,
+                        ),
+                    };
                 },
                 async publish({ slug, content, actorId }) {
                     const version = randomUUID();

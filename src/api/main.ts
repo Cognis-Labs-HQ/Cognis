@@ -251,6 +251,10 @@ uiRegistry.registerCapabilityProvider({
     providesCapabilities: ["ui:sideMenu"],
 });
 uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/document-diff.js",
+    providesCapabilities: ["ui:documentDiff"],
+});
+uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/app-router.js",
     providesCapabilities: [
         "component-pages:spawn",

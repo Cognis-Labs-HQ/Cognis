@@ -66,6 +66,10 @@ Adapterzeilen in der Administration reservieren nun getrennte Zusammenfassungs-S
 
 Seitenmenü-Einträge können nun eine Zielüberschrift angeben. Bei der Auswahl wird sanft und am Anfang ausgerichtet gescrollt, sodass die gewünschte Überschrift oben statt mitten im Inhalt erscheint.
 
+## Vergleich versionierter Dokumente
+
+Versionsspeicher können nun zwei unveränderliche Hashes vergleichen und geordnete unveränderte, hinzugefügte, geänderte und entfernte Zeilen zurückgeben. Ein über ctx verfügbarer Browser-Renderer stellt diese Unterschiede sicher mit grünen Ergänzungen, orangefarbenen Änderungen und roten Entfernungen dar, damit Rechtsmodule ein aktualisiertes Dokument vor der Zustimmung erklären können.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -87,3 +91,4 @@ Seitenmenü-Einträge können nun eine Zielüberschrift angeben. Bei der Auswahl
 - [182a22ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/182a22ef86b98848185f6a73e622bf31845aee2f)
 - [5a67fcd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a67fcd2562b01e10cf7907158de6d657bd3ec5d)
 - [3885aa11](https://github.com/Cognis-Labs-HQ/Cognis/commit/3885aa1123f324422fe756b150957f2a00b6a305)
+- [ea7bf233](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea7bf23385e3e32b39f42533c169eb2d483be775)
