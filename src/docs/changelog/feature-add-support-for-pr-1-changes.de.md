@@ -50,6 +50,10 @@ Der Keyring-Ereignisverlauf verwendet nun eine gemeinsame Seitennavigation mit v
 
 Ungespeicherte Änderungen schützen nun auch die Vor- und Zurücknavigation und stellen bei Ablehnung den aktiven Verlaufseintrag wieder her. Fabriken für Registrierungsfelder schlagen unabhängig fehl, Abschluss-Hooks erhalten übermittelte Werte und Integrationskontext und Keyring löst die Seitennavigation über ctx auf.
 
+## Regressionsabdeckung der vollständigen Testsuite
+
+Die Regressionsprüfungen für Keyring und Router wurden an die gemeinsamen Seitennavigations-Steuerelemente und den indizierten SPA-Verlaufszustand angepasst, sodass die vollständige Testsuite wieder fehlerfrei läuft.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -67,3 +71,4 @@ Ungespeicherte Änderungen schützen nun auch die Vor- und Zurücknavigation und
 - [e240270a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e240270a5a597aeb07cd3e905343be1f2c2ef4f5)
 - [c63e7c8f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c63e7c8f0aab5c4e1e38d5963fd64ab7036a40e5)
 - [672104a0](https://github.com/Cognis-Labs-HQ/Cognis/commit/672104a008171509ff08eb522d85c90dc70ac045)
+- [957a4c49](https://github.com/Cognis-Labs-HQ/Cognis/commit/957a4c4987bbac8d259942e134c33b783e8eb4e5)

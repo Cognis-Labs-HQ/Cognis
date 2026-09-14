@@ -50,6 +50,10 @@ Riwayat peristiwa Keyring kini memakai paginator bersama dengan ukuran halaman p
 
 Edit yang belum disimpan kini melindungi penelusuran riwayat Mundur dan Maju serta memulihkan entri aktif ketika navigasi ditolak. Factory bidang pendaftaran gagal secara terisolasi, hook penyelesaian menerima nilai terkirim dan konteks integrasi, serta Keyring menyelesaikan paginasi melalui ctx.
 
+## Cakupan regresi rangkaian pengujian lengkap
+
+Pemeriksaan regresi Keyring dan router diperbarui agar sesuai dengan kontrol paginasi bersama dan status riwayat SPA berindeks, sehingga seluruh rangkaian pengujian kembali berjalan tanpa kegagalan.
+
 ## Commit
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -67,3 +71,4 @@ Edit yang belum disimpan kini melindungi penelusuran riwayat Mundur dan Maju ser
 - [e240270a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e240270a5a597aeb07cd3e905343be1f2c2ef4f5)
 - [c63e7c8f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c63e7c8f0aab5c4e1e38d5963fd64ab7036a40e5)
 - [672104a0](https://github.com/Cognis-Labs-HQ/Cognis/commit/672104a008171509ff08eb522d85c90dc70ac045)
+- [957a4c49](https://github.com/Cognis-Labs-HQ/Cognis/commit/957a4c4987bbac8d259942e134c33b783e8eb4e5)
