@@ -3,7 +3,10 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import test from "node:test";
 
-import { renderDocumentDiff } from "../document-diff.js";
+import {
+    renderDocumentDiff,
+    renderMarkdownDocumentDiff,
+} from "../document-diff.js";
 
 test("document diff renders additions changes and removals safely", () => {
     const html = renderDocumentDiff({
@@ -42,9 +45,34 @@ test("document diff renders additions changes and removals safely", () => {
     assert.match(html, /href="#document-diff-\d+-line-1"/);
 });
 
+test("document diff renders full Markdown with semantic overlays", () => {
+    const html = renderMarkdownDocumentDiff({
+        lines: [
+            { type: "unchanged", content: "# Terms" },
+            { type: "removed", content: "Old **clause**" },
+            {
+                type: "changed",
+                oldContent: "Previous wording",
+                newContent: "Updated *wording*",
+            },
+            { type: "added", content: "New <clause>" },
+        ],
+    });
+
+    assert.match(html, /<h1>Terms<\/h1>/);
+    assert.match(html, /document-diff-markdown-overlay--removed/);
+    assert.match(html, /<strong>clause<\/strong>/);
+    assert.match(html, /document-diff-markdown-overlay--changed-previous/);
+    assert.match(html, /document-diff-markdown-overlay--changed-next/);
+    assert.match(html, /Updated <em>wording<\/em>/);
+    assert.match(html, /document-diff-markdown-overlay--added/);
+    assert.match(html, /New &lt;clause&gt;/);
+    assert.match(html, /document-diff-marker--changed/);
+});
+
 test("document diff styles use semantic git-style change colors", () => {
     const styles = readFileSync(
-        resolve(import.meta.dirname, "../../styles/reuse/page-sections.css"),
+        resolve(import.meta.dirname, "../../styles/reuse/document-diff.css"),
         "utf8",
     );
 

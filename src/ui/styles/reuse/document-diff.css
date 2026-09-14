@@ -1,0 +1,146 @@
+.document-diff-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 0.75rem;
+    gap: 0.35rem;
+    min-height: 0;
+}
+
+.document-diff {
+    max-height: min(24rem, 60vh);
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: monospace;
+}
+
+.document-diff-overview {
+    position: relative;
+    min-height: 2rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+.document-diff-marker {
+    position: absolute;
+    inset-inline: 1px;
+    top: clamp(1px, var(--document-diff-marker-position), calc(100% - 4px));
+    height: 4px;
+    border-radius: 999px;
+    transform: translateY(-50%);
+}
+
+.document-diff-marker--added {
+    background: var(--color-success-outline-text);
+}
+
+.document-diff-marker--changed {
+    background: var(--color-warning-outline-text);
+}
+
+.document-diff-marker--removed {
+    background: var(--color-danger-outline-text);
+}
+
+.document-diff-marker:hover,
+.document-diff-marker:focus-visible {
+    outline: 2px solid var(--accent, #3b82f6);
+    outline-offset: 1px;
+}
+
+.document-diff-line:target {
+    outline: 2px solid var(--accent, #3b82f6);
+    outline-offset: -2px;
+    scroll-margin-block: 0.5rem;
+}
+
+.document-diff-shell--markdown {
+    align-items: stretch;
+    min-height: 100%;
+}
+
+.document-diff-markdown {
+    min-width: 0;
+}
+
+.document-diff-markdown-overlay {
+    position: relative;
+    margin: 0;
+    padding: 0.25rem 0.75rem;
+    border-inline-start: 3px solid transparent;
+}
+
+.document-diff-markdown-overlay--added {
+    border-inline-start-color: var(--color-success-outline-text);
+    background: var(--color-success-hover-bg);
+}
+
+.document-diff-markdown-overlay--changed-previous,
+.document-diff-markdown-overlay--changed-next {
+    border-inline-start-color: var(--color-warning-outline-text);
+    background: color-mix(
+        in srgb,
+        var(--color-warning-outline-text) 12%,
+        transparent
+    );
+}
+
+.document-diff-markdown-overlay--changed-previous {
+    text-decoration: line-through;
+}
+
+.document-diff-markdown-overlay--removed {
+    border-inline-start-color: var(--color-danger-outline-text);
+    background: var(--color-danger-hover-bg);
+    text-decoration: line-through;
+}
+
+.document-diff-markdown-overlay:target {
+    outline: 2px solid var(--accent, #3b82f6);
+    outline-offset: -2px;
+    scroll-margin-block: 0.5rem;
+}
+
+.document-diff-line {
+    display: grid;
+    grid-template-columns: 3.5rem 3.5rem 1.5rem minmax(0, 1fr);
+    min-width: max-content;
+    border-left: 3px solid transparent;
+}
+
+.document-diff-line > span,
+.document-diff-line > pre {
+    padding: 3px 6px;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.document-diff-prefix {
+    text-align: center;
+    user-select: none;
+}
+
+.document-diff-line-number {
+    color: var(--text-muted);
+    text-align: right;
+    user-select: none;
+}
+
+.document-diff-line--added {
+    border-left-color: var(--color-success-outline-text);
+    background: var(--color-success-hover-bg);
+}
+
+.document-diff-line--changed-previous,
+.document-diff-line--changed-next {
+    border-left-color: var(--color-warning-outline-text);
+    background: color-mix(
+        in srgb,
+        var(--color-warning-outline-text) 12%,
+        transparent
+    );
+}
+
+.document-diff-line--removed {
+    border-left-color: var(--color-danger-outline-text);
+    background: var(--color-danger-hover-bg);
+}

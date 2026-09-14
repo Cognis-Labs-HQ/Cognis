@@ -74,6 +74,10 @@ Penyimpanan versi kini dapat membandingkan dua hash yang tidak dapat diubah dan 
 
 Perbandingan dokumen kini menampilkan bilah ikhtisar ringkas berkode warna di samping bilah gulir diff. Setiap penanda hijau, oranye, atau merah tertaut langsung ke baris yang ditambahkan, diubah, atau dihapus agar pembaca dapat menelusuri revisi panjang dengan cepat.
 
+## Perbandingan dokumen Markdown
+
+Kapabilitas diff dokumen kini dapat merender dokumen Markdown lengkap dengan tipografi normalnya sekaligus menerapkan overlay hijau, oranye, dan merah pada konten yang ditambahkan, diubah, dan dihapus. Dengan demikian, tautan persetujuan dapat membuka perbandingan ukuran penuh tanpa mengubah tautan dokumen biasa.
+
 ## Commit
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -97,3 +101,4 @@ Perbandingan dokumen kini menampilkan bilah ikhtisar ringkas berkode warna di sa
 - [3885aa11](https://github.com/Cognis-Labs-HQ/Cognis/commit/3885aa1123f324422fe756b150957f2a00b6a305)
 - [ea7bf233](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea7bf23385e3e32b39f42533c169eb2d483be775)
 - [b9b8eb2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/b9b8eb2f9210e59397552d936853f434861c4f16)
+- [c07485bc](https://github.com/Cognis-Labs-HQ/Cognis/commit/c07485bc1e502bda3d5f28050a3495825a777707)

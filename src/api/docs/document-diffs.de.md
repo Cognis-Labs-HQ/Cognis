@@ -11,3 +11,7 @@ Rufen Sie `store.diff(fromVersion, toVersion)` über einen Speicher auf, der mit
 Beide Hashes müssen im Namensraum des Speichers vorhanden sein und zum selben Dokument-Slug gehören. Das Ergebnis enthält Ausgangs- und Ziel-Hash, den gemeinsamen Slug und geordnete Zeilen mit der Klassifizierung `unchanged`, `added`, `removed` oder `changed`. Geänderte Einträge enthalten sowohl den vorherigen als auch den neuen Text.
 
 Der Browser-Renderer maskiert dynamischen Text und stellt hinzugefügte Zeilen grün, geänderte Zeilen orange und entfernte Zeilen rot dar.
+
+## Markdown-Vergleichsansichten
+
+Verwenden Sie `renderMarkdownDocumentDiff(diff)` aus der Browser-Capability `ui:documentDiff`, um das vollständige Zieldokument mit dem Markdown-Renderer des Hosts darzustellen. Unveränderte Inhalte behalten ihre normale Dokumentdarstellung, während Ergänzungen, Ersetzungen und Entfernungen grüne, orangefarbene und rote Überlagerungen mit Navigation über die Übersichtsleiste erhalten.

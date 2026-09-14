@@ -74,6 +74,10 @@ Keyring とルーターの回帰アサーションを、共通ページネーシ
 
 文書比較では、Diff のスクロールバーの横に、色分けされたコンパクトな概要バーが表示されるようになりました。緑、オレンジ、赤の各マーカーから、追加、変更、削除された行へ直接移動できるため、長い改訂内容をすばやく確認できます。
 
+## Markdown 文書の比較
+
+文書 Diff Capability は、通常の書式を保った Markdown 文書全体を描画しながら、追加、変更、削除された内容に緑、オレンジ、赤の Overlay を適用できるようになりました。これにより、通常の文書リンクを変更せずに、同意リンクから全画面の比較を開けます。
+
 ## コミット
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -97,3 +101,4 @@ Keyring とルーターの回帰アサーションを、共通ページネーシ
 - [3885aa11](https://github.com/Cognis-Labs-HQ/Cognis/commit/3885aa1123f324422fe756b150957f2a00b6a305)
 - [ea7bf233](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea7bf23385e3e32b39f42533c169eb2d483be775)
 - [b9b8eb2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/b9b8eb2f9210e59397552d936853f434861c4f16)
+- [c07485bc](https://github.com/Cognis-Labs-HQ/Cognis/commit/c07485bc1e502bda3d5f28050a3495825a777707)
