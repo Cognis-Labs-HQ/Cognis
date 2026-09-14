@@ -12,8 +12,16 @@ import {
 } from "/static/reuse/secret-visibility-toggle.js";
 import { KEYRING_RELOCK_OPTIONS } from "./relock-options.js";
 export function createSettingsSection({ i18n, root }) {
-    const eventPageSize = 10;
     const settingsRoot = root ?? document;
+    const pagination = uiCtx.capabilities.get("ui:pagination");
+    if (!pagination) {
+        throw new Error("Required UI capability unavailable: ui:pagination");
+    }
+    const {
+        bindPaginationControls,
+        createPagination,
+        renderPaginationControls,
+    } = pagination;
     const createKeyringScope = uiCtx.capabilities.get("keyring:forComponent");
     const deleteKeyringValue = uiCtx.capabilities.get("keyring:delete");
     const getKeyringRelockMinutes = uiCtx.capabilities.get(
@@ -41,7 +49,7 @@ export function createSettingsSection({ i18n, root }) {
     );
     const keyring = createKeyringScope("Authentication Gateway");
     let unbindSecretVisibility = null;
-    let eventPage = 0;
+    const eventPagination = createPagination({ data: [], perPage: 10 });
     let keysExpanded = true;
     let logsExpanded = true;
 
@@ -138,12 +146,8 @@ export function createSettingsSection({ i18n, root }) {
 
     function renderEventLog(unlocked) {
         const events = unlocked ? listKeyringEvents() : [];
-        const pageCount = Math.max(1, Math.ceil(events.length / eventPageSize));
-        eventPage = Math.min(eventPage, pageCount - 1);
-        const pageEvents = events.slice(
-            eventPage * eventPageSize,
-            (eventPage + 1) * eventPageSize,
-        );
+        const eventPage = eventPagination.updateData(events);
+        const pageEvents = eventPage.items;
         const rows = pageEvents.length
             ? pageEvents
                   .map(
@@ -163,16 +167,16 @@ export function createSettingsSection({ i18n, root }) {
           </table></div>
           ${
               unlocked && events.length
-                  ? `<nav class="settings-keyring-pagination" aria-label="${escapeHtml(i18n.t("gateway.auth.keyring.log_pages"))}">
-            <button type="button" data-keyring-log-previous${eventPage === 0 ? " disabled" : ""}>${escapeHtml(i18n.t("gateway.auth.keyring.previous"))}</button>
-            <span>${escapeHtml(
-                i18n
-                    .t("gateway.auth.keyring.page")
-                    .replace("{{current}}", String(eventPage + 1))
-                    .replace("{{total}}", String(pageCount)),
-            )}</span>
-            <button type="button" data-keyring-log-next${eventPage + 1 >= pageCount ? " disabled" : ""}>${escapeHtml(i18n.t("gateway.auth.keyring.next"))}</button>
-          </nav>`
+                  ? renderPaginationControls({
+                        page: eventPage,
+                        labels: {
+                            previous: i18n.t("gateway.auth.keyring.previous"),
+                            next: i18n.t("gateway.auth.keyring.next"),
+                            status: i18n.t("gateway.auth.keyring.page"),
+                        },
+                        ariaLabel: i18n.t("gateway.auth.keyring.log_pages"),
+                        escapeHtml,
+                    })
                   : ""
           }
         </section>`;
@@ -363,18 +367,9 @@ export function createSettingsSection({ i18n, root }) {
             ?.addEventListener("toggle", (event) => {
                 logsExpanded = event.currentTarget.open;
             });
-        settingsRoot
-            .querySelector("[data-keyring-log-previous]")
-            ?.addEventListener("click", () => {
-                eventPage = Math.max(0, eventPage - 1);
-                rerender();
-            });
-        settingsRoot
-            .querySelector("[data-keyring-log-next]")
-            ?.addEventListener("click", () => {
-                eventPage += 1;
-                rerender();
-            });
+        bindPaginationControls(settingsRoot, eventPagination, {
+            onChange: rerender,
+        });
         settingsRoot
             .querySelector("#settings-keyring-toggle")
             ?.addEventListener(

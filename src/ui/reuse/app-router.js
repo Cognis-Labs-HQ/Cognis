@@ -489,6 +489,18 @@ function resolveRouterRoot() {
 let _mountController = null;
 let _navigationSequence = 0;
 let _initialized = false;
+let _historyIndex = 0;
+let _committedPath = "";
+let _restoringHistory = false;
+let _guardBypassPath = null;
+
+function requestRouteNavigation(path, resume) {
+    const navigationEvent = new CustomEvent("cognis:route-before-navigate", {
+        cancelable: true,
+        detail: { path, resume },
+    });
+    return window.dispatchEvent(navigationEvent);
+}
 
 async function loadRoute(path) {
     const navigationSequence = ++_navigationSequence;
@@ -624,15 +636,28 @@ async function loadRoute(path) {
     }
 }
 
-export async function navigateTo(path) {
+export async function navigateTo(path, { bypassGuard = false } = {}) {
     const route = await resolveRoute(path);
     if (!route) return false;
     if (isPotentialStudyChildPath(path)) {
         const component = await resolveStudyChildComponent(path);
         if (!component) return false;
     }
+    if (
+        !bypassGuard &&
+        !requestRouteNavigation(path, () =>
+            navigateTo(path, { bypassGuard: true }),
+        )
+    )
+        return false;
     const previousRouterPage = getCurrentRoutePath();
-    history.pushState({ routerPage: path, previousRouterPage }, "", path);
+    _historyIndex += 1;
+    _committedPath = path;
+    history.pushState(
+        { routerPage: path, previousRouterPage, routerIndex: _historyIndex },
+        "",
+        path,
+    );
     return loadRoute(path);
 }
 
@@ -677,6 +702,16 @@ export function initRouter(root) {
     _initialized = true;
     installRuntimeErrorHandlers();
 
+    _historyIndex = Number.isInteger(history.state?.routerIndex)
+        ? history.state.routerIndex
+        : 0;
+    _committedPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    history.replaceState(
+        { ...(history.state ?? {}), routerIndex: _historyIndex },
+        "",
+        _committedPath,
+    );
+
     void loadAllRoutes();
     const initialRoute = findRoute(window.location.pathname);
     _currentBase = initialRoute ? initialRoute.base : null;
@@ -711,6 +746,10 @@ export function initRouter(root) {
     });
 
     window.addEventListener("popstate", async (event) => {
+        if (_restoringHistory) {
+            _restoringHistory = false;
+            return;
+        }
         const path = window.location.pathname;
         const pathWithHash = `${window.location.pathname}${window.location.hash}`;
         const route = await resolveRoute(path);
@@ -726,6 +765,40 @@ export function initRouter(root) {
         // so its presence means the router itself triggered this history entry and
         // must handle the transition even if the base path hasn't changed.
         if (route.base === _currentBase && !event.state?.routerPage) return;
+        const targetIndex = event.state?.routerIndex;
+        const bypassGuard = _guardBypassPath === pathWithHash;
+        if (bypassGuard) _guardBypassPath = null;
+        const resume = () => {
+            if (
+                Number.isInteger(targetIndex) &&
+                targetIndex !== _historyIndex
+            ) {
+                _guardBypassPath = pathWithHash;
+                history.go(targetIndex - _historyIndex);
+                return;
+            }
+            return navigateTo(pathWithHash, { bypassGuard: true });
+        };
+        if (!bypassGuard && !requestRouteNavigation(pathWithHash, resume)) {
+            if (
+                Number.isInteger(targetIndex) &&
+                targetIndex !== _historyIndex
+            ) {
+                _restoringHistory = true;
+                history.go(_historyIndex - targetIndex);
+            } else {
+                history.pushState(
+                    { routerPage: _committedPath, routerIndex: _historyIndex },
+                    "",
+                    _committedPath,
+                );
+            }
+            return;
+        }
+        if (Number.isInteger(event.state?.routerIndex)) {
+            _historyIndex = event.state.routerIndex;
+        }
+        _committedPath = pathWithHash;
         await loadRoute(pathWithHash);
     });
 }

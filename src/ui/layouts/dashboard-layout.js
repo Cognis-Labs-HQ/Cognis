@@ -28,6 +28,7 @@ import { uiCtx } from "../reuse/ui-ctx.js";
 import { showToast } from "../reuse/toast.js";
 import { bindLanguageToggle } from "../reuse/language-toggle.js";
 import { bindUserMenuIntegrity } from "./user-menu.js";
+import { footerLinks, mountFooterLinks } from "../reuse/footer-links.js";
 import { ensurePersistentStylesheet } from "../reuse/page-styles.js";
 import {
     ensureNavbarPluginsLoaded as loadNavbarPlugins,
@@ -40,6 +41,19 @@ capturePwaInstallPrompt();
 const BUTTON_STYLESHEET = "/static/styles/reuse/buttons.css";
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
 void ensurePersistentStylesheet(BUTTON_STYLESHEET);
+
+footerLinks.add({
+    id: "core:license",
+    side: "left",
+    href: "/license",
+    labelKey: "ui.layout.footer.license",
+});
+footerLinks.add({
+    id: "core:changelogs",
+    side: "left",
+    href: "/changelogs",
+    labelKey: "ui.layout.footer.changelogs",
+});
 
 function isAdminRole() {
     const role = localStorage.getItem("cognis_role");
@@ -285,27 +299,7 @@ function bindTopbarActions() {
     });
 
     logout?.addEventListener("click", async () => {
-        const accessToken = localStorage.getItem("cognis_access_token");
-        try {
-            await fetch("/api/v1/auth/logout", {
-                method: "POST",
-                credentials: "same-origin",
-                ...(accessToken
-                    ? { headers: { Authorization: `Bearer ${accessToken}` } }
-                    : {}),
-            });
-        } catch {
-            // Best-effort server-side revocation; navigate to login regardless.
-        }
-        await uiCtx.capabilities.get("keyring:lock")?.();
-        localStorage.removeItem("cognis_access_token");
-        localStorage.removeItem("cognis_account");
-        localStorage.removeItem("cognis_display_name");
-        localStorage.removeItem("cognis_role");
-        localStorage.removeItem("cognis_is_founder");
-        localStorage.removeItem("cognis_user_validation_mode");
-        document.cookie = "cognis_access_token=; Path=/; Max-Age=0";
-        window.location.href = "/login";
+        await uiCtx.runFlow("logout", { reason: "userRequested" });
     });
 }
 
@@ -685,6 +679,7 @@ export async function renderDashboardLayout(root, slots = {}) {
             i18n,
             existingShell.querySelector(".main-window") ?? existingShell,
         );
+        mountFooterLinks(existingShell, { i18n });
         applyActiveNavigation();
         if (
             enableAccountEnhancements &&
@@ -744,6 +739,7 @@ export async function renderDashboardLayout(root, slots = {}) {
     if (!showFooter) root.querySelector(".global-footer")?.remove();
 
     applyStaticTranslations(i18n, root);
+    mountFooterLinks(root.querySelector(".app-shell"), { i18n });
     if (
         enableAccountEnhancements &&
         (showTopbar || showNavbar) &&

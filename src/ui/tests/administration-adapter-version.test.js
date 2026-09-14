@@ -44,7 +44,7 @@ test("administration adapters expose version metadata in details", () => {
 
     assert.match(
         html,
-        /<details class="module-row adapter-inline-row"[^]*<summary class="adapter-inline-summary">/,
+        /<details class="module-row adapter-inline-row collapsible-section"[^]*<summary class="adapter-inline-summary collapsible-section-summary">/,
     );
     assert.doesNotMatch(html, /adapter-inline-version/);
     assert.match(html, /module-detail-value">0\.2\.6<\/span>/);

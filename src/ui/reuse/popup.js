@@ -42,6 +42,8 @@
  *   actions  — Array<{ id: string, label: string, variant?: 'confirm' | 'cancel' | 'neutral', disabled?: boolean }>.
  *              When omitted, a single green 'Done' (confirm) button is rendered.
  *   closeButtonVariant — Optional variant for the × header close button.
+ *   mandatory — When true, hides the header close button and disables
+ *              backdrop and Escape-key dismissal. Explicit actions still work.
  *   maxWidth — CSS max-width value (e.g. '40%', '600px') applied to the dialog
  *              window. Defaults to the CSS-defined value (480px).
  *
@@ -82,6 +84,7 @@
  *   timeoutMs?: number,
  *   timeoutActionId?: string | null,
  *   closeButtonVariant?: 'cancel' | 'neutral',
+ *   mandatory?: boolean,
  * }} options
  * @returns {Promise<string|null>}
  */
@@ -383,6 +386,7 @@ export async function openPopup({
     timeoutMs = 0,
     timeoutActionId = null,
     closeButtonVariant = "cancel",
+    mandatory = false,
     pages,
     initialPageId,
 } = {}) {
@@ -510,7 +514,7 @@ export async function openPopup({
       <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
         <div class="popup-header">
           <h2 class="popup-title" id="popup-title">${escapeHtml(currentPage?.title ?? title ?? "")}</h2>
-          <button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>
+          ${mandatory ? "" : `<button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>`}
         </div>
         <div class="popup-body">${resolvedBody}</div>
         ${actionButtons ? `<div class="popup-footer">${actionButtons}</div>` : ""}
@@ -522,7 +526,7 @@ export async function openPopup({
         }
 
         overlay.addEventListener("click", async (event) => {
-            if (event.target === overlay) await dismiss(null);
+            if (!mandatory && event.target === overlay) await dismiss(null);
         });
 
         function renderPopupPage(pageId) {
@@ -604,6 +608,7 @@ export async function openPopup({
             const overlays = document.querySelectorAll(".popup-overlay");
             if (overlays[overlays.length - 1] !== overlay) return;
             if (event.key === "Escape") {
+                if (mandatory) return;
                 dismiss(null).catch((error) =>
                     console.error("[popup] dismiss failed:", error),
                 );

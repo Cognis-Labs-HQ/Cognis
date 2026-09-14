@@ -1,0 +1,138 @@
+/**
+ * Registers and renders links contributed to either side of the page footer.
+ *
+ * Public exports:
+ *   createFooterLinkRegistry() — creates an isolated link contribution registry.
+ *   isFooterLinkActive(href, pathname) — checks whether a link owns a route.
+ *   footerLinks — shared registry published as the `ui:footerLinks` capability.
+ *   mountFooterLinks(root, options) — binds the shared registry to a page shell.
+ *
+ * Usage:
+ *   const footerLinks = uiCtx.capabilities.get('ui:footerLinks');
+ *   const remove = footerLinks.add({ id: 'legal', side: 'right', href: '/terms-of-service', label: 'Terms' });
+ *   remove();
+ *
+ * @param {{ onChange?: () => void }} options
+ * @returns {{ add: (descriptor: object) => (() => void), remove: (id: string) => boolean, list: (side?: 'left'|'right') => Array<object>, subscribe: (listener: () => void) => (() => void) }}
+ */
+
+import { uiCtx } from "./ui-ctx.js";
+
+export function createFooterLinkRegistry({ onChange } = {}) {
+    const links = new Map();
+    const listeners = new Set(onChange ? [onChange] : []);
+
+    function notify() {
+        listeners.forEach((listener) => listener());
+    }
+
+    function add(descriptor) {
+        const id = String(descriptor?.id ?? "").trim();
+        const href = String(descriptor?.href ?? "").trim();
+        const side = descriptor?.side ?? "left";
+        const label = String(descriptor?.label ?? "").trim();
+        const labelKey = String(descriptor?.labelKey ?? "").trim();
+        if (!id || !href || (!label && !labelKey)) {
+            throw new Error(
+                "Footer links require id, href, and label or labelKey.",
+            );
+        }
+        if (side !== "left" && side !== "right") {
+            throw new Error('Footer link side must be "left" or "right".');
+        }
+        if (links.has(id))
+            throw new Error(`Footer link "${id}" already exists.`);
+        const link = Object.freeze({ id, href, side, label, labelKey });
+        links.set(id, link);
+        notify();
+        return () => {
+            if (links.get(id) !== link) return;
+            links.delete(id);
+            notify();
+        };
+    }
+
+    function remove(id) {
+        const removed = links.delete(String(id ?? "").trim());
+        if (removed) notify();
+        return removed;
+    }
+
+    function list(side) {
+        const values = Array.from(links.values());
+        return side ? values.filter((link) => link.side === side) : values;
+    }
+
+    function subscribe(listener) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+    }
+
+    return { add, remove, list, subscribe };
+}
+
+export const footerLinks = createFooterLinkRegistry();
+uiCtx.capabilities.contribute("ui:footerLinks", footerLinks);
+const mountedShells = new WeakMap();
+
+/**
+ * Reports whether a footer link matches the current route or a descendant.
+ *
+ * @param {string} href - Footer link URL.
+ * @param {string} pathname - Route pathname to compare.
+ * @returns {boolean} Whether the link represents the route.
+ */
+export function isFooterLinkActive(href, pathname = window.location.pathname) {
+    const linkPath = new URL(href, window.location.origin).pathname;
+    return pathname === linkPath || pathname.startsWith(`${linkPath}/`);
+}
+
+/**
+ * Renders current footer link contributions and keeps them synchronized.
+ *
+ * @param {HTMLElement} root
+ * @param {{ i18n?: { t: (key: string) => string } }} options
+ * @returns {() => void} Stops synchronization for this shell.
+ */
+export function mountFooterLinks(root, { i18n } = {}) {
+    if (!root) return () => undefined;
+    mountedShells.get(root)?.();
+    function render() {
+        for (const side of ["left", "right"]) {
+            const container = root.querySelector(
+                `[data-footer-links="${side}"]`,
+            );
+            if (!container) continue;
+            container.replaceChildren(
+                ...footerLinks.list(side).map((descriptor) => {
+                    const link = document.createElement("a");
+                    link.className = "global-footer-link";
+                    link.href = descriptor.href;
+                    link.dataset.footerLink = descriptor.id;
+                    const isActive = isFooterLinkActive(descriptor.href);
+                    link.classList.toggle("active", isActive);
+                    if (isActive) link.setAttribute("aria-current", "page");
+                    link.textContent = descriptor.labelKey
+                        ? (i18n?.t(descriptor.labelKey) ?? descriptor.labelKey)
+                        : descriptor.label;
+                    return link;
+                }),
+            );
+        }
+    }
+
+    render();
+    const unsubscribe = footerLinks.subscribe(render);
+    window.addEventListener("popstate", render);
+    window.addEventListener("cognis:route-will-change", render);
+    const unmount = () => {
+        unsubscribe();
+        window.removeEventListener("popstate", render);
+        window.removeEventListener("cognis:route-will-change", render);
+        mountedShells.delete(root);
+    };
+    mountedShells.set(root, unmount);
+    return () => {
+        unmount();
+    };
+}

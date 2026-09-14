@@ -527,9 +527,14 @@ test("module marketplace replaces unavailable icons with the unknown icon", () =
     assert.match(pageSource, /data-resource-fallback/);
     assert.match(
         pageSource,
-        /\/static\/assets\/reuse\/module-icon-unknown\.svg/,
+        /module-detail-banner module-picture[^>]+data-resource-fallback/,
     );
+    assert.match(pageSource, /\/assets\/reuse\/module-icon-unknown\.svg/);
     assert.match(errorHandlerSource, /dataset\.resourceFallback/);
+    assert.match(
+        errorHandlerSource,
+        /resourceLoadError === HANDLED_RESOURCE_FALLBACK/,
+    );
     assert.match(fallbackIcon, /class="mark"/);
 });
 

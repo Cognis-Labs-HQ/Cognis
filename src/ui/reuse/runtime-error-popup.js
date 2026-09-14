@@ -47,6 +47,7 @@ import {
 } from "./route-path.js";
 
 const MAX_CONSOLE_ENTRY_COUNT = 30;
+const HANDLED_RESOURCE_FALLBACK = Symbol("handledResourceFallback");
 const POPUP_DEDUPLICATION_WINDOW_MILLISECONDS = 1500;
 /**
  * Benign browser-level ResizeObserver loop notifications that do not indicate
@@ -180,8 +181,16 @@ function buildResourceLoadError(event) {
     ) {
         const fallbackUrl = eventTarget.dataset.resourceFallback;
         delete eventTarget.dataset.resourceFallback;
+        eventTarget.dataset.resourceFallbackActive = "true";
         eventTarget.src = fallbackUrl;
-        return null;
+        return HANDLED_RESOURCE_FALLBACK;
+    }
+    if (
+        eventTarget instanceof HTMLImageElement &&
+        eventTarget.dataset.resourceFallbackActive === "true"
+    ) {
+        eventTarget.hidden = true;
+        return HANDLED_RESOURCE_FALLBACK;
     }
     const resourceUrl =
         eventTarget instanceof HTMLScriptElement
@@ -508,6 +517,7 @@ export function installRuntimeErrorHandlers() {
         "error",
         (event) => {
             const resourceLoadError = buildResourceLoadError(event);
+            if (resourceLoadError === HANDLED_RESOURCE_FALLBACK) return;
             const runtimeError = resourceLoadError ?? event.error;
             if (shouldIgnoreRuntimeError(runtimeError ?? event.message)) {
                 return;

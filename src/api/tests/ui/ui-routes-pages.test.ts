@@ -193,6 +193,18 @@ test("ui routes serve public assets directly from /assets", async () => {
 
     assert.equal(assetRes.status, 200);
     assert.equal(assetRes.headers["content-type"], "image/png");
+
+    const fallbackRes = createResponseRecorder();
+    await route(
+        { headers: {} } as any,
+        fallbackRes.res as any,
+        new URL("http://localhost/assets/reuse/module-icon-unknown.svg"),
+    );
+    assert.equal(fallbackRes.status, 200);
+    assert.equal(
+        fallbackRes.headers["content-type"],
+        "image/svg+xml; charset=utf-8",
+    );
 });
 
 test("core ui routes do not serve /profile (owned by profile gateway)", async () => {

@@ -20,6 +20,11 @@ export function createRegistrationRoutes(
     isGatewayEnabled: () => boolean = () => true,
     log?: GatewayBootstrapContext["log"],
     routeContext?: RouteContext,
+    issueAccessToken?: (
+        subject: string,
+        role: "user",
+        ttlSeconds: number,
+    ) => string,
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
@@ -158,13 +163,18 @@ export function createRegistrationRoutes(
                     password,
                     displayName,
                 });
+                const verifyToken = issueAccessToken?.(
+                    result.createdAccountId,
+                    "user",
+                    1800,
+                );
                 log?.("info", "Redeemed registration invite.", {
                     ...logMeta,
                     createdAccountId: result.createdAccountId,
                     inviterAccountId: result.inviterAccountId,
                 });
                 res.writeHead(201, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: result }));
+                res.end(JSON.stringify({ data: { ...result, verifyToken } }));
             } catch (error) {
                 const code =
                     error instanceof Error ? error.message : "redeem_failed";

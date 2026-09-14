@@ -221,6 +221,50 @@ test("GET /api/v1/auth/registration-config returns open-registration state", asy
     assert.equal(body.data.userValidationMode, "none");
 });
 
+test("GET /api/v1/auth/registration-config isolates composition failures", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("registration:public:isEnabled", () => true);
+
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: makeInMemoryDb(),
+    });
+    const systemCtx =
+        capabilities.get<ReturnType<typeof createCtx>>(CTX_CAPABILITY)!;
+    systemCtx.flow.extend(
+        "constructRegistrationUi",
+        "compose-form",
+        { id: "test:broken-registration-integration" },
+        () => {
+            throw new Error("integration unavailable");
+        },
+    );
+
+    const req = { method: "GET", headers: {} } as HttpIncomingMessage;
+    const res = makeResponse();
+    let handled = false;
+    for (const handler of routeRegistry.getHandlers()) {
+        handled = await handler(
+            req,
+            res as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/registration-config", "http://localhost"),
+        );
+        if (handled) break;
+    }
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload) as {
+        data: { registrationsEnabled: boolean; integrations: unknown[] };
+    };
+    assert.equal(body.data.registrationsEnabled, true);
+    assert.deepEqual(body.data.integrations, []);
+});
+
 test("GET /api/v1/gateways/auth/adapters requires admin auth", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();

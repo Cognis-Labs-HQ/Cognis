@@ -229,6 +229,10 @@ Version updates are atomic repository-wide changes. When bumping a component, up
 
 Component package dependencies on other Cognis components must use flexible tested-ceiling version ranges instead of exact pins. Use `<=<tested-version>` for every `@cognis/*` dependency so newer installed components can be detected as potentially untested without blocking older compatible patch lines at install time. Runtime lifecycle surfaces must treat missing or disabled declared dependencies as component errors, disable the affected component power control, and present a red exclamation warning with the expected and installed versions when the installed component is newer than the declared tested ceiling.
 
+### Branch and pull request names
+
+Branch names may contain only ASCII letters, numbers, hyphens (`-`), and underscores (`_`). Pull request names may additionally contain whitespace. No other special characters are legal in either name.
+
 ### Changelog entries
 
 Store changelog entries under `src/docs/changelog/` (one shared directory for all changelog files) instead of a root `CHANGELOG.md`.

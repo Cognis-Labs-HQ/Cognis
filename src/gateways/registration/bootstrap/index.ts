@@ -25,6 +25,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const accountStore =
         ctx.capabilities.get<LocalAccountStore>("auth:accountStore");
     if (!accountStore) return;
+    const issueAccessToken = ctx.capabilities.get<
+        (subject: string, role: "user", ttlSeconds: number) => string
+    >("auth:issueAccessToken");
 
     const canSendInviteEmail = ctx.capabilities.get<() => boolean>(
         "notify:canSendRegistrationInviteEmail",
@@ -123,6 +126,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             isGatewayEnabled,
             ctx.log,
             routeContext,
+            issueAccessToken,
         ),
         "registration",
     );

@@ -24,6 +24,9 @@
  *   invalid. Pages whose pathname is in `PUBLIC_AUTH_PATHNAMES` (i.e. `/login`
  *   and `/register`) are skipped entirely so they can load without a session
  *   and without triggering a redirect loop.
+ *
+ * `logout` — revokes the active server session, clears local account state,
+ *   locks the keyring, and redirects to `/login`.
  */
 
 import "/static/reuse/flow-registry.js";
@@ -73,11 +76,16 @@ function getFirstResult(stageResults, stageId) {
     return (stageResults[stageId] ?? [])[0] ?? null;
 }
 
-function clearStoredSession({ clearKeyring = false } = {}) {
-    const keyringAction = clearKeyring
-        ? uiCtx.capabilities.get("keyring:clearAccountState")
-        : uiCtx.capabilities.get("keyring:lock");
-    void keyringAction?.();
+function clearStoredSession({
+    clearKeyring = false,
+    skipKeyring = false,
+} = {}) {
+    if (!skipKeyring) {
+        const keyringAction = clearKeyring
+            ? uiCtx.capabilities.get("keyring:clearAccountState")
+            : uiCtx.capabilities.get("keyring:lock");
+        void keyringAction?.();
+    }
     localStorage.removeItem("cognis_access_token");
     localStorage.removeItem("cognis_account");
     localStorage.removeItem("cognis_display_name");
@@ -88,6 +96,41 @@ function clearStoredSession({ clearKeyring = false } = {}) {
     localStorage.removeItem("cognis_user_validation_mode");
     document.cookie = "cognis_access_token=; Path=/; Max-Age=0";
 }
+
+uiCtx.extendFlow(
+    "logout",
+    "revokeSession",
+    { id: "authGateway:revokeLogoutSession" },
+    async () => {
+        try {
+            await apiFetch("/api/v1/auth/logout", { method: "POST" });
+        } catch {
+            return { revoked: false };
+        }
+        return { revoked: true };
+    },
+);
+
+uiCtx.extendFlow(
+    "logout",
+    "clearSession",
+    { id: "authGateway:clearLogoutSession" },
+    async () => {
+        await uiCtx.capabilities.get("keyring:lock")?.();
+        clearStoredSession({ skipKeyring: true });
+        return { cleared: true };
+    },
+);
+
+uiCtx.extendFlow(
+    "logout",
+    "redirectToLogin",
+    { id: "authGateway:redirectLogoutToLogin" },
+    () => {
+        window.location.href = "/login";
+        return { redirectTo: "/login" };
+    },
+);
 
 uiCtx.extendFlow(
     "authenticate-session",
