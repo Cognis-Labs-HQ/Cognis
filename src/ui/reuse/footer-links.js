@@ -3,6 +3,7 @@
  *
  * Public exports:
  *   createFooterLinkRegistry() — creates an isolated link contribution registry.
+ *   isFooterLinkActive(href, pathname) — checks whether a link owns a route.
  *   footerLinks — shared registry published as the `ui:footerLinks` capability.
  *   mountFooterLinks(root, options) — binds the shared registry to a page shell.
  *
@@ -75,6 +76,18 @@ uiCtx.capabilities.contribute("ui:footerLinks", footerLinks);
 const mountedShells = new WeakMap();
 
 /**
+ * Reports whether a footer link matches the current route or a descendant.
+ *
+ * @param {string} href - Footer link URL.
+ * @param {string} pathname - Route pathname to compare.
+ * @returns {boolean} Whether the link represents the route.
+ */
+export function isFooterLinkActive(href, pathname = window.location.pathname) {
+    const linkPath = new URL(href, window.location.origin).pathname;
+    return pathname === linkPath || pathname.startsWith(`${linkPath}/`);
+}
+
+/**
  * Renders current footer link contributions and keeps them synchronized.
  *
  * @param {HTMLElement} root
@@ -96,6 +109,9 @@ export function mountFooterLinks(root, { i18n } = {}) {
                     link.className = "global-footer-link";
                     link.href = descriptor.href;
                     link.dataset.footerLink = descriptor.id;
+                    const isActive = isFooterLinkActive(descriptor.href);
+                    link.classList.toggle("active", isActive);
+                    if (isActive) link.setAttribute("aria-current", "page");
                     link.textContent = descriptor.labelKey
                         ? (i18n?.t(descriptor.labelKey) ?? descriptor.labelKey)
                         : descriptor.label;
@@ -107,9 +123,16 @@ export function mountFooterLinks(root, { i18n } = {}) {
 
     render();
     const unsubscribe = footerLinks.subscribe(render);
-    mountedShells.set(root, unsubscribe);
-    return () => {
+    window.addEventListener("popstate", render);
+    window.addEventListener("cognis:route-will-change", render);
+    const unmount = () => {
         unsubscribe();
+        window.removeEventListener("popstate", render);
+        window.removeEventListener("cognis:route-will-change", render);
         mountedShells.delete(root);
+    };
+    mountedShells.set(root, unmount);
+    return () => {
+        unmount();
     };
 }

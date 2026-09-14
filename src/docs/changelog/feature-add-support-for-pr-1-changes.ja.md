@@ -54,6 +54,10 @@ Keyring のイベント履歴は、呼び出し側が選択するページ件数
 
 Keyring とルーターの回帰アサーションを、共通ページネーション制御とインデックス付き SPA 履歴状態に合わせて更新し、完全なテストスイートが再び正常に完了するようにしました。
 
+## 有効なフッターリンクと共通サイドメニュー
+
+フッターリンクが現在のルートとその配下を有効状態として示すようになりました。ドキュメントと変更履歴のナビゲーションは、ctx 機能 `ui:sideMenu` を通じてランタイムモジュールにも公開される、再利用可能な構造化サイドメニュービルダーを使用します。
+
 ## コミット
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -72,3 +76,4 @@ Keyring とルーターの回帰アサーションを、共通ページネーシ
 - [c63e7c8f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c63e7c8f0aab5c4e1e38d5963fd64ab7036a40e5)
 - [672104a0](https://github.com/Cognis-Labs-HQ/Cognis/commit/672104a008171509ff08eb522d85c90dc70ac045)
 - [957a4c49](https://github.com/Cognis-Labs-HQ/Cognis/commit/957a4c4987bbac8d259942e134c33b783e8eb4e5)
+- [182a22ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/182a22ef86b98848185f6a73e622bf31845aee2f)

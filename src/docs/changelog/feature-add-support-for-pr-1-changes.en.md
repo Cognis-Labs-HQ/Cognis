@@ -54,6 +54,10 @@ Unsaved edits now guard Back and Forward history traversal and restore the activ
 
 Updated the Keyring and router regression assertions to reflect shared pagination controls and indexed SPA history state, restoring a clean full test run.
 
+## Active footer links and shared side menus
+
+Footer links now identify the active route and its descendants. Documentation and changelog navigation now use a reusable, structured side-menu builder exposed to runtime modules through the `ui:sideMenu` ctx capability.
+
 ## Commits
 
 - [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
@@ -72,3 +76,4 @@ Updated the Keyring and router regression assertions to reflect shared paginatio
 - [c63e7c8f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c63e7c8f0aab5c4e1e38d5963fd64ab7036a40e5)
 - [672104a0](https://github.com/Cognis-Labs-HQ/Cognis/commit/672104a008171509ff08eb522d85c90dc70ac045)
 - [957a4c49](https://github.com/Cognis-Labs-HQ/Cognis/commit/957a4c4987bbac8d259942e134c33b783e8eb4e5)
+- [182a22ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/182a22ef86b98848185f6a73e622bf31845aee2f)

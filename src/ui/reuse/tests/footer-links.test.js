@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createFooterLinkRegistry } from "../footer-links.js";
+import {
+    createFooterLinkRegistry,
+    isFooterLinkActive,
+} from "../footer-links.js";
 
 test("footer link registry contributes links to either shell side", () => {
     const registry = createFooterLinkRegistry();
@@ -28,6 +31,13 @@ test("footer link registry contributes links to either shell side", () => {
     );
     removeLegal();
     assert.deepEqual(registry.list("right"), []);
+});
+
+test("footer links are active for their route and its descendants", () => {
+    globalThis.window = { location: { origin: "https://cognis.test" } };
+    assert.equal(isFooterLinkActive("/docs", "/docs/latest/overview"), true);
+    assert.equal(isFooterLinkActive("/docs", "/documentation"), false);
+    assert.equal(isFooterLinkActive("/changelogs", "/docs/overview"), false);
 });
 
 test("footer link registry rejects invalid and duplicate contributions", () => {

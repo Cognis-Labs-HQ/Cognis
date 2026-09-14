@@ -45,6 +45,7 @@ for (const capability of [
     "ui:reuse",
     "ui:footerLinks",
     "ui:pagination",
+    "ui:sideMenu",
     "component-pages:spawn",
     "component-pages:discard",
     "ui:makeFloatingWindow",

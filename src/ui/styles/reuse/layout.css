@@ -479,7 +479,8 @@
     border-radius: 8px;
 }
 .global-footer-link:hover,
-.global-footer-link:focus-visible {
+.global-footer-link:focus-visible,
+.global-footer-link.active {
     color: var(--text);
     background: var(--surface-soft);
 }

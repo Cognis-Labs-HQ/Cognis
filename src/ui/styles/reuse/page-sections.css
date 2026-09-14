@@ -842,3 +842,19 @@ body:not([data-theme="light"]) .markdown-code-inline code {
 .component-page-window--borderless > .workspace .content-panel {
     min-height: 0;
 }
+.side-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.side-menu-group {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.side-menu .side-menu-link {
+    display: block;
+    text-align: left;
+}
