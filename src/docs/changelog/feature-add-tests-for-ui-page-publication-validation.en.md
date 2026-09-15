@@ -46,6 +46,10 @@ The built-in License page is now explicitly public, while Changelogs remain avai
 
 Authentication-footer plugins may once again contribute links as an import side effect, matching the established module contract. Cognis scopes those contributions to authentication pages, preserves application-only links when a plugin removes them, and lets each module decide which published documents are eligible. Direct mounting now establishes public-page context before composition, so the public License page does not invoke account-session enforcement.
 
+## Make publication validation source-aware
+
+UI publication validation now strips comments before discovering reusable exports, so documented examples cannot be mistaken for real APIs. External-module enforcement scans only browser UI sources and skips tests, dependencies, generated output, coverage, and build trees, preventing server or vendor code from receiving browser-only rules.
+
 ## Commits
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -58,3 +62,4 @@ Authentication-footer plugins may once again contribute links as an import side 
 - [234d0e03](https://github.com/Cognis-Labs-HQ/Cognis/commit/234d0e03)
 - [5f0ad5f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f0ad5f0)
 - [c44fcd61](https://github.com/Cognis-Labs-HQ/Cognis/commit/c44fcd61)
+- [d317260b](https://github.com/Cognis-Labs-HQ/Cognis/commit/d317260b)

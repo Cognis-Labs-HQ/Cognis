@@ -22,13 +22,26 @@ const DECLARATION_PATTERNS = [
     /\b(?:export\s+)?(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/g,
     /\b(?:export\s+)?(?:const|let|class)\s+([A-Za-z_$][\w$]*)\b/g,
 ];
+const EXCLUDED_EXTERNAL_DIRECTORIES = new Set([
+    ".git",
+    "build",
+    "coverage",
+    "dist",
+    "node_modules",
+    "tests",
+]);
 
-function walk(directoryPath) {
+function walk(directoryPath, excludedDirectories = new Set()) {
     if (!existsSync(directoryPath)) return [];
     return readdirSync(directoryPath, { withFileTypes: true }).flatMap(
         (entry) => {
             const entryPath = join(directoryPath, entry.name);
-            return entry.isDirectory() ? walk(entryPath) : [entryPath];
+            if (entry.isDirectory() && excludedDirectories.has(entry.name)) {
+                return [];
+            }
+            return entry.isDirectory()
+                ? walk(entryPath, excludedDirectories)
+                : [entryPath];
         },
     );
 }
@@ -37,12 +50,22 @@ function normalizePath(filePath) {
     return filePath.replace(/\\/g, "/");
 }
 
+function isExternalUiSource(filePath, sourceRoot) {
+    const relativePath = normalizePath(relative(sourceRoot, filePath));
+    const pathParts = relativePath.split("/");
+    return (
+        (normalizePath(resolve(sourceRoot)).endsWith("/ui") ||
+            pathParts.includes("ui")) &&
+        !pathParts.some((part) => EXCLUDED_EXTERNAL_DIRECTORIES.has(part))
+    );
+}
+
 function collectExportedUtilityNames(reuseRoot) {
     const names = new Set();
     for (const filePath of walk(reuseRoot)) {
         if (!JAVASCRIPT_EXTENSIONS.has(extname(filePath))) continue;
         if (normalizePath(filePath).includes("/tests/")) continue;
-        const source = readFileSync(filePath, "utf8");
+        const source = stripComments(readFileSync(filePath, "utf8"));
         for (const pattern of EXPORTED_UTILITY_PATTERNS) {
             for (const match of source.matchAll(pattern)) names.add(match[1]);
         }
@@ -70,9 +93,15 @@ function collectUiPublicationViolations({ sourceRoot, hostReuseRoot }) {
         "/src",
     );
 
-    for (const filePath of walk(sourceRoot)) {
+    const excludedDirectories = isExternalModule
+        ? EXCLUDED_EXTERNAL_DIRECTORIES
+        : new Set();
+    for (const filePath of walk(sourceRoot, excludedDirectories)) {
         if (!JAVASCRIPT_EXTENSIONS.has(extname(filePath))) continue;
         if (normalizePath(filePath).includes("/tests/")) continue;
+        if (isExternalModule && !isExternalUiSource(filePath, sourceRoot)) {
+            continue;
+        }
         const source = readFileSync(filePath, "utf8");
         const displayPath = normalizePath(relative(ROOT, filePath));
         const isHostUtility = normalizePath(resolve(filePath)).startsWith(
@@ -142,7 +171,7 @@ function collectUiPublicationViolations({ sourceRoot, hostReuseRoot }) {
             }
         }
         for (const pattern of DECLARATION_PATTERNS) {
-            for (const match of source.matchAll(pattern)) {
+            for (const match of executableSource.matchAll(pattern)) {
                 if (!utilityNames.has(match[1])) continue;
                 violations.push(
                     `${displayPath}: redeclares Cognis reuse utility ${match[1]}`,
@@ -182,7 +211,13 @@ test("UI publication validation rejects composer and reuse workarounds", () => {
     mkdirSync(join(moduleRoot, "ui", "app"), { recursive: true });
     writeFileSync(
         join(reuseRoot, "toast.js"),
-        "export function showToast() {}\n",
+        [
+            "/**",
+            " * Usage: export async function mount() {}",
+            " */",
+            "export function showToast() {}",
+            "",
+        ].join("\n"),
     );
     writeFileSync(
         join(moduleRoot, "ui", "app", "index.js"),
@@ -201,6 +236,16 @@ test("UI publication validation rejects composer and reuse workarounds", () => {
         join(moduleRoot, "ui", "app", "mixed.js"),
         'export async function mount(root) { createPageComposer(root); root.append(document.createElement("main")); }\n',
     );
+    mkdirSync(join(moduleRoot, "api"), { recursive: true });
+    mkdirSync(join(moduleRoot, "node_modules", "vendor"), { recursive: true });
+    writeFileSync(
+        join(moduleRoot, "api", "index.js"),
+        "export function showToast() { return fetch('/server-request'); }\n",
+    );
+    writeFileSync(
+        join(moduleRoot, "node_modules", "vendor", "index.js"),
+        "export function showToast() { return fetch('/vendor-request'); }\n",
+    );
 
     try {
         const violations = collectUiPublicationViolations({
@@ -211,6 +256,20 @@ test("UI publication validation rejects composer and reuse workarounds", () => {
             violations.some((violation) =>
                 violation.includes("does not call createPageComposer"),
             ),
+        );
+        assert.equal(
+            violations.some(
+                (violation) =>
+                    violation.includes("api/index.js") ||
+                    violation.includes("node_modules"),
+            ),
+            false,
+        );
+        assert.equal(
+            violations.some((violation) =>
+                violation.includes("reuse utility mount"),
+            ),
+            false,
         );
         assert.ok(
             violations.some((violation) =>

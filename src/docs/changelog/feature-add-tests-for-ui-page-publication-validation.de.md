@@ -46,6 +46,10 @@ Die integrierte Lizenzseite ist nun ausdrücklich öffentlich, während Änderun
 
 Plugins für den Authentifizierungsfußbereich können Links wieder wie im bestehenden Modulvertrag beim Import beitragen. Cognis beschränkt diese Beiträge auf Authentifizierungsseiten, erhält anwendungsbezogene Links, wenn ein Plugin sie entfernt, und überlässt jedem Modul die Entscheidung, welche veröffentlichten Dokumente zulässig sind. Beim direkten Einbinden wird der öffentliche Seitenkontext nun vor der Komposition gesetzt, sodass die öffentliche Lizenzseite keine Kontositzung erzwingt.
 
+## Veröffentlichungsprüfung quellenbewusst machen
+
+Die UI-Veröffentlichungsprüfung entfernt nun Kommentare, bevor wiederverwendbare Exporte ermittelt werden. Dadurch werden dokumentierte Beispiele nicht mit echten APIs verwechselt. Bei externen Modulen werden nur Browser-UI-Quellen geprüft; Tests, Abhängigkeiten, generierte Ausgaben, Coverage- und Build-Verzeichnisse werden übersprungen, sodass Server- oder Anbietercode keine reinen Browserregeln erhält.
+
 ## Commits
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -58,3 +62,4 @@ Plugins für den Authentifizierungsfußbereich können Links wieder wie im beste
 - [234d0e03](https://github.com/Cognis-Labs-HQ/Cognis/commit/234d0e03)
 - [5f0ad5f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f0ad5f0)
 - [c44fcd61](https://github.com/Cognis-Labs-HQ/Cognis/commit/c44fcd61)
+- [d317260b](https://github.com/Cognis-Labs-HQ/Cognis/commit/d317260b)

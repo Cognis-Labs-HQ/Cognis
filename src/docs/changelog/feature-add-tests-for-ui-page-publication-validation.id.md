@@ -46,6 +46,10 @@ Halaman Lisensi bawaan kini secara eksplisit bersifat publik, sedangkan Catatan 
 
 Plugin footer autentikasi kembali dapat menyumbangkan tautan sebagai efek samping impor sesuai kontrak modul yang telah ditetapkan. Cognis membatasi kontribusi tersebut pada halaman autentikasi, mempertahankan tautan khusus aplikasi ketika plugin menghapusnya, dan membiarkan setiap modul menentukan dokumen terbitan yang layak. Pemasangan langsung kini menetapkan konteks halaman publik sebelum komposisi sehingga halaman Lisensi publik tidak menjalankan penegakan sesi akun.
 
+## Jadikan validasi publikasi peka terhadap sumber
+
+Validasi publikasi UI kini menghapus komentar sebelum menemukan ekspor penggunaan ulang sehingga contoh terdokumentasi tidak dianggap sebagai API nyata. Penegakan modul eksternal hanya memindai sumber UI browser dan melewati pengujian, dependensi, keluaran hasil pembuatan, cakupan, serta pohon build agar kode server atau vendor tidak dikenai aturan khusus browser.
+
 ## Commit
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -58,3 +62,4 @@ Plugin footer autentikasi kembali dapat menyumbangkan tautan sebagai efek sampin
 - [234d0e03](https://github.com/Cognis-Labs-HQ/Cognis/commit/234d0e03)
 - [5f0ad5f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f0ad5f0)
 - [c44fcd61](https://github.com/Cognis-Labs-HQ/Cognis/commit/c44fcd61)
+- [d317260b](https://github.com/Cognis-Labs-HQ/Cognis/commit/d317260b)
