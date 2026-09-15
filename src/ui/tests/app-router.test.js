@@ -544,4 +544,8 @@ test("direct SPA entry loads capability providers before the route module", () =
         pageEntrySource,
         /__cognisPublicSpaRoute !== true[\s\S]*flowExists\("load-page"\)/,
     );
+    assert.match(
+        pageEntrySource,
+        /if \(publicPage\) globalThis\.__cognisPublicSpaRoute = true/,
+    );
 });

@@ -70,21 +70,21 @@ export async function loadAuthFooterPlugins() {
     const response = await apiFetch("/api/v1/ui/auth-footer-plugins");
     if (!response.ok) throw new Error("auth_footer_plugins_unavailable");
     const payload = await response.json();
-    await Promise.all(
-        (Array.isArray(payload?.data) ? payload.data : []).map(
-            async (plugin) => {
-                const scriptUrl = String(plugin.scriptUrl);
-                const pluginModule = await import(scriptUrl);
-                if (typeof pluginModule.listAuthFooterLinks !== "function") {
-                    throw new Error("auth_footer_link_provider_required");
-                }
+    for (const plugin of Array.isArray(payload?.data) ? payload.data : []) {
+        const scriptUrl = String(plugin.scriptUrl);
+        const pluginModule = await footerLinks.withContexts(
+            ["authentication"],
+            () => import(scriptUrl),
+        );
+        if (typeof pluginModule.listAuthFooterLinks === "function") {
+            await footerLinks.withContexts(["authentication"], async () => {
                 reconcileAuthFooterLinks(
                     scriptUrl,
                     await pluginModule.listAuthFooterLinks(),
                 );
-            },
-        ),
-    );
+            });
+        }
+    }
 }
 
 export function renderAuthFooter() {

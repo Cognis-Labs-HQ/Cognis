@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { reconcileAuthFooterLinks, renderAuthFooter } from "../auth-footer.js";
 import { footerLinks } from "../footer-links.js";
 
@@ -8,6 +9,15 @@ test("authentication footer exposes both shared link contribution slots", () => 
     assert.match(markup, /class="auth-footer"/);
     assert.match(markup, /data-footer-links="left"/);
     assert.match(markup, /data-footer-links="right"/);
+});
+
+test("authentication footer accepts context-scoped side-effect contributors", () => {
+    const source = readFileSync(
+        new URL("../auth-footer.js", import.meta.url),
+        "utf8",
+    );
+    assert.match(source, /footerLinks\.withContexts/);
+    assert.doesNotMatch(source, /auth_footer_link_provider_required/);
 });
 
 test("footer contexts keep application-only links off authentication pages", () => {

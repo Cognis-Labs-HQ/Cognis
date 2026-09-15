@@ -59,3 +59,38 @@ test("footer link registry rejects invalid and duplicate contributions", () => {
         /already exists/,
     );
 });
+
+test("footer contribution contexts scope plugin additions and removals", async () => {
+    const registry = createFooterLinkRegistry();
+    registry.add({
+        id: "changelogs",
+        href: "/changelogs",
+        label: "Changelogs",
+        contexts: ["application"],
+    });
+
+    await registry.withContexts(["authentication"], async () => {
+        registry.remove("changelogs");
+        await Promise.resolve();
+        registry.add({ id: "terms", href: "/terms", label: "Terms" });
+    });
+
+    assert.deepEqual(registry.list(), [
+        {
+            id: "changelogs",
+            href: "/changelogs",
+            side: "left",
+            label: "Changelogs",
+            labelKey: "",
+            contexts: ["application"],
+        },
+        {
+            id: "terms",
+            href: "/terms",
+            side: "left",
+            label: "Terms",
+            labelKey: "",
+            contexts: ["authentication"],
+        },
+    ]);
+});

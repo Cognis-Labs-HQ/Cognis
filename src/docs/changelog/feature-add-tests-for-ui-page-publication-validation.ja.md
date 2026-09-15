@@ -42,6 +42,10 @@
 
 組み込みのライセンスページを明示的に公開し、変更履歴は認証済みアプリ内でのみ利用可能として認証フッターには表示しないようにしました。Page Composer は公開モジュールページを正規化し、文書をフレームなしで描画するのではなく匿名用 Cognis シェルを維持します。
 
+## モジュールが公開する認証リンクを復元
+
+認証フッタープラグインは、既存のモジュール契約どおりインポート時の副作用としてリンクを再び提供できます。Cognis はその提供を認証ページに限定し、プラグインによる削除時もアプリケーション専用リンクを維持し、どの公開文書を対象とするかは各モジュールに委ねます。直接マウントでは構成前に公開ページコンテキストを設定するため、公開ライセンスページがアカウントセッションを要求しません。
+
 ## コミット
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -53,3 +57,4 @@
 - [841e6c76](https://github.com/Cognis-Labs-HQ/Cognis/commit/841e6c76)
 - [234d0e03](https://github.com/Cognis-Labs-HQ/Cognis/commit/234d0e03)
 - [5f0ad5f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f0ad5f0)
+- [c44fcd61](https://github.com/Cognis-Labs-HQ/Cognis/commit/c44fcd61)

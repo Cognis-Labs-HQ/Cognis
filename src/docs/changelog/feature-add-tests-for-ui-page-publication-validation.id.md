@@ -42,6 +42,10 @@ Kontributor footer autentikasi kini mengembalikan tautan yang saat ini layak dar
 
 Halaman Lisensi bawaan kini secara eksplisit bersifat publik, sedangkan Catatan Perubahan hanya tersedia di dalam aplikasi terautentikasi dan tidak ditampilkan pada footer autentikasi. Page composer menormalkan halaman modul publik agar tetap menggunakan shell Cognis anonim alih-alih merender dokumen tanpa bingkai.
 
+## Pulihkan tautan autentikasi yang diterbitkan modul
+
+Plugin footer autentikasi kembali dapat menyumbangkan tautan sebagai efek samping impor sesuai kontrak modul yang telah ditetapkan. Cognis membatasi kontribusi tersebut pada halaman autentikasi, mempertahankan tautan khusus aplikasi ketika plugin menghapusnya, dan membiarkan setiap modul menentukan dokumen terbitan yang layak. Pemasangan langsung kini menetapkan konteks halaman publik sebelum komposisi sehingga halaman Lisensi publik tidak menjalankan penegakan sesi akun.
+
 ## Commit
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -53,3 +57,4 @@ Halaman Lisensi bawaan kini secara eksplisit bersifat publik, sedangkan Catatan 
 - [841e6c76](https://github.com/Cognis-Labs-HQ/Cognis/commit/841e6c76)
 - [234d0e03](https://github.com/Cognis-Labs-HQ/Cognis/commit/234d0e03)
 - [5f0ad5f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f0ad5f0)
+- [c44fcd61](https://github.com/Cognis-Labs-HQ/Cognis/commit/c44fcd61)

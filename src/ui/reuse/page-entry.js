@@ -313,6 +313,7 @@ export async function mountWhenDirect(
     { rootSelector = "#app", public: publicPage = false } = {},
 ) {
     if (globalThis.__spaRouter) return;
+    if (publicPage) globalThis.__cognisPublicSpaRoute = true;
     registerPageUnloadListeners();
     if (typeof window !== "undefined") {
         installRuntimeErrorHandlers();

@@ -6,6 +6,7 @@
  *   isFooterLinkActive(href, pathname) — checks whether a link owns a route.
  *   footerLinks — shared registry published as the `ui:footerLinks` capability.
  *   mountFooterLinks(root, options) — binds the shared registry to a page shell.
+ *   Registry instances expose withContexts() to scope contribution defaults.
  *
  * Usage:
  *   const footerLinks = uiCtx.capabilities.get('ui:footerLinks');
@@ -13,7 +14,7 @@
  *   remove();
  *
  * @param {{ onChange?: () => void }} options
- * @returns {{ add: (descriptor: object) => (() => void), remove: (id: string) => boolean, list: (side?: 'left'|'right') => Array<object>, subscribe: (listener: () => void) => (() => void) }}
+ * @returns {{ add: (descriptor: object) => (() => void), remove: (id: string) => boolean, list: (side?: 'left'|'right') => Array<object>, subscribe: (listener: () => void) => (() => void), withContexts: (contexts: string[], contribute: () => unknown) => Promise<unknown> }}
  */
 
 import { uiCtx } from "./ui-ctx.js";
@@ -21,6 +22,7 @@ import { uiCtx } from "./ui-ctx.js";
 export function createFooterLinkRegistry({ onChange } = {}) {
     const links = new Map();
     const listeners = new Set(onChange ? [onChange] : []);
+    let contributionContexts = null;
 
     function notify() {
         listeners.forEach((listener) => listener());
@@ -51,7 +53,7 @@ export function createFooterLinkRegistry({ onChange } = {}) {
                           .filter(Boolean),
                   ),
               ]
-            : ["application"];
+            : (contributionContexts ?? ["application"]);
         if (contexts.length === 0) {
             throw new Error("Footer links require at least one context.");
         }
@@ -73,9 +75,31 @@ export function createFooterLinkRegistry({ onChange } = {}) {
     }
 
     function remove(id) {
-        const removed = links.delete(String(id ?? "").trim());
-        if (removed) notify();
-        return removed;
+        const normalizedId = String(id ?? "").trim();
+        const existing = links.get(normalizedId);
+        if (!existing) return false;
+        if (!contributionContexts) {
+            links.delete(normalizedId);
+            notify();
+            return true;
+        }
+        const remainingContexts = existing.contexts.filter(
+            (context) => !contributionContexts.includes(context),
+        );
+        if (remainingContexts.length === existing.contexts.length) return false;
+        if (remainingContexts.length === 0) {
+            links.delete(normalizedId);
+        } else {
+            links.set(
+                normalizedId,
+                Object.freeze({
+                    ...existing,
+                    contexts: Object.freeze(remainingContexts),
+                }),
+            );
+        }
+        notify();
+        return true;
     }
 
     function list(side) {
@@ -88,7 +112,40 @@ export function createFooterLinkRegistry({ onChange } = {}) {
         return () => listeners.delete(listener);
     }
 
-    return { add, remove, list, subscribe };
+    /**
+     * Applies default rendering contexts to contributions made by a plugin.
+     *
+     * @param {string[]} contexts Rendering contexts owned by the caller.
+     * @param {() => unknown} contribute Loads or invokes the contributor.
+     * @returns {Promise<unknown>} The contributor result.
+     */
+    async function withContexts(contexts, contribute) {
+        if (typeof contribute !== "function") {
+            throw new Error("Footer context contribution requires a function.");
+        }
+        const normalizedContexts = [
+            ...new Set(
+                (Array.isArray(contexts) ? contexts : [])
+                    .map(String)
+                    .map((value) => value.trim())
+                    .filter(Boolean),
+            ),
+        ];
+        if (normalizedContexts.length === 0) {
+            throw new Error(
+                "Footer contributions require at least one context.",
+            );
+        }
+        const previousContexts = contributionContexts;
+        contributionContexts = normalizedContexts;
+        try {
+            return await contribute();
+        } finally {
+            contributionContexts = previousContexts;
+        }
+    }
+
+    return { add, remove, list, subscribe, withContexts };
 }
 
 export const footerLinks = createFooterLinkRegistry();

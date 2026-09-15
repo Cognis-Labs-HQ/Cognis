@@ -42,6 +42,10 @@ Beiträge für den Authentifizierungsfußbereich geben ihre derzeit zulässigen 
 
 Die integrierte Lizenzseite ist nun ausdrücklich öffentlich, während Änderungsprotokolle nur innerhalb der authentifizierten Anwendung verfügbar bleiben und in Authentifizierungsfußbereichen ausgeblendet werden. Der Page Composer vereinheitlicht öffentliche Modulseiten so, dass die anonyme Cognis-Oberfläche erhalten bleibt, statt das Dokument ohne Rahmen darzustellen.
 
+## Von Modulen veröffentlichte Authentifizierungslinks wiederherstellen
+
+Plugins für den Authentifizierungsfußbereich können Links wieder wie im bestehenden Modulvertrag beim Import beitragen. Cognis beschränkt diese Beiträge auf Authentifizierungsseiten, erhält anwendungsbezogene Links, wenn ein Plugin sie entfernt, und überlässt jedem Modul die Entscheidung, welche veröffentlichten Dokumente zulässig sind. Beim direkten Einbinden wird der öffentliche Seitenkontext nun vor der Komposition gesetzt, sodass die öffentliche Lizenzseite keine Kontositzung erzwingt.
+
 ## Commits
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -53,3 +57,4 @@ Die integrierte Lizenzseite ist nun ausdrücklich öffentlich, während Änderun
 - [841e6c76](https://github.com/Cognis-Labs-HQ/Cognis/commit/841e6c76)
 - [234d0e03](https://github.com/Cognis-Labs-HQ/Cognis/commit/234d0e03)
 - [5f0ad5f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f0ad5f0)
+- [c44fcd61](https://github.com/Cognis-Labs-HQ/Cognis/commit/c44fcd61)

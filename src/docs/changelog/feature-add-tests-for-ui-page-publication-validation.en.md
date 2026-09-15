@@ -42,6 +42,10 @@ Authentication-footer contributors now return their currently eligible links fro
 
 The built-in License page is now explicitly public, while Changelogs remain available only inside the authenticated application and are omitted from authentication footers. Public module pages are normalized by the page composer to retain the anonymous Cognis shell instead of rendering as an unframed document.
 
+## Restore module-published authentication links
+
+Authentication-footer plugins may once again contribute links as an import side effect, matching the established module contract. Cognis scopes those contributions to authentication pages, preserves application-only links when a plugin removes them, and lets each module decide which published documents are eligible. Direct mounting now establishes public-page context before composition, so the public License page does not invoke account-session enforcement.
+
 ## Commits
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -53,3 +57,4 @@ The built-in License page is now explicitly public, while Changelogs remain avai
 - [841e6c76](https://github.com/Cognis-Labs-HQ/Cognis/commit/841e6c76)
 - [234d0e03](https://github.com/Cognis-Labs-HQ/Cognis/commit/234d0e03)
 - [5f0ad5f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f0ad5f0)
+- [c44fcd61](https://github.com/Cognis-Labs-HQ/Cognis/commit/c44fcd61)
