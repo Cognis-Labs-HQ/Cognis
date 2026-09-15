@@ -159,6 +159,24 @@ export const AUTH_FLOW_CATALOG = Object.freeze([
         ],
     }),
     createFlowContract({
+        id: "gateAccountCreation",
+        owner: "registration",
+        description:
+            "Authorizes creation of a Cognis account after external authentication.",
+        stages: [
+            {
+                id: "inspectIdentity",
+                description:
+                    "Collect the external identity, provider email, and registration token.",
+            },
+            {
+                id: "authorizeCreation",
+                description:
+                    "Require a valid registration policy or token before account persistence.",
+            },
+        ],
+    }),
+    createFlowContract({
         id: "construct-settings-ui",
         owner: "ui",
         description:

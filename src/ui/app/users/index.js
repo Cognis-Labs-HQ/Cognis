@@ -95,7 +95,7 @@ async function loadRegistrationGatewayState() {
     const adapters = Array.isArray(adaptersPayload?.data)
         ? adaptersPayload.data
         : [];
-    const inviteAdapter = adapters.find((entry) => entry.id === "invite");
+    const inviteAdapter = adapters.find((entry) => entry.id === "token");
     return inviteAdapter?.enabled === true;
 }
 
@@ -705,13 +705,14 @@ async function triggerInviteFlow() {
                 return;
             }
             let errorMessage = i18n.t("ui.reuse.invite_failed");
-            try {
-                const errorBody = await response.json();
-                if (errorBody?.error?.code === "email_taken") {
-                    errorMessage = i18n.t("ui.reuse.invite_email_taken");
-                }
-            } catch {
-                // fall through to the default invite_failed message in errorMessage
+            const errorBody = await response.json().catch((error) => {
+                console.error("registration_token_error_response_invalid", {
+                    error,
+                });
+                return null;
+            });
+            if (errorBody?.error?.code === "email_taken") {
+                errorMessage = i18n.t("ui.reuse.invite_email_taken");
             }
             showToast(errorMessage, { variant: "error" });
         },

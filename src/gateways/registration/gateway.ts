@@ -30,6 +30,10 @@ export interface RegistrationInviteAdapter {
         revokedByAccountId: string;
     }): Promise<boolean>;
     resolveInvite(token: string): Promise<InviteRecord | null>;
+    consumeExternalAccountToken(input: {
+        token: string;
+        accountId: string;
+    }): Promise<boolean>;
     redeemInvite(input: {
         token: string;
         username: string;
@@ -60,6 +64,7 @@ export interface RegistrationGatewayAdapter {
     version?: string;
     publisher?: string;
     defaultEnabled?: boolean;
+    locked?: boolean;
     invite?: RegistrationInviteAdapter;
     public?: RegistrationPublicAdapter;
 }
@@ -70,6 +75,7 @@ export interface RegistrationAdapterInfo {
     version?: string;
     publisher?: string;
     enabled: boolean;
+    locked?: boolean;
 }
 
 export interface RegistrationAdapterDeps {
@@ -183,6 +189,7 @@ export class CoreRegistrationGateway {
             ...(adapter.version ? { version: adapter.version } : {}),
             ...(adapter.publisher ? { publisher: adapter.publisher } : {}),
             enabled: this.enabledAdapters.has(adapter.id),
+            ...(adapter.locked ? { locked: true } : {}),
         }));
     }
 
@@ -193,7 +200,9 @@ export class CoreRegistrationGateway {
     }
 
     async disableAdapter(adapterId: string): Promise<void> {
-        if (!this.adapters.has(adapterId)) throw new Error("not_found");
+        const adapter = this.adapters.get(adapterId);
+        if (!adapter) throw new Error("not_found");
+        if (adapter.locked) throw new Error("adapter_locked");
         this.enabledAdapters.delete(adapterId);
         await this.saveAdapterEnabled(adapterId, false);
     }
@@ -249,6 +258,15 @@ export class CoreRegistrationGateway {
         const adapter = this.getInviteAdapter();
         if (!adapter) return null;
         return adapter.resolveInvite(token);
+    }
+
+    async consumeExternalAccountToken(input: {
+        token: string;
+        accountId: string;
+    }) {
+        const adapter = this.getInviteAdapter();
+        if (!adapter) throw new Error("invite_disabled");
+        return adapter.consumeExternalAccountToken(input);
     }
 
     async redeemInvite(input: {

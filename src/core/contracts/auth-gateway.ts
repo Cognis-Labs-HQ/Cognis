@@ -14,6 +14,7 @@ export interface AuthContext {
     provider: string;
     externalUserId: string;
     email?: string;
+    registrationToken?: string;
     role?: string;
 }
 

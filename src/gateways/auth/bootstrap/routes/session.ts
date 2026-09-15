@@ -252,6 +252,26 @@ export function createSessionRoutes({
             );
             return true;
         }
+        if (outcome === "account_creation_required") {
+            log?.("info", "Held external login for account authorization.", {
+                ...logMeta,
+                emailRequired: sessionResult.emailRequired === true,
+            });
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "account_creation_required",
+                        message:
+                            "Account registration authorization is required.",
+                    },
+                    data: {
+                        emailRequired: sessionResult.emailRequired === true,
+                    },
+                }),
+            );
+            return true;
+        }
         if (outcome === "tfa_unavailable") {
             log?.(
                 "warn",

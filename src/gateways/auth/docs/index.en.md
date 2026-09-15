@@ -62,6 +62,8 @@ Capabilities contributed:
 
 Authentication providers may call `auth:registerLoginButton` after `auth:registerProvider`. The descriptor requires the registered `providerId`, a complete localized `label`, and a same-origin `iconUrl`. Optional `backgroundColor`, `borderColor`, and `textColor` values use six-digit hexadecimal colors. The login page always renders the icon and full label at both compact and wide viewport sizes. Providers must call the returned cleanup function when their contribution is disabled. Unstyled non-credential methods are omitted rather than rendered as generic login buttons.
 
+External-provider sessions pass through `gateAccountCreation` before `ensureExternalAccount`. When open registration is disabled, the session must carry a registration token and a matching provider email. A held session returns `account_creation_required` with `emailRequired` so the provider UI can request a missing email or abort cleanly when the user cancels.
+
 ## API Routes
 
 | Method | Path                                         | Description                                       | Auth  |

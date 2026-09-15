@@ -13,6 +13,7 @@ import { CoreRegistrationGateway } from "../gateway.js";
 import { createRegistrationPageRoutes } from "./page-routes.js";
 import { createRegistrationRoutes } from "./registration-routes.js";
 import { createGatewayAdapterRoutes } from "./adapter-admin-routes.js";
+import { authorizeAccountCreation } from "./account-creation-gate.js";
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const manifestVersion = await readGatewayManifestVersion(
@@ -179,6 +180,24 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         },
     );
 
+    if (ctx.flow.exists("gateAccountCreation")) {
+        ctx.flow.extend(
+            "gateAccountCreation",
+            "authorizeCreation",
+            { id: "registration-gateway:authorize-account-creation" },
+            (stageContext) =>
+                authorizeAccountCreation(
+                    gateway,
+                    isGatewayEnabled(),
+                    (stageContext.input ?? {}) as {
+                        accountId?: string;
+                        email?: string;
+                        registrationToken?: string;
+                    },
+                ),
+        );
+    }
+
     ctx.routeRegistry.register(
         createGatewayAdapterRoutes(
             "registration",
@@ -195,7 +214,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         name: "Registration Gateway",
         version: manifestVersion,
         description:
-            "Registration workflows via pluggable invite/public adapters.",
+            "Registration workflows through mandatory tokens and optional public registration.",
         publisher: "Cognis Labs HQ",
         hasAdapters: true,
     });

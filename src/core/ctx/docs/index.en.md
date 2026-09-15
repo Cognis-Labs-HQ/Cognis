@@ -2,6 +2,8 @@
 
 The `startSsoLogin` flow starts redirect-based authentication without submitting credential fields. Provider hooks validate their selected provider during `validateProvider`, then create state and return `{ providerId, redirectUrl }` from `initiateAuthorization`. Cognis accepts only relative or HTTPS redirect URLs.
 
+The mandatory `gateAccountCreation` flow runs before an external identity can create a Cognis account. Public registration authorizes creation directly; otherwise the registration gateway requires a single-use registration token whose email matches the provider identity. A missing provider email produces `emailRequired: true`, allowing the SSO surface to ask for it, while cancellation or missing authorization leaves the account uncreated and aborts login.
+
 ## Overview
 
 `src/core/ctx/` defines the platform-level `ctx` capability bus as a dedicated core surface. It is intentionally unassuming: components contribute capabilities, register flows, and inject staged flow hooks without importing each other's internals.
@@ -85,6 +87,7 @@ Use these well-known stage names when contributing hooks to canonical flows:
 | ------------------------ | --------------------------------------------------------------------- |
 | `login`                  | `resolve-provider`, `authenticate`, `establish-session`               |
 | `startSsoLogin`          | `validateProvider`, `initiateAuthorization`                           |
+| `gateAccountCreation`    | `inspectIdentity`, `authorizeCreation`                                |
 | `construct-login-ui`     | `resolve-shell`, `resolve-methods`, `augment-methods`, `compose-form` |
 | `construct-settings-ui`  | `resolve-sections`, `augment-sections`, `compose-page`                |
 | `bootstrap-platform`     | `register-flows`, `post-boot`                                         |

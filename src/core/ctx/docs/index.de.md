@@ -2,6 +2,8 @@
 
 Der Ablauf `startSsoLogin` startet eine umleitungsbasierte Authentifizierung, ohne Anmeldedatenfelder zu übermitteln. Anbieter-Hooks prüfen den ausgewählten Anbieter in `validateProvider`, erstellen anschließend den Status und geben in `initiateAuthorization` `{ providerId, redirectUrl }` zurück. Cognis akzeptiert nur relative oder HTTPS-Umleitungs-URLs.
 
+Der verpflichtende Ablauf `gateAccountCreation` wird ausgeführt, bevor eine externe Identität ein Cognis-Konto erstellen kann. Die öffentliche Registrierung autorisiert die Erstellung direkt; andernfalls verlangt das Registrierungs-Gateway ein einmalig verwendbares Registrierungstoken, dessen E-Mail-Adresse mit der Anbieteridentität übereinstimmt. Eine fehlende Anbieter-E-Mail ergibt `emailRequired: true`, damit die SSO-Oberfläche danach fragen kann. Bei Abbruch oder fehlender Autorisierung wird kein Konto erstellt und die Anmeldung abgebrochen.
+
 ## Übersicht
 
 `src/core/ctx/` definiert den plattformweiten `ctx`-Capability-Bus als eigene Core-Oberfläche. Er ist bewusst unaufdringlich: Komponenten tragen Capabilities bei, registrieren Flows und injizieren gestufte Flow-Hooks, ohne interne Implementierungen anderer Komponenten zu importieren.

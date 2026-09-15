@@ -55,6 +55,12 @@ test("core flow catalog exposes canonical auth flow contracts", () => {
         ["validateProvider", "initiateAuthorization"],
     );
     assert.deepEqual(
+        getCanonicalFlowContract("gateAccountCreation")?.stages.map(
+            (stage) => stage.id,
+        ),
+        ["inspectIdentity", "authorizeCreation"],
+    );
+    assert.deepEqual(
         getCanonicalFlowContract("ldap-auth")?.stages.map((stage) => stage.id),
         ["resolve-adapter", "authenticate", "map-account"],
     );

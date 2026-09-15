@@ -343,3 +343,65 @@ test("login succeeds without TFA flow hook even when tfa:getLoginMethods is abse
     assert.equal(payload.data.tfaRequired, undefined);
     assert.equal(typeof loginResult.res.headers["set-cookie"], "string");
 });
+
+test("external login cannot create an account without registration authorization", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const db = new InMemoryTestExecutor();
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db,
+    });
+    const registerProvider = capabilities.require<
+        (provider: {
+            id: string;
+            name: string;
+            locked: boolean;
+            authenticate: () => Promise<{
+                accountId: string;
+                provider: string;
+                email: string;
+            }>;
+            configure: () => void;
+            getConfigSchema: () => [];
+        }) => () => void
+    >("auth:registerProvider");
+    const unregister = registerProvider({
+        id: "external-sso",
+        name: "External SSO",
+        locked: true,
+        async authenticate() {
+            return {
+                accountId: "external-user",
+                provider: "external-sso",
+                email: "external@example.com",
+            };
+        },
+        configure() {},
+        getConfigSchema() {
+            return [];
+        },
+    });
+
+    const loginResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", { provider: "external-sso" }),
+        "/api/v1/auth/login",
+    );
+    assert.equal(loginResult.res.status, 403);
+    assert.deepEqual(JSON.parse(loginResult.res.payload), {
+        error: {
+            code: "account_creation_required",
+            message: "Account registration authorization is required.",
+        },
+        data: { emailRequired: false },
+    });
+    const accountStore = capabilities.require<{
+        getInfo(accountId: string): Promise<unknown>;
+    }>("auth:accountStore");
+    assert.equal(await accountStore.getInfo("external-user"), null);
+    unregister();
+});

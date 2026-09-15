@@ -62,6 +62,8 @@ Beigetragene Capabilities:
 
 Authentifizierungsanbieter können `auth:registerLoginButton` nach `auth:registerProvider` aufrufen. Der Deskriptor erfordert die registrierte `providerId`, ein vollständig lokalisiertes `label` und eine gleichursprüngliche `iconUrl`. Optionale Werte für `backgroundColor`, `borderColor` und `textColor` verwenden sechsstellige Hexadezimalfarben. Die Anmeldeseite zeigt sowohl in kompakten als auch in breiten Ansichten immer das Symbol und die vollständige Beschriftung. Anbieter müssen die zurückgegebene Bereinigungsfunktion aufrufen, wenn ihr Beitrag deaktiviert wird. Nicht gestaltete Methoden ohne Anmeldedaten werden ausgelassen, anstatt als generische Anmeldeschaltflächen dargestellt zu werden.
 
+Sitzungen externer Anbieter durchlaufen `gateAccountCreation` vor `ensureExternalAccount`. Wenn die offene Registrierung deaktiviert ist, muss die Sitzung ein Registrierungstoken und eine passende Anbieter-E-Mail enthalten. Eine angehaltene Sitzung gibt `account_creation_required` mit `emailRequired` zurück, damit die Anbieteroberfläche eine fehlende E-Mail anfordern oder bei Abbruch sauber beenden kann.
+
 ## API-Routen
 
 | Methode | Pfad                                         | Beschreibung                                             | Authentifizierung |

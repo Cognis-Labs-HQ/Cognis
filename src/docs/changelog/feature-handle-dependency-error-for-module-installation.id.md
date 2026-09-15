@@ -14,6 +14,10 @@ Penyedia autentikasi dapat mendaftarkan tombol masuk bermerek yang dapat dihapus
 
 Tombol penyedia bermerek kini memulai alur kanonis `startSsoLogin`, bukan mengirimkan formulir nama pengguna dan kata sandi. Hook penyedia memvalidasi penyedia dan mengembalikan pengalihan otorisasi relatif atau HTTPS yang aman, sedangkan kegagalan dicatat dan ditampilkan sebagai toast yang dilokalkan.
 
+## Pembuatan akun bertoken
+
+Autentikasi eksternal kini melewati alur wajib `gateAccountCreation` sebelum Cognis menyimpan akun baru. Pendaftaran terbuka mengizinkan pembuatan secara langsung; pendaftaran tertutup mewajibkan token sekali pakai yang cocok dengan email penyedia dan melaporkan kapan UI SSO harus meminta email yang belum ada. Adapter Token Pendaftaran terpadu kini memiliki token undangan dan otorisasi SSO, bergantung pada pengiriman SMTP, tidak dapat dinonaktifkan, serta menyediakan tindakan undangan pada halaman Pengguna bagi administrator dan pendiri.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -21,3 +25,4 @@ Tombol penyedia bermerek kini memulai alur kanonis `startSsoLogin`, bukan mengir
 - [4eb78e44](https://github.com/Cognis-Labs-HQ/Cognis/commit/4eb78e4433e7371533c1cd9d26bdca0e82f006f9)
 - [5bd254bb](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bd254bb88a817bfe40e86eb32d25d53661ce5eb)
 - [83ca6396](https://github.com/Cognis-Labs-HQ/Cognis/commit/83ca639667ff46fb7a66afeaa69b4145383a9da9)
+- [88985bd5](https://github.com/Cognis-Labs-HQ/Cognis/commit/88985bd515cdbc7539c2326812879e67a39a1143)
