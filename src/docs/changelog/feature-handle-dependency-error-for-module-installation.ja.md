@@ -22,6 +22,10 @@
 
 匿名ログインページでログイン方法の読み込みや SSO 開始に失敗しても、認証が必要なサーバーログエンドポイントを呼び出さなくなりました。2 回目の HTTP 401 要求や未処理のログ拒否を発生させず、元のローカライズされたログインエラーを表示し続けます。
 
+## 組み合わせ可能な SSO 開始フック
+
+SSO リダイレクトの解決時に、意図的に結果を返さないフローフックを無視するようになりました。これにより、無関係な `initiateAuthorization` 参加者が SSO 要求を監視または辞退しても、選択されたプロバイダーが認可 URL を返す前にリダイレクト選択が停止しません。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -32,3 +36,4 @@
 - [88985bd5](https://github.com/Cognis-Labs-HQ/Cognis/commit/88985bd515cdbc7539c2326812879e67a39a1143)
 - [4120a69d](https://github.com/Cognis-Labs-HQ/Cognis/commit/4120a69d267eaf07897bed979032b2e7706e1a7c)
 - [a4c928d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a4c928d82c7c42ee4a9ec4f295199d008abc9137)
+- [fa24bfec](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa24bfec261a358e17e6bbb9078b160a1b4cb903)

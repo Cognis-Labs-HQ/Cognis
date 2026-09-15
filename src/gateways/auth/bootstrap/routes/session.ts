@@ -164,6 +164,13 @@ export function createSessionRoutes({
         for (const stageResult of flowResult.stageResults[
             "initiateAuthorization"
         ] ?? []) {
+            if (
+                !stageResult ||
+                typeof stageResult !== "object" ||
+                Array.isArray(stageResult)
+            ) {
+                continue;
+            }
             const result = stageResult as {
                 providerId?: unknown;
                 redirectUrl?: unknown;

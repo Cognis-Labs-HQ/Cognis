@@ -22,6 +22,10 @@ Autentikasi eksternal kini melewati alur wajib `gateAccountCreation` sebelum Cog
 
 Kegagalan pemuatan metode login dan permulaan SSO pada halaman login anonim tidak lagi memanggil endpoint log server yang memerlukan autentikasi. Kesalahan login terlokalisasi yang asli tetap terlihat tanpa membuat permintaan HTTP 401 kedua atau penolakan pencatatan yang tidak tertangani.
 
+## Hook permulaan SSO yang dapat digabungkan
+
+Penyelesaian pengalihan SSO kini mengabaikan hook alur yang sengaja tidak mengembalikan hasil. Peserta `initiateAuthorization` yang tidak terkait dapat mengamati atau menolak permintaan SSO tanpa merusak pemilihan pengalihan sebelum penyedia terpilih mengembalikan URL otorisasinya.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -32,3 +36,4 @@ Kegagalan pemuatan metode login dan permulaan SSO pada halaman login anonim tida
 - [88985bd5](https://github.com/Cognis-Labs-HQ/Cognis/commit/88985bd515cdbc7539c2326812879e67a39a1143)
 - [4120a69d](https://github.com/Cognis-Labs-HQ/Cognis/commit/4120a69d267eaf07897bed979032b2e7706e1a7c)
 - [a4c928d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a4c928d82c7c42ee4a9ec4f295199d008abc9137)
+- [fa24bfec](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa24bfec261a358e17e6bbb9078b160a1b4cb903)

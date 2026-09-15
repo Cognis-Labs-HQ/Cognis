@@ -144,6 +144,12 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
     systemCtx.flow.extend(
         "startSsoLogin",
         "initiateAuthorization",
+        { id: "test:unrelated-sso-hook" },
+        () => undefined,
+    );
+    systemCtx.flow.extend(
+        "startSsoLogin",
+        "initiateAuthorization",
         { id: "test:reject-protocol-relative-redirect" },
         (stageContext) => ({
             providerId: stageContext.input.providerId,

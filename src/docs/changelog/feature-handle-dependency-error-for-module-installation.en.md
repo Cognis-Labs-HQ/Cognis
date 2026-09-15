@@ -22,6 +22,10 @@ External authentication now passes through the mandatory `gateAccountCreation` f
 
 Login-method and SSO-start failures on the anonymous login page no longer call the authenticated server-log endpoint. The original localized login error remains visible without creating a second HTTP 401 request or an unhandled logging rejection.
 
+## Composable SSO start hooks
+
+SSO redirect resolution now ignores flow hooks that intentionally return no result. An unrelated `initiateAuthorization` participant can therefore observe or decline an SSO request without crashing redirect selection before the selected provider returns its authorization URL.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -32,3 +36,4 @@ Login-method and SSO-start failures on the anonymous login page no longer call t
 - [88985bd5](https://github.com/Cognis-Labs-HQ/Cognis/commit/88985bd515cdbc7539c2326812879e67a39a1143)
 - [4120a69d](https://github.com/Cognis-Labs-HQ/Cognis/commit/4120a69d267eaf07897bed979032b2e7706e1a7c)
 - [a4c928d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a4c928d82c7c42ee4a9ec4f295199d008abc9137)
+- [fa24bfec](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa24bfec261a358e17e6bbb9078b160a1b4cb903)
