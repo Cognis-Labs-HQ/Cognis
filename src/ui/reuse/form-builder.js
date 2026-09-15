@@ -42,6 +42,8 @@
  *   submitButtonClassName?: string,
  *   submitLabelKey: string,
  *   includeSubmitButton?: boolean,
+ *   trustedContentHtml?: string,
+ *   formAttributes?: Record<string, string|number|boolean>,
  *   fields: Array<{
  *     name: string,
  *     labelKey?: string,
@@ -95,6 +97,7 @@ export function createFormBuilder(ctx, options) {
         options?.submitButtonClassName ?? "btn-confirm btn-animated",
     ).trim();
     const includeSubmitButton = options?.includeSubmitButton !== false;
+    const trustedContentHtml = String(options?.trustedContentHtml ?? "");
     const submitLabelKey = String(
         options?.submitLabelKey ?? "ui.reuse.save",
     ).trim();
@@ -273,11 +276,15 @@ export function createFormBuilder(ctx, options) {
             .map((fieldConfig) => renderField(fieldConfig))
             .join("");
         const formClassAttribute = formClassName ? ` ${formClassName}` : "";
+        const formAttributes = Object.entries(options?.formAttributes ?? {})
+            .map(([name, value]) => renderAttribute(name, value))
+            .join("");
         const submitButtonMarkup = includeSubmitButton
             ? `<button type="submit" class="${escapeHtml(submitButtonClassName)}">${escapeHtml(i18n.t(submitLabelKey))}</button>`
             : "";
         return `
-      <form id="${escapeHtml(formId)}" class="form-builder stack${formClassAttribute}">
+      <form id="${escapeHtml(formId)}" class="form-builder stack${formClassAttribute}"${formAttributes}>
+        ${trustedContentHtml}
         ${renderedFields}
         ${submitButtonMarkup}
       </form>

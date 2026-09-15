@@ -432,18 +432,6 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/license") {
-            const loginRedirect = await resolveLoginRedirectLocation(
-                req,
-                ctx,
-                accountStore,
-                log,
-            );
-            if (loginRedirect) {
-                res.writeHead(302, { location: loginRedirect });
-                res.end();
-                return true;
-            }
-
             await htmlResponse.serveHtmlPage(
                 res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "license.html"),
@@ -717,17 +705,34 @@ export function createUiRoutes(
             return true;
 
         if (url.pathname === "/api/v1/ui/app-routes" && req.method === "GET") {
-            const claims = ctx.requireAuth(req, res, "user");
-            if (!claims) return true;
+            const claims = ctx.getAuthClaims(req);
             const routes = (uiRegistry?.listSpaRoutes() ?? []).filter(
                 (route) =>
                     (!route.isEnabled || route.isEnabled()) &&
-                    isRoleAllowed(claims.role, route.access),
+                    (claims
+                        ? isRoleAllowed(claims.role, route.access)
+                        : route.public === true),
             );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
                     data: versionDescriptor(routes, ASSET_VERSION),
+                }),
+            );
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/ui/auth-footer-plugins" &&
+            req.method === "GET"
+        ) {
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: versionDescriptor(
+                        uiRegistry?.listAuthFooterPlugins() ?? [],
+                        ASSET_VERSION,
+                    ).map(({ scriptUrl }) => ({ scriptUrl })),
                 }),
             );
             return true;

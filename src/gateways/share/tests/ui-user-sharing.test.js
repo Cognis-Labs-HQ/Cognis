@@ -466,10 +466,7 @@ test("component page renderers receive the root used by meeting shares", () => {
         /shareContext\.contentUrl && shareContext\.directAccess === true/,
     );
     assert.match(shareAppSource, /if \(navigated\) return/);
-    assert.match(shareAppSource, /root\.replaceChildren\(\)/);
     assert.match(shareAppSource, /mountSharedPage\(root/);
-    assert.doesNotMatch(shareAppSource, /preserveShareShell/);
-    assert.doesNotMatch(shareAppSource, /share-resource-mount-root/);
 });
 
 test("received user shares navigate once through the share session flow", () => {

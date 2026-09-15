@@ -51,8 +51,8 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.22` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.20` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `2.0.4`  |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.10` |
-| Calls (Social)        | `src/adapters/social/call/`         | `0.5.26` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.11` |
+| Calls (Social)        | `src/adapters/social/call/`         | `0.5.27` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10` |
@@ -65,8 +65,8 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                          | Version   |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.28`  |
-| Share                 | `src/gateways/share/`         | `1.7.46`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.31`  |
+| Share                 | `src/gateways/share/`         | `1.7.47`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.19`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.11`  |
 | Social                | `src/gateways/social/`        | `1.3.5`   |
@@ -75,7 +75,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
 | Study                 | `src/gateways/study/`         | `1.5.14`  |
-| Calendar              | `src/gateways/calendar/`      | `1.4.108` |
+| Calendar              | `src/gateways/calendar/`      | `1.4.109` |
 
 ## Kernverträge
 

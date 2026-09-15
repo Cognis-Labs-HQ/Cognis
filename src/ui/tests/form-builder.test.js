@@ -44,6 +44,27 @@ test("form builder applies theme styling to every select control", () => {
     assert.match(builder.render(), /class="form-builder-input theme-select"/);
 });
 
+test("form builder owns complex form wrappers and attributes", () => {
+    const builder = createFormBuilder(
+        {
+            i18n: { t: (key) => key },
+            escapeHtml: (value) => String(value),
+        },
+        {
+            formId: "custom-form",
+            includeSubmitButton: false,
+            fields: [],
+            trustedContentHtml: "<fieldset data-owned-content></fieldset>",
+            formAttributes: { "data-form-memory": "true" },
+        },
+    );
+
+    assert.match(
+        builder.render(),
+        /<form id="custom-form"[^>]*data-form-memory="true">[\s\S]*<fieldset data-owned-content><\/fieldset>/,
+    );
+});
+
 test("form builder renders trusted integration label markup", () => {
     const builder = createFormBuilder(
         {

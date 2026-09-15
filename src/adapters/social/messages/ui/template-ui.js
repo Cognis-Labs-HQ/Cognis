@@ -1,4 +1,5 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import {
@@ -58,11 +59,19 @@ export function createMessageTemplatesUi({
     }
 
     function renderTemplatePopupBody(isEditing) {
-        return `<form
-      class="messages-template-editor"
-      id="messages-template-editor"
-      aria-label="${escapeHtml(i18n.t("module.social.messages.template_editor"))}"
-    >
+        return createFormBuilder(
+            { i18n, escapeHtml },
+            {
+                formId: "messages-template-editor",
+                formClassName: "messages-template-editor",
+                includeSubmitButton: false,
+                fields: [],
+                formAttributes: {
+                    "aria-label": i18n.t(
+                        "module.social.messages.template_editor",
+                    ),
+                },
+                trustedContentHtml: `
       <label class="messages-template-label" for="messages-template-title">${escapeHtml(i18n.t("module.social.messages.template_title"))}</label>
       <input
         id="messages-template-title"
@@ -94,7 +103,9 @@ export function createMessageTemplatesUi({
       <div class="messages-template-actions">
         <button type="submit" class="btn-confirm btn-animated">${escapeHtml(isEditing ? i18n.t("ui.reuse.save") : i18n.t("ui.reuse.create"))}</button>
       </div>
-    </form>`;
+    `,
+            },
+        ).render();
     }
 
     function editTemplateById(templateId) {

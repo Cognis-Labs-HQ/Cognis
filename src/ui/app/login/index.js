@@ -1,8 +1,14 @@
 import { renderInPageCallout } from "../../reuse/in-page-callout.js";
+import {
+    loadAuthFooterPlugins,
+    mountAuthFooter,
+    renderAuthFooter,
+} from "../../reuse/auth-footer.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { createFormBuilder } from "../../reuse/form-builder.js";
 import { showToast } from "../../reuse/toast.js";
 import { openPopup } from "../../reuse/popup.js";
 import {
@@ -31,9 +37,12 @@ const AUTH_SOURCE_PREFERENCE_KEY = "cognis_login_auth_source";
  * @param {HTMLElement} root - Target app container.
  * @returns {Promise<void>} Resolves when the page has finished initialising.
  */
-export async function mount(root) {
+export async function mount(root, { signal } = {}) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.login");
+    await loadAuthFooterPlugins().catch(() => {
+        showToast(i18n.t("ui.app.login.error.generic"), { variant: "error" });
+    });
     let currentTfaLoginAttemptId = null;
     let pendingKeyringPassword = "";
     let lastTfaPayload = null;
@@ -737,18 +746,29 @@ export async function mount(root) {
                   footerHtml: `<a href="/register" class="in-page-callout__link">${escapeHtml(i18n.t("ui.app.login.not_registered.link"))}</a>`,
               })}</div>`
             : "";
-        const formPanelHtml = `
-      ${mobileBrandlineHtml}
-      <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
-      <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
-      <form id="login-form" class="stack auth-form" method="POST">
+        const loginFormBuilder = createFormBuilder(
+            { i18n, escapeHtml },
+            {
+                formId: "login-form",
+                formClassName: "auth-form",
+                includeSubmitButton: false,
+                fields: [],
+                trustedContentHtml: `
         <input type="hidden" id="login-provider" value="local" />
         <div id="login-credential-fields">${renderCredentialFields()}</div>
         <div id="login-tfa-fields" hidden></div>
         ${signupCalloutHtml}
         <button type="submit" id="login-form-submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
-      </form>
+      `,
+            },
+        );
+        const formPanelHtml = `
+      ${mobileBrandlineHtml}
+      <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
+      <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
+      ${loginFormBuilder.render()}
       <div id="sso-buttons" class="sso-buttons"></div>
+      ${renderAuthFooter()}
     `;
         return renderAuthLayout({
             introPanelAriaLabel: i18n.t("ui.app.login.intro.aria"),
@@ -785,6 +805,7 @@ export async function mount(root) {
                 },
                 render: () => renderLoginShell(),
                 onRender: () => {
+                    mountAuthFooter(root, { i18n, signal });
                     resetPasswordResetMode();
                     if (lastTfaPayload !== null) {
                         // Restore saved TFA prompt state; on failure, fall through to login-method loading (lines 609-610 below).

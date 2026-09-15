@@ -89,6 +89,8 @@ export interface SpaRoute {
     capabilityScripts?: string[];
     /** Optional role access policy for this route. */
     access?: RoleAccessPolicy;
+    /** Allows the route shell and descriptor to be served without a session. */
+    public?: boolean;
     /** Optional runtime predicate used to hide routes while owner is disabled. */
     isEnabled?: () => boolean;
     ownerId?: string;
@@ -109,6 +111,12 @@ export interface AuthTypingMessage {
     ownerId?: string;
     access?: RoleAccessPolicy;
     isEnabled?: () => boolean;
+}
+
+export interface AuthFooterPlugin {
+    scriptUrl: string;
+    isEnabled?: () => boolean;
+    ownerId?: string;
 }
 
 /**
@@ -145,6 +153,7 @@ export class UIRegistry {
     private readonly capabilityProviders: UiCapabilityProvider[] = [];
     private readonly spaRoutes: SpaRoute[] = [];
     private readonly authTypingMessages: AuthTypingMessage[] = [];
+    private readonly authFooterPlugins: AuthFooterPlugin[] = [];
     private readonly settingsSections: SettingsSection[] = [];
 
     constructor(manifestPath = process.env.COGNIS_UI_ASSET_MANIFEST) {
@@ -231,6 +240,9 @@ export class UIRegistry {
     }
 
     registerSpaRoute(route: SpaRoute): void {
+        if (route.public === true && route.access) {
+            throw new TypeError("public_spa_route_cannot_require_role");
+        }
         if (route.componentPage) {
             const { labelKey, descriptionKey, modes } = route.componentPage;
             if (
@@ -253,6 +265,18 @@ export class UIRegistry {
 
     registerAuthTypingMessage(message: AuthTypingMessage): void {
         this.authTypingMessages.push(message);
+    }
+
+    registerAuthFooterPlugin(plugin: AuthFooterPlugin): void {
+        this.authFooterPlugins.push(plugin);
+    }
+
+    listAuthFooterPlugins(): AuthFooterPlugin[] {
+        return this.resolveDescriptor(
+            this.authFooterPlugins.filter(
+                (plugin) => !plugin.isEnabled || plugin.isEnabled(),
+            ),
+        );
     }
 
     registerSettingsSection(section: SettingsSection): void {
@@ -298,6 +322,7 @@ export class UIRegistry {
         this.removeOwned(this.navbarPlugins, moduleId);
         this.removeOwned(this.spaRoutes, moduleId);
         this.removeOwned(this.authTypingMessages, moduleId);
+        this.removeOwned(this.authFooterPlugins, moduleId);
         this.removeOwned(this.settingsSections, moduleId);
         for (const prefix of this.moduleStaticDirs.keys()) {
             if (prefix === moduleId || prefix.startsWith(`${moduleId}/`)) {

@@ -79,6 +79,7 @@ interface ModuleUiRegistrationContext {
         scriptUrl: string;
         stylesheets?: string[];
         access?: RoleAccessPolicy;
+        public?: boolean;
         requiredCapabilities?: string[];
         componentPage?: {
             labelKey: string;
@@ -86,6 +87,7 @@ interface ModuleUiRegistrationContext {
             modes: Array<"overlay" | "fullscreen" | "pip">;
         };
     }): void;
+    registerAuthFooterPlugin(plugin: { scriptUrl: string }): void;
     registerSettingsSection(section: {
         id: string;
         label: string;
@@ -507,6 +509,15 @@ export function createModuleExtensionRoutes(
                         ),
                     ownerId: moduleId,
                     ownerUuid: manifest.uuid,
+                    isEnabled: () => isModuleEnabled(moduleId),
+                });
+            },
+            registerAuthFooterPlugin(plugin) {
+                requireActiveBootstrap();
+                if (!moduleEnabled) return;
+                options?.uiRegistry?.registerAuthFooterPlugin({
+                    ...plugin,
+                    ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
             },

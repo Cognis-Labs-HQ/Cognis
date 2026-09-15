@@ -170,6 +170,34 @@ test("UIRegistry registers and lists SPA routes", () => {
     assert.equal(reg.resolveSpaRoute("/settings"), undefined);
 });
 
+test("UIRegistry registers enabled authentication footer plugins", () => {
+    const reg = new UIRegistry();
+    reg.registerAuthFooterPlugin({ scriptUrl: "/legal-footer.js" });
+    reg.registerAuthFooterPlugin({
+        scriptUrl: "/disabled-footer.js",
+        isEnabled: () => false,
+    });
+    assert.deepEqual(reg.listAuthFooterPlugins(), [
+        { scriptUrl: "/legal-footer.js" },
+    ]);
+});
+
+test("UIRegistry rejects role restrictions on public SPA routes", () => {
+    const reg = new UIRegistry();
+    assert.throws(
+        () =>
+            reg.registerSpaRoute({
+                id: "invalid-public-page",
+                pattern: "^/public$",
+                base: "/public",
+                scriptUrl: "/public.js",
+                public: true,
+                access: { minRole: "user" },
+            }),
+        /public_spa_route_cannot_require_role/,
+    );
+});
+
 test("UIRegistry selects only declared UI capability provider scripts", () => {
     const reg = new UIRegistry();
     reg.registerNavbarPlugin({

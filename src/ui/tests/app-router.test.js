@@ -68,7 +68,7 @@ test("all dashboard pages call mount on direct browser load", () => {
         );
         assert.match(
             src,
-            /await mountWhenDirect\(mount\)/,
+            /await mountWhenDirect\(mount(?:,\s*\{[^}]*\})?\)/,
             `${page}/index.js must call mountWhenDirect(mount) for direct URL access`,
         );
     }
@@ -292,8 +292,8 @@ test("dashboard-layout initialises the router after shell setup", () => {
     );
     assert.match(
         src,
-        /initRouter\(root\)/,
-        "dashboard-layout.js must call initRouter(root)",
+        /if \(!componentWindow\) \{\s*initRouter\(root\);\s*bindThemeToggle/,
+        "dashboard-layout.js must initialize routing independently of account enhancements",
     );
     assert.doesNotMatch(
         src,
@@ -479,6 +479,25 @@ test("router mounts the native error page without account authentication", () =>
     );
 });
 
+test("router mounts the license page without account authentication", () => {
+    const routerSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(routerSource, /id:\s*"core\.license"[\s\S]*?public:\s*true/);
+});
+
+test("public module pages retain the anonymous Cognis shell", () => {
+    const composerSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
+        "utf8",
+    );
+    assert.match(
+        composerSource,
+        /__cognisPublicSpaRoute === true[\s\S]*publicPageContext[\s\S]*showTopbar = true[\s\S]*showNavbar = false[\s\S]*showFooter = true[\s\S]*frameless = false/,
+    );
+});
+
 test("navbar avatar refresh preserves a resolved image during SPA plugin loading", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
@@ -516,4 +535,17 @@ test("direct SPA entry loads capability providers before the route module", () =
 
     assert.ok(providerImport >= 0);
     assert.ok(routeImport > providerImport);
+    assert.match(source, /__cognisPublicSpaRoute = config\.public === true/);
+    const pageEntrySource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-entry.js"),
+        "utf8",
+    );
+    assert.match(
+        pageEntrySource,
+        /__cognisPublicSpaRoute !== true[\s\S]*flowExists\("load-page"\)/,
+    );
+    assert.match(
+        pageEntrySource,
+        /if \(publicPage\) globalThis\.__cognisPublicSpaRoute = true/,
+    );
 });

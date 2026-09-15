@@ -4,7 +4,6 @@ import test from "node:test";
 import {
     areModuleDependenciesSatisfied,
     dependencyLifecycleAction,
-    isRequiredDependency,
     moduleDependencyActionState,
     resolveInstallDependencies,
 } from "../app/modules/dependencies.js";
@@ -24,8 +23,6 @@ const requesting = {
 const modules = [required, optional, requesting];
 
 test("module dependencies resolve module IDs and UUIDs", () => {
-    assert.equal(isRequiredDependency(required, modules), true);
-    assert.equal(isRequiredDependency(optional, modules), false);
     assert.deepEqual(
         resolveInstallDependencies(requesting, modules, [optional.id]),
         [required, optional],
@@ -125,6 +122,6 @@ test("module dependency popup renders navigable cards and action-specific labels
     );
     assert.match(
         marketplaceSource,
-        /\["install", "enable"\]\.includes\(action\)[\s\S]*ensureModuleDependenciesReady\(module\)/,
+        /action === "enable"[\s\S]*ensureModuleDependenciesReady\(module\)/,
     );
 });

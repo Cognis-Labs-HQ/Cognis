@@ -22,8 +22,10 @@ export async function handleRegisteredSpaPage(
     input: RegisteredSpaPageInput,
 ): Promise<boolean> {
     if (!input.route || input.req.method !== "GET") return false;
-    const loginRedirect = await input.resolveLoginRedirect();
-    if (loginRedirect) return input.redirect(loginRedirect);
+    if (input.route.public !== true) {
+        const loginRedirect = await input.resolveLoginRedirect();
+        if (loginRedirect) return input.redirect(loginRedirect);
+    }
     const sessionRole = input.getSessionRole();
     if (
         input.route.access &&
@@ -40,6 +42,8 @@ export async function handleRegisteredSpaPage(
     const routeBootstrapConfig = JSON.stringify({
         capabilityScripts: input.route.capabilityScripts ?? [],
         scriptUrl: input.route.scriptUrl,
+        public: input.route.public === true,
+        componentPage: input.route.componentPage ?? null,
     }).replaceAll("<", "\\u003c");
     await serveHtmlPageWithReplacements(
         input.res,
