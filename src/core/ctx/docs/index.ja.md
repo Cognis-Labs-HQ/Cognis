@@ -1,5 +1,7 @@
 # Core Ctx と Flow バス
 
+`startSsoLogin` フローは、認証情報フィールドを送信せずにリダイレクト型認証を開始します。プロバイダーのフックは `validateProvider` で選択されたプロバイダーを検証し、状態を作成して `initiateAuthorization` から `{ providerId, redirectUrl }` を返します。Cognis は相対 URL または HTTPS のリダイレクト URL のみを受け付けます。
+
 ## 概要
 
 `src/core/ctx/` は、プラットフォーム全体で使う `ctx` ケーパビリティバスを core の独立した面として定義します。設計は非前提です。各コンポーネントは他コンポーネントの内部実装を直接 import せず、ケーパビリティ提供・flow 登録・stage hook 注入を行います。

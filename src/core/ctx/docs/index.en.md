@@ -1,5 +1,7 @@
 # Core Ctx and Flow Bus
 
+The `startSsoLogin` flow starts redirect-based authentication without submitting credential fields. Provider hooks validate their selected provider during `validateProvider`, then create state and return `{ providerId, redirectUrl }` from `initiateAuthorization`. Cognis accepts only relative or HTTPS redirect URLs.
+
 ## Overview
 
 `src/core/ctx/` defines the platform-level `ctx` capability bus as a dedicated core surface. It is intentionally unassuming: components contribute capabilities, register flows, and inject staged flow hooks without importing each other's internals.
@@ -82,6 +84,7 @@ Use these well-known stage names when contributing hooks to canonical flows:
 | Flow                     | Stages (in order)                                                     |
 | ------------------------ | --------------------------------------------------------------------- |
 | `login`                  | `resolve-provider`, `authenticate`, `establish-session`               |
+| `startSsoLogin`          | `validateProvider`, `initiateAuthorization`                           |
 | `construct-login-ui`     | `resolve-shell`, `resolve-methods`, `augment-methods`, `compose-form` |
 | `construct-settings-ui`  | `resolve-sections`, `augment-sections`, `compose-page`                |
 | `bootstrap-platform`     | `register-flows`, `post-boot`                                         |

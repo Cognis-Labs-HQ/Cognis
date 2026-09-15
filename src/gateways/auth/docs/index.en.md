@@ -64,18 +64,19 @@ Authentication providers may call `auth:registerLoginButton` after `auth:registe
 
 ## API Routes
 
-| Method | Path                                         | Description                           | Auth  |
-| ------ | -------------------------------------------- | ------------------------------------- | ----- |
-| `GET`  | `/api/v1/auth/login-methods`                 | List enabled authentication providers | None  |
-| `POST` | `/api/v1/auth/register`                      | Self-register a new local account     | None  |
-| `POST` | `/api/v1/auth/login`                         | Authenticate; returns bearer token    | None  |
-| `POST` | `/api/v1/auth/verify`                        | Verify current user's password        | User  |
-| `GET`  | `/api/v1/gateways/auth/adapters`             | List all registered auth adapters     | Admin |
-| `GET`  | `/api/v1/gateways/auth/adapters/:id/config`  | Get config schema for an adapter      | Admin |
-| `PUT`  | `/api/v1/gateways/auth/adapters/:id/config`  | Update config for an adapter          | Admin |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/test`    | Test an adapter configuration         | Admin |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/enable`  | Enable an adapter                     | Admin |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Disable an adapter                    | Admin |
+| Method | Path                                         | Description                                       | Auth  |
+| ------ | -------------------------------------------- | ------------------------------------------------- | ----- |
+| `GET`  | `/api/v1/auth/login-methods`                 | List enabled authentication providers             | None  |
+| `POST` | `/api/v1/auth/register`                      | Self-register a new local account                 | None  |
+| `POST` | `/api/v1/auth/login`                         | Authenticate; returns bearer token                | None  |
+| `POST` | `/api/v1/auth/sso/start`                     | Start an external provider authorization redirect | None  |
+| `POST` | `/api/v1/auth/verify`                        | Verify current user's password                    | User  |
+| `GET`  | `/api/v1/gateways/auth/adapters`             | List all registered auth adapters                 | Admin |
+| `GET`  | `/api/v1/gateways/auth/adapters/:id/config`  | Get config schema for an adapter                  | Admin |
+| `PUT`  | `/api/v1/gateways/auth/adapters/:id/config`  | Update config for an adapter                      | Admin |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/test`    | Test an adapter configuration                     | Admin |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/enable`  | Enable an adapter                                 | Admin |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Disable an adapter                                | Admin |
 
 Adapter test failures may include an `error.fieldErrors` object mapping any number of configuration field IDs to safe diagnostic messages.
 

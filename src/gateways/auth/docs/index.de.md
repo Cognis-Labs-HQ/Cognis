@@ -64,18 +64,19 @@ Authentifizierungsanbieter können `auth:registerLoginButton` nach `auth:registe
 
 ## API-Routen
 
-| Methode | Pfad                                         | Beschreibung                                    | Authentifizierung |
-| ------- | -------------------------------------------- | ----------------------------------------------- | ----------------- |
-| `GET`   | `/api/v1/auth/login-methods`                 | Aktivierte Authentifizierungsanbieter auflisten | Keine             |
-| `POST`  | `/api/v1/auth/register`                      | Neuen lokalen Account selbst registrieren       | Keine             |
-| `POST`  | `/api/v1/auth/login`                         | Authentifizieren; gibt Bearer-Token zurück      | Keine             |
-| `POST`  | `/api/v1/auth/verify`                        | Passwort des aktuellen Benutzers verifizieren   | Benutzer          |
-| `GET`   | `/api/v1/gateways/auth/adapters`             | Alle registrierten Auth-Adapter auflisten       | Admin             |
-| `GET`   | `/api/v1/gateways/auth/adapters/:id/config`  | Konfig-Schema für einen Adapter abrufen         | Admin             |
-| `PUT`   | `/api/v1/gateways/auth/adapters/:id/config`  | Konfig für einen Adapter aktualisieren          | Admin             |
-| `POST`  | `/api/v1/gateways/auth/adapters/:id/test`    | Adapterkonfiguration testen                     | Admin             |
-| `POST`  | `/api/v1/gateways/auth/adapters/:id/enable`  | Adapter aktivieren                              | Admin             |
-| `POST`  | `/api/v1/gateways/auth/adapters/:id/disable` | Adapter deaktivieren                            | Admin             |
+| Methode | Pfad                                         | Beschreibung                                             | Authentifizierung |
+| ------- | -------------------------------------------- | -------------------------------------------------------- | ----------------- |
+| `GET`   | `/api/v1/auth/login-methods`                 | Aktivierte Authentifizierungsanbieter auflisten          | Keine             |
+| `POST`  | `/api/v1/auth/register`                      | Neuen lokalen Account selbst registrieren                | Keine             |
+| `POST`  | `/api/v1/auth/login`                         | Authentifizieren; gibt Bearer-Token zurück               | Keine             |
+| `POST`  | `/api/v1/auth/sso/start`                     | Autorisierungsumleitung eines externen Anbieters starten | Keine             |
+| `POST`  | `/api/v1/auth/verify`                        | Passwort des aktuellen Benutzers verifizieren            | Benutzer          |
+| `GET`   | `/api/v1/gateways/auth/adapters`             | Alle registrierten Auth-Adapter auflisten                | Admin             |
+| `GET`   | `/api/v1/gateways/auth/adapters/:id/config`  | Konfig-Schema für einen Adapter abrufen                  | Admin             |
+| `PUT`   | `/api/v1/gateways/auth/adapters/:id/config`  | Konfig für einen Adapter aktualisieren                   | Admin             |
+| `POST`  | `/api/v1/gateways/auth/adapters/:id/test`    | Adapterkonfiguration testen                              | Admin             |
+| `POST`  | `/api/v1/gateways/auth/adapters/:id/enable`  | Adapter aktivieren                                       | Admin             |
+| `POST`  | `/api/v1/gateways/auth/adapters/:id/disable` | Adapter deaktivieren                                     | Admin             |
 
 Fehler bei Adaptertests können ein Objekt `error.fieldErrors` enthalten, das beliebig viele Konfigurationsfeld-IDs sicheren Diagnosemeldungen zuordnet.
 

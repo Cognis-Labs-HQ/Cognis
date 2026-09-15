@@ -1,5 +1,30 @@
+import { startSsoLogin } from "../../../gateways/auth/ui/login-client.js";
+import { showToast } from "../../reuse/toast.js";
+import { uiCtx } from "../../reuse/ui-ctx.js";
+
 export function isStyledSsoMethod(method) {
     return Boolean(method?.loginButton?.iconUrl && method.loginButton.label);
+}
+
+export async function beginSsoLogin(method, i18n) {
+    try {
+        const redirectUrl = await startSsoLogin(method.id);
+        window.location.assign(redirectUrl);
+    } catch (error) {
+        uiCtx.capabilities.get("ui:log")?.(
+            "error",
+            "SSO authorization could not be started.",
+            {
+                component: "login-page",
+                operation: "start_sso_login",
+                providerId: method.id,
+                error: error instanceof Error ? error.message : String(error),
+            },
+        );
+        showToast(i18n.t("ui.app.login.error.generic"), {
+            variant: "error",
+        });
+    }
 }
 
 export function createSsoLoginButton(method, onSelect) {

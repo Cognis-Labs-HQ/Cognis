@@ -6,6 +6,7 @@ import {
     createSsoLoginButton,
     isStyledSsoMethod,
 } from "../app/login/sso-buttons.js";
+import { startSsoLogin } from "../../gateways/auth/ui/login-client.js";
 
 class FakeElement {
     constructor(tagName) {
@@ -119,4 +120,30 @@ test("authentication footer links remain on one content-width row", async () => 
         styles,
         /\.auth-footer \.global-footer-link\s*\{[^}]*white-space:\s*nowrap/s,
     );
+});
+
+test("SSO initiation requests provider authorization without credentials", async () => {
+    const originalFetch = globalThis.fetch;
+    let request;
+    globalThis.fetch = async (url, options) => {
+        request = { url, options };
+        return {
+            ok: true,
+            json: async () => ({
+                data: { redirectUrl: "https://identity.example.com/authorize" },
+            }),
+        };
+    };
+    try {
+        assert.equal(
+            await startSsoLogin("x-sso"),
+            "https://identity.example.com/authorize",
+        );
+        assert.equal(request.url, "/api/v1/auth/sso/start");
+        assert.deepEqual(JSON.parse(request.options.body), {
+            providerId: "x-sso",
+        });
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
 });

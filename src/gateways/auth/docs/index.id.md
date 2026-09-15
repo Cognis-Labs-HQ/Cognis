@@ -64,18 +64,19 @@ Penyedia autentikasi dapat memanggil `auth:registerLoginButton` setelah `auth:re
 
 ## Route API
 
-| Metode | Path                                         | Keterangan                                  | Autentikasi      |
-| ------ | -------------------------------------------- | ------------------------------------------- | ---------------- |
-| `GET`  | `/api/v1/auth/login-methods`                 | Daftar penyedia autentikasi yang diaktifkan | Tidak diperlukan |
-| `POST` | `/api/v1/auth/register`                      | Mendaftar akun lokal baru secara mandiri    | Tidak diperlukan |
-| `POST` | `/api/v1/auth/login`                         | Autentikasi; mengembalikan token Bearer     | Tidak diperlukan |
-| `POST` | `/api/v1/auth/verify`                        | Verifikasi kata sandi pengguna saat ini     | Pengguna         |
-| `GET`  | `/api/v1/gateways/auth/adapters`             | Daftar semua adapter autentikasi terdaftar  | Admin            |
-| `GET`  | `/api/v1/gateways/auth/adapters/:id/config`  | Mendapatkan skema konfigurasi untuk adapter | Admin            |
-| `PUT`  | `/api/v1/gateways/auth/adapters/:id/config`  | Memperbarui konfigurasi untuk adapter       | Admin            |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/test`    | Menguji konfigurasi adapter                 | Admin            |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/enable`  | Mengaktifkan adapter                        | Admin            |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Menonaktifkan adapter                       | Admin            |
+| Metode | Path                                         | Keterangan                                      | Autentikasi      |
+| ------ | -------------------------------------------- | ----------------------------------------------- | ---------------- |
+| `GET`  | `/api/v1/auth/login-methods`                 | Daftar penyedia autentikasi yang diaktifkan     | Tidak diperlukan |
+| `POST` | `/api/v1/auth/register`                      | Mendaftar akun lokal baru secara mandiri        | Tidak diperlukan |
+| `POST` | `/api/v1/auth/login`                         | Autentikasi; mengembalikan token Bearer         | Tidak diperlukan |
+| `POST` | `/api/v1/auth/sso/start`                     | Memulai pengalihan otorisasi penyedia eksternal | Tidak ada        |
+| `POST` | `/api/v1/auth/verify`                        | Verifikasi kata sandi pengguna saat ini         | Pengguna         |
+| `GET`  | `/api/v1/gateways/auth/adapters`             | Daftar semua adapter autentikasi terdaftar      | Admin            |
+| `GET`  | `/api/v1/gateways/auth/adapters/:id/config`  | Mendapatkan skema konfigurasi untuk adapter     | Admin            |
+| `PUT`  | `/api/v1/gateways/auth/adapters/:id/config`  | Memperbarui konfigurasi untuk adapter           | Admin            |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/test`    | Menguji konfigurasi adapter                     | Admin            |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/enable`  | Mengaktifkan adapter                            | Admin            |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Menonaktifkan adapter                           | Admin            |
 
 Kegagalan uji adapter dapat menyertakan objek `error.fieldErrors` yang memetakan sejumlah ID kolom konfigurasi ke pesan diagnosis yang aman.
 

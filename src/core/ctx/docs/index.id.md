@@ -1,5 +1,7 @@
 # Bus Ctx dan Flow Core
 
+Alur `startSsoLogin` memulai autentikasi berbasis pengalihan tanpa mengirimkan bidang kredensial. Hook penyedia memvalidasi penyedia yang dipilih pada `validateProvider`, lalu membuat status dan mengembalikan `{ providerId, redirectUrl }` dari `initiateAuthorization`. Cognis hanya menerima URL pengalihan relatif atau HTTPS.
+
 ## Ikhtisar
 
 `src/core/ctx/` mendefinisikan bus kapabilitas `ctx` tingkat platform sebagai permukaan core tersendiri. Desainnya dibuat netral: komponen menyumbang kapabilitas, mendaftarkan flow, dan menyuntikkan hook tahap flow tanpa mengimpor internal komponen lain.

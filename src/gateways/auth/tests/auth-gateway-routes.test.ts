@@ -141,6 +141,24 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
             ],
         }),
     );
+    systemCtx.flow.extend(
+        "startSsoLogin",
+        "initiateAuthorization",
+        { id: "test:reject-protocol-relative-redirect" },
+        (stageContext) => ({
+            providerId: stageContext.input.providerId,
+            redirectUrl: "//malicious.example.com/authorize",
+        }),
+    );
+    systemCtx.flow.extend(
+        "startSsoLogin",
+        "initiateAuthorization",
+        { id: "test:start-faculty-sso" },
+        (stageContext) => ({
+            providerId: stageContext.input.providerId,
+            redirectUrl: "https://identity.example.com/authorize",
+        }),
+    );
 
     const handlers = routeRegistry.getHandlers();
     const req = {
@@ -190,6 +208,29 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
             },
         },
     );
+
+    const startResponse = makeResponse();
+    const startRequest = {
+        method: "POST",
+        headers: {},
+        async *[Symbol.asyncIterator]() {
+            yield Buffer.from(JSON.stringify({ providerId: "ldap:Faculty" }));
+        },
+    } as unknown as import("node:http").IncomingMessage;
+    for (const handler of handlers) {
+        handled = await handler(
+            startRequest,
+            startResponse as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/sso/start", "http://localhost"),
+        );
+        if (handled) break;
+    }
+    assert.equal(startResponse.status, 200);
+    assert.deepEqual(JSON.parse(startResponse.payload), {
+        data: {
+            redirectUrl: "https://identity.example.com/authorize",
+        },
+    });
 });
 
 test("GET /api/v1/auth/registration-config returns open-registration state", async () => {

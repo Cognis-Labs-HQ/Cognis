@@ -1,5 +1,7 @@
 # Core Ctx- und Flow-Bus
 
+Der Ablauf `startSsoLogin` startet eine umleitungsbasierte Authentifizierung, ohne Anmeldedatenfelder zu übermitteln. Anbieter-Hooks prüfen den ausgewählten Anbieter in `validateProvider`, erstellen anschließend den Status und geben in `initiateAuthorization` `{ providerId, redirectUrl }` zurück. Cognis akzeptiert nur relative oder HTTPS-Umleitungs-URLs.
+
 ## Übersicht
 
 `src/core/ctx/` definiert den plattformweiten `ctx`-Capability-Bus als eigene Core-Oberfläche. Er ist bewusst unaufdringlich: Komponenten tragen Capabilities bei, registrieren Flows und injizieren gestufte Flow-Hooks, ohne interne Implementierungen anderer Komponenten zu importieren.

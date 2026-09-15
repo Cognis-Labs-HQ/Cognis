@@ -22,7 +22,11 @@ import {
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import { createLoginIntegrationLoader } from "./integrations.js";
-import { createSsoLoginButton, isStyledSsoMethod } from "./sso-buttons.js";
+import {
+    beginSsoLogin,
+    createSsoLoginButton,
+    isStyledSsoMethod,
+} from "./sso-buttons.js";
 import {
     clearLoginSession,
     persistLoginSession as persistSession,
@@ -345,14 +349,9 @@ export async function mount(root, { signal } = {}) {
             if (ssoProviders.length > 0 && ssoContainer) {
                 ssoProviders.forEach((method) => {
                     ssoContainer.appendChild(
-                        createSsoLoginButton(method, async () => {
-                            if (providerInput) {
-                                providerInput.value = method.id;
-                            }
-                            document
-                                .querySelector("#login-form")
-                                ?.requestSubmit();
-                        }),
+                        createSsoLoginButton(method, () =>
+                            beginSsoLogin(method, i18n),
+                        ),
                     );
                 });
             }
@@ -823,7 +822,6 @@ export async function mount(root, { signal } = {}) {
                     mountAuthFooter(root, { i18n, signal });
                     resetPasswordResetMode();
                     if (lastTfaPayload !== null) {
-                        // Restore saved TFA prompt state; on failure, fall through to login-method loading (lines 609-610 below).
                         loadTfaLoginClient()
                             .then((client) => {
                                 if (client) {
