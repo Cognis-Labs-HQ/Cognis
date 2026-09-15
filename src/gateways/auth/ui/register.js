@@ -504,13 +504,14 @@ export async function mount(root, { signal } = {}) {
       ${messageHtml}
       ${formHtml}
       <button id="register-signin-instead" type="button" class="btn-animated auth-secondary-action">${escapeHtml(i18n.t("ui.reuse.sign_in_instead"))}</button>
+      ${renderAuthFooter()}
     `;
-        return `${renderAuthLayout({
+        return renderAuthLayout({
             introPanelAriaLabel: i18n.t("ui.app.login.intro.aria"),
             introPanelHtml,
             formPanelAriaLabel: i18n.t("ui.app.register.form_title"),
             formPanelHtml,
-        })}${renderAuthFooter()}`;
+        });
     }
 
     async function promptVerificationCodeForRegister(emailAddress) {

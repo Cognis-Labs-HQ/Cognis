@@ -322,7 +322,10 @@ export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
             await ensureHostUiProviders();
             return mount(mountRoot);
         };
-        if (uiCtx.flowExists("load-page")) {
+        if (
+            globalThis.__cognisPublicSpaRoute !== true &&
+            uiCtx.flowExists("load-page")
+        ) {
             const flowResult = await uiCtx.runFlow("load-page", {
                 mount: mountWithProviders,
                 root,

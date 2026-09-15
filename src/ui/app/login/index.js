@@ -768,13 +768,14 @@ export async function mount(root, { signal } = {}) {
       <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
       ${loginFormBuilder.render()}
       <div id="sso-buttons" class="sso-buttons"></div>
+      ${renderAuthFooter()}
     `;
-        return `${renderAuthLayout({
+        return renderAuthLayout({
             introPanelAriaLabel: i18n.t("ui.app.login.intro.aria"),
             introPanelHtml,
             formPanelAriaLabel: i18n.t("ui.app.login.title"),
             formPanelHtml,
-        })}${renderAuthFooter()}`;
+        });
     }
 
     const composer = createPageComposer(root, {

@@ -42,6 +42,7 @@ export async function handleRegisteredSpaPage(
     const routeBootstrapConfig = JSON.stringify({
         capabilityScripts: input.route.capabilityScripts ?? [],
         scriptUrl: input.route.scriptUrl,
+        public: input.route.public === true,
     }).replaceAll("<", "\\u003c");
     await serveHtmlPageWithReplacements(
         input.res,

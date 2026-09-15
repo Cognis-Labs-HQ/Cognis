@@ -30,6 +30,10 @@ Anmeldung und Registrierung zeigen nun einen gemeinsamen Linkstreifen am unteren
 
 Marketplace-Karten kennzeichnen ein Modul nicht mehr nur deshalb, weil ein anderes installiertes oder verfügbares Modul es als Abhängigkeit deklariert. Erforderliche und optionale Abhängigkeiten werden nur beim Aktivieren des anfordernden Moduls angezeigt, wenn die Beziehung handlungsrelevant ist.
 
+## Anonymen Zugriff auf Rechtsdokumente vervollständigen
+
+Der Authentifizierungsfußbereich wird nun innerhalb der sichtbaren Anmelde- und Registrierungsbereiche angezeigt, sodass registrierte Beiträge ihre Rechtsdokumentlinks darstellen können. Direkte Aufrufe serverseitig genehmigter öffentlicher SPA-Routen umgehen den authentifizierten `load-page`-Flow. Dadurch verwandelt `/terms-of-service` eine fehlende Sitzung nicht mehr in eine Weiterleitung zur Anmeldung wegen einer abgelaufenen Sitzung.
+
 ## Commits
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -38,3 +42,4 @@ Marketplace-Karten kennzeichnen ein Modul nicht mehr nur deshalb, weil ein ander
 - [5c3df5a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c3df5a3)
 - [60c9a07e](https://github.com/Cognis-Labs-HQ/Cognis/commit/60c9a07e)
 - [82ac645e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ac645e)
+- [841e6c76](https://github.com/Cognis-Labs-HQ/Cognis/commit/841e6c76)

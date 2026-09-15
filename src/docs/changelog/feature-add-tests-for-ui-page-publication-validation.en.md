@@ -30,6 +30,10 @@ Login and registration now render a shared bottom link strip. Enabled modules re
 
 Marketplace cards no longer label a module merely because another installed or available module declares it as a dependency. Required and optional dependencies are presented only when the requesting module is being enabled, when the relationship is actionable.
 
+## Complete anonymous legal access
+
+The authentication footer now renders inside the visible login and registration panels, allowing registered legal-document contributors to display their links. Direct loads of server-approved public SPA routes bypass the authenticated `load-page` flow, preventing `/terms-of-service` from turning a missing session into a session-expired login redirect.
+
 ## Commits
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -38,3 +42,4 @@ Marketplace cards no longer label a module merely because another installed or a
 - [5c3df5a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c3df5a3)
 - [60c9a07e](https://github.com/Cognis-Labs-HQ/Cognis/commit/60c9a07e)
 - [82ac645e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ac645e)
+- [841e6c76](https://github.com/Cognis-Labs-HQ/Cognis/commit/841e6c76)

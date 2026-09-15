@@ -30,6 +30,10 @@ Halaman masuk dan pendaftaran kini menampilkan bilah tautan bersama di bagian ba
 
 Kartu marketplace tidak lagi menandai modul hanya karena modul lain yang terpasang atau tersedia mendeklarasikannya sebagai dependensi. Dependensi wajib dan opsional hanya ditampilkan saat modul peminta sedang diaktifkan, ketika hubungan tersebut dapat ditindaklanjuti.
 
+## Lengkapi akses hukum anonim
+
+Footer autentikasi kini dirender di dalam panel masuk dan pendaftaran yang terlihat sehingga kontributor dokumen hukum terdaftar dapat menampilkan tautannya. Pemuatan langsung rute SPA publik yang disetujui server melewati alur `load-page` terautentikasi, sehingga `/terms-of-service` tidak lagi mengubah ketiadaan sesi menjadi pengalihan masuk karena sesi kedaluwarsa.
+
 ## Commit
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -38,3 +42,4 @@ Kartu marketplace tidak lagi menandai modul hanya karena modul lain yang terpasa
 - [5c3df5a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c3df5a3)
 - [60c9a07e](https://github.com/Cognis-Labs-HQ/Cognis/commit/60c9a07e)
 - [82ac645e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ac645e)
+- [841e6c76](https://github.com/Cognis-Labs-HQ/Cognis/commit/841e6c76)

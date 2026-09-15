@@ -30,6 +30,10 @@
 
 別のインストール済みまたは利用可能なモジュールが依存先として宣言しているという理由だけで、マーケットプレイスカードにモジュールのラベルを表示しないようにしました。必須および任意の依存関係は、その関係に対応できる要求元モジュールの有効化時にのみ表示されます。
 
+## 匿名の法的文書アクセスを完成
+
+認証フッターを表示中のログインおよび登録パネル内に描画し、登録済みの法的文書コントリビューターがリンクを表示できるようにしました。サーバーが承認した公開 SPA ルートの直接読み込みは認証用 `load-page` フローを迂回するため、`/terms-of-service` でセッションがない場合にセッション期限切れとしてログインへリダイレクトされなくなりました。
+
 ## コミット
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -38,3 +42,4 @@
 - [5c3df5a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c3df5a3)
 - [60c9a07e](https://github.com/Cognis-Labs-HQ/Cognis/commit/60c9a07e)
 - [82ac645e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ac645e)
+- [841e6c76](https://github.com/Cognis-Labs-HQ/Cognis/commit/841e6c76)
