@@ -6,6 +6,10 @@ import {
 } from "../../../../api/reuse/access-token-http.js";
 import { issueAccessToken, revokeAccessToken } from "../../access-tokens.js";
 import type { CoreAuthGateway } from "../../gateway.js";
+import {
+    parseAuthLoginButton,
+    type AuthLoginButtonDescriptor,
+} from "../../login-button.js";
 import type {
     AuthAccountStore,
     AuthRouteBootstrapRuntime,
@@ -47,6 +51,7 @@ export function createSessionRoutes({
             name: string;
             forgotPassword?: boolean;
             credential?: boolean;
+            loginButton?: AuthLoginButtonDescriptor;
         }>;
         integrations: Array<{
             id: string;
@@ -79,6 +84,7 @@ export function createSessionRoutes({
                 name: string;
                 forgotPassword?: boolean;
                 credential?: boolean;
+                loginButton?: AuthLoginButtonDescriptor;
             }
         >();
         for (const stageResult of [
@@ -95,6 +101,10 @@ export function createSessionRoutes({
                     (method as { name?: unknown })?.name ?? "",
                 ).trim();
                 if (!id || !name) continue;
+                const loginButton = parseAuthLoginButton(
+                    (method as { loginButton?: unknown }).loginButton,
+                    id,
+                );
                 methodById.set(id, {
                     id,
                     name,
@@ -104,6 +114,7 @@ export function createSessionRoutes({
                     credential:
                         (method as { credential?: unknown }).credential ===
                         true,
+                    ...(loginButton ? { loginButton } : {}),
                 });
             }
         }

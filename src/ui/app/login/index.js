@@ -22,6 +22,7 @@ import {
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import { createLoginIntegrationLoader } from "./integrations.js";
+import { createSsoLoginButton } from "./sso-buttons.js";
 import {
     clearLoginSession,
     persistLoginSession as persistSession,
@@ -340,21 +341,39 @@ export async function mount(root, { signal } = {}) {
 
             if (ssoProviders.length > 0 && ssoContainer) {
                 ssoProviders.forEach((method) => {
-                    const btn = document.createElement("button");
-                    btn.type = "button";
-                    btn.className = "btn-animated sso-login-btn";
-                    btn.textContent = i18n
+                    const fallbackLabel = i18n
                         .t("ui.app.login.sso.login_with")
                         .replace("{provider}", method.name);
-                    btn.addEventListener("click", async () => {
-                        if (providerInput) providerInput.value = method.id;
-                        document.querySelector("#login-form")?.requestSubmit();
-                    });
-                    ssoContainer.appendChild(btn);
+                    ssoContainer.appendChild(
+                        createSsoLoginButton(
+                            method,
+                            fallbackLabel,
+                            async () => {
+                                if (providerInput) {
+                                    providerInput.value = method.id;
+                                }
+                                document
+                                    .querySelector("#login-form")
+                                    ?.requestSubmit();
+                            },
+                        ),
+                    );
                 });
             }
-        } catch {
-            // Login methods unavailable — form works with local auth by default
+        } catch (error) {
+            uiCtx.capabilities.get("ui:log")?.(
+                "error",
+                "Login methods could not be loaded.",
+                {
+                    component: "login-page",
+                    operation: "load_login_methods",
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                },
+            );
+            showToast(i18n.t("ui.app.login.error.generic"), {
+                variant: "error",
+            });
         }
     }
 

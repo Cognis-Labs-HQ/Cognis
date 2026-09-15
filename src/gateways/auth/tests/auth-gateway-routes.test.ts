@@ -130,6 +130,13 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
                     id: "ldap:Faculty",
                     name: "Faculty",
                     credential: true,
+                    loginButton: {
+                        providerId: "ldap:Faculty",
+                        label: "Continue with Faculty",
+                        iconUrl: "/static/modules/faculty/icon.svg",
+                        backgroundColor: "#ffffff",
+                        textColor: "#202124",
+                    },
                 },
             ],
         }),
@@ -160,6 +167,7 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
                 id: string;
                 name: string;
                 credential?: boolean;
+                loginButton?: Record<string, string>;
             }>;
             integrations: unknown[];
         };
@@ -173,6 +181,13 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
             name: "Faculty",
             forgotPassword: false,
             credential: true,
+            loginButton: {
+                providerId: "ldap:Faculty",
+                label: "Continue with Faculty",
+                iconUrl: "/static/modules/faculty/icon.svg",
+                backgroundColor: "#ffffff",
+                textColor: "#202124",
+            },
         },
     );
 });
