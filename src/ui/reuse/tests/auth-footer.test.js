@@ -10,6 +10,31 @@ test("authentication footer exposes both shared link contribution slots", () => 
     assert.match(markup, /data-footer-links="right"/);
 });
 
+test("footer contexts keep application-only links off authentication pages", () => {
+    const removeApplicationLink = footerLinks.add({
+        id: "test:changelog",
+        href: "/changelogs",
+        label: "Changelogs",
+    });
+    const removePublicLink = footerLinks.add({
+        id: "test:license",
+        href: "/license",
+        label: "License",
+        contexts: ["application", "authentication"],
+    });
+
+    assert.deepEqual(
+        footerLinks
+            .list()
+            .filter(({ contexts }) => contexts.includes("authentication"))
+            .map(({ id }) => id),
+        ["test:license"],
+    );
+
+    removeApplicationLink();
+    removePublicLink();
+});
+
 test("authentication footer replaces a provider's published link set", () => {
     reconcileAuthFooterLinks("legal", [
         { id: "terms", href: "/terms", label: "Terms", side: "right" },
@@ -20,6 +45,10 @@ test("authentication footer replaces a provider's published link set", () => {
             .filter(({ id }) => id.startsWith("legal:"))
             .map(({ id, href }) => ({ id, href })),
         [{ id: "legal:terms", href: "/terms" }],
+    );
+    assert.deepEqual(
+        footerLinks.list().find(({ id }) => id === "legal:terms")?.contexts,
+        ["authentication"],
     );
 
     assert.throws(

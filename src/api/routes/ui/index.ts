@@ -432,18 +432,6 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/license") {
-            const loginRedirect = await resolveLoginRedirectLocation(
-                req,
-                ctx,
-                accountStore,
-                log,
-            );
-            if (loginRedirect) {
-                res.writeHead(302, { location: loginRedirect });
-                res.end();
-                return true;
-            }
-
             await htmlResponse.serveHtmlPage(
                 res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "license.html"),

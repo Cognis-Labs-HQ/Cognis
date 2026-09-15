@@ -223,7 +223,7 @@ test("core ui routes do not serve /profile (owned by profile gateway)", async ()
     );
 });
 
-test("license route requires login cookie and serves dedicated page", async () => {
+test("license route is public and serves its composed page", async () => {
     const route = createUiRoutes();
     const anonymous = createResponseRecorder();
     await route(
@@ -231,8 +231,9 @@ test("license route requires login cookie and serves dedicated page", async () =
         anonymous.res as any,
         new URL("http://localhost/license"),
     );
-    assert.equal(anonymous.status, 302);
-    assert.equal(anonymous.headers.location, "/login");
+    assert.equal(anonymous.status, 200);
+    assert.match(anonymous.body, /static\/app\/license\/index\.js/);
+    assert.match(anonymous.body, /id="app"/);
 
     const token = issueAccessToken("u1", "user", 60);
     const authed = createResponseRecorder();

@@ -38,6 +38,10 @@ Footer autentikasi kini dirender di dalam panel masuk dan pendaftaran yang terli
 
 Kontributor footer autentikasi kini mengembalikan tautan yang saat ini layak dari `listAuthFooterLinks()`, bukan mendorong kumpulan tetap sebagai efek samping impor. Cognis memvalidasi dan mengganti kumpulan tautan setiap penyedia secara atomik agar dokumen yang belum diterbitkan atau telah ditarik tidak tetap muncul pada halaman masuk dan pendaftaran.
 
+## Halaman hukum publik menggunakan shell Cognis
+
+Halaman Lisensi bawaan kini secara eksplisit bersifat publik, sedangkan Catatan Perubahan hanya tersedia di dalam aplikasi terautentikasi dan tidak ditampilkan pada footer autentikasi. Page composer menormalkan halaman modul publik agar tetap menggunakan shell Cognis anonim alih-alih merender dokumen tanpa bingkai.
+
 ## Commit
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -48,3 +52,4 @@ Kontributor footer autentikasi kini mengembalikan tautan yang saat ini layak dar
 - [82ac645e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ac645e)
 - [841e6c76](https://github.com/Cognis-Labs-HQ/Cognis/commit/841e6c76)
 - [234d0e03](https://github.com/Cognis-Labs-HQ/Cognis/commit/234d0e03)
+- [5f0ad5f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f0ad5f0)

@@ -68,7 +68,7 @@ test("all dashboard pages call mount on direct browser load", () => {
         );
         assert.match(
             src,
-            /await mountWhenDirect\(mount\)/,
+            /await mountWhenDirect\(mount(?:,\s*\{[^}]*\})?\)/,
             `${page}/index.js must call mountWhenDirect(mount) for direct URL access`,
         );
     }
@@ -476,6 +476,25 @@ test("router mounts the native error page without account authentication", () =>
     assert.match(
         routerSource,
         /const authResult = route\.public[\s\S]*\? null[\s\S]*runFlow\("authenticate-session"/,
+    );
+});
+
+test("router mounts the license page without account authentication", () => {
+    const routerSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(routerSource, /id:\s*"core\.license"[\s\S]*?public:\s*true/);
+});
+
+test("public module pages retain the anonymous Cognis shell", () => {
+    const composerSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
+        "utf8",
+    );
+    assert.match(
+        composerSource,
+        /__cognisPublicSpaRoute === true[\s\S]*publicPageContext[\s\S]*showTopbar = true[\s\S]*showNavbar = false[\s\S]*showFooter = true[\s\S]*frameless = false/,
     );
 });
 

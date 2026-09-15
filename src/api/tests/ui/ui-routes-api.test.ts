@@ -400,6 +400,7 @@ test("GET public registered SPA route serves its shell without a session", async
     assert.match(recorder.body, /<div id="app"/);
     assert.match(recorder.body, /modules\/terms\/ui\/app\.js/);
     assert.match(recorder.body, /"public":true/);
+    assert.match(recorder.body, /"componentPage"/);
 });
 
 test("GET auth footer plugins is public and returns enabled scripts", async () => {

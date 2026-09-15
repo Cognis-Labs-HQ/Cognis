@@ -39,7 +39,14 @@ export function reconcileAuthFooterLinks(providerId, descriptors) {
         if (side !== "left" && side !== "right") {
             throw new Error("invalid_auth_footer_link_side");
         }
-        return { id, href, label, labelKey, side };
+        return {
+            id,
+            href,
+            label,
+            labelKey,
+            side,
+            contexts: ["authentication"],
+        };
     });
     if (
         new Set(normalizedDescriptors.map(({ id }) => id)).size !==
@@ -90,7 +97,10 @@ export function renderAuthFooter() {
  * @returns {() => void} Removes registry and navigation listeners.
  */
 export function mountAuthFooter(root, { i18n, signal } = {}) {
-    const unmount = mountFooterLinks(root, { i18n });
+    const unmount = mountFooterLinks(root, {
+        i18n,
+        context: "authentication",
+    });
     signal?.addEventListener("abort", unmount, { once: true });
     return unmount;
 }

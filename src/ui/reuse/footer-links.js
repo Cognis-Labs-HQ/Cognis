@@ -9,7 +9,7 @@
  *
  * Usage:
  *   const footerLinks = uiCtx.capabilities.get('ui:footerLinks');
- *   const remove = footerLinks.add({ id: 'legal', side: 'right', href: '/terms-of-service', label: 'Terms' });
+ *   const remove = footerLinks.add({ id: 'legal', side: 'right', href: '/terms-of-service', label: 'Terms', contexts: ['application'] });
  *   remove();
  *
  * @param {{ onChange?: () => void }} options
@@ -42,7 +42,27 @@ export function createFooterLinkRegistry({ onChange } = {}) {
         }
         if (links.has(id))
             throw new Error(`Footer link "${id}" already exists.`);
-        const link = Object.freeze({ id, href, side, label, labelKey });
+        const contexts = Array.isArray(descriptor?.contexts)
+            ? [
+                  ...new Set(
+                      descriptor.contexts
+                          .map(String)
+                          .map((value) => value.trim())
+                          .filter(Boolean),
+                  ),
+              ]
+            : ["application"];
+        if (contexts.length === 0) {
+            throw new Error("Footer links require at least one context.");
+        }
+        const link = Object.freeze({
+            id,
+            href,
+            side,
+            label,
+            labelKey,
+            contexts: Object.freeze(contexts),
+        });
         links.set(id, link);
         notify();
         return () => {
@@ -91,10 +111,10 @@ export function isFooterLinkActive(href, pathname = window.location.pathname) {
  * Renders current footer link contributions and keeps them synchronized.
  *
  * @param {HTMLElement} root
- * @param {{ i18n?: { t: (key: string) => string } }} options
+ * @param {{ i18n?: { t: (key: string) => string }, context?: string }} options
  * @returns {() => void} Stops synchronization for this shell.
  */
-export function mountFooterLinks(root, { i18n } = {}) {
+export function mountFooterLinks(root, { i18n, context = "application" } = {}) {
     if (!root) return () => undefined;
     mountedShells.get(root)?.();
     function render() {
@@ -104,19 +124,25 @@ export function mountFooterLinks(root, { i18n } = {}) {
             );
             if (!container) continue;
             container.replaceChildren(
-                ...footerLinks.list(side).map((descriptor) => {
-                    const link = document.createElement("a");
-                    link.className = "global-footer-link";
-                    link.href = descriptor.href;
-                    link.dataset.footerLink = descriptor.id;
-                    const isActive = isFooterLinkActive(descriptor.href);
-                    link.classList.toggle("active", isActive);
-                    if (isActive) link.setAttribute("aria-current", "page");
-                    link.textContent = descriptor.labelKey
-                        ? (i18n?.t(descriptor.labelKey) ?? descriptor.labelKey)
-                        : descriptor.label;
-                    return link;
-                }),
+                ...footerLinks
+                    .list(side)
+                    .filter((descriptor) =>
+                        descriptor.contexts.includes(context),
+                    )
+                    .map((descriptor) => {
+                        const link = document.createElement("a");
+                        link.className = "global-footer-link";
+                        link.href = descriptor.href;
+                        link.dataset.footerLink = descriptor.id;
+                        const isActive = isFooterLinkActive(descriptor.href);
+                        link.classList.toggle("active", isActive);
+                        if (isActive) link.setAttribute("aria-current", "page");
+                        link.textContent = descriptor.labelKey
+                            ? (i18n?.t(descriptor.labelKey) ??
+                              descriptor.labelKey)
+                            : descriptor.label;
+                        return link;
+                    }),
             );
         }
     }

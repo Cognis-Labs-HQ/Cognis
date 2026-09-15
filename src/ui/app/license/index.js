@@ -200,4 +200,4 @@ export async function mount(root) {
     });
 }
 
-await mountWhenDirect(mount);
+await mountWhenDirect(mount, { public: true });

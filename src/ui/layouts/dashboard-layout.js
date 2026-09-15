@@ -47,6 +47,7 @@ footerLinks.add({
     side: "left",
     href: "/license",
     labelKey: "ui.layout.footer.license",
+    contexts: ["application", "authentication"],
 });
 footerLinks.add({
     id: "core:changelogs",

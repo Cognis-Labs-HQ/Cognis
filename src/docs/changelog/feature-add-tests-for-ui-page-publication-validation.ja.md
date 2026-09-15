@@ -38,6 +38,10 @@
 
 認証フッターのコントリビューターは、インポート時の副作用として固定リンクを追加するのではなく、`listAuthFooterLinks()` から現在対象となるリンクを返すようになりました。Cognis は各プロバイダーのリンク一式を検証して一括置換するため、未公開または取り下げ済みの文書がログインページや登録ページに残りません。
 
+## 公開法務ページで Cognis シェルを使用
+
+組み込みのライセンスページを明示的に公開し、変更履歴は認証済みアプリ内でのみ利用可能として認証フッターには表示しないようにしました。Page Composer は公開モジュールページを正規化し、文書をフレームなしで描画するのではなく匿名用 Cognis シェルを維持します。
+
 ## コミット
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -48,3 +52,4 @@
 - [82ac645e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ac645e)
 - [841e6c76](https://github.com/Cognis-Labs-HQ/Cognis/commit/841e6c76)
 - [234d0e03](https://github.com/Cognis-Labs-HQ/Cognis/commit/234d0e03)
+- [5f0ad5f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f0ad5f0)

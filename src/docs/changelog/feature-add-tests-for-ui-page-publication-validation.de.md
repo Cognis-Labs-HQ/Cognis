@@ -38,6 +38,10 @@ Der Authentifizierungsfußbereich wird nun innerhalb der sichtbaren Anmelde- und
 
 Beiträge für den Authentifizierungsfußbereich geben ihre derzeit zulässigen Links nun über `listAuthFooterLinks()` zurück, statt beim Import einen festen Satz einzutragen. Cognis prüft und ersetzt den Linksatz jedes Anbieters atomar, sodass unveröffentlichte oder zurückgezogene Dokumente nicht auf Anmelde- und Registrierungsseiten verbleiben.
 
+## Öffentliche Rechtsseiten verwenden die Cognis-Oberfläche
+
+Die integrierte Lizenzseite ist nun ausdrücklich öffentlich, während Änderungsprotokolle nur innerhalb der authentifizierten Anwendung verfügbar bleiben und in Authentifizierungsfußbereichen ausgeblendet werden. Der Page Composer vereinheitlicht öffentliche Modulseiten so, dass die anonyme Cognis-Oberfläche erhalten bleibt, statt das Dokument ohne Rahmen darzustellen.
+
 ## Commits
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -48,3 +52,4 @@ Beiträge für den Authentifizierungsfußbereich geben ihre derzeit zulässigen 
 - [82ac645e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ac645e)
 - [841e6c76](https://github.com/Cognis-Labs-HQ/Cognis/commit/841e6c76)
 - [234d0e03](https://github.com/Cognis-Labs-HQ/Cognis/commit/234d0e03)
+- [5f0ad5f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f0ad5f0)

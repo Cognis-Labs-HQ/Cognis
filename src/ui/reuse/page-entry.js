@@ -305,10 +305,13 @@ function endPageLoading(token) {
  *
  * @param {(root: Element | null) => Promise<unknown>} mount - Page mount
  *   function for the current entry module.
- * @param {{ rootSelector?: string }} [options] - Direct-mount options.
+ * @param {{ rootSelector?: string, public?: boolean }} [options] - Direct-mount options.
  * @returns {Promise<void>}
  */
-export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
+export async function mountWhenDirect(
+    mount,
+    { rootSelector = "#app", public: publicPage = false } = {},
+) {
     if (globalThis.__spaRouter) return;
     registerPageUnloadListeners();
     if (typeof window !== "undefined") {
@@ -323,6 +326,7 @@ export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
             return mount(mountRoot);
         };
         if (
+            !publicPage &&
             globalThis.__cognisPublicSpaRoute !== true &&
             uiCtx.flowExists("load-page")
         ) {

@@ -43,6 +43,7 @@ export async function handleRegisteredSpaPage(
         capabilityScripts: input.route.capabilityScripts ?? [],
         scriptUrl: input.route.scriptUrl,
         public: input.route.public === true,
+        componentPage: input.route.componentPage ?? null,
     }).replaceAll("<", "\\u003c");
     await serveHtmlPageWithReplacements(
         input.res,

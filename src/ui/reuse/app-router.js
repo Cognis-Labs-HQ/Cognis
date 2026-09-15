@@ -370,6 +370,7 @@ const STATIC_ROUTES = [
         ),
         pattern: /^\/license$/,
         base: "/license",
+        public: true,
         stylesheets: ROUTE_STYLE_BUNDLES.license,
         load: () => import("../app/license/index.js"),
     },
@@ -519,6 +520,8 @@ async function loadRoute(path) {
     ) {
         return false;
     }
+    globalThis.__cognisPublicSpaRoute = route.public === true;
+    globalThis.__cognisPublicSpaRoutePageContext = route.componentPage ?? null;
 
     // Load the destination entry before authentication so its gateway-owned
     // flow hooks participate in this navigation's authenticate-session run.

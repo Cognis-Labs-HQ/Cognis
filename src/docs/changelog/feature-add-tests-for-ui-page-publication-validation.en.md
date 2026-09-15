@@ -38,6 +38,10 @@ The authentication footer now renders inside the visible login and registration 
 
 Authentication-footer contributors now return their currently eligible links from `listAuthFooterLinks()` instead of pushing a fixed set as an import side effect. Cognis validates and atomically replaces each provider's link set, so unpublished or withdrawn documents do not remain on login and registration pages.
 
+## Public legal pages use the Cognis shell
+
+The built-in License page is now explicitly public, while Changelogs remain available only inside the authenticated application and are omitted from authentication footers. Public module pages are normalized by the page composer to retain the anonymous Cognis shell instead of rendering as an unframed document.
+
 ## Commits
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -48,3 +52,4 @@ Authentication-footer contributors now return their currently eligible links fro
 - [82ac645e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ac645e)
 - [841e6c76](https://github.com/Cognis-Labs-HQ/Cognis/commit/841e6c76)
 - [234d0e03](https://github.com/Cognis-Labs-HQ/Cognis/commit/234d0e03)
+- [5f0ad5f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f0ad5f0)

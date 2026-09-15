@@ -54,7 +54,7 @@ test("form builder owns complex form wrappers and attributes", () => {
             formId: "custom-form",
             includeSubmitButton: false,
             fields: [],
-            trustedContentHtml: '<fieldset data-owned-content></fieldset>',
+            trustedContentHtml: "<fieldset data-owned-content></fieldset>",
             formAttributes: { "data-form-memory": "true" },
         },
     );
