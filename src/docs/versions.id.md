@@ -47,8 +47,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.29` |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.25` |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.22` |
-| Registration Invite   | `src/adapters/registration/invite/` | `0.1.23` |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.22` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.24` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.20` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `2.0.4`  |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.7.11` |
@@ -65,13 +64,13 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                         | Versi     |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.31`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.37`  |
 | Share                 | `src/gateways/share/`         | `1.7.47`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.19`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.11`  |
 | Social                | `src/gateways/social/`        | `1.3.5`   |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.10`  |
-| Registration          | `src/gateways/registration/`  | `1.1.16`  |
+| Registration          | `src/gateways/registration/`  | `1.1.17`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
 | Study                 | `src/gateways/study/`         | `1.5.14`  |

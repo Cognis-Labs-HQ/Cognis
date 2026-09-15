@@ -130,8 +130,39 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
                     id: "ldap:Faculty",
                     name: "Faculty",
                     credential: true,
+                    loginButton: {
+                        providerId: "ldap:Faculty",
+                        label: "Continue with Faculty",
+                        iconUrl: "/static/modules/faculty/icon.svg",
+                        backgroundColor: "#ffffff",
+                        textColor: "#202124",
+                    },
                 },
             ],
+        }),
+    );
+    systemCtx.flow.extend(
+        "startSsoLogin",
+        "initiateAuthorization",
+        { id: "test:unrelated-sso-hook" },
+        () => undefined,
+    );
+    systemCtx.flow.extend(
+        "startSsoLogin",
+        "initiateAuthorization",
+        { id: "test:reject-protocol-relative-redirect" },
+        (stageContext) => ({
+            providerId: stageContext.input.providerId,
+            redirectUrl: "//malicious.example.com/authorize",
+        }),
+    );
+    systemCtx.flow.extend(
+        "startSsoLogin",
+        "initiateAuthorization",
+        { id: "test:start-faculty-sso" },
+        (stageContext) => ({
+            providerId: stageContext.input.providerId,
+            redirectUrl: "https://identity.example.com/authorize",
         }),
     );
 
@@ -160,6 +191,7 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
                 id: string;
                 name: string;
                 credential?: boolean;
+                loginButton?: Record<string, string>;
             }>;
             integrations: unknown[];
         };
@@ -173,8 +205,38 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
             name: "Faculty",
             forgotPassword: false,
             credential: true,
+            loginButton: {
+                providerId: "ldap:Faculty",
+                label: "Continue with Faculty",
+                iconUrl: "/static/modules/faculty/icon.svg",
+                backgroundColor: "#ffffff",
+                textColor: "#202124",
+            },
         },
     );
+
+    const startResponse = makeResponse();
+    const startRequest = {
+        method: "POST",
+        headers: {},
+        async *[Symbol.asyncIterator]() {
+            yield Buffer.from(JSON.stringify({ providerId: "ldap:Faculty" }));
+        },
+    } as unknown as import("node:http").IncomingMessage;
+    for (const handler of handlers) {
+        handled = await handler(
+            startRequest,
+            startResponse as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/sso/start", "http://localhost"),
+        );
+        if (handled) break;
+    }
+    assert.equal(startResponse.status, 200);
+    assert.deepEqual(JSON.parse(startResponse.payload), {
+        data: {
+            redirectUrl: "https://identity.example.com/authorize",
+        },
+    });
 });
 
 test("GET /api/v1/auth/registration-config returns open-registration state", async () => {

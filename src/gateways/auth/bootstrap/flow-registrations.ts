@@ -186,6 +186,50 @@ export async function registerAuthBootstrapHook(
                 adapterId !== "local" &&
                 context.accountStore.ensureExternalAccount
             ) {
+                const existingAccount = await context.accountStore.getInfo(
+                    session.accountId,
+                );
+                if (!existingAccount) {
+                    if (!context.ctx.flow.exists("gateAccountCreation")) {
+                        return {
+                            sessionResult: {
+                                outcome: "account_creation_required",
+                                emailRequired: !("email" in session),
+                            },
+                        };
+                    }
+                    const gateResult = await context.ctx.flow.run(
+                        "gateAccountCreation",
+                        {
+                            accountId: session.accountId,
+                            providerId: adapterId ?? session.provider,
+                            email:
+                                "email" in session
+                                    ? String(session.email ?? "") || undefined
+                                    : undefined,
+                            registrationToken:
+                                "registrationToken" in session
+                                    ? String(session.registrationToken ?? "") ||
+                                      undefined
+                                    : undefined,
+                        },
+                    );
+                    const authorization = (
+                        gateResult.stageResults["authorizeCreation"] ?? []
+                    ).find(
+                        (result) =>
+                            (result as { authorized?: unknown }).authorized ===
+                            true,
+                    ) as { authorized: true } | undefined;
+                    if (!authorization) {
+                        return {
+                            sessionResult: {
+                                outcome: "account_creation_required",
+                                emailRequired: !("email" in session),
+                            },
+                        };
+                    }
+                }
                 await context.accountStore.ensureExternalAccount({
                     accountId: session.accountId,
                     provider: adapterId ?? session.provider,

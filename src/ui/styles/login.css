@@ -270,6 +270,37 @@ p.auth-intro {
     border-radius: 6px;
 }
 
+.sso-login-btn--branded {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr) 24px;
+    align-items: center;
+    width: 100%;
+    min-height: 48px;
+    gap: 12px;
+    background: var(--sso-button-background, #ffffff);
+    border-color: var(--sso-button-border, #d8d8d8);
+    color: var(--sso-button-text, #202124);
+    border-radius: 999px;
+}
+
+.sso-login-btn__icon {
+    display: block;
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.sso-login-btn__label {
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sso-login-btn__spacer {
+    width: 24px;
+}
+
 .auth-reset-actions {
     display: flex;
     gap: 8px;
@@ -432,6 +463,7 @@ body[data-theme="light"] .auth-secondary-action:hover:not(:disabled) {
 .auth-footer {
     display: flex;
     justify-content: center;
+    flex-wrap: nowrap;
     gap: 1rem;
     width: 100%;
     padding: 0.75rem 1rem;
@@ -440,7 +472,14 @@ body[data-theme="light"] .auth-secondary-action:hover:not(:disabled) {
 
 .auth-footer [data-footer-links] {
     display: flex;
-    flex-wrap: wrap;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
     justify-content: center;
     gap: 1rem;
+    width: max-content;
+}
+
+.auth-footer .global-footer-link {
+    flex: 0 0 auto;
+    white-space: nowrap;
 }

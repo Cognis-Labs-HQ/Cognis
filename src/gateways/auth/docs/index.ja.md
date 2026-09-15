@@ -12,7 +12,7 @@
 - `auth_adapter_configs` に永続化されたアダプターの有効・無効状態を管理する。
 - 要求されたプロバイダーの有効なアダプターに委譲して認証情報を検証する。
 - 認証成功後に `issueAccessToken` でアクセストークンを発行する。
-- 文書化されたケイパビリティ一式を提供する：`auth:accountStore`、`auth:createLocalAdmin`、`auth:getLoginMethods`、`auth:registerProvider`、`auth:registerPageScriptOrigins`、`auth:issueAccessToken`、`auth:getAuthClaims`、`auth:requireAuth`、`auth:requireRoleAccess`、`auth:revokeAccessTokensForSubject`、`auth:revokeSetupPendingAccessTokens`、`auth:routeContext`。
+- 文書化されたケイパビリティ一式を提供する：`auth:accountStore`、`auth:createLocalAdmin`、`auth:getLoginMethods`、`auth:registerProvider`、`auth:registerLoginButton`、`auth:registerPageScriptOrigins`、`auth:issueAccessToken`、`auth:getAuthClaims`、`auth:requireAuth`、`auth:requireRoleAccess`、`auth:revokeAccessTokensForSubject`、`auth:revokeSetupPendingAccessTokens`、`auth:routeContext`。
 - すべての認証APIルートとアダプター管理ルートを登録する。
 
 責務外: ユーザープロフィールデータの保存（プロフィールゲートウェイの責務）、トークン発行を超えたセッション管理、非認証ビジネスロジック。
@@ -57,22 +57,26 @@ export class CoreAuthGateway {
 | `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | 存在しない場合に管理者アカウントを作成                                          |
 | `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | すべての有効なプロバイダーのメタデータを返す                                    |
 | `auth:registerProvider`          | `(provider, requires?) => dispose`             | モジュール認証プロバイダーを登録し、そのクリーンアップ関数を返す                |
+| `auth:registerLoginButton`       | `(descriptor) => dispose`                      | ブランド固有のログインボタン表示を登録し、そのクリーンアップ関数を返す          |
 | `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | ページのCSPヘッダーで1つの所有者の信頼済みhttp(s)スクリプトオリジンを置き換える |
+
+認証プロバイダーは `auth:registerProvider` の後に `auth:registerLoginButton` を呼び出せます。記述子には、登録済みの `providerId`、完全にローカライズされた `label`、同一オリジンの `iconUrl` が必要です。任意の `backgroundColor`、`borderColor`、`textColor` には 6 桁の 16 進色を使用します。ログインページは、コンパクト表示とワイド表示の両方でアイコンと完全なラベルを常に表示します。プロバイダーは、提供を無効にするときに返されたクリーンアップ関数を呼び出す必要があります。 スタイルが指定されていない非認証情報方式は、汎用ログインボタンとして表示せず除外されます。
 
 ## APIルート
 
-| メソッド | パス                                         | 説明                               | 認証     |
-| -------- | -------------------------------------------- | ---------------------------------- | -------- |
-| `GET`    | `/api/v1/auth/login-methods`                 | 有効な認証プロバイダーを一覧表示   | 不要     |
-| `POST`   | `/api/v1/auth/register`                      | 新しいローカルアカウントを自己登録 | 不要     |
-| `POST`   | `/api/v1/auth/login`                         | 認証してBearerトークンを返す       | 不要     |
-| `POST`   | `/api/v1/auth/verify`                        | 現在のユーザーのパスワードを検証   | ユーザー |
-| `GET`    | `/api/v1/gateways/auth/adapters`             | 登録済み認証アダプターを一覧表示   | 管理者   |
-| `GET`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定スキーマを取得     | 管理者   |
-| `PUT`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定を更新             | 管理者   |
-| `POST`   | `/api/v1/gateways/auth/adapters/:id/test`    | アダプター設定をテスト             | 管理者   |
-| `POST`   | `/api/v1/gateways/auth/adapters/:id/enable`  | アダプターを有効化                 | 管理者   |
-| `POST`   | `/api/v1/gateways/auth/adapters/:id/disable` | アダプターを無効化                 | 管理者   |
+| メソッド | パス                                         | 説明                                         | 認証     |
+| -------- | -------------------------------------------- | -------------------------------------------- | -------- |
+| `GET`    | `/api/v1/auth/login-methods`                 | 有効な認証プロバイダーを一覧表示             | 不要     |
+| `POST`   | `/api/v1/auth/register`                      | 新しいローカルアカウントを自己登録           | 不要     |
+| `POST`   | `/api/v1/auth/login`                         | 認証してBearerトークンを返す                 | 不要     |
+| `POST`   | `/api/v1/auth/sso/start`                     | 外部プロバイダーの認可リダイレクトを開始する | なし     |
+| `POST`   | `/api/v1/auth/verify`                        | 現在のユーザーのパスワードを検証             | ユーザー |
+| `GET`    | `/api/v1/gateways/auth/adapters`             | 登録済み認証アダプターを一覧表示             | 管理者   |
+| `GET`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定スキーマを取得               | 管理者   |
+| `PUT`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定を更新                       | 管理者   |
+| `POST`   | `/api/v1/gateways/auth/adapters/:id/test`    | アダプター設定をテスト                       | 管理者   |
+| `POST`   | `/api/v1/gateways/auth/adapters/:id/enable`  | アダプターを有効化                           | 管理者   |
+| `POST`   | `/api/v1/gateways/auth/adapters/:id/disable` | アダプターを無効化                           | 管理者   |
 
 アダプターテストの失敗には、任意の数の設定項目 ID を安全な診断メッセージに対応付ける `error.fieldErrors` オブジェクトが含まれる場合があります。
 

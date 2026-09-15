@@ -22,6 +22,12 @@ import {
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import { createLoginIntegrationLoader } from "./integrations.js";
+import { reportLoginError } from "./error-reporting.js";
+import {
+    beginSsoLogin,
+    createSsoLoginButton,
+    isStyledSsoMethod,
+} from "./sso-buttons.js";
 import {
     clearLoginSession,
     persistLoginSession as persistSession,
@@ -144,7 +150,10 @@ export async function mount(root, { signal } = {}) {
                 (method) => method.id === "local" || method.credential === true,
             );
             const ssoProviders = methods.filter(
-                (method) => method.id !== "local" && method.credential !== true,
+                (method) =>
+                    method.id !== "local" &&
+                    method.credential !== true &&
+                    isStyledSsoMethod(method),
             );
 
             const updateSignupCallout = (method) => {
@@ -340,21 +349,22 @@ export async function mount(root, { signal } = {}) {
 
             if (ssoProviders.length > 0 && ssoContainer) {
                 ssoProviders.forEach((method) => {
-                    const btn = document.createElement("button");
-                    btn.type = "button";
-                    btn.className = "btn-animated sso-login-btn";
-                    btn.textContent = i18n
-                        .t("ui.app.login.sso.login_with")
-                        .replace("{provider}", method.name);
-                    btn.addEventListener("click", async () => {
-                        if (providerInput) providerInput.value = method.id;
-                        document.querySelector("#login-form")?.requestSubmit();
-                    });
-                    ssoContainer.appendChild(btn);
+                    ssoContainer.appendChild(
+                        createSsoLoginButton(method, () =>
+                            beginSsoLogin(method, i18n),
+                        ),
+                    );
                 });
             }
-        } catch {
-            // Login methods unavailable — form works with local auth by default
+        } catch (error) {
+            reportLoginError("Login methods could not be loaded.", {
+                component: "login-page",
+                operation: "load_login_methods",
+                error: error instanceof Error ? error.message : String(error),
+            });
+            showToast(i18n.t("ui.app.login.error.generic"), {
+                variant: "error",
+            });
         }
     }
 
@@ -808,7 +818,6 @@ export async function mount(root, { signal } = {}) {
                     mountAuthFooter(root, { i18n, signal });
                     resetPasswordResetMode();
                     if (lastTfaPayload !== null) {
-                        // Restore saved TFA prompt state; on failure, fall through to login-method loading (lines 609-610 below).
                         loadTfaLoginClient()
                             .then((client) => {
                                 if (client) {

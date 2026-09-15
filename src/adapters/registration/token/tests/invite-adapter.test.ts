@@ -59,6 +59,8 @@ test("redeemInvite deletes created account when token cannot be marked redeemed"
         isEmailRegistered: async () => false,
         upsertVerifiedPrimaryEmail: async () => {},
     });
+    assert.equal(adapter.id, "token");
+    assert.equal(adapter.locked, true);
     const inviteAdapter = adapter.invite;
     assert.ok(inviteAdapter);
 
@@ -159,4 +161,35 @@ test("issueInvite revokes prior pending tokens for the same invitee email", asyn
     );
     assert.equal(insertedTokenCount, 2, "two tokens should have been inserted");
     assert.equal(sentEmailCount, 2, "two invite emails should have been sent");
+});
+
+test("external account token consumption records one-time redemption", async () => {
+    let redemptionSet: Record<string, unknown> | undefined;
+    const adapter = createAdapter({
+        dbExecutor: {
+            ensureTable: async () => {},
+            executeCommand: async (command: {
+                option: string;
+                set?: Record<string, unknown>;
+            }) => {
+                if (command.option === "UPDATE") redemptionSet = command.set;
+                return { rows: [], rowCount: 1 };
+            },
+        } as any,
+        accountStore: {} as any,
+        canSendInviteEmail: () => true,
+        sendInviteEmail: async () => {},
+        isEmailRegistered: async () => false,
+        upsertVerifiedPrimaryEmail: async () => {},
+    });
+
+    assert.equal(
+        await adapter.invite?.consumeExternalAccountToken({
+            token: "token-id.token-secret",
+            accountId: "external-user",
+        }),
+        true,
+    );
+    assert.equal(redemptionSet?.redeemed_account_id, "external-user");
+    assert.equal(typeof redemptionSet?.redeemed_at, "string");
 });

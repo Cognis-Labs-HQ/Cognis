@@ -230,6 +230,33 @@ test("auth gateway exposes provider registration to modules", async () => {
             return [];
         },
     });
+    const registerLoginButton = capabilities.require<
+        (descriptor: {
+            providerId: string;
+            label: string;
+            iconUrl: string;
+            backgroundColor: string;
+            textColor: string;
+        }) => () => void
+    >("auth:registerLoginButton");
+    assert.throws(
+        () =>
+            registerLoginButton({
+                providerId: "module-provider",
+                label: "Continue with Module Provider",
+                iconUrl: "https://tracker.example/icon.svg",
+                backgroundColor: "red",
+                textColor: "#202124",
+            }),
+        /auth_login_button_invalid/,
+    );
+    const unregisterLoginButton = registerLoginButton({
+        providerId: "module-provider",
+        label: "Continue with Module Provider",
+        iconUrl: "/static/modules/provider/icon.svg",
+        backgroundColor: "#ffffff",
+        textColor: "#202124",
+    });
 
     const getLoginMethods = capabilities.require<
         () => Array<{ id: string; name: string }>
@@ -237,6 +264,32 @@ test("auth gateway exposes provider registration to modules", async () => {
     assert.ok(
         getLoginMethods().some((method) => method.id === "module-provider"),
     );
+    const systemCtx = capabilities.require<Ctx>(CTX_CAPABILITY);
+    const loginUiResult = await systemCtx.flow.run("construct-login-ui");
+    assert.deepEqual(loginUiResult.stageResults["augment-methods"], [
+        {
+            methods: [
+                {
+                    id: "module-provider",
+                    name: "Continue with Module Provider",
+                    loginButton: {
+                        providerId: "module-provider",
+                        label: "Continue with Module Provider",
+                        iconUrl: "/static/modules/provider/icon.svg",
+                        backgroundColor: "#ffffff",
+                        textColor: "#202124",
+                    },
+                },
+            ],
+        },
+    ]);
+    unregisterLoginButton();
+    const loginUiAfterRemoval = await systemCtx.flow.run("construct-login-ui");
+    assert.deepEqual(loginUiAfterRemoval.stageResults["augment-methods"], [
+        {
+            methods: [],
+        },
+    ]);
     unregisterProvider();
     assert.ok(
         getLoginMethods().every((method) => method.id !== "module-provider"),

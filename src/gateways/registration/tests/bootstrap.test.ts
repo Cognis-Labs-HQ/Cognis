@@ -90,9 +90,23 @@ async function dispatchRoute(
 
 test("registration gateway bootstrap registers admin section, navbar plugin, and static dir", async () => {
     const map = new Map();
+    const systemCtx = createCtx();
+    systemCtx.registerFlow({
+        id: "gateAccountCreation",
+        stages: ["inspectIdentity", "authorizeCreation"],
+    });
     map.set("db:executor", {
         execute: async () => ({ rows: [], rowCount: 0 }),
-        executeCommand: async () => ({ rows: [], rowCount: 0 }),
+        executeCommand: async (command: { table?: string }) =>
+            command.table === "registration_adapter_configs"
+                ? {
+                      rows: [
+                          { adapter_id: "public", enabled: 0 },
+                          { adapter_id: "token", enabled: 1 },
+                      ],
+                      rowCount: 2,
+                  }
+                : { rows: [], rowCount: 0 },
         ensureTable: async () => {},
         transaction: async (cb) => cb(map.get("db:executor")),
     });
@@ -141,9 +155,14 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
                 registeredTypingMessages.push(message);
             },
         } as any,
-        gatewayRegistry: { register() {} } as any,
+        gatewayRegistry: {
+            register() {},
+            get() {
+                return { status: "active" };
+            },
+        } as any,
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
-        flow: createCtx().flow,
+        flow: systemCtx.flow,
     } as any);
 
     assert.equal(
@@ -173,6 +192,17 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
     assert.equal(msg.ownerType, "adapter");
     assert.equal(msg.ownerId, "public");
     assert.equal(typeof msg.isEnabled, "function");
+    const gateResult = await systemCtx.flow.run("gateAccountCreation", {
+        accountId: "sso-user",
+        providerId: "external-sso",
+    });
+    assert.deepEqual(gateResult.stageResults["authorizeCreation"], [
+        {
+            authorized: false,
+            emailRequired: true,
+            reason: "registration_token_required",
+        },
+    ]);
 });
 
 test("registration:public:isEnabled capability returns false when gateway is disabled", async () => {

@@ -6,6 +6,10 @@ import {
 } from "../../../../api/reuse/access-token-http.js";
 import { issueAccessToken, revokeAccessToken } from "../../access-tokens.js";
 import type { CoreAuthGateway } from "../../gateway.js";
+import {
+    parseAuthLoginButton,
+    type AuthLoginButtonDescriptor,
+} from "../../login-button.js";
 import type {
     AuthAccountStore,
     AuthRouteBootstrapRuntime,
@@ -47,6 +51,7 @@ export function createSessionRoutes({
             name: string;
             forgotPassword?: boolean;
             credential?: boolean;
+            loginButton?: AuthLoginButtonDescriptor;
         }>;
         integrations: Array<{
             id: string;
@@ -79,6 +84,7 @@ export function createSessionRoutes({
                 name: string;
                 forgotPassword?: boolean;
                 credential?: boolean;
+                loginButton?: AuthLoginButtonDescriptor;
             }
         >();
         for (const stageResult of [
@@ -95,6 +101,10 @@ export function createSessionRoutes({
                     (method as { name?: unknown })?.name ?? "",
                 ).trim();
                 if (!id || !name) continue;
+                const loginButton = parseAuthLoginButton(
+                    (method as { loginButton?: unknown }).loginButton,
+                    id,
+                );
                 methodById.set(id, {
                     id,
                     name,
@@ -104,6 +114,7 @@ export function createSessionRoutes({
                     credential:
                         (method as { credential?: unknown }).credential ===
                         true,
+                    ...(loginButton ? { loginButton } : {}),
                 });
             }
         }
@@ -142,6 +153,41 @@ export function createSessionRoutes({
                     : fallbackMethods,
             integrations: Array.from(integrationById.values()),
         };
+    }
+
+    function resolveSsoAuthorizationUrl(
+        flowResult: {
+            stageResults: Record<string, unknown[]>;
+        },
+        providerId: string,
+    ): string | null {
+        for (const stageResult of flowResult.stageResults[
+            "initiateAuthorization"
+        ] ?? []) {
+            if (
+                !stageResult ||
+                typeof stageResult !== "object" ||
+                Array.isArray(stageResult)
+            ) {
+                continue;
+            }
+            const result = stageResult as {
+                providerId?: unknown;
+                redirectUrl?: unknown;
+            };
+            if (result.providerId !== providerId) continue;
+            const redirectUrl = String(result.redirectUrl ?? "").trim();
+            if (!redirectUrl) continue;
+            if (
+                (redirectUrl.startsWith("/") &&
+                    !redirectUrl.startsWith("//")) ||
+                (URL.canParse(redirectUrl) &&
+                    new URL(redirectUrl).protocol === "https:")
+            ) {
+                return redirectUrl;
+            }
+        }
+        return null;
     }
 
     function resolveFlowSessionResult(flowResult: {
@@ -208,6 +254,26 @@ export function createSessionRoutes({
                     error: {
                         code: "invalid_credentials",
                         message: "Invalid credentials",
+                    },
+                }),
+            );
+            return true;
+        }
+        if (outcome === "account_creation_required") {
+            log?.("info", "Held external login for account authorization.", {
+                ...logMeta,
+                emailRequired: sessionResult.emailRequired === true,
+            });
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "account_creation_required",
+                        message:
+                            "Account registration authorization is required.",
+                    },
+                    data: {
+                        emailRequired: sessionResult.emailRequired === true,
                     },
                 }),
             );
@@ -435,6 +501,89 @@ export function createSessionRoutes({
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/sso/start" &&
+            req.method === "POST"
+        ) {
+            const body = await readJson(req);
+            const providerId = String(body.providerId ?? "").trim();
+            const systemCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
+            const method = systemCtx
+                ? (await resolveLoginUiConfig(systemCtx)).methods.find(
+                      (candidate) => candidate.id === providerId,
+                  )
+                : undefined;
+            if (
+                !systemCtx?.flow.exists("startSsoLogin") ||
+                !method?.loginButton
+            ) {
+                log?.("warn", "Rejected unavailable SSO login provider.", {
+                    ...logMeta,
+                    providerId,
+                });
+                res.writeHead(422, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "sso_provider_unavailable",
+                            message: "SSO provider is unavailable.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            let flowResult;
+            try {
+                flowResult = await systemCtx.flow.run("startSsoLogin", {
+                    providerId,
+                });
+            } catch (error) {
+                log?.("error", "SSO authorization flow failed.", {
+                    ...logMeta,
+                    providerId,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+                res.writeHead(502, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "sso_authorization_unavailable",
+                            message: "SSO authorization is unavailable.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const redirectUrl = resolveSsoAuthorizationUrl(
+                flowResult,
+                providerId,
+            );
+            if (!redirectUrl) {
+                log?.("error", "SSO authorization did not return a redirect.", {
+                    ...logMeta,
+                    providerId,
+                });
+                res.writeHead(502, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "sso_authorization_unavailable",
+                            message: "SSO authorization is unavailable.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            log?.("info", "Started SSO authorization.", {
+                ...logMeta,
+                providerId,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { redirectUrl } }));
             return true;
         }
 

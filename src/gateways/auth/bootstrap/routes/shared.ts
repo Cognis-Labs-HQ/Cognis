@@ -16,6 +16,7 @@ export type AuthGatewayRouteHandler = (
 
 export interface LoginFlowSessionResult {
     outcome: string;
+    emailRequired?: boolean;
     accountId?: string;
     displayName?: string;
     provider?: string;

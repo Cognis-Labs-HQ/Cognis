@@ -141,6 +141,42 @@ export const AUTH_FLOW_CATALOG = Object.freeze([
         ],
     }),
     createFlowContract({
+        id: "startSsoLogin",
+        owner: "auth",
+        description:
+            "Starts an external authentication provider's authorization redirect.",
+        stages: [
+            {
+                id: "validateProvider",
+                description:
+                    "Validate that the selected provider can initiate external authentication.",
+            },
+            {
+                id: "initiateAuthorization",
+                description:
+                    "Create provider authorization state and return its redirect URL.",
+            },
+        ],
+    }),
+    createFlowContract({
+        id: "gateAccountCreation",
+        owner: "registration",
+        description:
+            "Authorizes creation of a Cognis account after external authentication.",
+        stages: [
+            {
+                id: "inspectIdentity",
+                description:
+                    "Collect the external identity, provider email, and registration token.",
+            },
+            {
+                id: "authorizeCreation",
+                description:
+                    "Require a valid registration policy or token before account persistence.",
+            },
+        ],
+    }),
+    createFlowContract({
         id: "construct-settings-ui",
         owner: "ui",
         description:

@@ -12,7 +12,7 @@ Das Gateway entdeckt Adapter durch Scannen von `src/adapters/auth/` beim Bootstr
 - Adapter-Aktivierungsstatus in `auth_adapter_configs` verwalten und persistieren.
 - Anmeldedaten durch Delegierung an den aktivierten Adapter für den angeforderten Anbieter verifizieren.
 - Zugriffstoken nach erfolgreicher Authentifizierung über `issueAccessToken` ausstellen.
-- Den dokumentierten Capability-Satz beitragen: `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, `auth:registerProvider`, `auth:registerPageScriptOrigins`, `auth:issueAccessToken`, `auth:getAuthClaims`, `auth:requireAuth`, `auth:requireRoleAccess`, `auth:revokeAccessTokensForSubject`, `auth:revokeSetupPendingAccessTokens` und `auth:routeContext`.
+- Den dokumentierten Capability-Satz beitragen: `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, `auth:registerProvider`, `auth:registerLoginButton`, `auth:registerPageScriptOrigins`, `auth:issueAccessToken`, `auth:getAuthClaims`, `auth:requireAuth`, `auth:requireRoleAccess`, `auth:revokeAccessTokensForSubject`, `auth:revokeSetupPendingAccessTokens` und `auth:routeContext`.
 - Alle Auth-API-Routen und Adapter-Admin-Routen registrieren.
 
 Nicht verantwortlich für: Benutzerprofile speichern (das ist das Profil-Gateway), Session-Management über die Token-Ausstellung hinaus, oder nicht-auth-bezogene Geschäftslogik.
@@ -51,28 +51,34 @@ Bootstrap in `src/gateways/auth/bootstrap.ts` und `src/gateways/auth/bootstrap/`
 
 Beigetragene Capabilities:
 
-| Capability                       | Typ                                            | Beschreibung                                                                                  |
-| -------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `auth:accountStore`              | `LocalAccountStore`                            | Lokaler Account-Store, der vom lokalen Adapter verwendet wird                                 |
-| `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | Erstellt einen Admin-Account, wenn er nicht existiert                                         |
-| `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | Gibt Metadaten für alle aktivierten Anbieter zurück                                           |
-| `auth:registerProvider`          | `(provider, requires?) => dispose`             | Registriert einen Modul-Authentifizierungsanbieter und gibt seine Bereinigungsfunktion zurück |
-| `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Ersetzt vertrauenswürdige http(s)-Skriptursprünge für einen Besitzer in Seiten-CSP-Headern    |
+| Capability                       | Typ                                            | Beschreibung                                                                                                       |
+| -------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `auth:accountStore`              | `LocalAccountStore`                            | Lokaler Account-Store, der vom lokalen Adapter verwendet wird                                                      |
+| `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | Erstellt einen Admin-Account, wenn er nicht existiert                                                              |
+| `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | Gibt Metadaten für alle aktivierten Anbieter zurück                                                                |
+| `auth:registerProvider`          | `(provider, requires?) => dispose`             | Registriert einen Modul-Authentifizierungsanbieter und gibt seine Bereinigungsfunktion zurück                      |
+| `auth:registerLoginButton`       | `(descriptor) => dispose`                      | Registriert die Darstellung einer markenspezifischen Anmeldeschaltfläche und gibt ihre Bereinigungsfunktion zurück |
+| `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Ersetzt vertrauenswürdige http(s)-Skriptursprünge für einen Besitzer in Seiten-CSP-Headern                         |
+
+Authentifizierungsanbieter können `auth:registerLoginButton` nach `auth:registerProvider` aufrufen. Der Deskriptor erfordert die registrierte `providerId`, ein vollständig lokalisiertes `label` und eine gleichursprüngliche `iconUrl`. Optionale Werte für `backgroundColor`, `borderColor` und `textColor` verwenden sechsstellige Hexadezimalfarben. Die Anmeldeseite zeigt sowohl in kompakten als auch in breiten Ansichten immer das Symbol und die vollständige Beschriftung. Anbieter müssen die zurückgegebene Bereinigungsfunktion aufrufen, wenn ihr Beitrag deaktiviert wird. Nicht gestaltete Methoden ohne Anmeldedaten werden ausgelassen, anstatt als generische Anmeldeschaltflächen dargestellt zu werden.
+
+Sitzungen externer Anbieter durchlaufen `gateAccountCreation` vor `ensureExternalAccount`. Wenn die offene Registrierung deaktiviert ist, muss die Sitzung ein Registrierungstoken und eine passende Anbieter-E-Mail enthalten. Eine angehaltene Sitzung gibt `account_creation_required` mit `emailRequired` zurück, damit die Anbieteroberfläche eine fehlende E-Mail anfordern oder bei Abbruch sauber beenden kann.
 
 ## API-Routen
 
-| Methode | Pfad                                         | Beschreibung                                    | Authentifizierung |
-| ------- | -------------------------------------------- | ----------------------------------------------- | ----------------- |
-| `GET`   | `/api/v1/auth/login-methods`                 | Aktivierte Authentifizierungsanbieter auflisten | Keine             |
-| `POST`  | `/api/v1/auth/register`                      | Neuen lokalen Account selbst registrieren       | Keine             |
-| `POST`  | `/api/v1/auth/login`                         | Authentifizieren; gibt Bearer-Token zurück      | Keine             |
-| `POST`  | `/api/v1/auth/verify`                        | Passwort des aktuellen Benutzers verifizieren   | Benutzer          |
-| `GET`   | `/api/v1/gateways/auth/adapters`             | Alle registrierten Auth-Adapter auflisten       | Admin             |
-| `GET`   | `/api/v1/gateways/auth/adapters/:id/config`  | Konfig-Schema für einen Adapter abrufen         | Admin             |
-| `PUT`   | `/api/v1/gateways/auth/adapters/:id/config`  | Konfig für einen Adapter aktualisieren          | Admin             |
-| `POST`  | `/api/v1/gateways/auth/adapters/:id/test`    | Adapterkonfiguration testen                     | Admin             |
-| `POST`  | `/api/v1/gateways/auth/adapters/:id/enable`  | Adapter aktivieren                              | Admin             |
-| `POST`  | `/api/v1/gateways/auth/adapters/:id/disable` | Adapter deaktivieren                            | Admin             |
+| Methode | Pfad                                         | Beschreibung                                             | Authentifizierung |
+| ------- | -------------------------------------------- | -------------------------------------------------------- | ----------------- |
+| `GET`   | `/api/v1/auth/login-methods`                 | Aktivierte Authentifizierungsanbieter auflisten          | Keine             |
+| `POST`  | `/api/v1/auth/register`                      | Neuen lokalen Account selbst registrieren                | Keine             |
+| `POST`  | `/api/v1/auth/login`                         | Authentifizieren; gibt Bearer-Token zurück               | Keine             |
+| `POST`  | `/api/v1/auth/sso/start`                     | Autorisierungsumleitung eines externen Anbieters starten | Keine             |
+| `POST`  | `/api/v1/auth/verify`                        | Passwort des aktuellen Benutzers verifizieren            | Benutzer          |
+| `GET`   | `/api/v1/gateways/auth/adapters`             | Alle registrierten Auth-Adapter auflisten                | Admin             |
+| `GET`   | `/api/v1/gateways/auth/adapters/:id/config`  | Konfig-Schema für einen Adapter abrufen                  | Admin             |
+| `PUT`   | `/api/v1/gateways/auth/adapters/:id/config`  | Konfig für einen Adapter aktualisieren                   | Admin             |
+| `POST`  | `/api/v1/gateways/auth/adapters/:id/test`    | Adapterkonfiguration testen                              | Admin             |
+| `POST`  | `/api/v1/gateways/auth/adapters/:id/enable`  | Adapter aktivieren                                       | Admin             |
+| `POST`  | `/api/v1/gateways/auth/adapters/:id/disable` | Adapter deaktivieren                                     | Admin             |
 
 Fehler bei Adaptertests können ein Objekt `error.fieldErrors` enthalten, das beliebig viele Konfigurationsfeld-IDs sicheren Diagnosemeldungen zuordnet.
 
