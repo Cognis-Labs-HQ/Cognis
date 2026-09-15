@@ -26,6 +26,10 @@ The password-confirmation form builder is now injected by its browser integratio
 
 Login and registration now render a shared bottom link strip. Enabled modules register an authentication-footer browser contributor through `ctx`; contributors publish document links through the existing neutral footer-link capability. Publication validation now rejects commented composer placeholders, direct mount-root writes even beside a composer, and external workarounds for API requests, timestamps, feedback dialogs, and script loading.
 
+## Show dependencies on enable
+
+Marketplace cards no longer label a module merely because another installed or available module declares it as a dependency. Required and optional dependencies are presented only when the requesting module is being enabled, when the relationship is actionable.
+
 ## Commits
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -33,3 +37,4 @@ Login and registration now render a shared bottom link strip. Enabled modules re
 - [e0f8bc49](https://github.com/Cognis-Labs-HQ/Cognis/commit/e0f8bc49)
 - [5c3df5a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c3df5a3)
 - [60c9a07e](https://github.com/Cognis-Labs-HQ/Cognis/commit/60c9a07e)
+- [82ac645e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ac645e)

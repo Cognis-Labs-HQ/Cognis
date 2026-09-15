@@ -26,6 +26,10 @@ Der Formularersteller für die Passwortbestätigung wird nun durch seine Browser
 
 Anmeldung und Registrierung zeigen nun einen gemeinsamen Linkstreifen am unteren Rand. Aktivierte Module registrieren einen Browserbeitrag für den Authentifizierungsfußbereich über `ctx`; Beiträge veröffentlichen Dokumentlinks über die bestehende neutrale Fußbereich-Link-Fähigkeit. Die Veröffentlichungsprüfung weist nun auskommentierte Komponisten-Platzhalter, direkte Schreibzugriffe auf das Einbindungswurzelelement auch neben einem Komponisten sowie externe Umgehungen für API-Anfragen, Zeitstempel, Rückmeldedialoge und Skriptladen zurück.
 
+## Abhängigkeiten beim Aktivieren anzeigen
+
+Marketplace-Karten kennzeichnen ein Modul nicht mehr nur deshalb, weil ein anderes installiertes oder verfügbares Modul es als Abhängigkeit deklariert. Erforderliche und optionale Abhängigkeiten werden nur beim Aktivieren des anfordernden Moduls angezeigt, wenn die Beziehung handlungsrelevant ist.
+
 ## Commits
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -33,3 +37,4 @@ Anmeldung und Registrierung zeigen nun einen gemeinsamen Linkstreifen am unteren
 - [e0f8bc49](https://github.com/Cognis-Labs-HQ/Cognis/commit/e0f8bc49)
 - [5c3df5a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c3df5a3)
 - [60c9a07e](https://github.com/Cognis-Labs-HQ/Cognis/commit/60c9a07e)
+- [82ac645e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ac645e)

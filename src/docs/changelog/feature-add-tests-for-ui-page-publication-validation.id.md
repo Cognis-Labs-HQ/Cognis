@@ -26,6 +26,10 @@ Pembangun formulir konfirmasi kata sandi kini disuntikkan oleh integrasi peramba
 
 Halaman masuk dan pendaftaran kini menampilkan bilah tautan bersama di bagian bawah. Modul aktif mendaftarkan kontributor peramban footer autentikasi melalui `ctx`; kontributor menerbitkan tautan dokumen melalui kemampuan tautan footer netral yang sudah ada. Validasi publikasi kini menolak placeholder penyusun dalam komentar, penulisan langsung ke akar pemasangan meskipun ada penyusun, serta jalan pintas eksternal untuk permintaan API, stempel waktu, dialog umpan balik, dan pemuatan skrip.
 
+## Tampilkan dependensi saat aktivasi
+
+Kartu marketplace tidak lagi menandai modul hanya karena modul lain yang terpasang atau tersedia mendeklarasikannya sebagai dependensi. Dependensi wajib dan opsional hanya ditampilkan saat modul peminta sedang diaktifkan, ketika hubungan tersebut dapat ditindaklanjuti.
+
 ## Commit
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -33,3 +37,4 @@ Halaman masuk dan pendaftaran kini menampilkan bilah tautan bersama di bagian ba
 - [e0f8bc49](https://github.com/Cognis-Labs-HQ/Cognis/commit/e0f8bc49)
 - [5c3df5a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c3df5a3)
 - [60c9a07e](https://github.com/Cognis-Labs-HQ/Cognis/commit/60c9a07e)
+- [82ac645e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ac645e)

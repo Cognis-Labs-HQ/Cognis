@@ -26,6 +26,10 @@
 
 ログインページと登録ページに共通の下部リンクストリップを表示するようにしました。有効なモジュールは `ctx` を通じて認証フッターのブラウザーコントリビューターを登録し、既存の中立的なフッターリンク機能を通じて文書リンクを公開します。公開検証は、コメント内だけのコンポーザープレースホルダー、コンポーザーと併用されたマウントルートへの直接書き込み、API 要求、タイムスタンプ、フィードバックダイアログ、スクリプト読み込みに対する外部の迂回実装を拒否するようになりました。
 
+## 有効化時に依存関係を表示
+
+別のインストール済みまたは利用可能なモジュールが依存先として宣言しているという理由だけで、マーケットプレイスカードにモジュールのラベルを表示しないようにしました。必須および任意の依存関係は、その関係に対応できる要求元モジュールの有効化時にのみ表示されます。
+
 ## コミット
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -33,3 +37,4 @@
 - [e0f8bc49](https://github.com/Cognis-Labs-HQ/Cognis/commit/e0f8bc49)
 - [5c3df5a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c3df5a3)
 - [60c9a07e](https://github.com/Cognis-Labs-HQ/Cognis/commit/60c9a07e)
+- [82ac645e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ac645e)

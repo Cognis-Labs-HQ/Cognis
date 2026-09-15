@@ -34,14 +34,6 @@ export function dependencyLifecycleAction(module) {
     return module.installed ? "enable" : "install";
 }
 
-export function isRequiredDependency(module, modules) {
-    return modules.some((candidate) =>
-        references(candidate, "hard").some(
-            (reference) => reference === module.uuid || reference === module.id,
-        ),
-    );
-}
-
 export function areModuleDependenciesSatisfied(module, modules) {
     return [
         ...dependencyEntries(module, modules, "hard"),

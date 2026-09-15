@@ -61,7 +61,6 @@ import {
 } from "./assets.js";
 import {
     confirmModuleDependencies,
-    isRequiredDependency,
     resolveInstallDependencies,
 } from "./dependencies.js";
 import { releaseChannels, selectReleaseChannel } from "./release-channels.js";
@@ -172,7 +171,7 @@ function renderCard(module) {
     return `<article class="module-store-card" data-module-uuid="${module.uuid}" tabindex="0">
       ${avatar}
       <div class="module-store-card-copy">
-        <div class="module-store-card-heading"><h3>${escapeHtml(presentation.name)}${renderRestartWarning(module)}</h3>${isRequiredDependency(module, modules) ? `<span class="state-pill pill-required">${escapeHtml(i18n.t("ui.app.modules.required"))}</span>` : ""}${module.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}</div>
+        <div class="module-store-card-heading"><h3>${escapeHtml(presentation.name)}${renderRestartWarning(module)}</h3>${module.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}</div>
         <p>${escapeHtml(presentation.summary ?? presentation.description ?? "")}</p>
         <span class="module-store-publisher">${escapeHtml(module.publisher ?? "")} · ${escapeHtml(formatVersion(module.installed ? (module.installedVersion ?? module.version) : module.version))}</span>
         ${renderAvailableVersion(module)}
@@ -387,7 +386,7 @@ async function runLifecycleAction(
 ) {
     if (module.restartRequired) return false;
     if (
-        ["install", "enable"].includes(action) &&
+        action === "enable" &&
         !dependenciesReady &&
         !(await ensureModuleDependenciesReady(module))
     ) {
@@ -855,7 +854,7 @@ function bindInteractions(root, signal) {
                 )
                     return;
                 let dependenciesReady = false;
-                if (["install", "enable"].includes(action)) {
+                if (action === "enable") {
                     pendingDependencyChecks.add(module.uuid);
                     try {
                         dependenciesReady =
@@ -863,15 +862,7 @@ function bindInteractions(root, signal) {
                     } finally {
                         pendingDependencyChecks.delete(module.uuid);
                     }
-                    if (!dependenciesReady) {
-                        if (action === "install") {
-                            showToast(
-                                i18n.t("ui.app.modules.install_cancelled"),
-                                { type: "info" },
-                            );
-                        }
-                        return;
-                    }
+                    if (!dependenciesReady) return;
                 }
                 pendingModuleActions.set(module.uuid, action);
                 const finishLoading = target.dataset.moduleMenu
