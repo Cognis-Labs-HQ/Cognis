@@ -5,6 +5,7 @@ import {
     areModuleDependenciesSatisfied,
     dependencyLifecycleAction,
     moduleDependencyActionState,
+    resolveModuleDependencyErrorMessage,
     resolveInstallDependencies,
 } from "../app/modules/dependencies.js";
 
@@ -38,6 +39,28 @@ test("module dependencies are satisfied only when every dependency is enabled", 
     optional.installed = true;
     optional.status = "enabled";
     assert.equal(areModuleDependenciesSatisfied(requesting, modules), true);
+});
+
+test("dependency enablement failures resolve to a localized toast message", () => {
+    const i18n = { t: (key) => `translated:${key}` };
+    assert.equal(
+        resolveModuleDependencyErrorMessage(
+            { code: "module_dependency_disabled" },
+            i18n,
+        ),
+        "translated:ui.app.modules.hard_dependency_blocked",
+    );
+    assert.equal(
+        resolveModuleDependencyErrorMessage(
+            { code: "module_dependency_unavailable" },
+            i18n,
+        ),
+        "translated:ui.app.modules.hard_dependency_blocked",
+    );
+    assert.equal(
+        resolveModuleDependencyErrorMessage({ code: "other_failure" }, i18n),
+        null,
+    );
 });
 
 test("dependency popup actions follow the requested module state", () => {
