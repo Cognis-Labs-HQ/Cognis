@@ -34,6 +34,10 @@ Marketplace-Karten kennzeichnen ein Modul nicht mehr nur deshalb, weil ein ander
 
 Der Authentifizierungsfußbereich wird nun innerhalb der sichtbaren Anmelde- und Registrierungsbereiche angezeigt, sodass registrierte Beiträge ihre Rechtsdokumentlinks darstellen können. Direkte Aufrufe serverseitig genehmigter öffentlicher SPA-Routen umgehen den authentifizierten `load-page`-Flow. Dadurch verwandelt `/terms-of-service` eine fehlende Sitzung nicht mehr in eine Weiterleitung zur Anmeldung wegen einer abgelaufenen Sitzung.
 
+## Authentifizierungslinks veröffentlichungsbewusst halten
+
+Beiträge für den Authentifizierungsfußbereich geben ihre derzeit zulässigen Links nun über `listAuthFooterLinks()` zurück, statt beim Import einen festen Satz einzutragen. Cognis prüft und ersetzt den Linksatz jedes Anbieters atomar, sodass unveröffentlichte oder zurückgezogene Dokumente nicht auf Anmelde- und Registrierungsseiten verbleiben.
+
 ## Commits
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -43,3 +47,4 @@ Der Authentifizierungsfußbereich wird nun innerhalb der sichtbaren Anmelde- und
 - [60c9a07e](https://github.com/Cognis-Labs-HQ/Cognis/commit/60c9a07e)
 - [82ac645e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ac645e)
 - [841e6c76](https://github.com/Cognis-Labs-HQ/Cognis/commit/841e6c76)
+- [234d0e03](https://github.com/Cognis-Labs-HQ/Cognis/commit/234d0e03)

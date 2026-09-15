@@ -34,6 +34,10 @@ Marketplace cards no longer label a module merely because another installed or a
 
 The authentication footer now renders inside the visible login and registration panels, allowing registered legal-document contributors to display their links. Direct loads of server-approved public SPA routes bypass the authenticated `load-page` flow, preventing `/terms-of-service` from turning a missing session into a session-expired login redirect.
 
+## Keep authentication links publication-aware
+
+Authentication-footer contributors now return their currently eligible links from `listAuthFooterLinks()` instead of pushing a fixed set as an import side effect. Cognis validates and atomically replaces each provider's link set, so unpublished or withdrawn documents do not remain on login and registration pages.
+
 ## Commits
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -43,3 +47,4 @@ The authentication footer now renders inside the visible login and registration 
 - [60c9a07e](https://github.com/Cognis-Labs-HQ/Cognis/commit/60c9a07e)
 - [82ac645e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ac645e)
 - [841e6c76](https://github.com/Cognis-Labs-HQ/Cognis/commit/841e6c76)
+- [234d0e03](https://github.com/Cognis-Labs-HQ/Cognis/commit/234d0e03)

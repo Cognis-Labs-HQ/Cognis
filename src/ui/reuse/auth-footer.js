@@ -4,6 +4,8 @@
  *
  * Public exports:
  *   loadAuthFooterPlugins() — imports enabled auth footer contributors.
+ *   reconcileAuthFooterLinks(providerId, descriptors) — replaces one
+ *     provider's current links with its latest eligible descriptors.
  *   renderAuthFooter() — returns the shared footer-link mount points.
  *   mountAuthFooter(root, options) — binds contributed links to the strip.
  *
@@ -16,7 +18,46 @@
  */
 
 import { apiFetch } from "./api-client.js";
-import { mountFooterLinks } from "./footer-links.js";
+import { footerLinks, mountFooterLinks } from "./footer-links.js";
+
+const providerLinkDisposers = new Map();
+
+export function reconcileAuthFooterLinks(providerId, descriptors) {
+    const normalizedProviderId = String(providerId ?? "").trim();
+    if (!normalizedProviderId) throw new Error("auth_footer_provider_required");
+    const normalizedDescriptors = (
+        Array.isArray(descriptors) ? descriptors : []
+    ).map((descriptor) => {
+        const id = String(descriptor.id ?? "").trim();
+        const href = String(descriptor.href ?? "").trim();
+        const label = String(descriptor.label ?? "").trim();
+        const labelKey = String(descriptor.labelKey ?? "").trim();
+        const side = descriptor.side ?? "left";
+        if (!id || !href || (!label && !labelKey)) {
+            throw new Error("invalid_auth_footer_link");
+        }
+        if (side !== "left" && side !== "right") {
+            throw new Error("invalid_auth_footer_link_side");
+        }
+        return { id, href, label, labelKey, side };
+    });
+    if (
+        new Set(normalizedDescriptors.map(({ id }) => id)).size !==
+        normalizedDescriptors.length
+    ) {
+        throw new Error("duplicate_auth_footer_link_id");
+    }
+    providerLinkDisposers
+        .get(normalizedProviderId)
+        ?.forEach((dispose) => dispose());
+    const disposers = normalizedDescriptors.map((descriptor) =>
+        footerLinks.add({
+            ...descriptor,
+            id: `${normalizedProviderId}:${descriptor.id}`,
+        }),
+    );
+    providerLinkDisposers.set(normalizedProviderId, disposers);
+}
 
 export async function loadAuthFooterPlugins() {
     const response = await apiFetch("/api/v1/ui/auth-footer-plugins");
@@ -24,7 +65,17 @@ export async function loadAuthFooterPlugins() {
     const payload = await response.json();
     await Promise.all(
         (Array.isArray(payload?.data) ? payload.data : []).map(
-            (plugin) => import(String(plugin.scriptUrl)),
+            async (plugin) => {
+                const scriptUrl = String(plugin.scriptUrl);
+                const pluginModule = await import(scriptUrl);
+                if (typeof pluginModule.listAuthFooterLinks !== "function") {
+                    throw new Error("auth_footer_link_provider_required");
+                }
+                reconcileAuthFooterLinks(
+                    scriptUrl,
+                    await pluginModule.listAuthFooterLinks(),
+                );
+            },
         ),
     );
 }

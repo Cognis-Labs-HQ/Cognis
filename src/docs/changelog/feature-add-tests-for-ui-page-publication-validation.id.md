@@ -34,6 +34,10 @@ Kartu marketplace tidak lagi menandai modul hanya karena modul lain yang terpasa
 
 Footer autentikasi kini dirender di dalam panel masuk dan pendaftaran yang terlihat sehingga kontributor dokumen hukum terdaftar dapat menampilkan tautannya. Pemuatan langsung rute SPA publik yang disetujui server melewati alur `load-page` terautentikasi, sehingga `/terms-of-service` tidak lagi mengubah ketiadaan sesi menjadi pengalihan masuk karena sesi kedaluwarsa.
 
+## Jaga tautan autentikasi sesuai publikasi
+
+Kontributor footer autentikasi kini mengembalikan tautan yang saat ini layak dari `listAuthFooterLinks()`, bukan mendorong kumpulan tetap sebagai efek samping impor. Cognis memvalidasi dan mengganti kumpulan tautan setiap penyedia secara atomik agar dokumen yang belum diterbitkan atau telah ditarik tidak tetap muncul pada halaman masuk dan pendaftaran.
+
 ## Commit
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -43,3 +47,4 @@ Footer autentikasi kini dirender di dalam panel masuk dan pendaftaran yang terli
 - [60c9a07e](https://github.com/Cognis-Labs-HQ/Cognis/commit/60c9a07e)
 - [82ac645e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ac645e)
 - [841e6c76](https://github.com/Cognis-Labs-HQ/Cognis/commit/841e6c76)
+- [234d0e03](https://github.com/Cognis-Labs-HQ/Cognis/commit/234d0e03)

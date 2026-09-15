@@ -34,6 +34,10 @@
 
 認証フッターを表示中のログインおよび登録パネル内に描画し、登録済みの法的文書コントリビューターがリンクを表示できるようにしました。サーバーが承認した公開 SPA ルートの直接読み込みは認証用 `load-page` フローを迂回するため、`/terms-of-service` でセッションがない場合にセッション期限切れとしてログインへリダイレクトされなくなりました。
 
+## 認証リンクを公開状態に同期
+
+認証フッターのコントリビューターは、インポート時の副作用として固定リンクを追加するのではなく、`listAuthFooterLinks()` から現在対象となるリンクを返すようになりました。Cognis は各プロバイダーのリンク一式を検証して一括置換するため、未公開または取り下げ済みの文書がログインページや登録ページに残りません。
+
 ## コミット
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -43,3 +47,4 @@
 - [60c9a07e](https://github.com/Cognis-Labs-HQ/Cognis/commit/60c9a07e)
 - [82ac645e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ac645e)
 - [841e6c76](https://github.com/Cognis-Labs-HQ/Cognis/commit/841e6c76)
+- [234d0e03](https://github.com/Cognis-Labs-HQ/Cognis/commit/234d0e03)
