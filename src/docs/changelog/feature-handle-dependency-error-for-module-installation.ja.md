@@ -20,7 +20,7 @@
 
 ## 匿名 SSO エラーの確実な処理
 
-ログイン方法の読み込みと SSO 開始の失敗時に、認証前のサーバーログ要求が拒否されても安全に処理するようになりました。元のローカライズされたログインエラーが、未処理の HTTP 401 ログエラーに置き換わらず表示され続けます。
+匿名ログインページでログイン方法の読み込みや SSO 開始に失敗しても、認証が必要なサーバーログエンドポイントを呼び出さなくなりました。2 回目の HTTP 401 要求や未処理のログ拒否を発生させず、元のローカライズされたログインエラーを表示し続けます。
 
 ## コミット
 
@@ -31,3 +31,4 @@
 - [83ca6396](https://github.com/Cognis-Labs-HQ/Cognis/commit/83ca639667ff46fb7a66afeaa69b4145383a9da9)
 - [88985bd5](https://github.com/Cognis-Labs-HQ/Cognis/commit/88985bd515cdbc7539c2326812879e67a39a1143)
 - [4120a69d](https://github.com/Cognis-Labs-HQ/Cognis/commit/4120a69d267eaf07897bed979032b2e7706e1a7c)
+- [a4c928d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a4c928d82c7c42ee4a9ec4f295199d008abc9137)

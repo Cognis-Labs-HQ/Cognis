@@ -20,7 +20,7 @@ External authentication now passes through the mandatory `gateAccountCreation` f
 
 ## Reliable anonymous SSO errors
 
-Login-method and SSO-start failures now safely contain rejected server-log requests made before authentication. The original localized login error remains visible instead of being replaced by an unhandled HTTP 401 logging error.
+Login-method and SSO-start failures on the anonymous login page no longer call the authenticated server-log endpoint. The original localized login error remains visible without creating a second HTTP 401 request or an unhandled logging rejection.
 
 ## Commits
 
@@ -31,3 +31,4 @@ Login-method and SSO-start failures now safely contain rejected server-log reque
 - [83ca6396](https://github.com/Cognis-Labs-HQ/Cognis/commit/83ca639667ff46fb7a66afeaa69b4145383a9da9)
 - [88985bd5](https://github.com/Cognis-Labs-HQ/Cognis/commit/88985bd515cdbc7539c2326812879e67a39a1143)
 - [4120a69d](https://github.com/Cognis-Labs-HQ/Cognis/commit/4120a69d267eaf07897bed979032b2e7706e1a7c)
+- [a4c928d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a4c928d82c7c42ee4a9ec4f295199d008abc9137)

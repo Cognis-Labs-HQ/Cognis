@@ -149,23 +149,19 @@ test("SSO initiation requests provider authorization without credentials", async
     }
 });
 
-test("anonymous login logging failures are contained", async () => {
+test("anonymous login failures do not call the authenticated logger", () => {
     const originalConsoleError = console.error;
     const calls = [];
     console.error = (...args) => calls.push(args);
     try {
-        await assert.doesNotReject(() =>
-            reportLoginError(
-                "SSO authorization could not be started.",
-                { providerId: "x-sso" },
-                async () => {
-                    throw new Error("Server logging failed with HTTP 401");
-                },
-            ),
-        );
+        reportLoginError("SSO authorization could not be started.", {
+            providerId: "x-sso",
+            error: "SSO provider rejected the request.",
+        });
         assert.equal(calls.length, 1);
         assert.equal(calls[0][0], "SSO authorization could not be started.");
-        assert.match(calls[0][2].message, /HTTP 401/);
+        assert.equal(calls[0][1].providerId, "x-sso");
+        assert.equal(calls[0][1].error, "SSO provider rejected the request.");
     } finally {
         console.error = originalConsoleError;
     }

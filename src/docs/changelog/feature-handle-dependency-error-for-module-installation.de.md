@@ -20,7 +20,7 @@ Externe Authentifizierung durchläuft jetzt den verpflichtenden Ablauf `gateAcco
 
 ## Zuverlässige anonyme SSO-Fehler
 
-Fehler beim Laden der Anmeldemethoden und beim Starten von SSO behandeln nun abgelehnte Serverprotokoll-Anfragen vor der Authentifizierung sicher. Der ursprüngliche lokalisierte Anmeldefehler bleibt sichtbar, statt durch einen unbehandelten HTTP-401-Protokollfehler ersetzt zu werden.
+Fehler beim Laden der Anmeldemethoden und beim Starten von SSO auf der anonymen Anmeldeseite rufen den authentifizierten Serverprotokoll-Endpunkt nicht mehr auf. Der ursprüngliche lokalisierte Anmeldefehler bleibt sichtbar, ohne eine zweite HTTP-401-Anfrage oder eine unbehandelte Protokollablehnung zu erzeugen.
 
 ## Commits
 
@@ -31,3 +31,4 @@ Fehler beim Laden der Anmeldemethoden und beim Starten von SSO behandeln nun abg
 - [83ca6396](https://github.com/Cognis-Labs-HQ/Cognis/commit/83ca639667ff46fb7a66afeaa69b4145383a9da9)
 - [88985bd5](https://github.com/Cognis-Labs-HQ/Cognis/commit/88985bd515cdbc7539c2326812879e67a39a1143)
 - [4120a69d](https://github.com/Cognis-Labs-HQ/Cognis/commit/4120a69d267eaf07897bed979032b2e7706e1a7c)
+- [a4c928d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a4c928d82c7c42ee4a9ec4f295199d008abc9137)

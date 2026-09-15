@@ -11,7 +11,7 @@ export async function beginSsoLogin(method, i18n) {
         const redirectUrl = await startSsoLogin(method.id);
         window.location.assign(redirectUrl);
     } catch (error) {
-        await reportLoginError("SSO authorization could not be started.", {
+        reportLoginError("SSO authorization could not be started.", {
             component: "login-page",
             operation: "start_sso_login",
             providerId: method.id,
