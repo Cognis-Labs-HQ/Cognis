@@ -60,7 +60,7 @@ Capability yang disediakan:
 | `auth:registerLoginButton`       | `(descriptor) => dispose`                      | Mendaftarkan tampilan tombol masuk bermerek dan mengembalikan fungsi pembersihannya |
 | `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Mengganti origin skrip http(s) tepercaya untuk satu pemilik di header CSP halaman   |
 
-Penyedia autentikasi dapat memanggil `auth:registerLoginButton` setelah `auth:registerProvider`. Deskriptor mewajibkan `providerId` yang terdaftar, `label` lengkap yang telah dilokalkan, dan `iconUrl` dari asal yang sama. Nilai opsional `backgroundColor`, `borderColor`, dan `textColor` memakai warna heksadesimal enam digit. Halaman masuk selalu menampilkan ikon dan label lengkap pada ukuran layar ringkas maupun lebar. Penyedia harus memanggil fungsi pembersihan yang dikembalikan saat kontribusinya dinonaktifkan.
+Penyedia autentikasi dapat memanggil `auth:registerLoginButton` setelah `auth:registerProvider`. Deskriptor mewajibkan `providerId` yang terdaftar, `label` lengkap yang telah dilokalkan, dan `iconUrl` dari asal yang sama. Nilai opsional `backgroundColor`, `borderColor`, dan `textColor` memakai warna heksadesimal enam digit. Halaman masuk selalu menampilkan ikon dan label lengkap pada ukuran layar ringkas maupun lebar. Penyedia harus memanggil fungsi pembersihan yang dikembalikan saat kontribusinya dinonaktifkan. Metode tanpa kredensial yang tidak bergaya dihilangkan, bukan ditampilkan sebagai tombol masuk generik.
 
 ## Route API
 

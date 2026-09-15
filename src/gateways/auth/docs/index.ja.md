@@ -60,7 +60,7 @@ export class CoreAuthGateway {
 | `auth:registerLoginButton`       | `(descriptor) => dispose`                      | ブランド固有のログインボタン表示を登録し、そのクリーンアップ関数を返す          |
 | `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | ページのCSPヘッダーで1つの所有者の信頼済みhttp(s)スクリプトオリジンを置き換える |
 
-認証プロバイダーは `auth:registerProvider` の後に `auth:registerLoginButton` を呼び出せます。記述子には、登録済みの `providerId`、完全にローカライズされた `label`、同一オリジンの `iconUrl` が必要です。任意の `backgroundColor`、`borderColor`、`textColor` には 6 桁の 16 進色を使用します。ログインページは、コンパクト表示とワイド表示の両方でアイコンと完全なラベルを常に表示します。プロバイダーは、提供を無効にするときに返されたクリーンアップ関数を呼び出す必要があります。
+認証プロバイダーは `auth:registerProvider` の後に `auth:registerLoginButton` を呼び出せます。記述子には、登録済みの `providerId`、完全にローカライズされた `label`、同一オリジンの `iconUrl` が必要です。任意の `backgroundColor`、`borderColor`、`textColor` には 6 桁の 16 進色を使用します。ログインページは、コンパクト表示とワイド表示の両方でアイコンと完全なラベルを常に表示します。プロバイダーは、提供を無効にするときに返されたクリーンアップ関数を呼び出す必要があります。 スタイルが指定されていない非認証情報方式は、汎用ログインボタンとして表示せず除外されます。
 
 ## APIルート
 

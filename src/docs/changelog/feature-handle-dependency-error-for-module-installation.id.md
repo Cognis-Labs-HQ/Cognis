@@ -8,10 +8,11 @@ Pemasangan dan pengaktifan modul kini menampilkan dependensi wajib yang dinonakt
 
 ## Tombol penyedia bergaya
 
-Penyedia autentikasi kini dapat mendaftarkan tombol masuk bermerek yang dapat dihapus dengan ikon wajib dari asal yang sama dan label lengkap yang dilokalkan. Cognis memvalidasi kontrak tampilan serta mempertahankan ikon dan label lebar penuh pada layar kecil maupun besar.
+Penyedia autentikasi dapat mendaftarkan tombol masuk bermerek yang dapat dihapus dengan ikon wajib dari asal yang sama dan label lengkap yang dilokalkan. Cognis memvalidasi kontrak tampilan, menghilangkan metode SSO tanpa gaya, serta mempertahankan ikon dan label lebar penuh pada layar kecil maupun besar. Tautan kaki halaman autentikasi kini tetap bersama dalam satu baris selebar konten.
 
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
 - [d6a4f6b5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d6a4f6b5d0c4ae212927fd18912345ba749f837f)
 - [4eb78e44](https://github.com/Cognis-Labs-HQ/Cognis/commit/4eb78e4433e7371533c1cd9d26bdca0e82f006f9)
+- [5bd254bb](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bd254bb88a817bfe40e86eb32d25d53661ce5eb)

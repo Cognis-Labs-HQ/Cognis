@@ -22,7 +22,7 @@ import {
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import { createLoginIntegrationLoader } from "./integrations.js";
-import { createSsoLoginButton } from "./sso-buttons.js";
+import { createSsoLoginButton, isStyledSsoMethod } from "./sso-buttons.js";
 import {
     clearLoginSession,
     persistLoginSession as persistSession,
@@ -145,7 +145,10 @@ export async function mount(root, { signal } = {}) {
                 (method) => method.id === "local" || method.credential === true,
             );
             const ssoProviders = methods.filter(
-                (method) => method.id !== "local" && method.credential !== true,
+                (method) =>
+                    method.id !== "local" &&
+                    method.credential !== true &&
+                    isStyledSsoMethod(method),
             );
 
             const updateSignupCallout = (method) => {
@@ -341,22 +344,15 @@ export async function mount(root, { signal } = {}) {
 
             if (ssoProviders.length > 0 && ssoContainer) {
                 ssoProviders.forEach((method) => {
-                    const fallbackLabel = i18n
-                        .t("ui.app.login.sso.login_with")
-                        .replace("{provider}", method.name);
                     ssoContainer.appendChild(
-                        createSsoLoginButton(
-                            method,
-                            fallbackLabel,
-                            async () => {
-                                if (providerInput) {
-                                    providerInput.value = method.id;
-                                }
-                                document
-                                    .querySelector("#login-form")
-                                    ?.requestSubmit();
-                            },
-                        ),
+                        createSsoLoginButton(method, async () => {
+                            if (providerInput) {
+                                providerInput.value = method.id;
+                            }
+                            document
+                                .querySelector("#login-form")
+                                ?.requestSubmit();
+                        }),
                     );
                 });
             }

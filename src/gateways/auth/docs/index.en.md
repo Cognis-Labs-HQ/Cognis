@@ -60,7 +60,7 @@ Capabilities contributed:
 | `auth:registerLoginButton`       | `(descriptor) => dispose`                      | Registers branded login-button presentation and returns its cleanup function |
 | `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Replaces trusted http(s) script origins for one owner in page CSP headers    |
 
-Authentication providers may call `auth:registerLoginButton` after `auth:registerProvider`. The descriptor requires the registered `providerId`, a complete localized `label`, and a same-origin `iconUrl`. Optional `backgroundColor`, `borderColor`, and `textColor` values use six-digit hexadecimal colors. The login page always renders the icon and full label at both compact and wide viewport sizes. Providers must call the returned cleanup function when their contribution is disabled.
+Authentication providers may call `auth:registerLoginButton` after `auth:registerProvider`. The descriptor requires the registered `providerId`, a complete localized `label`, and a same-origin `iconUrl`. Optional `backgroundColor`, `borderColor`, and `textColor` values use six-digit hexadecimal colors. The login page always renders the icon and full label at both compact and wide viewport sizes. Providers must call the returned cleanup function when their contribution is disabled. Unstyled non-credential methods are omitted rather than rendered as generic login buttons.
 
 ## API Routes
 

@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-import { createSsoLoginButton } from "../app/login/sso-buttons.js";
+import {
+    createSsoLoginButton,
+    isStyledSsoMethod,
+} from "../app/login/sso-buttons.js";
 
 class FakeElement {
     constructor(tagName) {
@@ -54,7 +57,6 @@ test("branded SSO buttons retain their icon and full label", async () => {
                     textColor: "#202124",
                 },
             },
-            "Fallback",
             () => {
                 selected = true;
             },
@@ -85,4 +87,36 @@ test("branded SSO buttons retain their icon and full label", async () => {
     } finally {
         globalThis.document = originalDocument;
     }
+});
+
+test("plain SSO methods are excluded from login button rendering", () => {
+    assert.equal(
+        isStyledSsoMethod({ id: "plain", name: "Plain Provider" }),
+        false,
+    );
+    assert.equal(
+        isStyledSsoMethod({
+            id: "styled",
+            loginButton: {
+                label: "Continue with Styled Provider",
+                iconUrl: "/static/modules/styled/icon.svg",
+            },
+        }),
+        true,
+    );
+});
+
+test("authentication footer links remain on one content-width row", async () => {
+    const styles = await readFile(
+        new URL("../styles/login.css", import.meta.url),
+        "utf8",
+    );
+    assert.match(
+        styles,
+        /\.auth-footer \[data-footer-links\][^{]*\{[^}]*flex:\s*0 0 auto[^}]*flex-wrap:\s*nowrap[^}]*width:\s*max-content/s,
+    );
+    assert.match(
+        styles,
+        /\.auth-footer \.global-footer-link\s*\{[^}]*white-space:\s*nowrap/s,
+    );
 });
