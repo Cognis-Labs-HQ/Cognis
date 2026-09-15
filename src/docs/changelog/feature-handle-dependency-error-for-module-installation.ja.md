@@ -18,6 +18,10 @@
 
 外部認証は、Cognis が新しいアカウントを保存する前に、必須の `gateAccountCreation` フローを通過するようになりました。公開登録は作成を直接許可し、非公開登録ではプロバイダーのメールアドレスと一致する使い捨てトークンを要求します。SSO UI で不足しているメールアドレスの入力が必要な場合も通知します。統合された登録トークンアダプターは招待トークンと SSO 認可トークンを管理し、SMTP 配信に依存し、無効化できません。また、管理者と創設者向けのユーザーページの招待操作にも使用されます。
 
+## 匿名 SSO エラーの確実な処理
+
+ログイン方法の読み込みと SSO 開始の失敗時に、認証前のサーバーログ要求が拒否されても安全に処理するようになりました。元のローカライズされたログインエラーが、未処理の HTTP 401 ログエラーに置き換わらず表示され続けます。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -26,3 +30,4 @@
 - [5bd254bb](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bd254bb88a817bfe40e86eb32d25d53661ce5eb)
 - [83ca6396](https://github.com/Cognis-Labs-HQ/Cognis/commit/83ca639667ff46fb7a66afeaa69b4145383a9da9)
 - [88985bd5](https://github.com/Cognis-Labs-HQ/Cognis/commit/88985bd515cdbc7539c2326812879e67a39a1143)
+- [4120a69d](https://github.com/Cognis-Labs-HQ/Cognis/commit/4120a69d267eaf07897bed979032b2e7706e1a7c)

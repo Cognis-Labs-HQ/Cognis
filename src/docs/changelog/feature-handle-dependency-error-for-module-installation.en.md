@@ -18,6 +18,10 @@ Branded provider buttons now start the canonical `startSsoLogin` flow instead of
 
 External authentication now passes through the mandatory `gateAccountCreation` flow before Cognis persists a new account. Open registration authorizes creation directly; closed registration requires a single-use token matching the provider email and reports when the SSO UI must request a missing email. The unified Registration Token adapter now owns invitation and SSO authorization tokens, depends on SMTP delivery, cannot be disabled, and supplies the Users invitation action for administrators and founders.
 
+## Reliable anonymous SSO errors
+
+Login-method and SSO-start failures now safely contain rejected server-log requests made before authentication. The original localized login error remains visible instead of being replaced by an unhandled HTTP 401 logging error.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -26,3 +30,4 @@ External authentication now passes through the mandatory `gateAccountCreation` f
 - [5bd254bb](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bd254bb88a817bfe40e86eb32d25d53661ce5eb)
 - [83ca6396](https://github.com/Cognis-Labs-HQ/Cognis/commit/83ca639667ff46fb7a66afeaa69b4145383a9da9)
 - [88985bd5](https://github.com/Cognis-Labs-HQ/Cognis/commit/88985bd515cdbc7539c2326812879e67a39a1143)
+- [4120a69d](https://github.com/Cognis-Labs-HQ/Cognis/commit/4120a69d267eaf07897bed979032b2e7706e1a7c)
