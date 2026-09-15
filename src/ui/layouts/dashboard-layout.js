@@ -700,6 +700,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         }
         bindHeaderScrollState(root);
         if (!componentWindow) {
+            initRouter(root);
             bindThemeToggle({ usePreferenceApi });
             bindLanguageToggle({ i18n, navigateTo, showToast });
             bindSwitcherSettingsLinks(root);
@@ -757,12 +758,12 @@ export async function renderDashboardLayout(root, slots = {}) {
         scheduleDeferredLoginSetup(i18n);
         applyActiveNavigation();
         applyCompactNav(root);
-        initRouter(root);
         initSearchBar(i18n);
         ensureReleaseChangelogPopupChecked(i18n);
     }
     bindHeaderScrollState(root);
     if (!componentWindow) {
+        initRouter(root);
         bindThemeToggle({ usePreferenceApi });
         bindLanguageToggle({ i18n, navigateTo, showToast });
         bindSwitcherSettingsLinks(root);

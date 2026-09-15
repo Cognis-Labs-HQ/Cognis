@@ -50,6 +50,10 @@
 
 UI 公開検証は再利用エクスポートを収集する前にコメントを除去し、文書内の例を実際の API と誤認しないようにしました。外部モジュールではブラウザー UI ソースのみを検査し、テスト、依存関係、生成物、カバレッジ、ビルドツリーを除外するため、サーバーやベンダーコードにブラウザー専用規則を適用しません。
 
+## ルーティングを独立させ、実行コードの書き込みを検査
+
+ダッシュボードシェルはアカウント専用拡張とは独立してクライアント側ルーティングを初期化するようになり、匿名の公開ページでもページ内遷移を維持します。公開検証も実行可能なソースだけを対象にマウントルートへの書き込みを調べるため、コメントや JSDoc で禁止パターンを説明しても誤検出しません。
+
 ## コミット
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -63,3 +67,4 @@ UI 公開検証は再利用エクスポートを収集する前にコメント�
 - [5f0ad5f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f0ad5f0)
 - [c44fcd61](https://github.com/Cognis-Labs-HQ/Cognis/commit/c44fcd61)
 - [d317260b](https://github.com/Cognis-Labs-HQ/Cognis/commit/d317260b)
+- [28e0e9f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/28e0e9f3)

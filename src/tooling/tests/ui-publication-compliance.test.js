@@ -117,7 +117,7 @@ function collectUiPublicationViolations({ sourceRoot, hostReuseRoot }) {
             }
             if (
                 /\broot\s*\.(?:innerHTML|outerHTML|replaceChildren|append|appendChild)\b/.test(
-                    source,
+                    executableSource,
                 )
             ) {
                 violations.push(
@@ -236,6 +236,16 @@ test("UI publication validation rejects composer and reuse workarounds", () => {
         join(moduleRoot, "ui", "app", "mixed.js"),
         'export async function mount(root) { createPageComposer(root); root.append(document.createElement("main")); }\n',
     );
+    writeFileSync(
+        join(moduleRoot, "ui", "app", "documented.js"),
+        [
+            "/** Do not use root.innerHTML in a page entry. */",
+            "export async function mount(root) {",
+            "  createPageComposer(root);",
+            "}",
+            "",
+        ].join("\n"),
+    );
     mkdirSync(join(moduleRoot, "api"), { recursive: true });
     mkdirSync(join(moduleRoot, "node_modules", "vendor"), { recursive: true });
     writeFileSync(
@@ -269,6 +279,10 @@ test("UI publication validation rejects composer and reuse workarounds", () => {
             violations.some((violation) =>
                 violation.includes("reuse utility mount"),
             ),
+            false,
+        );
+        assert.equal(
+            violations.some((violation) => violation.includes("documented.js")),
             false,
         );
         assert.ok(

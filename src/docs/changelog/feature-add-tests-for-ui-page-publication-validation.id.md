@@ -50,6 +50,10 @@ Plugin footer autentikasi kembali dapat menyumbangkan tautan sebagai efek sampin
 
 Validasi publikasi UI kini menghapus komentar sebelum menemukan ekspor penggunaan ulang sehingga contoh terdokumentasi tidak dianggap sebagai API nyata. Penegakan modul eksternal hanya memindai sumber UI browser dan melewati pengujian, dependensi, keluaran hasil pembuatan, cakupan, serta pohon build agar kode server atau vendor tidak dikenai aturan khusus browser.
 
+## Pertahankan routing independen dan pindai penulisan yang dapat dijalankan
+
+Shell dasbor kini menginisialisasi routing sisi klien secara terpisah dari penyempurnaan khusus akun sehingga halaman publik anonim tetap memakai navigasi di tempat. Validasi publikasi juga hanya memeriksa penulisan ke root pemasangan dalam sumber yang dapat dijalankan, sehingga komentar dan JSDoc dapat mendokumentasikan pola terlarang tanpa menghasilkan pelanggaran palsu.
+
 ## Commit
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -63,3 +67,4 @@ Validasi publikasi UI kini menghapus komentar sebelum menemukan ekspor penggunaa
 - [5f0ad5f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f0ad5f0)
 - [c44fcd61](https://github.com/Cognis-Labs-HQ/Cognis/commit/c44fcd61)
 - [d317260b](https://github.com/Cognis-Labs-HQ/Cognis/commit/d317260b)
+- [28e0e9f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/28e0e9f3)

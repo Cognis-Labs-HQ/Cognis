@@ -50,6 +50,10 @@ Plugins für den Authentifizierungsfußbereich können Links wieder wie im beste
 
 Die UI-Veröffentlichungsprüfung entfernt nun Kommentare, bevor wiederverwendbare Exporte ermittelt werden. Dadurch werden dokumentierte Beispiele nicht mit echten APIs verwechselt. Bei externen Modulen werden nur Browser-UI-Quellen geprüft; Tests, Abhängigkeiten, generierte Ausgaben, Coverage- und Build-Verzeichnisse werden übersprungen, sodass Server- oder Anbietercode keine reinen Browserregeln erhält.
 
+## Routing unabhängig halten und ausführbare Schreibzugriffe prüfen
+
+Die Dashboard-Oberfläche initialisiert das clientseitige Routing nun unabhängig von kontobezogenen Erweiterungen, sodass anonyme öffentliche Seiten die Navigation ohne vollständiges Neuladen beibehalten. Die Veröffentlichungsprüfung untersucht Schreibzugriffe auf das Mount-Element außerdem nur im ausführbaren Quelltext; Kommentare und JSDoc können verbotene Muster daher ohne Fehlmeldung dokumentieren.
+
 ## Commits
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -63,3 +67,4 @@ Die UI-Veröffentlichungsprüfung entfernt nun Kommentare, bevor wiederverwendba
 - [5f0ad5f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f0ad5f0)
 - [c44fcd61](https://github.com/Cognis-Labs-HQ/Cognis/commit/c44fcd61)
 - [d317260b](https://github.com/Cognis-Labs-HQ/Cognis/commit/d317260b)
+- [28e0e9f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/28e0e9f3)

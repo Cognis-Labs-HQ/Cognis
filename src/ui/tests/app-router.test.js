@@ -292,8 +292,8 @@ test("dashboard-layout initialises the router after shell setup", () => {
     );
     assert.match(
         src,
-        /initRouter\(root\)/,
-        "dashboard-layout.js must call initRouter(root)",
+        /if \(!componentWindow\) \{\s*initRouter\(root\);\s*bindThemeToggle/,
+        "dashboard-layout.js must initialize routing independently of account enhancements",
     );
     assert.doesNotMatch(
         src,

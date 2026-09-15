@@ -50,6 +50,10 @@ Authentication-footer plugins may once again contribute links as an import side 
 
 UI publication validation now strips comments before discovering reusable exports, so documented examples cannot be mistaken for real APIs. External-module enforcement scans only browser UI sources and skips tests, dependencies, generated output, coverage, and build trees, preventing server or vendor code from receiving browser-only rules.
 
+## Keep routing independent and scan executable writes
+
+The dashboard shell now initializes client-side routing independently of account-only enhancements, so anonymous public pages retain in-place navigation. Publication validation also checks mount-root writes only in executable source, allowing comments and JSDoc to document prohibited patterns without creating false violations.
+
 ## Commits
 
 - [57d2cdca](https://github.com/Cognis-Labs-HQ/Cognis/commit/57d2cdca)
@@ -63,3 +67,4 @@ UI publication validation now strips comments before discovering reusable export
 - [5f0ad5f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f0ad5f0)
 - [c44fcd61](https://github.com/Cognis-Labs-HQ/Cognis/commit/c44fcd61)
 - [d317260b](https://github.com/Cognis-Labs-HQ/Cognis/commit/d317260b)
+- [28e0e9f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/28e0e9f3)
