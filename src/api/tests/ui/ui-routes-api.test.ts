@@ -401,6 +401,26 @@ test("GET public registered SPA route serves its shell without a session", async
     assert.match(recorder.body, /modules\/terms\/ui\/app\.js/);
 });
 
+test("GET auth footer plugins is public and returns enabled scripts", async () => {
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerAuthFooterPlugin({
+        scriptUrl: "/static/modules/terms/auth-footer.js",
+    });
+    const route = createUiRoutes(undefined, uiRegistry);
+    const recorder = createResponseRecorder();
+    await route(
+        { method: "GET", headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/api/v1/ui/auth-footer-plugins"),
+    );
+    assert.equal(recorder.status, 200);
+    assert.deepEqual(JSON.parse(recorder.body).data, [
+        {
+            scriptUrl: "/static/modules/terms/auth-footer.js?v=development",
+        },
+    ]);
+});
+
 test("GET /api/v1/ui/app-routes filters disabled and protected routes", async () => {
     const uiRegistry = new UIRegistry();
     uiRegistry.registerSpaRoute({

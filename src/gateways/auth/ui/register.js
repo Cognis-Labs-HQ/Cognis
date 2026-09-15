@@ -1,4 +1,9 @@
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
+import {
+    loadAuthFooterPlugins,
+    mountAuthFooter,
+    renderAuthFooter,
+} from "/static/reuse/auth-footer.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import {
     DEFAULT_LOCALE,
@@ -134,6 +139,9 @@ export async function mount(root, { signal } = {}) {
     const hadStoredSession = await resetAuthSessionForRegister();
 
     const i18n = await createI18n();
+    await loadAuthFooterPlugins().catch(() => {
+        showToast(i18n.t("ui.reuse.error"), { variant: "error" });
+    });
     const registrationIntegrations = [];
     let registrationIntegrationsReady = false;
     applyDocumentTitle(i18n, "ui.page.title.register");
@@ -497,12 +505,12 @@ export async function mount(root, { signal } = {}) {
       ${formHtml}
       <button id="register-signin-instead" type="button" class="btn-animated auth-secondary-action">${escapeHtml(i18n.t("ui.reuse.sign_in_instead"))}</button>
     `;
-        return renderAuthLayout({
+        return `${renderAuthLayout({
             introPanelAriaLabel: i18n.t("ui.app.login.intro.aria"),
             introPanelHtml,
             formPanelAriaLabel: i18n.t("ui.app.register.form_title"),
             formPanelHtml,
-        });
+        })}${renderAuthFooter()}`;
     }
 
     async function promptVerificationCodeForRegister(emailAddress) {
@@ -611,6 +619,7 @@ export async function mount(root, { signal } = {}) {
                 },
                 render: () => renderRegisterShell(),
                 onRender: () => {
+                    mountAuthFooter(root, { i18n, signal });
                     runTypingShowcase(typingSamples);
                     const signInInsteadButton = root.querySelector(
                         "#register-signin-instead",

@@ -113,6 +113,12 @@ export interface AuthTypingMessage {
     isEnabled?: () => boolean;
 }
 
+export interface AuthFooterPlugin {
+    scriptUrl: string;
+    isEnabled?: () => boolean;
+    ownerId?: string;
+}
+
 /**
  * A settings section contributed by a gateway or adapter. The settings page
  * dynamically imports the module at `scriptUrl` and calls
@@ -147,6 +153,7 @@ export class UIRegistry {
     private readonly capabilityProviders: UiCapabilityProvider[] = [];
     private readonly spaRoutes: SpaRoute[] = [];
     private readonly authTypingMessages: AuthTypingMessage[] = [];
+    private readonly authFooterPlugins: AuthFooterPlugin[] = [];
     private readonly settingsSections: SettingsSection[] = [];
 
     constructor(manifestPath = process.env.COGNIS_UI_ASSET_MANIFEST) {
@@ -260,6 +267,18 @@ export class UIRegistry {
         this.authTypingMessages.push(message);
     }
 
+    registerAuthFooterPlugin(plugin: AuthFooterPlugin): void {
+        this.authFooterPlugins.push(plugin);
+    }
+
+    listAuthFooterPlugins(): AuthFooterPlugin[] {
+        return this.resolveDescriptor(
+            this.authFooterPlugins.filter(
+                (plugin) => !plugin.isEnabled || plugin.isEnabled(),
+            ),
+        );
+    }
+
     registerSettingsSection(section: SettingsSection): void {
         this.settingsSections.push(section);
     }
@@ -303,6 +322,7 @@ export class UIRegistry {
         this.removeOwned(this.navbarPlugins, moduleId);
         this.removeOwned(this.spaRoutes, moduleId);
         this.removeOwned(this.authTypingMessages, moduleId);
+        this.removeOwned(this.authFooterPlugins, moduleId);
         this.removeOwned(this.settingsSections, moduleId);
         for (const prefix of this.moduleStaticDirs.keys()) {
             if (prefix === moduleId || prefix.startsWith(`${moduleId}/`)) {

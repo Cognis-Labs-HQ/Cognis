@@ -1,4 +1,9 @@
 import { renderInPageCallout } from "../../reuse/in-page-callout.js";
+import {
+    loadAuthFooterPlugins,
+    mountAuthFooter,
+    renderAuthFooter,
+} from "../../reuse/auth-footer.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
@@ -32,9 +37,12 @@ const AUTH_SOURCE_PREFERENCE_KEY = "cognis_login_auth_source";
  * @param {HTMLElement} root - Target app container.
  * @returns {Promise<void>} Resolves when the page has finished initialising.
  */
-export async function mount(root) {
+export async function mount(root, { signal } = {}) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.login");
+    await loadAuthFooterPlugins().catch(() => {
+        showToast(i18n.t("ui.app.login.error.generic"), { variant: "error" });
+    });
     let currentTfaLoginAttemptId = null;
     let pendingKeyringPassword = "";
     let lastTfaPayload = null;
@@ -761,12 +769,12 @@ export async function mount(root) {
       ${loginFormBuilder.render()}
       <div id="sso-buttons" class="sso-buttons"></div>
     `;
-        return renderAuthLayout({
+        return `${renderAuthLayout({
             introPanelAriaLabel: i18n.t("ui.app.login.intro.aria"),
             introPanelHtml,
             formPanelAriaLabel: i18n.t("ui.app.login.title"),
             formPanelHtml,
-        });
+        })}${renderAuthFooter()}`;
     }
 
     const composer = createPageComposer(root, {
@@ -796,6 +804,7 @@ export async function mount(root) {
                 },
                 render: () => renderLoginShell(),
                 onRender: () => {
+                    mountAuthFooter(root, { i18n, signal });
                     resetPasswordResetMode();
                     if (lastTfaPayload !== null) {
                         // Restore saved TFA prompt state; on failure, fall through to login-method loading (lines 609-610 below).

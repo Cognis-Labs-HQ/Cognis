@@ -103,6 +103,7 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
             ctx.flow.extend("host-flow", "extensions", { id: "owned-module:hook" }, () => "active");
             ctx.registerAdminSection({ id: "owned-module", label: "Owned", scriptUrl: "/static/modules/owned-module/admin.js" });
             ctx.registerNavbarPlugin({ scriptUrl: "/static/modules/owned-module/navbar.js" });
+            ctx.registerAuthFooterPlugin({ scriptUrl: "/static/modules/owned-module/auth-footer.js" });
             ctx.registerSpaRoute({ id: "owned-module-page", pattern: "^/owned$", base: "/owned", scriptUrl: "/static/modules/owned-module/app.js", public: true, componentPage: { labelKey: "module.owned.page", descriptionKey: "module.owned.description", modes: ["fullscreen"] } });
             ctx.registerApiGet("/api/v1/modules/owned", (_req, res) => { res.writeHead(200); res.end("ok"); });
             ctx.registerApiGet("/api/v1/modules/owned/config", (_req, res) => { res.writeHead(ctx.getCapability("system:ctx") ? 500 : 200); res.end("config"); }, { allowWhenDisabled: true });
@@ -161,6 +162,7 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
         assert.equal(uiRegistry.listSpaRoutes().length, 1);
         assert.equal(uiRegistry.listSpaRoutes()[0].ownerUuid, moduleUuid);
         assert.equal(uiRegistry.listSpaRoutes()[0].public, true);
+        assert.equal(uiRegistry.listAuthFooterPlugins().length, 1);
         assert.deepEqual(
             (await systemCtx.runFlow("host-flow")).stageResults.extensions,
             ["active"],
@@ -179,6 +181,7 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
         assert.equal(systemCtx.hasCapability("owned-module:feature"), false);
         assert.equal(uiRegistry.listNavbarPlugins().length, 0);
         assert.equal(uiRegistry.listSpaRoutes().length, 0);
+        assert.equal(uiRegistry.listAuthFooterPlugins().length, 0);
         assert.deepEqual(uiRegistry.listAdminSections(), []);
         assert.deepEqual(
             (await systemCtx.runFlow("host-flow")).stageResults.extensions,

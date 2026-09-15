@@ -734,6 +734,22 @@ export function createUiRoutes(
             return true;
         }
 
+        if (
+            url.pathname === "/api/v1/ui/auth-footer-plugins" &&
+            req.method === "GET"
+        ) {
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: versionDescriptor(
+                        uiRegistry?.listAuthFooterPlugins() ?? [],
+                        ASSET_VERSION,
+                    ).map(({ scriptUrl }) => ({ scriptUrl })),
+                }),
+            );
+            return true;
+        }
+
         if (url.pathname.startsWith("/static/adapters/")) {
             const rest = url.pathname.slice("/static/adapters/".length);
             const parts = rest.split("/");

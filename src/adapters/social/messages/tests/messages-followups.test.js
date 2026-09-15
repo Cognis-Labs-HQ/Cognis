@@ -577,10 +577,7 @@ test("messages composer persists per-room drafts via form-draft manager keyed by
         source,
         /createFormDraftManager\(\{[^}]*FORM_DRAFT_STORAGE_PREFIX:\s*"cognis_messages_draft"/m,
     );
-    assert.match(
-        source,
-        /"data-composer-include-form-memory": "true"/,
-    );
+    assert.match(source, /"data-composer-include-form-memory": "true"/);
     assert.match(source, /captureFormState\b/);
     assert.match(source, /restoreFormState\b/);
 });

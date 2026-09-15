@@ -233,7 +233,6 @@ export async function mount(
         }
         state.loading = false;
         state.errorKey = "";
-        root.replaceChildren();
         await mountSharedPage(root, {
             shareContext,
             i18n: state.i18n,

@@ -170,6 +170,18 @@ test("UIRegistry registers and lists SPA routes", () => {
     assert.equal(reg.resolveSpaRoute("/settings"), undefined);
 });
 
+test("UIRegistry registers enabled authentication footer plugins", () => {
+    const reg = new UIRegistry();
+    reg.registerAuthFooterPlugin({ scriptUrl: "/legal-footer.js" });
+    reg.registerAuthFooterPlugin({
+        scriptUrl: "/disabled-footer.js",
+        isEnabled: () => false,
+    });
+    assert.deepEqual(reg.listAuthFooterPlugins(), [
+        { scriptUrl: "/legal-footer.js" },
+    ]);
+});
+
 test("UIRegistry rejects role restrictions on public SPA routes", () => {
     const reg = new UIRegistry();
     assert.throws(
