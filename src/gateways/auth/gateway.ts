@@ -1,7 +1,12 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import type { AuthContext, AuthGateway, FlowApi } from "@cognis/core";
+import {
+    resolveComponentEnabledState,
+    type AuthContext,
+    type AuthGateway,
+    type FlowApi,
+} from "@cognis/core";
 import type { DbExecutor } from "../../gateways/db/reuse/db-executor.js";
 import type { CapabilityStore } from "../shared.js";
 import type { LocalAccountStore } from "./reuse/account-store.js";
@@ -275,9 +280,14 @@ export class CoreAuthGateway {
             const adapterId = String(row.adapter_id);
             const adapter = this.adapters.get(adapterId);
             if (!adapter) continue;
-            if (Boolean(row.enabled)) {
+            if (
+                resolveComponentEnabledState({
+                    persistedEnabled: row.enabled,
+                    locked: adapterId === "local" || adapter.locked === true,
+                })
+            ) {
                 this.enabledAdapters.add(adapterId);
-            } else if (adapterId !== "local") {
+            } else {
                 this.enabledAdapters.delete(adapterId);
             }
             try {
@@ -312,19 +322,15 @@ export class CoreAuthGateway {
             secretKeys,
         ) as Record<string, unknown>;
         if (
-            enabledValue === false ||
-            enabledValue === "false" ||
-            enabledValue === 0
-        ) {
-            if (adapterId !== "local") {
-                this.enabledAdapters.delete(adapterId);
-            }
-        } else if (
-            enabledValue === true ||
-            enabledValue === "true" ||
-            enabledValue === 1
+            resolveComponentEnabledState({
+                persistedEnabled: enabledValue,
+                defaultEnabled: this.enabledAdapters.has(adapterId),
+                locked: adapterId === "local" || adapter.locked === true,
+            })
         ) {
             this.enabledAdapters.add(adapterId);
+        } else {
+            this.enabledAdapters.delete(adapterId);
         }
         adapter.configure(adapterConfig);
         const json = JSON.stringify(adapterConfig);

@@ -50,6 +50,10 @@ Modul tanpa privilege kini hanya dapat mendaftarkan rute API, kemampuan, dan alu
 
 Callback SSO serentak kini memakai satu hasil konsumsi token sehingga callback yang kalah tidak dapat menghapus akun pemenang. Token Pendaftaran bergantung pada gateway Notifikasi yang netral, bukan SMTP; tombol bermerek dibatasi pada penyedia aktif; dan kegagalan dialog dependensi memakai panduan yang dilokalkan. Modul tanpa privilege tetap memiliki jalur kerja sama yang terdokumentasi dan teruji melalui kemampuan bernamespace milik penyedia serta alur yang tidak sensitif terhadap keamanan.
 
+## Pemulihan siklus hidup komponen wajib
+
+Penggabungan penukaran token kini menyertakan identitas token dan akun sehingga akun eksternal yang bersaing tidak mewarisi otorisasi callback lain. Kebijakan siklus hidup Core yang dapat digunakan ulang memaksa komponen wajib yang terkunci tetap aktif meskipun terdapat status nonaktif tersimpan yang usang; penyedia Autentikasi, Pendaftaran, dan Notifikasi selalu aktif menerapkannya saat pemuatan dan pada batas konfigurasi.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -67,3 +71,4 @@ Callback SSO serentak kini memakai satu hasil konsumsi token sehingga callback y
 - [23517721](https://github.com/Cognis-Labs-HQ/Cognis/commit/2351772152b0d07f6c82a9683222d0d0cf6602d0)
 - [d62eba99](https://github.com/Cognis-Labs-HQ/Cognis/commit/d62eba99)
 - [6eec5296](https://github.com/Cognis-Labs-HQ/Cognis/commit/6eec52967246d4e0991b56691c6024cdc71c2c1e)
+- [3cf4aee2](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf4aee2a35c83065d116717f71a845f36bf5416)

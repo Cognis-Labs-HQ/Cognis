@@ -288,6 +288,58 @@ test("concurrent external token consumption shares one account authorization", a
     assert.equal(emailCalls, 1);
 });
 
+test("concurrent token consumption does not authorize a different account", async () => {
+    let redeemedAccountId = "";
+    let releaseEmail!: () => void;
+    const emailPending = new Promise<void>((resolve) => {
+        releaseEmail = resolve;
+    });
+    const adapter = createAdapter({
+        dbExecutor: {
+            ensureTable: async () => {},
+            executeCommand: async (command: {
+                option: string;
+                set?: Record<string, unknown>;
+            }) => {
+                if (command.option === "UPDATE" && !redeemedAccountId) {
+                    redeemedAccountId = String(
+                        command.set?.redeemed_account_id ?? "",
+                    );
+                    return { rows: [], rowCount: 1 };
+                }
+                if (command.option === "SELECT") {
+                    return {
+                        rows: [{ redeemed_account_id: redeemedAccountId }],
+                        rowCount: 1,
+                    };
+                }
+                return { rows: [], rowCount: 0 };
+            },
+        } as any,
+        accountStore: {} as any,
+        canSendInviteEmail: () => true,
+        sendInviteEmail: async () => {},
+        isEmailRegistered: async () => false,
+        upsertVerifiedPrimaryEmail: async () => emailPending,
+    });
+    const commonInput = {
+        token: "token-id.token-secret",
+        email: "person@example.com",
+    };
+
+    const winning = adapter.invite!.consumeExternalAccountToken({
+        ...commonInput,
+        accountId: "winning-account",
+    });
+    const losing = adapter.invite!.consumeExternalAccountToken({
+        ...commonInput,
+        accountId: "losing-account",
+    });
+    assert.equal(await losing, false);
+    releaseEmail();
+    assert.equal(await winning, true);
+});
+
 test("external token consumption is restored when canonical email persistence fails", async () => {
     const updates: Array<Record<string, unknown> | undefined> = [];
     const adapter = createAdapter({

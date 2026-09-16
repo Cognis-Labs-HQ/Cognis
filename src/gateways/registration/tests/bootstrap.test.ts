@@ -372,9 +372,21 @@ test("registration adapter routes announce controls and accept empty config save
     const capabilityStore = new CapabilityStore();
     const dbExecutor = {
         execute: async () => ({ rows: [], rowCount: 0 }),
-        executeCommand: async ({ table }: { table?: string }) => {
-            if (table === "registration_adapter_configs") {
-                return { rows: [], rowCount: 0 };
+        executeCommand: async ({
+            option,
+            table,
+        }: {
+            option?: string;
+            table?: string;
+        }) => {
+            if (
+                option === "SELECT" &&
+                table === "registration_adapter_configs"
+            ) {
+                return {
+                    rows: [{ adapter_id: "token", enabled: 0 }],
+                    rowCount: 1,
+                };
             }
             return { rows: [], rowCount: 0 };
         },
@@ -442,9 +454,14 @@ test("registration adapter routes announce controls and accept empty config save
     const listPayload = JSON.parse(listResponse.payload) as {
         data: Array<{
             id: string;
+            enabled: boolean;
             controls?: Record<string, string>;
         }>;
     };
+    assert.equal(
+        listPayload.data.find((adapter) => adapter.id === "token")?.enabled,
+        true,
+    );
     const publicAdapter = listPayload.data.find(
         (adapter) => adapter.id === "public",
     );

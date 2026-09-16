@@ -686,6 +686,36 @@ test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", as
     );
 });
 
+test("CoreAuthGateway restores locked adapters despite persisted disablement", async () => {
+    const { CoreAuthGateway } = await import("../gateway.js");
+    const gateway = new CoreAuthGateway({
+        executeCommand: async (command: { option: string }) =>
+            command.option === "SELECT"
+                ? {
+                      rows: [
+                          {
+                              adapter_id: "mandatory",
+                              enabled: 0,
+                              config_json: "{}",
+                          },
+                      ],
+                  }
+                : { rows: [] },
+    } as any);
+    gateway.registerAdapter({
+        id: "mandatory",
+        name: "Mandatory",
+        locked: true,
+        authenticate: async () => null,
+        getConfigSchema: () => [],
+        configure: () => undefined,
+    });
+
+    await gateway.loadPersistedConfigs();
+
+    assert.ok(gateway.getEnabledAdapter("mandatory"));
+});
+
 test("CoreAuthGateway lists adapter publisher metadata", async () => {
     const { CoreAuthGateway } = await import("../gateway.js");
     const gateway = new CoreAuthGateway(makeInMemoryDb());

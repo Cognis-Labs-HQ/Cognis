@@ -50,6 +50,10 @@ Unprivileged modules can now register API routes, capabilities, and new flows on
 
 Concurrent SSO callbacks now share one token-consumption result so a losing callback cannot delete the winning account. Registration Tokens depend on the neutral Notification gateway rather than SMTP, branded buttons remain limited to enabled providers, and dependency-dialog failures use localized guidance. Unprivileged modules retain a documented and tested cooperation path through provider-owned namespaced capabilities and non-sensitive flows.
 
+## Mandatory component lifecycle recovery
+
+Token redemption coalescing now includes both token and account identity, preventing a competing external account from inheriting another callback's authorization. A reusable Core lifecycle policy forces mandatory locked components active despite obsolete persisted disablement; Authentication, Registration, and always-on Notification providers apply it at load and configuration boundaries.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -67,3 +71,4 @@ Concurrent SSO callbacks now share one token-consumption result so a losing call
 - [23517721](https://github.com/Cognis-Labs-HQ/Cognis/commit/2351772152b0d07f6c82a9683222d0d0cf6602d0)
 - [d62eba99](https://github.com/Cognis-Labs-HQ/Cognis/commit/d62eba99)
 - [6eec5296](https://github.com/Cognis-Labs-HQ/Cognis/commit/6eec52967246d4e0991b56691c6024cdc71c2c1e)
+- [3cf4aee2](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf4aee2a35c83065d116717f71a845f36bf5416)

@@ -1,5 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import { resolveComponentEnabledState } from "@cognis/core";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 
 export interface InviteRecord {
@@ -172,12 +173,12 @@ export class CoreRegistrationGateway {
         for (const row of result.rows ?? []) {
             const adapterId = String(row.adapter_id ?? "");
             if (!adapterId || !this.adapters.has(adapterId)) continue;
-            const enabledRaw = row.enabled;
-            const enabled =
-                enabledRaw === true ||
-                enabledRaw === 1 ||
-                enabledRaw === "1" ||
-                enabledRaw === "true";
+            const adapter = this.adapters.get(adapterId)!;
+            const enabled = resolveComponentEnabledState({
+                persistedEnabled: row.enabled,
+                locked: adapter.locked === true,
+                defaultEnabled: adapter.defaultEnabled === true,
+            });
             if (enabled) this.enabledAdapters.add(adapterId);
             else this.enabledAdapters.delete(adapterId);
         }

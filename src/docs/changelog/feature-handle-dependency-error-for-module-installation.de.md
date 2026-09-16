@@ -50,6 +50,10 @@ Nicht privilegierte Module können API-Routen, Fähigkeiten und neue Flows jetzt
 
 Gleichzeitige SSO-Rückrufe teilen sich nun ein Ergebnis der Tokenverwendung, sodass ein unterlegener Rückruf das erfolgreiche Konto nicht löschen kann. Registrierungstoken hängen vom neutralen Benachrichtigungs-Gateway statt von SMTP ab, markenspezifische Schaltflächen bleiben auf aktivierte Anbieter beschränkt und Fehler im Abhängigkeitsdialog verwenden lokalisierte Hinweise. Nicht privilegierte Module behalten einen dokumentierten und getesteten Kooperationspfad über anbietereigene namensgebundene Fähigkeiten und nicht sicherheitskritische Flows.
 
+## Wiederherstellung verpflichtender Komponenten
+
+Die Zusammenführung der Tokeneinlösung berücksichtigt jetzt Token und Kontoidentität, sodass ein konkurrierendes externes Konto nicht die Autorisierung eines anderen Rückrufs erbt. Eine wiederverwendbare Core-Lebenszyklusrichtlinie aktiviert verpflichtende gesperrte Komponenten trotz veralteter gespeicherter Deaktivierung; Authentifizierung, Registrierung und dauerhaft aktive Benachrichtigungsanbieter wenden sie beim Laden und an Konfigurationsgrenzen an.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -67,3 +71,4 @@ Gleichzeitige SSO-Rückrufe teilen sich nun ein Ergebnis der Tokenverwendung, so
 - [23517721](https://github.com/Cognis-Labs-HQ/Cognis/commit/2351772152b0d07f6c82a9683222d0d0cf6602d0)
 - [d62eba99](https://github.com/Cognis-Labs-HQ/Cognis/commit/d62eba99)
 - [6eec5296](https://github.com/Cognis-Labs-HQ/Cognis/commit/6eec52967246d4e0991b56691c6024cdc71c2c1e)
+- [3cf4aee2](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf4aee2a35c83065d116717f71a845f36bf5416)

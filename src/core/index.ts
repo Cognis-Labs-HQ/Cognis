@@ -1,5 +1,6 @@
 export * from "./contracts/auth-account.js";
 export * from "./contracts/access-policy.js";
+export * from "./contracts/components/lifecycle.js";
 export * from "./contracts/auth-gateway.js";
 export * from "./contracts/db-gateway.js";
 export * from "./contracts/files-gateway.js";

@@ -513,6 +513,29 @@ test("CoreNotificationGateway.loadPersistedConfigs restores disabled state", asy
     assert.equal(info?.active, false);
 });
 
+test("CoreNotificationGateway keeps always-on senders enabled after reload", async () => {
+    const configStore = {
+        async getConfig() {
+            return { enabled: false };
+        },
+        async saveConfig() {},
+    };
+    const gateway = new CoreNotificationGateway(
+        new VolatileNotificationPreferenceStore(),
+        configStore,
+    );
+    gateway.registerSender(new ConfigurableSender("internal", "Internal", {}));
+    gateway.registerAlwaysOnSender("internal");
+
+    await gateway.loadPersistedConfigs();
+
+    assert.equal(gateway.isSenderEnabled("internal"), true);
+    await assert.rejects(
+        () => gateway.disableSender("internal"),
+        /adapter_locked/,
+    );
+});
+
 test("CoreNotificationGateway notifies sender enabled state listeners", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);

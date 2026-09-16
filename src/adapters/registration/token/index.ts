@@ -608,12 +608,13 @@ export function createAdapter(deps: {
         email: string;
     }): Promise<boolean> {
         const { tokenHash } = parseToken(input.token);
-        const active = externalConsumptionByToken.get(tokenHash);
+        const consumptionKey = `${tokenHash}:${input.accountId}`;
+        const active = externalConsumptionByToken.get(consumptionKey);
         if (active) return active;
         const consumption = consumeExternalAccountTokenOnce(input).finally(() =>
-            externalConsumptionByToken.delete(tokenHash),
+            externalConsumptionByToken.delete(consumptionKey),
         );
-        externalConsumptionByToken.set(tokenHash, consumption);
+        externalConsumptionByToken.set(consumptionKey, consumption);
         return consumption;
     }
 
