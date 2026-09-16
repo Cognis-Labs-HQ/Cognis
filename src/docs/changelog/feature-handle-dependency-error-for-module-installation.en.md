@@ -46,6 +46,10 @@ Module API routes, capabilities, flows, hooks, static prefixes, and UI registrat
 
 Unprivileged modules can now register API routes, capabilities, and new flows only inside their own module namespace. Host and foreign namespaces require an explicit privileged declaration, preventing ordinary extensions from squatting on another module's integration surface. The compliance pass also corrected localized login diagnostics and Registration Token documentation structure.
 
+## Review hardening and cooperative integrations
+
+Concurrent SSO callbacks now share one token-consumption result so a losing callback cannot delete the winning account. Registration Tokens depend on the neutral Notification gateway rather than SMTP, branded buttons remain limited to enabled providers, and dependency-dialog failures use localized guidance. Unprivileged modules retain a documented and tested cooperation path through provider-owned namespaced capabilities and non-sensitive flows.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -62,3 +66,4 @@ Unprivileged modules can now register API routes, capabilities, and new flows on
 - [5552b77f](https://github.com/Cognis-Labs-HQ/Cognis/commit/5552b77f945050d4e9b51e43a90c79a95d348487)
 - [23517721](https://github.com/Cognis-Labs-HQ/Cognis/commit/2351772152b0d07f6c82a9683222d0d0cf6602d0)
 - [d62eba99](https://github.com/Cognis-Labs-HQ/Cognis/commit/d62eba99)
+- [6eec5296](https://github.com/Cognis-Labs-HQ/Cognis/commit/6eec52967246d4e0991b56691c6024cdc71c2c1e)

@@ -14,11 +14,7 @@ export async function registerAuthBootstrapHook({
         (descriptor: AuthLoginButtonDescriptor) => {
             const button = parseAuthLoginButton(descriptor);
             if (!button) throw new Error("auth_login_button_invalid");
-            if (
-                !authGateway
-                    .listAdapters()
-                    .some(({ id }) => id === button.providerId)
-            ) {
+            if (!authGateway.getEnabledAdapter(button.providerId)) {
                 throw new Error("auth_login_button_provider_unavailable");
             }
             buttons.set(button.providerId, button);
@@ -46,11 +42,15 @@ export async function registerAuthBootstrapHook({
         "augment-methods",
         { id: "auth-gateway:login-buttons" },
         () => ({
-            methods: [...buttons.values()].map((button) => ({
-                id: button.providerId,
-                name: button.label,
-                loginButton: button,
-            })),
+            methods: [...buttons.values()]
+                .filter((button) =>
+                    authGateway.getEnabledAdapter(button.providerId),
+                )
+                .map((button) => ({
+                    id: button.providerId,
+                    name: button.label,
+                    loginButton: button,
+                })),
         }),
     );
 }

@@ -520,3 +520,69 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
         await rm(externalModulesRoot, { recursive: true, force: true });
     }
 });
+
+test("unprivileged modules cooperate through provider-owned capabilities", async () => {
+    const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
+    const whiteboardUuid = "93c08730-acde-4a13-ae5c-9bb176989ed4";
+    const jitsiUuid = "ec69f234-5264-4db4-9bb3-95a170ac96f1";
+    await mkdir(path.join(modulesRoot, whiteboardUuid));
+    await mkdir(path.join(modulesRoot, jitsiUuid));
+    await writeFile(
+        path.join(modulesRoot, whiteboardUuid, "bootstrap.js"),
+        `export function bootstrapModule(ctx) {
+            ctx.contributePublicCapability("whiteboard:openBoard", (boardId) => ({ boardId, opened: true }));
+        }`,
+    );
+    await writeFile(
+        path.join(modulesRoot, jitsiUuid, "bootstrap.js"),
+        `export function bootstrapModule(ctx) {
+            const openBoard = ctx.getCapability("whiteboard:openBoard");
+            globalThis.__cooperativeModuleResult = openBoard("planning");
+        }`,
+    );
+    const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
+    const systemCtx = createCtx();
+    systemCtx.contributeCapability("system:ctx", systemCtx);
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "whiteboard",
+                    uuid: whiteboardUuid,
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                },
+                {
+                    id: "jitsi",
+                    uuid: jitsiUuid,
+                    requiresCapabilities: ["whiteboard:openBoard"],
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                },
+            ],
+        } as any,
+        () => true,
+        undefined,
+        {
+            routeContext: createDefaultRouteContext({
+                getCapability: (id) => systemCtx.getCapability(id),
+                flow: systemCtx.flow,
+            }),
+        },
+    );
+
+    try {
+        await extensions.refresh({ throwOnFailure: true });
+        assert.deepEqual((globalThis as any).__cooperativeModuleResult, {
+            boardId: "planning",
+            opened: true,
+        });
+    } finally {
+        delete (globalThis as any).__cooperativeModuleResult;
+        if (previousModulesRoot === undefined) {
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        } else {
+            process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
+        }
+        await rm(modulesRoot, { recursive: true, force: true });
+    }
+});

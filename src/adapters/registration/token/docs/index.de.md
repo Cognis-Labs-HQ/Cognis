@@ -1,6 +1,6 @@
 # Registrierungstoken
 
-Der verpflichtende Registrierungstoken-Adapter verwaltet Einladungs- und Autorisierungstoken für die Kontoerstellung. Er sendet einmalig verwendbare Links über den SMTP-Benachrichtigungsadapter und dient der Benutzerseite als Tokenquelle für Einladungen durch Administratoren und Gründer.
+Der verpflichtende Registrierungstoken-Adapter verwaltet Einladungs- und Autorisierungstoken für die Kontoerstellung. Er sendet einmalig verwendbare Links über den aktiven E-Mail-Benachrichtigungsanbieter und dient der Benutzerseite als Tokenquelle für Einladungen durch Administratoren und Gründer.
 
 ## Anwendungsbeispiele
 

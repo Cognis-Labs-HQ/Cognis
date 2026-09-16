@@ -1,6 +1,6 @@
 # Registration Tokens
 
-The mandatory Registration Token adapter owns invitation and account-creation authorization tokens. It sends single-use links through the SMTP notification adapter and is the token source used by the Users page for administrator and founder invitations.
+The mandatory Registration Token adapter owns invitation and account-creation authorization tokens. It sends single-use links through the active email notification provider and is the token source used by the Users page for administrator and founder invitations.
 
 ## Usage examples
 

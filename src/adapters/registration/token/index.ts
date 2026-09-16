@@ -123,6 +123,7 @@ export function createAdapter(deps: {
     } = deps;
 
     let schemaInitialized: Promise<void> | null = null;
+    const externalConsumptionByToken = new Map<string, Promise<boolean>>();
 
     function ensureReady(): Promise<void> {
         if (!schemaInitialized) {
@@ -544,7 +545,7 @@ export function createAdapter(deps: {
         };
     }
 
-    async function consumeExternalAccountToken(input: {
+    async function consumeExternalAccountTokenOnce(input: {
         token: string;
         accountId: string;
         email: string;
@@ -565,7 +566,21 @@ export function createAdapter(deps: {
                 { column: "redeemed_at", operator: "IS NULL" },
             ],
         });
-        if (Number(result.rowCount ?? 0) !== 1) return false;
+        if (Number(result.rowCount ?? 0) !== 1) {
+            const redemption = await dbExecutor.executeCommand({
+                option: "SELECT",
+                table: "registration_tokens",
+                columns: ["redeemed_account_id"],
+                where: [
+                    { column: "token_hash", value: tokenHash },
+                    { column: "revoked_at", operator: "IS NULL" },
+                ],
+            });
+            return (
+                String(redemption.rows?.[0]?.redeemed_account_id ?? "") ===
+                input.accountId
+            );
+        }
         try {
             await upsertVerifiedPrimaryEmail(
                 input.accountId,
@@ -585,6 +600,21 @@ export function createAdapter(deps: {
             throw error;
         }
         return true;
+    }
+
+    function consumeExternalAccountToken(input: {
+        token: string;
+        accountId: string;
+        email: string;
+    }): Promise<boolean> {
+        const { tokenHash } = parseToken(input.token);
+        const active = externalConsumptionByToken.get(tokenHash);
+        if (active) return active;
+        const consumption = consumeExternalAccountTokenOnce(input).finally(() =>
+            externalConsumptionByToken.delete(tokenHash),
+        );
+        externalConsumptionByToken.set(tokenHash, consumption);
+        return consumption;
     }
 
     return {

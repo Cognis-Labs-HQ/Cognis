@@ -172,9 +172,13 @@ export async function confirmModuleDependencies(
                             updateDependencyAction(overlay, action, hard, soft);
                         } catch (error) {
                             showToast(
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
+                                resolveModuleDependencyErrorMessage(
+                                    error,
+                                    i18n,
+                                ) ??
+                                    (error instanceof Error
+                                        ? error.message
+                                        : String(error)),
                                 { type: "error" },
                             );
                         } finally {

@@ -46,6 +46,10 @@ Rute API, kemampuan, alur, hook, prefiks statis, dan registrasi UI modul kini me
 
 Modul tanpa privilege kini hanya dapat mendaftarkan rute API, kemampuan, dan alur baru di dalam namespace modulnya sendiri. Namespace host dan modul lain memerlukan deklarasi privilege secara eksplisit sehingga ekstensi biasa tidak dapat mengambil alih permukaan integrasi modul lain. Pemeriksaan kepatuhan juga memperbaiki diagnostik login yang dilokalkan dan struktur dokumentasi Token Pendaftaran.
 
+## Penguatan tinjauan dan integrasi kooperatif
+
+Callback SSO serentak kini memakai satu hasil konsumsi token sehingga callback yang kalah tidak dapat menghapus akun pemenang. Token Pendaftaran bergantung pada gateway Notifikasi yang netral, bukan SMTP; tombol bermerek dibatasi pada penyedia aktif; dan kegagalan dialog dependensi memakai panduan yang dilokalkan. Modul tanpa privilege tetap memiliki jalur kerja sama yang terdokumentasi dan teruji melalui kemampuan bernamespace milik penyedia serta alur yang tidak sensitif terhadap keamanan.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -62,3 +66,4 @@ Modul tanpa privilege kini hanya dapat mendaftarkan rute API, kemampuan, dan alu
 - [5552b77f](https://github.com/Cognis-Labs-HQ/Cognis/commit/5552b77f945050d4e9b51e43a90c79a95d348487)
 - [23517721](https://github.com/Cognis-Labs-HQ/Cognis/commit/2351772152b0d07f6c82a9683222d0d0cf6602d0)
 - [d62eba99](https://github.com/Cognis-Labs-HQ/Cognis/commit/d62eba99)
+- [6eec5296](https://github.com/Cognis-Labs-HQ/Cognis/commit/6eec52967246d4e0991b56691c6024cdc71c2c1e)

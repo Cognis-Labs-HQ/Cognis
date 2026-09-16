@@ -106,6 +106,10 @@ test("module dependency popup renders navigable cards and action-specific labels
     assert.match(source, /beginButtonLoading/);
     assert.match(source, /data-install-dependency/);
     assert.match(source, /updateDependencyAction/);
+    assert.match(
+        source,
+        /resolveModuleDependencyErrorMessage\(\s*error,\s*i18n,?\s*\)/,
+    );
     assert.match(source, /label: i18n\.t\(`ui\.reuse\.\$\{action\}`\)/);
 
     const styles = await import("node:fs/promises").then(({ readFile }) =>

@@ -249,6 +249,45 @@ test("external account token consumption records one-time redemption", async () 
     });
 });
 
+test("concurrent external token consumption shares one account authorization", async () => {
+    let updateCalls = 0;
+    let emailCalls = 0;
+    let releaseEmail!: () => void;
+    const emailPending = new Promise<void>((resolve) => {
+        releaseEmail = resolve;
+    });
+    const adapter = createAdapter({
+        dbExecutor: {
+            ensureTable: async () => {},
+            executeCommand: async (command: { option: string }) => {
+                if (command.option === "UPDATE") updateCalls += 1;
+                return { rows: [], rowCount: 1 };
+            },
+        } as any,
+        accountStore: {} as any,
+        canSendInviteEmail: () => true,
+        sendInviteEmail: async () => {},
+        isEmailRegistered: async () => false,
+        upsertVerifiedPrimaryEmail: async () => {
+            emailCalls += 1;
+            await emailPending;
+        },
+    });
+    const input = {
+        token: "token-id.token-secret",
+        accountId: "external-user",
+        email: "person@example.com",
+    };
+
+    const first = adapter.invite!.consumeExternalAccountToken(input);
+    const second = adapter.invite!.consumeExternalAccountToken(input);
+    releaseEmail();
+
+    assert.deepEqual(await Promise.all([first, second]), [true, true]);
+    assert.equal(updateCalls, 1);
+    assert.equal(emailCalls, 1);
+});
+
 test("external token consumption is restored when canonical email persistence fails", async () => {
     const updates: Array<Record<string, unknown> | undefined> = [];
     const adapter = createAdapter({

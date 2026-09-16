@@ -242,6 +242,30 @@ test("auth gateway exposes provider registration to modules", async () => {
             textColor: string;
         }) => () => void
     >("auth:registerLoginButton");
+    const unregisterDisabledProvider = registerProvider({
+        id: "disabled-provider",
+        name: "Disabled Provider",
+        locked: false,
+        async authenticate() {
+            return null;
+        },
+        configure() {},
+        getConfigSchema() {
+            return [];
+        },
+    });
+    assert.throws(
+        () =>
+            registerLoginButton({
+                providerId: "disabled-provider",
+                label: "Continue with Disabled Provider",
+                iconUrl: "/static/modules/provider/disabled.svg",
+                backgroundColor: "#ffffff",
+                textColor: "#202124",
+            }),
+        /auth_login_button_provider_unavailable/,
+    );
+    unregisterDisabledProvider();
     assert.throws(
         () =>
             registerLoginButton({

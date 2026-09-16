@@ -1,6 +1,6 @@
 # Token Pendaftaran
 
-Adapter Token Pendaftaran wajib memiliki token undangan dan otorisasi pembuatan akun. Adapter ini mengirim tautan sekali pakai melalui adapter notifikasi SMTP dan menjadi sumber token yang dipakai halaman Pengguna untuk undangan administrator dan pendiri.
+Adapter Token Pendaftaran wajib memiliki token undangan dan otorisasi pembuatan akun. Adapter ini mengirim tautan sekali pakai melalui penyedia notifikasi email yang aktif dan menjadi sumber token yang dipakai halaman Pengguna untuk undangan administrator dan pendiri.
 
 ## Contoh penggunaan
 
