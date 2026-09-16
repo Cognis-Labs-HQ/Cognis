@@ -154,14 +154,13 @@ test("anonymous login failures do not call the authenticated logger", () => {
     const calls = [];
     console.error = (...args) => calls.push(args);
     try {
-        reportLoginError("SSO authorization could not be started.", {
+        reportLoginError({
             providerId: "x-sso",
             error: "SSO provider rejected the request.",
         });
         assert.equal(calls.length, 1);
-        assert.equal(calls[0][0], "SSO authorization could not be started.");
-        assert.equal(calls[0][1].providerId, "x-sso");
-        assert.equal(calls[0][1].error, "SSO provider rejected the request.");
+        assert.equal(calls[0][0].providerId, "x-sso");
+        assert.equal(calls[0][0].error, "SSO provider rejected the request.");
     } finally {
         console.error = originalConsoleError;
     }

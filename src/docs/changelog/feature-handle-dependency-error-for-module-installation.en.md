@@ -42,6 +42,10 @@ Modules must declare `privileged: true` before extending security-sensitive auth
 
 Module API routes, capabilities, flows, hooks, static prefixes, and UI registrations now reject cross-owner replacement and are cleaned up only for their recorded owner. Cross-module consumers can request an assurance descriptor containing immutable identity, version, privilege provenance, source, and runtime integrity. Installer provenance seals the manifest hash and Cognis re-hashes every declared file so integrations can refuse tampered or unverifiable providers.
 
+## Module isolation compliance
+
+Unprivileged modules can now register API routes, capabilities, and new flows only inside their own module namespace. Host and foreign namespaces require an explicit privileged declaration, preventing ordinary extensions from squatting on another module's integration surface. The compliance pass also corrected localized login diagnostics and Registration Token documentation structure.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -57,3 +61,4 @@ Module API routes, capabilities, flows, hooks, static prefixes, and UI registrat
 - [85b7f238](https://github.com/Cognis-Labs-HQ/Cognis/commit/85b7f238bd959f9c4230168ff1378eebc04bbcee)
 - [5552b77f](https://github.com/Cognis-Labs-HQ/Cognis/commit/5552b77f945050d4e9b51e43a90c79a95d348487)
 - [23517721](https://github.com/Cognis-Labs-HQ/Cognis/commit/2351772152b0d07f6c82a9683222d0d0cf6602d0)
+- [d62eba99](https://github.com/Cognis-Labs-HQ/Cognis/commit/d62eba99)

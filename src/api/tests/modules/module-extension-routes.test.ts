@@ -44,7 +44,7 @@ test("a timed-out module bootstrap is disabled without blocking refresh", async 
         `export async function bootstrapModule(ctx) {
             await new Promise((resolve) => setTimeout(resolve, 30));
             ctx.contributePublicCapability("stalled-module:late", true);
-            ctx.registerApiGet("/api/v1/modules/stalled/late", () => {});
+            ctx.registerApiGet("/api/v1/modules/stalled-module/late", () => {});
         }`,
     );
     const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
@@ -79,7 +79,7 @@ test("a timed-out module bootstrap is disabled without blocking refresh", async 
             await extensions.handle(
                 { method: "GET" } as any,
                 {} as any,
-                new URL("http://localhost/api/v1/modules/stalled/late"),
+                new URL("http://localhost/api/v1/modules/stalled-module/late"),
             ),
             false,
         );
@@ -265,15 +265,15 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
             ctx.registerNavbarPlugin({ scriptUrl: "/static/modules/owned-module/navbar.js" });
             ctx.registerAuthFooterPlugin({ scriptUrl: "/static/modules/owned-module/auth-footer.js" });
             ctx.registerSpaRoute({ id: "owned-module-page", pattern: "^/owned$", base: "/owned", scriptUrl: "/static/modules/owned-module/app.js", public: true, componentPage: { labelKey: "module.owned.page", descriptionKey: "module.owned.description", modes: ["fullscreen"] } });
-            ctx.registerApiGet("/api/v1/modules/owned", (_req, res) => { res.writeHead(200); res.end("ok"); });
-            ctx.registerApiGet("/api/v1/modules/owned/config", (_req, res) => { res.writeHead(ctx.getCapability("system:ctx") ? 500 : 200); res.end("config"); }, { allowWhenDisabled: true });
+            ctx.registerApiGet("/api/v1/modules/owned-module", (_req, res) => { res.writeHead(200); res.end("ok"); });
+            ctx.registerApiGet("/api/v1/modules/owned-module/config", (_req, res) => { res.writeHead(ctx.getCapability("system:ctx") ? 500 : 200); res.end("config"); }, { allowWhenDisabled: true });
             return () => { throw new Error("expected teardown failure"); };
         }`,
     );
     await writeFile(
         path.join(moduleRoot, "disabled-api.js"),
         `export function registerDisabledApiRoutes(ctx) {
-            ctx.registerApiGet("/api/v1/modules/owned/config", (_req, res) => { res.writeHead(ctx.getCapability("system:ctx") ? 500 : 200); res.end("config"); }, { allowWhenDisabled: true });
+            ctx.registerApiGet("/api/v1/modules/owned-module/config", (_req, res) => { res.writeHead(ctx.getCapability("system:ctx") ? 500 : 200); res.end("config"); }, { allowWhenDisabled: true });
         }`,
     );
     const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
@@ -351,7 +351,7 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
             await extensions.handle(
                 { method: "GET" } as any,
                 {} as any,
-                new URL("http://localhost/api/v1/modules/owned"),
+                new URL("http://localhost/api/v1/modules/owned-module"),
             ),
             false,
         );
@@ -362,7 +362,7 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
                     writeHead() {},
                     end() {},
                 } as any,
-                new URL("http://localhost/api/v1/modules/owned/config"),
+                new URL("http://localhost/api/v1/modules/owned-module/config"),
             ),
             true,
         );

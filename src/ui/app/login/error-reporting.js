@@ -6,10 +6,9 @@
  * that endpoint would create a second HTTP 401 error and obscure the failure
  * that the login UI is trying to present.
  *
- * @param {string} message - Stable operational log message.
  * @param {Record<string, unknown>} meta - Structured failure metadata.
  * @returns {void}
  */
-export function reportLoginError(message, meta) {
-    console.error(message, meta);
+export function reportLoginError(meta) {
+    console.error(meta);
 }

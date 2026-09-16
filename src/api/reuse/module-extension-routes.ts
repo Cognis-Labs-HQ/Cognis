@@ -12,7 +12,13 @@ import { stat } from "node:fs/promises";
 import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
 import type { UIRegistry } from "../../api/reuse/ui-registry.js";
+import type {
+    ModuleApiRouter,
+    ModuleRouteOptions,
+} from "./module-extension-contracts.js";
 import {
+    assertModuleOwnedCtxRegistration,
+    assertModuleOwnedRoute,
     PRIVILEGED_FLOW_IDS,
     resolveModuleAssurance,
     resolveModulePrivilege,
@@ -31,39 +37,6 @@ interface RouteHandler {
         req: IncomingMessage,
         res: ServerResponse,
     ) => Promise<void> | void;
-}
-
-interface ModuleRouteOptions {
-    access?: unknown;
-    allowWhenDisabled?: boolean;
-}
-
-interface ModuleApiRouter {
-    get(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    post(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    put(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    patch(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    delete(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
 }
 
 interface ModuleUiRegistrationContext {
@@ -333,6 +306,7 @@ export function createModuleExtensionRoutes(
             routeOptions?: ModuleRouteOptions,
         ) {
             requireActiveBootstrap();
+            assertModuleOwnedRoute(routePath, moduleId, privilege);
             const protectedPrefixes = [
                 "/api/v1/system",
                 "/api/v1/auth",
@@ -459,6 +433,7 @@ export function createModuleExtensionRoutes(
                 contribute(key, value) {
                     requireActiveBootstrap();
                     if (!moduleEnabled) return;
+                    assertModuleOwnedCtxRegistration(key, moduleId, privilege);
                     if (systemCtx?.hasCapability(key)) {
                         throw new Error("module_capability_conflict");
                     }
@@ -496,6 +471,7 @@ export function createModuleExtensionRoutes(
             contributeCapability(key, value) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
+                assertModuleOwnedCtxRegistration(key, moduleId, privilege);
                 if (systemCtx?.hasCapability(key)) {
                     throw new Error("module_capability_conflict");
                 }
@@ -505,6 +481,7 @@ export function createModuleExtensionRoutes(
             contributePublicCapability(key, value) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
+                assertModuleOwnedCtxRegistration(key, moduleId, privilege);
                 if (systemCtx?.hasCapability(key)) {
                     throw new Error("module_capability_conflict");
                 }
@@ -514,6 +491,11 @@ export function createModuleExtensionRoutes(
             registerFlow(flowRegistration) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
+                assertModuleOwnedCtxRegistration(
+                    flowRegistration.id,
+                    moduleId,
+                    privilege,
+                );
                 systemCtx?.registerFlow(flowRegistration);
                 scope.flows.push(flowRegistration.id);
             },

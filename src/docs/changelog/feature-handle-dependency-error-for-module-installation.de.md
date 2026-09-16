@@ -42,6 +42,10 @@ Module müssen `privileged: true` deklarieren, bevor sie sicherheitssensible Aut
 
 API-Routen, Fähigkeiten, Flows, Hooks, statische Präfixe und UI-Registrierungen von Modulen lehnen nun die Ersetzung durch andere Eigentümer ab und werden nur für ihren aufgezeichneten Eigentümer bereinigt. Modulübergreifende Verbraucher können eine Zusicherung mit unveränderlicher Identität, Version, Privilegienherkunft, Quelle und Laufzeitintegrität anfordern. Die Installationsherkunft versiegelt den Manifest-Hash und Cognis hasht jede deklarierte Datei erneut, sodass Integrationen manipulierte oder nicht überprüfbare Anbieter ablehnen können.
 
+## Konforme Modulisolierung
+
+Nicht privilegierte Module können API-Routen, Fähigkeiten und neue Flows jetzt nur in ihrem eigenen Modulnamensraum registrieren. Host- und fremde Namensräume erfordern eine ausdrückliche Privilegiendeklaration, sodass gewöhnliche Erweiterungen keine Integrationsfläche eines anderen Moduls belegen können. Die Konformitätsprüfung korrigierte außerdem lokalisierte Anmeldediagnosen und die Dokumentationsstruktur des Registrierungstokens.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -57,3 +61,4 @@ API-Routen, Fähigkeiten, Flows, Hooks, statische Präfixe und UI-Registrierunge
 - [85b7f238](https://github.com/Cognis-Labs-HQ/Cognis/commit/85b7f238bd959f9c4230168ff1378eebc04bbcee)
 - [5552b77f](https://github.com/Cognis-Labs-HQ/Cognis/commit/5552b77f945050d4e9b51e43a90c79a95d348487)
 - [23517721](https://github.com/Cognis-Labs-HQ/Cognis/commit/2351772152b0d07f6c82a9683222d0d0cf6602d0)
+- [d62eba99](https://github.com/Cognis-Labs-HQ/Cognis/commit/d62eba99)

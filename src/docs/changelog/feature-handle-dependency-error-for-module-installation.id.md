@@ -42,6 +42,10 @@ Modul harus mendeklarasikan `privileged: true` sebelum memperluas alur autentika
 
 Rute API, kemampuan, alur, hook, prefiks statis, dan registrasi UI modul kini menolak penggantian lintas pemilik serta hanya dibersihkan untuk pemilik yang tercatat. Konsumen lintas modul dapat meminta deskriptor jaminan berisi identitas tetap, versi, asal privilege, sumber, dan integritas runtime. Provenance pemasang menyegel hash manifes dan Cognis meng-hash ulang setiap file yang dideklarasikan agar integrasi dapat menolak penyedia yang dimodifikasi atau tidak dapat diverifikasi.
 
+## Isolasi modul yang patuh
+
+Modul tanpa privilege kini hanya dapat mendaftarkan rute API, kemampuan, dan alur baru di dalam namespace modulnya sendiri. Namespace host dan modul lain memerlukan deklarasi privilege secara eksplisit sehingga ekstensi biasa tidak dapat mengambil alih permukaan integrasi modul lain. Pemeriksaan kepatuhan juga memperbaiki diagnostik login yang dilokalkan dan struktur dokumentasi Token Pendaftaran.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -57,3 +61,4 @@ Rute API, kemampuan, alur, hook, prefiks statis, dan registrasi UI modul kini me
 - [85b7f238](https://github.com/Cognis-Labs-HQ/Cognis/commit/85b7f238bd959f9c4230168ff1378eebc04bbcee)
 - [5552b77f](https://github.com/Cognis-Labs-HQ/Cognis/commit/5552b77f945050d4e9b51e43a90c79a95d348487)
 - [23517721](https://github.com/Cognis-Labs-HQ/Cognis/commit/2351772152b0d07f6c82a9683222d0d0cf6602d0)
+- [d62eba99](https://github.com/Cognis-Labs-HQ/Cognis/commit/d62eba99)

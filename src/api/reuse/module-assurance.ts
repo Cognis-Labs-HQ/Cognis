@@ -22,6 +22,31 @@ export const PRIVILEGED_FLOW_IDS = new Set([
 ]);
 const TRUSTED_PRIVILEGED_GITHUB_OWNER = "cognis-labs-hq";
 
+export function assertModuleOwnedRoute(
+    routePath: string,
+    moduleId: string,
+    privilege: ModulePrivilege,
+): void {
+    const ownedPrefix = `/api/v1/modules/${moduleId}`;
+    if (
+        !privilege.requested &&
+        routePath !== ownedPrefix &&
+        !routePath.startsWith(`${ownedPrefix}/`)
+    ) {
+        throw new Error("module_privileged_access_required");
+    }
+}
+
+export function assertModuleOwnedCtxRegistration(
+    registrationId: string,
+    moduleId: string,
+    privilege: ModulePrivilege,
+): void {
+    if (!privilege.requested && !registrationId.startsWith(`${moduleId}:`)) {
+        throw new Error("module_privileged_access_required");
+    }
+}
+
 export async function resolveModulePrivilege(
     manifest: { privileged?: boolean },
     moduleRoot: string,

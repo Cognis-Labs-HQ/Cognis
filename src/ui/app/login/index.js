@@ -357,7 +357,7 @@ export async function mount(root, { signal } = {}) {
                 });
             }
         } catch (error) {
-            reportLoginError("Login methods could not be loaded.", {
+            reportLoginError({
                 component: "login-page",
                 operation: "load_login_methods",
                 error: error instanceof Error ? error.message : String(error),
