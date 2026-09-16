@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { createModuleExtensionRoutes } from "../../reuse/module-extension-routes.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
@@ -176,6 +177,72 @@ test("provider routes require an explicit privileged module declaration", async 
         await extensions.refresh({ throwOnFailure: true });
         assert.equal(warnings.length, warningCount);
     } finally {
+        if (previousModulesRoot === undefined)
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
+        await rm(modulesRoot, { recursive: true, force: true });
+    }
+});
+
+test("module assurance detects installed-file tampering", async () => {
+    const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
+    const moduleUuid = "936c7ea0-cdc8-4aaa-93f8-ad9d46250368";
+    const moduleRoot = path.join(modulesRoot, moduleUuid);
+    await mkdir(moduleRoot);
+    const bootstrapSource = `export async function bootstrapModule(ctx) {
+        globalThis.__moduleAssurance = await ctx.getModuleAssurance("assured-module");
+    }`;
+    await writeFile(path.join(moduleRoot, "bootstrap.js"), bootstrapSource);
+    const manifest = {
+        id: "assured-module",
+        uuid: moduleUuid,
+        version: "1.0.0",
+        class: "extension",
+        files: [
+            {
+                path: "bootstrap.js",
+                sha256: createHash("sha256")
+                    .update(bootstrapSource)
+                    .digest("hex"),
+            },
+        ],
+        entrypoints: { bootstrap: "./bootstrap.js" },
+    };
+    const rawManifest = JSON.stringify(manifest);
+    await writeFile(path.join(moduleRoot, "manifest.json"), rawManifest);
+    await writeFile(
+        path.join(moduleRoot, ".cognis-install.json"),
+        JSON.stringify({
+            cloneUrl:
+                "https://github.com/Cognis-Labs-HQ/cognis-module-assured.git",
+            manifestSha256: createHash("sha256")
+                .update(rawManifest)
+                .digest("hex"),
+        }),
+    );
+    const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
+    const extensions = createModuleExtensionRoutes(
+        { listManifests: async () => [manifest] } as any,
+        () => true,
+        undefined,
+        { routeContext: createDefaultRouteContext() },
+    );
+    try {
+        await extensions.refresh({ throwOnFailure: true });
+        assert.equal(
+            (globalThis as any).__moduleAssurance.integrity,
+            "verified",
+        );
+
+        await writeFile(
+            path.join(moduleRoot, "bootstrap.js"),
+            `${bootstrapSource}\n// tampered`,
+        );
+        await extensions.refresh({ throwOnFailure: true });
+        assert.equal((globalThis as any).__moduleAssurance.integrity, "failed");
+    } finally {
+        delete (globalThis as any).__moduleAssurance;
         if (previousModulesRoot === undefined)
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
         else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;

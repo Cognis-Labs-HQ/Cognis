@@ -38,6 +38,10 @@ Authentication adapters can now register removable `GET` and `POST` routes withi
 
 Modules must declare `privileged: true` before extending security-sensitive authentication flows or proxying gateway-owned routes through an auth adapter. Claiming to be an SSO provider alone grants no additional access. Cognis trusts privileged provenance from the hardcoded `Cognis-Labs-HQ` GitHub organization and emits an explicit warning whenever another source requests privilege.
 
+## Protected module ownership and assurance
+
+Module API routes, capabilities, flows, hooks, static prefixes, and UI registrations now reject cross-owner replacement and are cleaned up only for their recorded owner. Cross-module consumers can request an assurance descriptor containing immutable identity, version, privilege provenance, source, and runtime integrity. Installer provenance seals the manifest hash and Cognis re-hashes every declared file so integrations can refuse tampered or unverifiable providers.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -52,3 +56,4 @@ Modules must declare `privileged: true` before extending security-sensitive auth
 - [e66d75f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/e66d75f72b2e8ab4da4a4e93435f6472b4fe3903)
 - [85b7f238](https://github.com/Cognis-Labs-HQ/Cognis/commit/85b7f238bd959f9c4230168ff1378eebc04bbcee)
 - [5552b77f](https://github.com/Cognis-Labs-HQ/Cognis/commit/5552b77f945050d4e9b51e43a90c79a95d348487)
+- [23517721](https://github.com/Cognis-Labs-HQ/Cognis/commit/2351772152b0d07f6c82a9683222d0d0cf6602d0)

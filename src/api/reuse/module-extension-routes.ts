@@ -8,10 +8,17 @@ import type {
     FlowApi,
 } from "@cognis/core";
 import path from "node:path";
-import { readFile, stat } from "node:fs/promises";
+import { stat } from "node:fs/promises";
 import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
 import type { UIRegistry } from "../../api/reuse/ui-registry.js";
+import {
+    PRIVILEGED_FLOW_IDS,
+    resolveModuleAssurance,
+    resolveModulePrivilege,
+    type ModuleAssurance,
+    type ModulePrivilege,
+} from "./module-assurance.js";
 
 interface RouteHandler {
     method: string;
@@ -131,48 +138,6 @@ interface ModuleApiRegistrationContext {
     };
     log?: BootstrapLog;
 }
-
-interface ModulePrivilege {
-    requested: boolean;
-    trustedSource: boolean;
-    sourceRepository?: string;
-}
-
-const PRIVILEGED_FLOW_IDS = new Set([
-    "gateAccountCreation",
-    "login",
-    "startSsoLogin",
-]);
-const TRUSTED_PRIVILEGED_GITHUB_OWNER = "cognis-labs-hq";
-
-async function resolveModulePrivilege(
-    manifest: { privileged?: boolean },
-    moduleRoot: string,
-): Promise<ModulePrivilege> {
-    if (manifest.privileged !== true) {
-        return { requested: false, trustedSource: false };
-    }
-    const provenance = await readFile(
-        path.join(moduleRoot, ".cognis-install.json"),
-        "utf8",
-    )
-        .then((raw) => JSON.parse(raw) as { cloneUrl?: unknown })
-        .catch(() => null);
-    const sourceRepository = String(provenance?.cloneUrl ?? "").trim();
-    let trustedSource = false;
-    try {
-        const sourceUrl = new URL(sourceRepository);
-        trustedSource =
-            sourceUrl.protocol === "https:" &&
-            sourceUrl.hostname.toLowerCase() === "github.com" &&
-            sourceUrl.pathname.split("/").filter(Boolean)[0]?.toLowerCase() ===
-                TRUSTED_PRIVILEGED_GITHUB_OWNER;
-    } catch {
-        trustedSource = false;
-    }
-    return { requested: true, trustedSource, sourceRepository };
-}
-
 interface ModulePlugin {
     registerApiRoutes?: (
         router: ModuleApiRouter,
@@ -213,6 +178,7 @@ interface ModuleBootstrapCtx
     contributeCapability(key: string, value: unknown): void;
     contributePublicCapability(key: string, value: unknown): void;
     registerFlow(flow: FlowRegistration): void;
+    getModuleAssurance(moduleId: string): Promise<ModuleAssurance | null>;
 }
 
 interface ModuleBootstrapPlugin {
@@ -231,7 +197,6 @@ interface ModuleBootstrapPlugin {
         options: { deleteContent: boolean },
     ) => Promise<void> | void;
 }
-
 interface ModuleDisabledApiPlugin {
     registerDisabledApiRoutes?: (
         ctx: ModuleBootstrapCtx,
@@ -287,6 +252,7 @@ export function createModuleExtensionRoutes(
     const externalModulesRoot =
         process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
         path.resolve(process.cwd(), "external-modules");
+    const assuranceByModuleId = new Map<string, ModuleAssurance>();
 
     /**
      * Writes a standardized warning when a module declares an invalid access policy.
@@ -386,6 +352,16 @@ export function createModuleExtensionRoutes(
                     `Module ${moduleId} attempts to register protected route: ${routePath}`,
                 );
             }
+            if (
+                nextHandlers.some(
+                    (entry) =>
+                        entry.method === method &&
+                        entry.routePath === routePath &&
+                        entry.moduleId !== moduleId,
+                )
+            ) {
+                throw new Error("module_route_conflict");
+            }
             const parsedAccess = parseRoleAccessPolicy(routeOptions?.access);
             if (parsedAccess.invalid) {
                 logInvalidAccessPolicy(
@@ -483,6 +459,9 @@ export function createModuleExtensionRoutes(
                 contribute(key, value) {
                     requireActiveBootstrap();
                     if (!moduleEnabled) return;
+                    if (systemCtx?.hasCapability(key)) {
+                        throw new Error("module_capability_conflict");
+                    }
                     systemCtx?.contributeCapability(key, value);
                     scope.capabilities.push(key);
                 },
@@ -517,12 +496,18 @@ export function createModuleExtensionRoutes(
             contributeCapability(key, value) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
+                if (systemCtx?.hasCapability(key)) {
+                    throw new Error("module_capability_conflict");
+                }
                 systemCtx?.contributeCapability(key, value);
                 scope.capabilities.push(key);
             },
             contributePublicCapability(key, value) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
+                if (systemCtx?.hasCapability(key)) {
+                    throw new Error("module_capability_conflict");
+                }
                 systemCtx?.contributePublicCapability(key, value);
                 scope.capabilities.push(key);
             },
@@ -531,6 +516,22 @@ export function createModuleExtensionRoutes(
                 if (!moduleEnabled) return;
                 systemCtx?.registerFlow(flowRegistration);
                 scope.flows.push(flowRegistration.id);
+            },
+            async getModuleAssurance(targetModuleId) {
+                const existing = assuranceByModuleId.get(targetModuleId);
+                if (existing) return { ...existing };
+                const target = (await runtime.listManifests()).find(
+                    (candidate) =>
+                        candidate.class !== "core" &&
+                        candidate.id === targetModuleId,
+                );
+                if (!target?.uuid) return null;
+                const assurance = await resolveModuleAssurance(
+                    target,
+                    path.resolve(externalModulesRoot, target.uuid),
+                );
+                assuranceByModuleId.set(targetModuleId, assurance);
+                return { ...assurance };
             },
             getCapability(capabilityId) {
                 if (capabilityId === "system:ctx") return undefined;
@@ -738,6 +739,7 @@ export function createModuleExtensionRoutes(
             options?.uiRegistry?.unregisterModuleContributions(moduleId);
         }
         loadedModules.clear();
+        assuranceByModuleId.clear();
         const nextHandlers: RouteHandler[] = [];
         const manifests = await runtime.listManifests();
 
@@ -764,6 +766,10 @@ export function createModuleExtensionRoutes(
             const privilege = await resolveModulePrivilege(
                 manifest,
                 moduleRoot,
+            );
+            assuranceByModuleId.set(
+                manifest.id,
+                await resolveModuleAssurance(manifest, moduleRoot),
             );
             if (privilege.requested && !privilege.trustedSource) {
                 log?.(

@@ -192,6 +192,10 @@ export class UIRegistry {
     }
 
     registerAdminSection(section: AdminSection): void {
+        const existing = this.sections.get(section.id);
+        if (existing && existing.ownerId !== section.ownerId) {
+            throw new Error("ui_registration_conflict");
+        }
         this.sections.set(section.id, section);
     }
 
@@ -226,6 +230,15 @@ export class UIRegistry {
      */
     registerPageExtension(pageId: string, element: PageElement): void {
         const existing = this.pageExtensions.get(pageId) ?? [];
+        if (
+            existing.some(
+                (registered) =>
+                    registered.id === element.id &&
+                    registered.ownerId !== element.ownerId,
+            )
+        ) {
+            throw new Error("ui_registration_conflict");
+        }
         existing.push(element);
         this.pageExtensions.set(pageId, existing);
     }
@@ -236,6 +249,15 @@ export class UIRegistry {
      * behavior through `uiCtx.capabilities`.
      */
     registerNavbarPlugin(plugin: NavbarPlugin): void {
+        if (
+            this.navbarPlugins.some(
+                (registered) =>
+                    registered.scriptUrl === plugin.scriptUrl &&
+                    registered.ownerId !== plugin.ownerId,
+            )
+        ) {
+            throw new Error("ui_registration_conflict");
+        }
         this.navbarPlugins.push(plugin);
     }
 
@@ -260,14 +282,43 @@ export class UIRegistry {
                 throw new TypeError("invalid_component_page_declaration");
             }
         }
+        if (
+            this.spaRoutes.some(
+                (registered) =>
+                    (registered.id === route.id ||
+                        registered.pattern === route.pattern ||
+                        registered.base === route.base) &&
+                    registered.ownerId !== route.ownerId,
+            )
+        ) {
+            throw new Error("ui_registration_conflict");
+        }
         this.spaRoutes.push(route);
     }
 
     registerAuthTypingMessage(message: AuthTypingMessage): void {
+        if (
+            this.authTypingMessages.some(
+                (registered) =>
+                    registered.id === message.id &&
+                    registered.ownerId !== message.ownerId,
+            )
+        ) {
+            throw new Error("ui_registration_conflict");
+        }
         this.authTypingMessages.push(message);
     }
 
     registerAuthFooterPlugin(plugin: AuthFooterPlugin): void {
+        if (
+            this.authFooterPlugins.some(
+                (registered) =>
+                    registered.scriptUrl === plugin.scriptUrl &&
+                    registered.ownerId !== plugin.ownerId,
+            )
+        ) {
+            throw new Error("ui_registration_conflict");
+        }
         this.authFooterPlugins.push(plugin);
     }
 
@@ -280,6 +331,15 @@ export class UIRegistry {
     }
 
     registerSettingsSection(section: SettingsSection): void {
+        if (
+            this.settingsSections.some(
+                (registered) =>
+                    registered.id === section.id &&
+                    registered.ownerId !== section.ownerId,
+            )
+        ) {
+            throw new Error("ui_registration_conflict");
+        }
         this.settingsSections.push(section);
     }
 
@@ -305,6 +365,10 @@ export class UIRegistry {
      * prefixes that start with "modules/" here instead of to staticDirs).
      */
     registerModuleStaticDir(urlPrefix: string, absoluteDir: string): void {
+        const existing = this.moduleStaticDirs.get(urlPrefix);
+        if (existing && existing !== absoluteDir) {
+            throw new Error("ui_registration_conflict");
+        }
         this.moduleStaticDirs.set(urlPrefix, absoluteDir);
     }
 

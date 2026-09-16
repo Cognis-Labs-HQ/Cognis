@@ -38,6 +38,10 @@ Adapter autentikasi kini dapat mendaftarkan rute `GET` dan `POST` yang dapat dil
 
 Modul harus mendeklarasikan `privileged: true` sebelum memperluas alur autentikasi yang sensitif terhadap keamanan atau memproksikan rute milik gateway melalui adapter auth. Hanya mengaku sebagai penyedia SSO tidak memberikan akses tambahan. Cognis memercayai asal berprivilege dari organisasi GitHub `Cognis-Labs-HQ` yang ditetapkan langsung dan mengeluarkan peringatan eksplisit saat sumber lain meminta privilege.
 
+## Kepemilikan modul terlindungi dan jaminan
+
+Rute API, kemampuan, alur, hook, prefiks statis, dan registrasi UI modul kini menolak penggantian lintas pemilik serta hanya dibersihkan untuk pemilik yang tercatat. Konsumen lintas modul dapat meminta deskriptor jaminan berisi identitas tetap, versi, asal privilege, sumber, dan integritas runtime. Provenance pemasang menyegel hash manifes dan Cognis meng-hash ulang setiap file yang dideklarasikan agar integrasi dapat menolak penyedia yang dimodifikasi atau tidak dapat diverifikasi.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -52,3 +56,4 @@ Modul harus mendeklarasikan `privileged: true` sebelum memperluas alur autentika
 - [e66d75f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/e66d75f72b2e8ab4da4a4e93435f6472b4fe3903)
 - [85b7f238](https://github.com/Cognis-Labs-HQ/Cognis/commit/85b7f238bd959f9c4230168ff1378eebc04bbcee)
 - [5552b77f](https://github.com/Cognis-Labs-HQ/Cognis/commit/5552b77f945050d4e9b51e43a90c79a95d348487)
+- [23517721](https://github.com/Cognis-Labs-HQ/Cognis/commit/2351772152b0d07f6c82a9683222d0d0cf6602d0)

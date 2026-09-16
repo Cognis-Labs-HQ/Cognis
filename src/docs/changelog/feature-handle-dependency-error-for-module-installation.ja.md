@@ -38,6 +38,10 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 
 モジュールがセキュリティ上重要な認証フローを拡張したり、認証アダプターを通じてゲートウェイ所有ルートをプロキシしたりするには、`privileged: true` を宣言する必要があります。SSO プロバイダーを名乗るだけでは追加アクセスは付与されません。Cognis はハードコードされた GitHub 組織 `Cognis-Labs-HQ` 由来の特権を信頼し、それ以外のソースが特権を要求すると明示的な警告を出します。
 
+## 保護されたモジュール所有権と保証
+
+モジュールの API ルート、ケイパビリティ、フロー、フック、静的プレフィックス、UI 登録は、所有者をまたぐ置換を拒否し、記録された所有者についてのみ削除されるようになりました。モジュール間の利用側は、不変の識別情報、バージョン、特権の来歴、ソース、実行時整合性を含む保証記述子を要求できます。インストーラーの来歴がマニフェストのハッシュを封印し、Cognis が宣言済みファイルをすべて再ハッシュするため、統合側は改ざん済みまたは検証不能なプロバイダーを拒否できます。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -52,3 +56,4 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 - [e66d75f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/e66d75f72b2e8ab4da4a4e93435f6472b4fe3903)
 - [85b7f238](https://github.com/Cognis-Labs-HQ/Cognis/commit/85b7f238bd959f9c4230168ff1378eebc04bbcee)
 - [5552b77f](https://github.com/Cognis-Labs-HQ/Cognis/commit/5552b77f945050d4e9b51e43a90c79a95d348487)
+- [23517721](https://github.com/Cognis-Labs-HQ/Cognis/commit/2351772152b0d07f6c82a9683222d0d0cf6602d0)
