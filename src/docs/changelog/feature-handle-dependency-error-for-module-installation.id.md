@@ -54,6 +54,10 @@ Callback SSO serentak kini memakai satu hasil konsumsi token sehingga callback y
 
 Penggabungan penukaran token kini menyertakan identitas token dan akun sehingga akun eksternal yang bersaing tidak mewarisi otorisasi callback lain. Kebijakan siklus hidup Core yang dapat digunakan ulang memaksa komponen wajib yang terkunci tetap aktif meskipun terdapat status nonaktif tersimpan yang usang; penyedia Autentikasi, Pendaftaran, dan Notifikasi selalu aktif menerapkannya saat pemuatan dan pada batas konfigurasi.
 
+## Kesetaraan siklus hidup autentikasi runtime
+
+Adapter autentikasi dari modul kini memulihkan konfigurasi tersimpan dan status aktif milik gateway sebelum registrasi penyedia selesai. Kemampuan registrasi menjadi asinkron agar modul dapat menunggu kesiapan siklus hidup sebelum menyumbangkan rute callback atau tombol login bermerek, sesuai urutan penemuan dan aktivasi LDAP. Dokumentasi menjelaskan jalur migrasi X SSO dan kontrak penyiapan milik gateway.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -72,3 +76,4 @@ Penggabungan penukaran token kini menyertakan identitas token dan akun sehingga 
 - [d62eba99](https://github.com/Cognis-Labs-HQ/Cognis/commit/d62eba99)
 - [6eec5296](https://github.com/Cognis-Labs-HQ/Cognis/commit/6eec52967246d4e0991b56691c6024cdc71c2c1e)
 - [3cf4aee2](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf4aee2a35c83065d116717f71a845f36bf5416)
+- [fcfbfc35](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcfbfc35a6bd698b4be409764e07bf8820f3201b)

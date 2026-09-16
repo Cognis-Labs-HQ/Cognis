@@ -54,6 +54,10 @@ Gleichzeitige SSO-Rückrufe teilen sich nun ein Ergebnis der Tokenverwendung, so
 
 Die Zusammenführung der Tokeneinlösung berücksichtigt jetzt Token und Kontoidentität, sodass ein konkurrierendes externes Konto nicht die Autorisierung eines anderen Rückrufs erbt. Eine wiederverwendbare Core-Lebenszyklusrichtlinie aktiviert verpflichtende gesperrte Komponenten trotz veralteter gespeicherter Deaktivierung; Authentifizierung, Registrierung und dauerhaft aktive Benachrichtigungsanbieter wenden sie beim Laden und an Konfigurationsgrenzen an.
 
+## Einheitlicher Laufzeit-Authentifizierungslebenszyklus
+
+Von Modulen bereitgestellte Authentifizierungsadapter stellen nun ihre vom Gateway verwaltete gespeicherte Konfiguration und ihren Aktivierungszustand wieder her, bevor die Anbieterregistrierung abgeschlossen wird. Die Registrierungsfähigkeit ist asynchron, damit Module die Lebenszyklusbereitschaft abwarten können, bevor sie Rückrufrouten oder markenspezifische Anmeldeschaltflächen beitragen; dies entspricht der Erkennungs- und Aktivierungsreihenfolge von LDAP. Die Dokumentation beschreibt den Migrationspfad für X SSO und den Gateway-eigenen Einrichtungsvertrag.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -72,3 +76,4 @@ Die Zusammenführung der Tokeneinlösung berücksichtigt jetzt Token und Kontoid
 - [d62eba99](https://github.com/Cognis-Labs-HQ/Cognis/commit/d62eba99)
 - [6eec5296](https://github.com/Cognis-Labs-HQ/Cognis/commit/6eec52967246d4e0991b56691c6024cdc71c2c1e)
 - [3cf4aee2](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf4aee2a35c83065d116717f71a845f36bf5416)
+- [fcfbfc35](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcfbfc35a6bd698b4be409764e07bf8820f3201b)

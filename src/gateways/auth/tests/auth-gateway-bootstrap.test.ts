@@ -219,9 +219,9 @@ test("auth gateway exposes provider registration to modules", async () => {
             authenticate: () => Promise<null>;
             configure: () => void;
             getConfigSchema: () => [];
-        }) => () => void
+        }) => Promise<() => void>
     >("auth:registerProvider");
-    const unregisterProvider = registerProvider({
+    const unregisterProvider = await registerProvider({
         id: "module-provider",
         name: "Module Provider",
         locked: true,
@@ -242,7 +242,7 @@ test("auth gateway exposes provider registration to modules", async () => {
             textColor: string;
         }) => () => void
     >("auth:registerLoginButton");
-    const unregisterDisabledProvider = registerProvider({
+    const unregisterDisabledProvider = await registerProvider({
         id: "disabled-provider",
         name: "Disabled Provider",
         locked: false,
@@ -323,6 +323,74 @@ test("auth gateway exposes provider registration to modules", async () => {
     );
 });
 
+test("runtime auth providers restore persisted activation before login UI registration", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const dbExecutor = createDbExecutor();
+    const executeCommand = dbExecutor.executeCommand.bind(dbExecutor);
+    dbExecutor.executeCommand = async (command) => {
+        if (
+            command.option === "SELECT" &&
+            command.table === "auth_adapter_configs"
+        ) {
+            return {
+                rows: [
+                    {
+                        adapter_id: "x-sso",
+                        enabled: 1,
+                        config_json: JSON.stringify({
+                            clientId: "persisted-client",
+                        }),
+                    },
+                ],
+                rowCount: 1,
+            };
+        }
+        return executeCommand(command);
+    };
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        ...makeBaseCtx(capabilities, dbExecutor),
+    });
+    let configuredClientId = "";
+    const unregisterProvider = await capabilities.require<
+        (provider: AuthProviderAdapter) => Promise<() => void>
+    >("auth:registerProvider")({
+        id: "x-sso",
+        name: "X SSO",
+        authenticate: async () => null,
+        configure(config) {
+            configuredClientId = String(config.clientId ?? "");
+        },
+        getConfigSchema: () => [],
+    });
+    const unregisterButton = capabilities.require<
+        (descriptor: {
+            providerId: string;
+            label: string;
+            iconUrl: string;
+        }) => () => void
+    >("auth:registerLoginButton")({
+        providerId: "x-sso",
+        label: "Continue with X",
+        iconUrl: "/static/modules/x-sso/icon.svg",
+    });
+
+    assert.equal(configuredClientId, "persisted-client");
+    assert.ok(
+        capabilities
+            .require<() => Array<{ id: string }>>("auth:getLoginMethods")()
+            .some(({ id }) => id === "x-sso"),
+    );
+
+    unregisterButton();
+    unregisterProvider();
+});
+
 test("registered auth providers own removable callback routes", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
@@ -335,9 +403,9 @@ test("registered auth providers own removable callback routes", async () => {
         ...makeBaseCtx(capabilities, createDbExecutor()),
     });
     const registerProvider = capabilities.require<
-        (provider: AuthProviderAdapter) => () => void
+        (provider: AuthProviderAdapter) => Promise<() => void>
     >("auth:registerProvider");
-    const unregister = registerProvider({
+    const unregister = await registerProvider({
         id: "x-sso",
         name: "X SSO",
         locked: true,
@@ -359,7 +427,7 @@ test("registered auth providers own removable callback routes", async () => {
     );
     assert.equal(active.handled, true);
     assert.equal(active.res.status, 302);
-    assert.throws(
+    await assert.rejects(
         () =>
             registerProvider({
                 id: "x-sso",
@@ -371,7 +439,7 @@ test("registered auth providers own removable callback routes", async () => {
             }),
         /auth_provider_already_registered/,
     );
-    assert.throws(
+    await assert.rejects(
         () =>
             registerProvider({
                 id: "conflicting-sso",
@@ -395,7 +463,7 @@ test("registered auth providers own removable callback routes", async () => {
         "/api/v1/auth/x/callback",
     );
     assert.equal(removed.handled, false);
-    assert.throws(
+    await assert.rejects(
         () =>
             registerProvider({
                 id: "malicious-provider",

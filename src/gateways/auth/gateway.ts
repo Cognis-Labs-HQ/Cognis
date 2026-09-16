@@ -277,29 +277,39 @@ export class CoreAuthGateway {
             columns: ["adapter_id", "enabled", "config_json"],
         });
         for (const row of result.rows ?? []) {
-            const adapterId = String(row.adapter_id);
-            const adapter = this.adapters.get(adapterId);
-            if (!adapter) continue;
-            if (
-                resolveComponentEnabledState({
-                    persistedEnabled: row.enabled,
-                    locked: adapterId === "local" || adapter.locked === true,
-                })
-            ) {
-                this.enabledAdapters.add(adapterId);
-            } else {
-                this.enabledAdapters.delete(adapterId);
-            }
-            try {
-                const config = JSON.parse(String(row.config_json)) as Record<
-                    string,
-                    unknown
-                >;
-                adapter.configure(config);
-            } catch {
-                // Malformed JSON — skip silently
-            }
+            this.applyPersistedAdapterRow(row);
         }
+    }
+
+    async restoreRegisteredAdapter(adapterId: string): Promise<void> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "auth_adapter_configs",
+            columns: ["adapter_id", "enabled", "config_json"],
+            where: [{ column: "adapter_id", value: adapterId }],
+            limit: 1,
+        });
+        const row = result.rows?.[0];
+        if (row) this.applyPersistedAdapterRow(row);
+    }
+
+    private applyPersistedAdapterRow(row: Record<string, unknown>): void {
+        const adapterId = String(row.adapter_id);
+        const adapter = this.adapters.get(adapterId);
+        if (!adapter) return;
+        const enabled = resolveComponentEnabledState({
+            persistedEnabled: row.enabled,
+            locked: adapterId === "local" || adapter.locked === true,
+        });
+        if (enabled) this.enabledAdapters.add(adapterId);
+        else this.enabledAdapters.delete(adapterId);
+        let config: Record<string, unknown>;
+        try {
+            config = JSON.parse(String(row.config_json));
+        } catch {
+            config = {};
+        }
+        adapter.configure(config);
     }
 
     async saveAdapterConfig(

@@ -17,6 +17,12 @@
 
 責務外: ユーザープロフィールデータの保存（プロフィールゲートウェイの責務）、トークン発行を超えたセッション管理、非認証ビジネスロジック。
 
+### 実行時プロバイダーのライフサイクル
+
+実行時プロバイダーは LDAP と同様に、認証ゲートウェイを設定と電源状態の権限元として使用する必要があります。プロバイダーは安定した `id`、`getConfigSchema()`、`configure(config)`、`isConfigured()` を提供し、管理画面は `/api/v1/gateways/auth/adapters/<id>/config` を読み書きし、`/enable` または `/disable` で切り替えます。モジュール側で別の有効化フラグを保持したり、モジュールの有効化をアダプターの有効化と同一視したりしてはいけません。
+
+ブートストラップでは、ルートやログイン表示を登録する前に `auth:registerProvider(provider, requires)` を待機します。この Promise は、Cognis がアダプターの保存済み設定と有効状態を復元した後にのみ完了します。その後にブランド付きボタンを登録し、両方の破棄関数を保持し、終了処理ではプロバイダー登録を解除する前にボタンを削除します。保存済みの有効状態がないプロバイダーは無効状態で開始し、ゲートウェイ所有のアダプター設定フローでセットアップを完了する必要があります。
+
 ## アーキテクチャ
 
 中心クラスは `src/gateways/auth/gateway.ts` の `CoreAuthGateway` です。登録されたアダプターのマップ、有効なアダプターIDのセット、ローカルアダプターへの参照（`setLocalAdapter()` で別途設定）を保持します。
@@ -56,11 +62,11 @@ export class CoreAuthGateway {
 | `auth:accountStore`              | `LocalAccountStore`                            | ローカルアダプターが使用するローカルアカウントストア                            |
 | `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | 存在しない場合に管理者アカウントを作成                                          |
 | `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | すべての有効なプロバイダーのメタデータを返す                                    |
-| `auth:registerProvider`          | `(provider, requires?) => dispose`             | モジュール認証プロバイダーを登録し、そのクリーンアップ関数を返す                |
+| `auth:registerProvider`          | `async (provider, requires?) => dispose`       | モジュール認証プロバイダーを登録し、そのクリーンアップ関数を返す                |
 | `auth:registerLoginButton`       | `(descriptor) => dispose`                      | ブランド固有のログインボタン表示を登録し、そのクリーンアップ関数を返す          |
 | `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | ページのCSPヘッダーで1つの所有者の信頼済みhttp(s)スクリプトオリジンを置き換える |
 
-認証プロバイダーは `auth:registerProvider` の後に `auth:registerLoginButton` を呼び出せます。記述子には、登録済みの `providerId`、完全にローカライズされた `label`、同一オリジンの `iconUrl` が必要です。任意の `backgroundColor`、`borderColor`、`textColor` には 6 桁の 16 進色を使用します。ログインページは、コンパクト表示とワイド表示の両方でアイコンと完全なラベルを常に表示します。プロバイダーは、提供を無効にするときに返されたクリーンアップ関数を呼び出す必要があります。 スタイルが指定されていない非認証情報方式は、汎用ログインボタンとして表示せず除外されます。
+認証プロバイダーは `auth:registerProvider` を待機してから `auth:registerLoginButton` を呼び出す必要があります。登録処理は完了前にアダプターの保存済み設定と有効状態を復元し、LDAP のようなファイルシステム検出プロバイダーと同じライフサイクルになります。記述子には、登録済みの `providerId`、完全にローカライズされた `label`、同一オリジンの `iconUrl` が必要です。任意の `backgroundColor`、`borderColor`、`textColor` には 6 桁の 16 進色を使用します。ログインページは、コンパクト表示とワイド表示の両方でアイコンと完全なラベルを常に表示します。プロバイダーは、提供を無効にするときに返されたクリーンアップ関数を呼び出す必要があります。 スタイルが指定されていない非認証情報方式は、汎用ログインボタンとして表示せず除外されます。
 
 プロバイダーはアダプターに `routeNamespace` と `registerRoutes(router)` を宣言できます。ルーターは `/api/v1/auth/<routeNamespace>` からの相対 `GET` および `POST` パスを受け付けるため、提供元モジュールに保護されたコアルートへの直接アクセスを与えず、OAuth コールバックを認証ゲートウェイ配下に配置できます。名前空間は安全な URL セグメントに制限され、認証コアの名前空間は予約され、重複ルートは拒否され、プロバイダーを削除すると提供されたすべてのルートも削除されます。
 

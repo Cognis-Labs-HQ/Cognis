@@ -367,9 +367,9 @@ test("external login cannot create an account without registration authorization
             }>;
             configure: () => void;
             getConfigSchema: () => [];
-        }) => () => void
+        }) => Promise<() => void>
     >("auth:registerProvider");
-    const unregister = registerProvider({
+    const unregister = await registerProvider({
         id: "external-sso",
         name: "External SSO",
         locked: true,
@@ -416,9 +416,9 @@ test("external login rolls back account when token commit fails", async () => {
         capabilities,
         db: new InMemoryTestExecutor(),
     });
-    capabilities.require<(provider: Record<string, unknown>) => () => void>(
-        "auth:registerProvider",
-    )({
+    await capabilities.require<
+        (provider: Record<string, unknown>) => Promise<() => void>
+    >("auth:registerProvider")({
         id: "external-sso",
         name: "External SSO",
         locked: true,

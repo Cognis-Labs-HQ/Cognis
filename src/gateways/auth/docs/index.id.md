@@ -17,6 +17,12 @@ Gateway menemukan adapter dengan memindai `src/adapters/auth/` saat bootstrap. S
 
 Tidak bertanggung jawab atas: menyimpan data profil pengguna (itu tugas gateway profil), manajemen sesi di luar penerbitan token, atau logika bisnis non-autentikasi.
 
+### Siklus hidup penyedia runtime
+
+Penyedia runtime harus memakai gateway Authentication sebagai otoritas konfigurasi dan status daya, sama seperti LDAP. Penyedia memberikan `id` yang stabil, `getConfigSchema()`, `configure(config)`, dan `isConfigured()`; Administration membaca dan menulis `/api/v1/gateways/auth/adapters/<id>/config` serta mengaktifkan atau menonaktifkan melalui `/enable` atau `/disable`. Modul tidak boleh menyimpan bendera aktivasi kedua atau menganggap aktivasi modul sama dengan aktivasi adapter.
+
+Saat bootstrap, tunggu `auth:registerProvider(provider, requires)` sebelum mendaftarkan rute atau tampilan login. Promise selesai hanya setelah Cognis memulihkan konfigurasi tersimpan dan status aktif adapter. Daftarkan tombol bermerek setelah itu, simpan kedua fungsi pembersihan, lalu hapus tombol sebelum membatalkan pendaftaran penyedia saat teardown. Penyedia tanpa status aktif tersimpan mulai dalam keadaan nonaktif dan harus menyelesaikan penyiapan melalui alur konfigurasi adapter milik gateway.
+
 ## Arsitektur
 
 Kelas utama adalah `CoreAuthGateway` di `src/gateways/auth/gateway.ts`. Kelas ini menyimpan peta adapter terdaftar, kumpulan ID adapter yang diaktifkan, dan referensi ke adapter lokal (yang disambungkan secara terpisah melalui `setLocalAdapter()`).
@@ -56,11 +62,11 @@ Capability yang disediakan:
 | `auth:accountStore`              | `LocalAccountStore`                            | Store akun lokal yang digunakan oleh adapter lokal                                  |
 | `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | Membuat akun admin jika belum ada                                                   |
 | `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | Mengembalikan metadata untuk semua penyedia yang diaktifkan                         |
-| `auth:registerProvider`          | `(provider, requires?) => dispose`             | Mendaftarkan penyedia autentikasi modul dan mengembalikan fungsi pembersihannya     |
+| `auth:registerProvider`          | `async (provider, requires?) => dispose`       | Mendaftarkan penyedia autentikasi modul dan mengembalikan fungsi pembersihannya     |
 | `auth:registerLoginButton`       | `(descriptor) => dispose`                      | Mendaftarkan tampilan tombol masuk bermerek dan mengembalikan fungsi pembersihannya |
 | `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Mengganti origin skrip http(s) tepercaya untuk satu pemilik di header CSP halaman   |
 
-Penyedia autentikasi dapat memanggil `auth:registerLoginButton` setelah `auth:registerProvider`. Deskriptor mewajibkan `providerId` yang terdaftar, `label` lengkap yang telah dilokalkan, dan `iconUrl` dari asal yang sama. Nilai opsional `backgroundColor`, `borderColor`, dan `textColor` memakai warna heksadesimal enam digit. Halaman masuk selalu menampilkan ikon dan label lengkap pada ukuran layar ringkas maupun lebar. Penyedia harus memanggil fungsi pembersihan yang dikembalikan saat kontribusinya dinonaktifkan. Metode tanpa kredensial yang tidak bergaya dihilangkan, bukan ditampilkan sebagai tombol masuk generik.
+Penyedia autentikasi harus menunggu `auth:registerProvider` sebelum memanggil `auth:registerLoginButton`. Registrasi memulihkan konfigurasi tersimpan dan status aktif adapter sebelum selesai, selaras dengan penyedia yang ditemukan dari sistem berkas seperti LDAP. Deskriptor mewajibkan `providerId` yang terdaftar, `label` lengkap yang telah dilokalkan, dan `iconUrl` dari asal yang sama. Nilai opsional `backgroundColor`, `borderColor`, dan `textColor` memakai warna heksadesimal enam digit. Halaman masuk selalu menampilkan ikon dan label lengkap pada ukuran layar ringkas maupun lebar. Penyedia harus memanggil fungsi pembersihan yang dikembalikan saat kontribusinya dinonaktifkan. Metode tanpa kredensial yang tidak bergaya dihilangkan, bukan ditampilkan sebagai tombol masuk generik.
 
 Penyedia dapat mendeklarasikan `routeNamespace` dan `registerRoutes(router)` pada adapternya. Router menerima jalur `GET` dan `POST` relatif terhadap `/api/v1/auth/<routeNamespace>` agar callback OAuth dapat berada di bawah gateway Autentikasi tanpa memberi modul kontributor akses langsung ke rute inti yang dilindungi. Namespace dibatasi pada segmen URL yang aman, namespace inti Autentikasi dicadangkan, rute duplikat ditolak, dan penghapusan penyedia menghapus semua rute kontribusinya.
 

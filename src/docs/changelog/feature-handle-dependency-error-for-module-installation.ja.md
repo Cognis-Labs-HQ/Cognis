@@ -54,6 +54,10 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 
 トークン使用の統合キーにトークンとアカウント識別情報の両方を含め、競合する外部アカウントが別のコールバックの認可を引き継げないようにしました。再利用可能な Core ライフサイクルポリシーにより、古い保存済み無効状態があっても必須のロック済みコンポーネントを有効化します。認証、登録、常時有効な通知プロバイダーは、読み込み時と設定境界でこのポリシーを適用します。
 
+## 実行時認証ライフサイクルの統一
+
+モジュール提供の認証アダプターは、プロバイダー登録が完了する前に、ゲートウェイ所有の保存済み設定と有効状態を復元するようになりました。登録ケイパビリティを非同期化し、モジュールがコールバックルートやブランド付きログインボタンを提供する前にライフサイクル準備完了を待機できるため、LDAP の検出および有効化順序と一致します。ドキュメントには X SSO の移行手順とゲートウェイ所有のセットアップ契約を記載しました。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -72,3 +76,4 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 - [d62eba99](https://github.com/Cognis-Labs-HQ/Cognis/commit/d62eba99)
 - [6eec5296](https://github.com/Cognis-Labs-HQ/Cognis/commit/6eec52967246d4e0991b56691c6024cdc71c2c1e)
 - [3cf4aee2](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf4aee2a35c83065d116717f71a845f36bf5416)
+- [fcfbfc35](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcfbfc35a6bd698b4be409764e07bf8820f3201b)

@@ -17,7 +17,7 @@ export async function registerAuthBootstrapHook({
     ctx.capabilities.contribute("auth:accountStore", accountStore);
     ctx.capabilities.contribute(
         "auth:registerProvider",
-        (provider: AuthProviderAdapter, requires?: string[]) => {
+        async (provider: AuthProviderAdapter, requires?: string[]) => {
             if (
                 authGateway
                     .listAdapters()
@@ -31,6 +31,7 @@ export async function registerAuthBootstrapHook({
             );
             let unregisterRoutes: () => void;
             try {
+                await authGateway.restoreRegisteredAdapter(provider.id);
                 unregisterRoutes = registerAuthProviderRoutes(
                     ctx.routeRegistry,
                     provider,

@@ -17,6 +17,12 @@ Das Gateway entdeckt Adapter durch Scannen von `src/adapters/auth/` beim Bootstr
 
 Nicht verantwortlich für: Benutzerprofile speichern (das ist das Profil-Gateway), Session-Management über die Token-Ausstellung hinaus, oder nicht-auth-bezogene Geschäftslogik.
 
+### Lebenszyklus von Laufzeitanbietern
+
+Laufzeitanbieter müssen wie LDAP das Authentication-Gateway als Autorität für Konfiguration und Aktivierungszustand verwenden. Der Anbieter stellt eine stabile `id`, `getConfigSchema()`, `configure(config)` und `isConfigured()` bereit; die Administration liest und schreibt `/api/v1/gateways/auth/adapters/<id>/config` und schaltet über `/enable` oder `/disable`. Das Modul darf keinen zweiten Aktivierungsstatus verwalten und die Modulaktivierung nicht mit der Adapteraktivierung gleichsetzen.
+
+Beim Bootstrap muss `auth:registerProvider(provider, requires)` abgewartet werden, bevor Routen oder Anmeldedarstellung registriert werden. Das Promise wird erst aufgelöst, nachdem Cognis die gespeicherte Konfiguration und den Aktivierungszustand des Adapters wiederhergestellt hat. Anschließend wird die markenspezifische Schaltfläche registriert; beide Bereinigungsfunktionen werden aufbewahrt, und beim Abbau wird die Schaltfläche vor dem Anbieter entfernt. Ein Anbieter ohne gespeicherten aktivierten Zustand startet deaktiviert und muss die Einrichtung über den Gateway-eigenen Adapterkonfigurationsablauf abschließen.
+
 ## Architektur
 
 Die zentrale Klasse ist `CoreAuthGateway` in `src/gateways/auth/gateway.ts`. Sie hält eine Map registrierter Adapter, eine Menge aktivierter Adapter-IDs und eine Referenz auf den lokalen Adapter (der separat über `setLocalAdapter()` verkabelt wird).
@@ -56,11 +62,11 @@ Beigetragene Capabilities:
 | `auth:accountStore`              | `LocalAccountStore`                            | Lokaler Account-Store, der vom lokalen Adapter verwendet wird                                                      |
 | `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | Erstellt einen Admin-Account, wenn er nicht existiert                                                              |
 | `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | Gibt Metadaten für alle aktivierten Anbieter zurück                                                                |
-| `auth:registerProvider`          | `(provider, requires?) => dispose`             | Registriert einen Modul-Authentifizierungsanbieter und gibt seine Bereinigungsfunktion zurück                      |
+| `auth:registerProvider`          | `async (provider, requires?) => dispose`       | Registriert einen Modul-Authentifizierungsanbieter und gibt seine Bereinigungsfunktion zurück                      |
 | `auth:registerLoginButton`       | `(descriptor) => dispose`                      | Registriert die Darstellung einer markenspezifischen Anmeldeschaltfläche und gibt ihre Bereinigungsfunktion zurück |
 | `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Ersetzt vertrauenswürdige http(s)-Skriptursprünge für einen Besitzer in Seiten-CSP-Headern                         |
 
-Authentifizierungsanbieter können `auth:registerLoginButton` nach `auth:registerProvider` aufrufen. Der Deskriptor erfordert die registrierte `providerId`, ein vollständig lokalisiertes `label` und eine gleichursprüngliche `iconUrl`. Optionale Werte für `backgroundColor`, `borderColor` und `textColor` verwenden sechsstellige Hexadezimalfarben. Die Anmeldeseite zeigt sowohl in kompakten als auch in breiten Ansichten immer das Symbol und die vollständige Beschriftung. Anbieter müssen die zurückgegebene Bereinigungsfunktion aufrufen, wenn ihr Beitrag deaktiviert wird. Nicht gestaltete Methoden ohne Anmeldedaten werden ausgelassen, anstatt als generische Anmeldeschaltflächen dargestellt zu werden.
+Authentifizierungsanbieter müssen `auth:registerProvider` abwarten, bevor sie `auth:registerLoginButton` aufrufen. Die Registrierung stellt die gespeicherte Konfiguration und den Aktivierungszustand des Adapters vor dem Abschluss wieder her und entspricht damit dateisystembasierten Anbietern wie LDAP. Der Deskriptor erfordert die registrierte `providerId`, ein vollständig lokalisiertes `label` und eine gleichursprüngliche `iconUrl`. Optionale Werte für `backgroundColor`, `borderColor` und `textColor` verwenden sechsstellige Hexadezimalfarben. Die Anmeldeseite zeigt sowohl in kompakten als auch in breiten Ansichten immer das Symbol und die vollständige Beschriftung. Anbieter müssen die zurückgegebene Bereinigungsfunktion aufrufen, wenn ihr Beitrag deaktiviert wird. Nicht gestaltete Methoden ohne Anmeldedaten werden ausgelassen, anstatt als generische Anmeldeschaltflächen dargestellt zu werden.
 
 Ein Anbieter kann `routeNamespace` und `registerRoutes(router)` in seinem Adapter deklarieren. Der Router akzeptiert `GET`- und `POST`-Pfade relativ zu `/api/v1/auth/<routeNamespace>`, sodass OAuth-Rückrufe unter dem Authentifizierungs-Gateway liegen können, ohne dem beitragenden Modul direkten Zugriff auf geschützte Core-Routen zu geben. Namespaces sind auf sichere URL-Segmente beschränkt, Core-Authentifizierungs-Namespaces sind reserviert, doppelte Routen werden abgelehnt und beim Entfernen des Anbieters werden alle beigetragenen Routen entfernt.
 

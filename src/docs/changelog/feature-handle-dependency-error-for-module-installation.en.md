@@ -54,6 +54,10 @@ Concurrent SSO callbacks now share one token-consumption result so a losing call
 
 Token redemption coalescing now includes both token and account identity, preventing a competing external account from inheriting another callback's authorization. A reusable Core lifecycle policy forces mandatory locked components active despite obsolete persisted disablement; Authentication, Registration, and always-on Notification providers apply it at load and configuration boundaries.
 
+## Runtime auth lifecycle parity
+
+Module-provided authentication adapters now restore their gateway-owned persisted configuration and enabled state before provider registration completes. The registration capability is asynchronous so modules can await lifecycle readiness before contributing callback routes or branded login buttons, matching the discovery and activation order used by LDAP. Documentation specifies the X SSO migration path and gateway-owned setup contract.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -72,3 +76,4 @@ Token redemption coalescing now includes both token and account identity, preven
 - [d62eba99](https://github.com/Cognis-Labs-HQ/Cognis/commit/d62eba99)
 - [6eec5296](https://github.com/Cognis-Labs-HQ/Cognis/commit/6eec52967246d4e0991b56691c6024cdc71c2c1e)
 - [3cf4aee2](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf4aee2a35c83065d116717f71a845f36bf5416)
+- [fcfbfc35](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcfbfc35a6bd698b4be409764e07bf8820f3201b)

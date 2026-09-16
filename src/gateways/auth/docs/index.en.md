@@ -17,6 +17,12 @@ The gateway discovers adapters by scanning `src/adapters/auth/` at bootstrap tim
 
 Not responsible for: storing user profile data (the profile gateway), session management beyond token issuance, or any non-auth business logic.
 
+### Runtime provider lifecycle
+
+Runtime providers must use the Authentication gateway as their configuration and power-state authority, exactly like LDAP. The provider supplies a stable `id`, `getConfigSchema()`, `configure(config)`, and `isConfigured()`; Administration reads and writes `/api/v1/gateways/auth/adapters/<id>/config` and toggles `/enable` or `/disable`. The module must not maintain a second activation flag or treat module enablement as adapter enablement.
+
+During bootstrap, await `auth:registerProvider(provider, requires)` before registering routes or login presentation. The promise resolves only after Cognis restores the adapter's persisted configuration and enabled state. Register the branded button afterward, retain both disposers, and remove the button before unregistering the provider during teardown. A provider with no persisted enabled state starts disabled and must complete setup through the gateway-owned adapter configuration flow.
+
 ## Architecture
 
 The central class is `CoreAuthGateway` in `src/gateways/auth/gateway.ts`. It holds a map of registered adapters, a set of enabled adapter IDs, and a reference to the local adapter (which is wired separately via `setLocalAdapter()`).
@@ -56,11 +62,11 @@ Capabilities contributed:
 | `auth:accountStore`              | `LocalAccountStore`                            | Local account store used by the local adapter                                |
 | `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | Creates an admin account if it does not exist                                |
 | `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | Returns metadata for all enabled providers                                   |
-| `auth:registerProvider`          | `(provider, requires?) => dispose`             | Registers a module authentication provider and returns its cleanup function  |
+| `auth:registerProvider`          | `async (provider, requires?) => dispose`       | Registers a module authentication provider and returns its cleanup function  |
 | `auth:registerLoginButton`       | `(descriptor) => dispose`                      | Registers branded login-button presentation and returns its cleanup function |
 | `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Replaces trusted http(s) script origins for one owner in page CSP headers    |
 
-Authentication providers may call `auth:registerLoginButton` after `auth:registerProvider`. The descriptor requires the registered `providerId`, a complete localized `label`, and a same-origin `iconUrl`. Optional `backgroundColor`, `borderColor`, and `textColor` values use six-digit hexadecimal colors. The login page always renders the icon and full label at both compact and wide viewport sizes. Providers must call the returned cleanup function when their contribution is disabled. Unstyled non-credential methods are omitted rather than rendered as generic login buttons.
+Authentication providers must await `auth:registerProvider` before calling `auth:registerLoginButton`. Registration restores the adapter's persisted configuration and enabled state before resolving, matching filesystem-discovered providers such as LDAP. The descriptor requires the registered `providerId`, a complete localized `label`, and a same-origin `iconUrl`. Optional `backgroundColor`, `borderColor`, and `textColor` values use six-digit hexadecimal colors. The login page always renders the icon and full label at both compact and wide viewport sizes. Providers must call the returned cleanup function when their contribution is disabled. Unstyled non-credential methods are omitted rather than rendered as generic login buttons.
 
 A provider may declare `routeNamespace` and `registerRoutes(router)` on its adapter. The router accepts `GET` and `POST` paths relative to `/api/v1/auth/<routeNamespace>` so OAuth callbacks can live under the Authentication gateway without granting the contributing module direct access to protected core routes. Namespaces are restricted to safe URL segments, core Authentication namespaces are reserved, duplicate routes are rejected, and provider disposal removes every contributed route.
 
