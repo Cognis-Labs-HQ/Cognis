@@ -1,0 +1,4 @@
+<resources>
+  <string name="adapter.share.user.name">ユーザー</string>
+  <string name="adapter.share.user.description">Cognisユーザーに直接アクセス権を付与します。</string>
+</resources>

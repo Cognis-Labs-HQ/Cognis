@@ -1,0 +1,456 @@
+import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
+import path from "node:path";
+import { AccountInstanceStore } from "../account-instance-store.js";
+import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import type { IncomingMessage } from "node:http";
+import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
+import {
+    createDefaultRouteContext,
+    type RouteContext,
+} from "../../../api/reuse/route-context.js";
+import {
+    type CapabilityStore,
+    type GatewayBootstrapContext,
+} from "../../shared.js";
+import { type AccessRole } from "../access-tokens.js";
+import { CoreAuthGateway } from "../gateway.js";
+import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import { createAdapterAdminRoutes } from "./adapter-admin-routes.js";
+import {
+    createAuthGatewayRoutes,
+    type SecuritySubsection,
+} from "./auth-routes.js";
+import { loadLocalAccountStore } from "./local-account.js";
+import { createAuthRouteBootstrapRuntime } from "./route-runtime.js";
+import { runBootstrapDirectoryHooks } from "../../reuse/bootstrap-loader.js";
+import { parseLoginSessionTimeoutMinutes } from "../session-timeout.js";
+
+export interface AuthAccountStore {
+    ensureSchema(): Promise<void>;
+    has(username: string): Promise<boolean>;
+    delete(username: string): Promise<void>;
+    isFounder(username: string): Promise<boolean>;
+    verify(username: string, password: string): Promise<boolean>;
+    getDisplayName(username: string): Promise<string | null>;
+    ensureExternalAccount?(identity: {
+        accountId: string;
+        provider: string;
+        externalUserId: string;
+        email?: string;
+        displayName?: string;
+        role?: string;
+    }): Promise<void>;
+    getInfo(username: string): Promise<{
+        username: string;
+        enabled: boolean;
+        role?: string;
+    } | null>;
+    setFounder(username: string, isFounder: boolean): Promise<void>;
+    /**
+     * Registers a new account. Optional — only implemented by stores that
+     * support local account creation (e.g. local/LDAP adapters). Absent on
+     * read-only or SSO-only stores. Returns the created account record.
+     */
+    register?(
+        username: string,
+        password: string,
+        isAdmin: boolean,
+    ): Promise<{ username: string; role?: string }>;
+    /**
+     * Enables or disables an account. Optional — only available on stores that
+     * support toggling account status. Absent on read-only stores.
+     */
+    setEnabled?(username: string, enabled: boolean): Promise<void>;
+}
+
+export interface PendingTfaLoginAttempt {
+    id: string;
+    accountId: string;
+    role: AccessRole;
+    isFounder: boolean;
+    provider: string;
+    providerId: string;
+    displayName: string;
+    userValidationMode: "none" | "smtp";
+    requiredUserValidation: boolean;
+    ttlSeconds: number | null;
+    expiresAt: number;
+}
+
+export interface SecuritySettings {
+    registrationsEnabled: boolean;
+    userValidationMode: "none" | "smtp";
+    loginSessionTimeoutMinutes: number;
+}
+
+export interface AuthBootstrapHookContext {
+    accountStore: AuthAccountStore;
+    authGateway: CoreAuthGateway;
+    ctx: GatewayBootstrapContext;
+    routeContext: RouteContext;
+    authRouteBootstrapRuntime: AuthRouteBootstrapRuntime;
+    readSecuritySettings: () => Promise<SecuritySettings>;
+}
+
+export interface AuthRouteBootstrapRuntime {
+    buildAccessTokenCookie: (
+        req: IncomingMessage,
+        rawToken: string,
+        ttlSeconds: number | null,
+    ) => string;
+    clearPendingTfaLoginAttempt: (loginAttemptId: string) => void;
+    createPendingTfaLoginAttempt: (
+        input: Omit<PendingTfaLoginAttempt, "id" | "expiresAt">,
+    ) => PendingTfaLoginAttempt;
+    getAccessTokenTtlSeconds: () => number;
+    getPendingTfaLoginAttempt: (
+        loginAttemptId: string,
+    ) => PendingTfaLoginAttempt | null;
+}
+
+export interface AuthRouteBootstrapHookContext {
+    capabilities: CapabilityStore;
+    runtime: AuthRouteBootstrapRuntime;
+}
+
+const bootstrapDirectoryUrl = new URL(".", import.meta.url);
+
+export async function runAuthBootstrapHooks(
+    context: AuthBootstrapHookContext,
+): Promise<void> {
+    await runBootstrapDirectoryHooks({
+        context,
+        directoryUrl: bootstrapDirectoryUrl,
+        exportName: "registerAuthBootstrapHook",
+    });
+}
+
+export async function runAuthRouteBootstrapHooks(
+    context: AuthRouteBootstrapHookContext,
+): Promise<void> {
+    await runBootstrapDirectoryHooks({
+        context,
+        directoryUrl: bootstrapDirectoryUrl,
+        exportName: "registerAuthRouteBootstrapHook",
+    });
+}
+
+export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const manifestVersion = await readGatewayManifestVersion(
+        import.meta.url,
+        "../manifest.json",
+    );
+    const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
+
+    const accountStore = await loadLocalAccountStore(dbExecutor, ctx.log);
+    await accountStore.ensureSchema();
+    ctx.log?.("info", "Auth gateway account schema ready.", {
+        component: "auth-gateway",
+    });
+    const accountInstanceStore = new AccountInstanceStore(dbExecutor);
+    await accountInstanceStore.ensureSchema();
+    const accountDataOwners = new Map<
+        string,
+        (accountId: string) => Promise<void>
+    >();
+    const keyringDataOwners = new Map<
+        string,
+        (accountId: string) => Promise<void>
+    >();
+    ctx.capabilities.contribute(
+        "auth:registerAccountDataOwner",
+        (ownerId: string, purge: (accountId: string) => Promise<void>) => {
+            accountDataOwners.set(ownerId, purge);
+        },
+    );
+    ctx.capabilities.contribute(
+        "auth:registerKeyringDataOwner",
+        (ownerId: string, purge: (accountId: string) => Promise<void>) => {
+            keyringDataOwners.set(ownerId, purge);
+        },
+    );
+    ctx.capabilities.contribute(
+        "auth:purgeKeyringDependentData",
+        async (accountId: string) => {
+            const normalizedAccountId = accountId.trim().toLowerCase();
+            for (const purge of keyringDataOwners.values()) {
+                await purge(normalizedAccountId);
+            }
+        },
+    );
+    ctx.capabilities.contribute(
+        "auth:getAccountInstanceId",
+        async (accountId: string) => {
+            const instanceId =
+                await accountInstanceStore.getOrCreate(accountId);
+            for (const [ownerId, purge] of accountDataOwners) {
+                const mismatched =
+                    await accountInstanceStore.reconcileDataOwner(
+                        ownerId,
+                        accountId,
+                        instanceId,
+                        purge,
+                    );
+                if (mismatched) {
+                    ctx.log?.("info", "Purged stale account-owned data.", {
+                        component: "auth-gateway",
+                        operation: "purge_stale_account_data",
+                        ownerId,
+                        accountId: accountId.trim().toLowerCase(),
+                    });
+                }
+            }
+            return instanceId;
+        },
+    );
+    ctx.flow.extend(
+        "deprovision-user",
+        "cleanup-dependencies",
+        { id: "auth-gateway:delete-account-instance" },
+        async (stageContext) => {
+            const request = stageContext.input as {
+                username?: string;
+                action?: string;
+            };
+            const persisted = (
+                stageContext.stageResults["persist-state"] ?? []
+            ).some((result) => (result as { persisted?: boolean }).persisted);
+            if (
+                !persisted ||
+                request.action !== "delete" ||
+                !request.username
+            ) {
+                return { cleaned: false };
+            }
+            await accountInstanceStore.delete(request.username);
+            const accountId = request.username.trim().toLowerCase();
+            ctx.log?.("info", "Deleted transient account instance.", {
+                component: "auth-gateway",
+                operation: "delete_account_instance",
+                accountId,
+            });
+            return {
+                cleaned: true,
+                accountId,
+            };
+        },
+    );
+
+    const authGateway = new CoreAuthGateway(dbExecutor);
+    await authGateway.ensureSchema();
+    ctx.log?.("info", "Auth gateway adapter schema ready.", {
+        component: "auth-gateway",
+    });
+
+    const localAdapterPath = path.resolve(
+        process.cwd(),
+        "src",
+        "adapters",
+        "auth",
+        "local",
+        "index.ts",
+    );
+    try {
+        const mod = await import(`${localAdapterPath}?t=${Date.now()}`);
+        if (typeof mod.createAdapter === "function") {
+            const localAdapter = mod.createAdapter(accountStore);
+            const packageRaw = await readFile(
+                path.resolve(localAdapterPath, "..", "package.json"),
+                "utf8",
+            );
+            const packageJson = JSON.parse(packageRaw) as { version?: string };
+            if (packageJson.version) {
+                Object.assign(localAdapter, { version: packageJson.version });
+            }
+            const manifestRaw = await readFile(
+                path.resolve(localAdapterPath, "..", "manifest.json"),
+                "utf8",
+            );
+            const manifest = JSON.parse(manifestRaw) as {
+                publisher?: string;
+            };
+            if (manifest.publisher) {
+                Object.assign(localAdapter, { publisher: manifest.publisher });
+            }
+            authGateway.setLocalAdapter(localAdapter);
+            ctx.log?.("info", "Loaded local authentication adapter.", {
+                component: "auth-gateway",
+                adapterId: "local",
+            });
+        }
+    } catch (error) {
+        ctx.log?.("warn", "Local authentication adapter could not be loaded.", {
+            component: "auth-gateway",
+            adapterId: "local",
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
+
+    const authAdaptersRoot = path.join(ctx.adaptersRoot, "auth");
+    await authGateway.discoverAdapters(authAdaptersRoot, {
+        capabilities: ctx.capabilities,
+        registerStaticDir: (adapterId, absolutePath) =>
+            ctx.uiRegistry?.registerAdapterStaticDir(
+                "auth",
+                adapterId,
+                absolutePath,
+            ),
+        registerNavbarPlugin: (scriptUrl) =>
+            ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl }),
+        registerSettingsSection: (section) =>
+            ctx.uiRegistry?.registerSettingsSection(section),
+        flow: ctx.flow,
+        log: ctx.log,
+    });
+    ctx.capabilities.require("auth:keyringVaultStore");
+    for (const adapter of authGateway.listAdapters()) {
+        const adapterUiDirectory = path.join(
+            authAdaptersRoot,
+            adapter.id,
+            "ui",
+        );
+        if (existsSync(adapterUiDirectory)) {
+            ctx.uiRegistry?.registerAdapterStaticDir(
+                "auth",
+                adapter.id,
+                adapterUiDirectory,
+            );
+        }
+    }
+    await authGateway.loadPersistedConfigs();
+    ctx.log?.("info", "Authentication adapters discovered and configured.", {
+        component: "auth-gateway",
+        adaptersRoot: authAdaptersRoot,
+        adapterCount: authGateway.listAdapters().length,
+    });
+
+    ctx.capabilities.contribute(
+        "auth:confirmPassword",
+        (accountId: string, password: string, providerId?: string) =>
+            authGateway.confirmPassword(accountId, password, providerId),
+    );
+
+    const authRouteBootstrapRuntime = createAuthRouteBootstrapRuntime();
+    await runAuthRouteBootstrapHooks({
+        capabilities: ctx.capabilities,
+        runtime: authRouteBootstrapRuntime,
+    });
+
+    async function readSecuritySettings(): Promise<SecuritySettings> {
+        const preferenceStore =
+            ctx.capabilities.get<UserPreferenceStore>("preferences:store");
+        if (!preferenceStore) {
+            return {
+                registrationsEnabled: false,
+                userValidationMode: "none",
+                loginSessionTimeoutMinutes: 720,
+            };
+        }
+        const raw = await preferenceStore.get(
+            "__system__",
+            "security-settings",
+        );
+        if (!raw) {
+            return {
+                registrationsEnabled: false,
+                userValidationMode: "none",
+                loginSessionTimeoutMinutes: 720,
+            };
+        }
+        try {
+            const parsed = JSON.parse(raw) as Record<string, unknown>;
+            return {
+                registrationsEnabled:
+                    typeof parsed.registrationsEnabled === "boolean"
+                        ? parsed.registrationsEnabled
+                        : false,
+                userValidationMode:
+                    parsed.userValidationMode === "smtp" ? "smtp" : "none",
+                loginSessionTimeoutMinutes: parseLoginSessionTimeoutMinutes(
+                    parsed.loginSessionTimeoutMinutes,
+                ),
+            };
+        } catch {
+            return {
+                registrationsEnabled: false,
+                userValidationMode: "none",
+                loginSessionTimeoutMinutes: 720,
+            };
+        }
+    }
+
+    const securitySubsections: SecuritySubsection[] = [];
+    ctx.capabilities.contribute(
+        "auth:registerSecuritySection",
+        (section: SecuritySubsection) => {
+            securitySubsections.push(section);
+        },
+    );
+
+    const routeContext: RouteContext = createDefaultRouteContext({
+        getCapability: ctx.capabilities.get.bind(ctx.capabilities),
+        requireCapability: ctx.capabilities.require.bind(ctx.capabilities),
+        flow: ctx.flow,
+    });
+
+    ctx.routeRegistry.register(
+        createAuthGatewayRoutes(
+            authGateway,
+            accountStore,
+            ctx.capabilities,
+            routeContext,
+            authRouteBootstrapRuntime,
+            securitySubsections,
+            ctx.log,
+            readSecuritySettings,
+        ),
+        "auth",
+    );
+    ctx.routeRegistry.register(
+        createAdapterAdminRoutes("auth", authGateway, ctx.flow, ctx.log),
+        "auth",
+    );
+    ctx.log?.("info", "Auth gateway routes registered.", {
+        component: "auth-gateway",
+    });
+
+    ctx.routeRegistry.registerPrefix("/api/v1/auth", "auth");
+    ctx.gatewayRegistry.register({
+        id: "auth",
+        name: "Authentication Gateway",
+        version: manifestVersion,
+        description: "Manages authentication providers and user login.",
+        publisher: "Cognis Labs HQ",
+        required: true,
+    });
+
+    const uiDir = path.resolve(process.cwd(), "src", "gateways", "auth", "ui");
+    ctx.uiRegistry?.registerStaticDir("auth", uiDir);
+    ctx.uiRegistry?.registerSettingsSection({
+        id: "security",
+        label: "Security",
+        scriptUrl: "/static/gateways/auth/security-prefs/index.js",
+        stringsBaseUrl: "/static/gateways/auth/languages",
+    });
+    await runAuthBootstrapHooks({
+        accountStore,
+        authGateway,
+        ctx,
+        routeContext,
+        authRouteBootstrapRuntime,
+        readSecuritySettings,
+    });
+
+    const registerNotificationCategory = ctx.capabilities.get<
+        (id: string, label: string) => void
+    >("notify:registerCategory");
+    if (typeof registerNotificationCategory === "function") {
+        registerNotificationCategory("security", "Security");
+    }
+
+    ctx.log?.("info", "Auth gateway initialized.", {
+        component: "auth-gateway",
+        adapterCount: authGateway.listAdapters().length,
+    });
+}

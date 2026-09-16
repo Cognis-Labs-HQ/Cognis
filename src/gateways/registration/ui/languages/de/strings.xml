@@ -1,0 +1,3 @@
+<resources>
+  <string name="gateway.registration.no_tokens">Es wurden noch keine Registrierungstoken ausgestellt.</string>
+</resources>

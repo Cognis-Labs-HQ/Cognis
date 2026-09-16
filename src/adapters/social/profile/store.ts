@@ -1,0 +1,645 @@
+import { randomUUID } from "node:crypto";
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
+import {
+    normalizeHandleKey,
+    rowToProfile,
+} from "../../../gateways/social/reuse/profile-record.js";
+export type {
+    AccountRole,
+    AccountVisibility,
+    PostVisibility,
+    AccountLifecycleState,
+    AccountProfile,
+    Post,
+    ProfileCreateStore,
+    ProfileStore,
+    ProfileSearchOptions,
+} from "./store-contract.js";
+export { visibilityRank } from "./store-contract.js";
+import type {
+    AccountRole,
+    AccountVisibility,
+    PostVisibility,
+    AccountLifecycleState,
+    AccountProfile,
+    Post,
+    ProfileCreateStore,
+    ProfileSearchOptions,
+} from "./store-contract.js";
+
+function rowToPost(row: any): Post {
+    return {
+        id: row.id,
+        accountId: row.account_id,
+        title: row.title ?? null,
+        content: row.content,
+        visibility: row.visibility as PostVisibility,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+    };
+}
+
+const JOINED_PROFILE_COLUMNS: Array<{ col: string; as: string }> = [
+    { col: "account_profiles.account_id", as: "account_id" },
+    { col: "account_profiles.handle", as: "handle" },
+    { col: "account_profiles.display_name", as: "display_name" },
+    { col: "account_profiles.role", as: "role" },
+    { col: "account_profiles.bio", as: "bio" },
+    { col: "account_profiles.location", as: "location" },
+    { col: "account_profiles.website", as: "website" },
+    { col: "account_profiles.avatar_key", as: "avatar_key" },
+    { col: "account_profiles.banner_key", as: "banner_key" },
+    { col: "account_profiles.visibility", as: "visibility" },
+    {
+        col: "account_profiles.account_lifecycle_state",
+        as: "account_lifecycle_state",
+    },
+    { col: "account_profiles.created_at", as: "created_at" },
+    { col: "account_profiles.updated_at", as: "updated_at" },
+];
+
+const SCHEMA_TABLE_DEFS: StructuredDbTableDef[] = [
+    {
+        name: "account_profiles",
+        columns: [
+            { name: "account_id", type: "text", primaryKey: true },
+            { name: "handle", type: "text", notNull: true, unique: true },
+            { name: "display_name", type: "text" },
+            { name: "role", type: "text", notNull: true, default: "user" },
+            { name: "bio", type: "text" },
+            { name: "location", type: "text" },
+            { name: "website", type: "text" },
+            { name: "avatar_key", type: "text" },
+            { name: "banner_key", type: "text" },
+            {
+                name: "visibility",
+                type: "text",
+                notNull: true,
+                default: "friends",
+            },
+            {
+                name: "account_lifecycle_state",
+                type: "text",
+                notNull: true,
+                default: "active",
+            },
+            {
+                name: "created_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
+            {
+                name: "updated_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
+        ],
+    },
+    {
+        name: "account_follows",
+        columns: [
+            { name: "follower_id", type: "text", notNull: true },
+            { name: "following_id", type: "text", notNull: true },
+            {
+                name: "created_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
+        ],
+        primaryKey: ["follower_id", "following_id"],
+    },
+    {
+        name: "account_blocks",
+        columns: [
+            { name: "blocker_id", type: "text", notNull: true },
+            { name: "blocked_id", type: "text", notNull: true },
+            {
+                name: "created_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
+        ],
+        primaryKey: ["blocker_id", "blocked_id"],
+    },
+    {
+        name: "posts",
+        columns: [
+            { name: "id", type: "text", primaryKey: true },
+            { name: "account_id", type: "text", notNull: true },
+            { name: "title", type: "text" },
+            { name: "content", type: "text", notNull: true },
+            {
+                name: "visibility",
+                type: "text",
+                notNull: true,
+                default: "community",
+            },
+            {
+                name: "created_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
+            {
+                name: "updated_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
+        ],
+    },
+];
+
+export class DbProfileStore implements ProfileCreateStore {
+    constructor(private readonly db: DbExecutor) {}
+
+    async ensureSchema(): Promise<void> {
+        for (const def of SCHEMA_TABLE_DEFS) {
+            await this.db.ensureTable(def);
+        }
+    }
+
+    async createProfile(
+        accountId: string,
+        handle: string,
+        role: AccountRole = "user",
+        displayName?: string,
+    ): Promise<AccountProfile | null> {
+        try {
+            await this.db.executeCommand({
+                option: "INSERT",
+                table: "account_profiles",
+                values: {
+                    account_id: accountId,
+                    handle,
+                    role,
+                    visibility: "friends",
+                    account_lifecycle_state: "active",
+                },
+                conflict: { action: "ignore" },
+            });
+            if (displayName) {
+                await this.db.executeCommand({
+                    option: "UPDATE",
+                    table: "account_profiles",
+                    set: { display_name: displayName },
+                    where: [{ column: "account_id", value: accountId }],
+                });
+            }
+            return this.getProfile(accountId);
+        } catch {
+            return null;
+        }
+    }
+
+    async getProfile(accountId: string): Promise<AccountProfile | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_profiles",
+            where: [{ column: "account_id", value: accountId }],
+        });
+        const row = result.rows?.[0];
+        return row ? rowToProfile(row) : null;
+    }
+
+    async getProfileByHandle(handle: string): Promise<AccountProfile | null> {
+        const normalizedHandle = normalizeHandleKey(handle);
+        if (!normalizedHandle) return null;
+
+        const exactResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_profiles",
+            where: [{ column: "handle", value: handle }],
+            limit: 1,
+        });
+        const exactRow = exactResult.rows?.[0];
+        if (exactRow) {
+            return rowToProfile(exactRow);
+        }
+
+        const profileHandleRowsResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_profiles",
+            columns: ["account_id", "handle"],
+        });
+        const matchedHandleRow = (profileHandleRowsResult.rows ?? []).find(
+            (profileHandleRow) =>
+                normalizeHandleKey(String(profileHandleRow.handle ?? "")) ===
+                normalizedHandle,
+        );
+        if (!matchedHandleRow?.account_id) {
+            return null;
+        }
+        return this.getProfile(String(matchedHandleRow.account_id));
+    }
+
+    async searchProfiles(
+        query: string,
+        limit?: number,
+        options: ProfileSearchOptions = {},
+    ): Promise<AccountProfile[]> {
+        if (limit !== undefined && (!Number.isInteger(limit) || limit < 0)) {
+            throw new RangeError(
+                "Profile search limit must be a non-negative integer.",
+            );
+        }
+        const pattern =
+            String(query ?? "")
+                .trim()
+                .replace(/^@/, "")
+                .toLowerCase()
+                .replace(/[\\%_]/g, "\\$&") + "%";
+        const visibilityFilters = options.includeHidden
+            ? []
+            : [
+                  { column: "visibility", operator: "!=", value: "hidden" },
+                  { column: "account_lifecycle_state", value: "active" },
+              ];
+
+        const byHandle = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_profiles",
+            where: [
+                ...visibilityFilters,
+                {
+                    column: "handle",
+                    operator: "LIKE",
+                    value: pattern,
+                    escapeChar: "\\",
+                },
+            ],
+        });
+
+        const byDisplayName = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_profiles",
+            where: [
+                ...visibilityFilters,
+                {
+                    column: "display_name",
+                    operator: "LIKE",
+                    value: pattern,
+                    escapeChar: "\\",
+                },
+            ],
+        });
+
+        const seen = new Set<string>();
+        const merged: AccountProfile[] = [];
+
+        for (const row of [
+            ...(byHandle.rows ?? []),
+            ...(byDisplayName.rows ?? []),
+        ]) {
+            const profile = rowToProfile(row);
+            if (!seen.has(profile.accountId)) {
+                seen.add(profile.accountId);
+                merged.push(profile);
+            }
+        }
+
+        merged.sort((profileA, profileB) =>
+            profileA.handle < profileB.handle
+                ? -1
+                : profileA.handle > profileB.handle
+                  ? 1
+                  : 0,
+        );
+        const requesterAccountId = String(
+            options.requesterAccountId ?? "",
+        ).trim();
+        const followingAccountId = String(
+            options.followingAccountId ?? "",
+        ).trim();
+        const candidateHandles = Array.isArray(options.candidateHandles)
+            ? new Set(
+                  options.candidateHandles
+                      .map((handle) => normalizeHandleKey(handle))
+                      .filter(Boolean),
+              )
+            : null;
+        const followedAccountIds = followingAccountId
+            ? new Set(
+                  (await this.getFollowing(followingAccountId)).map(
+                      (profile) => profile.accountId,
+                  ),
+              )
+            : null;
+
+        const visibleToRequester: AccountProfile[] = [];
+        for (const profile of merged) {
+            const handle = normalizeHandleKey(profile.handle);
+            if (candidateHandles && !candidateHandles.has(handle)) {
+                continue;
+            }
+            if (
+                followedAccountIds &&
+                !followedAccountIds.has(profile.accountId)
+            ) {
+                continue;
+            }
+            if (
+                requesterAccountId &&
+                profile.accountId !== requesterAccountId
+            ) {
+                if (
+                    await this.isBlocked(profile.accountId, requesterAccountId)
+                ) {
+                    continue;
+                }
+            }
+            if (limit !== undefined && visibleToRequester.length >= limit) {
+                break;
+            }
+            visibleToRequester.push(profile);
+        }
+        return visibleToRequester;
+    }
+
+    async updateProfile(
+        accountId: string,
+        updates: Partial<
+            Pick<
+                AccountProfile,
+                | "bio"
+                | "location"
+                | "website"
+                | "visibility"
+                | "avatarKey"
+                | "bannerKey"
+                | "displayName"
+                | "lifecycleState"
+            >
+        >,
+    ): Promise<AccountProfile | null> {
+        const fieldMap: Record<string, string> = {
+            bio: "bio",
+            location: "location",
+            website: "website",
+            visibility: "visibility",
+            avatarKey: "avatar_key",
+            bannerKey: "banner_key",
+            displayName: "display_name",
+            lifecycleState: "account_lifecycle_state",
+        };
+
+        const setRecord: Record<string, unknown> = {};
+
+        for (const [key, col] of Object.entries(fieldMap)) {
+            if (key in updates) {
+                setRecord[col] = (updates as any)[key] ?? null;
+            }
+        }
+
+        if (Object.keys(setRecord).length === 0)
+            return this.getProfile(accountId);
+
+        setRecord.updated_at = new Date().toISOString();
+
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "account_profiles",
+            set: setRecord,
+            where: [{ column: "account_id", value: accountId }],
+        });
+        return this.getProfile(accountId);
+    }
+
+    async setRoleByHandle(handle: string, role: AccountRole): Promise<void> {
+        const set: Record<string, unknown> = {
+            role,
+            updated_at: new Date().toISOString(),
+        };
+        if (role === "teacher" || role === "admin" || role === "owner") {
+            set.visibility = "friends";
+        }
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "account_profiles",
+            set,
+            where: [{ column: "handle", value: handle }],
+        });
+    }
+
+    async getRole(accountId: string): Promise<AccountRole> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_profiles",
+            columns: ["role"],
+            where: [{ column: "account_id", value: accountId }],
+        });
+        return (result.rows?.[0]?.role as AccountRole) ?? "user";
+    }
+
+    async follow(followerId: string, followingId: string): Promise<void> {
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "account_follows",
+            values: { follower_id: followerId, following_id: followingId },
+            conflict: { action: "ignore" },
+        });
+    }
+
+    async unfollow(followerId: string, followingId: string): Promise<void> {
+        await this.db.executeCommand({
+            option: "DELETE",
+            table: "account_follows",
+            where: [
+                { column: "follower_id", value: followerId },
+                { column: "following_id", value: followingId },
+            ],
+        });
+    }
+
+    async isFollowing(
+        followerId: string,
+        followingId: string,
+    ): Promise<boolean> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_follows",
+            count: true,
+            where: [
+                { column: "follower_id", value: followerId },
+                { column: "following_id", value: followingId },
+            ],
+        });
+        return Number(result.rows?.[0]?.cnt ?? 0) > 0;
+    }
+
+    async getFollowers(accountId: string): Promise<AccountProfile[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_follows",
+            alias: "account_follows",
+            columns: JOINED_PROFILE_COLUMNS,
+            joins: [
+                {
+                    type: "INNER",
+                    table: "account_profiles",
+                    alias: "account_profiles",
+                    on: {
+                        leftColumn: "account_profiles.account_id",
+                        rightColumn: "account_follows.follower_id",
+                    },
+                },
+            ],
+            where: [
+                { column: "account_follows.following_id", value: accountId },
+            ],
+            orderBy: [
+                { column: "account_follows.created_at", direction: "DESC" },
+            ],
+        });
+        return (result.rows ?? []).map(rowToProfile);
+    }
+
+    async getFollowing(accountId: string): Promise<AccountProfile[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_follows",
+            alias: "account_follows",
+            columns: JOINED_PROFILE_COLUMNS,
+            joins: [
+                {
+                    type: "INNER",
+                    table: "account_profiles",
+                    alias: "account_profiles",
+                    on: {
+                        leftColumn: "account_profiles.account_id",
+                        rightColumn: "account_follows.following_id",
+                    },
+                },
+            ],
+            where: [
+                { column: "account_follows.follower_id", value: accountId },
+            ],
+            orderBy: [
+                { column: "account_follows.created_at", direction: "DESC" },
+            ],
+        });
+        return (result.rows ?? []).map(rowToProfile);
+    }
+
+    async getFollowerCount(accountId: string): Promise<number> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_follows",
+            count: true,
+            where: [{ column: "following_id", value: accountId }],
+        });
+        return Number(result.rows?.[0]?.cnt ?? 0);
+    }
+
+    async getFollowingCount(accountId: string): Promise<number> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_follows",
+            count: true,
+            where: [{ column: "follower_id", value: accountId }],
+        });
+        return Number(result.rows?.[0]?.cnt ?? 0);
+    }
+
+    async block(blockerId: string, blockedId: string): Promise<void> {
+        await this.unfollow(blockerId, blockedId);
+        await this.unfollow(blockedId, blockerId);
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "account_blocks",
+            values: { blocker_id: blockerId, blocked_id: blockedId },
+            conflict: { action: "ignore" },
+        });
+    }
+
+    async unblock(blockerId: string, blockedId: string): Promise<void> {
+        await this.db.executeCommand({
+            option: "DELETE",
+            table: "account_blocks",
+            where: [
+                { column: "blocker_id", value: blockerId },
+                { column: "blocked_id", value: blockedId },
+            ],
+        });
+    }
+
+    async isBlocked(blockerId: string, blockedId: string): Promise<boolean> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_blocks",
+            count: true,
+            where: [
+                { column: "blocker_id", value: blockerId },
+                { column: "blocked_id", value: blockedId },
+            ],
+        });
+        return Number(result.rows?.[0]?.cnt ?? 0) > 0;
+    }
+
+    async createPost(
+        accountId: string,
+        input: { title?: string; content: string; visibility: PostVisibility },
+    ): Promise<Post> {
+        const id = randomUUID();
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "posts",
+            values: {
+                id,
+                account_id: accountId,
+                title: input.title ?? null,
+                content: input.content,
+                visibility: input.visibility,
+            },
+        });
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "posts",
+            where: [{ column: "id", value: id }],
+        });
+        return rowToPost(result.rows![0]);
+    }
+
+    async getPostsByAccount(accountId: string): Promise<Post[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "posts",
+            where: [{ column: "account_id", value: accountId }],
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+        });
+        return (result.rows ?? []).map(rowToPost);
+    }
+
+    async getAllPosts(): Promise<Post[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "posts",
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+        });
+        return (result.rows ?? []).map(rowToPost);
+    }
+
+    async getPostById(postId: string): Promise<Post | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "posts",
+            where: [{ column: "id", value: postId }],
+        });
+        const row = result.rows?.[0];
+        return row ? rowToPost(row) : null;
+    }
+
+    async deletePost(postId: string): Promise<boolean> {
+        const result = await this.db.executeCommand({
+            option: "DELETE",
+            table: "posts",
+            where: [{ column: "id", value: postId }],
+        });
+        return (result.rowCount ?? 0) > 0;
+    }
+}
