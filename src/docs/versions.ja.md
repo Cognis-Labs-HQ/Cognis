@@ -70,7 +70,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Notification (notify) | `src/gateways/notify/`        | `1.5.12`   |
 | Social                | `src/gateways/social/`        | `1.3.5`    |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.10`   |
-| Registration          | `src/gateways/registration/`  | `1.1.20`   |
+| Registration          | `src/gateways/registration/`  | `1.1.21`   |
 | Logging               | `src/gateways/logging/`       | `1.5.14`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
 | Study                 | `src/gateways/study/`         | `1.5.14`   |

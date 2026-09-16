@@ -66,6 +66,10 @@ Saat identitas SSO yang telah diautentikasi memerlukan akun Cognis sementara pen
 
 Identitas SSO yang belum dikenal kini dialihkan ke percobaan pendaftaran sementara yang buram dan dirender oleh adapter Token Pendaftaran di dalam shell pendaftaran Cognis standar. Popup undangan Pengguna menyediakan tab Email dan Token; token manual berfungsi tanpa SMTP. Pendaftaran dari pendiri dibatasi sepuluh penggunaan berhasil dan dapat direset administrator. Pemilik mengontrol hak undangan pendiri dan administrator melalui Administrasi → Pendaftaran. Pendaftaran publik secara eksplisit melewati otorisasi token.
 
+## Koreksi build halaman Pengguna
+
+Tindakan pengaturan ulang undangan pendiri kini tetap berada di dalam penangan tindakan halaman Pengguna, sehingga build UI produksi kembali menghasilkan modul ECMAScript yang valid.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -87,3 +91,4 @@ Identitas SSO yang belum dikenal kini dialihkan ke percobaan pendaftaran sementa
 - [fcfbfc35](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcfbfc35a6bd698b4be409764e07bf8820f3201b)
 - [2f42af60](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f42af6007a0935a99ca2860cfb893c8e9bc3c2d)
 - [fb4cbefe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb4cbefe2974a810fe5a8dabc15267d7663a58a4)
+- [a7f57fd8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f57fd8e8d21b3783b9e316ade117343c4e5cbd)

@@ -521,23 +521,23 @@ async function runUserMenuAction(action, username) {
         if (!res.ok) return;
         await refreshData();
         composer.refresh(elements);
+        return;
     }
-}
 
-if (action === "reset-founder-invites") {
-    const response = await apiFetch(
-        `/api/v1/registration/founders/${encodeURIComponent(username)}/reset-invite-limit`,
-        { method: "POST" },
-    );
-    showToast(
-        i18n.t(
-            response.ok
-                ? "gateway.registration.founder_limit_reset"
-                : "ui.reuse.save_failed",
-        ),
-        { variant: response.ok ? "success" : "error" },
-    );
-    return;
+    if (action === "reset-founder-invites") {
+        const response = await apiFetch(
+            `/api/v1/registration/founders/${encodeURIComponent(username)}/reset-invite-limit`,
+            { method: "POST" },
+        );
+        showToast(
+            i18n.t(
+                response.ok
+                    ? "gateway.registration.founder_limit_reset"
+                    : "ui.reuse.save_failed",
+            ),
+            { variant: response.ok ? "success" : "error" },
+        );
+    }
 }
 
 function bindUsersInteractions() {

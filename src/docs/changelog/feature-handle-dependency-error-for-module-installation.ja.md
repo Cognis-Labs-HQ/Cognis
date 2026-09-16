@@ -66,6 +66,10 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 
 未知の SSO ID は、不透明で期限付きの登録試行へ移行し、登録トークンアダプターが標準 Cognis 登録シェル内に表示するようになりました。ユーザー招待ポップアップには「メール」と「トークン」タブがあり、手動トークンは SMTP なしでも利用できます。創設ユーザーによる登録は成功 10 件までで、管理者がリセットできます。所有者は「管理 → 登録」で創設ユーザーと管理者の招待権限を制御します。公開登録はトークン承認を明示的に省略します。
 
+## ユーザーページのビルド修正
+
+創設ユーザーの招待リセット操作をユーザーページのアクションハンドラー内に戻し、本番 UI ビルドが再び有効な ECMAScript モジュールを生成するようにしました。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -87,3 +91,4 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 - [fcfbfc35](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcfbfc35a6bd698b4be409764e07bf8820f3201b)
 - [2f42af60](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f42af6007a0935a99ca2860cfb893c8e9bc3c2d)
 - [fb4cbefe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb4cbefe2974a810fe5a8dabc15267d7663a58a4)
+- [a7f57fd8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f57fd8e8d21b3783b9e316ade117343c4e5cbd)

@@ -215,7 +215,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     {
                         id: "registration-token-authorization",
                         scriptUrl:
-                            "/static/gateways/registration-token/authorization.js",
+                            "/static/adapters/registration/token/ui/authorization.js",
                         stringsBaseUrl:
                             "/static/gateways/registration-token/languages",
                     },
