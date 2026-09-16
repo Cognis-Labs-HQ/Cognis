@@ -8,7 +8,7 @@ import type {
     FlowApi,
 } from "@cognis/core";
 import path from "node:path";
-import { stat } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
 import type { UIRegistry } from "../../api/reuse/ui-registry.js";
@@ -130,6 +130,47 @@ interface ModuleApiRegistrationContext {
         require<T>(key: string): T;
     };
     log?: BootstrapLog;
+}
+
+interface ModulePrivilege {
+    requested: boolean;
+    trustedSource: boolean;
+    sourceRepository?: string;
+}
+
+const PRIVILEGED_FLOW_IDS = new Set([
+    "gateAccountCreation",
+    "login",
+    "startSsoLogin",
+]);
+const TRUSTED_PRIVILEGED_GITHUB_OWNER = "cognis-labs-hq";
+
+async function resolveModulePrivilege(
+    manifest: { privileged?: boolean },
+    moduleRoot: string,
+): Promise<ModulePrivilege> {
+    if (manifest.privileged !== true) {
+        return { requested: false, trustedSource: false };
+    }
+    const provenance = await readFile(
+        path.join(moduleRoot, ".cognis-install.json"),
+        "utf8",
+    )
+        .then((raw) => JSON.parse(raw) as { cloneUrl?: unknown })
+        .catch(() => null);
+    const sourceRepository = String(provenance?.cloneUrl ?? "").trim();
+    let trustedSource = false;
+    try {
+        const sourceUrl = new URL(sourceRepository);
+        trustedSource =
+            sourceUrl.protocol === "https:" &&
+            sourceUrl.hostname.toLowerCase() === "github.com" &&
+            sourceUrl.pathname.split("/").filter(Boolean)[0]?.toLowerCase() ===
+                TRUSTED_PRIVILEGED_GITHUB_OWNER;
+    } catch {
+        trustedSource = false;
+    }
+    return { requested: true, trustedSource, sourceRepository };
 }
 
 interface ModulePlugin {
@@ -284,8 +325,34 @@ export function createModuleExtensionRoutes(
             flows: string[];
         },
         moduleEnabled: boolean,
+        privilege: ModulePrivilege,
     ): ModuleBootstrapCtx {
         const moduleId = manifest.id;
+        function resolveCapability<T>(capabilityId: string): T | undefined {
+            const capability =
+                options.routeContext.getCapability<T>(capabilityId);
+            if (
+                capabilityId !== "auth:registerProvider" ||
+                typeof capability !== "function"
+            ) {
+                return capability;
+            }
+            return ((
+                provider: { registerRoutes?: unknown },
+                ...args: unknown[]
+            ) => {
+                if (
+                    typeof provider?.registerRoutes === "function" &&
+                    !privilege.requested
+                ) {
+                    throw new Error("module_privileged_access_required");
+                }
+                return (capability as (...input: unknown[]) => unknown)(
+                    provider,
+                    ...args,
+                );
+            }) as T;
+        }
         function requireActiveBootstrap() {
             if (scope.active) return;
             throw new Error(
@@ -386,6 +453,9 @@ export function createModuleExtensionRoutes(
             extend(flowId, stageId, hook, handler) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return false;
+                if (PRIVILEGED_FLOW_IDS.has(flowId) && !privilege.requested) {
+                    throw new Error("module_privileged_access_required");
+                }
                 const registered = baseFlow.extend(
                     flowId,
                     stageId,
@@ -417,17 +487,15 @@ export function createModuleExtensionRoutes(
                     scope.capabilities.push(key);
                 },
                 get(key) {
-                    if (!moduleEnabled && key === "system:ctx") {
-                        return undefined;
-                    }
-                    return options.routeContext.getCapability(key);
+                    if (key === "system:ctx") return undefined;
+                    return resolveCapability(key);
                 },
                 has(key) {
-                    if (!moduleEnabled && key === "system:ctx") return false;
+                    if (key === "system:ctx") return false;
                     return systemCtx?.hasCapability(key) ?? false;
                 },
                 require(key) {
-                    if (!moduleEnabled && key === "system:ctx") {
+                    if (key === "system:ctx") {
                         throw new Error(
                             'Required capability "system:ctx" is not available.',
                         );
@@ -437,7 +505,13 @@ export function createModuleExtensionRoutes(
                             `Required capability "${key}" is not available.`,
                         );
                     }
-                    return systemCtx.requireCapability(key);
+                    const capability = resolveCapability(key);
+                    if (capability === undefined) {
+                        throw new Error(
+                            `Required capability "${key}" is not available.`,
+                        );
+                    }
+                    return capability;
                 },
             },
             contributeCapability(key, value) {
@@ -459,10 +533,8 @@ export function createModuleExtensionRoutes(
                 scope.flows.push(flowRegistration.id);
             },
             getCapability(capabilityId) {
-                if (!moduleEnabled && capabilityId === "system:ctx") {
-                    return undefined;
-                }
-                return options.routeContext.getCapability(capabilityId);
+                if (capabilityId === "system:ctx") return undefined;
+                return resolveCapability(capabilityId);
             },
             registerApiGet(routePath, handler, routeOptions) {
                 registerApiRoute("GET", routePath, handler, routeOptions);
@@ -689,6 +761,23 @@ export function createModuleExtensionRoutes(
                 });
                 continue;
             }
+            const privilege = await resolveModulePrivilege(
+                manifest,
+                moduleRoot,
+            );
+            if (privilege.requested && !privilege.trustedSource) {
+                log?.(
+                    "warn",
+                    "Untrusted external module requested privileged access.",
+                    {
+                        component: "module-extension-routes",
+                        moduleId: manifest.id,
+                        moduleUuid: manifest.uuid,
+                        sourceRepository:
+                            privilege.sourceRepository || "unknown",
+                    },
+                );
+            }
             options?.uiRegistry?.registerModuleStaticDir(
                 manifest.id,
                 path.join(moduleRoot, "ui"),
@@ -705,6 +794,7 @@ export function createModuleExtensionRoutes(
                 nextHandlers,
                 scope,
                 moduleEnabled,
+                privilege,
             );
             const entrypoint = resolveModuleEntrypointPath(
                 moduleRoot,

@@ -90,6 +90,99 @@ test("a timed-out module bootstrap is disabled without blocking refresh", async 
     }
 });
 
+test("provider routes require an explicit privileged module declaration", async () => {
+    const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
+    const moduleUuid = "806c7ea0-cdc8-4aaa-93f8-ad9d46250367";
+    const moduleRoot = path.join(modulesRoot, moduleUuid);
+    await mkdir(moduleRoot);
+    await writeFile(
+        path.join(moduleRoot, "bootstrap.js"),
+        `export function bootstrapModule(ctx) {
+            ctx.flow.extend("login", "authenticate", { id: "test-sso:authenticate" }, () => undefined);
+            const registerProvider = ctx.capabilities.require("auth:registerProvider");
+            return registerProvider({
+                id: "test-sso",
+                name: "Test SSO",
+                authenticate: async () => null,
+                configure() {},
+                getConfigSchema: () => [],
+                routeNamespace: "test-sso",
+                registerRoutes(router) { router.get("/callback", (_req, res) => res.end("ok")); },
+            });
+        }`,
+    );
+    await writeFile(
+        path.join(moduleRoot, ".cognis-install.json"),
+        JSON.stringify({ cloneUrl: "https://github.com/example/test-sso.git" }),
+    );
+    const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
+    const systemCtx = createCtx();
+    systemCtx.registerFlow({ id: "login", stages: ["authenticate"] });
+    let providerRegistered = false;
+    systemCtx.contributeCapability("system:ctx", systemCtx);
+    systemCtx.contributeCapability("auth:registerProvider", () => {
+        providerRegistered = true;
+        return () => {};
+    });
+    let privileged = false;
+    const warnings: string[] = [];
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "test-sso",
+                    uuid: moduleUuid,
+                    class: "extension",
+                    privileged,
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                },
+            ],
+        } as any,
+        () => true,
+        (level, message) => {
+            if (level === "warn") warnings.push(message);
+        },
+        {
+            routeContext: createDefaultRouteContext({
+                getCapability: (id) => systemCtx.getCapability(id),
+                flow: systemCtx.flow,
+            }),
+        },
+    );
+    try {
+        await assert.rejects(
+            () => extensions.refresh({ throwOnFailure: true }),
+            /module_privileged_access_required/,
+        );
+        assert.equal(providerRegistered, false);
+
+        privileged = true;
+        await extensions.refresh({ throwOnFailure: true });
+        assert.equal(providerRegistered, true);
+        assert.ok(
+            warnings.includes(
+                "Untrusted external module requested privileged access.",
+            ),
+        );
+        const warningCount = warnings.length;
+        await writeFile(
+            path.join(moduleRoot, ".cognis-install.json"),
+            JSON.stringify({
+                cloneUrl:
+                    "https://github.com/Cognis-Labs-HQ/cognis-module-test-sso.git",
+            }),
+        );
+        await extensions.refresh({ throwOnFailure: true });
+        assert.equal(warnings.length, warningCount);
+    } finally {
+        if (previousModulesRoot === undefined)
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
+        await rm(modulesRoot, { recursive: true, force: true });
+    }
+});
+
 test("disabling a module removes its routes, UI, capabilities, and flow hooks", async () => {
     const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
     const moduleUuid = "b76c6666-b6a7-4c7f-95ac-313fd8f33eb0";

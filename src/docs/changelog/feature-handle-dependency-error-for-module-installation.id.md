@@ -34,6 +34,10 @@ SSO saat pendaftaran tertutup kini memvalidasi undangan sebelum membuat akun, la
 
 Adapter autentikasi kini dapat mendaftarkan rute `GET` dan `POST` yang dapat dilepas dalam namespace penyedia tervalidasi di bawah `/api/v1/auth`. Namespace inti Autentikasi tetap dicadangkan, sehingga modul eksternal tetap tidak dapat mengklaim rute terlindungi secara langsung, sedangkan callback OAuth milik penyedia seperti `/api/v1/auth/x/callback` dapat diproksikan dengan aman melalui adapter terdaftar.
 
+## Modul berprivilege yang eksplisit
+
+Modul harus mendeklarasikan `privileged: true` sebelum memperluas alur autentikasi yang sensitif terhadap keamanan atau memproksikan rute milik gateway melalui adapter auth. Hanya mengaku sebagai penyedia SSO tidak memberikan akses tambahan. Cognis memercayai asal berprivilege dari organisasi GitHub `Cognis-Labs-HQ` yang ditetapkan langsung dan mengeluarkan peringatan eksplisit saat sumber lain meminta privilege.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -47,3 +51,4 @@ Adapter autentikasi kini dapat mendaftarkan rute `GET` dan `POST` yang dapat dil
 - [fa24bfec](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa24bfec261a358e17e6bbb9078b160a1b4cb903)
 - [e66d75f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/e66d75f72b2e8ab4da4a4e93435f6472b4fe3903)
 - [85b7f238](https://github.com/Cognis-Labs-HQ/Cognis/commit/85b7f238bd959f9c4230168ff1378eebc04bbcee)
+- [5552b77f](https://github.com/Cognis-Labs-HQ/Cognis/commit/5552b77f945050d4e9b51e43a90c79a95d348487)

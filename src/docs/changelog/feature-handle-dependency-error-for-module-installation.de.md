@@ -34,6 +34,10 @@ SSO bei geschlossener Registrierung prüft Einladungen nun vor der Kontoerstellu
 
 Authentifizierungsadapter können nun entfernbare `GET`- und `POST`-Routen in einem validierten Anbieter-Namespace unter `/api/v1/auth` registrieren. Core-Authentifizierungs-Namespaces bleiben reserviert, sodass externe Module weiterhin keine geschützten Routen direkt beanspruchen können, während anbietereigene OAuth-Rückrufe wie `/api/v1/auth/x/callback` sicher über den registrierten Adapter weitergeleitet werden können.
 
+## Explizit privilegierte Module
+
+Module müssen `privileged: true` deklarieren, bevor sie sicherheitssensible Authentifizierungsflows erweitern oder Gateway-eigene Routen über einen Auth-Adapter weiterleiten. Die bloße Bezeichnung als SSO-Anbieter gewährt keinen zusätzlichen Zugriff. Cognis vertraut privilegierter Herkunft aus der fest eingetragenen GitHub-Organisation `Cognis-Labs-HQ` und gibt eine ausdrückliche Warnung aus, wenn eine andere Quelle Privilegien anfordert.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -47,3 +51,4 @@ Authentifizierungsadapter können nun entfernbare `GET`- und `POST`-Routen in ei
 - [fa24bfec](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa24bfec261a358e17e6bbb9078b160a1b4cb903)
 - [e66d75f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/e66d75f72b2e8ab4da4a4e93435f6472b4fe3903)
 - [85b7f238](https://github.com/Cognis-Labs-HQ/Cognis/commit/85b7f238bd959f9c4230168ff1378eebc04bbcee)
+- [5552b77f](https://github.com/Cognis-Labs-HQ/Cognis/commit/5552b77f945050d4e9b51e43a90c79a95d348487)

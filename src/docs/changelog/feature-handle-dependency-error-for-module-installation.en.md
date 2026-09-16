@@ -34,6 +34,10 @@ Closed-registration SSO now validates invitations before account creation, then 
 
 Authentication adapters can now register removable `GET` and `POST` routes within a validated provider namespace under `/api/v1/auth`. Core Authentication namespaces remain reserved, so external modules still cannot claim protected routes directly while provider-owned OAuth callbacks such as `/api/v1/auth/x/callback` can be safely proxied through the registered adapter.
 
+## Explicit privileged modules
+
+Modules must declare `privileged: true` before extending security-sensitive authentication flows or proxying gateway-owned routes through an auth adapter. Claiming to be an SSO provider alone grants no additional access. Cognis trusts privileged provenance from the hardcoded `Cognis-Labs-HQ` GitHub organization and emits an explicit warning whenever another source requests privilege.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -47,3 +51,4 @@ Authentication adapters can now register removable `GET` and `POST` routes withi
 - [fa24bfec](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa24bfec261a358e17e6bbb9078b160a1b4cb903)
 - [e66d75f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/e66d75f72b2e8ab4da4a4e93435f6472b4fe3903)
 - [85b7f238](https://github.com/Cognis-Labs-HQ/Cognis/commit/85b7f238bd959f9c4230168ff1378eebc04bbcee)
+- [5552b77f](https://github.com/Cognis-Labs-HQ/Cognis/commit/5552b77f945050d4e9b51e43a90c79a95d348487)
