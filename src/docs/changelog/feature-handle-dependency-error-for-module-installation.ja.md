@@ -58,6 +58,10 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 
 モジュール提供の認証アダプターは、プロバイダー登録が完了する前に、ゲートウェイ所有の保存済み設定と有効状態を復元するようになりました。登録ケイパビリティを非同期化し、モジュールがコールバックルートやブランド付きログインボタンを提供する前にライフサイクル準備完了を待機できるため、LDAP の検出および有効化順序と一致します。ドキュメントには X SSO の移行手順とゲートウェイ所有のセットアップ契約を記載しました。
 
+## トークンで保護された SSO 登録の継続
+
+公開登録が無効な状態で認証済み SSO ID に Cognis アカウントが必要な場合、ログイン応答が登録トークンを明示的に要求し、再試行先のエンドポイントを返すようになりました。Cognis はプロバイダーの再認証を通して送信されたトークンと補助メールアドレスを保持し、必須の登録トークンアダプターがアカウント作成を承認できるようにします。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -77,3 +81,4 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 - [6eec5296](https://github.com/Cognis-Labs-HQ/Cognis/commit/6eec52967246d4e0991b56691c6024cdc71c2c1e)
 - [3cf4aee2](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf4aee2a35c83065d116717f71a845f36bf5416)
 - [fcfbfc35](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcfbfc35a6bd698b4be409764e07bf8820f3201b)
+- [2f42af60](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f42af6007a0935a99ca2860cfb893c8e9bc3c2d)

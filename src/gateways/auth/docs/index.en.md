@@ -70,7 +70,7 @@ Authentication providers must await `auth:registerProvider` before calling `auth
 
 A provider may declare `routeNamespace` and `registerRoutes(router)` on its adapter. The router accepts `GET` and `POST` paths relative to `/api/v1/auth/<routeNamespace>` so OAuth callbacks can live under the Authentication gateway without granting the contributing module direct access to protected core routes. Namespaces are restricted to safe URL segments, core Authentication namespaces are reserved, duplicate routes are rejected, and provider disposal removes every contributed route.
 
-External-provider sessions pass through `gateAccountCreation` before `ensureExternalAccount`. When open registration is disabled, the session must carry a registration token and a matching provider email. A held session returns `account_creation_required` with `emailRequired` so the provider UI can request a missing email or abort cleanly when the user cancels.
+External-provider sessions pass through `gateAccountCreation` before `ensureExternalAccount`. When open registration is disabled, the session must carry a registration token and a matching provider email. A held session returns `account_creation_required` with `emailRequired`, `registrationTokenRequired`, and `retryEndpoint`. The provider UI submits the token and any requested email to that endpoint with the same provider ID; Cognis carries those values into the account-creation gate even when the provider adapter returns only its authenticated identity. Cancelling instead of retrying aborts login without creating an account.
 
 ## API Routes
 

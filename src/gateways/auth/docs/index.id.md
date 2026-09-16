@@ -70,6 +70,8 @@ Penyedia autentikasi harus menunggu `auth:registerProvider` sebelum memanggil `a
 
 Penyedia dapat mendeklarasikan `routeNamespace` dan `registerRoutes(router)` pada adapternya. Router menerima jalur `GET` dan `POST` relatif terhadap `/api/v1/auth/<routeNamespace>` agar callback OAuth dapat berada di bawah gateway Autentikasi tanpa memberi modul kontributor akses langsung ke rute inti yang dilindungi. Namespace dibatasi pada segmen URL yang aman, namespace inti Autentikasi dicadangkan, rute duplikat ditolak, dan penghapusan penyedia menghapus semua rute kontribusinya.
 
+Sesi penyedia eksternal melewati `gateAccountCreation` sebelum `ensureExternalAccount`. Saat pendaftaran publik dinonaktifkan, sesi harus membawa token pendaftaran dan email penyedia yang cocok. Sesi yang ditahan mengembalikan `account_creation_required` dengan `emailRequired`, `registrationTokenRequired`, dan `retryEndpoint`. UI penyedia mengirim token dan email yang diminta ke endpoint tersebut dengan ID penyedia yang sama; Cognis meneruskan nilai itu ke gerbang pembuatan akun walaupun adapter penyedia hanya mengembalikan identitas terautentikasinya. Membatalkan alih-alih mencoba kembali menghentikan login tanpa membuat akun.
+
 ## Route API
 
 | Metode | Path                                         | Keterangan                                      | Autentikasi      |

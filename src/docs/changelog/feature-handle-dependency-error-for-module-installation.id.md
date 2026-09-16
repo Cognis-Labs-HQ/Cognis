@@ -58,6 +58,10 @@ Penggabungan penukaran token kini menyertakan identitas token dan akun sehingga 
 
 Adapter autentikasi dari modul kini memulihkan konfigurasi tersimpan dan status aktif milik gateway sebelum registrasi penyedia selesai. Kemampuan registrasi menjadi asinkron agar modul dapat menunggu kesiapan siklus hidup sebelum menyumbangkan rute callback atau tombol login bermerek, sesuai urutan penemuan dan aktivasi LDAP. Dokumentasi menjelaskan jalur migrasi X SSO dan kontrak penyiapan milik gateway.
 
+## Kelanjutan pendaftaran SSO berbasis token
+
+Saat identitas SSO yang telah diautentikasi memerlukan akun Cognis sementara pendaftaran publik dinonaktifkan, respons login kini secara eksplisit meminta token pendaftaran dan menyediakan endpoint percobaan ulang. Cognis mempertahankan token yang dikirim serta email cadangan selama autentikasi ulang penyedia agar adapter Token Pendaftaran wajib dapat mengotorisasi pembuatan akun.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -77,3 +81,4 @@ Adapter autentikasi dari modul kini memulihkan konfigurasi tersimpan dan status 
 - [6eec5296](https://github.com/Cognis-Labs-HQ/Cognis/commit/6eec52967246d4e0991b56691c6024cdc71c2c1e)
 - [3cf4aee2](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf4aee2a35c83065d116717f71a845f36bf5416)
 - [fcfbfc35](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcfbfc35a6bd698b4be409764e07bf8820f3201b)
+- [2f42af60](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f42af6007a0935a99ca2860cfb893c8e9bc3c2d)

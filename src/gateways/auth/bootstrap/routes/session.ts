@@ -282,6 +282,8 @@ export function createSessionRoutes({
                     },
                     data: {
                         emailRequired: sessionResult.emailRequired === true,
+                        registrationTokenRequired: true,
+                        retryEndpoint: "/api/v1/auth/login",
                     },
                 }),
             );

@@ -58,6 +58,10 @@ Token redemption coalescing now includes both token and account identity, preven
 
 Module-provided authentication adapters now restore their gateway-owned persisted configuration and enabled state before provider registration completes. The registration capability is asynchronous so modules can await lifecycle readiness before contributing callback routes or branded login buttons, matching the discovery and activation order used by LDAP. Documentation specifies the X SSO migration path and gateway-owned setup contract.
 
+## Token-gated SSO registration continuation
+
+When an authenticated SSO identity needs a Cognis account while public registration is disabled, the login response now explicitly requests a registration token and supplies the retry endpoint. Cognis preserves the submitted token and fallback email through provider re-authentication so the mandatory Registration Token adapter can authorize account creation.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -77,3 +81,4 @@ Module-provided authentication adapters now restore their gateway-owned persiste
 - [6eec5296](https://github.com/Cognis-Labs-HQ/Cognis/commit/6eec52967246d4e0991b56691c6024cdc71c2c1e)
 - [3cf4aee2](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf4aee2a35c83065d116717f71a845f36bf5416)
 - [fcfbfc35](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcfbfc35a6bd698b4be409764e07bf8820f3201b)
+- [2f42af60](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f42af6007a0935a99ca2860cfb893c8e9bc3c2d)

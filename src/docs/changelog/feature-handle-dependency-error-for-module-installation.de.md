@@ -58,6 +58,10 @@ Die Zusammenführung der Tokeneinlösung berücksichtigt jetzt Token und Kontoid
 
 Von Modulen bereitgestellte Authentifizierungsadapter stellen nun ihre vom Gateway verwaltete gespeicherte Konfiguration und ihren Aktivierungszustand wieder her, bevor die Anbieterregistrierung abgeschlossen wird. Die Registrierungsfähigkeit ist asynchron, damit Module die Lebenszyklusbereitschaft abwarten können, bevor sie Rückrufrouten oder markenspezifische Anmeldeschaltflächen beitragen; dies entspricht der Erkennungs- und Aktivierungsreihenfolge von LDAP. Die Dokumentation beschreibt den Migrationspfad für X SSO und den Gateway-eigenen Einrichtungsvertrag.
 
+## Token-geschützte Fortsetzung der SSO-Registrierung
+
+Wenn eine authentifizierte SSO-Identität bei deaktivierter öffentlicher Registrierung ein Cognis-Konto benötigt, fordert die Anmeldeantwort nun ausdrücklich ein Registrierungstoken an und liefert den Endpunkt für den erneuten Versuch. Cognis bewahrt das übermittelte Token und die Ersatz-E-Mail über die erneute Anbieterauthentifizierung hinweg, damit der verpflichtende Registrierungstoken-Adapter die Kontoerstellung freigeben kann.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -77,3 +81,4 @@ Von Modulen bereitgestellte Authentifizierungsadapter stellen nun ihre vom Gatew
 - [6eec5296](https://github.com/Cognis-Labs-HQ/Cognis/commit/6eec52967246d4e0991b56691c6024cdc71c2c1e)
 - [3cf4aee2](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf4aee2a35c83065d116717f71a845f36bf5416)
 - [fcfbfc35](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcfbfc35a6bd698b4be409764e07bf8820f3201b)
+- [2f42af60](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f42af6007a0935a99ca2860cfb893c8e9bc3c2d)

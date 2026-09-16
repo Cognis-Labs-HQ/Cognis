@@ -397,13 +397,92 @@ test("external login cannot create an account without registration authorization
             code: "account_creation_required",
             message: "Account registration authorization is required.",
         },
-        data: { emailRequired: false },
+        data: {
+            emailRequired: false,
+            registrationTokenRequired: true,
+            retryEndpoint: "/api/v1/auth/login",
+        },
     });
     const accountStore = capabilities.require<{
         getInfo(accountId: string): Promise<unknown>;
     }>("auth:accountStore");
     assert.equal(await accountStore.getInfo("external-user"), null);
     unregister();
+});
+
+test("external login retries account creation through the registration token gate", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: new InMemoryTestExecutor(),
+    });
+    await capabilities.require<
+        (provider: Record<string, unknown>) => Promise<() => void>
+    >("auth:registerProvider")({
+        id: "external-sso",
+        name: "External SSO",
+        locked: true,
+        authenticate: async () => ({
+            accountId: "external-user",
+            externalUserId: "provider-user",
+            provider: "external-sso",
+        }),
+        configure() {},
+        getConfigSchema: () => [],
+    });
+    const systemCtx =
+        capabilities.require<ReturnType<typeof createCtx>>(CTX_CAPABILITY);
+    const authorizationInputs: Array<Record<string, unknown>> = [];
+    systemCtx.flow.extend(
+        "gateAccountCreation",
+        "authorizeCreation",
+        { id: "test:registration-token-gate" },
+        (stageCtx) => {
+            const input = stageCtx.input as Record<string, unknown>;
+            authorizationInputs.push(input);
+            return input.registrationToken === "invite-token" &&
+                input.email === "external@example.com"
+                ? { authorized: true }
+                : { authorized: false, emailRequired: !input.email };
+        },
+    );
+
+    const heldResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", { provider: "external-sso" }),
+        "/api/v1/auth/login",
+    );
+    assert.equal(heldResult.res.status, 403);
+    assert.deepEqual(JSON.parse(heldResult.res.payload).data, {
+        emailRequired: true,
+        registrationTokenRequired: true,
+        retryEndpoint: "/api/v1/auth/login",
+    });
+
+    const completedResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            provider: "external-sso",
+            email: "external@example.com",
+            registrationToken: "invite-token",
+        }),
+        "/api/v1/auth/login",
+    );
+    assert.equal(completedResult.res.status, 200);
+    assert.deepEqual(authorizationInputs.at(-1), {
+        accountId: "external-user",
+        providerId: "external-sso",
+        email: "external@example.com",
+        registrationToken: "invite-token",
+    });
+    const accountStore = capabilities.require<{
+        getInfo(accountId: string): Promise<unknown>;
+    }>("auth:accountStore");
+    assert.notEqual(await accountStore.getInfo("external-user"), null);
 });
 
 test("external login rolls back account when token commit fails", async () => {

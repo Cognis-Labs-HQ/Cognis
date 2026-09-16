@@ -49,6 +49,27 @@ function getPublicLoginMethods(context: AuthBootstrapHookContext) {
     );
 }
 
+function applyAccountCreationCredentials(
+    session: {
+        accountId: string;
+        provider: string;
+        email?: string;
+        registrationToken?: string;
+        [key: string]: unknown;
+    },
+    credentials: Record<string, unknown>,
+) {
+    const registrationToken = String(
+        credentials.registrationToken ?? "",
+    ).trim();
+    const submittedEmail = String(credentials.email ?? "").trim();
+    return {
+        ...session,
+        ...(session.email || !submittedEmail ? {} : { email: submittedEmail }),
+        ...(registrationToken ? { registrationToken } : {}),
+    };
+}
+
 export async function registerAuthBootstrapHook(
     context: AuthBootstrapHookContext,
 ): Promise<void> {
@@ -145,7 +166,14 @@ export async function registerAuthBootstrapHook(
                 ...(input.credentials ?? {}),
                 authSourceId: method?.id,
             };
-            const session = await adapter.authenticate(credentials);
+            const authenticatedSession =
+                await adapter.authenticate(credentials);
+            const session = authenticatedSession
+                ? applyAccountCreationCredentials(
+                      authenticatedSession,
+                      credentials,
+                  )
+                : null;
             if (!session) {
                 return { success: false, reason: "invalid_credentials" };
             }

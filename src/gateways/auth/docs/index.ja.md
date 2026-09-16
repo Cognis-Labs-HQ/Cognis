@@ -70,6 +70,8 @@ export class CoreAuthGateway {
 
 プロバイダーはアダプターに `routeNamespace` と `registerRoutes(router)` を宣言できます。ルーターは `/api/v1/auth/<routeNamespace>` からの相対 `GET` および `POST` パスを受け付けるため、提供元モジュールに保護されたコアルートへの直接アクセスを与えず、OAuth コールバックを認証ゲートウェイ配下に配置できます。名前空間は安全な URL セグメントに制限され、認証コアの名前空間は予約され、重複ルートは拒否され、プロバイダーを削除すると提供されたすべてのルートも削除されます。
 
+外部プロバイダーのセッションは、`ensureExternalAccount` の前に `gateAccountCreation` を通過します。公開登録が無効な場合、セッションには登録トークンと一致するプロバイダーのメールアドレスが必要です。保留されたセッションは `emailRequired`、`registrationTokenRequired`、`retryEndpoint` を含む `account_creation_required` を返します。プロバイダー UI は同じプロバイダー ID とともにトークンおよび必要なメールアドレスをそのエンドポイントへ送信し、プロバイダーアダプターが認証済み ID のみを返す場合でも Cognis がそれらをアカウント作成ゲートへ引き渡します。再試行せずキャンセルすると、アカウントを作成せずログインを中止します。
+
 ## APIルート
 
 | メソッド | パス                                         | 説明                                         | 認証     |
