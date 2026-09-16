@@ -130,6 +130,19 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
                     id: "ldap:Faculty",
                     name: "Faculty",
                     credential: true,
+                },
+            ],
+        }),
+    );
+    systemCtx.flow.extend(
+        "construct-login-ui",
+        "augment-methods",
+        { id: "test:faculty-login-button" },
+        () => ({
+            methods: [
+                {
+                    id: "ldap:Faculty",
+                    name: "Faculty",
                     loginButton: {
                         providerId: "ldap:Faculty",
                         label: "Continue with Faculty",

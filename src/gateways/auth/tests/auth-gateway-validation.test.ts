@@ -405,3 +405,56 @@ test("external login cannot create an account without registration authorization
     assert.equal(await accountStore.getInfo("external-user"), null);
     unregister();
 });
+
+test("external login rolls back account when token commit fails", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: new InMemoryTestExecutor(),
+    });
+    capabilities.require<(provider: Record<string, unknown>) => () => void>(
+        "auth:registerProvider",
+    )({
+        id: "external-sso",
+        name: "External SSO",
+        locked: true,
+        authenticate: async () => ({
+            accountId: "external-user",
+            provider: "external-sso",
+            email: "external@example.com",
+        }),
+        configure() {},
+        getConfigSchema: () => [],
+    });
+    let commitCalled = false;
+    capabilities
+        .require<ReturnType<typeof createCtx>>(CTX_CAPABILITY)
+        .flow.extend(
+            "gateAccountCreation",
+            "authorizeCreation",
+            { id: "test:failing-token-commit" },
+            () => ({
+                authorized: true,
+                commit: async () => {
+                    commitCalled = true;
+                    return false;
+                },
+            }),
+        );
+
+    const result = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", { provider: "external-sso" }),
+        "/api/v1/auth/login",
+    );
+    assert.equal(result.res.status, 403);
+    assert.equal(commitCalled, true);
+    const accountStore = capabilities.require<{
+        getInfo(accountId: string): Promise<unknown>;
+    }>("auth:accountStore");
+    assert.equal(await accountStore.getInfo("external-user"), null);
+});

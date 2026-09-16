@@ -27,30 +27,34 @@ export async function authorizeAccountCreation(
             reason: "registration_token_required",
         };
     }
-    const invite = await gateway.resolveInvite(token);
+    let invite;
+    try {
+        invite = await gateway.resolveInvite(token);
+    } catch (error) {
+        if (!(error instanceof Error) || error.message !== "invalid_token") {
+            throw error;
+        }
+        invite = null;
+    }
     const authorized = invite?.inviteeEmail.toLowerCase() === email;
     if (authorized && invite) {
-        const consumed = await gateway.consumeExternalAccountToken({
-            token,
-            accountId,
-        });
-        if (!consumed) {
-            return {
-                authorized: false,
-                emailRequired: false,
-                reason: "registration_token_consumption_failed",
-            };
-        }
+        return {
+            authorized: true,
+            emailRequired: false,
+            source: "registrationToken",
+            commit: () =>
+                gateway.consumeExternalAccountToken({
+                    token,
+                    accountId,
+                    email,
+                }),
+        };
     }
     return {
         authorized,
         emailRequired: false,
-        ...(authorized
-            ? { source: "registrationToken" }
-            : {
-                  reason: invite
-                      ? "registration_token_email_mismatch"
-                      : "registration_token_invalid",
-              }),
+        reason: invite
+            ? "registration_token_email_mismatch"
+            : "registration_token_invalid",
     };
 }

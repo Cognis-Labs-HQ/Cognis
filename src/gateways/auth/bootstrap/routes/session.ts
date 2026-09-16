@@ -105,15 +105,23 @@ export function createSessionRoutes({
                     (method as { loginButton?: unknown }).loginButton,
                     id,
                 );
+                const existingMethod = methodById.get(id);
                 methodById.set(id, {
+                    ...existingMethod,
                     id,
                     name,
                     forgotPassword:
                         (method as { forgotPassword?: unknown })
-                            .forgotPassword === true,
+                            .forgotPassword === undefined
+                            ? (existingMethod?.forgotPassword ?? false)
+                            : (method as { forgotPassword?: unknown })
+                                  .forgotPassword === true,
                     credential:
                         (method as { credential?: unknown }).credential ===
-                        true,
+                        undefined
+                            ? (existingMethod?.credential ?? false)
+                            : (method as { credential?: unknown })
+                                  .credential === true,
                     ...(loginButton ? { loginButton } : {}),
                 });
             }

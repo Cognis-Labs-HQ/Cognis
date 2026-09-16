@@ -220,7 +220,12 @@ export async function registerAuthBootstrapHook(
                         (result) =>
                             (result as { authorized?: unknown }).authorized ===
                             true,
-                    ) as { authorized: true } | undefined;
+                    ) as
+                        | {
+                              authorized: true;
+                              commit?: () => Promise<boolean>;
+                          }
+                        | undefined;
                     if (!authorization) {
                         return {
                             sessionResult: {
@@ -229,6 +234,8 @@ export async function registerAuthBootstrapHook(
                             },
                         };
                     }
+                    stageCtx.data["accountCreationAuthorization"] =
+                        authorization;
                 }
                 await context.accountStore.ensureExternalAccount({
                     accountId: session.accountId,
@@ -247,6 +254,39 @@ export async function registerAuthBootstrapHook(
                             : undefined,
                     role: session.role,
                 });
+                const authorization = stageCtx.data[
+                    "accountCreationAuthorization"
+                ] as { commit?: () => Promise<boolean> } | undefined;
+                if (authorization?.commit) {
+                    let committed = false;
+                    try {
+                        committed = await authorization.commit();
+                    } catch (error) {
+                        context.ctx.log?.(
+                            "warn",
+                            "External account authorization could not be committed.",
+                            {
+                                component: "auth-gateway",
+                                accountId: session.accountId,
+                                providerId: adapterId ?? session.provider,
+                                error:
+                                    error instanceof Error
+                                        ? error.message
+                                        : String(error),
+                            },
+                        );
+                        committed = false;
+                    }
+                    if (!committed) {
+                        await context.accountStore.delete(session.accountId);
+                        return {
+                            sessionResult: {
+                                outcome: "account_creation_required",
+                                emailRequired: false,
+                            },
+                        };
+                    }
+                }
             }
 
             const account = await context.accountStore.getInfo(

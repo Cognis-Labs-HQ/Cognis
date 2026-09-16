@@ -7,6 +7,7 @@ function createGateway({ publicEnabled = false, inviteEmail = "" } = {}) {
     const consumed: Array<{
         token: string;
         accountId: string;
+        email: string;
     }> = [];
     return {
         consumed,
@@ -25,6 +26,7 @@ function createGateway({ publicEnabled = false, inviteEmail = "" } = {}) {
             consumeExternalAccountToken: async (input: {
                 token: string;
                 accountId: string;
+                email: string;
             }) => {
                 consumed.push(input);
                 return true;
@@ -55,26 +57,44 @@ test("closed registration requests a missing SSO email", async () => {
     );
 });
 
-test("matching registration tokens are consumed for SSO accounts", async () => {
+test("matching registration tokens are consumed after SSO account persistence", async () => {
     const { gateway, consumed } = createGateway({
         inviteEmail: "person@example.com",
     });
-    assert.deepEqual(
-        await authorizeAccountCreation(gateway, true, {
-            accountId: "external-user",
-            email: "Person@Example.com",
-            registrationToken: "registration-token",
-        }),
-        {
-            authorized: true,
-            emailRequired: false,
-            source: "registrationToken",
-        },
-    );
+    const result = await authorizeAccountCreation(gateway, true, {
+        accountId: "external-user",
+        email: "Person@Example.com",
+        registrationToken: "registration-token",
+    });
+    assert.equal(result.authorized, true);
+    assert.equal(result.emailRequired, false);
+    assert.equal(result.source, "registrationToken");
+    assert.deepEqual(consumed, []);
+    assert.equal(await result.commit?.(), true);
     assert.deepEqual(consumed, [
         {
             token: "registration-token",
             accountId: "external-user",
+            email: "person@example.com",
         },
     ]);
+});
+
+test("malformed registration tokens deny account creation", async () => {
+    const { gateway } = createGateway();
+    gateway.resolveInvite = async () => {
+        throw new Error("invalid_token");
+    };
+    assert.deepEqual(
+        await authorizeAccountCreation(gateway, true, {
+            accountId: "external-user",
+            email: "person@example.com",
+            registrationToken: "malformed",
+        }),
+        {
+            authorized: false,
+            emailRequired: false,
+            reason: "registration_token_invalid",
+        },
+    );
 });

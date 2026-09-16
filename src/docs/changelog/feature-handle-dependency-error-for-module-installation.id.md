@@ -26,6 +26,10 @@ Kegagalan pemuatan metode login dan permulaan SSO pada halaman login anonim tida
 
 Penyelesaian pengalihan SSO kini mengabaikan hook alur yang sengaja tidak mengembalikan hasil. Peserta `initiateAuthorization` yang tidak terkait dapat mengamati atau menolak permintaan SSO tanpa merusak pemilihan pengalihan sebelum penyedia terpilih mengembalikan URL otorisasinya.
 
+## Otorisasi pendaftaran yang aman secara transaksi
+
+SSO saat pendaftaran tertutup kini memvalidasi undangan sebelum membuat akun, lalu memakai token dan mencatat email terverifikasi kanonis hanya setelah penyimpanan akun berhasil. Kegagalan penyelesaian menghapus akun baru dan memulihkan kegunaan token. Token yang rusak menghasilkan penolakan gerbang biasa. Undangan pengganti mempertahankan token lama yang masih dapat digunakan sampai email baru berhasil dikirim, dan tampilan tombol login melengkapi alih-alih menimpa perilaku penyedia yang ada.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -37,3 +41,4 @@ Penyelesaian pengalihan SSO kini mengabaikan hook alur yang sengaja tidak mengem
 - [4120a69d](https://github.com/Cognis-Labs-HQ/Cognis/commit/4120a69d267eaf07897bed979032b2e7706e1a7c)
 - [a4c928d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a4c928d82c7c42ee4a9ec4f295199d008abc9137)
 - [fa24bfec](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa24bfec261a358e17e6bbb9078b160a1b4cb903)
+- [e66d75f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/e66d75f72b2e8ab4da4a4e93435f6472b4fe3903)

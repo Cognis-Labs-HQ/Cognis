@@ -37,6 +37,7 @@ interface RegistrationTokenAdapter {
     consumeExternalAccountToken(input: {
         token: string;
         accountId: string;
+        email: string;
     }): Promise<boolean>;
     redeemInvite(input: {
         token: string;
@@ -270,25 +271,6 @@ export function createAdapter(deps: {
             }
         }
 
-        // Any newly issued invite supersedes prior pending ones for the same
-        // recipient, regardless of who originally sent them. This prevents stale
-        // links from remaining valid after a re-invite.
-        const revokeTimestamp = new Date().toISOString();
-        await dbExecutor.executeCommand({
-            option: "UPDATE",
-            table: "registration_tokens",
-            set: {
-                revoked_at: revokeTimestamp,
-                revoked_by_account_id: input.inviterAccountId,
-            },
-            where: [
-                { column: "invitee_email", value: inviteeEmail },
-                { column: "revoked_at", operator: "IS NULL" },
-                { column: "redeemed_at", operator: "IS NULL" },
-                { column: "expires_at", operator: ">", value: revokeTimestamp },
-            ],
-        });
-
         const tokenId = randomUUID();
         const secret = randomBytes(32).toString("base64url");
         const rawToken = `${tokenId}.${secret}`;
@@ -322,6 +304,22 @@ export function createAdapter(deps: {
             });
             throw error;
         }
+        const revokeTimestamp = new Date().toISOString();
+        await dbExecutor.executeCommand({
+            option: "UPDATE",
+            table: "registration_tokens",
+            set: {
+                revoked_at: revokeTimestamp,
+                revoked_by_account_id: input.inviterAccountId,
+            },
+            where: [
+                { column: "id", operator: "!=", value: tokenId },
+                { column: "invitee_email", value: inviteeEmail },
+                { column: "revoked_at", operator: "IS NULL" },
+                { column: "redeemed_at", operator: "IS NULL" },
+                { column: "expires_at", operator: ">", value: revokeTimestamp },
+            ],
+        });
         return { tokenId, inviteUrl, expiresAt };
     }
 
@@ -549,14 +547,16 @@ export function createAdapter(deps: {
     async function consumeExternalAccountToken(input: {
         token: string;
         accountId: string;
+        email: string;
     }): Promise<boolean> {
         await ensureReady();
         const { tokenHash } = parseToken(input.token);
+        const redeemedAt = new Date().toISOString();
         const result = await dbExecutor.executeCommand({
             option: "UPDATE",
             table: "registration_tokens",
             set: {
-                redeemed_at: new Date().toISOString(),
+                redeemed_at: redeemedAt,
                 redeemed_account_id: input.accountId,
             },
             where: [
@@ -565,7 +565,26 @@ export function createAdapter(deps: {
                 { column: "redeemed_at", operator: "IS NULL" },
             ],
         });
-        return Number(result.rowCount ?? 0) === 1;
+        if (Number(result.rowCount ?? 0) !== 1) return false;
+        try {
+            await upsertVerifiedPrimaryEmail(
+                input.accountId,
+                normalizeEmail(input.email),
+            );
+        } catch (error) {
+            await dbExecutor.executeCommand({
+                option: "UPDATE",
+                table: "registration_tokens",
+                set: { redeemed_at: null, redeemed_account_id: null },
+                where: [
+                    { column: "token_hash", value: tokenHash },
+                    { column: "redeemed_at", value: redeemedAt },
+                    { column: "redeemed_account_id", value: input.accountId },
+                ],
+            });
+            throw error;
+        }
+        return true;
     }
 
     return {

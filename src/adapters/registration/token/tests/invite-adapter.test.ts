@@ -163,8 +163,56 @@ test("issueInvite revokes prior pending tokens for the same invitee email", asyn
     assert.equal(sentEmailCount, 2, "two invite emails should have been sent");
 });
 
+test("failed replacement delivery preserves prior pending tokens", async () => {
+    let revoked = false;
+    let deletedReplacement = false;
+    const adapter = createAdapter({
+        dbExecutor: {
+            ensureTable: async () => {},
+            executeCommand: async (command: {
+                option: string;
+                table?: string;
+                where?: Array<{ column: string }>;
+            }) => {
+                if (command.option === "DELETE") deletedReplacement = true;
+                if (
+                    command.option === "UPDATE" &&
+                    command.where?.some(
+                        (clause) => clause.column === "invitee_email",
+                    )
+                ) {
+                    revoked = true;
+                }
+                return { rows: [], rowCount: 1 };
+            },
+        } as any,
+        accountStore: {} as any,
+        canSendInviteEmail: () => true,
+        sendInviteEmail: async () => {
+            throw new Error("smtp_delivery_failed");
+        },
+        isEmailRegistered: async () => false,
+        upsertVerifiedPrimaryEmail: async () => {},
+    });
+
+    await assert.rejects(
+        () =>
+            adapter.invite!.issueInvite({
+                inviterAccountId: "inviter-1",
+                inviterDisplayName: "Inviter One",
+                inviteeEmail: "recipient@example.com",
+                inviterIsFounder: false,
+                inviteBaseUrl: "https://example.com",
+            }),
+        /smtp_delivery_failed/,
+    );
+    assert.equal(deletedReplacement, true);
+    assert.equal(revoked, false);
+});
+
 test("external account token consumption records one-time redemption", async () => {
     let redemptionSet: Record<string, unknown> | undefined;
+    let verifiedEmail: { accountId: string; email: string } | undefined;
     const adapter = createAdapter({
         dbExecutor: {
             ensureTable: async () => {},
@@ -180,16 +228,61 @@ test("external account token consumption records one-time redemption", async () 
         canSendInviteEmail: () => true,
         sendInviteEmail: async () => {},
         isEmailRegistered: async () => false,
-        upsertVerifiedPrimaryEmail: async () => {},
+        upsertVerifiedPrimaryEmail: async (accountId, email) => {
+            verifiedEmail = { accountId, email };
+        },
     });
 
     assert.equal(
         await adapter.invite?.consumeExternalAccountToken({
             token: "token-id.token-secret",
             accountId: "external-user",
+            email: "Person@Example.com",
         }),
         true,
     );
     assert.equal(redemptionSet?.redeemed_account_id, "external-user");
     assert.equal(typeof redemptionSet?.redeemed_at, "string");
+    assert.deepEqual(verifiedEmail, {
+        accountId: "external-user",
+        email: "person@example.com",
+    });
+});
+
+test("external token consumption is restored when canonical email persistence fails", async () => {
+    const updates: Array<Record<string, unknown> | undefined> = [];
+    const adapter = createAdapter({
+        dbExecutor: {
+            ensureTable: async () => {},
+            executeCommand: async (command: {
+                option: string;
+                set?: Record<string, unknown>;
+            }) => {
+                if (command.option === "UPDATE") updates.push(command.set);
+                return { rows: [], rowCount: 1 };
+            },
+        } as any,
+        accountStore: {} as any,
+        canSendInviteEmail: () => true,
+        sendInviteEmail: async () => {},
+        isEmailRegistered: async () => false,
+        upsertVerifiedPrimaryEmail: async () => {
+            throw new Error("email_persistence_failed");
+        },
+    });
+
+    await assert.rejects(
+        () =>
+            adapter.invite!.consumeExternalAccountToken({
+                token: "token-id.token-secret",
+                accountId: "external-user",
+                email: "person@example.com",
+            }),
+        /email_persistence_failed/,
+    );
+    assert.equal(typeof updates[0]?.redeemed_at, "string");
+    assert.deepEqual(updates[1], {
+        redeemed_at: null,
+        redeemed_account_id: null,
+    });
 });

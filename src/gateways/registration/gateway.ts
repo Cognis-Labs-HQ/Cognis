@@ -33,6 +33,7 @@ export interface RegistrationInviteAdapter {
     consumeExternalAccountToken(input: {
         token: string;
         accountId: string;
+        email: string;
     }): Promise<boolean>;
     redeemInvite(input: {
         token: string;
@@ -263,6 +264,7 @@ export class CoreRegistrationGateway {
     async consumeExternalAccountToken(input: {
         token: string;
         accountId: string;
+        email: string;
     }) {
         const adapter = this.getInviteAdapter();
         if (!adapter) throw new Error("invite_disabled");
