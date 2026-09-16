@@ -6,6 +6,7 @@ import {
 } from "../../../api/reuse/access-token-http.js";
 import type {
     AuthRouteBootstrapRuntime,
+    PendingAccountCreationAttempt,
     PendingTfaLoginAttempt,
 } from "./index.js";
 
@@ -13,6 +14,7 @@ import type {
 export const TFA_LOGIN_ATTEMPT_ID_BYTES = 18;
 // Pending TFA login attempts expire after 5 minutes to limit replay windows.
 export const TFA_LOGIN_ATTEMPT_TTL_MS = 5 * 60 * 1000;
+export const ACCOUNT_CREATION_ATTEMPT_TTL_MS = 10 * 60 * 1000;
 export const PASSWORD_RESET_TOKEN_TTL_SECONDS = 15 * 60;
 export const PASSWORD_RESET_RATE_LIMIT_MS = 60_000;
 export const PASSWORD_RESET_MIN_RESPONSE_MS = 350;
@@ -35,6 +37,10 @@ export async function waitForPasswordResetResponseFloor(
 
 export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
     const pendingTfaLoginAttempts = new Map<string, PendingTfaLoginAttempt>();
+    const pendingAccountCreationAttempts = new Map<
+        string,
+        PendingAccountCreationAttempt
+    >();
 
     function pruneExpiredTfaLoginAttempts(now = Date.now()): void {
         for (const [
@@ -43,6 +49,14 @@ export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
         ] of pendingTfaLoginAttempts.entries()) {
             if (entry.expiresAt < now) {
                 pendingTfaLoginAttempts.delete(loginAttemptId);
+            }
+        }
+    }
+
+    function pruneExpiredAccountCreationAttempts(now = Date.now()): void {
+        for (const [attemptId, entry] of pendingAccountCreationAttempts) {
+            if (entry.expiresAt < now) {
+                pendingAccountCreationAttempts.delete(attemptId);
             }
         }
     }
@@ -61,6 +75,24 @@ export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
         },
         clearPendingTfaLoginAttempt(loginAttemptId: string): void {
             pendingTfaLoginAttempts.delete(loginAttemptId);
+        },
+        clearPendingAccountCreationAttempt(attemptId: string): void {
+            pendingAccountCreationAttempts.delete(attemptId);
+        },
+        createPendingAccountCreationAttempt(
+            input: Omit<PendingAccountCreationAttempt, "id" | "expiresAt">,
+        ): PendingAccountCreationAttempt {
+            pruneExpiredAccountCreationAttempts();
+            const pendingAttempt: PendingAccountCreationAttempt = {
+                ...input,
+                id: `account_creation_${randomBytes(TFA_LOGIN_ATTEMPT_ID_BYTES).toString("base64url")}`,
+                expiresAt: Date.now() + ACCOUNT_CREATION_ATTEMPT_TTL_MS,
+            };
+            pendingAccountCreationAttempts.set(
+                pendingAttempt.id,
+                pendingAttempt,
+            );
+            return pendingAttempt;
         },
         createPendingTfaLoginAttempt(
             input: Omit<PendingTfaLoginAttempt, "id" | "expiresAt">,
@@ -82,6 +114,12 @@ export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
         ): PendingTfaLoginAttempt | null {
             pruneExpiredTfaLoginAttempts();
             return pendingTfaLoginAttempts.get(loginAttemptId) ?? null;
+        },
+        getPendingAccountCreationAttempt(
+            attemptId: string,
+        ): PendingAccountCreationAttempt | null {
+            pruneExpiredAccountCreationAttempts();
+            return pendingAccountCreationAttempts.get(attemptId) ?? null;
         },
     };
 }

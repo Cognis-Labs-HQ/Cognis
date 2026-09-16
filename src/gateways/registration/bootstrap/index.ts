@@ -152,6 +152,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         stringsBaseUrl: "/static/gateways/registration/languages",
     });
     ctx.uiRegistry?.registerStaticDir("registration", uiDir);
+    const tokenAdapterUiDir = path.resolve(
+        ctx.adaptersRoot,
+        "registration",
+        "token",
+        "ui",
+    );
+    ctx.uiRegistry?.registerStaticDir("registration-token", tokenAdapterUiDir);
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/registration/navbar.js",
     });
@@ -195,6 +202,25 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         registrationToken?: string;
                     },
                 ),
+        );
+    }
+
+    if (ctx.flow.exists("constructRegistrationUi")) {
+        ctx.flow.extend(
+            "constructRegistrationUi",
+            "compose-form",
+            { id: "registration-token:account-creation-authorization" },
+            () => ({
+                integrations: [
+                    {
+                        id: "registration-token-authorization",
+                        scriptUrl:
+                            "/static/gateways/registration-token/authorization.js",
+                        stringsBaseUrl:
+                            "/static/gateways/registration-token/languages",
+                    },
+                ],
+            }),
         );
     }
 

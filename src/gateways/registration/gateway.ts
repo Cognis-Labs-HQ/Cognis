@@ -21,6 +21,7 @@ export interface RegistrationInviteAdapter {
         inviteeEmail: string;
         inviterIsFounder: boolean;
         inviteBaseUrl: string;
+        deliverEmail?: boolean;
     }): Promise<{ tokenId: string; inviteUrl: string; expiresAt: string }>;
     listInvites(filter?: {
         inviterAccountId?: string;
@@ -45,6 +46,7 @@ export interface RegistrationInviteAdapter {
         createdAccountId: string;
         inviterAccountId: string;
     }>;
+    resetFounderInviteLimit(accountId: string): Promise<void>;
 }
 
 export interface RegistrationPublicAdapter {
@@ -105,6 +107,72 @@ export class CoreRegistrationGateway {
                 },
                 { name: "enabled", type: "integer", notNull: true, default: 0 },
             ],
+        });
+        await this.db.ensureTable({
+            name: "registration_policy",
+            columns: [
+                { name: "id", type: "text", primaryKey: true },
+                {
+                    name: "founder_invites_enabled",
+                    type: "boolean",
+                    notNull: true,
+                    default: "true",
+                },
+                {
+                    name: "admin_invites_enabled",
+                    type: "boolean",
+                    notNull: true,
+                    default: "true",
+                },
+            ],
+        });
+    }
+
+    async getInvitationPolicy(): Promise<{
+        founderInvitesEnabled: boolean;
+        adminInvitesEnabled: boolean;
+    }> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "registration_policy",
+            columns: ["founder_invites_enabled", "admin_invites_enabled"],
+            where: [{ column: "id", value: "default" }],
+        });
+        const row = result.rows?.[0];
+        return {
+            founderInvitesEnabled:
+                row?.founder_invites_enabled === undefined
+                    ? true
+                    : row.founder_invites_enabled === true ||
+                      Number(row.founder_invites_enabled) === 1,
+            adminInvitesEnabled:
+                row?.admin_invites_enabled === undefined
+                    ? true
+                    : row.admin_invites_enabled === true ||
+                      Number(row.admin_invites_enabled) === 1,
+        };
+    }
+
+    async setInvitationPolicy(input: {
+        founderInvitesEnabled: boolean;
+        adminInvitesEnabled: boolean;
+    }): Promise<void> {
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "registration_policy",
+            values: {
+                id: "default",
+                founder_invites_enabled: input.founderInvitesEnabled,
+                admin_invites_enabled: input.adminInvitesEnabled,
+            },
+            conflict: {
+                action: "update",
+                target: ["id"],
+                update: {
+                    founder_invites_enabled: input.founderInvitesEnabled,
+                    admin_invites_enabled: input.adminInvitesEnabled,
+                },
+            },
         });
     }
 
@@ -235,6 +303,7 @@ export class CoreRegistrationGateway {
         inviteeEmail: string;
         inviterIsFounder: boolean;
         inviteBaseUrl: string;
+        deliverEmail?: boolean;
     }) {
         const adapter = this.getInviteAdapter();
         if (!adapter) throw new Error("invite_disabled");
@@ -281,6 +350,12 @@ export class CoreRegistrationGateway {
         const adapter = this.getInviteAdapter();
         if (!adapter) throw new Error("invite_disabled");
         return adapter.redeemInvite(input);
+    }
+
+    async resetFounderInviteLimit(accountId: string): Promise<void> {
+        const adapter = this.getInviteAdapter();
+        if (!adapter) throw new Error("invite_disabled");
+        await adapter.resetFounderInviteLimit(accountId);
     }
 
     async registerPublic(input: {

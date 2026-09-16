@@ -392,17 +392,14 @@ test("external login cannot create an account without registration authorization
         "/api/v1/auth/login",
     );
     assert.equal(loginResult.res.status, 403);
-    assert.deepEqual(JSON.parse(loginResult.res.payload), {
-        error: {
-            code: "account_creation_required",
-            message: "Account registration authorization is required.",
-        },
-        data: {
-            emailRequired: false,
-            registrationTokenRequired: true,
-            retryEndpoint: "/api/v1/auth/login",
-        },
-    });
+    const heldPayload = JSON.parse(loginResult.res.payload);
+    assert.equal(heldPayload.error.code, "account_creation_required");
+    assert.equal(heldPayload.data.emailRequired, false);
+    assert.equal(heldPayload.data.registrationTokenRequired, true);
+    assert.match(
+        heldPayload.data.registrationUrl,
+        /^\/register\?accountCreationAttempt=account_creation_[A-Za-z0-9_-]+&emailRequired=false$/,
+    );
     const accountStore = capabilities.require<{
         getInfo(accountId: string): Promise<unknown>;
     }>("auth:accountStore");
@@ -457,16 +454,23 @@ test("external login retries account creation through the registration token gat
         "/api/v1/auth/login",
     );
     assert.equal(heldResult.res.status, 403);
-    assert.deepEqual(JSON.parse(heldResult.res.payload).data, {
-        emailRequired: true,
-        registrationTokenRequired: true,
-        retryEndpoint: "/api/v1/auth/login",
-    });
+    const heldPayload = JSON.parse(heldResult.res.payload);
+    assert.equal(heldPayload.data.emailRequired, true);
+    assert.equal(heldPayload.data.registrationTokenRequired, true);
+    const registrationUrl = new URL(
+        heldPayload.data.registrationUrl,
+        "http://localhost",
+    );
+    const accountCreationAttemptId = registrationUrl.searchParams.get(
+        "accountCreationAttempt",
+    );
+    assert.ok(accountCreationAttemptId);
+    assert.equal(registrationUrl.searchParams.get("emailRequired"), "true");
 
     const completedResult = await dispatchRoute(
         routeRegistry,
         makeJsonRequest("POST", {
-            provider: "external-sso",
+            accountCreationAttemptId,
             email: "external@example.com",
             registrationToken: "invite-token",
         }),

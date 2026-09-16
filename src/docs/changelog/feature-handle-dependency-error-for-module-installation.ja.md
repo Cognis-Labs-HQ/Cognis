@@ -62,6 +62,10 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 
 公開登録が無効な状態で認証済み SSO ID に Cognis アカウントが必要な場合、ログイン応答が登録トークンを明示的に要求し、再試行先のエンドポイントを返すようになりました。Cognis はプロバイダーの再認証を通して送信されたトークンと補助メールアドレスを保持し、必須の登録トークンアダプターがアカウント作成を承認できるようにします。
 
+## 登録所有の SSO 承認と招待ポリシー
+
+未知の SSO ID は、不透明で期限付きの登録試行へ移行し、登録トークンアダプターが標準 Cognis 登録シェル内に表示するようになりました。ユーザー招待ポップアップには「メール」と「トークン」タブがあり、手動トークンは SMTP なしでも利用できます。創設ユーザーによる登録は成功 10 件までで、管理者がリセットできます。所有者は「管理 → 登録」で創設ユーザーと管理者の招待権限を制御します。公開登録はトークン承認を明示的に省略します。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -82,3 +86,4 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 - [3cf4aee2](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf4aee2a35c83065d116717f71a845f36bf5416)
 - [fcfbfc35](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcfbfc35a6bd698b4be409764e07bf8820f3201b)
 - [2f42af60](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f42af6007a0935a99ca2860cfb893c8e9bc3c2d)
+- [fb4cbefe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb4cbefe2974a810fe5a8dabc15267d7663a58a4)

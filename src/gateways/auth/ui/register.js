@@ -37,11 +37,15 @@ import {
     normalizePasswordPolicy,
 } from "/static/gateways/auth/password-policy.js";
 import { bindConfirmPasswordRevalidation } from "/static/gateways/auth/reuse/bind-confirm-password-revalidation.js";
-
+import {
+    bindAccountCreationAuthorization,
+    readAccountCreationAuthorization,
+    REGISTRATION_ERROR_CODES,
+    renderAccountCreationAuthorization,
+} from "/static/gateways/auth/registration-authorization.js";
 const REGISTER_EMAIL_MAX_CHARACTERS = 320;
 const REGISTER_USERNAME_MAX_CHARACTERS = 25;
 const REGISTER_DISPLAY_NAME_MAX_CHARACTERS = 80;
-
 async function resetAuthSessionForRegister() {
     const hadStoredSession =
         Boolean(localStorage.getItem("cognis_access_token")) ||
@@ -155,19 +159,12 @@ export async function mount(root, { signal } = {}) {
     const tokenParam = params.get("token");
     const token = String(tokenParam ?? "").trim();
     const hasTokenParam = tokenParam !== null;
+    const accountCreationAuthorization =
+        readAccountCreationAuthorization(params);
     const prefilledEmail = String(params.get("email") ?? "")
         .trim()
         .toLowerCase();
-    const knownErrorCodes = new Set([
-        "invalid_token",
-        "username_taken",
-        "username_invalid",
-        "username_too_long",
-        "username_not_lowercase",
-        "username_and_password_required",
-        "inviter_not_found",
-        "generic",
-    ]);
+    const knownErrorCodes = REGISTRATION_ERROR_CODES;
 
     let inviteData = null;
     let tokenInvalid = false;
@@ -425,6 +422,11 @@ export async function mount(root, { signal } = {}) {
     }
 
     function renderRegisterShell() {
+        const accountCreationHtml = renderAccountCreationAuthorization({
+            integrations: registrationIntegrations,
+            request: accountCreationAuthorization,
+            escapeHtml,
+        });
         const isInviteFlow = Boolean(token);
         const isInvalid =
             isInviteFlow && tokenInvalid && !inviteAdapterDisabled;
@@ -437,7 +439,9 @@ export async function mount(root, { signal } = {}) {
         let formHtml = "";
         let messageHtml = "";
 
-        if (isInvalid) {
+        if (accountCreationHtml) {
+            formHtml = accountCreationHtml;
+        } else if (isInvalid) {
             messageHtml = renderInPageCallout({
                 variant: "danger",
                 title: i18n.t("ui.reuse.error"),
@@ -676,6 +680,18 @@ export async function mount(root, { signal } = {}) {
                         }
                         updateCountdown();
                         countdownTimer = setInterval(updateCountdown, 1000);
+                    }
+
+                    if (
+                        bindAccountCreationAuthorization({
+                            integrations: registrationIntegrations,
+                            request: accountCreationAuthorization,
+                            root,
+                            showToast,
+                            signal,
+                        })
+                    ) {
+                        return;
                     }
 
                     const form = root.querySelector("#register-form");

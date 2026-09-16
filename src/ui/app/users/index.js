@@ -312,12 +312,11 @@ function renderUsersTable() {
     const currentUser = users.find((user) => user.username === currentUsername);
     const currentRole = currentUser?.role ?? getCurrentRole();
     const viewerCanManagePrivileged = currentRole === "owner";
-    const inviteButtonHtml =
-        registrationGatewayActive && smtpAdapterActive
-            ? `<div class="controls">
+    const inviteButtonHtml = registrationGatewayActive
+        ? `<div class="controls">
           <button id="users-invite-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.reuse.invite"))}</button>
         </div>`
-            : "";
+        : "";
     return `
     ${inviteButtonHtml}
     <div class="users-table-wrap">
@@ -525,6 +524,22 @@ async function runUserMenuAction(action, username) {
     }
 }
 
+if (action === "reset-founder-invites") {
+    const response = await apiFetch(
+        `/api/v1/registration/founders/${encodeURIComponent(username)}/reset-invite-limit`,
+        { method: "POST" },
+    );
+    showToast(
+        i18n.t(
+            response.ok
+                ? "gateway.registration.founder_limit_reset"
+                : "ui.reuse.save_failed",
+        ),
+        { variant: response.ok ? "success" : "error" },
+    );
+    return;
+}
+
 function bindUsersInteractions() {
     root.querySelectorAll(".users-row").forEach((row) => {
         row.addEventListener("click", async (event) => {
@@ -686,22 +701,83 @@ function bindUsersInteractions() {
 async function triggerInviteFlow() {
     await reprompt.runWithReprompt(
         async () => {
-            const email = await promptInput({
+            let delivery = smtpAdapterActive ? "email" : "manual";
+            let emailInput = null;
+            const action = await openPopup({
                 title: i18n.t("ui.reuse.invite"),
-                label: i18n.t("ui.reuse.invite_email"),
-                type: "email",
-                placeholder: i18n.t("ui.reuse.email_placeholder"),
+                body: () => `
+                  <nav class="share-method-tabs" aria-label="${escapeHtml(i18n.t("gateway.registration.invite_methods"))}">
+                    <button type="button" class="share-method-tab${smtpAdapterActive ? " is-active" : ""}" data-invite-delivery="email" aria-pressed="${smtpAdapterActive ? "true" : "false"}" ${smtpAdapterActive ? "" : "disabled"}>${escapeHtml(i18n.t("gateway.registration.email_tab"))}</button>
+                    <button type="button" class="share-method-tab${smtpAdapterActive ? "" : " is-active"}" data-invite-delivery="manual" aria-pressed="${smtpAdapterActive ? "false" : "true"}">${escapeHtml(i18n.t("gateway.registration.token_tab"))}</button>
+                  </nav>
+                  <label class="stack">
+                    <span>${escapeHtml(i18n.t("ui.reuse.invite_email"))}</span>
+                    <input id="users-invite-email" type="email" placeholder="${escapeHtml(i18n.t("ui.reuse.email_placeholder"))}" required />
+                  </label>`,
+                actions: [
+                    {
+                        id: "create",
+                        label: i18n.t("gateway.registration.create_invite"),
+                        variant: "confirm",
+                    },
+                    ...(user?.isFounder
+                        ? [
+                              {
+                                  id: "reset-founder-invites",
+                                  label: i18n.t(
+                                      "gateway.registration.reset_founder_limit",
+                                  ),
+                              },
+                          ]
+                        : []),
+                ],
+                onOpen: (overlay) => {
+                    emailInput = overlay.querySelector("#users-invite-email");
+                    overlay
+                        .querySelectorAll("[data-invite-delivery]")
+                        .forEach((tab) => {
+                            tab.addEventListener("click", () => {
+                                delivery = tab.dataset.inviteDelivery;
+                                overlay
+                                    .querySelectorAll("[data-invite-delivery]")
+                                    .forEach((candidate) => {
+                                        const active = candidate === tab;
+                                        candidate.classList.toggle(
+                                            "is-active",
+                                            active,
+                                        );
+                                        candidate.setAttribute(
+                                            "aria-pressed",
+                                            String(active),
+                                        );
+                                    });
+                            });
+                        });
+                },
             });
+            if (action !== "create") return;
+            const email = emailInput?.value?.trim();
             if (!email) return;
             const response = await apiFetch("/api/v1/registration/tokens", {
                 method: "POST",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ email, delivery }),
             });
             if (response.ok) {
-                showToast(i18n.t("ui.reuse.invite_sent"), {
-                    variant: "success",
-                });
+                const payload = await response.json().catch(() => null);
+                if (delivery === "manual" && payload?.data?.inviteUrl) {
+                    await navigator.clipboard.writeText(payload.data.inviteUrl);
+                }
+                showToast(
+                    i18n.t(
+                        delivery === "manual"
+                            ? "gateway.registration.token_copied"
+                            : "ui.reuse.invite_sent",
+                    ),
+                    {
+                        variant: "success",
+                    },
+                );
                 return;
             }
             let errorMessage = i18n.t("ui.reuse.invite_failed");
@@ -753,11 +829,7 @@ export async function mount(rootEl, { signal } = {}) {
     await composer.init();
 
     const pageAction = new URL(location.href).searchParams.get("action");
-    if (
-        pageAction === "invite" &&
-        registrationGatewayActive &&
-        smtpAdapterActive
-    ) {
+    if (pageAction === "invite" && registrationGatewayActive) {
         await triggerInviteFlow();
     }
 }

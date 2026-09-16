@@ -3,11 +3,14 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     let tokens = [];
     let socialGatewayEnabled = false;
+    let invitationPolicy = null;
+    const isOwner = localStorage.getItem("cognis_role") === "owner";
 
     const dataReady = Promise.all([
         apiFetch("/api/v1/registration/tokens?includeClosed=true"),
         apiFetch("/api/v1/gateways/social"),
-    ]).then(async ([tokensRes, profileRes]) => {
+        apiFetch("/api/v1/registration/policy"),
+    ]).then(async ([tokensRes, profileRes, policyRes]) => {
         if (tokensRes.ok) {
             const payload = await tokensRes.json();
             tokens = payload.data ?? [];
@@ -15,6 +18,9 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         if (profileRes.ok) {
             const payload = await profileRes.json();
             socialGatewayEnabled = payload?.data?.status !== "disabled";
+        }
+        if (policyRes.ok) {
+            invitationPolicy = (await policyRes.json())?.data ?? null;
         }
     });
 
@@ -76,6 +82,16 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         </div>`;
 
         return `
+      ${
+          isOwner && invitationPolicy
+              ? `
+      <div class="security-settings-form">
+        <label class="security-checkbox-row"><input id="registration-founder-invites" type="checkbox" ${invitationPolicy.founderInvitesEnabled ? "checked" : ""} /> <span>${escapeHtml(i18n.t("gateway.registration.allow_founder_invites"))}</span></label>
+        <label class="security-checkbox-row"><input id="registration-admin-invites" type="checkbox" ${invitationPolicy.adminInvitesEnabled ? "checked" : ""} /> <span>${escapeHtml(i18n.t("gateway.registration.allow_admin_invites"))}</span></label>
+        <button id="registration-policy-save" class="btn-confirm btn-animated" type="button">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
+      </div>`
+              : ""
+      }
       <div class="security-settings-form">
         <p class="security-field-hint">${escapeHtml(i18n.t("ui.app.invite.page_subtitle"))}</p>
         <div class="security-field-row">
@@ -103,6 +119,37 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                 },
             ],
             onRender: (root) => {
+                root.querySelector(
+                    "#registration-policy-save",
+                )?.addEventListener("click", async () => {
+                    const founderInvitesEnabled =
+                        root.querySelector("#registration-founder-invites")
+                            ?.checked === true;
+                    const adminInvitesEnabled =
+                        root.querySelector("#registration-admin-invites")
+                            ?.checked === true;
+                    const response = await apiFetch(
+                        "/api/v1/registration/policy",
+                        {
+                            method: "PUT",
+                            headers: {
+                                "content-type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                founderInvitesEnabled,
+                                adminInvitesEnabled,
+                            }),
+                        },
+                    );
+                    showToast(
+                        i18n.t(
+                            response.ok
+                                ? "ui.reuse.saved"
+                                : "ui.reuse.save_failed",
+                        ),
+                        { variant: response.ok ? "success" : "error" },
+                    );
+                });
                 root.querySelectorAll(".invite-revoke-btn").forEach((btn) => {
                     btn.addEventListener("click", async () => {
                         const tokenId = btn.dataset.tokenId;

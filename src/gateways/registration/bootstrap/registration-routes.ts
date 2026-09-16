@@ -27,6 +27,13 @@ export function createRegistrationRoutes(
     ) => string,
 ) {
     const ctx = resolveRouteContext(routeContext);
+    const getInvitationPolicy = () =>
+        typeof gateway.getInvitationPolicy === "function"
+            ? gateway.getInvitationPolicy()
+            : Promise.resolve({
+                  founderInvitesEnabled: true,
+                  adminInvitesEnabled: true,
+              });
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -45,6 +52,15 @@ export function createRegistrationRoutes(
         ) {
             const authenticatedClaims = ctx.requireAuth(req, res, "user");
             if (!authenticatedClaims) return true;
+            const invitationPolicy = await getInvitationPolicy();
+            const isFounder = await accountStore.isFounder(
+                authenticatedClaims.sub,
+            );
+            const canInvite =
+                authenticatedClaims.role === "owner" ||
+                (authenticatedClaims.role === "admin" &&
+                    invitationPolicy.adminInvitesEnabled) ||
+                (isFounder && invitationPolicy.founderInvitesEnabled);
             log?.("debug", "Read registration state.", {
                 ...logMeta,
                 accountId: authenticatedClaims.sub,
@@ -59,9 +75,41 @@ export function createRegistrationRoutes(
                         gatewayEnabled: isGatewayEnabled(),
                         inviteEnabled: gateway.isInviteEnabled(),
                         publicEnabled: gateway.isPublicEnabled(),
+                        canInvite,
                     },
                 }),
             );
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/registration/policy" &&
+            req.method === "GET"
+        ) {
+            const authenticatedClaims = ctx.requireAuth(req, res, "admin");
+            if (!authenticatedClaims) return true;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: await getInvitationPolicy(),
+                }),
+            );
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/registration/policy" &&
+            req.method === "PUT"
+        ) {
+            const authenticatedClaims = ctx.requireAuth(req, res, "owner");
+            if (!authenticatedClaims) return true;
+            const body = await readJson(req);
+            await gateway.setInvitationPolicy({
+                founderInvitesEnabled: body.founderInvitesEnabled !== false,
+                adminInvitesEnabled: body.adminInvitesEnabled !== false,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 
@@ -214,7 +262,13 @@ export function createRegistrationRoutes(
             const isFounder = await accountStore.isFounder(
                 authenticatedClaims.sub,
             );
-            if (!isPrivilegedRole && !isFounder) {
+            const invitationPolicy = await getInvitationPolicy();
+            const canInvite =
+                authenticatedClaims.role === "owner" ||
+                (authenticatedClaims.role === "admin" &&
+                    invitationPolicy.adminInvitesEnabled) ||
+                (isFounder && invitationPolicy.founderInvitesEnabled);
+            if (!canInvite) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -268,7 +322,13 @@ export function createRegistrationRoutes(
             const isFounder = await accountStore.isFounder(
                 authenticatedClaims.sub,
             );
-            if (!isPrivilegedRole && !isFounder) {
+            const invitationPolicy = await getInvitationPolicy();
+            const canInvite =
+                authenticatedClaims.role === "owner" ||
+                (authenticatedClaims.role === "admin" &&
+                    invitationPolicy.adminInvitesEnabled) ||
+                (isFounder && invitationPolicy.founderInvitesEnabled);
+            if (!canInvite) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -278,6 +338,7 @@ export function createRegistrationRoutes(
                 return true;
             }
             const body = await readJson(req);
+            const deliverEmail = body.delivery !== "manual";
             const inviteeEmail = String(body.email ?? "")
                 .trim()
                 .toLowerCase();
@@ -325,6 +386,7 @@ export function createRegistrationRoutes(
                     inviteeEmail,
                     inviterIsFounder: !isPrivilegedRole && isFounder,
                     inviteBaseUrl: inviteBaseUrl(),
+                    deliverEmail,
                 });
                 log?.("info", "Issued registration invite.", {
                     ...logMeta,
@@ -347,6 +409,19 @@ export function createRegistrationRoutes(
                 res.writeHead(status, { "content-type": "application/json" });
                 res.end(JSON.stringify({ error: { code, message: code } }));
             }
+            return true;
+        }
+
+        const founderResetMatch = url.pathname.match(
+            /^\/api\/v1\/registration\/founders\/([^/]+)\/reset-invite-limit$/,
+        );
+        if (founderResetMatch && req.method === "POST") {
+            const authenticatedClaims = ctx.requireAuth(req, res, "admin");
+            if (!authenticatedClaims) return true;
+            const accountId = decodeURIComponent(founderResetMatch[1]);
+            await gateway.resetFounderInviteLimit(accountId);
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { reset: true } }));
             return true;
         }
 

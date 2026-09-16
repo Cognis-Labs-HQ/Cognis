@@ -1,3 +1,12 @@
 <resources>
   <string name="gateway.registration.no_tokens">登録トークンはまだ発行されていません。</string>
+  <string name="gateway.registration.invite_methods">招待方法</string>
+  <string name="gateway.registration.email_tab">メール</string>
+  <string name="gateway.registration.token_tab">トークン</string>
+  <string name="gateway.registration.create_invite">招待を作成</string>
+  <string name="gateway.registration.token_copied">登録リンクをコピーしました。</string>
+  <string name="gateway.registration.allow_founder_invites">創設ユーザーによる招待を許可</string>
+  <string name="gateway.registration.allow_admin_invites">管理者による招待を許可</string>
+  <string name="gateway.registration.reset_founder_limit">創設ユーザーの招待枠をリセット</string>
+  <string name="gateway.registration.founder_limit_reset">創設ユーザーの招待枠をリセットしました。</string>
 </resources>

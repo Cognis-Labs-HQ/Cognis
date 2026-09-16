@@ -1,0 +1,7 @@
+<resources>
+  <string name="adapter.registration.token.sso_intro">Your authenticated identity is not linked to a Cognis account. Enter a registration token to finish creating the account.</string>
+  <string name="adapter.registration.token.email">Email address</string>
+  <string name="adapter.registration.token.token">Registration token</string>
+  <string name="adapter.registration.token.continue">Continue</string>
+  <string name="adapter.registration.token.failed">Account registration could not be authorized.</string>
+</resources>

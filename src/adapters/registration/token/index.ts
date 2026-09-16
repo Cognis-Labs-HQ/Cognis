@@ -14,7 +14,7 @@ interface RegistrationInviteRecord {
     redeemedAccountId?: string | null;
 }
 
-const FOUNDER_PENDING_INVITE_LIMIT = 20;
+const FOUNDER_SUCCESSFUL_INVITE_LIMIT = 10;
 const INVITE_EXPIRY_MS = 24 * 60 * 60 * 1000;
 
 interface RegistrationTokenAdapter {
@@ -24,6 +24,7 @@ interface RegistrationTokenAdapter {
         inviteeEmail: string;
         inviterIsFounder: boolean;
         inviteBaseUrl: string;
+        deliverEmail?: boolean;
     }): Promise<{ tokenId: string; inviteUrl: string; expiresAt: string }>;
     listInvites(filter?: {
         inviterAccountId?: string;
@@ -48,6 +49,7 @@ interface RegistrationTokenAdapter {
         createdAccountId: string;
         inviterAccountId: string;
     }>;
+    resetFounderInviteLimit(accountId: string): Promise<void>;
 }
 
 function normalizeEmail(input: string): string {
@@ -144,6 +146,12 @@ export function createAdapter(deps: {
                     unique: true,
                 },
                 { name: "inviter_account_id", type: "text", notNull: true },
+                {
+                    name: "founder_invite",
+                    type: "boolean",
+                    notNull: true,
+                    default: "false",
+                },
                 { name: "invitee_email", type: "text", notNull: true },
                 { name: "expires_at", type: "timestamp", notNull: true },
                 { name: "revoked_at", type: "timestamp" },
@@ -201,6 +209,7 @@ export function createAdapter(deps: {
                 "registration_tokens.id",
                 "registration_tokens.inviter_account_id",
                 "registration_tokens.invitee_email",
+                "registration_tokens.founder_invite",
                 "registration_tokens.expires_at",
                 "accounts.display_name",
             ],
@@ -230,19 +239,17 @@ export function createAdapter(deps: {
         return result.rows?.[0];
     }
 
-    async function pendingFounderInviteCount(
+    async function successfulFounderInviteCount(
         inviterAccountId: string,
     ): Promise<number> {
-        const nowIso = new Date().toISOString();
         const result = await dbExecutor.executeCommand({
             option: "SELECT",
             table: "registration_tokens",
             count: true,
             where: [
                 { column: "inviter_account_id", value: inviterAccountId },
-                { column: "revoked_at", operator: "IS NULL" },
-                { column: "redeemed_at", operator: "IS NULL" },
-                { column: "expires_at", operator: ">", value: nowIso },
+                { column: "founder_invite", value: true },
+                { column: "redeemed_at", operator: "IS NOT NULL" },
             ],
         });
         const raw = result.rows?.[0]?.cnt;
@@ -256,22 +263,17 @@ export function createAdapter(deps: {
         inviteeEmail: string;
         inviterIsFounder: boolean;
         inviteBaseUrl: string;
+        deliverEmail?: boolean;
     }): Promise<{ tokenId: string; inviteUrl: string; expiresAt: string }> {
         await ensureReady();
-        if (!canSendInviteEmail()) throw new Error("smtp_unavailable");
+        const deliverEmail = input.deliverEmail !== false;
+        if (deliverEmail && !canSendInviteEmail()) {
+            throw new Error("smtp_unavailable");
+        }
         const inviteeEmail = normalizeEmail(input.inviteeEmail);
         if (!inviteeEmail) throw new Error("invitee_email_required");
         const emailTaken = await isEmailRegistered(inviteeEmail);
         if (emailTaken) throw new Error("email_taken");
-        if (input.inviterIsFounder) {
-            const pendingCount = await pendingFounderInviteCount(
-                input.inviterAccountId,
-            );
-            if (pendingCount >= FOUNDER_PENDING_INVITE_LIMIT) {
-                throw new Error("founder_token_limit_reached");
-            }
-        }
-
         const tokenId = randomUUID();
         const secret = randomBytes(32).toString("base64url");
         const rawToken = `${tokenId}.${secret}`;
@@ -286,24 +288,27 @@ export function createAdapter(deps: {
                 id: tokenId,
                 token_hash: tokenHash,
                 inviter_account_id: input.inviterAccountId,
+                founder_invite: input.inviterIsFounder,
                 invitee_email: inviteeEmail,
                 expires_at: expiresAt,
             },
         });
 
-        try {
-            await sendInviteEmail(
-                inviteeEmail,
-                input.inviterDisplayName,
-                inviteUrl,
-            );
-        } catch (error) {
-            await dbExecutor.executeCommand({
-                option: "DELETE",
-                table: "registration_tokens",
-                where: [{ column: "id", value: tokenId }],
-            });
-            throw error;
+        if (deliverEmail) {
+            try {
+                await sendInviteEmail(
+                    inviteeEmail,
+                    input.inviterDisplayName,
+                    inviteUrl,
+                );
+            } catch (error) {
+                await dbExecutor.executeCommand({
+                    option: "DELETE",
+                    table: "registration_tokens",
+                    where: [{ column: "id", value: tokenId }],
+                });
+                throw error;
+            }
         }
         const revokeTimestamp = new Date().toISOString();
         await dbExecutor.executeCommand({
@@ -436,6 +441,14 @@ export function createAdapter(deps: {
         if (!row) return null;
         const expiresAt = String(row.expires_at);
         if (new Date(expiresAt).getTime() <= Date.now()) return null;
+        if (row.founder_invite === true || Number(row.founder_invite) === 1) {
+            const successfulInvites = await successfulFounderInviteCount(
+                String(row.inviter_account_id),
+            );
+            if (successfulInvites >= FOUNDER_SUCCESSFUL_INVITE_LIMIT) {
+                return null;
+            }
+        }
         return {
             id: String(row.id),
             inviterAccountId: String(row.inviter_account_id),
@@ -618,6 +631,20 @@ export function createAdapter(deps: {
         return consumption;
     }
 
+    async function resetFounderInviteLimit(accountId: string): Promise<void> {
+        await ensureReady();
+        await dbExecutor.executeCommand({
+            option: "UPDATE",
+            table: "registration_tokens",
+            set: { founder_invite: false },
+            where: [
+                { column: "inviter_account_id", value: accountId },
+                { column: "founder_invite", value: true },
+                { column: "redeemed_at", operator: "IS NOT NULL" },
+            ],
+        });
+    }
+
     return {
         id: "token",
         name: "Registration Token",
@@ -630,6 +657,7 @@ export function createAdapter(deps: {
             resolveInvite,
             consumeExternalAccountToken,
             redeemInvite,
+            resetFounderInviteLimit,
         },
     };
 }

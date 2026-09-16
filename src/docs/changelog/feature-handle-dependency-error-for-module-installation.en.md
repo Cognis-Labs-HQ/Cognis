@@ -62,6 +62,10 @@ Module-provided authentication adapters now restore their gateway-owned persiste
 
 When an authenticated SSO identity needs a Cognis account while public registration is disabled, the login response now explicitly requests a registration token and supplies the retry endpoint. Cognis preserves the submitted token and fallback email through provider re-authentication so the mandatory Registration Token adapter can authorize account creation.
 
+## Registration-owned SSO authorization and invitation policies
+
+Unknown SSO identities now move to an opaque, expiring registration attempt rendered by the Registration Token adapter inside the standard Cognis registration shell. The Users invite popup provides Email and Token tabs, manual tokens work without SMTP, founder registrations are capped at ten successful uses with an administrator reset, and owners control founder and administrator invitation rights from Administration → Registration. Public registration explicitly bypasses token authorization.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -82,3 +86,4 @@ When an authenticated SSO identity needs a Cognis account while public registrat
 - [3cf4aee2](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf4aee2a35c83065d116717f71a845f36bf5416)
 - [fcfbfc35](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcfbfc35a6bd698b4be409764e07bf8820f3201b)
 - [2f42af60](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f42af6007a0935a99ca2860cfb893c8e9bc3c2d)
+- [fb4cbefe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb4cbefe2974a810fe5a8dabc15267d7663a58a4)

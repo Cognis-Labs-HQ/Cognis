@@ -27,6 +27,7 @@ async function registerInviteMenuEntry() {
             isFounder,
             gatewayEnabled: registrationState?.gatewayEnabled,
             inviteEnabled: registrationState?.inviteEnabled,
+            canInvite: registrationState?.canInvite,
         })
     ) {
         return;

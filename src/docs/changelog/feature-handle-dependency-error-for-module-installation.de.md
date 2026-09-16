@@ -62,6 +62,10 @@ Von Modulen bereitgestellte Authentifizierungsadapter stellen nun ihre vom Gatew
 
 Wenn eine authentifizierte SSO-Identität bei deaktivierter öffentlicher Registrierung ein Cognis-Konto benötigt, fordert die Anmeldeantwort nun ausdrücklich ein Registrierungstoken an und liefert den Endpunkt für den erneuten Versuch. Cognis bewahrt das übermittelte Token und die Ersatz-E-Mail über die erneute Anbieterauthentifizierung hinweg, damit der verpflichtende Registrierungstoken-Adapter die Kontoerstellung freigeben kann.
 
+## Registrierungseigene SSO-Autorisierung und Einladungsrichtlinien
+
+Unbekannte SSO-Identitäten wechseln nun zu einem undurchsichtigen, ablaufenden Registrierungsvorgang, den der Registrierungstoken-Adapter in der standardmäßigen Cognis-Registrierungshülle darstellt. Das Einladungsfenster der Benutzerseite bietet die Registerkarten E-Mail und Token; manuelle Token funktionieren ohne SMTP. Gründerregistrierungen sind auf zehn erfolgreiche Nutzungen begrenzt und können von Administratoren zurückgesetzt werden. Eigentümer steuern die Einladungsrechte von Gründern und Administratoren unter Administration → Registrierung. Die öffentliche Registrierung überspringt die Tokenautorisierung ausdrücklich.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -82,3 +86,4 @@ Wenn eine authentifizierte SSO-Identität bei deaktivierter öffentlicher Regist
 - [3cf4aee2](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf4aee2a35c83065d116717f71a845f36bf5416)
 - [fcfbfc35](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcfbfc35a6bd698b4be409764e07bf8820f3201b)
 - [2f42af60](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f42af6007a0935a99ca2860cfb893c8e9bc3c2d)
+- [fb4cbefe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb4cbefe2974a810fe5a8dabc15267d7663a58a4)

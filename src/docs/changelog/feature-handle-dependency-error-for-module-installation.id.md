@@ -62,6 +62,10 @@ Adapter autentikasi dari modul kini memulihkan konfigurasi tersimpan dan status 
 
 Saat identitas SSO yang telah diautentikasi memerlukan akun Cognis sementara pendaftaran publik dinonaktifkan, respons login kini secara eksplisit meminta token pendaftaran dan menyediakan endpoint percobaan ulang. Cognis mempertahankan token yang dikirim serta email cadangan selama autentikasi ulang penyedia agar adapter Token Pendaftaran wajib dapat mengotorisasi pembuatan akun.
 
+## Otorisasi SSO milik pendaftaran dan kebijakan undangan
+
+Identitas SSO yang belum dikenal kini dialihkan ke percobaan pendaftaran sementara yang buram dan dirender oleh adapter Token Pendaftaran di dalam shell pendaftaran Cognis standar. Popup undangan Pengguna menyediakan tab Email dan Token; token manual berfungsi tanpa SMTP. Pendaftaran dari pendiri dibatasi sepuluh penggunaan berhasil dan dapat direset administrator. Pemilik mengontrol hak undangan pendiri dan administrator melalui Administrasi → Pendaftaran. Pendaftaran publik secara eksplisit melewati otorisasi token.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -82,3 +86,4 @@ Saat identitas SSO yang telah diautentikasi memerlukan akun Cognis sementara pen
 - [3cf4aee2](https://github.com/Cognis-Labs-HQ/Cognis/commit/3cf4aee2a35c83065d116717f71a845f36bf5416)
 - [fcfbfc35](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcfbfc35a6bd698b4be409764e07bf8820f3201b)
 - [2f42af60](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f42af6007a0935a99ca2860cfb893c8e9bc3c2d)
+- [fb4cbefe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb4cbefe2974a810fe5a8dabc15267d7663a58a4)

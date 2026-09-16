@@ -9,4 +9,22 @@ test("Users invitations use the mandatory registration token adapter", async () 
     );
     assert.match(source, /entry\.id === "token"/);
     assert.match(source, /api\/v1\/registration\/tokens/);
+    assert.match(source, /share-method-tabs/);
+    assert.match(source, /delivery === "manual"/);
+    assert.doesNotMatch(
+        source,
+        /registrationGatewayActive && smtpAdapterActive\s*\?[^:]+users-invite-btn/,
+    );
+});
+
+test("Registration token adapter owns the SSO authorization form", async () => {
+    const source = await readFile(
+        new URL(
+            "../../adapters/registration/token/ui/authorization.js",
+            import.meta.url,
+        ),
+        "utf8",
+    );
+    assert.match(source, /renderAccountCreationAuthorization/);
+    assert.match(source, /authorizePendingAccountCreation/);
 });

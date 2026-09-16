@@ -144,6 +144,14 @@ export async function registerAuthBootstrapHook(
             const input = (stageCtx.input ?? {}) as {
                 provider?: string;
                 credentials?: Record<string, unknown>;
+                authenticatedSession?: {
+                    accountId: string;
+                    provider: string;
+                    externalUserId?: string;
+                    email?: string;
+                    displayName?: string;
+                    role?: string;
+                };
             };
             const resolveResult = (
                 (stageCtx.stageResults["resolve-provider"] ?? []) as Array<{
@@ -167,7 +175,8 @@ export async function registerAuthBootstrapHook(
                 authSourceId: method?.id,
             };
             const authenticatedSession =
-                await adapter.authenticate(credentials);
+                input.authenticatedSession ??
+                (await adapter.authenticate(credentials));
             const session = authenticatedSession
                 ? applyAccountCreationCredentials(
                       authenticatedSession,
@@ -223,6 +232,10 @@ export async function registerAuthBootstrapHook(
                             sessionResult: {
                                 outcome: "account_creation_required",
                                 emailRequired: !("email" in session),
+                                pendingAccountCreation: {
+                                    providerId: adapterId ?? session.provider,
+                                    session,
+                                },
                             },
                         };
                     }
@@ -259,6 +272,10 @@ export async function registerAuthBootstrapHook(
                             sessionResult: {
                                 outcome: "account_creation_required",
                                 emailRequired: !("email" in session),
+                                pendingAccountCreation: {
+                                    providerId: adapterId ?? session.provider,
+                                    session,
+                                },
                             },
                         };
                     }
@@ -311,6 +328,10 @@ export async function registerAuthBootstrapHook(
                             sessionResult: {
                                 outcome: "account_creation_required",
                                 emailRequired: false,
+                                pendingAccountCreation: {
+                                    providerId: adapterId ?? session.provider,
+                                    session,
+                                },
                             },
                         };
                     }

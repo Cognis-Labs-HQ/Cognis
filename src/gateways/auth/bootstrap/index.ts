@@ -78,6 +78,20 @@ export interface PendingTfaLoginAttempt {
     expiresAt: number;
 }
 
+export interface PendingAccountCreationAttempt {
+    id: string;
+    providerId: string;
+    session: {
+        accountId: string;
+        provider: string;
+        externalUserId?: string;
+        email?: string;
+        displayName?: string;
+        role?: string;
+    };
+    expiresAt: number;
+}
+
 export interface SecuritySettings {
     registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
@@ -107,6 +121,13 @@ export interface AuthRouteBootstrapRuntime {
     getPendingTfaLoginAttempt: (
         loginAttemptId: string,
     ) => PendingTfaLoginAttempt | null;
+    clearPendingAccountCreationAttempt: (attemptId: string) => void;
+    createPendingAccountCreationAttempt: (
+        input: Omit<PendingAccountCreationAttempt, "id" | "expiresAt">,
+    ) => PendingAccountCreationAttempt;
+    getPendingAccountCreationAttempt: (
+        attemptId: string,
+    ) => PendingAccountCreationAttempt | null;
 }
 
 export interface AuthRouteBootstrapHookContext {

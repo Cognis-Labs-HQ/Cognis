@@ -1,3 +1,12 @@
 <resources>
   <string name="gateway.registration.no_tokens">Belum ada token registrasi yang diterbitkan.</string>
+  <string name="gateway.registration.invite_methods">Metode undangan</string>
+  <string name="gateway.registration.email_tab">Email</string>
+  <string name="gateway.registration.token_tab">Token</string>
+  <string name="gateway.registration.create_invite">Buat undangan</string>
+  <string name="gateway.registration.token_copied">Tautan pendaftaran disalin.</string>
+  <string name="gateway.registration.allow_founder_invites">Izinkan pengguna pendiri mengundang</string>
+  <string name="gateway.registration.allow_admin_invites">Izinkan administrator mengundang</string>
+  <string name="gateway.registration.reset_founder_limit">Reset kuota undangan pendiri</string>
+  <string name="gateway.registration.founder_limit_reset">Kuota undangan pendiri telah direset.</string>
 </resources>

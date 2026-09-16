@@ -1,3 +1,12 @@
 <resources>
   <string name="gateway.registration.no_tokens">No registration tokens have been issued.</string>
+  <string name="gateway.registration.invite_methods">Invitation methods</string>
+  <string name="gateway.registration.email_tab">Email</string>
+  <string name="gateway.registration.token_tab">Token</string>
+  <string name="gateway.registration.create_invite">Create invite</string>
+  <string name="gateway.registration.token_copied">Registration link copied.</string>
+  <string name="gateway.registration.allow_founder_invites">Allow founding users to invite</string>
+  <string name="gateway.registration.allow_admin_invites">Allow administrators to invite</string>
+  <string name="gateway.registration.reset_founder_limit">Reset founder invite allowance</string>
+  <string name="gateway.registration.founder_limit_reset">Founder invite allowance reset.</string>
 </resources>

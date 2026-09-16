@@ -140,20 +140,18 @@ test("users row click guard ignores role dropdown interaction", () => {
     assert.match(source, /target\.closest\("button,input,select"\)/);
 });
 
-test("users invite flow is gated by registration and smtp adapter availability", () => {
+test("users invite flow remains available for manual tokens without SMTP", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/users/index.js"),
         "utf8",
     );
 
+    assert.match(source, /inviteButtonHtml =[\s\S]*registrationGatewayActive/);
     assert.match(
         source,
-        /inviteButtonHtml =[\s\S]*registrationGatewayActive\s*&&\s*smtpAdapterActive/,
+        /pageAction === "invite" && registrationGatewayActive/,
     );
-    assert.match(
-        source,
-        /pageAction === "invite"[\s\S]*registrationGatewayActive\s*&&\s*smtpAdapterActive/,
-    );
+    assert.match(source, /smtpAdapterActive \? "email" : "manual"/);
 });
 
 test("users resend verification action is hidden when smtp adapter is disabled", () => {

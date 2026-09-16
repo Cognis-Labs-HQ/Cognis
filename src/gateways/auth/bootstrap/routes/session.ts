@@ -268,6 +268,12 @@ export function createSessionRoutes({
             return true;
         }
         if (outcome === "account_creation_required") {
+            const pending = sessionResult.pendingAccountCreation;
+            const attempt = pending
+                ? authRouteBootstrapRuntime.createPendingAccountCreationAttempt(
+                      pending,
+                  )
+                : null;
             log?.("info", "Held external login for account authorization.", {
                 ...logMeta,
                 emailRequired: sessionResult.emailRequired === true,
@@ -283,7 +289,11 @@ export function createSessionRoutes({
                     data: {
                         emailRequired: sessionResult.emailRequired === true,
                         registrationTokenRequired: true,
-                        retryEndpoint: "/api/v1/auth/login",
+                        ...(attempt
+                            ? {
+                                  registrationUrl: `/register?accountCreationAttempt=${encodeURIComponent(attempt.id)}&emailRequired=${sessionResult.emailRequired === true ? "true" : "false"}`,
+                              }
+                            : {}),
                     },
                 }),
             );
@@ -600,18 +610,54 @@ export function createSessionRoutes({
         if (url.pathname === "/api/v1/auth/login" && req.method === "POST") {
             const body = await readJson(req);
             const provider = String(body.provider ?? "local");
+            const accountCreationAttemptId = String(
+                body.accountCreationAttemptId ?? "",
+            ).trim();
+            const pendingAccountCreation = accountCreationAttemptId
+                ? authRouteBootstrapRuntime.getPendingAccountCreationAttempt(
+                      accountCreationAttemptId,
+                  )
+                : null;
+            if (accountCreationAttemptId && !pendingAccountCreation) {
+                res.writeHead(410, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "account_creation_attempt_expired",
+                            message:
+                                "Account registration authorization has expired.",
+                        },
+                    }),
+                );
+                return true;
+            }
 
             const credentials: Record<string, unknown> = { ...body };
             delete credentials.provider;
+            delete credentials.accountCreationAttemptId;
 
             const systemCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
             if (systemCtx?.flow.exists("login")) {
                 const result = await systemCtx.flow.run("login", {
-                    provider,
+                    provider: pendingAccountCreation?.providerId ?? provider,
                     credentials,
+                    ...(pendingAccountCreation
+                        ? {
+                              authenticatedSession:
+                                  pendingAccountCreation.session,
+                          }
+                        : {}),
                 });
                 const sessionResult = resolveFlowSessionResult(result);
                 if (sessionResult) {
+                    if (
+                        accountCreationAttemptId &&
+                        sessionResult.outcome !== "account_creation_required"
+                    ) {
+                        authRouteBootstrapRuntime.clearPendingAccountCreationAttempt(
+                            accountCreationAttemptId,
+                        );
+                    }
                     return dispatchLoginFlowResult(
                         req,
                         res,
