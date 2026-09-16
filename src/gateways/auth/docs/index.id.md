@@ -62,6 +62,8 @@ Capability yang disediakan:
 
 Penyedia autentikasi dapat memanggil `auth:registerLoginButton` setelah `auth:registerProvider`. Deskriptor mewajibkan `providerId` yang terdaftar, `label` lengkap yang telah dilokalkan, dan `iconUrl` dari asal yang sama. Nilai opsional `backgroundColor`, `borderColor`, dan `textColor` memakai warna heksadesimal enam digit. Halaman masuk selalu menampilkan ikon dan label lengkap pada ukuran layar ringkas maupun lebar. Penyedia harus memanggil fungsi pembersihan yang dikembalikan saat kontribusinya dinonaktifkan. Metode tanpa kredensial yang tidak bergaya dihilangkan, bukan ditampilkan sebagai tombol masuk generik.
 
+Penyedia dapat mendeklarasikan `routeNamespace` dan `registerRoutes(router)` pada adapternya. Router menerima jalur `GET` dan `POST` relatif terhadap `/api/v1/auth/<routeNamespace>` agar callback OAuth dapat berada di bawah gateway Autentikasi tanpa memberi modul kontributor akses langsung ke rute inti yang dilindungi. Namespace dibatasi pada segmen URL yang aman, namespace inti Autentikasi dicadangkan, rute duplikat ditolak, dan penghapusan penyedia menghapus semua rute kontribusinya.
+
 ## Route API
 
 | Metode | Path                                         | Keterangan                                      | Autentikasi      |

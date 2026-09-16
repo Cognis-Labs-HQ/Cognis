@@ -24,8 +24,15 @@ export class RouteRegistry {
         gatewayId: string;
     }> = [];
 
-    register(handler: RouteHandler, gatewayId?: string): void {
-        this.entries.push({ handler, gatewayId });
+    register(handler: RouteHandler, gatewayId?: string): () => boolean {
+        const entry = { handler, gatewayId };
+        this.entries.push(entry);
+        return () => {
+            const index = this.entries.indexOf(entry);
+            if (index < 0) return false;
+            this.entries.splice(index, 1);
+            return true;
+        };
     }
 
     registerPrefix(prefix: string, gatewayId: string): void {

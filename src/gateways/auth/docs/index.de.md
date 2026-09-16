@@ -62,6 +62,8 @@ Beigetragene Capabilities:
 
 Authentifizierungsanbieter können `auth:registerLoginButton` nach `auth:registerProvider` aufrufen. Der Deskriptor erfordert die registrierte `providerId`, ein vollständig lokalisiertes `label` und eine gleichursprüngliche `iconUrl`. Optionale Werte für `backgroundColor`, `borderColor` und `textColor` verwenden sechsstellige Hexadezimalfarben. Die Anmeldeseite zeigt sowohl in kompakten als auch in breiten Ansichten immer das Symbol und die vollständige Beschriftung. Anbieter müssen die zurückgegebene Bereinigungsfunktion aufrufen, wenn ihr Beitrag deaktiviert wird. Nicht gestaltete Methoden ohne Anmeldedaten werden ausgelassen, anstatt als generische Anmeldeschaltflächen dargestellt zu werden.
 
+Ein Anbieter kann `routeNamespace` und `registerRoutes(router)` in seinem Adapter deklarieren. Der Router akzeptiert `GET`- und `POST`-Pfade relativ zu `/api/v1/auth/<routeNamespace>`, sodass OAuth-Rückrufe unter dem Authentifizierungs-Gateway liegen können, ohne dem beitragenden Modul direkten Zugriff auf geschützte Core-Routen zu geben. Namespaces sind auf sichere URL-Segmente beschränkt, Core-Authentifizierungs-Namespaces sind reserviert, doppelte Routen werden abgelehnt und beim Entfernen des Anbieters werden alle beigetragenen Routen entfernt.
+
 Sitzungen externer Anbieter durchlaufen `gateAccountCreation` vor `ensureExternalAccount`. Wenn die offene Registrierung deaktiviert ist, muss die Sitzung ein Registrierungstoken und eine passende Anbieter-E-Mail enthalten. Eine angehaltene Sitzung gibt `account_creation_required` mit `emailRequired` zurück, damit die Anbieteroberfläche eine fehlende E-Mail anfordern oder bei Abbruch sauber beenden kann.
 
 ## API-Routen

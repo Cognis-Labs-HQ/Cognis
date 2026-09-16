@@ -6,6 +6,7 @@ import {
 } from "../access-tokens.js";
 import type { AuthProviderAdapter } from "../gateway.js";
 import type { AuthBootstrapHookContext } from "./index.js";
+import { registerAuthProviderRoutes } from "../provider-route-registrar.js";
 
 export async function registerAuthBootstrapHook({
     accountStore,
@@ -17,10 +18,27 @@ export async function registerAuthBootstrapHook({
     ctx.capabilities.contribute(
         "auth:registerProvider",
         (provider: AuthProviderAdapter, requires?: string[]) => {
+            if (
+                authGateway
+                    .listAdapters()
+                    .some((adapter) => adapter.id === provider.id)
+            ) {
+                throw new Error("auth_provider_already_registered");
+            }
             const unregisterProvider = authGateway.registerAdapter(
                 provider,
                 requires,
             );
+            let unregisterRoutes: () => void;
+            try {
+                unregisterRoutes = registerAuthProviderRoutes(
+                    ctx.routeRegistry,
+                    provider,
+                );
+            } catch (error) {
+                unregisterProvider();
+                throw error;
+            }
             ctx.log?.(
                 "info",
                 "Registered an external authentication provider.",
@@ -31,6 +49,7 @@ export async function registerAuthBootstrapHook({
                 },
             );
             return () => {
+                unregisterRoutes();
                 if (!unregisterProvider()) return;
                 ctx.log?.(
                     "info",

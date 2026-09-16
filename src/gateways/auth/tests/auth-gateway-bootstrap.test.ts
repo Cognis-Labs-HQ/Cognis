@@ -11,8 +11,11 @@ import {
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { bootstrap } from "../bootstrap.js";
+import type { AuthProviderAdapter } from "../gateway.js";
 import {
     contributeTestKeyring,
+    dispatchRoute,
+    makeJsonRequest,
     makeInMemoryDb,
     type InMemoryDb,
 } from "./auth-gateway-test-helpers.js";
@@ -293,6 +296,94 @@ test("auth gateway exposes provider registration to modules", async () => {
     unregisterProvider();
     assert.ok(
         getLoginMethods().every((method) => method.id !== "module-provider"),
+    );
+});
+
+test("registered auth providers own removable callback routes", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        ...makeBaseCtx(capabilities, createDbExecutor()),
+    });
+    const registerProvider = capabilities.require<
+        (provider: AuthProviderAdapter) => () => void
+    >("auth:registerProvider");
+    const unregister = registerProvider({
+        id: "x-sso",
+        name: "X SSO",
+        locked: true,
+        routeNamespace: "x",
+        authenticate: async () => null,
+        configure() {},
+        getConfigSchema: () => [],
+        registerRoutes(router) {
+            router.get("/callback", (_req, res) => {
+                res.writeHead(302, { location: "/login" });
+                res.end("");
+            });
+        },
+    });
+    const active = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("GET", {}),
+        "/api/v1/auth/x/callback",
+    );
+    assert.equal(active.handled, true);
+    assert.equal(active.res.status, 302);
+    assert.throws(
+        () =>
+            registerProvider({
+                id: "x-sso",
+                name: "Replacement X SSO",
+                locked: true,
+                authenticate: async () => null,
+                configure() {},
+                getConfigSchema: () => [],
+            }),
+        /auth_provider_already_registered/,
+    );
+    assert.throws(
+        () =>
+            registerProvider({
+                id: "conflicting-sso",
+                name: "Conflicting SSO",
+                locked: true,
+                routeNamespace: "x",
+                authenticate: async () => null,
+                configure() {},
+                getConfigSchema: () => [],
+                registerRoutes(router) {
+                    router.get("/callback", (_req, res) => res.end(""));
+                },
+            }),
+        /auth_provider_route_duplicate/,
+    );
+
+    unregister();
+    const removed = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("GET", {}),
+        "/api/v1/auth/x/callback",
+    );
+    assert.equal(removed.handled, false);
+    assert.throws(
+        () =>
+            registerProvider({
+                id: "malicious-provider",
+                name: "Malicious Provider",
+                locked: true,
+                routeNamespace: "login",
+                authenticate: async () => null,
+                configure() {},
+                getConfigSchema: () => [],
+                registerRoutes() {},
+            }),
+        /auth_provider_route_namespace_invalid/,
     );
 });
 

@@ -1,3 +1,4 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { AuthContext, AuthGateway, FlowApi } from "@cognis/core";
@@ -24,6 +25,8 @@ export interface AuthProviderAdapter {
     readonly stringsBaseUrl?: string;
     readonly locked?: boolean;
     readonly authenticationProvider?: boolean;
+    readonly routeNamespace?: string;
+    registerRoutes?(router: AuthProviderRouteRouter): void;
     authenticate(
         credentials: Record<string, unknown>,
     ): Promise<AuthContext | null>;
@@ -57,6 +60,17 @@ export interface AuthProviderAdapter {
         config: Record<string, unknown>,
     ): Promise<Record<string, unknown>>;
     isConfigured?(): boolean;
+}
+
+export type AuthProviderRouteHandler = (
+    req: IncomingMessage,
+    res: ServerResponse,
+    url: URL,
+) => Promise<void> | void;
+
+export interface AuthProviderRouteRouter {
+    get(path: string, handler: AuthProviderRouteHandler): void;
+    post(path: string, handler: AuthProviderRouteHandler): void;
 }
 
 export interface AdapterInfo {

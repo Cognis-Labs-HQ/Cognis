@@ -30,6 +30,10 @@ Penyelesaian pengalihan SSO kini mengabaikan hook alur yang sengaja tidak mengem
 
 SSO saat pendaftaran tertutup kini memvalidasi undangan sebelum membuat akun, lalu memakai token dan mencatat email terverifikasi kanonis hanya setelah penyimpanan akun berhasil. Kegagalan penyelesaian menghapus akun baru dan memulihkan kegunaan token. Token yang rusak menghasilkan penolakan gerbang biasa. Undangan pengganti mempertahankan token lama yang masih dapat digunakan sampai email baru berhasil dikirim, dan tampilan tombol login melengkapi alih-alih menimpa perilaku penyedia yang ada.
 
+## Callback penyedia autentikasi yang terlindungi
+
+Adapter autentikasi kini dapat mendaftarkan rute `GET` dan `POST` yang dapat dilepas dalam namespace penyedia tervalidasi di bawah `/api/v1/auth`. Namespace inti Autentikasi tetap dicadangkan, sehingga modul eksternal tetap tidak dapat mengklaim rute terlindungi secara langsung, sedangkan callback OAuth milik penyedia seperti `/api/v1/auth/x/callback` dapat diproksikan dengan aman melalui adapter terdaftar.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -42,3 +46,4 @@ SSO saat pendaftaran tertutup kini memvalidasi undangan sebelum membuat akun, la
 - [a4c928d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a4c928d82c7c42ee4a9ec4f295199d008abc9137)
 - [fa24bfec](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa24bfec261a358e17e6bbb9078b160a1b4cb903)
 - [e66d75f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/e66d75f72b2e8ab4da4a4e93435f6472b4fe3903)
+- [85b7f238](https://github.com/Cognis-Labs-HQ/Cognis/commit/85b7f238bd959f9c4230168ff1378eebc04bbcee)

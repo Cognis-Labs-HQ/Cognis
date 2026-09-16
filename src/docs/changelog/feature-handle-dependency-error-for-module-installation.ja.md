@@ -30,6 +30,10 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 
 非公開登録の SSO は、アカウント作成前に招待を検証し、アカウントの保存成功後にのみトークンを消費して正規の検証済みメールアドレスを記録するようになりました。確定に失敗すると新しいアカウントを削除し、トークンを再利用可能に戻します。不正なトークンは通常のゲート拒否になります。再招待では新しいメールが届くまで以前の有効なトークンを保持し、ログインボタンの表示は既存のプロバイダー動作を上書きせず補完します。
 
+## 保護された認証プロバイダーのコールバック
+
+認証アダプターは、`/api/v1/auth` 配下の検証済みプロバイダー名前空間に、削除可能な `GET` および `POST` ルートを登録できるようになりました。認証コアの名前空間は引き続き予約されるため、外部モジュールは保護されたルートを直接要求できません。一方、`/api/v1/auth/x/callback` のようなプロバイダー所有の OAuth コールバックは、登録済みアダプターを通じて安全にプロキシできます。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -42,3 +46,4 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 - [a4c928d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a4c928d82c7c42ee4a9ec4f295199d008abc9137)
 - [fa24bfec](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa24bfec261a358e17e6bbb9078b160a1b4cb903)
 - [e66d75f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/e66d75f72b2e8ab4da4a4e93435f6472b4fe3903)
+- [85b7f238](https://github.com/Cognis-Labs-HQ/Cognis/commit/85b7f238bd959f9c4230168ff1378eebc04bbcee)
