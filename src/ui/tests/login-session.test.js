@@ -1,10 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import {
-    clearLoginSession,
-    persistLoginSession,
-} from "../app/login/session.js";
+import { clearLoginSession } from "../app/login/session.js";
+import { persistLoginSession } from "../../gateways/auth/ui/login-client.js";
 
 function createStorage() {
     const values = new Map();

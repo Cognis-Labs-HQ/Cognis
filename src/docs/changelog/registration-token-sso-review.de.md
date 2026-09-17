@@ -102,6 +102,10 @@ Das Einladungsfenster der Benutzerseite lädt seine Beschriftungen und Stile nun
 
 Abgelaufene SSO-Registrierungsleases löschen nun die serverseitig vorgemerkte Identität und führen zur Anmeldung zurück. Der Token-Tab erstellt sofort ein allgemeines Token; Text, Schaltflächen und Tabs verwenden die App-Standards.
 
+## Nahtloser SSO-Abschluss und neue Einladungstoken
+
+Eine erfolgreiche SSO-Registrierung speichert nun die authentifizierte Browsersitzung, bestätigt die Kontoerstellung und führt direkt zum Dashboard. Registrierungstoken werden verdeckt eingegeben und sofort bei erfolgreicher SSO-Autorisierung verbraucht. Das Einladungsfenster trennt E-Mail- und Token-Ansicht und erstellt beim Öffnen oder Methodenwechsel ein neues Token.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -131,3 +135,4 @@ Abgelaufene SSO-Registrierungsleases löschen nun die serverseitig vorgemerkte I
 - [82b32aaf](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b32aafcf4461f4ad3167e0adee2d65fccbfb3a)
 - [f63aa1a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/f63aa1a97b14476706130ea52d54a69e7b6fe65c)
 - [70a774cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/70a774cb0d2d3f24b4860f21ac67c80f2e16dcc5)
+- [c31fc022](https://github.com/Cognis-Labs-HQ/Cognis/commit/c31fc0228dd8581eeffc3cd620ec957af3e9e87d)

@@ -6,4 +6,5 @@
   <string name="adapter.registration.token.failed">Die Kontoerstellung konnte nicht autorisiert werden.</string>
   <string name="adapter.registration.token.lease_expires_in">Schließen Sie die Registrierung innerhalb von {countdown} ab</string>
   <string name="adapter.registration.token.lease_expired">Diese sichere Registrierungssitzung ist abgelaufen. Melden Sie sich erneut über Ihren Anbieter an, um fortzufahren.</string>
+  <string name="adapter.registration.token.created">Ihr Konto wurde erstellt. Sie werden jetzt angemeldet.</string>
 </resources>

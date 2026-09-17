@@ -102,6 +102,10 @@ Popup undangan pada halaman Pengguna kini memuat label dan gayanya dari gateway 
 
 Masa sewa pendaftaran SSO yang kedaluwarsa kini menghapus identitas tertunda di server dan mengembalikan pengunjung ke halaman masuk. Tab Token langsung menerbitkan satu token umum, sementara teks, tombol, dan tab memakai standar aplikasi.
 
+## Penyelesaian SSO mulus dan token undangan baru
+
+Pendaftaran SSO yang berhasil kini menyimpan sesi peramban terautentikasi, mengonfirmasi pembuatan akun, dan langsung menuju dasbor. Token pendaftaran disamarkan dan langsung digunakan saat otorisasi SSO berhasil. Popup undangan memisahkan tampilan Email dan Token serta membuat token baru saat dibuka atau metode berubah.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -131,3 +135,4 @@ Masa sewa pendaftaran SSO yang kedaluwarsa kini menghapus identitas tertunda di 
 - [82b32aaf](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b32aafcf4461f4ad3167e0adee2d65fccbfb3a)
 - [f63aa1a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/f63aa1a97b14476706130ea52d54a69e7b6fe65c)
 - [70a774cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/70a774cb0d2d3f24b4860f21ac67c80f2e16dcc5)
+- [c31fc022](https://github.com/Cognis-Labs-HQ/Cognis/commit/c31fc0228dd8581eeffc3cd620ec957af3e9e87d)

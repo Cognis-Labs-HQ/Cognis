@@ -28,10 +28,8 @@ import {
     createSsoLoginButton,
     isStyledSsoMethod,
 } from "./sso-buttons.js";
-import {
-    clearLoginSession,
-    persistLoginSession as persistSession,
-} from "./session.js";
+import { persistLoginSession as persistSession } from "/static/gateways/auth/login-client.js";
+import { clearLoginSession } from "./session.js";
 import "../../reuse/flow-registry.js";
 import "/static/adapters/auth/keyring/keyring.js";
 

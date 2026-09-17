@@ -1,6 +1,7 @@
 import {
     authorizePendingAccountCreation,
     cancelPendingAccountCreation,
+    persistLoginSession,
 } from "/static/gateways/auth/login-client.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 
@@ -30,7 +31,8 @@ export function renderAccountCreationAuthorization({
                 {
                     name: "registrationToken",
                     labelKey: "adapter.registration.token.token",
-                    type: "text",
+                    type: "password",
+                    autocomplete: "one-time-code",
                     required: true,
                 },
             ],
@@ -114,7 +116,13 @@ export function bindAccountCreationAuthorization({
                 },
             );
             if (response.ok) {
-                window.location.replace("/dashboard");
+                persistLoginSession(payload?.data ?? {});
+                showToast(i18n.t("adapter.registration.token.created"), {
+                    variant: "success",
+                });
+                window.setTimeout(() => {
+                    window.location.replace("/dashboard");
+                }, 800);
                 return;
             }
             showToast(

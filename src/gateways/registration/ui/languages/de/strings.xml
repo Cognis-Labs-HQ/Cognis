@@ -10,4 +10,5 @@
   <string name="gateway.registration.reset_founder_limit">Einladungskontingent des Gründers zurücksetzen</string>
   <string name="gateway.registration.founder_limit_reset">Einladungskontingent des Gründers zurückgesetzt.</string>
   <string name="gateway.registration.generated_token">Registrierungstoken</string>
+  <string name="gateway.registration.token_created">Ein neues Registrierungstoken wurde erstellt und kopiert.</string>
 </resources>

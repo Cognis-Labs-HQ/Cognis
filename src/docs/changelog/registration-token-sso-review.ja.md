@@ -102,6 +102,10 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 
 期限切れの SSO 登録リースは、サーバー側の一時 ID を消去してサインイン画面へ戻すようになりました。トークンタブは汎用トークンを即時発行し、文言、ボタン、タブにはアプリ標準を再利用します。
 
+## シームレスな SSO 完了と新しい招待トークン
+
+SSO 登録成功時に認証済みブラウザーセッションを保存し、アカウント作成を通知してダッシュボードへ直接進むようになりました。登録トークンは伏せ字入力になり、SSO 認可成功時に直ちに消費されます。招待ポップアップはメール表示とトークン表示を分離し、開くたび、または方式を切り替えるたびに新しいトークンを作成します。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -131,3 +135,4 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 - [82b32aaf](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b32aafcf4461f4ad3167e0adee2d65fccbfb3a)
 - [f63aa1a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/f63aa1a97b14476706130ea52d54a69e7b6fe65c)
 - [70a774cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/70a774cb0d2d3f24b4860f21ac67c80f2e16dcc5)
+- [c31fc022](https://github.com/Cognis-Labs-HQ/Cognis/commit/c31fc0228dd8581eeffc3cd620ec957af3e9e87d)

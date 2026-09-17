@@ -49,10 +49,13 @@ test("Registration token adapter owns the SSO authorization form", async () => {
     assert.match(source, /renderAccountCreationAuthorization/);
     assert.match(source, /authorizePendingAccountCreation/);
     assert.match(source, /cancelPendingAccountCreation/);
+    assert.match(source, /persistLoginSession/);
+    assert.match(source, /type: "password"/);
+    assert.match(source, /adapter\.registration\.token\.created/);
     assert.match(source, /window\.location\.replace\("\/login"\)/);
 });
 
-test("Token tab immediately requests one reusable manual registration token", async () => {
+test("Invite popup creates a fresh token on open and method changes", async () => {
     const source = await readFile(
         new URL("../app/users/index.js", import.meta.url),
         "utf8",
@@ -60,7 +63,9 @@ test("Token tab immediately requests one reusable manual registration token", as
     assert.match(source, /createRegistrationToken\(apiFetch, \{/);
     assert.match(source, /delivery: "manual"/);
     assert.match(source, /payload\?\.data\?\.registrationToken/);
-    assert.match(source, /manualTokenRequest/);
+    assert.doesNotMatch(source, /manualTokenRequest/);
+    assert.match(source, /createAction\.style\.display = manual/);
+    assert.match(source, /token_created/);
 });
 
 test("Users invite popup does not depend on a selected table user", async () => {

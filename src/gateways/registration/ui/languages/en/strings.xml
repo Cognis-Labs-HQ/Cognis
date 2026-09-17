@@ -10,4 +10,5 @@
   <string name="gateway.registration.reset_founder_limit">Reset founder invite allowance</string>
   <string name="gateway.registration.founder_limit_reset">Founder invite allowance reset.</string>
   <string name="gateway.registration.generated_token">Registration token</string>
+  <string name="gateway.registration.token_created">A new registration token was created and copied.</string>
 </resources>

@@ -702,7 +702,6 @@ async function triggerInviteFlow() {
         async () => {
             let delivery = smtpAdapterActive ? "email" : "manual";
             let emailInput = null;
-            let manualTokenRequest = null;
             const action = await openPopup({
                 title: i18n.t("ui.reuse.invite"),
                 body: () => `
@@ -741,8 +740,11 @@ async function triggerInviteFlow() {
                         '[data-popup-action="create"]',
                     );
                     const generateManualToken = async () => {
-                        if (manualTokenRequest) return manualTokenRequest;
-                        manualTokenRequest = registrationClient
+                        if (tokenResult instanceof HTMLElement) {
+                            tokenResult.hidden = true;
+                            tokenResult.style.display = "none";
+                        }
+                        return registrationClient
                             .createRegistrationToken(apiFetch, {
                                 delivery: "manual",
                             })
@@ -751,7 +753,6 @@ async function triggerInviteFlow() {
                                     .json()
                                     .catch(() => null);
                                 if (!response.ok) {
-                                    manualTokenRequest = null;
                                     showToast(
                                         i18n.t("ui.reuse.invite_failed"),
                                         { variant: "error" },
@@ -762,7 +763,6 @@ async function triggerInviteFlow() {
                                     payload?.data?.registrationToken ?? "",
                                 );
                                 if (!registrationToken) {
-                                    manualTokenRequest = null;
                                     return;
                                 }
                                 if (tokenValue instanceof HTMLInputElement) {
@@ -770,22 +770,23 @@ async function triggerInviteFlow() {
                                 }
                                 if (tokenResult instanceof HTMLElement) {
                                     tokenResult.hidden = false;
+                                    tokenResult.style.removeProperty("display");
                                 }
                                 await navigator.clipboard.writeText(
                                     registrationToken,
                                 );
                                 showToast(
-                                    i18n.t("gateway.registration.token_copied"),
+                                    i18n.t(
+                                        "gateway.registration.token_created",
+                                    ),
                                     { variant: "success" },
                                 );
                             })
                             .catch(() => {
-                                manualTokenRequest = null;
                                 showToast(i18n.t("ui.reuse.invite_failed"), {
                                     variant: "error",
                                 });
                             });
-                        return manualTokenRequest;
                     };
                     const selectDelivery = (tab) => {
                         delivery = tab.dataset.inviteDelivery;
@@ -802,17 +803,21 @@ async function triggerInviteFlow() {
                         const manual = delivery === "manual";
                         if (emailField instanceof HTMLElement) {
                             emailField.hidden = manual;
+                            emailField.style.display = manual ? "none" : "";
                         }
                         if (createAction instanceof HTMLElement) {
                             createAction.hidden = manual;
+                            createAction.style.display = manual ? "none" : "";
                         }
                         if (
                             tokenResult instanceof HTMLElement &&
                             tokenValue instanceof HTMLInputElement
                         ) {
                             tokenResult.hidden = !manual || !tokenValue.value;
+                            tokenResult.style.display =
+                                manual && tokenValue.value ? "" : "none";
                         }
-                        if (manual) void generateManualToken();
+                        void generateManualToken();
                     };
                     overlay
                         .querySelectorAll("[data-invite-delivery]")
@@ -828,6 +833,8 @@ async function triggerInviteFlow() {
                         if (manualTab instanceof HTMLButtonElement) {
                             selectDelivery(manualTab);
                         }
+                    } else {
+                        void generateManualToken();
                     }
                 },
             });

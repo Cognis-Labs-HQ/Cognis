@@ -102,6 +102,10 @@ The Users invitation popup now loads its labels and styles from the Registration
 
 Expired SSO registration leases now erase their server-side pending identity and return the visitor to sign-in. The invite Token tab immediately issues one generic token, while registration copy, buttons, and tabs reuse the application standards.
 
+## Seamless SSO completion and fresh invitation tokens
+
+Successful SSO registration now persists the authenticated browser session, confirms account creation, and continues directly to the dashboard. Registration tokens are concealed inputs and consumed as soon as SSO authorization succeeds. The invitation popup cleanly separates Email and Token views, hides the email action in Token mode, and creates a fresh token whenever the popup opens or its method changes.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -131,3 +135,4 @@ Expired SSO registration leases now erase their server-side pending identity and
 - [82b32aaf](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b32aafcf4461f4ad3167e0adee2d65fccbfb3a)
 - [f63aa1a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/f63aa1a97b14476706130ea52d54a69e7b6fe65c)
 - [70a774cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/70a774cb0d2d3f24b4860f21ac67c80f2e16dcc5)
+- [c31fc022](https://github.com/Cognis-Labs-HQ/Cognis/commit/c31fc0228dd8581eeffc3cd620ec957af3e9e87d)

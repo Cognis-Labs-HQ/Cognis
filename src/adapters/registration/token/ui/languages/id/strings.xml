@@ -6,4 +6,5 @@
   <string name="adapter.registration.token.failed">Pendaftaran akun tidak dapat diotorisasi.</string>
   <string name="adapter.registration.token.lease_expires_in">Selesaikan pendaftaran dalam {countdown}</string>
   <string name="adapter.registration.token.lease_expired">Sesi pendaftaran aman ini telah kedaluwarsa. Masuk lagi melalui penyedia Anda untuk melanjutkan.</string>
+  <string name="adapter.registration.token.created">Akun Anda telah dibuat. Anda sedang masuk.</string>
 </resources>
