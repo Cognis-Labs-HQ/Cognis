@@ -18,11 +18,16 @@ export interface RegistrationInviteAdapter {
     issueInvite(input: {
         inviterAccountId: string;
         inviterDisplayName: string;
-        inviteeEmail: string;
+        inviteeEmail?: string;
         inviterIsFounder: boolean;
         inviteBaseUrl: string;
         deliverEmail?: boolean;
-    }): Promise<{ tokenId: string; inviteUrl: string; expiresAt: string }>;
+    }): Promise<{
+        tokenId: string;
+        registrationToken: string;
+        inviteUrl: string;
+        expiresAt: string;
+    }>;
     listInvites(filter?: {
         inviterAccountId?: string;
         includeClosed?: boolean;
@@ -41,6 +46,7 @@ export interface RegistrationInviteAdapter {
         token: string;
         username: string;
         password: string;
+        email?: string;
         displayName?: string;
     }): Promise<{
         createdAccountId: string;

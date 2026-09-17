@@ -1,4 +1,7 @@
-import { authorizePendingAccountCreation } from "/static/gateways/auth/login-client.js";
+import {
+    authorizePendingAccountCreation,
+    cancelPendingAccountCreation,
+} from "/static/gateways/auth/login-client.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 
 export function renderAccountCreationAuthorization({
@@ -34,7 +37,7 @@ export function renderAccountCreationAuthorization({
         },
     );
     return `
-      <p class="auth-intro">${escapeHtml(i18n.t("adapter.registration.token.sso_intro"))}</p>
+      <p>${escapeHtml(i18n.t("adapter.registration.token.sso_intro"))}</p>
       ${expiresAt ? '<p id="account-creation-countdown" class="auth-countdown-pill" aria-live="off"></p>' : ""}
       <div class="auth-form-shell">
         ${builder.render()}
@@ -61,6 +64,17 @@ export function bindAccountCreationAuthorization({
     ) {
         const expiresAtMs = Number(expiresAt);
         let countdownTimer = null;
+        let expiryHandled = false;
+        async function expireAccountCreation() {
+            if (expiryHandled) return;
+            expiryHandled = true;
+            clearInterval(countdownTimer);
+            form.querySelectorAll("input, button").forEach((control) => {
+                control.disabled = true;
+            });
+            await cancelPendingAccountCreation().catch(() => undefined);
+            window.location.replace("/login");
+        }
         function updateCountdown() {
             const countdown = root.querySelector("#account-creation-countdown");
             if (!countdown) {
@@ -69,10 +83,7 @@ export function bindAccountCreationAuthorization({
             }
             const remaining = expiresAtMs - Date.now();
             if (remaining <= 0) {
-                countdown.textContent = i18n.t(
-                    "adapter.registration.token.lease_expired",
-                );
-                clearInterval(countdownTimer);
+                void expireAccountCreation();
                 return;
             }
             countdown.textContent = i18n

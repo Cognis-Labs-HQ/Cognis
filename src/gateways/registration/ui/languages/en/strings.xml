@@ -9,4 +9,5 @@
   <string name="gateway.registration.allow_admin_invites">Allow administrators to invite</string>
   <string name="gateway.registration.reset_founder_limit">Reset founder invite allowance</string>
   <string name="gateway.registration.founder_limit_reset">Founder invite allowance reset.</string>
+  <string name="gateway.registration.generated_token">Registration token</string>
 </resources>

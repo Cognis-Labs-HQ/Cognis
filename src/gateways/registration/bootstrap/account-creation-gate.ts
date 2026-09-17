@@ -36,7 +36,9 @@ export async function authorizeAccountCreation(
         }
         invite = null;
     }
-    const authorized = invite?.inviteeEmail.toLowerCase() === email;
+    const inviteEmail = String(invite?.inviteeEmail ?? "").toLowerCase();
+    const authorized =
+        Boolean(invite) && (!inviteEmail || inviteEmail === email);
     if (authorized && invite) {
         return {
             authorized: true,

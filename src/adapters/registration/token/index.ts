@@ -21,11 +21,16 @@ interface RegistrationTokenAdapter {
     issueInvite(input: {
         inviterAccountId: string;
         inviterDisplayName: string;
-        inviteeEmail: string;
+        inviteeEmail?: string;
         inviterIsFounder: boolean;
         inviteBaseUrl: string;
         deliverEmail?: boolean;
-    }): Promise<{ tokenId: string; inviteUrl: string; expiresAt: string }>;
+    }): Promise<{
+        tokenId: string;
+        registrationToken: string;
+        inviteUrl: string;
+        expiresAt: string;
+    }>;
     listInvites(filter?: {
         inviterAccountId?: string;
         includeClosed?: boolean;
@@ -44,6 +49,7 @@ interface RegistrationTokenAdapter {
         token: string;
         username: string;
         password: string;
+        email?: string;
         displayName?: string;
     }): Promise<{
         createdAccountId: string;
@@ -152,7 +158,7 @@ export function createAdapter(deps: {
                     notNull: true,
                     default: "false",
                 },
-                { name: "invitee_email", type: "text", notNull: true },
+                { name: "invitee_email", type: "text" },
                 { name: "expires_at", type: "timestamp", notNull: true },
                 { name: "revoked_at", type: "timestamp" },
                 { name: "revoked_by_account_id", type: "text" },
@@ -260,20 +266,28 @@ export function createAdapter(deps: {
     async function issueInvite(input: {
         inviterAccountId: string;
         inviterDisplayName: string;
-        inviteeEmail: string;
+        inviteeEmail?: string;
         inviterIsFounder: boolean;
         inviteBaseUrl: string;
         deliverEmail?: boolean;
-    }): Promise<{ tokenId: string; inviteUrl: string; expiresAt: string }> {
+    }): Promise<{
+        tokenId: string;
+        registrationToken: string;
+        inviteUrl: string;
+        expiresAt: string;
+    }> {
         await ensureReady();
         const deliverEmail = input.deliverEmail !== false;
         if (deliverEmail && !canSendInviteEmail()) {
             throw new Error("smtp_unavailable");
         }
-        const inviteeEmail = normalizeEmail(input.inviteeEmail);
-        if (!inviteeEmail) throw new Error("invitee_email_required");
-        const emailTaken = await isEmailRegistered(inviteeEmail);
-        if (emailTaken) throw new Error("email_taken");
+        const inviteeEmail = normalizeEmail(input.inviteeEmail ?? "");
+        if (deliverEmail && !inviteeEmail) {
+            throw new Error("invitee_email_required");
+        }
+        if (inviteeEmail && (await isEmailRegistered(inviteeEmail))) {
+            throw new Error("email_taken");
+        }
         const tokenId = randomUUID();
         const secret = randomBytes(32).toString("base64url");
         const rawToken = `${tokenId}.${secret}`;
@@ -311,22 +325,28 @@ export function createAdapter(deps: {
             }
         }
         const revokeTimestamp = new Date().toISOString();
-        await dbExecutor.executeCommand({
-            option: "UPDATE",
-            table: "registration_tokens",
-            set: {
-                revoked_at: revokeTimestamp,
-                revoked_by_account_id: input.inviterAccountId,
-            },
-            where: [
-                { column: "id", operator: "!=", value: tokenId },
-                { column: "invitee_email", value: inviteeEmail },
-                { column: "revoked_at", operator: "IS NULL" },
-                { column: "redeemed_at", operator: "IS NULL" },
-                { column: "expires_at", operator: ">", value: revokeTimestamp },
-            ],
-        });
-        return { tokenId, inviteUrl, expiresAt };
+        if (inviteeEmail) {
+            await dbExecutor.executeCommand({
+                option: "UPDATE",
+                table: "registration_tokens",
+                set: {
+                    revoked_at: revokeTimestamp,
+                    revoked_by_account_id: input.inviterAccountId,
+                },
+                where: [
+                    { column: "id", operator: "!=", value: tokenId },
+                    { column: "invitee_email", value: inviteeEmail },
+                    { column: "revoked_at", operator: "IS NULL" },
+                    { column: "redeemed_at", operator: "IS NULL" },
+                    {
+                        column: "expires_at",
+                        operator: ">",
+                        value: revokeTimestamp,
+                    },
+                ],
+            });
+        }
+        return { tokenId, registrationToken: rawToken, inviteUrl, expiresAt };
     }
 
     async function listInvites(filter?: {
@@ -396,7 +416,9 @@ export function createAdapter(deps: {
                     inviterDisplayName: row.display_name
                         ? String(row.display_name)
                         : String(row.inviter_account_id),
-                    inviteeEmail: String(row.invitee_email),
+                    inviteeEmail: row.invitee_email
+                        ? String(row.invitee_email)
+                        : "",
                     expiresAt,
                     createdAt,
                     status,
@@ -455,7 +477,7 @@ export function createAdapter(deps: {
             inviterDisplayName: row.display_name
                 ? String(row.display_name)
                 : String(row.inviter_account_id),
-            inviteeEmail: String(row.invitee_email),
+            inviteeEmail: row.invitee_email ? String(row.invitee_email) : "",
             expiresAt,
         };
     }
@@ -481,6 +503,7 @@ export function createAdapter(deps: {
         token: string;
         username: string;
         password: string;
+        email?: string;
         displayName?: string;
     }): Promise<{ createdAccountId: string; inviterAccountId: string }> {
         const username = input.username.trim();
@@ -490,6 +513,10 @@ export function createAdapter(deps: {
         }
         const invite = await resolveInvite(input.token);
         if (!invite) throw new Error("invalid_token");
+        const registrationEmail =
+            normalizeEmail(invite.inviteeEmail) ||
+            normalizeEmail(input.email ?? "");
+        if (!registrationEmail) throw new Error("invitee_email_required");
 
         const inviterStillExists = await accountStore.exists(
             invite.inviterAccountId,
@@ -506,7 +533,7 @@ export function createAdapter(deps: {
         try {
             await upsertVerifiedPrimaryEmail(
                 created.username,
-                invite.inviteeEmail,
+                registrationEmail,
             );
         } catch (error) {
             await rollbackCreatedAccount(created.username);

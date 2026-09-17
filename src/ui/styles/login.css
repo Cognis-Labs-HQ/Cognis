@@ -104,19 +104,10 @@ p.auth-intro {
 }
 
 .auth-form input,
-.auth-form button,
-.auth-form > a[class*="btn-"] {
+.auth-form button {
     padding: 12px 14px;
     font-size: 1.15rem;
     font-weight: 400;
-}
-
-.auth-form > a[class*="btn-"] {
-    display: block;
-    width: 100%;
-    margin-top: 8px;
-    text-align: center;
-    text-decoration: none;
 }
 
 .auth-form button {
@@ -386,7 +377,6 @@ p.auth-intro {
 
     .auth-form input,
     .auth-form button,
-    .auth-form > a[class*="btn-"],
     .sso-login-btn {
         padding: 10px 12px;
         font-size: 1rem;

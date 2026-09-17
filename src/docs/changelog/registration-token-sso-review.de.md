@@ -98,6 +98,10 @@ Der ausstehende SSO-Registrierungsstatus bleibt nun serverseitig hinter einem ku
 
 Das Einladungsfenster der Benutzerseite lädt seine Beschriftungen und Stile nun vor dem Öffnen aus dem Registrierungs-Gateway, und die Token-Erstellung erfolgt über dessen Browser-Client. Frische SSO-Sitzungen, die nur über ihr sicheres Zugriffscookie authentifiziert sind, bestehen die standardmäßige Aktualitätsprüfung für sensible Aktionen, sodass Administratoren und Gründungsbenutzer Registrierungstoken ohne eine nicht verfügbare lokale Passwortabfrage erzeugen können.
 
+## Zuverlässige Registrierungsübergabe und sofortige Token
+
+Abgelaufene SSO-Registrierungsleases löschen nun die serverseitig vorgemerkte Identität und führen zur Anmeldung zurück. Der Token-Tab erstellt sofort ein allgemeines Token; Text, Schaltflächen und Tabs verwenden die App-Standards.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -126,3 +130,4 @@ Das Einladungsfenster der Benutzerseite lädt seine Beschriftungen und Stile nun
 - [f08f3f47](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08f3f470df1cfb2aa9fca9f7ba1d29df1ea823d)
 - [82b32aaf](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b32aafcf4461f4ad3167e0adee2d65fccbfb3a)
 - [f63aa1a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/f63aa1a97b14476706130ea52d54a69e7b6fe65c)
+- [70a774cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/70a774cb0d2d3f24b4860f21ac67c80f2e16dcc5)

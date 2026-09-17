@@ -204,12 +204,14 @@ export function createRegistrationRoutes(
             const username = String(body.username ?? "").trim();
             const password = String(body.password ?? "");
             const displayName = String(body.displayName ?? "").trim();
+            const email = String(body.email ?? "").trim();
             try {
                 const result = await gateway.redeemInvite({
                     token,
                     username,
                     password,
                     displayName,
+                    email,
                 });
                 const verifyToken = issueAccessToken?.(
                     result.createdAccountId,
@@ -342,7 +344,7 @@ export function createRegistrationRoutes(
             const inviteeEmail = String(body.email ?? "")
                 .trim()
                 .toLowerCase();
-            if (!inviteeEmail) {
+            if (deliverEmail && !inviteeEmail) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -355,7 +357,7 @@ export function createRegistrationRoutes(
                 return true;
             }
             const trustedDomains = await getTrustedDomains();
-            if (trustedDomains.length > 0) {
+            if (inviteeEmail && trustedDomains.length > 0) {
                 const emailDomain = inviteeEmail.split("@")[1] ?? "";
                 const allowed = matchesTrustedDomain(
                     emailDomain,

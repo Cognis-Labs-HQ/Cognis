@@ -668,6 +668,29 @@ export function createSessionRoutes({
             return true;
         }
 
+        if (
+            url.pathname === "/api/v1/auth/account-creation-attempt" &&
+            req.method === "DELETE"
+        ) {
+            const attemptId =
+                authRouteBootstrapRuntime.extractPendingAccountCreationAttemptId(
+                    req,
+                );
+            if (attemptId) {
+                authRouteBootstrapRuntime.clearPendingAccountCreationAttempt(
+                    attemptId,
+                );
+            }
+            res.writeHead(204, {
+                "set-cookie":
+                    authRouteBootstrapRuntime.clearPendingAccountCreationCookie(
+                        req,
+                    ),
+            });
+            res.end();
+            return true;
+        }
+
         if (url.pathname === "/api/v1/auth/login" && req.method === "POST") {
             const body = await readJson(req);
             const provider = String(body.provider ?? "local");

@@ -98,6 +98,10 @@ Status pendaftaran SSO yang tertunda kini tetap dikelola server di balik cookie 
 
 Popup undangan pada halaman Pengguna kini memuat label dan gayanya dari gateway Pendaftaran sebelum dibuka, sedangkan pembuatan token dilakukan melalui klien browser milik gateway. Sesi SSO baru yang hanya diautentikasi oleh cookie akses aman dapat melewati pemeriksaan kebaruan tindakan sensitif standar, sehingga administrator dan pengguna pendiri dapat membuat token pendaftaran tanpa permintaan kata sandi lokal yang tidak tersedia.
 
+## Serah terima pendaftaran andal dan token instan
+
+Masa sewa pendaftaran SSO yang kedaluwarsa kini menghapus identitas tertunda di server dan mengembalikan pengunjung ke halaman masuk. Tab Token langsung menerbitkan satu token umum, sementara teks, tombol, dan tab memakai standar aplikasi.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -126,3 +130,4 @@ Popup undangan pada halaman Pengguna kini memuat label dan gayanya dari gateway 
 - [f08f3f47](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08f3f470df1cfb2aa9fca9f7ba1d29df1ea823d)
 - [82b32aaf](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b32aafcf4461f4ad3167e0adee2d65fccbfb3a)
 - [f63aa1a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/f63aa1a97b14476706130ea52d54a69e7b6fe65c)
+- [70a774cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/70a774cb0d2d3f24b4860f21ac67c80f2e16dcc5)

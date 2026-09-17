@@ -1,3 +1,17 @@
+.btn-confirm,
+.btn-cancel,
+.btn-neutral {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font: inherit;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+
 .btn-confirm {
     background: transparent;
     color: var(--color-success-outline-text, var(--color-success-text));

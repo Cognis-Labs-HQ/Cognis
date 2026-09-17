@@ -9,4 +9,5 @@
   <string name="gateway.registration.allow_admin_invites">Administratoren Einladungen erlauben</string>
   <string name="gateway.registration.reset_founder_limit">Einladungskontingent des Gründers zurücksetzen</string>
   <string name="gateway.registration.founder_limit_reset">Einladungskontingent des Gründers zurückgesetzt.</string>
+  <string name="gateway.registration.generated_token">Registrierungstoken</string>
 </resources>

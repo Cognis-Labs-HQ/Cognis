@@ -1,7 +1,4 @@
 const REGISTRATION_STRINGS_BASE_URL = "/static/gateways/registration/languages";
-const REGISTRATION_INVITE_STYLES_URL =
-    "/static/gateways/registration/invite.css";
-let inviteStylesReady = null;
 
 export async function loadRegistrationAvailability(apiFetch) {
     const gatewayResponse = await apiFetch("/api/v1/gateways/registration");
@@ -23,30 +20,6 @@ export async function loadRegistrationAvailability(apiFetch) {
 }
 
 export async function loadRegistrationInviteUi(i18n, extendI18n) {
-    if (!inviteStylesReady) {
-        inviteStylesReady = new Promise((resolve, reject) => {
-            const existing = document.querySelector(
-                `link[href="${REGISTRATION_INVITE_STYLES_URL}"]`,
-            );
-            if (existing?.sheet) {
-                resolve();
-                return;
-            }
-            const stylesheet = existing ?? document.createElement("link");
-            stylesheet.addEventListener("load", resolve, { once: true });
-            stylesheet.addEventListener(
-                "error",
-                () => reject(new Error("registration_invite_styles_failed")),
-                { once: true },
-            );
-            if (!existing) {
-                stylesheet.rel = "stylesheet";
-                stylesheet.href = REGISTRATION_INVITE_STYLES_URL;
-                document.head.append(stylesheet);
-            }
-        });
-    }
-    await inviteStylesReady;
     return extendI18n(i18n, REGISTRATION_STRINGS_BASE_URL);
 }
 

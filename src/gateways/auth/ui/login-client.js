@@ -37,3 +37,9 @@ export async function getPendingAccountCreation() {
     const payload = await response.json().catch(() => null);
     return payload?.data ?? null;
 }
+
+export async function cancelPendingAccountCreation() {
+    await fetch("/api/v1/auth/account-creation-attempt", {
+        method: "DELETE",
+    });
+}

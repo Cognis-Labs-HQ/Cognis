@@ -9,4 +9,5 @@
   <string name="gateway.registration.allow_admin_invites">管理者による招待を許可</string>
   <string name="gateway.registration.reset_founder_limit">創設ユーザーの招待枠をリセット</string>
   <string name="gateway.registration.founder_limit_reset">創設ユーザーの招待枠をリセットしました。</string>
+  <string name="gateway.registration.generated_token">登録トークン</string>
 </resources>

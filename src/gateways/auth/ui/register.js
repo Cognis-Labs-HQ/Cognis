@@ -812,6 +812,7 @@ export async function mount(root, { signal } = {}) {
                                                 username,
                                                 displayName,
                                                 password,
+                                                email,
                                             }),
                                         },
                                     );

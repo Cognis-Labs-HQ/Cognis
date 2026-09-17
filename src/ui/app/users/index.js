@@ -702,16 +702,22 @@ async function triggerInviteFlow() {
         async () => {
             let delivery = smtpAdapterActive ? "email" : "manual";
             let emailInput = null;
+            let manualTokenRequest = null;
             const action = await openPopup({
                 title: i18n.t("ui.reuse.invite"),
                 body: () => `
-                  <nav class="registration-invite-tabs" aria-label="${escapeHtml(i18n.t("gateway.registration.invite_methods"))}">
-                    <button type="button" class="registration-invite-tab${smtpAdapterActive ? " is-active" : ""}" data-invite-delivery="email" aria-pressed="${smtpAdapterActive ? "true" : "false"}" ${smtpAdapterActive ? "" : "disabled"}>${escapeHtml(i18n.t("gateway.registration.email_tab"))}</button>
-                    <button type="button" class="registration-invite-tab${smtpAdapterActive ? "" : " is-active"}" data-invite-delivery="manual" aria-pressed="${smtpAdapterActive ? "false" : "true"}">${escapeHtml(i18n.t("gateway.registration.token_tab"))}</button>
+                  <nav class="share-method-tabs" aria-label="${escapeHtml(i18n.t("gateway.registration.invite_methods"))}">
+                    <button type="button" class="share-method-tab${smtpAdapterActive ? " is-active" : ""}" data-invite-delivery="email" aria-pressed="${smtpAdapterActive ? "true" : "false"}" ${smtpAdapterActive ? "" : "disabled"}>${escapeHtml(i18n.t("gateway.registration.email_tab"))}</button>
+                    <button type="button" class="share-method-tab${smtpAdapterActive ? "" : " is-active"}" data-invite-delivery="manual" aria-pressed="${smtpAdapterActive ? "false" : "true"}">${escapeHtml(i18n.t("gateway.registration.token_tab"))}</button>
                   </nav>
-                  <label class="stack">
+                  <p class="share-method-description"></p>
+                  <label class="stack" data-invite-email-field>
                     <span>${escapeHtml(i18n.t("ui.reuse.invite_email"))}</span>
                     <input id="users-invite-email" type="email" placeholder="${escapeHtml(i18n.t("ui.reuse.email_placeholder"))}" required />
+                  </label>
+                  <label class="stack" data-invite-token-result hidden>
+                    <span>${escapeHtml(i18n.t("gateway.registration.generated_token"))}</span>
+                    <input data-invite-token-value type="text" readonly />
                   </label>`,
                 actions: [
                     {
@@ -722,26 +728,107 @@ async function triggerInviteFlow() {
                 ],
                 onOpen: (overlay) => {
                     emailInput = overlay.querySelector("#users-invite-email");
+                    const emailField = overlay.querySelector(
+                        "[data-invite-email-field]",
+                    );
+                    const tokenResult = overlay.querySelector(
+                        "[data-invite-token-result]",
+                    );
+                    const tokenValue = overlay.querySelector(
+                        "[data-invite-token-value]",
+                    );
+                    const createAction = overlay.querySelector(
+                        '[data-popup-action="create"]',
+                    );
+                    const generateManualToken = async () => {
+                        if (manualTokenRequest) return manualTokenRequest;
+                        manualTokenRequest = registrationClient
+                            .createRegistrationToken(apiFetch, {
+                                delivery: "manual",
+                            })
+                            .then(async (response) => {
+                                const payload = await response
+                                    .json()
+                                    .catch(() => null);
+                                if (!response.ok) {
+                                    manualTokenRequest = null;
+                                    showToast(
+                                        i18n.t("ui.reuse.invite_failed"),
+                                        { variant: "error" },
+                                    );
+                                    return;
+                                }
+                                const registrationToken = String(
+                                    payload?.data?.registrationToken ?? "",
+                                );
+                                if (!registrationToken) {
+                                    manualTokenRequest = null;
+                                    return;
+                                }
+                                if (tokenValue instanceof HTMLInputElement) {
+                                    tokenValue.value = registrationToken;
+                                }
+                                if (tokenResult instanceof HTMLElement) {
+                                    tokenResult.hidden = false;
+                                }
+                                await navigator.clipboard.writeText(
+                                    registrationToken,
+                                );
+                                showToast(
+                                    i18n.t("gateway.registration.token_copied"),
+                                    { variant: "success" },
+                                );
+                            })
+                            .catch(() => {
+                                manualTokenRequest = null;
+                                showToast(i18n.t("ui.reuse.invite_failed"), {
+                                    variant: "error",
+                                });
+                            });
+                        return manualTokenRequest;
+                    };
+                    const selectDelivery = (tab) => {
+                        delivery = tab.dataset.inviteDelivery;
+                        overlay
+                            .querySelectorAll("[data-invite-delivery]")
+                            .forEach((candidate) => {
+                                const active = candidate === tab;
+                                candidate.classList.toggle("is-active", active);
+                                candidate.setAttribute(
+                                    "aria-pressed",
+                                    String(active),
+                                );
+                            });
+                        const manual = delivery === "manual";
+                        if (emailField instanceof HTMLElement) {
+                            emailField.hidden = manual;
+                        }
+                        if (createAction instanceof HTMLElement) {
+                            createAction.hidden = manual;
+                        }
+                        if (
+                            tokenResult instanceof HTMLElement &&
+                            tokenValue instanceof HTMLInputElement
+                        ) {
+                            tokenResult.hidden = !manual || !tokenValue.value;
+                        }
+                        if (manual) void generateManualToken();
+                    };
                     overlay
                         .querySelectorAll("[data-invite-delivery]")
                         .forEach((tab) => {
-                            tab.addEventListener("click", () => {
-                                delivery = tab.dataset.inviteDelivery;
-                                overlay
-                                    .querySelectorAll("[data-invite-delivery]")
-                                    .forEach((candidate) => {
-                                        const active = candidate === tab;
-                                        candidate.classList.toggle(
-                                            "is-active",
-                                            active,
-                                        );
-                                        candidate.setAttribute(
-                                            "aria-pressed",
-                                            String(active),
-                                        );
-                                    });
-                            });
+                            tab.addEventListener("click", () =>
+                                selectDelivery(tab),
+                            );
                         });
+                    if (!smtpAdapterActive) {
+                        const manualTab = overlay.querySelector(
+                            '[data-invite-delivery="manual"]',
+                        );
+                        if (manualTab instanceof HTMLButtonElement) {
+                            selectDelivery(manualTab);
+                        }
+                    }
                 },
             });
             if (action !== "create") return;
