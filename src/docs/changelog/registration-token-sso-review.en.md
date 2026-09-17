@@ -94,6 +94,10 @@ The Registration Token form now omits its email field when the external provider
 
 Pending SSO registration state now remains server-owned behind a short-lived HttpOnly cookie. The browser uses the clean `/register` URL and asks the Authentication gateway for the non-sensitive form state it needs. The “Sign In Instead” navigation now uses the standard neutral button presentation and matches the registration action size without page-specific button styling.
 
+## Reliable invitation controls for SSO users
+
+The Users invitation popup now loads its labels and styles from the Registration gateway before it opens, and token creation goes through the gateway-owned browser client. Fresh SSO sessions authenticated only by their secure access cookie can pass the standard sensitive-action freshness check, so administrators and founding users can generate registration tokens without an unavailable local-password prompt.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -121,3 +125,4 @@ Pending SSO registration state now remains server-owned behind a short-lived Htt
 - [8a481699](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a48169990cae94504cf9a2ae97c78343cbd3951)
 - [f08f3f47](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08f3f470df1cfb2aa9fca9f7ba1d29df1ea823d)
 - [82b32aaf](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b32aafcf4461f4ad3167e0adee2d65fccbfb3a)
+- [f63aa1a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/f63aa1a97b14476706130ea52d54a69e7b6fe65c)

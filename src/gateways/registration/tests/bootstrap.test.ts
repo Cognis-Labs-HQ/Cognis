@@ -202,6 +202,8 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
         true,
     );
     assert.equal(existsSync(path.resolve(staticDir.dir, "navbar.js")), true);
+    assert.equal(existsSync(path.resolve(staticDir.dir, "client.js")), true);
+    assert.equal(existsSync(path.resolve(staticDir.dir, "invite.css")), true);
     const tokenStaticDir = registeredAdapterStaticDirs.find(
         (entry) =>
             entry.gatewayId === "registration" && entry.adapterId === "token",

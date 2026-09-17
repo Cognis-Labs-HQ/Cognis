@@ -94,6 +94,10 @@ Formulir Token Pendaftaran kini menyembunyikan kolom email ketika penyedia ekste
 
 Status pendaftaran SSO yang tertunda kini tetap dikelola server di balik cookie HttpOnly berumur pendek. Browser menggunakan URL `/register` yang bersih dan meminta status formulir yang tidak sensitif dari gateway Autentikasi. Navigasi “Masuk Sebagai Gantinya” kini memakai tampilan tombol netral standar dan berukuran sama dengan tindakan pendaftaran tanpa gaya khusus halaman.
 
+## Kontrol undangan yang andal untuk pengguna SSO
+
+Popup undangan pada halaman Pengguna kini memuat label dan gayanya dari gateway Pendaftaran sebelum dibuka, sedangkan pembuatan token dilakukan melalui klien browser milik gateway. Sesi SSO baru yang hanya diautentikasi oleh cookie akses aman dapat melewati pemeriksaan kebaruan tindakan sensitif standar, sehingga administrator dan pengguna pendiri dapat membuat token pendaftaran tanpa permintaan kata sandi lokal yang tidak tersedia.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -121,3 +125,4 @@ Status pendaftaran SSO yang tertunda kini tetap dikelola server di balik cookie 
 - [8a481699](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a48169990cae94504cf9a2ae97c78343cbd3951)
 - [f08f3f47](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08f3f470df1cfb2aa9fca9f7ba1d29df1ea823d)
 - [82b32aaf](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b32aafcf4461f4ad3167e0adee2d65fccbfb3a)
+- [f63aa1a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/f63aa1a97b14476706130ea52d54a69e7b6fe65c)

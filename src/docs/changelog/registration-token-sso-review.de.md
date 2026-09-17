@@ -94,6 +94,10 @@ Das Registrierungstoken-Formular blendet das E-Mail-Feld nun aus, wenn der exter
 
 Der ausstehende SSO-Registrierungsstatus bleibt nun serverseitig hinter einem kurzlebigen HttpOnly-Cookie. Der Browser verwendet die saubere URL `/register` und fragt beim Authentifizierungs-Gateway nur den nicht sensiblen Formularstatus ab. Die Navigation „Stattdessen anmelden“ nutzt nun die standardmäßige neutrale Schaltflächendarstellung und entspricht ohne seitenspezifische Stile der Größe der Registrierungsaktion.
 
+## Zuverlässige Einladung für SSO-Benutzer
+
+Das Einladungsfenster der Benutzerseite lädt seine Beschriftungen und Stile nun vor dem Öffnen aus dem Registrierungs-Gateway, und die Token-Erstellung erfolgt über dessen Browser-Client. Frische SSO-Sitzungen, die nur über ihr sicheres Zugriffscookie authentifiziert sind, bestehen die standardmäßige Aktualitätsprüfung für sensible Aktionen, sodass Administratoren und Gründungsbenutzer Registrierungstoken ohne eine nicht verfügbare lokale Passwortabfrage erzeugen können.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -121,3 +125,4 @@ Der ausstehende SSO-Registrierungsstatus bleibt nun serverseitig hinter einem ku
 - [8a481699](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a48169990cae94504cf9a2ae97c78343cbd3951)
 - [f08f3f47](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08f3f470df1cfb2aa9fca9f7ba1d29df1ea823d)
 - [82b32aaf](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b32aafcf4461f4ad3167e0adee2d65fccbfb3a)
+- [f63aa1a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/f63aa1a97b14476706130ea52d54a69e7b6fe65c)

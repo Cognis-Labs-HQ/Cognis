@@ -1,0 +1,22 @@
+.registration-invite-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+}
+
+.registration-invite-tab {
+    flex: 1 0 auto;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--surface-2);
+    color: inherit;
+    cursor: pointer;
+}
+
+.registration-invite-tab.is-active {
+    border-color: var(--accent, currentColor);
+    background: var(--surface-3, var(--surface-2));
+    font-weight: 700;
+}

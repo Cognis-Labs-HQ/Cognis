@@ -563,6 +563,49 @@ test("POST /api/v1/auth/verify returns 200 for fresh authenticated session", asy
     assert.equal(res.status, 200);
 });
 
+test("POST /api/v1/auth/verify accepts a fresh cookie-only SSO session", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+    });
+
+    const token = issueAccessToken("sso-cookie-user", "admin", 60, {
+        providerId: "external-sso",
+    });
+    const req = {
+        method: "POST",
+        headers: { cookie: `cognis_access_token=${token}` },
+        [Symbol.asyncIterator]: async function* () {
+            yield Buffer.from("{}");
+        },
+    } as unknown as import("node:http").IncomingMessage;
+    const res = makeResponse();
+
+    let handled = false;
+    for (const entry of routeRegistry.getEntries()) {
+        handled = await entry.handler(
+            req,
+            res as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/verify", "http://localhost"),
+        );
+        if (handled) break;
+    }
+
+    assert.ok(handled, "verify endpoint should handle the request");
+    assert.equal(res.status, 200);
+});
+
 test("POST /api/v1/auth/verify returns 401 when unauthenticated", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();

@@ -94,6 +94,10 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 
 保留中の SSO 登録状態は、短時間有効な HttpOnly Cookie の背後でサーバーが管理するようになりました。ブラウザーはクリーンな `/register` URL を使用し、認証ゲートウェイから機密性のないフォーム状態だけを取得します。「代わりにサインイン」ナビゲーションは標準のニュートラルボタン表示を使用し、ページ固有のスタイルなしで登録操作と同じ大きさになります。
 
+## SSO ユーザー向けの確実な招待操作
+
+ユーザーページの招待ポップアップは、開く前に登録ゲートウェイからラベルとスタイルを読み込み、トークン作成もゲートウェイ所有のブラウザークライアントを経由するようになりました。安全なアクセス Cookie のみで認証された新しい SSO セッションでも標準の機密操作の鮮度確認を通過できるため、管理者と創設ユーザーは利用できないローカルパスワード入力を求められずに登録トークンを生成できます。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -121,3 +125,4 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 - [8a481699](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a48169990cae94504cf9a2ae97c78343cbd3951)
 - [f08f3f47](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08f3f470df1cfb2aa9fca9f7ba1d29df1ea823d)
 - [82b32aaf](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b32aafcf4461f4ad3167e0adee2d65fccbfb3a)
+- [f63aa1a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/f63aa1a97b14476706130ea52d54a69e7b6fe65c)

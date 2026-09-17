@@ -1,5 +1,9 @@
 import { apiFetch } from "../../reuse/api-client.js";
-import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
+import {
+    applyDocumentTitle,
+    createI18n,
+    extendI18n,
+} from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { openPopup } from "../../reuse/popup.js";
@@ -23,6 +27,7 @@ let registrationGatewayActive = false;
 let smtpAdapterActive = false;
 let composer = null;
 let elements = [];
+let registrationClient = null;
 
 const QUOTA_UNITS = [
     { id: "B", multiplier: 1 },
@@ -83,20 +88,14 @@ async function loadUsers() {
 }
 
 async function loadRegistrationGatewayState() {
-    const response = await apiFetch("/api/v1/gateways/registration");
-    if (!response.ok) return false;
-    const payload = await response.json();
-    if (payload?.data?.status === "disabled") return false;
-    const adaptersRes = await apiFetch(
-        "/api/v1/gateways/registration/adapters",
-    );
-    if (!adaptersRes.ok) return false;
-    const adaptersPayload = await adaptersRes.json();
-    const adapters = Array.isArray(adaptersPayload?.data)
-        ? adaptersPayload.data
-        : [];
-    const inviteAdapter = adapters.find((entry) => entry.id === "token");
-    return inviteAdapter?.enabled === true;
+    try {
+        registrationClient =
+            await import("/static/gateways/registration/client.js");
+        return registrationClient.loadRegistrationAvailability(apiFetch);
+    } catch {
+        registrationClient = null;
+        return false;
+    }
 }
 
 async function fetchUserInfo(username) {
@@ -706,9 +705,9 @@ async function triggerInviteFlow() {
             const action = await openPopup({
                 title: i18n.t("ui.reuse.invite"),
                 body: () => `
-                  <nav class="share-method-tabs" aria-label="${escapeHtml(i18n.t("gateway.registration.invite_methods"))}">
-                    <button type="button" class="share-method-tab${smtpAdapterActive ? " is-active" : ""}" data-invite-delivery="email" aria-pressed="${smtpAdapterActive ? "true" : "false"}" ${smtpAdapterActive ? "" : "disabled"}>${escapeHtml(i18n.t("gateway.registration.email_tab"))}</button>
-                    <button type="button" class="share-method-tab${smtpAdapterActive ? "" : " is-active"}" data-invite-delivery="manual" aria-pressed="${smtpAdapterActive ? "false" : "true"}">${escapeHtml(i18n.t("gateway.registration.token_tab"))}</button>
+                  <nav class="registration-invite-tabs" aria-label="${escapeHtml(i18n.t("gateway.registration.invite_methods"))}">
+                    <button type="button" class="registration-invite-tab${smtpAdapterActive ? " is-active" : ""}" data-invite-delivery="email" aria-pressed="${smtpAdapterActive ? "true" : "false"}" ${smtpAdapterActive ? "" : "disabled"}>${escapeHtml(i18n.t("gateway.registration.email_tab"))}</button>
+                    <button type="button" class="registration-invite-tab${smtpAdapterActive ? "" : " is-active"}" data-invite-delivery="manual" aria-pressed="${smtpAdapterActive ? "false" : "true"}">${escapeHtml(i18n.t("gateway.registration.token_tab"))}</button>
                   </nav>
                   <label class="stack">
                     <span>${escapeHtml(i18n.t("ui.reuse.invite_email"))}</span>
@@ -748,11 +747,13 @@ async function triggerInviteFlow() {
             if (action !== "create") return;
             const email = emailInput?.value?.trim();
             if (!email) return;
-            const response = await apiFetch("/api/v1/registration/tokens", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ email, delivery }),
-            });
+            const response = await registrationClient.createRegistrationToken(
+                apiFetch,
+                {
+                    email,
+                    delivery,
+                },
+            );
             if (response.ok) {
                 const payload = await response.json().catch(() => null);
                 if (delivery === "manual" && payload?.data?.inviteUrl) {
@@ -800,6 +801,12 @@ export async function mount(rootEl, { signal } = {}) {
     smtpAdapterActive = false;
 
     await refreshData();
+    if (registrationGatewayActive && registrationClient) {
+        i18n = await registrationClient.loadRegistrationInviteUi(
+            i18n,
+            extendI18n,
+        );
+    }
 
     composer = createPageComposer(root, {
         allowCustomization: false,
