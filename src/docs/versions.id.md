@@ -43,11 +43,11 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.21` |
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.34` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.24` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.24` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.23` |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.29` |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.25` |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.22` |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.34` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.35` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.20` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `2.0.5`  |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.7.12` |
@@ -70,7 +70,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Notification (notify) | `src/gateways/notify/`        | `1.5.12`  |
 | Social                | `src/gateways/social/`        | `1.3.5`   |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.10`  |
-| Registration          | `src/gateways/registration/`  | `1.1.27`  |
+| Registration          | `src/gateways/registration/`  | `1.1.28`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
 | Study                 | `src/gateways/study/`         | `1.5.14`  |

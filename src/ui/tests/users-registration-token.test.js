@@ -62,15 +62,19 @@ test("Users invite control navigates to invite management", async () => {
     assert.doesNotMatch(source, /triggerInviteFlow/);
 });
 
-test("Invite management separates methods and generates tokens on demand", async () => {
+test("Invite management uses explicit popup and token actions", async () => {
     const source = await readFile(
         new URL("../app/invite/index.js", import.meta.url),
         "utf8",
     );
-    assert.match(source, /data-invite-method-panel/);
-    assert.match(source, /gateway\.registration\.generate_token/);
-    assert.match(source, /payload\?\.data\?\.inviteUrl/);
+    assert.match(source, /gateway\.registration\.send_invite_email/);
+    assert.match(source, /gateway\.registration\.generate_registration_token/);
+    assert.match(source, /openPopup/);
+    assert.match(source, /registrationToken/);
+    assert.match(source, /renderSecretVisibilityField/);
+    assert.match(source, /copyTextToClipboard/);
     assert.match(source, /redeemedAccountId/);
+    assert.doesNotMatch(source, /data-invite-delivery/);
 });
 
 test("Users page does not retain the old invite popup", async () => {

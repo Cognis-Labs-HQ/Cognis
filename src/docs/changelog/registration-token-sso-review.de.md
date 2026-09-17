@@ -118,6 +118,10 @@ Das Einladungsfenster zeigt nur die ausgewählte Methode und erstellt einen manu
 
 Die Einladungsaktion auf der Benutzerseite führt Administratoren nun zur Einladungsseite; das Administrator-Benutzermenü bleibt unverändert. Die Einladungsseite verwaltet E-Mail- und Token-Erstellung, zeigt nur die gewählte Methode und listet Status sowie eingelösten Benutzernamen eigener Einladungen. Die SSO-Einlösung erfolgt erst nach Erstellung des externen Kontos.
 
+## Klare Einladungsaktionen und wiederverwendbare ausstehende Plätze
+
+Die Einladungsseite zeigt jetzt ausgewogene Aktionen „Einladungs-E-Mail senden“ und das nur für Administratoren verfügbare „Registrierungstoken erstellen“. Die E-Mail-Erstellung verwendet ein fokussiertes Popup; die Token-Erstellung erfolgt sofort, kopiert den Registrierungscode und zeigt ihn über die standardmäßigen Steuerelemente für verborgene Geheimnisse in der aktualisierten Tabelle an. Nach jeder Erstellung oder jedem Widerruf wird die maßgebliche Einladungsliste neu geladen. Gründungsbenutzer dürfen höchstens zehn ausstehende E-Mail-Einladungen halten; eingelöste, widerrufene und abgelaufene Einladungen geben ihre Plätze wieder frei.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -151,3 +155,4 @@ Die Einladungsaktion auf der Benutzerseite führt Administratoren nun zur Einlad
 - [a49861b7](https://github.com/Cognis-Labs-HQ/Cognis/commit/a49861b77761f0806b2fc169695a757968eefa2f)
 - [9263d2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/9263d2ceb03b63a897aa996c11d30321d55bc008)
 - [4cce96d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/4cce96d9382c34293b168528698d6eb6d592561e)
+- [9a2a9dc6](https://github.com/Cognis-Labs-HQ/Cognis/commit/9a2a9dc6)

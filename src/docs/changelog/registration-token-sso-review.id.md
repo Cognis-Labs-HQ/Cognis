@@ -118,6 +118,10 @@ Popup undangan kini hanya memasang panel metode yang dipilih dan baru membuat ta
 
 Tindakan undangan pada halaman Pengguna kini membawa administrator ke halaman Undangan tanpa menambahkannya ke menu pengguna administrator. Halaman Undangan mengelola pembuatan email dan token, hanya menampilkan metode terpilih, serta mencantumkan status dan nama pengguna penukar undangan milik pemanggil. Penukaran SSO ditunda hingga akun eksternal selesai dibuat.
 
+## Tindakan undangan yang jelas dan slot tertunda yang dapat digunakan kembali
+
+Halaman Undangan kini menampilkan tindakan “Kirim Email Undangan” dan “Buat Token Pendaftaran” khusus administrator dengan ukuran yang seimbang. Pembuatan email memakai popup terfokus; pembuatan token berlangsung langsung, menyalin kode pendaftaran, dan menampilkannya melalui kontrol rahasia tersembunyi standar dalam tabel yang diperbarui. Setiap pembuatan atau pencabutan memuat ulang daftar undangan otoritatif. Pengguna pendiri dapat menyimpan paling banyak sepuluh undangan email tertunda, dan undangan yang dipakai, dicabut, atau kedaluwarsa mengembalikan slotnya.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -151,3 +155,4 @@ Tindakan undangan pada halaman Pengguna kini membawa administrator ke halaman Un
 - [a49861b7](https://github.com/Cognis-Labs-HQ/Cognis/commit/a49861b77761f0806b2fc169695a757968eefa2f)
 - [9263d2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/9263d2ceb03b63a897aa996c11d30321d55bc008)
 - [4cce96d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/4cce96d9382c34293b168528698d6eb6d592561e)
+- [9a2a9dc6](https://github.com/Cognis-Labs-HQ/Cognis/commit/9a2a9dc6)

@@ -364,6 +364,7 @@
   <string name="ui.app.users.role_updated">Role updated.</string>
   <string name="ui.app.invite.page_subtitle">Review and manage registration tokens.</string>
   <string name="ui.app.invite.email">Email address</string>
+  <string name="ui.app.invite.target">Invite target</string>
   <string name="ui.app.invite.status">Status</string>
   <string name="ui.app.invite.expires_at">Expires at</string>
   <string name="ui.app.invite.issuer">Issuer</string>

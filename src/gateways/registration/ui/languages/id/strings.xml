@@ -11,4 +11,6 @@
   <string name="gateway.registration.founder_limit_reset">Kuota undangan pendiri telah direset.</string>
   <string name="gateway.registration.token_description">Buat tautan pendaftaran untuk dibagikan kepada seseorang yang akan mendaftar secara manual atau dengan SSO.</string>
   <string name="gateway.registration.generate_token">Buat token</string>
+  <string name="gateway.registration.send_invite_email">Kirim Email Undangan</string>
+  <string name="gateway.registration.generate_registration_token">Buat Token Pendaftaran</string>
 </resources>

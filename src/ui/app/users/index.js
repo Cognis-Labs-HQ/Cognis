@@ -313,7 +313,7 @@ function renderUsersTable() {
     const viewerCanManagePrivileged = currentRole === "owner";
     const inviteButtonHtml = registrationGatewayActive
         ? `<div class="controls">
-          <a id="users-invite-btn" class="btn-confirm btn-animated" href="/invite">+ ${escapeHtml(i18n.t("ui.reuse.invite"))}</a>
+          <a id="users-invite-btn" class="btn-confirm" href="/invite">+ ${escapeHtml(i18n.t("ui.reuse.invite"))}</a>
         </div>`
         : "";
     return `

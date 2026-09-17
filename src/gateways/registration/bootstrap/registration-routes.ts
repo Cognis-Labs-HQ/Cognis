@@ -61,6 +61,9 @@ export function createRegistrationRoutes(
                 (authenticatedClaims.role === "admin" &&
                     invitationPolicy.adminInvitesEnabled) ||
                 (isFounder && invitationPolicy.founderInvitesEnabled);
+            const canGenerateToken =
+                authenticatedClaims.role === "admin" ||
+                authenticatedClaims.role === "owner";
             log?.("debug", "Read registration state.", {
                 ...logMeta,
                 accountId: authenticatedClaims.sub,
@@ -76,6 +79,7 @@ export function createRegistrationRoutes(
                         inviteEnabled: gateway.isInviteEnabled(),
                         publicEnabled: gateway.isPublicEnabled(),
                         canInvite,
+                        canGenerateToken,
                     },
                 }),
             );
@@ -332,6 +336,15 @@ export function createRegistrationRoutes(
             }
             const body = await readJson(req);
             const deliverEmail = body.delivery !== "manual";
+            if (!deliverEmail && !isPrivilegedRole) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: { code: "forbidden", message: "Access denied" },
+                    }),
+                );
+                return true;
+            }
             const inviteeEmail = String(body.email ?? "")
                 .trim()
                 .toLowerCase();

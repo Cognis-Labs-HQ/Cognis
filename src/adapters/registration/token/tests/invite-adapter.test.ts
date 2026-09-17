@@ -407,3 +407,40 @@ test("external token consumption is restored when canonical email persistence fa
         redeemed_account_id: null,
     });
 });
+
+test("founding users are limited to ten active pending invitations", async () => {
+    let inserted = false;
+    const adapter = createAdapter({
+        dbExecutor: {
+            ensureTable: async () => {},
+            executeCommand: async (command: {
+                option: string;
+                count?: boolean;
+            }) => {
+                if (command.option === "SELECT" && command.count) {
+                    return { rows: [{ cnt: 10 }], rowCount: 1 };
+                }
+                if (command.option === "INSERT") inserted = true;
+                return { rows: [], rowCount: 0 };
+            },
+        } as any,
+        accountStore: {} as any,
+        canSendInviteEmail: () => true,
+        sendInviteEmail: async () => {},
+        isEmailRegistered: async () => false,
+        upsertVerifiedPrimaryEmail: async () => {},
+    });
+
+    await assert.rejects(
+        () =>
+            adapter.invite!.issueInvite({
+                inviterAccountId: "founder-1",
+                inviterDisplayName: "Founder",
+                inviteeEmail: "recipient@example.com",
+                inviterIsFounder: true,
+                inviteBaseUrl: "https://example.com",
+            }),
+        /founder_token_limit_reached/,
+    );
+    assert.equal(inserted, false);
+});

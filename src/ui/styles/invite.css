@@ -1,0 +1,25 @@
+.invite-actions {
+    align-items: stretch;
+}
+
+.invite-actions > button {
+    flex: 0 1 260px;
+    min-height: 42px;
+}
+
+.invite-token-target {
+    display: flex;
+    align-items: end;
+    gap: 8px;
+    min-width: 260px;
+}
+
+.invite-token-target .secret-visibility-field {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.invite-token-target .invite-copy-btn {
+    flex: 0 0 auto;
+    min-height: 38px;
+}
