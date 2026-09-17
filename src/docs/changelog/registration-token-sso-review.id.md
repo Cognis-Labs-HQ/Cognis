@@ -114,6 +114,10 @@ Penyedia SSO kini dapat mendaftarkan resolver profil melalui CTX untuk nama tamp
 
 Popup undangan kini hanya memasang panel metode yang dipilih dan baru membuat tautan pendaftaran manual setelah Buat undangan ditekan. Undangan manual menyalin URL yang dapat digunakan. Email dari token umum tidak lagi ditandai terverifikasi, dan modul dengan berkas executable di luar inventaris tidak dinyatakan terverifikasi.
 
+## Pengelolaan undangan khusus dan penukaran SSO tertunda
+
+Tindakan undangan pada halaman Pengguna kini membawa administrator ke halaman Undangan tanpa menambahkannya ke menu pengguna administrator. Halaman Undangan mengelola pembuatan email dan token, hanya menampilkan metode terpilih, serta mencantumkan status dan nama pengguna penukar undangan milik pemanggil. Penukaran SSO ditunda hingga akun eksternal selesai dibuat.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -146,3 +150,4 @@ Popup undangan kini hanya memasang panel metode yang dipilih dan baru membuat ta
 - [c31fc022](https://github.com/Cognis-Labs-HQ/Cognis/commit/c31fc0228dd8581eeffc3cd620ec957af3e9e87d)
 - [a49861b7](https://github.com/Cognis-Labs-HQ/Cognis/commit/a49861b77761f0806b2fc169695a757968eefa2f)
 - [9263d2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/9263d2ceb03b63a897aa996c11d30321d55bc008)
+- [4cce96d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/4cce96d9382c34293b168528698d6eb6d592561e)

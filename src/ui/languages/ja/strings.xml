@@ -695,4 +695,5 @@
   <string name="ui.reuse.name">名前</string>
   <string name="ui.reuse.uninstall">アンインストール</string>
   <string name="ui.reuse.toggle_secret_visibility">シークレットの表示を切り替える</string>
+  <string name="ui.app.invite.method">方式</string>
 </resources>

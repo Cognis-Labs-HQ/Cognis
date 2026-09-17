@@ -114,6 +114,10 @@ SSO providers can now register a CTX profile resolver that supplies display name
 
 The invitation popup now mounts only the selected method panel and creates a manual registration link only after Create invite is pressed. Manual links copy the usable invite URL. Generic-token email input is no longer marked verified, and module assurance no longer reports verified when executable files are absent from the sealed inventory.
 
+## Dedicated invitation management and deferred SSO redemption
+
+The Users-page invite action now navigates administrators to the Invites page while the administrator user menu remains unchanged. The Invites page owns email and token creation, shows only the selected method, labels token creation separately, and lists each caller’s invitation status and redeemed username. SSO authorization once again defers token redemption and verified-email persistence until after the external account exists.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -146,3 +150,4 @@ The invitation popup now mounts only the selected method panel and creates a man
 - [c31fc022](https://github.com/Cognis-Labs-HQ/Cognis/commit/c31fc0228dd8581eeffc3cd620ec957af3e9e87d)
 - [a49861b7](https://github.com/Cognis-Labs-HQ/Cognis/commit/a49861b77761f0806b2fc169695a757968eefa2f)
 - [9263d2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/9263d2ceb03b63a897aa996c11d30321d55bc008)
+- [4cce96d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/4cce96d9382c34293b168528698d6eb6d592561e)

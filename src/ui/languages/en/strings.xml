@@ -695,4 +695,5 @@
   <string name="ui.reuse.name">Name</string>
   <string name="ui.reuse.uninstall">Uninstall</string>
   <string name="ui.reuse.toggle_secret_visibility">Toggle Secret Visibility</string>
+  <string name="ui.app.invite.method">Method</string>
 </resources>

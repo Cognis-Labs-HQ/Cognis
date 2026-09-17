@@ -59,7 +59,7 @@ test("closed registration requests a missing SSO email", async () => {
     );
 });
 
-test("matching registration tokens are consumed during SSO authorization", async () => {
+test("matching registration tokens are consumed after account persistence", async () => {
     const { gateway, consumed } = createGateway({
         inviteEmail: "person@example.com",
     });
@@ -71,6 +71,8 @@ test("matching registration tokens are consumed during SSO authorization", async
     assert.equal(result.authorized, true);
     assert.equal(result.emailRequired, false);
     assert.equal(result.source, "registrationToken");
+    assert.deepEqual(consumed, []);
+    assert.equal(await result.commit?.(), true);
     assert.deepEqual(consumed, [
         {
             token: "registration-token",

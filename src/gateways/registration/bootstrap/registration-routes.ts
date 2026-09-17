@@ -258,9 +258,6 @@ export function createRegistrationRoutes(
             }
             const authenticatedClaims = ctx.requireAuth(req, res, "user");
             if (!authenticatedClaims) return true;
-            const isPrivilegedRole =
-                authenticatedClaims.role === "admin" ||
-                authenticatedClaims.role === "owner";
             const isFounder = await accountStore.isFounder(
                 authenticatedClaims.sub,
             );
@@ -279,16 +276,10 @@ export function createRegistrationRoutes(
                 );
                 return true;
             }
-            const invites = isPrivilegedRole
-                ? await gateway.listInvites({
-                      includeClosed:
-                          url.searchParams.get("includeClosed") === "true",
-                  })
-                : await gateway.listInvites({
-                      inviterAccountId: authenticatedClaims.sub,
-                      includeClosed:
-                          url.searchParams.get("includeClosed") === "true",
-                  });
+            const invites = await gateway.listInvites({
+                inviterAccountId: authenticatedClaims.sub,
+                includeClosed: url.searchParams.get("includeClosed") === "true",
+            });
             log?.("debug", "Listed registration invites.", {
                 ...logMeta,
                 accountId: authenticatedClaims.sub,

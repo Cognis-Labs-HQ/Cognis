@@ -10,4 +10,5 @@
   <string name="gateway.registration.reset_founder_limit">創設ユーザーの招待枠をリセット</string>
   <string name="gateway.registration.founder_limit_reset">創設ユーザーの招待枠をリセットしました。</string>
   <string name="gateway.registration.token_description">手動または SSO で登録するユーザーに共有する登録リンクを作成します。</string>
+  <string name="gateway.registration.generate_token">トークンを作成</string>
 </resources>

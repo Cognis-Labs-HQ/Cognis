@@ -30,3 +30,23 @@ export function createRegistrationToken(apiFetch, { email, delivery }) {
         body: JSON.stringify({ email, delivery }),
     });
 }
+
+export function listRegistrationTokens(
+    apiFetch,
+    { includeClosed = false } = {},
+) {
+    return apiFetch(
+        `/api/v1/registration/tokens${includeClosed ? "?includeClosed=true" : ""}`,
+    );
+}
+
+export function loadRegistrationState(apiFetch) {
+    return apiFetch("/api/v1/registration/state");
+}
+
+export function revokeRegistrationToken(apiFetch, tokenId) {
+    return apiFetch(
+        `/api/v1/registration/tokens/${encodeURIComponent(tokenId)}/revoke`,
+        { method: "POST" },
+    );
+}

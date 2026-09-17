@@ -313,7 +313,7 @@ function renderUsersTable() {
     const viewerCanManagePrivileged = currentRole === "owner";
     const inviteButtonHtml = registrationGatewayActive
         ? `<div class="controls">
-          <button id="users-invite-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.reuse.invite"))}</button>
+          <a id="users-invite-btn" class="btn-confirm btn-animated" href="/invite">+ ${escapeHtml(i18n.t("ui.reuse.invite"))}</a>
         </div>`
         : "";
     return `
@@ -688,112 +688,6 @@ function bindUsersInteractions() {
             }
         });
     });
-
-    root.querySelector("#users-invite-btn")?.addEventListener(
-        "click",
-        async () => {
-            await triggerInviteFlow();
-        },
-    );
-}
-
-async function triggerInviteFlow() {
-    await reprompt.runWithReprompt(
-        async () => {
-            let delivery = smtpAdapterActive ? "email" : "manual";
-            let emailInput = null;
-            const action = await openPopup({
-                title: i18n.t("ui.reuse.invite"),
-                body: () => `
-                  <nav class="share-method-tabs" aria-label="${escapeHtml(i18n.t("gateway.registration.invite_methods"))}">
-                    <button type="button" class="share-method-tab${smtpAdapterActive ? " is-active" : ""}" data-invite-delivery="email" aria-pressed="${smtpAdapterActive ? "true" : "false"}" ${smtpAdapterActive ? "" : "disabled"}>${escapeHtml(i18n.t("gateway.registration.email_tab"))}</button>
-                    <button type="button" class="share-method-tab${smtpAdapterActive ? "" : " is-active"}" data-invite-delivery="manual" aria-pressed="${smtpAdapterActive ? "false" : "true"}">${escapeHtml(i18n.t("gateway.registration.token_tab"))}</button>
-                  </nav>
-                  <div data-invite-method-panel></div>`,
-                actions: [
-                    {
-                        id: "create",
-                        label: i18n.t("gateway.registration.create_invite"),
-                        variant: "confirm",
-                    },
-                ],
-                onOpen: (overlay) => {
-                    const panel = overlay.querySelector(
-                        "[data-invite-method-panel]",
-                    );
-                    const renderDelivery = () => {
-                        if (!(panel instanceof HTMLElement)) return;
-                        if (delivery === "manual") {
-                            panel.innerHTML = `<p class="share-method-description">${escapeHtml(i18n.t("gateway.registration.token_description"))}</p>`;
-                            emailInput = null;
-                            return;
-                        }
-                        panel.innerHTML = `<label class="stack"><span>${escapeHtml(i18n.t("ui.reuse.invite_email"))}</span><input id="users-invite-email" type="email" placeholder="${escapeHtml(i18n.t("ui.reuse.email_placeholder"))}" required /></label>`;
-                        emailInput = panel.querySelector("#users-invite-email");
-                    };
-                    const selectDelivery = (tab) => {
-                        delivery = tab.dataset.inviteDelivery;
-                        overlay
-                            .querySelectorAll("[data-invite-delivery]")
-                            .forEach((candidate) => {
-                                const active = candidate === tab;
-                                candidate.classList.toggle("is-active", active);
-                                candidate.setAttribute(
-                                    "aria-pressed",
-                                    String(active),
-                                );
-                            });
-                        renderDelivery();
-                    };
-                    overlay
-                        .querySelectorAll("[data-invite-delivery]")
-                        .forEach((tab) => {
-                            tab.addEventListener("click", () =>
-                                selectDelivery(tab),
-                            );
-                        });
-                    renderDelivery();
-                },
-            });
-            if (action !== "create") return;
-            const email = emailInput?.value?.trim();
-            if (delivery === "email" && !email) return;
-            const response = await registrationClient.createRegistrationToken(
-                apiFetch,
-                {
-                    ...(email ? { email } : {}),
-                    delivery,
-                },
-            );
-            if (response.ok) {
-                const payload = await response.json().catch(() => null);
-                if (delivery === "manual" && payload?.data?.inviteUrl) {
-                    await navigator.clipboard.writeText(payload.data.inviteUrl);
-                }
-                showToast(
-                    i18n.t(
-                        delivery === "manual"
-                            ? "gateway.registration.token_copied"
-                            : "ui.reuse.invite_sent",
-                    ),
-                    { variant: "success" },
-                );
-                return;
-            }
-            let errorMessage = i18n.t("ui.reuse.invite_failed");
-            const errorBody = await response.json().catch((error) => {
-                console.error("registration_token_error_response_invalid", {
-                    error,
-                });
-                return null;
-            });
-            if (errorBody?.error?.code === "email_taken") {
-                errorMessage = i18n.t("ui.reuse.invite_email_taken");
-            }
-            showToast(errorMessage, { variant: "error" });
-        },
-        { maxAttempts: 2 },
-    );
 }
 
 export async function mount(rootEl, { signal } = {}) {
@@ -830,11 +724,6 @@ export async function mount(rootEl, { signal } = {}) {
     });
 
     await composer.init();
-
-    const pageAction = new URL(location.href).searchParams.get("action");
-    if (pageAction === "invite" && registrationGatewayActive) {
-        await triggerInviteFlow();
-    }
 }
 
 await mountWhenDirect(mount);

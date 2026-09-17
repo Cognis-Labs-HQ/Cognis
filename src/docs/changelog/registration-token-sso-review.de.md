@@ -114,6 +114,10 @@ SSO-Anbieter können nun über CTX einen Profil-Resolver für Anzeigenamen, Biog
 
 Das Einladungsfenster zeigt nur die ausgewählte Methode und erstellt einen manuellen Registrierungslink erst nach „Einladung erstellen“. Manuelle Einladungen kopieren die nutzbare URL. E-Mail-Eingaben für allgemeine Token werden nicht mehr als verifiziert markiert, und Module mit nicht inventarisierten ausführbaren Dateien gelten nicht als verifiziert.
 
+## Eigene Einladungsverwaltung und verzögerte SSO-Einlösung
+
+Die Einladungsaktion auf der Benutzerseite führt Administratoren nun zur Einladungsseite; das Administrator-Benutzermenü bleibt unverändert. Die Einladungsseite verwaltet E-Mail- und Token-Erstellung, zeigt nur die gewählte Methode und listet Status sowie eingelösten Benutzernamen eigener Einladungen. Die SSO-Einlösung erfolgt erst nach Erstellung des externen Kontos.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -146,3 +150,4 @@ Das Einladungsfenster zeigt nur die ausgewählte Methode und erstellt einen manu
 - [c31fc022](https://github.com/Cognis-Labs-HQ/Cognis/commit/c31fc0228dd8581eeffc3cd620ec957af3e9e87d)
 - [a49861b7](https://github.com/Cognis-Labs-HQ/Cognis/commit/a49861b77761f0806b2fc169695a757968eefa2f)
 - [9263d2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/9263d2ceb03b63a897aa996c11d30321d55bc008)
+- [4cce96d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/4cce96d9382c34293b168528698d6eb6d592561e)

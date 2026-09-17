@@ -102,15 +102,15 @@ test("founder can list only their pending registration tokens", async () => {
     assert.equal(inviterFilter, "founder-user");
 });
 
-test("admin can list all pending registration tokens", async () => {
-    let didUseUnfilteredList = false;
+test("admin invite management is scoped to invitations they created", async () => {
+    let inviterFilter = "";
     const route = createRegistrationRoutes(
         {
             isInviteEnabled() {
                 return true;
             },
             async listInvites(filter?: { inviterAccountId?: string }) {
-                didUseUnfilteredList = !filter?.inviterAccountId;
+                inviterFilter = filter?.inviterAccountId ?? "";
                 return [];
             },
             async issueInvite() {
@@ -140,7 +140,7 @@ test("admin can list all pending registration tokens", async () => {
     );
     assert.equal(handled, true);
     assert.equal(res.status, 200);
-    assert.equal(didUseUnfilteredList, true);
+    assert.equal(inviterFilter, "admin-user");
 });
 
 test("registration state exposes founder-safe gateway status", async () => {

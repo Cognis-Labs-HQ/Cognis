@@ -40,16 +40,17 @@ export async function authorizeAccountCreation(
     const authorized =
         Boolean(invite) && (!inviteEmail || inviteEmail === email);
     if (authorized && invite) {
-        const consumed = await gateway.consumeExternalAccountToken({
-            token,
-            accountId,
-            email,
-            emailVerified: Boolean(inviteEmail),
-        });
         return {
-            authorized: consumed,
+            authorized: true,
             emailRequired: false,
             source: "registrationToken",
+            commit: () =>
+                gateway.consumeExternalAccountToken({
+                    token,
+                    accountId,
+                    email,
+                    emailVerified: Boolean(inviteEmail),
+                }),
         };
     }
     return {

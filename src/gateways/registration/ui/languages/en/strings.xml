@@ -10,4 +10,5 @@
   <string name="gateway.registration.reset_founder_limit">Reset founder invite allowance</string>
   <string name="gateway.registration.founder_limit_reset">Founder invite allowance reset.</string>
   <string name="gateway.registration.token_description">Create a registration link to share with someone who will register manually or with SSO.</string>
+  <string name="gateway.registration.generate_token">Generate token</string>
 </resources>

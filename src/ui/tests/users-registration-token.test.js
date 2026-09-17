@@ -8,9 +8,7 @@ test("Users invitations use the mandatory registration token adapter", async () 
         "utf8",
     );
     assert.match(source, /gateways\/registration\/client\.js/);
-    assert.match(source, /createRegistrationToken/);
-    assert.match(source, /share-method-tabs/);
-    assert.match(source, /delivery === "manual"/);
+    assert.match(source, /href="\/invite"/);
     assert.doesNotMatch(
         source,
         /registrationGatewayActive && smtpAdapterActive\s*\?[^:]+users-invite-btn/,
@@ -55,28 +53,31 @@ test("Registration token adapter owns the SSO authorization form", async () => {
     assert.match(source, /window\.location\.replace\("\/login"\)/);
 });
 
-test("Invite popup creates a manual invite only after confirmation", async () => {
+test("Users invite control navigates to invite management", async () => {
     const source = await readFile(
         new URL("../app/users/index.js", import.meta.url),
         "utf8",
     );
-    assert.match(source, /createRegistrationToken\(\s*apiFetch,\s*\{/);
-    assert.match(source, /delivery === "manual"/);
-    assert.match(source, /payload\?\.data\?\.inviteUrl/);
-    assert.match(source, /data-invite-method-panel/);
-    assert.doesNotMatch(source, /data-invite-token-result/);
-    assert.doesNotMatch(source, /generateManualToken/);
+    assert.match(source, /href="\/invite"/);
+    assert.doesNotMatch(source, /triggerInviteFlow/);
 });
 
-test("Users invite popup does not depend on a selected table user", async () => {
+test("Invite management separates methods and generates tokens on demand", async () => {
+    const source = await readFile(
+        new URL("../app/invite/index.js", import.meta.url),
+        "utf8",
+    );
+    assert.match(source, /data-invite-method-panel/);
+    assert.match(source, /gateway\.registration\.generate_token/);
+    assert.match(source, /payload\?\.data\?\.inviteUrl/);
+    assert.match(source, /redeemedAccountId/);
+});
+
+test("Users page does not retain the old invite popup", async () => {
     const source = await readFile(
         new URL("../app/users/index.js", import.meta.url),
         "utf8",
     );
-    const triggerInviteFlow = source.match(
-        /async function triggerInviteFlow\(\) \{[\s\S]*?\n\}/,
-    )?.[0];
-    assert.ok(triggerInviteFlow);
-    assert.doesNotMatch(triggerInviteFlow, /\buser\?\./);
-    assert.match(triggerInviteFlow, /id: "create"/);
+    assert.doesNotMatch(source, /async function triggerInviteFlow/);
+    assert.doesNotMatch(source, /data-invite-delivery/);
 });
