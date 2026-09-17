@@ -61,8 +61,6 @@ const PUBLIC_INSTALL_ERROR_CODES = new Set([
     "invalid_module_repository_path",
     "invalid_module_source",
     "missing_module_license_file",
-    "module_dependency_disabled",
-    "module_dependency_unavailable",
     "module_id_conflict",
     "module_uuid_mismatch",
     "unsupported_clone_url",

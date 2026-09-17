@@ -1,10 +1,6 @@
-# モジュール依存関係トースト
+# 登録トークンと SSO 統合
 
-**機能ブランチ:** feature-handle-dependency-error-for-module-installation
-
-## 明確な依存関係エラー
-
-モジュールのインストールと有効化で、無効または利用できない必須依存関係が、ローカライズされたエラートーストとして表示されるようになりました。依存関係の内部詳細はサーバーログにのみ記録されます。
+**機能ブランチ:** registration-token-sso-review
 
 ## スタイル付きプロバイダーボタン
 
@@ -70,6 +66,10 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 
 創設ユーザーの招待リセット操作をユーザーページのアクションハンドラー内に戻し、本番 UI ビルドが再び有効な ECMAScript モジュールを生成するようにしました。
 
+## 変更範囲の明確化
+
+無関係なモジュール依存関係トーストの変更を、この pull request から削除しました。残る実装は、登録トークンの統合、SSO とプロバイダーのライフサイクル統合、およびそれらの拡張点に必要なモジュール境界保護に限定されています。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -92,3 +92,4 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 - [2f42af60](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f42af6007a0935a99ca2860cfb893c8e9bc3c2d)
 - [fb4cbefe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb4cbefe2974a810fe5a8dabc15267d7663a58a4)
 - [a7f57fd8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f57fd8e8d21b3783b9e316ade117343c4e5cbd)
+- [06f9f746](https://github.com/Cognis-Labs-HQ/Cognis/commit/06f9f746c0b33eaab8eb3c7af57a6c9b754f4164)
