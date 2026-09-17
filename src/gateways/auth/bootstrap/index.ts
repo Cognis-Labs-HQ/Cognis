@@ -81,6 +81,7 @@ export interface PendingTfaLoginAttempt {
 export interface PendingAccountCreationAttempt {
     id: string;
     providerId: string;
+    emailRequired: boolean;
     session: {
         accountId: string;
         provider: string;
@@ -129,6 +130,14 @@ export interface AuthRouteBootstrapRuntime {
     getPendingAccountCreationAttempt: (
         attemptId: string,
     ) => PendingAccountCreationAttempt | null;
+    buildPendingAccountCreationCookie: (
+        req: IncomingMessage,
+        attemptId: string,
+    ) => string;
+    clearPendingAccountCreationCookie: (req: IncomingMessage) => string;
+    extractPendingAccountCreationAttemptId: (
+        req: IncomingMessage,
+    ) => string | null;
 }
 
 export interface AuthRouteBootstrapHookContext {

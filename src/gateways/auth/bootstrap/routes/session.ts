@@ -235,7 +235,10 @@ export function createSessionRoutes({
         res: import("node:http").ServerResponse,
         sessionResult: LoginFlowSessionResult,
         logMeta: AuthRouteLogMeta,
+        responseCookies: string[] = [],
     ): true {
+        const appendResponseCookie = (cookie: string): string | string[] =>
+            responseCookies.length > 0 ? [...responseCookies, cookie] : cookie;
         const outcome = sessionResult.outcome;
         if (outcome === "provider_unavailable") {
             log?.("warn", "Login failed: provider unavailable (flow).", {
@@ -271,14 +274,28 @@ export function createSessionRoutes({
             const pending = sessionResult.pendingAccountCreation;
             const attempt = pending
                 ? authRouteBootstrapRuntime.createPendingAccountCreationAttempt(
-                      pending,
+                      {
+                          ...pending,
+                          emailRequired: sessionResult.emailRequired === true,
+                      },
                   )
                 : null;
             log?.("info", "Held external login for account authorization.", {
                 ...logMeta,
                 emailRequired: sessionResult.emailRequired === true,
             });
-            res.writeHead(403, { "content-type": "application/json" });
+            res.writeHead(403, {
+                "content-type": "application/json",
+                ...(attempt
+                    ? {
+                          "set-cookie":
+                              authRouteBootstrapRuntime.buildPendingAccountCreationCookie(
+                                  req,
+                                  attempt.id,
+                              ),
+                      }
+                    : {}),
+            });
             res.end(
                 JSON.stringify({
                     error: {
@@ -291,7 +308,7 @@ export function createSessionRoutes({
                         registrationTokenRequired: true,
                         ...(attempt
                             ? {
-                                  registrationUrl: `/register?accountCreationAttempt=${encodeURIComponent(attempt.id)}&emailRequired=${sessionResult.emailRequired === true ? "true" : "false"}&expiresAt=${attempt.expiresAt}`,
+                                  registrationUrl: "/register",
                               }
                             : {}),
                     },
@@ -363,10 +380,12 @@ export function createSessionRoutes({
             );
             res.writeHead(200, {
                 "content-type": "application/json",
-                "set-cookie": authRouteBootstrapRuntime.buildAccessTokenCookie(
-                    req,
-                    token,
-                    ttlSeconds,
+                "set-cookie": appendResponseCookie(
+                    authRouteBootstrapRuntime.buildAccessTokenCookie(
+                        req,
+                        token,
+                        ttlSeconds,
+                    ),
                 ),
             });
             res.end(
@@ -426,10 +445,12 @@ export function createSessionRoutes({
             });
             res.writeHead(200, {
                 "content-type": "application/json",
-                "set-cookie": authRouteBootstrapRuntime.buildAccessTokenCookie(
-                    req,
-                    token,
-                    ttlSeconds,
+                "set-cookie": appendResponseCookie(
+                    authRouteBootstrapRuntime.buildAccessTokenCookie(
+                        req,
+                        token,
+                        ttlSeconds,
+                    ),
                 ),
             });
             res.end(
@@ -607,12 +628,54 @@ export function createSessionRoutes({
             return true;
         }
 
+        if (
+            url.pathname === "/api/v1/auth/account-creation-attempt" &&
+            req.method === "GET"
+        ) {
+            const attemptId =
+                authRouteBootstrapRuntime.extractPendingAccountCreationAttemptId(
+                    req,
+                );
+            const attempt = attemptId
+                ? authRouteBootstrapRuntime.getPendingAccountCreationAttempt(
+                      attemptId,
+                  )
+                : null;
+            if (!attempt) {
+                res.writeHead(200, {
+                    "content-type": "application/json",
+                    ...(attemptId
+                        ? {
+                              "set-cookie":
+                                  authRouteBootstrapRuntime.clearPendingAccountCreationCookie(
+                                      req,
+                                  ),
+                          }
+                        : {}),
+                });
+                res.end(JSON.stringify({ data: null }));
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        emailRequired: attempt.emailRequired,
+                        expiresAt: attempt.expiresAt,
+                    },
+                }),
+            );
+            return true;
+        }
+
         if (url.pathname === "/api/v1/auth/login" && req.method === "POST") {
             const body = await readJson(req);
             const provider = String(body.provider ?? "local");
-            const accountCreationAttemptId = String(
-                body.accountCreationAttemptId ?? "",
-            ).trim();
+            const accountCreationAttemptId = body.registrationToken
+                ? (authRouteBootstrapRuntime.extractPendingAccountCreationAttemptId(
+                      req,
+                  ) ?? "")
+                : "";
             const pendingAccountCreation = accountCreationAttemptId
                 ? authRouteBootstrapRuntime.getPendingAccountCreationAttempt(
                       accountCreationAttemptId,
@@ -634,7 +697,6 @@ export function createSessionRoutes({
 
             const credentials: Record<string, unknown> = { ...body };
             delete credentials.provider;
-            delete credentials.accountCreationAttemptId;
 
             const systemCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
             if (systemCtx?.flow.exists("login")) {
@@ -650,6 +712,7 @@ export function createSessionRoutes({
                 });
                 const sessionResult = resolveFlowSessionResult(result);
                 if (sessionResult) {
+                    const responseCookies: string[] = [];
                     if (
                         accountCreationAttemptId &&
                         sessionResult.outcome !== "account_creation_required"
@@ -657,12 +720,18 @@ export function createSessionRoutes({
                         authRouteBootstrapRuntime.clearPendingAccountCreationAttempt(
                             accountCreationAttemptId,
                         );
+                        responseCookies.push(
+                            authRouteBootstrapRuntime.clearPendingAccountCreationCookie(
+                                req,
+                            ),
+                        );
                     }
                     return dispatchLoginFlowResult(
                         req,
                         res,
                         sessionResult,
                         logMeta,
+                        responseCookies,
                     );
                 }
                 log?.("warn", "Login flow did not produce a session outcome.", {

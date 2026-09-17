@@ -16,7 +16,6 @@ export async function startSsoLogin(providerId) {
 }
 
 export async function authorizePendingAccountCreation({
-    accountCreationAttemptId,
     registrationToken,
     email,
 }) {
@@ -24,11 +23,17 @@ export async function authorizePendingAccountCreation({
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-            accountCreationAttemptId,
             registrationToken,
             ...(email ? { email } : {}),
         }),
     });
     const payload = await response.json().catch(() => null);
     return { response, payload };
+}
+
+export async function getPendingAccountCreation() {
+    const response = await fetch("/api/v1/auth/account-creation-attempt");
+    if (!response.ok) return null;
+    const payload = await response.json().catch(() => null);
+    return payload?.data ?? null;
 }

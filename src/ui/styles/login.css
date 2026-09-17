@@ -104,10 +104,19 @@ p.auth-intro {
 }
 
 .auth-form input,
-.auth-form button {
+.auth-form button,
+.auth-form > a[class*="btn-"] {
     padding: 12px 14px;
     font-size: 1.15rem;
     font-weight: 400;
+}
+
+.auth-form > a[class*="btn-"] {
+    display: block;
+    width: 100%;
+    margin-top: 8px;
+    text-align: center;
+    text-decoration: none;
 }
 
 .auth-form button {
@@ -377,6 +386,7 @@ p.auth-intro {
 
     .auth-form input,
     .auth-form button,
+    .auth-form > a[class*="btn-"],
     .sso-login-btn {
         padding: 10px 12px;
         font-size: 1rem;
@@ -460,6 +470,7 @@ body[data-theme="light"] .auth-secondary-action:hover:not(:disabled) {
     background: rgba(147, 197, 253, 0.3);
     border-color: rgba(37, 99, 235, 0.6);
 }
+
 .auth-footer {
     display: flex;
     justify-content: center;

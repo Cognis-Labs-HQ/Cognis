@@ -171,15 +171,12 @@ test("anonymous login failures do not call the authenticated logger", () => {
 });
 
 test("SSO account creation carries its lease into the composed token form", async () => {
-    const request = readAccountCreationAuthorization(
-        new URLSearchParams({
-            accountCreationAttempt: "account_creation_example",
-            emailRequired: "false",
-            expiresAt: "1893456000000",
-        }),
-    );
+    const request = readAccountCreationAuthorization({
+        emailRequired: false,
+        expiresAt: 1893456000000,
+    });
     assert.deepEqual(request, {
-        attemptId: "account_creation_example",
+        active: true,
         emailRequired: false,
         expiresAt: 1893456000000,
     });
@@ -219,7 +216,7 @@ test("SSO account creation only requests an email when one is required", async (
     renderAccountCreationAuthorization({
         integrations,
         request: {
-            attemptId: "account_creation_with_email",
+            active: true,
             emailRequired: false,
             expiresAt: 1893456000000,
         },
@@ -228,7 +225,7 @@ test("SSO account creation only requests an email when one is required", async (
     renderAccountCreationAuthorization({
         integrations,
         request: {
-            attemptId: "account_creation_without_email",
+            active: true,
             emailRequired: true,
             expiresAt: 1893456000000,
         },

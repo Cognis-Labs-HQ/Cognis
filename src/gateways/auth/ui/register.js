@@ -43,6 +43,7 @@ import {
     REGISTRATION_ERROR_CODES,
     renderAccountCreationAuthorization,
 } from "/static/gateways/auth/registration-authorization.js";
+import { getPendingAccountCreation } from "/static/gateways/auth/login-client.js";
 const REGISTER_EMAIL_MAX_CHARACTERS = 320;
 const REGISTER_USERNAME_MAX_CHARACTERS = 25;
 const REGISTER_DISPLAY_NAME_MAX_CHARACTERS = 80;
@@ -159,8 +160,9 @@ export async function mount(root, { signal } = {}) {
     const tokenParam = params.get("token");
     const token = String(tokenParam ?? "").trim();
     const hasTokenParam = tokenParam !== null;
-    const accountCreationAuthorization =
-        readAccountCreationAuthorization(params);
+    const accountCreationAuthorization = readAccountCreationAuthorization(
+        await getPendingAccountCreation().catch(() => null),
+    );
     const prefilledEmail = String(params.get("email") ?? "")
         .trim()
         .toLowerCase();
@@ -507,7 +509,9 @@ export async function mount(root, { signal } = {}) {
       <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.register.form_title"))}</h2>
       ${messageHtml}
       ${formHtml}
-      <button id="register-signin-instead" type="button" class="btn-animated auth-secondary-action">${escapeHtml(i18n.t("ui.reuse.sign_in_instead"))}</button>
+      <div class="auth-form">
+        <a id="register-signin-instead" href="/login" class="btn-neutral btn-animated">${escapeHtml(i18n.t("ui.reuse.sign_in_instead"))}</a>
+      </div>
       ${renderAuthFooter()}
     `;
         return renderAuthLayout({
@@ -626,18 +630,6 @@ export async function mount(root, { signal } = {}) {
                 onRender: () => {
                     mountAuthFooter(root, { i18n, signal });
                     runTypingShowcase(typingSamples);
-                    const signInInsteadButton = root.querySelector(
-                        "#register-signin-instead",
-                    );
-                    if (signInInsteadButton instanceof HTMLButtonElement) {
-                        signInInsteadButton.addEventListener(
-                            "click",
-                            () => {
-                                window.location.href = "/login";
-                            },
-                            signal ? { signal } : undefined,
-                        );
-                    }
 
                     if (tokenInvalid && invalidTokenToastToken !== token) {
                         invalidTokenToastToken = token;

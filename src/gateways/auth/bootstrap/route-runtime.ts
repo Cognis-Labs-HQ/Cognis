@@ -15,6 +15,7 @@ export const TFA_LOGIN_ATTEMPT_ID_BYTES = 18;
 // Pending TFA login attempts expire after 5 minutes to limit replay windows.
 export const TFA_LOGIN_ATTEMPT_TTL_MS = 5 * 60 * 1000;
 export const ACCOUNT_CREATION_ATTEMPT_TTL_MS = 10 * 60 * 1000;
+const ACCOUNT_CREATION_COOKIE = "cognis_account_creation";
 export const PASSWORD_RESET_TOKEN_TTL_SECONDS = 15 * 60;
 export const PASSWORD_RESET_RATE_LIMIT_MS = 60_000;
 export const PASSWORD_RESET_MIN_RESPONSE_MS = 350;
@@ -62,6 +63,30 @@ export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
     }
 
     return {
+        buildPendingAccountCreationCookie(
+            req: IncomingMessage,
+            attemptId: string,
+        ): string {
+            const securePart = shouldSetSecureCookie(req) ? "; Secure" : "";
+            return `${ACCOUNT_CREATION_COOKIE}=${encodeURIComponent(attemptId)}; Path=/api/v1/auth; HttpOnly; SameSite=Lax; Max-Age=${ACCOUNT_CREATION_ATTEMPT_TTL_MS / 1000}${securePart}`;
+        },
+        clearPendingAccountCreationCookie(req: IncomingMessage): string {
+            const securePart = shouldSetSecureCookie(req) ? "; Secure" : "";
+            return `${ACCOUNT_CREATION_COOKIE}=; Path=/api/v1/auth; HttpOnly; SameSite=Lax; Max-Age=0${securePart}`;
+        },
+        extractPendingAccountCreationAttemptId(
+            req: IncomingMessage,
+        ): string | null {
+            for (const cookie of String(req.headers.cookie ?? "").split(";")) {
+                const [name, ...valueParts] = cookie.trim().split("=");
+                if (name !== ACCOUNT_CREATION_COOKIE) continue;
+                const attemptId = valueParts.join("=");
+                return /^account_creation_[A-Za-z0-9_-]+$/.test(attemptId)
+                    ? attemptId
+                    : null;
+            }
+            return null;
+        },
         buildAccessTokenCookie(
             req: IncomingMessage,
             rawToken: string,

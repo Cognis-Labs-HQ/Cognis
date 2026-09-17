@@ -44,7 +44,6 @@ export function renderAccountCreationAuthorization({
 export function bindAccountCreationAuthorization({
     root,
     i18n,
-    attemptId,
     emailRequired,
     showToast,
     signal,
@@ -99,7 +98,6 @@ export function bindAccountCreationAuthorization({
                     : "";
             const { response, payload } = await authorizePendingAccountCreation(
                 {
-                    accountCreationAttemptId: attemptId,
                     registrationToken,
                     email,
                 },

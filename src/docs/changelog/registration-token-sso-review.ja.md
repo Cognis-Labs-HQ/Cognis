@@ -90,6 +90,10 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 
 外部プロバイダーから有効なアドレスが提供された場合、登録トークンフォームはメール欄を表示しないようになりました。プロバイダーのアドレスが未提供または無効な場合は必須のメール欄を表示し、認証ゲートウェイはメールなしで登録を進める判断の前に無効なコールバックアドレスを拒否します。
 
+## クリーンな SSO 登録引き継ぎ
+
+保留中の SSO 登録状態は、短時間有効な HttpOnly Cookie の背後でサーバーが管理するようになりました。ブラウザーはクリーンな `/register` URL を使用し、認証ゲートウェイから機密性のないフォーム状態だけを取得します。「代わりにサインイン」ナビゲーションは標準のニュートラルボタン表示を使用し、ページ固有のスタイルなしで登録操作と同じ大きさになります。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -116,3 +120,4 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 - [9d5530e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d5530e0359e8edb7f47756114c4dd18e4186617)
 - [8a481699](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a48169990cae94504cf9a2ae97c78343cbd3951)
 - [f08f3f47](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08f3f470df1cfb2aa9fca9f7ba1d29df1ea823d)
+- [82b32aaf](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b32aafcf4461f4ad3167e0adee2d65fccbfb3a)

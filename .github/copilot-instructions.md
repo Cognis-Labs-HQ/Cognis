@@ -23,6 +23,18 @@ from that gateway's UI client module and consume that function instead of
 issuing a gateway API request directly from another page or module. This keeps
 endpoint knowledge and response handling within the owning gateway.
 
+### Keep URLs clean and non-sensitive
+
+Avoid query parameters and fragments for transient server-owned workflow state.
+URLs must remain short, readable, and safe to expose in browser history, logs,
+analytics, referrer headers, and screenshots. Never place opaque attempt IDs,
+internal expiry timestamps, authorization decisions, or similar implementation
+state in a URL. Keep that state behind an HttpOnly, SameSite cookie and retrieve
+non-sensitive presentation metadata through the owning gateway's UI client. Use
+path segments or query parameters only for intentionally shareable resource
+identity, explicit user-controlled filtering, or a user-facing one-time link
+whose credential is intrinsically part of the shared link.
+
 ### API result limits are caller-controlled
 
 API endpoints must not impose arbitrary default or maximum result limits in

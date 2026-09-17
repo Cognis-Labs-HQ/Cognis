@@ -9,16 +9,12 @@ export const REGISTRATION_ERROR_CODES = new Set([
     "generic",
 ]);
 
-export function readAccountCreationAuthorization(params) {
-    const expiresAtValue = params.get("expiresAt");
-    const expiresAt = Number(expiresAtValue);
+export function readAccountCreationAuthorization(data) {
+    const expiresAt = Number(data?.expiresAt);
     return {
-        attemptId: String(params.get("accountCreationAttempt") ?? "").trim(),
-        emailRequired: params.get("emailRequired") === "true",
-        expiresAt:
-            expiresAtValue !== null && Number.isFinite(expiresAt)
-                ? expiresAt
-                : null,
+        active: Boolean(data) && Number.isFinite(expiresAt),
+        emailRequired: data?.emailRequired === true,
+        expiresAt: Number.isFinite(expiresAt) ? expiresAt : null,
     };
 }
 
@@ -33,7 +29,7 @@ export function renderAccountCreationAuthorization({
     request,
     escapeHtml,
 }) {
-    if (!request.attemptId) return null;
+    if (!request.active) return null;
     const integration = findIntegration(
         integrations,
         "renderAccountCreationAuthorization",
@@ -56,7 +52,7 @@ export function bindAccountCreationAuthorization({
     signal,
     formatCountdownClock,
 }) {
-    if (!request.attemptId) return false;
+    if (!request.active) return false;
     const integration = findIntegration(
         integrations,
         "bindAccountCreationAuthorization",
@@ -65,7 +61,6 @@ export function bindAccountCreationAuthorization({
     integration.module.bindAccountCreationAuthorization({
         root,
         i18n: integration.i18n,
-        attemptId: request.attemptId,
         emailRequired: request.emailRequired,
         expiresAt: request.expiresAt,
         showToast,

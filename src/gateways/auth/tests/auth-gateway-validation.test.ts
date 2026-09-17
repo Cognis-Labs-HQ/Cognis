@@ -396,9 +396,10 @@ test("external login cannot create an account without registration authorization
     assert.equal(heldPayload.error.code, "account_creation_required");
     assert.equal(heldPayload.data.emailRequired, false);
     assert.equal(heldPayload.data.registrationTokenRequired, true);
+    assert.equal(heldPayload.data.registrationUrl, "/register");
     assert.match(
-        heldPayload.data.registrationUrl,
-        /^\/register\?accountCreationAttempt=account_creation_[A-Za-z0-9_-]+&emailRequired=false&expiresAt=\d+$/,
+        String(loginResult.res.headers["set-cookie"]),
+        /^cognis_account_creation=account_creation_[A-Za-z0-9_-]+;/,
     );
     const accountStore = capabilities.require<{
         getInfo(accountId: string): Promise<unknown>;
@@ -459,26 +460,35 @@ test("external login retries account creation through the registration token gat
     const heldPayload = JSON.parse(heldResult.res.payload);
     assert.equal(heldPayload.data.emailRequired, true);
     assert.equal(heldPayload.data.registrationTokenRequired, true);
-    const registrationUrl = new URL(
-        heldPayload.data.registrationUrl,
-        "http://localhost",
+    assert.equal(heldPayload.data.registrationUrl, "/register");
+    const pendingCookie = String(heldResult.res.headers["set-cookie"])
+        .split(";")[0]
+        .trim();
+    assert.match(
+        pendingCookie,
+        /^cognis_account_creation=account_creation_[A-Za-z0-9_-]+$/,
     );
-    const accountCreationAttemptId = registrationUrl.searchParams.get(
-        "accountCreationAttempt",
+
+    const attemptResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("GET", {}, { cookie: pendingCookie }),
+        "/api/v1/auth/account-creation-attempt",
     );
-    assert.ok(accountCreationAttemptId);
-    assert.equal(registrationUrl.searchParams.get("emailRequired"), "true");
-    assert.ok(
-        Number(registrationUrl.searchParams.get("expiresAt")) > Date.now(),
-    );
+    assert.equal(attemptResult.res.status, 200);
+    const attemptPayload = JSON.parse(attemptResult.res.payload);
+    assert.equal(attemptPayload.data.emailRequired, true);
+    assert.ok(attemptPayload.data.expiresAt > Date.now());
 
     const completedResult = await dispatchRoute(
         routeRegistry,
-        makeJsonRequest("POST", {
-            accountCreationAttemptId,
-            email: "external@example.com",
-            registrationToken: "invite-token",
-        }),
+        makeJsonRequest(
+            "POST",
+            {
+                email: "external@example.com",
+                registrationToken: "invite-token",
+            },
+            { cookie: pendingCookie },
+        ),
         "/api/v1/auth/login",
     );
     assert.equal(completedResult.res.status, 200);

@@ -90,6 +90,10 @@ External authentication now resolves a canonical email from either the provider�
 
 The Registration Token form now omits its email field when the external provider supplied a valid address. Missing or malformed provider addresses instead produce a visible, required email field, while the authentication gateway rejects invalid callback addresses before deciding that registration can proceed without one.
 
+## Clean SSO registration handoff
+
+Pending SSO registration state now remains server-owned behind a short-lived HttpOnly cookie. The browser uses the clean `/register` URL and asks the Authentication gateway for the non-sensitive form state it needs. The “Sign In Instead” navigation now uses the standard neutral button presentation and matches the registration action size without page-specific button styling.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -116,3 +120,4 @@ The Registration Token form now omits its email field when the external provider
 - [9d5530e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d5530e0359e8edb7f47756114c4dd18e4186617)
 - [8a481699](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a48169990cae94504cf9a2ae97c78343cbd3951)
 - [f08f3f47](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08f3f470df1cfb2aa9fca9f7ba1d29df1ea823d)
+- [82b32aaf](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b32aafcf4461f4ad3167e0adee2d65fccbfb3a)
