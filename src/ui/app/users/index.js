@@ -709,15 +709,7 @@ async function triggerInviteFlow() {
                     <button type="button" class="share-method-tab${smtpAdapterActive ? " is-active" : ""}" data-invite-delivery="email" aria-pressed="${smtpAdapterActive ? "true" : "false"}" ${smtpAdapterActive ? "" : "disabled"}>${escapeHtml(i18n.t("gateway.registration.email_tab"))}</button>
                     <button type="button" class="share-method-tab${smtpAdapterActive ? "" : " is-active"}" data-invite-delivery="manual" aria-pressed="${smtpAdapterActive ? "false" : "true"}">${escapeHtml(i18n.t("gateway.registration.token_tab"))}</button>
                   </nav>
-                  <p class="share-method-description"></p>
-                  <label class="stack" data-invite-email-field>
-                    <span>${escapeHtml(i18n.t("ui.reuse.invite_email"))}</span>
-                    <input id="users-invite-email" type="email" placeholder="${escapeHtml(i18n.t("ui.reuse.email_placeholder"))}" required />
-                  </label>
-                  <label class="stack" data-invite-token-result hidden>
-                    <span>${escapeHtml(i18n.t("gateway.registration.generated_token"))}</span>
-                    <input data-invite-token-value type="text" readonly />
-                  </label>`,
+                  <div data-invite-method-panel></div>`,
                 actions: [
                     {
                         id: "create",
@@ -726,67 +718,18 @@ async function triggerInviteFlow() {
                     },
                 ],
                 onOpen: (overlay) => {
-                    emailInput = overlay.querySelector("#users-invite-email");
-                    const emailField = overlay.querySelector(
-                        "[data-invite-email-field]",
+                    const panel = overlay.querySelector(
+                        "[data-invite-method-panel]",
                     );
-                    const tokenResult = overlay.querySelector(
-                        "[data-invite-token-result]",
-                    );
-                    const tokenValue = overlay.querySelector(
-                        "[data-invite-token-value]",
-                    );
-                    const createAction = overlay.querySelector(
-                        '[data-popup-action="create"]',
-                    );
-                    const generateManualToken = async () => {
-                        if (tokenResult instanceof HTMLElement) {
-                            tokenResult.hidden = true;
-                            tokenResult.style.display = "none";
+                    const renderDelivery = () => {
+                        if (!(panel instanceof HTMLElement)) return;
+                        if (delivery === "manual") {
+                            panel.innerHTML = `<p class="share-method-description">${escapeHtml(i18n.t("gateway.registration.token_description"))}</p>`;
+                            emailInput = null;
+                            return;
                         }
-                        return registrationClient
-                            .createRegistrationToken(apiFetch, {
-                                delivery: "manual",
-                            })
-                            .then(async (response) => {
-                                const payload = await response
-                                    .json()
-                                    .catch(() => null);
-                                if (!response.ok) {
-                                    showToast(
-                                        i18n.t("ui.reuse.invite_failed"),
-                                        { variant: "error" },
-                                    );
-                                    return;
-                                }
-                                const registrationToken = String(
-                                    payload?.data?.registrationToken ?? "",
-                                );
-                                if (!registrationToken) {
-                                    return;
-                                }
-                                if (tokenValue instanceof HTMLInputElement) {
-                                    tokenValue.value = registrationToken;
-                                }
-                                if (tokenResult instanceof HTMLElement) {
-                                    tokenResult.hidden = false;
-                                    tokenResult.style.removeProperty("display");
-                                }
-                                await navigator.clipboard.writeText(
-                                    registrationToken,
-                                );
-                                showToast(
-                                    i18n.t(
-                                        "gateway.registration.token_created",
-                                    ),
-                                    { variant: "success" },
-                                );
-                            })
-                            .catch(() => {
-                                showToast(i18n.t("ui.reuse.invite_failed"), {
-                                    variant: "error",
-                                });
-                            });
+                        panel.innerHTML = `<label class="stack"><span>${escapeHtml(i18n.t("ui.reuse.invite_email"))}</span><input id="users-invite-email" type="email" placeholder="${escapeHtml(i18n.t("ui.reuse.email_placeholder"))}" required /></label>`;
+                        emailInput = panel.querySelector("#users-invite-email");
                     };
                     const selectDelivery = (tab) => {
                         delivery = tab.dataset.inviteDelivery;
@@ -800,24 +743,7 @@ async function triggerInviteFlow() {
                                     String(active),
                                 );
                             });
-                        const manual = delivery === "manual";
-                        if (emailField instanceof HTMLElement) {
-                            emailField.hidden = manual;
-                            emailField.style.display = manual ? "none" : "";
-                        }
-                        if (createAction instanceof HTMLElement) {
-                            createAction.hidden = manual;
-                            createAction.style.display = manual ? "none" : "";
-                        }
-                        if (
-                            tokenResult instanceof HTMLElement &&
-                            tokenValue instanceof HTMLInputElement
-                        ) {
-                            tokenResult.hidden = !manual || !tokenValue.value;
-                            tokenResult.style.display =
-                                manual && tokenValue.value ? "" : "none";
-                        }
-                        void generateManualToken();
+                        renderDelivery();
                     };
                     overlay
                         .querySelectorAll("[data-invite-delivery]")
@@ -826,25 +752,16 @@ async function triggerInviteFlow() {
                                 selectDelivery(tab),
                             );
                         });
-                    if (!smtpAdapterActive) {
-                        const manualTab = overlay.querySelector(
-                            '[data-invite-delivery="manual"]',
-                        );
-                        if (manualTab instanceof HTMLButtonElement) {
-                            selectDelivery(manualTab);
-                        }
-                    } else {
-                        void generateManualToken();
-                    }
+                    renderDelivery();
                 },
             });
             if (action !== "create") return;
             const email = emailInput?.value?.trim();
-            if (!email) return;
+            if (delivery === "email" && !email) return;
             const response = await registrationClient.createRegistrationToken(
                 apiFetch,
                 {
-                    email,
+                    ...(email ? { email } : {}),
                     delivery,
                 },
             );
@@ -859,9 +776,7 @@ async function triggerInviteFlow() {
                             ? "gateway.registration.token_copied"
                             : "ui.reuse.invite_sent",
                     ),
-                    {
-                        variant: "success",
-                    },
+                    { variant: "success" },
                 );
                 return;
             }
@@ -877,10 +792,7 @@ async function triggerInviteFlow() {
             }
             showToast(errorMessage, { variant: "error" });
         },
-        {
-            title: i18n.t("ui.reuse.invite"),
-            message: i18n.t("ui.reuse.sensitive_action_prompt"),
-        },
+        { maxAttempts: 2 },
     );
 }
 

@@ -238,6 +238,7 @@ test("external account token consumption records one-time redemption", async () 
             token: "token-id.token-secret",
             accountId: "external-user",
             email: "Person@Example.com",
+            emailVerified: true,
         }),
         true,
     );
@@ -247,6 +248,32 @@ test("external account token consumption records one-time redemption", async () 
         accountId: "external-user",
         email: "person@example.com",
     });
+});
+
+test("generic external tokens do not verify a user-supplied email", async () => {
+    let verified = false;
+    const adapter = createAdapter({
+        dbExecutor: {
+            ensureTable: async () => {},
+            executeCommand: async () => ({ rows: [], rowCount: 1 }),
+        } as any,
+        accountStore: {} as any,
+        canSendInviteEmail: () => true,
+        sendInviteEmail: async () => {},
+        isEmailRegistered: async () => false,
+        upsertVerifiedPrimaryEmail: async () => {
+            verified = true;
+        },
+    });
+    assert.equal(
+        await adapter.invite?.consumeExternalAccountToken({
+            token: "token-id.token-secret",
+            accountId: "external-user",
+            email: "unverified@example.com",
+        }),
+        true,
+    );
+    assert.equal(verified, false);
 });
 
 test("concurrent external token consumption shares one account authorization", async () => {
@@ -277,6 +304,7 @@ test("concurrent external token consumption shares one account authorization", a
         token: "token-id.token-secret",
         accountId: "external-user",
         email: "person@example.com",
+        emailVerified: true,
     };
 
     const first = adapter.invite!.consumeExternalAccountToken(input);
@@ -325,6 +353,7 @@ test("concurrent token consumption does not authorize a different account", asyn
     const commonInput = {
         token: "token-id.token-secret",
         email: "person@example.com",
+        emailVerified: true,
     };
 
     const winning = adapter.invite!.consumeExternalAccountToken({
@@ -368,6 +397,7 @@ test("external token consumption is restored when canonical email persistence fa
                 token: "token-id.token-secret",
                 accountId: "external-user",
                 email: "person@example.com",
+                emailVerified: true,
             }),
         /email_persistence_failed/,
     );

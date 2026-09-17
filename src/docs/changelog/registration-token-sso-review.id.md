@@ -110,6 +110,10 @@ Pendaftaran SSO yang berhasil kini menyimpan sesi peramban terautentikasi, mengo
 
 Penyedia SSO kini dapat mendaftarkan resolver profil melalui CTX untuk nama tampilan, biografi, lokasi, situs web, avatar, dan banner akun eksternal baru. Adapter Profil menangani penyimpanan data dan media. Inisial avatar bilah navigasi kini memakai nama profil yang sama dengan halaman profil.
 
+## Pembuatan undangan eksplisit dan perbaikan pemeriksaan jaminan
+
+Popup undangan kini hanya memasang panel metode yang dipilih dan baru membuat tautan pendaftaran manual setelah Buat undangan ditekan. Undangan manual menyalin URL yang dapat digunakan. Email dari token umum tidak lagi ditandai terverifikasi, dan modul dengan berkas executable di luar inventaris tidak dinyatakan terverifikasi.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -141,3 +145,4 @@ Penyedia SSO kini dapat mendaftarkan resolver profil melalui CTX untuk nama tamp
 - [70a774cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/70a774cb0d2d3f24b4860f21ac67c80f2e16dcc5)
 - [c31fc022](https://github.com/Cognis-Labs-HQ/Cognis/commit/c31fc0228dd8581eeffc3cd620ec957af3e9e87d)
 - [a49861b7](https://github.com/Cognis-Labs-HQ/Cognis/commit/a49861b77761f0806b2fc169695a757968eefa2f)
+- [9263d2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/9263d2ceb03b63a897aa996c11d30321d55bc008)

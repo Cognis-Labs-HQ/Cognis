@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 
 export interface ModulePrivilege {
@@ -21,6 +21,40 @@ export const PRIVILEGED_FLOW_IDS = new Set([
     "startSsoLogin",
 ]);
 const TRUSTED_PRIVILEGED_GITHUB_OWNER = "cognis-labs-hq";
+const RUNTIME_FILE_EXTENSIONS = new Set([
+    ".cjs",
+    ".js",
+    ".json",
+    ".jsx",
+    ".mjs",
+    ".ts",
+    ".tsx",
+]);
+
+async function listRuntimeFiles(
+    root: string,
+    directory = root,
+): Promise<string[]> {
+    const files: string[] = [];
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+        if (entry.name === ".git" || entry.name === "node_modules") continue;
+        const candidate = path.join(directory, entry.name);
+        if (entry.isDirectory()) {
+            files.push(...(await listRuntimeFiles(root, candidate)));
+            continue;
+        }
+        const relative = path.relative(root, candidate).replaceAll("\\", "/");
+        if (
+            relative === "manifest.json" ||
+            relative === ".cognis-install.json" ||
+            !RUNTIME_FILE_EXTENSIONS.has(path.extname(relative).toLowerCase())
+        ) {
+            continue;
+        }
+        files.push(relative);
+    }
+    return files;
+}
 
 export function assertModuleOwnedRoute(
     routePath: string,
@@ -147,6 +181,18 @@ export async function resolveModuleAssurance(
             if (digest !== file.sha256.toLowerCase()) {
                 throw new Error("module_file_checksum_mismatch");
             }
+        }
+        const hasUndeclaredRuntimeFile = (
+            await listRuntimeFiles(moduleRoot)
+        ).some((file) => !declaredFiles.has(file));
+        if (hasUndeclaredRuntimeFile) {
+            return {
+                ...privilege,
+                moduleId: manifest.id,
+                moduleUuid: manifest.uuid,
+                version: manifest.version,
+                integrity: "unverified",
+            };
         }
         return {
             ...privilege,

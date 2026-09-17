@@ -110,6 +110,10 @@ SSO 登録成功時に認証済みブラウザーセッションを保存し、�
 
 SSO プロバイダーは CTX を介して、新規外部アカウントの表示名、自己紹介、所在地、Web サイト、アバター、バナーを提供するプロフィールリゾルバーを登録できます。保存とメディア管理はプロフィールアダプターが所有します。ナビゲーションバーのイニシャルはプロフィールページと同じ表示名を使用します。
 
+## 明示的な招待作成と保証レビュー修正
+
+招待ポップアップは選択中の方式だけを表示し、「招待を作成」を押した後にのみ手動登録リンクを作成します。手動招待では利用可能な URL をコピーします。汎用トークンで入力されたメールは検証済みにせず、実行ファイルが封印済み一覧にないモジュールを検証済みと判定しません。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -141,3 +145,4 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 - [70a774cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/70a774cb0d2d3f24b4860f21ac67c80f2e16dcc5)
 - [c31fc022](https://github.com/Cognis-Labs-HQ/Cognis/commit/c31fc0228dd8581eeffc3cd620ec957af3e9e87d)
 - [a49861b7](https://github.com/Cognis-Labs-HQ/Cognis/commit/a49861b77761f0806b2fc169695a757968eefa2f)
+- [9263d2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/9263d2ceb03b63a897aa996c11d30321d55bc008)

@@ -41,6 +41,7 @@ export interface RegistrationInviteAdapter {
         token: string;
         accountId: string;
         email: string;
+        emailVerified?: boolean;
     }): Promise<boolean>;
     redeemInvite(input: {
         token: string;
@@ -341,6 +342,7 @@ export class CoreRegistrationGateway {
         token: string;
         accountId: string;
         email: string;
+        emailVerified?: boolean;
     }) {
         const adapter = this.getInviteAdapter();
         if (!adapter) throw new Error("invite_disabled");

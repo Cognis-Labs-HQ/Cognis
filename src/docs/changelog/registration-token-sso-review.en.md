@@ -110,6 +110,10 @@ Successful SSO registration now persists the authenticated browser session, conf
 
 SSO providers can now register a CTX profile resolver that supplies display name, biography, location, website, avatar, and banner data when a new external account is created. The Profile adapter owns persistence and media storage. Navbar avatar initials now use the same resolved profile display name as the profile page.
 
+## Explicit invitation creation and assurance review fixes
+
+The invitation popup now mounts only the selected method panel and creates a manual registration link only after Create invite is pressed. Manual links copy the usable invite URL. Generic-token email input is no longer marked verified, and module assurance no longer reports verified when executable files are absent from the sealed inventory.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -141,3 +145,4 @@ SSO providers can now register a CTX profile resolver that supplies display name
 - [70a774cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/70a774cb0d2d3f24b4860f21ac67c80f2e16dcc5)
 - [c31fc022](https://github.com/Cognis-Labs-HQ/Cognis/commit/c31fc0228dd8581eeffc3cd620ec957af3e9e87d)
 - [a49861b7](https://github.com/Cognis-Labs-HQ/Cognis/commit/a49861b77761f0806b2fc169695a757968eefa2f)
+- [9263d2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/9263d2ceb03b63a897aa996c11d30321d55bc008)

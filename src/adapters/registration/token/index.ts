@@ -44,6 +44,7 @@ interface RegistrationTokenAdapter {
         token: string;
         accountId: string;
         email: string;
+        emailVerified?: boolean;
     }): Promise<boolean>;
     redeemInvite(input: {
         token: string;
@@ -589,6 +590,7 @@ export function createAdapter(deps: {
         token: string;
         accountId: string;
         email: string;
+        emailVerified?: boolean;
     }): Promise<boolean> {
         await ensureReady();
         const { tokenHash } = parseToken(input.token);
@@ -622,10 +624,12 @@ export function createAdapter(deps: {
             );
         }
         try {
-            await upsertVerifiedPrimaryEmail(
-                input.accountId,
-                normalizeEmail(input.email),
-            );
+            if (input.emailVerified) {
+                await upsertVerifiedPrimaryEmail(
+                    input.accountId,
+                    normalizeEmail(input.email),
+                );
+            }
         } catch (error) {
             await dbExecutor.executeCommand({
                 option: "UPDATE",
@@ -646,6 +650,7 @@ export function createAdapter(deps: {
         token: string;
         accountId: string;
         email: string;
+        emailVerified?: boolean;
     }): Promise<boolean> {
         const { tokenHash } = parseToken(input.token);
         const consumptionKey = `${tokenHash}:${input.accountId}`;

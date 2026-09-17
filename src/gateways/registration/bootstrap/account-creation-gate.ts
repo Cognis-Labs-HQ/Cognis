@@ -44,6 +44,7 @@ export async function authorizeAccountCreation(
             token,
             accountId,
             email,
+            emailVerified: Boolean(inviteEmail),
         });
         return {
             authorized: consumed,

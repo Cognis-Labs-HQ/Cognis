@@ -8,6 +8,7 @@ function createGateway({ publicEnabled = false, inviteEmail = "" } = {}) {
         token: string;
         accountId: string;
         email: string;
+        emailVerified?: boolean;
     }> = [];
     return {
         consumed,
@@ -27,6 +28,7 @@ function createGateway({ publicEnabled = false, inviteEmail = "" } = {}) {
                 token: string;
                 accountId: string;
                 email: string;
+                emailVerified?: boolean;
             }) => {
                 consumed.push(input);
                 return true;
@@ -74,6 +76,7 @@ test("matching registration tokens are consumed during SSO authorization", async
             token: "registration-token",
             accountId: "external-user",
             email: "person@example.com",
+            emailVerified: true,
         },
     ]);
 });
