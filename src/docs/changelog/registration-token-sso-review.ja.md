@@ -1,6 +1,10 @@
-# 登録トークンと SSO 統合
+# 登録トークン、SSO、モジュール強化
 
 **機能ブランチ:** registration-token-sso-review
+
+## 明確な依存関係エラー
+
+モジュールのインストールと有効化で、無効または利用できない必須依存関係が、ローカライズされたエラートーストとして表示されるようになりました。依存関係の内部詳細はサーバーログにのみ記録されます。
 
 ## スタイル付きプロバイダーボタン
 
@@ -66,9 +70,13 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 
 創設ユーザーの招待リセット操作をユーザーページのアクションハンドラー内に戻し、本番 UI ビルドが再び有効な ECMAScript モジュールを生成するようにしました。
 
-## 変更範囲の明確化
+## 現行契約のみのモジュールライフサイクル
 
-無関係なモジュール依存関係トーストの変更を、この pull request から削除しました。残る実装は、登録トークンの統合、SSO とプロバイダーのライフサイクル統合、およびそれらの拡張点に必要なモジュール境界保護に限定されています。
+外部モジュールは `entrypoints.bootstrap` と `bootstrapModule(ctx)` だけで読み込まれるようになりました。古い API エントリーポイントと分割登録フックの実行経路は、互換分岐として残さず削除しました。既存環境は明示的な移行、または現行モジュールリリースのインストールによって更新します。
+
+## ユーザー招待の信頼性
+
+招待ポップアップがスコープ外のテーブル行変数を参照しないようにし、ユーザーごとの創設者上限リセット操作をユーザーメニューに維持したまま、ユーザーページの `user is not defined` 拒否を防ぎました。
 
 ## コミット
 
@@ -92,4 +100,4 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 - [2f42af60](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f42af6007a0935a99ca2860cfb893c8e9bc3c2d)
 - [fb4cbefe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb4cbefe2974a810fe5a8dabc15267d7663a58a4)
 - [a7f57fd8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f57fd8e8d21b3783b9e316ade117343c4e5cbd)
-- [06f9f746](https://github.com/Cognis-Labs-HQ/Cognis/commit/06f9f746c0b33eaab8eb3c7af57a6c9b754f4164)
+- [a42c7af6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a42c7af6b477c66a1a3d2f241c4b1f12b5bf4134)

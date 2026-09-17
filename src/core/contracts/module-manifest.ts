@@ -40,7 +40,6 @@ export interface ModuleManifest {
     entrypoints: {
         bootstrap?: string;
         disabledApi?: string;
-        api?: string;
         ui?: string;
         cli?: string;
         db?: string;

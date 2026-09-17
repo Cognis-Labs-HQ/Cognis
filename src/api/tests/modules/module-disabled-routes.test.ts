@@ -27,7 +27,7 @@ test("disabled modules expose no route handlers", async () => {
             listManifests: async () => [
                 {
                     id: "example-module",
-                    entrypoints: { api: "./api/index.js" },
+                    entrypoints: { bootstrap: "./api/index.js" },
                 },
             ],
         } as never,

@@ -1,6 +1,10 @@
-# Registration tokens and SSO integration
+# Registration tokens, SSO, and module hardening
 
 **Feature Branch:** registration-token-sso-review
+
+## Clear dependency errors
+
+Module installation and enablement now surface disabled or unavailable required dependencies as a localized error toast. Internal dependency details remain confined to server logs.
 
 ## Styled provider buttons
 
@@ -66,9 +70,13 @@ Unknown SSO identities now move to an opaque, expiring registration attempt rend
 
 The founder invitation reset action now remains inside the Users page action handler, restoring valid ECMAScript module output for production UI builds.
 
-## Focused change scope
+## Current-only module lifecycle
 
-The unrelated module dependency-toast changes were removed from this pull request. The remaining implementation is limited to registration-token consolidation, SSO/provider lifecycle integration, and the module boundary protections required by those extension points.
+External modules now load exclusively through `entrypoints.bootstrap` and `bootstrapModule(ctx)`. The obsolete API-entrypoint and split registration-hook runtime paths were deleted instead of retained as compatibility branches. Existing installations advance through explicit migrations or install a current module release.
+
+## Users invitation reliability
+
+The invitation popup no longer references a table-row variable outside its scope, preventing the `user is not defined` rejection on the Users page while preserving per-user founder-limit reset actions in the user menu.
 
 ## Commits
 
@@ -92,4 +100,4 @@ The unrelated module dependency-toast changes were removed from this pull reques
 - [2f42af60](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f42af6007a0935a99ca2860cfb893c8e9bc3c2d)
 - [fb4cbefe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb4cbefe2974a810fe5a8dabc15267d7663a58a4)
 - [a7f57fd8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f57fd8e8d21b3783b9e316ade117343c4e5cbd)
-- [06f9f746](https://github.com/Cognis-Labs-HQ/Cognis/commit/06f9f746c0b33eaab8eb3c7af57a6c9b754f4164)
+- [a42c7af6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a42c7af6b477c66a1a3d2f241c4b1f12b5bf4134)

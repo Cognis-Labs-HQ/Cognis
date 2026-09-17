@@ -111,14 +111,6 @@ interface ModuleApiRegistrationContext {
     };
     log?: BootstrapLog;
 }
-interface ModulePlugin {
-    registerApiRoutes?: (
-        router: ModuleApiRouter,
-        ctx: ModuleApiRegistrationContext,
-    ) => void;
-    registerUi?: (ctx: ModuleUiRegistrationContext) => void;
-}
-
 interface ModuleBootstrapCtx
     extends ModuleUiRegistrationContext, ModuleApiRegistrationContext {
     flow: FlowApi;
@@ -632,21 +624,11 @@ export function createModuleExtensionRoutes(
 
     function resolveModuleEntrypointPath(
         moduleRoot: string,
-        entrypoints: { bootstrap?: string; api?: string } | undefined,
-    ): { path: string; type: "bootstrap" | "legacy-api" } | null {
-        if (entrypoints?.bootstrap) {
-            return {
-                path: path.join(moduleRoot, entrypoints.bootstrap),
-                type: "bootstrap",
-            };
-        }
-        if (entrypoints?.api) {
-            return {
-                path: path.join(moduleRoot, entrypoints.api),
-                type: "legacy-api",
-            };
-        }
-        return null;
+        entrypoints: { bootstrap?: string } | undefined,
+    ): string | null {
+        return entrypoints?.bootstrap
+            ? path.join(moduleRoot, entrypoints.bootstrap)
+            : null;
     }
 
     function resolveDisabledApiEntrypointPath(
@@ -822,48 +804,21 @@ export function createModuleExtensionRoutes(
             log?.("debug", "Loading module route entrypoint.", {
                 component: "module-extension-routes",
                 moduleId: manifest.id,
-                entrypoint: entrypoint.type,
-                pluginPath: entrypoint.path,
+                pluginPath: entrypoint,
             });
             try {
                 const plugin = (await import(
-                    `${entrypoint.path}?t=${Date.now()}`
-                )) as ModulePlugin & ModuleBootstrapPlugin;
-                if (typeof plugin.bootstrapModule === "function") {
-                    if (plugin.registerUi || plugin.registerApiRoutes) {
-                        log?.(
-                            "warn",
-                            "Module exports bootstrapModule and legacy route hooks; legacy hooks are ignored.",
-                            {
-                                component: "module-extension-routes",
-                                moduleId: manifest.id,
-                            },
-                        );
-                    }
-                    const result = await bootstrapWithTimeout(
-                        plugin,
-                        moduleCtx,
-                    );
-                    scope.active = false;
-                    loadedModules.set(manifest.id, {
-                        ctx: moduleCtx,
-                        plugin,
-                        dispose:
-                            typeof result === "function" ? result : undefined,
-                        ...scope,
-                    });
-                    continue;
+                    `${entrypoint}?t=${Date.now()}`
+                )) as ModuleBootstrapPlugin;
+                if (typeof plugin.bootstrapModule !== "function") {
+                    throw new Error("module_bootstrap_export_missing");
                 }
-                if (plugin.registerUi && options?.uiRegistry) {
-                    plugin.registerUi(moduleCtx);
-                }
-                if (typeof plugin.registerApiRoutes === "function") {
-                    plugin.registerApiRoutes(moduleCtx.router, moduleCtx);
-                }
+                const result = await bootstrapWithTimeout(plugin, moduleCtx);
                 scope.active = false;
                 loadedModules.set(manifest.id, {
                     ctx: moduleCtx,
                     plugin,
+                    dispose: typeof result === "function" ? result : undefined,
                     ...scope,
                 });
             } catch (error) {
@@ -892,7 +847,7 @@ export function createModuleExtensionRoutes(
                 log?.("error", "Failed to load module API route plugin.", {
                     component: "module-extension-routes",
                     moduleId: manifest.id,
-                    pluginPath: entrypoint.path,
+                    pluginPath: entrypoint,
                     error:
                         error instanceof Error ? error.message : String(error),
                 });

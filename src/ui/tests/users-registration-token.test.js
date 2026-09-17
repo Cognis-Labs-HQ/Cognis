@@ -28,3 +28,16 @@ test("Registration token adapter owns the SSO authorization form", async () => {
     assert.match(source, /renderAccountCreationAuthorization/);
     assert.match(source, /authorizePendingAccountCreation/);
 });
+
+test("Users invite popup does not depend on a selected table user", async () => {
+    const source = await readFile(
+        new URL("../app/users/index.js", import.meta.url),
+        "utf8",
+    );
+    const triggerInviteFlow = source.match(
+        /async function triggerInviteFlow\(\) \{[\s\S]*?\n\}/,
+    )?.[0];
+    assert.ok(triggerInviteFlow);
+    assert.doesNotMatch(triggerInviteFlow, /\buser\?\./);
+    assert.match(triggerInviteFlow, /id: "create"/);
+});

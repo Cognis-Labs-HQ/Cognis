@@ -1,6 +1,10 @@
-# Token pendaftaran dan integrasi SSO
+# Token pendaftaran, SSO, dan penguatan modul
 
 **Cabang Fitur:** registration-token-sso-review
+
+## Kesalahan dependensi yang jelas
+
+Pemasangan dan pengaktifan modul kini menampilkan dependensi wajib yang dinonaktifkan atau tidak tersedia sebagai toast kesalahan yang dilokalkan. Detail internal dependensi tetap tersimpan dalam log server.
 
 ## Tombol penyedia bergaya
 
@@ -66,9 +70,13 @@ Identitas SSO yang belum dikenal kini dialihkan ke percobaan pendaftaran sementa
 
 Tindakan pengaturan ulang undangan pendiri kini tetap berada di dalam penangan tindakan halaman Pengguna, sehingga build UI produksi kembali menghasilkan modul ECMAScript yang valid.
 
-## Cakupan perubahan yang terfokus
+## Siklus hidup modul khusus kontrak terkini
 
-Perubahan toast dependensi modul yang tidak terkait telah dihapus dari pull request ini. Implementasi yang tersisa dibatasi pada konsolidasi token pendaftaran, integrasi siklus hidup SSO dan penyedia, serta perlindungan batas modul yang diperlukan oleh titik ekstensi tersebut.
+Modul eksternal kini dimuat secara eksklusif melalui `entrypoints.bootstrap` dan `bootstrapModule(ctx)`. Titik masuk API lama dan jalur hook registrasi terpisah dihapus, bukan dipertahankan sebagai cabang kompatibilitas. Instalasi yang ada beralih melalui migrasi eksplisit atau memasang rilis modul terkini.
+
+## Keandalan undangan pengguna
+
+Popup undangan tidak lagi merujuk variabel baris tabel di luar cakupannya. Perubahan ini mencegah penolakan `user is not defined` pada halaman Pengguna sambil mempertahankan tindakan reset batas pendiri di menu masing-masing pengguna.
 
 ## Komit
 
@@ -92,4 +100,4 @@ Perubahan toast dependensi modul yang tidak terkait telah dihapus dari pull requ
 - [2f42af60](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f42af6007a0935a99ca2860cfb893c8e9bc3c2d)
 - [fb4cbefe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb4cbefe2974a810fe5a8dabc15267d7663a58a4)
 - [a7f57fd8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f57fd8e8d21b3783b9e316ade117343c4e5cbd)
-- [06f9f746](https://github.com/Cognis-Labs-HQ/Cognis/commit/06f9f746c0b33eaab8eb3c7af57a6c9b754f4164)
+- [a42c7af6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a42c7af6b477c66a1a3d2f241c4b1f12b5bf4134)

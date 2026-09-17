@@ -1,10 +1,14 @@
-# Registrierungstoken und SSO-Integration
+# Registrierungstoken, SSO und Modulhärtung
 
 **Feature-Zweig:** registration-token-sso-review
 
+## Klare Abhängigkeitsfehler
+
+Bei der Installation und Aktivierung von Modulen werden deaktivierte oder nicht verfügbare erforderliche Abhängigkeiten jetzt als lokalisierte Fehlermeldung angezeigt. Interne Details zu Abhängigkeiten verbleiben in den Serverprotokollen.
+
 ## Gestaltete Anbieter-Schaltflächen
 
-Authentifizierungsanbieter können eine entfernbare, markenspezifische Anmeldeschaltfläche mit einem erforderlichen Symbol gleicher Herkunft und einer vollständig lokalisierten Beschriftung registrieren. Cognis validiert den Darstellungsvertrag, lässt ungestaltete SSO-Methoden weg und hält Symbol und Beschriftung auf kleinen wie großen Bildschirmen sichtbar. Die Links in der Authentifizierungsfußzeile bleiben gemeinsam in einer Zeile mit Inhaltsbreite.
+Authentifizierungsanbieter können eine entfernbare, markenspezifische Anmeldeschaltfläche mit einem erforderlichen Symbol desselben Ursprungs und einer vollständigen lokalisierten Beschriftung registrieren. Cognis prüft den Darstellungsvertrag, lässt ungestaltete SSO-Methoden weg und zeigt das Symbol sowie die Beschriftung in voller Breite auf kleinen und großen Bildschirmen. Links in der Authentifizierungsfußzeile bleiben jetzt gemeinsam in einer inhaltsbreiten Zeile.
 
 ## SSO-Autorisierungsablauf
 
@@ -66,9 +70,13 @@ Unbekannte SSO-Identitäten wechseln nun zu einem undurchsichtigen, ablaufenden 
 
 Die Aktion zum Zurücksetzen von Gründereinladungen verbleibt nun innerhalb der Aktionsbehandlung der Benutzerseite, sodass Produktions-Builds wieder ein gültiges ECMAScript-Modul erzeugen.
 
-## Fokussierter Änderungsumfang
+## Ausschließlich aktueller Modul-Lebenszyklus
 
-Die unabhängigen Änderungen an Hinweisen für Modulabhängigkeiten wurden aus diesem Pull Request entfernt. Die verbleibende Implementierung beschränkt sich auf die Zusammenführung der Registrierungstoken, die Integration des SSO- und Anbieterlebenszyklus sowie die für diese Erweiterungspunkte erforderlichen Modulgrenzen.
+Externe Module werden jetzt ausschließlich über `entrypoints.bootstrap` und `bootstrapModule(ctx)` geladen. Der veraltete API-Einstiegspunkt und die getrennten Registrierungs-Hooks wurden gelöscht, statt sie als Kompatibilitätszweige beizubehalten. Bestehende Installationen wechseln über explizite Migrationen oder durch Installation einer aktuellen Modulversion.
+
+## Zuverlässige Benutzereinladungen
+
+Das Einladungsfenster verweist nicht mehr auf eine Tabellenzeilenvariable außerhalb ihres Gültigkeitsbereichs. Dadurch wird die Ablehnung `user is not defined` auf der Benutzerseite verhindert, während die Zurücksetzung des Gründerlimits im jeweiligen Benutzermenü erhalten bleibt.
 
 ## Commits
 
@@ -92,4 +100,4 @@ Die unabhängigen Änderungen an Hinweisen für Modulabhängigkeiten wurden aus 
 - [2f42af60](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f42af6007a0935a99ca2860cfb893c8e9bc3c2d)
 - [fb4cbefe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb4cbefe2974a810fe5a8dabc15267d7663a58a4)
 - [a7f57fd8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f57fd8e8d21b3783b9e316ade117343c4e5cbd)
-- [06f9f746](https://github.com/Cognis-Labs-HQ/Cognis/commit/06f9f746c0b33eaab8eb3c7af57a6c9b754f4164)
+- [a42c7af6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a42c7af6b477c66a1a3d2f241c4b1f12b5bf4134)

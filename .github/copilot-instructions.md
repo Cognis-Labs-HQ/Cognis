@@ -430,6 +430,10 @@ When editing a file, make opportunistic improvements to the surrounding code tha
 
 Legacy compatibility is never required and never acceptable. Do not introduce fallback paths, conditional shims, or alternate code branches that exist solely to handle older schema layouts, API shapes, or data formats that are no longer the standard — even temporarily. This rule applies with particular force when the "legacy" concern originates in the same pull request that introduces the modern replacement: a feature cannot be deprecated and replaced in the same PR that creates it. If a feature is new, it ships clean; if an old feature is being removed, the removal is complete and unconditional.
 
+Upgrade existing installations with explicit, one-way migrations instead of runtime compatibility. Cross-component upgrade transformations must live under `src/legacy/migrations/`; component-owned database migrations remain in that component's `sql/migrate/` directory. Nothing under `src/legacy/` may be imported by request handlers, gateways, adapters, modules, or UI code. The startup migration runner is the only allowed caller, and migrated data must use the current model immediately afterward. Any compatibility code retained temporarily for an upgrade must be isolated under `src/legacy/`, carry a removal condition in its migration documentation, and must never share a file with the current implementation.
+
+Current implementation directories have zero tolerance for legacy aliases, fallback entrypoints, deprecated payload keys, or dual-format parsing. Delete those paths rather than preserving them beside the current contract.
+
 Do not write tests that verify legacy artefacts are absent. Asserting that a field does not exist, a route is not registered, or a column is not written is a legacy-absence test — it encodes an expectation about a removed thing rather than a requirement about the current system. These tests are forbidden and must be deleted on sight.
 
 ---

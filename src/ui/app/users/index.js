@@ -720,16 +720,6 @@ async function triggerInviteFlow() {
                         label: i18n.t("gateway.registration.create_invite"),
                         variant: "confirm",
                     },
-                    ...(user?.isFounder
-                        ? [
-                              {
-                                  id: "reset-founder-invites",
-                                  label: i18n.t(
-                                      "gateway.registration.reset_founder_limit",
-                                  ),
-                              },
-                          ]
-                        : []),
                 ],
                 onOpen: (overlay) => {
                     emailInput = overlay.querySelector("#users-invite-email");

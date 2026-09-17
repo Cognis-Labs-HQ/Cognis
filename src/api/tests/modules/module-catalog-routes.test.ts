@@ -408,6 +408,70 @@ test("module marketplace identifies GitHub connection timeouts in jobs and logs"
     assert.equal(entries[0].meta?.knownCause, "container_network_mtu");
 });
 
+test("module install jobs expose dependency validation error codes", async () => {
+    const token = issueAccessToken("admin-user", "admin", 60);
+    let responseBody = "";
+    let status = 0;
+    const route = createModuleRoutes(
+        { list: async () => [] } as any,
+        {
+            validateInstallDependencies: () => {
+                throw new ModuleEnableValidationError(
+                    "module_dependency_disabled",
+                    "internal dependency details",
+                );
+            },
+        },
+        undefined,
+        {
+            install: async (_module, _token, _branch, validate) => {
+                await validate({ id: "example", uuid: "module-uuid" } as any);
+                throw new Error("unreachable");
+            },
+        } as any,
+    );
+    const request = {
+        method: "POST",
+        headers: { authorization: `Bearer ${token}` },
+        async *[Symbol.asyncIterator]() {
+            yield Buffer.from(
+                JSON.stringify({ module: { uuid: "module-uuid" } }),
+            );
+        },
+    } as any;
+    const response = {
+        writeHead(code: number) {
+            status = code;
+        },
+        end(payload: string) {
+            responseBody = payload;
+        },
+    } as any;
+
+    await route(
+        request,
+        response,
+        new URL("http://localhost/api/v1/modules/install"),
+    );
+    const jobId = JSON.parse(responseBody).data.jobId;
+    await new Promise((resolve) => setImmediate(resolve));
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        response,
+        new URL(`http://localhost/api/v1/modules/install/${jobId}`),
+    );
+
+    assert.equal(status, 422);
+    assert.equal(
+        JSON.parse(responseBody).error.code,
+        "module_dependency_disabled",
+    );
+    assert.doesNotMatch(responseBody, /internal dependency details/);
+});
+
 test("module updates report that a container restart is required", async () => {
     const token = issueAccessToken("admin-user", "admin", 60);
     const moduleUuid = "94d6974b-d836-4653-af9b-8b68774f4458";

@@ -62,6 +62,7 @@ import {
 import {
     confirmModuleDependencies,
     resolveInstallDependencies,
+    resolveModuleDependencyErrorMessage,
 } from "./dependencies.js";
 import { releaseChannels, selectReleaseChannel } from "./release-channels.js";
 
@@ -887,14 +888,19 @@ function bindInteractions(root, signal) {
                         moduleUuid: module.uuid,
                         error,
                     });
+                    const dependencyMessage =
+                        resolveModuleDependencyErrorMessage(error, i18n);
                     showToast(
-                        error.code === "github_connection_timeout"
-                            ? i18n.t("ui.app.modules.github_timeout_warning")
-                            : error.code === "module_install_timeout"
-                              ? i18n.t("ui.app.modules.install_timeout")
-                              : error.code === "module_validation_failed"
-                                ? i18n.t("ui.app.modules.validation_failed")
-                                : error.message,
+                        dependencyMessage ??
+                            (error.code === "github_connection_timeout"
+                                ? i18n.t(
+                                      "ui.app.modules.github_timeout_warning",
+                                  )
+                                : error.code === "module_install_timeout"
+                                  ? i18n.t("ui.app.modules.install_timeout")
+                                  : error.code === "module_validation_failed"
+                                    ? i18n.t("ui.app.modules.validation_failed")
+                                    : error.message),
                         { type: "error" },
                     );
                 } finally {
