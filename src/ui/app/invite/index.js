@@ -140,6 +140,7 @@ export async function mount(root, { signal } = {}) {
         },
         toolbar: [],
         elements,
+        enableDomParking: false,
     });
 
     await composer.init();
@@ -160,7 +161,7 @@ export async function mount(root, { signal } = {}) {
             if (!(targetElement instanceof Element)) return;
             const refreshTokens = async () => {
                 tokens = await loadTokens();
-                composer.refresh(elements);
+                composer.refreshElements(["invite-tokens"]);
             };
             const emailButton = targetElement.closest("#invite-email-btn");
             if (emailButton) {
@@ -243,9 +244,59 @@ export async function mount(root, { signal } = {}) {
                         );
                         if (tokenId && registrationToken)
                             issuedTokens.set(tokenId, registrationToken);
-                        await copyTextToClipboard(registrationToken);
-                        showToast(i18n.t("gateway.registration.token_copied"), {
-                            variant: "success",
+                        await refreshTokens();
+                        await openPopup({
+                            title: i18n.t(
+                                "gateway.registration.generate_registration_token",
+                            ),
+                            body: renderSecretVisibilityField({
+                                id: "generated-registration-token",
+                                value: registrationToken,
+                                label: i18n.t("ui.app.invite.target"),
+                                toggleLabel: i18n.t(
+                                    "ui.reuse.toggle_secret_visibility",
+                                ),
+                                escapeHtml,
+                            }),
+                            actions: [
+                                {
+                                    id: "copy",
+                                    label: i18n.t("ui.reuse.copy"),
+                                },
+                                {
+                                    id: "close",
+                                    label: i18n.t("ui.reuse.done"),
+                                    variant: "confirm",
+                                },
+                            ],
+                            onOpen: (overlay) => {
+                                bindSecretVisibilityToggles({ root: overlay });
+                            },
+                            onAction: async (actionId, overlay) => {
+                                if (actionId !== "copy") return true;
+                                const copied =
+                                    await copyTextToClipboard(
+                                        registrationToken,
+                                    );
+                                const copyButton = overlay.querySelector(
+                                    '[data-popup-action="copy"]',
+                                );
+                                copyButton?.classList.toggle(
+                                    "popup-action-btn--copied",
+                                    copied,
+                                );
+                                showToast(
+                                    i18n.t(
+                                        copied
+                                            ? "gateway.registration.token_copied"
+                                            : "ui.reuse.markdown_code_copy_failed",
+                                    ),
+                                    {
+                                        variant: copied ? "success" : "error",
+                                    },
+                                );
+                                return false;
+                            },
                         });
                     });
                 } finally {
@@ -288,7 +339,7 @@ export async function mount(root, { signal } = {}) {
                 );
             } finally {
                 tokens = await loadTokens();
-                composer.refresh(elements);
+                composer.refreshElements(["invite-tokens"]);
             }
         },
         { signal: pageInteractionController.signal },

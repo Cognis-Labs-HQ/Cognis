@@ -122,6 +122,10 @@ Tindakan undangan pada halaman Pengguna kini membawa administrator ke halaman Un
 
 Halaman Undangan kini menampilkan tindakan “Kirim Email Undangan” dan “Buat Token Pendaftaran” khusus administrator dengan ukuran yang seimbang. Pembuatan email memakai popup terfokus; pembuatan token berlangsung langsung, menyalin kode pendaftaran, dan menampilkannya melalui kontrol rahasia tersembunyi standar dalam tabel yang diperbarui. Setiap pembuatan atau pencabutan memuat ulang daftar undangan otoritatif. Pengguna pendiri dapat menyimpan paling banyak sepuluh undangan email tertunda, dan undangan yang dipakai, dicabut, atau kedaluwarsa mengembalikan slotnya.
 
+## Kontrol undangan responsif dan handle SSO yang dapat dicari
+
+Tautan undangan pada halaman Pengguna kini memakai tampilan tombol href netral standar. Tindakan undangan tetap berada dalam satu baris, pembuatan token membuka popup nilai tersembunyi dengan kontrol visibilitas bersama dan salin berbasis SVG, dan setiap mutasi melewati cache HTTP sebelum hanya menyegarkan kartu tabel undangan. Autentikasi kini menyinkronkan nilai `handle` atau `username` penyedia ke handle Profil pada setiap login eksternal; resolver profil eksternal juga dapat mengembalikan handle. Dengan demikian pengguna SSO dapat dicari tanpa mengekspos ID akun penyedia yang buram.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -156,3 +160,4 @@ Halaman Undangan kini menampilkan tindakan “Kirim Email Undangan” dan “Bua
 - [9263d2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/9263d2ceb03b63a897aa996c11d30321d55bc008)
 - [4cce96d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/4cce96d9382c34293b168528698d6eb6d592561e)
 - [9a2a9dc6](https://github.com/Cognis-Labs-HQ/Cognis/commit/9a2a9dc6)
+- [c5ff88ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5ff88ce)

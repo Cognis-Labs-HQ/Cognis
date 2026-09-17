@@ -418,6 +418,20 @@ test("external login retries account creation through the registration token gat
         capabilities,
         db: new InMemoryTestExecutor(),
     });
+    let createdProfileHandle = "";
+    let synchronizedProfileHandle = "";
+    capabilities.contribute(
+        "profile:createProfile",
+        async (_accountId: string, handle: string) => {
+            createdProfileHandle = handle;
+        },
+    );
+    capabilities.contribute(
+        "profile:applyExternalProfile",
+        async (_accountId: string, profile: Record<string, unknown>) => {
+            synchronizedProfileHandle = String(profile.handle ?? "");
+        },
+    );
     await capabilities.require<
         (provider: Record<string, unknown>) => Promise<() => void>
     >("auth:registerProvider")({
@@ -427,6 +441,7 @@ test("external login retries account creation through the registration token gat
         authenticate: async () => ({
             accountId: "external-user",
             externalUserId: "provider-user",
+            username: "thefirehawk",
             provider: "external-sso",
             email: "not-an-email-address",
             emails: ["also-invalid"],
@@ -498,6 +513,8 @@ test("external login retries account creation through the registration token gat
         email: "external@example.com",
         registrationToken: "invite-token",
     });
+    assert.equal(createdProfileHandle, "thefirehawk");
+    assert.equal(synchronizedProfileHandle, "thefirehawk");
     const accountStore = capabilities.require<{
         getInfo(accountId: string): Promise<unknown>;
     }>("auth:accountStore");

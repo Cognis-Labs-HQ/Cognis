@@ -290,7 +290,10 @@ export function createRegistrationRoutes(
                 count: invites.length,
                 includeClosed: url.searchParams.get("includeClosed") === "true",
             });
-            res.writeHead(200, { "content-type": "application/json" });
+            res.writeHead(200, {
+                "content-type": "application/json",
+                "cache-control": "no-store",
+            });
             res.end(JSON.stringify({ data: invites }));
             return true;
         }

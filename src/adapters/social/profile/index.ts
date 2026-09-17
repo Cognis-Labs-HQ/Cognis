@@ -393,6 +393,7 @@ export async function bootstrapSocialAdapter(
         async (
             accountId: string,
             externalProfile: {
+                handle?: string;
                 displayName?: string;
                 bio?: string;
                 location?: string;
@@ -403,6 +404,10 @@ export async function bootstrapSocialAdapter(
         ): Promise<void> => {
             const updates: Parameters<typeof profileStore.updateProfile>[1] =
                 {};
+            const handle = String(externalProfile.handle ?? "")
+                .trim()
+                .replace(/^@/, "");
+            if (handle) updates.handle = handle;
             for (const field of [
                 "displayName",
                 "bio",

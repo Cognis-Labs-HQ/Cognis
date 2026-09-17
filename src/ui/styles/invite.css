@@ -3,8 +3,10 @@
 }
 
 .invite-actions > button {
-    flex: 0 1 260px;
+    flex: 0 0 auto;
+    width: max-content;
     min-height: 42px;
+    white-space: nowrap;
 }
 
 .invite-token-target {

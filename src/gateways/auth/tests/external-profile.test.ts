@@ -5,6 +5,7 @@ import { createExternalProfileRegistry } from "../external-profile.js";
 test("external profile providers register through an owner-scoped resolver", async () => {
     const registry = createExternalProfileRegistry();
     const dispose = registry.register("x-sso", async ({ accountId }) => ({
+        handle: "thefirehawk",
         displayName: `Profile ${accountId}`,
         bio: "Imported biography",
         avatar: {
@@ -19,6 +20,7 @@ test("external profile providers register through an owner-scoped resolver", asy
         session: {},
     });
     assert.equal(profile?.displayName, "Profile account-1");
+    assert.equal(profile?.handle, "thefirehawk");
     assert.equal(profile?.bio, "Imported biography");
     assert.equal(dispose(), true);
     assert.equal(

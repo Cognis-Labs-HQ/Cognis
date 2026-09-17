@@ -148,6 +148,10 @@ test("users invite action uses the dedicated invite management route", () => {
 
     assert.match(source, /inviteButtonHtml =[\s\S]*registrationGatewayActive/);
     assert.match(source, /id="users-invite-btn"[\s\S]*href="\/invite"/);
+    assert.match(
+        source,
+        /id="users-invite-btn" class="btn-neutral btn-animated"/,
+    );
     assert.doesNotMatch(source, /smtpAdapterActive \? "email" : "manual"/);
 });
 

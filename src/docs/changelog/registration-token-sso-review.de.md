@@ -122,6 +122,10 @@ Die Einladungsaktion auf der Benutzerseite führt Administratoren nun zur Einlad
 
 Die Einladungsseite zeigt jetzt ausgewogene Aktionen „Einladungs-E-Mail senden“ und das nur für Administratoren verfügbare „Registrierungstoken erstellen“. Die E-Mail-Erstellung verwendet ein fokussiertes Popup; die Token-Erstellung erfolgt sofort, kopiert den Registrierungscode und zeigt ihn über die standardmäßigen Steuerelemente für verborgene Geheimnisse in der aktualisierten Tabelle an. Nach jeder Erstellung oder jedem Widerruf wird die maßgebliche Einladungsliste neu geladen. Gründungsbenutzer dürfen höchstens zehn ausstehende E-Mail-Einladungen halten; eingelöste, widerrufene und abgelaufene Einladungen geben ihre Plätze wieder frei.
 
+## Reaktionsfähige Einladungselemente und durchsuchbare SSO-Namen
+
+Der Einladungslink auf der Benutzerseite verwendet jetzt die standardmäßige neutrale Darstellung für Link-Schaltflächen. Einladungsaktionen bleiben in einer Zeile, die Token-Erstellung öffnet ein Popup mit verborgenem Wert sowie den gemeinsamen Sichtbarkeits- und SVG-basierten Kopierfunktionen, und jede Änderung umgeht HTTP-Caches, bevor nur die Einladungstabellenkarte aktualisiert wird. Die Authentifizierung synchronisiert bei jeder externen Anmeldung die Anbieterwerte `handle` oder `username` mit dem Profilnamen; externe Profilauflöser können ebenfalls einen Namen liefern. Dadurch sind SSO-Benutzer auffindbar, ohne undurchsichtige Anbieter-Konto-IDs offenzulegen.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -156,3 +160,4 @@ Die Einladungsseite zeigt jetzt ausgewogene Aktionen „Einladungs-E-Mail senden
 - [9263d2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/9263d2ceb03b63a897aa996c11d30321d55bc008)
 - [4cce96d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/4cce96d9382c34293b168528698d6eb6d592561e)
 - [9a2a9dc6](https://github.com/Cognis-Labs-HQ/Cognis/commit/9a2a9dc6)
+- [c5ff88ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5ff88ce)

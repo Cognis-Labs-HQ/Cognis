@@ -4,6 +4,7 @@ export interface ExternalProfileMedia {
 }
 
 export interface ExternalAccountProfile {
+    handle?: string;
     displayName?: string;
     bio?: string;
     location?: string;

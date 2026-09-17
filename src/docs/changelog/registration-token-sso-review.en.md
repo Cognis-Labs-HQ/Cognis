@@ -122,6 +122,10 @@ The Users-page invite action now navigates administrators to the Invites page wh
 
 The Invites page now presents balanced “Send Invite Email” and administrator-only “Generate Registration Token” actions. Email creation uses a focused popup; token creation is immediate, copies the registration code, and exposes it through the standard concealed-secret controls in the refreshed table. Every create or revoke operation reloads the authoritative invitation list. Founding users may keep at most ten pending email invitations, with redeemed, revoked, and expired invitations returning their slots.
 
+## Responsive invite controls and searchable SSO handles
+
+The Users invite link now uses the standard neutral href-button treatment. Invitation actions remain on one line, token creation opens a concealed-value popup with the shared visibility and SVG-backed copy controls, and every mutation bypasses HTTP caches before refreshing only the invitation table card. Authentication now synchronizes provider `handle` or `username` values into Profile handles on every external login, and external profile resolvers may also return a handle, so SSO users are searchable without exposing opaque provider account IDs.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -156,3 +160,4 @@ The Invites page now presents balanced “Send Invite Email” and administrator
 - [9263d2ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/9263d2ceb03b63a897aa996c11d30321d55bc008)
 - [4cce96d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/4cce96d9382c34293b168528698d6eb6d592561e)
 - [9a2a9dc6](https://github.com/Cognis-Labs-HQ/Cognis/commit/9a2a9dc6)
+- [c5ff88ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5ff88ce)

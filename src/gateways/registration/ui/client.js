@@ -37,6 +37,7 @@ export function listRegistrationTokens(
 ) {
     return apiFetch(
         `/api/v1/registration/tokens${includeClosed ? "?includeClosed=true" : ""}`,
+        { cache: "no-store" },
     );
 }
 

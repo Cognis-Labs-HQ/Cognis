@@ -85,6 +85,18 @@ function resolveSessionEmail(session: {
         .find((email) => EMAIL_PATTERN.test(email));
 }
 
+function resolveSessionHandle(
+    session: Record<string, unknown>,
+): string | undefined {
+    for (const candidate of [session.handle, session.username]) {
+        const handle = String(candidate ?? "")
+            .trim()
+            .replace(/^@/, "");
+        if (handle) return handle;
+    }
+    return undefined;
+}
+
 export async function registerAuthBootstrapHook(
     context: AuthBootstrapHookContext,
 ): Promise<void> {
@@ -166,6 +178,8 @@ export async function registerAuthBootstrapHook(
                     email?: string;
                     emails?: string[];
                     displayName?: string;
+                    handle?: string;
+                    username?: string;
                     role?: string;
                 };
             };
@@ -434,12 +448,40 @@ export async function registerAuthBootstrapHook(
                         .getDisplayName(session.accountId)
                         .catch(() => null)
                 )?.trim() || undefined;
+            const sessionHandle = resolveSessionHandle(
+                session as Record<string, unknown>,
+            );
             await createProfile?.(
                 session.accountId,
-                session.accountId,
+                sessionHandle ?? session.accountId,
                 role,
                 displayName,
             );
+            const applyExternalProfile = capabilities.get<
+                (
+                    accountId: string,
+                    profile: Record<string, unknown>,
+                ) => Promise<void>
+            >("profile:applyExternalProfile");
+            if (sessionHandle && applyExternalProfile) {
+                await applyExternalProfile(session.accountId, {
+                    handle: sessionHandle,
+                }).catch((error) =>
+                    context.ctx.log?.(
+                        "warn",
+                        "External account handle could not be synchronized.",
+                        {
+                            component: "auth-gateway",
+                            accountId: session.accountId,
+                            providerId: adapterId ?? session.provider,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    ),
+                );
+            }
             const externalProfileRequest = stageCtx.data[
                 "newExternalAccountProfileRequest"
             ] as
@@ -456,12 +498,6 @@ export async function registerAuthBootstrapHook(
                         request: typeof externalProfileRequest,
                     ) => Promise<Record<string, unknown> | null>
                 >("auth:resolveExternalProfile");
-                const applyExternalProfile = capabilities.get<
-                    (
-                        accountId: string,
-                        profile: Record<string, unknown>,
-                    ) => Promise<void>
-                >("profile:applyExternalProfile");
                 if (resolveExternalProfile && applyExternalProfile) {
                     try {
                         const externalProfile = await resolveExternalProfile(

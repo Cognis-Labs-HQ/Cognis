@@ -366,6 +366,7 @@ export class DbProfileStore implements ProfileCreateStore {
         updates: Partial<
             Pick<
                 AccountProfile,
+                | "handle"
                 | "bio"
                 | "location"
                 | "website"
@@ -378,6 +379,7 @@ export class DbProfileStore implements ProfileCreateStore {
         >,
     ): Promise<AccountProfile | null> {
         const fieldMap: Record<string, string> = {
+            handle: "handle",
             bio: "bio",
             location: "location",
             website: "website",

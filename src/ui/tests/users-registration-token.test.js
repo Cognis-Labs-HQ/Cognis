@@ -73,6 +73,9 @@ test("Invite management uses explicit popup and token actions", async () => {
     assert.match(source, /registrationToken/);
     assert.match(source, /renderSecretVisibilityField/);
     assert.match(source, /copyTextToClipboard/);
+    assert.match(source, /popup-action-btn--copied/);
+    assert.match(source, /refreshElements\(\["invite-tokens"\]\)/);
+    assert.match(source, /enableDomParking: false/);
     assert.match(source, /redeemedAccountId/);
     assert.doesNotMatch(source, /data-invite-delivery/);
 });
