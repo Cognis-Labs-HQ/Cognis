@@ -78,6 +78,10 @@ Externe Module werden jetzt ausschließlich über `entrypoints.bootstrap` und `b
 
 Das Einladungsfenster verweist nicht mehr auf eine Tabellenzeilenvariable außerhalb ihres Gültigkeitsbereichs. Dadurch wird die Ablehnung `user is not defined` auf der Benutzerseite verhindert, während die Zurücksetzung des Gründerlimits im jeweiligen Benutzermenü erhalten bleibt.
 
+## Veröffentlichung der Registrierungstoken-Assets
+
+Das Registrierungs-Gateway veröffentlicht die Token-Adapter-UI jetzt über die adaptereigene statische Registrierung und löst ihr Skript über das Produktions-Asset-Manifest auf. In der Entwicklung wird die kanonische Adapter-URL bereitgestellt, in der Produktion die gehashte Bundle-URL zurückgegeben, und lokalisierte Token-Texte verwenden denselben Adapter-Namensraum. Dadurch lädt die SSO-Registrierungsfortsetzung nach `account_creation_required` das Tokenformular, statt auf den Hinweis zur geschlossenen Registrierung zurückzufallen.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -101,3 +105,4 @@ Das Einladungsfenster verweist nicht mehr auf eine Tabellenzeilenvariable außer
 - [fb4cbefe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb4cbefe2974a810fe5a8dabc15267d7663a58a4)
 - [a7f57fd8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f57fd8e8d21b3783b9e316ade117343c4e5cbd)
 - [a42c7af6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a42c7af6b477c66a1a3d2f241c4b1f12b5bf4134)
+- [9d5530e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d5530e0359e8edb7f47756114c4dd18e4186617)

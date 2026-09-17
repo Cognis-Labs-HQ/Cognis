@@ -95,6 +95,10 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
         id: "gateAccountCreation",
         stages: ["inspectIdentity", "authorizeCreation"],
     });
+    systemCtx.registerFlow({
+        id: "constructRegistrationUi",
+        stages: ["compose-form"],
+    });
     map.set("db:executor", {
         execute: async () => ({ rows: [], rowCount: 0 }),
         executeCommand: async (command: { table?: string }) =>
@@ -136,6 +140,7 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
     const registeredSections = [];
     const registeredPlugins = [];
     const registeredStaticDirs = [];
+    const registeredAdapterStaticDirs = [];
     const registeredTypingMessages = [];
 
     await bootstrap({
@@ -150,6 +155,18 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
             },
             registerStaticDir(id, dir) {
                 registeredStaticDirs.push({ id, dir });
+            },
+            registerAdapterStaticDir(gatewayId, adapterId, dir) {
+                registeredAdapterStaticDirs.push({
+                    gatewayId,
+                    adapterId,
+                    dir,
+                });
+            },
+            resolveAssetUrl(assetUrl) {
+                return assetUrl.endsWith("authorization.js")
+                    ? "/assets/registration-token-authorization.js"
+                    : assetUrl;
             },
             registerAuthTypingMessage(message) {
                 registeredTypingMessages.push(message);
@@ -185,6 +202,15 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
         true,
     );
     assert.equal(existsSync(path.resolve(staticDir.dir, "navbar.js")), true);
+    const tokenStaticDir = registeredAdapterStaticDirs.find(
+        (entry) =>
+            entry.gatewayId === "registration" && entry.adapterId === "token",
+    );
+    assert.ok(tokenStaticDir);
+    assert.equal(
+        existsSync(path.resolve(tokenStaticDir.dir, "authorization.js")),
+        true,
+    );
     assert.equal(registeredTypingMessages.length, 1);
     const msg = registeredTypingMessages[0];
     assert.equal(msg.id, "registration-register-today");
@@ -201,6 +227,22 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
             authorized: false,
             emailRequired: true,
             reason: "registration_token_required",
+        },
+    ]);
+    const registrationUi = await systemCtx.flow.run(
+        "constructRegistrationUi",
+        {},
+    );
+    assert.deepEqual(registrationUi.stageResults["compose-form"], [
+        {
+            integrations: [
+                {
+                    id: "registration-token-authorization",
+                    scriptUrl: "/assets/registration-token-authorization.js",
+                    stringsBaseUrl:
+                        "/static/adapters/registration/token/languages",
+                },
+            ],
         },
     ]);
 });

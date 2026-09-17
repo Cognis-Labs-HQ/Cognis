@@ -158,7 +158,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "token",
         "ui",
     );
-    ctx.uiRegistry?.registerStaticDir("registration-token", tokenAdapterUiDir);
+    ctx.uiRegistry?.registerAdapterStaticDir?.(
+        "registration",
+        "token",
+        tokenAdapterUiDir,
+    );
+    const tokenAuthorizationScriptUrl =
+        "/static/adapters/registration/token/ui/authorization.js";
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/registration/navbar.js",
     });
@@ -215,9 +221,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     {
                         id: "registration-token-authorization",
                         scriptUrl:
-                            "/static/adapters/registration/token/ui/authorization.js",
+                            ctx.uiRegistry?.resolveAssetUrl(
+                                tokenAuthorizationScriptUrl,
+                            ) ?? tokenAuthorizationScriptUrl,
                         stringsBaseUrl:
-                            "/static/gateways/registration-token/languages",
+                            "/static/adapters/registration/token/languages",
                     },
                 ],
             }),

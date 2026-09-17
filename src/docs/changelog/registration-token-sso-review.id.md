@@ -78,6 +78,10 @@ Modul eksternal kini dimuat secara eksklusif melalui `entrypoints.bootstrap` dan
 
 Popup undangan tidak lagi merujuk variabel baris tabel di luar cakupannya. Perubahan ini mencegah penolakan `user is not defined` pada halaman Pengguna sambil mempertahankan tindakan reset batas pendiri di menu masing-masing pengguna.
 
+## Publikasi aset token pendaftaran
+
+Gateway Pendaftaran kini menerbitkan UI adaptor token melalui registri statis milik adaptor dan menyelesaikan skripnya melalui manifes aset produksi. Lingkungan pengembangan menyajikan URL adaptor kanonis, produksi mengembalikan URL bundel berciri hash, dan string token terlokalisasi memakai namespace adaptor yang sama. Dengan demikian, kelanjutan pendaftaran SSO memuat formulir token setelah `account_creation_required`, bukan kembali ke pesan pendaftaran tertutup.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -101,3 +105,4 @@ Popup undangan tidak lagi merujuk variabel baris tabel di luar cakupannya. Perub
 - [fb4cbefe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb4cbefe2974a810fe5a8dabc15267d7663a58a4)
 - [a7f57fd8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f57fd8e8d21b3783b9e316ade117343c4e5cbd)
 - [a42c7af6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a42c7af6b477c66a1a3d2f241c4b1f12b5bf4134)
+- [9d5530e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d5530e0359e8edb7f47756114c4dd18e4186617)

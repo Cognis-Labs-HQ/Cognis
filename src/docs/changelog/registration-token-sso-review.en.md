@@ -78,6 +78,10 @@ External modules now load exclusively through `entrypoints.bootstrap` and `boots
 
 The invitation popup no longer references a table-row variable outside its scope, preventing the `user is not defined` rejection on the Users page while preserving per-user founder-limit reset actions in the user menu.
 
+## Registration-token asset publication
+
+The Registration gateway now publishes the token adapter UI through the adapter-owned static registry and resolves its script through the production asset manifest. Development serves the canonical adapter URL, production returns the hashed bundle URL, and localized token strings use the same adapter namespace. SSO registration continuation therefore loads the token form after `account_creation_required` instead of falling back to the closed-registration message.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -101,3 +105,4 @@ The invitation popup no longer references a table-row variable outside its scope
 - [fb4cbefe](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb4cbefe2974a810fe5a8dabc15267d7663a58a4)
 - [a7f57fd8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f57fd8e8d21b3783b9e316ade117343c4e5cbd)
 - [a42c7af6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a42c7af6b477c66a1a3d2f241c4b1f12b5bf4134)
+- [9d5530e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d5530e0359e8edb7f47756114c4dd18e4186617)
