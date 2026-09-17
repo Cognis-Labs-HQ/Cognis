@@ -363,7 +363,7 @@ test("external login cannot create an account without registration authorization
             authenticate: () => Promise<{
                 accountId: string;
                 provider: string;
-                email: string;
+                emails: string[];
             }>;
             configure: () => void;
             getConfigSchema: () => [];
@@ -377,7 +377,7 @@ test("external login cannot create an account without registration authorization
             return {
                 accountId: "external-user",
                 provider: "external-sso",
-                email: "external@example.com",
+                emails: ["external@example.com"],
             };
         },
         configure() {},
@@ -398,7 +398,7 @@ test("external login cannot create an account without registration authorization
     assert.equal(heldPayload.data.registrationTokenRequired, true);
     assert.match(
         heldPayload.data.registrationUrl,
-        /^\/register\?accountCreationAttempt=account_creation_[A-Za-z0-9_-]+&emailRequired=false$/,
+        /^\/register\?accountCreationAttempt=account_creation_[A-Za-z0-9_-]+&emailRequired=false&expiresAt=\d+$/,
     );
     const accountStore = capabilities.require<{
         getInfo(accountId: string): Promise<unknown>;
@@ -466,6 +466,9 @@ test("external login retries account creation through the registration token gat
     );
     assert.ok(accountCreationAttemptId);
     assert.equal(registrationUrl.searchParams.get("emailRequired"), "true");
+    assert.ok(
+        Number(registrationUrl.searchParams.get("expiresAt")) > Date.now(),
+    );
 
     const completedResult = await dispatchRoute(
         routeRegistry,

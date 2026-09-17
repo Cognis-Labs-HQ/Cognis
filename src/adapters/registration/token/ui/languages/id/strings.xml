@@ -1,7 +1,9 @@
 <resources>
-  <string name="adapter.registration.token.sso_intro">Identitas terautentikasi Anda belum tertaut ke akun Cognis. Masukkan token pendaftaran untuk menyelesaikan pembuatan akun.</string>
+  <string name="adapter.registration.token.sso_intro">Sedikit lagi! Identitas Anda telah diverifikasi. Masukkan token pendaftaran Cognis untuk menyelesaikan penyiapan akun Anda.</string>
   <string name="adapter.registration.token.email">Alamat email</string>
   <string name="adapter.registration.token.token">Token pendaftaran</string>
   <string name="adapter.registration.token.continue">Lanjutkan</string>
   <string name="adapter.registration.token.failed">Pendaftaran akun tidak dapat diotorisasi.</string>
+  <string name="adapter.registration.token.lease_expires_in">Selesaikan pendaftaran dalam {countdown}</string>
+  <string name="adapter.registration.token.lease_expired">Sesi pendaftaran aman ini telah kedaluwarsa. Masuk lagi melalui penyedia Anda untuk melanjutkan.</string>
 </resources>

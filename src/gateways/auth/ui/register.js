@@ -689,6 +689,7 @@ export async function mount(root, { signal } = {}) {
                             root,
                             showToast,
                             signal,
+                            formatCountdownClock,
                         })
                     ) {
                         return;

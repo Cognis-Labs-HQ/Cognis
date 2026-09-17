@@ -86,6 +86,7 @@ export interface PendingAccountCreationAttempt {
         provider: string;
         externalUserId?: string;
         email?: string;
+        emails?: string[];
         displayName?: string;
         role?: string;
     };

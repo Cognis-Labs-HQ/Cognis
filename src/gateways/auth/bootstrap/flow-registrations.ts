@@ -63,11 +63,24 @@ function applyAccountCreationCredentials(
         credentials.registrationToken ?? "",
     ).trim();
     const submittedEmail = String(credentials.email ?? "").trim();
+    const existingEmail = resolveSessionEmail(session);
     return {
         ...session,
-        ...(session.email || !submittedEmail ? {} : { email: submittedEmail }),
+        ...(existingEmail || !submittedEmail ? {} : { email: submittedEmail }),
         ...(registrationToken ? { registrationToken } : {}),
     };
+}
+
+function resolveSessionEmail(session: {
+    email?: unknown;
+    emails?: unknown;
+}): string | undefined {
+    const directEmail = String(session.email ?? "").trim();
+    if (directEmail) return directEmail;
+    if (!Array.isArray(session.emails)) return undefined;
+    return session.emails
+        .map((email) => String(email).trim())
+        .find((email) => email.length > 0);
 }
 
 export async function registerAuthBootstrapHook(
@@ -149,6 +162,7 @@ export async function registerAuthBootstrapHook(
                     provider: string;
                     externalUserId?: string;
                     email?: string;
+                    emails?: string[];
                     displayName?: string;
                     role?: string;
                 };
@@ -218,6 +232,7 @@ export async function registerAuthBootstrapHook(
 
             const { session, adapterId } = authResult;
             const capabilities = context.ctx.capabilities;
+            const sessionEmail = resolveSessionEmail(session);
 
             if (
                 adapterId !== "local" &&
@@ -231,7 +246,7 @@ export async function registerAuthBootstrapHook(
                         return {
                             sessionResult: {
                                 outcome: "account_creation_required",
-                                emailRequired: !("email" in session),
+                                emailRequired: !sessionEmail,
                                 pendingAccountCreation: {
                                     providerId: adapterId ?? session.provider,
                                     session,
@@ -244,10 +259,7 @@ export async function registerAuthBootstrapHook(
                         {
                             accountId: session.accountId,
                             providerId: adapterId ?? session.provider,
-                            email:
-                                "email" in session
-                                    ? String(session.email ?? "") || undefined
-                                    : undefined,
+                            email: sessionEmail,
                             registrationToken:
                                 "registrationToken" in session
                                     ? String(session.registrationToken ?? "") ||
@@ -271,7 +283,7 @@ export async function registerAuthBootstrapHook(
                         return {
                             sessionResult: {
                                 outcome: "account_creation_required",
-                                emailRequired: !("email" in session),
+                                emailRequired: !sessionEmail,
                                 pendingAccountCreation: {
                                     providerId: adapterId ?? session.provider,
                                     session,
@@ -289,10 +301,7 @@ export async function registerAuthBootstrapHook(
                         "externalUserId" in session
                             ? String(session.externalUserId)
                             : session.accountId,
-                    email:
-                        "email" in session
-                            ? String(session.email ?? "") || undefined
-                            : undefined,
+                    email: sessionEmail,
                     displayName:
                         "displayName" in session
                             ? String(session.displayName ?? "") || undefined

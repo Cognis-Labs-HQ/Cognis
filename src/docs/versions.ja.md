@@ -47,7 +47,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.29`   |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.25`   |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.22`   |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.28`   |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.29`   |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.20`   |
 | Profile (Social)      | `src/adapters/social/profile/`      | `2.0.4`    |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.7.11`   |
@@ -64,7 +64,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント        | パス                          | バージョン |
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`    |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.44`   |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.45`   |
 | Share                 | `src/gateways/share/`         | `1.7.47`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`   |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.12`   |
@@ -80,7 +80,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス        | バージョン |
 | -------------- | ----------- | ---------- |
-| Core Package   | `src/core/` | `0.3.100`  |
+| Core Package   | `src/core/` | `0.3.101`  |
 
 ## API
 

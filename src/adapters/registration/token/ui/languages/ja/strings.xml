@@ -1,7 +1,9 @@
 <resources>
-  <string name="adapter.registration.token.sso_intro">認証済み ID はまだ Cognis アカウントに関連付けられていません。登録トークンを入力してアカウント作成を完了してください。</string>
+  <string name="adapter.registration.token.sso_intro">あと少しです。ID の確認が完了しました。Cognis 登録トークンを入力して、アカウントの設定を完了してください。</string>
   <string name="adapter.registration.token.email">メールアドレス</string>
   <string name="adapter.registration.token.token">登録トークン</string>
   <string name="adapter.registration.token.continue">続行</string>
   <string name="adapter.registration.token.failed">アカウント登録を承認できませんでした。</string>
+  <string name="adapter.registration.token.lease_expires_in">{countdown} 以内に登録を完了してください</string>
+  <string name="adapter.registration.token.lease_expired">この安全な登録セッションは期限切れです。続行するには、プロバイダーでもう一度サインインしてください。</string>
 </resources>

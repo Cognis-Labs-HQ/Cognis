@@ -1,7 +1,11 @@
 import { authorizePendingAccountCreation } from "/static/gateways/auth/login-client.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 
-export function renderAccountCreationAuthorization({ i18n, escapeHtml }) {
+export function renderAccountCreationAuthorization({
+    i18n,
+    escapeHtml,
+    expiresAt,
+}) {
     const builder = createFormBuilder(
         { i18n, escapeHtml },
         {
@@ -25,6 +29,7 @@ export function renderAccountCreationAuthorization({ i18n, escapeHtml }) {
     );
     return `
       <p class="auth-intro">${escapeHtml(i18n.t("adapter.registration.token.sso_intro"))}</p>
+      ${expiresAt ? '<p id="account-creation-countdown" class="auth-countdown-pill" aria-live="off"></p>' : ""}
       <div class="auth-form-shell">
         ${builder.render()}
       </div>`;
@@ -37,6 +42,8 @@ export function bindAccountCreationAuthorization({
     emailRequired,
     showToast,
     signal,
+    expiresAt,
+    formatCountdownClock,
 }) {
     const form = root.querySelector("#account-creation-authorization-form");
     if (!(form instanceof HTMLFormElement)) return;
@@ -46,6 +53,36 @@ export function bindAccountCreationAuthorization({
     }
     if (emailInput instanceof HTMLInputElement)
         emailInput.required = emailRequired;
+    if (
+        Number.isFinite(expiresAt) &&
+        typeof formatCountdownClock === "function"
+    ) {
+        const expiresAtMs = Number(expiresAt);
+        let countdownTimer = null;
+        function updateCountdown() {
+            const countdown = root.querySelector("#account-creation-countdown");
+            if (!countdown) {
+                clearInterval(countdownTimer);
+                return;
+            }
+            const remaining = expiresAtMs - Date.now();
+            if (remaining <= 0) {
+                countdown.textContent = i18n.t(
+                    "adapter.registration.token.lease_expired",
+                );
+                clearInterval(countdownTimer);
+                return;
+            }
+            countdown.textContent = i18n
+                .t("adapter.registration.token.lease_expires_in")
+                .replace("{countdown}", formatCountdownClock(remaining));
+        }
+        updateCountdown();
+        countdownTimer = setInterval(updateCountdown, 1000);
+        signal?.addEventListener("abort", () => clearInterval(countdownTimer), {
+            once: true,
+        });
+    }
     form.addEventListener(
         "submit",
         async (event) => {

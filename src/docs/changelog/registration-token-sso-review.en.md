@@ -82,6 +82,10 @@ The invitation popup no longer references a table-row variable outside its scope
 
 The Registration gateway now publishes the token adapter UI through the adapter-owned static registry and resolves its script through the production asset manifest. Development serves the canonical adapter URL, production returns the hashed bundle URL, and localized token strings use the same adapter namespace. SSO registration continuation therefore loads the token form after `account_creation_required` instead of falling back to the closed-registration message.
 
+## Verified SSO identity handoff
+
+External authentication now resolves a canonical email from either the provider’s primary `email` or its `emails` collection, treating empty values as missing. The held-account URL carries its server-side lease expiry into the composed Registration Token form, which uses the standard form builder, login countdown styling, and live countdown behavior. The introductory text now welcomes the verified user and explains the final token step.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -106,3 +110,4 @@ The Registration gateway now publishes the token adapter UI through the adapter-
 - [a7f57fd8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f57fd8e8d21b3783b9e316ade117343c4e5cbd)
 - [a42c7af6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a42c7af6b477c66a1a3d2f241c4b1f12b5bf4134)
 - [9d5530e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d5530e0359e8edb7f47756114c4dd18e4186617)
+- [8a481699](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a48169990cae94504cf9a2ae97c78343cbd3951)

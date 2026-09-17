@@ -291,7 +291,7 @@ export function createSessionRoutes({
                         registrationTokenRequired: true,
                         ...(attempt
                             ? {
-                                  registrationUrl: `/register?accountCreationAttempt=${encodeURIComponent(attempt.id)}&emailRequired=${sessionResult.emailRequired === true ? "true" : "false"}`,
+                                  registrationUrl: `/register?accountCreationAttempt=${encodeURIComponent(attempt.id)}&emailRequired=${sessionResult.emailRequired === true ? "true" : "false"}&expiresAt=${attempt.expiresAt}`,
                               }
                             : {}),
                     },

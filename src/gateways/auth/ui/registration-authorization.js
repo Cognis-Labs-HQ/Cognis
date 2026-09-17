@@ -10,9 +10,15 @@ export const REGISTRATION_ERROR_CODES = new Set([
 ]);
 
 export function readAccountCreationAuthorization(params) {
+    const expiresAtValue = params.get("expiresAt");
+    const expiresAt = Number(expiresAtValue);
     return {
         attemptId: String(params.get("accountCreationAttempt") ?? "").trim(),
         emailRequired: params.get("emailRequired") === "true",
+        expiresAt:
+            expiresAtValue !== null && Number.isFinite(expiresAt)
+                ? expiresAt
+                : null,
     };
 }
 
@@ -36,6 +42,7 @@ export function renderAccountCreationAuthorization({
         ? integration.module.renderAccountCreationAuthorization({
               i18n: integration.i18n,
               escapeHtml,
+              expiresAt: request.expiresAt,
           })
         : null;
 }
@@ -46,6 +53,7 @@ export function bindAccountCreationAuthorization({
     root,
     showToast,
     signal,
+    formatCountdownClock,
 }) {
     if (!request.attemptId) return false;
     const integration = findIntegration(
@@ -58,8 +66,10 @@ export function bindAccountCreationAuthorization({
         i18n: integration.i18n,
         attemptId: request.attemptId,
         emailRequired: request.emailRequired,
+        expiresAt: request.expiresAt,
         showToast,
         signal,
+        formatCountdownClock,
     });
     return true;
 }

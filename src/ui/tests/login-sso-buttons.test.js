@@ -8,6 +8,7 @@ import {
 } from "../app/login/sso-buttons.js";
 import { reportLoginError } from "../app/login/error-reporting.js";
 import { startSsoLogin } from "../../gateways/auth/ui/login-client.js";
+import { readAccountCreationAuthorization } from "../../gateways/auth/ui/registration-authorization.js";
 
 class FakeElement {
     constructor(tagName) {
@@ -164,4 +165,36 @@ test("anonymous login failures do not call the authenticated logger", () => {
     } finally {
         console.error = originalConsoleError;
     }
+});
+
+test("SSO account creation carries its lease into the composed token form", async () => {
+    const request = readAccountCreationAuthorization(
+        new URLSearchParams({
+            accountCreationAttempt: "account_creation_example",
+            emailRequired: "false",
+            expiresAt: "1893456000000",
+        }),
+    );
+    assert.deepEqual(request, {
+        attemptId: "account_creation_example",
+        emailRequired: false,
+        expiresAt: 1893456000000,
+    });
+
+    const authorizationSource = await readFile(
+        new URL(
+            "../../adapters/registration/token/ui/authorization.js",
+            import.meta.url,
+        ),
+        "utf8",
+    );
+    assert.match(authorizationSource, /createFormBuilder/);
+    assert.match(authorizationSource, /account-creation-countdown/);
+    assert.match(authorizationSource, /formatCountdownClock/);
+
+    const styles = await readFile(
+        new URL("../styles/login.css", import.meta.url),
+        "utf8",
+    );
+    assert.match(styles, /\.auth-countdown-pill\s*\{/);
 });

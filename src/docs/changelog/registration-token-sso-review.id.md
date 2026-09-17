@@ -82,6 +82,10 @@ Popup undangan tidak lagi merujuk variabel baris tabel di luar cakupannya. Perub
 
 Gateway Pendaftaran kini menerbitkan UI adaptor token melalui registri statis milik adaptor dan menyelesaikan skripnya melalui manifes aset produksi. Lingkungan pengembangan menyajikan URL adaptor kanonis, produksi mengembalikan URL bundel berciri hash, dan string token terlokalisasi memakai namespace adaptor yang sama. Dengan demikian, kelanjutan pendaftaran SSO memuat formulir token setelah `account_creation_required`, bukan kembali ke pesan pendaftaran tertutup.
 
+## Serah terima identitas SSO terverifikasi
+
+Autentikasi eksternal kini menentukan email kanonis dari `email` utama penyedia atau koleksi `emails`, serta menganggap nilai kosong sebagai tidak tersedia. URL akun yang ditahan membawa waktu kedaluwarsa sewa sisi server ke formulir Token Pendaftaran terkomposisi, yang memakai pembuat formulir standar, gaya hitung mundur login, dan perilaku hitung mundur langsung. Teks pengantar kini menyambut pengguna terverifikasi dan menjelaskan langkah token terakhir.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -106,3 +110,4 @@ Gateway Pendaftaran kini menerbitkan UI adaptor token melalui registri statis mi
 - [a7f57fd8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7f57fd8e8d21b3783b9e316ade117343c4e5cbd)
 - [a42c7af6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a42c7af6b477c66a1a3d2f241c4b1f12b5bf4134)
 - [9d5530e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d5530e0359e8edb7f47756114c4dd18e4186617)
+- [8a481699](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a48169990cae94504cf9a2ae97c78343cbd3951)
