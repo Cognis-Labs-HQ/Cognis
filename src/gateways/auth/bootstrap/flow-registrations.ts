@@ -243,6 +243,7 @@ export async function registerAuthBootstrapHook(
                 const existingAccount = await context.accountStore.getInfo(
                     session.accountId,
                 );
+                const creatingExternalAccount = !existingAccount;
                 if (!existingAccount) {
                     if (!context.ctx.flow.exists("gateAccountCreation")) {
                         return {
@@ -310,6 +311,17 @@ export async function registerAuthBootstrapHook(
                             : undefined,
                     role: session.role,
                 });
+                if (creatingExternalAccount) {
+                    stageCtx.data["newExternalAccountProfileRequest"] = {
+                        providerId: adapterId ?? session.provider,
+                        accountId: session.accountId,
+                        externalUserId:
+                            "externalUserId" in session
+                                ? String(session.externalUserId)
+                                : session.accountId,
+                        session: session as Record<string, unknown>,
+                    };
+                }
                 const authorization = stageCtx.data[
                     "accountCreationAuthorization"
                 ] as { commit?: () => Promise<boolean> } | undefined;
@@ -428,6 +440,56 @@ export async function registerAuthBootstrapHook(
                 role,
                 displayName,
             );
+            const externalProfileRequest = stageCtx.data[
+                "newExternalAccountProfileRequest"
+            ] as
+                | {
+                      providerId: string;
+                      accountId: string;
+                      externalUserId: string;
+                      session: Record<string, unknown>;
+                  }
+                | undefined;
+            if (externalProfileRequest) {
+                const resolveExternalProfile = capabilities.get<
+                    (
+                        request: typeof externalProfileRequest,
+                    ) => Promise<Record<string, unknown> | null>
+                >("auth:resolveExternalProfile");
+                const applyExternalProfile = capabilities.get<
+                    (
+                        accountId: string,
+                        profile: Record<string, unknown>,
+                    ) => Promise<void>
+                >("profile:applyExternalProfile");
+                if (resolveExternalProfile && applyExternalProfile) {
+                    try {
+                        const externalProfile = await resolveExternalProfile(
+                            externalProfileRequest,
+                        );
+                        if (externalProfile) {
+                            await applyExternalProfile(
+                                session.accountId,
+                                externalProfile,
+                            );
+                        }
+                    } catch (error) {
+                        context.ctx.log?.(
+                            "warn",
+                            "External account profile could not be synchronized.",
+                            {
+                                component: "auth-gateway",
+                                accountId: session.accountId,
+                                providerId: externalProfileRequest.providerId,
+                                error:
+                                    error instanceof Error
+                                        ? error.message
+                                        : String(error),
+                            },
+                        );
+                    }
+                }
+            }
             await capabilities.get<(username: string) => Promise<void>>(
                 "files:quota:provisionUser",
             )?.(session.accountId);

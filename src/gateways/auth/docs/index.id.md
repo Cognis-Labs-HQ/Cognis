@@ -105,3 +105,7 @@ Perubahan sumber autentikasi menjalankan alur `reconcile-auth-sources` setelah p
 ## Batas sesi peramban
 
 Pembatalan konfirmasi kata sandi hanya berjalan untuk sesi akun penuh yang terautentikasi. Penyiapan halaman anonim dan tamu Share dapat mengunci atau mengganti status keyring tanpa mengirim permintaan khusus akun `DELETE /api/v1/auth/verify`.
+
+## Penyedia profil eksternal
+
+Modul SSO dapat mendaftarkan `auth:registerExternalProfileProvider` melalui CTX. Resolver menerima ID penyedia, ID akun Cognis, ID pengguna eksternal, dan sesi penyedia terautentikasi, lalu dapat mengembalikan nama tampilan, bio, lokasi, situs web, serta data avatar dan banner. Adapter Profil menyimpan data tersebut melalui kemampuan penyimpanan miliknya saat akun eksternal pertama kali dibuat.

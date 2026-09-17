@@ -106,6 +106,10 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 
 SSO 登録成功時に認証済みブラウザーセッションを保存し、アカウント作成を通知してダッシュボードへ直接進むようになりました。登録トークンは伏せ字入力になり、SSO 認可成功時に直ちに消費されます。招待ポップアップはメール表示とトークン表示を分離し、開くたび、または方式を切り替えるたびに新しいトークンを作成します。
 
+## SSO プロフィール同期と一貫したイニシャル
+
+SSO プロバイダーは CTX を介して、新規外部アカウントの表示名、自己紹介、所在地、Web サイト、アバター、バナーを提供するプロフィールリゾルバーを登録できます。保存とメディア管理はプロフィールアダプターが所有します。ナビゲーションバーのイニシャルはプロフィールページと同じ表示名を使用します。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -136,3 +140,4 @@ SSO 登録成功時に認証済みブラウザーセッションを保存し、�
 - [f63aa1a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/f63aa1a97b14476706130ea52d54a69e7b6fe65c)
 - [70a774cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/70a774cb0d2d3f24b4860f21ac67c80f2e16dcc5)
 - [c31fc022](https://github.com/Cognis-Labs-HQ/Cognis/commit/c31fc0228dd8581eeffc3cd620ec957af3e9e87d)
+- [a49861b7](https://github.com/Cognis-Labs-HQ/Cognis/commit/a49861b77761f0806b2fc169695a757968eefa2f)

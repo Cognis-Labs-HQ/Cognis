@@ -388,6 +388,58 @@ export async function bootstrapSocialAdapter(
         );
     }
 
+    ctx.capabilities.contribute(
+        "profile:applyExternalProfile",
+        async (
+            accountId: string,
+            externalProfile: {
+                displayName?: string;
+                bio?: string;
+                location?: string;
+                website?: string;
+                avatar?: { content: Uint8Array; contentType?: string };
+                banner?: { content: Uint8Array; contentType?: string };
+            },
+        ): Promise<void> => {
+            const updates: Parameters<typeof profileStore.updateProfile>[1] =
+                {};
+            for (const field of [
+                "displayName",
+                "bio",
+                "location",
+                "website",
+            ] as const) {
+                const value = externalProfile[field];
+                if (typeof value === "string" && value.trim()) {
+                    updates[field] = value.trim();
+                }
+            }
+            if (
+                fileGateway &&
+                externalProfile.avatar?.content instanceof Uint8Array
+            ) {
+                const stored = await fileGateway.store(
+                    accountId,
+                    externalProfile.avatar.content,
+                    externalProfile.avatar.contentType,
+                );
+                updates.avatarKey = stored.key;
+            }
+            if (
+                fileGateway &&
+                externalProfile.banner?.content instanceof Uint8Array
+            ) {
+                const stored = await fileGateway.store(
+                    accountId,
+                    externalProfile.banner.content,
+                    externalProfile.banner.contentType,
+                );
+                updates.bannerKey = stored.key;
+            }
+            await profileStore.updateProfile(accountId, updates);
+        },
+    );
+
     const dispatchNotification =
         ctx.capabilities.get<
             (envelope: {

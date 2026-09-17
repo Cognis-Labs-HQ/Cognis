@@ -7,6 +7,11 @@ import {
 import type { AuthProviderAdapter } from "../gateway.js";
 import type { AuthBootstrapHookContext } from "./index.js";
 import { registerAuthProviderRoutes } from "../provider-route-registrar.js";
+import {
+    createExternalProfileRegistry,
+    type ExternalProfileResolver,
+    type ExternalProfileRequest,
+} from "../external-profile.js";
 
 export async function registerAuthBootstrapHook({
     accountStore,
@@ -14,7 +19,17 @@ export async function registerAuthBootstrapHook({
     ctx,
     routeContext,
 }: AuthBootstrapHookContext): Promise<void> {
+    const externalProfiles = createExternalProfileRegistry();
     ctx.capabilities.contribute("auth:accountStore", accountStore);
+    ctx.capabilities.contribute(
+        "auth:registerExternalProfileProvider",
+        (providerId: string, resolver: ExternalProfileResolver) =>
+            externalProfiles.register(providerId, resolver),
+    );
+    ctx.capabilities.contribute(
+        "auth:resolveExternalProfile",
+        (request: ExternalProfileRequest) => externalProfiles.resolve(request),
+    );
     ctx.capabilities.contribute(
         "auth:registerProvider",
         async (provider: AuthProviderAdapter, requires?: string[]) => {

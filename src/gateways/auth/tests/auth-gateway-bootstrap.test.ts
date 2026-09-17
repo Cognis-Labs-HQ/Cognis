@@ -115,6 +115,11 @@ test("auth gateway bootstrap registers in GatewayRegistry", async () => {
         ...makeBaseCtx(capabilities, dbExecutor),
     });
 
+    assert.equal(
+        typeof capabilities.get("auth:registerExternalProfileProvider"),
+        "function",
+    );
+
     const gateways = gatewayRegistry.list();
     const authGw = gateways.find((g) => g.id === "auth");
     assert.ok(authGw, "auth gateway should be registered");

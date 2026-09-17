@@ -105,3 +105,7 @@ Authentication source changes run the `reconcile-auth-sources` flow after persis
 ## Browser session boundaries
 
 Password-confirmation invalidation runs only for an authenticated full-account session. Anonymous and Share guest page setup can lock or replace keyring state without sending an account-only `DELETE /api/v1/auth/verify` request.
+
+## External profile providers
+
+SSO modules may register `auth:registerExternalProfileProvider` through CTX. The resolver receives the provider ID, Cognis account ID, external user ID, and authenticated provider session, and may return display name, bio, location, website, avatar bytes, and banner bytes. The Profile adapter applies returned data through its own persistence and file-storage capability when the external account is first created.

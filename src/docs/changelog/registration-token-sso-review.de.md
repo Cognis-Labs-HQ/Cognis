@@ -106,6 +106,10 @@ Abgelaufene SSO-Registrierungsleases löschen nun die serverseitig vorgemerkte I
 
 Eine erfolgreiche SSO-Registrierung speichert nun die authentifizierte Browsersitzung, bestätigt die Kontoerstellung und führt direkt zum Dashboard. Registrierungstoken werden verdeckt eingegeben und sofort bei erfolgreicher SSO-Autorisierung verbraucht. Das Einladungsfenster trennt E-Mail- und Token-Ansicht und erstellt beim Öffnen oder Methodenwechsel ein neues Token.
 
+## SSO-Profilsynchronisierung und einheitliche Initialen
+
+SSO-Anbieter können nun über CTX einen Profil-Resolver für Anzeigenamen, Biografie, Ort, Website, Avatar und Banner neuer externer Konten registrieren. Der Profiladapter verwaltet Speicherung und Medien. Die Initialen in der Navigationsleiste verwenden denselben Profilnamen wie die Profilseite.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -136,3 +140,4 @@ Eine erfolgreiche SSO-Registrierung speichert nun die authentifizierte Browsersi
 - [f63aa1a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/f63aa1a97b14476706130ea52d54a69e7b6fe65c)
 - [70a774cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/70a774cb0d2d3f24b4860f21ac67c80f2e16dcc5)
 - [c31fc022](https://github.com/Cognis-Labs-HQ/Cognis/commit/c31fc0228dd8581eeffc3cd620ec957af3e9e87d)
+- [a49861b7](https://github.com/Cognis-Labs-HQ/Cognis/commit/a49861b77761f0806b2fc169695a757968eefa2f)

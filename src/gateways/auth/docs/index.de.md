@@ -105,3 +105,7 @@ Browser-Sitzungsergebnisse bewahren einen neutralen Fehlergrund der alternativen
 ## Grenzen der Browsersitzung
 
 Die Ungültigmachung der Passwortbestätigung wird nur für eine authentifizierte vollständige Kontositzung ausgeführt. Anonyme Seiten und Share-Gastseiten können den Schlüsselbund sperren oder ersetzen, ohne eine nur für Konten bestimmte Anfrage `DELETE /api/v1/auth/verify` zu senden.
+
+## Externe Profilanbieter
+
+SSO-Module können `auth:registerExternalProfileProvider` über CTX registrieren. Der Resolver erhält Anbieter-ID, Cognis-Konto-ID, externe Benutzer-ID und authentifizierte Anbietersitzung und kann Anzeigename, Biografie, Ort, Website sowie Avatar- und Bannerdaten zurückgeben. Der Profiladapter speichert diese Daten bei der ersten Erstellung des externen Kontos über seine eigenen Speicherfunktionen.

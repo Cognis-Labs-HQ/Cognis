@@ -106,6 +106,10 @@ Expired SSO registration leases now erase their server-side pending identity and
 
 Successful SSO registration now persists the authenticated browser session, confirms account creation, and continues directly to the dashboard. Registration tokens are concealed inputs and consumed as soon as SSO authorization succeeds. The invitation popup cleanly separates Email and Token views, hides the email action in Token mode, and creates a fresh token whenever the popup opens or its method changes.
 
+## SSO profile synchronization and consistent initials
+
+SSO providers can now register a CTX profile resolver that supplies display name, biography, location, website, avatar, and banner data when a new external account is created. The Profile adapter owns persistence and media storage. Navbar avatar initials now use the same resolved profile display name as the profile page.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -136,3 +140,4 @@ Successful SSO registration now persists the authenticated browser session, conf
 - [f63aa1a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/f63aa1a97b14476706130ea52d54a69e7b6fe65c)
 - [70a774cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/70a774cb0d2d3f24b4860f21ac67c80f2e16dcc5)
 - [c31fc022](https://github.com/Cognis-Labs-HQ/Cognis/commit/c31fc0228dd8581eeffc3cd620ec957af3e9e87d)
+- [a49861b7](https://github.com/Cognis-Labs-HQ/Cognis/commit/a49861b77761f0806b2fc169695a757968eefa2f)
