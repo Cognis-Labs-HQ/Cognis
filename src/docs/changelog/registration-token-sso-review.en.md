@@ -86,6 +86,10 @@ The Registration gateway now publishes the token adapter UI through the adapter-
 
 External authentication now resolves a canonical email from either the providerâ€™s primary `email` or its `emails` collection, treating empty values as missing. The held-account URL carries its server-side lease expiry into the composed Registration Token form, which uses the standard form builder, login countdown styling, and live countdown behavior. The introductory text now welcomes the verified user and explains the final token step.
 
+## Conditional SSO email collection
+
+The Registration Token form now omits its email field when the external provider supplied a valid address. Missing or malformed provider addresses instead produce a visible, required email field, while the authentication gateway rejects invalid callback addresses before deciding that registration can proceed without one.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -111,3 +115,4 @@ External authentication now resolves a canonical email from either the providerâ
 - [a42c7af6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a42c7af6b477c66a1a3d2f241c4b1f12b5bf4134)
 - [9d5530e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d5530e0359e8edb7f47756114c4dd18e4186617)
 - [8a481699](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a48169990cae94504cf9a2ae97c78343cbd3951)
+- [f08f3f47](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08f3f470df1cfb2aa9fca9f7ba1d29df1ea823d)

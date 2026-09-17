@@ -14,6 +14,8 @@ import {
 import { resolveRole } from "./local-account.js";
 import type { AuthBootstrapHookContext } from "./index.js";
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[a-zA-Z0-9]{2,}$/;
+
 function getEnabledLoginMethods(context: AuthBootstrapHookContext): Array<{
     id: string;
     name: string;
@@ -76,11 +78,11 @@ function resolveSessionEmail(session: {
     emails?: unknown;
 }): string | undefined {
     const directEmail = String(session.email ?? "").trim();
-    if (directEmail) return directEmail;
+    if (EMAIL_PATTERN.test(directEmail)) return directEmail;
     if (!Array.isArray(session.emails)) return undefined;
     return session.emails
         .map((email) => String(email).trim())
-        .find((email) => email.length > 0);
+        .find((email) => EMAIL_PATTERN.test(email));
 }
 
 export async function registerAuthBootstrapHook(

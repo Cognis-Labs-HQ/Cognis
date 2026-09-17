@@ -8,7 +8,10 @@ import {
 } from "../app/login/sso-buttons.js";
 import { reportLoginError } from "../app/login/error-reporting.js";
 import { startSsoLogin } from "../../gateways/auth/ui/login-client.js";
-import { readAccountCreationAuthorization } from "../../gateways/auth/ui/registration-authorization.js";
+import {
+    readAccountCreationAuthorization,
+    renderAccountCreationAuthorization,
+} from "../../gateways/auth/ui/registration-authorization.js";
 
 class FakeElement {
     constructor(tagName) {
@@ -197,4 +200,56 @@ test("SSO account creation carries its lease into the composed token form", asyn
         "utf8",
     );
     assert.match(styles, /\.auth-countdown-pill\s*\{/);
+});
+
+test("SSO account creation only requests an email when one is required", async () => {
+    const renderRequests = [];
+    const integrations = [
+        {
+            i18n: {},
+            module: {
+                renderAccountCreationAuthorization(request) {
+                    renderRequests.push(request);
+                    return "<form></form>";
+                },
+            },
+        },
+    ];
+
+    renderAccountCreationAuthorization({
+        integrations,
+        request: {
+            attemptId: "account_creation_with_email",
+            emailRequired: false,
+            expiresAt: 1893456000000,
+        },
+        escapeHtml: String,
+    });
+    renderAccountCreationAuthorization({
+        integrations,
+        request: {
+            attemptId: "account_creation_without_email",
+            emailRequired: true,
+            expiresAt: 1893456000000,
+        },
+        escapeHtml: String,
+    });
+
+    assert.deepEqual(
+        renderRequests.map(({ emailRequired }) => emailRequired),
+        [false, true],
+    );
+
+    const authorizationSource = await readFile(
+        new URL(
+            "../../adapters/registration/token/ui/authorization.js",
+            import.meta.url,
+        ),
+        "utf8",
+    );
+    assert.match(authorizationSource, /\.\.\.\(emailRequired/);
+    assert.match(
+        authorizationSource,
+        /name: "email"[\s\S]*?type: "email"[\s\S]*?required: true/,
+    );
 });

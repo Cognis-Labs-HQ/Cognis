@@ -427,6 +427,8 @@ test("external login retries account creation through the registration token gat
             accountId: "external-user",
             externalUserId: "provider-user",
             provider: "external-sso",
+            email: "not-an-email-address",
+            emails: ["also-invalid"],
         }),
         configure() {},
         getConfigSchema: () => [],

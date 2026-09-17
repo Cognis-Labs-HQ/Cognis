@@ -5,6 +5,7 @@ export function renderAccountCreationAuthorization({
     i18n,
     escapeHtml,
     expiresAt,
+    emailRequired,
 }) {
     const builder = createFormBuilder(
         { i18n, escapeHtml },
@@ -13,11 +14,16 @@ export function renderAccountCreationAuthorization({
             submitButtonClassName: "btn-confirm btn-animated",
             submitLabelKey: "adapter.registration.token.continue",
             fields: [
-                {
-                    name: "email",
-                    labelKey: "adapter.registration.token.email",
-                    type: "email",
-                },
+                ...(emailRequired
+                    ? [
+                          {
+                              name: "email",
+                              labelKey: "adapter.registration.token.email",
+                              type: "email",
+                              required: true,
+                          },
+                      ]
+                    : []),
                 {
                     name: "registrationToken",
                     labelKey: "adapter.registration.token.token",
@@ -48,11 +54,8 @@ export function bindAccountCreationAuthorization({
     const form = root.querySelector("#account-creation-authorization-form");
     if (!(form instanceof HTMLFormElement)) return;
     const emailInput = form.elements.namedItem("email");
-    if (!emailRequired && emailInput instanceof HTMLInputElement) {
-        emailInput.closest("label")?.remove();
-    }
-    if (emailInput instanceof HTMLInputElement)
-        emailInput.required = emailRequired;
+    if (emailRequired && emailInput instanceof HTMLInputElement)
+        emailInput.required = true;
     if (
         Number.isFinite(expiresAt) &&
         typeof formatCountdownClock === "function"

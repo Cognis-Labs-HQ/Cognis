@@ -86,6 +86,10 @@ Gateway Pendaftaran kini menerbitkan UI adaptor token melalui registri statis mi
 
 Autentikasi eksternal kini menentukan email kanonis dari `email` utama penyedia atau koleksi `emails`, serta menganggap nilai kosong sebagai tidak tersedia. URL akun yang ditahan membawa waktu kedaluwarsa sewa sisi server ke formulir Token Pendaftaran terkomposisi, yang memakai pembuat formulir standar, gaya hitung mundur login, dan perilaku hitung mundur langsung. Teks pengantar kini menyambut pengguna terverifikasi dan menjelaskan langkah token terakhir.
 
+## Pengumpulan email SSO bersyarat
+
+Formulir Token Pendaftaran kini menyembunyikan kolom email ketika penyedia eksternal memberikan alamat yang valid. Jika alamat penyedia tidak ada atau tidak valid, kolom email wajib akan ditampilkan, sementara gateway autentikasi menolak alamat panggilan balik yang tidak valid sebelum memutuskan bahwa pendaftaran dapat dilanjutkan tanpa email.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -111,3 +115,4 @@ Autentikasi eksternal kini menentukan email kanonis dari `email` utama penyedia 
 - [a42c7af6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a42c7af6b477c66a1a3d2f241c4b1f12b5bf4134)
 - [9d5530e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d5530e0359e8edb7f47756114c4dd18e4186617)
 - [8a481699](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a48169990cae94504cf9a2ae97c78343cbd3951)
+- [f08f3f47](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08f3f470df1cfb2aa9fca9f7ba1d29df1ea823d)

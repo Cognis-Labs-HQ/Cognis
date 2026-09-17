@@ -86,6 +86,10 @@ Das Registrierungs-Gateway veröffentlicht die Token-Adapter-UI jetzt über die 
 
 Die externe Authentifizierung ermittelt jetzt eine kanonische E-Mail-Adresse entweder aus der primären `email` des Anbieters oder aus seiner `emails`-Sammlung; leere Werte gelten als fehlend. Die URL des zurückgehaltenen Kontos überträgt das serverseitige Ablaufdatum in das zusammengesetzte Registrierungstoken-Formular, das den Standard-Formular-Builder, die Countdown-Darstellung der Anmeldung und einen laufenden Countdown verwendet. Der Einführungstext begrüßt nun den bestätigten Benutzer und erklärt den abschließenden Token-Schritt.
 
+## Bedingte SSO-E-Mail-Erfassung
+
+Das Registrierungstoken-Formular blendet das E-Mail-Feld nun aus, wenn der externe Anbieter eine gültige Adresse geliefert hat. Bei fehlenden oder ungültigen Anbieteradressen erscheint stattdessen ein sichtbares Pflichtfeld, während das Authentifizierungs-Gateway ungültige Rückrufadressen ablehnt, bevor es eine Registrierung ohne E-Mail zulässt.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -111,3 +115,4 @@ Die externe Authentifizierung ermittelt jetzt eine kanonische E-Mail-Adresse ent
 - [a42c7af6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a42c7af6b477c66a1a3d2f241c4b1f12b5bf4134)
 - [9d5530e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d5530e0359e8edb7f47756114c4dd18e4186617)
 - [8a481699](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a48169990cae94504cf9a2ae97c78343cbd3951)
+- [f08f3f47](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08f3f470df1cfb2aa9fca9f7ba1d29df1ea823d)

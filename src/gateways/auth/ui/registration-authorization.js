@@ -43,6 +43,7 @@ export function renderAccountCreationAuthorization({
               i18n: integration.i18n,
               escapeHtml,
               expiresAt: request.expiresAt,
+              emailRequired: request.emailRequired,
           })
         : null;
 }

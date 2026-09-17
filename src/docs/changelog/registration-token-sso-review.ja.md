@@ -86,6 +86,10 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 
 外部認証は、プロバイダーの主要な `email` または `emails` コレクションから正規のメールアドレスを解決し、空の値は未取得として扱うようになりました。保留アカウントの URL はサーバー側リースの有効期限を合成済み登録トークンフォームへ渡します。このフォームは標準フォームビルダー、ログイン用カウントダウンスタイル、ライブカウントダウン動作を使用します。案内文も、検証済みユーザーを歓迎し、最後のトークン手順を説明する内容に更新しました。
 
+## 条件付き SSO メール収集
+
+外部プロバイダーから有効なアドレスが提供された場合、登録トークンフォームはメール欄を表示しないようになりました。プロバイダーのアドレスが未提供または無効な場合は必須のメール欄を表示し、認証ゲートウェイはメールなしで登録を進める判断の前に無効なコールバックアドレスを拒否します。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -111,3 +115,4 @@ SSO リダイレクトの解決時に、意図的に結果を返さないフロ�
 - [a42c7af6](https://github.com/Cognis-Labs-HQ/Cognis/commit/a42c7af6b477c66a1a3d2f241c4b1f12b5bf4134)
 - [9d5530e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d5530e0359e8edb7f47756114c4dd18e4186617)
 - [8a481699](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a48169990cae94504cf9a2ae97c78343cbd3951)
+- [f08f3f47](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08f3f470df1cfb2aa9fca9f7ba1d29df1ea823d)
