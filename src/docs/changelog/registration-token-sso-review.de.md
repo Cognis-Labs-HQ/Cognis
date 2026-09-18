@@ -138,6 +138,10 @@ Jede handgeschriebene Quell-, Test-, Dokumentations-, Lokalisierungs-, Stil- und
 
 Die Modul-Deinstallation lädt nun den aufgelösten Bootstrap-Einstiegspunkt, die Authentifizierungsdarstellung lehnt unsichere Symbole und doppelte Anbieter ab, und Einladungssteuerelemente beachten die Richtlinie, während Registrierungsanfragen hinter ihrem Gateway-Client verbleiben. Share-spezifische Registerkartenstile gehören wieder dem Share-Adapter.
 
+## Zuverlässige Initialisierung des Seiten-Composers
+
+Die beim Aufteilen des Seiten-Composers entfernte gemeinsame Raster-Schritt-Abhängigkeit wurde wiederhergestellt. Dadurch schlagen Login- und andere zusammengesetzte Seiten bei der anfänglichen Platzierung nicht mehr fehl. Die Refaktorierungsprüfung korrigierte außerdem den Gültigkeitsbereich der Adapter-Suche in der Administration.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -176,3 +180,4 @@ Die Modul-Deinstallation lädt nun den aufgelösten Bootstrap-Einstiegspunkt, di
 - [f9564d25](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9564d25)
 - [cf3e737d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cf3e737d)
 - [a8d69188](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8d69188)
+- [47d25bc4](https://github.com/Cognis-Labs-HQ/Cognis/commit/47d25bc4)

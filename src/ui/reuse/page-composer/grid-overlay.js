@@ -6,6 +6,7 @@ import {
     PAGE_COMPOSER_GRID_GAP,
     buildOccupiedSet,
     checkPlacement,
+    gridStep,
     halfGrid,
     snapGridRound,
 } from "./grid-math.js";

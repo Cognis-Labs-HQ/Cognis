@@ -138,6 +138,10 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 
 モジュールのアンインストールは解決済みの bootstrap エントリーポイントを読み込むようになり、認証表示は安全でないアイコンと重複プロバイダーを拒否します。招待コントロールはポリシーに従い、登録リクエストは登録ゲートウェイクライアント内に維持されます。Share 固有のタブスタイルも Share アダプターの所有に戻しました。
 
+## 信頼できるページコンポーザー初期化
+
+ページコンポーザーの分割時に失われた共有グリッドステップ依存関係を復元し、ログインページなどの初期配置時の失敗を防止しました。リファクタリング監査では、管理画面のアダプター検索スコープも修正しました。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -176,3 +180,4 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 - [f9564d25](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9564d25)
 - [cf3e737d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cf3e737d)
 - [a8d69188](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8d69188)
+- [47d25bc4](https://github.com/Cognis-Labs-HQ/Cognis/commit/47d25bc4)

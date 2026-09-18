@@ -134,6 +134,10 @@ Token pendaftaran yang tidak valid, kedaluwarsa, dicabut, atau tidak cocok denga
 
 Penghapusan modul kini memuat entrypoint bootstrap yang telah diselesaikan, presentasi autentikasi menolak ikon yang tidak aman dan penyedia duplikat, serta kontrol undangan mengikuti kebijakan sementara permintaan pendaftaran tetap berada di balik klien gateway-nya. Gaya tab khusus Share kembali dimiliki adapter Share.
 
+## Inisialisasi penyusun halaman yang andal
+
+Dependensi langkah kisi bersama yang terhapus saat penyusun halaman dipecah telah dipulihkan, sehingga halaman login dan halaman tersusun lainnya tidak lagi gagal saat penempatan awal. Audit refaktor juga memperbaiki cakupan pencarian adapter di Administrasi.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -172,3 +176,4 @@ Penghapusan modul kini memuat entrypoint bootstrap yang telah diselesaikan, pres
 - [f9564d25](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9564d25)
 - [cf3e737d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cf3e737d)
 - [a8d69188](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8d69188)
+- [47d25bc4](https://github.com/Cognis-Labs-HQ/Cognis/commit/47d25bc4)

@@ -138,6 +138,10 @@ Every handwritten source, test, documentation, localization, style, and data fil
 
 Module uninstall now loads the resolved bootstrap entrypoint, authentication presentation rejects unsafe icons and duplicate providers, and invitation controls follow policy while registration requests remain behind their gateway client. Share-specific tab styling is again owned by the Share adapter.
 
+## Reliable page composer initialization
+
+Restored the shared grid-step dependency removed during the page-composer split, preventing login and other composed pages from failing during initial placement. The refactor audit also corrected adapter lookup scope in Administration.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -176,3 +180,4 @@ Module uninstall now loads the resolved bootstrap entrypoint, authentication pre
 - [f9564d25](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9564d25)
 - [cf3e737d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cf3e737d)
 - [a8d69188](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8d69188)
+- [47d25bc4](https://github.com/Cognis-Labs-HQ/Cognis/commit/47d25bc4)

@@ -352,11 +352,11 @@ function bindAdapterToggles() {
             if (!adapterId || !gatewayId) return;
             const previouslyChecked = !toggle.checked;
             const action = toggle.checked ? "enable" : "disable";
+            const adapter = adapterByCompositeKey.get(
+                adapterCompositeKey(gatewayId, adapterId),
+            );
 
             if (action === "enable") {
-                const adapter = adapterByCompositeKey.get(
-                    adapterCompositeKey(gatewayId, adapterId),
-                );
                 if (
                     adapter?.controls?.config &&
                     (await adapterRequiresSetup(
