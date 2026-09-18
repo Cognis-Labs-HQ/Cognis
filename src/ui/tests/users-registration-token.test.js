@@ -62,6 +62,39 @@ test("Registration clients own founder invite-limit reset requests", async () =>
     assert.doesNotMatch(adminSource, /users\?action=invite/);
 });
 
+test("Registration administration uses composed dirty-tracked policy controls", async () => {
+    const adminSource = await readFile(
+        new URL(
+            "../../gateways/registration/ui/admin-section.js",
+            import.meta.url,
+        ),
+        "utf8",
+    );
+    const administrationSource = await readFile(
+        new URL("../app/administration/index.js", import.meta.url),
+        "utf8",
+    );
+    const buttonStyles = await readFile(
+        new URL("../styles/reuse/buttons.css", import.meta.url),
+        "utf8",
+    );
+
+    assert.match(adminSource, /createFormBuilder/);
+    assert.match(adminSource, /createFormDirtyTracker/);
+    assert.match(adminSource, /inputClassName: "choice-checkbox"/);
+    assert.match(
+        adminSource,
+        /class="btn-neutral btn-animated" href="\/invite"/,
+    );
+    assert.doesNotMatch(adminSource, /registration-policy-save/);
+    assert.doesNotMatch(adminSource, /registration\/tokens/);
+    assert.doesNotMatch(adminSource, /invite-revoke-btn/);
+    assert.match(administrationSource, /section\.isDirty\?\.\(\)/);
+    assert.match(administrationSource, /await section\.save\?\.\(\)/);
+    assert.match(administrationSource, /section\.discard\?\.\(\)/);
+    assert.match(buttonStyles, /a\.btn-neutral\s*\{\s*color: var\(--text\);/);
+});
+
 test("Registration token adapter owns the SSO authorization form", async () => {
     const source = await readFile(
         new URL(

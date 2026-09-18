@@ -142,6 +142,10 @@ Dependensi langkah kisi bersama yang terhapus saat penyusun halaman dipecah tela
 
 Notifikasi login kini dimiliki oleh rute login aktif dan ditutup ketika navigasi membatalkan halaman tersebut. Tautan footer hukum tidak lagi meninggalkan umpan balik sesi atau pemulihan permanen di atas halaman tujuan, sementara inisialisasi penyusun yang dipulihkan memungkinkan halaman hukum anonim kembali ke Login tanpa menyisakan konten lama.
 
+## Administrasi pendaftaran yang tersusun
+
+Kontrol kebijakan pendaftaran kini menggunakan penyusun formulir bersama, gaya kotak centang dan tombol standar, serta alur penyimpanan dan pembuangan status perubahan bersama milik Administrasi. Catatan token pendaftaran tetap hanya berada di halaman Undangan, dan tombol navigasi menggunakan warna teks bawaan tema aktif.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -182,3 +186,4 @@ Notifikasi login kini dimiliki oleh rute login aktif dan ditutup ketika navigasi
 - [a8d69188](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8d69188)
 - [47d25bc4](https://github.com/Cognis-Labs-HQ/Cognis/commit/47d25bc4)
 - [62f4c08b](https://github.com/Cognis-Labs-HQ/Cognis/commit/62f4c08b)
+- [c01577d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01577d1)

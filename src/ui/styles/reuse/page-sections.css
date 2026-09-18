@@ -207,12 +207,6 @@
     max-width: 640px;
 }
 
-.security-field-hint {
-    font-weight: 400;
-    color: var(--color-text-muted, #64748b);
-    font-size: 0.85em;
-}
-
 .security-field-row {
     display: flex;
     gap: 8px;

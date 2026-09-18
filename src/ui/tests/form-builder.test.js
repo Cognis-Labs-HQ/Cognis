@@ -44,6 +44,32 @@ test("form builder applies theme styling to every select control", () => {
     assert.match(builder.render(), /class="form-builder-input theme-select"/);
 });
 
+test("form builder accepts standard reusable input classes", () => {
+    const builder = createFormBuilder(
+        {
+            i18n: { t: (key) => key },
+            escapeHtml: (value) => String(value),
+        },
+        {
+            formId: "checkbox-form",
+            includeSubmitButton: false,
+            fields: [
+                {
+                    name: "enabled",
+                    labelKey: "enabled",
+                    type: "checkbox",
+                    inputClassName: "choice-checkbox",
+                },
+            ],
+        },
+    );
+
+    assert.match(
+        builder.render(),
+        /class="form-builder-input choice-checkbox"/,
+    );
+});
+
 test("form builder owns complex form wrappers and attributes", () => {
     const builder = createFormBuilder(
         {

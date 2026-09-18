@@ -146,6 +146,10 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 
 ログイン通知はアクティブなログインルートに属し、ナビゲーションによってページが中断されると閉じるようになりました。法的情報へのフッターリンクを開いた後に永続的なセッション通知や復旧通知が移動先へ残らず、復元されたコンポーザー初期化により匿名の法的情報ページからログインへ戻っても古い内容が画面に残りません。
 
+## 構成済みの登録管理
+
+登録ポリシーの操作には、共有フォームコンポーザー、標準のチェックボックスとボタンのスタイル、および管理画面共通の変更保存・破棄フローを使用するようになりました。登録トークンの記録は招待ページだけに表示され、ナビゲーションボタンには有効なテーマの既定テキスト色が適用されます。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -186,3 +190,4 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 - [a8d69188](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8d69188)
 - [47d25bc4](https://github.com/Cognis-Labs-HQ/Cognis/commit/47d25bc4)
 - [62f4c08b](https://github.com/Cognis-Labs-HQ/Cognis/commit/62f4c08b)
+- [c01577d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01577d1)

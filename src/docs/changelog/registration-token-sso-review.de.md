@@ -146,6 +146,10 @@ Die beim Aufteilen des Seiten-Composers entfernte gemeinsame Raster-Schritt-Abh�
 
 Login-Benachrichtigungen gehören nun zur aktiven Login-Route und werden geschlossen, wenn die Navigation diese Seite abbricht. Links im rechtlichen Fußbereich lassen keine dauerhaften Sitzungs- oder Wiederherstellungsrückmeldungen mehr über der Zielseite stehen; zugleich ermöglicht die wiederhergestellte Composer-Initialisierung die Rückkehr anonymer Rechtsseiten zum Login, ohne veraltete Inhalte anzuzeigen.
 
+## Zusammengesetzte Registrierungsverwaltung
+
+Die Registrierungsrichtlinien verwenden jetzt den gemeinsamen Formularkomponisten, die Standardstile für Kontrollkästchen und Schaltflächen sowie den gemeinsamen Arbeitsablauf der Administration zum Speichern und Verwerfen geänderter Zustände. Registrierungstoken-Datensätze verbleiben ausschließlich auf der Einladungsseite, und Navigationsschaltflächen verwenden die Standardtextfarbe des aktiven Designs.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -186,3 +190,4 @@ Login-Benachrichtigungen gehören nun zur aktiven Login-Route und werden geschlo
 - [a8d69188](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8d69188)
 - [47d25bc4](https://github.com/Cognis-Labs-HQ/Cognis/commit/47d25bc4)
 - [62f4c08b](https://github.com/Cognis-Labs-HQ/Cognis/commit/62f4c08b)
+- [c01577d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01577d1)

@@ -146,6 +146,10 @@ Restored the shared grid-step dependency removed during the page-composer split,
 
 Login notifications now belong to the active login route and are dismissed when navigation aborts that page. Legal footer links no longer leave permanent session or recovery feedback floating over the destination page, while the restored composer initialization allows anonymous legal pages to return to Login without leaving stale content on screen.
 
+## Composed registration administration
+
+Registration policy controls now use the shared form composer, standard checkbox and button styles, and Administration’s shared dirty-state save and discard workflow. Registration-token records remain exclusively on the Invites page, and navigation buttons use the active theme’s default text color.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -186,3 +190,4 @@ Login notifications now belong to the active login route and are dismissed when 
 - [a8d69188](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8d69188)
 - [47d25bc4](https://github.com/Cognis-Labs-HQ/Cognis/commit/47d25bc4)
 - [62f4c08b](https://github.com/Cognis-Labs-HQ/Cognis/commit/62f4c08b)
+- [c01577d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01577d1)

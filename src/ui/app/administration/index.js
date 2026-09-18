@@ -71,6 +71,7 @@ let adapterByCompositeKey = new Map();
 let composer = null;
 let changesBar = null;
 let securitySection = null;
+let gatewaySections = [];
 let elements = [];
 function setModules(nextModules) {
     modules = nextModules;
@@ -671,6 +672,7 @@ async function guardSubPageSwitch() {
         if (result !== "discard") return false;
         securitySection?.discard();
         changesBar.markDirty("security", false);
+        gatewaySections.forEach((section) => section.discard?.());
     }
     return true;
 }
@@ -700,7 +702,7 @@ export async function mount(rootEl, { signal } = {}) {
     });
 
     const sectionMeta = await loadAdminSections();
-    const gatewaySections = (
+    gatewaySections = (
         await Promise.all(
             sectionMeta.map((section) =>
                 loadGatewaySection(section, {
@@ -709,6 +711,8 @@ export async function mount(rootEl, { signal } = {}) {
                     escapeHtml,
                     openPopup,
                     showToast,
+                    onDirtyChange: (sectionId, dirty) =>
+                        changesBar?.markDirty(sectionId, dirty),
                 }),
             ),
         )
@@ -895,6 +899,11 @@ export async function mount(rootEl, { signal } = {}) {
             try {
                 await securitySection.save();
                 changesBar.markDirty("security", false);
+                for (const section of gatewaySections) {
+                    if (!section.isDirty?.()) continue;
+                    await section.save?.();
+                    changesBar.markDirty(section.id, false);
+                }
                 await reloadGatewaysAndAdapters();
                 syncRuntimeToggleControls();
                 showToast(i18n.t("ui.app.admin.settings_saved"), {
@@ -908,6 +917,7 @@ export async function mount(rootEl, { signal } = {}) {
         },
         onDiscard: async () => {
             securitySection?.discard();
+            gatewaySections.forEach((section) => section.discard?.());
             composer.refresh(elements);
         },
     });

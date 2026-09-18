@@ -145,6 +145,12 @@ export function createFormBuilder(ctx, options) {
         const value =
             fieldConfig.value == null ? "" : String(fieldConfig.value);
         const className = String(fieldConfig.className ?? "").trim();
+        const inputClassName = [
+            "form-builder-input",
+            String(fieldConfig.inputClassName ?? "").trim(),
+        ]
+            .filter(Boolean)
+            .join(" ");
         const fieldClassName = className
             ? `form-builder-field ${className}`
             : "form-builder-field";
@@ -248,7 +254,7 @@ export function createFormBuilder(ctx, options) {
           id="${escapeHtml(inputId)}"
           name="${escapeHtml(fieldName)}"
           type="${escapeHtml(fieldConfig.secret ? "password" : type)}"
-          class="form-builder-input"
+          class="${escapeHtml(inputClassName)}"
           ${type === "checkbox" && value === "true" ? "checked" : `value="${escapeHtml(value)}"`}${fieldConfig.secret ? " data-secret-visibility-input" : ""}${attributes.join("")}
         />`;
         const inputMarkup = fieldConfig.secret
