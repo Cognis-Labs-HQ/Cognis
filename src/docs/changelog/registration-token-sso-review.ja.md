@@ -170,6 +170,10 @@ AI コントリビューション手順に、任意のシステムバイナリ�
 
 ログインページと登録ページは、初期化時にコンポーネント所有の翻訳を読み込むようになりました。また、ページを直接開いた場合も、ログイン、招待管理、モジュールマーケットプレイスに必要なすべてのスタイルシートを描画前に準備します。
 
+## ブラウザー SSO コールバックを確実に完了
+
+認証ゲートウェイは、`/sso/<namespace>/...` 配下にプロバイダー所有のブラウザーコールバックルートを公開するようになりました。クエリ形式の OAuth 応答はプロバイダーへ直接渡され、フラグメント形式の応答は Cognis のコールバックページから同じコールバックへ安全に転送されます。プロバイダー障害時は読み込み状態を終了し、ログインページにローカライズされたエラーを表示します。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -216,3 +220,4 @@ AI コントリビューション手順に、任意のシステムバイナリ�
 - [5766ce26](https://github.com/Cognis-Labs-HQ/Cognis/commit/5766ce26)
 - [abb16e51](https://github.com/Cognis-Labs-HQ/Cognis/commit/abb16e51)
 - [ca3305d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ca3305d1)
+- [4b3d58ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/4b3d58ea)

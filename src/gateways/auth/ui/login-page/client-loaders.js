@@ -48,6 +48,9 @@ export function showLoginReasonToast({ reason, i18n, showToast }) {
         account_archived: "ui.app.login.reason.account_archived",
         account_deactivated: "ui.app.login.reason.account_deactivated",
         account_deleted: "ui.app.login.reason.account_deleted",
+        sso_callback_failed: "ui.app.login.reason.sso_callback_failed",
+        sso_provider_unavailable:
+            "ui.app.login.reason.sso_provider_unavailable",
     }[reason];
     if (!key) return null;
     return showToast(i18n.t(key), { variant: "error", permanent: true });

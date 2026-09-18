@@ -90,4 +90,7 @@
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.app.login.reason.account_archived">アカウントはアーカイブされています。アクセスを復元するには管理者に連絡してください。</string>
   <string name="ui.app.login.reason.account_deactivated">アカウントは無効化されています。やり取りを復元するには再度ログインしてください。</string>
+  <string name="ui.app.login.sso_callback_failed">シングルサインオンを完了できませんでした。もう一度お試しください。</string>
+  <string name="ui.app.login.reason.sso_callback_failed">シングルサインオンを完了できませんでした。もう一度お試しください。</string>
+  <string name="ui.app.login.reason.sso_provider_unavailable">現在、サインインプロバイダーを利用できません。</string>
 </resources>

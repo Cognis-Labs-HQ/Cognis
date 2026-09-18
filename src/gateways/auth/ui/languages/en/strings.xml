@@ -90,4 +90,7 @@
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.app.login.reason.account_archived">Your account is archived. Contact an administrator to restore access.</string>
   <string name="ui.app.login.reason.account_deactivated">Your account is deactivated. Log in again to restore interaction.</string>
+  <string name="ui.app.login.sso_callback_failed">Single sign-on could not be completed. Please try again.</string>
+  <string name="ui.app.login.reason.sso_callback_failed">Single sign-on could not be completed. Please try again.</string>
+  <string name="ui.app.login.reason.sso_provider_unavailable">The sign-in provider is currently unavailable.</string>
 </resources>

@@ -170,6 +170,10 @@ Anmeldung, Registrierung und Einladungsverwaltung besitzen nun ihre Seiten, Rout
 
 Anmelde- und Registrierungsseiten laden ihre komponenteneigenen Übersetzungen jetzt bereits bei der Initialisierung. Direkte Seitenaufrufe laden außerdem die vollständigen Stylesheet-Pakete für Anmeldung, Einladungsverwaltung und Modulmarktplatz, bevor Inhalte gerendert werden.
 
+## Browserseitige SSO-Rückrufe abgeschlossen
+
+Das Authentifizierungs-Gateway stellt nun anbietereigene Browser-Rückrufrouten unter `/sso/<namespace>/...` bereit. Abfragebasierte OAuth-Antworten erreichen den Anbieter direkt; fragmentbasierte Antworten werden durch eine Cognis-Seite sicher in denselben Rückruf überführt. Anbieterfehler beenden die Ladeansicht und werden auf der Anmeldeseite lokalisiert gemeldet.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -216,3 +220,4 @@ Anmelde- und Registrierungsseiten laden ihre komponenteneigenen Übersetzungen j
 - [5766ce26](https://github.com/Cognis-Labs-HQ/Cognis/commit/5766ce26)
 - [abb16e51](https://github.com/Cognis-Labs-HQ/Cognis/commit/abb16e51)
 - [ca3305d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ca3305d1)
+- [4b3d58ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/4b3d58ea)

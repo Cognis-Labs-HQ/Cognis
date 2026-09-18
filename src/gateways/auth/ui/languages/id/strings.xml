@@ -90,4 +90,7 @@
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.app.login.reason.account_archived">Akun Anda diarsipkan. Hubungi administrator untuk memulihkan akses.</string>
   <string name="ui.app.login.reason.account_deactivated">Akun Anda dinonaktifkan. Masuk lagi untuk memulihkan interaksi.</string>
+  <string name="ui.app.login.sso_callback_failed">Single sign-on tidak dapat diselesaikan. Silakan coba lagi.</string>
+  <string name="ui.app.login.reason.sso_callback_failed">Single sign-on tidak dapat diselesaikan. Silakan coba lagi.</string>
+  <string name="ui.app.login.reason.sso_provider_unavailable">Penyedia login saat ini tidak tersedia.</string>
 </resources>

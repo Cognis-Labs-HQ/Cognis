@@ -170,6 +170,10 @@ Login, registration, and invitation management now own their pages, routes, styl
 
 Login and registration pages now load their component-owned translations during initialization. Direct page loads also prepare the complete stylesheet bundles for login, invitation management, and the module marketplace before rendering content.
 
+## Browser SSO callbacks complete reliably
+
+The Authentication gateway now publishes provider-owned browser callback routes under `/sso/<namespace>/...`. Query-based OAuth responses reach the provider directly, while a Cognis callback page safely forwards fragment-based responses into the same callback. Provider failures stop the loading state and return a localized error on the login page.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -216,3 +220,4 @@ Login and registration pages now load their component-owned translations during 
 - [5766ce26](https://github.com/Cognis-Labs-HQ/Cognis/commit/5766ce26)
 - [abb16e51](https://github.com/Cognis-Labs-HQ/Cognis/commit/abb16e51)
 - [ca3305d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ca3305d1)
+- [4b3d58ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/4b3d58ea)

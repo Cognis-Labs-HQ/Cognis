@@ -55,3 +55,17 @@ test("login reason helper skips unknown reasons", () => {
 
     assert.equal(result, null);
 });
+
+test("login reason helper reports SSO callback failures", () => {
+    let message = "";
+    showLoginReasonToast({
+        reason: "sso_callback_failed",
+        i18n: { t: (key) => key },
+        showToast: (value) => {
+            message = value;
+            return () => undefined;
+        },
+    });
+
+    assert.equal(message, "ui.app.login.reason.sso_callback_failed");
+});

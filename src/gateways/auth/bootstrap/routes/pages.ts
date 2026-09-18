@@ -14,6 +14,31 @@ const AUTH_UI_ROOT = path.resolve(
     "ui",
 );
 
+export async function serveAuthCallbackPage(
+    res: ServerResponse,
+    routeContext?: RouteContext,
+): Promise<void> {
+    const ctx = resolveRouteContext(routeContext);
+    try {
+        const file = await readFile(
+            path.join(AUTH_UI_ROOT, "pages", "callback.html"),
+        );
+        ctx.setPageSecurityHeaders(res);
+        res.writeHead(200, {
+            "content-type": "text/html; charset=utf-8",
+            "cache-control": "no-store",
+        });
+        res.end(file);
+    } catch {
+        res.writeHead(404, { "content-type": "application/json" });
+        res.end(
+            JSON.stringify({
+                error: { code: "not_found", message: "Asset not found." },
+            }),
+        );
+    }
+}
+
 export function createAuthPageRoutes(routeContext?: RouteContext) {
     const ctx = resolveRouteContext(routeContext);
     return async (

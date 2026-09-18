@@ -166,6 +166,10 @@ Login, pendaftaran, dan pengelolaan undangan kini memiliki halaman, rute, gaya, 
 
 Halaman login dan pendaftaran kini memuat terjemahan milik komponennya saat inisialisasi. Pemuatan halaman secara langsung juga menyiapkan seluruh bundel stylesheet untuk login, pengelolaan undangan, dan marketplace modul sebelum merender konten.
 
+## Callback SSO browser selesai dengan andal
+
+Gateway Autentikasi kini menerbitkan rute callback browser milik penyedia di bawah `/sso/<namespace>/...`. Respons OAuth berbasis kueri langsung diteruskan kepada penyedia, sedangkan halaman callback Cognis meneruskan respons berbasis fragmen secara aman ke callback yang sama. Kegagalan penyedia menghentikan status pemuatan dan mengembalikan galat yang dilokalkan pada halaman login.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -212,3 +216,4 @@ Halaman login dan pendaftaran kini memuat terjemahan milik komponennya saat inis
 - [5766ce26](https://github.com/Cognis-Labs-HQ/Cognis/commit/5766ce26)
 - [abb16e51](https://github.com/Cognis-Labs-HQ/Cognis/commit/abb16e51)
 - [ca3305d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ca3305d1)
+- [4b3d58ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/4b3d58ea)
