@@ -1,5 +1,4 @@
 import { apiFetch } from "/static/reuse/api-client.js";
-import { createAdaptivePoller } from "/static/reuse/adaptive-poller.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
@@ -9,8 +8,6 @@ import { updateNavbarAvatar } from "/static/layouts/dashboard-layout.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { navigateTo } from "/static/reuse/app-router.js";
-import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
-import { formatDate } from "/static/reuse/timestamp.js";
 import {
     loadOwnProfile,
     loadFollowers,
@@ -39,6 +36,18 @@ import { createProfileImageSelection } from "./profile-image-selection.js";
 import { resolveBannerCropAspectRatio } from "./image-crop.js";
 import { createProfilePostActions } from "./profile-post-actions.js";
 import { hydrateAvailabilityIndicators } from "./availability.js";
+import { registerProfilePostSearchIndex } from "./search-groups.js";
+import {
+    createFollowerCountPoller,
+    loadSocialConnectionList,
+} from "./follower-poller.js";
+import {
+    AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO,
+    PROFILE_BIO_MAX_CHARACTERS,
+    PROFILE_DISPLAY_NAME_MAX_CHARACTERS,
+    PROFILE_LOCATION_MAX_CHARACTERS,
+    PROFILE_WEBSITE_MAX_CHARACTERS,
+} from "./profile-config.js";
 
 let root = null;
 let i18n = null;
@@ -60,36 +69,11 @@ let bannerMenuCloseHandler = null;
 let canMessageTarget = false;
 let canRequestMessageTarget = false;
 let relationship = null;
-const AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO = 1;
 let pendingBannerAspectRatio = resolveBannerCropAspectRatio(bannerHeight);
 let newPostFormController = null;
 let followerCountPoller = null;
 
-const PROFILE_BIO_MAX_CHARACTERS = 200;
-const PROFILE_DISPLAY_NAME_MAX_CHARACTERS = 80;
-const PROFILE_LOCATION_MAX_CHARACTERS = 120;
-const PROFILE_WEBSITE_MAX_CHARACTERS = 2048;
-
-function collectProfilePostSearchGroups() {
-    const items = (posts ?? []).map((post) => {
-        const author = profile?.displayName || profile?.handle || urlHandle;
-        const timeLabel = formatDate(post.createdAt, "");
-        return {
-            id: `post:${post.id}`,
-            label: post.title || author || "Post",
-            description: [author, timeLabel].filter(Boolean).join(" — "),
-            url: `${window.location.pathname}${window.location.search}#post-${encodeURIComponent(post.id)}`,
-            resultClass: "text",
-            searchText: [post.title, post.content, author, timeLabel]
-                .filter(Boolean)
-                .join(" "),
-            visible: true,
-        };
-    });
-    return items.length ? [{ category: "Posts", items }] : [];
-}
-
-registerSearchIndex("profile-posts", collectProfilePostSearchGroups);
+registerProfilePostSearchIndex(() => ({ posts, profile, urlHandle }));
 
 let profileImageActions = null;
 let postActions = null;
@@ -180,45 +164,6 @@ function refreshProfileCards(cardIds) {
     composer?.refreshElements(cardIds);
 }
 
-async function loadSocialConnectionList(profileHandle, connectionKind) {
-    const response = await apiFetch(
-        `/api/v1/social/users/${encodeURIComponent(profileHandle)}/${connectionKind}`,
-    );
-    if (!response.ok) {
-        throw new Error(`Unable to refresh ${connectionKind}`);
-    }
-    return (await response.json()).data ?? [];
-}
-
-function getSocialHandles(users) {
-    return users.map((user) => user?.handle ?? "").join("\n");
-}
-
-async function refreshFollowerCounts() {
-    const profileHandle = profile?.handle;
-    if (!profileHandle) return false;
-    const [latestFollowers, latestFollowing] = await Promise.all([
-        loadSocialConnectionList(profileHandle, "followers"),
-        loadSocialConnectionList(profileHandle, "following"),
-    ]);
-    const followersChanged =
-        getSocialHandles(latestFollowers) !== getSocialHandles(followers);
-    const followingChanged =
-        getSocialHandles(latestFollowing) !== getSocialHandles(following);
-    if (!followersChanged && !followingChanged) return false;
-    followers = latestFollowers;
-    following = latestFollowing;
-    refreshProfileCards([
-        "hero",
-        ...(followersChanged ? ["followers"] : []),
-        ...(followingChanged ? ["following"] : []),
-        "suggested",
-    ]);
-    bindProfileHeroEvents();
-    bindSocialCardEvents();
-    return true;
-}
-
 function stopFollowerCountPoller() {
     followerCountPoller?.stop();
     followerCountPoller = null;
@@ -226,12 +171,26 @@ function stopFollowerCountPoller() {
 
 function startFollowerCountPoller(signal) {
     stopFollowerCountPoller();
-    followerCountPoller = createAdaptivePoller({
-        task: refreshFollowerCounts,
-        minIntervalMs: 1_000,
-        maxIntervalMs: 10_000,
-        initialIntervalMs: 1_000,
-        onError: () => {
+    followerCountPoller = createFollowerCountPoller({
+        loadConnections: loadSocialConnectionList,
+        readState: () => ({
+            profileHandle: profile?.handle,
+            followers,
+            following,
+        }),
+        applyConnections: (next) => {
+            followers = next.followers;
+            following = next.following;
+            refreshProfileCards([
+                "hero",
+                ...(next.followersChanged ? ["followers"] : []),
+                ...(next.followingChanged ? ["following"] : []),
+                "suggested",
+            ]);
+            bindProfileHeroEvents();
+            bindSocialCardEvents();
+        },
+        reportError: () => {
             showToast(i18n.t("ui.app.profile.follow_counts_refresh_failed"), {
                 variant: "error",
             });

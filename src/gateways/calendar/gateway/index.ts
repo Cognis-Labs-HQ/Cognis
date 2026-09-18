@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { normalizeCalendarColor, randomCalendarColor } from "../color.js";
+import { normalizeCalendarColor } from "../color.js";
 import type { CalendarStore } from "../store.js";
 import { CalendarTokenStore } from "./token-store.js";
 import {
@@ -56,6 +56,8 @@ import {
     listOwnedEventsByRecurrenceId,
 } from "./recurrence-event-queries.js";
 import { listInvitedPendingEvents } from "./invitation-queries.js";
+import { hydrateCalendarStore } from "./store-hydration.js";
+import { buildCalendarRecord } from "./calendar-creation.js";
 export class CoreCalendarGateway {
     private readonly calendarsById = new Map<string, CalendarRecord>();
     private readonly calendarIdsByOwner = new Map<string, Set<string>>();
@@ -75,36 +77,15 @@ export class CoreCalendarGateway {
 
     async attachStore(store: CalendarStore): Promise<void> {
         this.store = store;
-        const [calendars, events, responses] = await Promise.all([
-            store.listCalendars(),
-            store.listEvents(),
-            store.listResponses(),
-        ]);
-        this.calendarsById.clear();
-        this.calendarIdsByOwner.clear();
-        this.eventsByCalendar.clear();
-        this.responsesByRootEvent.clear();
-        for (const calendar of calendars) {
-            this.upsertCalendarRecord(calendar);
-        }
-        for (const event of events) {
-            upsertEventRecordHelper(this.eventsByCalendar, {
-                ...event,
-                attendees: normalizeAttendeeList(event.attendees),
-                inviteEmails: normalizeInviteEmails(event.inviteEmails),
-                status: normalizeEventStatus(event.status),
-                recurrence: normalizeEventRecurrence(event.recurrence),
-                responses: {},
-            });
-        }
-        for (const response of responses) {
-            setResponseRecordHelper(this.responsesByRootEvent, response);
-        }
-        for (const eventsForCalendar of this.eventsByCalendar.values()) {
-            for (const event of eventsForCalendar) {
-                this.refreshEventResponses(event);
-            }
-        }
+        await hydrateCalendarStore({
+            store,
+            calendarsById: this.calendarsById,
+            calendarIdsByOwner: this.calendarIdsByOwner,
+            eventsByCalendar: this.eventsByCalendar,
+            responsesByRootEvent: this.responsesByRootEvent,
+            upsertCalendar: (calendar) => this.upsertCalendarRecord(calendar),
+            refreshResponses: (event) => this.refreshEventResponses(event),
+        });
     }
 
     async flushStore(): Promise<void> {
@@ -151,11 +132,6 @@ export class CoreCalendarGateway {
     };
 
     createCalendar(input: CreateCalendarInput): CalendarRecord {
-        const now = new Date().toISOString();
-        const normalizedName = String(input.name ?? "").trim();
-        if (!normalizedName) {
-            throw new Error("calendar_name_required");
-        }
         if (input.isDefault === true) {
             for (const calendarId of this.calendarIdsByOwner.get(
                 input.ownerAccountId,
@@ -163,29 +139,14 @@ export class CoreCalendarGateway {
                 const calendar = this.calendarsById.get(calendarId);
                 if (!calendar?.isDefault) continue;
                 calendar.isDefault = false;
-                calendar.updatedAt = now;
+                calendar.updatedAt = new Date().toISOString();
                 this.upsertCalendarRecord(calendar);
                 this.scheduleStoreWrite(() =>
                     this.store?.saveCalendar(calendar),
                 );
             }
         }
-        const calendar: CalendarRecord = {
-            id: randomUUID(),
-            ownerAccountId: input.ownerAccountId,
-            name: normalizedName,
-            visibility: input.visibility ?? "private",
-            color:
-                input.color === undefined
-                    ? randomCalendarColor()
-                    : normalizeCalendarColor(input.color),
-            defaultReminderOffsetsMinutes: resolveReminderOffsets(
-                input.defaultReminderOffsetsMinutes,
-            ),
-            isDefault: input.isDefault === true,
-            createdAt: now,
-            updatedAt: now,
-        };
+        const calendar = buildCalendarRecord(input);
         this.upsertCalendarRecord(calendar);
         this.scheduleStoreWrite(() => this.store?.saveCalendar(calendar));
         return calendar;

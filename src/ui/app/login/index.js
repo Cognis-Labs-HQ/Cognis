@@ -30,6 +30,11 @@ import {
 } from "./sso-buttons.js";
 import { persistLoginSession as persistSession } from "/static/gateways/auth/login-client.js";
 import { clearLoginSession } from "./session.js";
+import {
+    createLoginClientLoaders,
+    isPublicRegistrationEnabled,
+    showLoginReasonToast,
+} from "./client-loaders.js";
 import "../../reuse/flow-registry.js";
 import "/static/adapters/auth/keyring/keyring.js";
 
@@ -50,14 +55,18 @@ export async function mount(root, { signal } = {}) {
     let currentTfaLoginAttemptId = null;
     let pendingKeyringPassword = "";
     let lastTfaPayload = null;
-    let tfaLoginClientPromise = null;
-    let requiredEmailEnforcementClientPromise = null;
     let passwordResetTokenHandled = false;
     let submitPasswordReset = null;
     const {
         loadConfig: loadLoginUiConfig,
         loadClient: loadLoginIntegrationClient,
     } = createLoginIntegrationLoader();
+    const { loadTfaLoginClient, loadRequiredEmailEnforcementClient } =
+        createLoginClientLoaders({
+            loadClient: loadLoginIntegrationClient,
+            i18n,
+            root,
+        });
 
     const typingSamples = await loadAuthTypingSamples(i18n);
     const loginReason = new URL(window.location.href).searchParams.get(
@@ -68,56 +77,16 @@ export async function mount(root, { signal } = {}) {
     }
     let loginReasonToastShown = false;
 
-    let publicRegistrationEnabled = false;
+    const publicRegistrationEnabled = await isPublicRegistrationEnabled();
     let isPasswordResetMode = false;
-    try {
-        const regConfigRes = await fetch("/api/v1/auth/registration-config");
-        if (regConfigRes.ok) {
-            const regConfigPayload = await regConfigRes.json();
-            publicRegistrationEnabled =
-                regConfigPayload?.data?.registrationsEnabled === true;
-        }
-    } catch {
-        publicRegistrationEnabled = false;
-    }
 
     function renderLoginReasonToast() {
         if (loginReasonToastShown) return;
-        const keyByReason = {
-            session_expired: "ui.app.login.reason.session_expired",
-            account_disabled: "ui.app.login.reason.account_disabled",
-            account_archived: "ui.app.login.reason.account_archived",
-            account_deactivated: "ui.app.login.reason.account_deactivated",
-            account_deleted: "ui.app.login.reason.account_deleted",
-        };
-        const reasonKey = keyByReason[loginReason];
-        if (!reasonKey) return;
-        loginReasonToastShown = true;
-        showToast(i18n.t(reasonKey), {
-            variant: "error",
-            permanent: true,
+        loginReasonToastShown = showLoginReasonToast({
+            reason: loginReason,
+            i18n,
+            showToast,
         });
-    }
-
-    async function loadTfaLoginClient() {
-        if (!tfaLoginClientPromise) {
-            tfaLoginClientPromise = loadLoginIntegrationClient(
-                "tfa",
-                (module) =>
-                    module.createTfaLoginClient({ baseI18n: i18n, root }),
-            );
-        }
-        return tfaLoginClientPromise;
-    }
-
-    async function loadRequiredEmailEnforcementClient() {
-        if (!requiredEmailEnforcementClientPromise) {
-            requiredEmailEnforcementClientPromise = loadLoginIntegrationClient(
-                "required-email-enforcement",
-                (module) => module.createRequiredEmailEnforcementClient(),
-            );
-        }
-        return requiredEmailEnforcementClientPromise;
     }
 
     function hideCredentialProviderSelector() {

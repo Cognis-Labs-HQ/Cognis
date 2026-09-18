@@ -130,6 +130,10 @@ Der Einladungslink auf der Benutzerseite verwendet jetzt die standardmäßige ne
 
 Ungültige, abgelaufene, widerrufene und für eine andere E-Mail-Adresse ausgestellte Registrierungstoken erzeugen nun präzise lokalisierte Rückmeldungen. Geheimnisse widerrufener manueller Token verschwinden sofort, deaktivierte SSO-Anbieter können keine Rückrufrouten mehr bedienen, und neue Profile beginnen mit einer kollisionssicheren Konto-ID, bevor Anbieterprofildaten angewendet werden.
 
+## Überschaubare Quellmodule
+
+Jede handgeschriebene Quell-, Test-, Dokumentations-, Lokalisierungs-, Stil- und Datendatei ist nun auf 950 Zeilen begrenzt. Übergroße Implementierungen wurden in fokussierte, komponenteneigene Module aufgeteilt, große Testsuiten nach Zuständigkeit getrennt und der Emoji-Katalog ohne Änderung seines öffentlichen Verhaltens partitioniert. Ein Konformitätstest verhindert zukünftige Rückschritte. Generierte Paketsperrdateien und Binärdateien bleiben unverändert.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -166,3 +170,4 @@ Ungültige, abgelaufene, widerrufene und für eine andere E-Mail-Adresse ausgest
 - [9a2a9dc6](https://github.com/Cognis-Labs-HQ/Cognis/commit/9a2a9dc6)
 - [c5ff88ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5ff88ce)
 - [f9564d25](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9564d25)
+- [cf3e737d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cf3e737d)

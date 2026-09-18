@@ -28,12 +28,10 @@ import {
     renderAuthBrandline,
     renderAuthLayout,
 } from "/static/reuse/auth-layout.js";
-import { clearStoredAuthSession } from "/static/reuse/auth-session.js";
 import { formatCountdownClock } from "/static/gateways/auth/countdown.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import {
     DEFAULT_PASSWORD_POLICY,
-    countPatternMatches,
     normalizePasswordPolicy,
 } from "/static/gateways/auth/password-policy.js";
 import { bindConfirmPasswordRevalidation } from "/static/gateways/auth/reuse/bind-confirm-password-revalidation.js";
@@ -44,94 +42,13 @@ import {
     renderAccountCreationAuthorization,
 } from "/static/gateways/auth/registration-authorization.js";
 import { getPendingAccountCreation } from "/static/gateways/auth/login-client.js";
+import {
+    buildPasswordCriteria,
+    resetAuthSessionForRegister,
+} from "./register-form.js";
 const REGISTER_EMAIL_MAX_CHARACTERS = 320;
 const REGISTER_USERNAME_MAX_CHARACTERS = 25;
 const REGISTER_DISPLAY_NAME_MAX_CHARACTERS = 80;
-async function resetAuthSessionForRegister() {
-    const hadStoredSession =
-        Boolean(localStorage.getItem("cognis_access_token")) ||
-        Boolean(localStorage.getItem("cognis_account"));
-    try {
-        await fetch("/api/v1/auth/logout", {
-            method: "POST",
-            credentials: "same-origin",
-        });
-    } catch {
-        // Best-effort cookie revocation; local reset still runs.
-    }
-    clearStoredAuthSession();
-    return hadStoredSession;
-}
-
-/**
- * Builds structured form-builder criteria for password validation.
- *
- * @param {{ minLength: number, requireUppercase: number, requireLowercase: number, requireDigit: number, requireSpecial: number }} policy
- * @returns {Array<{ id: string, type: 'custom', test: (value: string, fieldValues?: Record<string, string>) => boolean, messageKey: string, messageParams?: Record<string, number>, mode: 'live' }>}
- */
-function buildPasswordCriteria(policy) {
-    const criteria = [];
-    if (policy.minLength > 0) {
-        const minLength = policy.minLength;
-        criteria.push({
-            id: "password-min-length",
-            type: "custom",
-            test: (value) => value.length >= minLength,
-            messageKey: "ui.app.register.error.password_too_short",
-            messageParams: { min: minLength },
-            mode: "live",
-        });
-    }
-    if (policy.requireUppercase > 0) {
-        const minUppercaseCount = policy.requireUppercase;
-        criteria.push({
-            id: "password-uppercase-count",
-            type: "custom",
-            test: (value) =>
-                countPatternMatches(value, /[A-Z]/g) >= minUppercaseCount,
-            messageKey: "ui.app.register.error.password_requires_uppercase",
-            messageParams: { count: minUppercaseCount },
-            mode: "live",
-        });
-    }
-    if (policy.requireLowercase > 0) {
-        const minLowercaseCount = policy.requireLowercase;
-        criteria.push({
-            id: "password-lowercase-required",
-            type: "custom",
-            test: (value) =>
-                countPatternMatches(value, /[a-z]/g) >= minLowercaseCount,
-            messageKey: "ui.app.register.error.password_requires_lowercase",
-            messageParams: { count: minLowercaseCount },
-            mode: "live",
-        });
-    }
-    if (policy.requireDigit > 0) {
-        const minDigitCount = policy.requireDigit;
-        criteria.push({
-            id: "password-digit-count",
-            type: "custom",
-            test: (value) =>
-                countPatternMatches(value, /[0-9]/g) >= minDigitCount,
-            messageKey: "ui.app.register.error.password_requires_digit",
-            messageParams: { count: minDigitCount },
-            mode: "live",
-        });
-    }
-    if (policy.requireSpecial > 0) {
-        const minSpecialCount = policy.requireSpecial;
-        criteria.push({
-            id: "password-special-count",
-            type: "custom",
-            test: (value) =>
-                countPatternMatches(value, /[^A-Za-z0-9]/g) >= minSpecialCount,
-            messageKey: "ui.app.register.error.password_requires_special",
-            messageParams: { count: minSpecialCount },
-            mode: "live",
-        });
-    }
-    return criteria;
-}
 
 /**
  * Mounts the registration page into the provided root element.

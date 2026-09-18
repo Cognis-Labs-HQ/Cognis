@@ -10,6 +10,10 @@
 import { uiCtx } from "../ui-ctx.js";
 import { search } from "./capability.js";
 import { REGISTERED_SEARCH_CATEGORY_HOOKS } from "./state.js";
+import {
+    filterVisibleSearchGroups as filterVisibleGroups,
+    isSearchResultVisibleToUser as isVisibleResult,
+} from "./visibility.js";
 export { search } from "./capability.js";
 /**
  * Converts a singular category token into a basic plural form for placeholder
@@ -917,70 +921,10 @@ export function mergeSearchGroups(groups) {
     });
 }
 
-function escapeSearchSelectorToken(value) {
-    if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
-        return CSS.escape(value);
-    }
-    return String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-}
-
-function isInternalSearchUrlAccessible(url) {
-    const rawUrl = String(url ?? "").trim();
-    if (!rawUrl) return true;
-    try {
-        const resolvedUrl = new URL(rawUrl, window.location.origin);
-        if (resolvedUrl.origin !== window.location.origin) return false;
-        if (
-            resolvedUrl.protocol !== "http:" &&
-            resolvedUrl.protocol !== "https:"
-        ) {
-            return false;
-        }
-        if (
-            resolvedUrl.pathname === window.location.pathname &&
-            resolvedUrl.hash
-        ) {
-            const targetId = decodeURIComponent(resolvedUrl.hash.slice(1));
-            const target =
-                document.getElementById(targetId) ||
-                document.querySelector(
-                    `[data-search-id="${escapeSearchSelectorToken(targetId)}"], [data-search-anchor="${escapeSearchSelectorToken(targetId)}"]`,
-                );
-            return target ? isVisibleSearchElement(target) : true;
-        }
-        return (
-            rawUrl.startsWith("/") ||
-            resolvedUrl.origin === window.location.origin
-        );
-    } catch {
-        return false;
-    }
-}
-
 export function isSearchResultVisibleToUser(item) {
-    if (
-        item?.visible === false ||
-        item?.isVisible === false ||
-        item?.hidden === true ||
-        item?.private === true
-    ) {
-        return false;
-    }
-    const itemId = String(item?.id ?? "").trim();
-    const target = itemId
-        ? document.querySelector(
-              `[data-search-id="${escapeSearchSelectorToken(itemId)}"], [data-search-anchor="${escapeSearchSelectorToken(itemId)}"], [data-message-id="${escapeSearchSelectorToken(itemId)}"], [data-post-id="${escapeSearchSelectorToken(itemId)}"]`,
-          )
-        : null;
-    if (target && !isVisibleSearchElement(target)) return false;
-    return isInternalSearchUrlAccessible(item?.url);
+    return isVisibleResult(item, isVisibleSearchElement);
 }
 
 export function filterVisibleSearchGroups(groups) {
-    return (groups ?? [])
-        .map((group) => ({
-            ...group,
-            items: (group.items ?? []).filter(isSearchResultVisibleToUser),
-        }))
-        .filter((group) => group.items.length > 0);
+    return filterVisibleGroups(groups, isVisibleSearchElement);
 }

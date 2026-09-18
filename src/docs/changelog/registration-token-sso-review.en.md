@@ -130,6 +130,10 @@ The Users invite link now uses the standard neutral href-button treatment. Invit
 
 Invalid, expired, revoked, and email-mismatched registration tokens now produce precise localized feedback. Revoked manual-token secrets disappear immediately, disabled SSO providers can no longer serve callback routes, and new profiles begin with a collision-safe account identifier before provider profile data is applied.
 
+## Reviewable source modules
+
+Every handwritten source, test, documentation, localization, style, and data file is now limited to 950 lines. Oversized implementations were divided into focused component-owned modules, large test suites were separated by concern, and the emoji catalog was partitioned without changing its public behavior. A compliance test prevents future regressions. Generated package lockfiles and binary assets remain intact.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -166,3 +170,4 @@ Invalid, expired, revoked, and email-mismatched registration tokens now produce 
 - [9a2a9dc6](https://github.com/Cognis-Labs-HQ/Cognis/commit/9a2a9dc6)
 - [c5ff88ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5ff88ce)
 - [f9564d25](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9564d25)
+- [cf3e737d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cf3e737d)

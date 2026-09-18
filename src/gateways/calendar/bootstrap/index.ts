@@ -21,6 +21,10 @@ import type { ResolveAccountId } from "./helpers.js";
 import { createCalendarNotificationResolver } from "./notification-capabilities.js";
 import { finalizeCalendarBootstrap, GATEWAY_ROOT } from "./finalize.js";
 import { CalendarShareRegistry } from "./share-registry.js";
+import {
+    createCalendarProfileResolvers,
+    type CalendarProfileStore,
+} from "./profile-resolvers.js";
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
@@ -65,98 +69,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const resolveAccountId = ctx.capabilities.get<ResolveAccountId>(
         "auth:resolveAccountId",
     );
-    const profileStore = ctx.capabilities.get<{
-        getProfile?: (accountId: string) => Promise<{
-            displayName?: string | null;
-            handle?: string | null;
-        } | null>;
-        searchProfiles: (
-            query: string,
-            limit?: number,
-            options?: { includeHidden?: boolean },
-        ) => Promise<
-            Array<{
-                accountId: string;
-                handle?: string | null;
-                displayName?: string | null;
-                avatarKey?: string | null;
-            }>
-        >;
-        isFollowing: (
-            followerId: string,
-            followingId: string,
-        ) => Promise<boolean>;
-    }>("social:profileStore");
-
-    const resolveAccountDisplayName = profileStore?.getProfile
-        ? async (accountId: string) => {
-              const profile = await profileStore.getProfile?.(accountId);
-              return (
-                  String(
-                      profile?.displayName ?? profile?.handle ?? "",
-                  ).trim() || accountId
-              );
-          }
-        : null;
-
-    const resolveShareableUsers = profileStore
-        ? async (input: { ownerAccountId: string; query: string }) => {
-              const normalizedQuery = input.query.trim();
-              if (!normalizedQuery) return [];
-              const candidates = await profileStore.searchProfiles(
-                  normalizedQuery,
-                  25,
-                  { includeHidden: false },
-              );
-              const permittedCandidates = await Promise.all(
-                  candidates
-                      .filter(
-                          (entry) =>
-                              String(entry.accountId ?? "") !==
-                              input.ownerAccountId,
-                      )
-                      .map(async (entry) => {
-                          const targetAccountId = String(
-                              entry.accountId ?? "",
-                          ).trim();
-                          if (!targetAccountId) return null;
-                          const [followsTarget, targetFollows] =
-                              await Promise.all([
-                                  profileStore.isFollowing(
-                                      input.ownerAccountId,
-                                      targetAccountId,
-                                  ),
-                                  profileStore.isFollowing(
-                                      targetAccountId,
-                                      input.ownerAccountId,
-                                  ),
-                              ]);
-                          if (!followsTarget && !targetFollows) return null;
-                          return {
-                              accountId: targetAccountId,
-                              handle:
-                                  typeof entry.handle === "string"
-                                      ? entry.handle
-                                      : null,
-                              displayName:
-                                  typeof entry.displayName === "string"
-                                      ? entry.displayName
-                                      : null,
-                              avatarKey:
-                                  typeof entry.avatarKey === "string"
-                                      ? entry.avatarKey
-                                      : null,
-                          };
-                      }),
-              );
-              return permittedCandidates.filter(Boolean) as Array<{
-                  accountId: string;
-                  handle: string | null;
-                  displayName: string | null;
-                  avatarKey: string | null;
-              }>;
-          }
-        : null;
+    const profileResolvers = createCalendarProfileResolvers(
+        ctx.capabilities.get<CalendarProfileStore>("social:profileStore"),
+    );
+    const { resolveAccountDisplayName, resolveShareableUsers } =
+        profileResolvers;
 
     if (dbExecutor) {
         try {

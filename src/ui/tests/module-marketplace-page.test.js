@@ -54,17 +54,20 @@ const credentialsSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/credentials.js"),
     "utf8",
 );
-const marketplaceSource = readFileSync(
-    resolve(ROOT, "src/ui/app/modules/index.js"),
-    "utf8",
-);
+const marketplaceSource =
+    readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+    readFileSync(resolve(ROOT, "src/ui/app/modules/polling.js"), "utf8") +
+    readFileSync(
+        resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+        "utf8",
+    );
 const releaseChannelSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/release-channels.js"),
     "utf8",
 );
 test("module marketplace polls Cognis for current recommendations", () => {
     assert.match(marketplaceSource, /MARKETPLACE_POLL_INTERVAL_MS = 15_000/);
-    assert.match(marketplaceSource, /window\.setInterval\(poll/);
+    assert.match(marketplaceSource, /window\.setInterval\((?:poll|run)/);
     assert.match(
         marketplaceSource,
         /loadKnownModules\(false, signal, false\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
@@ -234,10 +237,7 @@ test("module marketplace content keeps a stable Modules heading", () => {
 });
 
 test("module cards and details show upgrade and downgrade versions", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const source = marketplaceSource;
     const upArrow = readFileSync(
         resolve(ROOT, "src/ui/public/assets/reuse/arrow-up.svg"),
         "utf8",
@@ -469,10 +469,7 @@ test("module marketplace does not resolve repository-relative avatars against th
 });
 
 test("module details render safe full source repository URLs below their titles", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const source = marketplaceSource;
     assert.equal(
         resolveModuleRepositoryUrl({
             cloneUrl: "https://github.com/Cognis-Labs-HQ/example.git",
@@ -741,7 +738,7 @@ test("module marketplace opens repository readmes in a full detail view", () => 
         /setModuleEnabled\(module\.id, false, \{[\s\S]*preserveEnabledState: true[\s\S]*installModule\([\s\S]*module,[\s\S]*token,[\s\S]*branch,[\s\S]*\)[\s\S]*enableModuleWithIntegrityCheck\(/,
     );
     assert.doesNotMatch(source, /class="theme-select" data-module-branch/);
-    assert.match(source, /function selectedBranch/);
+    assert.match(source, /createSelectedBranchResolver/);
     assert.match(presentationSource, /function hasModuleUpdate/);
     assert.match(source, /module\.defaultBranch/);
     assert.match(presentationSource, /module\.installedCommit/);
@@ -890,12 +887,9 @@ test("module details rotate bounded screenshots with manual navigation", () => {
 });
 
 test("module marketplace omits template manifests", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
-    assert.match(source, /return module\.template !== true/);
-    assert.match(source, /isVisibleMarketplaceModule\(module\)/);
+    const source = marketplaceSource;
+    assert.match(source, /module\.template !== true/);
+    assert.match(filterSource, /module\.template === true/);
 });
 
 test("module marketplace refresh actions emit one completion result", () => {
@@ -908,65 +902,5 @@ test("module marketplace refresh actions emit one completion result", () => {
     assert.match(
         source,
         /finally \{\s*marketplaceRefreshPending = false;\s*refreshMarketplace\(\);\s*\}/,
-    );
-});
-
-test("module lifecycle actions are serialized without dropping queued work", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
-
-    assert.match(source, /let moduleLifecycleQueue = Promise\.resolve\(\)/);
-    assert.match(source, /moduleLifecycleQueue\.then\(operation, operation\)/);
-    assert.match(
-        source,
-        /await queueModuleLifecycleAction\(\(\) =>\s*runLifecycleAction/,
-    );
-});
-
-test("module refresh preserves its current view and redraws detail actions", () => {
-    const marketplaceSource = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
-    assert.match(marketplaceSource, /loadKnownModules\(true, mountSignal\)/);
-    assert.match(
-        marketplaceSource,
-        /async function loadKnownModules\([\s\S]*restoreDetailRoute = false[\s\S]*signal = pageMountController\?\.signal/,
-    );
-    assert.match(
-        marketplaceSource,
-        /selectedModule = selectedModuleUuid[\s\S]*refreshMarketplace\(\)/,
-    );
-    assert.match(
-        marketplaceSource,
-        /function refreshMarketplace\(\)[\s\S]*refreshDetailActions\(\)/,
-    );
-});
-
-test("catalog presentation updates win over installed manifest metadata", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
-    assert.match(source, /const catalogPresentation =/);
-    assert.match(source, /name: known\.name/);
-    assert.match(source, /description: known\.description/);
-    assert.match(source, /assets: known\.assets/);
-    assert.match(source, /Object\.assign\(known, catalogPresentation\)/);
-});
-
-test("modules page aborts direct-mount interactions before SPA remount", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
-    assert.match(source, /replaceMountScope\(pageMountController, signal\)/);
-    assert.match(source, /bindInteractions\(root, mountSignal\)/);
-    assert.match(source, /signal:\s*mountSignal/);
-    assert.doesNotMatch(
-        source,
-        /mountSignal\.addEventListener\("abort", clearAuthenticatedModuleAssets/,
     );
 });

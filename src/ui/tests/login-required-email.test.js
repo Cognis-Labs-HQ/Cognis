@@ -11,21 +11,20 @@ const LOGIN_STYLE_SOURCE = readFileSync(
 );
 
 test("login required-email enforcement resolves helper from flow-provided integration", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/login/index.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(resolve(ROOT, "src/ui/app/login/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/login/client-loaders.js"),
+            "utf8",
+        );
     const integrationSource = readFileSync(
         resolve(ROOT, "src/ui/app/login/integrations.js"),
         "utf8",
     );
+    assert.match(source, /loadClient\(\s*"required-email-enforcement"/);
     assert.match(
         source,
-        /loadLoginIntegrationClient\(\s*"required-email-enforcement"/,
-    );
-    assert.match(
-        source,
-        /loadLoginIntegrationClient\(\s*"required-email-enforcement",\s*\(module\)\s*=>\s*module\.createRequiredEmailEnforcementClient\(\)/,
+        /loadClient\(\s*"required-email-enforcement",\s*\(module\)\s*=>\s*module\.createRequiredEmailEnforcementClient\(\)/,
     );
     assert.match(integrationSource, /async function loadClient\(/);
     assert.match(integrationSource, /fetch\("\/api\/v1\/auth\/login-ui"\)/);

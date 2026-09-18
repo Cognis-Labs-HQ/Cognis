@@ -354,6 +354,9 @@ test("clear-all click does not open popup when empty inbox is rendered", async (
         TextDecoder,
         URL,
         registerSearchIndex() {},
+        renderItem() {
+            return document.createElement("li");
+        },
         MutationObserver: class {
             observe() {}
         },

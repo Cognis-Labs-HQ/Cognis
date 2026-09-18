@@ -1,3 +1,4 @@
+import { fetchEmojiCatalog } from "./emoji-catalog.js";
 let cachedEmojiList = null;
 let cachedEmojiUsage = [];
 
@@ -8,12 +9,9 @@ export function getCachedEmojiList() {
 export async function loadAllEmojis() {
     if (cachedEmojiList) return cachedEmojiList;
     try {
-        const response = await fetch("/static/gateways/social/emojis.json");
-        if (response.ok) {
-            cachedEmojiList = await response.json();
-        }
+        cachedEmojiList = await fetchEmojiCatalog();
     } catch {
-        // fall through to empty list below
+        cachedEmojiList = [];
     }
     cachedEmojiList = cachedEmojiList ?? [];
     return cachedEmojiList;

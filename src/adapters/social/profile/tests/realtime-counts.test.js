@@ -6,16 +6,20 @@ const appSource = await readFile(
     new URL("../ui/app.js", import.meta.url),
     "utf8",
 );
+const followerPollerSource = await readFile(
+    new URL("../ui/follower-poller.js", import.meta.url),
+    "utf8",
+);
 
 test("profile page polls follower and following lists for real-time counts", () => {
-    assert.match(appSource, /createAdaptivePoller/);
+    assert.match(followerPollerSource, /createAdaptivePoller/);
     assert.match(
-        appSource,
-        /loadSocialConnectionList\(profileHandle, "followers"\)/,
+        followerPollerSource,
+        /loadConnections\(profileHandle, "followers"\)/,
     );
     assert.match(
-        appSource,
-        /loadSocialConnectionList\(profileHandle, "following"\)/,
+        followerPollerSource,
+        /loadConnections\(profileHandle, "following"\)/,
     );
     assert.match(
         appSource,
