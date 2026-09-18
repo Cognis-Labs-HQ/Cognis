@@ -1,18 +1,8 @@
 export type StructuredDbColumnType =
-    | "text"
-    | "integer"
-    | "bigint"
-    | "boolean"
-    | "timestamp"
-    | "blob";
+    "text" | "integer" | "bigint" | "boolean" | "timestamp" | "blob";
 
 export type StructuredDbColumnDefault =
-    | "now"
-    | "true"
-    | "false"
-    | null
-    | string
-    | number;
+    "now" | "true" | "false" | null | string | number;
 
 export interface StructuredDbColumnDef {
     name: string;

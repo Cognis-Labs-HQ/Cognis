@@ -34,10 +34,7 @@ export interface MessageRow {
 }
 
 export type MessageRequestStatus =
-    | "pending"
-    | "approved"
-    | "rejected"
-    | "cancelled";
+    "pending" | "approved" | "rejected" | "cancelled";
 
 export interface MessageRequestRow {
     id: string;

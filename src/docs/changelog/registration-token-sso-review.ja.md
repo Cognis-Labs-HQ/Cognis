@@ -154,6 +154,10 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 
 モジュールのインストール要求を実行する前に、既存の依存関係レビューを表示するようになりました。必須依存関係が不足している場合はインストールをブロックし、レビューから導入できます。一方、任意依存関係が不足していても、明示的に選択して続行できます。
 
+## 移植可能なサイズ検査とテーマ対応の依存関係ダイアログ
+
+ソースサイズの適合性検査はリポジトリ内のソースファイルを直接走査するようになり、CI で Git 実行ファイルを必要としません。依存関係のカード、境界線、警告には既存のテーマ変数を使用し、ライトテーマとダークテーマの両方で読みやすくしました。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -196,3 +200,4 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 - [62f4c08b](https://github.com/Cognis-Labs-HQ/Cognis/commit/62f4c08b)
 - [c01577d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01577d1)
 - [650c91d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/650c91d5)
+- [e9baab31](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9baab31)

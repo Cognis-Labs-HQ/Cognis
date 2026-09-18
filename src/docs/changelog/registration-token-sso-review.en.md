@@ -154,6 +154,10 @@ Registration policy controls now use the shared form composer, standard checkbox
 
 Module installation now opens the established dependency review before any install request. Missing hard dependencies block installation and can be installed from the review, while missing soft dependencies remain an explicit, permissive choice.
 
+## Portable size checks and themed dependency dialogs
+
+The source-size compliance check now scans repository source files directly and no longer requires the Git executable in CI. Module dependency cards, borders, and warnings now use the established theme tokens for readable light and dark presentation.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -196,3 +200,4 @@ Module installation now opens the established dependency review before any insta
 - [62f4c08b](https://github.com/Cognis-Labs-HQ/Cognis/commit/62f4c08b)
 - [c01577d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01577d1)
 - [650c91d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/650c91d5)
+- [e9baab31](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9baab31)

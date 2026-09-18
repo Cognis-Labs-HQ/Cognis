@@ -150,6 +150,10 @@ Kontrol kebijakan pendaftaran kini menggunakan penyusun formulir bersama, gaya k
 
 Pemasangan modul kini membuka tinjauan dependensi yang telah tersedia sebelum permintaan pemasangan dijalankan. Dependensi wajib yang hilang memblokir pemasangan dan dapat dipasang dari tinjauan, sedangkan dependensi opsional yang hilang tetap menjadi pilihan eksplisit yang tidak memblokir.
 
+## Pemeriksaan ukuran portabel dan dialog dependensi bertema
+
+Pemeriksaan kepatuhan ukuran sumber kini memindai berkas sumber repositori secara langsung dan tidak lagi memerlukan aplikasi Git di CI. Kartu, batas, dan peringatan dependensi kini menggunakan token tema yang tersedia agar mudah dibaca pada tema terang maupun gelap.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -192,3 +196,4 @@ Pemasangan modul kini membuka tinjauan dependensi yang telah tersedia sebelum pe
 - [62f4c08b](https://github.com/Cognis-Labs-HQ/Cognis/commit/62f4c08b)
 - [c01577d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01577d1)
 - [650c91d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/650c91d5)
+- [e9baab31](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9baab31)

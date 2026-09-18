@@ -364,8 +364,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
         const matchingPrivateRepositories =
             accessiblePrivateRepositories.filter((repository) => {
                 const owner = repository.owner as
-                    | Record<string, unknown>
-                    | undefined;
+                    Record<string, unknown> | undefined;
                 const ownerLogin = String(owner?.login ?? "").toLowerCase();
                 const fullNameOwner = String(repository.full_name ?? "")
                     .split("/", 1)[0]

@@ -3,14 +3,7 @@ import { normalizeResponse } from "./payload.ts";
 const FIELD_EMPTY_PLACEHOLDER = "—";
 
 type TextColor =
-    | "red"
-    | "green"
-    | "yellow"
-    | "blue"
-    | "magenta"
-    | "cyan"
-    | "gray"
-    | "bold";
+    "red" | "green" | "yellow" | "blue" | "magenta" | "cyan" | "gray" | "bold";
 
 function shouldUseAnsiColors(): boolean {
     return process.stdout.isTTY && !("NO_COLOR" in process.env);

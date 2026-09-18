@@ -13,11 +13,7 @@ export interface NotificationConfigStore {
 
 export type NotificationBroadcastDisplayMode = "bar" | "popup";
 export type NotificationBroadcastRole =
-    | "user"
-    | "teacher"
-    | "moderator"
-    | "admin"
-    | "owner";
+    "user" | "teacher" | "moderator" | "admin" | "owner";
 
 export interface NotificationBroadcast {
     id: string;

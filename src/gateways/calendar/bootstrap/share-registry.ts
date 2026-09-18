@@ -691,8 +691,7 @@ export class CalendarShareRegistry {
         if (!storedValue) return [];
         try {
             const parsed = JSON.parse(storedValue) as
-                | StoredCalendarShareLinks
-                | CalendarShareLinkRegistryRecord[];
+                StoredCalendarShareLinks | CalendarShareLinkRegistryRecord[];
             const links = Array.isArray(parsed)
                 ? parsed
                 : Array.isArray(parsed?.links)

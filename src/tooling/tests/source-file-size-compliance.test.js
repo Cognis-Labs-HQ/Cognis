@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
-import { extname } from "node:path";
-import { execFileSync } from "node:child_process";
+import { readdirSync, readFileSync } from "node:fs";
+import { extname, join } from "node:path";
 import test from "node:test";
 
 const MAX_SOURCE_LINES = 950;
@@ -14,16 +13,30 @@ const CHECKED_EXTENSIONS = new Set([
     ".xml",
 ]);
 const GENERATED_FILES = new Set(["package-lock.json"]);
+const EXCLUDED_DIRECTORIES = new Set([
+    ".git",
+    ".cache",
+    "coverage",
+    "dist",
+    "node_modules",
+]);
+
+function sourceFiles(directory = ".") {
+    return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+        const filePath = join(directory, entry.name);
+        if (entry.isDirectory()) {
+            return EXCLUDED_DIRECTORIES.has(entry.name)
+                ? []
+                : sourceFiles(filePath);
+        }
+        return entry.isFile() ? [filePath.replace(/^\.\//, "")] : [];
+    });
+}
 
 test("source and data files remain below the reviewable line limit", () => {
-    const tracked = execFileSync("git", ["ls-files"], { encoding: "utf8" })
-        .trim()
-        .split("\n")
-        .filter(Boolean);
-    const oversized = tracked.flatMap((filePath) => {
+    const oversized = sourceFiles().flatMap((filePath) => {
         if (
             GENERATED_FILES.has(filePath) ||
-            !existsSync(filePath) ||
             !CHECKED_EXTENSIONS.has(extname(filePath))
         )
             return [];

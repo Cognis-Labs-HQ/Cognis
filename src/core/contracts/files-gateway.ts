@@ -33,9 +33,7 @@ export interface StoredObject {
  *     public read access per object (e.g. "profile", "default").
  */
 export type NamespaceVisibility =
-    | "private-owner"
-    | "private-group"
-    | "component-managed";
+    "private-owner" | "private-group" | "component-managed";
 
 export interface NamespaceAcl {
     visibility: NamespaceVisibility;

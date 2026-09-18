@@ -154,6 +154,10 @@ Die Registrierungsrichtlinien verwenden jetzt den gemeinsamen Formularkomponiste
 
 Die Modulinstallation öffnet jetzt vor jeder Installationsanfrage die etablierte Abhängigkeitsprüfung. Fehlende harte Abhängigkeiten blockieren die Installation und können in der Prüfung installiert werden, während fehlende weiche Abhängigkeiten weiterhin eine ausdrückliche, zulässige Wahl bleiben.
 
+## Portable Größenprüfungen und themengerechte Abhängigkeitsdialoge
+
+Die Größenprüfung für Quelldateien durchsucht nun die Repository-Quelldateien direkt und benötigt in CI keine Git-Anwendung mehr. Karten, Rahmen und Warnungen im Abhängigkeitsdialog verwenden nun die etablierten Designvariablen für eine gut lesbare helle und dunkle Darstellung.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -196,3 +200,4 @@ Die Modulinstallation öffnet jetzt vor jeder Installationsanfrage die etabliert
 - [62f4c08b](https://github.com/Cognis-Labs-HQ/Cognis/commit/62f4c08b)
 - [c01577d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01577d1)
 - [650c91d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/650c91d5)
+- [e9baab31](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9baab31)

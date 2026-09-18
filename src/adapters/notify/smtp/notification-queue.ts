@@ -30,11 +30,7 @@ export class SmtpRateLimiter {
 }
 
 type SmtpQueueStatus =
-    | "queued"
-    | "waiting_rate_limit"
-    | "sending"
-    | "sent"
-    | "failed";
+    "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
 
 interface SmtpQueueEntry extends NotificationSenderQueueEntry {
     status: SmtpQueueStatus;

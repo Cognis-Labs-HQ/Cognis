@@ -131,6 +131,14 @@ test("module dependency popup renders navigable cards and action-specific labels
         styles,
         /body\[data-theme="dark"\] \.module-dependency-action-icon--download[^{]*\{[^}]*download-light\.svg/,
     );
+    assert.match(
+        styles,
+        /\.module-dependency-card\s*\{[^}]*background: var\(--surface\);[^}]*border: 1px solid var\(--border\);/s,
+    );
+    assert.match(
+        styles,
+        /\.module-dependency-warning\s*\{[^}]*color: var\(--color-danger-outline-text\);/s,
+    );
 
     const marketplaceSource = await import("node:fs/promises").then(
         ({ readFile }) =>

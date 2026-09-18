@@ -8,8 +8,7 @@ export interface HealthContribution {
 }
 
 export type HealthContributor = () =>
-    | HealthContribution
-    | Promise<HealthContribution>;
+    HealthContribution | Promise<HealthContribution>;
 
 export interface HealthStatus {
     status: "ok" | "warning" | "error";

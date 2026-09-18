@@ -666,8 +666,7 @@ export async function registerAuthBootstrapHook(
                 "augment-sections"
             ] ?? []) as Array<Record<string, unknown>>;
             const uiRegistry = stageCtx.meta["uiRegistry"] as
-                | { listSettingsSections?: () => unknown[] }
-                | undefined;
+                { listSettingsSections?: () => unknown[] } | undefined;
             const registrySections = uiRegistry?.listSettingsSections?.() ?? [];
             const uniqueSectionsById = new Map<
                 string,

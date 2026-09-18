@@ -1,8 +1,5 @@
 export type SocialMessagesProfileVisibility =
-    | "hidden"
-    | "private"
-    | "friends"
-    | "community";
+    "hidden" | "private" | "friends" | "community";
 
 export interface SocialMessagesProfile {
     accountId: string;
