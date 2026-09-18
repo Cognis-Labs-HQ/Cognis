@@ -77,6 +77,8 @@ test("Invite management uses explicit popup and token actions", async () => {
     assert.match(source, /refreshElements\(\["invite-tokens"\]\)/);
     assert.match(source, /enableDomParking: false/);
     assert.match(source, /redeemedAccountId/);
+    assert.match(source, /isPending \? \(issuedTokens\.get\(row\.id\)/);
+    assert.match(source, /issuedTokens\.delete\(tokenId\)/);
     assert.doesNotMatch(source, /data-invite-delivery/);
 });
 

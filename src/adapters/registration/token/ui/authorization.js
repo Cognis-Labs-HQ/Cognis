@@ -125,11 +125,14 @@ export function bindAccountCreationAuthorization({
                 }, 800);
                 return;
             }
-            showToast(
-                payload?.error?.message ??
-                    i18n.t("adapter.registration.token.failed"),
-                { variant: "error" },
-            );
+            const errorCode = String(payload?.error?.code ?? "");
+            const errorKey =
+                errorCode === "registration_token_invalid"
+                    ? "adapter.registration.token.invalid"
+                    : errorCode === "registration_token_email_mismatch"
+                      ? "adapter.registration.token.email_mismatch"
+                      : "adapter.registration.token.failed";
+            showToast(i18n.t(errorKey), { variant: "error" });
         },
         signal ? { signal } : undefined,
     );

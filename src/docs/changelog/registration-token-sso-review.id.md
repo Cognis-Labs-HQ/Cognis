@@ -126,6 +126,10 @@ Halaman Undangan kini menampilkan tindakan “Kirim Email Undangan” dan “Bua
 
 Tautan undangan pada halaman Pengguna kini memakai tampilan tombol href netral standar. Tindakan undangan tetap berada dalam satu baris, pembuatan token membuka popup nilai tersembunyi dengan kontrol visibilitas bersama dan salin berbasis SVG, dan setiap mutasi melewati cache HTTP sebelum hanya menyegarkan kartu tabel undangan. Autentikasi kini menyinkronkan nilai `handle` atau `username` penyedia ke handle Profil pada setiap login eksternal; resolver profil eksternal juga dapat mengembalikan handle. Dengan demikian pengguna SSO dapat dicari tanpa mengekspos ID akun penyedia yang buram.
 
+## Umpan balik otorisasi pendaftaran dan isolasi penyedia
+
+Token pendaftaran yang tidak valid, kedaluwarsa, dicabut, atau tidak cocok dengan email kini memberikan umpan balik terlokalisasi yang tepat. Rahasia token manual yang dicabut langsung menghilang, penyedia SSO yang dinonaktifkan tidak lagi dapat melayani rute panggilan balik, dan profil baru dimulai dengan pengenal akun yang aman dari benturan sebelum data profil penyedia diterapkan.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -161,3 +165,4 @@ Tautan undangan pada halaman Pengguna kini memakai tampilan tombol href netral s
 - [4cce96d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/4cce96d9382c34293b168528698d6eb6d592561e)
 - [9a2a9dc6](https://github.com/Cognis-Labs-HQ/Cognis/commit/9a2a9dc6)
 - [c5ff88ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5ff88ce)
+- [f9564d25](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9564d25)

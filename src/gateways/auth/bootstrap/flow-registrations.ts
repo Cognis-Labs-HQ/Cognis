@@ -284,9 +284,9 @@ export async function registerAuthBootstrapHook(
                                     : undefined,
                         },
                     );
-                    const authorization = (
-                        gateResult.stageResults["authorizeCreation"] ?? []
-                    ).find(
+                    const authorizationResults =
+                        gateResult.stageResults["authorizeCreation"] ?? [];
+                    const authorization = authorizationResults.find(
                         (result) =>
                             (result as { authorized?: unknown }).authorized ===
                             true,
@@ -297,9 +297,18 @@ export async function registerAuthBootstrapHook(
                           }
                         | undefined;
                     if (!authorization) {
+                        const denial = authorizationResults.find(
+                            (result) =>
+                                (result as { authorized?: unknown })
+                                    .authorized === false,
+                        ) as { reason?: unknown } | undefined;
                         return {
                             sessionResult: {
                                 outcome: "account_creation_required",
+                                authorizationFailureReason:
+                                    typeof denial?.reason === "string"
+                                        ? denial.reason
+                                        : undefined,
                                 emailRequired: !sessionEmail,
                                 pendingAccountCreation: {
                                     providerId: adapterId ?? session.provider,
@@ -453,7 +462,7 @@ export async function registerAuthBootstrapHook(
             );
             await createProfile?.(
                 session.accountId,
-                sessionHandle ?? session.accountId,
+                session.accountId,
                 role,
                 displayName,
             );

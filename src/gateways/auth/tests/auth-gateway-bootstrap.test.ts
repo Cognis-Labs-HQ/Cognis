@@ -468,6 +468,29 @@ test("registered auth providers own removable callback routes", async () => {
         "/api/v1/auth/x/callback",
     );
     assert.equal(removed.handled, false);
+    const unregisterDisabledProvider = await registerProvider({
+        id: "disabled-sso",
+        name: "Disabled SSO",
+        routeNamespace: "disabled-sso",
+        authenticate: async () => null,
+        configure() {},
+        getConfigSchema: () => [],
+        registerRoutes(router) {
+            router.get("/callback", (_req, res) => res.end("unexpected"));
+        },
+    });
+    const disabled = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("GET", {}),
+        "/api/v1/auth/disabled-sso/callback",
+    );
+    assert.equal(disabled.handled, true);
+    assert.equal(disabled.res.status, 503);
+    assert.equal(
+        JSON.parse(disabled.res.payload).error.code,
+        "provider_unavailable",
+    );
+    unregisterDisabledProvider();
     await assert.rejects(
         () =>
             registerProvider({

@@ -191,6 +191,10 @@ test("SSO account creation carries its lease into the composed token form", asyn
     assert.match(authorizationSource, /createFormBuilder/);
     assert.match(authorizationSource, /account-creation-countdown/);
     assert.match(authorizationSource, /formatCountdownClock/);
+    assert.match(
+        authorizationSource,
+        /errorCode === "registration_token_invalid"/,
+    );
 
     const styles = await readFile(
         new URL("../styles/login.css", import.meta.url),

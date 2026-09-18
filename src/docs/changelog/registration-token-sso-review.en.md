@@ -126,6 +126,10 @@ The Invites page now presents balanced “Send Invite Email” and administrator
 
 The Users invite link now uses the standard neutral href-button treatment. Invitation actions remain on one line, token creation opens a concealed-value popup with the shared visibility and SVG-backed copy controls, and every mutation bypasses HTTP caches before refreshing only the invitation table card. Authentication now synchronizes provider `handle` or `username` values into Profile handles on every external login, and external profile resolvers may also return a handle, so SSO users are searchable without exposing opaque provider account IDs.
 
+## Registration authorization feedback and provider isolation
+
+Invalid, expired, revoked, and email-mismatched registration tokens now produce precise localized feedback. Revoked manual-token secrets disappear immediately, disabled SSO providers can no longer serve callback routes, and new profiles begin with a collision-safe account identifier before provider profile data is applied.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -161,3 +165,4 @@ The Users invite link now uses the standard neutral href-button treatment. Invit
 - [4cce96d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/4cce96d9382c34293b168528698d6eb6d592561e)
 - [9a2a9dc6](https://github.com/Cognis-Labs-HQ/Cognis/commit/9a2a9dc6)
 - [c5ff88ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5ff88ce)
+- [f9564d25](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9564d25)

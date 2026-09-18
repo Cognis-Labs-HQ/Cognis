@@ -126,6 +126,10 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 
 ユーザーページの招待リンクを、標準のニュートラルな href ボタン表示に統一しました。招待操作は一行に収まり、トークン作成時には共通の表示切替と SVG ベースのコピー操作を備えた秘匿値ポップアップが開きます。また、変更のたびに HTTP キャッシュを回避し、招待テーブルのカードだけを更新します。外部ログインのたびにプロバイダーの `handle` または `username` をプロフィールハンドルへ同期し、外部プロフィールリゾルバーもハンドルを返せるようにしたため、不透明なプロバイダーアカウント ID を公開せずに SSO ユーザーを検索できます。
 
+## 登録承認のフィードバックとプロバイダー分離
+
+無効、期限切れ、取り消し済み、またはメールアドレスが一致しない登録トークンに、正確なローカライズ済みフィードバックを表示するようになりました。取り消した手動トークンの秘密情報は直ちに消え、無効化された SSO プロバイダーはコールバックルートを処理できず、新規プロフィールはプロバイダー情報を適用する前に衝突しないアカウント ID で作成されます。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -161,3 +165,4 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 - [4cce96d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/4cce96d9382c34293b168528698d6eb6d592561e)
 - [9a2a9dc6](https://github.com/Cognis-Labs-HQ/Cognis/commit/9a2a9dc6)
 - [c5ff88ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5ff88ce)
+- [f9564d25](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9564d25)

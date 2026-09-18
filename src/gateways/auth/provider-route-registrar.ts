@@ -38,6 +38,7 @@ function normalizeRelativePath(value: string): string {
 export function registerAuthProviderRoutes(
     routeRegistry: RouteRegistry,
     provider: AuthProviderAdapter,
+    isProviderEnabled: () => boolean,
 ): () => void {
     if (!provider.registerRoutes) return () => {};
     const namespace = String(provider.routeNamespace ?? provider.id)
@@ -72,6 +73,18 @@ export function registerAuthProviderRoutes(
             routeRegistry.register(async (req, res, url) => {
                 if (req.method !== method || url.pathname !== routePath) {
                     return false;
+                }
+                if (!isProviderEnabled()) {
+                    res.writeHead(503, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "provider_unavailable",
+                                message: "Auth provider not available",
+                            },
+                        }),
+                    );
+                    return true;
                 }
                 await handler(req, res, url);
                 return true;

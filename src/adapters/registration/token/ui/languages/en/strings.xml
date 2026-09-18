@@ -4,6 +4,8 @@
   <string name="adapter.registration.token.token">Registration token</string>
   <string name="adapter.registration.token.continue">Continue</string>
   <string name="adapter.registration.token.failed">Account registration could not be authorized.</string>
+  <string name="adapter.registration.token.invalid">That registration token is invalid, expired, or revoked.</string>
+  <string name="adapter.registration.token.email_mismatch">That registration token was issued for a different email address.</string>
   <string name="adapter.registration.token.lease_expires_in">Complete registration within {countdown}</string>
   <string name="adapter.registration.token.lease_expired">This secure registration session has expired. Sign in with your provider again to continue.</string>
   <string name="adapter.registration.token.created">Your account was created. Signing you in now.</string>

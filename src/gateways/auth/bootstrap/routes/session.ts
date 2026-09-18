@@ -271,6 +271,9 @@ export function createSessionRoutes({
             return true;
         }
         if (outcome === "account_creation_required") {
+            const authorizationFailureReason = String(
+                sessionResult.authorizationFailureReason ?? "",
+            ).trim();
             const pending = sessionResult.pendingAccountCreation;
             const attempt = pending
                 ? authRouteBootstrapRuntime.createPendingAccountCreationAttempt(
@@ -299,9 +302,12 @@ export function createSessionRoutes({
             res.end(
                 JSON.stringify({
                     error: {
-                        code: "account_creation_required",
-                        message:
-                            "Account registration authorization is required.",
+                        code:
+                            authorizationFailureReason ||
+                            "account_creation_required",
+                        message: authorizationFailureReason
+                            ? "Account registration authorization failed."
+                            : "Account registration authorization is required.",
                     },
                     data: {
                         emailRequired: sessionResult.emailRequired === true,

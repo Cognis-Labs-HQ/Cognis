@@ -462,7 +462,13 @@ test("external login retries account creation through the registration token gat
             return input.registrationToken === "invite-token" &&
                 input.email === "external@example.com"
                 ? { authorized: true }
-                : { authorized: false, emailRequired: !input.email };
+                : {
+                      authorized: false,
+                      emailRequired: !input.email,
+                      reason: input.registrationToken
+                          ? "registration_token_invalid"
+                          : "registration_token_required",
+                  };
         },
     );
 
@@ -494,6 +500,24 @@ test("external login retries account creation through the registration token gat
     assert.equal(attemptPayload.data.emailRequired, true);
     assert.ok(attemptPayload.data.expiresAt > Date.now());
 
+    const invalidResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            {
+                email: "external@example.com",
+                registrationToken: "expired-token",
+            },
+            { cookie: pendingCookie },
+        ),
+        "/api/v1/auth/login",
+    );
+    assert.equal(invalidResult.res.status, 403);
+    assert.equal(
+        JSON.parse(invalidResult.res.payload).error.code,
+        "registration_token_invalid",
+    );
+
     const completedResult = await dispatchRoute(
         routeRegistry,
         makeJsonRequest(
@@ -513,7 +537,7 @@ test("external login retries account creation through the registration token gat
         email: "external@example.com",
         registrationToken: "invite-token",
     });
-    assert.equal(createdProfileHandle, "thefirehawk");
+    assert.equal(createdProfileHandle, "external-user");
     assert.equal(synchronizedProfileHandle, "thefirehawk");
     const accountStore = capabilities.require<{
         getInfo(accountId: string): Promise<unknown>;

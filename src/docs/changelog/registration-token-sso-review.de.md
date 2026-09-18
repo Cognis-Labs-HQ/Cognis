@@ -126,6 +126,10 @@ Die Einladungsseite zeigt jetzt ausgewogene Aktionen „Einladungs-E-Mail senden
 
 Der Einladungslink auf der Benutzerseite verwendet jetzt die standardmäßige neutrale Darstellung für Link-Schaltflächen. Einladungsaktionen bleiben in einer Zeile, die Token-Erstellung öffnet ein Popup mit verborgenem Wert sowie den gemeinsamen Sichtbarkeits- und SVG-basierten Kopierfunktionen, und jede Änderung umgeht HTTP-Caches, bevor nur die Einladungstabellenkarte aktualisiert wird. Die Authentifizierung synchronisiert bei jeder externen Anmeldung die Anbieterwerte `handle` oder `username` mit dem Profilnamen; externe Profilauflöser können ebenfalls einen Namen liefern. Dadurch sind SSO-Benutzer auffindbar, ohne undurchsichtige Anbieter-Konto-IDs offenzulegen.
 
+## Rückmeldung zur Registrierungsautorisierung und Anbieterisolation
+
+Ungültige, abgelaufene, widerrufene und für eine andere E-Mail-Adresse ausgestellte Registrierungstoken erzeugen nun präzise lokalisierte Rückmeldungen. Geheimnisse widerrufener manueller Token verschwinden sofort, deaktivierte SSO-Anbieter können keine Rückrufrouten mehr bedienen, und neue Profile beginnen mit einer kollisionssicheren Konto-ID, bevor Anbieterprofildaten angewendet werden.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -161,3 +165,4 @@ Der Einladungslink auf der Benutzerseite verwendet jetzt die standardmäßige ne
 - [4cce96d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/4cce96d9382c34293b168528698d6eb6d592561e)
 - [9a2a9dc6](https://github.com/Cognis-Labs-HQ/Cognis/commit/9a2a9dc6)
 - [c5ff88ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5ff88ce)
+- [f9564d25](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9564d25)

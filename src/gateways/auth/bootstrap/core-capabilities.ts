@@ -50,6 +50,7 @@ export async function registerAuthBootstrapHook({
                 unregisterRoutes = registerAuthProviderRoutes(
                     ctx.routeRegistry,
                     provider,
+                    () => authGateway.getEnabledAdapter(provider.id) !== null,
                 );
             } catch (error) {
                 unregisterProvider();

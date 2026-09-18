@@ -51,7 +51,7 @@ function renderTokenRow(row, i18n, issuedTokens) {
         : "—";
     const issuerUsername = String(row.inviterAccountId ?? "");
     const redeemedUsername = String(row.redeemedAccountId ?? "");
-    const registrationToken = issuedTokens.get(row.id) ?? "";
+    const registrationToken = isPending ? (issuedTokens.get(row.id) ?? "") : "";
     const inviteTarget = row.inviteeEmail
         ? escapeHtml(row.inviteeEmail)
         : registrationToken
@@ -329,6 +329,7 @@ export async function mount(root, { signal } = {}) {
                     apiFetch,
                     tokenId,
                 );
+                if (response.ok) issuedTokens.delete(tokenId);
                 showToast(
                     i18n.t(
                         response.ok
