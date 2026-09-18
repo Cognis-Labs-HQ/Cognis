@@ -154,6 +154,10 @@ Pemasangan modul kini membuka tinjauan dependensi yang telah tersedia sebelum pe
 
 Pemeriksaan kepatuhan ukuran sumber kini memindai berkas sumber repositori secara langsung dan tidak lagi memerlukan aplikasi Git di CI. Kartu, batas, dan peringatan dependensi kini menggunakan token tema yang tersedia agar mudah dibaca pada tema terang maupun gelap.
 
+## Panduan pengujian portabel
+
+Petunjuk kontribusi AI kini mewajibkan pengujian agar tidak menganggap biner sistem opsional selalu terpasang. Pengujian yang sengaja menjalankan program eksternal harus mendeteksi ketersediaannya dan dilewati dengan alasan eksplisit ketika tidak tersedia.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -197,3 +201,4 @@ Pemeriksaan kepatuhan ukuran sumber kini memindai berkas sumber repositori secar
 - [c01577d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01577d1)
 - [650c91d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/650c91d5)
 - [e9baab31](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9baab31)
+- [5766ce26](https://github.com/Cognis-Labs-HQ/Cognis/commit/5766ce26)

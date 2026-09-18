@@ -457,6 +457,12 @@ Before running unit tests, ensure the following prerequisites are met:
 - `ripgrep` is installed (used by tooling scripts). Install with `apt-get install -y ripgrep` or equivalent for your platform.
 - `npm install` has been run to ensure all dependencies are present.
 
+Tests must never assume that optional system binaries such as `git`, `curl`,
+or shell-specific utilities are installed in the environment where they run.
+Use language/runtime APIs for filesystem, networking, and process-independent
+operations. When a test specifically exercises an external executable, detect
+its availability first and skip with an explicit reason when it is absent.
+
 Write unit tests that verify the API responds correctly under defined conditions, for example:
 
 - An invalid or expired user token cannot make authenticated API calls.

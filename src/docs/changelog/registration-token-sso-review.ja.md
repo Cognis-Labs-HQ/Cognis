@@ -158,6 +158,10 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 
 ソースサイズの適合性検査はリポジトリ内のソースファイルを直接走査するようになり、CI で Git 実行ファイルを必要としません。依存関係のカード、境界線、警告には既存のテーマ変数を使用し、ライトテーマとダークテーマの両方で読みやすくしました。
 
+## 移植可能なテストの指針
+
+AI コントリビューション手順に、任意のシステムバイナリがインストール済みであるとテストで仮定してはならないことを追記しました。外部実行ファイルを意図的に検証するテストは、その有無を確認し、利用できない場合は明示的な理由とともにスキップする必要があります。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -201,3 +205,4 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 - [c01577d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01577d1)
 - [650c91d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/650c91d5)
 - [e9baab31](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9baab31)
+- [5766ce26](https://github.com/Cognis-Labs-HQ/Cognis/commit/5766ce26)

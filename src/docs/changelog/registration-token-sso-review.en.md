@@ -158,6 +158,10 @@ Module installation now opens the established dependency review before any insta
 
 The source-size compliance check now scans repository source files directly and no longer requires the Git executable in CI. Module dependency cards, borders, and warnings now use the established theme tokens for readable light and dark presentation.
 
+## Portable test guidance
+
+AI contribution instructions now require tests to avoid assuming optional system binaries are installed. Tests that intentionally exercise an external executable must detect it and skip with an explicit reason when unavailable.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -201,3 +205,4 @@ The source-size compliance check now scans repository source files directly and 
 - [c01577d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01577d1)
 - [650c91d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/650c91d5)
 - [e9baab31](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9baab31)
+- [5766ce26](https://github.com/Cognis-Labs-HQ/Cognis/commit/5766ce26)

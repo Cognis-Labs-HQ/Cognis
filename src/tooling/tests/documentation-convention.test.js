@@ -82,3 +82,15 @@ test("AI instructions document the complete changelog structure", () => {
         assert.match(instructions, /bookkeeping metadata/);
     }
 });
+
+test("AI instructions require tests to tolerate missing system binaries", () => {
+    for (const path of [
+        resolve(ROOT, "AGENTS.md"),
+        resolve(ROOT, ".github/copilot-instructions.md"),
+    ]) {
+        const instructions = readFileSync(path, "utf8");
+        assert.match(instructions, /Tests must never assume/);
+        assert.match(instructions, /optional system binaries such as `git`/);
+        assert.match(instructions, /skip with an explicit reason/);
+    }
+});

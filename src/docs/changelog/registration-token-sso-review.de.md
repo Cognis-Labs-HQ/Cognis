@@ -158,6 +158,10 @@ Die Modulinstallation öffnet jetzt vor jeder Installationsanfrage die etabliert
 
 Die Größenprüfung für Quelldateien durchsucht nun die Repository-Quelldateien direkt und benötigt in CI keine Git-Anwendung mehr. Karten, Rahmen und Warnungen im Abhängigkeitsdialog verwenden nun die etablierten Designvariablen für eine gut lesbare helle und dunkle Darstellung.
 
+## Hinweise für portable Tests
+
+Die Anweisungen für KI-Beiträge verlangen nun, dass Tests nicht von installierten optionalen Systemprogrammen ausgehen. Tests, die absichtlich ein externes Programm ausführen, müssen dessen Verfügbarkeit erkennen und bei Nichtverfügbarkeit mit einer ausdrücklichen Begründung übersprungen werden.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -201,3 +205,4 @@ Die Größenprüfung für Quelldateien durchsucht nun die Repository-Quelldateie
 - [c01577d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01577d1)
 - [650c91d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/650c91d5)
 - [e9baab31](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9baab31)
+- [5766ce26](https://github.com/Cognis-Labs-HQ/Cognis/commit/5766ce26)
