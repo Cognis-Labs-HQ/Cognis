@@ -17,6 +17,9 @@ export async function registerAuthBootstrapHook({
             if (!authGateway.getEnabledAdapter(button.providerId)) {
                 throw new Error("auth_login_button_provider_unavailable");
             }
+            if (buttons.has(button.providerId)) {
+                throw new Error("auth_login_button_already_registered");
+            }
             buttons.set(button.providerId, button);
             ctx.log?.("info", "Registered an authentication login button.", {
                 component: "auth-gateway",
@@ -24,7 +27,8 @@ export async function registerAuthBootstrapHook({
                 providerId: button.providerId,
             });
             return () => {
-                if (!buttons.delete(button.providerId)) return;
+                if (buttons.get(button.providerId) !== button) return;
+                buttons.delete(button.providerId);
                 ctx.log?.(
                     "info",
                     "Unregistered an authentication login button.",

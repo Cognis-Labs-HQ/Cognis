@@ -51,3 +51,10 @@ export function revokeRegistrationToken(apiFetch, tokenId) {
         { method: "POST" },
     );
 }
+
+export function resetFounderInviteLimit(apiFetch, username) {
+    return apiFetch(
+        `/api/v1/registration/founders/${encodeURIComponent(username)}/reset-invite-limit`,
+        { method: "POST" },
+    );
+}

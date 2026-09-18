@@ -52,7 +52,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Profile (Social)      | `src/adapters/social/profile/`      | `2.0.7`  |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.7.14` |
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.30` |
-| Link Share            | `src/adapters/share/link/`          | `1.1.35` |
+| Link Share            | `src/adapters/share/link/`          | `1.1.36` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
@@ -64,13 +64,13 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                         | Versi     |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.54`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.55`  |
 | Share                 | `src/gateways/share/`         | `1.7.48`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.12`  |
 | Social                | `src/gateways/social/`        | `1.3.6`   |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.10`  |
-| Registration          | `src/gateways/registration/`  | `1.1.29`  |
+| Registration          | `src/gateways/registration/`  | `1.1.30`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
 | Study                 | `src/gateways/study/`         | `1.5.14`  |
@@ -86,7 +86,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen   | Jalur      | Versi    |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.5.24` |
+| API Server | `src/api/` | `0.5.25` |
 
 ## Peralatan
 

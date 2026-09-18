@@ -524,9 +524,9 @@ async function runUserMenuAction(action, username) {
     }
 
     if (action === "reset-founder-invites") {
-        const response = await apiFetch(
-            `/api/v1/registration/founders/${encodeURIComponent(username)}/reset-invite-limit`,
-            { method: "POST" },
+        const response = await registrationClient.resetFounderInviteLimit(
+            apiFetch,
+            username,
         );
         showToast(
             i18n.t(

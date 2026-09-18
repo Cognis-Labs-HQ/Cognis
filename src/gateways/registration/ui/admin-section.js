@@ -95,7 +95,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
       <div class="security-settings-form">
         <p class="security-field-hint">${escapeHtml(i18n.t("ui.app.invite.page_subtitle"))}</p>
         <div class="security-field-row">
-          <a class="btn-confirm btn-animated" href="/users?action=invite">${escapeHtml(i18n.t("ui.reuse.invite"))}</a>
+          <a class="btn-confirm btn-animated" href="/invite">${escapeHtml(i18n.t("ui.reuse.invite"))}</a>
         </div>
       </div>
       ${tableHtml}

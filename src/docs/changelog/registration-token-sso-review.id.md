@@ -130,6 +130,10 @@ Tautan undangan pada halaman Pengguna kini memakai tampilan tombol href netral s
 
 Token pendaftaran yang tidak valid, kedaluwarsa, dicabut, atau tidak cocok dengan email kini memberikan umpan balik terlokalisasi yang tepat. Rahasia token manual yang dicabut langsung menghilang, penyedia SSO yang dinonaktifkan tidak lagi dapat melayani rute panggilan balik, dan profil baru dimulai dengan pengenal akun yang aman dari benturan sebelum data profil penyedia diterapkan.
 
+## Batas ekstensi dan undangan yang lebih aman
+
+Penghapusan modul kini memuat entrypoint bootstrap yang telah diselesaikan, presentasi autentikasi menolak ikon yang tidak aman dan penyedia duplikat, serta kontrol undangan mengikuti kebijakan sementara permintaan pendaftaran tetap berada di balik klien gateway-nya. Gaya tab khusus Share kembali dimiliki adapter Share.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -167,3 +171,4 @@ Token pendaftaran yang tidak valid, kedaluwarsa, dicabut, atau tidak cocok denga
 - [c5ff88ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5ff88ce)
 - [f9564d25](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9564d25)
 - [cf3e737d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cf3e737d)
+- [a8d69188](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8d69188)

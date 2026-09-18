@@ -15,13 +15,16 @@ test("Users invitations use the mandatory registration token adapter", async () 
     );
 });
 
-test("Registration invite UI uses the same shared tabs as Share", async () => {
+test("Share keeps its method-tab styles within its adapter", async () => {
     const clientSource = await readFile(
         new URL("../../gateways/registration/ui/client.js", import.meta.url),
         "utf8",
     );
     const styles = await readFile(
-        new URL("../styles/reuse/method-tabs.css", import.meta.url),
+        new URL(
+            "../../adapters/share/link/ui/share-links-popup/index.css",
+            import.meta.url,
+        ),
         "utf8",
     );
     const shareSource = await readFile(
@@ -34,6 +37,29 @@ test("Registration invite UI uses the same shared tabs as Share", async () => {
     assert.match(clientSource, /gateways\/registration\/languages/);
     assert.match(styles, /\.share-method-tab\.is-active/);
     assert.match(shareSource, /share-method-tabs/);
+});
+
+test("Registration clients own founder invite-limit reset requests", async () => {
+    const clientSource = await readFile(
+        new URL("../../gateways/registration/ui/client.js", import.meta.url),
+        "utf8",
+    );
+    const usersSource = await readFile(
+        new URL("../app/users/index.js", import.meta.url),
+        "utf8",
+    );
+    const adminSource = await readFile(
+        new URL(
+            "../../gateways/registration/ui/admin-section.js",
+            import.meta.url,
+        ),
+        "utf8",
+    );
+    assert.match(clientSource, /export function resetFounderInviteLimit/);
+    assert.match(usersSource, /registrationClient\.resetFounderInviteLimit/);
+    assert.doesNotMatch(usersSource, /reset-invite-limit/);
+    assert.match(adminSource, /href="\/invite"/);
+    assert.doesNotMatch(adminSource, /users\?action=invite/);
 });
 
 test("Registration token adapter owns the SSO authorization form", async () => {
@@ -79,6 +105,10 @@ test("Invite management uses explicit popup and token actions", async () => {
     assert.match(source, /redeemedAccountId/);
     assert.match(source, /isPending \? \(issuedTokens\.get\(row\.id\)/);
     assert.match(source, /issuedTokens\.delete\(tokenId\)/);
+    assert.match(
+        source,
+        /inviteState\.inviteEnabled[\s\S]*\? inviteState\.canInvite/,
+    );
     assert.doesNotMatch(source, /data-invite-delivery/);
 });
 

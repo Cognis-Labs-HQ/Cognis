@@ -5,9 +5,57 @@ import { createModuleExtensionRoutes } from "../../reuse/module-extension-routes
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
 import { createCtx } from "@cognis/core";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+
+test("uninstall imports the resolved bootstrap entrypoint", async () => {
+    const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-uninstall-"));
+    const moduleUuid = "749a884c-f19e-4586-ae16-518e688e75bb";
+    const moduleRoot = path.join(modulesRoot, moduleUuid);
+    const markerPath = path.join(modulesRoot, "uninstalled.txt");
+    await mkdir(moduleRoot);
+    await writeFile(
+        path.join(moduleRoot, "bootstrap.js"),
+        `import { writeFile } from "node:fs/promises";
+         export async function uninstallModule(_ctx, options) {
+             await writeFile(${JSON.stringify(markerPath)}, String(options.deleteContent));
+         }`,
+    );
+    const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "uninstallable-module",
+                    uuid: moduleUuid,
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                },
+            ],
+        } as any,
+        () => true,
+        undefined,
+        { routeContext: createDefaultRouteContext() },
+    );
+
+    try {
+        assert.equal(
+            await extensions.uninstall("uninstallable-module", {
+                deleteContent: true,
+            }),
+            true,
+        );
+        assert.equal(await readFile(markerPath, "utf8"), "true");
+    } finally {
+        if (previousModulesRoot === undefined) {
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        } else {
+            process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
+        }
+        await rm(modulesRoot, { recursive: true, force: true });
+    }
+});
 
 test("core manifests are not loaded from the external module directory", async () => {
     const errors: string[] = [];

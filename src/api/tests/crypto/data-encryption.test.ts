@@ -111,7 +111,9 @@ test("decryptPayload: rejects tampered ciphertext", async () => {
         "secret",
     );
     const { iv, ciphertext } = await encryptPayload(key, "sensitive data");
-    const tampered = ciphertext.slice(0, -2) + "00";
+    const firstByte = Number.parseInt(ciphertext.slice(0, 2), 16) ^ 1;
+    const tampered =
+        firstByte.toString(16).padStart(2, "0") + ciphertext.slice(2);
     await assert.rejects(
         () => decryptPayload(key, iv, tampered),
         "Tampered ciphertext must not decrypt",

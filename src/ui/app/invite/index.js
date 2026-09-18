@@ -103,8 +103,10 @@ export async function mount(root, { signal } = {}) {
         <div class="controls invite-actions">
           ${
               inviteState.inviteEnabled
-                  ? `<button id="invite-email-btn" class="btn-confirm btn-animated" type="button">${escapeHtml(i18n.t("gateway.registration.send_invite_email"))}</button>
-                     ${inviteState.canGenerateToken ? `<button id="invite-token-btn" class="btn-confirm btn-animated" type="button">${escapeHtml(i18n.t("gateway.registration.generate_registration_token"))}</button>` : ""}`
+                  ? inviteState.canInvite
+                      ? `<button id="invite-email-btn" class="btn-confirm btn-animated" type="button">${escapeHtml(i18n.t("gateway.registration.send_invite_email"))}</button>
+                         ${inviteState.canGenerateToken ? `<button id="invite-token-btn" class="btn-confirm btn-animated" type="button">${escapeHtml(i18n.t("gateway.registration.generate_registration_token"))}</button>` : ""}`
+                      : ""
                   : `<em>${escapeHtml(i18n.t("ui.app.register.closed"))}</em>`
           }
         </div>

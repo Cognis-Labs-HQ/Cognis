@@ -24,7 +24,8 @@ export function parseAuthLoginButton(
         providerId !== (expectedProviderId ?? providerId) ||
         !label ||
         !iconUrl.startsWith("/") ||
-        iconUrl.startsWith("//")
+        iconUrl.startsWith("//") ||
+        iconUrl.includes("\\")
     ) {
         return null;
     }

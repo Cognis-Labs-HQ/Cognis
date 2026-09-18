@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { extname } from "node:path";
 import { execFileSync } from "node:child_process";
 import test from "node:test";
@@ -23,6 +23,7 @@ test("source and data files remain below the reviewable line limit", () => {
     const oversized = tracked.flatMap((filePath) => {
         if (
             GENERATED_FILES.has(filePath) ||
+            !existsSync(filePath) ||
             !CHECKED_EXTENSIONS.has(extname(filePath))
         )
             return [];

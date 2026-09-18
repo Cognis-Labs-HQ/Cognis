@@ -874,7 +874,7 @@ export function createModuleExtensionRoutes(
         );
         if (!entrypoint) return false;
         const plugin = (await import(
-            `${entrypoint.path}?uninstall=${Date.now()}`
+            `${entrypoint}?uninstall=${Date.now()}`
         )) as ModuleBootstrapPlugin;
         if (typeof plugin.uninstallModule !== "function") return false;
         await plugin.uninstallModule(

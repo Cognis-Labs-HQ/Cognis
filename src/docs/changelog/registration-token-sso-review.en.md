@@ -134,6 +134,10 @@ Invalid, expired, revoked, and email-mismatched registration tokens now produce 
 
 Every handwritten source, test, documentation, localization, style, and data file is now limited to 950 lines. Oversized implementations were divided into focused component-owned modules, large test suites were separated by concern, and the emoji catalog was partitioned without changing its public behavior. A compliance test prevents future regressions. Generated package lockfiles and binary assets remain intact.
 
+## Safer extension and invitation boundaries
+
+Module uninstall now loads the resolved bootstrap entrypoint, authentication presentation rejects unsafe icons and duplicate providers, and invitation controls follow policy while registration requests remain behind their gateway client. Share-specific tab styling is again owned by the Share adapter.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -171,3 +175,4 @@ Every handwritten source, test, documentation, localization, style, and data fil
 - [c5ff88ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5ff88ce)
 - [f9564d25](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9564d25)
 - [cf3e737d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cf3e737d)
+- [a8d69188](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8d69188)

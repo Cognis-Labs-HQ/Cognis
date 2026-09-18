@@ -134,6 +134,10 @@ Ungültige, abgelaufene, widerrufene und für eine andere E-Mail-Adresse ausgest
 
 Jede handgeschriebene Quell-, Test-, Dokumentations-, Lokalisierungs-, Stil- und Datendatei ist nun auf 950 Zeilen begrenzt. Übergroße Implementierungen wurden in fokussierte, komponenteneigene Module aufgeteilt, große Testsuiten nach Zuständigkeit getrennt und der Emoji-Katalog ohne Änderung seines öffentlichen Verhaltens partitioniert. Ein Konformitätstest verhindert zukünftige Rückschritte. Generierte Paketsperrdateien und Binärdateien bleiben unverändert.
 
+## Sicherere Erweiterungs- und Einladungsgrenzen
+
+Die Modul-Deinstallation lädt nun den aufgelösten Bootstrap-Einstiegspunkt, die Authentifizierungsdarstellung lehnt unsichere Symbole und doppelte Anbieter ab, und Einladungssteuerelemente beachten die Richtlinie, während Registrierungsanfragen hinter ihrem Gateway-Client verbleiben. Share-spezifische Registerkartenstile gehören wieder dem Share-Adapter.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -171,3 +175,4 @@ Jede handgeschriebene Quell-, Test-, Dokumentations-, Lokalisierungs-, Stil- und
 - [c5ff88ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5ff88ce)
 - [f9564d25](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9564d25)
 - [cf3e737d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cf3e737d)
+- [a8d69188](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8d69188)

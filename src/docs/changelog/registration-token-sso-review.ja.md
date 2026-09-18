@@ -134,6 +134,10 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 
 手書きのソース、テスト、ドキュメント、ローカライズ、スタイル、データの各ファイルを 950 行以内にしました。大きすぎる実装はコンポーネント所有の焦点を絞ったモジュールへ分割し、大規模なテストスイートは責務ごとに分離し、公開動作を変えずに絵文字カタログを分割しました。コンプライアンステストにより今後の再発を防止します。生成されたパッケージロックファイルとバイナリアセットはそのまま保持されます。
 
+## より安全な拡張機能と招待の境界
+
+モジュールのアンインストールは解決済みの bootstrap エントリーポイントを読み込むようになり、認証表示は安全でないアイコンと重複プロバイダーを拒否します。招待コントロールはポリシーに従い、登録リクエストは登録ゲートウェイクライアント内に維持されます。Share 固有のタブスタイルも Share アダプターの所有に戻しました。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -171,3 +175,4 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 - [c5ff88ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5ff88ce)
 - [f9564d25](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9564d25)
 - [cf3e737d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cf3e737d)
+- [a8d69188](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8d69188)
