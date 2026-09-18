@@ -142,6 +142,10 @@ Module uninstall now loads the resolved bootstrap entrypoint, authentication pre
 
 Restored the shared grid-step dependency removed during the page-composer split, preventing login and other composed pages from failing during initial placement. The refactor audit also corrected adapter lookup scope in Administration.
 
+## Route-scoped login feedback
+
+Login notifications now belong to the active login route and are dismissed when navigation aborts that page. Legal footer links no longer leave permanent session or recovery feedback floating over the destination page, while the restored composer initialization allows anonymous legal pages to return to Login without leaving stale content on screen.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -181,3 +185,4 @@ Restored the shared grid-step dependency removed during the page-composer split,
 - [cf3e737d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cf3e737d)
 - [a8d69188](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8d69188)
 - [47d25bc4](https://github.com/Cognis-Labs-HQ/Cognis/commit/47d25bc4)
+- [62f4c08b](https://github.com/Cognis-Labs-HQ/Cognis/commit/62f4c08b)

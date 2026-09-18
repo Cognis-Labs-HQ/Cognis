@@ -9,7 +9,7 @@ import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { createFormBuilder } from "../../reuse/form-builder.js";
-import { showToast } from "../../reuse/toast.js";
+import { showToast as showGlobalToast } from "../../reuse/toast.js";
 import { openPopup } from "../../reuse/popup.js";
 import {
     loadAuthTypingSamples,
@@ -32,8 +32,9 @@ import { persistLoginSession as persistSession } from "/static/gateways/auth/log
 import { clearLoginSession } from "./session.js";
 import {
     createLoginClientLoaders,
+    createLoginReasonNotifier,
+    createRouteScopedToast,
     isPublicRegistrationEnabled,
-    showLoginReasonToast,
 } from "./client-loaders.js";
 import "../../reuse/flow-registry.js";
 import "/static/adapters/auth/keyring/keyring.js";
@@ -48,6 +49,7 @@ const AUTH_SOURCE_PREFERENCE_KEY = "cognis_login_auth_source";
  */
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n();
+    const showToast = createRouteScopedToast(showGlobalToast, signal);
     applyDocumentTitle(i18n, "ui.page.title.login");
     await loadAuthFooterPlugins().catch(() => {
         showToast(i18n.t("ui.app.login.error.generic"), { variant: "error" });
@@ -75,19 +77,13 @@ export async function mount(root, { signal } = {}) {
     if (loginReason === "account_deleted") {
         await uiCtx.capabilities.get("keyring:clearAccountState")?.();
     }
-    let loginReasonToastShown = false;
-
     const publicRegistrationEnabled = await isPublicRegistrationEnabled();
     let isPasswordResetMode = false;
-
-    function renderLoginReasonToast() {
-        if (loginReasonToastShown) return;
-        loginReasonToastShown = showLoginReasonToast({
-            reason: loginReason,
-            i18n,
-            showToast,
-        });
-    }
+    const renderLoginReasonToast = createLoginReasonNotifier({
+        reason: loginReason,
+        i18n,
+        showToast,
+    });
 
     function hideCredentialProviderSelector() {
         const providerToggle = document.querySelector("#auth-provider-toggle");

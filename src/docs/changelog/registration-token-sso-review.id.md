@@ -138,6 +138,10 @@ Penghapusan modul kini memuat entrypoint bootstrap yang telah diselesaikan, pres
 
 Dependensi langkah kisi bersama yang terhapus saat penyusun halaman dipecah telah dipulihkan, sehingga halaman login dan halaman tersusun lainnya tidak lagi gagal saat penempatan awal. Audit refaktor juga memperbaiki cakupan pencarian adapter di Administrasi.
 
+## Umpan balik login yang terikat rute
+
+Notifikasi login kini dimiliki oleh rute login aktif dan ditutup ketika navigasi membatalkan halaman tersebut. Tautan footer hukum tidak lagi meninggalkan umpan balik sesi atau pemulihan permanen di atas halaman tujuan, sementara inisialisasi penyusun yang dipulihkan memungkinkan halaman hukum anonim kembali ke Login tanpa menyisakan konten lama.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -177,3 +181,4 @@ Dependensi langkah kisi bersama yang terhapus saat penyusun halaman dipecah tela
 - [cf3e737d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cf3e737d)
 - [a8d69188](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8d69188)
 - [47d25bc4](https://github.com/Cognis-Labs-HQ/Cognis/commit/47d25bc4)
+- [62f4c08b](https://github.com/Cognis-Labs-HQ/Cognis/commit/62f4c08b)

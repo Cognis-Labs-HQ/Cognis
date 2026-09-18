@@ -142,6 +142,10 @@ Die Modul-Deinstallation lädt nun den aufgelösten Bootstrap-Einstiegspunkt, di
 
 Die beim Aufteilen des Seiten-Composers entfernte gemeinsame Raster-Schritt-Abhängigkeit wurde wiederhergestellt. Dadurch schlagen Login- und andere zusammengesetzte Seiten bei der anfänglichen Platzierung nicht mehr fehl. Die Refaktorierungsprüfung korrigierte außerdem den Gültigkeitsbereich der Adapter-Suche in der Administration.
 
+## Routengebundene Login-Rückmeldungen
+
+Login-Benachrichtigungen gehören nun zur aktiven Login-Route und werden geschlossen, wenn die Navigation diese Seite abbricht. Links im rechtlichen Fußbereich lassen keine dauerhaften Sitzungs- oder Wiederherstellungsrückmeldungen mehr über der Zielseite stehen; zugleich ermöglicht die wiederhergestellte Composer-Initialisierung die Rückkehr anonymer Rechtsseiten zum Login, ohne veraltete Inhalte anzuzeigen.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -181,3 +185,4 @@ Die beim Aufteilen des Seiten-Composers entfernte gemeinsame Raster-Schritt-Abh�
 - [cf3e737d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cf3e737d)
 - [a8d69188](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8d69188)
 - [47d25bc4](https://github.com/Cognis-Labs-HQ/Cognis/commit/47d25bc4)
+- [62f4c08b](https://github.com/Cognis-Labs-HQ/Cognis/commit/62f4c08b)

@@ -142,6 +142,10 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 
 ページコンポーザーの分割時に失われた共有グリッドステップ依存関係を復元し、ログインページなどの初期配置時の失敗を防止しました。リファクタリング監査では、管理画面のアダプター検索スコープも修正しました。
 
+## ルートに限定されたログイン通知
+
+ログイン通知はアクティブなログインルートに属し、ナビゲーションによってページが中断されると閉じるようになりました。法的情報へのフッターリンクを開いた後に永続的なセッション通知や復旧通知が移動先へ残らず、復元されたコンポーザー初期化により匿名の法的情報ページからログインへ戻っても古い内容が画面に残りません。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -181,3 +185,4 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 - [cf3e737d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cf3e737d)
 - [a8d69188](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8d69188)
 - [47d25bc4](https://github.com/Cognis-Labs-HQ/Cognis/commit/47d25bc4)
+- [62f4c08b](https://github.com/Cognis-Labs-HQ/Cognis/commit/62f4c08b)

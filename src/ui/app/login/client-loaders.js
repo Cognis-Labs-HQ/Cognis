@@ -18,6 +18,29 @@ export function createLoginClientLoaders({ loadClient, i18n, root }) {
     };
 }
 
+export function createRouteScopedToast(showToast, signal) {
+    const dismissers = new Set();
+    const dismissAll = () => {
+        for (const dismiss of dismissers) dismiss();
+        dismissers.clear();
+    };
+    signal?.addEventListener("abort", dismissAll, { once: true });
+    return (message, options = {}) => {
+        const originalOnDismiss = options.onDismiss;
+        let dismiss = null;
+        dismiss = showToast(message, {
+            ...options,
+            onDismiss: () => {
+                dismissers.delete(dismiss);
+                originalOnDismiss?.();
+            },
+        });
+        dismissers.add(dismiss);
+        if (signal?.aborted) dismiss();
+        return dismiss;
+    };
+}
+
 export function showLoginReasonToast({ reason, i18n, showToast }) {
     const key = {
         session_expired: "ui.app.login.reason.session_expired",
@@ -26,9 +49,17 @@ export function showLoginReasonToast({ reason, i18n, showToast }) {
         account_deactivated: "ui.app.login.reason.account_deactivated",
         account_deleted: "ui.app.login.reason.account_deleted",
     }[reason];
-    if (!key) return false;
-    showToast(i18n.t(key), { variant: "error", permanent: true });
-    return true;
+    if (!key) return null;
+    return showToast(i18n.t(key), { variant: "error", permanent: true });
+}
+
+export function createLoginReasonNotifier(options) {
+    let shown = false;
+    return () => {
+        if (shown) return false;
+        shown = Boolean(showLoginReasonToast(options));
+        return shown;
+    };
 }
 
 export async function isPublicRegistrationEnabled() {
