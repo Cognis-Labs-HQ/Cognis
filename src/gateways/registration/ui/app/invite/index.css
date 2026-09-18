@@ -2,6 +2,10 @@
     align-items: stretch;
 }
 
+.invite-revoke-btn {
+    margin-right: 6px;
+}
+
 .invite-actions > button {
     flex: 0 0 auto;
     width: max-content;

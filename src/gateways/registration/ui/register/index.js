@@ -40,12 +40,12 @@ import {
     readAccountCreationAuthorization,
     REGISTRATION_ERROR_CODES,
     renderAccountCreationAuthorization,
-} from "/static/gateways/auth/registration-authorization.js";
+} from "./authorization.js";
 import { getPendingAccountCreation } from "/static/gateways/auth/login-client.js";
 import {
     buildPasswordCriteria,
     resetAuthSessionForRegister,
-} from "./register-form.js";
+} from "./form.js";
 const REGISTER_EMAIL_MAX_CHARACTERS = 320;
 const REGISTER_USERNAME_MAX_CHARACTERS = 25;
 const REGISTER_DISPLAY_NAME_MAX_CHARACTERS = 80;

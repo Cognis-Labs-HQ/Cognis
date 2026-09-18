@@ -1,9 +1,5 @@
 import { apiFetch } from "../../reuse/api-client.js";
-import {
-    applyDocumentTitle,
-    createI18n,
-    extendI18n,
-} from "../../reuse/i18n.js";
+import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { openPopup } from "../../reuse/popup.js";
@@ -23,11 +19,9 @@ let root = null;
 let i18n = null;
 let reprompt = null;
 let users = [];
-let registrationGatewayActive = false;
 let smtpAdapterActive = false;
 let composer = null;
 let elements = [];
-let registrationClient = null;
 
 const QUOTA_UNITS = [
     { id: "B", multiplier: 1 },
@@ -85,17 +79,6 @@ async function loadUsers() {
     if (!response.ok) return [];
     const payload = await response.json();
     return payload.data ?? [];
-}
-
-async function loadRegistrationGatewayState() {
-    try {
-        registrationClient =
-            await import("/static/gateways/registration/client.js");
-        return registrationClient.loadRegistrationAvailability(apiFetch);
-    } catch {
-        registrationClient = null;
-        return false;
-    }
 }
 
 async function fetchUserInfo(username) {
@@ -298,9 +281,8 @@ async function promptStorageQuotas(username) {
 }
 
 async function refreshData() {
-    [users, registrationGatewayActive, smtpAdapterActive] = await Promise.all([
+    [users, smtpAdapterActive] = await Promise.all([
         loadUsers(),
-        loadRegistrationGatewayState(),
         isSmtpAdapterActive(apiFetch),
     ]);
     buildElements();
@@ -311,13 +293,7 @@ function renderUsersTable() {
     const currentUser = users.find((user) => user.username === currentUsername);
     const currentRole = currentUser?.role ?? getCurrentRole();
     const viewerCanManagePrivileged = currentRole === "owner";
-    const inviteButtonHtml = registrationGatewayActive
-        ? `<div class="controls">
-          <a id="users-invite-btn" class="btn-neutral btn-animated" href="/invite">+ ${escapeHtml(i18n.t("ui.reuse.invite"))}</a>
-        </div>`
-        : "";
     return `
-    ${inviteButtonHtml}
     <div class="users-table-wrap">
       <table class="users-table">
         <thead>
@@ -522,21 +498,6 @@ async function runUserMenuAction(action, username) {
         composer.refresh(elements);
         return;
     }
-
-    if (action === "reset-founder-invites") {
-        const response = await registrationClient.resetFounderInviteLimit(
-            apiFetch,
-            username,
-        );
-        showToast(
-            i18n.t(
-                response.ok
-                    ? "gateway.registration.founder_limit_reset"
-                    : "ui.reuse.save_failed",
-            ),
-            { variant: response.ok ? "success" : "error" },
-        );
-    }
 }
 
 function bindUsersInteractions() {
@@ -697,16 +658,9 @@ export async function mount(rootEl, { signal } = {}) {
 
     reprompt = createRepromptGuard({ i18n });
     users = [];
-    registrationGatewayActive = false;
     smtpAdapterActive = false;
 
     await refreshData();
-    if (registrationGatewayActive && registrationClient) {
-        i18n = await registrationClient.loadRegistrationInviteUi(
-            i18n,
-            extendI18n,
-        );
-    }
 
     composer = createPageComposer(root, {
         allowCustomization: false,

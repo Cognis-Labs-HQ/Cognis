@@ -1,22 +1,22 @@
-import { apiFetch } from "../../reuse/api-client.js";
+import { apiFetch } from "/static/reuse/api-client.js";
 import {
     applyDocumentTitle,
     createI18n,
     extendI18n,
-} from "../../reuse/i18n.js";
-import { createPageComposer } from "../../reuse/page-composer/index.js";
-import { mountWhenDirect } from "../../reuse/page-entry.js";
-import { showToast } from "../../reuse/toast.js";
-import { copyTextToClipboard } from "../../reuse/clipboard.js";
-import { openPopup } from "../../reuse/popup.js";
-import { ensurePageStylesheet } from "../../reuse/page-styles.js";
+} from "/static/reuse/i18n.js";
+import { createPageComposer } from "/static/reuse/page-composer/index.js";
+import { mountWhenDirect } from "/static/reuse/page-entry.js";
+import { showToast } from "/static/reuse/toast.js";
+import { copyTextToClipboard } from "/static/reuse/clipboard.js";
+import { openPopup } from "/static/reuse/popup.js";
+import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import {
     bindSecretVisibilityToggles,
     renderSecretVisibilityField,
-} from "../../reuse/secret-visibility-toggle.js";
-import { escapeHtml } from "../../reuse/escape-html.js";
+} from "/static/reuse/secret-visibility-toggle.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createRepromptGuard } from "/static/gateways/auth/reuse/password-confirmation.js";
-import { formatDateTime } from "../../reuse/timestamp.js";
+import { formatDateTime } from "/static/reuse/timestamp.js";
 import {
     createRegistrationToken,
     listRegistrationTokens,
@@ -44,7 +44,7 @@ async function loadInviteState() {
 function renderTokenRow(row, i18n, issuedTokens) {
     const isPending = !row.status || row.status === "pending";
     const revokeHtml = isPending
-        ? `<button class="invite-revoke-btn btn-cancel btn-animated" data-token-id="${escapeHtml(row.id)}">${escapeHtml(i18n.t("ui.app.invite.revoke"))}</button>`
+        ? `<button class="invite-revoke-btn btn-cancel btn-animated" data-token-id="${escapeHtml(row.id)}">${escapeHtml(i18n.t("gateway.registration.invite.revoke"))}</button>`
         : "";
     const expiresAt = row.expiresAt
         ? escapeHtml(formatDateTime(row.expiresAt))
@@ -68,7 +68,7 @@ function renderTokenRow(row, i18n, issuedTokens) {
         <td>${inviteTarget}</td>
         <td>${escapeHtml(issuerUsername)}</td>
         <td>${redeemedUsername ? escapeHtml(redeemedUsername) : "—"}</td>
-        <td>${escapeHtml(i18n.t(`ui.app.invite.status_${row.status ?? "pending"}`))}</td>
+        <td>${escapeHtml(i18n.t(`gateway.registration.invite.status_${row.status ?? "pending"}`))}</td>
         <td>${expiresAt}</td>
         <td>${revokeHtml}</td>
       </tr>
@@ -83,10 +83,10 @@ function renderTokenRow(row, i18n, issuedTokens) {
  * @returns {Promise<void>} Resolves when the page has finished initialising.
  */
 export async function mount(root, { signal } = {}) {
-    ensurePageStylesheet("/static/styles/invite.css");
+    ensurePageStylesheet("/static/gateways/registration/app/invite/index.css");
     let i18n = await createI18n();
     i18n = await loadRegistrationInviteUi(i18n, extendI18n);
-    applyDocumentTitle(i18n, "ui.page.title.invite");
+    applyDocumentTitle(i18n, "gateway.registration.invite.page_title");
     const reprompt = createRepromptGuard({ i18n });
 
     const inviteState = await loadInviteState();
@@ -114,12 +114,12 @@ export async function mount(root, { signal } = {}) {
         <table class="users-table">
           <thead>
             <tr>
-              <th>${escapeHtml(i18n.t("ui.app.invite.method"))}</th>
-              <th>${escapeHtml(i18n.t("ui.app.invite.target"))}</th>
-              <th>${escapeHtml(i18n.t("ui.app.invite.issuer"))}</th>
-              <th>${escapeHtml(i18n.t("ui.app.invite.username"))}</th>
-              <th>${escapeHtml(i18n.t("ui.app.invite.status"))}</th>
-              <th>${escapeHtml(i18n.t("ui.app.invite.expires_at"))}</th>
+              <th>${escapeHtml(i18n.t("gateway.registration.invite.method"))}</th>
+              <th>${escapeHtml(i18n.t("gateway.registration.invite.target"))}</th>
+              <th>${escapeHtml(i18n.t("gateway.registration.invite.issuer"))}</th>
+              <th>${escapeHtml(i18n.t("gateway.registration.invite.username"))}</th>
+              <th>${escapeHtml(i18n.t("gateway.registration.invite.status"))}</th>
+              <th>${escapeHtml(i18n.t("gateway.registration.invite.expires_at"))}</th>
               <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
             </tr>
           </thead>
@@ -138,7 +138,7 @@ export async function mount(root, { signal } = {}) {
         preferenceKey: "invite-layout",
         pageContext: {
             title: i18n.t("ui.reuse.invite"),
-            subtitle: i18n.t("ui.app.invite.page_subtitle"),
+            subtitle: i18n.t("gateway.registration.invite.page_subtitle"),
         },
         toolbar: [],
         elements,
@@ -170,7 +170,7 @@ export async function mount(root, { signal } = {}) {
                 let inviteEmail = "";
                 const action = await openPopup({
                     title: i18n.t("gateway.registration.send_invite_email"),
-                    body: `<label class="stack"><span>${escapeHtml(i18n.t("ui.app.invite.email"))}</span><input id="invite-email" type="email" placeholder="${escapeHtml(i18n.t("ui.reuse.email_placeholder"))}" required /></label>`,
+                    body: `<label class="stack"><span>${escapeHtml(i18n.t("gateway.registration.invite.email"))}</span><input id="invite-email" type="email" placeholder="${escapeHtml(i18n.t("ui.reuse.email_placeholder"))}" required /></label>`,
                     actions: [
                         {
                             id: "create",
@@ -207,14 +207,14 @@ export async function mount(root, { signal } = {}) {
                             showToast(
                                 i18n.t(
                                     code === "email_domain_not_allowed"
-                                        ? "ui.app.invite.email_domain_not_allowed"
-                                        : "ui.reuse.invite_failed",
+                                        ? "gateway.registration.invite.email_domain_not_allowed"
+                                        : "gateway.registration.invite_failed",
                                 ),
                                 { variant: "error" },
                             );
                             return;
                         }
-                        showToast(i18n.t("ui.reuse.invite_sent"), {
+                        showToast(i18n.t("gateway.registration.invite_sent"), {
                             variant: "success",
                         });
                     });
@@ -234,7 +234,7 @@ export async function mount(root, { signal } = {}) {
                             },
                         );
                         if (!response.ok) {
-                            showToast(i18n.t("ui.reuse.invite_failed"), {
+                            showToast(i18n.t("gateway.registration.invite_failed"), {
                                 variant: "error",
                             });
                             return;
@@ -254,7 +254,9 @@ export async function mount(root, { signal } = {}) {
                             body: renderSecretVisibilityField({
                                 id: "generated-registration-token",
                                 value: registrationToken,
-                                label: i18n.t("ui.app.invite.target"),
+                                label: i18n.t(
+                                    "gateway.registration.invite.target",
+                                ),
                                 toggleLabel: i18n.t(
                                     "ui.reuse.toggle_secret_visibility",
                                 ),
@@ -335,8 +337,8 @@ export async function mount(root, { signal } = {}) {
                 showToast(
                     i18n.t(
                         response.ok
-                            ? "ui.app.invite.revoke_success"
-                            : "ui.app.invite.revoke_failed",
+                            ? "gateway.registration.invite.revoke_success"
+                            : "gateway.registration.invite.revoke_failed",
                     ),
                     { variant: response.ok ? "success" : "error" },
                 );

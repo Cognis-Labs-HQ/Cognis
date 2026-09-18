@@ -24,7 +24,6 @@ export interface SecuritySubsection {
 }
 
 interface SecuritySettings {
-    registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
     loginSessionTimeoutMinutes: number;
 }

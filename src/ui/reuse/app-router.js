@@ -296,18 +296,6 @@ const STATIC_ROUTES = [
         load: () => import("../app/users/index.js"),
     },
     {
-        id: "core.invite",
-        ownerUuid: CORE_COMPONENT_UUID,
-        componentPage: componentPage(
-            "ui.reuse.invite",
-            "ui.app.invite.page_subtitle",
-        ),
-        pattern: /^\/invite$/,
-        base: "/invite",
-        stylesheets: ROUTE_STYLE_BUNDLES.pageSections,
-        load: () => import("../app/invite/index.js"),
-    },
-    {
         id: "core.modules",
         ownerUuid: CORE_COMPONENT_UUID,
         componentPage: componentPage(

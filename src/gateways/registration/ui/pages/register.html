@@ -6,7 +6,7 @@
             name="viewport"
             content="width=device-width, initial-scale=1.0, viewport-fit=cover"
         />
-        <title>{{ui.page.title.login}}</title>
+        <title data-i18n="ui.page.title.register">Registration Invite</title>
         <link
             rel="icon"
             href="/static/assets/icons/cognis-icon.png"
@@ -28,10 +28,17 @@
         />
         <link rel="stylesheet" href="/static/styles/page-builder.css" />
         <link rel="stylesheet" href="/static/styles/reuse/layout.css" />
-        <link rel="stylesheet" href="/static/styles/login.css" />
+        <link rel="stylesheet" href="/static/styles/reuse/page-sections.css" />
+        <link
+            rel="stylesheet"
+            href="/static/gateways/auth/login-page/index.css"
+        />
     </head>
     <body>
         <main id="app"></main>
-        <script type="module" src="/static/app/login/index.js"></script>
+        <script
+            type="module"
+            src="/static/gateways/registration/register/index.js"
+        ></script>
     </body>
 </html>

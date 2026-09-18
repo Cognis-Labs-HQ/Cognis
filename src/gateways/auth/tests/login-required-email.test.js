@@ -4,21 +4,21 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 const LOGIN_STYLE_SOURCE = readFileSync(
-    resolve(ROOT, "src/ui/styles/login.css"),
+    resolve(ROOT, "src/gateways/auth/ui/login-page/index.css"),
     "utf8",
 );
 
 test("login required-email enforcement resolves helper from flow-provided integration", () => {
     const source =
-        readFileSync(resolve(ROOT, "src/ui/app/login/index.js"), "utf8") +
+        readFileSync(resolve(ROOT, "src/gateways/auth/ui/login-page/index.js"), "utf8") +
         readFileSync(
-            resolve(ROOT, "src/ui/app/login/client-loaders.js"),
+            resolve(ROOT, "src/gateways/auth/ui/login-page/client-loaders.js"),
             "utf8",
         );
     const integrationSource = readFileSync(
-        resolve(ROOT, "src/ui/app/login/integrations.js"),
+        resolve(ROOT, "src/gateways/auth/ui/login-page/integrations.js"),
         "utf8",
     );
     assert.match(source, /loadClient\(\s*"required-email-enforcement"/);
@@ -34,7 +34,7 @@ test("login required-email enforcement resolves helper from flow-provided integr
 
 test("login UI includes password reset token flow and nested signup callout link", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/app/login/index.js"),
+        resolve(ROOT, "src/gateways/auth/ui/login-page/index.js"),
         "utf8",
     );
     assert.match(source, /\/api\/v1\/auth\/request-login-link/);
@@ -50,7 +50,7 @@ test("login UI includes password reset token flow and nested signup callout link
 
 test("login UI resets password reset mode on refresh re-render", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/app/login/index.js"),
+        resolve(ROOT, "src/gateways/auth/ui/login-page/index.js"),
         "utf8",
     );
     assert.match(source, /function resetPasswordResetMode\(\)/);
@@ -64,7 +64,7 @@ test("login UI resets password reset mode on refresh re-render", () => {
 
 test("login recovery returns through an in-place form restore", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/app/login/index.js"),
+        resolve(ROOT, "src/gateways/auth/ui/login-page/index.js"),
         "utf8",
     );
     assert.match(source, /function restoreLoginForm\(\)/);
@@ -81,7 +81,7 @@ test("login recovery returns through an in-place form restore", () => {
 
 test("login hides the credential provider selector before showing TFA", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/app/login/index.js"),
+        resolve(ROOT, "src/gateways/auth/ui/login-page/index.js"),
         "utf8",
     );
     assert.match(
@@ -100,7 +100,7 @@ test("login hides the credential provider selector before showing TFA", () => {
 
 test("login UI handles TFA prompt restore failures by falling back to login methods", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/app/login/index.js"),
+        resolve(ROOT, "src/gateways/auth/ui/login-page/index.js"),
         "utf8",
     );
     assert.match(

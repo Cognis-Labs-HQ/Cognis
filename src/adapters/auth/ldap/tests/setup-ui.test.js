@@ -3,27 +3,27 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const ldapPopupSource = readFileSync(
-    new URL("../../adapters/auth/ldap/ui/config-popup.js", import.meta.url),
+    new URL("../ui/config-popup.js", import.meta.url),
     "utf8",
 );
 const adminPopupSource = readFileSync(
-    new URL("../app/administration/adapter-config-popup.js", import.meta.url),
+    new URL("../../../../ui/app/administration/adapter-config-popup.js", import.meta.url),
     "utf8",
 );
 const administrationSource = readFileSync(
-    new URL("../app/administration/index.js", import.meta.url),
+    new URL("../../../../ui/app/administration/index.js", import.meta.url),
     "utf8",
 );
 const administrationApiSource = readFileSync(
-    new URL("../app/administration/api-loaders.js", import.meta.url),
+    new URL("../../../../ui/app/administration/api-loaders.js", import.meta.url),
     "utf8",
 );
 const loginSource = readFileSync(
-    new URL("../app/login/index.js", import.meta.url),
+    new URL("../../../../gateways/auth/ui/login-page/index.js", import.meta.url),
     "utf8",
 );
 const popupSource = readFileSync(
-    new URL("../reuse/popup.js", import.meta.url),
+    new URL("../../../../ui/reuse/popup.js", import.meta.url),
     "utf8",
 );
 

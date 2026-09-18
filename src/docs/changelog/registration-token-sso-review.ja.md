@@ -162,6 +162,10 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 
 AI コントリビューション手順に、任意のシステムバイナリがインストール済みであるとテストで仮定してはならないことを追記しました。外部実行ファイルを意図的に検証するテストは、その有無を確認し、利用できない場合は明示的な理由とともにスキップする必要があります。
 
+## コンポーネント所有の認証・登録 UI
+
+ログイン、登録、招待管理のページ、ルート、スタイル、文字列、テストを、それぞれを担当するゲートウェイ内に移しました。コア UI から登録固有のアダプター制御とページルーティングを除き、公開登録ポリシーは招待ポリシーとともに登録ゲートウェイが管理します。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -206,3 +210,4 @@ AI コントリビューション手順に、任意のシステムバイナリ�
 - [650c91d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/650c91d5)
 - [e9baab31](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9baab31)
 - [5766ce26](https://github.com/Cognis-Labs-HQ/Cognis/commit/5766ce26)
+- [abb16e51](https://github.com/Cognis-Labs-HQ/Cognis/commit/abb16e51)

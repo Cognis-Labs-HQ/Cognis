@@ -1,5 +1,4 @@
-import { startSsoLogin } from "../../../gateways/auth/ui/login-client.js";
-import { showToast } from "../../reuse/toast.js";
+import { startSsoLogin } from "../login-client.js";
 import { reportLoginError } from "./error-reporting.js";
 
 export function isStyledSsoMethod(method) {
@@ -7,6 +6,7 @@ export function isStyledSsoMethod(method) {
 }
 
 export async function beginSsoLogin(method, i18n) {
+    const { showToast } = await import("/static/reuse/toast.js");
     try {
         const redirectUrl = await startSsoLogin(method.id);
         window.location.assign(redirectUrl);

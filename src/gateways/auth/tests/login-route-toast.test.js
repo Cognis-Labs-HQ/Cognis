@@ -4,7 +4,7 @@ import {
     createLoginReasonNotifier,
     createRouteScopedToast,
     showLoginReasonToast,
-} from "../app/login/client-loaders.js";
+} from "../ui/login-page/client-loaders.js";
 
 test("login route toasts dismiss when navigation aborts the page", () => {
     const controller = new AbortController();

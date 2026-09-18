@@ -158,6 +158,10 @@ Pemeriksaan kepatuhan ukuran sumber kini memindai berkas sumber repositori secar
 
 Petunjuk kontribusi AI kini mewajibkan pengujian agar tidak menganggap biner sistem opsional selalu terpasang. Pengujian yang sengaja menjalankan program eksternal harus mendeteksi ketersediaannya dan dilewati dengan alasan eksplisit ketika tidak tersedia.
 
+## UI autentikasi dan pendaftaran milik komponen
+
+Login, pendaftaran, dan pengelolaan undangan kini memiliki halaman, rute, gaya, string, dan pengujiannya di dalam gateway yang bertanggung jawab. UI inti tidak lagi memuat kontrol adapter atau perutean halaman khusus pendaftaran, sementara gateway pendaftaran mengelola kebijakan pendaftaran publik bersama kebijakan undangan.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -202,3 +206,4 @@ Petunjuk kontribusi AI kini mewajibkan pengujian agar tidak menganggap biner sis
 - [650c91d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/650c91d5)
 - [e9baab31](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9baab31)
 - [5766ce26](https://github.com/Cognis-Labs-HQ/Cognis/commit/5766ce26)
+- [abb16e51](https://github.com/Cognis-Labs-HQ/Cognis/commit/abb16e51)

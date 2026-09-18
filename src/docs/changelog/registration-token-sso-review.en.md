@@ -162,6 +162,10 @@ The source-size compliance check now scans repository source files directly and 
 
 AI contribution instructions now require tests to avoid assuming optional system binaries are installed. Tests that intentionally exercise an external executable must detect it and skip with an explicit reason when unavailable.
 
+## Component-owned authentication and registration UI
+
+Login, registration, and invitation management now own their pages, routes, styles, strings, and tests inside their responsible gateways. The core UI no longer contains registration-specific adapter controls or page routing, while the registration gateway now manages its public-registration policy alongside invitation policy.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -206,3 +210,4 @@ AI contribution instructions now require tests to avoid assuming optional system
 - [650c91d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/650c91d5)
 - [e9baab31](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9baab31)
 - [5766ce26](https://github.com/Cognis-Labs-HQ/Cognis/commit/5766ce26)
+- [abb16e51](https://github.com/Cognis-Labs-HQ/Cognis/commit/abb16e51)

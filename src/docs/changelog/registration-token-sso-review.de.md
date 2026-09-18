@@ -162,6 +162,10 @@ Die Größenprüfung für Quelldateien durchsucht nun die Repository-Quelldateie
 
 Die Anweisungen für KI-Beiträge verlangen nun, dass Tests nicht von installierten optionalen Systemprogrammen ausgehen. Tests, die absichtlich ein externes Programm ausführen, müssen dessen Verfügbarkeit erkennen und bei Nichtverfügbarkeit mit einer ausdrücklichen Begründung übersprungen werden.
 
+## Komponenten-eigene Authentifizierungs- und Registrierungsoberflächen
+
+Anmeldung, Registrierung und Einladungsverwaltung besitzen nun ihre Seiten, Routen, Stile, Zeichenfolgen und Tests innerhalb der zuständigen Gateways. Die Kernoberfläche enthält keine registrierungsspezifischen Adaptersteuerungen oder Seitenrouten mehr; gemeinsam genutzte Registrierungsrichtlinien werden vom Registrierungs-Gateway verwaltet.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -206,3 +210,4 @@ Die Anweisungen für KI-Beiträge verlangen nun, dass Tests nicht von installier
 - [650c91d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/650c91d5)
 - [e9baab31](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9baab31)
 - [5766ce26](https://github.com/Cognis-Labs-HQ/Cognis/commit/5766ce26)
+- [abb16e51](https://github.com/Cognis-Labs-HQ/Cognis/commit/abb16e51)

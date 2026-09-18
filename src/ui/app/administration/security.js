@@ -52,9 +52,9 @@ const POLICY_FIELDS = [
 /**
  * Security sub-module for the Administration page.
  *
- * Manages system-level security settings for trusted domains, registration
- * controls, user-validation mode, teacher approval requirements, and password
- * policy controls.
+ * Manages system-level security settings for trusted domains,
+ * user-validation mode, teacher approval requirements, and password policy
+ * controls.
  *
  * Public exports:
  *   initSecuritySection(root, options) — initialises the security section.
@@ -71,7 +71,6 @@ const POLICY_FIELDS = [
  */
 export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalDomains = [];
-    let currentPublicRegistrationEnabled = false;
     let originalUserValidationMode = "none";
     let currentUserValidationMode = "none";
     let originalTeacherManualApproval = true;
@@ -107,20 +106,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return normalizePasswordPolicy(payload?.data, originalPasswordPolicy);
     }
 
-    async function loadPublicRegistrationAdapterState() {
-        const response = await apiFetch(
-            "/api/v1/gateways/registration/adapters",
-        );
-        if (!response.ok) return false;
-        const payload = await response.json();
-        const adapters = Array.isArray(payload?.data) ? payload.data : [];
-        const publicAdapter = adapters.find((entry) => entry.id === "public");
-        return publicAdapter?.enabled === true;
-    }
-
     async function persistSettings(
         trustedDomains,
-        registrationsEnabled,
         userValidationMode,
         requireTeacherManualApproval,
         enforceTfaForAllUsers,
@@ -131,7 +118,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
                 trustedDomains,
-                registrationsEnabled,
                 userValidationMode,
                 requireTeacherManualApproval,
                 enforceTfaForAllUsers,
@@ -164,12 +150,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         const select = root.querySelector("#security-user-validation-mode");
         if (!(select instanceof HTMLSelectElement)) return "none";
         return select.value === "smtp" ? "smtp" : "none";
-    }
-
-    function getRegistrationsEnabledValue() {
-        const input = root.querySelector("#security-enable-registrations");
-        if (!(input instanceof HTMLInputElement)) return false;
-        return input.checked;
     }
 
     function getTeacherManualApprovalValue() {
@@ -263,8 +243,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 : originalUserValidationMode;
         const modeChanged =
             getValidationModeValue() !== effectiveOriginalValidationMode;
-        const registrationsChanged =
-            getRegistrationsEnabledValue() !== currentPublicRegistrationEnabled;
         const teacherApprovalChanged =
             getTeacherManualApprovalValue() !== originalTeacherManualApproval;
         const enforceTfaChanged =
@@ -275,7 +253,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         onDirtyChange?.(
             currentDomains !== originalDomainsValue ||
                 modeChanged ||
-                registrationsChanged ||
                 teacherApprovalChanged ||
                 enforceTfaChanged ||
                 loginTimeoutChanged ||
@@ -289,8 +266,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         smtpAdapterActive = smtpActive;
 
         originalDomains = settings.trustedDomains ?? [];
-        currentPublicRegistrationEnabled =
-            settings.registrationsEnabled === true;
         currentUserValidationMode =
             settings.userValidationMode === "smtp" ? "smtp" : "none";
         originalUserValidationMode = currentUserValidationMode;
@@ -307,9 +282,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         input.value = originalDomains.join(", ");
         const validationSelect = root.querySelector(
             "#security-user-validation-mode",
-        );
-        const registrationsToggle = root.querySelector(
-            "#security-enable-registrations",
         );
         const teacherApprovalToggle = root.querySelector(
             "#security-require-teacher-approval",
@@ -340,9 +312,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             }
             validationSelect.value = effectiveValidationMode;
         }
-        if (registrationsToggle instanceof HTMLInputElement) {
-            registrationsToggle.checked = currentPublicRegistrationEnabled;
-        }
         if (teacherApprovalToggle instanceof HTMLInputElement) {
             teacherApprovalToggle.checked = originalTeacherManualApproval;
         }
@@ -360,7 +329,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
 
         input.addEventListener("input", markDirtyState);
         validationSelect?.addEventListener("change", markDirtyState);
-        registrationsToggle?.addEventListener("change", markDirtyState);
         teacherApprovalToggle?.addEventListener("change", markDirtyState);
         enforceTfaToggle?.addEventListener("change", markDirtyState);
         loginTimeoutInput?.addEventListener("input", markDirtyState);
@@ -372,18 +340,11 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
 
     return {
         async init() {
-            const [
-                settings,
-                publicRegistrationEnabled,
-                passwordPolicy,
-                smtpActive,
-            ] = await Promise.all([
+            const [settings, passwordPolicy, smtpActive] = await Promise.all([
                 loadSettings(),
-                loadPublicRegistrationAdapterState(),
                 loadPasswordPolicy(),
                 isSmtpAdapterActive(apiFetch),
             ]);
-            settings.registrationsEnabled = publicRegistrationEnabled;
             bindSecurityInputs(settings, passwordPolicy, smtpActive);
             initialized = true;
         },
@@ -397,7 +358,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             bindSecurityInputs(
                 {
                     trustedDomains: originalDomains,
-                    registrationsEnabled: currentPublicRegistrationEnabled,
                     userValidationMode: originalUserValidationMode,
                     requireTeacherManualApproval: originalTeacherManualApproval,
                     enforceTfaForAllUsers: originalEnforceTfaForAllUsers,
@@ -414,7 +374,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             const validationMode = smtpAdapterActive
                 ? getValidationModeValue()
                 : originalUserValidationMode;
-            const registrationsEnabled = getRegistrationsEnabledValue();
             const requireTeacherManualApproval =
                 getTeacherManualApprovalValue();
             const enforceTfaForAllUsers = getEnforceTfaForAllUsersValue();
@@ -424,7 +383,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
 
             await persistSettings(
                 domains,
-                registrationsEnabled,
                 validationMode,
                 requireTeacherManualApproval,
                 enforceTfaForAllUsers,
@@ -432,14 +390,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             );
             await persistPasswordPolicy(passwordPolicy);
             clearTrustedDomainsCache();
-            if (registrationsEnabled !== currentPublicRegistrationEnabled) {
-                await apiFetch(
-                    `/api/v1/gateways/registration/adapters/public/${registrationsEnabled ? "enable" : "disable"}`,
-                    { method: "POST" },
-                );
-            }
+
             originalDomains = domains;
-            currentPublicRegistrationEnabled = registrationsEnabled;
             currentUserValidationMode = validationMode;
             originalUserValidationMode = validationMode;
             originalTeacherManualApproval = requireTeacherManualApproval;
@@ -462,18 +414,12 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                         ? "none"
                         : originalUserValidationMode;
             }
-            const registrationsToggle = root.querySelector(
-                "#security-enable-registrations",
-            );
             const teacherApprovalToggle = root.querySelector(
                 "#security-require-teacher-approval",
             );
             const enforceTfaToggle = root.querySelector(
                 "#security-enforce-tfa-for-all-users",
             );
-            if (registrationsToggle instanceof HTMLInputElement) {
-                registrationsToggle.checked = currentPublicRegistrationEnabled;
-            }
             if (teacherApprovalToggle instanceof HTMLInputElement) {
                 teacherApprovalToggle.checked = originalTeacherManualApproval;
             }
@@ -523,18 +469,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 class="security-domains-input"
                 placeholder="${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_placeholder"))}"
               />
-            </div>
-          </div>
-          <div class="components-section">
-            <h3 class="components-section-heading">
-              ${escapeHtml(i18n.t("ui.app.admin.security.enable_registrations_label"))}
-              ${renderInfoTooltip(i18n.t("ui.app.admin.security.enable_registrations_hint"), tooltipAria)}
-            </h3>
-            <div class="security-field-row">
-              <label class="switch">
-                <input id="security-enable-registrations" type="checkbox" />
-                <span class="slider"></span>
-              </label>
             </div>
           </div>
           <div class="components-section">

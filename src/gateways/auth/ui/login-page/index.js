@@ -1,26 +1,26 @@
-import { renderInPageCallout } from "../../reuse/in-page-callout.js";
+import { renderInPageCallout } from "/static/reuse/in-page-callout.js";
 import {
     loadAuthFooterPlugins,
     mountAuthFooter,
     renderAuthFooter,
-} from "../../reuse/auth-footer.js";
-import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
-import { createPageComposer } from "../../reuse/page-composer/index.js";
-import { mountWhenDirect } from "../../reuse/page-entry.js";
-import { escapeHtml } from "../../reuse/escape-html.js";
-import { createFormBuilder } from "../../reuse/form-builder.js";
-import { showToast as showGlobalToast } from "../../reuse/toast.js";
-import { openPopup } from "../../reuse/popup.js";
+} from "/static/reuse/auth-footer.js";
+import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
+import { createPageComposer } from "/static/reuse/page-composer/index.js";
+import { mountWhenDirect } from "/static/reuse/page-entry.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
+import { showToast as showGlobalToast } from "/static/reuse/toast.js";
+import { openPopup } from "/static/reuse/popup.js";
 import {
     loadAuthTypingSamples,
     runTypingShowcase,
-} from "../../reuse/auth-typing.js";
+} from "/static/reuse/auth-typing.js";
 import {
     renderAuthBrandline,
     renderAuthLayout,
-} from "../../reuse/auth-layout.js";
-import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
-import { uiCtx } from "../../reuse/ui-ctx.js";
+} from "/static/reuse/auth-layout.js";
+import { syncTimezoneOnLogin } from "/static/reuse/timestamp.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createLoginIntegrationLoader } from "./integrations.js";
 import { reportLoginError } from "./error-reporting.js";
 import {
@@ -36,7 +36,7 @@ import {
     createRouteScopedToast,
     isPublicRegistrationEnabled,
 } from "./client-loaders.js";
-import "../../reuse/flow-registry.js";
+import "/static/reuse/flow-registry.js";
 import "/static/adapters/auth/keyring/keyring.js";
 
 const AUTH_SOURCE_PREFERENCE_KEY = "cognis_login_auth_source";

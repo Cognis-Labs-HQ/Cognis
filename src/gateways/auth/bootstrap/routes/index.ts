@@ -42,7 +42,6 @@ export function createAuthGatewayRoutes(
     const resolvedReadSecuritySettings: () => Promise<SecuritySettings> =
         readSecuritySettings ??
         (async () => ({
-            registrationsEnabled: false,
             userValidationMode: "none",
         }));
 

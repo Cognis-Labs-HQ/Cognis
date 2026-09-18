@@ -5,13 +5,9 @@ import test from "node:test";
 import {
     createSsoLoginButton,
     isStyledSsoMethod,
-} from "../app/login/sso-buttons.js";
-import { reportLoginError } from "../app/login/error-reporting.js";
-import { startSsoLogin } from "../../gateways/auth/ui/login-client.js";
-import {
-    readAccountCreationAuthorization,
-    renderAccountCreationAuthorization,
-} from "../../gateways/auth/ui/registration-authorization.js";
+} from "../ui/login-page/sso-buttons.js";
+import { reportLoginError } from "../ui/login-page/error-reporting.js";
+import { startSsoLogin } from "../ui/login-client.js";
 
 class FakeElement {
     constructor(tagName) {
@@ -79,7 +75,7 @@ test("branded SSO buttons retain their icon and full label", async () => {
         assert.equal(selected, true);
 
         const styles = await readFile(
-            new URL("../styles/login.css", import.meta.url),
+            new URL("../ui/login-page/index.css", import.meta.url),
             "utf8",
         );
         assert.match(
@@ -114,7 +110,7 @@ test("plain SSO methods are excluded from login button rendering", () => {
 
 test("authentication footer links remain on one content-width row", async () => {
     const styles = await readFile(
-        new URL("../styles/login.css", import.meta.url),
+        new URL("../ui/login-page/index.css", import.meta.url),
         "utf8",
     );
     assert.match(
@@ -168,89 +164,4 @@ test("anonymous login failures do not call the authenticated logger", () => {
     } finally {
         console.error = originalConsoleError;
     }
-});
-
-test("SSO account creation carries its lease into the composed token form", async () => {
-    const request = readAccountCreationAuthorization({
-        emailRequired: false,
-        expiresAt: 1893456000000,
-    });
-    assert.deepEqual(request, {
-        active: true,
-        emailRequired: false,
-        expiresAt: 1893456000000,
-    });
-
-    const authorizationSource = await readFile(
-        new URL(
-            "../../adapters/registration/token/ui/authorization.js",
-            import.meta.url,
-        ),
-        "utf8",
-    );
-    assert.match(authorizationSource, /createFormBuilder/);
-    assert.match(authorizationSource, /account-creation-countdown/);
-    assert.match(authorizationSource, /formatCountdownClock/);
-    assert.match(
-        authorizationSource,
-        /errorCode === "registration_token_invalid"/,
-    );
-
-    const styles = await readFile(
-        new URL("../styles/login.css", import.meta.url),
-        "utf8",
-    );
-    assert.match(styles, /\.auth-countdown-pill\s*\{/);
-});
-
-test("SSO account creation only requests an email when one is required", async () => {
-    const renderRequests = [];
-    const integrations = [
-        {
-            i18n: {},
-            module: {
-                renderAccountCreationAuthorization(request) {
-                    renderRequests.push(request);
-                    return "<form></form>";
-                },
-            },
-        },
-    ];
-
-    renderAccountCreationAuthorization({
-        integrations,
-        request: {
-            active: true,
-            emailRequired: false,
-            expiresAt: 1893456000000,
-        },
-        escapeHtml: String,
-    });
-    renderAccountCreationAuthorization({
-        integrations,
-        request: {
-            active: true,
-            emailRequired: true,
-            expiresAt: 1893456000000,
-        },
-        escapeHtml: String,
-    });
-
-    assert.deepEqual(
-        renderRequests.map(({ emailRequired }) => emailRequired),
-        [false, true],
-    );
-
-    const authorizationSource = await readFile(
-        new URL(
-            "../../adapters/registration/token/ui/authorization.js",
-            import.meta.url,
-        ),
-        "utf8",
-    );
-    assert.match(authorizationSource, /\.\.\.\(emailRequired/);
-    assert.match(
-        authorizationSource,
-        /name: "email"[\s\S]*?type: "email"[\s\S]*?required: true/,
-    );
 });

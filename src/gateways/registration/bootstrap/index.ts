@@ -10,10 +10,11 @@ import {
 } from "../../../api/reuse/security-settings.js";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { CoreRegistrationGateway } from "../gateway.js";
-import { createRegistrationPageRoutes } from "./page-routes.js";
 import { createRegistrationRoutes } from "./registration-routes.js";
 import { createGatewayAdapterRoutes } from "./adapter-admin-routes.js";
 import { authorizeAccountCreation } from "./account-creation-gate.js";
+import { createRegistrationPageRoutes } from "./page-routes.js";
+import { createGatewayUiRegistryHooks } from "../../reuse/ui-registry-hooks.js";
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const manifestVersion = await readGatewayManifestVersion(
@@ -132,7 +133,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "registration",
     );
     ctx.routeRegistry.register(
-        createRegistrationPageRoutes(routeContext),
+        createRegistrationPageRoutes(accountStore, isGatewayEnabled, routeContext),
         "registration",
     );
     ctx.log?.("info", "Registration gateway routes registered.", {
@@ -152,6 +153,22 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         stringsBaseUrl: "/static/gateways/registration/languages",
     });
     ctx.uiRegistry?.registerStaticDir("registration", uiDir);
+    const uiHooks = createGatewayUiRegistryHooks(
+        ctx.uiRegistry,
+        "registration",
+    );
+    uiHooks.registerSpaRoute({
+        id: "registration-invite-page",
+        pattern: "^/invite$",
+        base: "/invite",
+        scriptUrl: "/static/gateways/registration/app/invite/index.js",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/gateways/registration/app/invite/index.css",
+        ],
+        isEnabled: isGatewayEnabled,
+    });
     const tokenAdapterUiDir = path.resolve(
         ctx.adaptersRoot,
         "registration",

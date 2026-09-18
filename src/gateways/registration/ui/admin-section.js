@@ -8,18 +8,27 @@ export function createAdminSection({
     onDirtyChange,
 }) {
     let invitationPolicy = null;
+    let publicRegistrationEnabled = false;
     let policyTracker = null;
     let policyForm = null;
     let policyFormBinding = null;
     let policyChangeHandler = null;
     const isOwner = localStorage.getItem("cognis_role") === "owner";
 
-    const dataReady = apiFetch("/api/v1/registration/policy").then(
-        async (response) => {
-            if (!response.ok) return;
-            invitationPolicy = (await response.json())?.data ?? null;
-        },
-    );
+    const dataReady = Promise.all([
+        apiFetch("/api/v1/registration/policy"),
+        apiFetch("/api/v1/gateways/registration/adapters"),
+    ]).then(async ([policyResponse, adaptersResponse]) => {
+        if (policyResponse.ok) {
+            invitationPolicy = (await policyResponse.json())?.data ?? null;
+        }
+        if (adaptersResponse.ok) {
+            const adapters = (await adaptersResponse.json())?.data ?? [];
+            publicRegistrationEnabled =
+                adapters.find((adapter) => adapter.id === "public")?.enabled ===
+                true;
+        }
+    });
 
     function createPolicyForm() {
         return createFormBuilder(
@@ -28,6 +37,14 @@ export function createAdminSection({
                 formId: "registration-policy-form",
                 includeSubmitButton: false,
                 fields: [
+                    {
+                        name: "publicRegistrationEnabled",
+                        labelKey:
+                            "gateway.registration.public_registration_enabled",
+                        type: "checkbox",
+                        value: String(publicRegistrationEnabled),
+                        inputClassName: "choice-checkbox",
+                    },
                     {
                         name: "founderInvitesEnabled",
                         labelKey: "gateway.registration.allow_founder_invites",
@@ -53,6 +70,9 @@ export function createAdminSection({
 
     function readPolicyForm() {
         return {
+            publicRegistrationEnabled:
+                policyForm?.elements.namedItem("publicRegistrationEnabled")
+                    ?.checked === true,
             founderInvitesEnabled:
                 policyForm?.elements.namedItem("founderInvitesEnabled")
                     ?.checked === true,
@@ -86,7 +106,7 @@ export function createAdminSection({
         return `
       ${policyFormHtml}
       <div class="stack">
-        <p>${escapeHtml(i18n.t("ui.app.invite.page_subtitle"))}</p>
+        <p>${escapeHtml(i18n.t("gateway.registration.invite.page_subtitle"))}</p>
         <div class="controls">
           <a class="btn-neutral btn-animated" href="/invite">${escapeHtml(i18n.t("ui.reuse.invite"))}</a>
         </div>
@@ -102,18 +122,38 @@ export function createAdminSection({
         async save() {
             if (!policyForm || !policyTracker?.isAnyDirty()) return;
             const nextPolicy = readPolicyForm();
+            if (
+                nextPolicy.publicRegistrationEnabled !==
+                publicRegistrationEnabled
+            ) {
+                const action = nextPolicy.publicRegistrationEnabled
+                    ? "enable"
+                    : "disable";
+                const adapterResponse = await apiFetch(
+                    `/api/v1/gateways/registration/adapters/public/${action}`,
+                    { method: "POST" },
+                );
+                if (!adapterResponse.ok)
+                    throw new Error("public_registration_save_failed");
+            }
             const response = await apiFetch("/api/v1/registration/policy", {
                 method: "PUT",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify(nextPolicy),
+                body: JSON.stringify({
+                    founderInvitesEnabled: nextPolicy.founderInvitesEnabled,
+                    adminInvitesEnabled: nextPolicy.adminInvitesEnabled,
+                }),
             });
             if (!response.ok)
                 throw new Error("registration_policy_save_failed");
+            publicRegistrationEnabled = nextPolicy.publicRegistrationEnabled;
             invitationPolicy = nextPolicy;
             resetPolicyTracker();
         },
         discard() {
             if (!policyForm || !invitationPolicy) return;
+            policyForm.elements.namedItem("publicRegistrationEnabled").checked =
+                publicRegistrationEnabled;
             policyForm.elements.namedItem("founderInvitesEnabled").checked =
                 invitationPolicy.founderInvitesEnabled === true;
             policyForm.elements.namedItem("adminInvitesEnabled").checked =

@@ -328,6 +328,7 @@ test("GET /register does not redirect authenticated users to dashboard", async (
             headers: { cookie: `cognis_access_token=${token}` },
         } as any,
         {
+            setHeader() {},
             writeHead(code: number, headers: Record<string, string>) {
                 status = code;
                 location = headers?.location ?? "";
@@ -349,6 +350,7 @@ test("GET /register serves the registration page to unauthenticated visitors", a
     const handled = await route(
         { method: "GET", headers: {} } as any,
         {
+            setHeader() {},
             writeHead(code: number) {
                 status = code;
             },

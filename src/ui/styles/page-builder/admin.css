@@ -45,8 +45,7 @@
     cursor: not-allowed;
 }
 .users-toggle-btn,
-.users-menu-btn,
-.invite-revoke-btn {
+.users-menu-btn {
     margin-right: 6px;
 }
 

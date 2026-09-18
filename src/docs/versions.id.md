@@ -64,13 +64,13 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                         | Versi     |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.55`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.56`  |
 | Share                 | `src/gateways/share/`         | `1.7.48`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.12`  |
 | Social                | `src/gateways/social/`        | `1.3.6`   |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.10`  |
-| Registration          | `src/gateways/registration/`  | `1.1.31`  |
+| Registration          | `src/gateways/registration/`  | `1.1.32`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
 | Study                 | `src/gateways/study/`         | `1.5.14`  |
@@ -86,7 +86,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen   | Jalur      | Versi    |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.5.27` |
+| API Server | `src/api/` | `0.5.28` |
 
 ## Peralatan
 
