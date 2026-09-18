@@ -340,7 +340,7 @@ async function runLifecycleAction(
 ) {
     if (module.restartRequired) return false;
     if (
-        action === "enable" &&
+        ["install", "enable"].includes(action) &&
         !dependenciesReady &&
         !(await ensureModuleDependenciesReady(module))
     ) {
@@ -808,7 +808,7 @@ function bindInteractions(root, signal) {
                 )
                     return;
                 let dependenciesReady = false;
-                if (action === "enable") {
+                if (["install", "enable"].includes(action)) {
                     pendingDependencyChecks.add(module.uuid);
                     try {
                         dependenciesReady =

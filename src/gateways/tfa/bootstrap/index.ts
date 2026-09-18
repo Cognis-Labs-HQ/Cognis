@@ -63,7 +63,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ) => Promise<{
             notificationId: string;
             status:
-                "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
+                | "queued"
+                | "waiting_rate_limit"
+                | "sending"
+                | "sent"
+                | "failed";
             createdAt: string;
             updatedAt: string;
             availableAt?: string;
@@ -98,7 +102,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     await gateway.discoverAdapters(tfaAdaptersRoot);
     await gateway.loadPersistedConfigs();
     const smtpAdapter = gateway.getAdapter("smtp") as
-        (TfaMethodAdapter & { getCodeLength?: () => number }) | null;
+        | (TfaMethodAdapter & { getCodeLength?: () => number })
+        | null;
     if (smtpAdapter) {
         gateway.setAdapterSyncTarget("smtp", {
             gatewayId: "notify",
@@ -284,7 +289,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     return null;
                 }
                 const currentSessionResult = stageCtx.data["sessionResult"] as
-                    Record<string, unknown> | undefined;
+                    | Record<string, unknown>
+                    | undefined;
                 if (currentSessionResult?.outcome !== "success") {
                     return null;
                 }

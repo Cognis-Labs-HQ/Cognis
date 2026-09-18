@@ -645,14 +645,17 @@ export async function registerShareBootstrapHooks(input: {
                         : "",
                 grantedCapabilities:
                     (tokenResult.tokenRecord?.grantedCapabilities as
-                        string[] | undefined) ?? [],
+                        | string[]
+                        | undefined) ?? [],
                 accessControls:
                     (tokenResult.tokenRecord?.accessControls as
-                        Record<string, unknown> | undefined) ?? {},
+                        | Record<string, unknown>
+                        | undefined) ?? {},
                 readonlyWatermark: Boolean(
                     (
                         tokenResult.tokenRecord?.accessControls as
-                            { watermarkReadonly?: boolean } | undefined
+                            | { watermarkReadonly?: boolean }
+                            | undefined
                     )?.watermarkReadonly,
                 ),
                 guestProfile:

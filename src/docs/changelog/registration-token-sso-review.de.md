@@ -150,6 +150,10 @@ Login-Benachrichtigungen gehören nun zur aktiven Login-Route und werden geschlo
 
 Die Registrierungsrichtlinien verwenden jetzt den gemeinsamen Formularkomponisten, die Standardstile für Kontrollkästchen und Schaltflächen sowie den gemeinsamen Arbeitsablauf der Administration zum Speichern und Verwerfen geänderter Zustände. Registrierungstoken-Datensätze verbleiben ausschließlich auf der Einladungsseite, und Navigationsschaltflächen verwenden die Standardtextfarbe des aktiven Designs.
 
+## Abhängigkeitshinweise vor der Installation
+
+Die Modulinstallation öffnet jetzt vor jeder Installationsanfrage die etablierte Abhängigkeitsprüfung. Fehlende harte Abhängigkeiten blockieren die Installation und können in der Prüfung installiert werden, während fehlende weiche Abhängigkeiten weiterhin eine ausdrückliche, zulässige Wahl bleiben.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -191,3 +195,4 @@ Die Registrierungsrichtlinien verwenden jetzt den gemeinsamen Formularkomponiste
 - [47d25bc4](https://github.com/Cognis-Labs-HQ/Cognis/commit/47d25bc4)
 - [62f4c08b](https://github.com/Cognis-Labs-HQ/Cognis/commit/62f4c08b)
 - [c01577d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01577d1)
+- [650c91d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/650c91d5)

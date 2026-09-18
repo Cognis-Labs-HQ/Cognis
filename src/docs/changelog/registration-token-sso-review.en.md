@@ -150,6 +150,10 @@ Login notifications now belong to the active login route and are dismissed when 
 
 Registration policy controls now use the shared form composer, standard checkbox and button styles, and Administration’s shared dirty-state save and discard workflow. Registration-token records remain exclusively on the Invites page, and navigation buttons use the active theme’s default text color.
 
+## Dependency guidance before installation
+
+Module installation now opens the established dependency review before any install request. Missing hard dependencies block installation and can be installed from the review, while missing soft dependencies remain an explicit, permissive choice.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -191,3 +195,4 @@ Registration policy controls now use the shared form composer, standard checkbox
 - [47d25bc4](https://github.com/Cognis-Labs-HQ/Cognis/commit/47d25bc4)
 - [62f4c08b](https://github.com/Cognis-Labs-HQ/Cognis/commit/62f4c08b)
 - [c01577d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01577d1)
+- [650c91d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/650c91d5)

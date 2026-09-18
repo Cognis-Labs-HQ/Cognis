@@ -149,6 +149,16 @@ test("module dependency popup renders navigable cards and action-specific labels
     );
     assert.match(
         marketplaceSource,
-        /action === "enable"[\s\S]*ensureModuleDependenciesReady\(module\)/,
+        /\["install", "enable"\]\.includes\(action\)[\s\S]*ensureModuleDependenciesReady\(module\)/,
     );
+});
+
+test("installation and enablement both run dependency preflight", async () => {
+    const source = await import("node:fs/promises").then(({ readFile }) =>
+        readFile(new URL("../app/modules/index.js", import.meta.url), "utf8"),
+    );
+    const preflightChecks = source.match(
+        /\["install", "enable"\]\.includes\(action\)/g,
+    );
+    assert.equal(preflightChecks?.length, 2);
 });

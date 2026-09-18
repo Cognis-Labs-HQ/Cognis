@@ -124,7 +124,7 @@ export function createDocumentLineDiff(
     }
 
     const lines: DocumentDiffLine[] = [];
-    for (let index = 0; index < primitiveLines.length;) {
+    for (let index = 0; index < primitiveLines.length; ) {
         if (primitiveLines[index].type === "unchanged") {
             lines.push(primitiveLines[index]);
             index += 1;

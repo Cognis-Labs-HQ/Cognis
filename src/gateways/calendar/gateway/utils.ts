@@ -5,9 +5,16 @@ import type { CoreCalendarGateway } from "./index.js";
 export type CalendarVisibility = "private" | "public" | "shared";
 export type CalendarEventStatus = string;
 export type CalendarEventRecurrence =
-    "none" | "daily" | "weekly" | "monthly" | "yearly";
+    | "none"
+    | "daily"
+    | "weekly"
+    | "monthly"
+    | "yearly";
 export type CalendarEventResponse =
-    "pending" | "accepted" | "tentative" | "declined";
+    | "pending"
+    | "accepted"
+    | "tentative"
+    | "declined";
 
 export interface CalendarRecord {
     id: string;

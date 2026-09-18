@@ -150,6 +150,10 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 
 登録ポリシーの操作には、共有フォームコンポーザー、標準のチェックボックスとボタンのスタイル、および管理画面共通の変更保存・破棄フローを使用するようになりました。登録トークンの記録は招待ページだけに表示され、ナビゲーションボタンには有効なテーマの既定テキスト色が適用されます。
 
+## インストール前の依存関係案内
+
+モジュールのインストール要求を実行する前に、既存の依存関係レビューを表示するようになりました。必須依存関係が不足している場合はインストールをブロックし、レビューから導入できます。一方、任意依存関係が不足していても、明示的に選択して続行できます。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -191,3 +195,4 @@ SSO プロバイダーは CTX を介して、新規外部アカウントの表�
 - [47d25bc4](https://github.com/Cognis-Labs-HQ/Cognis/commit/47d25bc4)
 - [62f4c08b](https://github.com/Cognis-Labs-HQ/Cognis/commit/62f4c08b)
 - [c01577d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01577d1)
+- [650c91d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/650c91d5)

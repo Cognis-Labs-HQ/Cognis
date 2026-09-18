@@ -236,7 +236,11 @@ export function createTfaRoutes(
             const apiToken = issueToken(
                 pendingAttempt.accountId,
                 pendingAttempt.role as
-                    "user" | "teacher" | "moderator" | "admin" | "owner",
+                    | "user"
+                    | "teacher"
+                    | "moderator"
+                    | "admin"
+                    | "owner",
                 accessTokenTtlSeconds,
                 {
                     providerId: pendingAttempt.providerId,

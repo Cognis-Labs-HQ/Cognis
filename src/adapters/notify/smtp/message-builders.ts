@@ -1,5 +1,6 @@
 export type VerificationEmailMessageType =
-    "verification-code" | "email-address-verification";
+    | "verification-code"
+    | "email-address-verification";
 
 const VERIFICATION_EMAIL_MESSAGES: Record<
     VerificationEmailMessageType,

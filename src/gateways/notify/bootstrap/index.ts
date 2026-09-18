@@ -298,7 +298,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             { id: "notify-gateway:smtp-enforcement", order: 50 },
             async (stageCtx) => {
                 const sessionResult = stageCtx.data["sessionResult"] as
-                    Record<string, unknown> | undefined;
+                    | Record<string, unknown>
+                    | undefined;
                 if (sessionResult?.outcome !== "success") {
                     return null;
                 }

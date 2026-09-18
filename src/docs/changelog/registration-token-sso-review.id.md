@@ -146,6 +146,10 @@ Notifikasi login kini dimiliki oleh rute login aktif dan ditutup ketika navigasi
 
 Kontrol kebijakan pendaftaran kini menggunakan penyusun formulir bersama, gaya kotak centang dan tombol standar, serta alur penyimpanan dan pembuangan status perubahan bersama milik Administrasi. Catatan token pendaftaran tetap hanya berada di halaman Undangan, dan tombol navigasi menggunakan warna teks bawaan tema aktif.
 
+## Panduan dependensi sebelum pemasangan
+
+Pemasangan modul kini membuka tinjauan dependensi yang telah tersedia sebelum permintaan pemasangan dijalankan. Dependensi wajib yang hilang memblokir pemasangan dan dapat dipasang dari tinjauan, sedangkan dependensi opsional yang hilang tetap menjadi pilihan eksplisit yang tidak memblokir.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -187,3 +191,4 @@ Kontrol kebijakan pendaftaran kini menggunakan penyusun formulir bersama, gaya k
 - [47d25bc4](https://github.com/Cognis-Labs-HQ/Cognis/commit/47d25bc4)
 - [62f4c08b](https://github.com/Cognis-Labs-HQ/Cognis/commit/62f4c08b)
 - [c01577d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c01577d1)
+- [650c91d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/650c91d5)
