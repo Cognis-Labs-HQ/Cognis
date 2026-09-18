@@ -83,7 +83,9 @@ function renderTokenRow(row, i18n, issuedTokens) {
  * @returns {Promise<void>} Resolves when the page has finished initialising.
  */
 export async function mount(root, { signal } = {}) {
-    ensurePageStylesheet("/static/gateways/registration/app/invite/index.css");
+    await ensurePageStylesheet(
+        "/static/gateways/registration/app/invite/index.css",
+    );
     let i18n = await createI18n();
     i18n = await loadRegistrationInviteUi(i18n, extendI18n);
     applyDocumentTitle(i18n, "gateway.registration.invite.page_title");
@@ -234,9 +236,12 @@ export async function mount(root, { signal } = {}) {
                             },
                         );
                         if (!response.ok) {
-                            showToast(i18n.t("gateway.registration.invite_failed"), {
-                                variant: "error",
-                            });
+                            showToast(
+                                i18n.t("gateway.registration.invite_failed"),
+                                {
+                                    variant: "error",
+                                },
+                            );
                             return;
                         }
                         const payload = await response.json().catch(() => null);

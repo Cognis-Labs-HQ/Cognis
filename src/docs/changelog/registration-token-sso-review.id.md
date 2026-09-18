@@ -162,6 +162,10 @@ Petunjuk kontribusi AI kini mewajibkan pengujian agar tidak menganggap biner sis
 
 Login, pendaftaran, dan pengelolaan undangan kini memiliki halaman, rute, gaya, string, dan pengujiannya di dalam gateway yang bertanggung jawab. UI inti tidak lagi memuat kontrol adapter atau perutean halaman khusus pendaftaran, sementara gateway pendaftaran mengelola kebijakan pendaftaran publik bersama kebijakan undangan.
 
+## String dan gaya yang andal saat halaman dimuat langsung
+
+Halaman login dan pendaftaran kini memuat terjemahan milik komponennya saat inisialisasi. Pemuatan halaman secara langsung juga menyiapkan seluruh bundel stylesheet untuk login, pengelolaan undangan, dan marketplace modul sebelum merender konten.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -207,3 +211,4 @@ Login, pendaftaran, dan pengelolaan undangan kini memiliki halaman, rute, gaya, 
 - [e9baab31](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9baab31)
 - [5766ce26](https://github.com/Cognis-Labs-HQ/Cognis/commit/5766ce26)
 - [abb16e51](https://github.com/Cognis-Labs-HQ/Cognis/commit/abb16e51)
+- [ca3305d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ca3305d1)

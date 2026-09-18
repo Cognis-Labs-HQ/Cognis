@@ -48,7 +48,9 @@ const AUTH_SOURCE_PREFERENCE_KEY = "cognis_login_auth_source";
  * @returns {Promise<void>} Resolves when the page has finished initialising.
  */
 export async function mount(root, { signal } = {}) {
-    const i18n = await createI18n();
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/gateways/auth/languages"],
+    });
     const showToast = createRouteScopedToast(showGlobalToast, signal);
     applyDocumentTitle(i18n, "ui.page.title.login");
     await loadAuthFooterPlugins().catch(() => {

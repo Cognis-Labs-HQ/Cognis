@@ -7,7 +7,10 @@ const ldapPopupSource = readFileSync(
     "utf8",
 );
 const adminPopupSource = readFileSync(
-    new URL("../../../../ui/app/administration/adapter-config-popup.js", import.meta.url),
+    new URL(
+        "../../../../ui/app/administration/adapter-config-popup.js",
+        import.meta.url,
+    ),
     "utf8",
 );
 const administrationSource = readFileSync(
@@ -15,11 +18,17 @@ const administrationSource = readFileSync(
     "utf8",
 );
 const administrationApiSource = readFileSync(
-    new URL("../../../../ui/app/administration/api-loaders.js", import.meta.url),
+    new URL(
+        "../../../../ui/app/administration/api-loaders.js",
+        import.meta.url,
+    ),
     "utf8",
 );
 const loginSource = readFileSync(
-    new URL("../../../../gateways/auth/ui/login-page/index.js", import.meta.url),
+    new URL(
+        "../../../../gateways/auth/ui/login-page/index.js",
+        import.meta.url,
+    ),
     "utf8",
 );
 const popupSource = readFileSync(

@@ -166,6 +166,10 @@ AI contribution instructions now require tests to avoid assuming optional system
 
 Login, registration, and invitation management now own their pages, routes, styles, strings, and tests inside their responsible gateways. The core UI no longer contains registration-specific adapter controls or page routing, while the registration gateway now manages its public-registration policy alongside invitation policy.
 
+## Reliable strings and styles on direct page loads
+
+Login and registration pages now load their component-owned translations during initialization. Direct page loads also prepare the complete stylesheet bundles for login, invitation management, and the module marketplace before rendering content.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -211,3 +215,4 @@ Login, registration, and invitation management now own their pages, routes, styl
 - [e9baab31](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9baab31)
 - [5766ce26](https://github.com/Cognis-Labs-HQ/Cognis/commit/5766ce26)
 - [abb16e51](https://github.com/Cognis-Labs-HQ/Cognis/commit/abb16e51)
+- [ca3305d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ca3305d1)

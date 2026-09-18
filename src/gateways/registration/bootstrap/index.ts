@@ -133,7 +133,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "registration",
     );
     ctx.routeRegistry.register(
-        createRegistrationPageRoutes(accountStore, isGatewayEnabled, routeContext),
+        createRegistrationPageRoutes(
+            accountStore,
+            isGatewayEnabled,
+            routeContext,
+        ),
         "registration",
     );
     ctx.log?.("info", "Registration gateway routes registered.", {

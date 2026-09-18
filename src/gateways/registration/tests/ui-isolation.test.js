@@ -26,9 +26,14 @@ test("registration gateway owns the invite management page and styles", async ()
     assert.match(source, /copyTextToClipboard/);
     assert.match(source, /refreshElements\(\["invite-tokens"\]\)/);
     assert.match(styles, /\.invite-token-target/);
+    assert.match(source, /await ensurePageStylesheet/);
     assert.match(
         page,
         /static\/gateways\/registration\/app\/invite\/index\.js/,
+    );
+    assert.match(
+        page,
+        /static\/gateways\/registration\/app\/invite\/index\.css/,
     );
 });
 
@@ -42,5 +47,9 @@ test("registration gateway owns registration page composition", async () => {
     assert.match(source, /createFormBuilder/);
     assert.match(form, /export function buildPasswordCriteria/);
     assert.match(authorization, /renderAccountCreationAuthorization/);
+    assert.match(
+        source,
+        /componentStringBaseUrls:[\s\S]*gateways\/auth\/languages[\s\S]*gateways\/registration\/languages/,
+    );
     assert.match(page, /static\/gateways\/registration\/register\/index\.js/);
 });

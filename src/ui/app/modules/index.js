@@ -11,6 +11,7 @@ import { renderMarkdown } from "../../reuse/markdown-renderer.js";
 import { beginButtonLoading } from "../../reuse/button-loading.js";
 import { beginPageLoading, mountWhenDirect } from "../../reuse/page-entry.js";
 import { replaceMountScope } from "../../reuse/mount-scope.js";
+import { loadModulePageStyles } from "./styles.js";
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import {
@@ -892,6 +893,7 @@ function elements() {
 
 export async function mount(root, { signal } = {}) {
     if (globalThis.__spaRouter && !signal) return;
+    await loadModulePageStyles();
     pageMountController = replaceMountScope(pageMountController, signal);
     const mountSignal = pageMountController.signal;
     const finishPageLoading = beginPageLoading();

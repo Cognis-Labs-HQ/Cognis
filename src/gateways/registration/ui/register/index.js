@@ -42,10 +42,7 @@ import {
     renderAccountCreationAuthorization,
 } from "./authorization.js";
 import { getPendingAccountCreation } from "/static/gateways/auth/login-client.js";
-import {
-    buildPasswordCriteria,
-    resetAuthSessionForRegister,
-} from "./form.js";
+import { buildPasswordCriteria, resetAuthSessionForRegister } from "./form.js";
 const REGISTER_EMAIL_MAX_CHARACTERS = 320;
 const REGISTER_USERNAME_MAX_CHARACTERS = 25;
 const REGISTER_DISPLAY_NAME_MAX_CHARACTERS = 80;
@@ -60,7 +57,12 @@ const REGISTER_DISPLAY_NAME_MAX_CHARACTERS = 80;
 export async function mount(root, { signal } = {}) {
     const hadStoredSession = await resetAuthSessionForRegister();
 
-    const i18n = await createI18n();
+    const i18n = await createI18n({
+        componentStringBaseUrls: [
+            "/static/gateways/auth/languages",
+            "/static/gateways/registration/languages",
+        ],
+    });
     await loadAuthFooterPlugins().catch(() => {
         showToast(i18n.t("ui.reuse.error"), { variant: "error" });
     });

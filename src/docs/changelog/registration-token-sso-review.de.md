@@ -166,6 +166,10 @@ Die Anweisungen für KI-Beiträge verlangen nun, dass Tests nicht von installier
 
 Anmeldung, Registrierung und Einladungsverwaltung besitzen nun ihre Seiten, Routen, Stile, Zeichenfolgen und Tests innerhalb der zuständigen Gateways. Die Kernoberfläche enthält keine registrierungsspezifischen Adaptersteuerungen oder Seitenrouten mehr; gemeinsam genutzte Registrierungsrichtlinien werden vom Registrierungs-Gateway verwaltet.
 
+## Zuverlässige Zeichenfolgen und Stile bei direktem Seitenaufruf
+
+Anmelde- und Registrierungsseiten laden ihre komponenteneigenen Übersetzungen jetzt bereits bei der Initialisierung. Direkte Seitenaufrufe laden außerdem die vollständigen Stylesheet-Pakete für Anmeldung, Einladungsverwaltung und Modulmarktplatz, bevor Inhalte gerendert werden.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -211,3 +215,4 @@ Anmeldung, Registrierung und Einladungsverwaltung besitzen nun ihre Seiten, Rout
 - [e9baab31](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9baab31)
 - [5766ce26](https://github.com/Cognis-Labs-HQ/Cognis/commit/5766ce26)
 - [abb16e51](https://github.com/Cognis-Labs-HQ/Cognis/commit/abb16e51)
+- [ca3305d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ca3305d1)

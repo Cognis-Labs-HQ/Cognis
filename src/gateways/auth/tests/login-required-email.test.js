@@ -12,7 +12,10 @@ const LOGIN_STYLE_SOURCE = readFileSync(
 
 test("login required-email enforcement resolves helper from flow-provided integration", () => {
     const source =
-        readFileSync(resolve(ROOT, "src/gateways/auth/ui/login-page/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/gateways/auth/ui/login-page/index.js"),
+            "utf8",
+        ) +
         readFileSync(
             resolve(ROOT, "src/gateways/auth/ui/login-page/client-loaders.js"),
             "utf8",

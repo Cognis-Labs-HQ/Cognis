@@ -166,6 +166,10 @@ AI コントリビューション手順に、任意のシステムバイナリ�
 
 ログイン、登録、招待管理のページ、ルート、スタイル、文字列、テストを、それぞれを担当するゲートウェイ内に移しました。コア UI から登録固有のアダプター制御とページルーティングを除き、公開登録ポリシーは招待ポリシーとともに登録ゲートウェイが管理します。
 
+## ページ直接読み込み時の文字列とスタイルを安定化
+
+ログインページと登録ページは、初期化時にコンポーネント所有の翻訳を読み込むようになりました。また、ページを直接開いた場合も、ログイン、招待管理、モジュールマーケットプレイスに必要なすべてのスタイルシートを描画前に準備します。
+
 ## コミット
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -211,3 +215,4 @@ AI コントリビューション手順に、任意のシステムバイナリ�
 - [e9baab31](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9baab31)
 - [5766ce26](https://github.com/Cognis-Labs-HQ/Cognis/commit/5766ce26)
 - [abb16e51](https://github.com/Cognis-Labs-HQ/Cognis/commit/abb16e51)
+- [ca3305d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ca3305d1)

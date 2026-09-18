@@ -56,6 +56,25 @@ test("login includes mobile auth brandline inside auth panel", () => {
     assert.match(loginSource, /auth-brandline--panel-mobile/);
 });
 
+test("login loads gateway strings and direct-load styles", () => {
+    const loginSource = readFileSync(
+        resolve(ROOT, "src/gateways/auth/ui/login-page/index.js"),
+        "utf8",
+    );
+    const loginPage = readFileSync(
+        resolve(ROOT, "src/gateways/auth/ui/pages/login.html"),
+        "utf8",
+    );
+
+    assert.match(
+        loginSource,
+        /componentStringBaseUrls:\s*\["\/static\/gateways\/auth\/languages"\]/,
+    );
+    assert.match(loginPage, /\/static\/styles\/page-builder\.css/);
+    assert.match(loginPage, /\/static\/styles\/reuse\/page-sections\.css/);
+    assert.match(loginPage, /\/static\/gateways\/auth\/login-page\/index\.css/);
+});
+
 test("auth brandline links to base domain", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/reuse/auth-layout.js"),

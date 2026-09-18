@@ -53,7 +53,9 @@ test("register invite countdown uses a pill and auth cards size independently", 
 });
 
 test("register form leaves field styling to the shared form builder", () => {
-    const registerPage = read("src/gateways/registration/ui/pages/register.html");
+    const registerPage = read(
+        "src/gateways/registration/ui/pages/register.html",
+    );
     const registerSource = read(
         "src/gateways/registration/ui/register/index.js",
     );

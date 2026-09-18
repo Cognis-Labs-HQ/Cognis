@@ -54,6 +54,10 @@ const credentialsSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/credentials.js"),
     "utf8",
 );
+const moduleStylesSource = readFileSync(
+    resolve(ROOT, "src/ui/app/modules/styles.js"),
+    "utf8",
+);
 const marketplaceSource =
     readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
     readFileSync(resolve(ROOT, "src/ui/app/modules/polling.js"), "utf8") +
@@ -902,5 +906,13 @@ test("module marketplace refresh actions emit one completion result", () => {
     assert.match(
         source,
         /finally \{\s*marketplaceRefreshPending = false;\s*refreshMarketplace\(\);\s*\}/,
+    );
+});
+
+test("module marketplace prepares its complete stylesheet bundle before mounting", () => {
+    assert.match(marketplaceSource, /await loadModulePageStyles\(\)/);
+    assert.match(
+        moduleStylesSource,
+        /preparePageStylesheets[\s\S]*page-builder\.css[\s\S]*page-sections\.css[\s\S]*modules\.css/,
     );
 });
