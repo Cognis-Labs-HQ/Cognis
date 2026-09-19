@@ -612,7 +612,7 @@ export async function bootstrapSocialAdapter(
                 if (!recipient) continue;
                 await dispatch({
                     category: "messages",
-                    recipientUsername: recipient.handle,
+                    recipientUsername: recipient.accountId,
                     subject: "New message",
                     body: "New message",
                     senderName: senderHandle,

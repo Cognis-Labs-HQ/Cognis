@@ -9,6 +9,11 @@ test("profile identity normalizes handles and resolves account IDs", async () =>
                 ? ({ handle: "  @@Alice  " } as never)
                 : null;
         },
+        async getProfileByHandle(handle: string) {
+            return handle === "alice"
+                ? ({ accountId: "account-1", handle: "alice" } as never)
+                : null;
+        },
     });
 
     assert.equal(identity.normalizeHandleKey(" @@Alice "), "alice");
@@ -17,6 +22,8 @@ test("profile identity normalizes handles and resolves account IDs", async () =>
         ["alice", "bob"],
     );
     assert.equal(await identity.resolveAccountHandle(" account-1 "), "alice");
+    assert.equal(await identity.resolveAccountId(" @Alice "), "account-1");
+    assert.equal(await identity.resolveAccountId("missing"), null);
     await assert.rejects(
         identity.resolveAccountHandle("", "actorAccountId"),
         /actorAccountId is required/,
@@ -33,6 +40,9 @@ test("profile identity rejects access while its adapter is disabled", async () =
         {
             async getProfile() {
                 return { handle: "alice" } as never;
+            },
+            async getProfileByHandle() {
+                return { accountId: "account-1", handle: "alice" } as never;
             },
         },
         () => enabled,
@@ -51,6 +61,10 @@ test("profile identity rejects access while its adapter is disabled", async () =
     );
     await assert.rejects(
         identity.resolveAccountHandle("account-1"),
+        /Social Profile adapter is disabled/,
+    );
+    await assert.rejects(
+        identity.resolveAccountId("alice"),
         /Social Profile adapter is disabled/,
     );
 });

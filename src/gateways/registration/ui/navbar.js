@@ -1,5 +1,12 @@
 import { createI18n } from "/static/reuse/i18n.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { shouldShowInviteMenuEntry } from "./invite-menu-visibility.js";
+import { createUsersLeadingControls } from "./users-controls.js";
+
+uiCtx.capabilities.contribute(
+    "users:getLeadingControls",
+    createUsersLeadingControls,
+);
 
 async function loadRegistrationState() {
     try {
@@ -27,6 +34,7 @@ async function registerInviteMenuEntry() {
             isFounder,
             gatewayEnabled: registrationState?.gatewayEnabled,
             inviteEnabled: registrationState?.inviteEnabled,
+            canInvite: registrationState?.canInvite,
         })
     ) {
         return;

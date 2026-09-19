@@ -12,6 +12,19 @@ import { stat } from "node:fs/promises";
 import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
 import type { UIRegistry } from "../../api/reuse/ui-registry.js";
+import type {
+    ModuleApiRouter,
+    ModuleRouteOptions,
+} from "./module-extension-contracts.js";
+import {
+    assertModuleOwnedCtxRegistration,
+    assertModuleOwnedRoute,
+    PRIVILEGED_FLOW_IDS,
+    resolveModuleAssurance,
+    resolveModulePrivilege,
+    type ModuleAssurance,
+    type ModulePrivilege,
+} from "./module-assurance.js";
 
 interface RouteHandler {
     method: string;
@@ -24,39 +37,6 @@ interface RouteHandler {
         req: IncomingMessage,
         res: ServerResponse,
     ) => Promise<void> | void;
-}
-
-interface ModuleRouteOptions {
-    access?: unknown;
-    allowWhenDisabled?: boolean;
-}
-
-interface ModuleApiRouter {
-    get(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    post(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    put(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    patch(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    delete(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
 }
 
 interface ModuleUiRegistrationContext {
@@ -131,15 +111,6 @@ interface ModuleApiRegistrationContext {
     };
     log?: BootstrapLog;
 }
-
-interface ModulePlugin {
-    registerApiRoutes?: (
-        router: ModuleApiRouter,
-        ctx: ModuleApiRegistrationContext,
-    ) => void;
-    registerUi?: (ctx: ModuleUiRegistrationContext) => void;
-}
-
 interface ModuleBootstrapCtx
     extends ModuleUiRegistrationContext, ModuleApiRegistrationContext {
     flow: FlowApi;
@@ -172,6 +143,7 @@ interface ModuleBootstrapCtx
     contributeCapability(key: string, value: unknown): void;
     contributePublicCapability(key: string, value: unknown): void;
     registerFlow(flow: FlowRegistration): void;
+    getModuleAssurance(moduleId: string): Promise<ModuleAssurance | null>;
 }
 
 interface ModuleBootstrapPlugin {
@@ -190,7 +162,6 @@ interface ModuleBootstrapPlugin {
         options: { deleteContent: boolean },
     ) => Promise<void> | void;
 }
-
 interface ModuleDisabledApiPlugin {
     registerDisabledApiRoutes?: (
         ctx: ModuleBootstrapCtx,
@@ -246,6 +217,7 @@ export function createModuleExtensionRoutes(
     const externalModulesRoot =
         process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
         path.resolve(process.cwd(), "external-modules");
+    const assuranceByModuleId = new Map<string, ModuleAssurance>();
 
     /**
      * Writes a standardized warning when a module declares an invalid access policy.
@@ -284,8 +256,34 @@ export function createModuleExtensionRoutes(
             flows: string[];
         },
         moduleEnabled: boolean,
+        privilege: ModulePrivilege,
     ): ModuleBootstrapCtx {
         const moduleId = manifest.id;
+        function resolveCapability<T>(capabilityId: string): T | undefined {
+            const capability =
+                options.routeContext.getCapability<T>(capabilityId);
+            if (
+                capabilityId !== "auth:registerProvider" ||
+                typeof capability !== "function"
+            ) {
+                return capability;
+            }
+            return ((
+                provider: { registerRoutes?: unknown },
+                ...args: unknown[]
+            ) => {
+                if (
+                    typeof provider?.registerRoutes === "function" &&
+                    !privilege.requested
+                ) {
+                    throw new Error("module_privileged_access_required");
+                }
+                return (capability as (...input: unknown[]) => unknown)(
+                    provider,
+                    ...args,
+                );
+            }) as T;
+        }
         function requireActiveBootstrap() {
             if (scope.active) return;
             throw new Error(
@@ -300,6 +298,7 @@ export function createModuleExtensionRoutes(
             routeOptions?: ModuleRouteOptions,
         ) {
             requireActiveBootstrap();
+            assertModuleOwnedRoute(routePath, moduleId, privilege);
             const protectedPrefixes = [
                 "/api/v1/system",
                 "/api/v1/auth",
@@ -318,6 +317,16 @@ export function createModuleExtensionRoutes(
                 throw new Error(
                     `Module ${moduleId} attempts to register protected route: ${routePath}`,
                 );
+            }
+            if (
+                nextHandlers.some(
+                    (entry) =>
+                        entry.method === method &&
+                        entry.routePath === routePath &&
+                        entry.moduleId !== moduleId,
+                )
+            ) {
+                throw new Error("module_route_conflict");
             }
             const parsedAccess = parseRoleAccessPolicy(routeOptions?.access);
             if (parsedAccess.invalid) {
@@ -386,6 +395,9 @@ export function createModuleExtensionRoutes(
             extend(flowId, stageId, hook, handler) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return false;
+                if (PRIVILEGED_FLOW_IDS.has(flowId) && !privilege.requested) {
+                    throw new Error("module_privileged_access_required");
+                }
                 const registered = baseFlow.extend(
                     flowId,
                     stageId,
@@ -413,21 +425,23 @@ export function createModuleExtensionRoutes(
                 contribute(key, value) {
                     requireActiveBootstrap();
                     if (!moduleEnabled) return;
+                    assertModuleOwnedCtxRegistration(key, moduleId, privilege);
+                    if (systemCtx?.hasCapability(key)) {
+                        throw new Error("module_capability_conflict");
+                    }
                     systemCtx?.contributeCapability(key, value);
                     scope.capabilities.push(key);
                 },
                 get(key) {
-                    if (!moduleEnabled && key === "system:ctx") {
-                        return undefined;
-                    }
-                    return options.routeContext.getCapability(key);
+                    if (key === "system:ctx") return undefined;
+                    return resolveCapability(key);
                 },
                 has(key) {
-                    if (!moduleEnabled && key === "system:ctx") return false;
+                    if (key === "system:ctx") return false;
                     return systemCtx?.hasCapability(key) ?? false;
                 },
                 require(key) {
-                    if (!moduleEnabled && key === "system:ctx") {
+                    if (key === "system:ctx") {
                         throw new Error(
                             'Required capability "system:ctx" is not available.',
                         );
@@ -437,32 +451,65 @@ export function createModuleExtensionRoutes(
                             `Required capability "${key}" is not available.`,
                         );
                     }
-                    return systemCtx.requireCapability(key);
+                    const capability = resolveCapability(key);
+                    if (capability === undefined) {
+                        throw new Error(
+                            `Required capability "${key}" is not available.`,
+                        );
+                    }
+                    return capability;
                 },
             },
             contributeCapability(key, value) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
+                assertModuleOwnedCtxRegistration(key, moduleId, privilege);
+                if (systemCtx?.hasCapability(key)) {
+                    throw new Error("module_capability_conflict");
+                }
                 systemCtx?.contributeCapability(key, value);
                 scope.capabilities.push(key);
             },
             contributePublicCapability(key, value) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
+                assertModuleOwnedCtxRegistration(key, moduleId, privilege);
+                if (systemCtx?.hasCapability(key)) {
+                    throw new Error("module_capability_conflict");
+                }
                 systemCtx?.contributePublicCapability(key, value);
                 scope.capabilities.push(key);
             },
             registerFlow(flowRegistration) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
+                assertModuleOwnedCtxRegistration(
+                    flowRegistration.id,
+                    moduleId,
+                    privilege,
+                );
                 systemCtx?.registerFlow(flowRegistration);
                 scope.flows.push(flowRegistration.id);
             },
+            async getModuleAssurance(targetModuleId) {
+                const existing = assuranceByModuleId.get(targetModuleId);
+                if (existing) return { ...existing };
+                const target = (await runtime.listManifests()).find(
+                    (candidate) =>
+                        candidate.class !== "core" &&
+                        candidate.id === targetModuleId,
+                );
+                if (!target?.uuid) return null;
+                const assurance = await resolveModuleAssurance(
+                    target,
+                    path.resolve(externalModulesRoot, target.uuid),
+                );
+                assuranceByModuleId.set(targetModuleId, assurance);
+                return { ...assurance };
+            },
             getCapability(capabilityId) {
-                if (!moduleEnabled && capabilityId === "system:ctx") {
-                    return undefined;
-                }
-                return options.routeContext.getCapability(capabilityId);
+                if (capabilityId === "system:ctx") return undefined;
+                return resolveCapability(capabilityId);
             },
             registerApiGet(routePath, handler, routeOptions) {
                 registerApiRoute("GET", routePath, handler, routeOptions);
@@ -577,21 +624,11 @@ export function createModuleExtensionRoutes(
 
     function resolveModuleEntrypointPath(
         moduleRoot: string,
-        entrypoints: { bootstrap?: string; api?: string } | undefined,
-    ): { path: string; type: "bootstrap" | "legacy-api" } | null {
-        if (entrypoints?.bootstrap) {
-            return {
-                path: path.join(moduleRoot, entrypoints.bootstrap),
-                type: "bootstrap",
-            };
-        }
-        if (entrypoints?.api) {
-            return {
-                path: path.join(moduleRoot, entrypoints.api),
-                type: "legacy-api",
-            };
-        }
-        return null;
+        entrypoints: { bootstrap?: string } | undefined,
+    ): string | null {
+        return entrypoints?.bootstrap
+            ? path.join(moduleRoot, entrypoints.bootstrap)
+            : null;
     }
 
     function resolveDisabledApiEntrypointPath(
@@ -666,6 +703,7 @@ export function createModuleExtensionRoutes(
             options?.uiRegistry?.unregisterModuleContributions(moduleId);
         }
         loadedModules.clear();
+        assuranceByModuleId.clear();
         const nextHandlers: RouteHandler[] = [];
         const manifests = await runtime.listManifests();
 
@@ -689,6 +727,27 @@ export function createModuleExtensionRoutes(
                 });
                 continue;
             }
+            const privilege = await resolveModulePrivilege(
+                manifest,
+                moduleRoot,
+            );
+            assuranceByModuleId.set(
+                manifest.id,
+                await resolveModuleAssurance(manifest, moduleRoot),
+            );
+            if (privilege.requested && !privilege.trustedSource) {
+                log?.(
+                    "warn",
+                    "Untrusted external module requested privileged access.",
+                    {
+                        component: "module-extension-routes",
+                        moduleId: manifest.id,
+                        moduleUuid: manifest.uuid,
+                        sourceRepository:
+                            privilege.sourceRepository || "unknown",
+                    },
+                );
+            }
             options?.uiRegistry?.registerModuleStaticDir(
                 manifest.id,
                 path.join(moduleRoot, "ui"),
@@ -705,6 +764,7 @@ export function createModuleExtensionRoutes(
                 nextHandlers,
                 scope,
                 moduleEnabled,
+                privilege,
             );
             const entrypoint = resolveModuleEntrypointPath(
                 moduleRoot,
@@ -744,48 +804,21 @@ export function createModuleExtensionRoutes(
             log?.("debug", "Loading module route entrypoint.", {
                 component: "module-extension-routes",
                 moduleId: manifest.id,
-                entrypoint: entrypoint.type,
-                pluginPath: entrypoint.path,
+                pluginPath: entrypoint,
             });
             try {
                 const plugin = (await import(
-                    `${entrypoint.path}?t=${Date.now()}`
-                )) as ModulePlugin & ModuleBootstrapPlugin;
-                if (typeof plugin.bootstrapModule === "function") {
-                    if (plugin.registerUi || plugin.registerApiRoutes) {
-                        log?.(
-                            "warn",
-                            "Module exports bootstrapModule and legacy route hooks; legacy hooks are ignored.",
-                            {
-                                component: "module-extension-routes",
-                                moduleId: manifest.id,
-                            },
-                        );
-                    }
-                    const result = await bootstrapWithTimeout(
-                        plugin,
-                        moduleCtx,
-                    );
-                    scope.active = false;
-                    loadedModules.set(manifest.id, {
-                        ctx: moduleCtx,
-                        plugin,
-                        dispose:
-                            typeof result === "function" ? result : undefined,
-                        ...scope,
-                    });
-                    continue;
+                    `${entrypoint}?t=${Date.now()}`
+                )) as ModuleBootstrapPlugin;
+                if (typeof plugin.bootstrapModule !== "function") {
+                    throw new Error("module_bootstrap_export_missing");
                 }
-                if (plugin.registerUi && options?.uiRegistry) {
-                    plugin.registerUi(moduleCtx);
-                }
-                if (typeof plugin.registerApiRoutes === "function") {
-                    plugin.registerApiRoutes(moduleCtx.router, moduleCtx);
-                }
+                const result = await bootstrapWithTimeout(plugin, moduleCtx);
                 scope.active = false;
                 loadedModules.set(manifest.id, {
                     ctx: moduleCtx,
                     plugin,
+                    dispose: typeof result === "function" ? result : undefined,
                     ...scope,
                 });
             } catch (error) {
@@ -814,7 +847,7 @@ export function createModuleExtensionRoutes(
                 log?.("error", "Failed to load module API route plugin.", {
                     component: "module-extension-routes",
                     moduleId: manifest.id,
-                    pluginPath: entrypoint.path,
+                    pluginPath: entrypoint,
                     error:
                         error instanceof Error ? error.message : String(error),
                 });
@@ -841,7 +874,7 @@ export function createModuleExtensionRoutes(
         );
         if (!entrypoint) return false;
         const plugin = (await import(
-            `${entrypoint.path}?uninstall=${Date.now()}`
+            `${entrypoint}?uninstall=${Date.now()}`
         )) as ModuleBootstrapPlugin;
         if (typeof plugin.uninstallModule !== "function") return false;
         await plugin.uninstallModule(

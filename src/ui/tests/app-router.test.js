@@ -10,7 +10,6 @@ const DASHBOARD_PAGES = [
     "dashboard",
     "settings",
     "users",
-    "invite",
     "administration",
     "docs",
     "changelogs",

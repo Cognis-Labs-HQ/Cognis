@@ -41,6 +41,18 @@ export function areModuleDependenciesSatisfied(module, modules) {
     ].every(isSatisfied);
 }
 
+export function resolveModuleDependencyErrorMessage(error, i18n) {
+    if (
+        ![
+            "module_dependency_disabled",
+            "module_dependency_unavailable",
+        ].includes(error?.code)
+    ) {
+        return null;
+    }
+    return i18n.t("ui.app.modules.hard_dependency_blocked");
+}
+
 function actionState(hard, soft) {
     const requiredMissing = hard.some((entry) => !isSatisfied(entry));
     const optionalMissing = soft.some((entry) => !isSatisfied(entry));
@@ -160,9 +172,13 @@ export async function confirmModuleDependencies(
                             updateDependencyAction(overlay, action, hard, soft);
                         } catch (error) {
                             showToast(
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
+                                resolveModuleDependencyErrorMessage(
+                                    error,
+                                    i18n,
+                                ) ??
+                                    (error instanceof Error
+                                        ? error.message
+                                        : String(error)),
                                 { type: "error" },
                             );
                         } finally {

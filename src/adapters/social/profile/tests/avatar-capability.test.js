@@ -67,6 +67,15 @@ test("Profile standalone provider waits for avatar styles and contributes its cl
     );
 });
 
+test("navbar and profile cards derive initials from the same profile label", () => {
+    const navbar = readFileSync(
+        resolve(process.cwd(), "src/adapters/social/profile/ui/navbar.js"),
+        "utf8",
+    );
+    assert.match(navbar, /payload\?\.data\?\.displayName/);
+    assert.match(navbar, /fallbackFor\(profileLabel\)/);
+});
+
 test("UI callers use CTX without a profile abstraction in core reuse", () => {
     const sourceRoot = resolve(process.cwd(), "src");
     const canonicalSource = resolve(

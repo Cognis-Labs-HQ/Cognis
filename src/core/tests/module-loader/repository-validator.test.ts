@@ -56,7 +56,6 @@ async function createRepository(): Promise<{
             capabilities: [],
             entrypoints: {
                 bootstrap: "./bootstrap.js",
-                api: "./api/index.js",
             },
             assets: {
                 icon: "assets/icon.svg",

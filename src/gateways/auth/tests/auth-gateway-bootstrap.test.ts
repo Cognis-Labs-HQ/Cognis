@@ -11,8 +11,11 @@ import {
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { bootstrap } from "../bootstrap.js";
+import type { AuthProviderAdapter } from "../gateway.js";
 import {
     contributeTestKeyring,
+    dispatchRoute,
+    makeJsonRequest,
     makeInMemoryDb,
     type InMemoryDb,
 } from "./auth-gateway-test-helpers.js";
@@ -111,6 +114,11 @@ test("auth gateway bootstrap registers in GatewayRegistry", async () => {
         capabilities,
         ...makeBaseCtx(capabilities, dbExecutor),
     });
+
+    assert.equal(
+        typeof capabilities.get("auth:registerExternalProfileProvider"),
+        "function",
+    );
 
     const gateways = gatewayRegistry.list();
     const authGw = gateways.find((g) => g.id === "auth");
@@ -216,9 +224,9 @@ test("auth gateway exposes provider registration to modules", async () => {
             authenticate: () => Promise<null>;
             configure: () => void;
             getConfigSchema: () => [];
-        }) => () => void
+        }) => Promise<() => void>
     >("auth:registerProvider");
-    const unregisterProvider = registerProvider({
+    const unregisterProvider = await registerProvider({
         id: "module-provider",
         name: "Module Provider",
         locked: true,
@@ -230,6 +238,57 @@ test("auth gateway exposes provider registration to modules", async () => {
             return [];
         },
     });
+    const registerLoginButton = capabilities.require<
+        (descriptor: {
+            providerId: string;
+            label: string;
+            iconUrl: string;
+            backgroundColor: string;
+            textColor: string;
+        }) => () => void
+    >("auth:registerLoginButton");
+    const unregisterDisabledProvider = await registerProvider({
+        id: "disabled-provider",
+        name: "Disabled Provider",
+        locked: false,
+        async authenticate() {
+            return null;
+        },
+        configure() {},
+        getConfigSchema() {
+            return [];
+        },
+    });
+    assert.throws(
+        () =>
+            registerLoginButton({
+                providerId: "disabled-provider",
+                label: "Continue with Disabled Provider",
+                iconUrl: "/static/modules/provider/disabled.svg",
+                backgroundColor: "#ffffff",
+                textColor: "#202124",
+            }),
+        /auth_login_button_provider_unavailable/,
+    );
+    unregisterDisabledProvider();
+    assert.throws(
+        () =>
+            registerLoginButton({
+                providerId: "module-provider",
+                label: "Continue with Module Provider",
+                iconUrl: "https://tracker.example/icon.svg",
+                backgroundColor: "red",
+                textColor: "#202124",
+            }),
+        /auth_login_button_invalid/,
+    );
+    const unregisterLoginButton = registerLoginButton({
+        providerId: "module-provider",
+        label: "Continue with Module Provider",
+        iconUrl: "/static/modules/provider/icon.svg",
+        backgroundColor: "#ffffff",
+        textColor: "#202124",
+    });
 
     const getLoginMethods = capabilities.require<
         () => Array<{ id: string; name: string }>
@@ -237,9 +296,214 @@ test("auth gateway exposes provider registration to modules", async () => {
     assert.ok(
         getLoginMethods().some((method) => method.id === "module-provider"),
     );
+    const systemCtx = capabilities.require<Ctx>(CTX_CAPABILITY);
+    const loginUiResult = await systemCtx.flow.run("construct-login-ui");
+    assert.deepEqual(loginUiResult.stageResults["augment-methods"], [
+        {
+            methods: [
+                {
+                    id: "module-provider",
+                    name: "Continue with Module Provider",
+                    loginButton: {
+                        providerId: "module-provider",
+                        label: "Continue with Module Provider",
+                        iconUrl: "/static/modules/provider/icon.svg",
+                        backgroundColor: "#ffffff",
+                        textColor: "#202124",
+                    },
+                },
+            ],
+        },
+    ]);
+    unregisterLoginButton();
+    const loginUiAfterRemoval = await systemCtx.flow.run("construct-login-ui");
+    assert.deepEqual(loginUiAfterRemoval.stageResults["augment-methods"], [
+        {
+            methods: [],
+        },
+    ]);
     unregisterProvider();
     assert.ok(
         getLoginMethods().every((method) => method.id !== "module-provider"),
+    );
+});
+
+test("runtime auth providers restore persisted activation before login UI registration", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const dbExecutor = createDbExecutor();
+    const executeCommand = dbExecutor.executeCommand.bind(dbExecutor);
+    dbExecutor.executeCommand = async (command) => {
+        if (
+            command.option === "SELECT" &&
+            command.table === "auth_adapter_configs"
+        ) {
+            return {
+                rows: [
+                    {
+                        adapter_id: "x-sso",
+                        enabled: 1,
+                        config_json: JSON.stringify({
+                            clientId: "persisted-client",
+                        }),
+                    },
+                ],
+                rowCount: 1,
+            };
+        }
+        return executeCommand(command);
+    };
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        ...makeBaseCtx(capabilities, dbExecutor),
+    });
+    let configuredClientId = "";
+    const unregisterProvider = await capabilities.require<
+        (provider: AuthProviderAdapter) => Promise<() => void>
+    >("auth:registerProvider")({
+        id: "x-sso",
+        name: "X SSO",
+        authenticate: async () => null,
+        configure(config) {
+            configuredClientId = String(config.clientId ?? "");
+        },
+        getConfigSchema: () => [],
+    });
+    const unregisterButton = capabilities.require<
+        (descriptor: {
+            providerId: string;
+            label: string;
+            iconUrl: string;
+        }) => () => void
+    >("auth:registerLoginButton")({
+        providerId: "x-sso",
+        label: "Continue with X",
+        iconUrl: "/static/modules/x-sso/icon.svg",
+    });
+
+    assert.equal(configuredClientId, "persisted-client");
+    assert.ok(
+        capabilities
+            .require<() => Array<{ id: string }>>("auth:getLoginMethods")()
+            .some(({ id }) => id === "x-sso"),
+    );
+
+    unregisterButton();
+    unregisterProvider();
+});
+
+test("registered auth providers own removable callback routes", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        ...makeBaseCtx(capabilities, createDbExecutor()),
+    });
+    const registerProvider = capabilities.require<
+        (provider: AuthProviderAdapter) => Promise<() => void>
+    >("auth:registerProvider");
+    const unregister = await registerProvider({
+        id: "x-sso",
+        name: "X SSO",
+        locked: true,
+        routeNamespace: "x",
+        authenticate: async () => null,
+        configure() {},
+        getConfigSchema: () => [],
+        registerRoutes(router) {
+            router.get("/callback", (_req, res) => {
+                res.writeHead(302, { location: "/login" });
+                res.end("");
+            });
+        },
+    });
+    const active = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("GET", {}),
+        "/api/v1/auth/x/callback",
+    );
+    assert.equal(active.handled, true);
+    assert.equal(active.res.status, 302);
+    await assert.rejects(
+        () =>
+            registerProvider({
+                id: "x-sso",
+                name: "Replacement X SSO",
+                locked: true,
+                authenticate: async () => null,
+                configure() {},
+                getConfigSchema: () => [],
+            }),
+        /auth_provider_already_registered/,
+    );
+    await assert.rejects(
+        () =>
+            registerProvider({
+                id: "conflicting-sso",
+                name: "Conflicting SSO",
+                locked: true,
+                routeNamespace: "x",
+                authenticate: async () => null,
+                configure() {},
+                getConfigSchema: () => [],
+                registerRoutes(router) {
+                    router.get("/callback", (_req, res) => res.end(""));
+                },
+            }),
+        /auth_provider_route_duplicate/,
+    );
+
+    unregister();
+    const removed = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("GET", {}),
+        "/api/v1/auth/x/callback",
+    );
+    assert.equal(removed.handled, false);
+    const unregisterDisabledProvider = await registerProvider({
+        id: "disabled-sso",
+        name: "Disabled SSO",
+        routeNamespace: "disabled-sso",
+        authenticate: async () => null,
+        configure() {},
+        getConfigSchema: () => [],
+        registerRoutes(router) {
+            router.get("/callback", (_req, res) => res.end("unexpected"));
+        },
+    });
+    const disabled = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("GET", {}),
+        "/api/v1/auth/disabled-sso/callback",
+    );
+    assert.equal(disabled.handled, true);
+    assert.equal(disabled.res.status, 503);
+    assert.equal(
+        JSON.parse(disabled.res.payload).error.code,
+        "provider_unavailable",
+    );
+    unregisterDisabledProvider();
+    await assert.rejects(
+        () =>
+            registerProvider({
+                id: "malicious-provider",
+                name: "Malicious Provider",
+                locked: true,
+                routeNamespace: "login",
+                authenticate: async () => null,
+                configure() {},
+                getConfigSchema: () => [],
+                registerRoutes() {},
+            }),
+        /auth_provider_route_namespace_invalid/,
     );
 });
 
@@ -518,6 +782,36 @@ test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", as
     );
 });
 
+test("CoreAuthGateway restores locked adapters despite persisted disablement", async () => {
+    const { CoreAuthGateway } = await import("../gateway.js");
+    const gateway = new CoreAuthGateway({
+        executeCommand: async (command: { option: string }) =>
+            command.option === "SELECT"
+                ? {
+                      rows: [
+                          {
+                              adapter_id: "mandatory",
+                              enabled: 0,
+                              config_json: "{}",
+                          },
+                      ],
+                  }
+                : { rows: [] },
+    } as any);
+    gateway.registerAdapter({
+        id: "mandatory",
+        name: "Mandatory",
+        locked: true,
+        authenticate: async () => null,
+        getConfigSchema: () => [],
+        configure: () => undefined,
+    });
+
+    await gateway.loadPersistedConfigs();
+
+    assert.ok(gateway.getEnabledAdapter("mandatory"));
+});
+
 test("CoreAuthGateway lists adapter publisher metadata", async () => {
     const { CoreAuthGateway } = await import("../gateway.js");
     const gateway = new CoreAuthGateway(makeInMemoryDb());
@@ -645,74 +939,4 @@ test("CoreAuthGateway redacts configured passwords and preserves them on blank u
         ).servers[0].bindPassword,
         "replacement-secret",
     );
-});
-
-test("RouteRegistry.getEntries returns handlers with their associated gatewayId", async () => {
-    const registry = new RouteRegistry();
-
-    const handlerA = async () => false;
-    const handlerB = async () => false;
-    const handlerC = async () => false;
-
-    registry.register(handlerA, "notify");
-    registry.register(handlerB, "profile");
-    registry.register(handlerC);
-
-    const entries = registry.getEntries();
-    assert.equal(entries.length, 3);
-    assert.equal(entries[0].gatewayId, "notify");
-    assert.equal(entries[1].gatewayId, "profile");
-    assert.equal(entries[2].gatewayId, undefined);
-    assert.equal(entries[0].handler, handlerA);
-    assert.equal(entries[1].handler, handlerB);
-    assert.equal(entries[2].handler, handlerC);
-});
-
-test("auth bootstrap contributes page script origin registration capability", async () => {
-    const gatewayRegistry = new GatewayRegistry();
-    const routeRegistry = new RouteRegistry();
-    const capabilities = new CapabilityStore();
-    const dbExecutor = createDbExecutor();
-
-    await bootstrap({
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-        ...makeBaseCtx(capabilities, dbExecutor),
-    });
-
-    const registerScriptOrigins = capabilities.get<
-        (
-            ownerId: string,
-            rawOrigins: Array<string | null | undefined>,
-        ) => string[]
-    >("auth:registerPageScriptOrigins");
-
-    assert.equal(typeof registerScriptOrigins, "function");
-    assert.deepEqual(
-        registerScriptOrigins?.("test:auth-gateway", [
-            "https://meetings.example.test/path",
-        ]),
-        ["https://meetings.example.test"],
-    );
-});
-
-test("auth bootstrap exposes route authentication capabilities to modules", async () => {
-    const gatewayRegistry = new GatewayRegistry();
-    const routeRegistry = new RouteRegistry();
-    const capabilities = new CapabilityStore();
-    const dbExecutor = createDbExecutor();
-
-    await bootstrap({
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-        ...makeBaseCtx(capabilities, dbExecutor),
-    });
-
-    assert.equal(typeof capabilities.get("auth:getAuthClaims"), "function");
-    assert.equal(typeof capabilities.get("auth:requireAuth"), "function");
-    assert.equal(typeof capabilities.get("auth:requireRoleAccess"), "function");
 });

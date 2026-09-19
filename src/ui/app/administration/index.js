@@ -51,6 +51,13 @@ import {
     isModuleEnabled,
     shouldQueryGatewayAdapters,
 } from "./toggle-flows.js";
+import {
+    adapterCompositeKey,
+    resolveAdapterControlUrl as resolveAdapterControlEndpoint,
+} from "./adapter-controls.js";
+import { createAdministrationControlBindings } from "./control-bindings.js";
+import { createAdministrationReloaders } from "./reloaders.js";
+import { syncRuntimeToggleControls as syncToggleControls } from "./runtime-toggles.js";
 let root = null;
 let i18n = null;
 let modules = [];
@@ -64,10 +71,8 @@ let adapterByCompositeKey = new Map();
 let composer = null;
 let changesBar = null;
 let securitySection = null;
+let gatewaySections = [];
 let elements = [];
-function adapterCompositeKey(gatewayId, adapterId) {
-    return `${gatewayId}:${adapterId}`;
-}
 function setModules(nextModules) {
     modules = nextModules;
     moduleById = new Map(
@@ -91,139 +96,70 @@ function setAllAdapters(nextAdapters) {
     );
 }
 
-async function reloadModules() {
-    setModules(await loadModules());
-}
-async function reloadGateways() {
-    setGateways(await loadGateways());
-}
-async function reloadAdapters() {
-    setAllAdapters(await loadAllAdapters(gateways));
-}
-async function reloadGatewaysAndAdapters() {
-    await Promise.all([reloadGateways(), reloadHealthStatus()]);
-    await reloadAdapters();
-}
+const {
+    reloadModules,
+    reloadGateways,
+    reloadAdapters,
+    reloadHealthStatus,
+    reloadGatewaysAndAdapters,
+} = createAdministrationReloaders({
+    loadModules,
+    loadGateways,
+    loadAdapters: loadAllAdapters,
+    loadHealth,
+    setModules,
+    setGateways,
+    setAdapters: setAllAdapters,
+    setHealth: (health) => (healthStatus = health),
+    getGateways: () => gateways,
+});
 
-const reloadHealthStatus = async () => (healthStatus = await loadHealth());
-
-/**
- * Resolves an adapter record either from the optional override or by matching
- * the loaded adapter cache for a gateway/adapter pair.
- *
- * @param {string} gatewayId
- * @param {string} adapterId
- * @param {Record<string, unknown> | null} [adapterOverride]
- * @returns {Record<string, unknown> | null} Matching adapter record from the
- * override or adapter cache, or null when no adapter can be resolved.
- */
-function findAdapterRecord(gatewayId, adapterId, adapterOverride = null) {
-    if (adapterOverride) {
-        return adapterOverride;
-    }
-    return (
-        adapterByCompositeKey.get(adapterCompositeKey(gatewayId, adapterId)) ??
-        null
-    );
-}
-
-/**
- * Resolves the URL for an adapter control endpoint using announced metadata
- * when present, with a standard gateway/adapter fallback path.
- *
- * @param {string} gatewayId
- * @param {string} adapterId
- * @param {string} controlName
- * @param {Record<string, unknown> | null} [adapterOverride]
- * @returns {string}
- */
-function resolveAdapterControlUrl(
+const resolveAdapterControlUrl = (
     gatewayId,
     adapterId,
     controlName,
     adapterOverride = null,
-) {
-    const adapter = findAdapterRecord(gatewayId, adapterId, adapterOverride);
-    const announcedUrl = adapter?.controls?.[controlName];
-    if (typeof announcedUrl === "string" && announcedUrl.length > 0) {
-        return announcedUrl;
-    }
-
-    const encodedGatewayId = encodeURIComponent(gatewayId);
-    const encodedAdapterId = encodeURIComponent(adapterId);
-    return `/api/v1/gateways/${encodedGatewayId}/adapters/${encodedAdapterId}/${controlName}`;
-}
+) =>
+    resolveAdapterControlEndpoint(
+        adapterByCompositeKey,
+        gatewayId,
+        adapterId,
+        controlName,
+        adapterOverride,
+    );
 
 /** Synchronizes runtime toggle controls after page-composer refreshes. */
 function syncRuntimeToggleControls() {
-    root.querySelectorAll('input[type="checkbox"][data-module]').forEach(
-        (toggle) => {
-            if (!(toggle instanceof HTMLInputElement)) return;
-            const moduleId = toggle.dataset.module;
-            if (!moduleId) return;
-            const moduleRecord = moduleById.get(moduleId);
-            if (!moduleRecord) return;
-            const isEnabled = isModuleEnabled(moduleRecord);
-            toggle.checked = isEnabled;
-            toggle.defaultChecked = isEnabled;
-            toggle.disabled = moduleRecord.class === "core";
-        },
-    );
-
-    root.querySelectorAll(
-        'input[type="checkbox"][data-gateway]:not(.adapter-toggle)',
-    ).forEach((toggle) => {
-        if (!(toggle instanceof HTMLInputElement)) return;
-        const gatewayId = toggle.dataset.gateway;
-        if (!gatewayId) return;
-        const gateway = gatewayById.get(gatewayId);
-        if (!gateway) return;
-        const isEnabled = (gateway.status ?? "active") !== "disabled";
-        toggle.checked = isEnabled;
-        toggle.defaultChecked = isEnabled;
-        toggle.disabled = gateway.required === true;
+    syncToggleControls({
+        root,
+        moduleById,
+        gatewayById,
+        adapterByCompositeKey,
+        adapterCompositeKey,
+        isModuleEnabled,
     });
-
-    root.querySelectorAll(
-        ".adapter-toggle[data-adapter][data-gateway]",
-    ).forEach((toggle) => {
-        if (!(toggle instanceof HTMLInputElement)) return;
-        const adapterId = toggle.dataset.adapter;
-        const gatewayId = toggle.dataset.gateway;
-        if (!adapterId || !gatewayId) return;
-        const adapter = adapterByCompositeKey.get(
-            adapterCompositeKey(gatewayId, adapterId),
-        );
-        if (!adapter) return;
-        const gateway = gatewayById.get(gatewayId);
-        const isGatewayDisabled = (gateway?.status ?? "active") === "disabled";
-        const isEnabled = !!(adapter.active ?? adapter.enabled);
-        toggle.checked = isEnabled;
-        toggle.defaultChecked = isEnabled;
-        toggle.disabled = isGatewayDisabled || Boolean(adapter.locked);
-    });
-}
-
-function getAdministrationState() {
-    return { i18n, moduleById, gatewayById };
 }
 
 function getAdministrationControlBindings() {
-    return {
-        getState: getAdministrationState,
-        apiFetch,
-        openPopup,
-        showToast,
-        escapeHtml,
-        toggleModule,
-        toggleGateway,
-        importGithubModule,
-        reloadModules,
-        reloadGateways,
-        reloadHealthStatus,
+    return createAdministrationControlBindings({
+        getI18n: () => i18n,
+        getModuleById: () => moduleById,
+        getGatewayById: () => gatewayById,
         getComposer: () => composer,
         getElements: () => elements,
-    };
+        controls: {
+            apiFetch,
+            openPopup,
+            showToast,
+            escapeHtml,
+            toggleModule,
+            toggleGateway,
+            importGithubModule,
+            reloadModules,
+            reloadGateways,
+            reloadHealthStatus,
+        },
+    });
 }
 
 function bindGatewayToggles() {
@@ -417,11 +353,11 @@ function bindAdapterToggles() {
             if (!adapterId || !gatewayId) return;
             const previouslyChecked = !toggle.checked;
             const action = toggle.checked ? "enable" : "disable";
+            const adapter = adapterByCompositeKey.get(
+                adapterCompositeKey(gatewayId, adapterId),
+            );
 
             if (action === "enable") {
-                const adapter = adapterByCompositeKey.get(
-                    adapterCompositeKey(gatewayId, adapterId),
-                );
                 if (
                     adapter?.controls?.config &&
                     (await adapterRequiresSetup(
@@ -736,6 +672,7 @@ async function guardSubPageSwitch() {
         if (result !== "discard") return false;
         securitySection?.discard();
         changesBar.markDirty("security", false);
+        gatewaySections.forEach((section) => section.discard?.());
     }
     return true;
 }
@@ -765,7 +702,7 @@ export async function mount(rootEl, { signal } = {}) {
     });
 
     const sectionMeta = await loadAdminSections();
-    const gatewaySections = (
+    gatewaySections = (
         await Promise.all(
             sectionMeta.map((section) =>
                 loadGatewaySection(section, {
@@ -774,6 +711,8 @@ export async function mount(rootEl, { signal } = {}) {
                     escapeHtml,
                     openPopup,
                     showToast,
+                    onDirtyChange: (sectionId, dirty) =>
+                        changesBar?.markDirty(sectionId, dirty),
                 }),
             ),
         )
@@ -960,6 +899,11 @@ export async function mount(rootEl, { signal } = {}) {
             try {
                 await securitySection.save();
                 changesBar.markDirty("security", false);
+                for (const section of gatewaySections) {
+                    if (!section.isDirty?.()) continue;
+                    await section.save?.();
+                    changesBar.markDirty(section.id, false);
+                }
                 await reloadGatewaysAndAdapters();
                 syncRuntimeToggleControls();
                 showToast(i18n.t("ui.app.admin.settings_saved"), {
@@ -973,6 +917,7 @@ export async function mount(rootEl, { signal } = {}) {
         },
         onDiscard: async () => {
             securitySection?.discard();
+            gatewaySections.forEach((section) => section.discard?.());
             composer.refresh(elements);
         },
     });

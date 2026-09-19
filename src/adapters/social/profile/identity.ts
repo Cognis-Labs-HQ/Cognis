@@ -11,10 +11,11 @@ export interface ProfileIdentityCapability {
         accountId: unknown,
         fieldName?: string,
     ): Promise<string>;
+    resolveAccountId(handle: unknown): Promise<string | null>;
 }
 
 export function createProfileIdentityCapability(
-    profileStore: Pick<ProfileStore, "getProfile">,
+    profileStore: Pick<ProfileStore, "getProfile" | "getProfileByHandle">,
     isEnabled: () => boolean = () => true,
 ): ProfileIdentityCapability {
     const requireEnabled = () => {
@@ -46,6 +47,19 @@ export function createProfileIdentityCapability(
                 );
             }
             return handle;
+        },
+        async resolveAccountId(handle) {
+            requireEnabled();
+            const candidate = String(handle ?? "").trim();
+            if (!candidate) return null;
+            const accountProfile = await profileStore.getProfile(candidate);
+            if (accountProfile) return accountProfile.accountId;
+            const normalizedHandle = normalizeHandleKey(candidate);
+            if (!normalizedHandle) return null;
+            return (
+                (await profileStore.getProfileByHandle(normalizedHandle))
+                    ?.accountId ?? null
+            );
         },
     };
 }

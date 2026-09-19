@@ -25,6 +25,7 @@ import { loadLocalAccountStore } from "./local-account.js";
 import { createAuthRouteBootstrapRuntime } from "./route-runtime.js";
 import { runBootstrapDirectoryHooks } from "../../reuse/bootstrap-loader.js";
 import { parseLoginSessionTimeoutMinutes } from "../session-timeout.js";
+import { createAuthPageRoutes } from "./routes/pages.js";
 
 export interface AuthAccountStore {
     ensureSchema(): Promise<void>;
@@ -78,8 +79,23 @@ export interface PendingTfaLoginAttempt {
     expiresAt: number;
 }
 
+export interface PendingAccountCreationAttempt {
+    id: string;
+    providerId: string;
+    emailRequired: boolean;
+    session: {
+        accountId: string;
+        provider: string;
+        externalUserId?: string;
+        email?: string;
+        emails?: string[];
+        displayName?: string;
+        role?: string;
+    };
+    expiresAt: number;
+}
+
 export interface SecuritySettings {
-    registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
     loginSessionTimeoutMinutes: number;
 }
@@ -107,6 +123,21 @@ export interface AuthRouteBootstrapRuntime {
     getPendingTfaLoginAttempt: (
         loginAttemptId: string,
     ) => PendingTfaLoginAttempt | null;
+    clearPendingAccountCreationAttempt: (attemptId: string) => void;
+    createPendingAccountCreationAttempt: (
+        input: Omit<PendingAccountCreationAttempt, "id" | "expiresAt">,
+    ) => PendingAccountCreationAttempt;
+    getPendingAccountCreationAttempt: (
+        attemptId: string,
+    ) => PendingAccountCreationAttempt | null;
+    buildPendingAccountCreationCookie: (
+        req: IncomingMessage,
+        attemptId: string,
+    ) => string;
+    clearPendingAccountCreationCookie: (req: IncomingMessage) => string;
+    extractPendingAccountCreationAttemptId: (
+        req: IncomingMessage,
+    ) => string | null;
 }
 
 export interface AuthRouteBootstrapHookContext {
@@ -342,7 +373,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.capabilities.get<UserPreferenceStore>("preferences:store");
         if (!preferenceStore) {
             return {
-                registrationsEnabled: false,
                 userValidationMode: "none",
                 loginSessionTimeoutMinutes: 720,
             };
@@ -353,7 +383,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         );
         if (!raw) {
             return {
-                registrationsEnabled: false,
                 userValidationMode: "none",
                 loginSessionTimeoutMinutes: 720,
             };
@@ -361,10 +390,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         try {
             const parsed = JSON.parse(raw) as Record<string, unknown>;
             return {
-                registrationsEnabled:
-                    typeof parsed.registrationsEnabled === "boolean"
-                        ? parsed.registrationsEnabled
-                        : false,
                 userValidationMode:
                     parsed.userValidationMode === "smtp" ? "smtp" : "none",
                 loginSessionTimeoutMinutes: parseLoginSessionTimeoutMinutes(
@@ -373,7 +398,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             };
         } catch {
             return {
-                registrationsEnabled: false,
                 userValidationMode: "none",
                 loginSessionTimeoutMinutes: 720,
             };
@@ -411,6 +435,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         createAdapterAdminRoutes("auth", authGateway, ctx.flow, ctx.log),
         "auth",
     );
+    ctx.routeRegistry.register(createAuthPageRoutes(routeContext), "auth");
     ctx.log?.("info", "Auth gateway routes registered.", {
         component: "auth-gateway",
     });

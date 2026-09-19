@@ -6,6 +6,10 @@ import {
 } from "../../../../api/reuse/access-token-http.js";
 import { issueAccessToken, revokeAccessToken } from "../../access-tokens.js";
 import type { CoreAuthGateway } from "../../gateway.js";
+import {
+    parseAuthLoginButton,
+    type AuthLoginButtonDescriptor,
+} from "../../login-button.js";
 import type {
     AuthAccountStore,
     AuthRouteBootstrapRuntime,
@@ -47,6 +51,7 @@ export function createSessionRoutes({
             name: string;
             forgotPassword?: boolean;
             credential?: boolean;
+            loginButton?: AuthLoginButtonDescriptor;
         }>;
         integrations: Array<{
             id: string;
@@ -79,6 +84,7 @@ export function createSessionRoutes({
                 name: string;
                 forgotPassword?: boolean;
                 credential?: boolean;
+                loginButton?: AuthLoginButtonDescriptor;
             }
         >();
         for (const stageResult of [
@@ -95,15 +101,28 @@ export function createSessionRoutes({
                     (method as { name?: unknown })?.name ?? "",
                 ).trim();
                 if (!id || !name) continue;
+                const loginButton = parseAuthLoginButton(
+                    (method as { loginButton?: unknown }).loginButton,
+                    id,
+                );
+                const existingMethod = methodById.get(id);
                 methodById.set(id, {
+                    ...existingMethod,
                     id,
                     name,
                     forgotPassword:
                         (method as { forgotPassword?: unknown })
-                            .forgotPassword === true,
+                            .forgotPassword === undefined
+                            ? (existingMethod?.forgotPassword ?? false)
+                            : (method as { forgotPassword?: unknown })
+                                  .forgotPassword === true,
                     credential:
                         (method as { credential?: unknown }).credential ===
-                        true,
+                        undefined
+                            ? (existingMethod?.credential ?? false)
+                            : (method as { credential?: unknown })
+                                  .credential === true,
+                    ...(loginButton ? { loginButton } : {}),
                 });
             }
         }
@@ -144,6 +163,41 @@ export function createSessionRoutes({
         };
     }
 
+    function resolveSsoAuthorizationUrl(
+        flowResult: {
+            stageResults: Record<string, unknown[]>;
+        },
+        providerId: string,
+    ): string | null {
+        for (const stageResult of flowResult.stageResults[
+            "initiateAuthorization"
+        ] ?? []) {
+            if (
+                !stageResult ||
+                typeof stageResult !== "object" ||
+                Array.isArray(stageResult)
+            ) {
+                continue;
+            }
+            const result = stageResult as {
+                providerId?: unknown;
+                redirectUrl?: unknown;
+            };
+            if (result.providerId !== providerId) continue;
+            const redirectUrl = String(result.redirectUrl ?? "").trim();
+            if (!redirectUrl) continue;
+            if (
+                (redirectUrl.startsWith("/") &&
+                    !redirectUrl.startsWith("//")) ||
+                (URL.canParse(redirectUrl) &&
+                    new URL(redirectUrl).protocol === "https:")
+            ) {
+                return redirectUrl;
+            }
+        }
+        return null;
+    }
+
     function resolveFlowSessionResult(flowResult: {
         data: Record<string, unknown>;
         stageResults: Record<string, unknown[]>;
@@ -181,7 +235,10 @@ export function createSessionRoutes({
         res: import("node:http").ServerResponse,
         sessionResult: LoginFlowSessionResult,
         logMeta: AuthRouteLogMeta,
+        responseCookies: string[] = [],
     ): true {
+        const appendResponseCookie = (cookie: string): string | string[] =>
+            responseCookies.length > 0 ? [...responseCookies, cookie] : cookie;
         const outcome = sessionResult.outcome;
         if (outcome === "provider_unavailable") {
             log?.("warn", "Login failed: provider unavailable (flow).", {
@@ -208,6 +265,58 @@ export function createSessionRoutes({
                     error: {
                         code: "invalid_credentials",
                         message: "Invalid credentials",
+                    },
+                }),
+            );
+            return true;
+        }
+        if (outcome === "account_creation_required") {
+            const authorizationFailureReason = String(
+                sessionResult.authorizationFailureReason ?? "",
+            ).trim();
+            const pending = sessionResult.pendingAccountCreation;
+            const attempt = pending
+                ? authRouteBootstrapRuntime.createPendingAccountCreationAttempt(
+                      {
+                          ...pending,
+                          emailRequired: sessionResult.emailRequired === true,
+                      },
+                  )
+                : null;
+            log?.("info", "Held external login for account authorization.", {
+                ...logMeta,
+                emailRequired: sessionResult.emailRequired === true,
+            });
+            res.writeHead(403, {
+                "content-type": "application/json",
+                ...(attempt
+                    ? {
+                          "set-cookie":
+                              authRouteBootstrapRuntime.buildPendingAccountCreationCookie(
+                                  req,
+                                  attempt.id,
+                              ),
+                      }
+                    : {}),
+            });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code:
+                            authorizationFailureReason ||
+                            "account_creation_required",
+                        message: authorizationFailureReason
+                            ? "Account registration authorization failed."
+                            : "Account registration authorization is required.",
+                    },
+                    data: {
+                        emailRequired: sessionResult.emailRequired === true,
+                        registrationTokenRequired: true,
+                        ...(attempt
+                            ? {
+                                  registrationUrl: "/register",
+                              }
+                            : {}),
                     },
                 }),
             );
@@ -277,10 +386,12 @@ export function createSessionRoutes({
             );
             res.writeHead(200, {
                 "content-type": "application/json",
-                "set-cookie": authRouteBootstrapRuntime.buildAccessTokenCookie(
-                    req,
-                    token,
-                    ttlSeconds,
+                "set-cookie": appendResponseCookie(
+                    authRouteBootstrapRuntime.buildAccessTokenCookie(
+                        req,
+                        token,
+                        ttlSeconds,
+                    ),
                 ),
             });
             res.end(
@@ -340,10 +451,12 @@ export function createSessionRoutes({
             });
             res.writeHead(200, {
                 "content-type": "application/json",
-                "set-cookie": authRouteBootstrapRuntime.buildAccessTokenCookie(
-                    req,
-                    token,
-                    ttlSeconds,
+                "set-cookie": appendResponseCookie(
+                    authRouteBootstrapRuntime.buildAccessTokenCookie(
+                        req,
+                        token,
+                        ttlSeconds,
+                    ),
                 ),
             });
             res.end(
@@ -438,9 +551,178 @@ export function createSessionRoutes({
             return true;
         }
 
+        if (
+            url.pathname === "/api/v1/auth/sso/start" &&
+            req.method === "POST"
+        ) {
+            const body = await readJson(req);
+            const providerId = String(body.providerId ?? "").trim();
+            const systemCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
+            const method = systemCtx
+                ? (await resolveLoginUiConfig(systemCtx)).methods.find(
+                      (candidate) => candidate.id === providerId,
+                  )
+                : undefined;
+            if (
+                !systemCtx?.flow.exists("startSsoLogin") ||
+                !method?.loginButton
+            ) {
+                log?.("warn", "Rejected unavailable SSO login provider.", {
+                    ...logMeta,
+                    providerId,
+                });
+                res.writeHead(422, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "sso_provider_unavailable",
+                            message: "SSO provider is unavailable.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            let flowResult;
+            try {
+                flowResult = await systemCtx.flow.run("startSsoLogin", {
+                    providerId,
+                });
+            } catch (error) {
+                log?.("error", "SSO authorization flow failed.", {
+                    ...logMeta,
+                    providerId,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+                res.writeHead(502, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "sso_authorization_unavailable",
+                            message: "SSO authorization is unavailable.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const redirectUrl = resolveSsoAuthorizationUrl(
+                flowResult,
+                providerId,
+            );
+            if (!redirectUrl) {
+                log?.("error", "SSO authorization did not return a redirect.", {
+                    ...logMeta,
+                    providerId,
+                });
+                res.writeHead(502, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "sso_authorization_unavailable",
+                            message: "SSO authorization is unavailable.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            log?.("info", "Started SSO authorization.", {
+                ...logMeta,
+                providerId,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { redirectUrl } }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/account-creation-attempt" &&
+            req.method === "GET"
+        ) {
+            const attemptId =
+                authRouteBootstrapRuntime.extractPendingAccountCreationAttemptId(
+                    req,
+                );
+            const attempt = attemptId
+                ? authRouteBootstrapRuntime.getPendingAccountCreationAttempt(
+                      attemptId,
+                  )
+                : null;
+            if (!attempt) {
+                res.writeHead(200, {
+                    "content-type": "application/json",
+                    ...(attemptId
+                        ? {
+                              "set-cookie":
+                                  authRouteBootstrapRuntime.clearPendingAccountCreationCookie(
+                                      req,
+                                  ),
+                          }
+                        : {}),
+                });
+                res.end(JSON.stringify({ data: null }));
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        emailRequired: attempt.emailRequired,
+                        expiresAt: attempt.expiresAt,
+                    },
+                }),
+            );
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/account-creation-attempt" &&
+            req.method === "DELETE"
+        ) {
+            const attemptId =
+                authRouteBootstrapRuntime.extractPendingAccountCreationAttemptId(
+                    req,
+                );
+            if (attemptId) {
+                authRouteBootstrapRuntime.clearPendingAccountCreationAttempt(
+                    attemptId,
+                );
+            }
+            res.writeHead(204, {
+                "set-cookie":
+                    authRouteBootstrapRuntime.clearPendingAccountCreationCookie(
+                        req,
+                    ),
+            });
+            res.end();
+            return true;
+        }
+
         if (url.pathname === "/api/v1/auth/login" && req.method === "POST") {
             const body = await readJson(req);
             const provider = String(body.provider ?? "local");
+            const accountCreationAttemptId = body.registrationToken
+                ? (authRouteBootstrapRuntime.extractPendingAccountCreationAttemptId(
+                      req,
+                  ) ?? "")
+                : "";
+            const pendingAccountCreation = accountCreationAttemptId
+                ? authRouteBootstrapRuntime.getPendingAccountCreationAttempt(
+                      accountCreationAttemptId,
+                  )
+                : null;
+            if (accountCreationAttemptId && !pendingAccountCreation) {
+                res.writeHead(410, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "account_creation_attempt_expired",
+                            message:
+                                "Account registration authorization has expired.",
+                        },
+                    }),
+                );
+                return true;
+            }
 
             const credentials: Record<string, unknown> = { ...body };
             delete credentials.provider;
@@ -448,16 +730,37 @@ export function createSessionRoutes({
             const systemCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
             if (systemCtx?.flow.exists("login")) {
                 const result = await systemCtx.flow.run("login", {
-                    provider,
+                    provider: pendingAccountCreation?.providerId ?? provider,
                     credentials,
+                    ...(pendingAccountCreation
+                        ? {
+                              authenticatedSession:
+                                  pendingAccountCreation.session,
+                          }
+                        : {}),
                 });
                 const sessionResult = resolveFlowSessionResult(result);
                 if (sessionResult) {
+                    const responseCookies: string[] = [];
+                    if (
+                        accountCreationAttemptId &&
+                        sessionResult.outcome !== "account_creation_required"
+                    ) {
+                        authRouteBootstrapRuntime.clearPendingAccountCreationAttempt(
+                            accountCreationAttemptId,
+                        );
+                        responseCookies.push(
+                            authRouteBootstrapRuntime.clearPendingAccountCreationCookie(
+                                req,
+                            ),
+                        );
+                    }
                     return dispatchLoginFlowResult(
                         req,
                         res,
                         sessionResult,
                         logMeta,
+                        responseCookies,
                     );
                 }
                 log?.("warn", "Login flow did not produce a session outcome.", {

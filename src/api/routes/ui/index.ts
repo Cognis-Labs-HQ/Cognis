@@ -197,17 +197,6 @@ export function createUiRoutes(
             return true;
         }
 
-        if (url.pathname === "/login") {
-            await htmlResponse.serveHtmlPage(
-                res,
-                path.join(SERVED_PUBLIC_ROOT, "pages", "login.html"),
-                log,
-                { path: url.pathname, method: req.method ?? "GET" },
-                ctx,
-            );
-            return true;
-        }
-
         if (url.pathname === "/settings") {
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
@@ -296,72 +285,6 @@ export function createUiRoutes(
             await htmlResponse.serveHtmlPage(
                 res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "users.html"),
-                log,
-                { path: url.pathname, method: req.method ?? "GET" },
-                ctx,
-            );
-            return true;
-        }
-
-        if (url.pathname === "/invite") {
-            const loginRedirect = await resolveLoginRedirectLocation(
-                req,
-                ctx,
-                accountStore,
-                log,
-            );
-            if (loginRedirect) {
-                res.writeHead(302, { location: loginRedirect });
-                res.end();
-                return true;
-            }
-            const session = ctx.getCookieSession(req);
-            if (!session) {
-                res.writeHead(302, {
-                    location: "/login?reason=session_expired",
-                });
-                res.end();
-                return true;
-            }
-            if (isRoleAllowed(session.role, { onlyRole: "admin" })) {
-                res.writeHead(302, { location: "/users" });
-                res.end();
-                return true;
-            }
-            const registrationGateway = gatewayRegistry?.get("registration");
-            if (
-                !registrationGateway ||
-                registrationGateway.status === "disabled"
-            ) {
-                res.writeHead(302, { location: "/dashboard" });
-                res.end();
-                return true;
-            }
-            const isFounder = accountStore
-                ? await accountStore.isFounder(session.sub).catch((error) => {
-                      log?.(
-                          "error",
-                          "Failed to resolve founder status for invite route access.",
-                          {
-                              component: "api-ui",
-                              accountId: session.sub,
-                              error:
-                                  error instanceof Error
-                                      ? error.message
-                                      : String(error),
-                          },
-                      );
-                      return false;
-                  })
-                : false;
-            if (!isFounder) {
-                res.writeHead(302, { location: "/dashboard" });
-                res.end();
-                return true;
-            }
-            await htmlResponse.serveHtmlPage(
-                res,
-                path.join(SERVED_PUBLIC_ROOT, "pages", "invite.html"),
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
                 ctx,

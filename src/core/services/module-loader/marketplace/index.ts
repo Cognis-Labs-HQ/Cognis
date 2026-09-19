@@ -119,6 +119,7 @@ interface ModuleInstallProvenance {
     cloneUrl: string;
     branch: string;
     commit: string;
+    manifestSha256: string;
 }
 
 export class ModuleMarketplaceService extends MarketplaceServiceBase {
@@ -626,9 +627,11 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                 temporary,
                 gitEnvironment,
             );
-            const manifest = this.parseManifest(
-                await readFile(path.join(temporary, "manifest.json"), "utf8"),
+            const rawManifest = await readFile(
+                path.join(temporary, "manifest.json"),
+                "utf8",
             );
+            const manifest = this.parseManifest(rawManifest);
             if (manifest.uuid !== module.uuid)
                 throw new Error("module_uuid_mismatch");
             const installedEntries = await readdir(this.installRoot, {
@@ -665,6 +668,9 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                 cloneUrl,
                 branch: selectedBranch,
                 commit: commit.trim(),
+                manifestSha256: createHash("sha256")
+                    .update(rawManifest, "utf8")
+                    .digest("hex"),
             };
             await writeFile(
                 path.join(temporary, ".cognis-install.json"),

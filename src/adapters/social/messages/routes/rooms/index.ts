@@ -251,7 +251,7 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                     const sender = await profileStore.getProfile(accountId);
                     await dispatch({
                         category: "message-requests",
-                        recipientUsername: primaryTarget.handle,
+                        recipientUsername: primaryTarget.accountId,
                         subject: "New message request",
                         body: "New message request",
                         senderName: sender?.handle ?? sender?.accountId,

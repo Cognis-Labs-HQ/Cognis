@@ -1,5 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import { resolveComponentEnabledState } from "@cognis/core";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 
 export interface InviteRecord {
@@ -17,10 +18,16 @@ export interface RegistrationInviteAdapter {
     issueInvite(input: {
         inviterAccountId: string;
         inviterDisplayName: string;
-        inviteeEmail: string;
+        inviteeEmail?: string;
         inviterIsFounder: boolean;
         inviteBaseUrl: string;
-    }): Promise<{ tokenId: string; inviteUrl: string; expiresAt: string }>;
+        deliverEmail?: boolean;
+    }): Promise<{
+        tokenId: string;
+        registrationToken: string;
+        inviteUrl: string;
+        expiresAt: string;
+    }>;
     listInvites(filter?: {
         inviterAccountId?: string;
         includeClosed?: boolean;
@@ -30,15 +37,23 @@ export interface RegistrationInviteAdapter {
         revokedByAccountId: string;
     }): Promise<boolean>;
     resolveInvite(token: string): Promise<InviteRecord | null>;
+    consumeExternalAccountToken(input: {
+        token: string;
+        accountId: string;
+        email: string;
+        emailVerified?: boolean;
+    }): Promise<boolean>;
     redeemInvite(input: {
         token: string;
         username: string;
         password: string;
+        email?: string;
         displayName?: string;
     }): Promise<{
         createdAccountId: string;
         inviterAccountId: string;
     }>;
+    resetFounderInviteLimit(accountId: string): Promise<void>;
 }
 
 export interface RegistrationPublicAdapter {
@@ -60,6 +75,7 @@ export interface RegistrationGatewayAdapter {
     version?: string;
     publisher?: string;
     defaultEnabled?: boolean;
+    locked?: boolean;
     invite?: RegistrationInviteAdapter;
     public?: RegistrationPublicAdapter;
 }
@@ -70,6 +86,7 @@ export interface RegistrationAdapterInfo {
     version?: string;
     publisher?: string;
     enabled: boolean;
+    locked?: boolean;
 }
 
 export interface RegistrationAdapterDeps {
@@ -97,6 +114,72 @@ export class CoreRegistrationGateway {
                 },
                 { name: "enabled", type: "integer", notNull: true, default: 0 },
             ],
+        });
+        await this.db.ensureTable({
+            name: "registration_policy",
+            columns: [
+                { name: "id", type: "text", primaryKey: true },
+                {
+                    name: "founder_invites_enabled",
+                    type: "boolean",
+                    notNull: true,
+                    default: "true",
+                },
+                {
+                    name: "admin_invites_enabled",
+                    type: "boolean",
+                    notNull: true,
+                    default: "true",
+                },
+            ],
+        });
+    }
+
+    async getInvitationPolicy(): Promise<{
+        founderInvitesEnabled: boolean;
+        adminInvitesEnabled: boolean;
+    }> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "registration_policy",
+            columns: ["founder_invites_enabled", "admin_invites_enabled"],
+            where: [{ column: "id", value: "default" }],
+        });
+        const row = result.rows?.[0];
+        return {
+            founderInvitesEnabled:
+                row?.founder_invites_enabled === undefined
+                    ? true
+                    : row.founder_invites_enabled === true ||
+                      Number(row.founder_invites_enabled) === 1,
+            adminInvitesEnabled:
+                row?.admin_invites_enabled === undefined
+                    ? true
+                    : row.admin_invites_enabled === true ||
+                      Number(row.admin_invites_enabled) === 1,
+        };
+    }
+
+    async setInvitationPolicy(input: {
+        founderInvitesEnabled: boolean;
+        adminInvitesEnabled: boolean;
+    }): Promise<void> {
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "registration_policy",
+            values: {
+                id: "default",
+                founder_invites_enabled: input.founderInvitesEnabled,
+                admin_invites_enabled: input.adminInvitesEnabled,
+            },
+            conflict: {
+                action: "update",
+                target: ["id"],
+                update: {
+                    founder_invites_enabled: input.founderInvitesEnabled,
+                    admin_invites_enabled: input.adminInvitesEnabled,
+                },
+            },
         });
     }
 
@@ -165,12 +248,12 @@ export class CoreRegistrationGateway {
         for (const row of result.rows ?? []) {
             const adapterId = String(row.adapter_id ?? "");
             if (!adapterId || !this.adapters.has(adapterId)) continue;
-            const enabledRaw = row.enabled;
-            const enabled =
-                enabledRaw === true ||
-                enabledRaw === 1 ||
-                enabledRaw === "1" ||
-                enabledRaw === "true";
+            const adapter = this.adapters.get(adapterId)!;
+            const enabled = resolveComponentEnabledState({
+                persistedEnabled: row.enabled,
+                locked: adapter.locked === true,
+                defaultEnabled: adapter.defaultEnabled === true,
+            });
             if (enabled) this.enabledAdapters.add(adapterId);
             else this.enabledAdapters.delete(adapterId);
         }
@@ -183,6 +266,7 @@ export class CoreRegistrationGateway {
             ...(adapter.version ? { version: adapter.version } : {}),
             ...(adapter.publisher ? { publisher: adapter.publisher } : {}),
             enabled: this.enabledAdapters.has(adapter.id),
+            ...(adapter.locked ? { locked: true } : {}),
         }));
     }
 
@@ -193,7 +277,9 @@ export class CoreRegistrationGateway {
     }
 
     async disableAdapter(adapterId: string): Promise<void> {
-        if (!this.adapters.has(adapterId)) throw new Error("not_found");
+        const adapter = this.adapters.get(adapterId);
+        if (!adapter) throw new Error("not_found");
+        if (adapter.locked) throw new Error("adapter_locked");
         this.enabledAdapters.delete(adapterId);
         await this.saveAdapterEnabled(adapterId, false);
     }
@@ -224,6 +310,7 @@ export class CoreRegistrationGateway {
         inviteeEmail: string;
         inviterIsFounder: boolean;
         inviteBaseUrl: string;
+        deliverEmail?: boolean;
     }) {
         const adapter = this.getInviteAdapter();
         if (!adapter) throw new Error("invite_disabled");
@@ -251,6 +338,17 @@ export class CoreRegistrationGateway {
         return adapter.resolveInvite(token);
     }
 
+    async consumeExternalAccountToken(input: {
+        token: string;
+        accountId: string;
+        email: string;
+        emailVerified?: boolean;
+    }) {
+        const adapter = this.getInviteAdapter();
+        if (!adapter) throw new Error("invite_disabled");
+        return adapter.consumeExternalAccountToken(input);
+    }
+
     async redeemInvite(input: {
         token: string;
         username: string;
@@ -260,6 +358,12 @@ export class CoreRegistrationGateway {
         const adapter = this.getInviteAdapter();
         if (!adapter) throw new Error("invite_disabled");
         return adapter.redeemInvite(input);
+    }
+
+    async resetFounderInviteLimit(accountId: string): Promise<void> {
+        const adapter = this.getInviteAdapter();
+        if (!adapter) throw new Error("invite_disabled");
+        await adapter.resetFounderInviteLimit(accountId);
     }
 
     async registerPublic(input: {

@@ -1,7 +1,25 @@
+.btn-confirm,
+.btn-cancel,
+.btn-neutral {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font: inherit;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+
 .btn-confirm {
     background: transparent;
     color: var(--color-success-outline-text, var(--color-success-text));
     border: 1px solid var(--color-success-border);
+}
+
+a.btn-confirm {
+    color: var(--color-success-outline-text, var(--color-success-text));
 }
 
 .btn-confirm:hover:not(:disabled) {
@@ -16,6 +34,10 @@
     border: 1px solid var(--color-danger-border);
 }
 
+a.btn-cancel {
+    color: var(--color-danger-outline-text, var(--color-danger-text));
+}
+
 .btn-cancel:hover:not(:disabled) {
     background: var(--color-danger-hover-bg);
     border-color: var(--color-danger-outline-text, var(--color-danger-text));
@@ -26,6 +48,10 @@
     background: transparent;
     color: var(--text);
     border: 1px solid var(--border);
+}
+
+a.btn-neutral {
+    color: var(--text);
 }
 
 .btn-neutral:hover:not(:disabled) {

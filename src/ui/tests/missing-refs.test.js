@@ -78,7 +78,11 @@ function collectExportedNames(filePath, seen = new Set()) {
     return exported;
 }
 
-const CSS_ROOTS = [join(ROOT, "src/ui/styles"), join(ROOT, "src/adapters")];
+const CSS_ROOTS = [
+    join(ROOT, "src/ui/styles"),
+    join(ROOT, "src/adapters"),
+    join(ROOT, "src/gateways"),
+];
 const USAGE_ROOTS = [
     join(ROOT, "src/ui/app"),
     join(ROOT, "src/ui/layouts"),

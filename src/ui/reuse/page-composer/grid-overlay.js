@@ -10,6 +10,7 @@ import {
     halfGrid,
     snapGridRound,
 } from "./grid-math.js";
+import { createGridGeometry } from "./grid-geometry.js";
 export function createGridOverlayHandlers({
     state,
     UNIT,
@@ -20,98 +21,17 @@ export function createGridOverlayHandlers({
     saveLayout,
     endEditMode,
 }) {
-    function getEditGridWidth() {
-        const section = state.gridSection?.isConnected
-            ? state.gridSection
-            : null;
-        if (!section) return state.gridCols * UNIT;
-        const rect = section.getBoundingClientRect();
-        const styles = window.getComputedStyle(section);
-        const paddingX =
-            Number.parseFloat(styles.paddingLeft || "0") +
-            Number.parseFloat(styles.paddingRight || "0");
-        return Math.max(1, rect.width - paddingX);
-    }
-    function getEditColumnSize() {
-        return state.gridTrackSize ?? UNIT;
-    }
-    function getEditRowSize() {
-        return UNIT;
-    }
-    function gridColumnOffset(coordinate) {
-        return coordinate * (getEditColumnSize() + PAGE_COMPOSER_GRID_GAP);
-    }
-    function gridRowOffset(coordinate) {
-        return coordinate * (getEditRowSize() + PAGE_COMPOSER_GRID_GAP);
-    }
-    function gridColumnSpanSize(span) {
-        return (
-            span * getEditColumnSize() +
-            Math.max(0, span - 1) * PAGE_COMPOSER_GRID_GAP
-        );
-    }
-    function gridRowSpanSize(span) {
-        return (
-            span * getEditRowSize() +
-            Math.max(0, span - 1) * PAGE_COMPOSER_GRID_GAP
-        );
-    }
-    function pixelToGridColumn(pixel) {
-        return pixel / (getEditColumnSize() + PAGE_COMPOSER_GRID_GAP);
-    }
-    function pixelToGridRow(pixel) {
-        return pixel / (getEditRowSize() + PAGE_COMPOSER_GRID_GAP);
-    }
-    function snapPixelColumnFloor(pixel, dim) {
-        const step = gridStep(dim);
-        return Math.floor(pixelToGridColumn(pixel) / step) * step;
-    }
-    function snapPixelRowFloor(pixel, dim) {
-        const step = gridStep(dim);
-        return Math.floor(pixelToGridRow(pixel) / step) * step;
-    }
-    function computeGridDimensions() {
-        if (!state.contentGrid) return;
-        state.contentGrid.style.width = "";
-        const width = state.contentGrid.getBoundingClientRect().width;
-        if (!state.editing) {
-            state.gridCols = Math.max(1, Math.floor(width / UNIT));
-        }
-        if (state.editing) {
-            const editWidth = getEditGridWidth();
-            const totalGap =
-                Math.max(0, state.gridCols - 1) * PAGE_COMPOSER_GRID_GAP;
-            state.gridTrackSize = Math.max(
-                1,
-                (editWidth - totalGap) / state.gridCols,
-            );
-        } else {
-            state.gridTrackSize = UNIT;
-        }
-        const visiblePlacements = (state.layout?.placements ?? []).filter(
-            (p) => !(state.layout?.hidden ?? []).includes(p.id),
-        );
-        const maxBottom = visiblePlacements.reduce(
-            (m, p) => Math.max(m, p.row + p.h),
-            0,
-        );
-        const extra = state.editing ? 1 : 0;
-        state.gridRows = Math.max(
-            state.editing ? Math.max(3, maxBottom + 2) : 1,
-            maxBottom + extra,
-        );
-        state.gridPixelHeight = gridRowSpanSize(state.gridRows);
-        state.gridPixelWidth = gridColumnSpanSize(state.gridCols);
-        state.contentGrid.style.minHeight =
-            state.frameless && !state.editing
-                ? ""
-                : `${state.gridPixelHeight}px`;
-        state.contentGrid.style.width = state.editing ? "" : "";
-        if (state.editing && state.gridSection) {
-            state.gridSection.style.minHeight = `${state.gridPixelHeight}px`;
-            state.gridSection.style.width = "";
-        }
-    }
+    const {
+        computeGridDimensions,
+        gridColumnOffset,
+        gridRowOffset,
+        gridColumnSpanSize,
+        gridRowSpanSize,
+        pixelToGridColumn,
+        pixelToGridRow,
+        snapPixelColumnFloor,
+        snapPixelRowFloor,
+    } = createGridGeometry(state, UNIT);
     function canPlace(col, row, w, h, excludeId) {
         if (col < 0 || row < 0 || col + w > state.gridCols) return false;
         const cells = buildOccupiedSet(

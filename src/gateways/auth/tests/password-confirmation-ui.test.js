@@ -4,7 +4,10 @@ import { createPasswordConfirmationGuard } from "../ui/reuse/password-confirmati
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const loginSource = readFileSync(resolve("src/ui/app/login/index.js"), "utf8");
+const loginSource = readFileSync(
+    resolve("src/gateways/auth/ui/login-page/index.js"),
+    "utf8",
+);
 
 test("deleted-account login clears the browser keyring before showing its reason", () => {
     assert.match(

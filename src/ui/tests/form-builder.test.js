@@ -44,6 +44,32 @@ test("form builder applies theme styling to every select control", () => {
     assert.match(builder.render(), /class="form-builder-input theme-select"/);
 });
 
+test("form builder accepts standard reusable input classes", () => {
+    const builder = createFormBuilder(
+        {
+            i18n: { t: (key) => key },
+            escapeHtml: (value) => String(value),
+        },
+        {
+            formId: "checkbox-form",
+            includeSubmitButton: false,
+            fields: [
+                {
+                    name: "enabled",
+                    labelKey: "enabled",
+                    type: "checkbox",
+                    inputClassName: "choice-checkbox",
+                },
+            ],
+        },
+    );
+
+    assert.match(
+        builder.render(),
+        /class="form-builder-input choice-checkbox"/,
+    );
+});
+
 test("form builder owns complex form wrappers and attributes", () => {
     const builder = createFormBuilder(
         {
@@ -72,7 +98,7 @@ test("form builder renders trusted integration label markup", () => {
             escapeHtml: (value) => String(value),
         },
         {
-            formId: "registration-form",
+            formId: "consent-form",
             submitLabelKey: "submit",
             fields: [
                 {
@@ -184,102 +210,6 @@ test("adapter reset stages environment values until settings are saved", () => {
     );
 });
 
-test("register page uses form builder instead of hardcoded maxlength for username", () => {
-    const source = read("src/gateways/auth/ui/register.js");
-    assert.match(
-        source,
-        /import \{ createFormBuilder \} from "\/static\/reuse\/form-builder\.js";/,
-    );
-    assert.doesNotMatch(source, /maxlength="25"/);
-    assert.match(
-        source,
-        /id: "username-max-length",[\s\S]*type: "maxLength",[\s\S]*value: REGISTER_USERNAME_MAX_CHARACTERS,/m,
-    );
-    assert.match(
-        source,
-        /name: "username",[\s\S]*maxCharacters: REGISTER_USERNAME_MAX_CHARACTERS/m,
-    );
-    assert.match(
-        source,
-        /name: "email",[\s\S]*maxCharacters: REGISTER_EMAIL_MAX_CHARACTERS/m,
-    );
-    assert.match(
-        source,
-        /name: "displayName",[\s\S]*maxCharacters: REGISTER_DISPLAY_NAME_MAX_CHARACTERS/m,
-    );
-});
-
-test("register invite countdown uses a pill and auth cards size independently", () => {
-    const registerSource = read("src/gateways/auth/ui/register.js");
-    const authStyles = read("src/ui/styles/login.css");
-
-    assert.match(
-        registerSource,
-        /id="register-countdown" class="auth-countdown-pill" aria-live="off"/,
-    );
-    assert.match(authStyles, /\.auth-layout \{[\s\S]*align-items: start;/m);
-    assert.match(
-        authStyles,
-        /\.auth-countdown-pill \{[\s\S]*border-radius: 999px;/m,
-    );
-});
-
-test("register form leaves field styling to the shared form builder", () => {
-    const registerPage = read("src/ui/public/pages/register.html");
-    const registerSource = read("src/gateways/auth/ui/register.js");
-
-    assert.match(
-        registerPage,
-        /href="\/static\/styles\/reuse\/page-sections\.css"/,
-    );
-    assert.doesNotMatch(registerSource, /formClassName:\s*"auth-form"/);
-});
-
-test("register password criteria use floating alert in form builder config", () => {
-    const source = read("src/gateways/auth/ui/register.js");
-    assert.match(source, /criteriaDisplay: "floating-alert"/);
-    assert.match(
-        source,
-        /floatingTitleKey: "ui\.app\.register\.password_requirements"/,
-    );
-});
-
-test("register username criteria use floating alert in form builder config", () => {
-    const source = read("src/gateways/auth/ui/register.js");
-    assert.match(
-        source,
-        /floatingTitleKey: "ui\.app\.register\.username_requirements"/,
-    );
-});
-
-test("register submit blocks when form builder marks fields invalid", () => {
-    const source = read("src/gateways/auth/ui/register.js");
-    assert.match(source, /formController\.validateAll\(true\)/);
-    assert.match(source, /ui\.app\.register\.error\.validation_failed/);
-});
-
-test("register username criterion allows only letters, digits, hyphens, and underscores", () => {
-    const source = read("src/gateways/auth/ui/register.js");
-    assert.match(source, /id: "username-printable-ascii"/);
-    assert.match(source, /\[a-zA-Z0-9_-\]/);
-    assert.match(
-        source,
-        /username-printable-ascii[\s\S]*?value\.length === 0/m,
-    );
-});
-
-test("register confirm password criterion only evaluates after password input", () => {
-    const source = read("src/gateways/auth/ui/register.js");
-    assert.match(
-        source,
-        /const passwordValue = String\([\s\S]*values\?\.password \?\? ""[\s\S]*\)/m,
-    );
-    assert.match(source, /if \(passwordValue\.length === 0\)/);
-    assert.match(source, /return null/);
-    assert.match(source, /return value === passwordValue/);
-    assert.match(source, /messageKey: "ui\.app\.register\.passwords_match"/);
-});
-
 test("form builder supports neutral custom criterion state via null", () => {
     const source = read("src/ui/reuse/form-builder.js");
     assert.match(source, /if \(criterionResult === null\)/);
@@ -312,7 +242,9 @@ test("form builder can omit its submit button when includeSubmitButton is false"
 });
 
 test("profile bio and post editors use form builder max-character fields", () => {
-    const source = read("src/adapters/social/profile/ui/app.js");
+    const source =
+        read("src/adapters/social/profile/ui/app.js") +
+        read("src/adapters/social/profile/ui/profile-config.js");
     const renderSource = read(
         "src/adapters/social/profile/ui/profile-render.js",
     );
@@ -489,12 +421,4 @@ test("form builder updates textarea counters and captures edited values after at
         globalThis.HTMLTextAreaElement = originalHTMLTextAreaElement;
         globalThis.HTMLSelectElement = originalHTMLSelectElement;
     }
-});
-
-test("register confirm password revalidates reactively when password changes", () => {
-    const source = read("src/gateways/auth/ui/register.js");
-    assert.match(
-        source,
-        /bindConfirmPasswordRevalidation\(\{\s*form,\s*formController,\s*passwordFieldName:\s*"password",\s*confirmFieldName:\s*"confirmPassword",/m,
-    );
 });

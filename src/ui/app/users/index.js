@@ -9,6 +9,7 @@ import { createRepromptGuard } from "/static/gateways/auth/reuse/password-confir
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
 import { formatDate, formatDateTime } from "../../reuse/timestamp.js";
 import { isSmtpAdapterActive } from "/static/gateways/notify/smtp-adapter.js";
+import { uiCtx } from "../../reuse/ui-ctx.js";
 import {
     ACCESS_ROLES,
     getRoleLabel,
@@ -19,10 +20,10 @@ let root = null;
 let i18n = null;
 let reprompt = null;
 let users = [];
-let registrationGatewayActive = false;
 let smtpAdapterActive = false;
 let composer = null;
 let elements = [];
+let leadingControlsHtml = "";
 
 const QUOTA_UNITS = [
     { id: "B", multiplier: 1 },
@@ -80,23 +81,6 @@ async function loadUsers() {
     if (!response.ok) return [];
     const payload = await response.json();
     return payload.data ?? [];
-}
-
-async function loadRegistrationGatewayState() {
-    const response = await apiFetch("/api/v1/gateways/registration");
-    if (!response.ok) return false;
-    const payload = await response.json();
-    if (payload?.data?.status === "disabled") return false;
-    const adaptersRes = await apiFetch(
-        "/api/v1/gateways/registration/adapters",
-    );
-    if (!adaptersRes.ok) return false;
-    const adaptersPayload = await adaptersRes.json();
-    const adapters = Array.isArray(adaptersPayload?.data)
-        ? adaptersPayload.data
-        : [];
-    const inviteAdapter = adapters.find((entry) => entry.id === "invite");
-    return inviteAdapter?.enabled === true;
 }
 
 async function fetchUserInfo(username) {
@@ -299,9 +283,8 @@ async function promptStorageQuotas(username) {
 }
 
 async function refreshData() {
-    [users, registrationGatewayActive, smtpAdapterActive] = await Promise.all([
+    [users, smtpAdapterActive] = await Promise.all([
         loadUsers(),
-        loadRegistrationGatewayState(),
         isSmtpAdapterActive(apiFetch),
     ]);
     buildElements();
@@ -312,14 +295,8 @@ function renderUsersTable() {
     const currentUser = users.find((user) => user.username === currentUsername);
     const currentRole = currentUser?.role ?? getCurrentRole();
     const viewerCanManagePrivileged = currentRole === "owner";
-    const inviteButtonHtml =
-        registrationGatewayActive && smtpAdapterActive
-            ? `<div class="controls">
-          <button id="users-invite-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.reuse.invite"))}</button>
-        </div>`
-            : "";
     return `
-    ${inviteButtonHtml}
+    ${leadingControlsHtml}
     <div class="users-table-wrap">
       <table class="users-table">
         <thead>
@@ -522,6 +499,7 @@ async function runUserMenuAction(action, username) {
         if (!res.ok) return;
         await refreshData();
         composer.refresh(elements);
+        return;
     }
 }
 
@@ -674,52 +652,6 @@ function bindUsersInteractions() {
             }
         });
     });
-
-    root.querySelector("#users-invite-btn")?.addEventListener(
-        "click",
-        async () => {
-            await triggerInviteFlow();
-        },
-    );
-}
-
-async function triggerInviteFlow() {
-    await reprompt.runWithReprompt(
-        async () => {
-            const email = await promptInput({
-                title: i18n.t("ui.reuse.invite"),
-                label: i18n.t("ui.reuse.invite_email"),
-                type: "email",
-                placeholder: i18n.t("ui.reuse.email_placeholder"),
-            });
-            if (!email) return;
-            const response = await apiFetch("/api/v1/registration/tokens", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ email }),
-            });
-            if (response.ok) {
-                showToast(i18n.t("ui.reuse.invite_sent"), {
-                    variant: "success",
-                });
-                return;
-            }
-            let errorMessage = i18n.t("ui.reuse.invite_failed");
-            try {
-                const errorBody = await response.json();
-                if (errorBody?.error?.code === "email_taken") {
-                    errorMessage = i18n.t("ui.reuse.invite_email_taken");
-                }
-            } catch {
-                // fall through to the default invite_failed message in errorMessage
-            }
-            showToast(errorMessage, { variant: "error" });
-        },
-        {
-            title: i18n.t("ui.reuse.invite"),
-            message: i18n.t("ui.reuse.sensitive_action_prompt"),
-        },
-    );
 }
 
 export async function mount(rootEl, { signal } = {}) {
@@ -729,10 +661,21 @@ export async function mount(rootEl, { signal } = {}) {
 
     reprompt = createRepromptGuard({ i18n });
     users = [];
-    registrationGatewayActive = false;
     smtpAdapterActive = false;
+    leadingControlsHtml = "";
 
     await refreshData();
+
+    const getLeadingControls = uiCtx.capabilities.get(
+        "users:getLeadingControls",
+    );
+    leadingControlsHtml = getLeadingControls
+        ? await getLeadingControls({
+              i18n,
+              role: getCurrentRole(),
+              isFounder: localStorage.getItem("cognis_is_founder") === "true",
+          }).catch(() => "")
+        : "";
 
     composer = createPageComposer(root, {
         allowCustomization: false,
@@ -750,15 +693,6 @@ export async function mount(rootEl, { signal } = {}) {
     });
 
     await composer.init();
-
-    const pageAction = new URL(location.href).searchParams.get("action");
-    if (
-        pageAction === "invite" &&
-        registrationGatewayActive &&
-        smtpAdapterActive
-    ) {
-        await triggerInviteFlow();
-    }
 }
 
 await mountWhenDirect(mount);

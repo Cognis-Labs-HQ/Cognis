@@ -7,6 +7,19 @@ import { ACCESS_ROLES } from "../reuse/access-role.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
+test("users page renders contributed controls directly above the table", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/users/index.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /\$\{leadingControlsHtml\}\s*<div class="users-table-wrap">/,
+    );
+    assert.match(source, /toolbar: \[\]/);
+});
+
 test("users role dropdown includes every assignable access role", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/users/index.js"),
@@ -138,22 +151,6 @@ test("users row click guard ignores role dropdown interaction", () => {
     );
 
     assert.match(source, /target\.closest\("button,input,select"\)/);
-});
-
-test("users invite flow is gated by registration and smtp adapter availability", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/users/index.js"),
-        "utf8",
-    );
-
-    assert.match(
-        source,
-        /inviteButtonHtml =[\s\S]*registrationGatewayActive\s*&&\s*smtpAdapterActive/,
-    );
-    assert.match(
-        source,
-        /pageAction === "invite"[\s\S]*registrationGatewayActive\s*&&\s*smtpAdapterActive/,
-    );
 });
 
 test("users resend verification action is hidden when smtp adapter is disabled", () => {

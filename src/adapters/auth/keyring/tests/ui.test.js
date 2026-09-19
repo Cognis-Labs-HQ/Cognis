@@ -1,80 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { webcrypto } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-
-const values = new Map();
-const sessionValues = new Map();
-const indexedDbValues = new Map();
-const settingsSource = readFileSync(
-    resolve(import.meta.dirname, "../ui/settings.js"),
-    "utf8",
-);
-const keyringSource = readFileSync(
-    resolve(import.meta.dirname, "../ui/keyring.js"),
-    "utf8",
-);
-Object.defineProperty(globalThis, "crypto", {
-    configurable: true,
-    value: webcrypto,
-});
-globalThis.localStorage = {
-    getItem: (key) => values.get(key) ?? null,
-    setItem: (key, value) => values.set(key, String(value)),
-    removeItem: (key) => values.delete(key),
-};
-globalThis.sessionStorage = {
-    getItem: (key) => sessionValues.get(key) ?? null,
-    setItem: (key, value) => sessionValues.set(key, String(value)),
-    removeItem: (key) => sessionValues.delete(key),
-};
-globalThis.indexedDB = {
-    open() {
-        const request = {};
-        const database = {
-            objectStoreNames: {
-                contains: () => true,
-            },
-            createObjectStore() {},
-            transaction() {
-                const transaction = {
-                    objectStore() {
-                        return {
-                            put(record) {
-                                indexedDbValues.set(record.id, record);
-                                queueMicrotask(() =>
-                                    transaction.oncomplete?.(),
-                                );
-                            },
-                            get(id) {
-                                const getRequest = {};
-                                queueMicrotask(() => {
-                                    getRequest.result = indexedDbValues.get(id);
-                                    getRequest.onsuccess?.();
-                                });
-                                return getRequest;
-                            },
-                            delete(id) {
-                                indexedDbValues.delete(id);
-                                queueMicrotask(() =>
-                                    transaction.oncomplete?.(),
-                                );
-                            },
-                        };
-                    },
-                };
-                return transaction;
-            },
-            close() {},
-        };
-        queueMicrotask(() => {
-            request.result = database;
-            request.onsuccess?.();
-        });
-        return request;
-    },
-};
+import {
+    indexedDbValues,
+    keyringSource,
+    sessionValues,
+    settingsSource,
+    values,
+} from "./ui-environment.js";
 
 test("keyring settings do not schedule an unlock prompt while rendering", () => {
     assert.doesNotMatch(settingsSource, /defer-page-action/);
@@ -127,10 +61,14 @@ test("cancelled access exposes an attributed manual unlock control", () => {
         resolve("src/adapters/auth/keyring/ui/keyring.js"),
         "utf8",
     );
+    const capabilitiesSource = readFileSync(
+        resolve("src/adapters/auth/keyring/ui/capabilities.js"),
+        "utf8",
+    );
     assert.match(source, /cognis:keyring-access-state/);
     assert.match(source, /keyring-manual-unlock/);
     assert.match(source, /manual:\s*true/);
-    assert.match(source, /keyring:isAccessSuppressed/);
+    assert.match(capabilitiesSource, /keyring:isAccessSuppressed/);
 });
 
 test("keyring lifecycle uses distinct destroyed and created notifications", () => {
@@ -536,9 +474,13 @@ test("first login sets up a new keyring with the selected encryption password", 
 });
 
 test("keyring password popups use the form composer with required fields", () => {
+    const resourcesSource = readFileSync(
+        resolve("src/adapters/auth/keyring/ui/resources.js"),
+        "utf8",
+    );
     assert.match(keyringSource, /createFormBuilder/);
     assert.match(keyringSource, /ensureKeyringFormStyles/);
-    assert.match(keyringSource, /styles\/reuse\/page-sections\.css/);
+    assert.match(resourcesSource, /styles\/reuse\/page-sections\.css/);
     assert.match(keyringSource, /formId: "keyring-unlock-form"/);
     assert.match(keyringSource, /formClassName: "keyring-password-form"/);
     assert.match(keyringSource, /name: "password"[\s\S]*required: true/);

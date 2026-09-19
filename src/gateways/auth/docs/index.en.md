@@ -12,10 +12,16 @@ The gateway discovers adapters by scanning `src/adapters/auth/` at bootstrap tim
 - Manage adapter enable/disable state persisted in `auth_adapter_configs`.
 - Verify credentials by delegating to the enabled adapter for the requested provider.
 - Issue access tokens after successful authentication via `issueAccessToken`.
-- Contribute the documented capability set: `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, `auth:registerProvider`, `auth:registerPageScriptOrigins`, `auth:issueAccessToken`, `auth:getAuthClaims`, `auth:requireAuth`, `auth:requireRoleAccess`, `auth:revokeAccessTokensForSubject`, `auth:revokeSetupPendingAccessTokens`, and `auth:routeContext`.
+- Contribute the documented capability set: `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, `auth:registerProvider`, `auth:registerLoginButton`, `auth:registerPageScriptOrigins`, `auth:issueAccessToken`, `auth:getAuthClaims`, `auth:requireAuth`, `auth:requireRoleAccess`, `auth:revokeAccessTokensForSubject`, `auth:revokeSetupPendingAccessTokens`, and `auth:routeContext`.
 - Register all auth API routes and adapter admin routes.
 
 Not responsible for: storing user profile data (the profile gateway), session management beyond token issuance, or any non-auth business logic.
+
+### Runtime provider lifecycle
+
+Runtime providers must use the Authentication gateway as their configuration and power-state authority, exactly like LDAP. The provider supplies a stable `id`, `getConfigSchema()`, `configure(config)`, and `isConfigured()`; Administration reads and writes `/api/v1/gateways/auth/adapters/<id>/config` and toggles `/enable` or `/disable`. The module must not maintain a second activation flag or treat module enablement as adapter enablement.
+
+During bootstrap, await `auth:registerProvider(provider, requires)` before registering routes or login presentation. The promise resolves only after Cognis restores the adapter's persisted configuration and enabled state. Register the branded button afterward, retain both disposers, and remove the button before unregistering the provider during teardown. A provider with no persisted enabled state starts disabled and must complete setup through the gateway-owned adapter configuration flow.
 
 ## Architecture
 
@@ -51,28 +57,38 @@ Bootstrap in `src/gateways/auth/bootstrap.ts` and `src/gateways/auth/bootstrap/`
 
 Capabilities contributed:
 
-| Capability                       | Type                                           | Description                                                                 |
-| -------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------- |
-| `auth:accountStore`              | `LocalAccountStore`                            | Local account store used by the local adapter                               |
-| `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | Creates an admin account if it does not exist                               |
-| `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | Returns metadata for all enabled providers                                  |
-| `auth:registerProvider`          | `(provider, requires?) => dispose`             | Registers a module authentication provider and returns its cleanup function |
-| `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Replaces trusted http(s) script origins for one owner in page CSP headers   |
+| Capability                       | Type                                           | Description                                                                  |
+| -------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------- |
+| `auth:accountStore`              | `LocalAccountStore`                            | Local account store used by the local adapter                                |
+| `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | Creates an admin account if it does not exist                                |
+| `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | Returns metadata for all enabled providers                                   |
+| `auth:registerProvider`          | `async (provider, requires?) => dispose`       | Registers a module authentication provider and returns its cleanup function  |
+| `auth:registerLoginButton`       | `(descriptor) => dispose`                      | Registers branded login-button presentation and returns its cleanup function |
+| `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Replaces trusted http(s) script origins for one owner in page CSP headers    |
+
+Authentication providers must await `auth:registerProvider` before calling `auth:registerLoginButton`. Registration restores the adapter's persisted configuration and enabled state before resolving, matching filesystem-discovered providers such as LDAP. The descriptor requires the registered `providerId`, a complete localized `label`, and a same-origin `iconUrl`. Optional `backgroundColor`, `borderColor`, and `textColor` values use six-digit hexadecimal colors. The login page always renders the icon and full label at both compact and wide viewport sizes. Providers must call the returned cleanup function when their contribution is disabled. Unstyled non-credential methods are omitted rather than rendered as generic login buttons.
+
+Browser-facing OAuth redirects may use `/sso/<routeNamespace>/<path>`. Cognis forwards query-based callbacks directly to the provider and bridges fragment-based responses into the same server-owned callback without leaving the page spinner active. Callback failures return to Login with a localized error.
+
+A provider may declare `routeNamespace` and `registerRoutes(router)` on its adapter. The router accepts `GET` and `POST` paths relative to `/api/v1/auth/<routeNamespace>` so OAuth callbacks can live under the Authentication gateway without granting the contributing module direct access to protected core routes. Namespaces are restricted to safe URL segments, core Authentication namespaces are reserved, duplicate routes are rejected, and provider disposal removes every contributed route.
+
+External-provider sessions pass through `gateAccountCreation` before `ensureExternalAccount`. When open registration is disabled, Cognis stores an unknown authenticated identity behind an opaque, expiring attempt ID and returns `account_creation_required` with a `registrationUrl`. Providers redirect to that URL rather than rendering authorization UI. The Registration Token adapter contributes the authorization form to the standard registration shell and resumes the held identity without exposing provider callback state. Public registration bypasses token authorization.
 
 ## API Routes
 
-| Method | Path                                         | Description                           | Auth  |
-| ------ | -------------------------------------------- | ------------------------------------- | ----- |
-| `GET`  | `/api/v1/auth/login-methods`                 | List enabled authentication providers | None  |
-| `POST` | `/api/v1/auth/register`                      | Self-register a new local account     | None  |
-| `POST` | `/api/v1/auth/login`                         | Authenticate; returns bearer token    | None  |
-| `POST` | `/api/v1/auth/verify`                        | Verify current user's password        | User  |
-| `GET`  | `/api/v1/gateways/auth/adapters`             | List all registered auth adapters     | Admin |
-| `GET`  | `/api/v1/gateways/auth/adapters/:id/config`  | Get config schema for an adapter      | Admin |
-| `PUT`  | `/api/v1/gateways/auth/adapters/:id/config`  | Update config for an adapter          | Admin |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/test`    | Test an adapter configuration         | Admin |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/enable`  | Enable an adapter                     | Admin |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Disable an adapter                    | Admin |
+| Method | Path                                         | Description                                       | Auth  |
+| ------ | -------------------------------------------- | ------------------------------------------------- | ----- |
+| `GET`  | `/api/v1/auth/login-methods`                 | List enabled authentication providers             | None  |
+| `POST` | `/api/v1/auth/register`                      | Self-register a new local account                 | None  |
+| `POST` | `/api/v1/auth/login`                         | Authenticate; returns bearer token                | None  |
+| `POST` | `/api/v1/auth/sso/start`                     | Start an external provider authorization redirect | None  |
+| `POST` | `/api/v1/auth/verify`                        | Verify current user's password                    | User  |
+| `GET`  | `/api/v1/gateways/auth/adapters`             | List all registered auth adapters                 | Admin |
+| `GET`  | `/api/v1/gateways/auth/adapters/:id/config`  | Get config schema for an adapter                  | Admin |
+| `PUT`  | `/api/v1/gateways/auth/adapters/:id/config`  | Update config for an adapter                      | Admin |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/test`    | Test an adapter configuration                     | Admin |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/enable`  | Enable an adapter                                 | Admin |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Disable an adapter                                | Admin |
 
 Adapter test failures may include an `error.fieldErrors` object mapping any number of configuration field IDs to safe diagnostic messages.
 
@@ -91,3 +107,7 @@ Authentication source changes run the `reconcile-auth-sources` flow after persis
 ## Browser session boundaries
 
 Password-confirmation invalidation runs only for an authenticated full-account session. Anonymous and Share guest page setup can lock or replace keyring state without sending an account-only `DELETE /api/v1/auth/verify` request.
+
+## External profile providers
+
+SSO modules may register `auth:registerExternalProfileProvider` through CTX. The resolver receives the provider ID, Cognis account ID, external user ID, and authenticated provider session, and may return a searchable handle, display name, bio, location, website, avatar bytes, and banner bytes. Cognis also uses a provider session `handle` or `username` as the initial profile handle when supplied, rather than exposing an opaque external account ID as the username. The Profile adapter applies returned data through its own persistence and file-storage capability when the external account is first created.

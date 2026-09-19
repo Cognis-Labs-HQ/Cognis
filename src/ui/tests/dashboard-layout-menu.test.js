@@ -261,7 +261,6 @@ test("built-in dashboard pages expose UUID-owned component page metadata", () =>
         "core.dashboard",
         "core.settings",
         "core.users",
-        "core.invite",
         "core.modules",
         "core.administration",
         "core.docs",

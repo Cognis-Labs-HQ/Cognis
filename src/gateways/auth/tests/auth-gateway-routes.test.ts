@@ -134,6 +134,50 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
             ],
         }),
     );
+    systemCtx.flow.extend(
+        "construct-login-ui",
+        "augment-methods",
+        { id: "test:faculty-login-button" },
+        () => ({
+            methods: [
+                {
+                    id: "ldap:Faculty",
+                    name: "Faculty",
+                    loginButton: {
+                        providerId: "ldap:Faculty",
+                        label: "Continue with Faculty",
+                        iconUrl: "/static/modules/faculty/icon.svg",
+                        backgroundColor: "#ffffff",
+                        textColor: "#202124",
+                    },
+                },
+            ],
+        }),
+    );
+    systemCtx.flow.extend(
+        "startSsoLogin",
+        "initiateAuthorization",
+        { id: "test:unrelated-sso-hook" },
+        () => undefined,
+    );
+    systemCtx.flow.extend(
+        "startSsoLogin",
+        "initiateAuthorization",
+        { id: "test:reject-protocol-relative-redirect" },
+        (stageContext) => ({
+            providerId: stageContext.input.providerId,
+            redirectUrl: "//malicious.example.com/authorize",
+        }),
+    );
+    systemCtx.flow.extend(
+        "startSsoLogin",
+        "initiateAuthorization",
+        { id: "test:start-faculty-sso" },
+        (stageContext) => ({
+            providerId: stageContext.input.providerId,
+            redirectUrl: "https://identity.example.com/authorize",
+        }),
+    );
 
     const handlers = routeRegistry.getHandlers();
     const req = {
@@ -160,6 +204,7 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
                 id: string;
                 name: string;
                 credential?: boolean;
+                loginButton?: Record<string, string>;
             }>;
             integrations: unknown[];
         };
@@ -173,8 +218,38 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
             name: "Faculty",
             forgotPassword: false,
             credential: true,
+            loginButton: {
+                providerId: "ldap:Faculty",
+                label: "Continue with Faculty",
+                iconUrl: "/static/modules/faculty/icon.svg",
+                backgroundColor: "#ffffff",
+                textColor: "#202124",
+            },
         },
     );
+
+    const startResponse = makeResponse();
+    const startRequest = {
+        method: "POST",
+        headers: {},
+        async *[Symbol.asyncIterator]() {
+            yield Buffer.from(JSON.stringify({ providerId: "ldap:Faculty" }));
+        },
+    } as unknown as import("node:http").IncomingMessage;
+    for (const handler of handlers) {
+        handled = await handler(
+            startRequest,
+            startResponse as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/sso/start", "http://localhost"),
+        );
+        if (handled) break;
+    }
+    assert.equal(startResponse.status, 200);
+    assert.deepEqual(JSON.parse(startResponse.payload), {
+        data: {
+            redirectUrl: "https://identity.example.com/authorize",
+        },
+    });
 });
 
 test("GET /api/v1/auth/registration-config returns open-registration state", async () => {
@@ -470,6 +545,49 @@ test("POST /api/v1/auth/verify returns 200 for fresh authenticated session", asy
         headers: { authorization: `Bearer ${token}` },
         [Symbol.asyncIterator]: async function* () {
             yield Buffer.from(JSON.stringify({ password: "wrong-password" }));
+        },
+    } as unknown as import("node:http").IncomingMessage;
+    const res = makeResponse();
+
+    let handled = false;
+    for (const entry of routeRegistry.getEntries()) {
+        handled = await entry.handler(
+            req,
+            res as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/verify", "http://localhost"),
+        );
+        if (handled) break;
+    }
+
+    assert.ok(handled, "verify endpoint should handle the request");
+    assert.equal(res.status, 200);
+});
+
+test("POST /api/v1/auth/verify accepts a fresh cookie-only SSO session", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+    });
+
+    const token = issueAccessToken("sso-cookie-user", "admin", 60, {
+        providerId: "external-sso",
+    });
+    const req = {
+        method: "POST",
+        headers: { cookie: `cognis_access_token=${token}` },
+        [Symbol.asyncIterator]: async function* () {
+            yield Buffer.from("{}");
         },
     } as unknown as import("node:http").IncomingMessage;
     const res = makeResponse();

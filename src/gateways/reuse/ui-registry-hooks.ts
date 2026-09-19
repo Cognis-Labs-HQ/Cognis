@@ -10,7 +10,7 @@ export function createGatewayUiRegistryHooks(
             isEnabled?: () => boolean,
             providesCapabilities?: string[],
         ): void {
-            uiRegistry?.registerNavbarPlugin({
+            uiRegistry?.registerNavbarPlugin?.({
                 scriptUrl,
                 isEnabled,
                 providesCapabilities,
@@ -24,7 +24,7 @@ export function createGatewayUiRegistryHooks(
             stylesheets?: string[];
             isEnabled?: () => boolean;
         }): void {
-            uiRegistry?.registerSpaRoute(route);
+            uiRegistry?.registerSpaRoute?.(route);
         },
         registerPageExtension(
             pageId: string,
@@ -35,13 +35,13 @@ export function createGatewayUiRegistryHooks(
                 isEnabled?: () => boolean;
             },
         ): void {
-            uiRegistry?.registerPageExtension(pageId, element);
+            uiRegistry?.registerPageExtension?.(pageId, element);
         },
         registerStaticDir(urlPrefix: string, absoluteDir: string): void {
-            uiRegistry?.registerStaticDir(urlPrefix, absoluteDir);
+            uiRegistry?.registerStaticDir?.(urlPrefix, absoluteDir);
         },
         registerAdapterStaticDir(adapterId: string, absoluteDir: string): void {
-            uiRegistry?.registerAdapterStaticDir(
+            uiRegistry?.registerAdapterStaticDir?.(
                 gatewayId,
                 adapterId,
                 absoluteDir,

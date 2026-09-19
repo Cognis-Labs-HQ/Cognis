@@ -9,6 +9,8 @@ export interface ModuleManifest {
     publisher?: string;
     class: ModuleClass;
     enabledByDefault?: boolean;
+    /** Requests guarded access to security-sensitive core extension surfaces. */
+    privileged?: boolean;
     /** Marketplace-only repositories are hidden only when explicitly marked. */
     template?: boolean;
     coreApiVersion: string;
@@ -38,7 +40,6 @@ export interface ModuleManifest {
     entrypoints: {
         bootstrap?: string;
         disabledApi?: string;
-        api?: string;
         ui?: string;
         cli?: string;
         db?: string;

@@ -32,7 +32,10 @@ test("social routes - follow and unfollow", async () => {
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
         await profileStore.updateProfile("alice", { visibility: "community" });
-        await profileStore.updateProfile("bob", { visibility: "community" });
+        await profileStore.updateProfile("bob", {
+            handle: "provider-bob",
+            visibility: "community",
+        });
         const sentNotifications: any[] = [];
         const route = createSocialRoutes(profileStore, undefined, {
             dispatchNotification: async (envelope) => {
@@ -53,7 +56,7 @@ test("social routes - follow and unfollow", async () => {
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/social/users/bob/follow"),
+            new URL("http://localhost/api/v1/social/users/provider-bob/follow"),
         );
         assert.equal(status, 200);
         assert.match(body, /true/);
@@ -72,7 +75,7 @@ test("social routes - follow and unfollow", async () => {
                     followerAccountId: "alice",
                     followerHandle: "alice",
                     targetAccountId: "bob",
-                    targetHandle: "bob",
+                    targetHandle: "provider-bob",
                 },
             },
         ]);
@@ -87,7 +90,7 @@ test("social routes - follow and unfollow", async () => {
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/social/users/bob/follow"),
+            new URL("http://localhost/api/v1/social/users/provider-bob/follow"),
         );
         assert.equal(status, 200);
         assert.ok(!(await profileStore.isFollowing("alice", "bob")));

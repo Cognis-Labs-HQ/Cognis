@@ -1,88 +1,116 @@
-import { formatDateTime } from "/static/reuse/timestamp.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
+import { createFormDirtyTracker } from "/static/reuse/unsaved-changes.js";
 
-export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
-    let tokens = [];
-    let socialGatewayEnabled = false;
+export function createAdminSection({
+    i18n,
+    apiFetch,
+    escapeHtml,
+    onDirtyChange,
+}) {
+    let invitationPolicy = null;
+    let publicRegistrationEnabled = false;
+    let policyTracker = null;
+    let policyForm = null;
+    let policyFormBinding = null;
+    let policyChangeHandler = null;
+    const isOwner = localStorage.getItem("cognis_role") === "owner";
 
     const dataReady = Promise.all([
-        apiFetch("/api/v1/registration/tokens?includeClosed=true"),
-        apiFetch("/api/v1/gateways/social"),
-    ]).then(async ([tokensRes, profileRes]) => {
-        if (tokensRes.ok) {
-            const payload = await tokensRes.json();
-            tokens = payload.data ?? [];
+        apiFetch("/api/v1/registration/policy"),
+        apiFetch("/api/v1/gateways/registration/adapters"),
+    ]).then(async ([policyResponse, adaptersResponse]) => {
+        if (policyResponse.ok) {
+            invitationPolicy = (await policyResponse.json())?.data ?? null;
         }
-        if (profileRes.ok) {
-            const payload = await profileRes.json();
-            socialGatewayEnabled = payload?.data?.status !== "disabled";
+        if (adaptersResponse.ok) {
+            const adapters = (await adaptersResponse.json())?.data ?? [];
+            publicRegistrationEnabled =
+                adapters.find((adapter) => adapter.id === "public")?.enabled ===
+                true;
         }
     });
 
-    function statusLabel(status) {
-        const key = `ui.app.invite.status_${status ?? "pending"}`;
-        return escapeHtml(i18n.t(key));
+    function createPolicyForm() {
+        return createFormBuilder(
+            { i18n, escapeHtml },
+            {
+                formId: "registration-policy-form",
+                includeSubmitButton: false,
+                fields: [
+                    {
+                        name: "publicRegistrationEnabled",
+                        labelKey:
+                            "gateway.registration.public_registration_enabled",
+                        type: "checkbox",
+                        value: String(publicRegistrationEnabled),
+                        inputClassName: "choice-checkbox",
+                    },
+                    {
+                        name: "founderInvitesEnabled",
+                        labelKey: "gateway.registration.allow_founder_invites",
+                        type: "checkbox",
+                        value: String(
+                            invitationPolicy?.founderInvitesEnabled === true,
+                        ),
+                        inputClassName: "choice-checkbox",
+                    },
+                    {
+                        name: "adminInvitesEnabled",
+                        labelKey: "gateway.registration.allow_admin_invites",
+                        type: "checkbox",
+                        value: String(
+                            invitationPolicy?.adminInvitesEnabled === true,
+                        ),
+                        inputClassName: "choice-checkbox",
+                    },
+                ],
+            },
+        );
     }
 
-    function renderTokenRow(token) {
-        const isPending = !token.status || token.status === "pending";
-        const revokeHtml = isPending
-            ? `<button class="invite-revoke-btn btn-animated" type="button" data-token-id="${escapeHtml(token.id)}">${escapeHtml(i18n.t("ui.app.invite.revoke"))}</button>`
-            : "";
-        const expiresAt = token.expiresAt
-            ? escapeHtml(formatDateTime(token.expiresAt))
-            : "";
-        const issuerUsername = String(token.inviterAccountId ?? "");
-        const redeemedUsername = String(token.redeemedAccountId ?? "");
-        const issuerCell = socialGatewayEnabled
-            ? `<a href="/profile/${encodeURIComponent(issuerUsername)}">${escapeHtml(issuerUsername)}</a>`
-            : escapeHtml(issuerUsername);
-        const redeemedCell = redeemedUsername
-            ? socialGatewayEnabled
-                ? `<a href="/profile/${encodeURIComponent(redeemedUsername)}">${escapeHtml(redeemedUsername)}</a>`
-                : escapeHtml(redeemedUsername)
-            : "—";
-        return `
-        <tr>
-          <td>${escapeHtml(token.inviteeEmail)}</td>
-          <td>${issuerCell}</td>
-          <td>${redeemedCell}</td>
-          <td>${statusLabel(token.status)}</td>
-          <td>${expiresAt}</td>
-          <td class="users-actions-cell">${revokeHtml}</td>
-        </tr>`;
+    function readPolicyForm() {
+        return {
+            publicRegistrationEnabled:
+                policyForm?.elements.namedItem("publicRegistrationEnabled")
+                    ?.checked === true,
+            founderInvitesEnabled:
+                policyForm?.elements.namedItem("founderInvitesEnabled")
+                    ?.checked === true,
+            adminInvitesEnabled:
+                policyForm?.elements.namedItem("adminInvitesEnabled")
+                    ?.checked === true,
+        };
+    }
+
+    function resetPolicyTracker() {
+        policyTracker?.destroy();
+        policyFormBinding?.detach?.();
+        if (policyForm && policyChangeHandler) {
+            policyForm.removeEventListener("change", policyChangeHandler);
+        }
+        if (!policyForm) return;
+        const formBuilder = createPolicyForm();
+        policyFormBinding = formBuilder.attach(policyForm);
+        policyTracker = createFormDirtyTracker(policyForm, { quiet: true });
+        policyChangeHandler = () => {
+            policyTracker.sync();
+            onDirtyChange?.("registration", policyTracker.isAnyDirty());
+        };
+        policyForm.addEventListener("change", policyChangeHandler);
+        onDirtyChange?.("registration", false);
     }
 
     function renderContent() {
-        const tableHtml =
-            tokens.length === 0
-                ? `<p class="registration-no-tokens"><em>${escapeHtml(i18n.t("gateway.registration.no_tokens"))}</em></p>`
-                : `
-        <div class="users-table-wrap">
-          <table class="users-table">
-            <thead>
-              <tr>
-                <th>${escapeHtml(i18n.t("ui.app.invite.email"))}</th>
-                <th>${escapeHtml(i18n.t("ui.app.invite.issuer"))}</th>
-                <th>${escapeHtml(i18n.t("ui.app.invite.username"))}</th>
-                <th>${escapeHtml(i18n.t("ui.app.invite.status"))}</th>
-                <th>${escapeHtml(i18n.t("ui.app.invite.expires_at"))}</th>
-                <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tokens.map(renderTokenRow).join("")}
-            </tbody>
-          </table>
-        </div>`;
-
+        const policyFormHtml =
+            isOwner && invitationPolicy ? createPolicyForm().render() : "";
         return `
-      <div class="security-settings-form">
-        <p class="security-field-hint">${escapeHtml(i18n.t("ui.app.invite.page_subtitle"))}</p>
-        <div class="security-field-row">
-          <a class="btn-confirm btn-animated" href="/users?action=invite">${escapeHtml(i18n.t("ui.reuse.invite"))}</a>
+      ${policyFormHtml}
+      <div class="stack">
+        <p>${escapeHtml(i18n.t("gateway.registration.invite.page_subtitle"))}</p>
+        <div class="controls">
+          <a class="btn-neutral btn-animated" href="/invite">${escapeHtml(i18n.t("ui.reuse.invite"))}</a>
         </div>
       </div>
-      ${tableHtml}
     `;
     }
 
@@ -90,6 +118,48 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         id: "registration",
         label: i18n.t("ui.reuse.registration"),
         dataReady,
+        isDirty: () => policyTracker?.isAnyDirty() === true,
+        async save() {
+            if (!policyForm || !policyTracker?.isAnyDirty()) return;
+            const nextPolicy = readPolicyForm();
+            if (
+                nextPolicy.publicRegistrationEnabled !==
+                publicRegistrationEnabled
+            ) {
+                const action = nextPolicy.publicRegistrationEnabled
+                    ? "enable"
+                    : "disable";
+                const adapterResponse = await apiFetch(
+                    `/api/v1/gateways/registration/adapters/public/${action}`,
+                    { method: "POST" },
+                );
+                if (!adapterResponse.ok)
+                    throw new Error("public_registration_save_failed");
+            }
+            const response = await apiFetch("/api/v1/registration/policy", {
+                method: "PUT",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    founderInvitesEnabled: nextPolicy.founderInvitesEnabled,
+                    adminInvitesEnabled: nextPolicy.adminInvitesEnabled,
+                }),
+            });
+            if (!response.ok)
+                throw new Error("registration_policy_save_failed");
+            publicRegistrationEnabled = nextPolicy.publicRegistrationEnabled;
+            invitationPolicy = nextPolicy;
+            resetPolicyTracker();
+        },
+        discard() {
+            if (!policyForm || !invitationPolicy) return;
+            policyForm.elements.namedItem("publicRegistrationEnabled").checked =
+                publicRegistrationEnabled;
+            policyForm.elements.namedItem("founderInvitesEnabled").checked =
+                invitationPolicy.founderInvitesEnabled === true;
+            policyForm.elements.namedItem("adminInvitesEnabled").checked =
+                invitationPolicy.adminInvitesEnabled === true;
+            resetPolicyTracker();
+        },
         subComposerOptions: {
             allowCustomization: false,
             preferenceKey: "administration-registration-layout",
@@ -103,38 +173,8 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                 },
             ],
             onRender: (root) => {
-                root.querySelectorAll(".invite-revoke-btn").forEach((btn) => {
-                    btn.addEventListener("click", async () => {
-                        const tokenId = btn.dataset.tokenId;
-                        if (!tokenId) return;
-                        const res = await apiFetch(
-                            `/api/v1/registration/tokens/${encodeURIComponent(tokenId)}/revoke`,
-                            { method: "POST" },
-                        );
-                        if (res.ok) {
-                            const idx = tokens.findIndex(
-                                (t) => t.id === tokenId,
-                            );
-                            if (idx >= 0) {
-                                tokens[idx] = {
-                                    ...tokens[idx],
-                                    status: "revoked",
-                                };
-                            }
-                            btn.closest("tr")
-                                ?.querySelector(".invite-revoke-btn")
-                                ?.remove();
-                            const statusCell = btn.closest("tr")?.cells[3];
-                            if (statusCell) {
-                                statusCell.textContent = statusLabel("revoked");
-                            }
-                        } else {
-                            showToast(i18n.t("ui.reuse.invite_failed"), {
-                                variant: "error",
-                            });
-                        }
-                    });
-                });
+                policyForm = root.querySelector("#registration-policy-form");
+                resetPolicyTracker();
             },
         },
     };

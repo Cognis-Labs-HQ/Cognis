@@ -22,6 +22,7 @@ import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { hexToBytes } from "/static/reuse/crypto-utils.js";
+import { renderNotificationItem as renderItem } from "./notification-item.js";
 
 const POLL_INTERVAL_VISIBLE_MS = 10_000;
 const POLL_INTERVAL_HIDDEN_MS = 30_000;
@@ -394,83 +395,27 @@ function updateClearAllButton() {
 }
 
 function renderNotificationItem(notif, i18n) {
-    const listItem = document.createElement("li");
-    listItem.className =
-        "notification-item " +
-        (notif.read ? "notification-item--read" : "notification-item--unread") +
-        (notif.actionUrl ? " notification-item--linked" : "");
-    listItem.dataset.id = notif.id;
-    listItem.dataset.searchCategory = "Notifications";
-    listItem.dataset.searchLabel = notif.subject;
-    listItem.dataset.searchText = [notif.subject, notif.senderName, notif.body]
-        .filter(Boolean)
-        .join(" ");
-
-    listItem.innerHTML =
-        '<span class="notification-item-dot" aria-hidden="true"></span>' +
-        '<span class="notification-item-body">' +
-        `<span class="notification-item-subject">${escapeHtml(notif.subject)}</span>` +
-        `<span class="notification-item-sender">${escapeHtml(notif.senderName ?? i18n.t("ui.reuse.system"))}</span>` +
-        `<span class="notification-item-preview">${escapeHtml(notif.body)}</span>` +
-        "</span>" +
-        `<span class="notification-item-time" data-relative-time="${notif.createdAt}">${escapeHtml(formatRelativeTime(notif.createdAt))}</span>` +
-        renderNotificationActions(notif) +
-        (notif.actionUrl
-            ? '<span class="notification-item-link-arrow" aria-hidden="true">&#8250;</span>'
-            : "") +
-        `<button class="notification-dismiss" data-search-exclude="true" type="button" aria-label="${i18n.t("ui.reuse.remove")}">&#215;</button>`;
-
-    listItem.addEventListener("click", async (e) => {
-        if (e.target.closest(".notification-dismiss")) return;
-        const actionButton = e.target.closest("[data-notification-action]");
-        if (actionButton instanceof HTMLElement) {
-            dispatchNotificationAction(
-                notif,
-                actionButton.dataset.notificationAction,
-            );
-            return;
-        }
-        if (!notif.read) {
-            try {
-                await markOneRead(notif.id);
-                listItem.classList.remove("notification-item--unread");
-                listItem.classList.add("notification-item--read");
-                notif.read = true;
-                await refreshCount();
-            } catch {
-                showToast(i18n.t("adapter.notify.internal.error_mark_read"), {
-                    variant: "error",
-                });
-            }
-        }
-        if (notif.actionUrl) {
+    return renderItem(notif, i18n, {
+        renderActions: renderNotificationActions,
+        dispatchAction: dispatchNotificationAction,
+        markRead: markOneRead,
+        refreshCount,
+        dismiss: deleteNotification,
+        navigate: (url) => {
             closePanel();
-            navigateNotif(notif.actionUrl);
-        }
-    });
-
-    const dismissBtn = listItem.querySelector(".notification-dismiss");
-    dismissBtn.addEventListener("click", async (e) => {
-        e.stopPropagation();
-        try {
-            await deleteNotification(notif.id);
-            listItem.remove();
+            navigateNotif(url);
+        },
+        reportError: (key) => showToast(i18n.t(key), { variant: "error" }),
+        afterDismiss: async (id) => {
             currentNotifications = currentNotifications.filter(
-                (n) => n.id !== notif.id,
+                (n) => n.id !== id,
             );
             await refreshCount();
-            if (currentNotifications.length === 0 && emptyEl) {
+            if (currentNotifications.length === 0 && emptyEl)
                 emptyEl.hidden = false;
-            }
             updateClearAllButton();
-        } catch {
-            showToast(i18n.t("adapter.notify.internal.error_dismiss"), {
-                variant: "error",
-            });
-        }
+        },
     });
-
-    return listItem;
 }
 
 async function refreshCount() {

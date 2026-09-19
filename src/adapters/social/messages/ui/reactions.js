@@ -1,3 +1,4 @@
+import { fetchEmojiCatalog } from "./emoji-catalog.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { createAnchoredPopup, openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -8,12 +9,9 @@ const MAX_EMOJI_PICKER_DISPLAY_COUNT = 80;
 async function loadAllEmojis(cache) {
     if (cache.emojiList) return cache.emojiList;
     try {
-        const response = await fetch("/static/gateways/social/emojis.json");
-        if (response.ok) {
-            cache.emojiList = await response.json();
-        }
+        cache.emojiList = await fetchEmojiCatalog();
     } catch {
-        cache.emojiList = cache.emojiList ?? [];
+        cache.emojiList = [];
     }
     cache.emojiList = cache.emojiList ?? [];
     return cache.emojiList;

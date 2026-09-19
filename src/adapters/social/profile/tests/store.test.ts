@@ -75,6 +75,33 @@ test("profile store resolves handles case-insensitively", async () => {
     assert.equal(profile?.handle, "AliceUser");
 });
 
+test("profile store makes synchronized external handles searchable", async () => {
+    const stores = [
+        new VolatileProfileStore(),
+        new DbProfileStore(new InMemoryTestExecutor()),
+    ];
+
+    for (const store of stores) {
+        if (store instanceof DbProfileStore) await store.ensureSchema();
+        await store.createProfile(
+            "opaque-external-account",
+            "opaque-external-account",
+            "user",
+            "The Firehawk",
+        );
+        await store.updateProfile("opaque-external-account", {
+            handle: "thefirehawk",
+        });
+
+        assert.deepEqual(
+            (await store.searchProfiles("thefire")).map(
+                (profile) => profile.handle,
+            ),
+            ["thefirehawk"],
+        );
+    }
+});
+
 test("profile store search can require a follow relationship", async () => {
     const databaseExecutor = new InMemoryTestExecutor();
     const store = new DbProfileStore(databaseExecutor);

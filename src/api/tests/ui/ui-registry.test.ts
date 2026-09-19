@@ -59,6 +59,44 @@ test("UIRegistry registers and lists admin sections", () => {
     assert.equal(sections[1].id, "s2");
 });
 
+test("UIRegistry prevents modules from replacing another owner's UI", () => {
+    const reg = new UIRegistry();
+    reg.registerAdminSection({
+        id: "shared-admin",
+        label: "Owner One",
+        scriptUrl: "/static/modules/one/admin.js",
+        ownerId: "one",
+    });
+    assert.throws(
+        () =>
+            reg.registerAdminSection({
+                id: "shared-admin",
+                label: "Owner Two",
+                scriptUrl: "/static/modules/two/admin.js",
+                ownerId: "two",
+            }),
+        /ui_registration_conflict/,
+    );
+    reg.registerSpaRoute({
+        id: "owner-one-page",
+        pattern: "^/shared$",
+        base: "/shared",
+        scriptUrl: "/static/modules/one/page.js",
+        ownerId: "one",
+    });
+    assert.throws(
+        () =>
+            reg.registerSpaRoute({
+                id: "owner-two-page",
+                pattern: "^/shared$",
+                base: "/shared",
+                scriptUrl: "/static/modules/two/page.js",
+                ownerId: "two",
+            }),
+        /ui_registration_conflict/,
+    );
+});
+
 test("UIRegistry removes every contribution owned by a module", () => {
     const reg = new UIRegistry();
     reg.registerAdminSection({
