@@ -1,6 +1,6 @@
 # Akses Runtime Modul
 
-**Cabang Fitur:** work
+**Cabang Fitur:** feature-allow-importing-cognis-internals-via-privileged-flag
 
 ## Izinkan sumber daya runtime Cognis
 

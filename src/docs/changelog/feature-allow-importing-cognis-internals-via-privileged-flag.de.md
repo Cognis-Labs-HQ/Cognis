@@ -1,6 +1,6 @@
 # Modul-Laufzeitzugriff
 
-**Feature-Zweig:** work
+**Feature-Zweig:** feature-allow-importing-cognis-internals-via-privileged-flag
 
 ## Cognis-Laufzeitressourcen erlauben
 

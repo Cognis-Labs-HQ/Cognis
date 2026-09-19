@@ -1,6 +1,6 @@
 # モジュール実行時アクセス
 
-**機能ブランチ:** work
+**機能ブランチ:** feature-allow-importing-cognis-internals-via-privileged-flag
 
 ## Cognis ランタイムリソースを許可
 
