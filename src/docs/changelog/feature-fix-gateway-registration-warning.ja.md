@@ -1,6 +1,6 @@
 # 正しい依存関係 UUID
 
-**機能ブランチ:** work
+**機能ブランチ:** feature-fix-gateway-registration-warning
 
 ## コンポーネント依存関係を正しく解決
 

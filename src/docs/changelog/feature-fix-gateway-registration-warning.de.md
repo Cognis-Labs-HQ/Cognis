@@ -1,6 +1,6 @@
 # Gültige Abhängigkeits-UUIDs
 
-**Feature-Zweig:** work
+**Feature-Zweig:** feature-fix-gateway-registration-warning
 
 ## Komponentenabhängigkeiten werden korrekt aufgelöst
 
