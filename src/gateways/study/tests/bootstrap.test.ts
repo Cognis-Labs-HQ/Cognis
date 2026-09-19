@@ -105,12 +105,31 @@ async function bootstrapStudyGateway() {
 }
 
 test("Study owns its SPA routes and Library detail-flow provider", async () => {
-    const { uiRegistry } = await bootstrapStudyGateway();
+    const { uiRegistry, systemCtx } = await bootstrapStudyGateway();
     const routes = uiRegistry.listSpaRoutes();
-    assert.ok(routes.some((route) => route.id === "gateway.study"));
-    assert.ok(routes.some((route) => route.id === "gateway.study.child"));
+    assert.equal(
+        routes.some((route) => route.id === "gateway.study"),
+        false,
+    );
+    assert.equal(
+        routes.some((route) => route.id === "gateway.study.child"),
+        false,
+    );
     assert.ok(
         uiRegistry.hasActiveCapabilityProvider("study:library:detailFlow"),
+    );
+    systemCtx.contributePublicCapability(
+        "study:language:ja",
+        japaneseLanguageCapability,
+    );
+    const enabledRoutes = uiRegistry.listSpaRoutes();
+    assert.equal(
+        enabledRoutes.some((route) => route.id === "gateway.study"),
+        true,
+    );
+    assert.equal(
+        enabledRoutes.some((route) => route.id === "gateway.study.child"),
+        true,
     );
 });
 
@@ -129,6 +148,24 @@ const japaneseLanguageCapability = {
         },
     ],
 };
+
+test("direct Study requests redirect to unavailable when no language is valid", async () => {
+    const { routeRegistry } = await bootstrapStudyGateway();
+    const response = new ResponseRecorder();
+    const handled = await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({
+            method: "GET",
+            cookieToken: issueAccessToken("learner", "user", 60),
+        }),
+        response,
+        new URL("http://localhost/study/hiragana"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(response.statusCode, 302);
+    assert.equal(response.headers.location, "/error?code=503");
+});
 
 test("study registered languages reflect installed language capabilities", async () => {
     const { routeRegistry, systemCtx } = await bootstrapStudyGateway();

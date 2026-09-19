@@ -3,7 +3,11 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { contentEntryId, inspectContentPack } from "../content-pack.js";
+import {
+    contentEntryId,
+    inspectContentPack,
+    versionedContentEntryId,
+} from "../content-pack.js";
 
 async function writeJson(file: string, value: unknown): Promise<void> {
     await writeFile(file, JSON.stringify(value), "utf8");
@@ -41,6 +45,10 @@ test("declarative language packs are inspected deterministically", async (t) => 
                 id: "letters",
                 metadata: { labels: { en: "Letters" } },
                 semanticRole: "atomicWritingUnit",
+                grid: {
+                    rowSize: 5,
+                    items: [null, "english:letter:a"],
+                },
                 fields: [
                     {
                         id: "pronunciation",
@@ -82,6 +90,7 @@ test("declarative language packs are inspected deterministically", async (t) => 
         {
             id: "english:letter:a",
             label: "a",
+            hidden: true,
             fields: {
                 pronunciation: ["ay"],
                 audio: "audio/a.mp3",
@@ -107,6 +116,11 @@ test("declarative language packs are inspected deterministically", async (t) => 
     const second = await inspectContentPack(root);
     assert.equal(first.digest, second.digest);
     assert.equal(first.records.length, 2);
+    assert.equal(first.records[0].hidden, true);
+    assert.deepEqual(first.schema.layers[0].grid, {
+        rowSize: 5,
+        items: [null, "english:letter:a"],
+    });
     assert.deepEqual(first.assets, [
         {
             path: "audio/a.mp3",
@@ -121,7 +135,14 @@ test("declarative language packs are inspected deterministically", async (t) => 
     ]);
     assert.equal(
         contentEntryId(manifest, "english:letter:a"),
-        contentEntryId(manifest, "english:letter:a"),
+        contentEntryId({ ...manifest, version: "2.0.0" }, "english:letter:a"),
+    );
+    assert.notEqual(
+        versionedContentEntryId(manifest, "english:letter:a"),
+        versionedContentEntryId(
+            { ...manifest, version: "2.0.0" },
+            "english:letter:a",
+        ),
     );
 
     await writeJson(path.join(root, "schema.json"), {
@@ -210,4 +231,101 @@ test("content packs reject dangling relationships", async (t) => {
     ]);
 
     await assert.rejects(inspectContentPack(root), /reference_not_found/);
+});
+
+test("content packs reject ordered sequences with unlinked text", async (t) => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-library-pack-"));
+    t.after(() => rm(root, { recursive: true, force: true }));
+    for (const layer of ["words", "particles", "sentences"])
+        await mkdir(path.join(root, "content", layer), { recursive: true });
+    await writeJson(path.join(root, "manifest.json"), {
+        id: "sentences",
+        publisher: "Test Publisher",
+        version: "1.0.0",
+        contentRevision: "1",
+        namespace: "sentences",
+        schema: "schema.json",
+        content: "content",
+        license: { id: "test" },
+    });
+    await writeJson(path.join(root, "schema.json"), {
+        id: "sentences",
+        version: 1,
+        namespace: "sentences",
+        language: "ja",
+        metadata: { labels: { en: "Sentences" } },
+        layers: [
+            {
+                id: "words",
+                semanticRole: "lexicalUnit",
+                metadata: { labels: { en: "Words" } },
+            },
+            {
+                id: "particles",
+                semanticRole: "particle",
+                metadata: { labels: { en: "Particles" } },
+            },
+            {
+                id: "sentences",
+                semanticRole: "orderedLexicalSequence",
+                metadata: { labels: { en: "Sentences" } },
+                relationships: [
+                    {
+                        id: "words",
+                        targetLayer: "words",
+                        metadata: { labels: { en: "Words" } },
+                        ordered: true,
+                        onDelete: "restrict",
+                    },
+                    {
+                        id: "particles",
+                        targetLayer: "particles",
+                        metadata: { labels: { en: "Particles" } },
+                        ordered: true,
+                        onDelete: "restrict",
+                    },
+                ],
+            },
+        ],
+    });
+    await writeJson(path.join(root, "content", "words", "words.json"), [
+        { id: "sentences:word:japanese", label: "日本語" },
+    ]);
+    await writeJson(path.join(root, "content", "particles", "particles.json"), [
+        { id: "sentences:particle:ga", label: "が" },
+    ]);
+    const sentenceFile = path.join(
+        root,
+        "content",
+        "sentences",
+        "sentences.json",
+    );
+    const references = [
+        {
+            entryId: "sentences:word:japanese",
+            relation: "words",
+            position: 0,
+        },
+        {
+            entryId: "sentences:particle:ga",
+            relation: "particles",
+            position: 1,
+        },
+    ];
+    await writeJson(sentenceFile, [
+        { id: "sentences:sentence:valid", label: "日本語が", references },
+    ]);
+    await assert.doesNotReject(inspectContentPack(root));
+
+    await writeJson(sentenceFile, [
+        {
+            id: "sentences:sentence:invalid",
+            label: "日本語が好き",
+            references,
+        },
+    ]);
+    await assert.rejects(
+        inspectContentPack(root),
+        /ordered_sequence_content_unresolved/,
+    );
 });

@@ -71,13 +71,6 @@ export async function mount(root, { signal, shareContext = null } = {}) {
     selectedView = loadSelectedViewPreference();
 
     function refreshCalendarComposer() {
-        root.querySelectorAll(
-            '[data-composer-element="calendar-view"]',
-        ).forEach((card) => {
-            if (!card.classList.contains("composer-cell")) {
-                card.remove();
-            }
-        });
         composer?.refresh();
     }
 

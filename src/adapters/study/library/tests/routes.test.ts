@@ -81,6 +81,51 @@ test("schema route rejects unauthorized requests", async () => {
     assert.equal(result.body.error.code, "unauthorized");
 });
 
+test("entry deletion passes validated selections to the Library capability", async () => {
+    let request:
+        | {
+              actor: { accountId: string; role: string };
+              entryIds: readonly string[];
+              blacklistContentHashes: boolean;
+          }
+        | undefined;
+    const route = createLibraryRoutes(
+        {
+            deleteEntries: async (actor, entryIds, blacklistContentHashes) => {
+                request = { actor, entryIds, blacklistContentHashes };
+                return [...entryIds, "dependent"];
+            },
+        } as never,
+        createAuthContext(
+            new Map([["admin", { sub: "ada", role: "admin" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "DELETE",
+            token: "admin",
+            body: JSON.stringify({
+                entryIds: ["one", "two"],
+                blacklistContentHashes: true,
+            }),
+        }) as never,
+        response as never,
+        new URL("http://localhost/api/v1/study/library/entries"),
+    );
+
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(request, {
+        actor: { accountId: "ada", role: "admin" },
+        entryIds: ["one", "two"],
+        blacklistContentHashes: true,
+    });
+    assert.deepEqual(JSON.parse(response.payload).data, {
+        deleted: 3,
+        entryIds: ["one", "two", "dependent"],
+    });
+});
+
 test("asset route keeps authenticated package bytes out of shared caches", async () => {
     const route = createLibraryRoutes(
         {
@@ -109,8 +154,14 @@ test("asset route keeps authenticated package bytes out of shared caches", async
 });
 
 test("Library browser resolves labels from localized schema metadata", async () => {
-    const source = await import("node:fs/promises").then(({ readFile }) =>
-        readFile(new URL("../ui/app.js", import.meta.url), "utf8"),
+    const { readFile } = await import("node:fs/promises");
+    const source = await readFile(
+        new URL("../ui/app/layer-cards.js", import.meta.url),
+        "utf8",
+    );
+    const presentationSource = await readFile(
+        new URL("../ui/app/presentation.js", import.meta.url),
+        "utf8",
     );
     assert.match(
         source,
@@ -120,7 +171,11 @@ test("Library browser resolves labels from localized schema metadata", async () 
         source,
         /localizedLabel\(\s*layer\.metadata,\s*schema\.language,?\s*\)/,
     );
-    assert.match(source, /parseLanguageCode\(language\)/);
+    assert.match(presentationSource, /parseLanguageCode\(language\)/);
+    assert.match(
+        presentationSource,
+        /import \{ parseLanguageCode \} from "\/static\/gateways\/study\/ui\/language\.js"/,
+    );
 });
 
 test("remote audio cache remains behind authenticated entry access", async () => {

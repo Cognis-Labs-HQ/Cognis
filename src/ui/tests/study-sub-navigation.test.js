@@ -36,8 +36,9 @@ test("Study submenu links use the user-dropdown button class", () => {
     );
     assert.match(
         stylesheet,
-        /\.study-page-subnav \.dropdown-item\s*\{\s*width: auto;/,
+        /\.study-page-subnav \[data-language-code\]\s*\{\s*width: auto;/,
     );
+    assert.doesNotMatch(stylesheet, /\.dropdown-item/);
     assert.match(source, /<ul class="page-subnav-list study-subnav-settings">/);
     assert.match(
         studyPage,
@@ -55,7 +56,7 @@ test("Study navigation stores language selection on buttons instead of URLs", ()
         "utf8",
     );
     const librarySource = readFileSync(
-        resolve(ROOT, "src/adapters/study/library/ui/app.js"),
+        resolve(ROOT, "src/adapters/study/library/ui/app/index.js"),
         "utf8",
     );
     const routerSource = readFileSync(
@@ -66,12 +67,51 @@ test("Study navigation stores language selection on buttons instead of URLs", ()
     assert.match(navigationSource, /data-language-code=/);
     assert.match(navigationSource, /readSelectedStudyLanguageCode/);
     assert.match(navigationSource, /bindStudySubNavigation/);
+    assert.match(navigationSource, /resolveRememberedStudyPageUrl/);
+    assert.match(
+        navigationSource,
+        /registeredPageUrls\.has\(rememberedPageUrl\)/,
+    );
+    assert.match(navigationSource, /studyLastPageUrl/);
+    assert.match(navigationSource, /data-study-settings/);
+    assert.match(navigationSource, /currentPath !== "\/study\/settings"/);
     assert.match(studyPageSource, /readSelectedStudyLanguageCode\(\)/);
+    assert.match(studyPageSource, /history\.state\?\.studyLastPageUrl/);
+    assert.match(studyPageSource, /!isSettingsPath && languageCode/);
     assert.match(librarySource, /readSelectedStudyLanguageCode\(\)/);
     assert.doesNotMatch(navigationSource, /withLanguageQuery/);
     assert.doesNotMatch(studyPageSource, /withLanguageQuery/);
     assert.doesNotMatch(librarySource, /withLanguageQuery/);
     assert.doesNotMatch(routerSource, /studyLanguageCode|data-language-code/);
+});
+
+test("Study pages redirect to the unavailable page without valid languages", () => {
+    const studyPageSource = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/study.js"),
+        "utf8",
+    );
+    const childRouteSource = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/route.js"),
+        "utf8",
+    );
+    assert.match(
+        studyPageSource,
+        /registeredLanguages\.length === 0[\s\S]*navigateTo\("\/error\?code=503"\)/,
+    );
+    assert.match(
+        childRouteSource,
+        /languages\.length === 0[\s\S]*navigateTo\("\/error\?code=503"\)/,
+    );
+});
+
+test("Study child loader delegates hub paths after a direct refresh", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/route.js"),
+        "utf8",
+    );
+    assert.match(source, /\["\/study", "\/study\/"/);
+    assert.match(source, /import\("\/static\/gateways\/study\/study\.js"\)/);
+    assert.match(source, /await hub\.mount\(root, options\)/);
 });
 
 test("Study sub-navigation normalizes language codes before resolving flags", () => {
@@ -88,4 +128,17 @@ test("Study sub-navigation normalizes language codes before resolving flags", ()
         /\.map\(\(languageCode\) => parseLanguageCode\(languageCode\)\)/,
     );
     assert.match(source, /\$\{escapeHtml\(language\.flag\)\}/);
+    assert.match(source, /isAdminScope\(\) && !hasLibraryModule/);
+});
+
+test("Study page links use light-theme success hover tokens", () => {
+    const stylesheet = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/study.css"),
+        "utf8",
+    );
+
+    assert.match(
+        stylesheet,
+        /body\[data-theme="light"\] \.study-hub-module-link:hover,[\s\S]*background: var\(--color-success-hover-bg\);[\s\S]*color: var\(--color-success-outline-text\);/,
+    );
 });

@@ -37,3 +37,7 @@ Each immediate content subdirectory matches one declared layer. JSON shards cont
 - Localize schema, layer, field, relationship, and documentation metadata.
 - Declare license, attribution, relationship deletion behavior, and exact constraints.
 - Run inspection before publishing and never depend on content shard enumeration order.
+
+## Relationship presentation and visibility
+
+Relationship presentation is explicit. Set `presentationRole` to `composition`, `alternateSpelling`, or `pronunciation` to describe how a resolver-backed reference is presented. Set `variant: true` only to identify an alternate form; this does not create a visual parent. Set `child: true` only when the referenced target is the actual conceptual parent whose chart card should unfold the source record. Do not use `child` for shared origins, transformations, pronunciations, or other associations. Set a record's top-level `hidden: true` when it must remain resolvable and available through deep links but must not appear as a chart card. Inbound relationships marked as variants or children are structural and are excluded from generic usage lists; only non-structural inbound references appear there.

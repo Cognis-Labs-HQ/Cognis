@@ -1,5 +1,6 @@
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
 import type { BootstrapLog } from "@cognis/core";
+import { createHash } from "node:crypto";
 import type { RawDbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { DbProviderId } from "../../../gateways/db/reuse/provider-id.js";
 import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
@@ -101,6 +102,16 @@ const POSTGRESQL_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
         return ` ON CONFLICT (${conflictTarget.join(", ")}) DO UPDATE SET ${assignments.join(", ")}`;
     },
 };
+
+function uniqueIndexName(table: string, columns: string[]): string {
+    const descriptiveName = `uq_${table}_${columns.join("_")}`;
+    if (descriptiveName.length <= 63) return descriptiveName;
+    const digest = createHash("sha256")
+        .update(`${table}:${columns.join(":")}`)
+        .digest("hex")
+        .slice(0, 12);
+    return `uq_${table.slice(0, 46)}_${digest}`;
+}
 
 export class PostgresDbGateway implements DatabaseGateway {
     constructor(
@@ -362,6 +373,59 @@ class PostgresExecutor implements RawDbExecutor {
             await this.execute(
                 `ALTER TABLE ${def.name} ADD COLUMN IF NOT EXISTS ${col.name} ${pgType(col)}${notNullClause}${defaultClause ? ` ${defaultClause}` : ""}${referenceClause}`,
             );
+        }
+        const declaredUniqueKeys = [
+            ...(compositePk.length > 0
+                ? [compositePk]
+                : def.columns
+                      .filter((column) => column.primaryKey)
+                      .map((column) => [column.name])),
+            ...(def.uniqueKeys ?? []),
+            ...def.columns
+                .filter((column) => column.unique)
+                .map((column) => [column.name]),
+        ];
+        const healedUniqueKeys = new Set<string>();
+        for (const columns of declaredUniqueKeys) {
+            const signature = columns.join("\u0000");
+            if (healedUniqueKeys.has(signature)) continue;
+            healedUniqueKeys.add(signature);
+            const duplicateRows = await this.execute(
+                `SELECT ${columns.join(", ")} FROM ${def.name} WHERE ${columns.map((column) => `${column} IS NOT NULL`).join(" AND ")} GROUP BY ${columns.join(", ")} HAVING COUNT(*) > 1 LIMIT 1`,
+            );
+            if ((duplicateRows.rows?.length ?? 0) > 0) {
+                writeDbLog(
+                    this.log,
+                    "error",
+                    "Skipped unique index healing because duplicate rows exist.",
+                    {
+                        component: "db",
+                        provider: "postgresql",
+                        table: def.name,
+                        columns,
+                    },
+                );
+                continue;
+            }
+            try {
+                await this.execute(
+                    `CREATE UNIQUE INDEX IF NOT EXISTS ${uniqueIndexName(def.name, columns)} ON ${def.name} (${columns.join(", ")})`,
+                );
+            } catch (error) {
+                if ((error as { code?: unknown }).code !== "23505") throw error;
+                writeDbLog(
+                    this.log,
+                    "error",
+                    "Unique index healing encountered concurrent duplicate rows.",
+                    {
+                        component: "db",
+                        provider: "postgresql",
+                        table: def.name,
+                        columns,
+                        ...buildDbErrorMeta(error),
+                    },
+                );
+            }
         }
         for (const index of def.indexes ?? []) {
             const indexName =

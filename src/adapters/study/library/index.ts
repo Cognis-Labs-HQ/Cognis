@@ -36,8 +36,8 @@ export function createStudyAdapter(): StudyAdapter {
 export async function bootstrapStudyAdapter(
     ctx: StudyAdapterBootstrapCtx,
 ): Promise<void> {
-    const db = ctx.capabilities.get<DbExecutor>("db:executor");
-    if (!db) {
+    const databaseExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    if (!databaseExecutor) {
         await ctx.log?.(
             "error",
             "Study/library adapter requires the DB gateway.",
@@ -69,7 +69,7 @@ export async function bootstrapStudyAdapter(
             callerComponent: "study-library",
         }),
     );
-    const store = new LibraryStore(db);
+    const store = new LibraryStore(databaseExecutor);
     try {
         await store.ensureSchema();
     } catch (error) {
@@ -109,10 +109,13 @@ export async function bootstrapStudyAdapter(
     ctx.registerAdapterStaticDir?.("study", "library", UI_ROOT);
     ctx.registerSpaRoute?.({
         id: "study-library-page",
-        pattern: "^/study/library(?:/[^/]+/[^/]+/[^/]+)?$",
+        pattern: "^/study/library(?:/[^/]+/[^/]+(?:/[^/]+)?)?$",
         base: "/study/library",
-        scriptUrl: "/static/adapters/study/library/app.js",
-        stylesheets: ["/static/adapters/study/library/library.css"],
+        scriptUrl: "/static/adapters/study/library/app/index.js",
+        stylesheets: [
+            "/static/gateways/study/study.css",
+            "/static/adapters/study/library/library.css",
+        ],
         requiredCapabilities: ["study:library:detailFlow"],
         isEnabled: () => ctx.isAdapterEnabled(),
     });

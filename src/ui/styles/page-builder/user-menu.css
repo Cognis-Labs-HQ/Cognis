@@ -1,0 +1,122 @@
+.page-shell-user-menu {
+    position: relative;
+}
+
+.page-shell-user-dropdown {
+    position: absolute;
+    right: 0;
+    top: 36px;
+    z-index: 3000;
+    list-style: none;
+    margin: 0;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px;
+    min-width: 170px;
+    max-width: min(280px, calc(100vw - 32px));
+    box-shadow: var(--shadow);
+    opacity: 0;
+    overflow: visible;
+    pointer-events: none;
+    transform: translateY(-6px);
+    transition:
+        opacity 0.16s ease,
+        transform 0.16s ease;
+}
+
+.page-shell-user-dropdown li {
+    display: flex;
+}
+
+.page-shell-user-dropdown li[hidden] {
+    display: none;
+}
+
+.page-shell-user-menu.open .page-shell-user-dropdown {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.page-shell-user-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    min-width: 0;
+    padding: 8px;
+    color: var(--text);
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    text-align: left;
+    text-decoration: none;
+    white-space: normal;
+    transition:
+        background 0.15s ease,
+        transform 0.15s ease;
+}
+
+.page-shell-user-menu-item:hover,
+.page-shell-user-menu-item:focus-visible {
+    background: var(--surface-soft);
+    outline: 1px solid var(--accent);
+    outline-offset: -1px;
+    transform: translateX(3px);
+}
+
+.page-shell-user-menu-item--logout::before {
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 auto;
+    background-color: currentColor;
+    content: "";
+    mask: center / contain no-repeat url("/static/assets/reuse/power-dark.svg");
+    -webkit-mask: center / contain no-repeat
+        url("/static/assets/reuse/power-dark.svg");
+}
+
+body[data-theme="light"] .page-shell-user-menu-item--logout::before {
+    mask-image: url("/static/assets/reuse/power-light.svg");
+    -webkit-mask-image: url("/static/assets/reuse/power-light.svg");
+}
+
+.page-shell-user-menu-item--logout {
+    gap: 0.5rem;
+}
+
+.page-shell-user-menu-item--logout:hover:not(:disabled),
+.page-shell-user-menu-item--logout:focus-visible {
+    color: var(--color-danger-outline-text, var(--color-danger-text));
+    background: var(--color-danger-hover-bg);
+    border-color: var(--color-danger-outline-text, var(--color-danger-text));
+    outline: none;
+}
+
+.app-shell .page-shell-user-menu-item.active {
+    border-bottom: 2px solid var(--accent-2);
+    border-radius: 0;
+}
+
+button.page-shell-user-menu-item {
+    appearance: none;
+}
+
+@media (max-width: 760px) {
+    .page-shell-user-dropdown {
+        width: min(240px, calc(100vw - 28px));
+        max-width: calc(100vw - 28px);
+        padding: 6px;
+    }
+
+    .page-shell-user-menu-item {
+        align-items: flex-start;
+        padding: 10px 12px;
+    }
+}

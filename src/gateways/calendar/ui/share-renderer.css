@@ -17,12 +17,6 @@
     overflow-y: hidden;
 }
 
-.content-panel:has(.calendar-share-page),
-.composer-cell-content:has(.calendar-share-page),
-.widget-card:has(.calendar-share-page) {
-    overflow-y: hidden;
-}
-
 .calendar-share-page .calendar-timeslot-grid {
     min-height: 0;
     overflow-y: auto;

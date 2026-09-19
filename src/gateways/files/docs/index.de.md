@@ -86,7 +86,7 @@ Komponenten sollten für reguläre Dateioperationen über `ctx` bevorzugt `files
 
 - `PUT/GET/DELETE /api/v1/files/:namespace/*key` — generische, namensraum-basierte Dateioperationen; erfordert Authentifizierung, die Akteur-Identität stammt aus der Sitzung.
 - `GET /api/v1/files/:namespace` — Auflistung.
-- `GET/PUT /api/v1/files/admin/namespace-defaults[/:namespaceId]`, `PUT /api/v1/files/admin/global-default`, `GET /api/v1/files/admin/users/:username/quotas`, `PUT /api/v1/files/admin/users/:username/quotas/:namespaceId` — administratoreigene Kontingentverwaltung (`namespaceId: "global"` adressiert das globale Kontingent des Benutzers).
+- `GET/PUT /api/v1/files/admin/namespace-defaults[/:namespaceId]`, `PUT /api/v1/files/admin/global-default`, `GET /api/v1/files/admin/users/:username/quotas`, `PUT /api/v1/files/admin/users/:username/quotas/:namespaceId` — administratoreigene Kontingentverwaltung (`namespaceId: "global"` adressiert das globale Kontingent des Benutzers). In der Administration sind diese registrierten Namensraum- und globalen Standardwerte außerdem in einem bearbeitbaren Dateiabschnitt verfügbar.
 
 ### Bootstrap-Reihenfolge-Einschränkung
 

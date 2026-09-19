@@ -27,6 +27,7 @@ import {
 } from "/static/gateways/study/ui/sub-navigation.js";
 import {
     resolveLanguageLabel,
+    isAdminScope,
     isStudentScope,
     buildLibraryUrl,
 } from "/static/gateways/study/ui/language.js";
@@ -77,6 +78,11 @@ export async function mount(root, { signal } = {}) {
                   .map((language) => toLanguageRecord(language))
                   .filter(Boolean)
             : [];
+
+    if (registeredLanguages.length === 0) {
+        await navigateTo("/error?code=503");
+        return;
+    }
 
     const learningLanguages =
         prefsResult.status === "fulfilled" &&
@@ -311,6 +317,16 @@ async function mountHub(
     }
 
     function buildHubUrl(languageCode) {
+        const rememberedPageUrl = [
+            history.state?.studyLastPageUrl,
+            history.state?.previousRouterPage,
+        ].find(
+            (path) =>
+                typeof path === "string" &&
+                path.startsWith("/study/") &&
+                !["/study/settings", "/study/welcome"].includes(path),
+        );
+        if (rememberedPageUrl) return rememberedPageUrl;
         const modules = languageModulesMap.get(languageCode) ?? [];
         const firstModulePageUrl = modules
             .map((component) => String(component?.pageUrl ?? "").trim())
@@ -343,7 +359,7 @@ async function mountHub(
             })
             .join("");
         const libraryLink =
-            isStudentScope() && !hasLibraryModule
+            isAdminScope() && !hasLibraryModule
                 ? `
                 <li>
                     <a class="dropdown-item${window.location.pathname === "/study/library" ? " active" : ""}" href="${escapeHtml(buildLibraryUrl(selectedLanguageCode))}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
@@ -358,7 +374,9 @@ async function mountHub(
                 const language = getLanguage(languageCode);
                 const href = buildHubUrl(languageCode);
                 const activeClass =
-                    languageCode === selectedLanguageCode ? " active" : "";
+                    !isSettingsPath && languageCode === selectedLanguageCode
+                        ? " active"
+                        : "";
                 return `
                     <li>
                         <a class="dropdown-item${activeClass}" href="${escapeHtml(href)}" data-language-code="${escapeHtml(languageCode)}" data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
@@ -386,6 +404,7 @@ async function mountHub(
                         <a
                             class="dropdown-item${settingsActiveClass}"
                             href="${escapeHtml(settingsUrl)}"
+                            data-study-settings
                             data-search-category="Pages"
                             data-search-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
                             data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}"

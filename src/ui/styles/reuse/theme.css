@@ -3,6 +3,7 @@
 :root {
     --app-font: Orbitron;
     --app-font-size: 1rem;
+    font-size: var(--app-font-size);
     --bg:
         radial-gradient(
             circle at top right,
@@ -131,7 +132,7 @@ body {
     font-family:
         var(--app-font), "Audiowide", "Rajdhani", "Exo 2", "Trebuchet MS",
         Arial, sans-serif;
-    font-size: var(--app-font-size);
+    font-size: 1rem;
     line-height: 1.45;
 }
 

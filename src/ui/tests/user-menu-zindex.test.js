@@ -18,7 +18,7 @@ function parseZIndexValue(source, selector) {
 
 test("user menu dropdown stacks above notification popups", () => {
     const layoutSource = readFileSync(
-        resolve(ROOT, "src/ui/styles/reuse/layout.css"),
+        resolve(ROOT, "src/ui/styles/page-builder/user-menu.css"),
         "utf8",
     );
     const popupSource = readFileSync(
@@ -30,7 +30,10 @@ test("user menu dropdown stacks above notification popups", () => {
         "utf8",
     );
 
-    const dropdownZIndex = parseZIndexValue(layoutSource, ".dropdown");
+    const dropdownZIndex = parseZIndexValue(
+        layoutSource,
+        ".page-shell-user-dropdown",
+    );
     const popupZIndex = parseZIndexValue(popupSource, ".popup-overlay");
     const toastZIndex = parseZIndexValue(toastSource, ".toast-tray");
 
@@ -42,4 +45,16 @@ test("user menu dropdown stacks above notification popups", () => {
         dropdownZIndex > toastZIndex,
         "user menu dropdown must render above toast notifications",
     );
+});
+
+test("page shell does not clip the user menu below navigation", () => {
+    const shellSource = readFileSync(
+        resolve(ROOT, "src/ui/styles/reuse/layout.css"),
+        "utf8",
+    );
+    const siteHeaderRule = shellSource.match(/\.site-header\s*\{[^}]*\}/)?.[0];
+
+    assert.ok(siteHeaderRule, "expected the core site-header rule");
+    assert.match(siteHeaderRule, /overflow:\s*visible/);
+    assert.doesNotMatch(siteHeaderRule, /overflow:\s*hidden/);
 });

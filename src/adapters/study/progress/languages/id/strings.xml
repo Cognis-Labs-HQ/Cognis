@@ -1,0 +1,4 @@
+<resources>
+  <string name="adapter.study.progress.name">Kemajuan Belajar</string>
+  <string name="adapter.study.progress.description">Riwayat belajar tetap dan kemajuan yang dapat dibangun ulang</string>
+</resources>

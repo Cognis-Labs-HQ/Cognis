@@ -5,7 +5,22 @@
   <string name="gateway.study.library_next">Berikutnya</string>
   <string name="gateway.study.library_filters">Filter entri perpustakaan</string>
   <string name="gateway.study.library_filter_empty">Tidak ada entri yang cocok dengan filter terpilih.</string>
+  <string name="gateway.study.library_variant_hint">Tekan lama untuk menampilkan kartu lainnya</string>
+  <string name="gateway.study.library_variants">Varian</string>
   <string name="gateway.study.library_scope_global">Cakupan: Global</string>
   <string name="gateway.study.library_scope_class">Cakupan: Kelas {{ class name }}</string>
   <string name="gateway.study.library_scope_user">Cakupan: Pengguna</string>
+  <string name="gateway.study.library_audio_load_error">Audio tidak dapat dimuat.</string>
+  <string name="gateway.study.library_select_entry">Pilih {{ entry }}</string>
+  <string name="gateway.study.library_delete_title">Hapus Konten Perpustakaan</string>
+  <string name="gateway.study.library_delete_warning">Konten terkait berikut juga akan dihapus:</string>
+  <string name="gateway.study.library_delete_permanent">Cegah modul memulihkan konten yang sama persis ini lagi</string>
+  <string name="gateway.study.library_delete_success">Konten Perpustakaan terpilih telah dihapus.</string>
+  <string name="gateway.study.library_delete_error">Konten Perpustakaan terpilih tidak dapat dihapus.</string>
+  <string name="gateway.study.library_used_in_layer">Digunakan dalam {{ layer }}</string>
+  <string name="gateway.study.library_relationship_composition">Komposisi</string>
+  <string name="gateway.study.library_relationship_alternateSpelling">Ejaan alternatif</string>
+  <string name="gateway.study.library_relationship_pronunciation">Pelafalan</string>
+  <string name="gateway.study.library_from_parent">(Dari: {{ parent }})</string>
+  <string name="gateway.study.library_usage_examples">Contoh penggunaan</string>
 </resources>

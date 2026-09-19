@@ -5,7 +5,22 @@
   <string name="gateway.study.library_next">Weiter</string>
   <string name="gateway.study.library_filters">Bibliothekseinträge filtern</string>
   <string name="gateway.study.library_filter_empty">Keine Einträge entsprechen den ausgewählten Filtern.</string>
+  <string name="gateway.study.library_variant_hint">Gedrückt halten, um weitere Karten anzuzeigen</string>
+  <string name="gateway.study.library_variants">Varianten</string>
   <string name="gateway.study.library_scope_global">Bereich: Global</string>
   <string name="gateway.study.library_scope_class">Bereich: Klasse {{ class name }}</string>
   <string name="gateway.study.library_scope_user">Bereich: Benutzer</string>
+  <string name="gateway.study.library_audio_load_error">Audio konnte nicht geladen werden.</string>
+  <string name="gateway.study.library_select_entry">{{ entry }} auswählen</string>
+  <string name="gateway.study.library_delete_title">Bibliotheksinhalte löschen</string>
+  <string name="gateway.study.library_delete_warning">Die folgenden zugehörigen Inhalte werden ebenfalls gelöscht:</string>
+  <string name="gateway.study.library_delete_permanent">Verhindern, dass Module genau diese Inhalte erneut wiederherstellen</string>
+  <string name="gateway.study.library_delete_success">Die ausgewählten Bibliotheksinhalte wurden gelöscht.</string>
+  <string name="gateway.study.library_delete_error">Die ausgewählten Bibliotheksinhalte konnten nicht gelöscht werden.</string>
+  <string name="gateway.study.library_used_in_layer">Verwendet in {{ layer }}</string>
+  <string name="gateway.study.library_relationship_composition">Zusammensetzung</string>
+  <string name="gateway.study.library_relationship_alternateSpelling">Alternative Schreibweisen</string>
+  <string name="gateway.study.library_relationship_pronunciation">Aussprachen</string>
+  <string name="gateway.study.library_from_parent">(Von: {{ parent }})</string>
+  <string name="gateway.study.library_usage_examples">Anwendungsbeispiele</string>
 </resources>
