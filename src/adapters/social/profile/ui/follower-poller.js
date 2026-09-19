@@ -2,8 +2,10 @@ import { createAdaptivePoller } from "/static/reuse/adaptive-poller.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 
 export async function loadSocialConnectionList(profileHandle, connectionKind) {
+    const routeSegment =
+        connectionKind === "followers" ? "follow" : connectionKind;
     const response = await apiFetch(
-        `/api/v1/social/users/${encodeURIComponent(profileHandle)}/${connectionKind}`,
+        `/api/v1/social/users/${encodeURIComponent(profileHandle)}/${routeSegment}`,
     );
     if (!response.ok) throw new Error(`Unable to refresh ${connectionKind}`);
     return (await response.json()).data ?? [];

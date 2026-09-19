@@ -45,6 +45,7 @@ test("call creation validates membership and dispatches localized actions", asyn
     const notifications: Array<{
         actionUrl?: string;
         category: string;
+        recipientUsername: string;
         metadata?: Record<string, unknown>;
     }> = [];
     const roomEvents: Array<{
@@ -56,7 +57,17 @@ test("call creation validates membership and dispatches localized actions", asyn
         {
             requireAuth: () => ({ sub: "caller", role: "user" }),
         } as never,
-        async () => roomContext,
+        async () => ({
+            ...roomContext,
+            participants: [
+                roomContext.participants[0],
+                {
+                    accountId: "sso-callee-id",
+                    handle: "callee",
+                    displayName: "Callee",
+                },
+            ],
+        }),
         async (notification) => notifications.push(notification),
         async (event) => roomEvents.push(event),
         {
@@ -82,6 +93,7 @@ test("call creation validates membership and dispatches localized actions", asyn
     assert.equal(recorder.result().status, 201);
     assert.equal(notifications.length, 1);
     assert.equal(notifications[0].category, "calls");
+    assert.equal(notifications[0].recipientUsername, "sso-callee-id");
     assert.match(notifications[0].actionUrl ?? "", /answer=1/);
     assert.deepEqual(notifications[0].metadata?.localizedText, {
         en: { subject: "Incoming Call...", body: "Caller is calling" },

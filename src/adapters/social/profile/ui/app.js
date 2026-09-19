@@ -171,6 +171,7 @@ function stopFollowerCountPoller() {
 
 function startFollowerCountPoller(signal) {
     stopFollowerCountPoller();
+    if (signal?.aborted) return;
     followerCountPoller = createFollowerCountPoller({
         loadConnections: loadSocialConnectionList,
         readState: () => ({

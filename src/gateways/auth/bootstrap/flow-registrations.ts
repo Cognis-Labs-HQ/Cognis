@@ -462,7 +462,7 @@ export async function registerAuthBootstrapHook(
             );
             await createProfile?.(
                 session.accountId,
-                session.accountId,
+                sessionHandle ?? session.accountId,
                 role,
                 displayName,
             );

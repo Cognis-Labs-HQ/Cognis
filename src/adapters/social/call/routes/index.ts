@@ -206,7 +206,7 @@ export function createCallRoutes(
                         );
                         return dispatch?.({
                             category: "calls",
-                            recipientUsername: participant.handle,
+                            recipientUsername: participant.accountId,
                             subject: localizedText.en?.subject ?? "Call",
                             body: localizedText.en?.body ?? callerName,
                             senderName:

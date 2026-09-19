@@ -49,9 +49,9 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.22`   |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.36`   |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.20`   |
-| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.7`    |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.14`   |
-| Calls (Social)        | `src/adapters/social/call/`         | `0.5.30`   |
+| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.8`    |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.15`   |
+| Calls (Social)        | `src/adapters/social/call/`         | `0.5.31`   |
 | Link Share            | `src/adapters/share/link/`          | `1.1.36`   |
 | User Share            | `src/adapters/share/user/`          | `1.1.19`   |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10`   |
@@ -64,10 +64,10 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント        | パス                          | バージョン |
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`    |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.59`   |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.60`   |
 | Share                 | `src/gateways/share/`         | `1.7.48`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`   |
-| Notification (notify) | `src/gateways/notify/`        | `1.5.12`   |
+| Notification (notify) | `src/gateways/notify/`        | `1.5.13`   |
 | Social                | `src/gateways/social/`        | `1.3.6`    |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.10`   |
 | Registration          | `src/gateways/registration/`  | `1.1.34`   |

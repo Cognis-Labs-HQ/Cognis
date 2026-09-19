@@ -29,6 +29,11 @@ test("profile page polls follower and following lists for real-time counts", () 
         appSource,
         /signal\?\.addEventListener\("abort", stopFollowerCountPoller/,
     );
+    assert.match(
+        followerPollerSource,
+        /connectionKind === "followers" \? "follow"/,
+    );
+    assert.match(appSource, /if \(signal\?\.aborted\) return;/);
 });
 
 test("profile edits repaint profile cards from the mutation response", () => {

@@ -537,7 +537,7 @@ test("external login retries account creation through the registration token gat
         email: "external@example.com",
         registrationToken: "invite-token",
     });
-    assert.equal(createdProfileHandle, "external-user");
+    assert.equal(createdProfileHandle, "thefirehawk");
     assert.equal(synchronizedProfileHandle, "thefirehawk");
     const accountStore = capabilities.require<{
         getInfo(accountId: string): Promise<unknown>;

@@ -356,7 +356,7 @@ export function createSocialRoutes(
                         claims.sub;
                     await options.dispatchNotification({
                         category: SOCIAL_NOTIFICATION_CATEGORY,
-                        recipientUsername: target.handle,
+                        recipientUsername: target.accountId,
                         subject: "New follower",
                         body: `${followerName} started following you.`,
                         senderName: "Cognis Social",
