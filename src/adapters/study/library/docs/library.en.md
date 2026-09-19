@@ -71,3 +71,7 @@ Deletion resolves the final relationship cascade and authorizes every affected e
 For lexical units and ordered lexical sequences, relationships presented as `alternateSpelling` appear as navigable secondary spellings directly beneath the primary detail heading. Structural or variant children are not repeated as an alternate-spellings section in detail content.
 
 A pronunciation identical to the primary or a secondary spelling is displayed only once. Pronunciation text remains plain title metadata rather than being heuristically converted into links to similarly labelled writing-unit records; relationship links continue to come exclusively from declared Library references.
+
+## Content-pack upgrades
+
+Pack upgrades retain records omitted by the publisher unless the manifest explicitly sets `pruneOmittedRecords` to `true`. Publishers should enable pruning only when the pack is authoritative for the complete record set.

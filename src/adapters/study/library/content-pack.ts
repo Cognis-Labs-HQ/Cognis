@@ -74,6 +74,12 @@ function validateManifest(value: unknown): LibraryContentPackManifest {
         if (licenseUrl.protocol !== "https:")
             throw new Error("invalid_license_url");
     }
+    if (
+        manifest.pruneOmittedRecords !== undefined &&
+        typeof manifest.pruneOmittedRecords !== "boolean"
+    ) {
+        throw new Error("invalid_content_pack_manifest");
+    }
     return manifest;
 }
 

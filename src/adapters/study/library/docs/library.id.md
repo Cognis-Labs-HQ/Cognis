@@ -57,3 +57,7 @@ Penghapusan menyelesaikan kaskade relasi akhir dan mengotorisasi setiap entri ya
 Untuk unit leksikal dan urutan leksikal terurut, relasi dengan tampilan `alternateSpelling` muncul sebagai ejaan sekunder yang dapat dinavigasi tepat di bawah judul detail utama. Anak struktural atau anak varian tidak diulang sebagai bagian ejaan alternatif dalam konten detail.
 
 Pelafalan yang sama dengan ejaan utama atau sekunder hanya ditampilkan sekali. Teks pelafalan tetap menjadi metadata judul biasa dan tidak diubah secara heuristik menjadi tautan ke catatan unit tulisan dengan label serupa; tautan relasi tetap hanya berasal dari referensi Pustaka yang dideklarasikan.
+
+## Peningkatan paket konten
+
+Peningkatan paket mempertahankan rekaman yang tidak disertakan penerbit kecuali manifes secara eksplisit menetapkan `pruneOmittedRecords` ke `true`. Penerbit sebaiknya mengaktifkan pemangkasan hanya jika paket menjadi sumber otoritatif untuk seluruh kumpulan rekaman.

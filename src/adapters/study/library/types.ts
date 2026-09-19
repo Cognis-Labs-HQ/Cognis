@@ -188,6 +188,8 @@ export interface LibraryContentPackManifest {
     schema: string;
     content: string;
     assets?: string;
+    /** Remove records from prior pack versions when they are absent from this version. */
+    pruneOmittedRecords?: boolean;
     license: {
         id: string;
         url?: string;

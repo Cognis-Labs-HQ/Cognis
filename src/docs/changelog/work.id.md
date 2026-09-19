@@ -28,7 +28,7 @@ Ejaan utama dan sekunder tidak lagi diulang sebagai metadata pelafalan. Pelafala
 
 ## Ketepatan relasi Pustaka dan paket konten
 
-Pratinjau penghapusan kini menghormati kebijakan kaskade, pelepasan, dan pembatasan tanpa menjadikan entri bergantung sebagai penghapusan eksplisit. Entri tersembunyi atau yang ditempatkan tidak masuk urutan popup, dan peningkatan paket konten menghapus rekaman penyedia yang tidak ada pada versi baru.
+Pratinjau penghapusan kini menghormati kebijakan kaskade, pelepasan, dan pembatasan tanpa menjadikan entri bergantung sebagai penghapusan eksplisit. Entri tersembunyi atau yang ditempatkan tidak masuk urutan popup. Peningkatan paket konten mempertahankan rekaman penyedia yang tidak ada secara bawaan; penerbit dapat secara eksplisit meminta pemangkasan otoritatif.
 
 ## Perilaku kemajuan yang tahan lama dan deterministik
 
@@ -45,3 +45,4 @@ Validasi modul eksternal kini mendeteksi URL internal Cognis langsung di impor C
 - [a009f770](https://github.com/Cognis-Labs-HQ/Cognis/commit/a009f770)
 - [799fc33d](https://github.com/Cognis-Labs-HQ/Cognis/commit/799fc33d)
 - [d472ffa9](https://github.com/Cognis-Labs-HQ/Cognis/commit/d472ffa9)
+- [992973f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/992973f5a421fa0043bfa792a1b4757abcff8209)

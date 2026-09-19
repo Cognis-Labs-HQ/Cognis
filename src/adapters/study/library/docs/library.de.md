@@ -57,3 +57,7 @@ Beim Löschen werden die endgültige Beziehungskaskade ermittelt und alle betrof
 Bei lexikalischen Einheiten und geordneten lexikalischen Folgen erscheinen Beziehungen mit der Darstellung `alternateSpelling` als navigierbare Zweitschreibweisen direkt unter der primären Detailüberschrift. Strukturelle Kinder oder Variantenkinder werden im Detailinhalt nicht erneut als Abschnitt für alternative Schreibweisen aufgeführt.
 
 Eine Aussprache, die mit der primären oder einer sekundären Schreibweise identisch ist, wird nur einmal angezeigt. Aussprachetext bleibt einfacher Titel-Metadatentext und wird nicht heuristisch in Links zu ähnlich beschrifteten Schreibeinträgen umgewandelt; Beziehungslinks stammen weiterhin ausschließlich aus deklarierten Bibliotheksreferenzen.
+
+## Aktualisierungen von Inhaltspaketen
+
+Paketaktualisierungen bewahren vom Herausgeber ausgelassene Einträge, sofern das Manifest nicht ausdrücklich `pruneOmittedRecords` auf `true` setzt. Herausgeber sollten die Bereinigung nur aktivieren, wenn das Paket den vollständigen Eintragsbestand maßgeblich festlegt.

@@ -28,7 +28,7 @@ Primäre und sekundäre Schreibweisen werden nicht mehr als Aussprachemetadaten 
 
 ## Korrekte Bibliotheksbeziehungen und Inhaltspakete
 
-Löschvorschauen berücksichtigen jetzt Kaskaden-, Trennungs- und Einschränkungsrichtlinien, ohne abhängige Einträge als ausdrücklich ausgewählte Löschungen zu behandeln. Verborgene oder platzierte Einträge bleiben aus der Popup-Reihenfolge ausgeschlossen, und Aktualisierungen von Inhaltspaketen entfernen vom Anbieter ausgelassene Einträge.
+Löschvorschauen berücksichtigen jetzt Kaskaden-, Trennungs- und Einschränkungsrichtlinien, ohne abhängige Einträge als ausdrücklich ausgewählte Löschungen zu behandeln. Verborgene oder platzierte Einträge bleiben aus der Popup-Reihenfolge ausgeschlossen. Aktualisierungen von Inhaltspaketen bewahren ausgelassene Anbietereinträge standardmäßig; Herausgeber können eine maßgebliche Bereinigung ausdrücklich anfordern.
 
 ## Dauerhaftes und deterministisches Fortschrittsverhalten
 
@@ -45,3 +45,4 @@ Die Prüfung externer Module erkennt nun direkte URLs zu Cognis-Interna sowohl i
 - [a009f770](https://github.com/Cognis-Labs-HQ/Cognis/commit/a009f770)
 - [799fc33d](https://github.com/Cognis-Labs-HQ/Cognis/commit/799fc33d)
 - [d472ffa9](https://github.com/Cognis-Labs-HQ/Cognis/commit/d472ffa9)
+- [992973f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/992973f5a421fa0043bfa792a1b4757abcff8209)
