@@ -1,6 +1,6 @@
 # モジュール UI プロバイダー
 
-**機能ブランチ:** work
+**機能ブランチ:** feature-expose-registercapabilityprovider-in-cognis
 
 ## 外部モジュールがブラウザープロバイダーを公開可能
 

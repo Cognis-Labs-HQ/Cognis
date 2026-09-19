@@ -1,6 +1,6 @@
 # UI-Anbieter für Module
 
-**Feature-Zweig:** work
+**Feature-Zweig:** feature-expose-registercapabilityprovider-in-cognis
 
 ## Externe Module können Browser-Anbieter veröffentlichen
 
