@@ -170,6 +170,10 @@ Halaman login dan pendaftaran kini memuat terjemahan milik komponennya saat inis
 
 Gateway Autentikasi kini menerbitkan rute callback browser milik penyedia di bawah `/sso/<namespace>/...`. Respons OAuth berbasis kueri langsung diteruskan kepada penyedia, sedangkan halaman callback Cognis meneruskan respons berbasis fragmen secara aman ke callback yang sama. Kegagalan penyedia menghentikan status pemuatan dan mengembalikan galat yang dilokalkan pada halaman login.
 
+## Klien pendaftaran milik gateway dan pelaporan galat yang dapat digunakan kembali
+
+Halaman pendaftaran kini memperoleh konfigurasi pendaftaran Autentikasi melalui klien UI gateway Autentikasi sehingga pengetahuan endpoint dan kontrak respons tetap berada pada pemiliknya. Pelaporan galat browser lokal dasar dipindahkan ke modul UI netral yang dapat digunakan kembali dan dipakai oleh halaman login.
+
 ## Komit
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -217,3 +221,4 @@ Gateway Autentikasi kini menerbitkan rute callback browser milik penyedia di baw
 - [abb16e51](https://github.com/Cognis-Labs-HQ/Cognis/commit/abb16e51)
 - [ca3305d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ca3305d1)
 - [4b3d58ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/4b3d58ea)
+- [54967e46](https://github.com/Cognis-Labs-HQ/Cognis/commit/54967e46)

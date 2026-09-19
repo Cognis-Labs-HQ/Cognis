@@ -67,11 +67,9 @@ export function createLoginReasonNotifier(options) {
 
 export async function isPublicRegistrationEnabled() {
     try {
-        const response = await fetch("/api/v1/auth/registration-config");
-        if (!response.ok) return false;
-        const payload = await response.json();
-        return payload?.data?.registrationsEnabled === true;
+        return (await loadRegistrationConfig()).registrationsEnabled;
     } catch {
         return false;
     }
 }
+import { loadRegistrationConfig } from "../login-client.js";

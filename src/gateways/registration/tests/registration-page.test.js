@@ -56,6 +56,19 @@ test("registration integration load failures do not disable the base form", () =
     );
 });
 
+test("registration page loads auth-owned configuration through the auth client", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/registration/ui/register/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /loadRegistrationConfig/);
+    assert.doesNotMatch(
+        source,
+        /fetch\("\/api\/v1\/auth\/registration-config"/,
+    );
+});
+
 test("registration field factories fail independently", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/registration/ui/register/index.js"),

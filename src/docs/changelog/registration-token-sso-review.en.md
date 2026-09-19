@@ -174,6 +174,10 @@ Login and registration pages now load their component-owned translations during 
 
 The Authentication gateway now publishes provider-owned browser callback routes under `/sso/<namespace>/...`. Query-based OAuth responses reach the provider directly, while a Cognis callback page safely forwards fragment-based responses into the same callback. Provider failures stop the loading state and return a localized error on the login page.
 
+## Gateway-owned registration client and reusable error reporting
+
+The registration page now obtains Authentication registration configuration through the Authentication gateway UI client, keeping endpoint and response-contract knowledge with its owner. Basic local browser error reporting has moved into a neutral reusable UI module consumed by the login page.
+
 ## Commits
 
 - [82b2e35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/82b2e35e792e91be2924edc0ffa45d3d2c8a1c0d)
@@ -221,3 +225,4 @@ The Authentication gateway now publishes provider-owned browser callback routes 
 - [abb16e51](https://github.com/Cognis-Labs-HQ/Cognis/commit/abb16e51)
 - [ca3305d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ca3305d1)
 - [4b3d58ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/4b3d58ea)
+- [54967e46](https://github.com/Cognis-Labs-HQ/Cognis/commit/54967e46)

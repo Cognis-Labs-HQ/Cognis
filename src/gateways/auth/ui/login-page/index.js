@@ -22,7 +22,7 @@ import {
 import { syncTimezoneOnLogin } from "/static/reuse/timestamp.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createLoginIntegrationLoader } from "./integrations.js";
-import { reportLoginError } from "./error-reporting.js";
+import { reportClientError } from "/static/reuse/error-reporting.js";
 import {
     beginSsoLogin,
     createSsoLoginButton,
@@ -322,7 +322,7 @@ export async function mount(root, { signal } = {}) {
                 });
             }
         } catch (error) {
-            reportLoginError({
+            reportClientError({
                 component: "login-page",
                 operation: "load_login_methods",
                 error: error instanceof Error ? error.message : String(error),

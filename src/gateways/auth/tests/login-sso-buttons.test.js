@@ -6,8 +6,7 @@ import {
     createSsoLoginButton,
     isStyledSsoMethod,
 } from "../ui/login-page/sso-buttons.js";
-import { reportLoginError } from "../ui/login-page/error-reporting.js";
-import { startSsoLogin } from "../ui/login-client.js";
+import { loadRegistrationConfig, startSsoLogin } from "../ui/login-client.js";
 
 class FakeElement {
     constructor(tagName) {
@@ -149,19 +148,28 @@ test("SSO initiation requests provider authorization without credentials", async
     }
 });
 
-test("anonymous login failures do not call the authenticated logger", () => {
-    const originalConsoleError = console.error;
-    const calls = [];
-    console.error = (...args) => calls.push(args);
+test("auth client owns registration configuration response parsing", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () => ({
+        ok: true,
+        json: async () => ({
+            data: {
+                registrationsEnabled: true,
+                userValidationMode: "email",
+                integrations: [
+                    { id: "terms", scriptUrl: "/static/terms.js" },
+                    { id: "incomplete" },
+                ],
+            },
+        }),
+    });
     try {
-        reportLoginError({
-            providerId: "x-sso",
-            error: "SSO provider rejected the request.",
+        assert.deepEqual(await loadRegistrationConfig(), {
+            registrationsEnabled: true,
+            userValidationMode: "email",
+            integrations: [{ id: "terms", scriptUrl: "/static/terms.js" }],
         });
-        assert.equal(calls.length, 1);
-        assert.equal(calls[0][0].providerId, "x-sso");
-        assert.equal(calls[0][0].error, "SSO provider rejected the request.");
     } finally {
-        console.error = originalConsoleError;
+        globalThis.fetch = originalFetch;
     }
 });

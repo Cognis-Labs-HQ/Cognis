@@ -1,5 +1,4 @@
 import { startSsoLogin } from "../login-client.js";
-import { reportLoginError } from "./error-reporting.js";
 
 export function isStyledSsoMethod(method) {
     return Boolean(method?.loginButton?.iconUrl && method.loginButton.label);
@@ -11,7 +10,9 @@ export async function beginSsoLogin(method, i18n) {
         const redirectUrl = await startSsoLogin(method.id);
         window.location.assign(redirectUrl);
     } catch (error) {
-        reportLoginError({
+        const { reportClientError } =
+            await import("/static/reuse/error-reporting.js");
+        reportClientError({
             component: "login-page",
             operation: "start_sso_login",
             providerId: method.id,

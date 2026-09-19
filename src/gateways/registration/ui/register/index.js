@@ -41,7 +41,10 @@ import {
     REGISTRATION_ERROR_CODES,
     renderAccountCreationAuthorization,
 } from "./authorization.js";
-import { getPendingAccountCreation } from "/static/gateways/auth/login-client.js";
+import {
+    getPendingAccountCreation,
+    loadRegistrationConfig,
+} from "/static/gateways/auth/login-client.js";
 import { buildPasswordCriteria, resetAuthSessionForRegister } from "./form.js";
 const REGISTER_EMAIL_MAX_CHARACTERS = 320;
 const REGISTER_USERNAME_MAX_CHARACTERS = 25;
@@ -123,50 +126,38 @@ export async function mount(root, { signal } = {}) {
     }
 
     try {
-        const regConfigResponse = await fetch(
-            "/api/v1/auth/registration-config",
-        );
-        if (regConfigResponse.ok) {
-            const regConfigPayload = await regConfigResponse.json();
-            if (!token && !hasTokenParam) {
-                openRegistrationsEnabled =
-                    regConfigPayload?.data?.registrationsEnabled === true;
-            }
-            userValidationMode = String(
-                regConfigPayload?.data?.userValidationMode ?? "none",
-            );
-            for (const descriptor of regConfigPayload?.data?.integrations ??
-                []) {
-                if (!descriptor?.id || !descriptor?.scriptUrl) continue;
-                try {
-                    const integrationModule = await import(
-                        descriptor.scriptUrl
-                    );
-                    registrationIntegrations.push({
-                        descriptor,
-                        module: integrationModule,
-                        i18n: await extendI18n(i18n, descriptor.stringsBaseUrl),
-                    });
-                } catch (error) {
-                    console.error(
-                        JSON.stringify({
-                            level: "error",
-                            component: "register-page",
-                            operation: "load-registration-integration",
-                            integrationId: String(descriptor.id),
-                            error:
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
-                        }),
-                    );
-                    showToast(i18n.t("ui.app.register.error.generic"), {
-                        variant: "error",
-                    });
-                }
-            }
-            registrationIntegrationsReady = true;
+        const registrationConfig = await loadRegistrationConfig();
+        if (!token && !hasTokenParam) {
+            openRegistrationsEnabled = registrationConfig.registrationsEnabled;
         }
+        userValidationMode = registrationConfig.userValidationMode;
+        for (const descriptor of registrationConfig.integrations) {
+            try {
+                const integrationModule = await import(descriptor.scriptUrl);
+                registrationIntegrations.push({
+                    descriptor,
+                    module: integrationModule,
+                    i18n: await extendI18n(i18n, descriptor.stringsBaseUrl),
+                });
+            } catch (error) {
+                console.error(
+                    JSON.stringify({
+                        level: "error",
+                        component: "register-page",
+                        operation: "load-registration-integration",
+                        integrationId: String(descriptor.id),
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    }),
+                );
+                showToast(i18n.t("ui.app.register.error.generic"), {
+                    variant: "error",
+                });
+            }
+        }
+        registrationIntegrationsReady = true;
     } catch {
         if (!token && !hasTokenParam) openRegistrationsEnabled = false;
     }

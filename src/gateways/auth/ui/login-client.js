@@ -38,6 +38,32 @@ export async function getPendingAccountCreation() {
     return payload?.data ?? null;
 }
 
+export async function loadRegistrationConfig() {
+    const response = await fetch("/api/v1/auth/registration-config");
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) {
+        const error = new Error(
+            payload?.error?.message ??
+                "Registration configuration is unavailable.",
+        );
+        error.code = payload?.error?.code ?? "registration_config_unavailable";
+        throw error;
+    }
+    const data = payload?.data ?? {};
+    return {
+        registrationsEnabled: data.registrationsEnabled === true,
+        userValidationMode: String(data.userValidationMode ?? "none"),
+        integrations: Array.isArray(data.integrations)
+            ? data.integrations.filter(
+                  (descriptor) =>
+                      descriptor?.id &&
+                      typeof descriptor.scriptUrl === "string" &&
+                      descriptor.scriptUrl.trim().length > 0,
+              )
+            : [],
+    };
+}
+
 export async function cancelPendingAccountCreation() {
     await fetch("/api/v1/auth/account-creation-attempt", {
         method: "DELETE",
