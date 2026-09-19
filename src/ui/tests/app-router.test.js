@@ -178,6 +178,26 @@ test("adapter routes take precedence over neutral fallback routes", () => {
     assert.doesNotMatch(src, /route\.id === "gateway\.study\.child"/);
 });
 
+test("programmatic navigation uses the provider-agnostic route guard", () => {
+    const src = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    const navigateSource = src.slice(
+        src.indexOf("export async function navigateTo("),
+        src.indexOf('uiCtx.capabilities.contribute("ui:navigate"'),
+    );
+
+    assert.match(
+        navigateSource,
+        /if \(!\(await canNavigateToRoute\(route, path\)\)\) return false;/,
+    );
+    assert.doesNotMatch(
+        navigateSource,
+        /isPotentialStudyChildPath|resolveStudyChildComponent/,
+    );
+});
+
 test("route invalidation prevents in-flight anonymous loads from restoring stale routes", () => {
     const routerSource = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),

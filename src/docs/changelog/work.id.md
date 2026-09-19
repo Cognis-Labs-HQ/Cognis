@@ -42,6 +42,10 @@ Validasi modul eksternal kini mendeteksi URL internal Cognis langsung di impor C
 
 Proyeksi kemajuan kini membatasi interval tinjauan hingga empat belas hari agar sesuai dengan validasi stempel waktu peristiwa dan memastikan setiap peristiwa yang diterima tetap dapat dibangun ulang.
 
+## Navigasi dasbor yang andal
+
+Navigasi dasbor terprogram kini memakai hook otorisasi rute generik alih-alih fungsi pembantu khusus Study yang telah dihapus, sehingga navigasi tidak lagi gagal akibat galat referensi.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -51,3 +55,4 @@ Proyeksi kemajuan kini membatasi interval tinjauan hingga empat belas hari agar 
 - [d472ffa9](https://github.com/Cognis-Labs-HQ/Cognis/commit/d472ffa9)
 - [992973f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/992973f5a421fa0043bfa792a1b4757abcff8209)
 - [4c7366ad](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c7366adec02748038211fcdf407f8b5b2ea759e)
+- [2b097121](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b097121)

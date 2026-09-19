@@ -42,6 +42,10 @@ Die Prüfung externer Module erkennt nun direkte URLs zu Cognis-Interna sowohl i
 
 Fortschrittsprojektionen begrenzen Wiederholungsintervalle jetzt auf vierzehn Tage. Dies entspricht der Prüfung von Ereigniszeitstempeln und stellt sicher, dass jedes angenommene Ereignis rekonstruierbar bleibt.
 
+## Zuverlässige Dashboard-Navigation
+
+Die programmgesteuerte Dashboard-Navigation verwendet nun den allgemeinen Hook zur Routenautorisierung statt entfernter Study-spezifischer Hilfsfunktionen. Dadurch scheitert die Navigation nicht mehr an einem Referenzfehler.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -51,3 +55,4 @@ Fortschrittsprojektionen begrenzen Wiederholungsintervalle jetzt auf vierzehn Ta
 - [d472ffa9](https://github.com/Cognis-Labs-HQ/Cognis/commit/d472ffa9)
 - [992973f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/992973f5a421fa0043bfa792a1b4757abcff8209)
 - [4c7366ad](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c7366adec02748038211fcdf407f8b5b2ea759e)
+- [2b097121](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b097121)

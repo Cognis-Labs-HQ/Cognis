@@ -42,6 +42,10 @@ External module validation now detects direct Cognis internal URLs in CSS import
 
 Progress projections now cap review intervals at fourteen days, matching event timestamp validation and ensuring every accepted event remains rebuildable.
 
+## Reliable dashboard navigation
+
+Programmatic dashboard navigation now uses the generic route authorization hook instead of calling removed Study-specific helpers, preventing navigation from failing with a reference error.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -51,3 +55,4 @@ Progress projections now cap review intervals at fourteen days, matching event t
 - [d472ffa9](https://github.com/Cognis-Labs-HQ/Cognis/commit/d472ffa9)
 - [992973f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/992973f5a421fa0043bfa792a1b4757abcff8209)
 - [4c7366ad](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c7366adec02748038211fcdf407f8b5b2ea759e)
+- [2b097121](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b097121)
