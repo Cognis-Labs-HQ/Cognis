@@ -52,6 +52,10 @@ interface ModuleUiRegistrationContext {
               }
             | string,
     ): void;
+    registerCapabilityProvider(provider: {
+        scriptUrl: string;
+        providesCapabilities: string[];
+    }): void;
     registerSpaRoute(route: {
         id: string;
         pattern: string;
@@ -538,6 +542,15 @@ export function createModuleExtensionRoutes(
                     scriptUrl: pluginConfig.scriptUrl,
                     access: pluginConfig.access,
                     providesCapabilities: pluginConfig.providesCapabilities,
+                    ownerId: moduleId,
+                    isEnabled: () => isModuleEnabled(moduleId),
+                });
+            },
+            registerCapabilityProvider(provider) {
+                requireActiveBootstrap();
+                if (!moduleEnabled) return;
+                options?.uiRegistry?.registerCapabilityProvider({
+                    ...provider,
                     ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });

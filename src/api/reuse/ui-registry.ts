@@ -65,6 +65,7 @@ export interface UiCapabilityProvider {
     scriptUrl: string;
     providesCapabilities: string[];
     isEnabled?: () => boolean;
+    ownerId?: string;
 }
 
 /**
@@ -384,6 +385,7 @@ export class UIRegistry {
             else this.pageExtensions.delete(pageId);
         }
         this.removeOwned(this.navbarPlugins, moduleId);
+        this.removeOwned(this.capabilityProviders, moduleId);
         this.removeOwned(this.spaRoutes, moduleId);
         this.removeOwned(this.authTypingMessages, moduleId);
         this.removeOwned(this.authFooterPlugins, moduleId);
