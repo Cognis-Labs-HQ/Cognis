@@ -18,6 +18,7 @@
  */
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createPasswordConfirmationGuard } from "./password-confirmation-guard.js";
@@ -54,6 +55,7 @@ export function createRepromptGuard({
         confirmPasswordImpl,
         openPopupImpl,
         escapeHtmlImpl: escapeHtml,
+        createFormBuilderImpl: createFormBuilder,
     });
 }
 

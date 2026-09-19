@@ -12,10 +12,16 @@ Gateway menemukan adapter dengan memindai `src/adapters/auth/` saat bootstrap. S
 - Mengelola status aktif/nonaktif adapter yang dipersistensikan di `auth_adapter_configs`.
 - Memverifikasi kredensial dengan mendelegasikan ke adapter yang diaktifkan untuk penyedia yang diminta.
 - Menerbitkan token akses setelah autentikasi berhasil melalui `issueAccessToken`.
-- Menyediakan kumpulan kapabilitas terdokumentasi: `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, `auth:registerProvider`, `auth:registerPageScriptOrigins`, `auth:issueAccessToken`, `auth:getAuthClaims`, `auth:requireAuth`, `auth:requireRoleAccess`, `auth:revokeAccessTokensForSubject`, `auth:revokeSetupPendingAccessTokens`, dan `auth:routeContext`.
+- Menyediakan kumpulan kapabilitas terdokumentasi: `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, `auth:registerProvider`, `auth:registerLoginButton`, `auth:registerPageScriptOrigins`, `auth:issueAccessToken`, `auth:getAuthClaims`, `auth:requireAuth`, `auth:requireRoleAccess`, `auth:revokeAccessTokensForSubject`, `auth:revokeSetupPendingAccessTokens`, dan `auth:routeContext`.
 - Mendaftarkan semua route API autentikasi dan route admin adapter.
 
 Tidak bertanggung jawab atas: menyimpan data profil pengguna (itu tugas gateway profil), manajemen sesi di luar penerbitan token, atau logika bisnis non-autentikasi.
+
+### Siklus hidup penyedia runtime
+
+Penyedia runtime harus memakai gateway Authentication sebagai otoritas konfigurasi dan status daya, sama seperti LDAP. Penyedia memberikan `id` yang stabil, `getConfigSchema()`, `configure(config)`, dan `isConfigured()`; Administration membaca dan menulis `/api/v1/gateways/auth/adapters/<id>/config` serta mengaktifkan atau menonaktifkan melalui `/enable` atau `/disable`. Modul tidak boleh menyimpan bendera aktivasi kedua atau menganggap aktivasi modul sama dengan aktivasi adapter.
+
+Saat bootstrap, tunggu `auth:registerProvider(provider, requires)` sebelum mendaftarkan rute atau tampilan login. Promise selesai hanya setelah Cognis memulihkan konfigurasi tersimpan dan status aktif adapter. Daftarkan tombol bermerek setelah itu, simpan kedua fungsi pembersihan, lalu hapus tombol sebelum membatalkan pendaftaran penyedia saat teardown. Penyedia tanpa status aktif tersimpan mulai dalam keadaan nonaktif dan harus menyelesaikan penyiapan melalui alur konfigurasi adapter milik gateway.
 
 ## Arsitektur
 
@@ -51,28 +57,38 @@ Bootstrap di `src/gateways/auth/bootstrap.ts` dan `src/gateways/auth/bootstrap/`
 
 Capability yang disediakan:
 
-| Capability                       | Tipe                                           | Keterangan                                                                        |
-| -------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------- |
-| `auth:accountStore`              | `LocalAccountStore`                            | Store akun lokal yang digunakan oleh adapter lokal                                |
-| `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | Membuat akun admin jika belum ada                                                 |
-| `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | Mengembalikan metadata untuk semua penyedia yang diaktifkan                       |
-| `auth:registerProvider`          | `(provider, requires?) => dispose`             | Mendaftarkan penyedia autentikasi modul dan mengembalikan fungsi pembersihannya   |
-| `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Mengganti origin skrip http(s) tepercaya untuk satu pemilik di header CSP halaman |
+| Capability                       | Tipe                                           | Keterangan                                                                          |
+| -------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `auth:accountStore`              | `LocalAccountStore`                            | Store akun lokal yang digunakan oleh adapter lokal                                  |
+| `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | Membuat akun admin jika belum ada                                                   |
+| `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | Mengembalikan metadata untuk semua penyedia yang diaktifkan                         |
+| `auth:registerProvider`          | `async (provider, requires?) => dispose`       | Mendaftarkan penyedia autentikasi modul dan mengembalikan fungsi pembersihannya     |
+| `auth:registerLoginButton`       | `(descriptor) => dispose`                      | Mendaftarkan tampilan tombol masuk bermerek dan mengembalikan fungsi pembersihannya |
+| `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Mengganti origin skrip http(s) tepercaya untuk satu pemilik di header CSP halaman   |
+
+Penyedia autentikasi harus menunggu `auth:registerProvider` sebelum memanggil `auth:registerLoginButton`. Registrasi memulihkan konfigurasi tersimpan dan status aktif adapter sebelum selesai, selaras dengan penyedia yang ditemukan dari sistem berkas seperti LDAP. Deskriptor mewajibkan `providerId` yang terdaftar, `label` lengkap yang telah dilokalkan, dan `iconUrl` dari asal yang sama. Nilai opsional `backgroundColor`, `borderColor`, dan `textColor` memakai warna heksadesimal enam digit. Halaman masuk selalu menampilkan ikon dan label lengkap pada ukuran layar ringkas maupun lebar. Penyedia harus memanggil fungsi pembersihan yang dikembalikan saat kontribusinya dinonaktifkan. Metode tanpa kredensial yang tidak bergaya dihilangkan, bukan ditampilkan sebagai tombol masuk generik.
+
+Pengalihan OAuth yang menghadap browser dapat menggunakan `/sso/<routeNamespace>/<path>`. Cognis meneruskan callback berbasis kueri langsung ke penyedia dan menjembatani respons berbasis fragmen ke callback milik server yang sama tanpa membiarkan indikator pemuatan terus aktif. Kegagalan callback kembali ke Login dengan galat yang dilokalkan.
+
+Penyedia dapat mendeklarasikan `routeNamespace` dan `registerRoutes(router)` pada adapternya. Router menerima jalur `GET` dan `POST` relatif terhadap `/api/v1/auth/<routeNamespace>` agar callback OAuth dapat berada di bawah gateway Autentikasi tanpa memberi modul kontributor akses langsung ke rute inti yang dilindungi. Namespace dibatasi pada segmen URL yang aman, namespace inti Autentikasi dicadangkan, rute duplikat ditolak, dan penghapusan penyedia menghapus semua rute kontribusinya.
+
+Sesi penyedia eksternal melewati `gateAccountCreation` sebelum `ensureExternalAccount`. Saat pendaftaran publik dinonaktifkan, sesi harus membawa token pendaftaran dan email penyedia yang cocok. Sesi yang ditahan mengembalikan `account_creation_required` dengan `emailRequired`, `registrationTokenRequired`, dan `retryEndpoint`. UI penyedia mengirim token dan email yang diminta ke endpoint tersebut dengan ID penyedia yang sama; Cognis meneruskan nilai itu ke gerbang pembuatan akun walaupun adapter penyedia hanya mengembalikan identitas terautentikasinya. Membatalkan alih-alih mencoba kembali menghentikan login tanpa membuat akun.
 
 ## Route API
 
-| Metode | Path                                         | Keterangan                                  | Autentikasi      |
-| ------ | -------------------------------------------- | ------------------------------------------- | ---------------- |
-| `GET`  | `/api/v1/auth/login-methods`                 | Daftar penyedia autentikasi yang diaktifkan | Tidak diperlukan |
-| `POST` | `/api/v1/auth/register`                      | Mendaftar akun lokal baru secara mandiri    | Tidak diperlukan |
-| `POST` | `/api/v1/auth/login`                         | Autentikasi; mengembalikan token Bearer     | Tidak diperlukan |
-| `POST` | `/api/v1/auth/verify`                        | Verifikasi kata sandi pengguna saat ini     | Pengguna         |
-| `GET`  | `/api/v1/gateways/auth/adapters`             | Daftar semua adapter autentikasi terdaftar  | Admin            |
-| `GET`  | `/api/v1/gateways/auth/adapters/:id/config`  | Mendapatkan skema konfigurasi untuk adapter | Admin            |
-| `PUT`  | `/api/v1/gateways/auth/adapters/:id/config`  | Memperbarui konfigurasi untuk adapter       | Admin            |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/test`    | Menguji konfigurasi adapter                 | Admin            |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/enable`  | Mengaktifkan adapter                        | Admin            |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Menonaktifkan adapter                       | Admin            |
+| Metode | Path                                         | Keterangan                                      | Autentikasi      |
+| ------ | -------------------------------------------- | ----------------------------------------------- | ---------------- |
+| `GET`  | `/api/v1/auth/login-methods`                 | Daftar penyedia autentikasi yang diaktifkan     | Tidak diperlukan |
+| `POST` | `/api/v1/auth/register`                      | Mendaftar akun lokal baru secara mandiri        | Tidak diperlukan |
+| `POST` | `/api/v1/auth/login`                         | Autentikasi; mengembalikan token Bearer         | Tidak diperlukan |
+| `POST` | `/api/v1/auth/sso/start`                     | Memulai pengalihan otorisasi penyedia eksternal | Tidak ada        |
+| `POST` | `/api/v1/auth/verify`                        | Verifikasi kata sandi pengguna saat ini         | Pengguna         |
+| `GET`  | `/api/v1/gateways/auth/adapters`             | Daftar semua adapter autentikasi terdaftar      | Admin            |
+| `GET`  | `/api/v1/gateways/auth/adapters/:id/config`  | Mendapatkan skema konfigurasi untuk adapter     | Admin            |
+| `PUT`  | `/api/v1/gateways/auth/adapters/:id/config`  | Memperbarui konfigurasi untuk adapter           | Admin            |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/test`    | Menguji konfigurasi adapter                     | Admin            |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/enable`  | Mengaktifkan adapter                            | Admin            |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Menonaktifkan adapter                           | Admin            |
 
 Kegagalan uji adapter dapat menyertakan objek `error.fieldErrors` yang memetakan sejumlah ID kolom konfigurasi ke pesan diagnosis yang aman.
 
@@ -91,3 +107,7 @@ Perubahan sumber autentikasi menjalankan alur `reconcile-auth-sources` setelah p
 ## Batas sesi peramban
 
 Pembatalan konfirmasi kata sandi hanya berjalan untuk sesi akun penuh yang terautentikasi. Penyiapan halaman anonim dan tamu Share dapat mengunci atau mengganti status keyring tanpa mengirim permintaan khusus akun `DELETE /api/v1/auth/verify`.
+
+## Penyedia profil eksternal
+
+Modul SSO dapat mendaftarkan `auth:registerExternalProfileProvider` melalui CTX. Resolver menerima ID penyedia, ID akun Cognis, ID pengguna eksternal, dan sesi penyedia terautentikasi, lalu dapat mengembalikan handle yang dapat dicari, nama tampilan, bio, lokasi, situs web, serta data avatar dan banner. Cognis juga memakai `handle` atau `username` dari sesi penyedia sebagai handle profil awal bila tersedia, alih-alih menampilkan ID akun eksternal yang buram sebagai nama pengguna. Adapter Profil menyimpan data tersebut melalui kemampuan penyimpanan miliknya saat akun eksternal pertama kali dibuat.

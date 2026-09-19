@@ -94,6 +94,47 @@ test("bootstrap contributes LDAP email provisioning capability", async () => {
     );
 });
 
+test("notify dispatch resolves profile handles to canonical account IDs", async () => {
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
+        await makeCtx();
+    capabilities.contribute("social:profile:identity", {
+        async resolveAccountId(handle: unknown) {
+            return handle === "provider-handle" ? "sso-account-id" : null;
+        },
+    });
+
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        flow,
+    });
+
+    const received: Array<{ recipientUsername: string }> = [];
+    const gateway = capabilities.require<any>("notify:gateway");
+    gateway.registerSender({
+        senderId: "capture",
+        async send(envelope: { recipientUsername: string }) {
+            received.push(envelope);
+        },
+    });
+    gateway.registerAlwaysOnSender("capture");
+    const dispatch =
+        capabilities.require<
+            (envelope: Record<string, unknown>) => Promise<unknown>
+        >("notify:dispatch");
+
+    await dispatch({
+        category: "social",
+        recipientUsername: "provider-handle",
+        subject: "Hello",
+        body: "World",
+    });
+
+    assert.equal(received[0]?.recipientUsername, "sso-account-id");
+});
+
 test("bootstrap registers routes with RouteRegistry", async () => {
     const { gatewayRegistry, routeRegistry, capabilities, flow } =
         await makeCtx();

@@ -62,6 +62,14 @@ Replaced metadata dropdowns with optionally grouped filter pills and restored th
 
 Restored Library rendering on browsers without native `Map.groupBy`, normalized Study language codes so registered flags remain attached to language controls, and moved remote-audio persistence entirely behind a component-owned Files gateway namespace. The Library no longer writes cache files directly or imposes its own audio size ceiling.
 
+## Align with upstream Development
+
+Merged the latest upstream Development changes and resolved the retired registration invite adapter in favor of upstream's token-based implementation, keeping the Study Library feature compatible with the current application architecture.
+
+## Refresh Study adapter compatibility
+
+Raised the Library and Progress adapters' tested gateway ceiling to the upstream gateway version, bumped both adapter versions, and restored their complete workspace lockfile records so clean dependency installation succeeds after the merge. Corrected upstream registry integrity metadata also makes the locked dependency set reproducible.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -73,3 +81,6 @@ Restored Library rendering on browsers without native `Map.groupBy`, normalized 
 - [a7891aaa](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7891aaa8195180c45fa490ada5469d2d306c62b)
 - [b8a1852e](https://github.com/Cognis-Labs-HQ/Cognis/commit/b8a1852e1f4aa45ce950ad49484f818c713341d2)
 - [820d53f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/820d53f65816655949a0a1f47068a10cdfc51178)
+- [8be331f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8be331f9bc1a54edc80c10e53a4e4d2704a4f7b5)
+- [3c72e487](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c72e4870f99213562fb3796b4d76624486ba272)
+- [25309509](https://github.com/Cognis-Labs-HQ/Cognis/commit/25309509877018b8d1a4633636f9d45daeef45b4)

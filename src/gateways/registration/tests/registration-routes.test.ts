@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { Readable } from "node:stream";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import {
     createRegistrationRoutes,
@@ -102,15 +103,15 @@ test("founder can list only their pending registration tokens", async () => {
     assert.equal(inviterFilter, "founder-user");
 });
 
-test("admin can list all pending registration tokens", async () => {
-    let didUseUnfilteredList = false;
+test("admin invite management is scoped to invitations they created", async () => {
+    let inviterFilter = "";
     const route = createRegistrationRoutes(
         {
             isInviteEnabled() {
                 return true;
             },
             async listInvites(filter?: { inviterAccountId?: string }) {
-                didUseUnfilteredList = !filter?.inviterAccountId;
+                inviterFilter = filter?.inviterAccountId ?? "";
                 return [];
             },
             async issueInvite() {
@@ -140,7 +141,7 @@ test("admin can list all pending registration tokens", async () => {
     );
     assert.equal(handled, true);
     assert.equal(res.status, 200);
-    assert.equal(didUseUnfilteredList, true);
+    assert.equal(inviterFilter, "admin-user");
 });
 
 test("registration state exposes founder-safe gateway status", async () => {
@@ -172,6 +173,41 @@ test("registration state exposes founder-safe gateway status", async () => {
     assert.equal(res.status, 200);
     assert.match(res.payload, /"gatewayEnabled":false/);
     assert.match(res.payload, /"inviteEnabled":true/);
+    assert.match(res.payload, /"canGenerateToken":false/);
+});
+
+test("founding users cannot issue manual registration tokens", async () => {
+    let issued = false;
+    const route = createRegistrationRoutes(
+        {
+            isInviteEnabled() {
+                return true;
+            },
+            async issueInvite() {
+                issued = true;
+                return { tokenId: "t", inviteUrl: "u", expiresAt: "x" };
+            },
+        } as any,
+        accountStore,
+    );
+    const req = Readable.from([JSON.stringify({ delivery: "manual" })]);
+    Object.assign(req, {
+        method: "POST",
+        headers: {
+            authorization: `Bearer ${founderToken}`,
+            "content-type": "application/json",
+        },
+    });
+    const res = makeResponse();
+
+    await route(
+        req as any,
+        res,
+        new URL("http://localhost/api/v1/registration/tokens"),
+    );
+
+    assert.equal(res.status, 403);
+    assert.equal(issued, false);
 });
 
 test("invite endpoint returns inviter details for valid token", async () => {
@@ -292,6 +328,7 @@ test("GET /register does not redirect authenticated users to dashboard", async (
             headers: { cookie: `cognis_access_token=${token}` },
         } as any,
         {
+            setHeader() {},
             writeHead(code: number, headers: Record<string, string>) {
                 status = code;
                 location = headers?.location ?? "";
@@ -313,6 +350,7 @@ test("GET /register serves the registration page to unauthenticated visitors", a
     const handled = await route(
         { method: "GET", headers: {} } as any,
         {
+            setHeader() {},
             writeHead(code: number) {
                 status = code;
             },

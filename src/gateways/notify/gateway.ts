@@ -1,7 +1,10 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { CapabilityStore } from "@cognis/core";
+import {
+    resolveComponentEnabledState,
+    type CapabilityStore,
+} from "@cognis/core";
 
 /**
  * Context passed to `bootstrapNotifyAdapter` when a notification adapter
@@ -452,17 +455,24 @@ export class CoreNotificationGateway
     ): Promise<void> {
         const { enabled, ...senderConfig } = config;
         const wasEnabled = this.isSenderEnabled(senderId);
-        if (enabled === false || enabled === "false") {
+        const isEnabled = resolveComponentEnabledState({
+            persistedEnabled: enabled,
+            defaultEnabled: wasEnabled,
+            locked: this.alwaysOnSenders.has(senderId),
+        });
+        if (!isEnabled) {
             this.disabledSenders.add(senderId);
         } else {
             this.disabledSenders.delete(senderId);
         }
-        const isEnabled = this.isSenderEnabled(senderId);
         const sender = this.senders.get(senderId);
         if (sender && typeof sender.setConfig === "function") {
             sender.setConfig(senderConfig);
         }
         const persistConfig: Record<string, unknown> = { ...config };
+        if (this.alwaysOnSenders.has(senderId)) {
+            persistConfig.enabled = true;
+        }
         if (persistConfig.password === "") {
             delete persistConfig.password;
         }
@@ -491,8 +501,16 @@ export class CoreNotificationGateway
         for (const sender of this.senders.values()) {
             const config = await this.configStore.getConfig(sender.senderId);
             if (!config) continue;
-            if (config.enabled === false || config.enabled === "false") {
+            if (
+                !resolveComponentEnabledState({
+                    persistedEnabled: config.enabled,
+                    defaultEnabled: true,
+                    locked: this.alwaysOnSenders.has(sender.senderId),
+                })
+            ) {
                 this.disabledSenders.add(sender.senderId);
+            } else {
+                this.disabledSenders.delete(sender.senderId);
             }
             if (typeof sender.setConfig === "function") {
                 const { enabled, ...senderConfig } = config;
@@ -515,6 +533,9 @@ export class CoreNotificationGateway
     }
 
     async disableSender(senderId: string): Promise<void> {
+        if (this.alwaysOnSenders.has(senderId)) {
+            throw new Error("adapter_locked");
+        }
         const wasDisabled = this.disabledSenders.has(senderId);
         this.disabledSenders.add(senderId);
         const existing = (await this.configStore?.getConfig(senderId)) ?? null;

@@ -183,7 +183,7 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
         async getProfileByHandle(handle: string) {
             if (handle === "bob") {
                 return {
-                    accountId: "bob",
+                    accountId: "sso-bob-id",
                     handle: "bob",
                     displayName: "Bob",
                     visibility: "community",
@@ -200,9 +200,9 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
                     visibility: "community",
                 };
             }
-            if (accountId === "bob") {
+            if (accountId === "sso-bob-id") {
                 return {
-                    accountId: "bob",
+                    accountId: "sso-bob-id",
                     handle: "bob",
                     displayName: "Bob",
                     visibility: "community",
@@ -251,7 +251,7 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
     assert.equal(dispatched.length, 1);
     assert.equal(dispatched[0].category, "message-requests");
     assert.equal(dispatched[0].subject, "New message request");
-    assert.equal(dispatched[0].recipientUsername, "bob");
+    assert.equal(dispatched[0].recipientUsername, "sso-bob-id");
     assert.equal(dispatched[0].actionUrl, "/messages");
     assert.deepEqual(dispatched[0].metadata, {
         requestId: "req-1",

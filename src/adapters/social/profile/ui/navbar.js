@@ -157,10 +157,13 @@ function updateAvailabilitySelection(container, indicator, status, i18n) {
 
 uiCtx.capabilities.contribute("ui:navbarAvatarProvider", async () => {
     const handle = localStorage.getItem("cognis_account") ?? "";
-    const fallback = {
-        avatarInitials: getProfileInitials(handle),
-        avatarColor: getProfileInitialsColor(handle),
-    };
+    const storedDisplayName =
+        localStorage.getItem("cognis_display_name") ?? handle;
+    const fallbackFor = (label) => ({
+        avatarInitials: getProfileInitials(label),
+        avatarColor: getProfileInitialsColor(label),
+    });
+    let fallback = fallbackFor(storedDisplayName);
     try {
         const pingRes = await apiFetch("/api/v1/social/profile/ping");
         if (!pingRes.ok) return { ...fallback, profileAvailable: false };
@@ -172,6 +175,11 @@ uiCtx.capabilities.contribute("ui:navbarAvatarProvider", async () => {
         const res = await apiFetch("/api/v1/social/profile");
         if (!res.ok) return { ...fallback, profileAvailable: true };
         const payload = await res.json();
+        const profileLabel =
+            payload?.data?.displayName ||
+            payload?.data?.handle ||
+            storedDisplayName;
+        fallback = fallbackFor(profileLabel);
         const avatarKey = payload?.data?.avatarKey;
         if (!avatarKey) return { ...fallback, profileAvailable: true };
 

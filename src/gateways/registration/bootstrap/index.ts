@@ -10,9 +10,11 @@ import {
 } from "../../../api/reuse/security-settings.js";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { CoreRegistrationGateway } from "../gateway.js";
-import { createRegistrationPageRoutes } from "./page-routes.js";
 import { createRegistrationRoutes } from "./registration-routes.js";
 import { createGatewayAdapterRoutes } from "./adapter-admin-routes.js";
+import { authorizeAccountCreation } from "./account-creation-gate.js";
+import { createRegistrationPageRoutes } from "./page-routes.js";
+import { createGatewayUiRegistryHooks } from "../../reuse/ui-registry-hooks.js";
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const manifestVersion = await readGatewayManifestVersion(
@@ -25,6 +27,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const accountStore =
         ctx.capabilities.get<LocalAccountStore>("auth:accountStore");
     if (!accountStore) return;
+    const issueAccessToken = ctx.capabilities.get<
+        (subject: string, role: "user", ttlSeconds: number) => string
+    >("auth:issueAccessToken");
 
     const canSendInviteEmail = ctx.capabilities.get<() => boolean>(
         "notify:canSendRegistrationInviteEmail",
@@ -123,11 +128,16 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             isGatewayEnabled,
             ctx.log,
             routeContext,
+            issueAccessToken,
         ),
         "registration",
     );
     ctx.routeRegistry.register(
-        createRegistrationPageRoutes(routeContext),
+        createRegistrationPageRoutes(
+            accountStore,
+            isGatewayEnabled,
+            routeContext,
+        ),
         "registration",
     );
     ctx.log?.("info", "Registration gateway routes registered.", {
@@ -147,8 +157,38 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         stringsBaseUrl: "/static/gateways/registration/languages",
     });
     ctx.uiRegistry?.registerStaticDir("registration", uiDir);
+    const uiHooks = createGatewayUiRegistryHooks(
+        ctx.uiRegistry,
+        "registration",
+    );
+    uiHooks.registerSpaRoute({
+        id: "registration-invite-page",
+        pattern: "^/invite$",
+        base: "/invite",
+        scriptUrl: "/static/gateways/registration/app/invite/index.js",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/gateways/registration/app/invite/index.css",
+        ],
+        isEnabled: isGatewayEnabled,
+    });
+    const tokenAdapterUiDir = path.resolve(
+        ctx.adaptersRoot,
+        "registration",
+        "token",
+        "ui",
+    );
+    ctx.uiRegistry?.registerAdapterStaticDir?.(
+        "registration",
+        "token",
+        tokenAdapterUiDir,
+    );
+    const tokenAuthorizationScriptUrl =
+        "/static/adapters/registration/token/ui/authorization.js";
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/registration/navbar.js",
+        providesCapabilities: ["users:getLeadingControls"],
     });
     ctx.uiRegistry?.registerAuthTypingMessage({
         id: "registration-register-today",
@@ -175,6 +215,45 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         },
     );
 
+    if (ctx.flow.exists("gateAccountCreation")) {
+        ctx.flow.extend(
+            "gateAccountCreation",
+            "authorizeCreation",
+            { id: "registration-gateway:authorize-account-creation" },
+            (stageContext) =>
+                authorizeAccountCreation(
+                    gateway,
+                    isGatewayEnabled(),
+                    (stageContext.input ?? {}) as {
+                        accountId?: string;
+                        email?: string;
+                        registrationToken?: string;
+                    },
+                ),
+        );
+    }
+
+    if (ctx.flow.exists("constructRegistrationUi")) {
+        ctx.flow.extend(
+            "constructRegistrationUi",
+            "compose-form",
+            { id: "registration-token:account-creation-authorization" },
+            () => ({
+                integrations: [
+                    {
+                        id: "registration-token-authorization",
+                        scriptUrl:
+                            ctx.uiRegistry?.resolveAssetUrl(
+                                tokenAuthorizationScriptUrl,
+                            ) ?? tokenAuthorizationScriptUrl,
+                        stringsBaseUrl:
+                            "/static/adapters/registration/token/languages",
+                    },
+                ],
+            }),
+        );
+    }
+
     ctx.routeRegistry.register(
         createGatewayAdapterRoutes(
             "registration",
@@ -191,7 +270,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         name: "Registration Gateway",
         version: manifestVersion,
         description:
-            "Registration workflows via pluggable invite/public adapters.",
+            "Registration workflows through mandatory tokens and optional public registration.",
         publisher: "Cognis Labs HQ",
         hasAdapters: true,
     });

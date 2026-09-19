@@ -34,19 +34,23 @@ export function dependencyLifecycleAction(module) {
     return module.installed ? "enable" : "install";
 }
 
-export function isRequiredDependency(module, modules) {
-    return modules.some((candidate) =>
-        references(candidate, "hard").some(
-            (reference) => reference === module.uuid || reference === module.id,
-        ),
-    );
-}
-
 export function areModuleDependenciesSatisfied(module, modules) {
     return [
         ...dependencyEntries(module, modules, "hard"),
         ...dependencyEntries(module, modules, "soft"),
     ].every(isSatisfied);
+}
+
+export function resolveModuleDependencyErrorMessage(error, i18n) {
+    if (
+        ![
+            "module_dependency_disabled",
+            "module_dependency_unavailable",
+        ].includes(error?.code)
+    ) {
+        return null;
+    }
+    return i18n.t("ui.app.modules.hard_dependency_blocked");
 }
 
 function actionState(hard, soft) {
@@ -168,9 +172,13 @@ export async function confirmModuleDependencies(
                             updateDependencyAction(overlay, action, hard, soft);
                         } catch (error) {
                             showToast(
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
+                                resolveModuleDependencyErrorMessage(
+                                    error,
+                                    i18n,
+                                ) ??
+                                    (error instanceof Error
+                                        ? error.message
+                                        : String(error)),
                                 { type: "error" },
                             );
                         } finally {

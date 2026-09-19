@@ -32,32 +32,31 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen              | Jalur                               | Versi    |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.27` |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.29` |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.17` |
-| Kuota Berkas          | `src/adapters/file/quota/`          | `1.0.15` |
-| Local Auth            | `src/adapters/auth/local/`          | `0.3.17` |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.49` |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.29` |
-| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.15` |
-| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.15` |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.28` |
-| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.18` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.19` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.25` |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.19` |
-| Memory Database       | `src/adapters/db/memory/`           | `0.1.16` |
-| Registration Invite   | `src/adapters/registration/invite/` | `0.1.17` |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.16` |
-| Public Registration   | `src/adapters/registration/public/` | `0.1.14` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.5`  |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.10` |
-| Calls (Social)        | `src/adapters/social/call/`         | `0.5.21` |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.34` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.30` |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.23` |
+| Kuota Berkas          | `src/adapters/file/quota/`          | `1.0.21` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.3.23` |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.51` |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.35` |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.21` |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.21` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.35` |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.24` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.23` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.29` |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.25` |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.22` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.36` |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.20` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.8`  |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.16` |
+| Calls (Social)        | `src/adapters/social/call/`         | `0.5.31` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.36` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.11` |
-| Library (Study)       | `src/adapters/study/library/`       | `2.7.15` |
-| Kemajuan (Study)      | `src/adapters/study/progress/`      | `1.1.5`  |
+| Library (Study)       | `src/adapters/study/library/`       | `2.7.16` |
+| Kemajuan (Study)      | `src/adapters/study/progress/`      | `1.1.6`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.5`  |
 | File Logging          | `src/adapters/logging/file/`        | `1.1.5`  |
 
@@ -66,29 +65,29 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                         | Versi     |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.23`  |
-| Share                 | `src/gateways/share/`         | `1.7.47`  |
-| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.19`  |
-| Notification (notify) | `src/gateways/notify/`        | `1.5.11`  |
-| Social                | `src/gateways/social/`        | `1.3.5`   |
-| File Storage (files)  | `src/gateways/files/`         | `2.1.11`  |
-| Registration          | `src/gateways/registration/`  | `1.1.15`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.61`  |
+| Share                 | `src/gateways/share/`         | `1.7.48`  |
+| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`  |
+| Notification (notify) | `src/gateways/notify/`        | `1.5.13`  |
+| Social                | `src/gateways/social/`        | `1.3.6`   |
+| File Storage (files)  | `src/gateways/files/`         | `2.1.10`  |
+| Registration          | `src/gateways/registration/`  | `1.1.37`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
-| Study                 | `src/gateways/study/`         | `1.8.17`  |
-| Calendar              | `src/gateways/calendar/`      | `1.4.110` |
+| Study                 | `src/gateways/study/`         | `1.5.14`  |
+| Calendar              | `src/gateways/calendar/`      | `1.4.112` |
 
 ## Kontrak inti
 
 | Komponen     | Jalur       | Versi     |
 | ------------ | ----------- | --------- |
-| Core Package | `src/core/` | `0.3.106` |
+| Core Package | `src/core/` | `0.3.101` |
 
 ## API
 
-| Komponen   | Jalur      | Versi   |
-| ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.5.7` |
+| Komponen   | Jalur      | Versi    |
+| ---------- | ---------- | -------- |
+| API Server | `src/api/` | `0.5.28` |
 
 ## Peralatan
 

@@ -757,7 +757,12 @@ export function createSubComposerHandlers({
             state.resizeObserver.disconnect();
         }
         state.resizeObserver = new ResizeObserver(() => {
-            if (!state.container) return;
+            if (!state.container || !document.contains(state.container)) {
+                state.resizeObserver?.disconnect();
+                state.resizeObserver = null;
+                state.container = null;
+                return;
+            }
             state.container.style.width = "";
             const width = state.container.getBoundingClientRect().width;
             const newCols = Math.max(1, Math.floor(width / UNIT));

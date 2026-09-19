@@ -62,6 +62,14 @@ Metadaten-Auswahlfelder wurden durch optional gruppierte Filter-Pills ersetzt, u
 
 Die Bibliothek wird wieder in Browsern ohne natives `Map.groupBy` dargestellt. Normalisierte Studien-Sprachcodes erhalten registrierte Flaggen an den Sprachsteuerungen, und entferntes Audio wird vollständig in einem komponenteneigenen Namensraum des Datei-Gateways gespeichert. Die Bibliothek schreibt keine Cache-Dateien mehr direkt und setzt keine eigene Größenobergrenze für Audio.
 
+## Mit dem upstream Development-Zweig abgleichen
+
+Die neuesten Änderungen aus dem upstream Development-Zweig wurden zusammengeführt. Der eingestellte Registrierungseinladungs-Adapter wurde zugunsten der upstream tokenbasierten Implementierung aufgelöst, damit die Studienbibliothek mit der aktuellen Anwendungsarchitektur kompatibel bleibt.
+
+## Kompatibilität der Studienadapter aktualisieren
+
+Die getestete Gateway-Obergrenze der Bibliotheks- und Fortschrittsadapter wurde auf die upstream Gateway-Version angehoben, beide Adapterversionen wurden erhöht und ihre vollständigen Workspace-Einträge in der Sperrdatei wurden wiederhergestellt, damit eine saubere Abhängigkeitsinstallation nach der Zusammenführung gelingt. Korrigierte upstream Integritätsmetadaten der Paketregistrierung machen den gesperrten Abhängigkeitssatz zudem reproduzierbar.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -73,3 +81,6 @@ Die Bibliothek wird wieder in Browsern ohne natives `Map.groupBy` dargestellt. N
 - [a7891aaa](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7891aaa8195180c45fa490ada5469d2d306c62b)
 - [b8a1852e](https://github.com/Cognis-Labs-HQ/Cognis/commit/b8a1852e1f4aa45ce950ad49484f818c713341d2)
 - [820d53f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/820d53f65816655949a0a1f47068a10cdfc51178)
+- [8be331f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8be331f9bc1a54edc80c10e53a4e4d2704a4f7b5)
+- [3c72e487](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c72e4870f99213562fb3796b4d76624486ba272)
+- [25309509](https://github.com/Cognis-Labs-HQ/Cognis/commit/25309509877018b8d1a4633636f9d45daeef45b4)

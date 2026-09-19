@@ -83,24 +83,14 @@ test("AI instructions document the complete changelog structure", () => {
     }
 });
 
-test("Study language framework translations preserve contract parity", () => {
-    const documents = ["de", "en", "id", "ja"].map((language) =>
-        readFileSync(
-            resolve(ROOT, `src/docs/study-language-framework.${language}.md`),
-            "utf8",
-        ),
-    );
-    const contractShape = (markdown) => ({
-        sections: (markdown.match(/^## /gm) ?? []).length,
-        checklistItems: (markdown.match(/^- /gm) ?? []).length,
-        contractTerms: [
-            ...new Set(
-                [...markdown.matchAll(/`([^`]+)`/g)].map(([, value]) => value),
-            ),
-        ].sort(),
-    });
-    const expected = contractShape(documents[0]);
-    for (const document of documents.slice(1)) {
-        assert.deepEqual(contractShape(document), expected);
+test("AI instructions require tests to tolerate missing system binaries", () => {
+    for (const path of [
+        resolve(ROOT, "AGENTS.md"),
+        resolve(ROOT, ".github/copilot-instructions.md"),
+    ]) {
+        const instructions = readFileSync(path, "utf8");
+        assert.match(instructions, /Tests must never assume/);
+        assert.match(instructions, /optional system binaries such as `git`/);
+        assert.match(instructions, /skip with an explicit reason/);
     }
 });

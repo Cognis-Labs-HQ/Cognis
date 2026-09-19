@@ -14,5 +14,9 @@ test("keyring settings use canonical section structure", () => {
 });
 
 test("keyring event log pagination shows ten events per page", () => {
-    assert.match(source, /const eventPageSize = 10;/);
+    assert.match(source, /capabilities\.get\("ui:pagination"\)/);
+    assert.doesNotMatch(source, /static\/reuse\/pagination\.js/);
+    assert.match(source, /createPagination\(\{ data: \[\], perPage: 10 \}\)/);
+    assert.match(source, /renderPaginationControls/);
+    assert.match(source, /bindPaginationControls/);
 });

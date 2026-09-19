@@ -90,9 +90,27 @@ async function dispatchRoute(
 
 test("registration gateway bootstrap registers admin section, navbar plugin, and static dir", async () => {
     const map = new Map();
+    const systemCtx = createCtx();
+    systemCtx.registerFlow({
+        id: "gateAccountCreation",
+        stages: ["inspectIdentity", "authorizeCreation"],
+    });
+    systemCtx.registerFlow({
+        id: "constructRegistrationUi",
+        stages: ["compose-form"],
+    });
     map.set("db:executor", {
         execute: async () => ({ rows: [], rowCount: 0 }),
-        executeCommand: async () => ({ rows: [], rowCount: 0 }),
+        executeCommand: async (command: { table?: string }) =>
+            command.table === "registration_adapter_configs"
+                ? {
+                      rows: [
+                          { adapter_id: "public", enabled: 0 },
+                          { adapter_id: "token", enabled: 1 },
+                      ],
+                      rowCount: 2,
+                  }
+                : { rows: [], rowCount: 0 },
         ensureTable: async () => {},
         transaction: async (cb) => cb(map.get("db:executor")),
     });
@@ -122,6 +140,7 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
     const registeredSections = [];
     const registeredPlugins = [];
     const registeredStaticDirs = [];
+    const registeredAdapterStaticDirs = [];
     const registeredTypingMessages = [];
 
     await bootstrap({
@@ -137,13 +156,30 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
             registerStaticDir(id, dir) {
                 registeredStaticDirs.push({ id, dir });
             },
+            registerAdapterStaticDir(gatewayId, adapterId, dir) {
+                registeredAdapterStaticDirs.push({
+                    gatewayId,
+                    adapterId,
+                    dir,
+                });
+            },
+            resolveAssetUrl(assetUrl) {
+                return assetUrl.endsWith("authorization.js")
+                    ? "/assets/registration-token-authorization.js"
+                    : assetUrl;
+            },
             registerAuthTypingMessage(message) {
                 registeredTypingMessages.push(message);
             },
         } as any,
-        gatewayRegistry: { register() {} } as any,
+        gatewayRegistry: {
+            register() {},
+            get() {
+                return { status: "active" };
+            },
+        } as any,
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
-        flow: createCtx().flow,
+        flow: systemCtx.flow,
     } as any);
 
     assert.equal(
@@ -153,7 +189,11 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
     assert.equal(
         registeredPlugins.some(
             (plugin) =>
-                plugin.scriptUrl === "/static/gateways/registration/navbar.js",
+                plugin.scriptUrl ===
+                    "/static/gateways/registration/navbar.js" &&
+                plugin.providesCapabilities?.includes(
+                    "users:getLeadingControls",
+                ),
         ),
         true,
     );
@@ -166,6 +206,16 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
         true,
     );
     assert.equal(existsSync(path.resolve(staticDir.dir, "navbar.js")), true);
+    assert.equal(existsSync(path.resolve(staticDir.dir, "client.js")), true);
+    const tokenStaticDir = registeredAdapterStaticDirs.find(
+        (entry) =>
+            entry.gatewayId === "registration" && entry.adapterId === "token",
+    );
+    assert.ok(tokenStaticDir);
+    assert.equal(
+        existsSync(path.resolve(tokenStaticDir.dir, "authorization.js")),
+        true,
+    );
     assert.equal(registeredTypingMessages.length, 1);
     const msg = registeredTypingMessages[0];
     assert.equal(msg.id, "registration-register-today");
@@ -173,6 +223,33 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
     assert.equal(msg.ownerType, "adapter");
     assert.equal(msg.ownerId, "public");
     assert.equal(typeof msg.isEnabled, "function");
+    const gateResult = await systemCtx.flow.run("gateAccountCreation", {
+        accountId: "sso-user",
+        providerId: "external-sso",
+    });
+    assert.deepEqual(gateResult.stageResults["authorizeCreation"], [
+        {
+            authorized: false,
+            emailRequired: true,
+            reason: "registration_token_required",
+        },
+    ]);
+    const registrationUi = await systemCtx.flow.run(
+        "constructRegistrationUi",
+        {},
+    );
+    assert.deepEqual(registrationUi.stageResults["compose-form"], [
+        {
+            integrations: [
+                {
+                    id: "registration-token-authorization",
+                    scriptUrl: "/assets/registration-token-authorization.js",
+                    stringsBaseUrl:
+                        "/static/adapters/registration/token/languages",
+                },
+            ],
+        },
+    ]);
 });
 
 test("registration:public:isEnabled capability returns false when gateway is disabled", async () => {
@@ -342,9 +419,21 @@ test("registration adapter routes announce controls and accept empty config save
     const capabilityStore = new CapabilityStore();
     const dbExecutor = {
         execute: async () => ({ rows: [], rowCount: 0 }),
-        executeCommand: async ({ table }: { table?: string }) => {
-            if (table === "registration_adapter_configs") {
-                return { rows: [], rowCount: 0 };
+        executeCommand: async ({
+            option,
+            table,
+        }: {
+            option?: string;
+            table?: string;
+        }) => {
+            if (
+                option === "SELECT" &&
+                table === "registration_adapter_configs"
+            ) {
+                return {
+                    rows: [{ adapter_id: "token", enabled: 0 }],
+                    rowCount: 1,
+                };
             }
             return { rows: [], rowCount: 0 };
         },
@@ -412,9 +501,14 @@ test("registration adapter routes announce controls and accept empty config save
     const listPayload = JSON.parse(listResponse.payload) as {
         data: Array<{
             id: string;
+            enabled: boolean;
             controls?: Record<string, string>;
         }>;
     };
+    assert.equal(
+        listPayload.data.find((adapter) => adapter.id === "token")?.enabled,
+        true,
+    );
     const publicAdapter = listPayload.data.find(
         (adapter) => adapter.id === "public",
     );

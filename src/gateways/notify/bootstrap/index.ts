@@ -347,8 +347,19 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
      */
     ctx.capabilities.contribute(
         "notify:dispatch",
-        (envelope: Parameters<typeof gateway.dispatch>[0]) =>
-            gateway.dispatch(envelope),
+        async (envelope: Parameters<typeof gateway.dispatch>[0]) => {
+            const profileIdentity = ctx.capabilities.get<{
+                resolveAccountId(handle: unknown): Promise<string | null>;
+            }>("social:profile:identity");
+            const recipientAccountId = await profileIdentity
+                ?.resolveAccountId(envelope.recipientUsername)
+                .catch(() => null);
+            return gateway.dispatch({
+                ...envelope,
+                recipientUsername:
+                    recipientAccountId ?? envelope.recipientUsername,
+            });
+        },
     );
     /**
      * notify:dispatchToRole — role-based notification fan-out helper for

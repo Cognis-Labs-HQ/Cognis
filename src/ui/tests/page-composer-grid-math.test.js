@@ -9,6 +9,7 @@ import {
     snapGridFloor,
     snapGridRound,
 } from "../reuse/page-composer/grid-math.js";
+import { createGridOverlayHandlers } from "../reuse/page-composer/grid-overlay.js";
 
 test("grid math handles even and odd dimensions", () => {
     assert.equal(gridStep(8), 1);
@@ -58,4 +59,37 @@ test("occupied placement registration blocks any overlapping target region", () 
 
     assert.equal(checkPlacement(occupied, 0, 0, 3, 3), false);
     assert.equal(checkPlacement(occupied, 0, 0, 1, 1), true);
+});
+
+test("grid overlay initializes placements with the shared grid step", () => {
+    const state = {
+        elements: [{ id: "login", gridSize: { default: [4, 2] } }],
+        gridCols: 8,
+        gridRows: 8,
+        layout: { placements: [], hidden: [] },
+    };
+    const handlers = createGridOverlayHandlers({
+        state,
+        UNIT: 72,
+        i18n: { t: (key) => key },
+        escapeHtml: String,
+        getGridSize: (element) => ({
+            ...element.gridSize,
+            min: [1, 1],
+            fillWidth: false,
+            fillHeight: false,
+            fullWidth: false,
+            halfWidth: false,
+            halfHeight: false,
+        }),
+        renderGridComposer() {},
+        async saveLayout() {},
+        endEditMode() {},
+    });
+
+    handlers.initializePlacements();
+
+    assert.deepEqual(state.layout.placements, [
+        { id: "login", col: 0, row: 0, w: 4, h: 2 },
+    ]);
 });

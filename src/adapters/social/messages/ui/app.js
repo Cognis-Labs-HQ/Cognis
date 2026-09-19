@@ -9,10 +9,10 @@
  * the authenticated user's encrypted keyring and cached for the page lifetime.
  */
 
-import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
+import { applyDocumentTitle } from "/static/reuse/i18n.js";
 import {
     createFormDraftManager,
     createPageComposer,
@@ -45,40 +45,27 @@ import {
     formatRoomListAvatar,
 } from "./message-render.js";
 import { resolveMessageTemplateVariables } from "./message-templates.js";
-import { loadChatRoomKey, requireChatRoomKey } from "./chat-loading.js";
 import { createMessagesRoomState } from "./room-state.js";
 import { renderRoomList } from "./room-render.js";
 import { activateRoomAction, resolveRoomActions } from "./flows.js";
-
-const profileAvatars = () => {
-    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
-    if (!capability) throw new Error("Profile avatar capability unavailable");
-    return capability;
-};
-const handleProfileAvatarError = (event) => profileAvatars().handleError(event);
-const hydrateProfileAvatars = (container) =>
-    profileAvatars().hydrate(container);
-
-const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
-const TYPING_TTL_SECONDS = 8;
-const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
-const TYPING_SEND_DEBOUNCE_MS = 1200;
-const LIVE_REFRESH_INTERVAL_MS = 2500;
-const getRoomKey = (roomId) => loadChatRoomKey(roomId);
-const requireRoomKey = (roomId) => requireChatRoomKey(roomId);
-const resolveThreadRoomKey = (roomContext, roomId) =>
-    roomContext?.pendingRequest?.direction === "incoming" ||
-    roomContext?.direction === "incoming"
-        ? null
-        : requireRoomKey(roomId);
+import {
+    LAST_OPENED_ROOM_KEY,
+    LIVE_REFRESH_INTERVAL_MS,
+    TYPING_IDLE_RESET_MS,
+    TYPING_SEND_DEBOUNCE_MS,
+    TYPING_TTL_SECONDS,
+} from "./runtime-config.js";
+import {
+    getRoomKey,
+    createMessagesI18n,
+    handleProfileAvatarError,
+    hydrateProfileAvatars,
+    requireRoomKey,
+    resolveThreadRoomKey,
+} from "./runtime-bridges.js";
 
 export async function mount(root, { signal } = {}) {
-    const i18n = await createI18n({
-        componentStringBaseUrls: [
-            "/static/adapters/social/messages/languages",
-            "/static/gateways/social/languages",
-        ],
-    });
+    const i18n = await createMessagesI18n();
     if (signal?.aborted) return;
     applyDocumentTitle(i18n, "ui.reuse.messages");
 
@@ -294,18 +281,17 @@ export async function mount(root, { signal } = {}) {
     </section>
   </div>`;
 
-    const elements = [
+    const messageFormBuilder = createFormBuilder(
+        { i18n, escapeHtml },
         {
-            id: "messages-thread",
-            label: i18n.t("ui.reuse.messages"),
-            gridSize: { default: [12, 8], min: [4, 4], max: "full" },
-            render: () =>
-                `<section class="messages-thread">
-          <div id="messages-thread-header-slot"></div>
-          <div id="messages-request-banner-slot"></div>
-          <div class="messages-thread-list" id="messages-thread-list"></div>
-          <div class="messages-typing-status" id="messages-typing-status"></div>
-          <form class="messages-composer" id="messages-composer" data-composer-include-form-memory="true">
+            formId: "messages-composer",
+            formClassName: "messages-composer",
+            includeSubmitButton: false,
+            fields: [],
+            formAttributes: {
+                "data-composer-include-form-memory": "true",
+            },
+            trustedContentHtml: `
             <div class="messages-composer-mode-row">
               <button type="button" class="messages-composer-mode-toggle" id="messages-composer-compose-toggle" aria-pressed="true">${escapeHtml(i18n.t("module.social.messages.compose"))}</button>
               <button type="button" class="messages-composer-mode-toggle" id="messages-composer-preview-toggle" aria-pressed="false">${escapeHtml(i18n.t("module.social.messages.preview"))}</button>
@@ -319,7 +305,21 @@ export async function mount(root, { signal } = {}) {
                 <div id="messages-composer-preview" class="messages-composer-preview messages-message-body" aria-live="polite">${renderComposerPreviewMarkup("", i18n.t("module.social.messages.preview_placeholder"))}</div>
               </div>
             </div>
-          </form>
+          `,
+        },
+    );
+    const elements = [
+        {
+            id: "messages-thread",
+            label: i18n.t("ui.reuse.messages"),
+            gridSize: { default: [12, 8], min: [4, 4], max: "full" },
+            render: () =>
+                `<section class="messages-thread">
+          <div id="messages-thread-header-slot"></div>
+          <div id="messages-request-banner-slot"></div>
+          <div class="messages-thread-list" id="messages-thread-list"></div>
+          <div class="messages-typing-status" id="messages-typing-status"></div>
+          ${messageFormBuilder.render()}
         </section>`,
             onRender: () => {
                 const threadList = document.getElementById(

@@ -24,6 +24,7 @@ export const COMMON_STYLESHEETS = Object.freeze([
     "buttons.css",
     "char-counter.css",
     "choice-checkbox.css",
+    "document-diff.css",
     "floating-window.css",
     "graph.css",
     "hamburger-menu.css",

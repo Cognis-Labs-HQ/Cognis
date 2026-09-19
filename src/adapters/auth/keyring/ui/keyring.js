@@ -17,6 +17,12 @@ import {
     relockStorageKey,
     STORAGE_KEY,
 } from "./storage-keys.js";
+import {
+    registerKeyringCapabilities,
+    registerKeyringLoginFlow,
+} from "./capabilities.js";
+import { createRelockPreference } from "./relock-preference.js";
+import { ensureKeyringFormStyles, loadKeyringI18n } from "./resources.js";
 
 const keyringApiModule = await import(
     typeof window === "undefined"
@@ -47,29 +53,10 @@ let accountInstanceId = "";
 let temporaryKeyringAccountId = "";
 let unlockRequestPromise = null;
 let keyringAccessSuppressed = false;
-let keyringI18nPromise = null;
 let persistenceQueue = Promise.resolve();
 let keyringStateVersion = 0;
 let keyringExists = false;
 const pendingValues = new Map();
-
-function loadKeyringI18n() {
-    keyringI18nPromise ??= import("/static/reuse/i18n.js").then(
-        ({ createI18n }) =>
-            createI18n({
-                componentStringBaseUrls: [
-                    "/static/adapters/auth/keyring/languages",
-                ],
-            }),
-    );
-    return keyringI18nPromise;
-}
-
-async function ensureKeyringFormStyles() {
-    const { ensurePageStylesheet } =
-        await import("/static/reuse/page-styles.js");
-    await ensurePageStylesheet("/static/styles/reuse/page-sections.css");
-}
 
 function keyringStorage() {
     return temporaryKeyringAccountId ? sessionStorage : localStorage;
@@ -918,81 +905,39 @@ export async function resolveKeyringValue(id, options = {}) {
     return String(replacement);
 }
 
-export function getKeyringRelockMinutes() {
-    const stored = localStorage.getItem(relockStorageKey());
-    if (stored !== null) return Math.max(0, Number(stored) || 0);
-    return Math.max(0, Number(vaultData?.preferences?.relockMinutes ?? 0));
-}
+const relockPreference = createRelockPreference({
+    getVaultData: () => vaultData,
+    persistVault,
+    scheduleRelock,
+});
+export const getKeyringRelockMinutes = relockPreference.getMinutes;
+export const setKeyringRelockMinutes = relockPreference.setMinutes;
 
-export async function setKeyringRelockMinutes(minutes) {
-    const normalizedMinutes = Math.max(0, Number(minutes) || 0);
-    localStorage.setItem(relockStorageKey(), String(normalizedMinutes));
-    if (vaultData) {
-        vaultData.preferences ??= {};
-        vaultData.preferences.relockMinutes = normalizedMinutes;
-        await persistVault();
-        scheduleRelock({ resetDeadline: true });
-    }
-}
+registerKeyringCapabilities(uiCtx, {
+    get: getKeyringValue,
+    set: setKeyringValue,
+    delete: deleteKeyringValue,
+    list: listKeyringEntries,
+    listEvents: listKeyringEvents,
+    clear: clearKeyringValues,
+    destroy: destroyKeyring,
+    create: createKeyring,
+    exists: () => keyringExists || Boolean(loadLocalEnvelope()),
+    clearAccountState: clearKeyringAccountState,
+    changePassword: changeKeyringPassword,
+    resolve: resolveKeyringValue,
+    lock: lockKeyring,
+    unlock: unlockKeyring,
+    requestUnlock: requestKeyringUnlock,
+    restoreSession: restoreKeyringSession,
+    isUnlocked: isKeyringUnlocked,
+    isAccessSuppressed: () => keyringAccessSuppressed,
+    hasDeferredSetup: () => sessionStorage.getItem(DEFERRED_SETUP_KEY) === "1",
+    activateTemporary: activateTemporaryKeyring,
+    endTemporary: endTemporaryKeyring,
+    forComponent: createKeyringScope,
+    getRelockMinutes: getKeyringRelockMinutes,
+    setRelockMinutes: setKeyringRelockMinutes,
+});
 
-uiCtx.capabilities.contribute("keyring:get", getKeyringValue);
-uiCtx.capabilities.contribute("keyring:set", setKeyringValue);
-uiCtx.capabilities.contribute("keyring:delete", deleteKeyringValue);
-uiCtx.capabilities.contribute("keyring:list", listKeyringEntries);
-uiCtx.capabilities.contribute("keyring:listEvents", listKeyringEvents);
-uiCtx.capabilities.contribute("keyring:clear", clearKeyringValues);
-uiCtx.capabilities.contribute("keyring:destroy", destroyKeyring);
-uiCtx.capabilities.contribute("keyring:create", createKeyring);
-uiCtx.capabilities.contribute(
-    "keyring:exists",
-    () => keyringExists || Boolean(loadLocalEnvelope()),
-);
-uiCtx.capabilities.contribute(
-    "keyring:clearAccountState",
-    clearKeyringAccountState,
-);
-uiCtx.capabilities.contribute("keyring:changePassword", changeKeyringPassword);
-uiCtx.capabilities.contribute("keyring:resolve", resolveKeyringValue);
-uiCtx.capabilities.contribute("keyring:lock", lockKeyring);
-uiCtx.capabilities.contribute("keyring:unlock", unlockKeyring);
-uiCtx.capabilities.contribute("keyring:requestUnlock", requestKeyringUnlock);
-uiCtx.capabilities.contribute("keyring:restoreSession", restoreKeyringSession);
-uiCtx.capabilities.contribute("keyring:isUnlocked", isKeyringUnlocked);
-uiCtx.capabilities.contribute(
-    "keyring:isAccessSuppressed",
-    () => keyringAccessSuppressed,
-);
-uiCtx.capabilities.contribute(
-    "keyring:hasDeferredSetup",
-    () => sessionStorage.getItem(DEFERRED_SETUP_KEY) === "1",
-);
-uiCtx.capabilities.contribute(
-    "keyring:activateTemporary",
-    activateTemporaryKeyring,
-);
-
-if (uiCtx.flowExists("complete-login")) {
-    uiCtx.extendFlow(
-        "complete-login",
-        "setup-account-services",
-        { id: "auth-keyring:setup-after-login" },
-        (stageContext) =>
-            setupKeyringAfterLogin(
-                String(stageContext.input?.accountPassword ?? ""),
-                {
-                    deferNewSetup:
-                        stageContext.input?.deferNewKeyringSetup === true,
-                },
-            ),
-    );
-}
-uiCtx.capabilities.contribute("keyring:endTemporary", endTemporaryKeyring);
-uiCtx.capabilities.contribute("keyring:forComponent", createKeyringScope);
-uiCtx.capabilities.contribute(
-    "keyring:getRelockMinutes",
-    getKeyringRelockMinutes,
-);
-uiCtx.capabilities.contribute(
-    "keyring:setRelockMinutes",
-    setKeyringRelockMinutes,
-);
+registerKeyringLoginFlow(uiCtx, setupKeyringAfterLogin);

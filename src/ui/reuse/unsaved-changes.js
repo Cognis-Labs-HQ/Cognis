@@ -22,14 +22,79 @@
  *   bar.markDirty('font', false);
  *
  * @param {HTMLElement|null} floatingEl
- * @param {{ onSave?: () => Promise<void>, onDiscard?: () => void, quiet?: boolean }} options
- * @returns {{ markDirty(id: string, dirty: boolean): void, isAnyDirty(): boolean, sync: () => void }}
+ * @param {{ onSave?: () => Promise<void>, onDiscard?: () => void, quiet?: boolean, confirmMessage?: string, openConfirmation?: () => Promise<string|null> }} options
+ * @returns {{ markDirty(id: string, dirty: boolean): void, isAnyDirty(): boolean, sync: () => void, destroy: () => void }}
  */
+import { escapeHtml } from "./escape-html.js";
+import { createI18n } from "./i18n.js";
+
+async function openDefaultNavigationConfirmation(confirmMessage) {
+    const [{ openPopup }, i18n] = await Promise.all([
+        import("./popup.js"),
+        createI18n(),
+    ]);
+    return openPopup({
+        title: i18n.t("ui.reuse.unsaved_changes"),
+        body: `<p>${escapeHtml(confirmMessage ?? i18n.t("ui.reuse.leave_page_warning"))}</p>`,
+        variant: "warning",
+        actions: [
+            {
+                id: "stay",
+                label: i18n.t("ui.reuse.cancel"),
+                variant: "neutral",
+            },
+            {
+                id: "discard",
+                label: i18n.t("ui.reuse.discard_and_leave"),
+                variant: "cancel",
+            },
+        ],
+    });
+}
+
 export function createUnsavedChangesBar(
     floatingEl,
-    { onSave, onDiscard, quiet = false } = {},
+    { onSave, onDiscard, quiet = false, confirmMessage, openConfirmation } = {},
 ) {
     const dirtyMap = new Map();
+    let navigationDecisionPending = false;
+
+    const confirmNavigation = (event) => {
+        if (!isAnyDirty()) return;
+        event.preventDefault();
+        event.returnValue = "";
+    };
+
+    const showSpaNavigationDecision = async (resumeNavigation) => {
+        try {
+            const action = openConfirmation
+                ? await openConfirmation()
+                : await openDefaultNavigationConfirmation(confirmMessage);
+            if (action !== "discard") return;
+            dirtyMap.clear();
+            sync();
+            destroy();
+            await resumeNavigation?.();
+        } finally {
+            navigationDecisionPending = false;
+        }
+    };
+
+    const confirmSpaNavigation = (event) => {
+        if (!isAnyDirty()) {
+            destroy();
+            return;
+        }
+        event.preventDefault();
+        if (navigationDecisionPending) return;
+        navigationDecisionPending = true;
+        void showSpaNavigationDecision(event.detail?.resume);
+    };
+    globalThis.window?.addEventListener?.("beforeunload", confirmNavigation);
+    globalThis.window?.addEventListener?.(
+        "cognis:route-before-navigate",
+        confirmSpaNavigation,
+    );
 
     function isAnyDirty() {
         for (const isDirty of dirtyMap.values()) {
@@ -72,7 +137,18 @@ export function createUnsavedChangesBar(
             sync();
         });
 
-    return { markDirty, isAnyDirty, sync };
+    function destroy() {
+        globalThis.window?.removeEventListener?.(
+            "beforeunload",
+            confirmNavigation,
+        );
+        globalThis.window?.removeEventListener?.(
+            "cognis:route-before-navigate",
+            confirmSpaNavigation,
+        );
+    }
+
+    return { markDirty, isAnyDirty, sync, destroy };
 }
 
 /**
@@ -201,6 +277,7 @@ export function createFormDirtyTracker(
         isAnyDirty: changesBar.isAnyDirty,
         sync,
         destroy() {
+            changesBar.destroy();
             cleanupEntries.forEach(([field, eventName, handler]) => {
                 field.removeEventListener?.(eventName, handler);
             });

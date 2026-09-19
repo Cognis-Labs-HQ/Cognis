@@ -14,6 +14,8 @@ import {
 import { resolveRole } from "./local-account.js";
 import type { AuthBootstrapHookContext } from "./index.js";
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[a-zA-Z0-9]{2,}$/;
+
 function getEnabledLoginMethods(context: AuthBootstrapHookContext): Array<{
     id: string;
     name: string;
@@ -47,6 +49,52 @@ function getPublicLoginMethods(context: AuthBootstrapHookContext) {
                 : {}),
         }),
     );
+}
+
+function applyAccountCreationCredentials(
+    session: {
+        accountId: string;
+        provider: string;
+        email?: string;
+        registrationToken?: string;
+        [key: string]: unknown;
+    },
+    credentials: Record<string, unknown>,
+) {
+    const registrationToken = String(
+        credentials.registrationToken ?? "",
+    ).trim();
+    const submittedEmail = String(credentials.email ?? "").trim();
+    const existingEmail = resolveSessionEmail(session);
+    return {
+        ...session,
+        ...(existingEmail || !submittedEmail ? {} : { email: submittedEmail }),
+        ...(registrationToken ? { registrationToken } : {}),
+    };
+}
+
+function resolveSessionEmail(session: {
+    email?: unknown;
+    emails?: unknown;
+}): string | undefined {
+    const directEmail = String(session.email ?? "").trim();
+    if (EMAIL_PATTERN.test(directEmail)) return directEmail;
+    if (!Array.isArray(session.emails)) return undefined;
+    return session.emails
+        .map((email) => String(email).trim())
+        .find((email) => EMAIL_PATTERN.test(email));
+}
+
+function resolveSessionHandle(
+    session: Record<string, unknown>,
+): string | undefined {
+    for (const candidate of [session.handle, session.username]) {
+        const handle = String(candidate ?? "")
+            .trim()
+            .replace(/^@/, "");
+        if (handle) return handle;
+    }
+    return undefined;
 }
 
 export async function registerAuthBootstrapHook(
@@ -123,6 +171,17 @@ export async function registerAuthBootstrapHook(
             const input = (stageCtx.input ?? {}) as {
                 provider?: string;
                 credentials?: Record<string, unknown>;
+                authenticatedSession?: {
+                    accountId: string;
+                    provider: string;
+                    externalUserId?: string;
+                    email?: string;
+                    emails?: string[];
+                    displayName?: string;
+                    handle?: string;
+                    username?: string;
+                    role?: string;
+                };
             };
             const resolveResult = (
                 (stageCtx.stageResults["resolve-provider"] ?? []) as Array<{
@@ -145,7 +204,15 @@ export async function registerAuthBootstrapHook(
                 ...(input.credentials ?? {}),
                 authSourceId: method?.id,
             };
-            const session = await adapter.authenticate(credentials);
+            const authenticatedSession =
+                input.authenticatedSession ??
+                (await adapter.authenticate(credentials));
+            const session = authenticatedSession
+                ? applyAccountCreationCredentials(
+                      authenticatedSession,
+                      credentials,
+                  )
+                : null;
             if (!session) {
                 return { success: false, reason: "invalid_credentials" };
             }
@@ -181,11 +248,78 @@ export async function registerAuthBootstrapHook(
 
             const { session, adapterId } = authResult;
             const capabilities = context.ctx.capabilities;
+            const sessionEmail = resolveSessionEmail(session);
 
             if (
                 adapterId !== "local" &&
                 context.accountStore.ensureExternalAccount
             ) {
+                const existingAccount = await context.accountStore.getInfo(
+                    session.accountId,
+                );
+                const creatingExternalAccount = !existingAccount;
+                if (!existingAccount) {
+                    if (!context.ctx.flow.exists("gateAccountCreation")) {
+                        return {
+                            sessionResult: {
+                                outcome: "account_creation_required",
+                                emailRequired: !sessionEmail,
+                                pendingAccountCreation: {
+                                    providerId: adapterId ?? session.provider,
+                                    session,
+                                },
+                            },
+                        };
+                    }
+                    const gateResult = await context.ctx.flow.run(
+                        "gateAccountCreation",
+                        {
+                            accountId: session.accountId,
+                            providerId: adapterId ?? session.provider,
+                            email: sessionEmail,
+                            registrationToken:
+                                "registrationToken" in session
+                                    ? String(session.registrationToken ?? "") ||
+                                      undefined
+                                    : undefined,
+                        },
+                    );
+                    const authorizationResults =
+                        gateResult.stageResults["authorizeCreation"] ?? [];
+                    const authorization = authorizationResults.find(
+                        (result) =>
+                            (result as { authorized?: unknown }).authorized ===
+                            true,
+                    ) as
+                        | {
+                              authorized: true;
+                              commit?: () => Promise<boolean>;
+                          }
+                        | undefined;
+                    if (!authorization) {
+                        const denial = authorizationResults.find(
+                            (result) =>
+                                (result as { authorized?: unknown })
+                                    .authorized === false,
+                        ) as { reason?: unknown } | undefined;
+                        return {
+                            sessionResult: {
+                                outcome: "account_creation_required",
+                                authorizationFailureReason:
+                                    typeof denial?.reason === "string"
+                                        ? denial.reason
+                                        : undefined,
+                                emailRequired: !sessionEmail,
+                                pendingAccountCreation: {
+                                    providerId: adapterId ?? session.provider,
+                                    session,
+                                },
+                            },
+                        };
+                    }
+                    stageCtx.data["accountCreationAuthorization"] =
+                        authorization;
+                }
                 await context.accountStore.ensureExternalAccount({
                     accountId: session.accountId,
                     provider: adapterId ?? session.provider,
@@ -193,16 +327,61 @@ export async function registerAuthBootstrapHook(
                         "externalUserId" in session
                             ? String(session.externalUserId)
                             : session.accountId,
-                    email:
-                        "email" in session
-                            ? String(session.email ?? "") || undefined
-                            : undefined,
+                    email: sessionEmail,
                     displayName:
                         "displayName" in session
                             ? String(session.displayName ?? "") || undefined
                             : undefined,
                     role: session.role,
                 });
+                if (creatingExternalAccount) {
+                    stageCtx.data["newExternalAccountProfileRequest"] = {
+                        providerId: adapterId ?? session.provider,
+                        accountId: session.accountId,
+                        externalUserId:
+                            "externalUserId" in session
+                                ? String(session.externalUserId)
+                                : session.accountId,
+                        session: session as Record<string, unknown>,
+                    };
+                }
+                const authorization = stageCtx.data[
+                    "accountCreationAuthorization"
+                ] as { commit?: () => Promise<boolean> } | undefined;
+                if (authorization?.commit) {
+                    let committed = false;
+                    try {
+                        committed = await authorization.commit();
+                    } catch (error) {
+                        context.ctx.log?.(
+                            "warn",
+                            "External account authorization could not be committed.",
+                            {
+                                component: "auth-gateway",
+                                accountId: session.accountId,
+                                providerId: adapterId ?? session.provider,
+                                error:
+                                    error instanceof Error
+                                        ? error.message
+                                        : String(error),
+                            },
+                        );
+                        committed = false;
+                    }
+                    if (!committed) {
+                        await context.accountStore.delete(session.accountId);
+                        return {
+                            sessionResult: {
+                                outcome: "account_creation_required",
+                                emailRequired: false,
+                                pendingAccountCreation: {
+                                    providerId: adapterId ?? session.provider,
+                                    session,
+                                },
+                            },
+                        };
+                    }
+                }
             }
 
             const account = await context.accountStore.getInfo(
@@ -278,12 +457,84 @@ export async function registerAuthBootstrapHook(
                         .getDisplayName(session.accountId)
                         .catch(() => null)
                 )?.trim() || undefined;
+            const sessionHandle = resolveSessionHandle(
+                session as Record<string, unknown>,
+            );
             await createProfile?.(
                 session.accountId,
-                session.accountId,
+                sessionHandle ?? session.accountId,
                 role,
                 displayName,
             );
+            const applyExternalProfile = capabilities.get<
+                (
+                    accountId: string,
+                    profile: Record<string, unknown>,
+                ) => Promise<void>
+            >("profile:applyExternalProfile");
+            if (sessionHandle && applyExternalProfile) {
+                await applyExternalProfile(session.accountId, {
+                    handle: sessionHandle,
+                }).catch((error) =>
+                    context.ctx.log?.(
+                        "warn",
+                        "External account handle could not be synchronized.",
+                        {
+                            component: "auth-gateway",
+                            accountId: session.accountId,
+                            providerId: adapterId ?? session.provider,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    ),
+                );
+            }
+            const externalProfileRequest = stageCtx.data[
+                "newExternalAccountProfileRequest"
+            ] as
+                | {
+                      providerId: string;
+                      accountId: string;
+                      externalUserId: string;
+                      session: Record<string, unknown>;
+                  }
+                | undefined;
+            if (externalProfileRequest) {
+                const resolveExternalProfile = capabilities.get<
+                    (
+                        request: typeof externalProfileRequest,
+                    ) => Promise<Record<string, unknown> | null>
+                >("auth:resolveExternalProfile");
+                if (resolveExternalProfile && applyExternalProfile) {
+                    try {
+                        const externalProfile = await resolveExternalProfile(
+                            externalProfileRequest,
+                        );
+                        if (externalProfile) {
+                            await applyExternalProfile(
+                                session.accountId,
+                                externalProfile,
+                            );
+                        }
+                    } catch (error) {
+                        context.ctx.log?.(
+                            "warn",
+                            "External account profile could not be synchronized.",
+                            {
+                                component: "auth-gateway",
+                                accountId: session.accountId,
+                                providerId: externalProfileRequest.providerId,
+                                error:
+                                    error instanceof Error
+                                        ? error.message
+                                        : String(error),
+                            },
+                        );
+                    }
+                }
+            }
             await capabilities.get<(username: string) => Promise<void>>(
                 "files:quota:provisionUser",
             )?.(session.accountId);

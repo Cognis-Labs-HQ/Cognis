@@ -1,6 +1,5 @@
 export interface SecuritySettings {
     trustedDomains: string[];
-    registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
     requireTeacherManualApproval: boolean;
     enforceTfaForAllUsers: boolean;
@@ -23,7 +22,6 @@ export const SECURITY_SETTINGS_KEY = "security-settings";
 export function defaultSecuritySettings(): SecuritySettings {
     return {
         trustedDomains: [],
-        registrationsEnabled: false,
         userValidationMode: "none",
         requireTeacherManualApproval: true,
         enforceTfaForAllUsers: false,
@@ -56,10 +54,6 @@ export function parseSecuritySettings(
         const parsed = JSON.parse(raw) as Record<string, unknown>;
         return {
             trustedDomains: normalizeTrustedDomains(parsed.trustedDomains),
-            registrationsEnabled:
-                typeof parsed.registrationsEnabled === "boolean"
-                    ? parsed.registrationsEnabled
-                    : false,
             userValidationMode:
                 parsed.userValidationMode === "smtp" ? "smtp" : "none",
             requireTeacherManualApproval:

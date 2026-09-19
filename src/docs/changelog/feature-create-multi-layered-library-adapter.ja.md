@@ -62,6 +62,14 @@ ctx と認証済み API を通じて、検証付きグローバル JSON イン�
 
 ネイティブ `Map.groupBy` がないブラウザーでもライブラリを表示できるようにしました。学習言語コードを正規化して登録済みの旗を言語操作に維持し、リモート音声の永続化をコンポーネント所有のファイルゲートウェイ名前空間へ完全に移しました。ライブラリはキャッシュファイルを直接書き込まず、独自の音声サイズ上限も設けません。
 
+## upstream Development ブランチとの整合
+
+upstream Development ブランチの最新変更を統合しました。廃止された登録招待アダプターの競合は upstream のトークンベース実装を優先して解決し、学習ライブラリ機能を現在のアプリケーション構成に適合させました。
+
+## 学習アダプターの互換性を更新
+
+ライブラリおよび進捗アダプターで検証済みのゲートウェイ上限を upstream のゲートウェイ版へ引き上げ、両アダプターの版を更新しました。また、完全なワークスペース記録をロックファイルへ復元し、統合後もクリーンな依存関係インストールが成功するようにしました。upstream のレジストリ整合性メタデータも修正し、固定された依存関係一式を再現可能にしました。
+
 ## コミット
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -73,3 +81,6 @@ ctx と認証済み API を通じて、検証付きグローバル JSON イン�
 - [a7891aaa](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7891aaa8195180c45fa490ada5469d2d306c62b)
 - [b8a1852e](https://github.com/Cognis-Labs-HQ/Cognis/commit/b8a1852e1f4aa45ce950ad49484f818c713341d2)
 - [820d53f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/820d53f65816655949a0a1f47068a10cdfc51178)
+- [8be331f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8be331f9bc1a54edc80c10e53a4e4d2704a4f7b5)
+- [3c72e487](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c72e4870f99213562fb3796b4d76624486ba272)
+- [25309509](https://github.com/Cognis-Labs-HQ/Cognis/commit/25309509877018b8d1a4633636f9d45daeef45b4)

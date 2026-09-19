@@ -30,6 +30,10 @@
  * `defer-page-action`
  *   Defers popup-producing actions until the current page mount completes.
  *
+ * `logout` (owner: auth-gateway)
+ *   Revokes the server session, clears account-bound browser state, and
+ *   redirects to the login page. Modules invoke it through `uiCtx.runFlow`.
+ *
  * @example
  * ```js
  * import '/static/reuse/page-flow-catalog.js';

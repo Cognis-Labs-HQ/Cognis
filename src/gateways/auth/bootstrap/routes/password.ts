@@ -1,4 +1,7 @@
-import { extractBearerToken } from "../../../../api/reuse/access-token-http.js";
+import {
+    extractBearerToken,
+    extractCookieToken,
+} from "../../../../api/reuse/access-token-http.js";
 import {
     invalidateTokenVerification,
     isTokenVerificationFresh,
@@ -50,7 +53,8 @@ export function createPasswordRoutes({
         if (url.pathname === "/api/v1/auth/verify" && req.method === "DELETE") {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const rawToken = extractBearerToken(req) ?? "";
+            const rawToken =
+                extractBearerToken(req) ?? extractCookieToken(req) ?? "";
             if (rawToken) invalidateTokenVerification(rawToken);
             res.writeHead(204);
             res.end();
@@ -59,7 +63,8 @@ export function createPasswordRoutes({
         if (url.pathname === "/api/v1/auth/verify" && req.method === "POST") {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const rawToken = extractBearerToken(req) ?? "";
+            const rawToken =
+                extractBearerToken(req) ?? extractCookieToken(req) ?? "";
             const oneHourMs = 60 * 60 * 1000;
             if (rawToken && isTokenVerificationFresh(rawToken, oneHourMs)) {
                 log?.(

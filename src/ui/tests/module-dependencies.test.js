@@ -4,8 +4,8 @@ import test from "node:test";
 import {
     areModuleDependenciesSatisfied,
     dependencyLifecycleAction,
-    isRequiredDependency,
     moduleDependencyActionState,
+    resolveModuleDependencyErrorMessage,
     resolveInstallDependencies,
 } from "../app/modules/dependencies.js";
 
@@ -24,8 +24,6 @@ const requesting = {
 const modules = [required, optional, requesting];
 
 test("module dependencies resolve module IDs and UUIDs", () => {
-    assert.equal(isRequiredDependency(required, modules), true);
-    assert.equal(isRequiredDependency(optional, modules), false);
     assert.deepEqual(
         resolveInstallDependencies(requesting, modules, [optional.id]),
         [required, optional],
@@ -41,6 +39,28 @@ test("module dependencies are satisfied only when every dependency is enabled", 
     optional.installed = true;
     optional.status = "enabled";
     assert.equal(areModuleDependenciesSatisfied(requesting, modules), true);
+});
+
+test("dependency enablement failures resolve to a localized toast message", () => {
+    const i18n = { t: (key) => `translated:${key}` };
+    assert.equal(
+        resolveModuleDependencyErrorMessage(
+            { code: "module_dependency_disabled" },
+            i18n,
+        ),
+        "translated:ui.app.modules.hard_dependency_blocked",
+    );
+    assert.equal(
+        resolveModuleDependencyErrorMessage(
+            { code: "module_dependency_unavailable" },
+            i18n,
+        ),
+        "translated:ui.app.modules.hard_dependency_blocked",
+    );
+    assert.equal(
+        resolveModuleDependencyErrorMessage({ code: "other_failure" }, i18n),
+        null,
+    );
 });
 
 test("dependency popup actions follow the requested module state", () => {
@@ -86,6 +106,10 @@ test("module dependency popup renders navigable cards and action-specific labels
     assert.match(source, /beginButtonLoading/);
     assert.match(source, /data-install-dependency/);
     assert.match(source, /updateDependencyAction/);
+    assert.match(
+        source,
+        /resolveModuleDependencyErrorMessage\(\s*error,\s*i18n,?\s*\)/,
+    );
     assert.match(source, /label: i18n\.t\(`ui\.reuse\.\$\{action\}`\)/);
 
     const styles = await import("node:fs/promises").then(({ readFile }) =>
@@ -107,6 +131,14 @@ test("module dependency popup renders navigable cards and action-specific labels
         styles,
         /body\[data-theme="dark"\] \.module-dependency-action-icon--download[^{]*\{[^}]*download-light\.svg/,
     );
+    assert.match(
+        styles,
+        /\.module-dependency-card\s*\{[^}]*background: var\(--surface\);[^}]*border: 1px solid var\(--border\);/s,
+    );
+    assert.match(
+        styles,
+        /\.module-dependency-warning\s*\{[^}]*color: var\(--color-danger-outline-text\);/s,
+    );
 
     const marketplaceSource = await import("node:fs/promises").then(
         ({ readFile }) =>
@@ -127,4 +159,14 @@ test("module dependency popup renders navigable cards and action-specific labels
         marketplaceSource,
         /\["install", "enable"\]\.includes\(action\)[\s\S]*ensureModuleDependenciesReady\(module\)/,
     );
+});
+
+test("installation and enablement both run dependency preflight", async () => {
+    const source = await import("node:fs/promises").then(({ readFile }) =>
+        readFile(new URL("../app/modules/index.js", import.meta.url), "utf8"),
+    );
+    const preflightChecks = source.match(
+        /\["install", "enable"\]\.includes\(action\)/g,
+    );
+    assert.equal(preflightChecks?.length, 2);
 });

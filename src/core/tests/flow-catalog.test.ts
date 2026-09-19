@@ -33,6 +33,12 @@ test("core flow catalog keeps unique flow and stage ids", () => {
 
 test("core flow catalog exposes canonical auth flow contracts", () => {
     assert.deepEqual(
+        getCanonicalFlowContract("constructRegistrationUi")?.stages.map(
+            (stage) => stage.id,
+        ),
+        ["compose-form"],
+    );
+    assert.deepEqual(
         getCanonicalFlowContract("construct-login-ui")?.stages.map(
             (stage) => stage.id,
         ),
@@ -41,6 +47,18 @@ test("core flow catalog exposes canonical auth flow contracts", () => {
     assert.deepEqual(
         getCanonicalFlowContract("login")?.stages.map((stage) => stage.id),
         ["resolve-provider", "authenticate", "establish-session"],
+    );
+    assert.deepEqual(
+        getCanonicalFlowContract("startSsoLogin")?.stages.map(
+            (stage) => stage.id,
+        ),
+        ["validateProvider", "initiateAuthorization"],
+    );
+    assert.deepEqual(
+        getCanonicalFlowContract("gateAccountCreation")?.stages.map(
+            (stage) => stage.id,
+        ),
+        ["inspectIdentity", "authorizeCreation"],
     );
     assert.deepEqual(
         getCanonicalFlowContract("ldap-auth")?.stages.map((stage) => stage.id),

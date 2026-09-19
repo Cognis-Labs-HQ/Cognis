@@ -1,4 +1,5 @@
 import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
+import { createCollapsibleSectionComposer } from "../../reuse/collapsible-section-composer.js";
 
 function resolveAdapterId(adapter) {
     return adapter.senderId ?? adapter.id;
@@ -194,18 +195,25 @@ function renderInlineAdapters(
     componentResolver,
 ) {
     if (!adapters || adapters.length === 0) return "";
-    const rows = adapters
-        .map((adapter) => {
+    const sectionComposer = createCollapsibleSectionComposer({
+        escapeHtml,
+        detailsLabel: i18n.t("ui.reuse.details"),
+    });
+    const rows = sectionComposer.render(
+        adapters.map((adapter) => {
             const adapterId = resolveAdapterId(adapter);
             const isActive = isAdapterEnabled(adapter);
             const isLocked = Boolean(adapter.locked);
-            return `
-        <details class="module-row adapter-inline-row"
-          data-adapter-id="${escapeHtml(adapterId)}"
-          data-gateway-id="${escapeHtml(gatewayId)}">
-          <summary class="adapter-inline-summary">
-            <span class="adapter-inline-name"><strong>${escapeHtml(adapter.name ?? adapterId)}</strong></span>
-            <div class="module-row-controls adapter-inline-controls">
+            return {
+                id: `${gatewayId}:${adapterId}`,
+                className: "module-row adapter-inline-row",
+                summaryClassName: "adapter-inline-summary",
+                controlsClassName:
+                    "module-row-controls adapter-inline-controls",
+                contentClassName: "module-meta adapter-inline-meta",
+                attributesHtml: `data-adapter-id="${escapeHtml(adapterId)}" data-gateway-id="${escapeHtml(gatewayId)}"`,
+                titleHtml: `<span class="adapter-inline-name"><strong>${escapeHtml(adapter.name ?? adapterId)}</strong></span>`,
+                controlsHtml: `
               <span class="state-pill ${isActive ? "pill-active" : "pill-disabled"}">${isActive ? i18n.t("ui.app.admin.state.active") : i18n.t("ui.app.admin.state.disabled")}</span>
               ${renderHealthLight(resolveComponentHealth(healthStatus, "adapter", `${gatewayId}:${adapterId}`) ?? resolveComponentHealth(healthStatus, "adapter", adapterId) ?? (isActive ? { status: "ok" } : null), isActive, escapeHtml)}
               <label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_adapter"))}">
@@ -216,16 +224,11 @@ function renderInlineAdapters(
                   ${isGatewayDisabled || isLocked ? "disabled" : ""} />
                 <span class="slider"></span>
               </label>
-              <span class="module-chevron" role="button" tabindex="0" data-details-toggle aria-label="${escapeHtml(i18n.t("ui.reuse.details"))}">▾</span>
-            </div>
-          </summary>
-          <div class="module-meta adapter-inline-meta">
-            <ul class="module-details">${renderAdapterDetailsList(adapter, adapterId, componentResolver, i18n, escapeHtml)}</ul>
-          </div>
-        </details>
-      `;
-        })
-        .join("");
+              `,
+                contentHtml: `<ul class="module-details">${renderAdapterDetailsList(adapter, adapterId, componentResolver, i18n, escapeHtml)}</ul>`,
+            };
+        }),
+    );
     return `
       <div class="gateway-adapters-section">
         <span class="gateway-adapters-label">${i18n.t("ui.app.admin.adapters")}</span>
@@ -248,8 +251,12 @@ function renderGatewaysContent(gateways, allAdapters, deps) {
         }
         adaptersByGatewayId.get(gatewayId).push(adapter);
     }
-    return gateways
-        .map((gateway) => {
+    const sectionComposer = createCollapsibleSectionComposer({
+        escapeHtml,
+        detailsLabel: i18n.t("ui.reuse.details"),
+    });
+    return sectionComposer.render(
+        gateways.map((gateway) => {
             const pill = getStatePill(gateway.status ?? "active", i18n);
             const isEnabled = (gateway.status ?? "active") !== "disabled";
             const isGatewayDisabled = !isEnabled;
@@ -270,28 +277,29 @@ function renderGatewaysContent(gateways, allAdapters, deps) {
                       )
                     : "";
 
-            return `
-        <details class="module-row" data-gateway="${escapeHtml(gateway.id)}">
-          <summary class="module-row-summary">
-            <span class="module-row-title"><strong>${escapeHtml(gateway.name)}</strong>${managedTooltip}</span>
-            <div class="module-row-controls">
+            return {
+                id: gateway.id,
+                className: "module-row",
+                summaryClassName: "module-row-summary",
+                controlsClassName: "module-row-controls",
+                contentClassName: "module-meta",
+                attributesHtml: `data-gateway="${escapeHtml(gateway.id)}"`,
+                titleHtml: `<span class="module-row-title"><strong>${escapeHtml(gateway.name)}</strong>${managedTooltip}</span>`,
+                controlsHtml: `
               <span class="state-pill ${pill.className}">${pill.label}</span>
               ${healthLight}
               <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
                 <input type="checkbox" data-gateway="${escapeHtml(gateway.id)}" ${isEnabled ? "checked" : ""} ${gateway.required ? "disabled" : ""} />
                 <span class="slider"></span>
               </label>
-              <span class="module-chevron" role="button" tabindex="0" data-details-toggle aria-label="${escapeHtml(i18n.t("ui.reuse.details"))}">▾</span>
-            </div>
-          </summary>
-          <div class="module-meta">
+              `,
+                contentHtml: `
             <ul class="module-details">${renderGatewayDetailsList(gateway, componentResolver, healthStatus, i18n, escapeHtml)}</ul>
             ${renderInlineAdapters(gatewayAdapters, gateway.id, isGatewayDisabled, i18n, escapeHtml, healthStatus, componentResolver)}
-          </div>
-        </details>
-      `;
-        })
-        .join("");
+          `,
+            };
+        }),
+    );
 }
 
 export function renderComponentsContent(modules, gateways, allAdapters, deps) {

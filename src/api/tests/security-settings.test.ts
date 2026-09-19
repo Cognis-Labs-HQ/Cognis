@@ -63,7 +63,6 @@ test("isTrustedHttpUrl allows same-origin and trusted external HTTP(S) URLs only
 test("parseSecuritySettings returns default settings when raw is null", () => {
     const settings = parseSecuritySettings(null);
     assert.deepEqual(settings?.trustedDomains, []);
-    assert.equal(settings?.registrationsEnabled, false);
     assert.equal(settings?.userValidationMode, "none");
     assert.equal(settings?.requireTeacherManualApproval, true);
     assert.equal(settings?.enforceTfaForAllUsers, false);

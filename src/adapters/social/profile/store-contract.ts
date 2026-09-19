@@ -69,6 +69,7 @@ export interface ProfileStore extends ProfileCreateStore {
         updates: Partial<
             Pick<
                 AccountProfile,
+                | "handle"
                 | "bio"
                 | "location"
                 | "website"
@@ -171,6 +172,7 @@ export class VolatileProfileStore implements ProfileStore {
         updates: Partial<
             Pick<
                 AccountProfile,
+                | "handle"
                 | "bio"
                 | "location"
                 | "website"
@@ -184,6 +186,10 @@ export class VolatileProfileStore implements ProfileStore {
     ): Promise<AccountProfile | null> {
         const profile = this.profiles.get(accountId);
         if (!profile) return null;
+        if (updates.handle && updates.handle !== profile.handle) {
+            this.byHandle.delete(profile.handle);
+            this.byHandle.set(updates.handle, accountId);
+        }
         Object.assign(profile, updates);
         profile.updatedAt = new Date().toISOString();
         return profile;

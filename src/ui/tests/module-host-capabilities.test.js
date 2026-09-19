@@ -43,9 +43,14 @@ for (const capability of [
     "ui:openErrorPopup",
     "ui:resourceLoader",
     "ui:reuse",
+    "ui:footerLinks",
+    "ui:pagination",
+    "ui:sideMenu",
+    "ui:documentDiff",
     "component-pages:spawn",
     "component-pages:discard",
     "ui:makeFloatingWindow",
+    "ui:navigate",
 ]) {
     test(`host registers the module UI capability ${capability}`, () => {
         assert.match(

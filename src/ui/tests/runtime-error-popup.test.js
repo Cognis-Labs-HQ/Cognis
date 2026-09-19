@@ -178,7 +178,7 @@ test("router stores previous route in history state during SPA navigation", () =
     assert.match(source, /previousRouterPage/);
     assert.match(
         source,
-        /history\.pushState\(\s*\{\s*\.\.\.state,\s*routerPage:\s*path,\s*previousRouterPage\s*\},\s*["']["'],\s*path,?\s*\)/,
+        /history\.pushState\(\s*\{\s*routerPage:\s*path,\s*previousRouterPage,\s*routerIndex:\s*_historyIndex\s*\},\s*["']["'],\s*path,?\s*\)/,
     );
 });
 
@@ -851,95 +851,4 @@ test("runtime error popup copy action skips class toggle when overlay is not an 
     });
 
     assert.equal(timeouts.length, 0);
-});
-
-test("runtime error handlers ignore benign ResizeObserver loop errors", async () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
-        "utf8",
-    );
-    const testableSource =
-        source
-            .replace(/^import[\s\S]*?from .*;\n/gm, "")
-            .replace(/\bexport\s+/g, "") +
-        "\n" +
-        "globalThis.__testExports = { installRuntimeErrorHandlers };\n";
-
-    const listeners = new Map();
-    const openPopupCalls = [];
-    const context = {
-        console,
-        Date,
-        applyTheme() {},
-        getStoredTheme() {
-            return "light";
-        },
-        openPopup(options) {
-            openPopupCalls.push(options);
-            return Promise.resolve("close");
-        },
-        primePopupStylesheet() {
-            return Promise.resolve();
-        },
-        shouldSuppressConnectionRecoveryPopup() {
-            return false;
-        },
-        createI18n() {
-            return Promise.resolve({
-                t(key) {
-                    return key;
-                },
-            });
-        },
-        escapeHtml(value) {
-            return String(value ?? "");
-        },
-        getCurrentRoutePath() {
-            return "/settings";
-        },
-        normalizeSameOriginRoutePath(routePath) {
-            return String(routePath ?? "");
-        },
-        window: {
-            location: {
-                href: "https://example.com/settings#security",
-                assign() {},
-            },
-            history: {
-                back() {},
-                state: {},
-            },
-            addEventListener(type, handler) {
-                listeners.set(type, handler);
-            },
-        },
-        document: {
-            referrer: "",
-            querySelector() {
-                return {};
-            },
-        },
-    };
-    context.globalThis = context;
-
-    vm.runInNewContext(testableSource, context, {
-        filename: "runtime-error-popup.js",
-    });
-
-    context.__testExports.installRuntimeErrorHandlers();
-    const errorHandler = listeners.get("error");
-    assert.equal(typeof errorHandler, "function");
-
-    const ignoredResizeObserverMessages = [
-        "ResizeObserver loop completed with undelivered notifications.",
-        "ResizeObserver loop limit exceeded",
-    ];
-    for (const ignoredMessage of ignoredResizeObserverMessages) {
-        errorHandler({
-            message: ignoredMessage,
-        });
-        await Promise.resolve();
-        await Promise.resolve();
-    }
-    assert.equal(openPopupCalls.length, 0);
 });

@@ -59,6 +59,44 @@ test("UIRegistry registers and lists admin sections", () => {
     assert.equal(sections[1].id, "s2");
 });
 
+test("UIRegistry prevents modules from replacing another owner's UI", () => {
+    const reg = new UIRegistry();
+    reg.registerAdminSection({
+        id: "shared-admin",
+        label: "Owner One",
+        scriptUrl: "/static/modules/one/admin.js",
+        ownerId: "one",
+    });
+    assert.throws(
+        () =>
+            reg.registerAdminSection({
+                id: "shared-admin",
+                label: "Owner Two",
+                scriptUrl: "/static/modules/two/admin.js",
+                ownerId: "two",
+            }),
+        /ui_registration_conflict/,
+    );
+    reg.registerSpaRoute({
+        id: "owner-one-page",
+        pattern: "^/shared$",
+        base: "/shared",
+        scriptUrl: "/static/modules/one/page.js",
+        ownerId: "one",
+    });
+    assert.throws(
+        () =>
+            reg.registerSpaRoute({
+                id: "owner-two-page",
+                pattern: "^/shared$",
+                base: "/shared",
+                scriptUrl: "/static/modules/two/page.js",
+                ownerId: "two",
+            }),
+        /ui_registration_conflict/,
+    );
+});
+
 test("UIRegistry removes every contribution owned by a module", () => {
     const reg = new UIRegistry();
     reg.registerAdminSection({
@@ -168,6 +206,34 @@ test("UIRegistry registers and lists SPA routes", () => {
         "messages-page",
     );
     assert.equal(reg.resolveSpaRoute("/settings"), undefined);
+});
+
+test("UIRegistry registers enabled authentication footer plugins", () => {
+    const reg = new UIRegistry();
+    reg.registerAuthFooterPlugin({ scriptUrl: "/legal-footer.js" });
+    reg.registerAuthFooterPlugin({
+        scriptUrl: "/disabled-footer.js",
+        isEnabled: () => false,
+    });
+    assert.deepEqual(reg.listAuthFooterPlugins(), [
+        { scriptUrl: "/legal-footer.js" },
+    ]);
+});
+
+test("UIRegistry rejects role restrictions on public SPA routes", () => {
+    const reg = new UIRegistry();
+    assert.throws(
+        () =>
+            reg.registerSpaRoute({
+                id: "invalid-public-page",
+                pattern: "^/public$",
+                base: "/public",
+                scriptUrl: "/public.js",
+                public: true,
+                access: { minRole: "user" },
+            }),
+        /public_spa_route_cannot_require_role/,
+    );
 });
 
 test("UIRegistry selects only declared UI capability provider scripts", () => {

@@ -39,6 +39,7 @@ import {
     generatePassphrase,
     PASSPHRASE_CAPABILITY,
 } from "./reuse/passphrase.js";
+import { createDocumentVersionStoreCapability } from "./reuse/document-version-store.js";
 
 requirePublicEnvironment();
 
@@ -238,11 +239,28 @@ uiRegistry.registerCapabilityProvider({
     providesCapabilities: ["ui:reuse"],
 });
 uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/footer-links.js",
+    providesCapabilities: ["ui:footerLinks"],
+});
+uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/pagination.js",
+    providesCapabilities: ["ui:pagination"],
+});
+uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/side-menu.js",
+    providesCapabilities: ["ui:sideMenu"],
+});
+uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/document-diff.js",
+    providesCapabilities: ["ui:documentDiff"],
+});
+uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/app-router.js",
     providesCapabilities: [
         "component-pages:spawn",
         "component-pages:discard",
         "ui:makeFloatingWindow",
+        "ui:navigate",
     ],
 });
 const healthService = new HealthService();
@@ -399,6 +417,9 @@ if (flowCtx.flow.exists("bootstrap-platform")) {
 }
 
 const dbExecutor = capabilities.get<DbExecutor>("db:executor")!;
+const documentVersionStore = createDocumentVersionStoreCapability();
+capabilities.contribute("docs:versionStore", documentVersionStore);
+systemCtx.contributeCapability("docs:versionStore", documentVersionStore);
 const dbDialect = capabilities.get<DbDialectHelper>("db:dialect")!;
 await dbExecutor.ensureTable({
     name: "gateways",

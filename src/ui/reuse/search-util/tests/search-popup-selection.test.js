@@ -7,10 +7,15 @@ import { fileURLToPath } from "node:url";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 
 test("search URL normalizes the singular user result filter", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/search-util/matching.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(
+            resolve(ROOT, "src/ui/reuse/search-util/matching.js"),
+            "utf8",
+        ) +
+        readFileSync(
+            resolve(ROOT, "src/ui/reuse/search-util/visibility.js"),
+            "utf8",
+        );
     assert.match(
         source,
         /const resolvedTypeFilter = normalizeResultType\(rawTypeFilter\)/,
@@ -105,10 +110,15 @@ test("global search modules result points to the module marketplace", () => {
 });
 
 test("global search exposes registered categories and match controls", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/search-util/matching.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(
+            resolve(ROOT, "src/ui/reuse/search-util/matching.js"),
+            "utf8",
+        ) +
+        readFileSync(
+            resolve(ROOT, "src/ui/reuse/search-util/visibility.js"),
+            "utf8",
+        );
     const popupSource = readFileSync(
         resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
         "utf8",
@@ -345,10 +355,18 @@ test("visible search indexes calendar notifications and posts", () => {
         resolve(ROOT, "src/gateways/calendar/ui/calendar-ui-helpers.js"),
         "utf8",
     );
-    const notificationSource = readFileSync(
-        resolve(ROOT, "src/adapters/notify/internal/ui/navbar-plugin.js"),
-        "utf8",
-    );
+    const notificationSource =
+        readFileSync(
+            resolve(ROOT, "src/adapters/notify/internal/ui/navbar-plugin.js"),
+            "utf8",
+        ) +
+        readFileSync(
+            resolve(
+                ROOT,
+                "src/adapters/notify/internal/ui/notification-item.js",
+            ),
+            "utf8",
+        );
     const profileSource = readFileSync(
         resolve(ROOT, "src/adapters/social/profile/ui/profile-render.js"),
         "utf8",
@@ -538,10 +556,15 @@ test("createSearchBar stores shortcut button through search state", async () => 
 });
 
 test("profile messages notifications and study indexes are privacy scoped", () => {
-    const profileSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/profile/ui/app.js"),
-        "utf8",
-    );
+    const profileSource =
+        readFileSync(
+            resolve(ROOT, "src/adapters/social/profile/ui/app.js"),
+            "utf8",
+        ) +
+        readFileSync(
+            resolve(ROOT, "src/adapters/social/profile/ui/search-groups.js"),
+            "utf8",
+        );
     const profileRenderSource = readFileSync(
         resolve(ROOT, "src/adapters/social/profile/ui/profile-render.js"),
         "utf8",
@@ -550,14 +573,27 @@ test("profile messages notifications and study indexes are privacy scoped", () =
         resolve(ROOT, "src/adapters/social/messages/ui/message-render.js"),
         "utf8",
     );
-    const notificationsSource = readFileSync(
-        resolve(ROOT, "src/adapters/notify/internal/ui/navbar-plugin.js"),
-        "utf8",
-    );
-    const searchSource = readFileSync(
-        resolve(ROOT, "src/ui/reuse/search-util/matching.js"),
-        "utf8",
-    );
+    const notificationsSource =
+        readFileSync(
+            resolve(ROOT, "src/adapters/notify/internal/ui/navbar-plugin.js"),
+            "utf8",
+        ) +
+        readFileSync(
+            resolve(
+                ROOT,
+                "src/adapters/notify/internal/ui/notification-item.js",
+            ),
+            "utf8",
+        );
+    const searchSource =
+        readFileSync(
+            resolve(ROOT, "src/ui/reuse/search-util/matching.js"),
+            "utf8",
+        ) +
+        readFileSync(
+            resolve(ROOT, "src/ui/reuse/search-util/visibility.js"),
+            "utf8",
+        );
     const studySearchSource = readFileSync(
         resolve(ROOT, "src/gateways/study/ui/search/index.js"),
         "utf8",

@@ -12,10 +12,18 @@
 - `auth_adapter_configs` に永続化されたアダプターの有効・無効状態を管理する。
 - 要求されたプロバイダーの有効なアダプターに委譲して認証情報を検証する。
 - 認証成功後に `issueAccessToken` でアクセストークンを発行する。
-- 文書化されたケイパビリティ一式を提供する：`auth:accountStore`、`auth:createLocalAdmin`、`auth:getLoginMethods`、`auth:registerProvider`、`auth:registerPageScriptOrigins`、`auth:issueAccessToken`、`auth:getAuthClaims`、`auth:requireAuth`、`auth:requireRoleAccess`、`auth:revokeAccessTokensForSubject`、`auth:revokeSetupPendingAccessTokens`、`auth:routeContext`。
+- 文書化されたケイパビリティ一式を提供する：`auth:accountStore`、`auth:createLocalAdmin`、`auth:getLoginMethods`、`auth:registerProvider`、`auth:registerLoginButton`、`auth:registerPageScriptOrigins`、`auth:issueAccessToken`、`auth:getAuthClaims`、`auth:requireAuth`、`auth:requireRoleAccess`、`auth:revokeAccessTokensForSubject`、`auth:revokeSetupPendingAccessTokens`、`auth:routeContext`。
 - すべての認証APIルートとアダプター管理ルートを登録する。
 
 責務外: ユーザープロフィールデータの保存（プロフィールゲートウェイの責務）、トークン発行を超えたセッション管理、非認証ビジネスロジック。
+
+### 実行時プロバイダーのライフサイクル
+
+実行時ブラウザー向け OAuth リダイレクトでは `/sso/<routeNamespace>/<path>` を使用できます。Cognis はクエリ形式のコールバックをプロバイダーへ直接渡し、フラグメント形式の応答も同じサーバー所有コールバックへ橋渡しするため、読み込み表示が残り続けません。コールバック失敗時は、ローカライズされたエラーとともにログインへ戻ります。
+
+プロバイダーは LDAP と同様に、認証ゲートウェイを設定と電源状態の権限元として使用する必要があります。プロバイダーは安定した `id`、`getConfigSchema()`、`configure(config)`、`isConfigured()` を提供し、管理画面は `/api/v1/gateways/auth/adapters/<id>/config` を読み書きし、`/enable` または `/disable` で切り替えます。モジュール側で別の有効化フラグを保持したり、モジュールの有効化をアダプターの有効化と同一視したりしてはいけません。
+
+ブートストラップでは、ルートやログイン表示を登録する前に `auth:registerProvider(provider, requires)` を待機します。この Promise は、Cognis がアダプターの保存済み設定と有効状態を復元した後にのみ完了します。その後にブランド付きボタンを登録し、両方の破棄関数を保持し、終了処理ではプロバイダー登録を解除する前にボタンを削除します。保存済みの有効状態がないプロバイダーは無効状態で開始し、ゲートウェイ所有のアダプター設定フローでセットアップを完了する必要があります。
 
 ## アーキテクチャ
 
@@ -56,23 +64,31 @@ export class CoreAuthGateway {
 | `auth:accountStore`              | `LocalAccountStore`                            | ローカルアダプターが使用するローカルアカウントストア                            |
 | `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | 存在しない場合に管理者アカウントを作成                                          |
 | `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | すべての有効なプロバイダーのメタデータを返す                                    |
-| `auth:registerProvider`          | `(provider, requires?) => dispose`             | モジュール認証プロバイダーを登録し、そのクリーンアップ関数を返す                |
+| `auth:registerProvider`          | `async (provider, requires?) => dispose`       | モジュール認証プロバイダーを登録し、そのクリーンアップ関数を返す                |
+| `auth:registerLoginButton`       | `(descriptor) => dispose`                      | ブランド固有のログインボタン表示を登録し、そのクリーンアップ関数を返す          |
 | `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | ページのCSPヘッダーで1つの所有者の信頼済みhttp(s)スクリプトオリジンを置き換える |
+
+認証プロバイダーは `auth:registerProvider` を待機してから `auth:registerLoginButton` を呼び出す必要があります。登録処理は完了前にアダプターの保存済み設定と有効状態を復元し、LDAP のようなファイルシステム検出プロバイダーと同じライフサイクルになります。記述子には、登録済みの `providerId`、完全にローカライズされた `label`、同一オリジンの `iconUrl` が必要です。任意の `backgroundColor`、`borderColor`、`textColor` には 6 桁の 16 進色を使用します。ログインページは、コンパクト表示とワイド表示の両方でアイコンと完全なラベルを常に表示します。プロバイダーは、提供を無効にするときに返されたクリーンアップ関数を呼び出す必要があります。 スタイルが指定されていない非認証情報方式は、汎用ログインボタンとして表示せず除外されます。
+
+プロバイダーはアダプターに `routeNamespace` と `registerRoutes(router)` を宣言できます。ルーターは `/api/v1/auth/<routeNamespace>` からの相対 `GET` および `POST` パスを受け付けるため、提供元モジュールに保護されたコアルートへの直接アクセスを与えず、OAuth コールバックを認証ゲートウェイ配下に配置できます。名前空間は安全な URL セグメントに制限され、認証コアの名前空間は予約され、重複ルートは拒否され、プロバイダーを削除すると提供されたすべてのルートも削除されます。
+
+外部プロバイダーのセッションは、`ensureExternalAccount` の前に `gateAccountCreation` を通過します。公開登録が無効な場合、セッションには登録トークンと一致するプロバイダーのメールアドレスが必要です。保留されたセッションは `emailRequired`、`registrationTokenRequired`、`retryEndpoint` を含む `account_creation_required` を返します。プロバイダー UI は同じプロバイダー ID とともにトークンおよび必要なメールアドレスをそのエンドポイントへ送信し、プロバイダーアダプターが認証済み ID のみを返す場合でも Cognis がそれらをアカウント作成ゲートへ引き渡します。再試行せずキャンセルすると、アカウントを作成せずログインを中止します。
 
 ## APIルート
 
-| メソッド | パス                                         | 説明                               | 認証     |
-| -------- | -------------------------------------------- | ---------------------------------- | -------- |
-| `GET`    | `/api/v1/auth/login-methods`                 | 有効な認証プロバイダーを一覧表示   | 不要     |
-| `POST`   | `/api/v1/auth/register`                      | 新しいローカルアカウントを自己登録 | 不要     |
-| `POST`   | `/api/v1/auth/login`                         | 認証してBearerトークンを返す       | 不要     |
-| `POST`   | `/api/v1/auth/verify`                        | 現在のユーザーのパスワードを検証   | ユーザー |
-| `GET`    | `/api/v1/gateways/auth/adapters`             | 登録済み認証アダプターを一覧表示   | 管理者   |
-| `GET`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定スキーマを取得     | 管理者   |
-| `PUT`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定を更新             | 管理者   |
-| `POST`   | `/api/v1/gateways/auth/adapters/:id/test`    | アダプター設定をテスト             | 管理者   |
-| `POST`   | `/api/v1/gateways/auth/adapters/:id/enable`  | アダプターを有効化                 | 管理者   |
-| `POST`   | `/api/v1/gateways/auth/adapters/:id/disable` | アダプターを無効化                 | 管理者   |
+| メソッド | パス                                         | 説明                                         | 認証     |
+| -------- | -------------------------------------------- | -------------------------------------------- | -------- |
+| `GET`    | `/api/v1/auth/login-methods`                 | 有効な認証プロバイダーを一覧表示             | 不要     |
+| `POST`   | `/api/v1/auth/register`                      | 新しいローカルアカウントを自己登録           | 不要     |
+| `POST`   | `/api/v1/auth/login`                         | 認証してBearerトークンを返す                 | 不要     |
+| `POST`   | `/api/v1/auth/sso/start`                     | 外部プロバイダーの認可リダイレクトを開始する | なし     |
+| `POST`   | `/api/v1/auth/verify`                        | 現在のユーザーのパスワードを検証             | ユーザー |
+| `GET`    | `/api/v1/gateways/auth/adapters`             | 登録済み認証アダプターを一覧表示             | 管理者   |
+| `GET`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定スキーマを取得               | 管理者   |
+| `PUT`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定を更新                       | 管理者   |
+| `POST`   | `/api/v1/gateways/auth/adapters/:id/test`    | アダプター設定をテスト                       | 管理者   |
+| `POST`   | `/api/v1/gateways/auth/adapters/:id/enable`  | アダプターを有効化                           | 管理者   |
+| `POST`   | `/api/v1/gateways/auth/adapters/:id/disable` | アダプターを無効化                           | 管理者   |
 
 アダプターテストの失敗には、任意の数の設定項目 ID を安全な診断メッセージに対応付ける `error.fieldErrors` オブジェクトが含まれる場合があります。
 
@@ -91,3 +107,7 @@ export class CoreAuthGateway {
 ## ブラウザーセッションの境界
 
 パスワード確認の無効化は、認証済みの完全なアカウントセッションでのみ実行されます。匿名ページや Share ゲストページの初期化では、アカウント専用の `DELETE /api/v1/auth/verify` 要求を送らずにキーリング状態をロックまたは置換できます。
+
+## 外部プロフィールプロバイダー
+
+SSO モジュールは CTX を介して `auth:registerExternalProfileProvider` を登録できます。リゾルバーはプロバイダー ID、Cognis アカウント ID、外部ユーザー ID、認証済みプロバイダーセッションを受け取り、検索可能なハンドル、表示名、自己紹介、所在地、Web サイト、アバターおよびバナーのデータを返せます。プロバイダーセッションに `handle` または `username` がある場合、Cognis は不透明な外部アカウント ID ではなく、その値を初期プロフィールハンドルとして使用します。プロフィールアダプターが外部アカウントの初回作成時に自身の保存機能で反映します。

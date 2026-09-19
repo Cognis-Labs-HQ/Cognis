@@ -305,11 +305,15 @@ function endPageLoading(token) {
  *
  * @param {(root: Element | null) => Promise<unknown>} mount - Page mount
  *   function for the current entry module.
- * @param {{ rootSelector?: string }} [options] - Direct-mount options.
+ * @param {{ rootSelector?: string, public?: boolean }} [options] - Direct-mount options.
  * @returns {Promise<void>}
  */
-export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
+export async function mountWhenDirect(
+    mount,
+    { rootSelector = "#app", public: publicPage = false } = {},
+) {
     if (globalThis.__spaRouter) return;
+    if (publicPage) globalThis.__cognisPublicSpaRoute = true;
     registerPageUnloadListeners();
     if (typeof window !== "undefined") {
         installRuntimeErrorHandlers();
@@ -322,7 +326,11 @@ export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
             await ensureHostUiProviders();
             return mount(mountRoot);
         };
-        if (uiCtx.flowExists("load-page")) {
+        if (
+            !publicPage &&
+            globalThis.__cognisPublicSpaRoute !== true &&
+            uiCtx.flowExists("load-page")
+        ) {
             const flowResult = await uiCtx.runFlow("load-page", {
                 mount: mountWithProviders,
                 root,

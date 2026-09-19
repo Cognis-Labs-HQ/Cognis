@@ -42,10 +42,13 @@
  *   submitButtonClassName?: string,
  *   submitLabelKey: string,
  *   includeSubmitButton?: boolean,
+ *   trustedContentHtml?: string,
+ *   formAttributes?: Record<string, string|number|boolean>,
  *   fields: Array<{
  *     name: string,
  *     labelKey?: string,
  *     label?: string,
+ *     labelHtml?: string, // trusted markup; callers must sanitize untrusted content
  *     type?: 'text'|'email'|'password'|'number'|'url'|'select'|'textarea'|'checkbox',
  *     secret?: boolean,
  *     slider?: boolean,
@@ -94,6 +97,7 @@ export function createFormBuilder(ctx, options) {
         options?.submitButtonClassName ?? "btn-confirm btn-animated",
     ).trim();
     const includeSubmitButton = options?.includeSubmitButton !== false;
+    const trustedContentHtml = String(options?.trustedContentHtml ?? "");
     const submitLabelKey = String(
         options?.submitLabelKey ?? "ui.reuse.save",
     ).trim();
@@ -127,7 +131,12 @@ export function createFormBuilder(ctx, options) {
         }
         const type = String(fieldConfig?.type ?? "text").trim();
         const inputId = `form-builder-${fieldName}`;
-        const label = fieldConfig.label ?? i18n.t(fieldConfig.labelKey);
+        const label = fieldConfig.labelHtml
+            ? ""
+            : (fieldConfig.label ?? i18n.t(fieldConfig.labelKey));
+        const labelMarkup = fieldConfig.labelHtml
+            ? String(fieldConfig.labelHtml)
+            : escapeHtml(label);
         const required = fieldConfig.required === true;
         const disabled = fieldConfig.disabled === true;
         const maxCharacters = Number(fieldConfig.maxCharacters ?? 0);
@@ -136,6 +145,12 @@ export function createFormBuilder(ctx, options) {
         const value =
             fieldConfig.value == null ? "" : String(fieldConfig.value);
         const className = String(fieldConfig.className ?? "").trim();
+        const inputClassName = [
+            "form-builder-input",
+            String(fieldConfig.inputClassName ?? "").trim(),
+        ]
+            .filter(Boolean)
+            .join(" ");
         const fieldClassName = className
             ? `form-builder-field ${className}`
             : "form-builder-field";
@@ -239,7 +254,7 @@ export function createFormBuilder(ctx, options) {
           id="${escapeHtml(inputId)}"
           name="${escapeHtml(fieldName)}"
           type="${escapeHtml(fieldConfig.secret ? "password" : type)}"
-          class="form-builder-input"
+          class="${escapeHtml(inputClassName)}"
           ${type === "checkbox" && value === "true" ? "checked" : `value="${escapeHtml(value)}"`}${fieldConfig.secret ? " data-secret-visibility-input" : ""}${attributes.join("")}
         />`;
         const inputMarkup = fieldConfig.secret
@@ -253,7 +268,7 @@ export function createFormBuilder(ctx, options) {
 
         return `
       <div class="${fieldClassName}" data-form-builder-field="${escapeHtml(fieldName)}">
-        <span class="form-builder-label-text"><label for="${escapeHtml(inputId)}">${escapeHtml(label)}${requiredFlagInline}</label>${infoTooltip}</span>
+        <span class="form-builder-label-text"><label for="${escapeHtml(inputId)}">${labelMarkup}${requiredFlagInline}</label>${infoTooltip}</span>
         ${inputMarkup}
         ${counterMarkup}
         ${inlineCriteria}
@@ -267,11 +282,15 @@ export function createFormBuilder(ctx, options) {
             .map((fieldConfig) => renderField(fieldConfig))
             .join("");
         const formClassAttribute = formClassName ? ` ${formClassName}` : "";
+        const formAttributes = Object.entries(options?.formAttributes ?? {})
+            .map(([name, value]) => renderAttribute(name, value))
+            .join("");
         const submitButtonMarkup = includeSubmitButton
             ? `<button type="submit" class="${escapeHtml(submitButtonClassName)}">${escapeHtml(i18n.t(submitLabelKey))}</button>`
             : "";
         return `
-      <form id="${escapeHtml(formId)}" class="form-builder stack${formClassAttribute}">
+      <form id="${escapeHtml(formId)}" class="form-builder stack${formClassAttribute}"${formAttributes}>
+        ${trustedContentHtml}
         ${renderedFields}
         ${submitButtonMarkup}
       </form>

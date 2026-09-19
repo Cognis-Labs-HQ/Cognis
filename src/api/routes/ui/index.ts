@@ -197,17 +197,6 @@ export function createUiRoutes(
             return true;
         }
 
-        if (url.pathname === "/login") {
-            await htmlResponse.serveHtmlPage(
-                res,
-                path.join(SERVED_PUBLIC_ROOT, "pages", "login.html"),
-                log,
-                { path: url.pathname, method: req.method ?? "GET" },
-                ctx,
-            );
-            return true;
-        }
-
         if (url.pathname === "/settings") {
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
@@ -303,72 +292,6 @@ export function createUiRoutes(
             return true;
         }
 
-        if (url.pathname === "/invite") {
-            const loginRedirect = await resolveLoginRedirectLocation(
-                req,
-                ctx,
-                accountStore,
-                log,
-            );
-            if (loginRedirect) {
-                res.writeHead(302, { location: loginRedirect });
-                res.end();
-                return true;
-            }
-            const session = ctx.getCookieSession(req);
-            if (!session) {
-                res.writeHead(302, {
-                    location: "/login?reason=session_expired",
-                });
-                res.end();
-                return true;
-            }
-            if (isRoleAllowed(session.role, { onlyRole: "admin" })) {
-                res.writeHead(302, { location: "/users" });
-                res.end();
-                return true;
-            }
-            const registrationGateway = gatewayRegistry?.get("registration");
-            if (
-                !registrationGateway ||
-                registrationGateway.status === "disabled"
-            ) {
-                res.writeHead(302, { location: "/dashboard" });
-                res.end();
-                return true;
-            }
-            const isFounder = accountStore
-                ? await accountStore.isFounder(session.sub).catch((error) => {
-                      log?.(
-                          "error",
-                          "Failed to resolve founder status for invite route access.",
-                          {
-                              component: "api-ui",
-                              accountId: session.sub,
-                              error:
-                                  error instanceof Error
-                                      ? error.message
-                                      : String(error),
-                          },
-                      );
-                      return false;
-                  })
-                : false;
-            if (!isFounder) {
-                res.writeHead(302, { location: "/dashboard" });
-                res.end();
-                return true;
-            }
-            await htmlResponse.serveHtmlPage(
-                res,
-                path.join(SERVED_PUBLIC_ROOT, "pages", "invite.html"),
-                log,
-                { path: url.pathname, method: req.method ?? "GET" },
-                ctx,
-            );
-            return true;
-        }
-
         if (url.pathname.startsWith("/docs")) {
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
@@ -432,18 +355,6 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/license") {
-            const loginRedirect = await resolveLoginRedirectLocation(
-                req,
-                ctx,
-                accountStore,
-                log,
-            );
-            if (loginRedirect) {
-                res.writeHead(302, { location: loginRedirect });
-                res.end();
-                return true;
-            }
-
             await htmlResponse.serveHtmlPage(
                 res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "license.html"),
@@ -717,17 +628,34 @@ export function createUiRoutes(
             return true;
 
         if (url.pathname === "/api/v1/ui/app-routes" && req.method === "GET") {
-            const claims = ctx.requireAuth(req, res, "user");
-            if (!claims) return true;
+            const claims = ctx.getAuthClaims(req);
             const routes = (uiRegistry?.listSpaRoutes() ?? []).filter(
                 (route) =>
                     (!route.isEnabled || route.isEnabled()) &&
-                    isRoleAllowed(claims.role, route.access),
+                    (claims
+                        ? isRoleAllowed(claims.role, route.access)
+                        : route.public === true),
             );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
                     data: versionDescriptor(routes, ASSET_VERSION),
+                }),
+            );
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/ui/auth-footer-plugins" &&
+            req.method === "GET"
+        ) {
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: versionDescriptor(
+                        uiRegistry?.listAuthFooterPlugins() ?? [],
+                        ASSET_VERSION,
+                    ).map(({ scriptUrl }) => ({ scriptUrl })),
                 }),
             );
             return true;

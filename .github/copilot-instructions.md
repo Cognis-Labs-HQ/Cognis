@@ -23,6 +23,18 @@ from that gateway's UI client module and consume that function instead of
 issuing a gateway API request directly from another page or module. This keeps
 endpoint knowledge and response handling within the owning gateway.
 
+### Keep URLs clean and non-sensitive
+
+Avoid query parameters and fragments for transient server-owned workflow state.
+URLs must remain short, readable, and safe to expose in browser history, logs,
+analytics, referrer headers, and screenshots. Never place opaque attempt IDs,
+internal expiry timestamps, authorization decisions, or similar implementation
+state in a URL. Keep that state behind an HttpOnly, SameSite cookie and retrieve
+non-sensitive presentation metadata through the owning gateway's UI client. Use
+path segments or query parameters only for intentionally shareable resource
+identity, explicit user-controlled filtering, or a user-facing one-time link
+whose credential is intrinsically part of the shared link.
+
 ### API result limits are caller-controlled
 
 API endpoints must not impose arbitrary default or maximum result limits in
@@ -243,6 +255,10 @@ Version updates are atomic repository-wide changes. When bumping a component, up
 
 Component package dependencies on other Cognis components must use flexible tested-ceiling version ranges instead of exact pins. Use `<=<tested-version>` for every `@cognis/*` dependency so newer installed components can be detected as potentially untested without blocking older compatible patch lines at install time. Runtime lifecycle surfaces must treat missing or disabled declared dependencies as component errors, disable the affected component power control, and present a red exclamation warning with the expected and installed versions when the installed component is newer than the declared tested ceiling.
 
+### Branch and pull request names
+
+Branch names may contain only ASCII letters, numbers, hyphens (`-`), and underscores (`_`). Pull request names may additionally contain whitespace. No other special characters are legal in either name.
+
 ### Changelog entries
 
 Store changelog entries under `src/docs/changelog/` (one shared directory for all changelog files) instead of a root `CHANGELOG.md`.
@@ -444,6 +460,10 @@ When editing a file, make opportunistic improvements to the surrounding code tha
 
 Legacy compatibility is never required and never acceptable. Do not introduce fallback paths, conditional shims, or alternate code branches that exist solely to handle older schema layouts, API shapes, or data formats that are no longer the standard — even temporarily. This rule applies with particular force when the "legacy" concern originates in the same pull request that introduces the modern replacement: a feature cannot be deprecated and replaced in the same PR that creates it. If a feature is new, it ships clean; if an old feature is being removed, the removal is complete and unconditional.
 
+Upgrade existing installations with explicit, one-way migrations instead of runtime compatibility. Cross-component upgrade transformations must live under `src/legacy/migrations/`; component-owned database migrations remain in that component's `sql/migrate/` directory. Nothing under `src/legacy/` may be imported by request handlers, gateways, adapters, modules, or UI code. The startup migration runner is the only allowed caller, and migrated data must use the current model immediately afterward. Any compatibility code retained temporarily for an upgrade must be isolated under `src/legacy/`, carry a removal condition in its migration documentation, and must never share a file with the current implementation.
+
+Current implementation directories have zero tolerance for legacy aliases, fallback entrypoints, deprecated payload keys, or dual-format parsing. Delete those paths rather than preserving them beside the current contract.
+
 Do not write tests that verify legacy artefacts are absent. Asserting that a field does not exist, a route is not registered, or a column is not written is a legacy-absence test — it encodes an expectation about a removed thing rather than a requirement about the current system. These tests are forbidden and must be deleted on sight.
 
 ---
@@ -454,6 +474,12 @@ Before running unit tests, ensure the following prerequisites are met:
 
 - `ripgrep` is installed (used by tooling scripts). Install with `apt-get install -y ripgrep` or equivalent for your platform.
 - `npm install` has been run to ensure all dependencies are present.
+
+Tests must never assume that optional system binaries such as `git`, `curl`,
+or shell-specific utilities are installed in the environment where they run.
+Use language/runtime APIs for filesystem, networking, and process-independent
+operations. When a test specifically exercises an external executable, detect
+its availability first and skip with an explicit reason when it is absent.
 
 Write unit tests that verify the API responds correctly under defined conditions, for example:
 

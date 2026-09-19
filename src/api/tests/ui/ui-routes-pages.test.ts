@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import { createUiRoutes } from "../../routes/ui/index.js";
 import {
     issueAccessToken,
-    lookupAccessToken,
     revokeAccessTokensForSubject,
 } from "../../../gateways/auth/access-tokens.js";
 import { createResponseRecorder } from "./ui-routes-test-helpers.js";
@@ -110,55 +109,6 @@ test("dashboard route redirects revoked disabled-account sessions with account_d
     assert.equal(recorder.headers.location, "/login?reason=account_disabled");
 });
 
-test("login page serves html for authenticated sessions", async () => {
-    const route = createUiRoutes();
-    const token = issueAccessToken("u1", "user", 60);
-    const recorder = createResponseRecorder();
-
-    await route(
-        { headers: { cookie: `cognis_access_token=${token}` } } as any,
-        recorder.res as any,
-        new URL("http://localhost/login"),
-    );
-
-    assert.equal(recorder.status, 200);
-    assert.match(recorder.body, /id="app"/);
-    assert.match(recorder.body, /app\/login\/index\.js/);
-});
-
-test("login page serves html for revoked cookie tokens", async () => {
-    const route = createUiRoutes();
-    const token = issueAccessToken("u2", "user", 60);
-    revokeAccessTokensForSubject("u2");
-    assert.equal(lookupAccessToken(token)?.revoked, true);
-    const recorder = createResponseRecorder();
-
-    await route(
-        { headers: { cookie: `cognis_access_token=${token}` } } as any,
-        recorder.res as any,
-        new URL("http://localhost/login"),
-    );
-
-    assert.equal(recorder.status, 200);
-    assert.match(recorder.body, /id="app"/);
-    assert.match(recorder.body, /app\/login\/index\.js/);
-});
-
-test("login page is served as standalone page html", async () => {
-    const route = createUiRoutes();
-    const recorder = createResponseRecorder();
-
-    await route(
-        { headers: {} } as any,
-        recorder.res as any,
-        new URL("http://localhost/login"),
-    );
-
-    assert.equal(recorder.status, 200);
-    assert.match(recorder.body, /id="app"/);
-    assert.match(recorder.body, /app\/login\/index\.js/);
-});
-
 test("ui static route serves templates and assets from public folder", async () => {
     const route = createUiRoutes();
 
@@ -193,6 +143,18 @@ test("ui routes serve public assets directly from /assets", async () => {
 
     assert.equal(assetRes.status, 200);
     assert.equal(assetRes.headers["content-type"], "image/png");
+
+    const fallbackRes = createResponseRecorder();
+    await route(
+        { headers: {} } as any,
+        fallbackRes.res as any,
+        new URL("http://localhost/assets/reuse/module-icon-unknown.svg"),
+    );
+    assert.equal(fallbackRes.status, 200);
+    assert.equal(
+        fallbackRes.headers["content-type"],
+        "image/svg+xml; charset=utf-8",
+    );
 });
 
 test("core ui routes do not serve /profile (owned by profile gateway)", async () => {
@@ -211,7 +173,7 @@ test("core ui routes do not serve /profile (owned by profile gateway)", async ()
     );
 });
 
-test("license route requires login cookie and serves dedicated page", async () => {
+test("license route is public and serves its composed page", async () => {
     const route = createUiRoutes();
     const anonymous = createResponseRecorder();
     await route(
@@ -219,8 +181,9 @@ test("license route requires login cookie and serves dedicated page", async () =
         anonymous.res as any,
         new URL("http://localhost/license"),
     );
-    assert.equal(anonymous.status, 302);
-    assert.equal(anonymous.headers.location, "/login");
+    assert.equal(anonymous.status, 200);
+    assert.match(anonymous.body, /static\/app\/license\/index\.js/);
+    assert.match(anonymous.body, /id="app"/);
 
     const token = issueAccessToken("u1", "user", 60);
     const authed = createResponseRecorder();

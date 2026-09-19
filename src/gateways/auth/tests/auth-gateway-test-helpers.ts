@@ -12,11 +12,14 @@ export type InMemoryDb = {
 };
 
 export type TestResponse = {
+    setHeader: (name: string, value: unknown) => void;
     writeHead: (code: number, headers?: Record<string, unknown>) => void;
-    end: (payload: string) => void;
+    end: (payload?: string | Buffer) => void;
     readonly status: number;
     readonly payload: string;
     readonly headers: Record<string, unknown>;
+    readonly headersSent: boolean;
+    readonly writableEnded: boolean;
 };
 
 export function makeInMemoryDb(): InMemoryDb {
@@ -67,13 +70,18 @@ export function makeResponse(): TestResponse {
     let status = 0;
     let payload = "";
     let headers: Record<string, unknown> = {};
+    let ended = false;
     return {
+        setHeader(name: string, value: unknown) {
+            headers[name.toLowerCase()] = value;
+        },
         writeHead(code: number, nextHeaders?: Record<string, unknown>) {
             status = code;
             headers = nextHeaders ?? {};
         },
-        end(nextPayload: string) {
-            payload = nextPayload;
+        end(nextPayload?: string | Buffer) {
+            payload = nextPayload ? String(nextPayload) : "";
+            ended = true;
         },
         get status() {
             return status;
@@ -83,6 +91,12 @@ export function makeResponse(): TestResponse {
         },
         get headers() {
             return headers;
+        },
+        get headersSent() {
+            return status !== 0;
+        },
+        get writableEnded() {
+            return ended;
         },
     };
 }

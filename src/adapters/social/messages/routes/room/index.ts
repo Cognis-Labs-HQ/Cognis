@@ -856,7 +856,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 if (recipient && recipientMember && !recipientMember.muted) {
                     await dispatch({
                         category: "messages",
-                        recipientUsername: recipient.handle,
+                        recipientUsername: recipient.accountId,
                         subject: "New reaction",
                         body: `Reacted with ${emoji}`,
                         senderName: sender?.handle ?? sender?.accountId,

@@ -59,7 +59,6 @@ function parseDemoModeFromEnv() {
 
 function serializeSecuritySettings(input: {
     trustedDomains: string[];
-    registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
     requireTeacherManualApproval: boolean;
     enforceTfaForAllUsers: boolean;
@@ -67,7 +66,6 @@ function serializeSecuritySettings(input: {
 }): string {
     return JSON.stringify({
         trustedDomains: input.trustedDomains,
-        registrationsEnabled: input.registrationsEnabled,
         userValidationMode: input.userValidationMode,
         requireTeacherManualApproval: input.requireTeacherManualApproval,
         enforceTfaForAllUsers: input.enforceTfaForAllUsers,
@@ -241,10 +239,6 @@ export function createSystemRoutes(
             if (!claims) return true;
             const body = await readJson(req);
             const trustedDomains = normalizeTrustedDomains(body.trustedDomains);
-            const registrationsEnabled =
-                typeof body.registrationsEnabled === "boolean"
-                    ? body.registrationsEnabled
-                    : false;
             const userValidationMode =
                 body.userValidationMode === "smtp" ? "smtp" : "none";
             const requireTeacherManualApproval =
@@ -304,7 +298,6 @@ export function createSystemRoutes(
                     SECURITY_SETTINGS_KEY,
                     serializeSecuritySettings({
                         trustedDomains,
-                        registrationsEnabled,
                         userValidationMode,
                         requireTeacherManualApproval,
                         enforceTfaForAllUsers,
@@ -352,7 +345,6 @@ export function createSystemRoutes(
                 ...logMeta,
                 accountId: claims.sub,
                 trustedDomainCount: trustedDomains.length,
-                registrationsEnabled,
                 userValidationMode,
                 requireTeacherManualApproval,
                 enforceTfaForAllUsers,

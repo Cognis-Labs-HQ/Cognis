@@ -1,16 +1,37 @@
 /**
- * Shared dynamic contribution loaders for UI extension descriptors.
+ * Loads UI contribution modules without triggering page-entry direct mounts.
  *
- * Each descriptor must include a `scriptUrl` string. The module is imported and
- * the named factory export is invoked with caller-provided args.
+ * Public exports:
+ * - `loadDynamicContribution(descriptor, options)` — loads one contribution and invokes its factory.
+ * - `loadDynamicContributions(descriptors, options)` — loads a list and removes unavailable contributions.
+ *
+ * @example
+ * const section = await loadDynamicContribution(descriptor, {
+ *   exportName: 'createAdminSection',
+ *   buildArgs: () => ({ i18n }),
+ *   onError: (error) => log(error),
+ * });
+ *
+ * @param {{ scriptUrl?: string }} descriptor Contribution resource descriptor.
+ * @param {{ exportName: string, buildArgs?: (descriptor: object) => Promise<unknown>|unknown, onError?: (error: unknown, descriptor: object) => void }} options Loader options.
+ * @returns {Promise<unknown|null>} The factory result, or null when loading fails.
  */
+
+import { loadWithSpaImportGuard } from "./page-entry.js";
 
 async function loadContributionModule(scriptUrl) {
     const normalizedUrl = String(scriptUrl ?? "").trim();
     if (!normalizedUrl) return null;
-    return import(normalizedUrl);
+    return loadWithSpaImportGuard(() => import(normalizedUrl));
 }
 
+/**
+ * Loads one descriptor and invokes its named factory.
+ *
+ * @param {{ scriptUrl?: string }} descriptor Contribution resource descriptor.
+ * @param {{ exportName: string, buildArgs?: (descriptor: object) => Promise<unknown>|unknown, onError?: (error: unknown, descriptor: object) => void }} options Loader options.
+ * @returns {Promise<unknown|null>} The factory result, or null when loading fails.
+ */
 export async function loadDynamicContribution(
     descriptor,
     { exportName, buildArgs, onError },
@@ -28,6 +49,13 @@ export async function loadDynamicContribution(
     }
 }
 
+/**
+ * Loads multiple descriptors and removes contributions that could not load.
+ *
+ * @param {Array<{ scriptUrl?: string }>} descriptors Contribution resource descriptors.
+ * @param {{ exportName: string, buildArgs?: (descriptor: object) => Promise<unknown>|unknown, onError?: (error: unknown, descriptor: object) => void }} options Loader options.
+ * @returns {Promise<unknown[]>} Successfully created contributions.
+ */
 export async function loadDynamicContributions(
     descriptors,
     { exportName, buildArgs, onError },

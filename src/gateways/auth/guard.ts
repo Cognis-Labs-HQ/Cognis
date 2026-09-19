@@ -1,5 +1,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
+    extractBearerToken,
+    extractCookieToken,
+} from "../../api/reuse/access-token-http.js";
+import {
     getAccessTokenTtlSeconds,
     verifyAccessToken,
     type AccessRole,
@@ -154,9 +158,8 @@ export function canAccessUserData(
 }
 
 export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
-    const raw = req.headers.authorization;
-    if (!raw?.startsWith("Bearer ")) return null;
-    const token = raw.slice("Bearer ".length);
+    const token = extractBearerToken(req) ?? extractCookieToken(req);
+    if (!token) return null;
     const access =
         verifyAccessToken(token) ??
         verifyAccessToken(token, { purpose: "share" });
@@ -185,10 +188,7 @@ export function requireAuth(
 ) {
     const claims = getAuthClaims(req);
     if (!claims) {
-        const raw = req.headers.authorization;
-        const token = raw?.startsWith("Bearer ")
-            ? raw.slice("Bearer ".length)
-            : "";
+        const token = extractBearerToken(req) ?? extractCookieToken(req) ?? "";
         const access = token ? verifyAccessToken(token) : null;
         if (access?.setupPending) {
             res.writeHead(403, { "content-type": "application/json" });

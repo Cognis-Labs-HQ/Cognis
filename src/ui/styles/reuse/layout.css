@@ -389,9 +389,15 @@
 }
 .global-footer-inner {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
     gap: 6px;
+}
+.global-footer-links {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
 }
 .global-footer-link {
     color: var(--text-muted);
@@ -402,7 +408,8 @@
     border-radius: 8px;
 }
 .global-footer-link:hover,
-.global-footer-link:focus-visible {
+.global-footer-link:focus-visible,
+.global-footer-link.active {
     color: var(--text);
     background: var(--surface-soft);
 }

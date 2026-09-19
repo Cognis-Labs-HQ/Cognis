@@ -9,21 +9,13 @@ import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { navigateTo } from "../../reuse/app-router.js";
 import { linkShortCommitRefs } from "../../reuse/commit-links.js";
+import { createSideMenu } from "../../reuse/side-menu.js";
 
 const CHANGELOG_GROUP_KEY = "changelog";
 
 const GROUP_KEYS = {
     [CHANGELOG_GROUP_KEY]: "ui.app.changelogs.group.changelogs",
 };
-
-function escapeHtml(value) {
-    return value
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
-}
 
 function groupLabel(i18n, group) {
     const key = GROUP_KEYS[group];
@@ -44,16 +36,6 @@ function docTitle(item) {
             .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
             .join(" ")
     );
-}
-
-function renderDocNavButton(item) {
-    const title = docTitle(item);
-    const safeTitle = escapeHtml(title);
-    return `
-        <li>
-            <button class="docs-nav-link" data-slug="${item.slug}">${safeTitle}</button>
-        </li>
-    `;
 }
 
 function normalizeDocSlug(href) {
@@ -88,7 +70,7 @@ function changelogRouteSubpathToSlug(subpath) {
     return `changelog/${subpath}`;
 }
 
-function buildGroupedNav(i18n, items) {
+function createNavigationGroups(i18n, items) {
     const groups = new Map();
     for (const item of items) {
         const groupKey = item.sourceName || CHANGELOG_GROUP_KEY;
@@ -96,23 +78,14 @@ function buildGroupedNav(i18n, items) {
         groups.get(groupKey).push(item);
     }
 
-    let html = "";
-    for (const [group, groupItems] of groups) {
-        const label = escapeHtml(
-            group === CHANGELOG_GROUP_KEY ? groupLabel(i18n, group) : group,
-        );
-        const safeGroup = escapeHtml(group);
-        const links = groupItems
-            .map((item) => renderDocNavButton(item))
-            .join("");
-        const storageKey = `changelogs-group-open:${group}`;
-        const isOpen = localStorage.getItem(storageKey) !== "false";
-        html += `<details class="docs-nav-group" ${isOpen ? "open" : ""} data-nav-group="${safeGroup}">`;
-        html += `<summary>${label}</summary>`;
-        html += `<ul>${links}</ul>`;
-        html += `</details>`;
-    }
-    return html;
+    return Array.from(groups, ([group, groupItems]) => ({
+        id: group,
+        label: group === CHANGELOG_GROUP_KEY ? groupLabel(i18n, group) : group,
+        items: groupItems.map((item) => ({
+            id: item.slug,
+            label: docTitle(item),
+        })),
+    }));
 }
 
 export async function mount(root, { signal } = {}) {
@@ -147,12 +120,7 @@ export async function mount(root, { signal } = {}) {
             window.history.replaceState({ slug }, "", historyPath);
         }
 
-        root.querySelectorAll("[data-slug]").forEach((button) => {
-            const isActive = button.dataset.slug === slug;
-            button.classList.toggle("active", isActive);
-            if (isActive) button.setAttribute("aria-current", "page");
-            else button.removeAttribute("aria-current");
-        });
+        navigationMenu.setActive(slug);
     }
 
     function resolveDefaultSlug(subpath, selectableDocs) {
@@ -173,6 +141,11 @@ export async function mount(root, { signal } = {}) {
 
     const docs = await loadDocsIndex();
     const changelogDocs = docs.filter((doc) => isChangelogDoc(doc));
+    const navigationMenu = createSideMenu({
+        groups: createNavigationGroups(i18n, changelogDocs),
+        storageKeyPrefix: "changelogs-group-open",
+        onSelect: (slug) => showDoc(slug, { signal }),
+    });
 
     const elements = [
         {
@@ -199,7 +172,7 @@ export async function mount(root, { signal } = {}) {
                 id: "changelogs-nav",
                 label: i18n.t("ui.reuse.navigation"),
                 render: () =>
-                    `<h3>${i18n.t("ui.reuse.navigation")}</h3><nav class="docs-nav">${buildGroupedNav(i18n, changelogDocs)}</nav>`,
+                    `<h3>${i18n.t("ui.reuse.navigation")}</h3>${navigationMenu.render()}`,
             },
         ],
         toolbarScrollable: true,
@@ -207,16 +180,7 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
 
-    root.querySelectorAll("[data-slug]").forEach((button) => {
-        button.addEventListener("click", () => showDoc(button.dataset.slug));
-    });
-
-    root.querySelectorAll("details[data-nav-group]").forEach((details) => {
-        details.addEventListener("toggle", () => {
-            const key = `changelogs-group-open:${details.dataset.navGroup}`;
-            localStorage.setItem(key, details.open ? "true" : "false");
-        });
-    });
+    navigationMenu.mount(root, { signal });
 
     root.addEventListener(
         "click",

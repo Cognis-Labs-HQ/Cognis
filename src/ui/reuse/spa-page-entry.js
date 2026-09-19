@@ -19,6 +19,8 @@ const config = JSON.parse(configElement?.textContent ?? "{}");
 const capabilityScripts = Array.isArray(config.capabilityScripts)
     ? config.capabilityScripts
     : [];
+globalThis.__cognisPublicSpaRoute = config.public === true;
+globalThis.__cognisPublicSpaRoutePageContext = config.componentPage ?? null;
 
 await Promise.all(capabilityScripts.map((scriptUrl) => import(scriptUrl)));
 if (!config.scriptUrl) throw new Error("SPA route script unavailable");

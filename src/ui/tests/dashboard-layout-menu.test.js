@@ -155,8 +155,14 @@ test("dashboard footer renders license and changelogs links", () => {
         resolve(ROOT, "src/ui/public/templates/dashboard-layout.html"),
         "utf8",
     );
-    const licenseLinkIndex = template.indexOf('href="/license"');
-    const changelogsLinkIndex = template.indexOf('href="/changelogs"');
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    assert.match(template, /data-footer-links="left"/);
+    assert.match(template, /data-footer-links="right"/);
+    const licenseLinkIndex = layoutSource.indexOf('href: "/license"');
+    const changelogsLinkIndex = layoutSource.indexOf('href: "/changelogs"');
     assert.ok(
         licenseLinkIndex !== -1 && changelogsLinkIndex !== -1,
         "dashboard footer should include license and changelogs links",
@@ -167,39 +173,12 @@ test("dashboard footer renders license and changelogs links", () => {
     );
 });
 
-test("dashboard logout requests server revocation before clearing local token", () => {
+test("dashboard logout delegates to the shared ctx flow", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
         "utf8",
     );
-    // This test intentionally locks exact source snippets so logout ordering and
-    // Bearer forwarding remain explicit in dashboard-layout.js.
-    const logoutFetchIndex = layoutSource.indexOf(
-        'await fetch("/api/v1/auth/logout"',
-    );
-    const clearTokenIndex = layoutSource.indexOf(
-        'localStorage.removeItem("cognis_access_token")',
-    );
-    const lockKeyringIndex = layoutSource.indexOf(
-        'await uiCtx.capabilities.get("keyring:lock")?.()',
-    );
-    assert.ok(
-        logoutFetchIndex !== -1 && clearTokenIndex !== -1,
-        "expected logout fetch and local token clear calls in dashboard-layout.js",
-    );
-    assert.ok(
-        logoutFetchIndex < clearTokenIndex,
-        "logout fetch should occur before local token removal so revocation can use current auth state",
-    );
-    assert.ok(
-        lockKeyringIndex > logoutFetchIndex &&
-            lockKeyringIndex < clearTokenIndex,
-        "logout should clear the account-scoped keyring session before removing the account identity",
-    );
-    assert.ok(
-        layoutSource.includes("Authorization: `Bearer ${accessToken}`"),
-        "logout request should send Bearer token when available",
-    );
+    assert.match(layoutSource, /uiCtx\.runFlow\("logout"/);
 });
 
 test("dashboard resolves guest sessions through the auth capability", () => {
@@ -314,7 +293,6 @@ test("built-in dashboard pages expose UUID-owned component page metadata", () =>
         "core.dashboard",
         "core.settings",
         "core.users",
-        "core.invite",
         "core.modules",
         "core.administration",
         "core.docs",

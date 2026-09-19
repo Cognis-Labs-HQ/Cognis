@@ -42,6 +42,19 @@ export const BOOTSTRAP_FLOW_CATALOG = Object.freeze([
 
 export const AUTH_FLOW_CATALOG = Object.freeze([
     createFlowContract({
+        id: "constructRegistrationUi",
+        owner: "auth",
+        description:
+            "Builds the registration form from host and integration contributions.",
+        stages: [
+            {
+                id: "compose-form",
+                description:
+                    "Collect integration descriptors for registration fields and completion work.",
+            },
+        ],
+    }),
+    createFlowContract({
         id: "construct-login-ui",
         owner: "auth",
         description:
@@ -124,6 +137,42 @@ export const AUTH_FLOW_CATALOG = Object.freeze([
                 id: "map-account",
                 description:
                     "Normalize LDAP identity data into Cognis account context fields.",
+            },
+        ],
+    }),
+    createFlowContract({
+        id: "startSsoLogin",
+        owner: "auth",
+        description:
+            "Starts an external authentication provider's authorization redirect.",
+        stages: [
+            {
+                id: "validateProvider",
+                description:
+                    "Validate that the selected provider can initiate external authentication.",
+            },
+            {
+                id: "initiateAuthorization",
+                description:
+                    "Create provider authorization state and return its redirect URL.",
+            },
+        ],
+    }),
+    createFlowContract({
+        id: "gateAccountCreation",
+        owner: "registration",
+        description:
+            "Authorizes creation of a Cognis account after external authentication.",
+        stages: [
+            {
+                id: "inspectIdentity",
+                description:
+                    "Collect the external identity, provider email, and registration token.",
+            },
+            {
+                id: "authorizeCreation",
+                description:
+                    "Require a valid registration policy or token before account persistence.",
             },
         ],
     }),

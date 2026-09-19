@@ -1,7 +1,8 @@
 {
     "id": "token",
-    "uuid": "d781b852-36b0-5e91-92da-c1141b4a3623",
+    "uuid": "c6a66d9c-d6d1-5762-86d8-c4e1fc8d5088",
     "name": "Registration Token",
-    "version": "0.1.16",
-    "publisher": "Cognis Labs HQ"
+    "version": "0.1.36",
+    "publisher": "Cognis Labs HQ",
+    "requires": ["433cd9f3-5b80-5e7d-911b-1907b9348f26"]
 }

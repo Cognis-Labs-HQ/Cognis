@@ -1,12 +1,61 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { createModuleExtensionRoutes } from "../../reuse/module-extension-routes.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
 import { createCtx } from "@cognis/core";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+
+test("uninstall imports the resolved bootstrap entrypoint", async () => {
+    const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-uninstall-"));
+    const moduleUuid = "749a884c-f19e-4586-ae16-518e688e75bb";
+    const moduleRoot = path.join(modulesRoot, moduleUuid);
+    const markerPath = path.join(modulesRoot, "uninstalled.txt");
+    await mkdir(moduleRoot);
+    await writeFile(
+        path.join(moduleRoot, "bootstrap.js"),
+        `import { writeFile } from "node:fs/promises";
+         export async function uninstallModule(_ctx, options) {
+             await writeFile(${JSON.stringify(markerPath)}, String(options.deleteContent));
+         }`,
+    );
+    const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "uninstallable-module",
+                    uuid: moduleUuid,
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                },
+            ],
+        } as any,
+        () => true,
+        undefined,
+        { routeContext: createDefaultRouteContext() },
+    );
+
+    try {
+        assert.equal(
+            await extensions.uninstall("uninstallable-module", {
+                deleteContent: true,
+            }),
+            true,
+        );
+        assert.equal(await readFile(markerPath, "utf8"), "true");
+    } finally {
+        if (previousModulesRoot === undefined) {
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        } else {
+            process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
+        }
+        await rm(modulesRoot, { recursive: true, force: true });
+    }
+});
 
 test("core manifests are not loaded from the external module directory", async () => {
     const errors: string[] = [];
@@ -144,7 +193,7 @@ test("a timed-out module bootstrap is disabled without blocking refresh", async 
         `export async function bootstrapModule(ctx) {
             await new Promise((resolve) => setTimeout(resolve, 30));
             ctx.contributePublicCapability("stalled-module:late", true);
-            ctx.registerApiGet("/api/v1/modules/stalled/late", () => {});
+            ctx.registerApiGet("/api/v1/modules/stalled-module/late", () => {});
         }`,
     );
     const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
@@ -179,11 +228,170 @@ test("a timed-out module bootstrap is disabled without blocking refresh", async 
             await extensions.handle(
                 { method: "GET" } as any,
                 {} as any,
-                new URL("http://localhost/api/v1/modules/stalled/late"),
+                new URL("http://localhost/api/v1/modules/stalled-module/late"),
             ),
             false,
         );
     } finally {
+        if (previousModulesRoot === undefined)
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
+        await rm(modulesRoot, { recursive: true, force: true });
+    }
+});
+
+test("provider routes require an explicit privileged module declaration", async () => {
+    const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
+    const moduleUuid = "806c7ea0-cdc8-4aaa-93f8-ad9d46250367";
+    const moduleRoot = path.join(modulesRoot, moduleUuid);
+    await mkdir(moduleRoot);
+    await writeFile(
+        path.join(moduleRoot, "bootstrap.js"),
+        `export function bootstrapModule(ctx) {
+            ctx.flow.extend("login", "authenticate", { id: "test-sso:authenticate" }, () => undefined);
+            const registerProvider = ctx.capabilities.require("auth:registerProvider");
+            return registerProvider({
+                id: "test-sso",
+                name: "Test SSO",
+                authenticate: async () => null,
+                configure() {},
+                getConfigSchema: () => [],
+                routeNamespace: "test-sso",
+                registerRoutes(router) { router.get("/callback", (_req, res) => res.end("ok")); },
+            });
+        }`,
+    );
+    await writeFile(
+        path.join(moduleRoot, ".cognis-install.json"),
+        JSON.stringify({ cloneUrl: "https://github.com/example/test-sso.git" }),
+    );
+    const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
+    const systemCtx = createCtx();
+    systemCtx.registerFlow({ id: "login", stages: ["authenticate"] });
+    let providerRegistered = false;
+    systemCtx.contributeCapability("system:ctx", systemCtx);
+    systemCtx.contributeCapability("auth:registerProvider", () => {
+        providerRegistered = true;
+        return () => {};
+    });
+    let privileged = false;
+    const warnings: string[] = [];
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "test-sso",
+                    uuid: moduleUuid,
+                    class: "extension",
+                    privileged,
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                },
+            ],
+        } as any,
+        () => true,
+        (level, message) => {
+            if (level === "warn") warnings.push(message);
+        },
+        {
+            routeContext: createDefaultRouteContext({
+                getCapability: (id) => systemCtx.getCapability(id),
+                flow: systemCtx.flow,
+            }),
+        },
+    );
+    try {
+        await assert.rejects(
+            () => extensions.refresh({ throwOnFailure: true }),
+            /module_privileged_access_required/,
+        );
+        assert.equal(providerRegistered, false);
+
+        privileged = true;
+        await extensions.refresh({ throwOnFailure: true });
+        assert.equal(providerRegistered, true);
+        assert.ok(
+            warnings.includes(
+                "Untrusted external module requested privileged access.",
+            ),
+        );
+        const warningCount = warnings.length;
+        await writeFile(
+            path.join(moduleRoot, ".cognis-install.json"),
+            JSON.stringify({
+                cloneUrl:
+                    "https://github.com/Cognis-Labs-HQ/cognis-module-test-sso.git",
+            }),
+        );
+        await extensions.refresh({ throwOnFailure: true });
+        assert.equal(warnings.length, warningCount);
+    } finally {
+        if (previousModulesRoot === undefined)
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
+        await rm(modulesRoot, { recursive: true, force: true });
+    }
+});
+
+test("module assurance detects installed-file tampering", async () => {
+    const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
+    const moduleUuid = "936c7ea0-cdc8-4aaa-93f8-ad9d46250368";
+    const moduleRoot = path.join(modulesRoot, moduleUuid);
+    await mkdir(moduleRoot);
+    const bootstrapSource = `export async function bootstrapModule(ctx) {
+        globalThis.__moduleAssurance = await ctx.getModuleAssurance("assured-module");
+    }`;
+    await writeFile(path.join(moduleRoot, "bootstrap.js"), bootstrapSource);
+    const manifest = {
+        id: "assured-module",
+        uuid: moduleUuid,
+        version: "1.0.0",
+        class: "extension",
+        files: [
+            {
+                path: "bootstrap.js",
+                sha256: createHash("sha256")
+                    .update(bootstrapSource)
+                    .digest("hex"),
+            },
+        ],
+        entrypoints: { bootstrap: "./bootstrap.js" },
+    };
+    const rawManifest = JSON.stringify(manifest);
+    await writeFile(path.join(moduleRoot, "manifest.json"), rawManifest);
+    await writeFile(
+        path.join(moduleRoot, ".cognis-install.json"),
+        JSON.stringify({
+            cloneUrl:
+                "https://github.com/Cognis-Labs-HQ/cognis-module-assured.git",
+            manifestSha256: createHash("sha256")
+                .update(rawManifest)
+                .digest("hex"),
+        }),
+    );
+    const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
+    const extensions = createModuleExtensionRoutes(
+        { listManifests: async () => [manifest] } as any,
+        () => true,
+        undefined,
+        { routeContext: createDefaultRouteContext() },
+    );
+    try {
+        await extensions.refresh({ throwOnFailure: true });
+        assert.equal(
+            (globalThis as any).__moduleAssurance.integrity,
+            "verified",
+        );
+
+        await writeFile(
+            path.join(moduleRoot, "bootstrap.js"),
+            `${bootstrapSource}\n// tampered`,
+        );
+        await extensions.refresh({ throwOnFailure: true });
+        assert.equal((globalThis as any).__moduleAssurance.integrity, "failed");
+    } finally {
+        delete (globalThis as any).__moduleAssurance;
         if (previousModulesRoot === undefined)
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
         else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
@@ -204,7 +412,8 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
             ctx.flow.extend("host-flow", "extensions", { id: "owned-module:hook" }, () => "active");
             ctx.registerAdminSection({ id: "owned-module", label: "Owned", scriptUrl: "/static/modules/owned-module/admin.js" });
             ctx.registerNavbarPlugin({ scriptUrl: "/static/modules/owned-module/navbar.js" });
-            ctx.registerSpaRoute({ id: "owned-module-page", pattern: "^/owned$", base: "/owned", scriptUrl: "/static/modules/owned-module/app.js", componentPage: { labelKey: "module.owned.page", descriptionKey: "module.owned.description", modes: ["fullscreen"] } });
+            ctx.registerAuthFooterPlugin({ scriptUrl: "/static/modules/owned-module/auth-footer.js" });
+            ctx.registerSpaRoute({ id: "owned-module-page", pattern: "^/owned$", base: "/owned", scriptUrl: "/static/modules/owned-module/app.js", public: true, componentPage: { labelKey: "module.owned.page", descriptionKey: "module.owned.description", modes: ["fullscreen"] } });
             ctx.registerApiGet("/api/v1/modules/owned-module", (_req, res) => { res.writeHead(200); res.end("ok"); });
             ctx.registerApiGet("/api/v1/modules/owned-module/config", (_req, res) => { res.writeHead(ctx.getCapability("system:ctx") ? 500 : 200); res.end("config"); }, { allowWhenDisabled: true });
             return () => { throw new Error("expected teardown failure"); };
@@ -261,6 +470,8 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
         assert.equal(uiRegistry.listNavbarPlugins().length, 1);
         assert.equal(uiRegistry.listSpaRoutes().length, 1);
         assert.equal(uiRegistry.listSpaRoutes()[0].ownerUuid, moduleUuid);
+        assert.equal(uiRegistry.listSpaRoutes()[0].public, true);
+        assert.equal(uiRegistry.listAuthFooterPlugins().length, 1);
         assert.deepEqual(
             (await systemCtx.runFlow("host-flow")).stageResults.extensions,
             ["active"],
@@ -279,6 +490,7 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
         assert.equal(systemCtx.hasCapability("owned-module:feature"), false);
         assert.equal(uiRegistry.listNavbarPlugins().length, 0);
         assert.equal(uiRegistry.listSpaRoutes().length, 0);
+        assert.equal(uiRegistry.listAuthFooterPlugins().length, 0);
         assert.deepEqual(uiRegistry.listAdminSections(), []);
         assert.deepEqual(
             (await systemCtx.runFlow("host-flow")).stageResults.extensions,
@@ -455,5 +667,71 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
                 previousExternalModulesRoot;
         }
         await rm(externalModulesRoot, { recursive: true, force: true });
+    }
+});
+
+test("unprivileged modules cooperate through provider-owned capabilities", async () => {
+    const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
+    const whiteboardUuid = "93c08730-acde-4a13-ae5c-9bb176989ed4";
+    const jitsiUuid = "ec69f234-5264-4db4-9bb3-95a170ac96f1";
+    await mkdir(path.join(modulesRoot, whiteboardUuid));
+    await mkdir(path.join(modulesRoot, jitsiUuid));
+    await writeFile(
+        path.join(modulesRoot, whiteboardUuid, "bootstrap.js"),
+        `export function bootstrapModule(ctx) {
+            ctx.contributePublicCapability("whiteboard:openBoard", (boardId) => ({ boardId, opened: true }));
+        }`,
+    );
+    await writeFile(
+        path.join(modulesRoot, jitsiUuid, "bootstrap.js"),
+        `export function bootstrapModule(ctx) {
+            const openBoard = ctx.getCapability("whiteboard:openBoard");
+            globalThis.__cooperativeModuleResult = openBoard("planning");
+        }`,
+    );
+    const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
+    const systemCtx = createCtx();
+    systemCtx.contributeCapability("system:ctx", systemCtx);
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "whiteboard",
+                    uuid: whiteboardUuid,
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                },
+                {
+                    id: "jitsi",
+                    uuid: jitsiUuid,
+                    requiresCapabilities: ["whiteboard:openBoard"],
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                },
+            ],
+        } as any,
+        () => true,
+        undefined,
+        {
+            routeContext: createDefaultRouteContext({
+                getCapability: (id) => systemCtx.getCapability(id),
+                flow: systemCtx.flow,
+            }),
+        },
+    );
+
+    try {
+        await extensions.refresh({ throwOnFailure: true });
+        assert.deepEqual((globalThis as any).__cooperativeModuleResult, {
+            boardId: "planning",
+            opened: true,
+        });
+    } finally {
+        delete (globalThis as any).__cooperativeModuleResult;
+        if (previousModulesRoot === undefined) {
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        } else {
+            process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
+        }
+        await rm(modulesRoot, { recursive: true, force: true });
     }
 });

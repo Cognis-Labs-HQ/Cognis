@@ -177,6 +177,24 @@ test("docs page falls back ungrouped docs to the platform section", () => {
         source.includes('const groupKey = item.group || "platform";'),
         "docs navigation should assign ungrouped docs to platform",
     );
+    assert.match(source, /createSideMenu\(/);
+    assert.match(source, /createNavigationGroups\(i18n, navigationDocs\)/);
+});
+
+test("docs and changelogs use the shared side menu capability", () => {
+    const docsSource = readFileSync(
+        join(ROOT, "src/ui/app/docs/index.js"),
+        "utf8",
+    );
+    const changelogSource = readFileSync(
+        join(ROOT, "src/ui/app/changelogs/index.js"),
+        "utf8",
+    );
+    for (const source of [docsSource, changelogSource]) {
+        assert.match(source, /createSideMenu\(/);
+        assert.match(source, /navigationMenu\.mount\(root, \{ signal \}\)/);
+        assert.match(source, /navigationMenu\.setActive\(slug\)/);
+    }
 });
 
 test("docs page keeps docs-specific stylesheet enabled", () => {
@@ -226,17 +244,14 @@ test("changelogs module keeps changelog-only navigation data", () => {
     );
 });
 
-test("changelog navigation escapes external module names", () => {
+test("changelog navigation delegates structured module groups to the side menu", () => {
     const source = readFileSync(
         join(ROOT, "src/ui/app/changelogs/index.js"),
         "utf8",
     );
-    assert.match(
-        source,
-        /const label = escapeHtml\([\s\S]*?groupLabel\(i18n, group\) : group/,
-    );
-    assert.match(source, /const safeGroup = escapeHtml\(group\)/);
-    assert.match(source, /data-nav-group="\$\{safeGroup\}"/);
+    assert.match(source, /createNavigationGroups\(i18n, changelogDocs\)/);
+    assert.match(source, /group === CHANGELOG_GROUP_KEY/);
+    assert.match(source, /items: groupItems\.map/);
 });
 
 test("changelog commit links show short refs with complete hrefs", () => {

@@ -89,6 +89,23 @@ export function createPageComposer(
         signal,
     },
 ) {
+    if (globalThis.__cognisPublicSpaRoute === true) {
+        const publicPageContext = globalThis.__cognisPublicSpaRoutePageContext;
+        if (!pageContext && publicPageContext) {
+            pageContext = {
+                title: i18n.t(publicPageContext.labelKey),
+                subtitle: i18n.t(publicPageContext.descriptionKey),
+            };
+        }
+        showTopbar = true;
+        showNavbar = false;
+        showThemeToggle = true;
+        showFooter = true;
+        frameless = false;
+        requireAccountSession = false;
+        enableAccountEnhancements = false;
+    }
+
     function escapeHtml(value) {
         return String(value)
             .replaceAll("&", "&amp;")
