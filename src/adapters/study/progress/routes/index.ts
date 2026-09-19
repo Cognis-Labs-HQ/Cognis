@@ -27,6 +27,7 @@ const REQUEST_ERROR_CODES = new Set([
     "invalid_hints",
     "invalid_independent_correctness",
     "invalid_interest_vein",
+    "invalid_json",
     "invalid_language",
     "invalid_layer",
     "invalid_metadata",
@@ -66,7 +67,11 @@ export function createProgressRoutes(
             return false;
         } catch (error) {
             const code =
-                error instanceof Error ? error.message : "internal_error";
+                error instanceof SyntaxError
+                    ? "invalid_json"
+                    : error instanceof Error
+                      ? error.message
+                      : "internal_error";
             await log?.("error", "Study progress request failed.", {
                 component: "study-progress",
                 operation: "route",
@@ -76,14 +81,16 @@ export function createProgressRoutes(
             });
             const status = code.startsWith("forbidden")
                 ? 403
-                : code === "event_not_found"
-                  ? 404
-                  : code === "event_id_conflict" ||
-                      code === "event_already_corrected"
-                    ? 409
-                    : REQUEST_ERROR_CODES.has(code)
-                      ? 400
-                      : 500;
+                : code === "adapter_disabled"
+                  ? 503
+                  : code === "event_not_found"
+                    ? 404
+                    : code === "event_id_conflict" ||
+                        code === "event_already_corrected"
+                      ? 409
+                      : REQUEST_ERROR_CODES.has(code)
+                        ? 400
+                        : 500;
             sendJson(response, status, {
                 error: { code: status === 500 ? "internal_error" : code },
             });

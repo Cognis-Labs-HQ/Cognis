@@ -261,6 +261,7 @@ test("validates every required event data category", async () => {
     const invalid: Array<[Partial<LearningEventInput>, RegExp]> = [
         [{ id: "" }, /invalid_event_id/],
         [{ occurredAt: "invalid" }, /invalid_occurred_at/],
+        [{ occurredAt: "+275760-09-12T23:59:59.999Z" }, /invalid_occurred_at/],
         [
             { content: { ...event("base").content, schema: "" } },
             /invalid_schema/,
@@ -297,6 +298,23 @@ test("validates every required event data category", async () => {
             expected,
         );
     }
+});
+
+test("equal event timestamps use event ids as a deterministic tie breaker", async () => {
+    const service = new ProgressService(new MemoryProgressStore());
+    const occurredAt = "2026-09-06T10:00:00.000Z";
+    await service.recordEvent(
+        user,
+        event("event-z", { occurredAt, contentRevision: "revision-z" }),
+    );
+    await service.recordEvent(
+        user,
+        event("event-a", { occurredAt, contentRevision: "revision-a" }),
+    );
+    assert.equal(
+        (await service.listProjections(user))[0].contentRevision,
+        "revision-z",
+    );
 });
 
 test("supports every aggregation dimension", async () => {

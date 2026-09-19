@@ -58,7 +58,12 @@ export function selectAllVisibleEntries(root, i18n) {
     updateDeleteSelectionButton(root, i18n);
 }
 
-export async function confirmEntryDeletion(root, libraryEntries, i18n) {
+export async function confirmEntryDeletion(
+    root,
+    libraryEntries,
+    schemas,
+    i18n,
+) {
     const entryIds = selectedEntryIds(root);
     if (entryIds.length === 0) return null;
     const cascadeIds = new Set(entryIds);
@@ -66,10 +71,22 @@ export async function confirmEntryDeletion(root, libraryEntries, i18n) {
     while (changed) {
         changed = false;
         for (const entry of libraryEntries) {
+            const sourceLayer = schemas
+                .find(
+                    (schema) =>
+                        schema.id === entry.schemaId &&
+                        schema.version === entry.schemaVersion,
+                )
+                ?.layers.find((layer) => layer.id === entry.layer);
             if (
                 !cascadeIds.has(entry.id) &&
-                entry.references?.some((reference) =>
-                    cascadeIds.has(reference.entryId),
+                entry.references?.some(
+                    (reference) =>
+                        cascadeIds.has(reference.entryId) &&
+                        sourceLayer?.relationships?.find(
+                            (relationship) =>
+                                relationship.id === reference.relation,
+                        )?.onDelete === "cascade",
                 )
             ) {
                 cascadeIds.add(entry.id);
@@ -108,7 +125,5 @@ export async function confirmEntryDeletion(root, libraryEntries, i18n) {
             ).checked;
         },
     });
-    return action === "delete"
-        ? { entryIds: Array.from(cascadeIds), blacklistContentHashes }
-        : null;
+    return action === "delete" ? { entryIds, blacklistContentHashes } : null;
 }

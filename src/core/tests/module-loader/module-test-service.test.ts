@@ -199,6 +199,18 @@ test("external module activation rejects protected core and reuse CSS", async ()
     );
 });
 
+test("external module activation rejects internal URLs in stylesheets", async () => {
+    const { root, moduleRoot } = await createModule("export {};\n");
+    await writeFile(
+        path.join(moduleRoot, "module.css"),
+        '@import "/static/reuse/layout.css";\n',
+    );
+    await assert.rejects(
+        new ModuleTestService([root]).run("example-module"),
+        /module_boundary_violation[\s\S]*internal_url/,
+    );
+});
+
 test("external module activation rejects protected class attribute selectors", async () => {
     const { root, moduleRoot } = await createModule("export {};\n");
     await writeFile(

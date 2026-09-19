@@ -122,7 +122,12 @@ export function bindLibraryInteractions(root, context) {
     );
 
     async function deleteSelection() {
-        const request = await confirmEntryDeletion(root, entries, i18n);
+        const request = await confirmEntryDeletion(
+            root,
+            entries,
+            schemas,
+            i18n,
+        );
         if (!request) return;
         try {
             const deletion = await deleteLibraryEntries(request.entryIds, {

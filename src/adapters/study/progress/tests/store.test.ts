@@ -88,6 +88,34 @@ test("DB progress survives store recreation and enforces idempotency", async () 
     );
 });
 
+test("idempotent events compare object values independent of key order", async () => {
+    const databaseExecutor = persistentExecutor();
+    const store = new DbProgressStore(databaseExecutor);
+    await store.ensureSchema();
+    const original = {
+        ...learningEvent(),
+        metadata: { first: 1, second: 2 },
+    };
+    const reordered = {
+        metadata: { second: 2, first: 1 },
+        completion: original.completion,
+        durationMs: original.durationMs,
+        hints: original.hints,
+        independentCorrect: original.independentCorrect,
+        correct: original.correct,
+        attempt: original.attempt,
+        context: original.context,
+        activity: original.activity,
+        contentRevision: original.contentRevision,
+        content: original.content,
+        occurredAt: original.occurredAt,
+        actorId: original.actorId,
+        id: original.id,
+    } satisfies LearningEvent;
+    assert.equal(await store.append(original), "inserted");
+    assert.equal(await store.append(reordered), "duplicate");
+});
+
 test("DB progress atomically replaces rebuildable projections", async () => {
     const databaseExecutor = persistentExecutor();
     const store = new DbProgressStore(databaseExecutor);

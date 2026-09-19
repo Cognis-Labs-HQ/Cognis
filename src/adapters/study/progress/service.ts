@@ -55,6 +55,7 @@ export interface ProgressCapability {
 
 const IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,199}$/;
 const PRIVILEGED_ROLES = new Set(["admin", "owner"]);
+const MAX_REVIEW_DELAY_MS = 14 * 86_400_000;
 
 function requireIdentifier(value: unknown, code: string): string {
     if (typeof value !== "string" || !IDENTIFIER.test(value))
@@ -86,7 +87,10 @@ function normalizeEvent(
     input: LearningEventInput,
 ): LearningEvent {
     const occurredAt = new Date(input.occurredAt);
-    if (!Number.isFinite(occurredAt.valueOf()))
+    if (
+        !Number.isFinite(occurredAt.valueOf()) ||
+        occurredAt.valueOf() > 8_640_000_000_000_000 - MAX_REVIEW_DELAY_MS
+    )
         throw new Error("invalid_occurred_at");
     if (!Number.isInteger(input.attempt) || input.attempt < 0)
         throw new Error("invalid_attempt");
@@ -208,8 +212,10 @@ function buildProjections(events: LearningEvent[]): ProgressProjection[] {
         groups.set(key, [...(groups.get(key) ?? []), event]);
     }
     return Array.from(groups.values(), (group) => {
-        group.sort((left, right) =>
-            left.occurredAt.localeCompare(right.occurredAt),
+        group.sort(
+            (left, right) =>
+                left.occurredAt.localeCompare(right.occurredAt) ||
+                left.id.localeCompare(right.id),
         );
         const latest = group.at(-1)!;
         const attempts = group.filter((event) => event.attempt > 0);
@@ -266,7 +272,12 @@ export class ProgressService implements ProgressCapability {
         private readonly classAccess?: StudyClassAccessCapability,
         private readonly flow?: FlowApi,
         private readonly log?: Log,
+        private readonly isEnabled: () => boolean = () => true,
     ) {}
+
+    private requireEnabled(): void {
+        if (!this.isEnabled()) throw new Error("adapter_disabled");
+    }
 
     private async authorize(
         actor: ProgressActor,
@@ -296,6 +307,7 @@ export class ProgressService implements ProgressCapability {
         actor: ProgressActor,
         input: LearningEventInput,
     ): Promise<{ event: LearningEvent; duplicate: boolean }> {
+        this.requireEnabled();
         if (input.compensatesEventId !== undefined) {
             throw new Error("correction_route_required");
         }
@@ -307,6 +319,7 @@ export class ProgressService implements ProgressCapability {
         actor: ProgressActor,
         event: LearningEvent,
     ): Promise<{ event: LearningEvent; duplicate: boolean }> {
+        this.requireEnabled();
         await this.authorize(
             actor,
             event.actorId,
@@ -338,6 +351,7 @@ export class ProgressService implements ProgressCapability {
         actor: ProgressActor,
         input: LearningEventInput & { compensatesEventId: string },
     ): Promise<{ event: LearningEvent; duplicate: boolean }> {
+        this.requireEnabled();
         const events = await this.store.all();
         const target = events.find(
             (event) => event.id === input.compensatesEventId,
@@ -374,6 +388,7 @@ export class ProgressService implements ProgressCapability {
         actor: ProgressActor,
         filters: ProgressFilters = {},
     ): Promise<LearningEvent[]> {
+        this.requireEnabled();
         validateFilters(filters);
         const actorId = filters.actorId ?? actor.accountId;
         await this.authorize(actor, actorId, filters.classroomId);
@@ -410,6 +425,7 @@ export class ProgressService implements ProgressCapability {
         actor: ProgressActor,
         filters: ProgressFilters = {},
     ): Promise<ProgressProjection[]> {
+        this.requireEnabled();
         validateFilters(filters);
         await this.authorize(
             actor,
@@ -433,6 +449,7 @@ export class ProgressService implements ProgressCapability {
         actor: ProgressActor,
         filters: ProgressFilters = {},
     ): Promise<ProgressAggregate> {
+        this.requireEnabled();
         validateFilters(filters);
         await this.authorize(
             actor,
@@ -477,6 +494,7 @@ export class ProgressService implements ProgressCapability {
         actor: ProgressActor,
         targetActorId = actor.accountId,
     ): Promise<ProgressProjection[]> {
+        this.requireEnabled();
         await this.authorize(actor, targetActorId);
         await this.rebuildInternal();
         const projections = (await this.store.projections()).filter(

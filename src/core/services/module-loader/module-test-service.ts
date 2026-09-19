@@ -117,6 +117,11 @@ export async function validateModuleBoundaries(
     for (const filePath of sourceFiles) {
         const relativePath = path.relative(root, filePath);
         const source = await readFile(filePath, "utf8");
+        for (const match of source.matchAll(COGNIS_INTERNAL_URL_PATTERN)) {
+            if (filePath.endsWith(".css")) {
+                violations.push(`${relativePath}:internal_url:${match[1]}`);
+            }
+        }
         if (filePath.endsWith(".css")) {
             const className = protectedStyleClass(source);
             if (className)

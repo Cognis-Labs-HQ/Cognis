@@ -1,5 +1,6 @@
 import type { LearningEvent, ProgressProjection } from "./types.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import { isDeepStrictEqual } from "node:util";
 
 export interface ProgressStore {
     append(event: LearningEvent): Promise<"inserted" | "duplicate">;
@@ -15,7 +16,7 @@ export class MemoryProgressStore implements ProgressStore {
     async append(event: LearningEvent): Promise<"inserted" | "duplicate"> {
         const existing = this.events.get(event.id);
         if (existing) {
-            if (JSON.stringify(existing) !== JSON.stringify(event)) {
+            if (!isDeepStrictEqual(existing, event)) {
                 throw new Error("event_id_conflict");
             }
             return "duplicate";
@@ -115,8 +116,10 @@ export class DbProgressStore implements ProgressStore {
             }
             if (
                 !stored ||
-                JSON.stringify(parseJson<LearningEvent>(stored.event_json)) !==
-                    JSON.stringify(event)
+                !isDeepStrictEqual(
+                    parseJson<LearningEvent>(stored.event_json),
+                    event,
+                )
             ) {
                 throw new Error("event_id_conflict");
             }
@@ -128,7 +131,10 @@ export class DbProgressStore implements ProgressStore {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "study_progress_events",
-            orderBy: [{ column: "occurred_at", direction: "ASC" }],
+            orderBy: [
+                { column: "occurred_at", direction: "ASC" },
+                { column: "event_id", direction: "ASC" },
+            ],
         });
         return (result.rows ?? []).map((row) =>
             parseJson<LearningEvent>(row.event_json),

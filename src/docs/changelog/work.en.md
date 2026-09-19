@@ -26,9 +26,22 @@ Word and sentence alternate spellings now appear as navigable secondary title co
 
 Primary and secondary spellings are no longer repeated as pronunciation metadata. Pronunciations remain plain title text and are never heuristically turned into writing-unit links, so displayed relationships continue to reflect only the module-provided Library graph.
 
+## Library relationship and content-pack correctness
+
+Deletion previews now honor cascade, detach, and restrict policies without turning dependents into explicit deletions. Hidden or placed records stay out of popup sequencing, and content-pack upgrades remove provider records omitted by the new version.
+
+## Durable and deterministic progress behavior
+
+Progress retries compare events structurally, equal timestamps use event IDs as deterministic tie breakers, unsafe extreme dates are rejected before persistence, malformed JSON returns a client error, and disabled adapters gate their capabilities and flow hooks.
+
+## Complete module stylesheet validation
+
+External module validation now detects direct Cognis internal URLs in CSS imports and asset URLs as well as in scripts.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
 - [458c6bea](https://github.com/Cognis-Labs-HQ/Cognis/commit/458c6bea)
 - [a009f770](https://github.com/Cognis-Labs-HQ/Cognis/commit/a009f770)
 - [799fc33d](https://github.com/Cognis-Labs-HQ/Cognis/commit/799fc33d)
+- [d472ffa9](https://github.com/Cognis-Labs-HQ/Cognis/commit/d472ffa9)

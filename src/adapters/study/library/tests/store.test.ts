@@ -134,6 +134,79 @@ test("content pack import ignores duplicate all-key references", async () => {
     );
 });
 
+test("content pack updates remove records omitted by the new version", async () => {
+    const commands: StructuredDbCommand[] = [];
+    const schema = {
+        id: "japanese",
+        version: 1,
+        namespace: "ja",
+        language: "ja",
+        metadata: { labels: { en: "Japanese" } },
+        layers: [
+            { id: "characters", metadata: { labels: { en: "Characters" } } },
+        ],
+    };
+    const db: DbExecutor = {
+        ensureTable: async () => {},
+        transaction: async (callback) => callback(db),
+        executeCommand: async (command) => {
+            commands.push(command);
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_entries" &&
+                command.columns?.length === 1 &&
+                command.columns[0] === "id" &&
+                command.where?.some((clause) => clause.column === "created_by")
+            ) {
+                return { rows: [{ id: "removed-entry" }] };
+            }
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_schemas"
+            ) {
+                return { rows: [{ schema_json: JSON.stringify(schema) }] };
+            }
+            if (command.option === "SELECT") return { rows: [] };
+            return { rowCount: 1 };
+        },
+    };
+    await new LibraryStore(db).ingestContentPack({
+        root: "/content",
+        manifest: {
+            id: "study-language-ja",
+            publisher: "Cognis Labs HQ",
+            version: "2.0.0",
+            contentRevision: "2",
+            namespace: "ja",
+            schema: "schema.json",
+            content: "data",
+            license: { id: "CC-BY-4.0" },
+        },
+        schema,
+        digest: "digest-two",
+        records: [{ id: "current", layer: "characters", label: "Current" }],
+        assets: [],
+    });
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "DELETE" &&
+                command.table === "study_library_entries" &&
+                command.where?.[0]?.value === "removed-entry",
+        ),
+        true,
+    );
+    assert.equal(
+        commands.filter(
+            (command) =>
+                command.option === "DELETE" &&
+                command.table === "study_library_references" &&
+                command.where?.[0]?.value === "removed-entry",
+        ).length,
+        2,
+    );
+});
+
 test("content pack import removes duplicate hashes and preserves references", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {

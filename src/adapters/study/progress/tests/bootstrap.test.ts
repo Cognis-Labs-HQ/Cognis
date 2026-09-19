@@ -19,10 +19,14 @@ function bootstrapContext() {
         ) => callback(systemCtx.getCapability("db:executor")),
     });
     const routes: unknown[] = [];
+    let enabled = true;
     return {
         systemCtx,
         commands,
         routes,
+        setEnabled(value: boolean) {
+            enabled = value;
+        },
         context: {
             gateway: new CoreStudyGateway(),
             adapterId: "progress",
@@ -39,7 +43,7 @@ function bootstrapContext() {
             registerStaticDir: () => {},
             registerNavbarPlugin: () => {},
             registerPageExtension: () => {},
-            isAdapterEnabled: () => true,
+            isAdapterEnabled: () => enabled,
         },
     };
 }
@@ -117,4 +121,25 @@ test("gateway adapter disablement removes progress from active adapters", async 
     assert.equal(gateway.isAdapterEnabled("progress"), true);
     await gateway.disableAdapter("progress");
     assert.equal(gateway.isAdapterEnabled("progress"), false);
+});
+
+test("disabled progress adapter gates capabilities and flow hooks", async () => {
+    const fixture = bootstrapContext();
+    await bootstrapStudyAdapter(fixture.context as never);
+    fixture.setEnabled(false);
+    const progress = fixture.systemCtx.requireCapability<{
+        listEvents(actor: unknown): Promise<unknown>;
+    }>("study:progress");
+    await assert.rejects(
+        progress.listEvents({ accountId: "actor-one", role: "user" }),
+        /adapter_disabled/,
+    );
+    await assert.rejects(
+        fixture.systemCtx.flow.run(
+            "study:progress:recordEvent",
+            { id: "disabled-event" },
+            { data: {} },
+        ),
+        /adapter_disabled/,
+    );
 });

@@ -18,7 +18,7 @@ async function dispatch(
     progress: Record<string, unknown>,
     method: string,
     path: string,
-    body?: Record<string, unknown>,
+    body?: Record<string, unknown> | string,
     token = "learner",
 ): Promise<{ status: number; body: Record<string, unknown> }> {
     const route = createProgressRoutes(
@@ -30,7 +30,12 @@ async function dispatch(
         new RequestRecorder({
             method,
             token,
-            body: body ? JSON.stringify(body) : undefined,
+            body:
+                typeof body === "string"
+                    ? body
+                    : body
+                      ? JSON.stringify(body)
+                      : undefined,
         }) as never,
         response as never,
         new URL(`http://localhost${path}`),
@@ -200,4 +205,15 @@ test("progress routes conceal unexpected persistence failures", async () => {
         (result.body.error as { code: string }).code,
         "internal_error",
     );
+});
+
+test("event routes report malformed JSON as a client error", async () => {
+    const result = await dispatch(
+        { recordEvent: async () => assert.fail("must not be called") },
+        "POST",
+        "/api/v1/study/progress/events",
+        "{not-json",
+    );
+    assert.equal(result.status, 400);
+    assert.equal((result.body.error as { code: string }).code, "invalid_json");
 });

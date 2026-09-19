@@ -26,9 +26,22 @@ Alternative Schreibweisen von Wörtern und Sätzen erscheinen nun als navigierba
 
 Primäre und sekundäre Schreibweisen werden nicht mehr als Aussprachemetadaten wiederholt. Aussprachen bleiben einfacher Titeltext und werden nie heuristisch in Links zu Schreibeinträgen umgewandelt, sodass angezeigte Beziehungen ausschließlich den vom Modul bereitgestellten Bibliotheksgraphen widerspiegeln.
 
+## Korrekte Bibliotheksbeziehungen und Inhaltspakete
+
+Löschvorschauen berücksichtigen jetzt Kaskaden-, Trennungs- und Einschränkungsrichtlinien, ohne abhängige Einträge als ausdrücklich ausgewählte Löschungen zu behandeln. Verborgene oder platzierte Einträge bleiben aus der Popup-Reihenfolge ausgeschlossen, und Aktualisierungen von Inhaltspaketen entfernen vom Anbieter ausgelassene Einträge.
+
+## Dauerhaftes und deterministisches Fortschrittsverhalten
+
+Fortschrittswiederholungen vergleichen Ereignisse strukturell, gleiche Zeitstempel verwenden Ereignis-IDs als deterministische Entscheidung, unsichere Extremdaten werden vor der Speicherung abgelehnt, fehlerhaftes JSON liefert einen Clientfehler und deaktivierte Adapter sperren ihre Fähigkeiten und Ablauf-Hooks.
+
+## Vollständige Prüfung von Modul-Stylesheets
+
+Die Prüfung externer Module erkennt nun direkte URLs zu Cognis-Interna sowohl in CSS-Importen und Asset-URLs als auch in Skripten.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
 - [458c6bea](https://github.com/Cognis-Labs-HQ/Cognis/commit/458c6bea)
 - [a009f770](https://github.com/Cognis-Labs-HQ/Cognis/commit/a009f770)
 - [799fc33d](https://github.com/Cognis-Labs-HQ/Cognis/commit/799fc33d)
+- [d472ffa9](https://github.com/Cognis-Labs-HQ/Cognis/commit/d472ffa9)

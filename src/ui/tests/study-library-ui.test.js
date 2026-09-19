@@ -553,6 +553,8 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /cascadeIds\.has\(entry\.id\) && !selectedIds\.has/);
     assert.match(source, /const cascadeWarning = cascadeEntries\.length/);
     assert.match(source, /entry\.references\?\.some/);
+    assert.match(source, /onDelete === "cascade"/);
+    assert.match(source, /\? \{ entryIds, blacklistContentHashes \}/);
     assert.match(source, /class="library-delete-cascade-list"/);
     assert.match(
         stylesheet,
@@ -562,6 +564,15 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /reference\.entryId === entry\.id/);
     assert.match(source, /function isSameLibraryRecord/);
     assert.match(source, /isSameLibraryRecord\(entry, parent\)/);
+});
+
+test("Study Library popup sequencing excludes hidden and placed cards", () => {
+    assert.match(source, /const active = layerEntries\.filter/);
+    assert.match(source, /!placements\.has\(entry\.id\)/);
+    assert.match(
+        source,
+        /isDirectlyVisible\(entry, layerEntries, placements\)/,
+    );
 });
 
 test("Study Library relationship links consistently open entry details", () => {

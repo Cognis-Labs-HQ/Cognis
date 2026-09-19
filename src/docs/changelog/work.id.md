@@ -26,9 +26,22 @@ Ejaan alternatif kata dan kalimat kini muncul sebagai konten judul sekunder yang
 
 Ejaan utama dan sekunder tidak lagi diulang sebagai metadata pelafalan. Pelafalan tetap berupa teks judul biasa dan tidak pernah diubah secara heuristik menjadi tautan unit tulisan, sehingga relasi yang ditampilkan hanya mencerminkan graf Pustaka yang disediakan modul.
 
+## Ketepatan relasi Pustaka dan paket konten
+
+Pratinjau penghapusan kini menghormati kebijakan kaskade, pelepasan, dan pembatasan tanpa menjadikan entri bergantung sebagai penghapusan eksplisit. Entri tersembunyi atau yang ditempatkan tidak masuk urutan popup, dan peningkatan paket konten menghapus rekaman penyedia yang tidak ada pada versi baru.
+
+## Perilaku kemajuan yang tahan lama dan deterministik
+
+Percobaan ulang kemajuan membandingkan peristiwa secara struktural, stempel waktu yang sama memakai ID peristiwa sebagai penentu deterministik, tanggal ekstrem yang tidak aman ditolak sebelum penyimpanan, JSON rusak menghasilkan galat klien, dan adapter nonaktif memblokir kapabilitas serta hook alurnya.
+
+## Validasi stylesheet modul yang lengkap
+
+Validasi modul eksternal kini mendeteksi URL internal Cognis langsung di impor CSS dan URL aset maupun di skrip.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
 - [458c6bea](https://github.com/Cognis-Labs-HQ/Cognis/commit/458c6bea)
 - [a009f770](https://github.com/Cognis-Labs-HQ/Cognis/commit/a009f770)
 - [799fc33d](https://github.com/Cognis-Labs-HQ/Cognis/commit/799fc33d)
+- [d472ffa9](https://github.com/Cognis-Labs-HQ/Cognis/commit/d472ffa9)

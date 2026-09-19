@@ -9,7 +9,11 @@ import {
     loadLibraryAudio,
 } from "./presentation.js";
 import { popupTitleDetailItems } from "./popup-title.js";
-import { variantPlacement } from "./variant-placement.js";
+import {
+    assignVariantPlacements,
+    variantPlacement,
+} from "./variant-placement.js";
+import { isDirectlyVisible } from "./cards.js";
 
 export async function openEntryPopup(
     root,
@@ -41,10 +45,20 @@ export async function openEntryPopup(
                 entry.id ===
                 variantPlacement(detail.entry, schemas, entries)?.parentId,
         );
-        const active = entries.filter(
+        const layer = layerForEntry(schemas, selectedEntry);
+        const layerEntries = entries.filter(
             (entry) =>
                 entry.schemaId === selectedEntry.schemaId &&
                 entry.layer === selectedEntry.layer,
+        );
+        const schema = schemas.find(
+            (candidate) => candidate.id === selectedEntry.schemaId,
+        );
+        const placements = assignVariantPlacements(layerEntries, schema, layer);
+        const active = layerEntries.filter(
+            (entry) =>
+                !placements.has(entry.id) &&
+                isDirectlyVisible(entry, layerEntries, placements),
         );
         const index = active.findIndex(
             (entry) => entry.id === selectedEntry.id,

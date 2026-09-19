@@ -85,6 +85,7 @@ export async function bootstrapStudyAdapter(
         "persist",
         { id: "study-progress:persist", order: -100 },
         async ({ input, data }) => {
+            if (!ctx.isAdapterEnabled()) throw new Error("adapter_disabled");
             const appendResult = await store.append(input as LearningEvent);
             (data as ProgressRecordFlowData).appendResult = appendResult;
             return appendResult;
@@ -95,6 +96,7 @@ export async function bootstrapStudyAdapter(
         "project",
         { id: "study-progress:project", order: -100 },
         async ({ data }) => {
+            if (!ctx.isAdapterEnabled()) throw new Error("adapter_disabled");
             if ((data as ProgressRecordFlowData).appendResult === "inserted") {
                 await rebuildProgressProjections(store);
                 return "rebuilt";
@@ -109,6 +111,7 @@ export async function bootstrapStudyAdapter(
         ),
         ctx.flow,
         ctx.log,
+        () => ctx.isAdapterEnabled(),
     );
     ctx.capabilities.contribute("study:progress", service);
     ctx.registerRoute(

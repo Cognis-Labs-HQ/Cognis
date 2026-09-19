@@ -323,6 +323,34 @@ export class LibraryStore {
                     ({ canonicalId }) => canonicalId,
                 ),
             );
+            const previousEntries = await db.executeCommand({
+                option: "SELECT",
+                table: "study_library_entries",
+                columns: ["id"],
+                where: [
+                    {
+                        column: "created_by",
+                        value: `content-pack:${manifest.id}`,
+                    },
+                    { column: "schema_id", value: schema.id },
+                ],
+            });
+            for (const row of previousEntries.rows ?? []) {
+                const previousId = String(row.id);
+                if (importedSourceIds.has(previousId)) continue;
+                for (const column of ["source_entry_id", "target_entry_id"]) {
+                    await db.executeCommand({
+                        option: "DELETE",
+                        table: "study_library_references",
+                        where: [{ column, value: previousId }],
+                    });
+                }
+                await db.executeCommand({
+                    option: "DELETE",
+                    table: "study_library_entries",
+                    where: [{ column: "id", value: previousId }],
+                });
+            }
             for (const sourceEntryId of importedSourceIds) {
                 await db.executeCommand({
                     option: "DELETE",
