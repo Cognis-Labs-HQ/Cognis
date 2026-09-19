@@ -1,6 +1,6 @@
 # Zuverlässige soziale SSO-Identitäten und Benachrichtigungen
 
-**Feature-Zweig:** work
+**Feature-Zweig:** feature-handle-dependency-error-for-module-installation
 
 ## SSO-Handles werden zu Profilidentitäten
 
@@ -24,7 +24,7 @@ Die Aktion **+ Einladen** befindet sich wieder oberhalb der Benutzertabelle und 
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/0c20e406
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/ce0d316b
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f25b56c8
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e1004e29
+- [0c20e406](https://github.com/Cognis-Labs-HQ/Cognis/commit/0c20e406)
+- [ce0d316b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ce0d316b)
+- [f25b56c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/f25b56c8)
+- [e1004e29](https://github.com/Cognis-Labs-HQ/Cognis/commit/e1004e29)

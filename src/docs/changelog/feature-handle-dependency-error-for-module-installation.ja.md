@@ -1,6 +1,6 @@
 # 信頼性の高い SSO ソーシャル ID と通知
 
-**機能ブランチ:** work
+**機能ブランチ:** feature-handle-dependency-error-for-module-installation
 
 ## SSO ハンドルをプロフィール ID として優先
 
@@ -24,7 +24,7 @@ Registration ゲートウェイが、所有者と対象の創設ユーザー向�
 
 ## コミット
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/0c20e406
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/ce0d316b
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f25b56c8
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e1004e29
+- [0c20e406](https://github.com/Cognis-Labs-HQ/Cognis/commit/0c20e406)
+- [ce0d316b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ce0d316b)
+- [f25b56c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/f25b56c8)
+- [e1004e29](https://github.com/Cognis-Labs-HQ/Cognis/commit/e1004e29)

@@ -1,6 +1,6 @@
 # Identitas Sosial dan Notifikasi SSO yang Andal
 
-**Cabang Fitur:** work
+**Cabang Fitur:** feature-handle-dependency-error-for-module-installation
 
 ## Handle SSO Menjadi Identitas Profil
 
@@ -24,7 +24,7 @@ Kontrol **+ Undang** kembali berada di atas tabel Pengguna sesuai penempatan seb
 
 ## Commit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/0c20e406
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/ce0d316b
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f25b56c8
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e1004e29
+- [0c20e406](https://github.com/Cognis-Labs-HQ/Cognis/commit/0c20e406)
+- [ce0d316b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ce0d316b)
+- [f25b56c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/f25b56c8)
+- [e1004e29](https://github.com/Cognis-Labs-HQ/Cognis/commit/e1004e29)

@@ -1,6 +1,6 @@
 # Reliable SSO Social Identity and Notifications
 
-**Feature Branch:** work
+**Feature Branch:** feature-handle-dependency-error-for-module-installation
 
 ## SSO Handles Become Profile Identities
 
@@ -24,7 +24,7 @@ The **+ Invite** control is restored above the Users table, matching its establi
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/0c20e406
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/ce0d316b
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f25b56c8
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e1004e29
+- [0c20e406](https://github.com/Cognis-Labs-HQ/Cognis/commit/0c20e406)
+- [ce0d316b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ce0d316b)
+- [f25b56c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/f25b56c8)
+- [e1004e29](https://github.com/Cognis-Labs-HQ/Cognis/commit/e1004e29)
