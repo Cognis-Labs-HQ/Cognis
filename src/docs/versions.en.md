@@ -50,7 +50,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.36` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.20` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `2.0.8`  |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.15` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.16` |
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.31` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.36` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
@@ -70,7 +70,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Notification (notify) | `src/gateways/notify/`        | `1.5.13`  |
 | Social                | `src/gateways/social/`        | `1.3.6`   |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.10`  |
-| Registration          | `src/gateways/registration/`  | `1.1.36`  |
+| Registration          | `src/gateways/registration/`  | `1.1.37`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
 | Study                 | `src/gateways/study/`         | `1.5.14`  |
