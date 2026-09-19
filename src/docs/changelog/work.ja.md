@@ -38,6 +38,10 @@ Study Libraryブラウザーのエントリポイントを小さなページ調�
 
 外部モジュール検証が、スクリプトだけでなくCSSのインポートとアセットURLに含まれるCognis内部への直接URLも検出するようになりました。
 
+## 安全な復習日の範囲
+
+進捗プロジェクションの復習間隔を14日までに制限し、イベント日時の検証と整合させました。これにより、受け入れたすべてのイベントを確実に再構築できます。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -46,3 +50,4 @@ Study Libraryブラウザーのエントリポイントを小さなページ調�
 - [799fc33d](https://github.com/Cognis-Labs-HQ/Cognis/commit/799fc33d)
 - [d472ffa9](https://github.com/Cognis-Labs-HQ/Cognis/commit/d472ffa9)
 - [992973f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/992973f5a421fa0043bfa792a1b4757abcff8209)
+- [4c7366ad](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c7366adec02748038211fcdf407f8b5b2ea759e)

@@ -317,6 +317,22 @@ test("equal event timestamps use event ids as a deterministic tie breaker", asyn
     );
 });
 
+test("caps review scheduling so every accepted timestamp remains representable", async () => {
+    const service = new ProgressService(new MemoryProgressStore());
+    for (let index = 0; index < 20; index += 1) {
+        await service.recordEvent(
+            user,
+            event(`event-review-${String(index).padStart(2, "0")}`, {
+                occurredAt: "2026-09-06T10:00:00.000Z",
+            }),
+        );
+    }
+    assert.equal(
+        (await service.listProjections(user))[0].dueForReview,
+        "2026-09-20T10:00:00.000Z",
+    );
+});
+
 test("supports every aggregation dimension", async () => {
     const service = new ProgressService(new MemoryProgressStore(), {
         canRead: async () => true,

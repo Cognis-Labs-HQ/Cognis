@@ -38,6 +38,10 @@ Fortschrittswiederholungen vergleichen Ereignisse strukturell, gleiche Zeitstemp
 
 Die Prüfung externer Module erkennt nun direkte URLs zu Cognis-Interna sowohl in CSS-Importen und Asset-URLs als auch in Skripten.
 
+## Sichere Grenzen für Wiederholungsdaten
+
+Fortschrittsprojektionen begrenzen Wiederholungsintervalle jetzt auf vierzehn Tage. Dies entspricht der Prüfung von Ereigniszeitstempeln und stellt sicher, dass jedes angenommene Ereignis rekonstruierbar bleibt.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -46,3 +50,4 @@ Die Prüfung externer Module erkennt nun direkte URLs zu Cognis-Interna sowohl i
 - [799fc33d](https://github.com/Cognis-Labs-HQ/Cognis/commit/799fc33d)
 - [d472ffa9](https://github.com/Cognis-Labs-HQ/Cognis/commit/d472ffa9)
 - [992973f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/992973f5a421fa0043bfa792a1b4757abcff8209)
+- [4c7366ad](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c7366adec02748038211fcdf407f8b5b2ea759e)

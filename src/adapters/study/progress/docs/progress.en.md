@@ -19,3 +19,7 @@ Corrections are posted to `/api/v1/study/progress/events/corrections` and append
 Events and rebuildable projections are persisted through the DB gateway so learning history survives adapter reloads and server restarts.
 
 The ordinary event endpoint rejects `compensatesEventId`; clients must use the corrections endpoint so target authorization and scope validation always run. The persistent store enforces one correction per target atomically, including when correction requests arrive concurrently.
+
+## Review scheduling safety
+
+Review intervals are capped at fourteen days. Event timestamps are accepted only when that complete interval remains representable, so an accepted event cannot later make projection rebuilding fail because its review date exceeds the supported date range.

@@ -38,6 +38,10 @@ Progress retries compare events structurally, equal timestamps use event IDs as 
 
 External module validation now detects direct Cognis internal URLs in CSS imports and asset URLs as well as in scripts.
 
+## Safe review-date bounds
+
+Progress projections now cap review intervals at fourteen days, matching event timestamp validation and ensuring every accepted event remains rebuildable.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -46,3 +50,4 @@ External module validation now detects direct Cognis internal URLs in CSS import
 - [799fc33d](https://github.com/Cognis-Labs-HQ/Cognis/commit/799fc33d)
 - [d472ffa9](https://github.com/Cognis-Labs-HQ/Cognis/commit/d472ffa9)
 - [992973f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/992973f5a421fa0043bfa792a1b4757abcff8209)
+- [4c7366ad](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c7366adec02748038211fcdf407f8b5b2ea759e)

@@ -55,7 +55,8 @@ export interface ProgressCapability {
 
 const IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,199}$/;
 const PRIVILEGED_ROLES = new Set(["admin", "owner"]);
-const MAX_REVIEW_DELAY_MS = 14 * 86_400_000;
+const MAX_REVIEW_DELAY_DAYS = 14;
+const MAX_REVIEW_DELAY_MS = MAX_REVIEW_DELAY_DAYS * 86_400_000;
 
 function requireIdentifier(value: unknown, code: string): string {
     if (typeof value !== "string" || !IDENTIFIER.test(value))
@@ -230,9 +231,9 @@ function buildProjections(events: LearningEvent[]): ProgressProjection[] {
         }
         const confidence =
             attempts.length === 0 ? 0 : independent / attempts.length;
-        const reviewDays = Math.max(
-            1,
-            Math.round((1 + streak) * (1 + confidence * 6)),
+        const reviewDays = Math.min(
+            MAX_REVIEW_DELAY_DAYS,
+            Math.max(1, Math.round((1 + streak) * (1 + confidence * 6))),
         );
         return {
             actorId: latest.actorId,

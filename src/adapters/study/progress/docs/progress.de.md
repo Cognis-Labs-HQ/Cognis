@@ -17,3 +17,7 @@ Authentifizierte Clients verwenden `/api/v1/study/progress/events`, `/projection
 Authentifizierte Clients senden Korrekturen an `/api/v1/study/progress/events/corrections`; sie werden angehängt und verändern niemals den Verlauf. Die Kompensation wird vor Dimensions- oder Zeitraumfiltern anhand des vollständigen berechtigten Verlaufs aufgelöst. Ereignisse und Projektionen werden über das DB-Gateway dauerhaft gespeichert und bleiben bei Neustarts erhalten.
 
 Der gewöhnliche Ereignis-Endpunkt lehnt `compensatesEventId` ab; Clients müssen den Korrektur-Endpunkt verwenden, damit Zielautorisierung und Bereichsprüfung immer ausgeführt werden. Der persistente Speicher erzwingt atomar genau eine Korrektur pro Ziel, auch bei gleichzeitig eintreffenden Korrekturanfragen.
+
+## Sichere Wiederholungsplanung
+
+Wiederholungsintervalle sind auf vierzehn Tage begrenzt. Ereigniszeitstempel werden nur angenommen, wenn das vollständige Intervall darstellbar bleibt, sodass ein angenommenes Ereignis den späteren Projektionsaufbau nicht durch ein außerhalb des unterstützten Datumsbereichs liegendes Wiederholungsdatum scheitern lassen kann.

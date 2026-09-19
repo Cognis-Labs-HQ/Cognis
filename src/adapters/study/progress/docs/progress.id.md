@@ -17,3 +17,7 @@ Klien terautentikasi memakai `/api/v1/study/progress/events`, `/projections`, da
 Klien terautentikasi mengirim koreksi ke `/api/v1/study/progress/events/corrections`; koreksi selalu ditambahkan tanpa mengubah riwayat. Kompensasi diselesaikan terhadap seluruh riwayat yang diizinkan sebelum filter dimensi atau waktu diterapkan. Peristiwa dan proyeksi disimpan secara persisten melalui gateway DB sehingga tetap tersedia setelah mulai ulang.
 
 Endpoint peristiwa biasa menolak `compensatesEventId`; klien harus memakai endpoint koreksi agar otorisasi target dan validasi cakupan selalu dijalankan. Penyimpanan persisten memberlakukan satu koreksi per target secara atomik, termasuk ketika permintaan koreksi tiba bersamaan.
+
+## Keamanan jadwal tinjauan
+
+Interval tinjauan dibatasi hingga empat belas hari. Stempel waktu peristiwa hanya diterima jika seluruh interval tersebut tetap dapat direpresentasikan, sehingga peristiwa yang diterima tidak dapat menggagalkan pembangunan ulang proyeksi akibat tanggal tinjauan yang melampaui rentang tanggal yang didukung.
