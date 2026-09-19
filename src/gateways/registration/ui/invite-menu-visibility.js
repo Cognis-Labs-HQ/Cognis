@@ -6,11 +6,10 @@ export function shouldShowInviteMenuEntry({
     canInvite,
 }) {
     const normalizedRole = String(role ?? "").trim();
-    const isAdminRole =
-        normalizedRole === "admin" || normalizedRole === "owner";
-    if (isAdminRole) return false;
-    if (isFounder !== true) return false;
     if (gatewayEnabled !== true) return false;
     if (canInvite === false) return false;
-    return inviteEnabled === true;
+    if (inviteEnabled !== true) return false;
+    if (normalizedRole === "owner") return true;
+    if (normalizedRole === "admin") return false;
+    return isFounder === true;
 }

@@ -1,5 +1,12 @@
 import { createI18n } from "/static/reuse/i18n.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { shouldShowInviteMenuEntry } from "./invite-menu-visibility.js";
+import { createUsersToolbarActions } from "./users-toolbar.js";
+
+uiCtx.capabilities.contribute(
+    "users:getToolbarActions",
+    createUsersToolbarActions,
+);
 
 async function loadRegistrationState() {
     try {

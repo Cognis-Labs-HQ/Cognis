@@ -9,6 +9,7 @@ import { createRepromptGuard } from "/static/gateways/auth/reuse/password-confir
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
 import { formatDate, formatDateTime } from "../../reuse/timestamp.js";
 import { isSmtpAdapterActive } from "/static/gateways/notify/smtp-adapter.js";
+import { uiCtx } from "../../reuse/ui-ctx.js";
 import {
     ACCESS_ROLES,
     getRoleLabel,
@@ -662,6 +663,15 @@ export async function mount(rootEl, { signal } = {}) {
 
     await refreshData();
 
+    const getToolbarActions = uiCtx.capabilities.get("users:getToolbarActions");
+    const toolbar = getToolbarActions
+        ? await getToolbarActions({
+              i18n,
+              role: getCurrentRole(),
+              isFounder: localStorage.getItem("cognis_is_founder") === "true",
+          }).catch(() => [])
+        : [];
+
     composer = createPageComposer(root, {
         allowCustomization: false,
         i18n,
@@ -670,7 +680,7 @@ export async function mount(rootEl, { signal } = {}) {
             title: i18n.t("ui.reuse.users"),
             subtitle: i18n.t("ui.app.users.page_subtitle"),
         },
-        toolbar: [],
+        toolbar,
         elements,
         onRender: () => {
             bindUsersInteractions();

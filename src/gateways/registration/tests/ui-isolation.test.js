@@ -14,6 +14,19 @@ test("registration administration owns policy and invite navigation", async () =
     assert.match(source, /class="btn-neutral btn-animated" href="\/invite"/);
 });
 
+test("registration contributes the Users page Invite toolbar action", async () => {
+    const [navbar, toolbar] = await Promise.all([
+        readRegistrationUi("navbar.js"),
+        readRegistrationUi("users-toolbar.js"),
+    ]);
+    assert.match(navbar, /users:getToolbarActions/);
+    assert.match(toolbar, /loadRegistrationState/);
+    assert.match(
+        toolbar,
+        /class="btn-confirm btn-animated" href="\/invite">\+ /,
+    );
+});
+
 test("registration gateway owns the invite management page and styles", async () => {
     const [source, styles, page] = await Promise.all([
         readRegistrationUi("app/invite/index.js"),
