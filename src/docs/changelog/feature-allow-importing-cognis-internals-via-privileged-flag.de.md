@@ -8,4 +8,4 @@ Die Modulaktivierung lehnt gewöhnliche Importe offengelegter Cognis-Browserress
 
 ## Commits
 
-- [5f898d0ca87f58ca129d2e990ba2ee243becd21b](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f898d0ca87f58ca129d2e990ba2ee243becd21b)
+- [5f898d0c](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f898d0ca87f58ca129d2e990ba2ee243becd21b)
