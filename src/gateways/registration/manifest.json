@@ -2,13 +2,12 @@
     "id": "registration",
     "uuid": "4160e651-7703-5519-9f02-2a5cac7b1551",
     "name": "Registration Gateway",
-    "version": "1.1.36",
+    "version": "1.1.37",
     "required": false,
     "requires": [
         "5711a248-4ac9-5d44-98b5-b99bd4c6d722",
         "a77dac5a-fe42-5bab-8036-54e319cf5313",
-        "433cd9f3-5b80-5e7d-911b-1907b9348f26",
-        "c6a66d9c-d6d1-5762-86d8-c4e1fc8d5088"
+        "433cd9f3-5b80-5e7d-911b-1907b9348f26"
     ],
     "description": "Registration workflows through mandatory tokens and optional public registration.",
     "publisher": "Cognis Labs HQ",

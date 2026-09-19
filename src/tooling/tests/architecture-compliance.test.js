@@ -43,24 +43,50 @@ const COMPONENT_UUID_PATTERN =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 test("component manifest dependencies use UUID references", () => {
-    const violations = walk(resolve(ROOT, "src"))
-        .filter((filePath) => filePath.endsWith("manifest.json"))
-        .flatMap((filePath) => {
-            const manifest = JSON.parse(readFileSync(filePath, "utf8"));
-            const requires = Array.isArray(manifest.requires)
-                ? manifest.requires
-                : [];
-            return requires
-                .filter(
-                    (reference) =>
-                        typeof reference !== "string" ||
-                        !COMPONENT_UUID_PATTERN.test(reference),
-                )
-                .map(
-                    (reference) =>
-                        `${normalizePath(relative(ROOT, filePath))}: ${String(reference)}`,
-                );
-        });
+    const manifestPaths = walk(resolve(ROOT, "src")).filter((filePath) =>
+        filePath.endsWith("manifest.json"),
+    );
+    const manifests = manifestPaths.map((filePath) => ({
+        filePath,
+        manifest: JSON.parse(readFileSync(filePath, "utf8")),
+    }));
+    const componentUuids = new Set(
+        manifests
+            .map(({ manifest }) => manifest.uuid)
+            .filter((uuid) => typeof uuid === "string"),
+    );
+    const gatewayUuids = new Set(
+        manifests
+            .filter(({ filePath }) =>
+                normalizePath(relative(ROOT, filePath)).startsWith(
+                    "src/gateways/",
+                ),
+            )
+            .map(({ manifest }) => manifest.uuid)
+            .filter((uuid) => typeof uuid === "string"),
+    );
+    const violations = manifests.flatMap((filePath) => {
+        const { filePath: manifestPath, manifest } = filePath;
+        const requires = Array.isArray(manifest.requires)
+            ? manifest.requires
+            : [];
+        const allowedUuids = normalizePath(
+            relative(ROOT, manifestPath),
+        ).startsWith("src/gateways/")
+            ? gatewayUuids
+            : componentUuids;
+        return requires
+            .filter(
+                (reference) =>
+                    typeof reference !== "string" ||
+                    !COMPONENT_UUID_PATTERN.test(reference) ||
+                    !allowedUuids.has(reference),
+            )
+            .map(
+                (reference) =>
+                    `${normalizePath(relative(ROOT, manifestPath))}: ${String(reference)}`,
+            );
+    });
 
     assert.deepEqual(violations, []);
 });
