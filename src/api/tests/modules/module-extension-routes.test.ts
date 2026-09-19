@@ -311,6 +311,7 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
             ctx.flow.extend("host-flow", "extensions", { id: "owned-module:hook" }, () => "active");
             ctx.registerAdminSection({ id: "owned-module", label: "Owned", scriptUrl: "/static/modules/owned-module/admin.js" });
             ctx.registerNavbarPlugin({ scriptUrl: "/static/modules/owned-module/navbar.js" });
+            ctx.registerCapabilityProvider({ scriptUrl: "/static/modules/owned-module/whiteboard.js", providesCapabilities: ["whiteboard:uiGateway"] });
             ctx.registerAuthFooterPlugin({ scriptUrl: "/static/modules/owned-module/auth-footer.js" });
             ctx.registerSpaRoute({ id: "owned-module-page", pattern: "^/owned$", base: "/owned", scriptUrl: "/static/modules/owned-module/app.js", public: true, componentPage: { labelKey: "module.owned.page", descriptionKey: "module.owned.description", modes: ["fullscreen"] } });
             ctx.registerApiGet("/api/v1/modules/owned-module", (_req, res) => { res.writeHead(200); res.end("ok"); });
@@ -367,6 +368,18 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
         assert.equal(systemCtx.hasCapability("owned-module:feature"), true);
         assert.equal(uiRegistry.listAdminSections().length, 1);
         assert.equal(uiRegistry.listNavbarPlugins().length, 1);
+        assert.deepEqual(
+            uiRegistry.listCapabilityProviders().map((provider) => ({
+                scriptUrl: provider.scriptUrl,
+                providesCapabilities: provider.providesCapabilities,
+            })),
+            [
+                {
+                    scriptUrl: "/static/modules/owned-module/whiteboard.js",
+                    providesCapabilities: ["whiteboard:uiGateway"],
+                },
+            ],
+        );
         assert.equal(uiRegistry.listSpaRoutes().length, 1);
         assert.equal(uiRegistry.listSpaRoutes()[0].ownerUuid, moduleUuid);
         assert.equal(uiRegistry.listSpaRoutes()[0].public, true);
@@ -388,6 +401,7 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
         );
         assert.equal(systemCtx.hasCapability("owned-module:feature"), false);
         assert.equal(uiRegistry.listNavbarPlugins().length, 0);
+        assert.deepEqual(uiRegistry.listCapabilityProviders(), []);
         assert.equal(uiRegistry.listSpaRoutes().length, 0);
         assert.equal(uiRegistry.listAuthFooterPlugins().length, 0);
         assert.deepEqual(uiRegistry.listAdminSections(), []);
