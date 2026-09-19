@@ -1,9 +1,11 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
     resolveLanguageLabel,
-    isAdminScope,
     buildLibraryUrl,
+    isAdminScope,
+    parseLanguageCode,
 } from "/static/gateways/study/ui/language.js";
 
 const SETTINGS_GEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -55,6 +57,44 @@ const SUB_NAV_CACHE = {
     modulesByLanguage: new Map(),
 };
 
+export function readSelectedStudyLanguageCode() {
+    const selectedButton = document.querySelector(
+        ".study-subnav-language-options .dropdown-item.active[data-language-code]",
+    );
+    return parseLanguageCode(
+        history.state?.studyLanguageCode ??
+            selectedButton?.dataset.languageCode,
+    );
+}
+
+export function bindStudySubNavigation(root, { signal } = {}) {
+    root.addEventListener(
+        "click",
+        (event) => {
+            const settingsLink = event.target.closest("a[data-study-settings]");
+            const link = event.target.closest("a[data-language-code]");
+            if (!link && !settingsLink) return;
+            const navigate = uiCtx.capabilities.get("ui:navigate");
+            if (typeof navigate !== "function") return;
+            event.preventDefault();
+            event.stopPropagation();
+            const destination = link ?? settingsLink;
+            const currentPageUrl = resolveRememberedStudyPageUrl(
+                window.location.pathname,
+            );
+            navigate(destination.getAttribute("href"), {
+                state: {
+                    studyLanguageCode:
+                        link?.dataset.languageCode ??
+                        readSelectedStudyLanguageCode(),
+                    studyLastPageUrl: currentPageUrl,
+                },
+            });
+        },
+        { signal },
+    );
+}
+
 /**
  * Clears the in-memory sub-navigation cache. Call this after any operation
  * that changes the user's learning language preferences so that the next
@@ -73,6 +113,19 @@ function resolveDefaultChildPageUrl(modules) {
         .map((component) => String(component?.pageUrl ?? "").trim())
         .find(Boolean);
     return firstModulePageUrl || "/study";
+}
+
+function resolveRememberedStudyPageUrl(currentPath) {
+    return [
+        currentPath,
+        history.state?.studyLastPageUrl,
+        history.state?.previousRouterPage,
+    ].find(
+        (path) =>
+            typeof path === "string" &&
+            path.startsWith("/study/") &&
+            !["/study/settings", "/study/welcome"].includes(path),
+    );
 }
 
 /**
@@ -104,7 +157,10 @@ function resolveDefaultChildPageUrl(modules) {
  *   languagePageUrlsByCode: Map<string, string>
  * }>} Model data for shared Study child-page sub-navigation rendering.
  */
-export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
+export async function loadStudySubNavigationModel({
+    fallbackLanguageCode,
+} = {}) {
+    const requestedLanguageCode = parseLanguageCode(fallbackLanguageCode);
     const [registeredLanguagesRaw, learningLanguagesRaw] = await Promise.all([
         SUB_NAV_CACHE.registeredLanguages ?? loadRegisteredLanguages(),
         SUB_NAV_CACHE.learningLanguages ?? loadLearningLanguages(),
@@ -114,7 +170,7 @@ export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
 
     const languageCatalogByCode = new Map();
     for (const registeredLanguage of registeredLanguagesRaw) {
-        const languageCode = String(registeredLanguage?.code ?? "").trim();
+        const languageCode = parseLanguageCode(registeredLanguage?.code);
         if (!languageCode) continue;
         languageCatalogByCode.set(languageCode, {
             code: languageCode,
@@ -126,13 +182,13 @@ export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
         });
     }
 
-    const learningLanguages = learningLanguagesRaw.filter((languageCode) =>
-        Boolean(String(languageCode ?? "").trim()),
-    );
+    const learningLanguages = learningLanguagesRaw
+        .map((languageCode) => parseLanguageCode(languageCode))
+        .filter(Boolean);
     const activeLanguageCodes = Array.from(
         new Set([
             ...learningLanguages,
-            ...[fallbackLanguageCode].filter(Boolean),
+            ...[requestedLanguageCode].filter(Boolean),
         ]),
     );
     for (const languageCode of activeLanguageCodes) {
@@ -146,9 +202,7 @@ export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
     }
 
     const selectedLanguageCode =
-        (fallbackLanguageCode && String(fallbackLanguageCode).trim()) ||
-        activeLanguageCodes[0] ||
-        fallbackLanguageCode;
+        requestedLanguageCode || activeLanguageCodes[0];
 
     const modulesByLanguage = new Map();
     await Promise.all(
@@ -168,11 +222,24 @@ export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
     );
 
     const modules = modulesByLanguage.get(selectedLanguageCode) ?? [];
+    const rememberedPageUrl = resolveRememberedStudyPageUrl(
+        window.location.pathname,
+    );
     const languagePageUrlsByCode = new Map(
-        activeLanguageCodes.map((languageCode) => [
-            languageCode,
-            resolveDefaultChildPageUrl(modulesByLanguage.get(languageCode)),
-        ]),
+        activeLanguageCodes.map((languageCode) => {
+            const languageModules = modulesByLanguage.get(languageCode) ?? [];
+            const registeredPageUrls = new Set(
+                languageModules.map((component) =>
+                    String(component?.pageUrl ?? "").trim(),
+                ),
+            );
+            return [
+                languageCode,
+                rememberedPageUrl && registeredPageUrls.has(rememberedPageUrl)
+                    ? rememberedPageUrl
+                    : resolveDefaultChildPageUrl(languageModules),
+            ];
+        }),
     );
 
     return {
@@ -209,18 +276,19 @@ export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
  */
 export function renderStudySubNavigation({ model, currentPath, i18n }) {
     const selectedLanguageCode = model.selectedLanguageCode ?? "";
-    const adminLibraryUrl = buildLibraryUrl();
+    const libraryUrl = buildLibraryUrl();
     const hasLibraryModule = (model.modules ?? []).some(
         (component) => String(component?.id ?? "").trim() === "library",
     );
     const moduleLinks = (model.modules ?? [])
         .map((component) => {
-            const pageUrl = String(component?.pageUrl ?? "").trim();
-            if (!pageUrl) return "";
-            const activeClass = pageUrl === currentPath ? " active" : "";
+            const rawPageUrl = String(component?.pageUrl ?? "").trim();
+            if (!rawPageUrl) return "";
+            const pageUrl = rawPageUrl;
+            const activeClass = rawPageUrl === currentPath ? " active" : "";
             return `
                 <li>
-                    <a class="study-subnav-link study-subnav-module-link${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(String(component?.label ?? pageUrl))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                    <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(String(component?.label ?? pageUrl))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                         ${escapeHtml(String(component?.label ?? pageUrl))}
                     </a>
                 </li>
@@ -231,7 +299,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         isAdminScope() && !hasLibraryModule
             ? `
             <li>
-                <a class="study-subnav-link study-subnav-module-link${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(adminLibraryUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                <a class="dropdown-item${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(libraryUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                     ${escapeHtml(i18n.t("gateway.study.library_label"))}
                 </a>
             </li>
@@ -246,12 +314,15 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                 name: resolveLanguageLabel(languageCode),
             };
             const activeClass =
-                languageCode === model.selectedLanguageCode ? " active" : "";
+                currentPath !== "/study/settings" &&
+                languageCode === model.selectedLanguageCode
+                    ? " active"
+                    : "";
             const languageHubUrl =
                 model.languagePageUrlsByCode?.get(languageCode) || "/study";
             return `
                 <li>
-                    <a class="study-subnav-language-option${activeClass}" href="${escapeHtml(languageHubUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                    <a class="dropdown-item${activeClass}" href="${escapeHtml(languageHubUrl)}" data-language-code="${escapeHtml(languageCode)}" data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                         ${escapeHtml(language.flag)}
                         <span>${escapeHtml(language.name)}</span>
                     </a>
@@ -272,17 +343,22 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             <ul class="page-subnav-list study-subnav-language-options">
                 ${languageOptions}
             </ul>
-            <a
-                class="study-subnav-settings-link${settingsActiveClass}"
-                href="${escapeHtml(settingsUrl)}"
-                data-search-category="Pages"
-                data-search-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-                data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}"
-                aria-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-                title="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-            >
-                ${SETTINGS_GEAR_SVG}
-            </a>
+            <ul class="page-subnav-list study-subnav-settings">
+                <li>
+                    <a
+                        class="dropdown-item${settingsActiveClass}"
+                        href="${escapeHtml(settingsUrl)}"
+                        data-study-settings
+                        data-search-category="Pages"
+                        data-search-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
+                        data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}"
+                        aria-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
+                        title="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
+                    >
+                        ${SETTINGS_GEAR_SVG}
+                    </a>
+                </li>
+            </ul>
         </div>
     `;
 }

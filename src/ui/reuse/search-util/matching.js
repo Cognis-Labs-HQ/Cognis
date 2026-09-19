@@ -489,7 +489,6 @@ export function collectVisibleNavigationSearchGroups() {
         [
             ".topnav a[href]",
             ".page-subnav a[href]",
-            ".study-subnav a[href]",
             '[data-search-category="Pages"][href]',
         ].join(", "),
     );

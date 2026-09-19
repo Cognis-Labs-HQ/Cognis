@@ -53,9 +53,6 @@
 .availability-menu-item {
     border-bottom: 1px solid var(--border);
 }
-.dropdown:has(.availability-menu-item) {
-    overflow: visible;
-}
 .availability-menu-control {
     position: relative;
     width: 100%;

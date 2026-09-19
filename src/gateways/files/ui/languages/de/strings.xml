@@ -1,0 +1,12 @@
+<resources>
+  <string name="gateway.files.admin.title">Kontingente für Datei-Namensräume</string>
+  <string name="gateway.files.admin.description">Legt das Standard-Speicherkontingent für neu bereitgestellte Benutzer in jedem registrierten Datei-Namensraum fest.</string>
+  <string name="gateway.files.admin.global_default">Globales Standardkontingent (Bytes)</string>
+  <string name="gateway.files.admin.namespace">Namensraum</string>
+  <string name="gateway.files.admin.owner">Eigentümerkomponente</string>
+  <string name="gateway.files.admin.visibility">Sichtbarkeit</string>
+  <string name="gateway.files.admin.quota_bytes">Standardkontingent (Bytes)</string>
+  <string name="gateway.files.admin.save">Speichern</string>
+  <string name="gateway.files.admin.saved">Standardkontingent gespeichert.</string>
+  <string name="gateway.files.admin.save_failed">Das Standardkontingent konnte nicht gespeichert werden.</string>
+</resources>

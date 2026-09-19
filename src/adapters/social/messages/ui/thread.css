@@ -83,8 +83,8 @@
 }
 
 @media (max-width: 900px) {
-    .messages-page .main-window--with-toolbar .toolbar {
-        width: min(320px, 85vw);
+    .messages-page {
+        --page-toolbar-width-mobile: min(320px, 85vw);
     }
 }
 

@@ -86,7 +86,7 @@ Komponen sebaiknya menggunakan `files:namespace` untuk operasi file rutin melalu
 
 - `PUT/GET/DELETE /api/v1/files/:namespace/*key` — operasi file generik berbasis namespace; memerlukan autentikasi, identitas aktor berasal dari sesi.
 - `GET /api/v1/files/:namespace` — daftar.
-- `GET/PUT /api/v1/files/admin/namespace-defaults[/:namespaceId]`, `PUT /api/v1/files/admin/global-default`, `GET /api/v1/files/admin/users/:username/quotas`, `PUT /api/v1/files/admin/users/:username/quotas/:namespaceId` — administrasi kuota khusus admin (`namespaceId: "global"` menargetkan kuota global pengguna).
+- `GET/PUT /api/v1/files/admin/namespace-defaults[/:namespaceId]`, `PUT /api/v1/files/admin/global-default`, `GET /api/v1/files/admin/users/:username/quotas`, `PUT /api/v1/files/admin/users/:username/quotas/:namespaceId` — administrasi kuota khusus admin (`namespaceId: "global"` menargetkan kuota global pengguna). Administrasi juga menampilkan bawaan namespace terdaftar dan bawaan global tersebut dalam bagian Berkas yang dapat diedit.
 
 ### Batasan urutan bootstrap
 

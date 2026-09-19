@@ -447,7 +447,8 @@ test("calendar toolbar includes pending quick responses with shared-calendar tar
     assert.match(PENDING_RENDER_SOURCE, /btn-animated calendar-pending-action/);
     assert.match(PENDING_RENDER_SOURCE, /btn-confirm/);
     assert.match(PENDING_RENDER_SOURCE, /btn-cancel/);
-    assert.match(PENDING_RENDER_SOURCE, /popup-action-btn--neutral/);
+    assert.match(PENDING_RENDER_SOURCE, /btn-neutral/);
+    assert.doesNotMatch(PENDING_RENDER_SOURCE, /popup-action-btn/);
     assert.match(POPUP_MANAGER_SOURCE, /respondToEventSelection/);
     assert.match(POPUP_MANAGER_SOURCE, /handlePendingResponseClick/);
     assert.match(
@@ -597,7 +598,7 @@ test("calendar event popup polls participant response updates", () => {
     );
     assert.match(
         POPUP_MANAGER_SOURCE,
-        /popupBody\.innerHTML = renderEventPopupBody\(\);/,
+        /popupApi\.updateBody\(\s*renderEventPopupBody\(\)/,
     );
     assert.match(
         POPUP_MANAGER_SOURCE,
@@ -775,10 +776,7 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
         SHARE_RENDERER_CSS_SOURCE,
         /\.calendar-share-page \.calendar-timeslot-grid\s*\{[\s\S]*overflow-y:\s*auto/,
     );
-    assert.match(
-        SHARE_RENDERER_CSS_SOURCE,
-        /\.widget-card:has\(\.calendar-share-page\)\s*\{[\s\S]*overflow-y:\s*hidden/,
-    );
+    assert.doesNotMatch(SHARE_RENDERER_CSS_SOURCE, /\.widget-card/);
 });
 
 test("calendar page prompts to unlock received calendar shares while loading", () => {

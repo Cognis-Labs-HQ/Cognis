@@ -129,7 +129,7 @@ export function renderRows(labels, links) {
             <article class="share-links-row" data-share-edit="${escapeHtml(shareId)}">
               <button
                 type="button"
-                class="popup-close-btn btn-cancel btn-animated share-links-row-close"
+                class="btn-cancel btn-animated share-links-row-close"
                 data-share-delete="${escapeHtml(shareId)}"
                 aria-label="${escapeHtml(labels.revoke)}"
                 title="${escapeHtml(labels.revoke)}"

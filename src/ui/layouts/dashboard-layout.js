@@ -39,7 +39,9 @@ import {
 
 capturePwaInstallPrompt();
 const BUTTON_STYLESHEET = "/static/styles/reuse/buttons.css";
+const PAGE_SHELL_STYLESHEET = "/static/styles/page-builder.css";
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
+void ensurePersistentStylesheet(PAGE_SHELL_STYLESHEET);
 void ensurePersistentStylesheet(BUTTON_STYLESHEET);
 
 footerLinks.add({
@@ -517,8 +519,18 @@ function syncHeaderScrollState(root) {
 
     const hasSubNavigation = Boolean(shell.querySelector(".page-subnav"));
     const hasPrimaryNavigation = Boolean(shell.querySelector(".global-navrow"));
+    const primaryNavigation = shell.querySelector(".global-navrow");
+    const currentlyPrioritized = shell.classList.contains(
+        "app-shell--subnav-priority",
+    );
+    const primaryNavigationHeight =
+        Number(primaryNavigation?.scrollHeight) || 0;
     const shouldPrioritizeSubnav =
-        hasSubNavigation && hasPrimaryNavigation && window.scrollY > 12;
+        hasSubNavigation &&
+        hasPrimaryNavigation &&
+        (currentlyPrioritized
+            ? window.scrollY > 12
+            : window.scrollY > primaryNavigationHeight + 12);
 
     shell.classList.toggle("app-shell--has-subnav", hasSubNavigation);
     shell.classList.toggle(
