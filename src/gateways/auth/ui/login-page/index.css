@@ -117,6 +117,15 @@ p.auth-intro {
     color: #f1f7ff;
 }
 
+.auth-form .auth-form-action {
+    box-sizing: border-box;
+    width: 100%;
+    margin-top: 8px;
+    padding: 12px 14px;
+    font-size: 1.15rem;
+    font-weight: 400;
+}
+
 .auth-text-action {
     margin-top: -2px;
     padding: 0;
@@ -377,6 +386,7 @@ p.auth-intro {
 
     .auth-form input,
     .auth-form button,
+    .auth-form .auth-form-action,
     .sso-login-btn {
         padding: 10px 12px;
         font-size: 1rem;

@@ -136,12 +136,20 @@ test("register page provides a standard sign-in-instead link", () => {
 
     assert.match(
         source,
-        /<a id="register-signin-instead" href="\/login" class="btn-neutral btn-animated">/,
+        /<a id="register-signin-instead" href="\/login" class="btn-neutral btn-animated auth-form-action">/,
     );
     assert.match(source, /ui\.reuse\.sign_in_instead/);
     assert.doesNotMatch(
         source,
         /id="register-signin-instead"[^>]+auth-secondary-action/,
+    );
+    const styles = readFileSync(
+        resolve(ROOT, "src/gateways/auth/ui/login-page/index.css"),
+        "utf8",
+    );
+    assert.match(
+        styles,
+        /\.auth-form \.auth-form-action \{[\s\S]*width: 100%;[\s\S]*padding: 12px 14px;/,
     );
 });
 

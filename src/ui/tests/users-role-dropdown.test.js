@@ -7,6 +7,19 @@ import { ACCESS_ROLES } from "../reuse/access-role.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
+test("users page renders contributed controls directly above the table", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/users/index.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /\$\{leadingControlsHtml\}\s*<div class="users-table-wrap">/,
+    );
+    assert.match(source, /toolbar: \[\]/);
+});
+
 test("users role dropdown includes every assignable access role", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/users/index.js"),

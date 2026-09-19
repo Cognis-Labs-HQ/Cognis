@@ -18,7 +18,13 @@
 
 Registration ゲートウェイが、所有者と対象の創設ユーザー向けにユーザーページの **+ 招待** アクションを再び提供します。登録トークンを利用できない場合やポリシーで招待が許可されていない場合、このアクションは表示されません。
 
+## 登録アクションのスタイルと配置
+
+**+ 招待** コントロールをページツールバーではなく、従来どおりユーザーテーブルの上に戻しました。ページを直接開いた場合も Registration ケイパビリティを事前読み込みし、管理者にはアカウントドロップダウンの招待項目を引き続き表示しません。**代わりにサインイン** はニュートラルな外観を維持しながら、登録送信アクションと同じ寸法になりました。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0c20e406
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ce0d316b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f25b56c8
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e1004e29

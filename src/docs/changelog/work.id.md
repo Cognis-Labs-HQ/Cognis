@@ -18,7 +18,13 @@ Penyegaran pengikut kini memakai rute daftar pengikut yang dipublikasikan, dan p
 
 Gateway Registration kembali menyediakan tindakan **+ Undang** pada halaman Pengguna untuk pemilik dan pengguna pendiri yang memenuhi syarat. Tindakan disembunyikan saat token pendaftaran tidak tersedia atau kebijakan tidak mengizinkan undangan.
 
+## Gaya dan Penempatan Tindakan Pendaftaran
+
+Kontrol **+ Undang** kembali berada di atas tabel Pengguna sesuai penempatan sebelumnya, bukan di bilah alat halaman. Pemuatan halaman langsung memuat kemampuan Registration terlebih dahulu, administrator tetap tidak melihat entri tersebut di menu akun, dan **Masuk Sebagai Gantinya** kini memiliki ukuran yang sama dengan tindakan pendaftaran sambil mempertahankan gaya netral.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0c20e406
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ce0d316b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f25b56c8
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e1004e29

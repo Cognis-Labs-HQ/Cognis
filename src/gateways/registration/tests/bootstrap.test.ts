@@ -189,7 +189,11 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
     assert.equal(
         registeredPlugins.some(
             (plugin) =>
-                plugin.scriptUrl === "/static/gateways/registration/navbar.js",
+                plugin.scriptUrl ===
+                    "/static/gateways/registration/navbar.js" &&
+                plugin.providesCapabilities?.includes(
+                    "users:getLeadingControls",
+                ),
         ),
         true,
     );

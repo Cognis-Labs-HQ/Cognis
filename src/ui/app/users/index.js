@@ -23,6 +23,7 @@ let users = [];
 let smtpAdapterActive = false;
 let composer = null;
 let elements = [];
+let leadingControlsHtml = "";
 
 const QUOTA_UNITS = [
     { id: "B", multiplier: 1 },
@@ -295,6 +296,7 @@ function renderUsersTable() {
     const currentRole = currentUser?.role ?? getCurrentRole();
     const viewerCanManagePrivileged = currentRole === "owner";
     return `
+    ${leadingControlsHtml}
     <div class="users-table-wrap">
       <table class="users-table">
         <thead>
@@ -660,17 +662,20 @@ export async function mount(rootEl, { signal } = {}) {
     reprompt = createRepromptGuard({ i18n });
     users = [];
     smtpAdapterActive = false;
+    leadingControlsHtml = "";
 
     await refreshData();
 
-    const getToolbarActions = uiCtx.capabilities.get("users:getToolbarActions");
-    const toolbar = getToolbarActions
-        ? await getToolbarActions({
+    const getLeadingControls = uiCtx.capabilities.get(
+        "users:getLeadingControls",
+    );
+    leadingControlsHtml = getLeadingControls
+        ? await getLeadingControls({
               i18n,
               role: getCurrentRole(),
               isFounder: localStorage.getItem("cognis_is_founder") === "true",
-          }).catch(() => [])
-        : [];
+          }).catch(() => "")
+        : "";
 
     composer = createPageComposer(root, {
         allowCustomization: false,
@@ -680,7 +685,7 @@ export async function mount(rootEl, { signal } = {}) {
             title: i18n.t("ui.reuse.users"),
             subtitle: i18n.t("ui.app.users.page_subtitle"),
         },
-        toolbar,
+        toolbar: [],
         elements,
         onRender: () => {
             bindUsersInteractions();

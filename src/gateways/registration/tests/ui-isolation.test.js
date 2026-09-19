@@ -14,16 +14,16 @@ test("registration administration owns policy and invite navigation", async () =
     assert.match(source, /class="btn-neutral btn-animated" href="\/invite"/);
 });
 
-test("registration contributes the Users page Invite toolbar action", async () => {
-    const [navbar, toolbar] = await Promise.all([
+test("registration contributes the Users table Invite control", async () => {
+    const [navbar, controls] = await Promise.all([
         readRegistrationUi("navbar.js"),
-        readRegistrationUi("users-toolbar.js"),
+        readRegistrationUi("users-controls.js"),
     ]);
-    assert.match(navbar, /users:getToolbarActions/);
-    assert.match(toolbar, /loadRegistrationState/);
+    assert.match(navbar, /users:getLeadingControls/);
+    assert.match(controls, /loadRegistrationState/);
     assert.match(
-        toolbar,
-        /class="btn-confirm btn-animated" href="\/invite">\+ /,
+        controls,
+        /<div class="controls"><a class="btn-confirm btn-animated" href="\/invite">\+ /,
     );
 });
 

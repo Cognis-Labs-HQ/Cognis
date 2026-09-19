@@ -18,7 +18,13 @@ Follower refreshes now use the published follower-list route, and polling does n
 
 The Registration gateway once again contributes a **+ Invite** action to the Users page for owners and eligible founding users. The action is hidden when registration tokens are unavailable or policy disallows invitations.
 
+## Registration Action Styling and Placement
+
+The **+ Invite** control is restored above the Users table, matching its established placement instead of occupying the page toolbar. Direct page loads preload its Registration capability, administrators remain excluded from the account dropdown entry, and **Sign In Instead** now matches the registration submit action dimensions while retaining neutral styling.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0c20e406
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ce0d316b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f25b56c8
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e1004e29

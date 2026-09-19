@@ -188,6 +188,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "/static/adapters/registration/token/ui/authorization.js";
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/registration/navbar.js",
+        providesCapabilities: ["users:getLeadingControls"],
     });
     ctx.uiRegistry?.registerAuthTypingMessage({
         id: "registration-register-today",

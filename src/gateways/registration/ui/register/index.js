@@ -326,7 +326,8 @@ export async function mount(root, { signal } = {}) {
             { i18n, escapeHtml },
             {
                 formId: "register-form",
-                submitButtonClassName: "btn-confirm btn-animated",
+                submitButtonClassName:
+                    "btn-confirm btn-animated auth-form-action",
                 submitLabelKey: "ui.app.register.submit",
                 fields: registerFormFields,
             },
@@ -420,7 +421,7 @@ export async function mount(root, { signal } = {}) {
       ${messageHtml}
       ${formHtml}
       <div class="auth-form">
-        <a id="register-signin-instead" href="/login" class="btn-neutral btn-animated">${escapeHtml(i18n.t("ui.reuse.sign_in_instead"))}</a>
+        <a id="register-signin-instead" href="/login" class="btn-neutral btn-animated auth-form-action">${escapeHtml(i18n.t("ui.reuse.sign_in_instead"))}</a>
       </div>
       ${renderAuthFooter()}
     `;
