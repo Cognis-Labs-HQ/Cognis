@@ -118,7 +118,7 @@ Integrasi autentikasi eksternal dapat menyediakan kueri CTX `auth:syncExternalPr
 
 ### Identitas eksternal yang dihapus
 
-Penghapusan akun yang diautentikasi secara eksternal menyimpan sidik jari satu arah dari identitas penyedianya sebelum data milik akun dihapus. Autentikasi dan rekonsiliasi kemudian menolak identitas tersebut, sehingga sesi penyedia yang masih aktif tidak dapat membuat ulang akun Cognis yang telah dihapus secara diam-diam. Sidik jari tidak diekspos kepada klien peramban.
+Penghapusan akun yang diautentikasi secara eksternal menyimpan sidik jari satu arah dari identitas penyedianya sebelum data milik akun dihapus. Autentikasi penyedia yang berhasil kemudian menghapus catatan penghapusan tersebut secara transaksional saat membuat ulang akun, sesuai dengan perilaku autentikasi berbasis direktori. Autentikasi yang gagal tidak dapat menghapus catatan, dan sidik jari tidak diekspos kepada klien peramban.
 
 ### Nama akun berlingkup penyedia
 

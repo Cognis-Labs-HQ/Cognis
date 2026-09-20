@@ -44,6 +44,7 @@ test("external account persistence creates the account before its identity", asy
             ),
         },
     ]);
+    assert.equal(commands[0]?.option, "DELETE");
     assert.deepEqual(commands[1]?.where, [
         { column: "provider", value: "ldap" },
         {

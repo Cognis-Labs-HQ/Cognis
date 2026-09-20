@@ -27,7 +27,7 @@ test("external identities keep one normalized canonical account", async () => {
     assert.equal((await store.list()).length, 1);
 });
 
-test("deleted external identities cannot silently recreate accounts", async () => {
+test("successful external authentication can recreate a deleted account", async () => {
     const store = new VolatileLocalAccountStore();
     const identity = {
         accountId: "subject",
@@ -44,11 +44,17 @@ test("deleted external identities cannot silently recreate accounts", async () =
         ),
         true,
     );
-    await assert.rejects(
-        () => store.ensureExternalAccount(identity),
-        /external_identity_deleted/,
+    const recreatedAccountId = await store.ensureExternalAccount(identity);
+
+    assert.equal(recreatedAccountId, accountId);
+    assert.equal(
+        await store.isExternalIdentityDeleted(
+            identity.provider,
+            identity.externalUserId,
+        ),
+        false,
     );
-    assert.equal((await store.list()).length, 0);
+    assert.equal((await store.list()).length, 1);
 });
 
 test("provider namespaces keep identical local and external handles distinct", async () => {

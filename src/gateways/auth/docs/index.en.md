@@ -118,7 +118,7 @@ An external authentication integration can expose the `auth:syncExternalProfile`
 
 ### Deleted external identities
 
-Deleting an externally authenticated account records a one-way fingerprint of its provider identity before removing account-owned data. Authentication and reconciliation reject that identity afterward, so an active provider session cannot silently recreate the deleted Cognis account. The fingerprint is not exposed to browser clients.
+Deleting an externally authenticated account records a one-way fingerprint of its provider identity before removing account-owned data. A later successful provider authentication clears that deletion record transactionally while recreating the account, matching directory-backed authentication behavior. Failed authentication cannot clear the record, and the fingerprint is not exposed to browser clients.
 
 ### Provider-scoped account names
 

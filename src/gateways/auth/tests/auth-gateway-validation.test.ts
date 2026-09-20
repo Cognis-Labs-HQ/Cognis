@@ -545,8 +545,40 @@ test("external login retries account creation through the registration token gat
     assert.equal(synchronizedProfileHandle, "x:thefirehawk");
     const accountStore = capabilities.require<{
         getInfo(accountId: string): Promise<unknown>;
+        delete(accountId: string): Promise<void>;
+        isExternalIdentityDeleted(
+            provider: string,
+            externalUserId: string,
+        ): Promise<boolean>;
     }>("auth:accountStore");
     assert.notEqual(await accountStore.getInfo("x:thefirehawk"), null);
+
+    await accountStore.delete("x:thefirehawk");
+    assert.equal(
+        await accountStore.isExternalIdentityDeleted(
+            "external-sso",
+            "provider-user",
+        ),
+        true,
+    );
+    const recreatedResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            provider: "external-sso",
+            email: "external@example.com",
+            registrationToken: "invite-token",
+        }),
+        "/api/v1/auth/login",
+    );
+    assert.equal(recreatedResult.res.status, 200);
+    assert.notEqual(await accountStore.getInfo("x:thefirehawk"), null);
+    assert.equal(
+        await accountStore.isExternalIdentityDeleted(
+            "external-sso",
+            "provider-user",
+        ),
+        false,
+    );
 });
 
 test("external login rolls back account when token commit fails", async () => {

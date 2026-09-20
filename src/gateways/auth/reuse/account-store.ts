@@ -164,9 +164,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
             identity.provider,
             identity.externalUserId,
         );
-        if (this.deletedExternalIdentities.has(identityFingerprint)) {
-            throw new Error("external_identity_deleted");
-        }
+        this.deletedExternalIdentities.delete(identityFingerprint);
         const mappedAccountId = this.externalIdentities.get(identityId);
         const accountId = mappedAccountId ?? normalizedAccountId;
         this.externalIdentities.set(identityId, accountId);

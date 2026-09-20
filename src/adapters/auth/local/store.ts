@@ -72,14 +72,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
             identity.accountNamespace ?? identity.provider,
             identity.accountId,
         );
-        if (
-            await this.isExternalIdentityDeleted(
-                identity.provider,
-                identity.externalUserId,
-            )
-        ) {
-            throw new Error("external_identity_deleted");
-        }
         const now = new Date().toISOString();
         const role =
             identity.role === "teacher" ||
@@ -88,6 +80,19 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 ? identity.role
                 : "user";
         await this.db.transaction(async (txDb) => {
+            await txDb.executeCommand({
+                option: "DELETE",
+                table: "deleted_auth_identities",
+                where: [
+                    {
+                        column: "id",
+                        value: externalIdentityFingerprint(
+                            identity.provider,
+                            identity.externalUserId,
+                        ),
+                    },
+                ],
+            });
             const identityResult = await txDb.executeCommand({
                 option: "SELECT",
                 table: "auth_identities",

@@ -118,7 +118,7 @@ Eine externe Authentifizierungsintegration kann die CTX-Abfrage `auth:syncExtern
 
 ### Gelöschte externe Identitäten
 
-Beim Löschen eines extern authentifizierten Kontos wird vor dem Entfernen der kontoeigenen Daten ein nicht umkehrbarer Fingerabdruck seiner Anbieteridentität gespeichert. Authentifizierung und Abgleich weisen diese Identität anschließend zurück, sodass eine aktive Anbietersitzung das gelöschte Cognis-Konto nicht unbemerkt neu erstellen kann. Der Fingerabdruck wird Browser-Clients nicht offengelegt.
+Beim Löschen eines extern authentifizierten Kontos wird vor dem Entfernen der kontoeigenen Daten ein nicht umkehrbarer Fingerabdruck seiner Anbieteridentität gespeichert. Eine spätere erfolgreiche Anbieterauthentifizierung entfernt diesen Löschvermerk transaktional während der Neuerstellung des Kontos und entspricht damit dem Verhalten verzeichnisgestützter Authentifizierung. Fehlgeschlagene Authentifizierung kann den Vermerk nicht entfernen, und der Fingerabdruck wird Browser-Clients nicht offengelegt.
 
 ### Anbieterbezogene Kontonamen
 
