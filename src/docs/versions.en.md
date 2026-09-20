@@ -32,26 +32,26 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component             | Path                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.35` |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.36` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.30` |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.24` |
-| File Quota            | `src/adapters/file/quota/`          | `1.0.22` |
-| Local Auth            | `src/adapters/auth/local/`          | `0.3.28` |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.25` |
+| File Quota            | `src/adapters/file/quota/`          | `1.0.23` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.3.29` |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.51` |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.36` |
-| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.22` |
-| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.22` |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.36` |
-| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.25` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.24` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.30` |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.26` |
-| Memory Database       | `src/adapters/db/memory/`           | `0.1.23` |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.37` |
-| Public Registration   | `src/adapters/registration/public/` | `0.1.21` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.10` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.17` |
-| Calls (Social)        | `src/adapters/social/call/`         | `0.5.32` |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.37` |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.23` |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.23` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.37` |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.26` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.25` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.31` |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.27` |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.24` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.38` |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.22` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.11` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.18` |
+| Calls (Social)        | `src/adapters/social/call/`         | `0.5.33` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.36` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10` |
@@ -64,7 +64,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component             | Path                          | Version   |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.66`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.67`  |
 | Share                 | `src/gateways/share/`         | `1.7.48`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.13`  |
@@ -74,19 +74,19 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
 | Study                 | `src/gateways/study/`         | `1.5.14`  |
-| Calendar              | `src/gateways/calendar/`      | `1.4.113` |
+| Calendar              | `src/gateways/calendar/`      | `1.4.114` |
 
 ## Core contracts
 
 | Component    | Path        | Version   |
 | ------------ | ----------- | --------- |
-| Core Package | `src/core/` | `0.3.106` |
+| Core Package | `src/core/` | `0.3.107` |
 
 ## API
 
 | Component  | Path       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.6.0` |
+| API Server | `src/api/` | `0.6.1` |
 
 ## Tooling
 

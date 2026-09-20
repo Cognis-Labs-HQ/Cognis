@@ -1,11 +1,11 @@
 {
     "name": "@cognis/adapter-registration-token",
-    "version": "0.1.37",
+    "version": "0.1.38",
     "private": true,
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.3.106",
+        "@cognis/core": "<=0.3.107",
         "@cognis/gateways": "<=0.1.11"
     }
 }

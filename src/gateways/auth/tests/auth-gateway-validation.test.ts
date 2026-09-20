@@ -423,6 +423,7 @@ test("external login retries account creation through the registration token gat
     });
     let createdProfileHandle = "";
     let synchronizedProfileHandle = "";
+    let synchronizedProfileVisibility = "";
     capabilities.contribute(
         "profile:createProfile",
         async (_accountId: string, handle: string) => {
@@ -433,6 +434,9 @@ test("external login retries account creation through the registration token gat
         "profile:applyExternalProfile",
         async (_accountId: string, profile: Record<string, unknown>) => {
             synchronizedProfileHandle = String(profile.handle ?? "");
+            synchronizedProfileVisibility = String(
+                profile.profileVisibility ?? "",
+            );
         },
     );
     await capabilities.require<
@@ -449,6 +453,7 @@ test("external login retries account creation through the registration token gat
             provider: "external-sso",
             email: "not-an-email-address",
             emails: ["also-invalid"],
+            profileVisibility: "private",
         }),
         configure() {},
         getConfigSchema: () => [],
@@ -543,6 +548,7 @@ test("external login retries account creation through the registration token gat
     });
     assert.equal(createdProfileHandle, "x:thefirehawk");
     assert.equal(synchronizedProfileHandle, "x:thefirehawk");
+    assert.equal(synchronizedProfileVisibility, "private");
     const accountStore = capabilities.require<{
         getInfo(accountId: string): Promise<unknown>;
         delete(accountId: string): Promise<void>;

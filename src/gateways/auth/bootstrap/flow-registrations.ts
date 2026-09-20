@@ -473,6 +473,9 @@ export async function registerAuthBootstrapHook(
             if (profileHandle && applyExternalProfile) {
                 await applyExternalProfile(session.accountId, {
                     handle: profileHandle,
+                    ...("profileVisibility" in session
+                        ? { profileVisibility: session.profileVisibility }
+                        : {}),
                 }).catch((error) =>
                     context.ctx.log?.(
                         "warn",

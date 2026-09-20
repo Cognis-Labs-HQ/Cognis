@@ -51,3 +51,7 @@
 ### ブラウザークライアント機能
 
 `social:profileUiClient` は依存ページのマウント前に独立したプロフィールプロバイダーが提供し、ブラウザーモジュールが所有アダプターのクライアント経由でプロフィールデータを取得できる `getCurrentProfile()` を公開します。
+
+## 外部プロフィールの公開範囲
+
+`profile:applyExternalProfile` は `profileVisibility` として `hidden`、`private`、`friends`、`community` を受け付けます。有効な値はプロフィール作成または同期後の公開範囲として保存され、不明な値は無視されます。

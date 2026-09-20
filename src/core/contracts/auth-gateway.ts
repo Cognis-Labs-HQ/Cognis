@@ -17,6 +17,7 @@ export interface AuthContext {
     email?: string;
     emails?: string[];
     registrationToken?: string;
+    profileVisibility?: string;
     role?: string;
 }
 

@@ -110,7 +110,7 @@ Password-confirmation invalidation runs only for an authenticated full-account s
 
 ## External profile providers
 
-SSO modules may register `auth:registerExternalProfileProvider` through CTX. The resolver receives the provider ID, Cognis account ID, external user ID, and authenticated provider session, and may return a searchable handle, display name, bio, location, website, avatar bytes, and banner bytes. Cognis also uses a provider session `handle` or `username` as the initial profile handle when supplied, rather than exposing an opaque external account ID as the username. The Profile adapter applies returned data through its own persistence and file-storage capability when the external account is first created.
+SSO modules may register `auth:registerExternalProfileProvider` through CTX. The resolver receives the provider ID, Cognis account ID, external user ID, and authenticated provider session, and may return a searchable handle, display name, bio, location, website, avatar bytes, and banner bytes. Cognis also uses a provider session `handle` or `username` as the initial profile handle when supplied, rather than exposing an opaque external account ID as the username. The Profile adapter applies returned data through its own persistence and file-storage capability when the external account is first created. A valid `profileVisibility` value (`hidden`, `private`, `friends`, or `community`) is persisted as the new profile’s visibility.
 
 ### External profile synchronization
 
