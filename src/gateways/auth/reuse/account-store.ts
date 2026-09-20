@@ -10,6 +10,7 @@ import type { AuthContext } from "@cognis/core";
 export interface LocalAccountStore {
     ensureExternalAccount?(identity: {
         accountId: string;
+        accountNamespace?: string;
         provider: string;
         externalUserId: string;
         email?: string;
@@ -96,6 +97,21 @@ export function normalizeUsername(username: string): string {
     return username.trim().toLowerCase();
 }
 
+export function normalizeExternalAccountId(
+    provider: string,
+    accountId: string,
+): string {
+    const providerNamespace = normalizeUsername(provider);
+    if (!/^[a-z0-9][a-z0-9_-]*$/.test(providerNamespace)) {
+        throw new Error("invalid_external_account_namespace");
+    }
+    const normalizedAccountId = normalizeUsername(accountId);
+    const providerPrefix = `${providerNamespace}:`;
+    return normalizedAccountId.startsWith(providerPrefix)
+        ? normalizedAccountId
+        : `${providerPrefix}${normalizedAccountId}`;
+}
+
 export function externalIdentityFingerprint(
     provider: string,
     externalUserId: string,
@@ -133,12 +149,16 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
 
     async ensureExternalAccount(identity: {
         accountId: string;
+        accountNamespace?: string;
         provider: string;
         externalUserId: string;
         displayName?: string;
         role?: string;
     }): Promise<string> {
-        const normalizedAccountId = normalizeUsername(identity.accountId);
+        const normalizedAccountId = normalizeExternalAccountId(
+            identity.accountNamespace ?? identity.provider,
+            identity.accountId,
+        );
         const identityId = `${identity.provider}:${identity.externalUserId}`;
         const identityFingerprint = externalIdentityFingerprint(
             identity.provider,

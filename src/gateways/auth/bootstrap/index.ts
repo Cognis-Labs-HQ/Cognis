@@ -36,6 +36,7 @@ export interface AuthAccountStore {
     getDisplayName(username: string): Promise<string | null>;
     ensureExternalAccount?(identity: {
         accountId: string;
+        accountNamespace?: string;
         provider: string;
         externalUserId: string;
         email?: string;
@@ -95,6 +96,7 @@ export interface PendingAccountCreationAttempt {
         accountId: string;
         provider: string;
         externalUserId?: string;
+        accountNamespace?: string;
         email?: string;
         emails?: string[];
         displayName?: string;

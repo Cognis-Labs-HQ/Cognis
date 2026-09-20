@@ -15,6 +15,7 @@ import { resolveRole } from "./local-account.js";
 import type { AuthBootstrapHookContext } from "./index.js";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[a-zA-Z0-9]{2,}$/;
+const ACCOUNT_NAMESPACE_PATTERN = /^[a-z0-9][a-z0-9_-]*$/;
 
 function getEnabledLoginMethods(context: AuthBootstrapHookContext): Array<{
     id: string;
@@ -95,6 +96,35 @@ function resolveSessionHandle(
         if (handle) return handle;
     }
     return undefined;
+}
+
+function resolveExternalAccountKey(
+    session: Record<string, unknown>,
+    adapterId: string,
+): string {
+    const requestedNamespace = String(
+        session.accountNamespace ?? session.provider ?? adapterId,
+    )
+        .trim()
+        .toLowerCase();
+    const providerNamespace = ACCOUNT_NAMESPACE_PATTERN.test(requestedNamespace)
+        ? requestedNamespace
+        : adapterId.trim().toLowerCase();
+    const proposedAccountId = String(session.accountId ?? "").trim();
+    const handle = resolveSessionHandle(session);
+    const normalizedCandidate = (handle ?? proposedAccountId).toLowerCase();
+    const providerPrefix = `${providerNamespace}:`;
+    const candidate = normalizedCandidate.startsWith(providerPrefix)
+        ? normalizedCandidate.slice(providerPrefix.length)
+        : normalizedCandidate;
+    return `${providerNamespace}:${candidate}`;
+}
+
+function resolveExternalProfileHandle(
+    session: Record<string, unknown>,
+    adapterId: string,
+): string {
+    return resolveExternalAccountKey(session, adapterId);
 }
 
 export async function registerAuthBootstrapHook(
@@ -180,6 +210,7 @@ export async function registerAuthBootstrapHook(
                     displayName?: string;
                     handle?: string;
                     username?: string;
+                    accountNamespace?: string;
                     role?: string;
                 };
             };
@@ -243,7 +274,11 @@ export async function registerAuthBootstrapHook(
                     : ((await context.accountStore.resolveExternalAccountId?.(
                           adapter.id,
                           externalUserId,
-                      )) ?? session.accountId.trim().toLowerCase());
+                      )) ??
+                      resolveExternalAccountKey(
+                          session as Record<string, unknown>,
+                          adapter.id,
+                      ));
             session.accountId = canonicalAccountId;
             return { success: true, session, adapterId: adapter.id };
         },
@@ -352,6 +387,10 @@ export async function registerAuthBootstrapHook(
                 session.accountId =
                     await context.accountStore.ensureExternalAccount({
                         accountId: session.accountId,
+                        accountNamespace:
+                            "accountNamespace" in session
+                                ? String(session.accountNamespace)
+                                : session.provider,
                         provider: adapterId ?? session.provider,
                         externalUserId:
                             "externalUserId" in session
@@ -490,9 +529,16 @@ export async function registerAuthBootstrapHook(
             const sessionHandle = resolveSessionHandle(
                 session as Record<string, unknown>,
             );
+            const profileHandle =
+                adapterId === "local"
+                    ? (sessionHandle ?? session.accountId)
+                    : resolveExternalProfileHandle(
+                          session as Record<string, unknown>,
+                          adapterId ?? session.provider,
+                      );
             await createProfile?.(
                 session.accountId,
-                sessionHandle ?? session.accountId,
+                profileHandle,
                 role,
                 displayName,
             );
@@ -502,9 +548,9 @@ export async function registerAuthBootstrapHook(
                     profile: Record<string, unknown>,
                 ) => Promise<void>
             >("profile:applyExternalProfile");
-            if (sessionHandle && applyExternalProfile) {
+            if (profileHandle && applyExternalProfile) {
                 await applyExternalProfile(session.accountId, {
-                    handle: sessionHandle,
+                    handle: profileHandle,
                 }).catch((error) =>
                     context.ctx.log?.(
                         "warn",
@@ -543,10 +589,20 @@ export async function registerAuthBootstrapHook(
                             externalProfileRequest,
                         );
                         if (externalProfile) {
-                            await applyExternalProfile(
-                                session.accountId,
-                                externalProfile,
-                            );
+                            const externalProfileHandle =
+                                typeof externalProfile.handle === "string"
+                                    ? resolveExternalProfileHandle(
+                                          {
+                                              ...session,
+                                              handle: externalProfile.handle,
+                                          },
+                                          externalProfileRequest.providerId,
+                                      )
+                                    : profileHandle;
+                            await applyExternalProfile(session.accountId, {
+                                ...externalProfile,
+                                handle: externalProfileHandle,
+                            });
                         }
                     } catch (error) {
                         context.ctx.log?.(

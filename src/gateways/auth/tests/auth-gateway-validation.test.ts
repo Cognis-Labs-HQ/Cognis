@@ -404,7 +404,10 @@ test("external login cannot create an account without registration authorization
     const accountStore = capabilities.require<{
         getInfo(accountId: string): Promise<unknown>;
     }>("auth:accountStore");
-    assert.equal(await accountStore.getInfo("external-user"), null);
+    assert.equal(
+        await accountStore.getInfo("external-sso:external-user"),
+        null,
+    );
     unregister();
 });
 
@@ -442,6 +445,7 @@ test("external login retries account creation through the registration token gat
             accountId: "external-user",
             externalUserId: "provider-user",
             username: "thefirehawk",
+            accountNamespace: "x",
             provider: "external-sso",
             email: "not-an-email-address",
             emails: ["also-invalid"],
@@ -532,17 +536,17 @@ test("external login retries account creation through the registration token gat
     );
     assert.equal(completedResult.res.status, 200);
     assert.deepEqual(authorizationInputs.at(-1), {
-        accountId: "external-user",
+        accountId: "x:thefirehawk",
         providerId: "external-sso",
         email: "external@example.com",
         registrationToken: "invite-token",
     });
-    assert.equal(createdProfileHandle, "thefirehawk");
-    assert.equal(synchronizedProfileHandle, "thefirehawk");
+    assert.equal(createdProfileHandle, "x:thefirehawk");
+    assert.equal(synchronizedProfileHandle, "x:thefirehawk");
     const accountStore = capabilities.require<{
         getInfo(accountId: string): Promise<unknown>;
     }>("auth:accountStore");
-    assert.notEqual(await accountStore.getInfo("external-user"), null);
+    assert.notEqual(await accountStore.getInfo("x:thefirehawk"), null);
 });
 
 test("external login rolls back account when token commit fails", async () => {
@@ -595,5 +599,8 @@ test("external login rolls back account when token commit fails", async () => {
     const accountStore = capabilities.require<{
         getInfo(accountId: string): Promise<unknown>;
     }>("auth:accountStore");
-    assert.equal(await accountStore.getInfo("external-user"), null);
+    assert.equal(
+        await accountStore.getInfo("external-sso:external-user"),
+        null,
+    );
 });

@@ -34,7 +34,7 @@ test("external account persistence creates the account before its identity", asy
             "auth_identities",
         ],
     );
-    assert.equal(accountId, "firehawk");
+    assert.equal(accountId, "ldap:firehawk");
     assert.deepEqual(commands[0]?.where, [
         {
             column: "id",
@@ -52,7 +52,7 @@ test("external account persistence creates the account before its identity", asy
         },
     ]);
     assert.deepEqual(commands[2]?.values, {
-        id: "firehawk",
+        id: "ldap:firehawk",
         email: "firehawk@example.org",
         display_name: "Fire Hawk",
         is_admin: false,
@@ -63,7 +63,7 @@ test("external account persistence creates the account before its identity", asy
     });
     assert.equal(
         (commands[3]?.values as Record<string, unknown>).account_id,
-        "firehawk",
+        "ldap:firehawk",
     );
     assert.deepEqual(commands[2]?.conflict, {
         action: "update",

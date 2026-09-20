@@ -1,11 +1,11 @@
 {
     "name": "@cognis/adapter-auth-local",
-    "version": "0.3.25",
+    "version": "0.3.26",
     "private": true,
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.3.104",
+        "@cognis/core": "<=0.3.105",
         "@cognis/gateways": "<=0.1.11"
     }
 }

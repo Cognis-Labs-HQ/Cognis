@@ -3,6 +3,7 @@ import type { AuthContext } from "./auth-gateway.js";
 export interface LocalAccountStore {
     ensureExternalAccount?(identity: {
         accountId: string;
+        accountNamespace?: string;
         provider: string;
         externalUserId: string;
         email?: string;

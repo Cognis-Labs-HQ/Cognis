@@ -36,7 +36,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.30`   |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.23`   |
 | ファイル容量制限      | `src/adapters/file/quota/`          | `1.0.21`   |
-| Local Auth            | `src/adapters/auth/local/`          | `0.3.25`   |
+| Local Auth            | `src/adapters/auth/local/`          | `0.3.26`   |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.51`   |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.35`   |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.21`   |
@@ -64,7 +64,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント        | パス                          | バージョン |
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`    |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.63`   |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.64`   |
 | Share                 | `src/gateways/share/`         | `1.7.48`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`   |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.13`   |
@@ -80,7 +80,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス        | バージョン |
 | -------------- | ----------- | ---------- |
-| Core Package   | `src/core/` | `0.3.104`  |
+| Core Package   | `src/core/` | `0.3.105`  |
 
 ## API
 

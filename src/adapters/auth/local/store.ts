@@ -14,6 +14,7 @@ import type { AuthContext, BootstrapLog } from "@cognis/core";
 import type { LocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
 import {
     externalIdentityFingerprint,
+    normalizeExternalAccountId,
     normalizeUsername,
     validateUsername,
 } from "../../../gateways/auth/reuse/account-store.js";
@@ -60,13 +61,17 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async ensureExternalAccount(identity: {
         accountId: string;
+        accountNamespace?: string;
         provider: string;
         externalUserId: string;
         email?: string;
         displayName?: string;
         role?: string;
     }): Promise<string> {
-        let normalizedAccountId = normalizeUsername(identity.accountId);
+        let normalizedAccountId = normalizeExternalAccountId(
+            identity.accountNamespace ?? identity.provider,
+            identity.accountId,
+        );
         if (
             await this.isExternalIdentityDeleted(
                 identity.provider,
