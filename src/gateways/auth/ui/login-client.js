@@ -15,6 +15,13 @@ export async function startSsoLogin(providerId) {
     return payload.data.redirectUrl;
 }
 
+export async function loadLoginMethods() {
+    const response = await fetch("/api/v1/auth/login-methods");
+    if (!response.ok) return [];
+    const payload = await response.json().catch(() => null);
+    return Array.isArray(payload?.data) ? payload.data : [];
+}
+
 export async function authorizePendingAccountCreation({
     registrationToken,
     email,

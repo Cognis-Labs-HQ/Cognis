@@ -110,4 +110,16 @@ Pembatalan konfirmasi kata sandi hanya berjalan untuk sesi akun penuh yang terau
 
 ## Penyedia profil eksternal
 
-Modul SSO dapat mendaftarkan `auth:registerExternalProfileProvider` melalui CTX. Resolver menerima ID penyedia, ID akun Cognis, ID pengguna eksternal, dan sesi penyedia terautentikasi, lalu dapat mengembalikan handle yang dapat dicari, nama tampilan, bio, lokasi, situs web, serta data avatar dan banner. Cognis juga memakai `handle` atau `username` dari sesi penyedia sebagai handle profil awal bila tersedia, alih-alih menampilkan ID akun eksternal yang buram sebagai nama pengguna. Adapter Profil menyimpan data tersebut melalui kemampuan penyimpanan miliknya saat akun eksternal pertama kali dibuat.
+Modul SSO dapat mendaftarkan `auth:registerExternalProfileProvider` melalui CTX. Resolver menerima ID penyedia, ID akun Cognis, ID pengguna eksternal, dan sesi penyedia terautentikasi, lalu dapat mengembalikan handle yang dapat dicari, nama tampilan, bio, lokasi, situs web, serta data avatar dan banner. Cognis juga memakai `handle` atau `username` dari sesi penyedia sebagai handle profil awal bila tersedia, alih-alih menampilkan ID akun eksternal yang buram sebagai nama pengguna. Adapter Profil menyimpan data tersebut melalui kemampuan penyimpanan miliknya saat akun eksternal pertama kali dibuat. Nilai `profileVisibility` yang valid (`hidden`, `private`, `friends`, atau `community`) disimpan sebagai visibilitas profil baru.
+
+### Sinkronisasi profil eksternal
+
+Integrasi autentikasi eksternal dapat menyediakan kueri CTX `auth:syncExternalProfile`. Kueri menerima `{ providerId }` untuk akun yang terautentikasi, memperbarui profil milik penyedia melalui `auth:resolveExternalProfile`, lalu selesai hanya setelah Cognis menyimpan handle, kolom tampilan, data avatar, dan data banner melalui kapabilitas Profil dan Berkas. URL gambar penyedia hanya menjadi masukan integrasi; kueri harus mengembalikan data media agar antarmuka peramban selalu menampilkan berkas milik Cognis. Di peramban, integrasi memanggil `auth:registerExternalProfileSynchronizer` dengan ID penyedia dan fungsi sinkronisasinya. Registri milik Autentikasi hanya menampilkan tindakan untuk penyedia saat ini sehingga integrasi lain yang terpasang tidak dapat menangani atau menimpa profil akun yang salah.
+
+### Identitas eksternal yang dihapus
+
+Penghapusan akun yang diautentikasi secara eksternal menyimpan sidik jari satu arah dari identitas penyedianya sebelum data milik akun dihapus. Autentikasi penyedia yang berhasil kemudian menghapus catatan penghapusan tersebut secara transaksional saat membuat ulang akun, sesuai dengan perilaku autentikasi berbasis direktori. Autentikasi yang gagal tidak dapat menghapus catatan, dan sidik jari tidak diekspos kepada klien peramban.
+
+### Nama akun berlingkup penyedia
+
+Akun eksternal baru memakai ruang nama penyedia pada kunci akun lokal dan handle profil. Sesi penyedia untuk handle `firehawksystems` dengan `accountNamespace` bernilai `x` menjadi `x:firehawksystems`; akun lokal `firehawksystems` dan identitas seperti `line:firehawksystems` tetap terpisah. Pemetaan `(provider, external_user_id)` yang sudah ada tetap menjadi acuan pada proses masuk berikutnya meskipun handle penyedia berubah.

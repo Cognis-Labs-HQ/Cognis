@@ -6,6 +6,7 @@ import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
 import { createRepromptGuard } from "/static/gateways/auth/reuse/password-confirmation.js";
+import { loadLoginMethods } from "/static/gateways/auth/login-client.js";
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
 import { formatDate, formatDateTime } from "../../reuse/timestamp.js";
 import { isSmtpAdapterActive } from "/static/gateways/notify/smtp-adapter.js";
@@ -24,6 +25,7 @@ let smtpAdapterActive = false;
 let composer = null;
 let elements = [];
 let leadingControlsHtml = "";
+let providerIcons = new Map();
 
 const QUOTA_UNITS = [
     { id: "B", multiplier: 1 },
@@ -283,10 +285,18 @@ async function promptStorageQuotas(username) {
 }
 
 async function refreshData() {
-    [users, smtpAdapterActive] = await Promise.all([
+    const [loadedUsers, isSmtpActive, loginMethods] = await Promise.all([
         loadUsers(),
         isSmtpAdapterActive(apiFetch),
+        loadLoginMethods(),
     ]);
+    users = loadedUsers;
+    smtpAdapterActive = isSmtpActive;
+    providerIcons = new Map(
+        loginMethods
+            .filter((method) => method.loginButton?.iconUrl)
+            .map((method) => [method.id, method.loginButton.iconUrl]),
+    );
     buildElements();
 }
 
@@ -349,7 +359,7 @@ function renderUsersTable() {
                           `;
                   return `
               <tr class="users-row" data-username="${escapeHtml(user.username)}">
-                <td>${escapeHtml(user.username)}</td>
+                <td><span class="users-identity">${providerIcons.has(user.provider) ? `<img class="users-provider-icon" src="${escapeHtml(providerIcons.get(user.provider))}" alt="" />` : ""}${escapeHtml(user.handle || user.username)}</span></td>
                 <td>${roleCellHtml}</td>
                 <td>${escapeHtml(statusLabel)}</td>
                 <td class="users-actions-cell">${actionsHtml}</td>

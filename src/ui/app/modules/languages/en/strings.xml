@@ -91,4 +91,6 @@
   <string name="ui.app.modules.optional">Optional</string>
   <string name="ui.app.modules.dependencies_message">{{module}} module has the following dependencies. Installation cannot proceed until all required dependencies are installed. Choosing not to install optional dependencies may degrade user experience.</string>
   <string name="ui.app.modules.hard_dependency_blocked">Install and enable every required dependency before continuing.</string>
+  <string name="ui.app.modules.configure_adapters">Configure Adapters</string>
+  <string name="ui.app.modules.configure_later">Later</string>
 </resources>

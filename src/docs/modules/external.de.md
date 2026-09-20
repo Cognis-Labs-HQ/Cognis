@@ -126,3 +126,7 @@ Module, die ein Laufzeitskript laden müssen, deklarieren `ui:resourceLoader` un
 Externe Manifeste können `hardDependencies` und `softDependencies` als Listen von Modul-UUIDs oder IDs deklarieren. Harte Abhängigkeiten werden nicht empfohlen, da Administratoren sie vor der Installation installieren und aktivieren müssen. Weiche Abhängigkeiten können im Installationsdialog optional ausgewählt werden.
 
 Deaktivierte Module importieren oder starten niemals ihren normalen Bootstrap. Muss ein Modul im deaktivierten Zustand Konfiguration bereitstellen, deklariert es `entrypoints.disabledApi`; diese isolierte Datei exportiert `registerDisabledApiRoutes(ctx)` und darf nur ausdrücklich mit `allowWhenDisabled` markierte Routen registrieren.
+
+### Hinweise nach der Aktivierung
+
+Ein Modul, das Konfigurationsoberflächen an anderer Stelle in Cognis beiträgt, kann `ui.activationGuidance` deklarieren, anstatt ein leeres Moduleinstellungsformular zu erstellen. Der Vertrag enthält einen lokalisierten `titleKey`, einen optionalen `descriptionKey` und geordnete `steps`. Jeder Schritt besitzt eine stabile `id`, einen lokalisierten `labelKey`, einen optionalen `descriptionKey` und optionale `targets`. Ein Adapterziel verwendet `{ "kind": "adapter", "gatewayId": "<gateway>", "adapterId": "<adapter>" }`. Nach erfolgreicher Aktivierung zeigt Cognis alle Schritte an und bietet an, die Administration zu öffnen. Ein Modul kann mehrere Adapterziele aufführen, ohne dass der Core die Anbieternamen kennen muss.

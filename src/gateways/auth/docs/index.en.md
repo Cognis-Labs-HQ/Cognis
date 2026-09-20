@@ -110,4 +110,16 @@ Password-confirmation invalidation runs only for an authenticated full-account s
 
 ## External profile providers
 
-SSO modules may register `auth:registerExternalProfileProvider` through CTX. The resolver receives the provider ID, Cognis account ID, external user ID, and authenticated provider session, and may return a searchable handle, display name, bio, location, website, avatar bytes, and banner bytes. Cognis also uses a provider session `handle` or `username` as the initial profile handle when supplied, rather than exposing an opaque external account ID as the username. The Profile adapter applies returned data through its own persistence and file-storage capability when the external account is first created.
+SSO modules may register `auth:registerExternalProfileProvider` through CTX. The resolver receives the provider ID, Cognis account ID, external user ID, and authenticated provider session, and may return a searchable handle, display name, bio, location, website, avatar bytes, and banner bytes. Cognis also uses a provider session `handle` or `username` as the initial profile handle when supplied, rather than exposing an opaque external account ID as the username. The Profile adapter applies returned data through its own persistence and file-storage capability when the external account is first created. A valid `profileVisibility` value (`hidden`, `private`, `friends`, or `community`) is persisted as the new profile’s visibility.
+
+### External profile synchronization
+
+An external authentication integration can expose the `auth:syncExternalProfile` CTX query. It accepts `{ providerId }` for the authenticated account, refreshes the provider-owned profile through `auth:resolveExternalProfile`, and returns only after Cognis has persisted the resulting handle, display fields, avatar bytes, and banner bytes through the Profile and Files capabilities. Provider image URLs are inputs to the integration only; the query must return media bytes so browser surfaces always render Cognis-owned files. In the browser, an integration calls `auth:registerExternalProfileSynchronizer` with its provider ID and synchronization function. The Authentication-owned registry exposes the action only for the current provider, so another installed integration cannot handle or overwrite the wrong account profile.
+
+### Deleted external identities
+
+Deleting an externally authenticated account records a one-way fingerprint of its provider identity before removing account-owned data. A later successful provider authentication clears that deletion record transactionally while recreating the account, matching directory-backed authentication behavior. Failed authentication cannot clear the record, and the fingerprint is not exposed to browser clients.
+
+### Provider-scoped account names
+
+New external accounts use the provider namespace in both the local account key and profile handle. A provider session for handle `firehawksystems` with `accountNamespace` set to `x` therefore becomes `x:firehawksystems`; a local `firehawksystems` account and identities such as `line:firehawksystems` remain distinct. Existing `(provider, external_user_id)` mappings remain authoritative on later logins even if a provider handle changes.

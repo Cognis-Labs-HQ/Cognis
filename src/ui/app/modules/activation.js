@@ -5,6 +5,7 @@ import {
     missingRequiredModulePreferenceKeys,
     openModulePreferences,
 } from "./preferences.js";
+import { presentActivationGuidance } from "./activation-guidance.js";
 
 export function modulePreferenceLabels(i18n) {
     return {
@@ -46,7 +47,10 @@ export async function activateModule(module, i18n) {
                 module,
                 requiredMessage,
             );
-            if (configuredAfterEnable) return result;
+            if (configuredAfterEnable) {
+                await presentActivationGuidance(module, i18n);
+                return result;
+            }
         } catch (configError) {
             if (configError.code !== "module_config_required") {
                 await setModuleEnabled(module.id, false);
@@ -71,9 +75,12 @@ export async function activateModule(module, i18n) {
             await setModuleEnabled(module.id, false);
             throw setupError;
         }
+        await presentActivationGuidance(module, i18n);
         return result;
     }
-    return enableModuleWithIntegrityCheck(module.id, i18n);
+    const result = await enableModuleWithIntegrityCheck(module.id, i18n);
+    if (result) await presentActivationGuidance(module, i18n);
+    return result;
 }
 
 async function prepareRequiredModulePreferences(module, i18n, message) {

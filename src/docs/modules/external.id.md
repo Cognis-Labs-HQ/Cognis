@@ -126,3 +126,7 @@ Modul yang harus memuat skrip runtime mendeklarasikan `ui:resourceLoader` dan me
 Manifes eksternal dapat menyatakan `hardDependencies` dan `softDependencies` sebagai daftar UUID atau ID modul. Dependensi keras tidak dianjurkan karena administrator harus memasang dan mengaktifkannya sebelum instalasi dapat dilanjutkan. Dependensi lunak dapat dipilih secara opsional pada dialog instalasi.
 
 Modul yang dinonaktifkan tidak pernah mengimpor atau menjalankan bootstrap normalnya. Modul yang harus menyediakan konfigurasi saat nonaktif mendeklarasikan `entrypoints.disabledApi`; file terisolasi itu mengekspor `registerDisabledApiRoutes(ctx)` dan hanya boleh mendaftarkan rute yang ditandai `allowWhenDisabled` secara eksplisit.
+
+### Panduan setelah aktivasi
+
+Modul yang menyediakan permukaan konfigurasi di bagian lain Cognis dapat mendeklarasikan `ui.activationGuidance` alih-alih membuat formulir pengaturan modul yang kosong. Kontrak menyediakan `titleKey` yang dilokalkan, `descriptionKey` opsional, dan `steps` yang berurutan. Setiap langkah memiliki `id` stabil, `labelKey` yang dilokalkan, `descriptionKey` opsional, serta `targets` opsional. Target adaptor menggunakan `{ "kind": "adapter", "gatewayId": "<gateway>", "adapterId": "<adapter>" }`. Setelah aktivasi berhasil, Cognis menampilkan setiap langkah dan menawarkan untuk membuka Administrasi. Modul dapat mencantumkan beberapa target adaptor tanpa membuat core mengetahui nama penyedia.

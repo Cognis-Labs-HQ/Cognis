@@ -14,7 +14,14 @@ import {
 import { resolveRole } from "./local-account.js";
 import type { AuthBootstrapHookContext } from "./index.js";
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[a-zA-Z0-9]{2,}$/;
+import {
+    applyAccountCreationCredentials,
+    resolveExternalAccountKey,
+    resolveExternalAccountNamespace,
+    resolveExternalProfileHandle,
+    resolveSessionEmail,
+    resolveSessionHandle,
+} from "./external-session.js";
 
 function getEnabledLoginMethods(context: AuthBootstrapHookContext): Array<{
     id: string;
@@ -49,52 +56,6 @@ function getPublicLoginMethods(context: AuthBootstrapHookContext) {
                 : {}),
         }),
     );
-}
-
-function applyAccountCreationCredentials(
-    session: {
-        accountId: string;
-        provider: string;
-        email?: string;
-        registrationToken?: string;
-        [key: string]: unknown;
-    },
-    credentials: Record<string, unknown>,
-) {
-    const registrationToken = String(
-        credentials.registrationToken ?? "",
-    ).trim();
-    const submittedEmail = String(credentials.email ?? "").trim();
-    const existingEmail = resolveSessionEmail(session);
-    return {
-        ...session,
-        ...(existingEmail || !submittedEmail ? {} : { email: submittedEmail }),
-        ...(registrationToken ? { registrationToken } : {}),
-    };
-}
-
-function resolveSessionEmail(session: {
-    email?: unknown;
-    emails?: unknown;
-}): string | undefined {
-    const directEmail = String(session.email ?? "").trim();
-    if (EMAIL_PATTERN.test(directEmail)) return directEmail;
-    if (!Array.isArray(session.emails)) return undefined;
-    return session.emails
-        .map((email) => String(email).trim())
-        .find((email) => EMAIL_PATTERN.test(email));
-}
-
-function resolveSessionHandle(
-    session: Record<string, unknown>,
-): string | undefined {
-    for (const candidate of [session.handle, session.username]) {
-        const handle = String(candidate ?? "")
-            .trim()
-            .replace(/^@/, "");
-        if (handle) return handle;
-    }
-    return undefined;
 }
 
 export async function registerAuthBootstrapHook(
@@ -180,6 +141,7 @@ export async function registerAuthBootstrapHook(
                     displayName?: string;
                     handle?: string;
                     username?: string;
+                    accountNamespace?: string;
                     role?: string;
                 };
             };
@@ -216,7 +178,38 @@ export async function registerAuthBootstrapHook(
             if (!session) {
                 return { success: false, reason: "invalid_credentials" };
             }
-            return { success: true, session, adapterId: adapter.id };
+            const externalUserId =
+                "externalUserId" in session
+                    ? String(session.externalUserId)
+                    : session.accountId;
+            const resolvedExternalAccountId =
+                adapter.id === "local"
+                    ? null
+                    : ((await context.accountStore.resolveExternalAccountId?.(
+                          adapter.id,
+                          externalUserId,
+                      )) ?? null);
+            const canonicalAccountId =
+                adapter.id === "local"
+                    ? session.accountId.trim().toLowerCase()
+                    : (resolvedExternalAccountId ??
+                      resolveExternalAccountKey(
+                          session as Record<string, unknown>,
+                          adapter.id,
+                      ));
+            session.accountId = canonicalAccountId;
+            if (adapter.id !== "local") {
+                session.accountNamespace = resolveExternalAccountNamespace(
+                    session as Record<string, unknown>,
+                    adapter.id,
+                );
+            }
+            return {
+                success: true,
+                session,
+                adapterId: adapter.id,
+                externalIdentityMapped: resolvedExternalAccountId !== null,
+            };
         },
     );
 
@@ -235,6 +228,7 @@ export async function registerAuthBootstrapHook(
                         role?: string;
                     };
                     adapterId?: string;
+                    externalIdentityMapped?: boolean;
                 }>
             )[0];
 
@@ -246,7 +240,7 @@ export async function registerAuthBootstrapHook(
                 };
             }
 
-            const { session, adapterId } = authResult;
+            const { session, adapterId, externalIdentityMapped } = authResult;
             const capabilities = context.ctx.capabilities;
             const sessionEmail = resolveSessionEmail(session);
 
@@ -257,8 +251,13 @@ export async function registerAuthBootstrapHook(
                 const existingAccount = await context.accountStore.getInfo(
                     session.accountId,
                 );
+                if (existingAccount && !externalIdentityMapped) {
+                    return {
+                        sessionResult: { outcome: "invalid_credentials" },
+                    };
+                }
                 const creatingExternalAccount = !existingAccount;
-                if (!existingAccount) {
+                if (!externalIdentityMapped) {
                     if (!context.ctx.flow.exists("gateAccountCreation")) {
                         return {
                             sessionResult: {
@@ -320,20 +319,25 @@ export async function registerAuthBootstrapHook(
                     stageCtx.data["accountCreationAuthorization"] =
                         authorization;
                 }
-                await context.accountStore.ensureExternalAccount({
-                    accountId: session.accountId,
-                    provider: adapterId ?? session.provider,
-                    externalUserId:
-                        "externalUserId" in session
-                            ? String(session.externalUserId)
-                            : session.accountId,
-                    email: sessionEmail,
-                    displayName:
-                        "displayName" in session
-                            ? String(session.displayName ?? "") || undefined
-                            : undefined,
-                    role: session.role,
-                });
+                session.accountId =
+                    await context.accountStore.ensureExternalAccount({
+                        accountId: session.accountId,
+                        accountNamespace:
+                            "accountNamespace" in session
+                                ? String(session.accountNamespace)
+                                : session.provider,
+                        provider: adapterId ?? session.provider,
+                        externalUserId:
+                            "externalUserId" in session
+                                ? String(session.externalUserId)
+                                : session.accountId,
+                        email: sessionEmail,
+                        displayName:
+                            "displayName" in session
+                                ? String(session.displayName ?? "") || undefined
+                                : undefined,
+                        role: session.role,
+                    });
                 if (creatingExternalAccount) {
                     stageCtx.data["newExternalAccountProfileRequest"] = {
                         providerId: adapterId ?? session.provider,
@@ -369,7 +373,9 @@ export async function registerAuthBootstrapHook(
                         committed = false;
                     }
                     if (!committed) {
-                        await context.accountStore.delete(session.accountId);
+                        await context.accountStore.delete(session.accountId, {
+                            recordExternalIdentityDeletion: false,
+                        });
                         return {
                             sessionResult: {
                                 outcome: "account_creation_required",
@@ -460,9 +466,16 @@ export async function registerAuthBootstrapHook(
             const sessionHandle = resolveSessionHandle(
                 session as Record<string, unknown>,
             );
+            const profileHandle =
+                adapterId === "local"
+                    ? (sessionHandle ?? session.accountId)
+                    : resolveExternalProfileHandle(
+                          session as Record<string, unknown>,
+                          adapterId ?? session.provider,
+                      );
             await createProfile?.(
                 session.accountId,
-                sessionHandle ?? session.accountId,
+                profileHandle,
                 role,
                 displayName,
             );
@@ -472,9 +485,12 @@ export async function registerAuthBootstrapHook(
                     profile: Record<string, unknown>,
                 ) => Promise<void>
             >("profile:applyExternalProfile");
-            if (sessionHandle && applyExternalProfile) {
+            if (profileHandle && applyExternalProfile) {
                 await applyExternalProfile(session.accountId, {
-                    handle: sessionHandle,
+                    handle: profileHandle,
+                    ...("profileVisibility" in session
+                        ? { profileVisibility: session.profileVisibility }
+                        : {}),
                 }).catch((error) =>
                     context.ctx.log?.(
                         "warn",
@@ -513,10 +529,20 @@ export async function registerAuthBootstrapHook(
                             externalProfileRequest,
                         );
                         if (externalProfile) {
-                            await applyExternalProfile(
-                                session.accountId,
-                                externalProfile,
-                            );
+                            const externalProfileHandle =
+                                typeof externalProfile.handle === "string"
+                                    ? resolveExternalProfileHandle(
+                                          {
+                                              ...session,
+                                              handle: externalProfile.handle,
+                                          },
+                                          externalProfileRequest.providerId,
+                                      )
+                                    : profileHandle;
+                            await applyExternalProfile(session.accountId, {
+                                ...externalProfile,
+                                handle: externalProfileHandle,
+                            });
                         }
                     } catch (error) {
                         context.ctx.log?.(

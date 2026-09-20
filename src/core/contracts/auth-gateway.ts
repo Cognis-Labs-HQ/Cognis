@@ -13,9 +13,11 @@ export interface AuthContext {
     accountId: string;
     provider: string;
     externalUserId: string;
+    accountNamespace?: string;
     email?: string;
     emails?: string[];
     registrationToken?: string;
+    profileVisibility?: string;
     role?: string;
 }
 
