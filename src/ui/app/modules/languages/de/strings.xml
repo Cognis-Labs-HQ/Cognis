@@ -91,4 +91,6 @@
   <string name="ui.app.modules.optional">Optional</string>
   <string name="ui.app.modules.dependencies_message">Das Modul {{module}} hat die folgenden Abhängigkeiten. Die Installation kann erst fortgesetzt werden, wenn alle erforderlichen Abhängigkeiten installiert sind. Wenn optionale Abhängigkeiten nicht installiert werden, kann die Benutzererfahrung beeinträchtigt werden.</string>
   <string name="ui.app.modules.hard_dependency_blocked">Installieren und aktivieren Sie alle erforderlichen Abhängigkeiten, bevor Sie fortfahren.</string>
+  <string name="ui.app.modules.configure_adapters">Adapter konfigurieren</string>
+  <string name="ui.app.modules.configure_later">Später</string>
 </resources>

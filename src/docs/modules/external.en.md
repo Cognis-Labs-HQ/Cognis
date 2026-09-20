@@ -126,3 +126,7 @@ Modules that must load a runtime script declare `ui:resourceLoader` and call its
 External manifests may declare `hardDependencies` and `softDependencies` as arrays of module UUIDs or IDs. Hard dependencies are discouraged because administrators must install and enable them before installation can continue. Soft dependencies are optional selections in the installation dialog.
 
 Disabled modules never import or execute their normal bootstrap. A module that must expose configuration while disabled declares `entrypoints.disabledApi`; that isolated file exports `registerDisabledApiRoutes(ctx)` and may register only routes explicitly marked `allowWhenDisabled`.
+
+### Activation guidance
+
+A module that contributes configuration surfaces elsewhere in Cognis can declare `ui.activationGuidance` instead of creating an empty module-settings form. The contract provides localized `titleKey`, optional `descriptionKey`, and ordered `steps`. Each step has a stable `id`, localized `labelKey`, optional `descriptionKey`, and optional `targets`. An adapter target uses `{ "kind": "adapter", "gatewayId": "<gateway>", "adapterId": "<adapter>" }`. After successful enablement, Cognis presents every step and offers to open Administration. A module can list multiple adapter targets without core knowing the provider names.
