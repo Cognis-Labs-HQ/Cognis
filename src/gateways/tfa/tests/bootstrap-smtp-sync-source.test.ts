@@ -1,0 +1,36 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const ROOT = process.cwd();
+
+test("tfa smtp bootstrap enables notify smtp only when smtp tfa is enabled", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/tfa/bootstrap/index.ts"),
+        "utf8",
+    );
+
+    assert.match(source, /adapterId === "smtp" && enabled/);
+    assert.match(
+        source,
+        /if \(gateway\.isAdapterEnabled\("smtp"\)\) \{\s*await setNotifySenderEnabled\("smtp", true\);/,
+    );
+    assert.doesNotMatch(source, /setNotifySenderEnabled\("smtp", enabled\)/);
+    assert.doesNotMatch(source, /setAdapterAvailabilityCheck\(\s*"smtp"/);
+    assert.doesNotMatch(source, /notify-smtp:sync-tfa-smtp/);
+});
+
+test("tfa declares notify as a bootstrap dependency", () => {
+    const manifest = JSON.parse(
+        readFileSync(resolve(ROOT, "src/gateways/tfa/manifest.json"), "utf8"),
+    );
+
+    const notifyManifest = JSON.parse(
+        readFileSync(
+            resolve(ROOT, "src/gateways/notify/manifest.json"),
+            "utf8",
+        ),
+    );
+    assert.ok(manifest.requires.includes(notifyManifest.uuid));
+});

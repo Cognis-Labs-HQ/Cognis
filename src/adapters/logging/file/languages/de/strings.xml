@@ -1,0 +1,10 @@
+<resources>
+  <string name="adapter.logging.file.level">Protokollstufe</string>
+  <string name="adapter.logging.file.rotate_max_bytes">Rotationsgröße (Bytes)</string>
+  <string name="adapter.logging.file.rotate_max_files">Aufzubewahrende rotierte Dateien</string>
+  <string name="adapter.logging.file.rotate_compress">Rotierte Protokolle komprimieren</string>
+  <string name="adapter.logging.file.error.level">Nicht unterstützte Protokollstufe</string>
+  <string name="adapter.logging.file.error.rotate_max_bytes">Die Rotationsgröße muss eine positive Zahl sein</string>
+  <string name="adapter.logging.file.error.rotate_max_files">Die Anzahl rotierter Dateien muss eine nicht negative Ganzzahl sein</string>
+  <string name="adapter.logging.file.error.rotate_compress">Die Kompressionseinstellung muss ein boolescher Wert sein</string>
+</resources>

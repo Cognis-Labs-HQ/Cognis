@@ -1,0 +1,825 @@
+import { randomBytes } from "node:crypto";
+import { sanitizeFilenameBase } from "../../../api/reuse/sanitize-filename.js";
+import type {
+    CalendarEventRecord,
+    CalendarEventResponse,
+    CalendarRecord,
+    CalendarVisibility,
+    CoreCalendarGateway,
+} from "../gateway/index.js";
+import type {
+    CalendarShareLinkRegistryRecord,
+    CalendarShareRegistry,
+} from "./share-registry.js";
+
+const DEFAULT_SHARE_TTL_SECONDS = 24 * 3600;
+
+export function resolveAvailabilityStatus(
+    value: unknown,
+    getCapability: <T>(capabilityId: string) => T | undefined,
+    fallback = "busy",
+): string {
+    const resolveStatuses = getCapability<() => readonly string[]>(
+        "social:getAvailabilityStatuses",
+    );
+    const supportedStatuses = resolveStatuses?.() ?? ["busy", "free"];
+    return typeof value === "string" && supportedStatuses.includes(value)
+        ? value
+        : fallback;
+}
+
+export type NotificationDispatcher = (envelope: {
+    category: string;
+    recipientUsername: string;
+    recipientEmail?: string;
+    subject: string;
+    body: string;
+    actionUrl?: string;
+    senderName?: string;
+    metadata?: Record<string, unknown>;
+    attachments?: Array<{
+        filename: string;
+        contentType?: string;
+        content: string;
+    }>;
+}) => Promise<{ dispatched: string[] }>;
+
+export type ResolveAccountId = (
+    handleOrIdentifier: string,
+) => Promise<string | null>;
+export type ResolveAccountDisplayName = (
+    accountId: string,
+) => Promise<string> | string;
+export type CalendarLogger = (
+    level: string,
+    msg: string,
+    meta?: Record<string, unknown>,
+) => void;
+
+export type EventLocationRef = {
+    calendarId: string;
+    eventId: string;
+};
+
+export function normalizeVisibility(value: unknown): CalendarVisibility {
+    return value === "public" ? "public" : "private";
+}
+
+export function normalizeStringList(value: unknown): string[] {
+    if (!Array.isArray(value)) return [];
+    return Array.from(
+        new Set(
+            value.map((entry) => String(entry ?? "").trim()).filter(Boolean),
+        ),
+    );
+}
+
+export function normalizeReminderOffsets(value: unknown): number[] {
+    const maxReminderOffsetMinutes = 7 * 24 * 60 * 52;
+    if (!Array.isArray(value)) return [];
+    return Array.from(
+        new Set(
+            value
+                .map((entry) =>
+                    typeof entry === "number" ? entry : Number(entry),
+                )
+                .filter(
+                    (entry) =>
+                        Number.isFinite(entry) &&
+                        entry > 0 &&
+                        entry <= maxReminderOffsetMinutes,
+                )
+                .map((entry) => Math.trunc(entry)),
+        ),
+    ).sort((left, right) => left - right);
+}
+
+export function buildCalendarShareData(input: {
+    shareLink: CalendarShareLinkRegistryRecord;
+    calendarName: string;
+    buildAbsoluteUrl: (relativePath: string) => string;
+}): {
+    id: string;
+    name: string | null;
+    passphrase: string | null;
+    expiresAt: string;
+    shareUrl: string;
+    caldavUrl: string;
+    icsUrl: string;
+} {
+    const encodedCalendarName = encodeURIComponent(input.calendarName);
+    const caldavPath = `/api/v1/calendar/caldav/share/${encodeURIComponent(
+        input.shareLink.token,
+    )}/${encodedCalendarName}/`;
+    const icsPath = `/api/v1/calendar/ics/share/${encodeURIComponent(
+        input.shareLink.token,
+    )}/${encodedCalendarName}.ics`;
+    const caldavUrl = input.buildAbsoluteUrl(caldavPath);
+    const icsUrl = input.buildAbsoluteUrl(icsPath);
+    return {
+        id: input.shareLink.id,
+        name: input.shareLink.name,
+        passphrase: input.shareLink.passphrase,
+        expiresAt: input.shareLink.expiresAt,
+        shareUrl: caldavUrl,
+        caldavUrl,
+        icsUrl,
+    };
+}
+
+export function createCalendarSharePassphrase(): string {
+    // 5 x 4-char base64url segments gives a human-readable passphrase with
+    // strong entropy while remaining easy to copy and verify visually.
+    const words = Array.from({ length: 5 }, () =>
+        randomBytes(3).toString("base64url").slice(0, 4).toLowerCase(),
+    );
+    return words.join("-");
+}
+
+export function createCalendarShareName(): string {
+    return randomBytes(4).toString("hex");
+}
+
+export function resolveShareExpiry(expiresInHours: unknown): string {
+    if (expiresInHours === null) return "";
+    if (
+        typeof expiresInHours !== "number" ||
+        !Number.isFinite(expiresInHours)
+    ) {
+        return new Date(
+            Date.now() + DEFAULT_SHARE_TTL_SECONDS * 1000,
+        ).toISOString();
+    }
+    if (expiresInHours <= 0) {
+        return new Date(
+            Date.now() + DEFAULT_SHARE_TTL_SECONDS * 1000,
+        ).toISOString();
+    }
+    const ttlSeconds = Math.max(1, Math.round(expiresInHours * 3600));
+    return new Date(Date.now() + ttlSeconds * 1000).toISOString();
+}
+
+export async function normalizeAttendeesForOwner(
+    attendees: unknown,
+    ownerAccountId: string,
+    resolveAccountId: ResolveAccountId | null,
+): Promise<string[]> {
+    const normalized = normalizeStringList(attendees);
+    const resolved = await Promise.all(
+        normalized.map((attendee) =>
+            resolveNotificationRecipientUsername(attendee, resolveAccountId),
+        ),
+    );
+    return Array.from(
+        new Set(
+            [...resolved, ownerAccountId]
+                .map((entry) => String(entry ?? "").trim())
+                .filter(Boolean),
+        ),
+    );
+}
+
+export async function includeSharedAudienceAttendees(
+    attendees: string[],
+    shareRegistry: CalendarShareRegistry,
+    ownerAccountId: string,
+    ownerCalendarId: string,
+): Promise<string[]> {
+    const shares = await shareRegistry.listCalendarUserShares(
+        ownerAccountId,
+        ownerCalendarId,
+    );
+    return Array.from(
+        new Set(
+            [
+                ...attendees,
+                ownerAccountId,
+                ...shares.map((share) => share.recipientAccountId),
+            ]
+                .map((accountId) => String(accountId ?? "").trim())
+                .filter(Boolean),
+        ),
+    );
+}
+
+export function normalizeResponseValue(value: unknown): CalendarEventResponse {
+    return value === "accepted" || value === "tentative" || value === "declined"
+        ? value
+        : "pending";
+}
+
+export function buildIcsAttachmentFilename(eventTitle: string): string {
+    return `${sanitizeFilenameBase(eventTitle, "event")}.ics`;
+}
+
+export function sendJson(
+    res: ServerResponse,
+    statusCode: number,
+    payload: unknown,
+): void {
+    res.writeHead(statusCode, { "content-type": "application/json" });
+    res.end(JSON.stringify(payload));
+}
+
+export function sendCalendarError(
+    res: ServerResponse,
+    code: string,
+    message: string,
+    statusCode: number,
+): void {
+    sendJson(res, statusCode, {
+        error: {
+            code,
+            message,
+        },
+    });
+}
+
+export function requireOrganizerOwnedSourceEvent(input: {
+    gateway: CoreCalendarGateway;
+    ownerAccountId: string;
+    calendarId: string;
+    eventId: string;
+    res: ServerResponse;
+    actionVerb: "edit" | "delete";
+}): CalendarEventRecord | null {
+    const targetEvent = input.gateway.getOwnedEvent(
+        input.ownerAccountId,
+        input.calendarId,
+        input.eventId,
+    );
+    if (!targetEvent) {
+        sendCalendarError(input.res, "not_found", "Event not found.", 404);
+        return null;
+    }
+    const isOrganizerOwnedSourceEvent =
+        targetEvent.createdBy === input.ownerAccountId &&
+        targetEvent.sourceEventId === null;
+    if (!isOrganizerOwnedSourceEvent) {
+        sendCalendarError(
+            input.res,
+            "forbidden",
+            `Only the event organizer can ${input.actionVerb} this event.`,
+            403,
+        );
+        return null;
+    }
+    return targetEvent;
+}
+
+export function requireWritableSharedSourceEvent(input: {
+    gateway: CoreCalendarGateway;
+    sharedCalendar: {
+        ownerCalendarId: string;
+        permission: "read" | "write";
+    };
+    eventId: string;
+    res: ServerResponse;
+}): CalendarEventRecord | null {
+    if (input.sharedCalendar.permission !== "write") {
+        sendCalendarError(
+            input.res,
+            "forbidden",
+            "Calendar is read-only.",
+            403,
+        );
+        return null;
+    }
+    const sourceEvent = input.gateway.getEvent(
+        input.sharedCalendar.ownerCalendarId,
+        input.eventId,
+    );
+    if (!sourceEvent) {
+        sendCalendarError(input.res, "not_found", "Event not found.", 404);
+        return null;
+    }
+    return sourceEvent;
+}
+
+export function buildEventActionUrl(
+    calendarId: string,
+    eventId: string,
+): string {
+    const query = new URLSearchParams({
+        calendarId,
+        eventId,
+    });
+    return `/calendar?${query.toString()}`;
+}
+
+export function buildInviteNotificationSubject(
+    event: CalendarEventRecord,
+    inviterDisplayName: string,
+): string {
+    return `${inviterDisplayName} invited you to ${event.title}`;
+}
+
+export function buildInternalInviteBody(
+    event: CalendarEventRecord,
+    eventActionUrl: string,
+    inviterDisplayName: string,
+): string {
+    return [
+        `${inviterDisplayName} invited you to ${event.title}.`,
+        "",
+        `Starts ${event.startAt} and ends ${event.endAt}.`,
+        ...(event.description ? [`Note: ${event.description}`] : []),
+        ...(event.meetingUrl ? [`Meeting link: ${event.meetingUrl}`] : []),
+        "",
+        "Open the event to accept, decline, or respond as tentative.",
+        eventActionUrl,
+    ].join("\n");
+}
+
+export function buildExternalInviteBody(
+    event: CalendarEventRecord,
+    meetingAccessUrl: string | null,
+    inviterDisplayName: string,
+): string {
+    return [
+        `${inviterDisplayName} invited you to ${event.title}.`,
+        "",
+        `Starts ${event.startAt} and ends ${event.endAt}.`,
+        ...(event.description ? [`Note: ${event.description}`] : []),
+        ...(meetingAccessUrl ? [`Meeting link: ${meetingAccessUrl}`] : []),
+    ].join("\n");
+}
+
+export function buildResponseNotificationSubject(
+    response: CalendarEventResponse,
+): string {
+    return `Event invite ${response}`;
+}
+
+export function buildResponseNotificationBody(
+    event: CalendarEventRecord,
+    attendeeDisplayName: string,
+    response: CalendarEventResponse,
+): string {
+    return `${attendeeDisplayName} has ${response} the invite to ${event.title}.`;
+}
+
+export function buildCancellationNotificationBody(
+    event: CalendarEventRecord,
+): string {
+    return [
+        `${event.title} has been cancelled.`,
+        "",
+        `It was scheduled from ${event.startAt} to ${event.endAt}.`,
+        ...(event.description ? [`Note: ${event.description}`] : []),
+        ...(event.meetingUrl ? [`Meeting link: ${event.meetingUrl}`] : []),
+    ].join("\n");
+}
+
+export function buildReminderNotificationBody(
+    event: CalendarEventRecord,
+    reminderOffsetMinutes: number,
+): string {
+    return [
+        `${event.title} starts in ${reminderOffsetMinutes} minutes.`,
+        "",
+        `Starts ${event.startAt} and ends ${event.endAt}.`,
+        ...(event.description ? [`Note: ${event.description}`] : []),
+        ...(event.meetingUrl ? [`Meeting link: ${event.meetingUrl}`] : []),
+    ].join("\n");
+}
+
+async function resolveNotificationRecipientUsername(
+    attendee: string,
+    resolveAccountId: ResolveAccountId | null,
+): Promise<string> {
+    if (!resolveAccountId) return attendee;
+    try {
+        return (await resolveAccountId(attendee)) ?? attendee;
+    } catch {
+        return attendee;
+    }
+}
+
+export async function dispatchInviteNotifications({
+    gateway,
+    event,
+    dispatchNotification,
+    shareRegistry,
+    canInviteByEmail,
+    externalHost,
+    inviterAccountId,
+    calendarId,
+    resolveAccountId,
+    resolveAccountDisplayName,
+    log,
+}: {
+    gateway: CoreCalendarGateway;
+    event: CalendarEventRecord;
+    dispatchNotification: NotificationDispatcher | null;
+    shareRegistry?: CalendarShareRegistry;
+    canInviteByEmail: boolean;
+    externalHost: string;
+    inviterAccountId: string;
+    calendarId: string;
+    resolveAccountId: ResolveAccountId | null;
+    resolveAccountDisplayName?: ResolveAccountDisplayName | null;
+    log?: CalendarLogger;
+}): Promise<void> {
+    if (!dispatchNotification) return;
+    const inviterDisplayName = resolveAccountDisplayName
+        ? await resolveAccountDisplayName(inviterAccountId)
+        : inviterAccountId;
+    const activeShare = shareRegistry
+        ? await shareRegistry.getByRecipientCalendarId(calendarId)
+        : null;
+    const ownerCalendarId = activeShare?.ownerCalendarId ?? calendarId;
+    const ownerAccountId = activeShare?.ownerAccountId ?? inviterAccountId;
+    const ownerCalendarShares = shareRegistry
+        ? await shareRegistry.listCalendarUserShares(
+              ownerAccountId,
+              ownerCalendarId,
+          )
+        : [];
+    await Promise.all(
+        event.attendees.map(async (attendee) => {
+            const recipientUsername =
+                await resolveNotificationRecipientUsername(
+                    attendee,
+                    resolveAccountId,
+                );
+            if (recipientUsername === inviterAccountId) return;
+            const invitedCopy = gateway
+                .listMirroredEvents(event.id)
+                .find((copy) => {
+                    const copyCalendar = gateway.getCalendar(copy.calendarId);
+                    return copyCalendar?.ownerAccountId === recipientUsername;
+                });
+            const recipientShare = ownerCalendarShares.find(
+                (share) => share.recipientAccountId === recipientUsername,
+            );
+            const actionCalendarId =
+                invitedCopy?.calendarId ??
+                recipientShare?.recipientCalendarId ??
+                ownerCalendarId;
+            const actionEventId = invitedCopy?.id ?? event.id;
+            const actionUrl = buildEventActionUrl(
+                actionCalendarId,
+                actionEventId,
+            );
+            try {
+                await dispatchNotification({
+                    category: "calendar",
+                    recipientUsername,
+                    subject: buildInviteNotificationSubject(
+                        event,
+                        inviterDisplayName,
+                    ),
+                    body: buildInternalInviteBody(
+                        event,
+                        actionUrl,
+                        inviterDisplayName,
+                    ),
+                    actionUrl,
+                    senderName: inviterDisplayName,
+                    metadata: {
+                        eventId: actionEventId,
+                        calendarId: actionCalendarId,
+                    },
+                });
+            } catch (error) {
+                log?.("error", "Calendar invite notification failed.", {
+                    component: "calendar-gateway",
+                    attendee: recipientUsername,
+                    eventId: event.id,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+            }
+        }),
+    );
+    if (!canInviteByEmail || event.inviteEmails.length === 0) return;
+    const eventIcs = gateway.exportCalendarAsIcs(calendarId);
+    await Promise.all(
+        event.inviteEmails.map(async (email) => {
+            try {
+                const scopedAccessToken = event.meetingUrl
+                    ? gateway.issueScopedMeetingAccessToken({
+                          targetUrl: event.meetingUrl,
+                          createdByAccountId: inviterAccountId,
+                          eventId: event.id,
+                      })
+                    : null;
+                const meetingAccessUrl = scopedAccessToken
+                    ? `${externalHost}/api/v1/calendar/meeting-access/${encodeURIComponent(scopedAccessToken.token)}`
+                    : null;
+                await dispatchNotification({
+                    category: "calendar",
+                    recipientUsername: email,
+                    recipientEmail: email,
+                    subject: buildInviteNotificationSubject(
+                        event,
+                        inviterDisplayName,
+                    ),
+                    body: buildExternalInviteBody(
+                        event,
+                        meetingAccessUrl,
+                        inviterDisplayName,
+                    ),
+                    senderName: inviterDisplayName,
+                    actionUrl:
+                        meetingAccessUrl ??
+                        buildEventActionUrl(calendarId, event.id),
+                    attachments: [
+                        {
+                            filename: buildIcsAttachmentFilename(event.title),
+                            contentType: "text/calendar; charset=UTF-8",
+                            content: eventIcs,
+                        },
+                    ],
+                    metadata: {
+                        eventId: event.id,
+                        calendarId,
+                    },
+                });
+            } catch (error) {
+                log?.("error", "Calendar email invite notification failed.", {
+                    component: "calendar-gateway",
+                    email,
+                    eventId: event.id,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+            }
+        }),
+    );
+}
+
+export async function dispatchCancellationNotifications({
+    dispatchNotification,
+    event,
+    resolveAccountId,
+    canInviteByEmail,
+    log,
+}: {
+    dispatchNotification: NotificationDispatcher | null;
+    event: CalendarEventRecord;
+    resolveAccountId: ResolveAccountId | null;
+    canInviteByEmail: boolean;
+    log?: CalendarLogger;
+}): Promise<void> {
+    if (!dispatchNotification) return;
+    await Promise.all(
+        event.attendees.map(async (attendee) => {
+            const recipientUsername =
+                await resolveNotificationRecipientUsername(
+                    attendee,
+                    resolveAccountId,
+                );
+            try {
+                await dispatchNotification({
+                    category: "calendar",
+                    recipientUsername,
+                    subject: `Event cancelled: ${event.title}`,
+                    body: buildCancellationNotificationBody(event),
+                    actionUrl: "/calendar",
+                    senderName: event.createdBy,
+                    metadata: {
+                        eventId: event.id,
+                        recurrenceId: event.recurrenceId,
+                        cancelled: true,
+                    },
+                });
+            } catch (error) {
+                log?.("error", "Calendar cancellation notification failed.", {
+                    component: "calendar-gateway",
+                    attendee: recipientUsername,
+                    eventId: event.id,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+            }
+        }),
+    );
+    if (!canInviteByEmail || event.inviteEmails.length === 0) return;
+    await Promise.all(
+        event.inviteEmails.map(async (email) => {
+            try {
+                await dispatchNotification({
+                    category: "calendar",
+                    recipientUsername: email,
+                    recipientEmail: email,
+                    subject: `Event cancelled: ${event.title}`,
+                    body: buildCancellationNotificationBody(event),
+                    senderName: event.createdBy,
+                    metadata: {
+                        eventId: event.id,
+                        recurrenceId: event.recurrenceId,
+                        cancelled: true,
+                    },
+                });
+            } catch (error) {
+                log?.(
+                    "error",
+                    "Calendar email cancellation notification failed.",
+                    {
+                        component: "calendar-gateway",
+                        email,
+                        eventId: event.id,
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    },
+                );
+            }
+        }),
+    );
+}
+
+export async function dispatchReminderNotifications({
+    dispatchNotification,
+    event,
+    resolveAccountId,
+    log,
+}: {
+    dispatchNotification: NotificationDispatcher | null;
+    event: CalendarEventRecord;
+    resolveAccountId: ResolveAccountId | null;
+    log?: CalendarLogger;
+}): Promise<void> {
+    if (!dispatchNotification) return;
+    const reminders = normalizeReminderOffsets(event.reminderOffsetsMinutes);
+    if (reminders.length === 0) return;
+    await Promise.all(
+        event.attendees.map(async (attendee) => {
+            const recipientUsername =
+                await resolveNotificationRecipientUsername(
+                    attendee,
+                    resolveAccountId,
+                );
+            await Promise.all(
+                reminders.map(async (reminderOffsetMinutes) => {
+                    const startAtMs = Date.parse(event.startAt);
+                    const reminderAt = Number.isFinite(startAtMs)
+                        ? new Date(
+                              startAtMs - reminderOffsetMinutes * 60_000,
+                          ).toISOString()
+                        : null;
+                    try {
+                        await dispatchNotification({
+                            category: "calendar",
+                            recipientUsername,
+                            subject: `Calendar reminder: ${event.title}`,
+                            body: buildReminderNotificationBody(
+                                event,
+                                reminderOffsetMinutes,
+                            ),
+                            actionUrl: buildEventActionUrl(
+                                event.calendarId,
+                                event.id,
+                            ),
+                            senderName: event.createdBy,
+                            metadata: {
+                                eventId: event.id,
+                                calendarId: event.calendarId,
+                                reminderOffsetMinutes,
+                                ...(reminderAt ? { reminderAt } : {}),
+                            },
+                        });
+                    } catch (error) {
+                        log?.(
+                            "error",
+                            "Calendar reminder notification failed.",
+                            {
+                                component: "calendar-gateway",
+                                attendee: recipientUsername,
+                                eventId: event.id,
+                                reminderOffsetMinutes,
+                                error:
+                                    error instanceof Error
+                                        ? error.message
+                                        : String(error),
+                            },
+                        );
+                    }
+                }),
+            );
+        }),
+    );
+}
+
+export function resolveCreatedSeries(
+    gateway: CoreCalendarGateway,
+    calendarId: string,
+    event: CalendarEventRecord,
+): CalendarEventRecord[] {
+    if (!event.recurrenceId) {
+        return [event];
+    }
+    return gateway
+        .listEvents(calendarId)
+        .filter((entry) => entry.recurrenceId === event.recurrenceId);
+}
+
+export function resolveEventMeta(
+    event: CalendarEventRecord,
+    accountId: string,
+    response: CalendarEventResponse | null,
+    sharedPermission: "read" | "write" | null = null,
+): Record<string, unknown> {
+    const hasResponded =
+        response === "accepted" ||
+        response === "tentative" ||
+        response === "declined";
+    return {
+        canEdit: sharedPermission === "write" || event.createdBy === accountId,
+        canRespond:
+            sharedPermission === null &&
+            event.attendees.includes(accountId) &&
+            !hasResponded,
+        responseUpdatesExistingEvent:
+            event.createdBy !== accountId && event.sourceEventId === null,
+        response,
+        responseOptions: ["accepted", "tentative", "declined"],
+    };
+}
+
+export function errorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : "calendar_error";
+}
+
+export async function resolveJitsiAvailability(
+    resolver: ((providerId: string) => Promise<boolean> | boolean) | null,
+    log?: CalendarLogger,
+): Promise<boolean> {
+    if (!resolver) return false;
+    try {
+        return Boolean(await resolver("jitsi-meet"));
+    } catch (error) {
+        log?.(
+            "warn",
+            "Failed to resolve meetings provider availability; defaulting to unavailable.",
+            {
+                component: "calendar-gateway",
+                error: error instanceof Error ? error.message : String(error),
+            },
+        );
+        return false;
+    }
+}
+
+export async function validateSharedCalendars(
+    calendars: CalendarRecord[],
+    recipientAccountId: string,
+    shareRegistry: CalendarShareRegistry,
+    gateway: CoreCalendarGateway,
+    log?: CalendarLogger,
+): Promise<CalendarRecord[]> {
+    const validated: CalendarRecord[] = [];
+    let pendingFlush = false;
+    for (const calendar of calendars) {
+        if (calendar.visibility !== "shared") {
+            validated.push(calendar);
+            continue;
+        }
+        const shareRecord = await shareRegistry.getByRecipientCalendarId(
+            calendar.id,
+        );
+        if (
+            !shareRecord ||
+            shareRecord.recipientAccountId !== recipientAccountId
+        ) {
+            try {
+                gateway.deleteCalendar({
+                    ownerAccountId: recipientAccountId,
+                    calendarId: calendar.id,
+                });
+                pendingFlush = true;
+                log?.(
+                    "info",
+                    "Removed stale shared calendar during handshake.",
+                    {
+                        component: "calendar-gateway",
+                        accountId: recipientAccountId,
+                        calendarId: calendar.id,
+                    },
+                );
+            } catch (cleanupError) {
+                log?.("warn", "Failed to remove stale shared calendar.", {
+                    component: "calendar-gateway",
+                    accountId: recipientAccountId,
+                    calendarId: calendar.id,
+                    error:
+                        cleanupError instanceof Error
+                            ? cleanupError.message
+                            : String(cleanupError),
+                });
+            }
+            continue;
+        }
+        validated.push({
+            ...calendar,
+            sharedPermission: shareRecord.permission,
+        });
+    }
+    if (pendingFlush) {
+        await gateway.flushStore();
+    }
+    return validated;
+}

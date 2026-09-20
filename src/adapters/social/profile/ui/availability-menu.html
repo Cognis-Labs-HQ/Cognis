@@ -1,0 +1,25 @@
+<div class="availability-menu-control">
+    <button
+        type="button"
+        class="availability-menu-toggle"
+        aria-expanded="false"
+        aria-haspopup="listbox"
+    >
+        <span class="availability-menu-dot"></span>
+        <span class="availability-menu-value"></span>
+        <span class="availability-menu-chevron" aria-hidden="true"></span>
+    </button>
+    <div class="availability-menu-options" role="listbox" hidden>
+        <template data-availability-option-template>
+            <button
+                type="button"
+                class="availability-menu-option"
+                role="option"
+                aria-selected="false"
+            >
+                <span class="availability-menu-dot"></span>
+                <span data-availability-label></span>
+            </button>
+        </template>
+    </div>
+</div>

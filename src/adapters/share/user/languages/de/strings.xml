@@ -1,0 +1,4 @@
+<resources>
+  <string name="adapter.share.user.name">Benutzer</string>
+  <string name="adapter.share.user.description">Gewähren Sie Cognis-Benutzern direkten Zugriff.</string>
+</resources>

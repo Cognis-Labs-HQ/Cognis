@@ -1,0 +1,703 @@
+import { createHash, randomBytes, randomUUID } from "node:crypto";
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { LocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
+import type { RegistrationGatewayAdapter } from "../../../gateways/registration/gateway.js";
+
+interface RegistrationInviteRecord {
+    id: string;
+    inviterAccountId: string;
+    inviterDisplayName: string;
+    inviteeEmail: string;
+    expiresAt: string;
+    createdAt?: string;
+    status?: "pending" | "expired" | "revoked" | "redeemed";
+    redeemedAccountId?: string | null;
+}
+
+const FOUNDER_PENDING_INVITE_LIMIT = 10;
+const INVITE_EXPIRY_MS = 24 * 60 * 60 * 1000;
+
+interface RegistrationTokenAdapter {
+    issueInvite(input: {
+        inviterAccountId: string;
+        inviterDisplayName: string;
+        inviteeEmail?: string;
+        inviterIsFounder: boolean;
+        inviteBaseUrl: string;
+        deliverEmail?: boolean;
+    }): Promise<{
+        tokenId: string;
+        registrationToken: string;
+        inviteUrl: string;
+        expiresAt: string;
+    }>;
+    listInvites(filter?: {
+        inviterAccountId?: string;
+        includeClosed?: boolean;
+    }): Promise<RegistrationInviteRecord[]>;
+    revokeInvite(input: {
+        tokenId: string;
+        revokedByAccountId: string;
+    }): Promise<boolean>;
+    resolveInvite(token: string): Promise<RegistrationInviteRecord | null>;
+    consumeExternalAccountToken(input: {
+        token: string;
+        accountId: string;
+        email: string;
+        emailVerified?: boolean;
+    }): Promise<boolean>;
+    redeemInvite(input: {
+        token: string;
+        username: string;
+        password: string;
+        email?: string;
+        displayName?: string;
+    }): Promise<{
+        createdAccountId: string;
+        inviterAccountId: string;
+    }>;
+    resetFounderInviteLimit(accountId: string): Promise<void>;
+}
+
+function normalizeEmail(input: string): string {
+    return input.trim().toLowerCase();
+}
+
+function sha256(content: string): string {
+    return createHash("sha256").update(content, "utf8").digest("hex");
+}
+
+function buildInviteUrl(baseUrl: string, token: string): string {
+    let parsedBase: URL;
+    try {
+        parsedBase = new URL(baseUrl);
+    } catch {
+        throw new Error("invalid_invite_base_url");
+    }
+    if (parsedBase.protocol !== "http:" && parsedBase.protocol !== "https:") {
+        throw new Error("invalid_invite_base_url");
+    }
+    parsedBase.pathname = "/register";
+    parsedBase.search = `token=${encodeURIComponent(token)}`;
+    return parsedBase.toString();
+}
+
+function parseToken(rawToken: string): { tokenId: string; tokenHash: string } {
+    const token = rawToken.trim();
+    const dotIndex = token.indexOf(".");
+    if (dotIndex <= 0 || dotIndex === token.length - 1) {
+        throw new Error("invalid_token");
+    }
+    return {
+        tokenId: token.slice(0, dotIndex),
+        tokenHash: sha256(token),
+    };
+}
+
+export function createAdapter(deps: {
+    dbExecutor: DbExecutor;
+    accountStore: LocalAccountStore;
+    canSendInviteEmail: () => boolean;
+    sendInviteEmail: (
+        to: string,
+        inviterDisplayName: string,
+        inviteUrl: string,
+    ) => Promise<void>;
+    createProfile?: (
+        accountId: string,
+        handle: string,
+        role?: string,
+        displayName?: string,
+    ) => Promise<void>;
+    isEmailRegistered: (email: string) => Promise<boolean>;
+    upsertVerifiedPrimaryEmail: (
+        accountId: string,
+        email: string,
+    ) => Promise<void>;
+    log?: (
+        level: "debug" | "info" | "warn" | "error",
+        message: string,
+        meta?: Record<string, unknown>,
+    ) => void;
+}): RegistrationGatewayAdapter {
+    const {
+        dbExecutor,
+        accountStore,
+        canSendInviteEmail,
+        sendInviteEmail,
+        createProfile,
+        isEmailRegistered,
+        upsertVerifiedPrimaryEmail,
+        log,
+    } = deps;
+
+    let schemaInitialized: Promise<void> | null = null;
+    const externalConsumptionByToken = new Map<string, Promise<boolean>>();
+
+    function ensureReady(): Promise<void> {
+        if (!schemaInitialized) {
+            schemaInitialized = initSchema();
+        }
+        return schemaInitialized;
+    }
+
+    async function initSchema(): Promise<void> {
+        await dbExecutor.ensureTable({
+            name: "registration_tokens",
+            columns: [
+                { name: "id", type: "text", primaryKey: true },
+                {
+                    name: "token_hash",
+                    type: "text",
+                    notNull: true,
+                    unique: true,
+                },
+                { name: "inviter_account_id", type: "text", notNull: true },
+                {
+                    name: "founder_invite",
+                    type: "boolean",
+                    notNull: true,
+                    default: "false",
+                },
+                { name: "invitee_email", type: "text" },
+                { name: "expires_at", type: "timestamp", notNull: true },
+                { name: "revoked_at", type: "timestamp" },
+                { name: "revoked_by_account_id", type: "text" },
+                { name: "redeemed_at", type: "timestamp" },
+                { name: "redeemed_account_id", type: "text" },
+                {
+                    name: "created_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+            indexes: [
+                {
+                    columns: ["inviter_account_id"],
+                    name: "idx_reg_tokens_inviter",
+                },
+                {
+                    columns: ["invitee_email"],
+                    name: "idx_reg_tokens_invitee_email",
+                },
+            ],
+        });
+        await dbExecutor.ensureTable({
+            name: "user_emails",
+            columns: [
+                { name: "account_id", type: "text", notNull: true },
+                { name: "email", type: "text", notNull: true },
+                {
+                    name: "is_primary",
+                    type: "boolean",
+                    notNull: true,
+                    default: "false",
+                },
+                {
+                    name: "verified",
+                    type: "boolean",
+                    notNull: true,
+                    default: "false",
+                },
+            ],
+            primaryKey: ["account_id", "email"],
+            uniqueKeys: [["email"]],
+        });
+    }
+
+    async function readInviteByTokenHash(tokenHash: string) {
+        await ensureReady();
+        const result = await dbExecutor.executeCommand({
+            option: "SELECT",
+            table: "registration_tokens",
+            alias: "registration_tokens",
+            columns: [
+                "registration_tokens.id",
+                "registration_tokens.inviter_account_id",
+                "registration_tokens.invitee_email",
+                "registration_tokens.founder_invite",
+                "registration_tokens.expires_at",
+                "accounts.display_name",
+            ],
+            joins: [
+                {
+                    type: "INNER",
+                    table: "accounts",
+                    alias: "accounts",
+                    on: {
+                        leftColumn: "accounts.id",
+                        rightColumn: "registration_tokens.inviter_account_id",
+                    },
+                },
+            ],
+            where: [
+                { column: "registration_tokens.token_hash", value: tokenHash },
+                {
+                    column: "registration_tokens.revoked_at",
+                    operator: "IS NULL",
+                },
+                {
+                    column: "registration_tokens.redeemed_at",
+                    operator: "IS NULL",
+                },
+            ],
+        });
+        return result.rows?.[0];
+    }
+
+    async function pendingFounderInviteCount(
+        inviterAccountId: string,
+    ): Promise<number> {
+        const nowIso = new Date().toISOString();
+        const result = await dbExecutor.executeCommand({
+            option: "SELECT",
+            table: "registration_tokens",
+            count: true,
+            where: [
+                { column: "inviter_account_id", value: inviterAccountId },
+                { column: "founder_invite", value: true },
+                { column: "redeemed_at", operator: "IS NULL" },
+                { column: "revoked_at", operator: "IS NULL" },
+                { column: "expires_at", operator: ">", value: nowIso },
+            ],
+        });
+        const raw = result.rows?.[0]?.cnt;
+        const count = Number(raw);
+        return Number.isFinite(count) ? count : 0;
+    }
+
+    async function issueInvite(input: {
+        inviterAccountId: string;
+        inviterDisplayName: string;
+        inviteeEmail?: string;
+        inviterIsFounder: boolean;
+        inviteBaseUrl: string;
+        deliverEmail?: boolean;
+    }): Promise<{
+        tokenId: string;
+        registrationToken: string;
+        inviteUrl: string;
+        expiresAt: string;
+    }> {
+        await ensureReady();
+        const deliverEmail = input.deliverEmail !== false;
+        if (deliverEmail && !canSendInviteEmail()) {
+            throw new Error("smtp_unavailable");
+        }
+        const inviteeEmail = normalizeEmail(input.inviteeEmail ?? "");
+        if (deliverEmail && !inviteeEmail) {
+            throw new Error("invitee_email_required");
+        }
+        if (inviteeEmail && (await isEmailRegistered(inviteeEmail))) {
+            throw new Error("email_taken");
+        }
+        if (
+            input.inviterIsFounder &&
+            (await pendingFounderInviteCount(input.inviterAccountId)) >=
+                FOUNDER_PENDING_INVITE_LIMIT
+        ) {
+            throw new Error("founder_token_limit_reached");
+        }
+        const tokenId = randomUUID();
+        const secret = randomBytes(32).toString("base64url");
+        const rawToken = `${tokenId}.${secret}`;
+        const tokenHash = sha256(rawToken);
+        const expiresAt = new Date(Date.now() + INVITE_EXPIRY_MS).toISOString();
+        const inviteUrl = buildInviteUrl(input.inviteBaseUrl, rawToken);
+
+        await dbExecutor.executeCommand({
+            option: "INSERT",
+            table: "registration_tokens",
+            values: {
+                id: tokenId,
+                token_hash: tokenHash,
+                inviter_account_id: input.inviterAccountId,
+                founder_invite: input.inviterIsFounder,
+                invitee_email: inviteeEmail,
+                expires_at: expiresAt,
+            },
+        });
+
+        if (deliverEmail) {
+            try {
+                await sendInviteEmail(
+                    inviteeEmail,
+                    input.inviterDisplayName,
+                    inviteUrl,
+                );
+            } catch (error) {
+                await dbExecutor.executeCommand({
+                    option: "DELETE",
+                    table: "registration_tokens",
+                    where: [{ column: "id", value: tokenId }],
+                });
+                throw error;
+            }
+        }
+        const revokeTimestamp = new Date().toISOString();
+        if (inviteeEmail) {
+            await dbExecutor.executeCommand({
+                option: "UPDATE",
+                table: "registration_tokens",
+                set: {
+                    revoked_at: revokeTimestamp,
+                    revoked_by_account_id: input.inviterAccountId,
+                },
+                where: [
+                    { column: "id", operator: "!=", value: tokenId },
+                    { column: "invitee_email", value: inviteeEmail },
+                    { column: "revoked_at", operator: "IS NULL" },
+                    { column: "redeemed_at", operator: "IS NULL" },
+                    {
+                        column: "expires_at",
+                        operator: ">",
+                        value: revokeTimestamp,
+                    },
+                ],
+            });
+        }
+        return { tokenId, registrationToken: rawToken, inviteUrl, expiresAt };
+    }
+
+    async function listInvites(filter?: {
+        inviterAccountId?: string;
+        includeClosed?: boolean;
+    }): Promise<RegistrationInviteRecord[]> {
+        await ensureReady();
+        const now = Date.now();
+        const whereConditions = filter?.inviterAccountId
+            ? [
+                  {
+                      column: "registration_tokens.inviter_account_id",
+                      value: filter.inviterAccountId,
+                  },
+              ]
+            : undefined;
+        const result = await dbExecutor.executeCommand({
+            option: "SELECT",
+            table: "registration_tokens",
+            alias: "registration_tokens",
+            columns: [
+                "registration_tokens.id",
+                "registration_tokens.inviter_account_id",
+                "registration_tokens.invitee_email",
+                "registration_tokens.expires_at",
+                "registration_tokens.created_at",
+                "registration_tokens.revoked_at",
+                "registration_tokens.redeemed_at",
+                "registration_tokens.redeemed_account_id",
+                "accounts.display_name",
+            ],
+            joins: [
+                {
+                    type: "INNER",
+                    table: "accounts",
+                    alias: "accounts",
+                    on: {
+                        leftColumn: "accounts.id",
+                        rightColumn: "registration_tokens.inviter_account_id",
+                    },
+                },
+            ],
+            where: whereConditions,
+            orderBy: [
+                { column: "registration_tokens.created_at", direction: "DESC" },
+            ],
+        });
+        return (result.rows ?? [])
+            .map((row) => {
+                const expiresAt = String(row.expires_at);
+                const createdAt = String(row.created_at);
+                const revokedAt = row.revoked_at
+                    ? String(row.revoked_at)
+                    : null;
+                const redeemedAt = row.redeemed_at
+                    ? String(row.redeemed_at)
+                    : null;
+                let status: "pending" | "expired" | "revoked" | "redeemed" =
+                    "pending";
+                if (redeemedAt) status = "redeemed";
+                else if (revokedAt) status = "revoked";
+                else if (new Date(expiresAt).getTime() <= now)
+                    status = "expired";
+                return {
+                    id: String(row.id),
+                    inviterAccountId: String(row.inviter_account_id),
+                    inviterDisplayName: row.display_name
+                        ? String(row.display_name)
+                        : String(row.inviter_account_id),
+                    inviteeEmail: row.invitee_email
+                        ? String(row.invitee_email)
+                        : "",
+                    expiresAt,
+                    createdAt,
+                    status,
+                    redeemedAccountId: row.redeemed_account_id
+                        ? String(row.redeemed_account_id)
+                        : null,
+                };
+            })
+            .filter((row) =>
+                filter?.includeClosed ? true : row.status === "pending",
+            );
+    }
+
+    async function revokeInvite(input: {
+        tokenId: string;
+        revokedByAccountId: string;
+    }): Promise<boolean> {
+        await ensureReady();
+        const nowIso = new Date().toISOString();
+        const result = await dbExecutor.executeCommand({
+            option: "UPDATE",
+            table: "registration_tokens",
+            set: {
+                revoked_at: nowIso,
+                revoked_by_account_id: input.revokedByAccountId,
+            },
+            where: [
+                { column: "id", value: input.tokenId },
+                { column: "revoked_at", operator: "IS NULL" },
+                { column: "redeemed_at", operator: "IS NULL" },
+                { column: "expires_at", operator: ">", value: nowIso },
+            ],
+        });
+        return Number(result.rowCount ?? 0) > 0;
+    }
+
+    async function resolveInvite(
+        token: string,
+    ): Promise<RegistrationInviteRecord | null> {
+        const { tokenHash } = parseToken(token);
+        const row = await readInviteByTokenHash(tokenHash);
+        if (!row) return null;
+        const expiresAt = String(row.expires_at);
+        if (new Date(expiresAt).getTime() <= Date.now()) return null;
+        return {
+            id: String(row.id),
+            inviterAccountId: String(row.inviter_account_id),
+            inviterDisplayName: row.display_name
+                ? String(row.display_name)
+                : String(row.inviter_account_id),
+            inviteeEmail: row.invitee_email ? String(row.invitee_email) : "",
+            expiresAt,
+        };
+    }
+
+    async function rollbackCreatedAccount(accountId: string): Promise<void> {
+        try {
+            await accountStore.delete(accountId);
+        } catch (error) {
+            log?.(
+                "warn",
+                "Failed to delete account during invite redemption rollback.",
+                {
+                    component: "registration-invite",
+                    accountId,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                },
+            );
+        }
+    }
+
+    async function redeemInvite(input: {
+        token: string;
+        username: string;
+        password: string;
+        email?: string;
+        displayName?: string;
+    }): Promise<{ createdAccountId: string; inviterAccountId: string }> {
+        const username = input.username.trim();
+        const password = input.password;
+        if (!username || !password) {
+            throw new Error("username_and_password_required");
+        }
+        const invite = await resolveInvite(input.token);
+        if (!invite) throw new Error("invalid_token");
+        const registrationEmail =
+            normalizeEmail(invite.inviteeEmail) ||
+            normalizeEmail(input.email ?? "");
+        if (!registrationEmail) throw new Error("invitee_email_required");
+
+        const inviterStillExists = await accountStore.exists(
+            invite.inviterAccountId,
+        );
+        if (!inviterStillExists) throw new Error("inviter_not_found");
+
+        const displayName = input.displayName?.trim() || undefined;
+        const created = await accountStore.register(
+            username,
+            password,
+            "user",
+            displayName,
+        );
+        try {
+            await upsertVerifiedPrimaryEmail(
+                created.username,
+                registrationEmail,
+            );
+        } catch (error) {
+            await rollbackCreatedAccount(created.username);
+            throw error;
+        }
+        if (displayName) {
+            await dbExecutor.executeCommand({
+                option: "UPDATE",
+                table: "accounts",
+                set: { display_name: displayName },
+                where: [{ column: "id", value: created.username }],
+            });
+        }
+        await dbExecutor.executeCommand({
+            option: "UPDATE",
+            table: "accounts",
+            set: { invited_by_account_id: invite.inviterAccountId },
+            where: [{ column: "id", value: created.username }],
+        });
+        await createProfile?.(
+            created.username,
+            created.username,
+            "user",
+            displayName,
+        );
+
+        const nowIso = new Date().toISOString();
+        const { tokenHash } = parseToken(input.token);
+        const redeemResult = await dbExecutor.executeCommand({
+            option: "UPDATE",
+            table: "registration_tokens",
+            set: {
+                redeemed_at: nowIso,
+                redeemed_account_id: created.username,
+            },
+            where: [
+                { column: "token_hash", value: tokenHash },
+                { column: "revoked_at", operator: "IS NULL" },
+                { column: "redeemed_at", operator: "IS NULL" },
+            ],
+        });
+        if (Number(redeemResult.rowCount ?? 0) < 1) {
+            await rollbackCreatedAccount(created.username);
+            throw new Error("invalid_token");
+        }
+        return {
+            createdAccountId: created.username,
+            inviterAccountId: invite.inviterAccountId,
+        };
+    }
+
+    async function consumeExternalAccountTokenOnce(input: {
+        token: string;
+        accountId: string;
+        email: string;
+        emailVerified?: boolean;
+    }): Promise<boolean> {
+        await ensureReady();
+        const { tokenHash } = parseToken(input.token);
+        const redeemedAt = new Date().toISOString();
+        const result = await dbExecutor.executeCommand({
+            option: "UPDATE",
+            table: "registration_tokens",
+            set: {
+                redeemed_at: redeemedAt,
+                redeemed_account_id: input.accountId,
+            },
+            where: [
+                { column: "token_hash", value: tokenHash },
+                { column: "revoked_at", operator: "IS NULL" },
+                { column: "redeemed_at", operator: "IS NULL" },
+            ],
+        });
+        if (Number(result.rowCount ?? 0) !== 1) {
+            const redemption = await dbExecutor.executeCommand({
+                option: "SELECT",
+                table: "registration_tokens",
+                columns: ["redeemed_account_id"],
+                where: [
+                    { column: "token_hash", value: tokenHash },
+                    { column: "revoked_at", operator: "IS NULL" },
+                ],
+            });
+            return (
+                String(redemption.rows?.[0]?.redeemed_account_id ?? "") ===
+                input.accountId
+            );
+        }
+        try {
+            if (input.emailVerified) {
+                await upsertVerifiedPrimaryEmail(
+                    input.accountId,
+                    normalizeEmail(input.email),
+                );
+            }
+        } catch (error) {
+            await dbExecutor.executeCommand({
+                option: "UPDATE",
+                table: "registration_tokens",
+                set: { redeemed_at: null, redeemed_account_id: null },
+                where: [
+                    { column: "token_hash", value: tokenHash },
+                    { column: "redeemed_at", value: redeemedAt },
+                    { column: "redeemed_account_id", value: input.accountId },
+                ],
+            });
+            throw error;
+        }
+        return true;
+    }
+
+    function consumeExternalAccountToken(input: {
+        token: string;
+        accountId: string;
+        email: string;
+        emailVerified?: boolean;
+    }): Promise<boolean> {
+        const { tokenHash } = parseToken(input.token);
+        const consumptionKey = `${tokenHash}:${input.accountId}`;
+        const active = externalConsumptionByToken.get(consumptionKey);
+        if (active) return active;
+        const consumption = consumeExternalAccountTokenOnce(input).finally(() =>
+            externalConsumptionByToken.delete(consumptionKey),
+        );
+        externalConsumptionByToken.set(consumptionKey, consumption);
+        return consumption;
+    }
+
+    async function resetFounderInviteLimit(accountId: string): Promise<void> {
+        await ensureReady();
+        const nowIso = new Date().toISOString();
+        await dbExecutor.executeCommand({
+            option: "UPDATE",
+            table: "registration_tokens",
+            set: {
+                revoked_at: nowIso,
+                revoked_by_account_id: accountId,
+            },
+            where: [
+                { column: "inviter_account_id", value: accountId },
+                { column: "founder_invite", value: true },
+                { column: "revoked_at", operator: "IS NULL" },
+                { column: "redeemed_at", operator: "IS NULL" },
+                { column: "expires_at", operator: ">", value: nowIso },
+            ],
+        });
+    }
+
+    return {
+        id: "token",
+        name: "Registration Token",
+        locked: true,
+        defaultEnabled: true,
+        invite: {
+            issueInvite,
+            listInvites,
+            revokeInvite,
+            resolveInvite,
+            consumeExternalAccountToken,
+            redeemInvite,
+            resetFounderInviteLimit,
+        },
+    };
+}

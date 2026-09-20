@@ -1,0 +1,19 @@
+# Reliable Test Suite
+
+**Feature Branch:** feature-fix-test-failures-and-adjust-doc-name-check
+
+## Changelogs excluded from title limits
+
+Documentation title-length validation now excludes changelog entries, whose release summary titles may be longer than documentation navigation labels.
+
+## Failing checks repaired
+
+Authentication password resets, in-memory database joins, UI source checks, component boundaries, and stale regression expectations now behave consistently.
+
+## Large files divided
+
+Oversized tests and runtime modules were divided into focused files so the repository remains within its source-size guardrail.
+
+## Commits
+
+- [7850b66](https://github.com/Cognis-Labs-HQ/Cognis/commit/7850b66d4241a1b0f4ca12a846f3e7d808875695)
