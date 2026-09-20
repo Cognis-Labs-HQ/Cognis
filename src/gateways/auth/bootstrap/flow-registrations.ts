@@ -14,8 +14,14 @@ import {
 import { resolveRole } from "./local-account.js";
 import type { AuthBootstrapHookContext } from "./index.js";
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[a-zA-Z0-9]{2,}$/;
-const ACCOUNT_NAMESPACE_PATTERN = /^[a-z0-9][a-z0-9_-]*$/;
+import {
+    applyAccountCreationCredentials,
+    resolveExternalAccountKey,
+    resolveExternalAccountNamespace,
+    resolveExternalProfileHandle,
+    resolveSessionEmail,
+    resolveSessionHandle,
+} from "./external-session.js";
 
 function getEnabledLoginMethods(context: AuthBootstrapHookContext): Array<{
     id: string;
@@ -50,81 +56,6 @@ function getPublicLoginMethods(context: AuthBootstrapHookContext) {
                 : {}),
         }),
     );
-}
-
-function applyAccountCreationCredentials(
-    session: {
-        accountId: string;
-        provider: string;
-        email?: string;
-        registrationToken?: string;
-        [key: string]: unknown;
-    },
-    credentials: Record<string, unknown>,
-) {
-    const registrationToken = String(
-        credentials.registrationToken ?? "",
-    ).trim();
-    const submittedEmail = String(credentials.email ?? "").trim();
-    const existingEmail = resolveSessionEmail(session);
-    return {
-        ...session,
-        ...(existingEmail || !submittedEmail ? {} : { email: submittedEmail }),
-        ...(registrationToken ? { registrationToken } : {}),
-    };
-}
-
-function resolveSessionEmail(session: {
-    email?: unknown;
-    emails?: unknown;
-}): string | undefined {
-    const directEmail = String(session.email ?? "").trim();
-    if (EMAIL_PATTERN.test(directEmail)) return directEmail;
-    if (!Array.isArray(session.emails)) return undefined;
-    return session.emails
-        .map((email) => String(email).trim())
-        .find((email) => EMAIL_PATTERN.test(email));
-}
-
-function resolveSessionHandle(
-    session: Record<string, unknown>,
-): string | undefined {
-    for (const candidate of [session.handle, session.username]) {
-        const handle = String(candidate ?? "")
-            .trim()
-            .replace(/^@/, "");
-        if (handle) return handle;
-    }
-    return undefined;
-}
-
-function resolveExternalAccountKey(
-    session: Record<string, unknown>,
-    adapterId: string,
-): string {
-    const requestedNamespace = String(
-        session.accountNamespace ?? session.provider ?? adapterId,
-    )
-        .trim()
-        .toLowerCase();
-    const providerNamespace = ACCOUNT_NAMESPACE_PATTERN.test(requestedNamespace)
-        ? requestedNamespace
-        : adapterId.trim().toLowerCase();
-    const proposedAccountId = String(session.accountId ?? "").trim();
-    const handle = resolveSessionHandle(session);
-    const normalizedCandidate = (handle ?? proposedAccountId).toLowerCase();
-    const providerPrefix = `${providerNamespace}:`;
-    const candidate = normalizedCandidate.startsWith(providerPrefix)
-        ? normalizedCandidate.slice(providerPrefix.length)
-        : normalizedCandidate;
-    return `${providerNamespace}:${candidate}`;
-}
-
-function resolveExternalProfileHandle(
-    session: Record<string, unknown>,
-    adapterId: string,
-): string {
-    return resolveExternalAccountKey(session, adapterId);
 }
 
 export async function registerAuthBootstrapHook(
@@ -263,6 +194,12 @@ export async function registerAuthBootstrapHook(
                           adapter.id,
                       ));
             session.accountId = canonicalAccountId;
+            if (adapter.id !== "local") {
+                session.accountNamespace = resolveExternalAccountNamespace(
+                    session as Record<string, unknown>,
+                    adapter.id,
+                );
+            }
             return { success: true, session, adapterId: adapter.id };
         },
     );
@@ -421,7 +358,9 @@ export async function registerAuthBootstrapHook(
                         committed = false;
                     }
                     if (!committed) {
-                        await context.accountStore.delete(session.accountId);
+                        await context.accountStore.delete(session.accountId, {
+                            recordExternalIdentityDeletion: false,
+                        });
                         return {
                             sessionResult: {
                                 outcome: "account_creation_required",

@@ -100,6 +100,19 @@ test("form builder renders accessible radio option groups", () => {
     assert.match(markup, /type="radio"[^>]*value="false"/);
 });
 
+test("form builder validates radio groups from the selected group value", () => {
+    const source = read("src/ui/reuse/form-builder.js");
+
+    assert.match(
+        source,
+        /const fieldValue = String\(fieldValues\[fieldName\] \?\? ""\)/,
+    );
+    assert.doesNotMatch(
+        source,
+        /const fieldValue = String\(fieldInput\.value \?\? ""\)/,
+    );
+});
+
 test("form builder owns complex form wrappers and attributes", () => {
     const builder = createFormBuilder(
         {

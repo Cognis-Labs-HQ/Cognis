@@ -491,24 +491,24 @@ export function createFormBuilder(ctx, options) {
                 return true;
             }
             const fieldInputs = getFieldInputs(fieldName);
-            const fieldInput =
-                fieldInputs.find(
-                    (input) =>
-                        !(input instanceof HTMLInputElement) ||
-                        input.type !== "radio" ||
-                        input.checked,
-                ) ?? fieldInputs[0];
-            if (!fieldInput) {
+            const fieldInput = fieldInputs.find(
+                (input) =>
+                    !(input instanceof HTMLInputElement) ||
+                    input.type !== "radio" ||
+                    input.checked,
+            );
+            const fallbackFieldInput = fieldInput ?? fieldInputs[0];
+            if (!fallbackFieldInput) {
                 return true;
             }
             updateFieldCharacterCounter(
                 formElement,
                 fieldName,
                 fieldConfig,
-                fieldInput,
+                fallbackFieldInput,
             );
             const fieldValues = createFieldValues(formElement);
-            const fieldValue = String(fieldInput.value ?? "");
+            const fieldValue = String(fieldValues[fieldName] ?? "");
             const required = fieldConfig.required === true;
             const fieldHasValue = fieldValue.trim().length > 0;
             const shouldEvaluateNow =

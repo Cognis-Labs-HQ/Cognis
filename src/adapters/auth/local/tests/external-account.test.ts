@@ -224,3 +224,46 @@ test("external accounts support administrative actions other than password reset
             .deleted_at,
     });
 });
+
+test("external account rollback deletes without recording a tombstone", async () => {
+    const commands: Array<Record<string, unknown>> = [];
+    const executor = {
+        async executeCommand(command: Record<string, unknown>) {
+            commands.push(command);
+            return command.option === "SELECT"
+                ? {
+                      rows: [
+                          {
+                              provider: "external-provider",
+                              external_user_id: "subject",
+                          },
+                      ],
+                  }
+                : { rows: [] };
+        },
+        async transaction(operation: (transaction: unknown) => Promise<void>) {
+            await operation(this);
+        },
+    };
+    const store = new DbLocalAccountStore(executor as never);
+
+    await store.delete("external-provider:subject", {
+        recordExternalIdentityDeletion: false,
+    });
+
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "INSERT" &&
+                command.table === "deleted_auth_identities",
+        ),
+        false,
+    );
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "DELETE" && command.table === "accounts",
+        ),
+        true,
+    );
+});

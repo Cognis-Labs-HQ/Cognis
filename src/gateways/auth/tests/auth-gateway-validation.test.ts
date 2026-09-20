@@ -630,9 +630,70 @@ test("external login rolls back account when token commit fails", async () => {
     assert.equal(commitCalled, true);
     const accountStore = capabilities.require<{
         getInfo(accountId: string): Promise<unknown>;
+        isExternalIdentityDeleted(
+            provider: string,
+            externalUserId: string,
+        ): Promise<boolean>;
     }>("auth:accountStore");
     assert.equal(
         await accountStore.getInfo("external-sso:external-user"),
+        null,
+    );
+    assert.equal(
+        await accountStore.isExternalIdentityDeleted(
+            "external-sso",
+            "external-user",
+        ),
+        false,
+    );
+});
+
+test("external login uses the adapter namespace when the session provider is not namespace-safe", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: new InMemoryTestExecutor(),
+    });
+    await capabilities.require<
+        (provider: Record<string, unknown>) => Promise<() => void>
+    >("auth:registerProvider")({
+        id: "external-sso",
+        name: "External SSO",
+        locked: true,
+        authenticate: async () => ({
+            accountId: "ExternalUser",
+            externalUserId: "opaque-subject",
+            provider: "ldap:Students",
+            email: "external@example.com",
+        }),
+        configure() {},
+        getConfigSchema: () => [],
+    });
+    capabilities
+        .require<ReturnType<typeof createCtx>>(CTX_CAPABILITY)
+        .flow.extend(
+            "gateAccountCreation",
+            "authorizeCreation",
+            { id: "test:allow-invalid-session-provider" },
+            () => ({ authorized: true }),
+        );
+
+    const result = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", { provider: "external-sso" }),
+        "/api/v1/auth/login",
+    );
+
+    assert.equal(result.res.status, 200);
+    const accountStore = capabilities.require<{
+        getInfo(accountId: string): Promise<unknown>;
+    }>("auth:accountStore");
+    assert.notEqual(
+        await accountStore.getInfo("external-sso:externaluser"),
         null,
     );
 });

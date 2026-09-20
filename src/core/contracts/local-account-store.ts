@@ -45,7 +45,10 @@ export interface LocalAccountStore {
     ): Promise<void>;
     setPassword(username: string, password: string): Promise<void>;
     setEnabled(username: string, enabled: boolean): Promise<void>;
-    delete(username: string): Promise<void>;
+    delete(
+        username: string,
+        options?: { recordExternalIdentityDeletion?: boolean },
+    ): Promise<void>;
     getInfo(username: string): Promise<{
         username: string;
         createdAt: string | null;

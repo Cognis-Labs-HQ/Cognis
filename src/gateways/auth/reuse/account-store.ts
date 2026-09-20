@@ -56,7 +56,10 @@ export interface LocalAccountStore {
     ): Promise<void>;
     setPassword(username: string, password: string): Promise<void>;
     setEnabled(username: string, enabled: boolean): Promise<void>;
-    delete(username: string): Promise<void>;
+    delete(
+        username: string,
+        options?: { recordExternalIdentityDeletion?: boolean },
+    ): Promise<void>;
     getInfo(username: string): Promise<{
         username: string;
         createdAt: string | null;
@@ -347,13 +350,19 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         account.enabled = enabled;
     }
 
-    async delete(username: string) {
+    async delete(
+        username: string,
+        options: { recordExternalIdentityDeletion?: boolean } = {},
+    ) {
         const accountId = normalizeUsername(username);
         for (const [identityId, mappedAccountId] of this.externalIdentities) {
             if (mappedAccountId !== accountId) continue;
             const identityFingerprint =
                 this.externalIdentityFingerprints.get(identityId);
-            if (identityFingerprint) {
+            if (
+                identityFingerprint &&
+                options.recordExternalIdentityDeletion !== false
+            ) {
                 this.deletedExternalIdentities.add(identityFingerprint);
             }
             this.externalIdentities.delete(identityId);

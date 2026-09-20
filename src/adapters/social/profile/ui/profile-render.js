@@ -294,7 +294,7 @@ export function renderHero({
           </label>
           ${
               externalProviderLabel
-                  ? `<button class="profile-banner-menu-item profile-provider-sync-btn btn-neutral" type="button">${escapeHtml(i18n.t("ui.app.profile.provider_sync").replace("{{ provider }}", externalProviderLabel))}</button>`
+                  ? `<button class="profile-banner-menu-item profile-provider-sync-btn btn-cancel" type="button">${escapeHtml(i18n.t("ui.app.profile.provider_sync").replace("{{ provider }}", externalProviderLabel))}</button>`
                   : ""
           }
         </div>

@@ -30,7 +30,10 @@ import { createAuthPageRoutes } from "./routes/pages.js";
 export interface AuthAccountStore {
     ensureSchema(): Promise<void>;
     has(username: string): Promise<boolean>;
-    delete(username: string): Promise<void>;
+    delete(
+        username: string,
+        options?: { recordExternalIdentityDeletion?: boolean },
+    ): Promise<void>;
     isFounder(username: string): Promise<boolean>;
     verify(username: string, password: string): Promise<boolean>;
     getDisplayName(username: string): Promise<string | null>;

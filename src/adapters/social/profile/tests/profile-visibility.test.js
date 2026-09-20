@@ -23,3 +23,7 @@ test("profile editor disables private visibility choices for administrators", ()
 test("profile block button uses the cancel button style", () => {
     assert.match(PROFILE_RENDER_SOURCE, /profile-hero-block-btn btn-cancel/);
 });
+
+test("profile synchronization uses the destructive button style", () => {
+    assert.match(PROFILE_RENDER_SOURCE, /profile-provider-sync-btn btn-cancel/);
+});

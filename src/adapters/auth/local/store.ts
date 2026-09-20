@@ -694,7 +694,10 @@ export class DbLocalAccountStore implements LocalAccountStore {
         });
     }
 
-    async delete(username: string) {
+    async delete(
+        username: string,
+        options: { recordExternalIdentityDeletion?: boolean } = {},
+    ) {
         const lowercaseUsername = normalizeUsername(username);
         try {
             await this.db.transaction(async (txDb) => {
@@ -704,7 +707,10 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     columns: ["provider", "external_user_id"],
                     where: [{ column: "account_id", value: lowercaseUsername }],
                 });
-                for (const identity of identityResult.rows ?? []) {
+                for (const identity of options.recordExternalIdentityDeletion ===
+                false
+                    ? []
+                    : (identityResult.rows ?? [])) {
                     const provider = String(identity.provider);
                     const externalUserId = String(identity.external_user_id);
                     await txDb.executeCommand({
