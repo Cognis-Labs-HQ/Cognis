@@ -70,7 +70,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Notification (notify) | `src/gateways/notify/`        | `1.5.13`  |
 | Social                | `src/gateways/social/`        | `1.3.6`   |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.10`  |
-| Registration          | `src/gateways/registration/`  | `1.1.37`  |
+| Registration          | `src/gateways/registration/`  | `1.1.38`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
 | Study                 | `src/gateways/study/`         | `1.5.14`  |

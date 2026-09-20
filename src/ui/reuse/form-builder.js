@@ -49,7 +49,7 @@
  *     labelKey?: string,
  *     label?: string,
  *     labelHtml?: string, // trusted markup; callers must sanitize untrusted content
- *     type?: 'text'|'email'|'password'|'number'|'url'|'select'|'textarea'|'checkbox',
+ *     type?: 'text'|'email'|'password'|'number'|'url'|'select'|'textarea'|'checkbox'|'radio',
  *     secret?: boolean,
  *     slider?: boolean,
  *     required?: boolean,
@@ -212,8 +212,22 @@ export function createFormBuilder(ctx, options) {
                 : "";
 
         const plainInputMarkup =
-            type === "select"
-                ? `<select id="${escapeHtml(inputId)}" name="${escapeHtml(fieldName)}" class="form-builder-input theme-select"${attributes.join("")}>
+            type === "radio"
+                ? `<div class="form-builder-radio-group" role="radiogroup" aria-label="${escapeHtml(label)}">
+            ${(Array.isArray(fieldConfig.options) ? fieldConfig.options : [])
+                .map((optionConfig, optionIndex) => {
+                    const optionValue = String(optionConfig?.value ?? "");
+                    const optionLabel = String(optionConfig?.label ?? "");
+                    const optionId = `${inputId}-${optionIndex}`;
+                    const isChecked =
+                        optionConfig?.selected === true ||
+                        optionValue === value;
+                    return `<label class="form-builder-radio-option" for="${escapeHtml(optionId)}"><input id="${escapeHtml(optionId)}" name="${escapeHtml(fieldName)}" type="radio" class="form-builder-radio-input" value="${escapeHtml(optionValue)}"${isChecked ? " checked" : ""}${attributes.join("")} /><span>${escapeHtml(optionLabel)}</span></label>`;
+                })
+                .join("")}
+          </div>`
+                : type === "select"
+                  ? `<select id="${escapeHtml(inputId)}" name="${escapeHtml(fieldName)}" class="form-builder-input theme-select"${attributes.join("")}>
             ${(Array.isArray(fieldConfig.options) ? fieldConfig.options : [])
                 .map((optionConfig) => {
                     const optionValue = String(optionConfig?.value ?? "");
@@ -244,13 +258,13 @@ export function createFormBuilder(ctx, options) {
                 })
                 .join("")}
           </select>`
-                : type === "textarea"
-                  ? `<textarea
+                  : type === "textarea"
+                    ? `<textarea
           id="${escapeHtml(inputId)}"
           name="${escapeHtml(fieldName)}"
           class="form-builder-input"${attributes.join("")}
         >${escapeHtml(value)}</textarea>`
-                  : `<input
+                    : `<input
           id="${escapeHtml(inputId)}"
           name="${escapeHtml(fieldName)}"
           type="${escapeHtml(fieldConfig.secret ? "password" : type)}"
@@ -266,9 +280,14 @@ export function createFormBuilder(ctx, options) {
             ? `<span class="form-builder-char-counter" data-form-builder-char-counter="${escapeHtml(fieldName)}">${escapeHtml(String(value.length))} / ${escapeHtml(String(maxCharacters))}</span>`
             : "";
 
+        const fieldLabelMarkup =
+            type === "radio"
+                ? `<span class="form-builder-label-text"><span>${labelMarkup}${requiredFlagInline}</span>${infoTooltip}</span>`
+                : `<span class="form-builder-label-text"><label for="${escapeHtml(inputId)}">${labelMarkup}${requiredFlagInline}</label>${infoTooltip}</span>`;
+
         return `
       <div class="${fieldClassName}" data-form-builder-field="${escapeHtml(fieldName)}">
-        <span class="form-builder-label-text"><label for="${escapeHtml(inputId)}">${labelMarkup}${requiredFlagInline}</label>${infoTooltip}</span>
+        ${fieldLabelMarkup}
         ${inputMarkup}
         ${counterMarkup}
         ${inlineCriteria}
@@ -305,6 +324,13 @@ export function createFormBuilder(ctx, options) {
                 continue;
             }
             const fieldInput = formElement.elements.namedItem(fieldName);
+            if (
+                typeof RadioNodeList !== "undefined" &&
+                fieldInput instanceof RadioNodeList
+            ) {
+                fieldValues[fieldName] = String(fieldInput.value ?? "");
+                continue;
+            }
             fieldValues[fieldName] =
                 fieldInput instanceof HTMLInputElement ||
                 fieldInput instanceof HTMLSelectElement ||
@@ -389,6 +415,23 @@ export function createFormBuilder(ctx, options) {
         });
         const touchedFieldNames = new Set();
 
+        function getFieldInputs(fieldName) {
+            const namedField = formElement.elements.namedItem(fieldName);
+            if (
+                typeof RadioNodeList !== "undefined" &&
+                namedField instanceof RadioNodeList
+            ) {
+                return Array.from(namedField).filter(
+                    (fieldInput) => fieldInput instanceof HTMLInputElement,
+                );
+            }
+            return namedField instanceof HTMLInputElement ||
+                namedField instanceof HTMLSelectElement ||
+                namedField instanceof HTMLTextAreaElement
+                ? [namedField]
+                : [];
+        }
+
         function updateCriterionVisualState(
             fieldName,
             fieldConfig,
@@ -447,12 +490,15 @@ export function createFormBuilder(ctx, options) {
             if (!fieldConfig) {
                 return true;
             }
-            const fieldInput = formElement.elements.namedItem(fieldName);
-            if (
-                !(fieldInput instanceof HTMLInputElement) &&
-                !(fieldInput instanceof HTMLSelectElement) &&
-                !(fieldInput instanceof HTMLTextAreaElement)
-            ) {
+            const fieldInputs = getFieldInputs(fieldName);
+            const fieldInput =
+                fieldInputs.find(
+                    (input) =>
+                        !(input instanceof HTMLInputElement) ||
+                        input.type !== "radio" ||
+                        input.checked,
+                ) ?? fieldInputs[0];
+            if (!fieldInput) {
                 return true;
             }
             updateFieldCharacterCounter(
@@ -509,12 +555,14 @@ export function createFormBuilder(ctx, options) {
             const fieldConfig = fields.find(
                 (entry) => entry.name === fieldName,
             );
-            const fieldInput = formElement.elements.namedItem(fieldName);
-            if (!fieldConfig || !(fieldInput instanceof HTMLElement)) {
+            const fieldInputs = getFieldInputs(fieldName);
+            if (!fieldConfig || fieldInputs.length === 0) {
                 return false;
             }
             fieldConfig.required = required === true;
-            fieldInput.toggleAttribute("required", fieldConfig.required);
+            for (const fieldInput of fieldInputs) {
+                fieldInput.toggleAttribute("required", fieldConfig.required);
+            }
             const label = formElement.querySelector(
                 `[data-form-builder-field="${CSS.escape(fieldName)}"] .form-builder-label-text > label`,
             );
@@ -543,48 +591,43 @@ export function createFormBuilder(ctx, options) {
             if (!fieldName) {
                 continue;
             }
-            const fieldInput = formElement.elements.namedItem(fieldName);
-            if (
-                !(fieldInput instanceof HTMLInputElement) &&
-                !(fieldInput instanceof HTMLSelectElement) &&
-                !(fieldInput instanceof HTMLTextAreaElement)
-            ) {
-                continue;
+            const fieldInputs = getFieldInputs(fieldName);
+            for (const fieldInput of fieldInputs) {
+                fieldInput.addEventListener(
+                    "input",
+                    () => {
+                        if (String(fieldInput.value ?? "").length > 0) {
+                            touchedFieldNames.add(fieldName);
+                        }
+                        validateField(fieldName, false);
+                    },
+                    listenerOptions,
+                );
+                fieldInput.addEventListener(
+                    "change",
+                    () => {
+                        if (String(fieldInput.value ?? "").length > 0) {
+                            touchedFieldNames.add(fieldName);
+                        }
+                        validateField(fieldName, false);
+                    },
+                    listenerOptions,
+                );
+                fieldInput.addEventListener(
+                    "blur",
+                    () => {
+                        touchedFieldNames.add(fieldName);
+                        validateField(fieldName, true);
+                    },
+                    listenerOptions,
+                );
+                updateFieldCharacterCounter(
+                    formElement,
+                    fieldName,
+                    fieldConfig,
+                    fieldInput,
+                );
             }
-            fieldInput.addEventListener(
-                "input",
-                () => {
-                    if (String(fieldInput.value ?? "").length > 0) {
-                        touchedFieldNames.add(fieldName);
-                    }
-                    validateField(fieldName, false);
-                },
-                listenerOptions,
-            );
-            fieldInput.addEventListener(
-                "change",
-                () => {
-                    if (String(fieldInput.value ?? "").length > 0) {
-                        touchedFieldNames.add(fieldName);
-                    }
-                    validateField(fieldName, false);
-                },
-                listenerOptions,
-            );
-            fieldInput.addEventListener(
-                "blur",
-                () => {
-                    touchedFieldNames.add(fieldName);
-                    validateField(fieldName, true);
-                },
-                listenerOptions,
-            );
-            updateFieldCharacterCounter(
-                formElement,
-                fieldName,
-                fieldConfig,
-                fieldInput,
-            );
         }
 
         return {

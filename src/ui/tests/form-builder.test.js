@@ -70,6 +70,36 @@ test("form builder accepts standard reusable input classes", () => {
     );
 });
 
+test("form builder renders accessible radio option groups", () => {
+    const builder = createFormBuilder(
+        {
+            i18n: { t: (key) => key },
+            escapeHtml: (value) => String(value),
+        },
+        {
+            formId: "radio-form",
+            includeSubmitButton: false,
+            fields: [
+                {
+                    name: "enabled",
+                    label: "Enabled",
+                    type: "radio",
+                    value: "true",
+                    options: [
+                        { value: "true", label: "Yes" },
+                        { value: "false", label: "No" },
+                    ],
+                },
+            ],
+        },
+    );
+
+    const markup = builder.render();
+    assert.match(markup, /class="form-builder-radio-group" role="radiogroup"/);
+    assert.match(markup, /type="radio"[^>]*value="true" checked/);
+    assert.match(markup, /type="radio"[^>]*value="false"/);
+});
+
 test("form builder owns complex form wrappers and attributes", () => {
     const builder = createFormBuilder(
         {
