@@ -115,3 +115,7 @@ SSO-Module können `auth:registerExternalProfileProvider` über CTX registrieren
 ### Synchronisierung externer Profile
 
 Eine externe Authentifizierungsintegration kann die CTX-Abfrage `auth:syncExternalProfile` bereitstellen. Sie akzeptiert `{ providerId }` für das authentifizierte Konto, aktualisiert das anbieterseitige Profil über `auth:resolveExternalProfile` und wird erst abgeschlossen, nachdem Cognis Benutzername, Anzeigefelder, Avatar-Daten und Banner-Daten über die Profil- und Dateifunktionen gespeichert hat. Bild-URLs des Anbieters sind nur Eingaben für die Integration; die Abfrage muss Mediendaten zurückgeben, damit Browseroberflächen stets Cognis-eigene Dateien darstellen. Die Browserintegration stellt die gleichnamige UI-Funktion bereit, die das Bannermenü des eigenen Profils erkennt, ohne einen Anbieter- oder Modulnamen zu kennen.
+
+### Gelöschte externe Identitäten
+
+Beim Löschen eines extern authentifizierten Kontos wird vor dem Entfernen der kontoeigenen Daten ein nicht umkehrbarer Fingerabdruck seiner Anbieteridentität gespeichert. Authentifizierung und Abgleich weisen diese Identität anschließend zurück, sodass eine aktive Anbietersitzung das gelöschte Cognis-Konto nicht unbemerkt neu erstellen kann. Der Fingerabdruck wird Browser-Clients nicht offengelegt.

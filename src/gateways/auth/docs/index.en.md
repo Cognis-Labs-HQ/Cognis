@@ -115,3 +115,7 @@ SSO modules may register `auth:registerExternalProfileProvider` through CTX. The
 ### External profile synchronization
 
 An external authentication integration can expose the `auth:syncExternalProfile` CTX query. It accepts `{ providerId }` for the authenticated account, refreshes the provider-owned profile through `auth:resolveExternalProfile`, and returns only after Cognis has persisted the resulting handle, display fields, avatar bytes, and banner bytes through the Profile and Files capabilities. Provider image URLs are inputs to the integration only; the query must return media bytes so browser surfaces always render Cognis-owned files. The browser integration contributes the same-named UI capability, which the own-profile banner menu detects without knowing a provider or module name.
+
+### Deleted external identities
+
+Deleting an externally authenticated account records a one-way fingerprint of its provider identity before removing account-owned data. Authentication and reconciliation reject that identity afterward, so an active provider session cannot silently recreate the deleted Cognis account. The fingerprint is not exposed to browser clients.

@@ -220,6 +220,23 @@ export async function registerAuthBootstrapHook(
                 "externalUserId" in session
                     ? String(session.externalUserId)
                     : session.accountId;
+            if (
+                adapter.id !== "local" &&
+                (await context.accountStore.isExternalIdentityDeleted?.(
+                    adapter.id,
+                    externalUserId,
+                ))
+            ) {
+                context.ctx.log?.(
+                    "warn",
+                    "Rejected a deleted external identity.",
+                    {
+                        component: "auth-gateway",
+                        providerId: adapter.id,
+                    },
+                );
+                return { success: false, reason: "invalid_credentials" };
+            }
             const canonicalAccountId =
                 adapter.id === "local"
                     ? session.accountId.trim().toLowerCase()

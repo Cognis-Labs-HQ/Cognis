@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { DbLocalAccountStore } from "../store.js";
+import { externalIdentityFingerprint } from "../../../../gateways/auth/reuse/account-store.js";
 
 test("external account persistence creates the account before its identity", async () => {
     const commands: Array<Record<string, unknown>> = [];
@@ -26,24 +27,45 @@ test("external account persistence creates the account before its identity", asy
 
     assert.deepEqual(
         commands.map((command) => command.table),
-        ["auth_identities", "accounts", "auth_identities"],
+        [
+            "deleted_auth_identities",
+            "auth_identities",
+            "accounts",
+            "auth_identities",
+        ],
     );
     assert.equal(accountId, "firehawk");
-    assert.deepEqual(commands[1]?.values, {
+    assert.deepEqual(commands[0]?.where, [
+        {
+            column: "id",
+            value: externalIdentityFingerprint(
+                "ldap",
+                "uid=firehawk,ou=People,dc=example,dc=org",
+            ),
+        },
+    ]);
+    assert.deepEqual(commands[1]?.where, [
+        { column: "provider", value: "ldap" },
+        {
+            column: "external_user_id",
+            value: "uid=firehawk,ou=People,dc=example,dc=org",
+        },
+    ]);
+    assert.deepEqual(commands[2]?.values, {
         id: "firehawk",
         email: "firehawk@example.org",
         display_name: "Fire Hawk",
         is_admin: false,
         role: "teacher",
         enabled: true,
-        created_at: (commands[1]?.values as Record<string, unknown>).created_at,
-        updated_at: (commands[1]?.values as Record<string, unknown>).updated_at,
+        created_at: (commands[2]?.values as Record<string, unknown>).created_at,
+        updated_at: (commands[2]?.values as Record<string, unknown>).updated_at,
     });
     assert.equal(
-        (commands[2]?.values as Record<string, unknown>).account_id,
+        (commands[3]?.values as Record<string, unknown>).account_id,
         "firehawk",
     );
-    assert.deepEqual(commands[1]?.conflict, {
+    assert.deepEqual(commands[2]?.conflict, {
         action: "update",
         target: ["id"],
         update: {
@@ -51,7 +73,7 @@ test("external account persistence creates the account before its identity", asy
             display_name: "Fire Hawk",
             is_admin: false,
             role: "teacher",
-            updated_at: (commands[1]?.values as Record<string, unknown>)
+            updated_at: (commands[2]?.values as Record<string, unknown>)
                 .updated_at,
         },
     });
@@ -100,7 +122,11 @@ test("local auth schema provisions external identities", async () => {
 
     assert.deepEqual(
         tables.map((table) => table.name),
-        ["auth_identities", "local_auth_password_history"],
+        [
+            "auth_identities",
+            "deleted_auth_identities",
+            "local_auth_password_history",
+        ],
     );
     const identityTable = tables[0];
     assert.deepEqual(identityTable?.uniqueKeys, [
@@ -151,6 +177,19 @@ test("external accounts support administrative actions other than password reset
     const executor = {
         async executeCommand(command: Record<string, unknown>) {
             commands.push(command);
+            if (
+                command.option === "SELECT" &&
+                command.table === "auth_identities"
+            ) {
+                return {
+                    rows: [
+                        {
+                            provider: "external-provider",
+                            external_user_id: "subject",
+                        },
+                    ],
+                };
+            }
             return { rows: [{ is_founder: true }] };
         },
         async transaction(operation: (transaction: unknown) => Promise<void>) {
@@ -173,4 +212,14 @@ test("external accounts support administrative actions other than password reset
     for (const command of accountCommands) {
         assert.deepEqual(command.where, [{ column: "id", value: "firehawk" }]);
     }
+    const tombstoneCommand = commands.find(
+        (command) =>
+            command.option === "INSERT" &&
+            command.table === "deleted_auth_identities",
+    );
+    assert.deepEqual(tombstoneCommand?.values, {
+        id: externalIdentityFingerprint("external-provider", "subject"),
+        deleted_at: (tombstoneCommand?.values as Record<string, unknown>)
+            .deleted_at,
+    });
 });

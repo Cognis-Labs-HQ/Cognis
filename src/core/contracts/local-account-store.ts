@@ -13,6 +13,10 @@ export interface LocalAccountStore {
         provider: string,
         externalUserId: string,
     ): Promise<string | null>;
+    isExternalIdentityDeleted?(
+        provider: string,
+        externalUserId: string,
+    ): Promise<boolean>;
     register(
         username: string,
         password: string,

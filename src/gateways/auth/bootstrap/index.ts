@@ -46,6 +46,10 @@ export interface AuthAccountStore {
         provider: string,
         externalUserId: string,
     ): Promise<string | null>;
+    isExternalIdentityDeleted?(
+        provider: string,
+        externalUserId: string,
+    ): Promise<boolean>;
     getInfo(username: string): Promise<{
         username: string;
         enabled: boolean;

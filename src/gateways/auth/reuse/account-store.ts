@@ -4,7 +4,7 @@
  * through gateway bootstrap wiring and do not depend on adapter internals.
  */
 
-import { pbkdf2Sync } from "node:crypto";
+import { createHash, pbkdf2Sync } from "node:crypto";
 import type { AuthContext } from "@cognis/core";
 
 export interface LocalAccountStore {
@@ -20,6 +20,10 @@ export interface LocalAccountStore {
         provider: string,
         externalUserId: string,
     ): Promise<string | null>;
+    isExternalIdentityDeleted?(
+        provider: string,
+        externalUserId: string,
+    ): Promise<boolean>;
     removeExternalIdentitiesByPrefix?(
         provider: string,
         externalUserIdPrefix: string,
@@ -92,6 +96,15 @@ export function normalizeUsername(username: string): string {
     return username.trim().toLowerCase();
 }
 
+export function externalIdentityFingerprint(
+    provider: string,
+    externalUserId: string,
+): string {
+    return createHash("sha256")
+        .update(`${provider}\0${externalUserId}`, "utf8")
+        .digest("hex");
+}
+
 /**
  * Validates username format: printable ASCII only, max 25 characters,
  * and must be all-lowercase (case-insensitive storage is enforced by
@@ -115,6 +128,8 @@ export function validateUsername(username: string): string | null {
 export class VolatileLocalAccountStore implements LocalAccountStore {
     private readonly accounts = new Map<string, StoredAccount>();
     private readonly externalIdentities = new Map<string, string>();
+    private readonly externalIdentityFingerprints = new Map<string, string>();
+    private readonly deletedExternalIdentities = new Set<string>();
 
     async ensureExternalAccount(identity: {
         accountId: string;
@@ -125,9 +140,17 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
     }): Promise<string> {
         const normalizedAccountId = normalizeUsername(identity.accountId);
         const identityId = `${identity.provider}:${identity.externalUserId}`;
+        const identityFingerprint = externalIdentityFingerprint(
+            identity.provider,
+            identity.externalUserId,
+        );
+        if (this.deletedExternalIdentities.has(identityFingerprint)) {
+            throw new Error("external_identity_deleted");
+        }
         const mappedAccountId = this.externalIdentities.get(identityId);
         const accountId = mappedAccountId ?? normalizedAccountId;
         this.externalIdentities.set(identityId, accountId);
+        this.externalIdentityFingerprints.set(identityId, identityFingerprint);
         const existingAccount = this.accounts.get(accountId);
         if (existingAccount) {
             existingAccount.displayName =
@@ -161,6 +184,15 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         );
     }
 
+    async isExternalIdentityDeleted(
+        provider: string,
+        externalUserId: string,
+    ): Promise<boolean> {
+        return this.deletedExternalIdentities.has(
+            externalIdentityFingerprint(provider, externalUserId),
+        );
+    }
+
     async removeExternalIdentitiesByPrefix(
         provider: string,
         externalUserIdPrefix: string,
@@ -171,6 +203,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
                 continue;
             }
             this.externalIdentities.delete(identityId);
+            this.externalIdentityFingerprints.delete(identityId);
             accountIds.add(accountId);
         }
         return [...accountIds];
@@ -297,7 +330,18 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
     }
 
     async delete(username: string) {
-        this.accounts.delete(normalizeUsername(username));
+        const accountId = normalizeUsername(username);
+        for (const [identityId, mappedAccountId] of this.externalIdentities) {
+            if (mappedAccountId !== accountId) continue;
+            const identityFingerprint =
+                this.externalIdentityFingerprints.get(identityId);
+            if (identityFingerprint) {
+                this.deletedExternalIdentities.add(identityFingerprint);
+            }
+            this.externalIdentities.delete(identityId);
+            this.externalIdentityFingerprints.delete(identityId);
+        }
+        this.accounts.delete(accountId);
     }
 
     async getInfo(username: string): Promise<{

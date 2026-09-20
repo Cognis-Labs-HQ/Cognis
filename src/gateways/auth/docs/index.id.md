@@ -115,3 +115,7 @@ Modul SSO dapat mendaftarkan `auth:registerExternalProfileProvider` melalui CTX.
 ### Sinkronisasi profil eksternal
 
 Integrasi autentikasi eksternal dapat menyediakan kueri CTX `auth:syncExternalProfile`. Kueri menerima `{ providerId }` untuk akun yang terautentikasi, memperbarui profil milik penyedia melalui `auth:resolveExternalProfile`, lalu selesai hanya setelah Cognis menyimpan handle, kolom tampilan, data avatar, dan data banner melalui kapabilitas Profil dan Berkas. URL gambar penyedia hanya menjadi masukan integrasi; kueri harus mengembalikan data media agar antarmuka peramban selalu menampilkan berkas milik Cognis. Integrasi peramban menyediakan kapabilitas UI bernama sama, yang dideteksi menu banner profil sendiri tanpa mengetahui nama penyedia atau modul.
+
+### Identitas eksternal yang dihapus
+
+Penghapusan akun yang diautentikasi secara eksternal menyimpan sidik jari satu arah dari identitas penyedianya sebelum data milik akun dihapus. Autentikasi dan rekonsiliasi kemudian menolak identitas tersebut, sehingga sesi penyedia yang masih aktif tidak dapat membuat ulang akun Cognis yang telah dihapus secara diam-diam. Sidik jari tidak diekspos kepada klien peramban.

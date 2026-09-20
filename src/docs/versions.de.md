@@ -36,7 +36,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.30` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.23` |
 | Dateikontingent       | `src/adapters/file/quota/`          | `1.0.21` |
-| Local Auth            | `src/adapters/auth/local/`          | `0.3.24` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.3.25` |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.51` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.35` |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.21` |
@@ -64,7 +64,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                          | Version   |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.62`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.63`  |
 | Share                 | `src/gateways/share/`         | `1.7.48`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.13`  |
@@ -80,7 +80,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente   | Pfad        | Version   |
 | ------------ | ----------- | --------- |
-| Core Package | `src/core/` | `0.3.102` |
+| Core Package | `src/core/` | `0.3.103` |
 
 ## API
 
