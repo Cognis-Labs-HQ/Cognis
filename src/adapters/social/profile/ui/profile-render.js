@@ -218,6 +218,7 @@ export function renderHero({
     posts,
     following,
     followers,
+    externalProviderLabel,
     i18n,
 }) {
     const bannerImageObjectPosition = `${bannerPanX}% ${bannerPanY}%`;
@@ -291,6 +292,11 @@ export function renderHero({
             >
             ${escapeHtml(i18n.t("ui.app.profile.banner_height.full"))}
           </label>
+          ${
+              externalProviderLabel
+                  ? `<button class="profile-banner-menu-item profile-provider-sync-btn btn-neutral" type="button">${escapeHtml(i18n.t("ui.app.profile.provider_sync").replace("{{ provider }}", externalProviderLabel))}</button>`
+                  : ""
+          }
         </div>
       </div>
     `

@@ -111,3 +111,7 @@ Password-confirmation invalidation runs only for an authenticated full-account s
 ## External profile providers
 
 SSO modules may register `auth:registerExternalProfileProvider` through CTX. The resolver receives the provider ID, Cognis account ID, external user ID, and authenticated provider session, and may return a searchable handle, display name, bio, location, website, avatar bytes, and banner bytes. Cognis also uses a provider session `handle` or `username` as the initial profile handle when supplied, rather than exposing an opaque external account ID as the username. The Profile adapter applies returned data through its own persistence and file-storage capability when the external account is first created.
+
+### External profile synchronization
+
+An external authentication integration can expose the `auth:syncExternalProfile` CTX query. It accepts `{ providerId }` for the authenticated account, refreshes the provider-owned profile through `auth:resolveExternalProfile`, and returns only after Cognis has persisted the resulting handle, display fields, avatar bytes, and banner bytes through the Profile and Files capabilities. Provider image URLs are inputs to the integration only; the query must return media bytes so browser surfaces always render Cognis-owned files. The browser integration contributes the same-named UI capability, which the own-profile banner menu detects without knowing a provider or module name.

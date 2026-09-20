@@ -216,6 +216,18 @@ export async function registerAuthBootstrapHook(
             if (!session) {
                 return { success: false, reason: "invalid_credentials" };
             }
+            const externalUserId =
+                "externalUserId" in session
+                    ? String(session.externalUserId)
+                    : session.accountId;
+            const canonicalAccountId =
+                adapter.id === "local"
+                    ? session.accountId.trim().toLowerCase()
+                    : ((await context.accountStore.resolveExternalAccountId?.(
+                          adapter.id,
+                          externalUserId,
+                      )) ?? session.accountId.trim().toLowerCase());
+            session.accountId = canonicalAccountId;
             return { success: true, session, adapterId: adapter.id };
         },
     );
@@ -320,20 +332,21 @@ export async function registerAuthBootstrapHook(
                     stageCtx.data["accountCreationAuthorization"] =
                         authorization;
                 }
-                await context.accountStore.ensureExternalAccount({
-                    accountId: session.accountId,
-                    provider: adapterId ?? session.provider,
-                    externalUserId:
-                        "externalUserId" in session
-                            ? String(session.externalUserId)
-                            : session.accountId,
-                    email: sessionEmail,
-                    displayName:
-                        "displayName" in session
-                            ? String(session.displayName ?? "") || undefined
-                            : undefined,
-                    role: session.role,
-                });
+                session.accountId =
+                    await context.accountStore.ensureExternalAccount({
+                        accountId: session.accountId,
+                        provider: adapterId ?? session.provider,
+                        externalUserId:
+                            "externalUserId" in session
+                                ? String(session.externalUserId)
+                                : session.accountId,
+                        email: sessionEmail,
+                        displayName:
+                            "displayName" in session
+                                ? String(session.displayName ?? "") || undefined
+                                : undefined,
+                        role: session.role,
+                    });
                 if (creatingExternalAccount) {
                     stageCtx.data["newExternalAccountProfileRequest"] = {
                         providerId: adapterId ?? session.provider,

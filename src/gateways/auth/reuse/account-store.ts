@@ -15,7 +15,11 @@ export interface LocalAccountStore {
         email?: string;
         displayName?: string;
         role?: string;
-    }): Promise<void>;
+    }): Promise<string>;
+    resolveExternalAccountId?(
+        provider: string,
+        externalUserId: string,
+    ): Promise<string | null>;
     removeExternalIdentitiesByPrefix?(
         provider: string,
         externalUserIdPrefix: string,
@@ -85,7 +89,7 @@ const VOLATILE_PASSWORD_HISTORY_LIMIT = 10;
 
 /** Lowercases a username to enable case-insensitive lookups. */
 export function normalizeUsername(username: string): string {
-    return username.toLowerCase();
+    return username.trim().toLowerCase();
 }
 
 /**
@@ -118,24 +122,25 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         externalUserId: string;
         displayName?: string;
         role?: string;
-    }): Promise<void> {
-        this.externalIdentities.set(
-            `${identity.provider}:${identity.externalUserId}`,
-            identity.accountId,
-        );
-        const existingAccount = this.accounts.get(identity.accountId);
+    }): Promise<string> {
+        const normalizedAccountId = normalizeUsername(identity.accountId);
+        const identityId = `${identity.provider}:${identity.externalUserId}`;
+        const mappedAccountId = this.externalIdentities.get(identityId);
+        const accountId = mappedAccountId ?? normalizedAccountId;
+        this.externalIdentities.set(identityId, accountId);
+        const existingAccount = this.accounts.get(accountId);
         if (existingAccount) {
             existingAccount.displayName =
                 identity.displayName?.trim() || existingAccount.displayName;
-            return;
+            return accountId;
         }
-        this.accounts.set(identity.accountId, {
+        this.accounts.set(accountId, {
             passwordHash: "external-account-no-local-password",
             passwordHistoryHashes: [],
             isFounder: false,
             enabled: true,
             lastLogin: null,
-            displayName: identity.displayName?.trim() || identity.accountId,
+            displayName: identity.displayName?.trim() || accountId,
             role:
                 identity.role === "teacher" ||
                 identity.role === "moderator" ||
@@ -144,6 +149,16 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
                     : "user",
             provider: identity.provider,
         });
+        return accountId;
+    }
+
+    async resolveExternalAccountId(
+        provider: string,
+        externalUserId: string,
+    ): Promise<string | null> {
+        return (
+            this.externalIdentities.get(`${provider}:${externalUserId}`) ?? null
+        );
     }
 
     async removeExternalIdentitiesByPrefix(

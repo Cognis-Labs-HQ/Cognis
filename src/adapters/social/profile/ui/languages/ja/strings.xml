@@ -12,4 +12,7 @@
   <string name="ui.app.profile.availability.tentative">仮予定</string>
   <string name="ui.app.profile.availability.idle">離席中</string>
   <string name="ui.app.profile.availability.unknown">不明</string>
+  <string name="ui.app.profile.provider_sync">{{ provider }} と同期</string>
+  <string name="ui.app.profile.provider_sync_complete">プロフィールを同期しました。</string>
+  <string name="ui.app.profile.provider_sync_failed">プロフィールを同期できませんでした。</string>
 </resources>

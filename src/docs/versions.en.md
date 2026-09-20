@@ -36,7 +36,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.30` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.23` |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.21` |
-| Local Auth            | `src/adapters/auth/local/`          | `0.3.23` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.3.24` |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.51` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.35` |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.21` |
@@ -49,7 +49,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.22` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.36` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.20` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.8`  |
+| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.9`  |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.7.16` |
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.31` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.36` |
@@ -64,7 +64,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component             | Path                          | Version   |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.61`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.62`  |
 | Share                 | `src/gateways/share/`         | `1.7.48`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.13`  |
@@ -80,7 +80,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component    | Path        | Version   |
 | ------------ | ----------- | --------- |
-| Core Package | `src/core/` | `0.3.101` |
+| Core Package | `src/core/` | `0.3.102` |
 
 ## API
 

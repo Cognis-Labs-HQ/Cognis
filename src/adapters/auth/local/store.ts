@@ -64,7 +64,8 @@ export class DbLocalAccountStore implements LocalAccountStore {
         email?: string;
         displayName?: string;
         role?: string;
-    }): Promise<void> {
+    }): Promise<string> {
+        let normalizedAccountId = normalizeUsername(identity.accountId);
         const now = new Date().toISOString();
         const role =
             identity.role === "teacher" ||
@@ -73,14 +74,29 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 ? identity.role
                 : "user";
         await this.db.transaction(async (txDb) => {
+            const identityResult = await txDb.executeCommand({
+                option: "SELECT",
+                table: "auth_identities",
+                columns: ["account_id"],
+                where: [
+                    { column: "provider", value: identity.provider },
+                    {
+                        column: "external_user_id",
+                        value: identity.externalUserId,
+                    },
+                ],
+                limit: 1,
+            });
+            const accountId = identityResult.rows?.[0]?.account_id
+                ? normalizeUsername(String(identityResult.rows[0].account_id))
+                : normalizedAccountId;
             await txDb.executeCommand({
                 option: "INSERT",
                 table: "accounts",
                 values: {
-                    id: identity.accountId,
+                    id: accountId,
                     email: identity.email ?? null,
-                    display_name:
-                        identity.displayName?.trim() || identity.accountId,
+                    display_name: identity.displayName?.trim() || accountId,
                     is_admin: role === "admin",
                     role,
                     enabled: true,
@@ -92,8 +108,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     target: ["id"],
                     update: {
                         email: identity.email ?? null,
-                        display_name:
-                            identity.displayName?.trim() || identity.accountId,
+                        display_name: identity.displayName?.trim() || accountId,
                         is_admin: role === "admin",
                         role,
                         updated_at: now,
@@ -105,7 +120,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 table: "auth_identities",
                 values: {
                     id: `${identity.provider}:${identity.externalUserId}`,
-                    account_id: identity.accountId,
+                    account_id: accountId,
                     provider: identity.provider,
                     external_user_id: identity.externalUserId,
                     created_at: now,
@@ -113,12 +128,32 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 },
                 conflict: { action: "ignore" },
             });
+            normalizedAccountId = accountId;
         });
         this.writeLog("info", "Ensured external account identity.", {
             component: "auth-local-store",
-            accountId: identity.accountId,
+            accountId: normalizedAccountId,
             provider: identity.provider,
         });
+        return normalizedAccountId;
+    }
+
+    async resolveExternalAccountId(
+        provider: string,
+        externalUserId: string,
+    ): Promise<string | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "auth_identities",
+            columns: ["account_id"],
+            where: [
+                { column: "provider", value: provider },
+                { column: "external_user_id", value: externalUserId },
+            ],
+            limit: 1,
+        });
+        const accountId = result.rows?.[0]?.account_id;
+        return accountId ? normalizeUsername(String(accountId)) : null;
     }
 
     async removeExternalIdentitiesByPrefix(

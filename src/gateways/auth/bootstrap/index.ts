@@ -41,7 +41,11 @@ export interface AuthAccountStore {
         email?: string;
         displayName?: string;
         role?: string;
-    }): Promise<void>;
+    }): Promise<string>;
+    resolveExternalAccountId?(
+        provider: string,
+        externalUserId: string,
+    ): Promise<string | null>;
     getInfo(username: string): Promise<{
         username: string;
         enabled: boolean;

@@ -111,3 +111,7 @@ Pembatalan konfirmasi kata sandi hanya berjalan untuk sesi akun penuh yang terau
 ## Penyedia profil eksternal
 
 Modul SSO dapat mendaftarkan `auth:registerExternalProfileProvider` melalui CTX. Resolver menerima ID penyedia, ID akun Cognis, ID pengguna eksternal, dan sesi penyedia terautentikasi, lalu dapat mengembalikan handle yang dapat dicari, nama tampilan, bio, lokasi, situs web, serta data avatar dan banner. Cognis juga memakai `handle` atau `username` dari sesi penyedia sebagai handle profil awal bila tersedia, alih-alih menampilkan ID akun eksternal yang buram sebagai nama pengguna. Adapter Profil menyimpan data tersebut melalui kemampuan penyimpanan miliknya saat akun eksternal pertama kali dibuat.
+
+### Sinkronisasi profil eksternal
+
+Integrasi autentikasi eksternal dapat menyediakan kueri CTX `auth:syncExternalProfile`. Kueri menerima `{ providerId }` untuk akun yang terautentikasi, memperbarui profil milik penyedia melalui `auth:resolveExternalProfile`, lalu selesai hanya setelah Cognis menyimpan handle, kolom tampilan, data avatar, dan data banner melalui kapabilitas Profil dan Berkas. URL gambar penyedia hanya menjadi masukan integrasi; kueri harus mengembalikan data media agar antarmuka peramban selalu menampilkan berkas milik Cognis. Integrasi peramban menyediakan kapabilitas UI bernama sama, yang dideteksi menu banner profil sendiri tanpa mengetahui nama penyedia atau modul.

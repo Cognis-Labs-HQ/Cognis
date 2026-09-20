@@ -12,4 +12,7 @@
   <string name="ui.app.profile.availability.tentative">Vorläufig</string>
   <string name="ui.app.profile.availability.idle">Inaktiv</string>
   <string name="ui.app.profile.availability.unknown">Unbekannt</string>
+  <string name="ui.app.profile.provider_sync">Mit {{ provider }} synchronisieren</string>
+  <string name="ui.app.profile.provider_sync_complete">Profil synchronisiert.</string>
+  <string name="ui.app.profile.provider_sync_failed">Profil konnte nicht synchronisiert werden.</string>
 </resources>

@@ -360,6 +360,11 @@ export async function bootstrapSocialAdapter(
         async (accountId: string): Promise<AccountRole | undefined> =>
             (await profileStore.getProfile(accountId))?.role,
     );
+    ctx.capabilities.contribute(
+        "profile:getHandle",
+        async (accountId: string): Promise<string | undefined> =>
+            (await profileStore.getProfile(accountId))?.handle,
+    );
 
     const registerNamespace = ctx.capabilities.get<
         (definition: {

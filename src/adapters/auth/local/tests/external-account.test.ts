@@ -15,8 +15,8 @@ test("external account persistence creates the account before its identity", asy
     };
     const store = new DbLocalAccountStore(executor as never);
 
-    await store.ensureExternalAccount({
-        accountId: "firehawk",
+    const accountId = await store.ensureExternalAccount({
+        accountId: "FireHawk",
         provider: "ldap",
         externalUserId: "uid=firehawk,ou=People,dc=example,dc=org",
         email: "firehawk@example.org",
@@ -26,23 +26,24 @@ test("external account persistence creates the account before its identity", asy
 
     assert.deepEqual(
         commands.map((command) => command.table),
-        ["accounts", "auth_identities"],
+        ["auth_identities", "accounts", "auth_identities"],
     );
-    assert.deepEqual(commands[0]?.values, {
+    assert.equal(accountId, "firehawk");
+    assert.deepEqual(commands[1]?.values, {
         id: "firehawk",
         email: "firehawk@example.org",
         display_name: "Fire Hawk",
         is_admin: false,
         role: "teacher",
         enabled: true,
-        created_at: (commands[0]?.values as Record<string, unknown>).created_at,
-        updated_at: (commands[0]?.values as Record<string, unknown>).updated_at,
+        created_at: (commands[1]?.values as Record<string, unknown>).created_at,
+        updated_at: (commands[1]?.values as Record<string, unknown>).updated_at,
     });
     assert.equal(
-        (commands[1]?.values as Record<string, unknown>).account_id,
+        (commands[2]?.values as Record<string, unknown>).account_id,
         "firehawk",
     );
-    assert.deepEqual(commands[0]?.conflict, {
+    assert.deepEqual(commands[1]?.conflict, {
         action: "update",
         target: ["id"],
         update: {
@@ -50,7 +51,7 @@ test("external account persistence creates the account before its identity", asy
             display_name: "Fire Hawk",
             is_admin: false,
             role: "teacher",
-            updated_at: (commands[0]?.values as Record<string, unknown>)
+            updated_at: (commands[1]?.values as Record<string, unknown>)
                 .updated_at,
         },
     });

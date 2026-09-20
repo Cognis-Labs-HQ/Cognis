@@ -111,3 +111,7 @@ Die Ungültigmachung der Passwortbestätigung wird nur für eine authentifiziert
 ## Externe Profilanbieter
 
 SSO-Module können `auth:registerExternalProfileProvider` über CTX registrieren. Der Resolver erhält Anbieter-ID, Cognis-Konto-ID, externe Benutzer-ID und authentifizierte Anbietersitzung und kann einen durchsuchbaren Benutzernamen, Anzeigename, Biografie, Ort, Website sowie Avatar- und Bannerdaten zurückgeben. Cognis verwendet außerdem einen in der Anbietersitzung gelieferten `handle` oder `username` als anfänglichen Profilnamen, statt eine undurchsichtige externe Konto-ID als Benutzernamen anzuzeigen. Der Profiladapter speichert diese Daten bei der ersten Erstellung des externen Kontos über seine eigenen Speicherfunktionen.
+
+### Synchronisierung externer Profile
+
+Eine externe Authentifizierungsintegration kann die CTX-Abfrage `auth:syncExternalProfile` bereitstellen. Sie akzeptiert `{ providerId }` für das authentifizierte Konto, aktualisiert das anbieterseitige Profil über `auth:resolveExternalProfile` und wird erst abgeschlossen, nachdem Cognis Benutzername, Anzeigefelder, Avatar-Daten und Banner-Daten über die Profil- und Dateifunktionen gespeichert hat. Bild-URLs des Anbieters sind nur Eingaben für die Integration; die Abfrage muss Mediendaten zurückgeben, damit Browseroberflächen stets Cognis-eigene Dateien darstellen. Die Browserintegration stellt die gleichnamige UI-Funktion bereit, die das Bannermenü des eigenen Profils erkennt, ohne einen Anbieter- oder Modulnamen zu kennen.

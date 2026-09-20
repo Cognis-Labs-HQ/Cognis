@@ -8,7 +8,11 @@ export interface LocalAccountStore {
         email?: string;
         displayName?: string;
         role?: string;
-    }): Promise<void>;
+    }): Promise<string>;
+    resolveExternalAccountId?(
+        provider: string,
+        externalUserId: string,
+    ): Promise<string | null>;
     register(
         username: string,
         password: string,

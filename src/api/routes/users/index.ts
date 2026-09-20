@@ -75,9 +75,18 @@ export function createUserRoutes(
             const isSecondFactorEnabled = ctx.getCapability<
                 (accountId: string) => Promise<boolean>
             >("tfa:isSecondFactorEnabled");
+            const getProfileHandle =
+                ctx.getCapability<
+                    (accountId: string) => Promise<string | undefined>
+                >("profile:getHandle");
             const users = await Promise.all(
                 (await accountStore.list()).map(async (user) => ({
                     ...user,
+                    handle: getProfileHandle
+                        ? await getProfileHandle(user.username).catch(
+                              () => undefined,
+                          )
+                        : undefined,
                     lifecycleState:
                         (await getProfileLifecycleState?.(user.username).catch(
                             () => null,
