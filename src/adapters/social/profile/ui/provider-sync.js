@@ -1,13 +1,18 @@
 import { showToast } from "/static/reuse/toast.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 
-export function resolveExternalProfileProvider() {
+function resolveExternalProfileSync() {
     const providerId = localStorage.getItem("cognis_provider_id");
+    const registry = uiCtx.capabilities.get("auth:externalProfileSync");
     return providerId &&
         providerId !== "local" &&
-        uiCtx.capabilities.get("auth:syncExternalProfile")
-        ? providerId
+        registry?.supports(providerId)
+        ? { providerId, registry }
         : null;
+}
+
+export function resolveExternalProfileProvider() {
+    return resolveExternalProfileSync()?.providerId ?? null;
 }
 
 export function bindExternalProfileSync({
@@ -20,15 +25,14 @@ export function bindExternalProfileSync({
     root.querySelector(".profile-provider-sync-btn")?.addEventListener(
         "click",
         async () => {
-            const providerId = resolveExternalProfileProvider();
-            const syncExternalProfile = uiCtx.capabilities.get(
-                "auth:syncExternalProfile",
-            );
-            if (!providerId || !syncExternalProfile) return;
+            const profileSync = resolveExternalProfileSync();
+            if (!profileSync) return;
             dropdown.hidden = true;
             menuButton.setAttribute("aria-expanded", "false");
             try {
-                await syncExternalProfile({ providerId });
+                await profileSync.registry.synchronize({
+                    providerId: profileSync.providerId,
+                });
                 await applyProfile();
                 showToast(i18n.t("ui.app.profile.provider_sync_complete"), {
                     variant: "success",

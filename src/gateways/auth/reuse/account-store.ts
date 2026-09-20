@@ -170,6 +170,9 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         this.deletedExternalIdentities.delete(identityFingerprint);
         const mappedAccountId = this.externalIdentities.get(identityId);
         const accountId = mappedAccountId ?? normalizedAccountId;
+        if (!mappedAccountId && this.accounts.has(accountId)) {
+            throw new Error("external_account_id_conflict");
+        }
         this.externalIdentities.set(identityId, accountId);
         this.externalIdentityFingerprints.set(identityId, identityFingerprint);
         const existingAccount = this.accounts.get(accountId);

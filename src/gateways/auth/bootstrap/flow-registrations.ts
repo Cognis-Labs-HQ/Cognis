@@ -182,13 +182,17 @@ export async function registerAuthBootstrapHook(
                 "externalUserId" in session
                     ? String(session.externalUserId)
                     : session.accountId;
-            const canonicalAccountId =
+            const resolvedExternalAccountId =
                 adapter.id === "local"
-                    ? session.accountId.trim().toLowerCase()
+                    ? null
                     : ((await context.accountStore.resolveExternalAccountId?.(
                           adapter.id,
                           externalUserId,
-                      )) ??
+                      )) ?? null);
+            const canonicalAccountId =
+                adapter.id === "local"
+                    ? session.accountId.trim().toLowerCase()
+                    : (resolvedExternalAccountId ??
                       resolveExternalAccountKey(
                           session as Record<string, unknown>,
                           adapter.id,
@@ -200,7 +204,12 @@ export async function registerAuthBootstrapHook(
                     adapter.id,
                 );
             }
-            return { success: true, session, adapterId: adapter.id };
+            return {
+                success: true,
+                session,
+                adapterId: adapter.id,
+                externalIdentityMapped: resolvedExternalAccountId !== null,
+            };
         },
     );
 
@@ -219,6 +228,7 @@ export async function registerAuthBootstrapHook(
                         role?: string;
                     };
                     adapterId?: string;
+                    externalIdentityMapped?: boolean;
                 }>
             )[0];
 
@@ -230,7 +240,7 @@ export async function registerAuthBootstrapHook(
                 };
             }
 
-            const { session, adapterId } = authResult;
+            const { session, adapterId, externalIdentityMapped } = authResult;
             const capabilities = context.ctx.capabilities;
             const sessionEmail = resolveSessionEmail(session);
 
@@ -241,8 +251,13 @@ export async function registerAuthBootstrapHook(
                 const existingAccount = await context.accountStore.getInfo(
                     session.accountId,
                 );
+                if (existingAccount && !externalIdentityMapped) {
+                    return {
+                        sessionResult: { outcome: "invalid_credentials" },
+                    };
+                }
                 const creatingExternalAccount = !existingAccount;
-                if (!existingAccount) {
+                if (!externalIdentityMapped) {
                     if (!context.ctx.flow.exists("gateAccountCreation")) {
                         return {
                             sessionResult: {

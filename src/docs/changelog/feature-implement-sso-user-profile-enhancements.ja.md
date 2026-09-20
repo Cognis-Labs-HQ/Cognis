@@ -26,6 +26,10 @@
 
 管理画面では登録と招待のポリシーを簡潔な「はい」または「いいえ」のラジオグループで表示します。共通フォームコンポーザーと変更追跡が保存と破棄を一貫して管理し、必須ラジオグループは選択されるまで無効です。
 
+## プロフィール同期の分離
+
+外部プロフィール同期はプロバイダーごとに登録されるため、Cognis は現在のアカウントを認証したプロバイダーに対してのみ同期を表示して実行します。置き換えられたアバターとバナーのオブジェクト URL は解放され、古いメディアがブラウザーメモリに残りません。
+
 ## 準拠と安全性
 
 アカウント名前空間は検索前に検証され、失敗したアカウント作成のロールバックは削除記録を作成せず、プロフィール同期には破壊的操作のスタイルを使用し、影響を受けるコンポーネントのバージョンと依存関係上限を整合させています。
@@ -43,3 +47,4 @@
 - [6e3830656f89213880dbcb4429ff44239f2c2bbf](https://github.com/Cognis-Labs-HQ/Cognis/commit/6e3830656f89213880dbcb4429ff44239f2c2bbf)
 - [b7423a46e20c3a4cc795eebc3ff4aa765ede7fa4](https://github.com/Cognis-Labs-HQ/Cognis/commit/b7423a46e20c3a4cc795eebc3ff4aa765ede7fa4)
 - [fbbbfda628ce7aed65235b1b071b921c906dd79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/fbbbfda628ce7aed65235b1b071b921c906dd79d)
+- [c5a50d8d4728d861e69a72e840da64ec64850b82](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5a50d8d4728d861e69a72e840da64ec64850b82)

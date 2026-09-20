@@ -80,19 +80,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 ? identity.role
                 : "user";
         await this.db.transaction(async (txDb) => {
-            await txDb.executeCommand({
-                option: "DELETE",
-                table: "deleted_auth_identities",
-                where: [
-                    {
-                        column: "id",
-                        value: externalIdentityFingerprint(
-                            identity.provider,
-                            identity.externalUserId,
-                        ),
-                    },
-                ],
-            });
             const identityResult = await txDb.executeCommand({
                 option: "SELECT",
                 table: "auth_identities",
@@ -109,6 +96,31 @@ export class DbLocalAccountStore implements LocalAccountStore {
             const accountId = identityResult.rows?.[0]?.account_id
                 ? normalizeUsername(String(identityResult.rows[0].account_id))
                 : normalizedAccountId;
+            if (!identityResult.rows?.[0]?.account_id) {
+                const accountResult = await txDb.executeCommand({
+                    option: "SELECT",
+                    table: "accounts",
+                    columns: ["id"],
+                    where: [{ column: "id", value: accountId }],
+                    limit: 1,
+                });
+                if (accountResult.rows?.length) {
+                    throw new Error("external_account_id_conflict");
+                }
+            }
+            await txDb.executeCommand({
+                option: "DELETE",
+                table: "deleted_auth_identities",
+                where: [
+                    {
+                        column: "id",
+                        value: externalIdentityFingerprint(
+                            identity.provider,
+                            identity.externalUserId,
+                        ),
+                    },
+                ],
+            });
             await txDb.executeCommand({
                 option: "INSERT",
                 table: "accounts",

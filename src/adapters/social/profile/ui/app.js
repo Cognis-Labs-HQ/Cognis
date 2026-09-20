@@ -580,6 +580,7 @@ function bindProfileHeroEvents() {
             i18n,
             applyProfile: async () => {
                 profile = await loadOwnProfile();
+                profileImageActions?.revokeProfileBlobUrls();
                 avatarBlobUrl = await loadImageAsBlob(profile?.avatarKey);
                 bannerBlobUrl = await loadImageAsBlob(profile?.bannerKey);
                 refreshProfileHero();

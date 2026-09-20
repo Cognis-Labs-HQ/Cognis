@@ -26,6 +26,10 @@ Modules can declare localized activation guidance with adapter targets. After en
 
 Administration presents registration and invitation policies as compact Yes or No radio groups. The shared form composer and dirty tracker consistently manage saving and discarding, while required radio groups remain invalid until selected.
 
+## Provider Sync Isolation
+
+External profile synchronization is registered per provider, so Cognis only offers and invokes synchronization for the provider that authenticated the current account. Replaced avatar and banner object URLs are revoked to avoid retaining stale media in browser memory.
+
 ## Compliance and Safety
 
 Account namespaces are validated before lookup, failed account-creation rollbacks do not create deletion tombstones, profile synchronization uses destructive-action styling, and affected component versions and dependency ceilings remain aligned.
@@ -43,3 +47,4 @@ Account namespaces are validated before lookup, failed account-creation rollback
 - [6e3830656f89213880dbcb4429ff44239f2c2bbf](https://github.com/Cognis-Labs-HQ/Cognis/commit/6e3830656f89213880dbcb4429ff44239f2c2bbf)
 - [b7423a46e20c3a4cc795eebc3ff4aa765ede7fa4](https://github.com/Cognis-Labs-HQ/Cognis/commit/b7423a46e20c3a4cc795eebc3ff4aa765ede7fa4)
 - [fbbbfda628ce7aed65235b1b071b921c906dd79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/fbbbfda628ce7aed65235b1b071b921c906dd79d)
+- [c5a50d8d4728d861e69a72e840da64ec64850b82](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5a50d8d4728d861e69a72e840da64ec64850b82)

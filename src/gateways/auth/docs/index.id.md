@@ -114,7 +114,7 @@ Modul SSO dapat mendaftarkan `auth:registerExternalProfileProvider` melalui CTX.
 
 ### Sinkronisasi profil eksternal
 
-Integrasi autentikasi eksternal dapat menyediakan kueri CTX `auth:syncExternalProfile`. Kueri menerima `{ providerId }` untuk akun yang terautentikasi, memperbarui profil milik penyedia melalui `auth:resolveExternalProfile`, lalu selesai hanya setelah Cognis menyimpan handle, kolom tampilan, data avatar, dan data banner melalui kapabilitas Profil dan Berkas. URL gambar penyedia hanya menjadi masukan integrasi; kueri harus mengembalikan data media agar antarmuka peramban selalu menampilkan berkas milik Cognis. Integrasi peramban menyediakan kapabilitas UI bernama sama, yang dideteksi menu banner profil sendiri tanpa mengetahui nama penyedia atau modul.
+Integrasi autentikasi eksternal dapat menyediakan kueri CTX `auth:syncExternalProfile`. Kueri menerima `{ providerId }` untuk akun yang terautentikasi, memperbarui profil milik penyedia melalui `auth:resolveExternalProfile`, lalu selesai hanya setelah Cognis menyimpan handle, kolom tampilan, data avatar, dan data banner melalui kapabilitas Profil dan Berkas. URL gambar penyedia hanya menjadi masukan integrasi; kueri harus mengembalikan data media agar antarmuka peramban selalu menampilkan berkas milik Cognis. Di peramban, integrasi memanggil `auth:registerExternalProfileSynchronizer` dengan ID penyedia dan fungsi sinkronisasinya. Registri milik Autentikasi hanya menampilkan tindakan untuk penyedia saat ini sehingga integrasi lain yang terpasang tidak dapat menangani atau menimpa profil akun yang salah.
 
 ### Identitas eksternal yang dihapus
 

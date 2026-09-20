@@ -26,6 +26,10 @@ Modul dapat mendeklarasikan panduan aktivasi yang dilokalkan beserta target adap
 
 Administrasi menampilkan kebijakan pendaftaran dan undangan sebagai grup radio Ya atau Tidak yang ringkas. Penyusun formulir bersama dan pelacak perubahan mengelola penyimpanan serta pembatalan secara konsisten; grup radio wajib tetap tidak valid hingga dipilih.
 
+## Isolasi Sinkronisasi Profil
+
+Sinkronisasi profil eksternal didaftarkan per penyedia sehingga Cognis hanya menawarkan dan menjalankannya untuk penyedia yang mengautentikasi akun saat ini. URL objek avatar dan banner yang diganti dicabut agar media lama tidak tertahan dalam memori peramban.
+
 ## Kepatuhan dan Keamanan
 
 Ruang nama akun divalidasi sebelum pencarian, pembatalan pembuatan akun yang gagal tidak membuat catatan penghapusan, sinkronisasi profil memakai gaya tindakan destruktif, serta versi komponen dan batas dependensi tetap selaras.
@@ -43,3 +47,4 @@ Ruang nama akun divalidasi sebelum pencarian, pembatalan pembuatan akun yang gag
 - [6e3830656f89213880dbcb4429ff44239f2c2bbf](https://github.com/Cognis-Labs-HQ/Cognis/commit/6e3830656f89213880dbcb4429ff44239f2c2bbf)
 - [b7423a46e20c3a4cc795eebc3ff4aa765ede7fa4](https://github.com/Cognis-Labs-HQ/Cognis/commit/b7423a46e20c3a4cc795eebc3ff4aa765ede7fa4)
 - [fbbbfda628ce7aed65235b1b071b921c906dd79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/fbbbfda628ce7aed65235b1b071b921c906dd79d)
+- [c5a50d8d4728d861e69a72e840da64ec64850b82](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5a50d8d4728d861e69a72e840da64ec64850b82)

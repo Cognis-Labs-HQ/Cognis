@@ -78,3 +78,25 @@ test("provider namespaces keep identical local and external handles distinct", a
         ["firehawksystems", "line:firehawksystems", "x:firehawksystems"],
     );
 });
+
+test("external identities cannot attach to a colliding local account", async () => {
+    const store = new VolatileLocalAccountStore();
+    await store.register("external-provider:alice", "password");
+
+    await assert.rejects(
+        () =>
+            store.ensureExternalAccount({
+                accountId: "alice",
+                provider: "external-provider",
+                externalUserId: "opaque-alice-subject",
+            }),
+        /external_account_id_conflict/,
+    );
+    assert.equal(
+        await store.resolveExternalAccountId(
+            "external-provider",
+            "opaque-alice-subject",
+        ),
+        null,
+    );
+});

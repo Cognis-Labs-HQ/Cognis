@@ -703,3 +703,52 @@ test("external login uses the adapter namespace when the session provider is not
         null,
     );
 });
+
+test("external login cannot claim a colliding local account id", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: new InMemoryTestExecutor(),
+    });
+    const accountStore = capabilities.require<{
+        register(username: string, password: string): Promise<unknown>;
+        resolveExternalAccountId(
+            provider: string,
+            externalUserId: string,
+        ): Promise<string | null>;
+    }>("auth:accountStore");
+    await accountStore.register("external-sso:alice", "password");
+    await capabilities.require<
+        (provider: Record<string, unknown>) => Promise<() => void>
+    >("auth:registerProvider")({
+        id: "external-sso",
+        name: "External SSO",
+        locked: true,
+        authenticate: async () => ({
+            accountId: "alice",
+            externalUserId: "opaque-alice-subject",
+            provider: "external-sso",
+        }),
+        configure() {},
+        getConfigSchema: () => [],
+    });
+
+    const result = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", { provider: "external-sso" }),
+        "/api/v1/auth/login",
+    );
+
+    assert.equal(result.res.status, 401);
+    assert.equal(
+        await accountStore.resolveExternalAccountId(
+            "external-sso",
+            "opaque-alice-subject",
+        ),
+        null,
+    );
+});
