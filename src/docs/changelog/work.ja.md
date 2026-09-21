@@ -50,6 +50,10 @@ Study Libraryブラウザーのエントリポイントを小さなページ調�
 
 各言語版のバージョン一覧で正規の英語パッケージ名を使用し、周辺のドキュメントは引き続き各言語にローカライズしました。
 
+## 対象を限定した確実なモジュール有効化
+
+モジュール有効化時の厳密なランタイム更新では、要求されたモジュールだけを必須として扱うようにしました。これにより、無関係な無効モジュールや検証不合格モジュールが、Study言語モジュールを含む正常な有効化を取り消すことはありません。無効時の設定ブートストラップはサーバー側APIソースツリーだけを検証し、有効化前には引き続き完全な境界検証を必須とします。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -61,3 +65,4 @@ Study Libraryブラウザーのエントリポイントを小さなページ調�
 - [4c7366ad](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c7366adec02748038211fcdf407f8b5b2ea759e)
 - [2b097121](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b097121)
 - [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)
+- [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)

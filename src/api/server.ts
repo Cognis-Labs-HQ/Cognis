@@ -493,6 +493,7 @@ export function buildServer(deps: ApiDependencies) {
                     temporarilyDisabledDependents.delete(moduleId);
                     await moduleExtensionRoutes.refresh({
                         throwOnFailure: true,
+                        requiredModuleId: moduleId,
                     });
                 } catch (error) {
                     enabledModules.delete(moduleId);

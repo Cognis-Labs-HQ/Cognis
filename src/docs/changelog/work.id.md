@@ -50,6 +50,10 @@ Navigasi dasbor terprogram kini memakai hook otorisasi rute generik alih-alih fu
 
 Indeks versi kini memakai nama paket bahasa Inggris kanonis di setiap varian bahasa, sementara dokumentasi di sekitarnya tetap dilokalkan.
 
+## Aktivasi modul tertarget yang andal
+
+Aktivasi modul kini hanya mewajibkan modul yang diminta selama penyegaran runtime ketat, sehingga modul tidak valid atau nonaktif yang tidak terkait tidak dapat membatalkan aktivasi yang valid, termasuk modul bahasa Study. Bootstrap konfigurasi nonaktif hanya memvalidasi pohon sumber API sisi server, sedangkan validasi batas lengkap tetap wajib sebelum aktivasi.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -61,3 +65,4 @@ Indeks versi kini memakai nama paket bahasa Inggris kanonis di setiap varian bah
 - [4c7366ad](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c7366adec02748038211fcdf407f8b5b2ea759e)
 - [2b097121](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b097121)
 - [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)
+- [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)

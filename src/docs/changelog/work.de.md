@@ -50,6 +50,10 @@ Die programmgesteuerte Dashboard-Navigation verwendet nun den allgemeinen Hook z
 
 Die Versionsverzeichnisse verwenden nun in allen Sprachvarianten die kanonischen englischen Paketnamen, während die umgebende Dokumentation lokalisiert bleibt.
 
+## Zuverlässige gezielte Modulaktivierung
+
+Bei der Modulaktivierung gilt während der strikten Laufzeitaktualisierung nun nur das angeforderte Modul als zwingend. Dadurch können unabhängige ungültige oder deaktivierte Module eine gültige Aktivierung – einschließlich Study-Sprachmodulen – nicht mehr zurückrollen. Deaktivierte Konfigurations-Bootstraps prüfen nur ihren serverseitigen API-Quellbaum; vor der Aktivierung bleibt die vollständige Grenzprüfung verpflichtend.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -61,3 +65,4 @@ Die Versionsverzeichnisse verwenden nun in allen Sprachvarianten die kanonischen
 - [4c7366ad](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c7366adec02748038211fcdf407f8b5b2ea759e)
 - [2b097121](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b097121)
 - [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)
+- [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)

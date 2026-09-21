@@ -50,6 +50,10 @@ Programmatic dashboard navigation now uses the generic route authorization hook 
 
 Version indexes now use the canonical English package names in every language variant, while the surrounding documentation remains localized.
 
+## Reliable targeted module activation
+
+Module activation now treats only the requested module as mandatory during the strict runtime refresh, so unrelated invalid or disabled modules cannot roll back a valid activation, including Study language modules. Disabled configuration bootstraps validate only their server-side API source tree, while full boundary validation remains mandatory before activation.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -61,3 +65,4 @@ Version indexes now use the canonical English package names in every language va
 - [4c7366ad](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c7366adec02748038211fcdf407f8b5b2ea759e)
 - [2b097121](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b097121)
 - [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)
+- [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)

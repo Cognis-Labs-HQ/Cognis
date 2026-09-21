@@ -123,6 +123,7 @@ test("disabled modules register configuration routes from their API entrypoint",
     const moduleUuid = "47f7e791-7d56-4197-b83e-061fef10fb10";
     const moduleRoot = path.join(modulesRoot, moduleUuid);
     await mkdir(path.join(moduleRoot, "api"), { recursive: true });
+    await mkdir(path.join(moduleRoot, "ui"), { recursive: true });
     await writeFile(
         path.join(moduleRoot, "api", "index.js"),
         `export function registerApiRoutes(router) {
@@ -132,6 +133,10 @@ test("disabled modules register configuration routes from their API entrypoint",
             }, { allowWhenDisabled: true });
             router.get("/api/v1/modules/configurable/private", () => {});
         }`,
+    );
+    await writeFile(
+        path.join(moduleRoot, "ui", "app.js"),
+        'import "/static/reuse/app-router.js";\n',
     );
     const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
     process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
@@ -151,7 +156,7 @@ test("disabled modules register configuration routes from their API entrypoint",
         { routeContext: createDefaultRouteContext() },
     );
     try {
-        await extensions.refresh();
+        await extensions.refresh({ throwOnFailure: true });
         let status = 0;
         const handled = await extensions.handle(
             { method: "GET" } as any,
@@ -173,6 +178,57 @@ test("disabled modules register configuration routes from their API entrypoint",
             ),
             false,
         );
+    } finally {
+        if (previousModulesRoot === undefined) {
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        } else {
+            process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
+        }
+        await rm(modulesRoot, { recursive: true, force: true });
+    }
+});
+
+test("strict refresh ignores failures from modules unrelated to the required module", async () => {
+    const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
+    const invalidUuid = "67b8332d-ac67-4a25-9c26-c50085189079";
+    const requiredUuid = "051b997a-b86f-4d69-856a-828c9d13dac7";
+    await mkdir(path.join(modulesRoot, invalidUuid));
+    await mkdir(path.join(modulesRoot, requiredUuid));
+    await writeFile(
+        path.join(modulesRoot, invalidUuid, "bootstrap.js"),
+        'throw new Error("unrelated bootstrap failure");\n',
+    );
+    await writeFile(
+        path.join(modulesRoot, requiredUuid, "bootstrap.js"),
+        "export function bootstrapModule() {}\n",
+    );
+    const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "invalid-module",
+                    uuid: invalidUuid,
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                },
+                {
+                    id: "required-module",
+                    uuid: requiredUuid,
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                },
+            ],
+        } as any,
+        () => true,
+        undefined,
+        { routeContext: createDefaultRouteContext() },
+    );
+
+    try {
+        await extensions.refresh({
+            throwOnFailure: true,
+            requiredModuleId: "required-module",
+        });
     } finally {
         if (previousModulesRoot === undefined) {
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;

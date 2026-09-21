@@ -187,7 +187,10 @@ export interface ModuleExtensionRoutes {
         res: ServerResponse,
         url: URL,
     ): Promise<boolean>;
-    refresh(options?: { throwOnFailure?: boolean }): Promise<void>;
+    refresh(options?: {
+        throwOnFailure?: boolean;
+        requiredModuleId?: string;
+    }): Promise<void>;
     uninstall(
         moduleId: string,
         options: { deleteContent: boolean },
@@ -686,7 +689,14 @@ export function createModuleExtensionRoutes(
         }
     }
 
-    async function refresh(refreshOptions?: { throwOnFailure?: boolean }) {
+    async function refresh(refreshOptions?: {
+        throwOnFailure?: boolean;
+        requiredModuleId?: string;
+    }) {
+        const shouldThrowFor = (moduleId: string) =>
+            refreshOptions?.throwOnFailure === true &&
+            (refreshOptions.requiredModuleId === undefined ||
+                refreshOptions.requiredModuleId === moduleId);
         for (const [moduleId, loaded] of loadedModules) {
             for (const teardown of [
                 loaded.dispose,
@@ -801,6 +811,7 @@ export function createModuleExtensionRoutes(
                 try {
                     await validateModuleBoundaries(moduleRoot, {
                         moduleId: manifest.id,
+                        sourceRoot: path.dirname(disabledApiEntrypoint.path),
                     });
                     const plugin = (await import(
                         `${disabledApiEntrypoint.path}?t=${Date.now()}`
@@ -825,7 +836,7 @@ export function createModuleExtensionRoutes(
                                 ? error.message
                                 : String(error),
                     });
-                    if (refreshOptions?.throwOnFailure) throw error;
+                    if (shouldThrowFor(manifest.id)) throw error;
                 }
                 continue;
             }
@@ -881,7 +892,7 @@ export function createModuleExtensionRoutes(
                         error instanceof Error ? error.message : String(error),
                 });
                 await options.onBootstrapFailed?.(manifest.id);
-                if (refreshOptions?.throwOnFailure) throw error;
+                if (shouldThrowFor(manifest.id)) throw error;
             }
         }
 
