@@ -483,3 +483,39 @@ test("buildServer serves system health from the injected health service", async 
         await close(server);
     }
 });
+
+test("startup restores previously enabled modules without rerunning enablement tests", async () => {
+    let enablementTestRuns = 0;
+    const server = buildServer({
+        moduleRuntimeGateway: {
+            listManifests: async () => [
+                {
+                    id: "enabled-module",
+                    uuid: "69e97f15-299a-4e1b-9414-d142f711532b",
+                    class: "extension",
+                    entrypoints: {},
+                },
+            ],
+        } as unknown as ModuleRuntimeGateway,
+        loadModuleStates: async () => [
+            { moduleId: "enabled-module", enabled: true },
+        ],
+        runModuleTests: async () => {
+            enablementTestRuns += 1;
+        },
+        routeContext: createDefaultRouteContext(),
+    });
+
+    try {
+        const port = await listen(server);
+        const response = await fetch(`http://127.0.0.1:${port}/`, {
+            redirect: "manual",
+            signal: AbortSignal.timeout(1_000),
+        });
+
+        assert.equal(response.status, 302);
+        assert.equal(enablementTestRuns, 0);
+    } finally {
+        await close(server);
+    }
+});

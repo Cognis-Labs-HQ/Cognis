@@ -90,6 +90,10 @@ The branch-only Study adapter scheduler and gateways package-version escalation 
 
 Disabled external modules now load only their dedicated disabled-state API entry point. Cognis no longer executes a module’s normal API bootstrap while restoring disabled modules, eliminating the startup deadlock that blocked health checks and every proxied request. Full-suite repairs also restore UI ownership boundaries, synchronized component versions, popup headings, shell translation, and reviewable source sizes.
 
+## Fast persisted module restoration
+
+Startup now restores persisted enabled-module state without rerunning the module enablement test suite and integrity audit. Those checks remain part of explicit enablement, while ordinary restarts no longer block every HTTP request behind potentially long-running external module tests.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -113,3 +117,4 @@ Disabled external modules now load only their dedicated disabled-state API entry
 - [5917b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/5917b511)
 - [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)
 - [d1cdc256](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1cdc256)
+- [9fcc23e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fcc23e3)

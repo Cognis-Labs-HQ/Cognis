@@ -90,6 +90,10 @@ Penjadwal adapter Study khusus cabang dan kenaikan versi paket gateways telah di
 
 Modul eksternal yang dinonaktifkan kini hanya memuat titik masuk API khusus untuk keadaan nonaktif. Cognis tidak lagi menjalankan bootstrap API normal modul saat memulihkan modul yang dinonaktifkan, sehingga kebuntuan awal yang memblokir pemeriksaan kesehatan dan semua permintaan proksi telah dihapus. Perbaikan dari rangkaian pengujian lengkap juga memulihkan batas kepemilikan UI, versi komponen yang tersinkronisasi, judul popup, terjemahan shell, dan ukuran sumber yang mudah ditinjau.
 
+## Pemulihan modul tersimpan yang cepat
+
+Saat dimulai, status aktif modul yang tersimpan kini dipulihkan tanpa menjalankan ulang rangkaian pengujian pengaktifan dan audit integritas. Pemeriksaan tersebut tetap dijalankan saat pengaktifan eksplisit, sedangkan mulai ulang biasa tidak lagi memblokir semua permintaan HTTP karena pengujian modul eksternal yang mungkin berjalan lama.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -113,3 +117,4 @@ Modul eksternal yang dinonaktifkan kini hanya memuat titik masuk API khusus untu
 - [5917b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/5917b511)
 - [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)
 - [d1cdc256](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1cdc256)
+- [9fcc23e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fcc23e3)

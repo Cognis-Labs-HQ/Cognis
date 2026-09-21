@@ -90,6 +90,10 @@ Der nur in diesem Zweig vorhandene Study-Adapter-Scheduler und die Eskalation de
 
 Deaktivierte externe Module laden jetzt ausschließlich ihren eigenen API-Einstiegspunkt für den deaktivierten Zustand. Cognis führt beim Wiederherstellen deaktivierter Module nicht mehr deren normalen API-Bootstrap aus. Dadurch entfällt die Startsperre, die Integritätsprüfungen und alle Proxy-Anfragen blockierte. Reparaturen aus dem vollständigen Testlauf stellen außerdem UI-Besitzgrenzen, synchronisierte Komponentenversionen, Popup-Überschriften, Shell-Übersetzung und überprüfbare Dateigrößen wieder her.
 
+## Schnelle Modulwiederherstellung
+
+Beim Start wird der gespeicherte Aktivierungszustand von Modulen jetzt wiederhergestellt, ohne die Aktivierungstests und Integritätsprüfung erneut auszuführen. Diese Prüfungen bleiben Bestandteil der ausdrücklichen Aktivierung; gewöhnliche Neustarts blockieren nicht mehr jede HTTP-Anfrage durch möglicherweise lang laufende Tests externer Module.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -113,3 +117,4 @@ Deaktivierte externe Module laden jetzt ausschließlich ihren eigenen API-Einsti
 - [5917b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/5917b511)
 - [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)
 - [d1cdc256](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1cdc256)
+- [9fcc23e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fcc23e3)

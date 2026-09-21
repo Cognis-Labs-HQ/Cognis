@@ -90,6 +90,10 @@ Library のプレビューではメタデータとスコープの位置を固定
 
 無効な外部モジュールは、無効状態専用のAPIエントリーポイントだけを読み込むようになりました。無効なモジュールの復元中に通常のAPI Bootstrapを実行しないため、ヘルスチェックとすべてのプロキシ要求を妨げていた起動時の停止を解消しました。完全なテストスイートで見つかったUI所有境界、コンポーネントバージョン、ポップアップ見出し、シェル翻訳、レビュー可能なソースサイズの問題も修正しました。
 
+## 保存済みモジュールの高速復元
+
+起動時に、モジュール有効化テストスイートと整合性監査を再実行せず、保存済みの有効状態を復元するようにしました。これらの検査は明示的な有効化時には引き続き実行されますが、通常の再起動では時間のかかる外部モジュールテストによってすべてのHTTP要求がブロックされません。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -113,3 +117,4 @@ Library のプレビューではメタデータとスコープの位置を固定
 - [5917b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/5917b511)
 - [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)
 - [d1cdc256](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1cdc256)
+- [9fcc23e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fcc23e3)
