@@ -187,10 +187,7 @@ export interface ModuleExtensionRoutes {
         res: ServerResponse,
         url: URL,
     ): Promise<boolean>;
-    refresh(options?: {
-        throwOnFailure?: boolean;
-        requiredModuleId?: string;
-    }): Promise<void>;
+    refresh(options?: { throwOnFailure?: boolean }): Promise<void>;
     uninstall(
         moduleId: string,
         options: { deleteContent: boolean },
@@ -689,14 +686,7 @@ export function createModuleExtensionRoutes(
         }
     }
 
-    async function refresh(refreshOptions?: {
-        throwOnFailure?: boolean;
-        requiredModuleId?: string;
-    }) {
-        const shouldThrowFor = (moduleId: string) =>
-            refreshOptions?.throwOnFailure === true &&
-            (refreshOptions.requiredModuleId === undefined ||
-                refreshOptions.requiredModuleId === moduleId);
+    async function refresh(refreshOptions?: { throwOnFailure?: boolean }) {
         for (const [moduleId, loaded] of loadedModules) {
             for (const teardown of [
                 loaded.dispose,
@@ -809,14 +799,9 @@ export function createModuleExtensionRoutes(
             if (!moduleEnabled) {
                 if (!disabledApiEntrypoint) continue;
                 try {
-                    if (!privilege.requested) {
-                        await validateModuleBoundaries(moduleRoot, {
-                            moduleId: manifest.id,
-                            sourceRoot: path.dirname(
-                                disabledApiEntrypoint.path,
-                            ),
-                        });
-                    }
+                    await validateModuleBoundaries(moduleRoot, {
+                        moduleId: manifest.id,
+                    });
                     const plugin = (await import(
                         `${disabledApiEntrypoint.path}?t=${Date.now()}`
                     )) as ModuleDisabledApiPlugin & ModulePlugin;
@@ -840,7 +825,7 @@ export function createModuleExtensionRoutes(
                                 ? error.message
                                 : String(error),
                     });
-                    if (shouldThrowFor(manifest.id)) throw error;
+                    if (refreshOptions?.throwOnFailure) throw error;
                 }
                 continue;
             }
@@ -896,7 +881,7 @@ export function createModuleExtensionRoutes(
                         error instanceof Error ? error.message : String(error),
                 });
                 await options.onBootstrapFailed?.(manifest.id);
-                if (shouldThrowFor(manifest.id)) throw error;
+                if (refreshOptions?.throwOnFailure) throw error;
             }
         }
 

@@ -493,7 +493,6 @@ export function buildServer(deps: ApiDependencies) {
                     temporarilyDisabledDependents.delete(moduleId);
                     await moduleExtensionRoutes.refresh({
                         throwOnFailure: true,
-                        requiredModuleId: moduleId,
                     });
                 } catch (error) {
                     enabledModules.delete(moduleId);
@@ -724,15 +723,9 @@ export function buildServer(deps: ApiDependencies) {
                 error: error instanceof Error ? error.message : String(error),
             });
         });
-    const runtimeRequestBarrier = Promise.race([
-        runtimeStateReady,
-        new Promise<void>((resolve) => {
-            const timer = setTimeout(resolve, 250);
-            timer.unref();
-        }),
-    ]);
 
     const server = createServer(async (req, res) => {
+        await runtimeStateReady;
         const url = new URL(req.url ?? "/", "http://localhost");
         const startedAt = Date.now();
         let responseBytes = 0;
@@ -771,33 +764,6 @@ export function buildServer(deps: ApiDependencies) {
             method: req.method ?? "GET",
             path: url.pathname,
         });
-
-        // Startup probes must remain responsive while persisted module and
-        // gateway state is restored; otherwise the web proxy never starts.
-        if (url.pathname === "/") {
-            await uiRoutes(req, res, url);
-            return;
-        }
-        if (
-            req.method === "GET" &&
-            (url.pathname === "/api/v1/system/health" ||
-                url.pathname === "/api/v1/system/healthcheck")
-        ) {
-            await systemRoutes(req, res, url);
-            return;
-        }
-        if (
-            req.method === "GET" &&
-            url.pathname === "/api/v1/ui/auth-typing-messages"
-        ) {
-            await uiRoutes(req, res, url);
-            return;
-        }
-
-        // Runtime restoration continues in the background if an extension is
-        // slow or unresponsive. Core requests must never inherit an unbounded
-        // wait from third-party startup work.
-        await runtimeRequestBarrier;
 
         try {
             const owner = deps.routeRegistry?.findOwner(url.pathname);

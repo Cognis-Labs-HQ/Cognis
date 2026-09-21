@@ -253,11 +253,6 @@ async function loadAllRoutes() {
     const loadGeneration = _routeCacheGeneration;
     const loadPromise = (async () => {
         const dynamicRoutes = await loadSpaRoutes();
-        dynamicRoutes.sort(
-            (left, right) =>
-                String(right.base ?? "").length -
-                String(left.base ?? "").length,
-        );
         const primaryRoutes = STATIC_ROUTES.filter((route) => !route.fallback);
         const fallbackRoutes = STATIC_ROUTES.filter((route) => route.fallback);
         const routes = [...primaryRoutes, ...dynamicRoutes, ...fallbackRoutes];

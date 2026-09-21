@@ -50,14 +50,6 @@ Programmatic dashboard navigation now uses the generic route authorization hook 
 
 Version indexes now use the canonical English package names in every language variant, while the surrounding documentation remains localized.
 
-## Reliable targeted module activation
-
-Module activation now treats only the requested module as mandatory during the strict runtime refresh, so unrelated invalid or disabled modules cannot roll back a valid activation, including Study language modules. Disabled configuration bootstraps validate only their server-side API source tree, while full boundary validation remains mandatory before activation.
-
-## Privileged module compatibility restored
-
-The development baseline's privileged-module compatibility contract is restored: privileged modules may use their declared host runtime integrations without being rejected by the newer unprivileged-module boundary scan. Unprivileged modules remain fully scanned, and module-owned tests still run for both classes.
-
 ## Focused Study library pages
 
 Detailed Library layer presentations now open as dedicated pages from the Study sub-navigation. The administrator Library root uses a compact, consistent layer index with entry counts, and the Study submenu now includes a localized Leaderboard page.
@@ -90,17 +82,9 @@ Library previews now reserve fixed positions for metadata and scope while pronun
 
 Study adapter bootstrap now runs independent adapters concurrently while preserving declared dependency order. This removes the serialized startup delay that caused root probes to disconnect with HTTP 499, without allowing Leaderboard to initialize before Progress.
 
-## Always-responsive base health check
+## Study-scoped platform integration
 
-The base Cognis URL now returns its dashboard redirect before persisted module and gateway state restoration finishes. Nginx and Kubernetes health checks therefore receive an immediate response instead of timing out with HTTP 499 while runtime extensions initialize.
-
-## Health endpoints available during restoration
-
-Both container health endpoints now bypass the runtime-state restoration barrier, matching the Docker healthcheck script that probes `/api/v1/system/health`. This allows the Cognis container to become healthy so the dependent Nginx service can start.
-
-## Responsive public UI during extension restoration
-
-Core requests now use a bounded runtime-restoration barrier, and authentication typing messages are served independently of that barrier. Module message discovery also has a short fallback deadline, preventing an unresponsive extension runtime from turning the public login UI request into a 504 response.
+The implementation now retains the API and web-router behavior from the established Library baseline. Engagement capability registration remains in API composition, while module activation, boundary validation, startup request routing, authentication message loading, and generic SPA route ordering are no longer altered by this Study feature.
 
 ## Commits
 
@@ -123,6 +107,4 @@ Core requests now use a bounded runtime-restoration barrier, and authentication 
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
 - [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
-- [89294560](https://github.com/Cognis-Labs-HQ/Cognis/commit/89294560)
-- [bedc1992](https://github.com/Cognis-Labs-HQ/Cognis/commit/bedc1992)
-- [b816ce87](https://github.com/Cognis-Labs-HQ/Cognis/commit/b816ce87)
+- [5917b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/5917b511)

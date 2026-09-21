@@ -50,14 +50,6 @@ Die programmgesteuerte Dashboard-Navigation verwendet nun den allgemeinen Hook z
 
 Die Versionsverzeichnisse verwenden nun in allen Sprachvarianten die kanonischen englischen Paketnamen, während die umgebende Dokumentation lokalisiert bleibt.
 
-## Zuverlässige gezielte Modulaktivierung
-
-Bei der Modulaktivierung gilt während der strikten Laufzeitaktualisierung nun nur das angeforderte Modul als zwingend. Dadurch können unabhängige ungültige oder deaktivierte Module eine gültige Aktivierung – einschließlich Study-Sprachmodulen – nicht mehr zurückrollen. Deaktivierte Konfigurations-Bootstraps prüfen nur ihren serverseitigen API-Quellbaum; vor der Aktivierung bleibt die vollständige Grenzprüfung verpflichtend.
-
-## Kompatibilität privilegierter Module wiederhergestellt
-
-Der Kompatibilitätsvertrag der Entwicklungsbasis für privilegierte Module ist wiederhergestellt: Privilegierte Module können ihre deklarierten Host-Laufzeitintegrationen verwenden, ohne von der neueren Grenzprüfung für nicht privilegierte Module abgelehnt zu werden. Nicht privilegierte Module werden weiterhin vollständig geprüft, und moduleigene Tests laufen für beide Klassen.
-
 ## Fokussierte Study-Bibliotheksseiten
 
 Detaillierte Darstellungen der Bibliotheksebenen werden nun als eigene Seiten aus der Study-Unternavigation geöffnet. Die Bibliothekswurzel für Administratoren verwendet einen kompakten, einheitlichen Ebenenindex mit Eintragszahlen, und das Study-Untermenü enthält nun eine lokalisierte Bestenlistenseite.
@@ -90,17 +82,9 @@ Bibliotheksvorschauen reservieren feste Positionen für Metadaten und Bereich, w
 
 Der Start der Study-Adapter führt unabhängige Adapter nun parallel aus und behält dabei die deklarierte Abhängigkeitsreihenfolge bei. Dadurch entfällt die sequenzielle Startverzögerung, wegen der Root-Prüfungen mit HTTP 499 abbrachen, ohne dass Leaderboard vor Progress initialisiert werden kann.
 
-## Stets erreichbare Basis-Gesundheitsprüfung
+## Auf Study begrenzte Plattformintegration
 
-Die Cognis-Basis-URL liefert ihre Dashboard-Weiterleitung jetzt aus, bevor die Wiederherstellung gespeicherter Modul- und Gateway-Zustände abgeschlossen ist. Nginx- und Kubernetes-Gesundheitsprüfungen erhalten dadurch sofort eine Antwort, statt während der Initialisierung von Laufzeiterweiterungen mit HTTP 499 abzulaufen.
-
-## Gesundheitsendpunkte während der Wiederherstellung verfügbar
-
-Beide Container-Gesundheitsendpunkte umgehen nun die Sperre der Laufzeit-Zustandswiederherstellung. Dies entspricht dem Docker-Gesundheitsprüfungsskript, das `/api/v1/system/health` abfragt. Dadurch kann der Cognis-Container gesund werden und der abhängige Nginx-Dienst starten.
-
-## Reaktionsfähige öffentliche UI während der Erweiterungswiederherstellung
-
-Kernanfragen verwenden nun eine begrenzte Sperre für die Wiederherstellung des Laufzeitzustands, und Authentifizierungs-Tippmeldungen werden unabhängig davon ausgeliefert. Auch die Ermittlung von Modulmeldungen besitzt eine kurze Rückfallfrist, sodass eine nicht reagierende Erweiterungslaufzeit die öffentliche Anmelde-UI-Anfrage nicht mehr in eine 504-Antwort verwandelt.
+Die Implementierung behält nun das API- und Web-Router-Verhalten der etablierten Library-Ausgangsbasis bei. Die Registrierung der Engagement-Fähigkeiten bleibt in der API-Zusammensetzung erhalten, während Modulaktivierung, Grenzvalidierung, Startanforderungsrouting, Laden von Authentifizierungsmeldungen und generische SPA-Routenreihenfolge durch diese Study-Funktion nicht mehr verändert werden.
 
 ## Commits
 
@@ -123,6 +107,4 @@ Kernanfragen verwenden nun eine begrenzte Sperre für die Wiederherstellung des 
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
 - [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
-- [89294560](https://github.com/Cognis-Labs-HQ/Cognis/commit/89294560)
-- [bedc1992](https://github.com/Cognis-Labs-HQ/Cognis/commit/bedc1992)
-- [b816ce87](https://github.com/Cognis-Labs-HQ/Cognis/commit/b816ce87)
+- [5917b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/5917b511)

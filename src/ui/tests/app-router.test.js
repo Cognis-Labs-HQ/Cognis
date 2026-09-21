@@ -173,7 +173,6 @@ test("adapter routes take precedence over neutral fallback routes", () => {
         "utf8",
     );
     assert.match(src, /primaryRoutes[\s\S]*dynamicRoutes[\s\S]*fallbackRoutes/);
-    assert.match(src, /dynamicRoutes\.sort/);
     assert.match(src, /staticRoute && !staticRoute\.fallback/);
     assert.match(src, /canNavigateToRoute\(route, path\)/);
     assert.doesNotMatch(src, /route\.id === "gateway\.study\.child"/);

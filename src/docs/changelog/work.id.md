@@ -50,14 +50,6 @@ Navigasi dasbor terprogram kini memakai hook otorisasi rute generik alih-alih fu
 
 Indeks versi kini memakai nama paket bahasa Inggris kanonis di setiap varian bahasa, sementara dokumentasi di sekitarnya tetap dilokalkan.
 
-## Aktivasi modul tertarget yang andal
-
-Aktivasi modul kini hanya mewajibkan modul yang diminta selama penyegaran runtime ketat, sehingga modul tidak valid atau nonaktif yang tidak terkait tidak dapat membatalkan aktivasi yang valid, termasuk modul bahasa Study. Bootstrap konfigurasi nonaktif hanya memvalidasi pohon sumber API sisi server, sedangkan validasi batas lengkap tetap wajib sebelum aktivasi.
-
-## Kompatibilitas modul berhak istimewa dipulihkan
-
-Kontrak kompatibilitas modul berhak istimewa dari baseline development dipulihkan: modul berhak istimewa dapat memakai integrasi runtime host yang dideklarasikan tanpa ditolak oleh pemindaian batas modul tanpa hak istimewa yang lebih baru. Modul tanpa hak istimewa tetap dipindai sepenuhnya, dan pengujian milik modul tetap dijalankan untuk kedua kelas.
-
 ## Halaman pustaka Study yang terfokus
 
 Tampilan terperinci setiap lapisan Pustaka kini dibuka sebagai halaman tersendiri dari subnavigasi Study. Halaman utama Pustaka administrator memakai indeks lapisan yang ringkas dan konsisten dengan jumlah entri, dan submenu Study kini mencakup halaman Papan peringkat yang dilokalkan.
@@ -90,17 +82,9 @@ Pratinjau Pustaka kini menyediakan posisi tetap untuk metadata dan cakupan, seda
 
 Bootstrap adapter Study kini menjalankan adapter independen secara bersamaan dengan tetap mempertahankan urutan dependensi yang dideklarasikan. Perubahan ini menghilangkan penundaan startup berurutan yang menyebabkan probe root terputus dengan HTTP 499, tanpa memungkinkan Leaderboard diinisialisasi sebelum Progress.
 
-## Pemeriksaan kesehatan dasar yang selalu responsif
+## Integrasi platform yang dibatasi pada Study
 
-URL dasar Cognis kini mengembalikan pengalihan dashboard sebelum pemulihan status modul dan gateway tersimpan selesai. Dengan demikian, pemeriksaan kesehatan Nginx dan Kubernetes segera menerima respons alih-alih mengalami waktu habis dengan HTTP 499 saat ekstensi runtime diinisialisasi.
-
-## Endpoint kesehatan tersedia selama pemulihan
-
-Kedua endpoint kesehatan kontainer kini melewati penghalang pemulihan status runtime, sesuai dengan skrip pemeriksaan kesehatan Docker yang memeriksa `/api/v1/system/health`. Dengan demikian, kontainer Cognis dapat menjadi sehat sehingga layanan Nginx yang bergantung padanya dapat dimulai.
-
-## UI publik tetap responsif selama pemulihan ekstensi
-
-Permintaan inti kini memakai penghalang pemulihan runtime dengan batas waktu, sedangkan pesan pengetikan autentikasi dilayani secara independen dari penghalang tersebut. Penemuan pesan modul juga memiliki tenggat fallback singkat, sehingga runtime ekstensi yang tidak responsif tidak lagi mengubah permintaan UI login publik menjadi respons 504.
+Implementasi kini mempertahankan perilaku API dan router web dari baseline Library yang telah ditetapkan. Registrasi kapabilitas engagement tetap berada dalam komposisi API, sedangkan aktivasi modul, validasi batas, perutean permintaan startup, pemuatan pesan autentikasi, dan pengurutan rute SPA generik tidak lagi diubah oleh fitur Study ini.
 
 ## Commit
 
@@ -123,6 +107,4 @@ Permintaan inti kini memakai penghalang pemulihan runtime dengan batas waktu, se
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
 - [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
-- [89294560](https://github.com/Cognis-Labs-HQ/Cognis/commit/89294560)
-- [bedc1992](https://github.com/Cognis-Labs-HQ/Cognis/commit/bedc1992)
-- [b816ce87](https://github.com/Cognis-Labs-HQ/Cognis/commit/b816ce87)
+- [5917b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/5917b511)
