@@ -90,6 +90,10 @@ Library previews now reserve fixed positions for metadata and scope while pronun
 
 Study adapter bootstrap now runs independent adapters concurrently while preserving declared dependency order. This removes the serialized startup delay that caused root probes to disconnect with HTTP 499, without allowing Leaderboard to initialize before Progress.
 
+## Always-responsive base health check
+
+The base Cognis URL now returns its dashboard redirect before persisted module and gateway state restoration finishes. Nginx and Kubernetes health checks therefore receive an immediate response instead of timing out with HTTP 499 while runtime extensions initialize.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -111,3 +115,4 @@ Study adapter bootstrap now runs independent adapters concurrently while preserv
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
 - [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
+- [89294560](https://github.com/Cognis-Labs-HQ/Cognis/commit/89294560)

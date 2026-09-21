@@ -726,7 +726,6 @@ export function buildServer(deps: ApiDependencies) {
         });
 
     const server = createServer(async (req, res) => {
-        await runtimeStateReady;
         const url = new URL(req.url ?? "/", "http://localhost");
         const startedAt = Date.now();
         let responseBytes = 0;
@@ -765,6 +764,17 @@ export function buildServer(deps: ApiDependencies) {
             method: req.method ?? "GET",
             path: url.pathname,
         });
+
+        // The base URL is also the container's liveness probe. It must remain
+        // responsive while persisted module and gateway state is restored;
+        // otherwise the proxy can repeatedly restart an otherwise healthy
+        // application before initialization completes.
+        if (url.pathname === "/") {
+            await uiRoutes(req, res, url);
+            return;
+        }
+
+        await runtimeStateReady;
 
         try {
             const owner = deps.routeRegistry?.findOwner(url.pathname);

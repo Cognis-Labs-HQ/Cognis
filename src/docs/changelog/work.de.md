@@ -90,6 +90,10 @@ Bibliotheksvorschauen reservieren feste Positionen für Metadaten und Bereich, w
 
 Der Start der Study-Adapter führt unabhängige Adapter nun parallel aus und behält dabei die deklarierte Abhängigkeitsreihenfolge bei. Dadurch entfällt die sequenzielle Startverzögerung, wegen der Root-Prüfungen mit HTTP 499 abbrachen, ohne dass Leaderboard vor Progress initialisiert werden kann.
 
+## Stets erreichbare Basis-Gesundheitsprüfung
+
+Die Cognis-Basis-URL liefert ihre Dashboard-Weiterleitung jetzt aus, bevor die Wiederherstellung gespeicherter Modul- und Gateway-Zustände abgeschlossen ist. Nginx- und Kubernetes-Gesundheitsprüfungen erhalten dadurch sofort eine Antwort, statt während der Initialisierung von Laufzeiterweiterungen mit HTTP 499 abzulaufen.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -111,3 +115,4 @@ Der Start der Study-Adapter führt unabhängige Adapter nun parallel aus und beh
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
 - [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
+- [89294560](https://github.com/Cognis-Labs-HQ/Cognis/commit/89294560)

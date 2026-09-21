@@ -90,6 +90,10 @@ Pratinjau Pustaka kini menyediakan posisi tetap untuk metadata dan cakupan, seda
 
 Bootstrap adapter Study kini menjalankan adapter independen secara bersamaan dengan tetap mempertahankan urutan dependensi yang dideklarasikan. Perubahan ini menghilangkan penundaan startup berurutan yang menyebabkan probe root terputus dengan HTTP 499, tanpa memungkinkan Leaderboard diinisialisasi sebelum Progress.
 
+## Pemeriksaan kesehatan dasar yang selalu responsif
+
+URL dasar Cognis kini mengembalikan pengalihan dashboard sebelum pemulihan status modul dan gateway tersimpan selesai. Dengan demikian, pemeriksaan kesehatan Nginx dan Kubernetes segera menerima respons alih-alih mengalami waktu habis dengan HTTP 499 saat ekstensi runtime diinisialisasi.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -111,3 +115,4 @@ Bootstrap adapter Study kini menjalankan adapter independen secara bersamaan den
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
 - [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
+- [89294560](https://github.com/Cognis-Labs-HQ/Cognis/commit/89294560)

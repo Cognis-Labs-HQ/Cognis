@@ -90,6 +90,10 @@ Library のプレビューではメタデータとスコープの位置を固定
 
 Study アダプターのブートストラップは、宣言された依存関係の順序を維持しながら、独立したアダプターを並行して実行するようになりました。これにより、Leaderboard が Progress より先に初期化されることを防ぎつつ、ルートプローブが HTTP 499 で切断される原因となっていた直列起動の遅延を解消します。
 
+## 常に応答するベースヘルスチェック
+
+Cognis のベース URL は、保存されたモジュールおよびゲートウェイ状態の復元が完了する前に、ダッシュボードへのリダイレクトを返すようになりました。これにより、Nginx と Kubernetes のヘルスチェックは、ランタイム拡張の初期化中に HTTP 499 でタイムアウトせず、直ちに応答を受け取れます。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -111,3 +115,4 @@ Study アダプターのブートストラップは、宣言された依存関�
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
 - [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
+- [89294560](https://github.com/Cognis-Labs-HQ/Cognis/commit/89294560)
