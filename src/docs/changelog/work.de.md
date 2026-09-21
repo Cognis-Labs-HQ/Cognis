@@ -94,6 +94,10 @@ Deaktivierte externe Module laden jetzt ausschließlich ihren eigenen API-Einsti
 
 Beim Start wird der gespeicherte Aktivierungszustand von Modulen jetzt wiederhergestellt, ohne die Aktivierungstests und Integritätsprüfung erneut auszuführen. Diese Prüfungen bleiben Bestandteil der ausdrücklichen Aktivierung; gewöhnliche Neustarts blockieren nicht mehr jede HTTP-Anfrage durch möglicherweise lang laufende Tests externer Module.
 
+## An development angeglichener Start
+
+Ein Vergleich aus einem vollständigen Klon mit development zeigte sachfremde Änderungen an der Datenbankschema-Reparatur und am Test-Runner für externe Module in den gestapelten Study-Zweigen. Die startsensitive Infrastruktur für MariaDB, PostgreSQL und Modultests entspricht nun wieder der vertrauenswürdigen development-Implementierung; Leaderboard-, Progress- und Library-Funktionscode bleibt auf seine zuständigen Komponenten beschränkt.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -118,3 +122,4 @@ Beim Start wird der gespeicherte Aktivierungszustand von Modulen jetzt wiederher
 - [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)
 - [d1cdc256](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1cdc256)
 - [9fcc23e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fcc23e3)
+- [87275211](https://github.com/Cognis-Labs-HQ/Cognis/commit/87275211)

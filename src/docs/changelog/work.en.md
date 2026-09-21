@@ -94,6 +94,10 @@ Disabled external modules now load only their dedicated disabled-state API entry
 
 Startup now restores persisted enabled-module state without rerunning the module enablement test suite and integrity audit. Those checks remain part of explicit enablement, while ordinary restarts no longer block every HTTP request behind potentially long-running external module tests.
 
+## Development-aligned startup infrastructure
+
+A clean-clone comparison against development identified unrelated database schema-healing and external-module test-runner changes carried by the stacked Study branches. Startup-sensitive MariaDB, PostgreSQL, and module-test infrastructure now matches the trusted development implementation; leaderboard, Progress, and Library feature code remains isolated to its owning components.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -118,3 +122,4 @@ Startup now restores persisted enabled-module state without rerunning the module
 - [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)
 - [d1cdc256](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1cdc256)
 - [9fcc23e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fcc23e3)
+- [87275211](https://github.com/Cognis-Labs-HQ/Cognis/commit/87275211)

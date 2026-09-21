@@ -94,6 +94,10 @@ Modul eksternal yang dinonaktifkan kini hanya memuat titik masuk API khusus untu
 
 Saat dimulai, status aktif modul yang tersimpan kini dipulihkan tanpa menjalankan ulang rangkaian pengujian pengaktifan dan audit integritas. Pemeriksaan tersebut tetap dijalankan saat pengaktifan eksplisit, sedangkan mulai ulang biasa tidak lagi memblokir semua permintaan HTTP karena pengujian modul eksternal yang mungkin berjalan lama.
 
+## Infrastruktur awal selaras development
+
+Perbandingan dari klon lengkap terhadap development menemukan perubahan pemulihan skema basis data dan pelaksana pengujian modul eksternal yang tidak terkait di dalam cabang Study bertumpuk. Infrastruktur MariaDB, PostgreSQL, dan pengujian modul yang sensitif saat dimulai kini sama dengan implementasi development tepercaya; kode fitur Leaderboard, Progress, dan Library tetap terisolasi pada komponen pemiliknya.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -118,3 +122,4 @@ Saat dimulai, status aktif modul yang tersimpan kini dipulihkan tanpa menjalanka
 - [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)
 - [d1cdc256](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1cdc256)
 - [9fcc23e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fcc23e3)
+- [87275211](https://github.com/Cognis-Labs-HQ/Cognis/commit/87275211)

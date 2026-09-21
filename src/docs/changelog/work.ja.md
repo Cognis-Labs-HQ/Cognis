@@ -94,6 +94,10 @@ Library のプレビューではメタデータとスコープの位置を固定
 
 起動時に、モジュール有効化テストスイートと整合性監査を再実行せず、保存済みの有効状態を復元するようにしました。これらの検査は明示的な有効化時には引き続き実行されますが、通常の再起動では時間のかかる外部モジュールテストによってすべてのHTTP要求がブロックされません。
 
+## development準拠の起動基盤
+
+リポジトリ全体をクローンしてdevelopmentと比較した結果、積み重ねられたStudyブランチに無関係なデータベーススキーマ修復と外部モジュールテスト実行機構の変更が含まれていました。起動に影響するMariaDB、PostgreSQL、モジュールテスト基盤を信頼済みのdevelopment実装へ戻し、Leaderboard、Progress、Libraryの機能コードを各所有コンポーネント内に限定しました。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -118,3 +122,4 @@ Library のプレビューではメタデータとスコープの位置を固定
 - [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)
 - [d1cdc256](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1cdc256)
 - [9fcc23e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fcc23e3)
+- [87275211](https://github.com/Cognis-Labs-HQ/Cognis/commit/87275211)
