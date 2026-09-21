@@ -514,6 +514,14 @@ test("buildServer responds to startup probes before runtime state restoration co
             { signal: AbortSignal.timeout(1_000) },
         );
         assert.equal(healthcheckResponse.status, 200);
+
+        const typingStartedAt = Date.now();
+        const typingResponse = await fetch(
+            `http://127.0.0.1:${port}/api/v1/ui/auth-typing-messages`,
+            { signal: AbortSignal.timeout(1_000) },
+        );
+        assert.equal(typingResponse.status, 200);
+        assert.ok(Date.now() - typingStartedAt < 1_000);
     } finally {
         await close(server);
     }

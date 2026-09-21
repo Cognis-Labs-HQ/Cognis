@@ -98,6 +98,10 @@ Die Cognis-Basis-URL liefert ihre Dashboard-Weiterleitung jetzt aus, bevor die W
 
 Beide Container-Gesundheitsendpunkte umgehen nun die Sperre der Laufzeit-Zustandswiederherstellung. Dies entspricht dem Docker-Gesundheitsprüfungsskript, das `/api/v1/system/health` abfragt. Dadurch kann der Cognis-Container gesund werden und der abhängige Nginx-Dienst starten.
 
+## Reaktionsfähige öffentliche UI während der Erweiterungswiederherstellung
+
+Kernanfragen verwenden nun eine begrenzte Sperre für die Wiederherstellung des Laufzeitzustands, und Authentifizierungs-Tippmeldungen werden unabhängig davon ausgeliefert. Auch die Ermittlung von Modulmeldungen besitzt eine kurze Rückfallfrist, sodass eine nicht reagierende Erweiterungslaufzeit die öffentliche Anmelde-UI-Anfrage nicht mehr in eine 504-Antwort verwandelt.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -121,3 +125,4 @@ Beide Container-Gesundheitsendpunkte umgehen nun die Sperre der Laufzeit-Zustand
 - [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
 - [89294560](https://github.com/Cognis-Labs-HQ/Cognis/commit/89294560)
 - [bedc1992](https://github.com/Cognis-Labs-HQ/Cognis/commit/bedc1992)
+- [b816ce87](https://github.com/Cognis-Labs-HQ/Cognis/commit/b816ce87)

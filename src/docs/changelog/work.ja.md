@@ -98,6 +98,10 @@ Cognis のベース URL は、保存されたモジュールおよびゲート�
 
 両方のコンテナーヘルスエンドポイントがランタイム状態復元の待機を回避するようになり、`/api/v1/system/health` を検査する Docker ヘルスチェックスクリプトと一致しました。これにより Cognis コンテナーが正常状態になり、依存する Nginx サービスを起動できます。
 
+## 拡張復元中も応答する公開 UI
+
+コアリクエストは期限付きのランタイム復元バリアを使用し、認証タイピングメッセージはそのバリアとは独立して配信されるようになりました。モジュールメッセージの検出にも短いフォールバック期限を設け、応答しない拡張ランタイムによって公開ログイン UI のリクエストが 504 になることを防ぎます。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -121,3 +125,4 @@ Cognis のベース URL は、保存されたモジュールおよびゲート�
 - [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
 - [89294560](https://github.com/Cognis-Labs-HQ/Cognis/commit/89294560)
 - [bedc1992](https://github.com/Cognis-Labs-HQ/Cognis/commit/bedc1992)
+- [b816ce87](https://github.com/Cognis-Labs-HQ/Cognis/commit/b816ce87)

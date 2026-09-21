@@ -724,6 +724,13 @@ export function buildServer(deps: ApiDependencies) {
                 error: error instanceof Error ? error.message : String(error),
             });
         });
+    const runtimeRequestBarrier = Promise.race([
+        runtimeStateReady,
+        new Promise<void>((resolve) => {
+            const timer = setTimeout(resolve, 250);
+            timer.unref();
+        }),
+    ]);
 
     const server = createServer(async (req, res) => {
         const url = new URL(req.url ?? "/", "http://localhost");
@@ -779,8 +786,18 @@ export function buildServer(deps: ApiDependencies) {
             await systemRoutes(req, res, url);
             return;
         }
+        if (
+            req.method === "GET" &&
+            url.pathname === "/api/v1/ui/auth-typing-messages"
+        ) {
+            await uiRoutes(req, res, url);
+            return;
+        }
 
-        await runtimeStateReady;
+        // Runtime restoration continues in the background if an extension is
+        // slow or unresponsive. Core requests must never inherit an unbounded
+        // wait from third-party startup work.
+        await runtimeRequestBarrier;
 
         try {
             const owner = deps.routeRegistry?.findOwner(url.pathname);

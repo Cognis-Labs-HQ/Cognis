@@ -98,6 +98,10 @@ URL dasar Cognis kini mengembalikan pengalihan dashboard sebelum pemulihan statu
 
 Kedua endpoint kesehatan kontainer kini melewati penghalang pemulihan status runtime, sesuai dengan skrip pemeriksaan kesehatan Docker yang memeriksa `/api/v1/system/health`. Dengan demikian, kontainer Cognis dapat menjadi sehat sehingga layanan Nginx yang bergantung padanya dapat dimulai.
 
+## UI publik tetap responsif selama pemulihan ekstensi
+
+Permintaan inti kini memakai penghalang pemulihan runtime dengan batas waktu, sedangkan pesan pengetikan autentikasi dilayani secara independen dari penghalang tersebut. Penemuan pesan modul juga memiliki tenggat fallback singkat, sehingga runtime ekstensi yang tidak responsif tidak lagi mengubah permintaan UI login publik menjadi respons 504.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -121,3 +125,4 @@ Kedua endpoint kesehatan kontainer kini melewati penghalang pemulihan status run
 - [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
 - [89294560](https://github.com/Cognis-Labs-HQ/Cognis/commit/89294560)
 - [bedc1992](https://github.com/Cognis-Labs-HQ/Cognis/commit/bedc1992)
+- [b816ce87](https://github.com/Cognis-Labs-HQ/Cognis/commit/b816ce87)

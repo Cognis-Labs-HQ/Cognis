@@ -98,6 +98,10 @@ The base Cognis URL now returns its dashboard redirect before persisted module a
 
 Both container health endpoints now bypass the runtime-state restoration barrier, matching the Docker healthcheck script that probes `/api/v1/system/health`. This allows the Cognis container to become healthy so the dependent Nginx service can start.
 
+## Responsive public UI during extension restoration
+
+Core requests now use a bounded runtime-restoration barrier, and authentication typing messages are served independently of that barrier. Module message discovery also has a short fallback deadline, preventing an unresponsive extension runtime from turning the public login UI request into a 504 response.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -121,3 +125,4 @@ Both container health endpoints now bypass the runtime-state restoration barrier
 - [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
 - [89294560](https://github.com/Cognis-Labs-HQ/Cognis/commit/89294560)
 - [bedc1992](https://github.com/Cognis-Labs-HQ/Cognis/commit/bedc1992)
+- [b816ce87](https://github.com/Cognis-Labs-HQ/Cognis/commit/b816ce87)
