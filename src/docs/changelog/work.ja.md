@@ -46,6 +46,10 @@ Study Libraryブラウザーのエントリポイントを小さなページ調�
 
 プログラムによるダッシュボード移動で、削除済みのStudy固有ヘルパーではなく汎用ルート認可フックを使用するようにし、参照エラーによる移動失敗を防ぎました。
 
+## 一貫した英語のパッケージ名
+
+各言語版のバージョン一覧で正規の英語パッケージ名を使用し、周辺のドキュメントは引き続き各言語にローカライズしました。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -56,3 +60,4 @@ Study Libraryブラウザーのエントリポイントを小さなページ調�
 - [992973f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/992973f5a421fa0043bfa792a1b4757abcff8209)
 - [4c7366ad](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c7366adec02748038211fcdf407f8b5b2ea759e)
 - [2b097121](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b097121)
+- [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)

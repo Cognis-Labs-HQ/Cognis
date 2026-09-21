@@ -46,6 +46,10 @@ Proyeksi kemajuan kini membatasi interval tinjauan hingga empat belas hari agar 
 
 Navigasi dasbor terprogram kini memakai hook otorisasi rute generik alih-alih fungsi pembantu khusus Study yang telah dihapus, sehingga navigasi tidak lagi gagal akibat galat referensi.
 
+## Nama paket bahasa Inggris yang konsisten
+
+Indeks versi kini memakai nama paket bahasa Inggris kanonis di setiap varian bahasa, sementara dokumentasi di sekitarnya tetap dilokalkan.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -56,3 +60,4 @@ Navigasi dasbor terprogram kini memakai hook otorisasi rute generik alih-alih fu
 - [992973f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/992973f5a421fa0043bfa792a1b4757abcff8209)
 - [4c7366ad](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c7366adec02748038211fcdf407f8b5b2ea759e)
 - [2b097121](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b097121)
+- [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)

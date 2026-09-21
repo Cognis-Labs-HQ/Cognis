@@ -46,6 +46,10 @@ Fortschrittsprojektionen begrenzen Wiederholungsintervalle jetzt auf vierzehn Ta
 
 Die programmgesteuerte Dashboard-Navigation verwendet nun den allgemeinen Hook zur Routenautorisierung statt entfernter Study-spezifischer Hilfsfunktionen. Dadurch scheitert die Navigation nicht mehr an einem Referenzfehler.
 
+## Einheitliche englische Paketnamen
+
+Die Versionsverzeichnisse verwenden nun in allen Sprachvarianten die kanonischen englischen Paketnamen, während die umgebende Dokumentation lokalisiert bleibt.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -56,3 +60,4 @@ Die programmgesteuerte Dashboard-Navigation verwendet nun den allgemeinen Hook z
 - [992973f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/992973f5a421fa0043bfa792a1b4757abcff8209)
 - [4c7366ad](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c7366adec02748038211fcdf407f8b5b2ea759e)
 - [2b097121](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b097121)
+- [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)

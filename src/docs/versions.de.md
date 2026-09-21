@@ -35,7 +35,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.36` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.30` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.25` |
-| Dateikontingent       | `src/adapters/file/quota/`          | `1.0.23` |
+| File Quota            | `src/adapters/file/quota/`          | `1.0.23` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.30` |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.51` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.37` |
@@ -56,8 +56,8 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.11` |
 | Library (Study)       | `src/adapters/study/library/`       | `2.7.17` |
-| Fortschritt (Study)   | `src/adapters/study/progress/`      | `1.1.7`  |
-| Bestenliste (Study)   | `src/adapters/study/leaderboard/`   | `1.0.1`  |
+| Progress (Study)      | `src/adapters/study/progress/`      | `1.1.7`  |
+| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.0.1`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.5`  |
 | File Logging          | `src/adapters/logging/file/`        | `1.1.5`  |
 

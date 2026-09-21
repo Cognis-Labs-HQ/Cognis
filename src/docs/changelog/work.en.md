@@ -46,6 +46,10 @@ Progress projections now cap review intervals at fourteen days, matching event t
 
 Programmatic dashboard navigation now uses the generic route authorization hook instead of calling removed Study-specific helpers, preventing navigation from failing with a reference error.
 
+## Consistent English package names
+
+Version indexes now use the canonical English package names in every language variant, while the surrounding documentation remains localized.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -56,3 +60,4 @@ Programmatic dashboard navigation now uses the generic route authorization hook 
 - [992973f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/992973f5a421fa0043bfa792a1b4757abcff8209)
 - [4c7366ad](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c7366adec02748038211fcdf407f8b5b2ea759e)
 - [2b097121](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b097121)
+- [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)
