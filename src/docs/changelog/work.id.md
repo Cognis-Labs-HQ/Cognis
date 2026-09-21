@@ -78,13 +78,13 @@ Lapisan Pustaka kini berada di menu samping administrator. Lapisan terpilih tamp
 
 Pratinjau Pustaka kini menyediakan posisi tetap untuk metadata dan cakupan, sedangkan pelafalan dan definisi berada di popup detail bersama pohon relasi masuk dan keluar satu tingkat. Editor administrator menggunakan kontrol berbasis skema dan pelacak perubahan terlindungi alih-alih JSON mentah; pensil sesuai tema tetap terlihat di tepi baris. Rute Study tetap terdaftar selama inisialisasi bahasa, dan bootstrap adapter berdasarkan dependensi memastikan Progress siap sebelum Papan Peringkat.
 
-## Startup Study yang responsif
-
-Bootstrap adapter Study kini menjalankan adapter independen secara bersamaan dengan tetap mempertahankan urutan dependensi yang dideklarasikan. Perubahan ini menghilangkan penundaan startup berurutan yang menyebabkan probe root terputus dengan HTTP 499, tanpa memungkinkan Leaderboard diinisialisasi sebelum Progress.
-
 ## Integrasi platform yang dibatasi pada Study
 
 Implementasi kini mempertahankan perilaku API dan router web dari baseline Library yang telah ditetapkan. Registrasi kapabilitas engagement tetap berada dalam komposisi API, sedangkan aktivasi modul, validasi batas, perutean permintaan startup, pemuatan pesan autentikasi, dan pengurutan rute SPA generik tidak lagi diubah oleh fitur Study ini.
+
+## Paritas startup Study dipulihkan
+
+Penjadwal adapter Study khusus cabang dan kenaikan versi paket gateways telah dihapus. Penemuan serta startup adapter Study kini sama persis dengan baseline development. Leaderboard me-resolve Progress secara lazy melalui ctx, sehingga dependensinya dipertahankan tanpa mengubah bootstrap seluruh gateway atau menunda modul yang sudah ada.
 
 ## Commit
 
@@ -106,5 +106,5 @@ Implementasi kini mempertahankan perilaku API dan router web dari baseline Libra
 - [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
-- [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
 - [5917b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/5917b511)
+- [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)

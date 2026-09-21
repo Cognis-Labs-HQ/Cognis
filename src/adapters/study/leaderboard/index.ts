@@ -27,14 +27,12 @@ export async function bootstrapStudyAdapter(
     ctx: StudyAdapterBootstrapCtx,
 ): Promise<void> {
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
-    const progress =
-        ctx.capabilities.get<ProgressEvidenceCapability>("study:progress");
     const scoring =
         ctx.capabilities.get<ScoringCapability>("engagement:scoring");
-    if (!systemCtx || !progress || !scoring) {
+    if (!systemCtx || !scoring) {
         await ctx.log?.(
             "error",
-            "Study/leaderboard requires the Study Progress capability.",
+            "Study/leaderboard requires the system context and engagement scoring capability.",
             { component: "study-leaderboard", fatal: true },
         );
         return;
@@ -59,7 +57,8 @@ export async function bootstrapStudyAdapter(
         if (!systemCtx.hasFlow(id))
             systemCtx.registerFlow({ id, description, stages: [...stages] });
     const service = new LeaderboardService(
-        progress,
+        () =>
+            ctx.capabilities.get<ProgressEvidenceCapability>("study:progress"),
         () => ctx.isAdapterEnabled(),
         scoring,
     );

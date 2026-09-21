@@ -78,13 +78,13 @@ Bibliotheksebenen befinden sich nun im Seitenmenü für Administratoren. Die aus
 
 Bibliotheksvorschauen reservieren feste Positionen für Metadaten und Bereich, während Aussprachen und Definitionen zusammen mit einem einstufigen Baum eingehender und ausgehender Beziehungen im Detailfenster erscheinen. Der Administrator-Editor verwendet schemabasierte Eingaben und geschützte Änderungsverfolgung statt Roh-JSON; sein themengerechter Stift bleibt am Zeilenrand sichtbar. Study-Routen bleiben während der Sprachinitialisierung registriert, und die abhängige Bootstrap-Reihenfolge stellt Progress vor der Bestenliste bereit.
 
-## Reaktionsschneller Study-Start
-
-Der Start der Study-Adapter führt unabhängige Adapter nun parallel aus und behält dabei die deklarierte Abhängigkeitsreihenfolge bei. Dadurch entfällt die sequenzielle Startverzögerung, wegen der Root-Prüfungen mit HTTP 499 abbrachen, ohne dass Leaderboard vor Progress initialisiert werden kann.
-
 ## Auf Study begrenzte Plattformintegration
 
 Die Implementierung behält nun das API- und Web-Router-Verhalten der etablierten Library-Ausgangsbasis bei. Die Registrierung der Engagement-Fähigkeiten bleibt in der API-Zusammensetzung erhalten, während Modulaktivierung, Grenzvalidierung, Startanforderungsrouting, Laden von Authentifizierungsmeldungen und generische SPA-Routenreihenfolge durch diese Study-Funktion nicht mehr verändert werden.
+
+## Study-Startparität wiederhergestellt
+
+Der nur in diesem Zweig vorhandene Study-Adapter-Scheduler und die Eskalation der Gateways-Paketversion wurden entfernt. Erkennung und Start der Study-Adapter entsprechen nun exakt der Entwicklungsbasis. Leaderboard löst Progress verzögert über ctx auf und erhält damit seine Abhängigkeit, ohne den gatewayweiten Start zu verändern oder bestehende Module zu verzögern.
 
 ## Commits
 
@@ -106,5 +106,5 @@ Die Implementierung behält nun das API- und Web-Router-Verhalten der etablierte
 - [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
-- [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
 - [5917b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/5917b511)
+- [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)

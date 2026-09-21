@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { LeaderboardService } from "../service.js";
 import { bootstrapStudyAdapter } from "../index.js";
-import type { LeaderboardDefinition } from "../types.js";
+import type {
+    LeaderboardDefinition,
+    ProgressEvidenceCapability,
+} from "../types.js";
 import { CapabilityStore, createCtx, ScoringEngine } from "@cognis/core";
 import type { StudyAdapterBootstrapCtx } from "../../../../gateways/study/gateway.js";
 import { createDefaultRouteContext } from "../../../../api/reuse/route-context.js";
@@ -63,7 +66,6 @@ test("bootstrap publishes the leaderboard capability for language providers", as
     const systemCtx = createCtx();
     const capabilities = new CapabilityStore();
     capabilities.contribute("system:ctx", systemCtx);
-    capabilities.contribute("study:progress", progress);
     capabilities.contribute("engagement:scoring", new ScoringEngine());
     capabilities.contribute("auth:routeContext", createDefaultRouteContext());
     let spaRoute:
@@ -80,6 +82,29 @@ test("bootstrap publishes the leaderboard capability for language providers", as
     assert.ok(systemCtx.getCapability("study:leaderboard"));
     assert.equal(spaRoute?.pattern, "^/study/leaderboard$");
     assert.deepEqual(spaRoute?.requiredCapabilities, undefined);
+});
+
+test("leaderboard resolves Progress lazily without changing gateway bootstrap", async () => {
+    const capabilities = new CapabilityStore();
+    const service = new LeaderboardService(() =>
+        capabilities.get<ProgressEvidenceCapability>("study:progress"),
+    );
+    service.registerDefinition({ ...definition, minimumCohortSize: 1 });
+    service.setParticipation("alice", "weekly", { optedIn: true });
+    service.assignCohort("alice", "weekly", "red");
+    capabilities.contribute("study:progress", progress);
+
+    await service.submitObservation(actor("alice"), {
+        id: "lazy-progress",
+        definitionId: "weekly",
+        participantId: "alice",
+        criterionId: "accuracy",
+        value: 100,
+        observedAt: "2026-09-02T00:00:00Z",
+        evidenceEventIds: ["a"],
+        cohortId: "red",
+        seasonId: "s1",
+    });
 });
 
 async function fixture() {

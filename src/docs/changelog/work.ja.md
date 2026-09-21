@@ -78,13 +78,13 @@ Library レイヤーを管理者用サイドメニューへ移動しました。
 
 Library のプレビューではメタデータとスコープの位置を固定し、発音と定義は 1 階層の参照先・参照元ツリーとともに詳細ポップアップへ移しました。管理者エディターは生の JSON ではなくスキーマ由来の入力と保護付き変更追跡を使用し、テーマ対応の鉛筆を行端に表示します。言語初期化中も Study ルートを登録し続け、依存順のアダプター Bootstrap によって Leaderboard より先に Progress を準備します。
 
-## 応答性の高い Study 起動
-
-Study アダプターのブートストラップは、宣言された依存関係の順序を維持しながら、独立したアダプターを並行して実行するようになりました。これにより、Leaderboard が Progress より先に初期化されることを防ぎつつ、ルートプローブが HTTP 499 で切断される原因となっていた直列起動の遅延を解消します。
-
 ## Study に限定したプラットフォーム統合
 
 実装は、確立された Library ベースラインの API および Web ルーター動作を維持するようになりました。Engagement 機能の登録は API 構成に残しつつ、モジュール有効化、境界検証、起動時リクエストルーティング、認証メッセージ読み込み、汎用 SPA ルート順序は、この Study 機能では変更しません。
+
+## Study 起動の同等性を復元
+
+このブランチ固有の Study アダプタースケジューラーと gateways パッケージバージョンの引き上げを削除しました。Study アダプターの検出と起動は development ベースラインと完全に一致します。Leaderboard は ctx を介して Progress を遅延解決し、ゲートウェイ全体の起動を変更したり既存モジュールを遅延させたりせずに依存関係を維持します。
 
 ## コミット
 
@@ -106,5 +106,5 @@ Study アダプターのブートストラップは、宣言された依存関�
 - [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
-- [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
 - [5917b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/5917b511)
+- [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)

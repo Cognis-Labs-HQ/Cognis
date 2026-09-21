@@ -29,10 +29,21 @@ export class LeaderboardService implements LeaderboardCapability {
     private snapshots = new Map<string, Map<string, number>>();
 
     constructor(
-        private readonly progress: ProgressEvidenceCapability,
+        private readonly progress:
+            | ProgressEvidenceCapability
+            | (() => ProgressEvidenceCapability | undefined),
         private readonly enabled = () => true,
         private readonly scoring?: ScoringCapability,
     ) {}
+
+    private progressCapability(): ProgressEvidenceCapability {
+        const progress =
+            typeof this.progress === "function"
+                ? this.progress()
+                : this.progress;
+        if (!progress) throw new Error("progress_unavailable");
+        return progress;
+    }
 
     async scoreActivity(
         actor: LeaderboardActor,
@@ -159,7 +170,9 @@ export class LeaderboardService implements LeaderboardCapability {
         if (uniqueEvidence.length < criterion.minimumEvidence)
             throw new Error("insufficient_evidence");
         for (const eventId of uniqueEvidence) {
-            const events = await this.progress.listEvents(actor, { eventId });
+            const events = await this.progressCapability().listEvents(actor, {
+                eventId,
+            });
             if (
                 !events.some(
                     (event) =>

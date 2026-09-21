@@ -76,15 +76,15 @@ Library layers now live in the administrator side menu. The selected layer rende
 
 ## Focused Library details and stable Study startup
 
-Library previews now reserve fixed positions for metadata and scope while pronunciations and definitions live in the detail popup alongside a one-level inbound/outbound relationship tree. The administrator editor uses schema-derived controls and protected dirty tracking instead of raw JSON, and its theme-aware pencil remains visible at the row edge. Study routes stay registered during language initialization, and dependency-ordered adapter bootstrap ensures Progress is ready before Leaderboard.
-
-## Responsive Study startup
-
-Study adapter bootstrap now runs independent adapters concurrently while preserving declared dependency order. This removes the serialized startup delay that caused root probes to disconnect with HTTP 499, without allowing Leaderboard to initialize before Progress.
+Library previews now reserve fixed positions for metadata and scope while pronunciations and definitions live in the detail popup alongside a one-level inbound/outbound relationship tree. The administrator editor uses schema-derived controls and protected dirty tracking instead of raw JSON, and its theme-aware pencil remains visible at the row edge.
 
 ## Study-scoped platform integration
 
 The implementation now retains the API and web-router behavior from the established Library baseline. Engagement capability registration remains in API composition, while module activation, boundary validation, startup request routing, authentication message loading, and generic SPA route ordering are no longer altered by this Study feature.
+
+## Study startup parity restored
+
+The branch-only Study adapter scheduler and gateways package-version escalation were removed. Study adapter discovery and startup now exactly match the development baseline. Leaderboard resolves Progress lazily through ctx, preserving its dependency without changing gateway-wide bootstrap or delaying existing modules.
 
 ## Commits
 
@@ -106,5 +106,5 @@ The implementation now retains the API and web-router behavior from the establis
 - [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
-- [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
 - [5917b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/5917b511)
+- [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)

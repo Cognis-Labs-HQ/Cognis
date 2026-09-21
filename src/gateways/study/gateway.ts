@@ -132,47 +132,6 @@ export interface StudyAdapterInfo {
     requires?: string[];
 }
 
-export function orderStudyAdapterIds(
-    entries: readonly string[],
-    requiresFor: (adapterId: string) => readonly string[],
-): string[] {
-    const entrySet = new Set(entries);
-    const orderedEntries: string[] = [];
-    const visited = new Set<string>();
-    const visiting = new Set<string>();
-    const visit = (entry: string): void => {
-        if (visited.has(entry) || visiting.has(entry)) return;
-        visiting.add(entry);
-        for (const dependency of requiresFor(entry)) {
-            if (entrySet.has(dependency)) visit(dependency);
-        }
-        visiting.delete(entry);
-        visited.add(entry);
-        orderedEntries.push(entry);
-    };
-    [...entries].sort().forEach(visit);
-    return orderedEntries;
-}
-
-export async function runDependencyOrderedStudyTasks(
-    entries: readonly string[],
-    requiresFor: (adapterId: string) => readonly string[],
-    run: (adapterId: string) => Promise<void>,
-): Promise<void> {
-    const tasks = new Map<string, Promise<void>>();
-    for (const entry of orderStudyAdapterIds(entries, requiresFor)) {
-        const dependencies = requiresFor(entry).flatMap((dependency) => {
-            const task = tasks.get(dependency);
-            return task ? [task] : [];
-        });
-        tasks.set(
-            entry,
-            Promise.all(dependencies).then(() => run(entry)),
-        );
-    }
-    await Promise.all(tasks.values());
-}
-
 /**
  * Context passed to `bootstrapStudyAdapter` when a study adapter exports that
  * function. Mirrors the social gateway adapter bootstrap contract.
@@ -492,13 +451,10 @@ export class CoreStudyGateway {
             return;
         }
 
-        const requiresFor = (entry: string) =>
-            this.getAdapter(entry)?.requires ?? [];
-        await runDependencyOrderedStudyTasks(
-            entries,
-            requiresFor,
-            async (entry) => {
+        await Promise.all(
+            entries.sort().map(async (entry) => {
                 const pkgPath = path.join(adaptersRoot, entry, "package.json");
+
                 let mod: Record<string, unknown>;
                 try {
                     const raw = await readFile(pkgPath, "utf8");
@@ -513,10 +469,13 @@ export class CoreStudyGateway {
                 } catch {
                     return;
                 }
+
                 if (typeof mod.bootstrapStudyAdapter !== "function") return;
+
                 const bootstrapFn = mod.bootstrapStudyAdapter as (
                     ctx: StudyAdapterBootstrapCtx,
                 ) => Promise<void> | void;
+
                 const adapterCtx: StudyAdapterBootstrapCtx = {
                     ...baseCtx,
                     adapterId: entry,
@@ -530,6 +489,7 @@ export class CoreStudyGateway {
                         }, gatewayId);
                     },
                 };
+
                 try {
                     await bootstrapFn(adapterCtx);
                 } catch (err) {
@@ -546,7 +506,7 @@ export class CoreStudyGateway {
                         },
                     );
                 }
-            },
+            }),
         );
     }
 }

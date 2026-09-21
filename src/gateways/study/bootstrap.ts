@@ -378,13 +378,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "/static/gateways/study/study.css",
     ];
     const isStudyAvailable = (): boolean => {
-        return ctx.gatewayRegistry.get("study")?.status !== "disabled";
-    };
-    const hasEnabledStudyLanguage = (): boolean => {
         syncLanguageCapabilities();
-        return gateway
-            .listRegisteredLanguageModules()
-            .some((language) => language.enabled);
+        return (
+            ctx.gatewayRegistry.get("study")?.status !== "disabled" &&
+            gateway
+                .listRegisteredLanguageModules()
+                .some((language) => language.enabled)
+        );
     };
     ctx.uiRegistry?.registerSpaRoute({
         id: "gateway.study",
@@ -416,7 +416,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             res.end();
             return true;
         }
-        if (!isStudyAvailable() || !hasEnabledStudyLanguage()) {
+        if (!isStudyAvailable()) {
             res.writeHead(302, { location: "/error?code=503" });
             res.end();
             return true;
