@@ -4,18 +4,27 @@
  * through gateway bootstrap wiring and do not depend on adapter internals.
  */
 
-import { pbkdf2Sync } from "node:crypto";
+import { createHash, pbkdf2Sync } from "node:crypto";
 import type { AuthContext } from "@cognis/core";
 
 export interface LocalAccountStore {
     ensureExternalAccount?(identity: {
         accountId: string;
+        accountNamespace?: string;
         provider: string;
         externalUserId: string;
         email?: string;
         displayName?: string;
         role?: string;
-    }): Promise<void>;
+    }): Promise<string>;
+    resolveExternalAccountId?(
+        provider: string,
+        externalUserId: string,
+    ): Promise<string | null>;
+    isExternalIdentityDeleted?(
+        provider: string,
+        externalUserId: string,
+    ): Promise<boolean>;
     removeExternalIdentitiesByPrefix?(
         provider: string,
         externalUserIdPrefix: string,
@@ -47,7 +56,10 @@ export interface LocalAccountStore {
     ): Promise<void>;
     setPassword(username: string, password: string): Promise<void>;
     setEnabled(username: string, enabled: boolean): Promise<void>;
-    delete(username: string): Promise<void>;
+    delete(
+        username: string,
+        options?: { recordExternalIdentityDeletion?: boolean },
+    ): Promise<void>;
     getInfo(username: string): Promise<{
         username: string;
         createdAt: string | null;
@@ -85,7 +97,31 @@ const VOLATILE_PASSWORD_HISTORY_LIMIT = 10;
 
 /** Lowercases a username to enable case-insensitive lookups. */
 export function normalizeUsername(username: string): string {
-    return username.toLowerCase();
+    return username.trim().toLowerCase();
+}
+
+export function normalizeExternalAccountId(
+    provider: string,
+    accountId: string,
+): string {
+    const providerNamespace = normalizeUsername(provider);
+    if (!/^[a-z0-9][a-z0-9_-]*$/.test(providerNamespace)) {
+        throw new Error("invalid_external_account_namespace");
+    }
+    const normalizedAccountId = normalizeUsername(accountId);
+    const providerPrefix = `${providerNamespace}:`;
+    return normalizedAccountId.startsWith(providerPrefix)
+        ? normalizedAccountId
+        : `${providerPrefix}${normalizedAccountId}`;
+}
+
+export function externalIdentityFingerprint(
+    provider: string,
+    externalUserId: string,
+): string {
+    return createHash("sha256")
+        .update(`${provider}\0${externalUserId}`, "utf8")
+        .digest("hex");
 }
 
 /**
@@ -111,31 +147,47 @@ export function validateUsername(username: string): string | null {
 export class VolatileLocalAccountStore implements LocalAccountStore {
     private readonly accounts = new Map<string, StoredAccount>();
     private readonly externalIdentities = new Map<string, string>();
+    private readonly externalIdentityFingerprints = new Map<string, string>();
+    private readonly deletedExternalIdentities = new Set<string>();
 
     async ensureExternalAccount(identity: {
         accountId: string;
+        accountNamespace?: string;
         provider: string;
         externalUserId: string;
         displayName?: string;
         role?: string;
-    }): Promise<void> {
-        this.externalIdentities.set(
-            `${identity.provider}:${identity.externalUserId}`,
+    }): Promise<string> {
+        const normalizedAccountId = normalizeExternalAccountId(
+            identity.accountNamespace ?? identity.provider,
             identity.accountId,
         );
-        const existingAccount = this.accounts.get(identity.accountId);
+        const identityId = `${identity.provider}:${identity.externalUserId}`;
+        const identityFingerprint = externalIdentityFingerprint(
+            identity.provider,
+            identity.externalUserId,
+        );
+        this.deletedExternalIdentities.delete(identityFingerprint);
+        const mappedAccountId = this.externalIdentities.get(identityId);
+        const accountId = mappedAccountId ?? normalizedAccountId;
+        if (!mappedAccountId && this.accounts.has(accountId)) {
+            throw new Error("external_account_id_conflict");
+        }
+        this.externalIdentities.set(identityId, accountId);
+        this.externalIdentityFingerprints.set(identityId, identityFingerprint);
+        const existingAccount = this.accounts.get(accountId);
         if (existingAccount) {
             existingAccount.displayName =
                 identity.displayName?.trim() || existingAccount.displayName;
-            return;
+            return accountId;
         }
-        this.accounts.set(identity.accountId, {
+        this.accounts.set(accountId, {
             passwordHash: "external-account-no-local-password",
             passwordHistoryHashes: [],
             isFounder: false,
             enabled: true,
             lastLogin: null,
-            displayName: identity.displayName?.trim() || identity.accountId,
+            displayName: identity.displayName?.trim() || accountId,
             role:
                 identity.role === "teacher" ||
                 identity.role === "moderator" ||
@@ -144,6 +196,25 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
                     : "user",
             provider: identity.provider,
         });
+        return accountId;
+    }
+
+    async resolveExternalAccountId(
+        provider: string,
+        externalUserId: string,
+    ): Promise<string | null> {
+        return (
+            this.externalIdentities.get(`${provider}:${externalUserId}`) ?? null
+        );
+    }
+
+    async isExternalIdentityDeleted(
+        provider: string,
+        externalUserId: string,
+    ): Promise<boolean> {
+        return this.deletedExternalIdentities.has(
+            externalIdentityFingerprint(provider, externalUserId),
+        );
     }
 
     async removeExternalIdentitiesByPrefix(
@@ -156,6 +227,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
                 continue;
             }
             this.externalIdentities.delete(identityId);
+            this.externalIdentityFingerprints.delete(identityId);
             accountIds.add(accountId);
         }
         return [...accountIds];
@@ -281,8 +353,25 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         account.enabled = enabled;
     }
 
-    async delete(username: string) {
-        this.accounts.delete(normalizeUsername(username));
+    async delete(
+        username: string,
+        options: { recordExternalIdentityDeletion?: boolean } = {},
+    ) {
+        const accountId = normalizeUsername(username);
+        for (const [identityId, mappedAccountId] of this.externalIdentities) {
+            if (mappedAccountId !== accountId) continue;
+            const identityFingerprint =
+                this.externalIdentityFingerprints.get(identityId);
+            if (
+                identityFingerprint &&
+                options.recordExternalIdentityDeletion !== false
+            ) {
+                this.deletedExternalIdentities.add(identityFingerprint);
+            }
+            this.externalIdentities.delete(identityId);
+            this.externalIdentityFingerprints.delete(identityId);
+        }
+        this.accounts.delete(accountId);
     }
 
     async getInfo(username: string): Promise<{

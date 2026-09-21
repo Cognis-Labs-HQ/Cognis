@@ -12,4 +12,7 @@
   <string name="ui.app.profile.availability.tentative">Tentatif</string>
   <string name="ui.app.profile.availability.idle">Tidak aktif</string>
   <string name="ui.app.profile.availability.unknown">Tidak diketahui</string>
+  <string name="ui.app.profile.provider_sync">Sinkronkan dengan {{ provider }}</string>
+  <string name="ui.app.profile.provider_sync_complete">Profil disinkronkan.</string>
+  <string name="ui.app.profile.provider_sync_failed">Profil tidak dapat disinkronkan.</string>
 </resources>

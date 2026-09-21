@@ -13,6 +13,8 @@ import { promisify } from "node:util";
 import type { AuthContext, BootstrapLog } from "@cognis/core";
 import type { LocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
 import {
+    externalIdentityFingerprint,
+    normalizeExternalAccountId,
     normalizeUsername,
     validateUsername,
 } from "../../../gateways/auth/reuse/account-store.js";
@@ -59,12 +61,17 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async ensureExternalAccount(identity: {
         accountId: string;
+        accountNamespace?: string;
         provider: string;
         externalUserId: string;
         email?: string;
         displayName?: string;
         role?: string;
-    }): Promise<void> {
+    }): Promise<string> {
+        let normalizedAccountId = normalizeExternalAccountId(
+            identity.accountNamespace ?? identity.provider,
+            identity.accountId,
+        );
         const now = new Date().toISOString();
         const role =
             identity.role === "teacher" ||
@@ -73,14 +80,54 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 ? identity.role
                 : "user";
         await this.db.transaction(async (txDb) => {
+            const identityResult = await txDb.executeCommand({
+                option: "SELECT",
+                table: "auth_identities",
+                columns: ["account_id"],
+                where: [
+                    { column: "provider", value: identity.provider },
+                    {
+                        column: "external_user_id",
+                        value: identity.externalUserId,
+                    },
+                ],
+                limit: 1,
+            });
+            const accountId = identityResult.rows?.[0]?.account_id
+                ? normalizeUsername(String(identityResult.rows[0].account_id))
+                : normalizedAccountId;
+            if (!identityResult.rows?.[0]?.account_id) {
+                const accountResult = await txDb.executeCommand({
+                    option: "SELECT",
+                    table: "accounts",
+                    columns: ["id"],
+                    where: [{ column: "id", value: accountId }],
+                    limit: 1,
+                });
+                if (accountResult.rows?.length) {
+                    throw new Error("external_account_id_conflict");
+                }
+            }
+            await txDb.executeCommand({
+                option: "DELETE",
+                table: "deleted_auth_identities",
+                where: [
+                    {
+                        column: "id",
+                        value: externalIdentityFingerprint(
+                            identity.provider,
+                            identity.externalUserId,
+                        ),
+                    },
+                ],
+            });
             await txDb.executeCommand({
                 option: "INSERT",
                 table: "accounts",
                 values: {
-                    id: identity.accountId,
+                    id: accountId,
                     email: identity.email ?? null,
-                    display_name:
-                        identity.displayName?.trim() || identity.accountId,
+                    display_name: identity.displayName?.trim() || accountId,
                     is_admin: role === "admin",
                     role,
                     enabled: true,
@@ -92,8 +139,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     target: ["id"],
                     update: {
                         email: identity.email ?? null,
-                        display_name:
-                            identity.displayName?.trim() || identity.accountId,
+                        display_name: identity.displayName?.trim() || accountId,
                         is_admin: role === "admin",
                         role,
                         updated_at: now,
@@ -105,7 +151,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 table: "auth_identities",
                 values: {
                     id: `${identity.provider}:${identity.externalUserId}`,
-                    account_id: identity.accountId,
+                    account_id: accountId,
                     provider: identity.provider,
                     external_user_id: identity.externalUserId,
                     created_at: now,
@@ -113,12 +159,54 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 },
                 conflict: { action: "ignore" },
             });
+            normalizedAccountId = accountId;
         });
         this.writeLog("info", "Ensured external account identity.", {
             component: "auth-local-store",
-            accountId: identity.accountId,
+            accountId: normalizedAccountId,
             provider: identity.provider,
         });
+        return normalizedAccountId;
+    }
+
+    async resolveExternalAccountId(
+        provider: string,
+        externalUserId: string,
+    ): Promise<string | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "auth_identities",
+            columns: ["account_id"],
+            where: [
+                { column: "provider", value: provider },
+                { column: "external_user_id", value: externalUserId },
+            ],
+            limit: 1,
+        });
+        const accountId = result.rows?.[0]?.account_id;
+        return accountId ? normalizeUsername(String(accountId)) : null;
+    }
+
+    async isExternalIdentityDeleted(
+        provider: string,
+        externalUserId: string,
+    ): Promise<boolean> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "deleted_auth_identities",
+            columns: ["id"],
+            where: [
+                {
+                    column: "id",
+                    value: externalIdentityFingerprint(
+                        provider,
+                        externalUserId,
+                    ),
+                },
+            ],
+            limit: 1,
+        });
+        return Boolean(result.rows?.length);
     }
 
     async removeExternalIdentitiesByPrefix(
@@ -195,6 +283,18 @@ export class DbLocalAccountStore implements LocalAccountStore {
             ],
             uniqueKeys: [["provider", "external_user_id"]],
             indexes: [{ columns: ["account_id"] }],
+        });
+        await this.db.ensureTable({
+            name: "deleted_auth_identities",
+            columns: [
+                { name: "id", type: "text", primaryKey: true },
+                {
+                    name: "deleted_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
         });
         await this.db.ensureTable({
             name: "local_auth_password_history",
@@ -606,10 +706,38 @@ export class DbLocalAccountStore implements LocalAccountStore {
         });
     }
 
-    async delete(username: string) {
+    async delete(
+        username: string,
+        options: { recordExternalIdentityDeletion?: boolean } = {},
+    ) {
         const lowercaseUsername = normalizeUsername(username);
         try {
             await this.db.transaction(async (txDb) => {
+                const identityResult = await txDb.executeCommand({
+                    option: "SELECT",
+                    table: "auth_identities",
+                    columns: ["provider", "external_user_id"],
+                    where: [{ column: "account_id", value: lowercaseUsername }],
+                });
+                for (const identity of options.recordExternalIdentityDeletion ===
+                false
+                    ? []
+                    : (identityResult.rows ?? [])) {
+                    const provider = String(identity.provider);
+                    const externalUserId = String(identity.external_user_id);
+                    await txDb.executeCommand({
+                        option: "INSERT",
+                        table: "deleted_auth_identities",
+                        values: {
+                            id: externalIdentityFingerprint(
+                                provider,
+                                externalUserId,
+                            ),
+                            deleted_at: new Date().toISOString(),
+                        },
+                        conflict: { action: "ignore" },
+                    });
+                }
                 await txDb.executeCommand({
                     option: "DELETE",
                     table: "local_auth_credentials",

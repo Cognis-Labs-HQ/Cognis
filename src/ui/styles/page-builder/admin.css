@@ -30,6 +30,16 @@
 .users-actions-cell {
     white-space: nowrap;
 }
+.users-identity {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.45rem;
+}
+.users-provider-icon {
+    height: 1rem;
+    object-fit: contain;
+    width: 1rem;
+}
 .users-role-select {
     padding: 4px 8px;
     border: 1px solid var(--border, #ccc);

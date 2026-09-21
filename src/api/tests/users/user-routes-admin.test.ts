@@ -645,7 +645,7 @@ test("users list includes provisioned LDAP accounts and identifies their provide
     );
 
     const ldapUser = JSON.parse(body).data.find(
-        (entry: { username: string }) => entry.username === "ldap-user",
+        (entry: { username: string }) => entry.username === "ldap:ldap-user",
     );
     assert.equal(ldapUser.provider, "ldap");
 });
@@ -678,7 +678,7 @@ test("admin password changes are rejected for LDAP accounts", async () => {
                 body = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/users/ldap-user/password"),
+        new URL("http://localhost/api/v1/users/ldap%3Aldap-user/password"),
     );
 
     assert.equal(status, 403);

@@ -39,7 +39,7 @@ export async function bootstrapModule(ctx) {
 
 ### リポジトリ契約
 
-1 つの Git リポジトリは 1 つのモジュールを提供します。そのルートには、`manifest.json`、`package.json`、`routes.json`、およびオプションのオーケストレーター エントリ ポイント `bootstrap.js`、`api/index.js`、`ui/index.js`、および `cli/index.js` が含まれています。 `bootstrap.js` は唯一のシステム統合エントリであり、`ctx` を受け取ります。リポジトリ内の任意のファイルをインポートできますが、Cognis または別のコンポーネントの内部パスをインポートしてはなりません。 `ctx` を通じて機能とフロー ステージをエクスポートします。この狭いエントリポイント契約により、作成者は Cognis を結合せずに内部ファイルを自由に再編成できます。
+1 つの Git リポジトリは 1 つのモジュールを提供します。そのルートには、`manifest.json`、`package.json`、`routes.json`、およびオプションのオーケストレーターエントリポイント `bootstrap.js`、`api/index.js`、`ui/index.js`、`cli/index.js` が含まれます。`bootstrap.js` は唯一のシステム統合エントリであり、`ctx` を受け取ります。リポジトリ内のファイルに加え、デプロイ環境が公開する Cognis ランタイムリソースをインポートできます。公開するケイパビリティとフローステージでは、ライフサイクルのクリーンアップが追跡できるよう、引き続き `ctx` を使用することを推奨します。セキュリティ上重要な登録は引き続き制限され、`privileged: true` が必要です。通常のインポート、API URL、共有スタイルクラスによってモジュールが特権扱いになることはありません。
 
 `package.json` は `"type": "module"` を使用する必要があり、そのバージョンは `manifest.json` と正確に一致する必要があります。 `routes.json` は常に存在し、モジュールがルートを要求しない場合の空の配列を含む配列を含みます。宣言されたすべてのエントリ ポイントは、チェックアウト内の通常のファイルに解決される必要があります。宣言されたエントリ ポイントでオーケストレーションを維持し、その背後に自由に編成された実装コードを配置します。 Cognis は他のモジュール パスをインポートしません。
 
@@ -128,3 +128,7 @@ await reuse.loadStylesheets(["layout.css", "page-sections.css"]);
 外部マニフェストでは、モジュールの UUID または ID の配列として `hardDependencies` と `softDependencies` を宣言できます。ハード依存関係は、続行前に管理者がインストールして有効化する必要があるため非推奨です。ソフト依存関係はインストールダイアログで任意に選択できます。
 
 無効なモジュールは通常の Bootstrap をインポートも実行もしません。無効時にも設定を公開する必要があるモジュールは `entrypoints.disabledApi` を宣言します。この分離ファイルは `registerDisabledApiRoutes(ctx)` をエクスポートし、`allowWhenDisabled` を明示したルートだけを登録できます。
+
+### 有効化後のガイダンス
+
+Cognis の別の場所に設定画面を提供するモジュールは、空のモジュール設定フォームを作成する代わりに `ui.activationGuidance` を宣言できます。この契約には、ローカライズされた `titleKey`、任意の `descriptionKey`、順序付きの `steps` を指定します。各ステップには、安定した `id`、ローカライズされた `labelKey`、任意の `descriptionKey` と `targets` があります。アダプター対象は `{ "kind": "adapter", "gatewayId": "<gateway>", "adapterId": "<adapter>" }` を使用します。有効化に成功すると、Cognis はすべての手順を表示し、管理画面を開く選択肢を提示します。Core がプロバイダー名を認識しなくても、モジュールは複数のアダプター対象を列挙できます。

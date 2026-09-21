@@ -404,7 +404,10 @@ test("external login cannot create an account without registration authorization
     const accountStore = capabilities.require<{
         getInfo(accountId: string): Promise<unknown>;
     }>("auth:accountStore");
-    assert.equal(await accountStore.getInfo("external-user"), null);
+    assert.equal(
+        await accountStore.getInfo("external-sso:external-user"),
+        null,
+    );
     unregister();
 });
 
@@ -420,6 +423,7 @@ test("external login retries account creation through the registration token gat
     });
     let createdProfileHandle = "";
     let synchronizedProfileHandle = "";
+    let synchronizedProfileVisibility = "";
     capabilities.contribute(
         "profile:createProfile",
         async (_accountId: string, handle: string) => {
@@ -430,6 +434,9 @@ test("external login retries account creation through the registration token gat
         "profile:applyExternalProfile",
         async (_accountId: string, profile: Record<string, unknown>) => {
             synchronizedProfileHandle = String(profile.handle ?? "");
+            synchronizedProfileVisibility = String(
+                profile.profileVisibility ?? "",
+            );
         },
     );
     await capabilities.require<
@@ -442,9 +449,11 @@ test("external login retries account creation through the registration token gat
             accountId: "external-user",
             externalUserId: "provider-user",
             username: "thefirehawk",
+            accountNamespace: "x",
             provider: "external-sso",
             email: "not-an-email-address",
             emails: ["also-invalid"],
+            profileVisibility: "private",
         }),
         configure() {},
         getConfigSchema: () => [],
@@ -532,17 +541,50 @@ test("external login retries account creation through the registration token gat
     );
     assert.equal(completedResult.res.status, 200);
     assert.deepEqual(authorizationInputs.at(-1), {
-        accountId: "external-user",
+        accountId: "x:thefirehawk",
         providerId: "external-sso",
         email: "external@example.com",
         registrationToken: "invite-token",
     });
-    assert.equal(createdProfileHandle, "thefirehawk");
-    assert.equal(synchronizedProfileHandle, "thefirehawk");
+    assert.equal(createdProfileHandle, "x:thefirehawk");
+    assert.equal(synchronizedProfileHandle, "x:thefirehawk");
+    assert.equal(synchronizedProfileVisibility, "private");
     const accountStore = capabilities.require<{
         getInfo(accountId: string): Promise<unknown>;
+        delete(accountId: string): Promise<void>;
+        isExternalIdentityDeleted(
+            provider: string,
+            externalUserId: string,
+        ): Promise<boolean>;
     }>("auth:accountStore");
-    assert.notEqual(await accountStore.getInfo("external-user"), null);
+    assert.notEqual(await accountStore.getInfo("x:thefirehawk"), null);
+
+    await accountStore.delete("x:thefirehawk");
+    assert.equal(
+        await accountStore.isExternalIdentityDeleted(
+            "external-sso",
+            "provider-user",
+        ),
+        true,
+    );
+    const recreatedResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            provider: "external-sso",
+            email: "external@example.com",
+            registrationToken: "invite-token",
+        }),
+        "/api/v1/auth/login",
+    );
+    assert.equal(recreatedResult.res.status, 200);
+    assert.notEqual(await accountStore.getInfo("x:thefirehawk"), null);
+    assert.equal(
+        await accountStore.isExternalIdentityDeleted(
+            "external-sso",
+            "provider-user",
+        ),
+        false,
+    );
 });
 
 test("external login rolls back account when token commit fails", async () => {
@@ -594,6 +636,119 @@ test("external login rolls back account when token commit fails", async () => {
     assert.equal(commitCalled, true);
     const accountStore = capabilities.require<{
         getInfo(accountId: string): Promise<unknown>;
+        isExternalIdentityDeleted(
+            provider: string,
+            externalUserId: string,
+        ): Promise<boolean>;
     }>("auth:accountStore");
-    assert.equal(await accountStore.getInfo("external-user"), null);
+    assert.equal(
+        await accountStore.getInfo("external-sso:external-user"),
+        null,
+    );
+    assert.equal(
+        await accountStore.isExternalIdentityDeleted(
+            "external-sso",
+            "external-user",
+        ),
+        false,
+    );
+});
+
+test("external login uses the adapter namespace when the session provider is not namespace-safe", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: new InMemoryTestExecutor(),
+    });
+    await capabilities.require<
+        (provider: Record<string, unknown>) => Promise<() => void>
+    >("auth:registerProvider")({
+        id: "external-sso",
+        name: "External SSO",
+        locked: true,
+        authenticate: async () => ({
+            accountId: "ExternalUser",
+            externalUserId: "opaque-subject",
+            provider: "ldap:Students",
+            email: "external@example.com",
+        }),
+        configure() {},
+        getConfigSchema: () => [],
+    });
+    capabilities
+        .require<ReturnType<typeof createCtx>>(CTX_CAPABILITY)
+        .flow.extend(
+            "gateAccountCreation",
+            "authorizeCreation",
+            { id: "test:allow-invalid-session-provider" },
+            () => ({ authorized: true }),
+        );
+
+    const result = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", { provider: "external-sso" }),
+        "/api/v1/auth/login",
+    );
+
+    assert.equal(result.res.status, 200);
+    const accountStore = capabilities.require<{
+        getInfo(accountId: string): Promise<unknown>;
+    }>("auth:accountStore");
+    assert.notEqual(
+        await accountStore.getInfo("external-sso:externaluser"),
+        null,
+    );
+});
+
+test("external login cannot claim a colliding local account id", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: new InMemoryTestExecutor(),
+    });
+    const accountStore = capabilities.require<{
+        register(username: string, password: string): Promise<unknown>;
+        resolveExternalAccountId(
+            provider: string,
+            externalUserId: string,
+        ): Promise<string | null>;
+    }>("auth:accountStore");
+    await accountStore.register("external-sso:alice", "password");
+    await capabilities.require<
+        (provider: Record<string, unknown>) => Promise<() => void>
+    >("auth:registerProvider")({
+        id: "external-sso",
+        name: "External SSO",
+        locked: true,
+        authenticate: async () => ({
+            accountId: "alice",
+            externalUserId: "opaque-alice-subject",
+            provider: "external-sso",
+        }),
+        configure() {},
+        getConfigSchema: () => [],
+    });
+
+    const result = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", { provider: "external-sso" }),
+        "/api/v1/auth/login",
+    );
+
+    assert.equal(result.res.status, 401);
+    assert.equal(
+        await accountStore.resolveExternalAccountId(
+            "external-sso",
+            "opaque-alice-subject",
+        ),
+        null,
+    );
 });

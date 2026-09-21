@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { DbLocalAccountStore } from "../store.js";
+import { externalIdentityFingerprint } from "../../../../gateways/auth/reuse/account-store.js";
 
 test("external account persistence creates the account before its identity", async () => {
     const commands: Array<Record<string, unknown>> = [];
@@ -15,8 +16,8 @@ test("external account persistence creates the account before its identity", asy
     };
     const store = new DbLocalAccountStore(executor as never);
 
-    await store.ensureExternalAccount({
-        accountId: "firehawk",
+    const accountId = await store.ensureExternalAccount({
+        accountId: "FireHawk",
         provider: "ldap",
         externalUserId: "uid=firehawk,ou=People,dc=example,dc=org",
         email: "firehawk@example.org",
@@ -26,23 +27,47 @@ test("external account persistence creates the account before its identity", asy
 
     assert.deepEqual(
         commands.map((command) => command.table),
-        ["accounts", "auth_identities"],
+        [
+            "auth_identities",
+            "accounts",
+            "deleted_auth_identities",
+            "accounts",
+            "auth_identities",
+        ],
     );
-    assert.deepEqual(commands[0]?.values, {
-        id: "firehawk",
+    assert.equal(accountId, "ldap:firehawk");
+    assert.deepEqual(commands[2]?.where, [
+        {
+            column: "id",
+            value: externalIdentityFingerprint(
+                "ldap",
+                "uid=firehawk,ou=People,dc=example,dc=org",
+            ),
+        },
+    ]);
+    assert.equal(commands[2]?.option, "DELETE");
+    assert.deepEqual(commands[0]?.where, [
+        { column: "provider", value: "ldap" },
+        {
+            column: "external_user_id",
+            value: "uid=firehawk,ou=People,dc=example,dc=org",
+        },
+    ]);
+    assert.deepEqual(commands[3]?.values, {
+        id: "ldap:firehawk",
         email: "firehawk@example.org",
         display_name: "Fire Hawk",
         is_admin: false,
         role: "teacher",
         enabled: true,
-        created_at: (commands[0]?.values as Record<string, unknown>).created_at,
-        updated_at: (commands[0]?.values as Record<string, unknown>).updated_at,
+        created_at: (commands[3]?.values as Record<string, unknown>).created_at,
+        updated_at: (commands[3]?.values as Record<string, unknown>).updated_at,
     });
     assert.equal(
-        (commands[1]?.values as Record<string, unknown>).account_id,
-        "firehawk",
+        (commands[4]?.values as Record<string, unknown>).account_id,
+        "ldap:firehawk",
     );
-    assert.deepEqual(commands[0]?.conflict, {
+    assert.deepEqual(commands[3]?.conflict, {
         action: "update",
         target: ["id"],
         update: {
@@ -50,7 +75,7 @@ test("external account persistence creates the account before its identity", asy
             display_name: "Fire Hawk",
             is_admin: false,
             role: "teacher",
-            updated_at: (commands[0]?.values as Record<string, unknown>)
+            updated_at: (commands[3]?.values as Record<string, unknown>)
                 .updated_at,
         },
     });
@@ -99,7 +124,11 @@ test("local auth schema provisions external identities", async () => {
 
     assert.deepEqual(
         tables.map((table) => table.name),
-        ["auth_identities", "local_auth_password_history"],
+        [
+            "auth_identities",
+            "deleted_auth_identities",
+            "local_auth_password_history",
+        ],
     );
     const identityTable = tables[0];
     assert.deepEqual(identityTable?.uniqueKeys, [
@@ -150,6 +179,19 @@ test("external accounts support administrative actions other than password reset
     const executor = {
         async executeCommand(command: Record<string, unknown>) {
             commands.push(command);
+            if (
+                command.option === "SELECT" &&
+                command.table === "auth_identities"
+            ) {
+                return {
+                    rows: [
+                        {
+                            provider: "external-provider",
+                            external_user_id: "subject",
+                        },
+                    ],
+                };
+            }
             return { rows: [{ is_founder: true }] };
         },
         async transaction(operation: (transaction: unknown) => Promise<void>) {
@@ -172,4 +214,92 @@ test("external accounts support administrative actions other than password reset
     for (const command of accountCommands) {
         assert.deepEqual(command.where, [{ column: "id", value: "firehawk" }]);
     }
+    const tombstoneCommand = commands.find(
+        (command) =>
+            command.option === "INSERT" &&
+            command.table === "deleted_auth_identities",
+    );
+    assert.deepEqual(tombstoneCommand?.values, {
+        id: externalIdentityFingerprint("external-provider", "subject"),
+        deleted_at: (tombstoneCommand?.values as Record<string, unknown>)
+            .deleted_at,
+    });
+});
+
+test("external account rollback deletes without recording a tombstone", async () => {
+    const commands: Array<Record<string, unknown>> = [];
+    const executor = {
+        async executeCommand(command: Record<string, unknown>) {
+            commands.push(command);
+            return command.option === "SELECT"
+                ? {
+                      rows: [
+                          {
+                              provider: "external-provider",
+                              external_user_id: "subject",
+                          },
+                      ],
+                  }
+                : { rows: [] };
+        },
+        async transaction(operation: (transaction: unknown) => Promise<void>) {
+            await operation(this);
+        },
+    };
+    const store = new DbLocalAccountStore(executor as never);
+
+    await store.delete("external-provider:subject", {
+        recordExternalIdentityDeletion: false,
+    });
+
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "INSERT" &&
+                command.table === "deleted_auth_identities",
+        ),
+        false,
+    );
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "DELETE" && command.table === "accounts",
+        ),
+        true,
+    );
+});
+
+test("external identities cannot attach to a colliding persisted account", async () => {
+    const commands: Array<Record<string, unknown>> = [];
+    const executor = {
+        async executeCommand(command: Record<string, unknown>) {
+            commands.push(command);
+            if (command.table === "accounts" && command.option === "SELECT") {
+                return { rows: [{ id: "external-provider:alice" }] };
+            }
+            return { rows: [] };
+        },
+        async transaction(operation: (transaction: unknown) => Promise<void>) {
+            await operation(this);
+        },
+    };
+    const store = new DbLocalAccountStore(executor as never);
+
+    await assert.rejects(
+        () =>
+            store.ensureExternalAccount({
+                accountId: "alice",
+                provider: "external-provider",
+                externalUserId: "opaque-alice-subject",
+            }),
+        /external_account_id_conflict/,
+    );
+    assert.equal(
+        commands.some((command) => command.table === "deleted_auth_identities"),
+        false,
+    );
+    assert.equal(
+        commands.some((command) => command.option === "INSERT"),
+        false,
+    );
 });

@@ -119,3 +119,12 @@ test("register confirm password revalidates reactively when password changes", (
         /bindConfirmPasswordRevalidation\(\{\s*form,\s*formController,\s*passwordFieldName:\s*"password",\s*confirmFieldName:\s*"confirmPassword",/m,
     );
 });
+
+test("administration registration policy uses composed radio groups and dirty tracking", () => {
+    const source = read("src/gateways/registration/ui/admin-section.js");
+    assert.match(source, /createFormBuilder/);
+    assert.match(source, /createFormDirtyTracker/);
+    assert.match(source, /type: "radio"/);
+    assert.doesNotMatch(source, /type: "checkbox"/);
+    assert.match(source, /policyFormBinding\?\.getValues\(\)/);
+});

@@ -39,7 +39,7 @@ Setiap modul memiliki `id` yang dapat dibaca manusia dan RFC 4122 `uuid`. ID dap
 
 ### Kontrak repositori
 
-Satu repositori Git mengirimkan satu modul. Akarnya berisi `manifest.json`, `package.json`, `routes.json`, dan titik masuk orkestrator opsional `bootstrap.js`, `api/index.js`, `ui/index.js`, dan `cli/index.js`. `bootstrap.js` adalah satu-satunya entri integrasi sistem dan menerima `ctx`; ia dapat mengimpor file apa pun dalam repositorinya, tetapi tidak boleh mengimpor Cognis atau jalur internal komponen lain. Ekspor kemampuan dan tahapan aliran melalui `ctx`. Kontrak titik masuk yang sempit ini memungkinkan penulis dengan bebas mengatur ulang file internal tanpa menggabungkan Cognis ke dalamnya.
+Satu repositori Git mengirimkan satu modul. Akarnya berisi `manifest.json`, `package.json`, `routes.json`, dan titik masuk orkestrator opsional `bootstrap.js`, `api/index.js`, `ui/index.js`, dan `cli/index.js`. `bootstrap.js` adalah satu-satunya entri integrasi sistem dan menerima `ctx`; berkas ini dapat mengimpor berkas dalam repositorinya serta sumber daya runtime Cognis yang disediakan deployment. Kapabilitas dan tahap alur yang diekspor tetap sebaiknya menggunakan `ctx` agar pembersihan siklus hidup dapat melacaknya. Pendaftaran sensitif terhadap keamanan tetap dibatasi dan memerlukan `privileged: true`; impor biasa, URL API, dan kelas gaya bersama tidak membuat modul berprivilege.
 
 `package.json` harus menggunakan `"type": "module"` dan versinya harus sama persis dengan `manifest.json`. `routes.json` selalu ada dan berisi array, termasuk array kosong ketika modul tidak mengklaim rute. Setiap titik masuk yang dinyatakan harus diselesaikan menjadi file biasa di dalam kasir. Pertahankan orkestrasi di titik masuk yang dinyatakan dan tempatkan kode implementasi yang terorganisir secara bebas di belakangnya; Cognis tidak mengimpor jalur modul lainnya.
 
@@ -128,3 +128,7 @@ Modul yang harus memuat skrip runtime mendeklarasikan `ui:resourceLoader` dan me
 Manifes eksternal dapat menyatakan `hardDependencies` dan `softDependencies` sebagai daftar UUID atau ID modul. Dependensi keras tidak dianjurkan karena administrator harus memasang dan mengaktifkannya sebelum instalasi dapat dilanjutkan. Dependensi lunak dapat dipilih secara opsional pada dialog instalasi.
 
 Modul yang dinonaktifkan tidak pernah mengimpor atau menjalankan bootstrap normalnya. Modul yang harus menyediakan konfigurasi saat nonaktif mendeklarasikan `entrypoints.disabledApi`; file terisolasi itu mengekspor `registerDisabledApiRoutes(ctx)` dan hanya boleh mendaftarkan rute yang ditandai `allowWhenDisabled` secara eksplisit.
+
+### Panduan setelah aktivasi
+
+Modul yang menyediakan permukaan konfigurasi di bagian lain Cognis dapat mendeklarasikan `ui.activationGuidance` alih-alih membuat formulir pengaturan modul yang kosong. Kontrak menyediakan `titleKey` yang dilokalkan, `descriptionKey` opsional, dan `steps` yang berurutan. Setiap langkah memiliki `id` stabil, `labelKey` yang dilokalkan, `descriptionKey` opsional, serta `targets` opsional. Target adaptor menggunakan `{ "kind": "adapter", "gatewayId": "<gateway>", "adapterId": "<adapter>" }`. Setelah aktivasi berhasil, Cognis menampilkan setiap langkah dan menawarkan untuk membuka Administrasi. Modul dapat mencantumkan beberapa target adaptor tanpa membuat core mengetahui nama penyedia.

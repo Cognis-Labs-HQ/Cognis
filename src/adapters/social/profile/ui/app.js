@@ -48,6 +48,14 @@ import {
     PROFILE_LOCATION_MAX_CHARACTERS,
     PROFILE_WEBSITE_MAX_CHARACTERS,
 } from "./profile-config.js";
+import {
+    bindExternalProfileSync,
+    resolveExternalProfileProvider,
+} from "./provider-sync.js";
+import {
+    bindFollowButtonHover,
+    bindSocialCardFollowButtons,
+} from "./follow-buttons.js";
 
 let root = null;
 let i18n = null;
@@ -437,22 +445,6 @@ bannerFileInput.addEventListener("change", async () => {
     clearPendingSelection("banner");
 });
 
-function bindFollowButtonHover(button) {
-    if (button.dataset.following !== "true") return;
-
-    const followingLabel = i18n.t("ui.app.profile.following");
-    const unfollowLabel = i18n.t("ui.app.profile.unfollow");
-
-    button.addEventListener("mouseenter", () => {
-        button.textContent = unfollowLabel;
-        button.classList.add("btn-cancel");
-    });
-    button.addEventListener("mouseleave", () => {
-        button.textContent = followingLabel;
-        button.classList.remove("btn-cancel");
-    });
-}
-
 function bindProfileHeroEvents() {
     root.querySelector(".profile-hero-edit-btn")?.addEventListener(
         "click",
@@ -460,7 +452,7 @@ function bindProfileHeroEvents() {
     );
     const heroFollowButton = root.querySelector(".profile-hero-follow-btn");
     if (heroFollowButton) {
-        bindFollowButtonHover(heroFollowButton);
+        bindFollowButtonHover(heroFollowButton, i18n);
         heroFollowButton.addEventListener("click", () =>
             postActions?.doFollowUser(urlHandle),
         );
@@ -581,18 +573,26 @@ function bindProfileHeroEvents() {
                 profileImageActions?.doRemoveBanner();
             },
         );
+        bindExternalProfileSync({
+            root,
+            dropdown,
+            menuButton,
+            i18n,
+            applyProfile: async () => {
+                profile = await loadOwnProfile();
+                profileImageActions?.revokeProfileBlobUrls();
+                avatarBlobUrl = await loadImageAsBlob(profile?.avatarKey);
+                bannerBlobUrl = await loadImageAsBlob(profile?.bannerKey);
+                refreshProfileHero();
+                bindProfileHeroEvents();
+            },
+        });
     }
 }
 
 function bindSocialCardEvents() {
-    root.querySelectorAll(".profile-follow-btn[data-handle]").forEach(
-        (button) => {
-            if (button.dataset.followActionBound === "true") return;
-            button.dataset.followActionBound = "true";
-            button.addEventListener("click", () =>
-                postActions?.doFollowUser(button.dataset.handle),
-            );
-        },
+    bindSocialCardFollowButtons(root, (handle) =>
+        postActions?.doFollowUser(handle),
     );
 }
 
@@ -853,6 +853,9 @@ export async function mount(rootEl, { signal } = {}) {
                     posts,
                     following,
                     followers,
+                    externalProviderLabel: isOwnProfile
+                        ? resolveExternalProfileProvider()
+                        : null,
                     i18n,
                 }),
         },
