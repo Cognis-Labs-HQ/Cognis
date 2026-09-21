@@ -6,7 +6,7 @@
     "main": "index.ts",
     "dependencies": {
         "@cognis/core": "<=0.3.110",
-        "@cognis/gateways": "<=0.1.14",
+        "@cognis/gateways": "<=0.1.15",
         "ldapts": "^9.0.0"
     }
 }

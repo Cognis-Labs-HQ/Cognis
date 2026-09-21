@@ -32,4 +32,8 @@
   <string name="gateway.study.library_update_error">ライブラリエントリを更新できませんでした。入力データを確認してください。</string>
   <string name="gateway.study.library_admin_edit">{{ entry }} を編集</string>
   <string name="gateway.study.library_admin_edit_title">{{ entry }} を編集</string>
+  <string name="gateway.study.library_admin_list_placeholder">1 行に 1 つの値</string>
+  <string name="gateway.study.library_relation_tree">関連コンテンツ</string>
+  <string name="gateway.study.library_relation_parents">参照先</string>
+  <string name="gateway.study.library_relation_children">参照元</string>
 </resources>

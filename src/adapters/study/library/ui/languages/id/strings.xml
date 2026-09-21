@@ -32,4 +32,8 @@
   <string name="gateway.study.library_update_error">Entri Pustaka tidak dapat diperbarui. Periksa data yang dimasukkan.</string>
   <string name="gateway.study.library_admin_edit">Edit {{ entry }}</string>
   <string name="gateway.study.library_admin_edit_title">Edit {{ entry }}</string>
+  <string name="gateway.study.library_admin_list_placeholder">Satu nilai per baris</string>
+  <string name="gateway.study.library_relation_tree">Konten Terkait</string>
+  <string name="gateway.study.library_relation_parents">Referensi</string>
+  <string name="gateway.study.library_relation_children">Dirujuk Oleh</string>
 </resources>

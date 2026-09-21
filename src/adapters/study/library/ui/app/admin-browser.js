@@ -1,10 +1,6 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { localizedLabel } from "./presentation.js";
 
-function editIcon() {
-    return `<picture><source media="(prefers-color-scheme: dark)" srcset="/static/adapters/study/library/assets/edit-dark.svg"><img src="/static/adapters/study/library/assets/edit-light.svg" alt=""></picture>`;
-}
-
 export function adminLayerGroups(schemas) {
     return schemas.map((schema) => ({
         id: schema.id,
@@ -36,7 +32,7 @@ export function renderAdminBrowser(schemas, entries, i18n, selectedLayer) {
             (entry) => `<li class="library-admin-entry-row">
                 <input class="library-entry-selection" type="checkbox" data-library-select-entry="${escapeHtml(entry.id)}" aria-label="${escapeHtml(entry.label)}">
                 <span>${escapeHtml(entry.label)}</span>
-                <button class="library-admin-edit btn-neutral" type="button" data-library-admin-edit="${escapeHtml(entry.id)}" aria-label="${escapeHtml(i18n.t("gateway.study.library_admin_edit").replace("{{ entry }}", entry.label))}">${editIcon()}</button>
+                <button class="library-admin-edit btn-neutral" type="button" data-library-admin-edit="${escapeHtml(entry.id)}" aria-label="${escapeHtml(i18n.t("gateway.study.library_admin_edit").replace("{{ entry }}", entry.label))}"></button>
             </li>`,
         )
         .join("");

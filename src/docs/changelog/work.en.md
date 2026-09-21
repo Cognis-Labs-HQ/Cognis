@@ -82,6 +82,10 @@ The Library root is now an administrator-only editor for every record in the sel
 
 Library layers now live in the administrator side menu. The selected layer renders as a clean row list whose theme-aware pencil opens a focused edit popup. Learner layer and Leaderboard routes now load the complete page-composer stylesheet bundle; the Leaderboard route no longer declares a server capability as a missing browser capability, so the app router mounts it directly instead of falling through to the generic Study child loader.
 
+## Focused Library details and stable Study startup
+
+Library previews now reserve fixed positions for metadata and scope while pronunciations and definitions live in the detail popup alongside a one-level inbound/outbound relationship tree. The administrator editor uses schema-derived controls and protected dirty tracking instead of raw JSON, and its theme-aware pencil remains visible at the row edge. Study routes stay registered during language initialization, and dependency-ordered adapter bootstrap ensures Progress is ready before Leaderboard.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -101,3 +105,4 @@ Library layers now live in the administrator side menu. The selected layer rende
 - [73464474](https://github.com/Cognis-Labs-HQ/Cognis/commit/73464474)
 - [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
+- [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)

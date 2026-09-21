@@ -7,6 +7,20 @@ import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
+import { orderStudyAdapterIds } from "../gateway.js";
+
+test("Study adapters bootstrap after their declared dependencies", () => {
+    const requirements = new Map([
+        ["leaderboard", ["progress"]],
+        ["progress", []],
+        ["library", []],
+    ]);
+    const order = orderStudyAdapterIds(
+        ["leaderboard", "library", "progress"],
+        (id) => requirements.get(id) ?? [],
+    );
+    assert.ok(order.indexOf("progress") < order.indexOf("leaderboard"));
+});
 
 class ResponseRecorder extends EventEmitter {
     statusCode = 0;
@@ -104,16 +118,16 @@ async function bootstrapStudyGateway() {
     };
 }
 
-test("Study owns its SPA routes and Library detail-flow provider", async () => {
+test("Study keeps its SPA routes available while language modules initialize", async () => {
     const { uiRegistry, systemCtx } = await bootstrapStudyGateway();
     const routes = uiRegistry.listSpaRoutes();
     assert.equal(
         routes.some((route) => route.id === "gateway.study"),
-        false,
+        true,
     );
     assert.equal(
         routes.some((route) => route.id === "gateway.study.child"),
-        false,
+        true,
     );
     assert.ok(
         uiRegistry.hasActiveCapabilityProvider("study:library:detailFlow"),

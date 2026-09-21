@@ -32,4 +32,8 @@
   <string name="gateway.study.library_update_error">Could not update the Library entry. Check the entered data.</string>
   <string name="gateway.study.library_admin_edit">Edit {{ entry }}</string>
   <string name="gateway.study.library_admin_edit_title">Edit {{ entry }}</string>
+  <string name="gateway.study.library_admin_list_placeholder">One value per line</string>
+  <string name="gateway.study.library_relation_tree">Related Content</string>
+  <string name="gateway.study.library_relation_parents">References</string>
+  <string name="gateway.study.library_relation_children">Referenced By</string>
 </resources>

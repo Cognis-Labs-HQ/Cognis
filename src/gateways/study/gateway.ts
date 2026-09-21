@@ -132,6 +132,28 @@ export interface StudyAdapterInfo {
     requires?: string[];
 }
 
+export function orderStudyAdapterIds(
+    entries: readonly string[],
+    requiresFor: (adapterId: string) => readonly string[],
+): string[] {
+    const entrySet = new Set(entries);
+    const orderedEntries: string[] = [];
+    const visited = new Set<string>();
+    const visiting = new Set<string>();
+    const visit = (entry: string): void => {
+        if (visited.has(entry) || visiting.has(entry)) return;
+        visiting.add(entry);
+        for (const dependency of requiresFor(entry)) {
+            if (entrySet.has(dependency)) visit(dependency);
+        }
+        visiting.delete(entry);
+        visited.add(entry);
+        orderedEntries.push(entry);
+    };
+    [...entries].sort().forEach(visit);
+    return orderedEntries;
+}
+
 /**
  * Context passed to `bootstrapStudyAdapter` when a study adapter exports that
  * function. Mirrors the social gateway adapter bootstrap contract.
@@ -451,62 +473,53 @@ export class CoreStudyGateway {
             return;
         }
 
-        await Promise.all(
-            entries.sort().map(async (entry) => {
-                const pkgPath = path.join(adaptersRoot, entry, "package.json");
-
-                let mod: Record<string, unknown>;
-                try {
-                    const raw = await readFile(pkgPath, "utf8");
-                    const pkg = JSON.parse(raw) as { main?: string };
-                    if (!pkg.main) return;
-                    const entryPath = path.resolve(
-                        adaptersRoot,
-                        entry,
-                        pkg.main,
-                    );
-                    mod = await import(entryPath);
-                } catch {
-                    return;
-                }
-
-                if (typeof mod.bootstrapStudyAdapter !== "function") return;
-
-                const bootstrapFn = mod.bootstrapStudyAdapter as (
-                    ctx: StudyAdapterBootstrapCtx,
-                ) => Promise<void> | void;
-
-                const adapterCtx: StudyAdapterBootstrapCtx = {
-                    ...baseCtx,
-                    adapterId: entry,
-                    adapterRoot: path.join(adaptersRoot, entry),
-                    isAdapterEnabled: (adapterId = entry) =>
-                        this.isAdapterEnabled(adapterId),
-                    registerRoute: (handler, gatewayId) => {
-                        baseCtx.registerRoute(async (req, res, url) => {
-                            if (!this.isAdapterEnabled(entry)) return false;
-                            return handler(req, res, url);
-                        }, gatewayId);
-                    },
-                };
-
-                try {
-                    await bootstrapFn(adapterCtx);
-                } catch (err) {
-                    baseCtx.log?.(
-                        "error",
-                        `Study gateway: adapter "${entry}" bootstrap failed — skipping.`,
-                        {
-                            component: "study-gateway",
-                            adapter: entry,
-                            error:
-                                err instanceof Error
-                                    ? err.message
-                                    : String(err),
-                        },
-                    );
-                }
-            }),
+        const orderedEntries = orderStudyAdapterIds(
+            entries,
+            (entry) => this.getAdapter(entry)?.requires ?? [],
         );
+
+        for (const entry of orderedEntries) {
+            const pkgPath = path.join(adaptersRoot, entry, "package.json");
+            let mod: Record<string, unknown>;
+            try {
+                const raw = await readFile(pkgPath, "utf8");
+                const pkg = JSON.parse(raw) as { main?: string };
+                if (!pkg.main) continue;
+                const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
+                mod = await import(entryPath);
+            } catch {
+                continue;
+            }
+            if (typeof mod.bootstrapStudyAdapter !== "function") continue;
+            const bootstrapFn = mod.bootstrapStudyAdapter as (
+                ctx: StudyAdapterBootstrapCtx,
+            ) => Promise<void> | void;
+            const adapterCtx: StudyAdapterBootstrapCtx = {
+                ...baseCtx,
+                adapterId: entry,
+                adapterRoot: path.join(adaptersRoot, entry),
+                isAdapterEnabled: (adapterId = entry) =>
+                    this.isAdapterEnabled(adapterId),
+                registerRoute: (handler, gatewayId) => {
+                    baseCtx.registerRoute(async (req, res, url) => {
+                        if (!this.isAdapterEnabled(entry)) return false;
+                        return handler(req, res, url);
+                    }, gatewayId);
+                },
+            };
+            try {
+                await bootstrapFn(adapterCtx);
+            } catch (err) {
+                baseCtx.log?.(
+                    "error",
+                    `Study gateway: adapter "${entry}" bootstrap failed — skipping.`,
+                    {
+                        component: "study-gateway",
+                        adapter: entry,
+                        error: err instanceof Error ? err.message : String(err),
+                    },
+                );
+            }
+        }
     }
 }

@@ -145,6 +145,7 @@ export async function mount(root, { signal } = {}) {
         entries,
         i18n,
         render: renderSelectedLayer,
+        schemas,
         signal,
     });
 }

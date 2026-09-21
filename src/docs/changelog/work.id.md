@@ -82,6 +82,10 @@ Akar Pustaka kini menjadi editor khusus administrator untuk setiap rekaman dalam
 
 Lapisan Pustaka kini berada di menu samping administrator. Lapisan terpilih tampil sebagai daftar baris yang bersih; pensil yang mengikuti tema membuka popup penyuntingan terfokus. Rute lapisan pelajar dan Papan Peringkat kini memuat bundel stylesheet Page Composer lengkap. Rute Papan Peringkat tidak lagi salah mendeklarasikan kapabilitas server sebagai kapabilitas browser yang hilang, sehingga router aplikasi memasangnya langsung alih-alih meneruskannya ke pemuat child Study umum.
 
+## Detail Pustaka terfokus dan startup Study stabil
+
+Pratinjau Pustaka kini menyediakan posisi tetap untuk metadata dan cakupan, sedangkan pelafalan dan definisi berada di popup detail bersama pohon relasi masuk dan keluar satu tingkat. Editor administrator menggunakan kontrol berbasis skema dan pelacak perubahan terlindungi alih-alih JSON mentah; pensil sesuai tema tetap terlihat di tepi baris. Rute Study tetap terdaftar selama inisialisasi bahasa, dan bootstrap adapter berdasarkan dependensi memastikan Progress siap sebelum Papan Peringkat.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -101,3 +105,4 @@ Lapisan Pustaka kini berada di menu samping administrator. Lapisan terpilih tamp
 - [73464474](https://github.com/Cognis-Labs-HQ/Cognis/commit/73464474)
 - [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
+- [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)

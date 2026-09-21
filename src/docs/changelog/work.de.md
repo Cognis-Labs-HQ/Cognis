@@ -82,6 +82,10 @@ Die Bibliothekswurzel ist nun ein ausschließlich für Administratoren bestimmte
 
 Bibliotheksebenen befinden sich nun im Seitenmenü für Administratoren. Die ausgewählte Ebene erscheint als übersichtliche Zeilenliste; ein themengerechter Stift öffnet ein fokussiertes Bearbeitungsfenster. Lernenden-Ebenen und Bestenliste laden jetzt das vollständige Stylesheet-Paket des Page Composer. Die Bestenlistenroute deklariert keine Server-Capability mehr fälschlich als fehlende Browser-Capability und wird daher direkt statt über den allgemeinen Study-Child-Loader eingebunden.
 
+## Fokussierte Bibliotheksdetails und stabiler Study-Start
+
+Bibliotheksvorschauen reservieren feste Positionen für Metadaten und Bereich, während Aussprachen und Definitionen zusammen mit einem einstufigen Baum eingehender und ausgehender Beziehungen im Detailfenster erscheinen. Der Administrator-Editor verwendet schemabasierte Eingaben und geschützte Änderungsverfolgung statt Roh-JSON; sein themengerechter Stift bleibt am Zeilenrand sichtbar. Study-Routen bleiben während der Sprachinitialisierung registriert, und die abhängige Bootstrap-Reihenfolge stellt Progress vor der Bestenliste bereit.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -101,3 +105,4 @@ Bibliotheksebenen befinden sich nun im Seitenmenü für Administratoren. Die aus
 - [73464474](https://github.com/Cognis-Labs-HQ/Cognis/commit/73464474)
 - [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
+- [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)

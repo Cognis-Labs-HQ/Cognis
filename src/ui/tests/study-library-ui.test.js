@@ -13,6 +13,10 @@ const layerPageSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/ui/app/layer/index.js"),
     "utf8",
 );
+const adminInteractionsSource = readFileSync(
+    resolve(ROOT, "src/adapters/study/library/ui/app/admin-interactions.js"),
+    "utf8",
+);
 const source = readdirSync(resolve(ROOT, "src/adapters/study/library/ui/app"))
     .filter((file) => file.endsWith(".js"))
     .map((file) =>
@@ -79,6 +83,15 @@ test("Study Library uses an administrator-only common data editor", () => {
     assert.match(source, /data-library-admin-edit/);
     assert.match(source, /openPopup/);
     assert.match(source, /updateLibraryEntry/);
+    assert.match(adminInteractionsSource, /layer\?\.fields/);
+    assert.match(adminInteractionsSource, /layer\?\.relationships/);
+    assert.match(adminInteractionsSource, /closeProtection: true/);
+    assert.doesNotMatch(adminInteractionsSource, /JSON\.parse/);
+    assert.match(stylesheet, /library-admin-edit[\s\S]*edit-light\.svg/);
+    assert.match(
+        stylesheet,
+        /body\[data-theme="dark"\] \.library-admin-edit[\s\S]*edit-dark\.svg/,
+    );
     assert.doesNotMatch(source, /const url = `\/study\/library/);
 });
 
@@ -111,10 +124,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /library-entry-grid--minimal/);
     assert.match(source, /contentScrolling: false/);
     assert.match(source, /library-entry-minimal-content/);
-    assert.match(
-        source,
-        /library-entry-minimal-content[\s\S]*<\/span>\$\{pronunciation \? `<span class="library-card-pronunciation library-card-pronunciation-below"/,
-    );
+    assert.doesNotMatch(source, /library-card-pronunciation/);
     assert.match(
         stylesheet,
         /\.library-entry-minimal-content\s*\{[\s\S]*font-size:\s*clamp\([\s\S]*1\.8rem[\s\S]*12rem[\s\S]*2\.4rem/,
@@ -181,7 +191,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(adapterSource, /\/static\/styles\/reuse\/page-sections\.css/);
 });
 
-test("Study layer cards retain definitions and rich details", () => {
+test("Study layer cards move pronunciations and definitions into details", () => {
     const cards = readFileSync(
         resolve(ROOT, "src/adapters/study/library/ui/app/cards.js"),
         "utf8",
@@ -190,7 +200,8 @@ test("Study layer cards retain definitions and rich details", () => {
         resolve(ROOT, "src/adapters/study/library/ui/app/detail.js"),
         "utf8",
     );
-    assert.match(cards, /library-card-definition/);
+    assert.doesNotMatch(cards, /library-card-definition/);
+    assert.doesNotMatch(cards, /pronunciationValues/);
     assert.match(detail, /gateway\.study\.library_definitions/);
     assert.match(detail, /pronunciationValues\(entry\)/);
 });
@@ -295,6 +306,10 @@ test("Study Library renders metadata and scope indicators", () => {
     assert.match(source, /class="library-metadata-pill"/);
     assert.match(source, /class="library-scope"/);
     assert.match(stylesheet, /\.library-metadata-pill/);
+    assert.match(
+        stylesheet,
+        /\.library-entry-card \.library-entry-indicators[\s\S]*position:\s*absolute[\s\S]*bottom:\s*0\.65rem/,
+    );
     assert.match(stylesheet, /\.popup-heading > \.library-scope/);
 });
 
@@ -308,8 +323,8 @@ test("Study Library positions pronunciations by semantic role", () => {
     );
     assert.match(source, /open-title-reference:\$\{entry\.id\}/);
     assert.match(source, /composed\.titleDefinition/);
-    assert.match(source, /class="library-entry-heading"/);
-    assert.match(source, /library-card-pronunciation-below/);
+    assert.doesNotMatch(source, /class="library-entry-heading"/);
+    assert.doesNotMatch(source, /library-card-pronunciation-below/);
     assert.match(source, /const relatedWords = isWritingUnitLayer/);
     assert.match(source, /semanticRole ===\s*"lexicalUnit"/);
     assert.match(stylesheet, /\.library-entry-heading/);
@@ -503,10 +518,12 @@ test("Study Library cards use opaque theme surfaces", () => {
     assert.doesNotMatch(minimalCardRule, /background:\s*transparent/);
 });
 
-test("Study Library keeps definitions in previews and detail cards", () => {
-    assert.match(source, /library-card-definition/);
+test("Study Library keeps definitions in detail cards only", () => {
+    assert.doesNotMatch(source, /library-card-definition/);
     assert.match(source, /const definitions = references/);
     assert.match(source, /gateway\.study\.library_definitions/);
+    assert.match(source, /function relationTree/);
+    assert.match(source, /library-relation-tree/);
 });
 
 test("Study Library honors module-defined grid layouts", () => {

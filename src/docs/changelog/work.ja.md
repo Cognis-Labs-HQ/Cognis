@@ -82,6 +82,10 @@ Library ルートを、非表示の定義や関係データを含む選択言語
 
 Library レイヤーを管理者用サイドメニューへ移動しました。選択レイヤーは簡潔な行一覧として表示し、テーマ対応の鉛筆から専用編集ポップアップを開きます。学習者向けレイヤーとリーダーボードのルートは Page Composer の完全なスタイルシート一式を読み込むようになりました。リーダーボードルートはサーバー Capability を不足したブラウザー Capability として誤宣言しないため、汎用 Study 子ローダーへフォールスルーせず、アプリルーターが直接マウントします。
 
+## 詳細に集中した Library と安定した起動
+
+Library のプレビューではメタデータとスコープの位置を固定し、発音と定義は 1 階層の参照先・参照元ツリーとともに詳細ポップアップへ移しました。管理者エディターは生の JSON ではなくスキーマ由来の入力と保護付き変更追跡を使用し、テーマ対応の鉛筆を行端に表示します。言語初期化中も Study ルートを登録し続け、依存順のアダプター Bootstrap によって Leaderboard より先に Progress を準備します。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -101,3 +105,4 @@ Library レイヤーを管理者用サイドメニューへ移動しました。
 - [73464474](https://github.com/Cognis-Labs-HQ/Cognis/commit/73464474)
 - [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
+- [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
