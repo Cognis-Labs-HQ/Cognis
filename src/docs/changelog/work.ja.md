@@ -86,6 +86,10 @@ Library レイヤーを管理者用サイドメニューへ移動しました。
 
 Library のプレビューではメタデータとスコープの位置を固定し、発音と定義は 1 階層の参照先・参照元ツリーとともに詳細ポップアップへ移しました。管理者エディターは生の JSON ではなくスキーマ由来の入力と保護付き変更追跡を使用し、テーマ対応の鉛筆を行端に表示します。言語初期化中も Study ルートを登録し続け、依存順のアダプター Bootstrap によって Leaderboard より先に Progress を準備します。
 
+## 応答性の高い Study 起動
+
+Study アダプターのブートストラップは、宣言された依存関係の順序を維持しながら、独立したアダプターを並行して実行するようになりました。これにより、Leaderboard が Progress より先に初期化されることを防ぎつつ、ルートプローブが HTTP 499 で切断される原因となっていた直列起動の遅延を解消します。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -106,3 +110,4 @@ Library のプレビューではメタデータとスコープの位置を固定
 - [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
+- [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)

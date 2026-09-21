@@ -7,7 +7,10 @@ import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
-import { orderStudyAdapterIds } from "../gateway.js";
+import {
+    orderStudyAdapterIds,
+    runDependencyOrderedStudyTasks,
+} from "../gateway.js";
 
 test("Study adapters bootstrap after their declared dependencies", () => {
     const requirements = new Map([
@@ -20,6 +23,39 @@ test("Study adapters bootstrap after their declared dependencies", () => {
         (id) => requirements.get(id) ?? [],
     );
     assert.ok(order.indexOf("progress") < order.indexOf("leaderboard"));
+});
+
+test("Study bootstraps independent adapters concurrently without overtaking dependencies", async () => {
+    const requirements = new Map([
+        ["leaderboard", ["progress"]],
+        ["progress", []],
+        ["library", []],
+    ]);
+    const events: string[] = [];
+    let releaseProgress!: () => void;
+    const progressReady = new Promise<void>((resolve) => {
+        releaseProgress = resolve;
+    });
+
+    const bootstrapping = runDependencyOrderedStudyTasks(
+        ["leaderboard", "library", "progress"],
+        (id) => requirements.get(id) ?? [],
+        async (id) => {
+            events.push(`${id}:start`);
+            if (id === "progress") await progressReady;
+            events.push(`${id}:end`);
+        },
+    );
+    await new Promise((resolve) => setImmediate(resolve));
+
+    assert.ok(events.includes("library:end"));
+    assert.ok(events.includes("progress:start"));
+    assert.equal(events.includes("leaderboard:start"), false);
+    releaseProgress();
+    await bootstrapping;
+    assert.ok(
+        events.indexOf("progress:end") < events.indexOf("leaderboard:start"),
+    );
 });
 
 class ResponseRecorder extends EventEmitter {

@@ -86,6 +86,10 @@ Lapisan Pustaka kini berada di menu samping administrator. Lapisan terpilih tamp
 
 Pratinjau Pustaka kini menyediakan posisi tetap untuk metadata dan cakupan, sedangkan pelafalan dan definisi berada di popup detail bersama pohon relasi masuk dan keluar satu tingkat. Editor administrator menggunakan kontrol berbasis skema dan pelacak perubahan terlindungi alih-alih JSON mentah; pensil sesuai tema tetap terlihat di tepi baris. Rute Study tetap terdaftar selama inisialisasi bahasa, dan bootstrap adapter berdasarkan dependensi memastikan Progress siap sebelum Papan Peringkat.
 
+## Startup Study yang responsif
+
+Bootstrap adapter Study kini menjalankan adapter independen secara bersamaan dengan tetap mempertahankan urutan dependensi yang dideklarasikan. Perubahan ini menghilangkan penundaan startup berurutan yang menyebabkan probe root terputus dengan HTTP 499, tanpa memungkinkan Leaderboard diinisialisasi sebelum Progress.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -106,3 +110,4 @@ Pratinjau Pustaka kini menyediakan posisi tetap untuk metadata dan cakupan, seda
 - [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
+- [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)

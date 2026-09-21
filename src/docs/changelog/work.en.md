@@ -86,6 +86,10 @@ Library layers now live in the administrator side menu. The selected layer rende
 
 Library previews now reserve fixed positions for metadata and scope while pronunciations and definitions live in the detail popup alongside a one-level inbound/outbound relationship tree. The administrator editor uses schema-derived controls and protected dirty tracking instead of raw JSON, and its theme-aware pencil remains visible at the row edge. Study routes stay registered during language initialization, and dependency-ordered adapter bootstrap ensures Progress is ready before Leaderboard.
 
+## Responsive Study startup
+
+Study adapter bootstrap now runs independent adapters concurrently while preserving declared dependency order. This removes the serialized startup delay that caused root probes to disconnect with HTTP 499, without allowing Leaderboard to initialize before Progress.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -106,3 +110,4 @@ Library previews now reserve fixed positions for metadata and scope while pronun
 - [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
+- [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)

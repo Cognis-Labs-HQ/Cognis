@@ -86,6 +86,10 @@ Bibliotheksebenen befinden sich nun im Seitenmenü für Administratoren. Die aus
 
 Bibliotheksvorschauen reservieren feste Positionen für Metadaten und Bereich, während Aussprachen und Definitionen zusammen mit einem einstufigen Baum eingehender und ausgehender Beziehungen im Detailfenster erscheinen. Der Administrator-Editor verwendet schemabasierte Eingaben und geschützte Änderungsverfolgung statt Roh-JSON; sein themengerechter Stift bleibt am Zeilenrand sichtbar. Study-Routen bleiben während der Sprachinitialisierung registriert, und die abhängige Bootstrap-Reihenfolge stellt Progress vor der Bestenliste bereit.
 
+## Reaktionsschneller Study-Start
+
+Der Start der Study-Adapter führt unabhängige Adapter nun parallel aus und behält dabei die deklarierte Abhängigkeitsreihenfolge bei. Dadurch entfällt die sequenzielle Startverzögerung, wegen der Root-Prüfungen mit HTTP 499 abbrachen, ohne dass Leaderboard vor Progress initialisiert werden kann.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -106,3 +110,4 @@ Bibliotheksvorschauen reservieren feste Positionen für Metadaten und Bereich, w
 - [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
 - [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
+- [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
