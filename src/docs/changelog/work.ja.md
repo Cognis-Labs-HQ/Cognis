@@ -78,6 +78,10 @@ Core は採点、Achievement 登録、アクティビティ記録の Capability 
 
 Library ルートを、非表示の定義や関係データを含む選択言語の全レコードを扱う管理者専用エディターにしました。学習者向けレイヤーは Study サブナビゲーションから直接リンクされる独立ルートで表示し、定義、メタデータ、フィルター、バリアント、詳細表示を備えた豊富なカード表現を復元しました。
 
+## 簡潔な Library 編集と安定した Study ルート
+
+Library レイヤーを管理者用サイドメニューへ移動しました。選択レイヤーは簡潔な行一覧として表示し、テーマ対応の鉛筆から専用編集ポップアップを開きます。学習者向けレイヤーとリーダーボードのルートは Page Composer の完全なスタイルシート一式を読み込むようになりました。リーダーボードルートはサーバー Capability を不足したブラウザー Capability として誤宣言しないため、汎用 Study 子ローダーへフォールスルーせず、アプリルーターが直接マウントします。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -96,3 +100,4 @@ Library ルートを、非表示の定義や関係データを含む選択言語
 - [633e2579](https://github.com/Cognis-Labs-HQ/Cognis/commit/633e2579)
 - [73464474](https://github.com/Cognis-Labs-HQ/Cognis/commit/73464474)
 - [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
+- [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)

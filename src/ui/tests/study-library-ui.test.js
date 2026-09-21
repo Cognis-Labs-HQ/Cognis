@@ -72,9 +72,12 @@ test("Study Library uses an administrator-only common data editor", () => {
     assert.match(indexSource, /renderAdminBrowser/);
     assert.match(indexSource, /if \(!isAdminScope\(\)\)/);
     assert.match(indexSource, /bindAdminLibraryInteractions/);
-    assert.match(source, /class="library-admin-layer"/);
+    assert.match(indexSource, /createSideMenu/);
+    assert.match(indexSource, /adminLayerGroups/);
     assert.match(source, /library-admin-layer-count/);
-    assert.match(source, /data-library-admin-entry/);
+    assert.match(source, /library-admin-entry-row/);
+    assert.match(source, /data-library-admin-edit/);
+    assert.match(source, /openPopup/);
     assert.match(source, /updateLibraryEntry/);
     assert.doesNotMatch(source, /const url = `\/study\/library/);
 });
@@ -174,6 +177,8 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(stylesheet, /max-width: 100%/);
     assert.doesNotMatch(stylesheet, /\.study-subnav/);
     assert.match(adapterSource, /\/static\/gateways\/study\/study\.css/);
+    assert.match(adapterSource, /\/static\/styles\/page-builder\.css/);
+    assert.match(adapterSource, /\/static\/styles\/reuse\/page-sections\.css/);
 });
 
 test("Study layer cards retain definitions and rich details", () => {

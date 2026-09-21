@@ -64,6 +64,6 @@ Paketaktualisierungen bewahren vom Herausgeber ausgelassene Einträge, sofern da
 
 ## Administration und Lernseiten
 
-`/study/library` ist ein Dateneditor ausschließlich für Administratoren. Er gruppiert alle Datensätze der ausgewählten Sprache nach Schema und Ebene, einschließlich Definitionen und Beziehungen, und bearbeitet Bezeichnungen, Sichtbarkeit, Felder und Referenzen über die Library-API. Er verlinkt weder auf die Lerndarstellung noch verwendet er diese wieder.
+`/study/library` ist ein Dateneditor ausschließlich für Administratoren. Sein Seitenmenü gruppiert alle Datensätze der ausgewählten Sprache nach Schema und Ebene, einschließlich Definitionen und Beziehungen. Die ausgewählte Ebene bleibt eine übersichtliche Zeilenliste; ein themengerechter Stift öffnet ein fokussiertes Fenster zum Bearbeiten von Bezeichnungen, Sichtbarkeit, Feldern und Referenzen über die Library-API. Er verlinkt weder auf die Lerndarstellung noch verwendet er diese wieder.
 
 Lernenden-Ebenen verwenden eigenständige SPA-Routen unter `/study/layers/:schema/:layer`, die direkt in der Study-Unternavigation verlinkt sind. Diese Seiten verwenden den reichhaltigen Kartenrenderer mit Filtern, Varianten, Definitionen, Metadaten und Detailfenstern, ohne administrative Bearbeitungssteuerungen anzuzeigen.

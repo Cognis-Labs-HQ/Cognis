@@ -3,6 +3,7 @@ import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
+import { createSideMenu } from "/static/reuse/side-menu.js";
 import { loadLibrary } from "./data.js";
 import {
     bindStudySubNavigation,
@@ -11,7 +12,7 @@ import {
     renderStudySubNavigation,
 } from "/static/gateways/study/ui/sub-navigation.js";
 import { isAdminScope } from "/static/gateways/study/ui/language.js";
-import { renderAdminBrowser } from "./admin-browser.js";
+import { adminLayerGroups, renderAdminBrowser } from "./admin-browser.js";
 import { bindAdminLibraryInteractions } from "./admin-interactions.js";
 import { refreshLibraryFilterResults } from "./filters.js";
 import { bindLibraryInteractions } from "./interactions.js";
@@ -46,6 +47,40 @@ export async function mount(root, { signal } = {}) {
     });
     const languageCode = model.selectedLanguageCode;
     const { schemas, entries } = await loadLibrary(languageCode, i18n);
+    const firstLayer = schemas
+        .flatMap((schema) =>
+            schema.layers.map((layer) => ({
+                schemaId: schema.id,
+                layerId: layer.id,
+            })),
+        )
+        .at(0);
+    let selectedLayer = firstLayer;
+    const renderSelectedLayer = () => {
+        const browser = root.querySelector(".library-browser");
+        if (browser)
+            browser.innerHTML = renderAdminBrowser(
+                schemas,
+                entries,
+                i18n,
+                selectedLayer,
+            );
+    };
+    const layerMenu = createSideMenu({
+        groups: adminLayerGroups(schemas),
+        storageKeyPrefix: "study-library-admin-layer",
+        activeId: firstLayer
+            ? `${firstLayer.schemaId}:${firstLayer.layerId}`
+            : "",
+        onSelect: (id) => {
+            const separator = id.indexOf(":");
+            selectedLayer = {
+                schemaId: id.slice(0, separator),
+                layerId: id.slice(separator + 1),
+            };
+            renderSelectedLayer();
+        },
+    });
     const composer = createPageComposer(root, {
         allowCustomization: false,
         contentScrolling: false,
@@ -57,7 +92,7 @@ export async function mount(root, { signal } = {}) {
                 width: "fill",
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
                 render: () =>
-                    `<section class="library-browser">${renderAdminBrowser(schemas, entries, i18n)}</section>`,
+                    `<section class="library-browser">${renderAdminBrowser(schemas, entries, i18n, selectedLayer)}</section>`,
             },
         ],
         preferenceKey: "study-library-layout",
@@ -66,7 +101,14 @@ export async function mount(root, { signal } = {}) {
             title: i18n.t("gateway.study.library_label"),
             subtitle: i18n.t("gateway.study.library_subtitle"),
         },
-        toolbar: [],
+        toolbar: [
+            {
+                id: "library-layers",
+                label: i18n.t("gateway.study.library_layers"),
+                render: () => layerMenu.render(),
+            },
+        ],
+        toolbarScrollable: true,
         floatingMenu: libraryFloatingMenu(entries, i18n, true),
         subNavigation: [
             {
@@ -83,6 +125,7 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     signal?.throwIfAborted();
+    layerMenu.mount(root, { signal });
     root.querySelectorAll("[data-library-panel]").forEach((panel) => {
         if (panel.querySelector("button[data-library-filter].active")) {
             refreshLibraryFilterResults(panel);
@@ -95,10 +138,15 @@ export async function mount(root, { signal } = {}) {
         languageCode,
         schemas,
         signal,
-        renderContent: (currentEntries) =>
-            renderAdminBrowser(schemas, currentEntries, i18n),
+        renderContent: () =>
+            renderAdminBrowser(schemas, entries, i18n, selectedLayer),
     });
-    bindAdminLibraryInteractions(root, { entries, i18n, signal });
+    bindAdminLibraryInteractions(root, {
+        entries,
+        i18n,
+        render: renderSelectedLayer,
+        signal,
+    });
 }
 
 await mountWhenDirect(mount);

@@ -78,6 +78,10 @@ Core kini menerbitkan kapabilitas skor, pendaftaran achievement, dan pencatatan 
 
 Akar Pustaka kini menjadi editor khusus administrator untuk setiap rekaman dalam bahasa terpilih, termasuk data definisi dan relasi tersembunyi. Lapisan pelajar dimuat pada rute Study mandiri yang ditautkan langsung dari subnavigasi, sekaligus memulihkan tampilan kartu kaya, definisi, metadata, filter, varian, dan tampilan detail.
 
+## Penyuntingan Pustaka bersih dan rute Study andal
+
+Lapisan Pustaka kini berada di menu samping administrator. Lapisan terpilih tampil sebagai daftar baris yang bersih; pensil yang mengikuti tema membuka popup penyuntingan terfokus. Rute lapisan pelajar dan Papan Peringkat kini memuat bundel stylesheet Page Composer lengkap. Rute Papan Peringkat tidak lagi salah mendeklarasikan kapabilitas server sebagai kapabilitas browser yang hilang, sehingga router aplikasi memasangnya langsung alih-alih meneruskannya ke pemuat child Study umum.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -96,3 +100,4 @@ Akar Pustaka kini menjadi editor khusus administrator untuk setiap rekaman dalam
 - [633e2579](https://github.com/Cognis-Labs-HQ/Cognis/commit/633e2579)
 - [73464474](https://github.com/Cognis-Labs-HQ/Cognis/commit/73464474)
 - [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
+- [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)

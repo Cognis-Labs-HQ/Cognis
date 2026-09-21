@@ -113,6 +113,8 @@ export async function bootstrapStudyAdapter(
         base: "/study/library",
         scriptUrl: "/static/adapters/study/library/app/index.js",
         stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
             "/static/gateways/study/study.css",
             "/static/adapters/study/library/library.css",
         ],
@@ -125,6 +127,8 @@ export async function bootstrapStudyAdapter(
         base: "/study/layers",
         scriptUrl: "/static/adapters/study/library/app/layer/index.js",
         stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
             "/static/gateways/study/study.css",
             "/static/adapters/study/library/library.css",
         ],

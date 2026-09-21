@@ -30,4 +30,6 @@
   <string name="gateway.study.library_admin_hidden">学習者には非表示</string>
   <string name="gateway.study.library_update_success">ライブラリエントリを更新しました。</string>
   <string name="gateway.study.library_update_error">ライブラリエントリを更新できませんでした。入力データを確認してください。</string>
+  <string name="gateway.study.library_admin_edit">{{ entry }} を編集</string>
+  <string name="gateway.study.library_admin_edit_title">{{ entry }} を編集</string>
 </resources>

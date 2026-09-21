@@ -78,6 +78,10 @@ Core now publishes scoring, achievement registration, and activity-recording cap
 
 The Library root is now an administrator-only editor for every record in the selected language, including hidden definition and relationship data. Learner layers mount on independent Study routes linked directly from the sub-navigation, while restoring the rich card presentation, definitions, metadata, filtering, variants, and detail views.
 
+## Clean Library editing and reliable Study routes
+
+Library layers now live in the administrator side menu. The selected layer renders as a clean row list whose theme-aware pencil opens a focused edit popup. Learner layer and Leaderboard routes now load the complete page-composer stylesheet bundle; the Leaderboard route no longer declares a server capability as a missing browser capability, so the app router mounts it directly instead of falling through to the generic Study child loader.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -96,3 +100,4 @@ The Library root is now an administrator-only editor for every record in the sel
 - [633e2579](https://github.com/Cognis-Labs-HQ/Cognis/commit/633e2579)
 - [73464474](https://github.com/Cognis-Labs-HQ/Cognis/commit/73464474)
 - [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
+- [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)

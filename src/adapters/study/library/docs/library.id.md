@@ -64,6 +64,6 @@ Peningkatan paket mempertahankan rekaman yang tidak disertakan penerbit kecuali 
 
 ## Administrasi dan halaman pelajar
 
-`/study/library` adalah editor data khusus administrator. Editor ini mengelompokkan seluruh rekaman bahasa terpilih berdasarkan skema dan lapisan, termasuk rekaman definisi dan relasi, serta mengedit label, visibilitas, bidang, dan referensi melalui API Pustaka. Editor ini tidak menautkan atau menggunakan ulang tampilan pelajar.
+`/study/library` adalah editor data khusus administrator. Menu sampingnya mengelompokkan seluruh rekaman bahasa terpilih berdasarkan skema dan lapisan, termasuk rekaman definisi dan relasi. Lapisan terpilih tetap berupa daftar baris yang bersih; pensil yang mengikuti tema membuka popup terfokus untuk mengedit label, visibilitas, bidang, dan referensi melalui API Pustaka. Editor ini tidak menautkan atau menggunakan ulang tampilan pelajar.
 
 Lapisan untuk pelajar menggunakan rute SPA mandiri `/study/layers/:schema/:layer` yang ditautkan langsung dari subnavigasi Study. Halaman ini menggunakan kembali renderer kartu kaya dengan filter, varian, definisi, metadata, dan popup detail tanpa menampilkan kontrol penyuntingan administratif.

@@ -66,13 +66,20 @@ test("bootstrap publishes the leaderboard capability for language providers", as
     capabilities.contribute("study:progress", progress);
     capabilities.contribute("engagement:scoring", new ScoringEngine());
     capabilities.contribute("auth:routeContext", createDefaultRouteContext());
+    let spaRoute:
+        { pattern: string; requiredCapabilities?: string[] } | undefined;
     await bootstrapStudyAdapter({
         capabilities,
         isAdapterEnabled: () => true,
         registerRoute: () => undefined,
+        registerSpaRoute: (route) => {
+            spaRoute = route;
+        },
     } as unknown as StudyAdapterBootstrapCtx);
     assert.equal(systemCtx.isPublicCapability("study:leaderboard"), true);
     assert.ok(systemCtx.getCapability("study:leaderboard"));
+    assert.equal(spaRoute?.pattern, "^/study/leaderboard$");
+    assert.deepEqual(spaRoute?.requiredCapabilities, undefined);
 });
 
 async function fixture() {

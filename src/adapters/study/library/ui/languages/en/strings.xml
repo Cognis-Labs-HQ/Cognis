@@ -30,4 +30,6 @@
   <string name="gateway.study.library_admin_hidden">Hidden from learners</string>
   <string name="gateway.study.library_update_success">The Library entry was updated.</string>
   <string name="gateway.study.library_update_error">Could not update the Library entry. Check the entered data.</string>
+  <string name="gateway.study.library_admin_edit">Edit {{ entry }}</string>
+  <string name="gateway.study.library_admin_edit_title">Edit {{ entry }}</string>
 </resources>

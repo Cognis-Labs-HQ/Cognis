@@ -30,4 +30,6 @@
   <string name="gateway.study.library_admin_hidden">Vor Lernenden verborgen</string>
   <string name="gateway.study.library_update_success">Der Bibliothekseintrag wurde aktualisiert.</string>
   <string name="gateway.study.library_update_error">Der Bibliothekseintrag konnte nicht aktualisiert werden. Prüfe die eingegebenen Daten.</string>
+  <string name="gateway.study.library_admin_edit">{{ entry }} bearbeiten</string>
+  <string name="gateway.study.library_admin_edit_title">{{ entry }} bearbeiten</string>
 </resources>

@@ -78,6 +78,10 @@ Core veröffentlicht Wertung, Achievement-Registrierung und Aktivitätsaufzeichn
 
 Die Bibliothekswurzel ist nun ein ausschließlich für Administratoren bestimmter Editor für alle Datensätze der ausgewählten Sprache, einschließlich verborgener Definitionen und Beziehungsdaten. Lernenden-Ebenen werden über eigenständige Study-Routen direkt aus der Unternavigation geöffnet; die reichhaltige Kartendarstellung mit Definitionen, Metadaten, Filtern, Varianten und Detailansichten ist wiederhergestellt.
 
+## Klare Bibliotheksbearbeitung und zuverlässige Study-Routen
+
+Bibliotheksebenen befinden sich nun im Seitenmenü für Administratoren. Die ausgewählte Ebene erscheint als übersichtliche Zeilenliste; ein themengerechter Stift öffnet ein fokussiertes Bearbeitungsfenster. Lernenden-Ebenen und Bestenliste laden jetzt das vollständige Stylesheet-Paket des Page Composer. Die Bestenlistenroute deklariert keine Server-Capability mehr fälschlich als fehlende Browser-Capability und wird daher direkt statt über den allgemeinen Study-Child-Loader eingebunden.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -96,3 +100,4 @@ Die Bibliothekswurzel ist nun ein ausschließlich für Administratoren bestimmte
 - [633e2579](https://github.com/Cognis-Labs-HQ/Cognis/commit/633e2579)
 - [73464474](https://github.com/Cognis-Labs-HQ/Cognis/commit/73464474)
 - [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
+- [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)

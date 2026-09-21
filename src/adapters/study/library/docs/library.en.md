@@ -78,6 +78,6 @@ Pack upgrades retain records omitted by the publisher unless the manifest explic
 
 ## Administration and learner pages
 
-`/study/library` is an administrator-only data editor. It groups every record for the selected language by schema and layer, including definition and relationship records, and edits labels, visibility, fields, and references through the Library API. It does not link into or reuse the learner presentation.
+`/study/library` is an administrator-only data editor. Its side menu groups every record for the selected language by schema and layer, including definition and relationship records. The selected layer stays a clean row list, and a theme-aware pencil opens a focused popup for editing labels, visibility, fields, and references through the Library API. It does not link into or reuse the learner presentation.
 
 Learner-facing layers use independent `/study/layers/:schema/:layer` SPA routes linked directly from Study sub-navigation. These pages reuse the rich card renderer, filters, variants, definitions, metadata, and detail popups without exposing administrative editing controls.

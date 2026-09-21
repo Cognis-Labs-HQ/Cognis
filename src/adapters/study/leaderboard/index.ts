@@ -79,10 +79,11 @@ export async function bootstrapStudyAdapter(
         base: "/study/leaderboard",
         scriptUrl: "/static/adapters/study/leaderboard/app/index.js",
         stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
             "/static/gateways/study/study.css",
             "/static/adapters/study/leaderboard/leaderboard.css",
         ],
-        requiredCapabilities: ["study:leaderboard"],
         isEnabled: () => ctx.isAdapterEnabled(),
     });
     ready = true;

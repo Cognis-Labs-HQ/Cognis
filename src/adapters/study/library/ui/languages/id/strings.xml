@@ -30,4 +30,6 @@
   <string name="gateway.study.library_admin_hidden">Disembunyikan dari pelajar</string>
   <string name="gateway.study.library_update_success">Entri Pustaka telah diperbarui.</string>
   <string name="gateway.study.library_update_error">Entri Pustaka tidak dapat diperbarui. Periksa data yang dimasukkan.</string>
+  <string name="gateway.study.library_admin_edit">Edit {{ entry }}</string>
+  <string name="gateway.study.library_admin_edit_title">Edit {{ entry }}</string>
 </resources>
