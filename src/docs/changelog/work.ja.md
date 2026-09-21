@@ -70,6 +70,10 @@ development基準の特権モジュール互換契約を復元しました。特
 
 Coreが、プロバイダー指定難易度、活動種別の重み、時間内完了、初回完了と段階的な反復報酬、スコープ付きのグローバル／プロバイダー倍率、使用型ブースター、自己ベストを用いたコレクション単位のXP算出を統括するようになりました。プロバイダーは通常・レア・レジェンダリーの動的実績を登録でき、証拠に基づく変更不能なバッジが閲覧可能なプロフィールに表示されます。Studyは検証済みProgressイベントの集合をリーダーボードXPへ変換し、個人・イベント・クラス定義のライブ順位を提供し、動きを減らす設定に対応した過去比較の順位変動アニメーションを表示します。
 
+## 公開プロバイダー契約
+
+Core は採点、Achievement 登録、アクティビティ記録の Capability を `ctx` で公開し、Study リーダーボードも同じ方法でプロバイダー契約を公開するようになりました。採点ではプロバイダー入力の上限、一意な証拠、時間目標、ヒント利用時の報酬を検証します。新しいローカライズ済みコンポーネント文書で、登録、Flow 拡張、証拠検証、プライバシー、シーズン運用を説明します。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -86,3 +90,4 @@ Coreが、プロバイダー指定難易度、活動種別の重み、時間内�
 - [a0f0832a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f0832a)
 - [8d78ecd3](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d78ecd3)
 - [633e2579](https://github.com/Cognis-Labs-HQ/Cognis/commit/633e2579)
+- [73464474](https://github.com/Cognis-Labs-HQ/Cognis/commit/73464474)

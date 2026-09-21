@@ -70,6 +70,10 @@ Spezifischere Adapter-SPA-Routen haben nun Vorrang vor allgemeinen untergeordnet
 
 Core orchestriert nun die sammlungsbasierte EP-Wertung mit Anbieterschwierigkeit, Aktivitätsgewichtungen, zeitgerechtem Abschluss, Erstabschluss- und diskreten Wiederholungsbelohnungen, begrenzten globalen beziehungsweise anbieterspezifischen Multiplikatoren, einlösbaren Boostern und persönlichen Bestleistungen. Anbieter können dynamische normale, seltene und legendäre Erfolge registrieren; deren nachweisgestützte Auszeichnungen unveränderlich sind und auf zulässigen Profilen erscheinen. Study wandelt geprüfte Progress-Ereignissammlungen in Bestenlisten-EP um, stellt Live-Ranglisten für persönliche, Ereignis- und Klassendefinitionen bereit und animiert nachträgliche Rangänderungen unter Beachtung reduzierter Bewegung.
 
+## Öffentliche Engagement-Verträge für Anbieter
+
+Core veröffentlicht Wertung, Achievement-Registrierung und Aktivitätsaufzeichnung nun über `ctx`; die Study-Bestenliste veröffentlicht ihren Anbietervertrag auf demselben Weg. Die Wertung prüft jetzt begrenzte Anbietereingaben, eindeutige Evidenz, Zeitziele und durch Hinweise unterstützte Belohnungen. Neue lokalisierte Komponentendokumentation erläutert Registrierung, Flow-Erweiterung, Evidenzprüfung, Datenschutz und saisonalen Bestenlistenbetrieb.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -86,3 +90,4 @@ Core orchestriert nun die sammlungsbasierte EP-Wertung mit Anbieterschwierigkeit
 - [a0f0832a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f0832a)
 - [8d78ecd3](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d78ecd3)
 - [633e2579](https://github.com/Cognis-Labs-HQ/Cognis/commit/633e2579)
+- [73464474](https://github.com/Cognis-Labs-HQ/Cognis/commit/73464474)

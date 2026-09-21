@@ -70,6 +70,10 @@ More-specific adapter SPA routes now win over generic gateway child routes, so t
 
 Core now orchestrates collection-based XP scoring with provider difficulty, activity weights, timed completion, first-completion and discrete repeat rewards, scoped global/provider modifiers, consumable boosters, and personal bests. Providers can register dynamic normal, rare, and legendary achievements whose evidence-backed awards are immutable and visible on permitted profiles. Study converts verified Progress event collections into leaderboard XP, serves live standings for personal, event, and classroom definitions, and animates retrospective rank movement with reduced-motion support.
 
+## Public provider engagement contracts
+
+Core now publishes scoring, achievement registration, and activity-recording capabilities through `ctx`, and the Study Leaderboard publishes its provider contract the same way. Scoring now validates bounded provider inputs, unique evidence, timing targets, and hint-assisted rewards. New localized component documentation explains registration, flow extension, evidence validation, privacy, and seasonal leaderboard operation.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -86,3 +90,4 @@ Core now orchestrates collection-based XP scoring with provider difficulty, acti
 - [a0f0832a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f0832a)
 - [8d78ecd3](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d78ecd3)
 - [633e2579](https://github.com/Cognis-Labs-HQ/Cognis/commit/633e2579)
+- [73464474](https://github.com/Cognis-Labs-HQ/Cognis/commit/73464474)

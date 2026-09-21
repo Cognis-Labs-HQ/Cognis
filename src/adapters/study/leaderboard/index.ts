@@ -64,6 +64,7 @@ export async function bootstrapStudyAdapter(
         scoring,
     );
     ctx.capabilities.contribute("study:leaderboard", service);
+    systemCtx.contributePublicCapability("study:leaderboard", service);
     ctx.registerRoute(
         createLeaderboardRoutes(
             service,

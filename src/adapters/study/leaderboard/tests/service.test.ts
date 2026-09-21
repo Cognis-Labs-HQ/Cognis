@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { LeaderboardService } from "../service.js";
+import { bootstrapStudyAdapter } from "../index.js";
 import type { LeaderboardDefinition } from "../types.js";
-import { ScoringEngine } from "@cognis/core";
+import { CapabilityStore, createCtx, ScoringEngine } from "@cognis/core";
+import type { StudyAdapterBootstrapCtx } from "../../../../gateways/study/gateway.js";
+import { createDefaultRouteContext } from "../../../../api/reuse/route-context.js";
 
 const events = new Map(
     [
@@ -55,6 +58,22 @@ const definition: LeaderboardDefinition = {
         },
     ],
 };
+
+test("bootstrap publishes the leaderboard capability for language providers", async () => {
+    const systemCtx = createCtx();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("system:ctx", systemCtx);
+    capabilities.contribute("study:progress", progress);
+    capabilities.contribute("engagement:scoring", new ScoringEngine());
+    capabilities.contribute("auth:routeContext", createDefaultRouteContext());
+    await bootstrapStudyAdapter({
+        capabilities,
+        isAdapterEnabled: () => true,
+        registerRoute: () => undefined,
+    } as unknown as StudyAdapterBootstrapCtx);
+    assert.equal(systemCtx.isPublicCapability("study:leaderboard"), true);
+    assert.ok(systemCtx.getCapability("study:leaderboard"));
+});
 
 async function fixture() {
     const service = new LeaderboardService(progress);

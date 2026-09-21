@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { AchievementRegistry, ScoringEngine } from "../index.js";
+import {
+    AchievementRegistry,
+    createCtx,
+    registerEngagementCapabilities,
+    ScoringEngine,
+} from "../index.js";
 
 const activity = {
     activityId: "flashcards-1",
@@ -104,4 +109,56 @@ test("achievements are difficulty-ranked immutable evidence-backed badges", () =
     assert.equal(Object.isFrozen(award), true);
     assert.equal(achievements.evaluate(flawless, score).length, 0);
     assert.equal(achievements.list("learner").length, 1);
+});
+
+test("engagement registration exposes provider capabilities and composes flows", async () => {
+    const ctx = createCtx();
+    registerEngagementCapabilities(ctx);
+    assert.deepEqual(ctx.listPublicCapabilities(), [
+        "engagement:achievements",
+        "engagement:recordActivity",
+        "engagement:scoring",
+    ]);
+    const achievements = ctx.requireCapability<AchievementRegistry>(
+        "engagement:achievements",
+    );
+    achievements.register({
+        id: "first-set",
+        providerId: "study-language-ja",
+        difficulty: "normal",
+        title: { en: "First Set" },
+        description: { en: "Complete an activity." },
+        icon: "award",
+        evaluate: () => true,
+    });
+    const record = ctx.requireCapability<
+        (input: typeof activity) => Promise<{
+            stageResults: Record<string, unknown[]>;
+        }>
+    >("engagement:recordActivity");
+    const result = await record(activity);
+    assert.equal(result.stageResults.score.length, 1);
+    assert.equal(achievements.list("learner").length, 1);
+});
+
+test("scoring rejects ambiguous evidence and penalizes hints", () => {
+    const scoring = new ScoringEngine();
+    const noHints = scoring.score({
+        ...activity,
+        firstCompletion: false,
+        events: activity.events.map((event) => ({ ...event, hints: 0 })),
+    });
+    const hints = scoring.score({ ...activity, firstCompletion: false });
+    assert.ok(hints.baseXp < noHints.baseXp);
+    assert.throws(
+        () =>
+            scoring.score({
+                ...activity,
+                events: activity.events.map((event) => ({
+                    ...event,
+                    id: "duplicate",
+                })),
+            }),
+        /invalid_activity_score_input/,
+    );
 });
