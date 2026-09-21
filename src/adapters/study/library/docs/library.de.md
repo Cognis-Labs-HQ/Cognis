@@ -61,3 +61,9 @@ Eine Aussprache, die mit der primären oder einer sekundären Schreibweise ident
 ## Aktualisierungen von Inhaltspaketen
 
 Paketaktualisierungen bewahren vom Herausgeber ausgelassene Einträge, sofern das Manifest nicht ausdrücklich `pruneOmittedRecords` auf `true` setzt. Herausgeber sollten die Bereinigung nur aktivieren, wenn das Paket den vollständigen Eintragsbestand maßgeblich festlegt.
+
+## Administration und Lernseiten
+
+`/study/library` ist ein Dateneditor ausschließlich für Administratoren. Er gruppiert alle Datensätze der ausgewählten Sprache nach Schema und Ebene, einschließlich Definitionen und Beziehungen, und bearbeitet Bezeichnungen, Sichtbarkeit, Felder und Referenzen über die Library-API. Er verlinkt weder auf die Lerndarstellung noch verwendet er diese wieder.
+
+Lernenden-Ebenen verwenden eigenständige SPA-Routen unter `/study/layers/:schema/:layer`, die direkt in der Study-Unternavigation verlinkt sind. Diese Seiten verwenden den reichhaltigen Kartenrenderer mit Filtern, Varianten, Definitionen, Metadaten und Detailfenstern, ohne administrative Bearbeitungssteuerungen anzuzeigen.

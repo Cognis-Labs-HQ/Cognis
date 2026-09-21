@@ -1,32 +1,25 @@
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
-import { escapeHtml } from "/static/reuse/escape-html.js";
-import { navigateTo } from "/static/reuse/app-router.js";
-import { loadLibrary } from "./data.js";
 import {
     bindStudySubNavigation,
     loadStudySubNavigationModel,
     readSelectedStudyLanguageCode,
     renderStudySubNavigation,
 } from "/static/gateways/study/ui/sub-navigation.js";
-import { isAdminScope } from "/static/gateways/study/ui/language.js";
-import { renderAdminBrowser } from "./admin-browser.js";
-import { bindAdminLibraryInteractions } from "./admin-interactions.js";
-import { refreshLibraryFilterResults } from "./filters.js";
-import { bindLibraryInteractions } from "./interactions.js";
-import { canDeleteEntry } from "./selection.js";
+import { loadLibrary } from "../data.js";
+import { renderBrowser } from "../layer-cards.js";
+import { refreshLibraryFilterResults } from "../filters.js";
+import { bindLibraryInteractions } from "../interactions.js";
+import { localizedLabel } from "../presentation.js";
 
-function libraryFloatingMenu(entries, i18n, isAdminDataView) {
-    if (!isAdminDataView || !entries.some(canDeleteEntry)) return [];
-    return [
-        {
-            id: "library-selection-actions",
-            label: i18n.t("ui.reuse.actions"),
-            render: () =>
-                `<button class="btn-neutral library-selection-action" type="button" data-library-select-all>${escapeHtml(i18n.t("ui.reuse.select_all"))}</button><button class="btn-cancel library-selection-action" type="button" data-library-delete-selection disabled>${escapeHtml(i18n.t("ui.reuse.delete"))}</button><button class="btn-neutral library-selection-action library-selection-close" type="button" data-library-selection-close aria-label="${escapeHtml(i18n.t("ui.reuse.close"))}">X</button>`,
-        },
-    ];
+function requestedLayer() {
+    const parts = window.location.pathname.split("/").filter(Boolean);
+    if (parts.length !== 4 || parts[1] !== "layers") return null;
+    return {
+        schemaId: decodeURIComponent(parts[2]),
+        layerId: decodeURIComponent(parts[3]),
+    };
 }
 
 export async function mount(root, { signal } = {}) {
@@ -36,38 +29,41 @@ export async function mount(root, { signal } = {}) {
             "/static/adapters/study/library/languages",
         ],
     });
-    applyDocumentTitle(i18n, "gateway.study.library_label");
-    if (!isAdminScope()) {
-        await navigateTo("/study");
-        return;
-    }
+    const selectedLayer = requestedLayer();
     const model = await loadStudySubNavigationModel({
         fallbackLanguageCode: readSelectedStudyLanguageCode(),
     });
     const languageCode = model.selectedLanguageCode;
     const { schemas, entries } = await loadLibrary(languageCode, i18n);
+    const schema = schemas.find(({ id }) => id === selectedLayer?.schemaId);
+    const layer = schema?.layers?.find(
+        ({ id }) => id === selectedLayer?.layerId,
+    );
+    const title = layer
+        ? localizedLabel(layer.metadata, schema.language) || layer.id
+        : i18n.t("gateway.study.library_label");
+    applyDocumentTitle(i18n, "gateway.study.library_label");
     const composer = createPageComposer(root, {
         allowCustomization: false,
         contentScrolling: false,
         elements: [
             {
-                id: "study-library",
-                label: i18n.t("gateway.study.library_label"),
+                id: "study-library-layer",
+                label: title,
                 pinned: true,
                 width: "fill",
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
                 render: () =>
-                    `<section class="library-browser">${renderAdminBrowser(schemas, entries, i18n)}</section>`,
+                    `<section class="library-browser">${renderBrowser(schemas, entries, i18n, selectedLayer)}</section>`,
             },
         ],
-        preferenceKey: "study-library-layout",
+        preferenceKey: "study-library-layer-layout",
         i18n,
         pageContext: {
-            title: i18n.t("gateway.study.library_label"),
+            title,
             subtitle: i18n.t("gateway.study.library_subtitle"),
         },
         toolbar: [],
-        floatingMenu: libraryFloatingMenu(entries, i18n, true),
         subNavigation: [
             {
                 id: "study-subnav",
@@ -93,12 +89,10 @@ export async function mount(root, { signal } = {}) {
         entries,
         i18n,
         languageCode,
+        requestedLayer: selectedLayer,
         schemas,
         signal,
-        renderContent: (currentEntries) =>
-            renderAdminBrowser(schemas, currentEntries, i18n),
     });
-    bindAdminLibraryInteractions(root, { entries, i18n, signal });
 }
 
 await mountWhenDirect(mount);

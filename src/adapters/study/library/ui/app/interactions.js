@@ -136,12 +136,9 @@ export function bindLibraryInteractions(root, context) {
             entries = entries.filter(
                 (entry) => !deletion.entryIds.includes(entry.id),
             );
-            root.querySelector(".library-browser").innerHTML = renderBrowser(
-                schemas,
-                entries,
-                i18n,
-                requestedLayer,
-            );
+            root.querySelector(".library-browser").innerHTML =
+                context.renderContent?.(entries) ??
+                renderBrowser(schemas, entries, i18n, requestedLayer);
             setSelectionMode(root, false, i18n);
             showToast(i18n.t("gateway.study.library_delete_success"), {
                 variant: "success",

@@ -74,6 +74,10 @@ Core kini mengorkestrasi skor XP berbasis kumpulan dengan tingkat kesulitan peny
 
 Core kini menerbitkan kapabilitas skor, pendaftaran achievement, dan pencatatan aktivitas melalui `ctx`; Papan Peringkat Study menerbitkan kontrak penyedianya dengan cara yang sama. Penilaian kini memvalidasi masukan penyedia yang dibatasi, bukti unik, target waktu, dan hadiah berbantuan petunjuk. Dokumentasi komponen terlokalisasi yang baru menjelaskan pendaftaran, perluasan alur, validasi bukti, privasi, dan operasi papan peringkat musiman.
 
+## Pisahkan administrasi dan pembelajaran Pustaka
+
+Akar Pustaka kini menjadi editor khusus administrator untuk setiap rekaman dalam bahasa terpilih, termasuk data definisi dan relasi tersembunyi. Lapisan pelajar dimuat pada rute Study mandiri yang ditautkan langsung dari subnavigasi, sekaligus memulihkan tampilan kartu kaya, definisi, metadata, filter, varian, dan tampilan detail.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -91,3 +95,4 @@ Core kini menerbitkan kapabilitas skor, pendaftaran achievement, dan pencatatan 
 - [8d78ecd3](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d78ecd3)
 - [633e2579](https://github.com/Cognis-Labs-HQ/Cognis/commit/633e2579)
 - [73464474](https://github.com/Cognis-Labs-HQ/Cognis/commit/73464474)
+- [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)

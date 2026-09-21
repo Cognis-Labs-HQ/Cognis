@@ -870,6 +870,42 @@ export class LibraryStore {
         return (await this.get(id))!;
     }
 
+    async update(id: string, input: LibraryEntryInput): Promise<LibraryEntry> {
+        await this.db.transaction(async (transactionDb) => {
+            await transactionDb.executeCommand({
+                option: "UPDATE",
+                table: "study_library_entries",
+                values: {
+                    label: input.label,
+                    hidden: input.hidden === true,
+                    fields_json: JSON.stringify(input.fields ?? {}),
+                    updated_at: new Date().toISOString(),
+                },
+                where: [{ column: "id", value: id }],
+            });
+            await transactionDb.executeCommand({
+                option: "DELETE",
+                table: "study_library_references",
+                where: [{ column: "source_entry_id", value: id }],
+            });
+            for (const [position, reference] of (
+                input.references ?? []
+            ).entries()) {
+                await transactionDb.executeCommand({
+                    option: "INSERT",
+                    table: "study_library_references",
+                    values: {
+                        source_entry_id: id,
+                        target_entry_id: reference.entryId,
+                        relation: reference.relation ?? "contains",
+                        position: reference.position ?? position,
+                    },
+                });
+            }
+        });
+        return (await this.get(id))!;
+    }
+
     async createPush(
         sourceEntryId: string,
         destination: LibraryLocation,

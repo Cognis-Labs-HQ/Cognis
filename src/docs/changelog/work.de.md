@@ -74,6 +74,10 @@ Core orchestriert nun die sammlungsbasierte EP-Wertung mit Anbieterschwierigkeit
 
 Core veröffentlicht Wertung, Achievement-Registrierung und Aktivitätsaufzeichnung nun über `ctx`; die Study-Bestenliste veröffentlicht ihren Anbietervertrag auf demselben Weg. Die Wertung prüft jetzt begrenzte Anbietereingaben, eindeutige Evidenz, Zeitziele und durch Hinweise unterstützte Belohnungen. Neue lokalisierte Komponentendokumentation erläutert Registrierung, Flow-Erweiterung, Evidenzprüfung, Datenschutz und saisonalen Bestenlistenbetrieb.
 
+## Bibliotheksverwaltung und Lernen getrennt
+
+Die Bibliothekswurzel ist nun ein ausschließlich für Administratoren bestimmter Editor für alle Datensätze der ausgewählten Sprache, einschließlich verborgener Definitionen und Beziehungsdaten. Lernenden-Ebenen werden über eigenständige Study-Routen direkt aus der Unternavigation geöffnet; die reichhaltige Kartendarstellung mit Definitionen, Metadaten, Filtern, Varianten und Detailansichten ist wiederhergestellt.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -91,3 +95,4 @@ Core veröffentlicht Wertung, Achievement-Registrierung und Aktivitätsaufzeichn
 - [8d78ecd3](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d78ecd3)
 - [633e2579](https://github.com/Cognis-Labs-HQ/Cognis/commit/633e2579)
 - [73464474](https://github.com/Cognis-Labs-HQ/Cognis/commit/73464474)
+- [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)

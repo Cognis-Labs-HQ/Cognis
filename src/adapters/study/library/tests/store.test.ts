@@ -678,3 +678,62 @@ test("unchanged content packs restore entries removed after installation", async
     assert.equal(receipt.unchanged, true);
     assert.equal(restoredEntries.length, 1);
 });
+
+test("entry updates replace editable fields and relationships atomically", async () => {
+    const commands: StructuredDbCommand[] = [];
+    const db: DbExecutor = {
+        ensureTable: async () => {},
+        transaction: async (callback) => callback(db),
+        executeCommand: async (command) => {
+            commands.push(command);
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_entries"
+            ) {
+                return {
+                    rows: [
+                        {
+                            id: "entry-1",
+                            scope: "global",
+                            scope_id: "global",
+                            schema_id: "japanese",
+                            schema_version: 1,
+                            layer: "words",
+                            language: "ja",
+                            label: "updated",
+                            fields_json: "{}",
+                            created_by: "ada",
+                            created_at: "2026-01-01T00:00:00Z",
+                            updated_at: "2026-01-02T00:00:00Z",
+                        },
+                    ],
+                };
+            }
+            if (command.option === "SELECT") return { rows: [] };
+            return { rowCount: 1 };
+        },
+    };
+    await new LibraryStore(db).update("entry-1", {
+        schemaId: "japanese",
+        schemaVersion: 1,
+        layer: "words",
+        label: "updated",
+        fields: {},
+        references: [{ entryId: "definition-1", relation: "means" }],
+    });
+    assert.ok(commands.some((command) => command.option === "UPDATE"));
+    assert.ok(
+        commands.some(
+            (command) =>
+                command.option === "DELETE" &&
+                command.table === "study_library_references",
+        ),
+    );
+    assert.ok(
+        commands.some(
+            (command) =>
+                command.option === "INSERT" &&
+                command.table === "study_library_references",
+        ),
+    );
+});

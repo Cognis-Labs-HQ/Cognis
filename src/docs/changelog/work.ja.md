@@ -74,6 +74,10 @@ Coreが、プロバイダー指定難易度、活動種別の重み、時間内�
 
 Core は採点、Achievement 登録、アクティビティ記録の Capability を `ctx` で公開し、Study リーダーボードも同じ方法でプロバイダー契約を公開するようになりました。採点ではプロバイダー入力の上限、一意な証拠、時間目標、ヒント利用時の報酬を検証します。新しいローカライズ済みコンポーネント文書で、登録、Flow 拡張、証拠検証、プライバシー、シーズン運用を説明します。
 
+## Library 管理と学習表示の分離
+
+Library ルートを、非表示の定義や関係データを含む選択言語の全レコードを扱う管理者専用エディターにしました。学習者向けレイヤーは Study サブナビゲーションから直接リンクされる独立ルートで表示し、定義、メタデータ、フィルター、バリアント、詳細表示を備えた豊富なカード表現を復元しました。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -91,3 +95,4 @@ Core は採点、Achievement 登録、アクティビティ記録の Capability 
 - [8d78ecd3](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d78ecd3)
 - [633e2579](https://github.com/Cognis-Labs-HQ/Cognis/commit/633e2579)
 - [73464474](https://github.com/Cognis-Labs-HQ/Cognis/commit/73464474)
+- [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)

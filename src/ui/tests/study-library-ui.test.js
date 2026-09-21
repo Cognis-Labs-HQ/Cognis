@@ -9,6 +9,10 @@ const indexSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/ui/app/index.js"),
     "utf8",
 );
+const layerPageSource = readFileSync(
+    resolve(ROOT, "src/adapters/study/library/ui/app/layer/index.js"),
+    "utf8",
+);
 const source = readdirSync(resolve(ROOT, "src/adapters/study/library/ui/app"))
     .filter((file) => file.endsWith(".js"))
     .map((file) =>
@@ -64,11 +68,15 @@ test("Study Library keeps its page modules focused", () => {
     }
 });
 
-test("Study Library uses a simple administrative layer index", () => {
+test("Study Library uses an administrator-only common data editor", () => {
     assert.match(indexSource, /renderAdminBrowser/);
-    assert.match(indexSource, /isAdminDataView \? renderAdminBrowser/);
+    assert.match(indexSource, /if \(!isAdminScope\(\)\)/);
+    assert.match(indexSource, /bindAdminLibraryInteractions/);
     assert.match(source, /class="library-admin-layer"/);
     assert.match(source, /library-admin-layer-count/);
+    assert.match(source, /data-library-admin-entry/);
+    assert.match(source, /updateLibraryEntry/);
+    assert.doesNotMatch(source, /const url = `\/study\/library/);
 });
 
 test("Study Library presents browsable layers as filterable card tabs", () => {
@@ -168,7 +176,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(adapterSource, /\/static\/gateways\/study\/study\.css/);
 });
 
-test("Study Library keeps previews concise and details informative", () => {
+test("Study layer cards retain definitions and rich details", () => {
     const cards = readFileSync(
         resolve(ROOT, "src/adapters/study/library/ui/app/cards.js"),
         "utf8",
@@ -177,7 +185,7 @@ test("Study Library keeps previews concise and details informative", () => {
         resolve(ROOT, "src/adapters/study/library/ui/app/detail.js"),
         "utf8",
     );
-    assert.doesNotMatch(cards, /library-card-definition/);
+    assert.match(cards, /library-card-definition/);
     assert.match(detail, /gateway\.study\.library_definitions/);
     assert.match(detail, /pronunciationValues\(entry\)/);
 });
@@ -263,15 +271,17 @@ test("Study Library integrates definitions and particles into item details", () 
 });
 
 test("Study Library separates admin data browsing from learner layer pages", () => {
-    assert.match(source, /const isAdminDataView = routeParts\.length === 2/);
-    assert.match(source, /isAdminDataView && !isAdminScope\(\)/);
+    assert.match(indexSource, /if \(!isAdminScope\(\)\)/);
+    assert.match(layerPageSource, /renderBrowser\(/);
+    assert.match(layerPageSource, /parts\[1\] !== "layers"/);
     assert.match(
         source,
         /requestedLayer \? "" : `<div class="library-layer-tabs"/,
     );
+    assert.match(adapterSource, /pattern: "\^\/study\/library\$"/);
     assert.match(
         adapterSource,
-        /\/study\/library\(\?:\/\[\^\/\]\+\/\[\^\/\]\+\(\?:\/\[\^\/\]\+\)\?\)\?/,
+        /pattern: "\^\/study\/layers\/\[\^\/\]\+\/\[\^\/\]\+\$"/,
     );
 });
 
@@ -488,8 +498,8 @@ test("Study Library cards use opaque theme surfaces", () => {
     assert.doesNotMatch(minimalCardRule, /background:\s*transparent/);
 });
 
-test("Study Library moves definitions from previews into detail cards", () => {
-    assert.doesNotMatch(source, /library-card-definition/);
+test("Study Library keeps definitions in previews and detail cards", () => {
+    assert.match(source, /library-card-definition/);
     assert.match(source, /const definitions = references/);
     assert.match(source, /gateway\.study\.library_definitions/);
 });

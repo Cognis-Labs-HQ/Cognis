@@ -74,6 +74,10 @@ Core now orchestrates collection-based XP scoring with provider difficulty, acti
 
 Core now publishes scoring, achievement registration, and activity-recording capabilities through `ctx`, and the Study Leaderboard publishes its provider contract the same way. Scoring now validates bounded provider inputs, unique evidence, timing targets, and hint-assisted rewards. New localized component documentation explains registration, flow extension, evidence validation, privacy, and seasonal leaderboard operation.
 
+## Separate Library administration and learning
+
+The Library root is now an administrator-only editor for every record in the selected language, including hidden definition and relationship data. Learner layers mount on independent Study routes linked directly from the sub-navigation, while restoring the rich card presentation, definitions, metadata, filtering, variants, and detail views.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -91,3 +95,4 @@ Core now publishes scoring, achievement registration, and activity-recording cap
 - [8d78ecd3](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d78ecd3)
 - [633e2579](https://github.com/Cognis-Labs-HQ/Cognis/commit/633e2579)
 - [73464474](https://github.com/Cognis-Labs-HQ/Cognis/commit/73464474)
+- [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)

@@ -137,6 +137,21 @@ export function createLibraryRoutes(
                 );
                 return true;
             }
+            if (detailMatch && req.method === "PUT") {
+                const entryId = decodeURIComponent(detailMatch[1]);
+                const body = (await readJson(req)) as {
+                    entry: Parameters<LibraryCapability["update"]>[2];
+                };
+                const entry = await library.update(actor, entryId, body.entry);
+                await log?.("info", "Updated library entry.", {
+                    component: "study-library",
+                    operation: "update-entry-route",
+                    accountId: actor.accountId,
+                    entryId,
+                });
+                sendJson(res, 200, { data: entry });
+                return true;
+            }
             if (
                 url.pathname === "/api/v1/study/library/entries" &&
                 req.method === "POST"

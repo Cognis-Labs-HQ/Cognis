@@ -75,3 +75,9 @@ A pronunciation identical to the primary or a secondary spelling is displayed on
 ## Content-pack upgrades
 
 Pack upgrades retain records omitted by the publisher unless the manifest explicitly sets `pruneOmittedRecords` to `true`. Publishers should enable pruning only when the pack is authoritative for the complete record set.
+
+## Administration and learner pages
+
+`/study/library` is an administrator-only data editor. It groups every record for the selected language by schema and layer, including definition and relationship records, and edits labels, visibility, fields, and references through the Library API. It does not link into or reuse the learner presentation.
+
+Learner-facing layers use independent `/study/layers/:schema/:layer` SPA routes linked directly from Study sub-navigation. These pages reuse the rich card renderer, filters, variants, definitions, metadata, and detail popups without exposing administrative editing controls.

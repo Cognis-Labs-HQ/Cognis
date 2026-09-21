@@ -54,7 +54,7 @@ test("Study submenu promotes Library layers and Leaderboard to pages", () => {
     assert.match(source, /fetchLibrarySchemas/);
     assert.match(
         source,
-        /\/study\/library\/\$\{encodeURIComponent\(schema\.id\)\}/,
+        /\/study\/layers\/\$\{encodeURIComponent\(schema\.id\)\}/,
     );
     assert.match(source, /pageUrl: "\/study\/leaderboard"/);
     assert.match(source, /labelKey: "gateway\.study\.leaderboard_label"/);

@@ -248,7 +248,7 @@ export async function loadStudySubNavigationModel({
             modules.push({
                 id: `library-${schema.id}-${layer.id}`,
                 label,
-                pageUrl: `/study/library/${encodeURIComponent(schema.id)}/${encodeURIComponent(layer.id)}`,
+                pageUrl: `/study/layers/${encodeURIComponent(schema.id)}/${encodeURIComponent(layer.id)}`,
                 order: 200,
             });
         }

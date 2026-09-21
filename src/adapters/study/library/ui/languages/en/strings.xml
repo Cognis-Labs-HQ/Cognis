@@ -24,4 +24,10 @@
   <string name="gateway.study.library_definitions">Definitions</string>
   <string name="gateway.study.library_from_parent">(From: {{ parent }})</string>
   <string name="gateway.study.library_usage_examples">Usage examples</string>
+  <string name="gateway.study.library_admin_label">Label</string>
+  <string name="gateway.study.library_admin_fields">Fields (JSON)</string>
+  <string name="gateway.study.library_admin_references">Relationships (JSON)</string>
+  <string name="gateway.study.library_admin_hidden">Hidden from learners</string>
+  <string name="gateway.study.library_update_success">The Library entry was updated.</string>
+  <string name="gateway.study.library_update_error">Could not update the Library entry. Check the entered data.</string>
 </resources>

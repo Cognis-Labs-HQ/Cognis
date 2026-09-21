@@ -207,3 +207,39 @@ test("remote audio cache remains behind authenticated entry access", async () =>
     assert.equal(requestedEntry, "character-a");
     assert.equal(requestedField, "audio");
 });
+
+test("entry update delegates validated identity to the Library capability", async () => {
+    let updatedId = "";
+    const entry = {
+        schemaId: "japanese",
+        schemaVersion: 1,
+        layer: "words",
+        label: "updated",
+        fields: { reading: "ことば" },
+        references: [],
+    };
+    const route = createLibraryRoutes(
+        {
+            update: async (_actor, entryId, input) => {
+                updatedId = entryId;
+                return { id: entryId, ...input };
+            },
+        } as never,
+        createAuthContext(
+            new Map([["admin", { sub: "ada", role: "admin" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "PUT",
+            token: "admin",
+            body: JSON.stringify({ entry }),
+        }) as never,
+        response as never,
+        new URL("http://localhost/api/v1/study/library/entries/entry-1"),
+    );
+    assert.equal(response.statusCode, 200);
+    assert.equal(updatedId, "entry-1");
+    assert.equal(JSON.parse(response.payload).data.label, "updated");
+});

@@ -109,9 +109,21 @@ export async function bootstrapStudyAdapter(
     ctx.registerAdapterStaticDir?.("study", "library", UI_ROOT);
     ctx.registerSpaRoute?.({
         id: "study-library-page",
-        pattern: "^/study/library(?:/[^/]+/[^/]+(?:/[^/]+)?)?$",
+        pattern: "^/study/library$",
         base: "/study/library",
         scriptUrl: "/static/adapters/study/library/app/index.js",
+        stylesheets: [
+            "/static/gateways/study/study.css",
+            "/static/adapters/study/library/library.css",
+        ],
+        requiredCapabilities: ["study:library:detailFlow"],
+        isEnabled: () => ctx.isAdapterEnabled(),
+    });
+    ctx.registerSpaRoute?.({
+        id: "study-library-layer-page",
+        pattern: "^/study/layers/[^/]+/[^/]+$",
+        base: "/study/layers",
+        scriptUrl: "/static/adapters/study/library/app/layer/index.js",
         stylesheets: [
             "/static/gateways/study/study.css",
             "/static/adapters/study/library/library.css",
