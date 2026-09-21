@@ -16,6 +16,7 @@ import {
 } from "/static/gateways/study/ui/library-client.js";
 import { isAdminScope } from "/static/gateways/study/ui/language.js";
 import { renderBrowser } from "./layer-cards.js";
+import { renderAdminBrowser } from "./admin-browser.js";
 import { refreshLibraryFilterResults } from "./filters.js";
 import { bindLibraryInteractions } from "./interactions.js";
 import { canDeleteEntry } from "./selection.js";
@@ -96,7 +97,7 @@ export async function mount(root, { signal } = {}) {
                 width: "fill",
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
                 render: () =>
-                    `<section class="library-browser">${renderBrowser(schemas, entries, i18n, requestedLayer)}</section>`,
+                    `<section class="library-browser">${isAdminDataView ? renderAdminBrowser(schemas, entries, i18n) : renderBrowser(schemas, entries, i18n, requestedLayer)}</section>`,
             },
         ],
         preferenceKey: "study-library-layout",

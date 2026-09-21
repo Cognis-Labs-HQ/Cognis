@@ -7,6 +7,7 @@ import {
     isAdminScope,
     parseLanguageCode,
 } from "/static/gateways/study/ui/language.js";
+import { fetchLibrarySchemas } from "/static/gateways/study/ui/library-client.js";
 
 const SETTINGS_GEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
   <circle cx="12" cy="12" r="3"/>
@@ -221,7 +222,45 @@ export async function loadStudySubNavigationModel({
         }),
     );
 
-    const modules = modulesByLanguage.get(selectedLanguageCode) ?? [];
+    const modules = [...(modulesByLanguage.get(selectedLanguageCode) ?? [])];
+    const schemas = selectedLanguageCode
+        ? await fetchLibrarySchemas(selectedLanguageCode).catch(() => [])
+        : [];
+    const preferredLocales = [document.documentElement.lang, "en"].filter(
+        Boolean,
+    );
+    for (const schema of schemas) {
+        for (const layer of schema.layers ?? []) {
+            if (
+                ["definition", "meaning", "particle"].includes(
+                    layer.semanticRole,
+                )
+            ) {
+                continue;
+            }
+            const labels = layer.metadata?.labels ?? {};
+            const label =
+                preferredLocales
+                    .map((locale) => labels[locale])
+                    .find(Boolean) ??
+                Object.values(labels).find(Boolean) ??
+                layer.id;
+            modules.push({
+                id: `library-${schema.id}-${layer.id}`,
+                label,
+                pageUrl: `/study/library/${encodeURIComponent(schema.id)}/${encodeURIComponent(layer.id)}`,
+                order: 200,
+            });
+        }
+    }
+    modules.push({
+        id: "leaderboard",
+        label: "Leaderboard",
+        labelKey: "gateway.study.leaderboard_label",
+        pageUrl: "/study/leaderboard",
+        order: 300,
+    });
+    modules.sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
     const rememberedPageUrl = resolveRememberedStudyPageUrl(
         window.location.pathname,
     );
@@ -285,11 +324,14 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             const rawPageUrl = String(component?.pageUrl ?? "").trim();
             if (!rawPageUrl) return "";
             const pageUrl = rawPageUrl;
+            const label = component?.labelKey
+                ? i18n.t(component.labelKey)
+                : String(component?.label ?? pageUrl);
             const activeClass = rawPageUrl === currentPath ? " active" : "";
             return `
                 <li>
-                    <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(String(component?.label ?? pageUrl))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
-                        ${escapeHtml(String(component?.label ?? pageUrl))}
+                    <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(label)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                        ${escapeHtml(label)}
                     </a>
                 </li>
             `;

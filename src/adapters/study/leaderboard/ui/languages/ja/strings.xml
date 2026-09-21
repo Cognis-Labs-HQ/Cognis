@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="gateway.study.leaderboard_label">リーダーボード</string>
+  <string name="gateway.study.leaderboard_subtitle">参加中のStudyイベントで検証済みの学習進捗を比較します。</string>
+  <string name="gateway.study.leaderboard_heading">Studyリーダーボード</string>
+  <string name="gateway.study.leaderboard_empty">利用できるリーダーボードイベントはまだありません。</string>
+</resources>

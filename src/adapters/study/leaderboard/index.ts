@@ -5,8 +5,11 @@ import type {
 } from "../../../gateways/study/gateway.js";
 import { LeaderboardService } from "./service.js";
 import type { ProgressEvidenceCapability } from "./types.js";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 let ready = false;
+const UI_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "ui");
 export function createStudyAdapter(): StudyAdapter {
     return {
         adapterId: "leaderboard",
@@ -55,6 +58,19 @@ export async function bootstrapStudyAdapter(
         "study:leaderboard",
         new LeaderboardService(progress, () => ctx.isAdapterEnabled()),
     );
+    ctx.registerAdapterStaticDir?.("study", "leaderboard", UI_ROOT);
+    ctx.registerSpaRoute?.({
+        id: "study-leaderboard-page",
+        pattern: "^/study/leaderboard$",
+        base: "/study/leaderboard",
+        scriptUrl: "/static/adapters/study/leaderboard/app/index.js",
+        stylesheets: [
+            "/static/gateways/study/study.css",
+            "/static/adapters/study/leaderboard/leaderboard.css",
+        ],
+        requiredCapabilities: ["study:leaderboard"],
+        isEnabled: () => ctx.isAdapterEnabled(),
+    });
     ready = true;
 }
 

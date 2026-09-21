@@ -58,6 +58,10 @@ Bei der Modulaktivierung gilt während der strikten Laufzeitaktualisierung nun n
 
 Der Kompatibilitätsvertrag der Entwicklungsbasis für privilegierte Module ist wiederhergestellt: Privilegierte Module können ihre deklarierten Host-Laufzeitintegrationen verwenden, ohne von der neueren Grenzprüfung für nicht privilegierte Module abgelehnt zu werden. Nicht privilegierte Module werden weiterhin vollständig geprüft, und moduleigene Tests laufen für beide Klassen.
 
+## Fokussierte Study-Bibliotheksseiten
+
+Detaillierte Darstellungen der Bibliotheksebenen werden nun als eigene Seiten aus der Study-Unternavigation geöffnet. Die Bibliothekswurzel für Administratoren verwendet einen kompakten, einheitlichen Ebenenindex mit Eintragszahlen, und das Study-Untermenü enthält nun eine lokalisierte Bestenlistenseite.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -71,3 +75,4 @@ Der Kompatibilitätsvertrag der Entwicklungsbasis für privilegierte Module ist 
 - [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)
 - [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)
 - [504e4b2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/504e4b2b)
+- [a0f0832a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f0832a)

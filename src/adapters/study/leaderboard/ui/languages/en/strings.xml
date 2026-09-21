@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="gateway.study.leaderboard_label">Leaderboard</string>
+  <string name="gateway.study.leaderboard_subtitle">Compare verified learning progress in your active Study events.</string>
+  <string name="gateway.study.leaderboard_heading">Study leaderboard</string>
+  <string name="gateway.study.leaderboard_empty">No leaderboard event is available yet.</string>
+</resources>

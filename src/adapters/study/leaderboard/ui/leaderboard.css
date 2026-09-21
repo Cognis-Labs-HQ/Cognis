@@ -1,0 +1,8 @@
+.study-leaderboard-empty {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.study-leaderboard-empty > * {
+    margin: 0;
+}

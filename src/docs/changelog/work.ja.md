@@ -58,6 +58,10 @@ Study Libraryブラウザーのエントリポイントを小さなページ調�
 
 development基準の特権モジュール互換契約を復元しました。特権モジュールは、宣言済みのホストランタイム連携を、新しい非特権モジュール境界検査で拒否されずに利用できます。非特権モジュールには引き続き完全な検査を実施し、どちらのクラスでもモジュール所有のテストを実行します。
 
+## 目的別のStudyライブラリページ
+
+ライブラリ各階層の詳細表示を、Studyサブナビゲーションから開く専用ページへ移しました。管理者向けライブラリのルートは、項目数を示す簡潔で統一された階層一覧になり、Studyサブメニューにはローカライズされたリーダーボードページも追加されました。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -71,3 +75,4 @@ development基準の特権モジュール互換契約を復元しました。特
 - [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)
 - [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)
 - [504e4b2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/504e4b2b)
+- [a0f0832a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f0832a)

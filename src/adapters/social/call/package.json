@@ -8,6 +8,6 @@
     "dependencies": {
         "@cognis/adapter-social-messages": "<=2.7.19",
         "@cognis/core": "<=0.3.108",
-        "@cognis/gateways": "<=0.1.11"
+        "@cognis/gateways": "<=0.1.12"
     }
 }

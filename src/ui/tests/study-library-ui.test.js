@@ -64,6 +64,13 @@ test("Study Library keeps its page modules focused", () => {
     }
 });
 
+test("Study Library uses a simple administrative layer index", () => {
+    assert.match(indexSource, /renderAdminBrowser/);
+    assert.match(indexSource, /isAdminDataView \? renderAdminBrowser/);
+    assert.match(source, /class="library-admin-layer"/);
+    assert.match(source, /library-admin-layer-count/);
+});
+
 test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(
         source,

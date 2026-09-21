@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="gateway.study.leaderboard_label">Papan peringkat</string>
+  <string name="gateway.study.leaderboard_subtitle">Bandingkan kemajuan belajar terverifikasi dalam acara Study aktif Anda.</string>
+  <string name="gateway.study.leaderboard_heading">Papan peringkat Study</string>
+  <string name="gateway.study.leaderboard_empty">Belum ada acara papan peringkat yang tersedia.</string>
+</resources>

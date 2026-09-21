@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="gateway.study.leaderboard_label">Bestenliste</string>
+  <string name="gateway.study.leaderboard_subtitle">Vergleiche geprüfte Lernfortschritte in deinen aktiven Study-Ereignissen.</string>
+  <string name="gateway.study.leaderboard_heading">Study-Bestenliste</string>
+  <string name="gateway.study.leaderboard_empty">Noch ist kein Bestenlisten-Ereignis verfügbar.</string>
+</resources>

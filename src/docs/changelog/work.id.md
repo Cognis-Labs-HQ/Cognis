@@ -58,6 +58,10 @@ Aktivasi modul kini hanya mewajibkan modul yang diminta selama penyegaran runtim
 
 Kontrak kompatibilitas modul berhak istimewa dari baseline development dipulihkan: modul berhak istimewa dapat memakai integrasi runtime host yang dideklarasikan tanpa ditolak oleh pemindaian batas modul tanpa hak istimewa yang lebih baru. Modul tanpa hak istimewa tetap dipindai sepenuhnya, dan pengujian milik modul tetap dijalankan untuk kedua kelas.
 
+## Halaman pustaka Study yang terfokus
+
+Tampilan terperinci setiap lapisan Pustaka kini dibuka sebagai halaman tersendiri dari subnavigasi Study. Halaman utama Pustaka administrator memakai indeks lapisan yang ringkas dan konsisten dengan jumlah entri, dan submenu Study kini mencakup halaman Papan peringkat yang dilokalkan.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -71,3 +75,4 @@ Kontrak kompatibilitas modul berhak istimewa dari baseline development dipulihka
 - [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)
 - [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)
 - [504e4b2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/504e4b2b)
+- [a0f0832a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f0832a)

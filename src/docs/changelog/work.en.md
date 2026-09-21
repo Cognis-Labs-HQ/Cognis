@@ -58,6 +58,10 @@ Module activation now treats only the requested module as mandatory during the s
 
 The development baseline's privileged-module compatibility contract is restored: privileged modules may use their declared host runtime integrations without being rejected by the newer unprivileged-module boundary scan. Unprivileged modules remain fully scanned, and module-owned tests still run for both classes.
 
+## Focused Study library pages
+
+Detailed Library layer presentations now open as dedicated pages from the Study sub-navigation. The administrator Library root uses a compact, consistent layer index with entry counts, and the Study submenu now includes a localized Leaderboard page.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -71,3 +75,4 @@ The development baseline's privileged-module compatibility contract is restored:
 - [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)
 - [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)
 - [504e4b2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/504e4b2b)
+- [a0f0832a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f0832a)
