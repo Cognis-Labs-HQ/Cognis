@@ -19,6 +19,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { RouteRegistry } from "./reuse/route-registry.js";
 import { UIRegistry } from "./reuse/ui-registry.js";
+import { permitsModuleEnable } from "./reuse/module-enable-result.js";
 import {
     createConsoleLog,
     setAppLogger,
@@ -202,7 +203,11 @@ const configuredBootstrapLevel = ["debug", "info", "warn", "error"].includes(
     : "info";
 const bootstrapLog = createConsoleLog(configuredBootstrapLevel);
 
-type ModuleEnableTest = () => Promise<{ ok?: boolean; message?: string }>;
+type ModuleEnableTest = () => Promise<{
+    ok?: boolean;
+    code?: string;
+    message?: string;
+}>;
 
 function getModuleEnableTest(
     moduleId: string,
@@ -567,11 +572,19 @@ const server = buildServer({
         const test = getModuleEnableTest(moduleId, systemCtx, capabilities);
         if (!test) return;
         const result = await test();
-        if (result?.ok === false) {
+        if (!permitsModuleEnable(result)) {
             throw new Error(
                 result.message ??
                     `Module ${moduleId} did not pass its enablement test`,
             );
+        }
+        if (result?.ok === false) {
+            log("info", "Allowed module access to Cognis runtime resources.", {
+                component: "api-modules",
+                operation: "validate_module_enable",
+                moduleId,
+                validationCode: "module_boundary_violation",
+            });
         }
     },
     onModuleStateChanged: capabilities.get<

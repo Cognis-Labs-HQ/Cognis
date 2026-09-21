@@ -30,18 +30,30 @@ import { createAuthPageRoutes } from "./routes/pages.js";
 export interface AuthAccountStore {
     ensureSchema(): Promise<void>;
     has(username: string): Promise<boolean>;
-    delete(username: string): Promise<void>;
+    delete(
+        username: string,
+        options?: { recordExternalIdentityDeletion?: boolean },
+    ): Promise<void>;
     isFounder(username: string): Promise<boolean>;
     verify(username: string, password: string): Promise<boolean>;
     getDisplayName(username: string): Promise<string | null>;
     ensureExternalAccount?(identity: {
         accountId: string;
+        accountNamespace?: string;
         provider: string;
         externalUserId: string;
         email?: string;
         displayName?: string;
         role?: string;
-    }): Promise<void>;
+    }): Promise<string>;
+    resolveExternalAccountId?(
+        provider: string,
+        externalUserId: string,
+    ): Promise<string | null>;
+    isExternalIdentityDeleted?(
+        provider: string,
+        externalUserId: string,
+    ): Promise<boolean>;
     getInfo(username: string): Promise<{
         username: string;
         enabled: boolean;
@@ -87,6 +99,7 @@ export interface PendingAccountCreationAttempt {
         accountId: string;
         provider: string;
         externalUserId?: string;
+        accountNamespace?: string;
         email?: string;
         emails?: string[];
         displayName?: string;

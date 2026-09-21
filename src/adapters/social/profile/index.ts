@@ -360,6 +360,11 @@ export async function bootstrapSocialAdapter(
         async (accountId: string): Promise<AccountRole | undefined> =>
             (await profileStore.getProfile(accountId))?.role,
     );
+    ctx.capabilities.contribute(
+        "profile:getHandle",
+        async (accountId: string): Promise<string | undefined> =>
+            (await profileStore.getProfile(accountId))?.handle,
+    );
 
     const registerNamespace = ctx.capabilities.get<
         (definition: {
@@ -398,6 +403,7 @@ export async function bootstrapSocialAdapter(
                 bio?: string;
                 location?: string;
                 website?: string;
+                profileVisibility?: string;
                 avatar?: { content: Uint8Array; contentType?: string };
                 banner?: { content: Uint8Array; contentType?: string };
             },
@@ -408,6 +414,14 @@ export async function bootstrapSocialAdapter(
                 .trim()
                 .replace(/^@/, "");
             if (handle) updates.handle = handle;
+            if (
+                externalProfile.profileVisibility === "hidden" ||
+                externalProfile.profileVisibility === "private" ||
+                externalProfile.profileVisibility === "friends" ||
+                externalProfile.profileVisibility === "community"
+            ) {
+                updates.visibility = externalProfile.profileVisibility;
+            }
             for (const field of [
                 "displayName",
                 "bio",

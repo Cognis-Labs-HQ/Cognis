@@ -122,6 +122,52 @@ test("profile adapter bootstrap contributes profile capabilities", async () => {
     );
 });
 
+test("external profile synchronization applies requested profile visibility", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const capabilities = new CapabilityStore();
+        capabilities.contribute("db:executor", executor);
+        const { ctx } = makeAdapterCtx({ capabilities });
+        await bootstrapSocialAdapter(ctx);
+        const createProfile = capabilities.get<
+            (accountId: string, handle: string) => Promise<void>
+        >("profile:createProfile");
+        const applyExternalProfile = capabilities.get<
+            (
+                accountId: string,
+                profile: { profileVisibility?: string },
+            ) => Promise<void>
+        >("profile:applyExternalProfile");
+        const profileStore = capabilities.get<{
+            getProfile(
+                accountId: string,
+            ): Promise<{ visibility: string } | null>;
+        }>("social:profileStore");
+        assert.ok(createProfile);
+        assert.ok(applyExternalProfile);
+        assert.ok(profileStore);
+
+        await createProfile("external-user", "provider:external-user");
+        await applyExternalProfile("external-user", {
+            profileVisibility: "private",
+        });
+
+        assert.equal(
+            (await profileStore.getProfile("external-user"))?.visibility,
+            "private",
+        );
+        await applyExternalProfile("external-user", {
+            profileVisibility: "provider-only-value",
+        });
+        assert.equal(
+            (await profileStore.getProfile("external-user"))?.visibility,
+            "private",
+        );
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
+
 test("profile lifecycle capability creates a profile row when missing", async () => {
     const { dir, executor } = makeTempDb();
     try {

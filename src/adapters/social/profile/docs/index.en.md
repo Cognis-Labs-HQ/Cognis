@@ -134,3 +134,7 @@ The profile navbar plugin provides `ui:profileAvatarRenderer`. Modules that rend
 ### Browser client capability
 
 `social:profileUiClient` is contributed by a standalone profile provider before dependent pages mount and exposes `getCurrentProfile()` so browser modules obtain profile data through the owning adapter client.
+
+## External Visibility
+
+`profile:applyExternalProfile` accepts `profileVisibility` values of `hidden`, `private`, `friends`, or `community`. A valid value becomes the persisted profile visibility after profile creation or synchronization; unknown values are ignored.

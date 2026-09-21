@@ -3,12 +3,21 @@ import type { AuthContext } from "./auth-gateway.js";
 export interface LocalAccountStore {
     ensureExternalAccount?(identity: {
         accountId: string;
+        accountNamespace?: string;
         provider: string;
         externalUserId: string;
         email?: string;
         displayName?: string;
         role?: string;
-    }): Promise<void>;
+    }): Promise<string>;
+    resolveExternalAccountId?(
+        provider: string,
+        externalUserId: string,
+    ): Promise<string | null>;
+    isExternalIdentityDeleted?(
+        provider: string,
+        externalUserId: string,
+    ): Promise<boolean>;
     register(
         username: string,
         password: string,
@@ -36,7 +45,10 @@ export interface LocalAccountStore {
     ): Promise<void>;
     setPassword(username: string, password: string): Promise<void>;
     setEnabled(username: string, enabled: boolean): Promise<void>;
-    delete(username: string): Promise<void>;
+    delete(
+        username: string,
+        options?: { recordExternalIdentityDeletion?: boolean },
+    ): Promise<void>;
     getInfo(username: string): Promise<{
         username: string;
         createdAt: string | null;

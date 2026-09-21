@@ -39,7 +39,7 @@ Every module has a human-readable `id` and an RFC 4122 `uuid`. The ID may be ren
 
 ### Repository contract
 
-One Git repository delivers one module. Its root contains `manifest.json`, `package.json`, `routes.json`, and the optional orchestrator entry points `bootstrap.js`, `api/index.js`, `ui/index.js`, and `cli/index.js`. `bootstrap.js` is the sole system integration entry and receives `ctx`; it may import any file within its repository, but must not import Cognis or another component's internal paths. Export capabilities and flow stages through `ctx`. This narrow entry-point contract lets authors freely reorganize internal files without coupling Cognis to them.
+One Git repository delivers one module. Its root contains `manifest.json`, `package.json`, `routes.json`, and the optional orchestrator entry points `bootstrap.js`, `api/index.js`, `ui/index.js`, and `cli/index.js`. `bootstrap.js` is the sole system integration entry and receives `ctx`; it may import files within its repository as well as Cognis runtime resources that the deployment exposes. Exported capabilities and flow stages should still use `ctx` so lifecycle cleanup can track them. Security-sensitive registrations remain restricted and require `privileged: true`; ordinary imports, API URLs, and shared style classes do not make a module privileged.
 
 `package.json` must use `"type": "module"` and its version must exactly match `manifest.json`. `routes.json` is always present and contains an array, including an empty array when the module claims no routes. Every declared entry point must resolve to a regular file inside the checkout. Keep orchestration in the declared entry points and place freely organized implementation code behind them; Cognis does not import any other module path.
 
@@ -128,3 +128,7 @@ Modules that must load a runtime script declare `ui:resourceLoader` and call its
 External manifests may declare `hardDependencies` and `softDependencies` as arrays of module UUIDs or IDs. Hard dependencies are discouraged because administrators must install and enable them before installation can continue. Soft dependencies are optional selections in the installation dialog.
 
 Disabled modules never import or execute their normal bootstrap. A module that must expose configuration while disabled declares `entrypoints.disabledApi`; that isolated file exports `registerDisabledApiRoutes(ctx)` and may register only routes explicitly marked `allowWhenDisabled`.
+
+### Activation guidance
+
+A module that contributes configuration surfaces elsewhere in Cognis can declare `ui.activationGuidance` instead of creating an empty module-settings form. The contract provides localized `titleKey`, optional `descriptionKey`, and ordered `steps`. Each step has a stable `id`, localized `labelKey`, optional `descriptionKey`, and optional `targets`. An adapter target uses `{ "kind": "adapter", "gatewayId": "<gateway>", "adapterId": "<adapter>" }`. After successful enablement, Cognis presents every step and offers to open Administration. A module can list multiple adapter targets without core knowing the provider names.

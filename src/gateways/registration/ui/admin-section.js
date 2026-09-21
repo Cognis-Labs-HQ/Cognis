@@ -31,6 +31,18 @@ export function createAdminSection({
     });
 
     function createPolicyForm() {
+        const booleanOptions = (enabled) => [
+            {
+                value: "true",
+                label: i18n.t("ui.reuse.yes"),
+                selected: enabled,
+            },
+            {
+                value: "false",
+                label: i18n.t("ui.reuse.no"),
+                selected: !enabled,
+            },
+        ];
         return createFormBuilder(
             { i18n, escapeHtml },
             {
@@ -41,27 +53,31 @@ export function createAdminSection({
                         name: "publicRegistrationEnabled",
                         labelKey:
                             "gateway.registration.public_registration_enabled",
-                        type: "checkbox",
+                        type: "radio",
                         value: String(publicRegistrationEnabled),
-                        inputClassName: "choice-checkbox",
+                        options: booleanOptions(publicRegistrationEnabled),
                     },
                     {
                         name: "founderInvitesEnabled",
                         labelKey: "gateway.registration.allow_founder_invites",
-                        type: "checkbox",
+                        type: "radio",
                         value: String(
                             invitationPolicy?.founderInvitesEnabled === true,
                         ),
-                        inputClassName: "choice-checkbox",
+                        options: booleanOptions(
+                            invitationPolicy?.founderInvitesEnabled === true,
+                        ),
                     },
                     {
                         name: "adminInvitesEnabled",
                         labelKey: "gateway.registration.allow_admin_invites",
-                        type: "checkbox",
+                        type: "radio",
                         value: String(
                             invitationPolicy?.adminInvitesEnabled === true,
                         ),
-                        inputClassName: "choice-checkbox",
+                        options: booleanOptions(
+                            invitationPolicy?.adminInvitesEnabled === true,
+                        ),
                     },
                 ],
             },
@@ -69,17 +85,21 @@ export function createAdminSection({
     }
 
     function readPolicyForm() {
+        const values = policyFormBinding?.getValues() ?? {};
         return {
             publicRegistrationEnabled:
-                policyForm?.elements.namedItem("publicRegistrationEnabled")
-                    ?.checked === true,
-            founderInvitesEnabled:
-                policyForm?.elements.namedItem("founderInvitesEnabled")
-                    ?.checked === true,
-            adminInvitesEnabled:
-                policyForm?.elements.namedItem("adminInvitesEnabled")
-                    ?.checked === true,
+                values.publicRegistrationEnabled === "true",
+            founderInvitesEnabled: values.founderInvitesEnabled === "true",
+            adminInvitesEnabled: values.adminInvitesEnabled === "true",
         };
+    }
+
+    function setRadioValue(fieldName, enabled) {
+        policyForm
+            ?.querySelectorAll(`input[name="${fieldName}"]`)
+            .forEach((radio) => {
+                radio.checked = radio.value === String(enabled);
+            });
     }
 
     function resetPolicyTracker() {
@@ -152,12 +172,18 @@ export function createAdminSection({
         },
         discard() {
             if (!policyForm || !invitationPolicy) return;
-            policyForm.elements.namedItem("publicRegistrationEnabled").checked =
-                publicRegistrationEnabled;
-            policyForm.elements.namedItem("founderInvitesEnabled").checked =
-                invitationPolicy.founderInvitesEnabled === true;
-            policyForm.elements.namedItem("adminInvitesEnabled").checked =
-                invitationPolicy.adminInvitesEnabled === true;
+            setRadioValue(
+                "publicRegistrationEnabled",
+                publicRegistrationEnabled,
+            );
+            setRadioValue(
+                "founderInvitesEnabled",
+                invitationPolicy.founderInvitesEnabled === true,
+            );
+            setRadioValue(
+                "adminInvitesEnabled",
+                invitationPolicy.adminInvitesEnabled === true,
+            );
             resetPolicyTracker();
         },
         subComposerOptions: {

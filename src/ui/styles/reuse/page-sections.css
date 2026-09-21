@@ -241,6 +241,34 @@
     position: relative;
 }
 
+.form-builder-radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.form-builder-radio-option {
+    align-items: center;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 0.4rem;
+    min-width: 5rem;
+    padding: 0.45rem 0.75rem;
+}
+
+.form-builder-radio-option:has(.form-builder-radio-input:checked) {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+}
+
+.form-builder-radio-input {
+    accent-color: var(--accent);
+    margin: 0;
+}
+
 .markdown-code-block {
     margin: 0.35rem 0;
     padding: 0.5rem 0.6rem;

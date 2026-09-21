@@ -51,3 +51,7 @@ Plugin navbar profil menyediakan `ui:profileAvatarRenderer`. Modul yang merender
 ### Kapabilitas klien browser
 
 `social:profileUiClient` dikontribusikan oleh penyedia Profil mandiri sebelum halaman yang bergantung dipasang dan menyediakan `getCurrentProfile()` agar modul browser memperoleh data profil melalui klien adaptor pemilik.
+
+## Visibilitas Eksternal
+
+`profile:applyExternalProfile` menerima nilai `profileVisibility` berupa `hidden`, `private`, `friends`, atau `community`. Nilai yang valid menjadi visibilitas profil tersimpan setelah pembuatan atau sinkronisasi profil; nilai yang tidak dikenal diabaikan.

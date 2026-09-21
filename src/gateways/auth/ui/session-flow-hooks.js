@@ -1,3 +1,4 @@
+import "./external-profile-sync.js";
 /**
  * Auth-gateway default hooks for the `authenticate-session` and `load-page`
  * client-side flows.

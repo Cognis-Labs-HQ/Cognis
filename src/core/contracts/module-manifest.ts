@@ -57,6 +57,21 @@ export interface ModuleManifest {
             required?: boolean;
         }>;
         stringsBaseUrl?: string;
+        /** Localized next steps shown after the module is enabled. */
+        activationGuidance?: {
+            titleKey: string;
+            descriptionKey?: string;
+            steps: Array<{
+                id: string;
+                labelKey: string;
+                descriptionKey?: string;
+                targets?: Array<{
+                    kind: "adapter";
+                    gatewayId: string;
+                    adapterId: string;
+                }>;
+            }>;
+        };
     };
     files?: Array<{
         path: string;
