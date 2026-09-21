@@ -86,6 +86,10 @@ Implementasi kini mempertahankan perilaku API dan router web dari baseline Libra
 
 Penjadwal adapter Study khusus cabang dan kenaikan versi paket gateways telah dihapus. Penemuan serta startup adapter Study kini sama persis dengan baseline development. Leaderboard me-resolve Progress secara lazy melalui ctx, sehingga dependensinya dipertahankan tanpa mengubah bootstrap seluruh gateway atau menunda modul yang sudah ada.
 
+## Permintaan awal yang responsif
+
+Pemeriksaan kesehatan, pengalihan alamat akar, pesan pengetikan autentikasi, permintaan service worker, dan pemeriksaan peramban yang tidak dikenal tidak lagi menunggu pemulihan runtime modul tanpa batas. Penghalang permintaan berbatas menjaga semua rute lain tetap responsif ketika ekstensi macet saat dimulai.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -108,3 +112,4 @@ Penjadwal adapter Study khusus cabang dan kenaikan versi paket gateways telah di
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
 - [5917b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/5917b511)
 - [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)
+- [8ac1f493](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ac1f493)

@@ -86,6 +86,10 @@ Library のプレビューではメタデータとスコープの位置を固定
 
 このブランチ固有の Study アダプタースケジューラーと gateways パッケージバージョンの引き上げを削除しました。Study アダプターの検出と起動は development ベースラインと完全に一致します。Leaderboard は ctx を介して Progress を遅延解決し、ゲートウェイ全体の起動を変更したり既存モジュールを遅延させたりせずに依存関係を維持します。
 
+## 応答性の高い起動時リクエスト
+
+ヘルスチェック、ルートのリダイレクト、認証入力メッセージ、Service Workerリクエスト、不明なブラウザープローブが、モジュールランタイムの復元を無期限に待たなくなりました。時間制限付きのリクエストバリアにより、起動時に拡張機能が停止しても、その他のルートは応答を維持します。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -108,3 +112,4 @@ Library のプレビューではメタデータとスコープの位置を固定
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
 - [5917b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/5917b511)
 - [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)
+- [8ac1f493](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ac1f493)

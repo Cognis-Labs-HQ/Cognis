@@ -347,7 +347,8 @@ function isUiStaticAssetRequest(pathname: string): boolean {
     return (
         pathname.startsWith("/static/") ||
         pathname.startsWith("/assets/") ||
-        pathname === "/manifest.webmanifest"
+        pathname === "/manifest.webmanifest" ||
+        pathname === "/sw.js"
     );
 }
 
@@ -723,9 +724,15 @@ export function buildServer(deps: ApiDependencies) {
                 error: error instanceof Error ? error.message : String(error),
             });
         });
+    const runtimeRequestBarrier = Promise.race([
+        runtimeStateReady,
+        new Promise<void>((resolve) => {
+            const timer = setTimeout(resolve, 250);
+            timer.unref();
+        }),
+    ]);
 
     const server = createServer(async (req, res) => {
-        await runtimeStateReady;
         const url = new URL(req.url ?? "/", "http://localhost");
         const startedAt = Date.now();
         let responseBytes = 0;
@@ -764,6 +771,48 @@ export function buildServer(deps: ApiDependencies) {
             method: req.method ?? "GET",
             path: url.pathname,
         });
+
+        if (url.pathname === "/") {
+            await uiRoutes(req, res, url);
+            return;
+        }
+        if (
+            req.method === "GET" &&
+            (url.pathname === "/api/v1/system/health" ||
+                url.pathname === "/api/v1/system/healthcheck")
+        ) {
+            await systemRoutes(req, res, url);
+            return;
+        }
+        if (
+            req.method === "GET" &&
+            url.pathname === "/api/v1/ui/auth-typing-messages"
+        ) {
+            await uiRoutes(req, res, url);
+            return;
+        }
+        if (
+            (url.pathname.startsWith("/static/") &&
+                !url.pathname.startsWith("/static/modules/")) ||
+            url.pathname === "/manifest.webmanifest" ||
+            url.pathname === "/sw.js"
+        ) {
+            await uiRoutes(req, res, url);
+            return;
+        }
+        if (
+            url.pathname === "/.well-known/appspecific/com.chrome.devtools.json"
+        ) {
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: { code: "not_found", message: "Not found" },
+                }),
+            );
+            return;
+        }
+
+        await runtimeRequestBarrier;
 
         try {
             const owner = deps.routeRegistry?.findOwner(url.pathname);
