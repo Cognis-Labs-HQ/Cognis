@@ -539,28 +539,22 @@ export function createUiRoutes(
                     ownerType,
                     ownerId,
                 }));
-            const manifests = runtime
-                ? await Promise.race([
-                      runtime.listManifests(),
-                      new Promise<
-                          Awaited<ReturnType<typeof runtime.listManifests>>
-                      >((resolve) => setTimeout(() => resolve([]), 250)),
-                  ])
+            const moduleMessages = runtime
+                ? (await runtime.listManifests())
+                      .filter((manifest) =>
+                          isModuleEnabled ? isModuleEnabled(manifest.id) : true,
+                      )
+                      .flatMap((manifest) =>
+                          (manifest.ui?.authTypingMessages ?? []).map(
+                              (textKey, index) => ({
+                                  id: `${manifest.id}:${index}`,
+                                  textKey,
+                                  ownerType: "module",
+                                  ownerId: manifest.id,
+                              }),
+                          ),
+                      )
                 : [];
-            const moduleMessages = manifests
-                .filter((manifest) =>
-                    isModuleEnabled ? isModuleEnabled(manifest.id) : true,
-                )
-                .flatMap((manifest) =>
-                    (manifest.ui?.authTypingMessages ?? []).map(
-                        (textKey, index) => ({
-                            id: `${manifest.id}:${index}`,
-                            textKey,
-                            ownerType: "module",
-                            ownerId: manifest.id,
-                        }),
-                    ),
-                );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({

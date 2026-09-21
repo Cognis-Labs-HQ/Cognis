@@ -86,9 +86,9 @@ Die Implementierung behält nun das API- und Web-Router-Verhalten der etablierte
 
 Der nur in diesem Zweig vorhandene Study-Adapter-Scheduler und die Eskalation der Gateways-Paketversion wurden entfernt. Erkennung und Start der Study-Adapter entsprechen nun exakt der Entwicklungsbasis. Leaderboard löst Progress verzögert über ctx auf und erhält damit seine Abhängigkeit, ohne den gatewayweiten Start zu verändern oder bestehende Module zu verzögern.
 
-## Reaktionsfähige Startanfragen
+## Korrekter Erweiterungsstart
 
-Integritätsprüfungen, die Weiterleitung der Stammadresse, Authentifizierungs-Schreibmeldungen, Service-Worker-Anfragen und unbekannte Browser-Prüfungen warten nicht mehr unbegrenzt auf die Wiederherstellung der Modullaufzeit. Eine begrenzte Anfragesperre hält alle anderen Routen reaktionsfähig, wenn eine Erweiterung beim Start hängen bleibt.
+Deaktivierte externe Module laden jetzt ausschließlich ihren eigenen API-Einstiegspunkt für den deaktivierten Zustand. Cognis führt beim Wiederherstellen deaktivierter Module nicht mehr deren normalen API-Bootstrap aus. Dadurch entfällt die Startsperre, die Integritätsprüfungen und alle Proxy-Anfragen blockierte. Reparaturen aus dem vollständigen Testlauf stellen außerdem UI-Besitzgrenzen, synchronisierte Komponentenversionen, Popup-Überschriften, Shell-Übersetzung und überprüfbare Dateigrößen wieder her.
 
 ## Commits
 
@@ -112,4 +112,4 @@ Integritätsprüfungen, die Weiterleitung der Stammadresse, Authentifizierungs-S
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
 - [5917b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/5917b511)
 - [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)
-- [8ac1f493](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ac1f493)
+- [d1cdc256](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1cdc256)

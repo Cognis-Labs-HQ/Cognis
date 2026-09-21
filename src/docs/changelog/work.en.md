@@ -86,9 +86,9 @@ The implementation now retains the API and web-router behavior from the establis
 
 The branch-only Study adapter scheduler and gateways package-version escalation were removed. Study adapter discovery and startup now exactly match the development baseline. Leaderboard resolves Progress lazily through ctx, preserving its dependency without changing gateway-wide bootstrap or delaying existing modules.
 
-## Responsive startup requests
+## Correct extension startup lifecycle
 
-Health checks, the root redirect, authentication typing messages, service-worker requests, and unknown browser probes no longer wait indefinitely for module runtime restoration. A bounded request barrier keeps all other routes responsive when an extension stalls during startup.
+Disabled external modules now load only their dedicated disabled-state API entry point. Cognis no longer executes a module’s normal API bootstrap while restoring disabled modules, eliminating the startup deadlock that blocked health checks and every proxied request. Full-suite repairs also restore UI ownership boundaries, synchronized component versions, popup headings, shell translation, and reviewable source sizes.
 
 ## Commits
 
@@ -112,4 +112,4 @@ Health checks, the root redirect, authentication typing messages, service-worker
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
 - [5917b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/5917b511)
 - [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)
-- [8ac1f493](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ac1f493)
+- [d1cdc256](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1cdc256)

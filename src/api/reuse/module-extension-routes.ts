@@ -7,7 +7,6 @@ import type {
     RoleAccessPolicy,
     FlowApi,
 } from "@cognis/core";
-import { validateModuleBoundaries } from "@cognis/core";
 import path from "node:path";
 import { stat } from "node:fs/promises";
 import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
@@ -219,7 +218,6 @@ export function createModuleExtensionRoutes(
             flows: string[];
         }
     >();
-    let installedModuleIds = new Set<string>();
     const externalModulesRoot =
         process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
         path.resolve(process.cwd(), "external-modules");
@@ -646,18 +644,12 @@ export function createModuleExtensionRoutes(
             : null;
     }
 
-    function resolveDisabledApiEntrypoint(
+    function resolveDisabledApiEntrypointPath(
         moduleRoot: string,
-        entrypoints: { disabledApi?: string; api?: string } | undefined,
-    ): { path: string; dedicated: boolean } | null {
-        if (entrypoints?.disabledApi) {
-            return {
-                path: path.join(moduleRoot, entrypoints.disabledApi),
-                dedicated: true,
-            };
-        }
-        return entrypoints?.api
-            ? { path: path.join(moduleRoot, entrypoints.api), dedicated: false }
+        entrypoints: { disabledApi?: string } | undefined,
+    ): string | null {
+        return entrypoints?.disabledApi
+            ? path.join(moduleRoot, entrypoints.disabledApi)
             : null;
     }
 
@@ -727,7 +719,6 @@ export function createModuleExtensionRoutes(
         assuranceByModuleId.clear();
         const nextHandlers: RouteHandler[] = [];
         const manifests = await runtime.listManifests();
-        installedModuleIds = new Set(manifests.map((manifest) => manifest.id));
 
         for (const manifest of manifests) {
             if (manifest.class === "core") continue;
@@ -792,24 +783,17 @@ export function createModuleExtensionRoutes(
                 moduleRoot,
                 manifest.entrypoints,
             );
-            const disabledApiEntrypoint = resolveDisabledApiEntrypoint(
+            const disabledApiEntrypoint = resolveDisabledApiEntrypointPath(
                 moduleRoot,
                 manifest.entrypoints,
             );
             if (!moduleEnabled) {
                 if (!disabledApiEntrypoint) continue;
                 try {
-                    await validateModuleBoundaries(moduleRoot, {
-                        moduleId: manifest.id,
-                    });
                     const plugin = (await import(
-                        `${disabledApiEntrypoint.path}?t=${Date.now()}`
-                    )) as ModuleDisabledApiPlugin & ModulePlugin;
-                    if (disabledApiEntrypoint.dedicated) {
-                        await plugin.registerDisabledApiRoutes?.(moduleCtx);
-                    } else {
-                        plugin.registerApiRoutes?.(moduleCtx.router, moduleCtx);
-                    }
+                        `${disabledApiEntrypoint}?t=${Date.now()}`
+                    )) as ModuleDisabledApiPlugin;
+                    await plugin.registerDisabledApiRoutes?.(moduleCtx);
                     scope.active = false;
                     loadedModules.set(manifest.id, {
                         ctx: moduleCtx,
@@ -926,30 +910,7 @@ export function createModuleExtensionRoutes(
                 (entry) =>
                     entry.method === method && entry.routePath === url.pathname,
             );
-            if (!match) {
-                const configMatch = url.pathname.match(
-                    /^\/api\/v1\/modules\/([^/]+)\/config$/,
-                );
-                const moduleId = configMatch
-                    ? decodeURIComponent(configMatch[1])
-                    : "";
-                if (moduleId && installedModuleIds.has(moduleId)) {
-                    res.writeHead(503, {
-                        "content-type": "application/json",
-                    });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "module_config_unavailable",
-                                message:
-                                    "Module configuration is unavailable while its disabled API is not registered.",
-                            },
-                        }),
-                    );
-                    return true;
-                }
-                return false;
-            }
+            if (!match) return false;
             if (!isModuleEnabled(match.moduleId) && !match.allowWhenDisabled) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(

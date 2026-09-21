@@ -10,7 +10,7 @@ import type {
 } from "./types.js";
 import type { ActivityScoreInput, ScoringCapability } from "@cognis/core";
 
-const ID = /^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,199}$/;
+const IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,199}$/;
 const privileged = new Set(["admin", "owner"]);
 
 export class LeaderboardService implements LeaderboardCapability {
@@ -92,7 +92,7 @@ export class LeaderboardService implements LeaderboardCapability {
 
     registerDefinition(input: LeaderboardDefinition): void {
         this.requireEnabled();
-        if (!ID.test(input.id) || !input.criteria.length)
+        if (!IDENTIFIER_PATTERN.test(input.id) || !input.criteria.length)
             throw new Error("invalid_definition");
         if (input.kind === "classroom" && !input.classroomId)
             throw new Error("classroom_required");
@@ -104,7 +104,7 @@ export class LeaderboardService implements LeaderboardCapability {
         const ids = new Set<string>();
         for (const criterion of input.criteria) {
             if (
-                !ID.test(criterion.id) ||
+                !IDENTIFIER_PATTERN.test(criterion.id) ||
                 ids.has(criterion.id) ||
                 !Object.keys(criterion.label).length ||
                 !Number.isInteger(criterion.priority) ||
@@ -141,7 +141,7 @@ export class LeaderboardService implements LeaderboardCapability {
         if (
             !definition ||
             !criterion ||
-            !ID.test(observation.id) ||
+            !IDENTIFIER_PATTERN.test(observation.id) ||
             !Number.isFinite(observation.value) ||
             !Number.isFinite(Date.parse(observation.observedAt)) ||
             !observation.evidenceEventIds.length

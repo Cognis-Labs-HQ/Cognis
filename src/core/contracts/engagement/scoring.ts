@@ -227,7 +227,7 @@ export class ScoringEngine implements ScoringCapability {
                 Date.parse(modifier.endsAt) >= timestamp &&
                 matchesScopes(modifier.scopes, input.scopes),
         );
-        const xp = Math.max(
+        const experiencePoints = Math.max(
             1,
             Math.round(
                 applied.reduce(
@@ -242,7 +242,7 @@ export class ScoringEngine implements ScoringCapability {
             }
         }
         const result = {
-            xp,
+            xp: experiencePoints,
             baseXp,
             completion,
             appliedModifiers: applied.map(({ id, multiplier }) => ({
@@ -252,7 +252,8 @@ export class ScoringEngine implements ScoringCapability {
         } as const;
         const activityType = input.events[0].activityType;
         const key = `${input.participantId}\0${activityType}`;
-        if ((this.bests.get(key)?.xp ?? -1) < xp) this.bests.set(key, result);
+        if ((this.bests.get(key)?.xp ?? -1) < experiencePoints)
+            this.bests.set(key, result);
         return structuredClone(result);
     }
 

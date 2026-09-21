@@ -20,7 +20,7 @@
     min-width: 260px;
 }
 
-.invite-token-target .secret-visibility-field {
+.invite-token-target > :first-child {
     flex: 1 1 auto;
     min-width: 0;
 }

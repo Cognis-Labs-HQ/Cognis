@@ -1,6 +1,7 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { updateLibraryEntry } from "/static/gateways/study/ui/library-client.js";
 import { localizedLabel } from "./presentation.js";
 
@@ -67,12 +68,26 @@ function editorBody(entry, schemas, entries, i18n) {
             relationshipEditor(relationship, entry, entries, schema.language),
         )
         .join("");
-    return `<form class="library-admin-editor" data-library-admin-editor>
-        <label><span>${escapeHtml(i18n.t("gateway.study.library_admin_label"))}</span><input name="label" value="${escapeHtml(entry.label)}" required maxlength="500"></label>
-        ${fields}
-        ${relationships}
-        <label class="library-admin-hidden"><input name="hidden" type="checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>
-    </form>`;
+    return createFormBuilder(
+        { i18n, escapeHtml },
+        {
+            formId: "library-admin-editor",
+            formClassName: "library-admin-editor",
+            formAttributes: { "data-library-admin-editor": true },
+            includeSubmitButton: false,
+            submitLabelKey: "ui.reuse.save",
+            fields: [
+                {
+                    name: "label",
+                    label: i18n.t("gateway.study.library_admin_label"),
+                    required: true,
+                    value: entry.label,
+                    maxCharacters: 500,
+                },
+            ],
+            trustedContentHtml: `${fields}${relationships}<label class="library-admin-hidden"><input name="hidden" type="checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`,
+        },
+    ).render();
 }
 
 function readFields(form, layer) {

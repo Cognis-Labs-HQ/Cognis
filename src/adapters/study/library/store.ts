@@ -15,37 +15,9 @@ import type {
     LibraryPushRequest,
     LibrarySchema,
 } from "./types.js";
-
-function mapEntry(row: Record<string, unknown>): LibraryEntry {
-    return {
-        id: String(row.id),
-        sourceRecordId:
-            row.source_record_id === null || row.source_record_id === undefined
-                ? undefined
-                : String(row.source_record_id),
-        displayId:
-            row.display_id === null || row.display_id === undefined
-                ? undefined
-                : Number(row.display_id),
-        hidden: row.hidden === true || Number(row.hidden) === 1,
-        schemaId: String(row.schema_id),
-        schemaVersion: Number(row.schema_version),
-        layer: String(row.layer),
-        language: String(row.language),
-        label: String(row.label),
-        fields: JSON.parse(String(row.fields_json ?? "{}")),
-        references: [],
-        scope: String(row.scope) as LibraryEntry["scope"],
-        scopeId: String(row.scope_id),
-        createdBy: String(row.created_by),
-        createdAt: String(row.created_at),
-        updatedAt: String(row.updated_at),
-    };
-}
-
+import { mapEntry } from "./entry-row.js";
 export class LibraryStore {
     constructor(private readonly db: DbExecutor) {}
-
     private async upsert(
         db: DbExecutor,
         table: string,
@@ -63,7 +35,6 @@ export class LibraryStore {
             },
         });
     }
-
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({
             name: "study_library_schemas",
@@ -222,7 +193,6 @@ export class LibraryStore {
             ],
         });
     }
-
     async saveSchema(schema: LibrarySchema): Promise<void> {
         const existing = await this.db.executeCommand({
             option: "SELECT",
@@ -247,7 +217,6 @@ export class LibraryStore {
             },
         });
     }
-
     async ingestContentPack(
         plan: LibraryContentPackPlan,
     ): Promise<LibraryContentPackReceipt> {
@@ -491,7 +460,6 @@ export class LibraryStore {
         });
         return this.contentPackReceipt(plan, unchanged);
     }
-
     async deleteEntries(
         entryIds: readonly string[],
         deletedBy: string,
@@ -550,7 +518,6 @@ export class LibraryStore {
         });
         return deletedEntryIds;
     }
-
     async resolveDeletionCascade(
         entryIds: readonly string[],
         db: DbExecutor = this.db,
@@ -615,7 +582,6 @@ export class LibraryStore {
         }
         return Array.from(cascadeIds);
     }
-
     private async removeDuplicateContentEntries(
         db: DbExecutor,
         canonicalId: string,
@@ -721,7 +687,6 @@ export class LibraryStore {
             });
         }
     }
-
     private contentPackAssetUrl(
         publisher: string,
         packId: string,
@@ -734,7 +699,6 @@ export class LibraryStore {
             .join("/");
         return `/api/v1/study/library/assets/${encodeURIComponent(publisher)}/${encodeURIComponent(packId)}/${encodeURIComponent(version)}/${encodedPath}`;
     }
-
     async getContentPackAsset(
         publisher: string,
         packId: string,
@@ -758,7 +722,6 @@ export class LibraryStore {
             data: Buffer.from(String(row.data_base64), "base64"),
         };
     }
-
     private contentPackReceipt(
         plan: LibraryContentPackPlan,
         unchanged: boolean,
@@ -779,7 +742,6 @@ export class LibraryStore {
             unchanged,
         };
     }
-
     async get(id: string): Promise<LibraryEntry | null> {
         const result = await this.db.executeCommand({
             option: "SELECT",
@@ -801,7 +763,6 @@ export class LibraryStore {
         }));
         return entry;
     }
-
     async list(
         location: LibraryLocation,
         filters: { schemaId?: string; layer?: string } = {},
@@ -825,7 +786,6 @@ export class LibraryStore {
             entries.filter((entry): entry is LibraryEntry => entry !== null),
         );
     }
-
     async create(
         location: LibraryLocation,
         input: LibraryEntryInput,
@@ -869,7 +829,6 @@ export class LibraryStore {
         });
         return (await this.get(id))!;
     }
-
     async update(id: string, input: LibraryEntryInput): Promise<LibraryEntry> {
         await this.db.transaction(async (transactionDb) => {
             await transactionDb.executeCommand({
@@ -905,7 +864,6 @@ export class LibraryStore {
         });
         return (await this.get(id))!;
     }
-
     async createPush(
         sourceEntryId: string,
         destination: LibraryLocation,
@@ -931,7 +889,6 @@ export class LibraryStore {
             status: "pending",
         };
     }
-
     async getPush(id: string): Promise<LibraryPushRequest | null> {
         const result = await this.db.executeCommand({
             option: "SELECT",
@@ -953,7 +910,6 @@ export class LibraryStore {
             status: String(row.status) as LibraryPushRequest["status"],
         };
     }
-
     async reviewPush(
         id: string,
         status: "approved" | "rejected",
@@ -973,7 +929,6 @@ export class LibraryStore {
             ],
         });
     }
-
     async referencesFor(targetEntryId: string): Promise<LibraryEntry[]> {
         const result = await this.db.executeCommand({
             option: "SELECT",

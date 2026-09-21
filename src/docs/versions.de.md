@@ -55,10 +55,10 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Link Share            | `src/adapters/share/link/`          | `1.1.36` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.11` |
-| Library (Study)       | `src/adapters/study/library/`       | `2.9.0`  |
+| Library (Study)       | `src/adapters/study/library/`       | `2.9.1`  |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.1.7`  |
-| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.1.3`  |
-| Console Logging       | `src/adapters/logging/console/`     | `1.1.5`  |
+| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.1.4`  |
+| Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
 | File Logging          | `src/adapters/logging/file/`        | `1.1.5`  |
 
 ## Gateways
@@ -66,23 +66,23 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                          | Version   |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.68`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.69`  |
 | Share                 | `src/gateways/share/`         | `1.7.48`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.13`  |
 | Social                | `src/gateways/social/`        | `1.3.6`   |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.10`  |
-| Registration          | `src/gateways/registration/`  | `1.1.38`  |
+| Registration          | `src/gateways/registration/`  | `1.1.39`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
-| Study                 | `src/gateways/study/`         | `1.8.18`  |
+| Study                 | `src/gateways/study/`         | `1.8.19`  |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115` |
 
 ## Kernverträge
 
 | Komponente   | Pfad        | Version   |
 | ------------ | ----------- | --------- |
-| Core Package | `src/core/` | `0.3.110` |
+| Core Package | `src/core/` | `0.3.111` |
 
 ## API
 
