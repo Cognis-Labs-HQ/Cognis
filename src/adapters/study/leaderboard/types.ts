@@ -1,4 +1,8 @@
-import type { AccessRole } from "@cognis/core";
+import type {
+    AccessRole,
+    ActivityScore,
+    ActivityScoreInput,
+} from "@cognis/core";
 
 export type RankingDirection = "ascending" | "descending";
 export type RankingValueType = "number" | "duration" | "percentage";
@@ -84,6 +88,7 @@ export interface LeaderboardTableModel {
 }
 
 export interface LeaderboardCapability {
+    listDefinitions(): readonly LeaderboardDefinition[];
     registerDefinition(definition: LeaderboardDefinition): void;
     submitObservation(
         actor: LeaderboardActor,
@@ -117,6 +122,12 @@ export interface LeaderboardCapability {
     archivedResults(
         definitionId: string,
     ): readonly { seasonId: string; rows: readonly StandingRow[] }[];
+    scoreActivity(
+        actor: LeaderboardActor,
+        definitionId: string,
+        criterionId: string,
+        activity: ActivityScoreInput,
+    ): Promise<ActivityScore>;
 }
 
 export interface ProgressEvidenceCapability {

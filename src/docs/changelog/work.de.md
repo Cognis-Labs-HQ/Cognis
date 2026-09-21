@@ -66,6 +66,10 @@ Detaillierte Darstellungen der Bibliotheksebenen werden nun als eigene Seiten au
 
 Spezifischere Adapter-SPA-Routen haben nun Vorrang vor allgemeinen untergeordneten Gateway-Routen, sodass die Bestenliste korrekt eingebunden wird. Fehlt ein optionales Übersetzungsbündel, verwendet die Study-Navigation die bereitgestellte Ersatzbezeichnung. Bibliotheksvorschauen konzentrieren sich auf Eintrag und Aussprache, während Detailkarten Aussprachen, Definitionen, Metadaten, Beziehungen und Beispiele zeigen.
 
+## Erweiterbare Wertung, Erfolge und Live-Wettbewerbe
+
+Core orchestriert nun die sammlungsbasierte EP-Wertung mit Anbieterschwierigkeit, Aktivitätsgewichtungen, zeitgerechtem Abschluss, Erstabschluss- und diskreten Wiederholungsbelohnungen, begrenzten globalen beziehungsweise anbieterspezifischen Multiplikatoren, einlösbaren Boostern und persönlichen Bestleistungen. Anbieter können dynamische normale, seltene und legendäre Erfolge registrieren; deren nachweisgestützte Auszeichnungen unveränderlich sind und auf zulässigen Profilen erscheinen. Study wandelt geprüfte Progress-Ereignissammlungen in Bestenlisten-EP um, stellt Live-Ranglisten für persönliche, Ereignis- und Klassendefinitionen bereit und animiert nachträgliche Rangänderungen unter Beachtung reduzierter Bewegung.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -81,3 +85,4 @@ Spezifischere Adapter-SPA-Routen haben nun Vorrang vor allgemeinen untergeordnet
 - [504e4b2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/504e4b2b)
 - [a0f0832a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f0832a)
 - [8d78ecd3](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d78ecd3)
+- [633e2579](https://github.com/Cognis-Labs-HQ/Cognis/commit/633e2579)

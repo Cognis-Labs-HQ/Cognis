@@ -8,6 +8,7 @@ import type {
     LeaderboardTableModel,
     ProgressEvidenceCapability,
 } from "./types.js";
+import type { ActivityScoreInput, ScoringCapability } from "@cognis/core";
 
 const ID = /^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,199}$/;
 const privileged = new Set(["admin", "owner"]);
@@ -30,12 +31,52 @@ export class LeaderboardService implements LeaderboardCapability {
     constructor(
         private readonly progress: ProgressEvidenceCapability,
         private readonly enabled = () => true,
+        private readonly scoring?: ScoringCapability,
     ) {}
+
+    async scoreActivity(
+        actor: LeaderboardActor,
+        definitionId: string,
+        criterionId: string,
+        activity: ActivityScoreInput,
+    ) {
+        this.requireEnabled();
+        if (!this.scoring) throw new Error("scoring_unavailable");
+        if (
+            actor.accountId !== activity.participantId &&
+            !privileged.has(actor.role)
+        )
+            throw new Error("forbidden_actor");
+        const definition = this.definitions.get(definitionId);
+        if (!definition?.criteria.some(({ id }) => id === criterionId))
+            throw new Error("criterion_not_found");
+        const score = this.scoring.score(activity);
+        await this.submitObservation(actor, {
+            id: `${activity.activityId}:xp`,
+            definitionId,
+            participantId: activity.participantId,
+            criterionId,
+            value: score.xp,
+            observedAt: activity.completedAt,
+            evidenceEventIds: activity.events.map(({ id }) => id),
+            seasonId: definition.season?.id,
+            cohortId: this.cohorts.get(
+                this.key(activity.participantId, definitionId),
+            ),
+        });
+        return score;
+    }
     private key(participantId: string, definitionId: string) {
         return `${definitionId}\0${participantId}`;
     }
     private requireEnabled() {
         if (!this.enabled()) throw new Error("adapter_disabled");
+    }
+    listDefinitions() {
+        this.requireEnabled();
+        return [...this.definitions.values()].map((definition) =>
+            structuredClone(definition),
+        );
     }
 
     registerDefinition(input: LeaderboardDefinition): void {

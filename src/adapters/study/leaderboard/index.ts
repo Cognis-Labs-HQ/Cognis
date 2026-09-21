@@ -1,4 +1,4 @@
-import type { Ctx } from "@cognis/core";
+import type { Ctx, ScoringCapability } from "@cognis/core";
 import type {
     StudyAdapter,
     StudyAdapterBootstrapCtx,
@@ -7,6 +7,8 @@ import { LeaderboardService } from "./service.js";
 import type { ProgressEvidenceCapability } from "./types.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import type { RouteContext } from "../../../api/reuse/route-context.js";
+import { createLeaderboardRoutes } from "./routes/index.js";
 
 let ready = false;
 const UI_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "ui");
@@ -27,7 +29,9 @@ export async function bootstrapStudyAdapter(
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
     const progress =
         ctx.capabilities.get<ProgressEvidenceCapability>("study:progress");
-    if (!systemCtx || !progress) {
+    const scoring =
+        ctx.capabilities.get<ScoringCapability>("engagement:scoring");
+    if (!systemCtx || !progress || !scoring) {
         await ctx.log?.(
             "error",
             "Study/leaderboard requires the Study Progress capability.",
@@ -54,9 +58,18 @@ export async function bootstrapStudyAdapter(
     ] as const)
         if (!systemCtx.hasFlow(id))
             systemCtx.registerFlow({ id, description, stages: [...stages] });
-    ctx.capabilities.contribute(
-        "study:leaderboard",
-        new LeaderboardService(progress, () => ctx.isAdapterEnabled()),
+    const service = new LeaderboardService(
+        progress,
+        () => ctx.isAdapterEnabled(),
+        scoring,
+    );
+    ctx.capabilities.contribute("study:leaderboard", service);
+    ctx.registerRoute(
+        createLeaderboardRoutes(
+            service,
+            ctx.capabilities.get<RouteContext>("auth:routeContext"),
+        ),
+        "study",
     );
     ctx.registerAdapterStaticDir?.("study", "leaderboard", UI_ROOT);
     ctx.registerSpaRoute?.({

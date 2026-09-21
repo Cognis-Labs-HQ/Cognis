@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { LeaderboardService } from "../service.js";
 import type { LeaderboardDefinition } from "../types.js";
+import { ScoringEngine } from "@cognis/core";
 
 const events = new Map(
     [
@@ -148,6 +149,7 @@ test("weighted ranking is explicit and rolling observations expire", async () =>
     const service = new LeaderboardService(progress);
     service.registerDefinition({
         ...definition,
+        minimumCohortSize: 1,
         id: "weighted",
         strategy: "weighted",
         season: undefined,
@@ -169,4 +171,47 @@ test("weighted ranking is explicit and rolling observations expire", async () =>
         ).total,
         0,
     );
+});
+
+test("activity collections score through core and become evidence-backed XP", async () => {
+    const scoring = new ScoringEngine();
+    const service = new LeaderboardService(progress, () => true, scoring);
+    service.registerDefinition({
+        ...definition,
+        minimumCohortSize: 1,
+        criteria: [
+            {
+                ...definition.criteria[0],
+                id: "xp",
+                valueType: "number",
+                window: { kind: "allTime" },
+            },
+        ],
+    });
+    service.setParticipation("alice", "weekly", {
+        optedIn: true,
+        alias: "alice",
+    });
+    const score = await service.scoreActivity(actor("alice"), "weekly", "xp", {
+        activityId: "activity-a",
+        participantId: "alice",
+        providerId: "study-language-ja",
+        difficulty: 2,
+        completedAt: "2026-09-01T00:00:00.000Z",
+        events: [
+            {
+                id: "a",
+                activityType: "writing",
+                correct: true,
+                independentCorrect: true,
+                hints: 0,
+                durationMs: 1_000,
+            },
+        ],
+    });
+    const standings = await service.queryStandings({
+        definitionId: "weekly",
+        viewerId: "alice",
+    });
+    assert.equal(standings.rows[0].criteria.xp, score.xp);
 });

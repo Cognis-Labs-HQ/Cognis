@@ -66,6 +66,10 @@ Tampilan terperinci setiap lapisan Pustaka kini dibuka sebagai halaman tersendir
 
 Rute SPA adapter yang lebih spesifik kini didahulukan daripada rute turunan gateway generik sehingga Papan peringkat dapat dimuat dengan benar. Navigasi Study memakai label cadangan yang disediakan saat bundel terjemahan opsional tidak tersedia. Pratinjau Pustaka kini berfokus pada item dan pelafalan, sedangkan kartu detail menampilkan pelafalan, definisi, metadata, hubungan, dan contoh.
 
+## Skor, pencapaian, dan kompetisi langsung yang dapat diperluas
+
+Core kini mengorkestrasi skor XP berbasis kumpulan dengan tingkat kesulitan penyedia, bobot aktivitas, penyelesaian tepat waktu, hadiah penyelesaian pertama dan pengulangan diskret, pengali global atau penyedia berbasis cakupan, booster yang dapat ditukarkan, serta rekor pribadi. Penyedia dapat mendaftarkan pencapaian dinamis normal, langka, dan legendaris dengan penghargaan berbasis bukti yang tidak dapat diubah dan terlihat pada profil yang diizinkan. Study mengubah kumpulan peristiwa Progress terverifikasi menjadi XP papan peringkat, menyajikan peringkat langsung untuk definisi pribadi, acara, dan kelas, serta menganimasikan perubahan peringkat retrospektif dengan dukungan pengurangan gerakan.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -81,3 +85,4 @@ Rute SPA adapter yang lebih spesifik kini didahulukan daripada rute turunan gate
 - [504e4b2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/504e4b2b)
 - [a0f0832a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f0832a)
 - [8d78ecd3](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d78ecd3)
+- [633e2579](https://github.com/Cognis-Labs-HQ/Cognis/commit/633e2579)

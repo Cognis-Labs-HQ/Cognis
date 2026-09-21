@@ -12,6 +12,8 @@ import {
     CapabilityStore,
     HealthService,
     ModuleMarketplaceService,
+    ScoringEngine,
+    AchievementRegistry,
     type BootstrapLog,
 } from "@cognis/core";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
@@ -276,6 +278,46 @@ const gatewayService = new GatewayService(gatewayRegistry);
 // as ctx.flow — no capability unwrapping required.
 const systemCtx = createCtx();
 capabilities.contribute("system:ctx", systemCtx);
+const scoringEngine = new ScoringEngine();
+const achievementRegistry = new AchievementRegistry();
+systemCtx.registerFlow({
+    id: "engagement:scoreActivity",
+    description: "Score a completed collection of learning events.",
+    stages: ["validate", "score", "achievements", "publish"],
+});
+systemCtx.registerFlow({
+    id: "engagement:evaluateAchievements",
+    description: "Evaluate immutable achievement awards for scored activity.",
+    stages: ["collect", "evaluate", "award"],
+});
+systemCtx.flow.extend(
+    "engagement:scoreActivity",
+    "score",
+    { id: "core-engagement:score" },
+    ({ input }) =>
+        scoringEngine.score(input as Parameters<ScoringEngine["score"]>[0]),
+);
+systemCtx.flow.extend(
+    "engagement:scoreActivity",
+    "achievements",
+    { id: "core-engagement:achievements" },
+    ({ input, stageResults }) => {
+        const score = stageResults.score?.[0] as ReturnType<
+            ScoringEngine["score"]
+        >;
+        return achievementRegistry.evaluate(
+            input as Parameters<ScoringEngine["score"]>[0],
+            score,
+        );
+    },
+);
+systemCtx.contributeCapability("engagement:scoring", scoringEngine);
+systemCtx.contributeCapability("engagement:achievements", achievementRegistry);
+systemCtx.contributeCapability("engagement:recordActivity", (input: unknown) =>
+    systemCtx.flow.run("engagement:scoreActivity", input),
+);
+capabilities.contribute("engagement:scoring", scoringEngine);
+capabilities.contribute("engagement:achievements", achievementRegistry);
 capabilities.contribute(PASSPHRASE_CAPABILITY, generatePassphrase);
 systemCtx.contributeCapability(PASSPHRASE_CAPABILITY, generatePassphrase);
 const shutdownHandlers = new Set<() => Promise<void>>();

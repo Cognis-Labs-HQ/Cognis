@@ -17,6 +17,7 @@ import {
     replaceProfileMedia,
     type ProfileMediaMutationResult,
 } from "./media-flow-hooks.js";
+import type { AchievementCapability } from "@cognis/core";
 
 const VALID_VISIBILITY = new Set<AccountVisibility>([
     "hidden",
@@ -46,6 +47,7 @@ function profileResponse(
     followerCount: number | null,
     followingCount: number | null,
     postCount: number | null,
+    achievements: ReturnType<AchievementCapability["list"]> = [],
 ) {
     return {
         accountId: profile.accountId,
@@ -64,6 +66,7 @@ function profileResponse(
         postCount,
         createdAt: profile.createdAt,
         updatedAt: profile.updatedAt,
+        achievements,
     };
 }
 
@@ -152,6 +155,9 @@ export function createProfileRoutes(
     routeContext?: RouteContext,
 ) {
     const ctx = resolveRouteContext(routeContext);
+    const achievements = ctx.getCapability<AchievementCapability>(
+        "engagement:achievements",
+    );
     const flowApi = ctx.flow;
     return async (
         req: IncomingMessage,
@@ -241,6 +247,7 @@ export function createProfileRoutes(
                         followerCount,
                         followingCount,
                         posts.length,
+                        achievements?.list(profile.accountId) ?? [],
                     ),
                 }),
             );
@@ -907,6 +914,7 @@ export function createProfileRoutes(
                               followerCount,
                               followingCount,
                               posts.length,
+                              achievements?.list(target.accountId) ?? [],
                           )
                         : minimalProfileResponse(target),
                 }),

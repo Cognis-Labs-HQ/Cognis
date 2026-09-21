@@ -66,6 +66,10 @@ Detailed Library layer presentations now open as dedicated pages from the Study 
 
 More-specific adapter SPA routes now win over generic gateway child routes, so the Leaderboard mounts correctly. Study navigation falls back to its supplied label when an optional translation bundle is absent. Library previews now focus on the item and pronunciation, while detail cards expose pronunciations, definitions, metadata, relationships, and examples.
 
+## Extensible scoring, achievements, and live competition
+
+Core now orchestrates collection-based XP scoring with provider difficulty, activity weights, timed completion, first-completion and discrete repeat rewards, scoped global/provider modifiers, consumable boosters, and personal bests. Providers can register dynamic normal, rare, and legendary achievements whose evidence-backed awards are immutable and visible on permitted profiles. Study converts verified Progress event collections into leaderboard XP, serves live standings for personal, event, and classroom definitions, and animates retrospective rank movement with reduced-motion support.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -81,3 +85,4 @@ More-specific adapter SPA routes now win over generic gateway child routes, so t
 - [504e4b2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/504e4b2b)
 - [a0f0832a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f0832a)
 - [8d78ecd3](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d78ecd3)
+- [633e2579](https://github.com/Cognis-Labs-HQ/Cognis/commit/633e2579)

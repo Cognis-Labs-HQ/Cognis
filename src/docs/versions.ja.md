@@ -49,7 +49,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.24`   |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.38`   |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.22`   |
-| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.12`   |
+| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.13`   |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.7.19`   |
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.34`   |
 | Link Share            | `src/adapters/share/link/`          | `1.1.36`   |
@@ -57,7 +57,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.11`   |
 | Library (Study)       | `src/adapters/study/library/`       | `2.7.19`   |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.1.7`    |
-| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.0.2`    |
+| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.1.0`    |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.5`    |
 | File Logging          | `src/adapters/logging/file/`        | `1.1.5`    |
 
@@ -82,13 +82,13 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス        | バージョン |
 | -------------- | ----------- | ---------- |
-| Core Package   | `src/core/` | `0.3.108`  |
+| Core Package   | `src/core/` | `0.3.109`  |
 
 ## API
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.6.3`    |
+| API Server     | `src/api/` | `0.6.4`    |
 
 ## ツール
 
