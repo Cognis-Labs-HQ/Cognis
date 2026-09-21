@@ -94,6 +94,10 @@ Study adapter bootstrap now runs independent adapters concurrently while preserv
 
 The base Cognis URL now returns its dashboard redirect before persisted module and gateway state restoration finishes. Nginx and Kubernetes health checks therefore receive an immediate response instead of timing out with HTTP 499 while runtime extensions initialize.
 
+## Health endpoints available during restoration
+
+Both container health endpoints now bypass the runtime-state restoration barrier, matching the Docker healthcheck script that probes `/api/v1/system/health`. This allows the Cognis container to become healthy so the dependent Nginx service can start.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -116,3 +120,4 @@ The base Cognis URL now returns its dashboard redirect before persisted module a
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
 - [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
 - [89294560](https://github.com/Cognis-Labs-HQ/Cognis/commit/89294560)
+- [bedc1992](https://github.com/Cognis-Labs-HQ/Cognis/commit/bedc1992)

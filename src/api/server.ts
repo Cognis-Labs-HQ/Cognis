@@ -765,12 +765,18 @@ export function buildServer(deps: ApiDependencies) {
             path: url.pathname,
         });
 
-        // The base URL is also the container's liveness probe. It must remain
-        // responsive while persisted module and gateway state is restored;
-        // otherwise the proxy can repeatedly restart an otherwise healthy
-        // application before initialization completes.
+        // Startup probes must remain responsive while persisted module and
+        // gateway state is restored; otherwise the web proxy never starts.
         if (url.pathname === "/") {
             await uiRoutes(req, res, url);
+            return;
+        }
+        if (
+            req.method === "GET" &&
+            (url.pathname === "/api/v1/system/health" ||
+                url.pathname === "/api/v1/system/healthcheck")
+        ) {
+            await systemRoutes(req, res, url);
             return;
         }
 

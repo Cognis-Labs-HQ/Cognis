@@ -94,6 +94,10 @@ Der Start der Study-Adapter führt unabhängige Adapter nun parallel aus und beh
 
 Die Cognis-Basis-URL liefert ihre Dashboard-Weiterleitung jetzt aus, bevor die Wiederherstellung gespeicherter Modul- und Gateway-Zustände abgeschlossen ist. Nginx- und Kubernetes-Gesundheitsprüfungen erhalten dadurch sofort eine Antwort, statt während der Initialisierung von Laufzeiterweiterungen mit HTTP 499 abzulaufen.
 
+## Gesundheitsendpunkte während der Wiederherstellung verfügbar
+
+Beide Container-Gesundheitsendpunkte umgehen nun die Sperre der Laufzeit-Zustandswiederherstellung. Dies entspricht dem Docker-Gesundheitsprüfungsskript, das `/api/v1/system/health` abfragt. Dadurch kann der Cognis-Container gesund werden und der abhängige Nginx-Dienst starten.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -116,3 +120,4 @@ Die Cognis-Basis-URL liefert ihre Dashboard-Weiterleitung jetzt aus, bevor die W
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
 - [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
 - [89294560](https://github.com/Cognis-Labs-HQ/Cognis/commit/89294560)
+- [bedc1992](https://github.com/Cognis-Labs-HQ/Cognis/commit/bedc1992)

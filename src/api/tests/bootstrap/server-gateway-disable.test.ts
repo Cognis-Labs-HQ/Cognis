@@ -484,7 +484,7 @@ test("buildServer serves system health from the injected health service", async 
     }
 });
 
-test("buildServer responds at the root before runtime state restoration completes", async () => {
+test("buildServer responds to startup probes before runtime state restoration completes", async () => {
     const runtimeStatePending = new Promise<never>(() => {});
     const server = buildServer({
         moduleRuntimeGateway: {
@@ -502,6 +502,18 @@ test("buildServer responds at the root before runtime state restoration complete
 
         assert.equal(response.status, 302);
         assert.equal(response.headers.get("location"), "/dashboard");
+
+        const healthResponse = await fetch(
+            `http://127.0.0.1:${port}/api/v1/system/health`,
+            { signal: AbortSignal.timeout(1_000) },
+        );
+        assert.equal(healthResponse.status, 200);
+
+        const healthcheckResponse = await fetch(
+            `http://127.0.0.1:${port}/api/v1/system/healthcheck`,
+            { signal: AbortSignal.timeout(1_000) },
+        );
+        assert.equal(healthcheckResponse.status, 200);
     } finally {
         await close(server);
     }

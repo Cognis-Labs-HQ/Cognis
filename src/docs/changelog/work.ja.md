@@ -94,6 +94,10 @@ Study アダプターのブートストラップは、宣言された依存関�
 
 Cognis のベース URL は、保存されたモジュールおよびゲートウェイ状態の復元が完了する前に、ダッシュボードへのリダイレクトを返すようになりました。これにより、Nginx と Kubernetes のヘルスチェックは、ランタイム拡張の初期化中に HTTP 499 でタイムアウトせず、直ちに応答を受け取れます。
 
+## 復元中もヘルスエンドポイントを利用可能
+
+両方のコンテナーヘルスエンドポイントがランタイム状態復元の待機を回避するようになり、`/api/v1/system/health` を検査する Docker ヘルスチェックスクリプトと一致しました。これにより Cognis コンテナーが正常状態になり、依存する Nginx サービスを起動できます。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -116,3 +120,4 @@ Cognis のベース URL は、保存されたモジュールおよびゲート�
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
 - [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
 - [89294560](https://github.com/Cognis-Labs-HQ/Cognis/commit/89294560)
+- [bedc1992](https://github.com/Cognis-Labs-HQ/Cognis/commit/bedc1992)

@@ -94,6 +94,10 @@ Bootstrap adapter Study kini menjalankan adapter independen secara bersamaan den
 
 URL dasar Cognis kini mengembalikan pengalihan dashboard sebelum pemulihan status modul dan gateway tersimpan selesai. Dengan demikian, pemeriksaan kesehatan Nginx dan Kubernetes segera menerima respons alih-alih mengalami waktu habis dengan HTTP 499 saat ekstensi runtime diinisialisasi.
 
+## Endpoint kesehatan tersedia selama pemulihan
+
+Kedua endpoint kesehatan kontainer kini melewati penghalang pemulihan status runtime, sesuai dengan skrip pemeriksaan kesehatan Docker yang memeriksa `/api/v1/system/health`. Dengan demikian, kontainer Cognis dapat menjadi sehat sehingga layanan Nginx yang bergantung padanya dapat dimulai.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -116,3 +120,4 @@ URL dasar Cognis kini mengembalikan pengalihan dashboard sebelum pemulihan statu
 - [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
 - [dd89e8c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd89e8c9)
 - [89294560](https://github.com/Cognis-Labs-HQ/Cognis/commit/89294560)
+- [bedc1992](https://github.com/Cognis-Labs-HQ/Cognis/commit/bedc1992)
