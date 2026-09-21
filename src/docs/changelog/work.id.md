@@ -62,6 +62,10 @@ Kontrak kompatibilitas modul berhak istimewa dari baseline development dipulihka
 
 Tampilan terperinci setiap lapisan Pustaka kini dibuka sebagai halaman tersendiri dari subnavigasi Study. Halaman utama Pustaka administrator memakai indeks lapisan yang ringkas dan konsisten dengan jumlah entri, dan submenu Study kini mencakup halaman Papan peringkat yang dilokalkan.
 
+## Halaman Study andal dan kartu Pustaka terfokus
+
+Rute SPA adapter yang lebih spesifik kini didahulukan daripada rute turunan gateway generik sehingga Papan peringkat dapat dimuat dengan benar. Navigasi Study memakai label cadangan yang disediakan saat bundel terjemahan opsional tidak tersedia. Pratinjau Pustaka kini berfokus pada item dan pelafalan, sedangkan kartu detail menampilkan pelafalan, definisi, metadata, hubungan, dan contoh.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -76,3 +80,4 @@ Tampilan terperinci setiap lapisan Pustaka kini dibuka sebagai halaman tersendir
 - [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)
 - [504e4b2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/504e4b2b)
 - [a0f0832a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f0832a)
+- [8d78ecd3](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d78ecd3)

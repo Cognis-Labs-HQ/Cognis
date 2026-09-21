@@ -62,6 +62,10 @@ development基準の特権モジュール互換契約を復元しました。特
 
 ライブラリ各階層の詳細表示を、Studyサブナビゲーションから開く専用ページへ移しました。管理者向けライブラリのルートは、項目数を示す簡潔で統一された階層一覧になり、Studyサブメニューにはローカライズされたリーダーボードページも追加されました。
 
+## 安定したStudyページと要点を絞ったライブラリカード
+
+より具体的なアダプターSPAルートを汎用ゲートウェイ子ルートより優先し、リーダーボードを正しくマウントできるようにしました。任意の翻訳バンドルがない場合、Studyナビゲーションは提供された代替ラベルを使用します。ライブラリのプレビューは項目と読み方に絞り、詳細カードでは読み方、定義、メタデータ、関係、用例を表示します。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -76,3 +80,4 @@ development基準の特権モジュール互換契約を復元しました。特
 - [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)
 - [504e4b2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/504e4b2b)
 - [a0f0832a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f0832a)
+- [8d78ecd3](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d78ecd3)

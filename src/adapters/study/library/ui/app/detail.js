@@ -7,6 +7,7 @@ import {
     localizedLabel,
     localizedTextValue,
     metadataFields,
+    pronunciationValues,
     relationSection,
     renderAudio,
     renderDetailFields,
@@ -86,8 +87,26 @@ function coreSections(detail, schemas, entries, i18n) {
                       ];
             }),
     );
+    const definitions = references
+        .filter((candidate) =>
+            isMeaningLayer(layerForEntry(schemas, candidate)),
+        )
+        .map((definition) =>
+            definitionText(
+                definition,
+                layerForEntry(schemas, definition),
+                entry.language,
+            ),
+        )
+        .filter(Boolean);
+    const pronunciations = pronunciationValues(entry);
     return [
         `<header class="library-detail-summary">${renderAudio(entry, layer)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
+        section(
+            i18n.t("gateway.study.library_relationship_pronunciation"),
+            pronunciations,
+        ),
+        section(i18n.t("gateway.study.library_definitions"), definitions),
         renderDetailFields(genericFields),
         relatedWords.length
             ? relationSection(

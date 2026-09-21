@@ -62,6 +62,10 @@ Der Kompatibilitätsvertrag der Entwicklungsbasis für privilegierte Module ist 
 
 Detaillierte Darstellungen der Bibliotheksebenen werden nun als eigene Seiten aus der Study-Unternavigation geöffnet. Die Bibliothekswurzel für Administratoren verwendet einen kompakten, einheitlichen Ebenenindex mit Eintragszahlen, und das Study-Untermenü enthält nun eine lokalisierte Bestenlistenseite.
 
+## Zuverlässige Study-Seiten und fokussierte Bibliothekskarten
+
+Spezifischere Adapter-SPA-Routen haben nun Vorrang vor allgemeinen untergeordneten Gateway-Routen, sodass die Bestenliste korrekt eingebunden wird. Fehlt ein optionales Übersetzungsbündel, verwendet die Study-Navigation die bereitgestellte Ersatzbezeichnung. Bibliotheksvorschauen konzentrieren sich auf Eintrag und Aussprache, während Detailkarten Aussprachen, Definitionen, Metadaten, Beziehungen und Beispiele zeigen.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -76,3 +80,4 @@ Detaillierte Darstellungen der Bibliotheksebenen werden nun als eigene Seiten au
 - [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)
 - [504e4b2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/504e4b2b)
 - [a0f0832a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f0832a)
+- [8d78ecd3](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d78ecd3)

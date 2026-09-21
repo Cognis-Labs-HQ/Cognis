@@ -62,6 +62,10 @@ The development baseline's privileged-module compatibility contract is restored:
 
 Detailed Library layer presentations now open as dedicated pages from the Study sub-navigation. The administrator Library root uses a compact, consistent layer index with entry counts, and the Study submenu now includes a localized Leaderboard page.
 
+## Reliable Study pages and focused Library cards
+
+More-specific adapter SPA routes now win over generic gateway child routes, so the Leaderboard mounts correctly. Study navigation falls back to its supplied label when an optional translation bundle is absent. Library previews now focus on the item and pronunciation, while detail cards expose pronunciations, definitions, metadata, relationships, and examples.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -76,3 +80,4 @@ Detailed Library layer presentations now open as dedicated pages from the Study 
 - [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)
 - [504e4b2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/504e4b2b)
 - [a0f0832a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f0832a)
+- [8d78ecd3](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d78ecd3)

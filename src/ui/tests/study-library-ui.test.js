@@ -168,6 +168,20 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(adapterSource, /\/static\/gateways\/study\/study\.css/);
 });
 
+test("Study Library keeps previews concise and details informative", () => {
+    const cards = readFileSync(
+        resolve(ROOT, "src/adapters/study/library/ui/app/cards.js"),
+        "utf8",
+    );
+    const detail = readFileSync(
+        resolve(ROOT, "src/adapters/study/library/ui/app/detail.js"),
+        "utf8",
+    );
+    assert.doesNotMatch(cards, /library-card-definition/);
+    assert.match(detail, /gateway\.study\.library_definitions/);
+    assert.match(detail, /pronunciationValues\(entry\)/);
+});
+
 test("Study Library integrates definitions and particles into item details", () => {
     assert.match(source, /field\.type === "localizedText"/);
     assert.match(source, /localizedTextValue\(fields\[field\.id\]\)/);
@@ -474,15 +488,10 @@ test("Study Library cards use opaque theme surfaces", () => {
     assert.doesNotMatch(minimalCardRule, /background:\s*transparent/);
 });
 
-test("Study Library card definitions truncate without dropping detail data", () => {
-    assert.match(source, /function cardDefinitions/);
-    assert.match(source, /definitions[\s\S]*\.map\(\(definition\)/);
-    assert.match(source, /\.join\(" · "\)/);
-    assert.match(
-        stylesheet,
-        /\.library-card-definition[\s\S]*overflow:\s*hidden[\s\S]*text-overflow:\s*ellipsis[\s\S]*white-space:\s*nowrap/,
-    );
-    assert.match(source, /const definitions = \(detail\.references/);
+test("Study Library moves definitions from previews into detail cards", () => {
+    assert.doesNotMatch(source, /library-card-definition/);
+    assert.match(source, /const definitions = references/);
+    assert.match(source, /gateway\.study\.library_definitions/);
 });
 
 test("Study Library honors module-defined grid layouts", () => {

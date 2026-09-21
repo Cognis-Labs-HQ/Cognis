@@ -324,9 +324,13 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             const rawPageUrl = String(component?.pageUrl ?? "").trim();
             if (!rawPageUrl) return "";
             const pageUrl = rawPageUrl;
-            const label = component?.labelKey
+            const translatedLabel = component?.labelKey
                 ? i18n.t(component.labelKey)
-                : String(component?.label ?? pageUrl);
+                : "";
+            const label =
+                translatedLabel && translatedLabel !== component?.labelKey
+                    ? translatedLabel
+                    : String(component?.label ?? pageUrl);
             const activeClass = rawPageUrl === currentPath ? " active" : "";
             return `
                 <li>
