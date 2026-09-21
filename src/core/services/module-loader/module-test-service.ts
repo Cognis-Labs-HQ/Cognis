@@ -180,7 +180,12 @@ export class ModuleTestService {
     async run(moduleId: string): Promise<void> {
         const moduleRoot = await this.findModuleRoot(moduleId);
         if (!moduleRoot) return;
-        await validateModuleBoundaries(moduleRoot, { moduleId });
+        const manifest = JSON.parse(
+            await readFile(path.join(moduleRoot, "manifest.json"), "utf8"),
+        ) as { privileged?: unknown };
+        if (manifest.privileged !== true) {
+            await validateModuleBoundaries(moduleRoot, { moduleId });
+        }
         const testFiles = await discoverTestFiles(moduleRoot);
         if (testFiles.length === 0) return;
         try {

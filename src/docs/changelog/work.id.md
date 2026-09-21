@@ -54,6 +54,10 @@ Indeks versi kini memakai nama paket bahasa Inggris kanonis di setiap varian bah
 
 Aktivasi modul kini hanya mewajibkan modul yang diminta selama penyegaran runtime ketat, sehingga modul tidak valid atau nonaktif yang tidak terkait tidak dapat membatalkan aktivasi yang valid, termasuk modul bahasa Study. Bootstrap konfigurasi nonaktif hanya memvalidasi pohon sumber API sisi server, sedangkan validasi batas lengkap tetap wajib sebelum aktivasi.
 
+## Kompatibilitas modul berhak istimewa dipulihkan
+
+Kontrak kompatibilitas modul berhak istimewa dari baseline development dipulihkan: modul berhak istimewa dapat memakai integrasi runtime host yang dideklarasikan tanpa ditolak oleh pemindaian batas modul tanpa hak istimewa yang lebih baru. Modul tanpa hak istimewa tetap dipindai sepenuhnya, dan pengujian milik modul tetap dijalankan untuk kedua kelas.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -66,3 +70,4 @@ Aktivasi modul kini hanya mewajibkan modul yang diminta selama penyegaran runtim
 - [2b097121](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b097121)
 - [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)
 - [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)
+- [504e4b2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/504e4b2b)

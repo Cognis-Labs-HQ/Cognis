@@ -809,10 +809,14 @@ export function createModuleExtensionRoutes(
             if (!moduleEnabled) {
                 if (!disabledApiEntrypoint) continue;
                 try {
-                    await validateModuleBoundaries(moduleRoot, {
-                        moduleId: manifest.id,
-                        sourceRoot: path.dirname(disabledApiEntrypoint.path),
-                    });
+                    if (!privilege.requested) {
+                        await validateModuleBoundaries(moduleRoot, {
+                            moduleId: manifest.id,
+                            sourceRoot: path.dirname(
+                                disabledApiEntrypoint.path,
+                            ),
+                        });
+                    }
                     const plugin = (await import(
                         `${disabledApiEntrypoint.path}?t=${Date.now()}`
                     )) as ModuleDisabledApiPlugin & ModulePlugin;

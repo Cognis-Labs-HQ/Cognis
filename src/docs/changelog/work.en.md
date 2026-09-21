@@ -54,6 +54,10 @@ Version indexes now use the canonical English package names in every language va
 
 Module activation now treats only the requested module as mandatory during the strict runtime refresh, so unrelated invalid or disabled modules cannot roll back a valid activation, including Study language modules. Disabled configuration bootstraps validate only their server-side API source tree, while full boundary validation remains mandatory before activation.
 
+## Privileged module compatibility restored
+
+The development baseline's privileged-module compatibility contract is restored: privileged modules may use their declared host runtime integrations without being rejected by the newer unprivileged-module boundary scan. Unprivileged modules remain fully scanned, and module-owned tests still run for both classes.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -66,3 +70,4 @@ Module activation now treats only the requested module as mandatory during the s
 - [2b097121](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b097121)
 - [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)
 - [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)
+- [504e4b2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/504e4b2b)

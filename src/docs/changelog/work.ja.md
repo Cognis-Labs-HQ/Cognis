@@ -54,6 +54,10 @@ Study Libraryブラウザーのエントリポイントを小さなページ調�
 
 モジュール有効化時の厳密なランタイム更新では、要求されたモジュールだけを必須として扱うようにしました。これにより、無関係な無効モジュールや検証不合格モジュールが、Study言語モジュールを含む正常な有効化を取り消すことはありません。無効時の設定ブートストラップはサーバー側APIソースツリーだけを検証し、有効化前には引き続き完全な境界検証を必須とします。
 
+## 特権モジュールの互換性を復元
+
+development基準の特権モジュール互換契約を復元しました。特権モジュールは、宣言済みのホストランタイム連携を、新しい非特権モジュール境界検査で拒否されずに利用できます。非特権モジュールには引き続き完全な検査を実施し、どちらのクラスでもモジュール所有のテストを実行します。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -66,3 +70,4 @@ Study Libraryブラウザーのエントリポイントを小さなページ調�
 - [2b097121](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b097121)
 - [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)
 - [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)
+- [504e4b2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/504e4b2b)

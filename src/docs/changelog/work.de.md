@@ -54,6 +54,10 @@ Die Versionsverzeichnisse verwenden nun in allen Sprachvarianten die kanonischen
 
 Bei der Modulaktivierung gilt während der strikten Laufzeitaktualisierung nun nur das angeforderte Modul als zwingend. Dadurch können unabhängige ungültige oder deaktivierte Module eine gültige Aktivierung – einschließlich Study-Sprachmodulen – nicht mehr zurückrollen. Deaktivierte Konfigurations-Bootstraps prüfen nur ihren serverseitigen API-Quellbaum; vor der Aktivierung bleibt die vollständige Grenzprüfung verpflichtend.
 
+## Kompatibilität privilegierter Module wiederhergestellt
+
+Der Kompatibilitätsvertrag der Entwicklungsbasis für privilegierte Module ist wiederhergestellt: Privilegierte Module können ihre deklarierten Host-Laufzeitintegrationen verwenden, ohne von der neueren Grenzprüfung für nicht privilegierte Module abgelehnt zu werden. Nicht privilegierte Module werden weiterhin vollständig geprüft, und moduleigene Tests laufen für beide Klassen.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -66,3 +70,4 @@ Bei der Modulaktivierung gilt während der strikten Laufzeitaktualisierung nun n
 - [2b097121](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b097121)
 - [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)
 - [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)
+- [504e4b2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/504e4b2b)

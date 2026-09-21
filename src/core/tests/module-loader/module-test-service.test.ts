@@ -21,6 +21,20 @@ async function createModule(testBody: string) {
     return { root, moduleRoot };
 }
 
+test("privileged compatibility modules retain host runtime access", async () => {
+    const { root, moduleRoot } = await createModule("export {};\n");
+    await writeFile(
+        path.join(moduleRoot, "manifest.json"),
+        JSON.stringify({ id: "example-module", privileged: true }),
+    );
+    await writeFile(
+        path.join(moduleRoot, "legacy-ui.js"),
+        'import "/static/reuse/app-router.js";\nexport const usersUrl = "/api/v1/users";\n',
+    );
+
+    await new ModuleTestService([root]).run("example-module");
+});
+
 test("module tests discover standard JavaScript and TypeScript test files", async () => {
     const { moduleRoot } = await createModule("export {};\n");
     await writeFile(
