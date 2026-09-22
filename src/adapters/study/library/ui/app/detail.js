@@ -7,7 +7,6 @@ import {
     localizedLabel,
     localizedTextValue,
     metadataFields,
-    pronunciationValues,
     relationSection,
     renderAudio,
     renderDetailFields,
@@ -17,6 +16,7 @@ import {
     section,
 } from "./presentation.js";
 import { definitionDisplay } from "./definition-display.js";
+import { similarEntries } from "./similar-items.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
 
@@ -110,14 +110,6 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
                       ),
                   relatedWords,
                   i18n.t("gateway.study.library_no_relationships"),
-                  (candidate) => {
-                      const pronunciation = pronunciationValues(candidate)
-                          .filter((value) => value !== candidate.label)
-                          .join(" · ");
-                      return pronunciation
-                          ? `${candidate.label} ${pronunciation}`
-                          : candidate.label;
-                  },
               )
             : "",
         !options.showReferenceTree && directExamples.length
@@ -132,6 +124,13 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
                   i18n.t("gateway.study.library_used_by"),
                   otherUsedBy,
                   i18n.t("gateway.study.library_no_relationships"),
+              )
+            : "",
+        !options.showReferenceTree
+            ? relationSection(
+                  i18n.t("gateway.study.library_similar_items"),
+                  similarEntries(entry, entries),
+                  i18n.t("gateway.study.library_no_similar_items"),
               )
             : "",
     ].filter(Boolean);

@@ -56,7 +56,7 @@ Layers with the `atomicWritingUnit` or `compoundWritingUnit` role declare requir
 
 ## Metadata filter groups
 
-A badge field can set `detail.group` to place related filters together and `detail.exclusive` to control selection. When every field in a group declares `exclusive: true`, choosing a pill clears the group's previous choice. The default `false` permits multiple selected pills. Every field in a named group must use the same exclusivity setting.
+A badge field is filterable by default, and providers may set `detail.filterable: true` on other primitive or localized metadata fields to expose their values as learner-facing filters. Filterable fields can set `detail.group` to place related filters together and `detail.exclusive` to control selection. When every field in a group declares `exclusive: true`, choosing a pill clears the group's previous choice. The default `false` permits multiple selected pills. Every field in a named group must use the same exclusivity setting.
 
 ## Authenticated audio playback
 

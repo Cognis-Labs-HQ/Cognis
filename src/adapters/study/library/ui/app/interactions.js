@@ -77,7 +77,21 @@ export function bindLibraryInteractions(root, context) {
     };
     root.addEventListener(
         "pointerover",
-        (event) => markViewed(event.target.closest("[data-library-entry]")),
+        (event) => {
+            const status = event.target.closest("[data-library-entry-status]");
+            const control = event.target.closest("[data-library-entry]");
+            markViewed(
+                control ??
+                    (status
+                        ? {
+                              dataset: {
+                                  libraryEntry:
+                                      status.dataset.libraryEntryStatus,
+                              },
+                          }
+                        : null),
+            );
+        },
         { signal },
     );
     bindVariantInteractions(root, {

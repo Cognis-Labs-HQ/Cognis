@@ -2,8 +2,8 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
     entryAttributes,
     entrySearchAttribute,
-    metadataFields,
-    metadataValues,
+    fieldValues,
+    filterFields,
     pronunciationValues,
     definitionText,
     isMeaningLayer,
@@ -79,9 +79,9 @@ export function renderEntryCard(
     variant = false,
 ) {
     const filterValues = Object.fromEntries(
-        metadataFields(layer).map((field) => [
+        filterFields(layer).map((field) => [
             field.id,
-            metadataValues(entry, layer)
+            fieldValues(entry, [field])
                 .filter((item) => item.field.id === field.id)
                 .map(({ value }) => value),
         ]),
@@ -110,7 +110,7 @@ export function renderEntryCard(
     const newPill = entry.isNew
         ? `<span class="library-new-pill">${escapeHtml(i18n.t("gateway.study.library_new"))}</span>`
         : "";
-    return `<div class="library-entry-card-shell" data-library-variant-depth="${depth}"><span class="library-entry-card-status">${renderScope(entry, i18n)}${newPill}</span><button class="library-entry-card${variant ? " library-entry-variant" : ""} btn-neutral" type="button" ${entryAttributes(entry)} ${entrySearchAttribute(entry)}${filterAttribute}>${renderCardContents(entry, layer, entries, schema, i18n)}</button>${renderSelection(entry, i18n)}${variantHint}${variants
+    return `<div class="library-entry-card-shell" data-library-variant-depth="${depth}"><span class="library-entry-card-status" data-library-entry-status="${escapeHtml(entry.id)}">${renderScope(entry, i18n)}${newPill}</span><button class="library-entry-card${variant ? " library-entry-variant" : ""} btn-neutral" type="button" ${entryAttributes(entry)} ${entrySearchAttribute(entry)}${filterAttribute}>${renderCardContents(entry, layer, entries, schema, i18n)}</button>${renderSelection(entry, i18n)}${variantHint}${variants
         .map(
             ({ entry: child, direction, distance }) =>
                 `<div class="library-entry-variant-shell library-entry-variant-${direction}" data-library-preferred-direction="${direction}" style="--library-variant-card-span: ${distance * 100}%; --library-variant-gap-span: ${distance * 0.75}rem">${renderEntryCard(child, layer, entries, schema, placements, i18n, depth + 1, true)}</div>`,

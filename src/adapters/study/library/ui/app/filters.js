@@ -1,17 +1,13 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { groupByToMap } from "/static/reuse/group-by.js";
-import {
-    localizedLabel,
-    metadataFields,
-    metadataValues,
-} from "./presentation.js";
+import { fieldValues, filterFields, localizedLabel } from "./presentation.js";
 
 function filterDescriptors(layer, layerEntries, contentLanguage) {
-    return metadataFields(layer).flatMap((field) => {
+    return filterFields(layer).flatMap((field) => {
         const values = [
             ...new Set(
                 layerEntries.flatMap((entry) =>
-                    metadataValues(entry, layer)
+                    fieldValues(entry, [field])
                         .filter((item) => item.field.id === field.id)
                         .map(({ value }) => value),
                 ),

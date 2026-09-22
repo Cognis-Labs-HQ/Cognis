@@ -177,6 +177,27 @@ test("metadata filter groups declare consistent selection exclusivity", () => {
             },
         },
     ];
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...english,
+                layers: [
+                    {
+                        ...english.layers[0],
+                        fields: [
+                            {
+                                ...groupedFields[0],
+                                detail: {
+                                    ...groupedFields[0].detail,
+                                    filterable: "yes" as unknown as boolean,
+                                },
+                            },
+                        ],
+                    },
+                ],
+            }),
+        /invalid_filterable_field/,
+    );
     assert.doesNotThrow(() =>
         validateLibrarySchema({
             ...english,

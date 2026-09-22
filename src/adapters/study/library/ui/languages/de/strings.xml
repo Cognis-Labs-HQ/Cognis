@@ -38,6 +38,8 @@
   <string name="gateway.study.library_definitions">Definitionen</string>
   <string name="gateway.study.library_from_parent">(Von: {{ parent }})</string>
   <string name="gateway.study.library_usage_examples">Anwendungsbeispiele</string>
+  <string name="gateway.study.library_similar_items">Ähnliche Einträge</string>
+  <string name="gateway.study.library_no_similar_items">Keine ähnlichen Einträge gefunden.</string>
   <string name="gateway.study.library_admin_label">Bezeichnung</string>
   <string name="gateway.study.library_admin_fields">Felder (JSON)</string>
   <string name="gateway.study.library_admin_references">Beziehungen (JSON)</string>

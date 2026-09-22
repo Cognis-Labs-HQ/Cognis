@@ -95,19 +95,35 @@ export function metadataFields(layer) {
     );
 }
 
-export function metadataValues(entry, layer) {
-    return metadataFields(layer).flatMap((field) => {
+export function filterFields(layer) {
+    return (layer?.fields ?? []).filter(
+        (field) =>
+            !field.detail?.hidden &&
+            (field.detail?.renderer === "badge" ||
+                field.detail?.filterable === true),
+    );
+}
+
+export function fieldValues(entry, fields) {
+    return fields.flatMap((field) => {
         const raw = entry.fields?.[field.id];
         const values = Array.isArray(raw) ? raw : [raw];
         return values
+            .map((value) =>
+                value && typeof value === "object"
+                    ? localizedTextValue(value)
+                    : value,
+            )
             .filter(
                 (value) =>
-                    value !== undefined &&
-                    value !== null &&
-                    typeof value !== "object",
+                    value !== undefined && value !== null && value !== "",
             )
             .map((value) => ({ field, value: String(value) }));
     });
+}
+
+export function metadataValues(entry, layer) {
+    return fieldValues(entry, metadataFields(layer));
 }
 
 export function renderMetadataPills(entry, layer) {

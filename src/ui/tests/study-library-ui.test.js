@@ -111,7 +111,7 @@ test("Study Library uses an administrator-only common data editor", () => {
 test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(
         source,
-        /localizedLabel,[\s\S]*metadataFields,[\s\S]*metadataValues,[\s\S]*from "\.\/presentation\.js"/,
+        /fieldValues,[\s\S]*filterFields,[\s\S]*localizedLabel,[\s\S]*from "\.\/presentation\.js"/,
     );
     assert.match(source, /role="tablist"/);
     assert.match(source, /role="tabpanel"/);
@@ -126,6 +126,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /filter\.detail\?\.defaultTag/);
     assert.match(source, /required \|\| tags\.length === 1/);
     assert.match(source, /function refreshLibraryFilterResults/);
+    assert.match(source, /field\.detail\?\.filterable === true/);
     assert.match(source, /function deduplicateDisplayEntries/);
     assert.match(source, /new Set\([\s\S]*meaningRelations\.has/);
     assert.match(source, /meaningIds\.join\("\\u0000"\)/);
@@ -505,11 +506,16 @@ test("Study Library unfolds structured character variants", () => {
     );
     assert.doesNotMatch(
         stylesheet,
-        /\.library-entry-variant-shell\s*\{[\s\S]*?visibility:\s*hidden/,
+        /\.library-entry-variant-shell\s*\{[^}]*visibility:\s*hidden/,
     );
     assert.doesNotMatch(
         stylesheet,
-        /\.library-entry-variant-shell\s*\{[\s\S]*?opacity:\s*0/,
+        /\.library-entry-variant-shell\s*\{[^}]*opacity:\s*0/,
+    );
+    assert.match(stylesheet, /backdrop-filter:\s*blur\(2\.5px\)/);
+    assert.match(
+        cardsSource,
+        /data-library-entry-status="\$\{escapeHtml\(entry\.id\)\}"/,
     );
     assert.match(stylesheet, /variant-arrow-light\.svg/);
     assert.match(stylesheet, /variant-arrow-dark\.svg/);
@@ -530,7 +536,6 @@ test("Study Library unfolds structured character variants", () => {
         stylesheet,
         /\.library-entry-card-shell\.library-entry-variants-open[\s\S]*z-index:\s*7/,
     );
-    assert.doesNotMatch(stylesheet, /backdrop-filter:\s*blur/);
 });
 
 test("Study Library gives content safe edge spacing", () => {
@@ -719,6 +724,16 @@ test("Study Library relationship links consistently open entry details", () => {
         /relatedEntry &&[\s\S]*!isMeaningLayer[\s\S]*sourceDefinition: displayedDefinition/,
     );
     assert.match(source, /resolvePopupNavigation/);
+});
+
+test("Study Library keeps related links concise and suggests similar items", () => {
+    const detail = readFileSync(
+        resolve(ROOT, "src/adapters/study/library/ui/app/detail.js"),
+        "utf8",
+    );
+    assert.doesNotMatch(detail, /pronunciationValues\(candidate\)/);
+    assert.match(detail, /similarEntries\(entry, entries\)/);
+    assert.match(detail, /gateway\.study\.library_similar_items/);
 });
 
 test("Study Library serializes popup opening and identifies child parents", () => {

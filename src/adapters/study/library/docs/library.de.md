@@ -36,7 +36,7 @@ Ebenen mit der Rolle `atomicWritingUnit` oder `compoundWritingUnit` deklarieren 
 
 ## Metadatenfiltergruppen
 
-Ein Abzeichenfeld kann mit `detail.group` zusammengehörige Filter gruppieren und mit `detail.exclusive` die Auswahl steuern. Wenn jedes Feld einer Gruppe `exclusive: true` angibt, löscht die Auswahl einer Pille die vorherige Gruppenauswahl. Der Standardwert `false` erlaubt mehrere ausgewählte Pillen. Alle Felder einer benannten Gruppe müssen dieselbe Einstellung verwenden.
+Ein Abzeichenfeld ist standardmäßig filterbar. Anbieter können außerdem `detail.filterable: true` für andere primitive oder lokalisierte Metadatenfelder setzen, um deren Werte als Filter für Lernende bereitzustellen. Filterbare Felder können mit `detail.group` zusammengehörige Filter gruppieren und mit `detail.exclusive` die Auswahl steuern. Wenn jedes Feld einer Gruppe `exclusive: true` angibt, löscht die Auswahl einer Pille die vorherige Gruppenauswahl. Der Standardwert `false` erlaubt mehrere ausgewählte Pillen. Alle Felder einer benannten Gruppe müssen dieselbe Einstellung verwenden.
 
 ## Authentifizierte Audiowiedergabe
 

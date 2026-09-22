@@ -34,6 +34,8 @@ export interface LibraryDetailHint {
     required?: boolean;
     /** A tag value that the module requests be selected initially. */
     defaultTag?: string;
+    /** Expose this field as a user-facing filter even when it is not a badge. */
+    filterable?: boolean;
     hidden?: boolean;
 }
 

@@ -54,6 +54,11 @@ function validateField(field: LibraryFieldSchema, ids: Set<string>): void {
     )
         throw new Error("invalid_filter_group_requirement");
     if (
+        field.detail?.filterable !== undefined &&
+        typeof field.detail.filterable !== "boolean"
+    )
+        throw new Error("invalid_filterable_field");
+    if (
         field.detail?.defaultTag !== undefined &&
         (typeof field.detail.defaultTag !== "string" ||
             !field.detail.defaultTag.trim())

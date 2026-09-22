@@ -83,7 +83,8 @@ body[data-theme="light"] .library-browser {
     position: absolute;
     z-index: 4;
     inset: 0;
-    background: color-mix(in srgb, var(--surface-2) 78%, transparent);
+    background: color-mix(in srgb, var(--surface-2) 84%, transparent);
+    backdrop-filter: blur(2.5px);
     content: "";
     pointer-events: none;
 }
@@ -261,6 +262,7 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     border: 2px solid
         var(--color-success-outline-text, var(--color-success-border));
     background: var(--library-card-surface-raised);
+    opacity: 0.98;
 }
 
 .library-entry-card.library-entry-card.library-entry-variant:is(

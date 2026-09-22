@@ -26,6 +26,10 @@ Cognis は、閲覧済みライブラリ項目の UUID をアカウントごと�
 
 カード端の公開範囲、新着、選択コントロールを各カードの左右境界内に収め、狭いプレビューでは主値へ大部分の幅を割り当てるようにしました。複数選択にはホバー式の「公開先」メニュー、内容のあるローカライズ済み削除ボタン、保留申請の取り下げ、権限付き差し戻しを追加し、不要な閉じるボタンを削除しました。
 
+## 簡潔なリンクと高度な発見
+
+関連項目の操作には各カードの主要値だけを表示するようになりました。子カードは表面をより明確にし、背景との分離を強め、独立してホバーできる新着マーカーを備えます。詳細ポップアップは文字、語彙メタデータ、共通の関係を基に同じレイヤーの類似項目を提案し、言語プロバイダーは追加のメタデータフィールドを学習者向けフィルターとして公開できます。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -33,3 +37,4 @@ Cognis は、閲覧済みライブラリ項目の UUID をアカウントごと�
 - [d6f1cf21](https://github.com/Cognis-Labs-HQ/Cognis/commit/d6f1cf219f2739174c01019b358ab939a24659f7)
 - [8e38ded6](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e38ded6f03e8e36d225e8d425625c1b719fa112)
 - [c916c66f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c916c66f2095da249058883026fa7eba94005316)
+- [227f2166](https://github.com/Cognis-Labs-HQ/Cognis/commit/227f21669b5ab0a3473f0bf5f547bfdb424f4ca2)

@@ -36,7 +36,7 @@ Lapisan dengan peran `atomicWritingUnit` atau `compoundWritingUnit` mendeklarasi
 
 ## Grup filter metadata
 
-Kolom lencana dapat memakai `detail.group` untuk mengelompokkan filter terkait dan `detail.exclusive` untuk mengatur pilihan. Jika setiap kolom dalam grup menetapkan `exclusive: true`, memilih satu pil akan menghapus pilihan grup sebelumnya. Nilai bawaan `false` mengizinkan beberapa pil terpilih. Semua kolom dalam grup bernama harus memakai pengaturan eksklusivitas yang sama.
+Kolom lencana dapat difilter secara bawaan. Penyedia juga dapat menetapkan `detail.filterable: true` pada kolom metadata primitif atau terlokalisasi lainnya agar nilainya tersedia sebagai filter bagi pelajar. Kolom yang dapat difilter dapat memakai `detail.group` untuk mengelompokkan filter terkait dan `detail.exclusive` untuk mengatur pilihan. Jika setiap kolom dalam grup menetapkan `exclusive: true`, memilih satu pil akan menghapus pilihan grup sebelumnya. Nilai bawaan `false` mengizinkan beberapa pil terpilih. Semua kolom dalam grup bernama harus memakai pengaturan eksklusivitas yang sama.
 
 ## Pemutaran audio terautentikasi
 
