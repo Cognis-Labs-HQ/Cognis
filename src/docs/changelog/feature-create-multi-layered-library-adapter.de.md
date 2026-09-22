@@ -102,6 +102,10 @@ Library-Raster behalten ihre Begrenzung. Geöffnete Äste prüfen nun die vom An
 
 Das Überlaufen wurde durch eine begrenzte Laufzeitplatzierung ersetzt. Anbieterrichtungen bleiben die erste Wahl, aber jeder sichtbare verschachtelte Ast wird gemessen und bei Bedarf umgeleitet, sodass jede Karte innerhalb des Library-Rasters und Widgets bleibt.
 
+## Anker verschachtelter Karten stabil halten
+
+Die Einpassung misst jetzt nur die jeweils platzierte Karte, sodass ein Nachfahre seine bereits positionierte Elternkarte nicht verschieben kann. Wenn der bereinigte Pfad zu wenige umliegende Plätze bietet, verwenden Geschwisterkarten eine Richtung mit zunehmendem Abstand erneut und werden in derselben Zeile oder Spalte gestapelt.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -124,3 +128,4 @@ Das Überlaufen wurde durch eine begrenzte Laufzeitplatzierung ersetzt. Anbieter
 - [e8019a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8019a21e12295863fcf009a52385c85069498de)
 - [806058fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/806058fe26c0d127f0bacf034530b1023131d380)
 - [3c0d5766](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c0d57662df962ac6b5d93f793e0c8de91e1856b)
+- [748063b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/748063b10cc208747832e7880098858db648a415)

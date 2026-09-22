@@ -9,22 +9,11 @@ const VARIANT_DIRECTIONS = [
     "down-left",
 ];
 
-function branchBounds(slot) {
-    const visible = [
-        slot,
-        ...slot.querySelectorAll(".library-entry-variant-shell"),
-    ]
-        .filter((element) => getComputedStyle(element).display !== "none")
-        .map((element) => element.getBoundingClientRect());
-    return visible.reduce(
-        (bounds, rect) => ({
-            top: Math.min(bounds.top, rect.top),
-            right: Math.max(bounds.right, rect.right),
-            bottom: Math.max(bounds.bottom, rect.bottom),
-            left: Math.min(bounds.left, rect.left),
-        }),
-        visible[0],
+function cardBounds(slot) {
+    const card = slot.querySelector(
+        ":scope > .library-entry-card-shell > .library-entry-card",
     );
+    return (card ?? slot).getBoundingClientRect();
 }
 
 function overflowScore(rect, boundary) {
@@ -81,7 +70,7 @@ export function fitVariantBranchWithinGrid(rootShell) {
             };
             for (const direction of candidates) {
                 setVariantDirection(slot, direction);
-                const score = overflowScore(branchBounds(slot), boundary);
+                const score = overflowScore(cardBounds(slot), boundary);
                 if (score < best.score) best = { direction, score };
                 if (score === 0) break;
             }

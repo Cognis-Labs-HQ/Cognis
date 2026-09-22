@@ -360,7 +360,8 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /parentPlacement\?\.rootIndex/);
     assert.match(source, /parentPlacement\?\.offset/);
     assert.match(source, /function variantDirectionCapacity/);
-    assert.match(source, /capacity >= requiredCapacity/);
+    assert.match(source, /capacity - distance \+ 1 >= requiredCapacity/);
+    assert.match(source, /directionCountsByParent/);
     assert.match(source, /let ancestorPlacement = parentPlacement/);
     assert.match(
         source,
@@ -405,8 +406,16 @@ test("Study Library unfolds structured character variants", () => {
     );
     assert.match(source, /function activateVariantBranch/);
     assert.match(source, /function fitVariantBranchWithinGrid/);
+    assert.match(source, /function cardBounds/);
+    assert.match(
+        source,
+        /:scope > \.library-entry-card-shell > \.library-entry-card/,
+    );
+    assert.doesNotMatch(source, /function branchBounds/);
     assert.match(source, /function overflowScore/);
     assert.match(source, /data-library-preferred-direction/);
+    assert.match(source, /--library-variant-card-span/);
+    assert.match(source, /distance: placement\.distance \?\? 1/);
     assert.match(source, /restorePreferredVariantDirections/);
     assert.match(source, /function clearVariantBranch/);
     assert.match(source, /"pointerover"/);

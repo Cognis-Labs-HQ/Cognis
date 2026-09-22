@@ -102,6 +102,10 @@ Library grids retain their clipping boundary. Expanded branches now evaluate pro
 
 Replaced overflow bleed with bounded runtime placement. Provider directions remain first choice, but each visible nested branch is measured and redirected when necessary so every card stays inside the Library grid and widget.
 
+## Keep nested card anchors stable
+
+Nested fitting now measures only the card being placed, so a descendant cannot move its already-positioned parent. When the pruned path has too few surrounding slots, sibling cards reuse a direction at increasing distance and stack along the same row or column.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -124,3 +128,4 @@ Replaced overflow bleed with bounded runtime placement. Provider directions rema
 - [e8019a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8019a21e12295863fcf009a52385c85069498de)
 - [806058fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/806058fe26c0d127f0bacf034530b1023131d380)
 - [3c0d5766](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c0d57662df962ac6b5d93f793e0c8de91e1856b)
+- [748063b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/748063b10cc208747832e7880098858db648a415)

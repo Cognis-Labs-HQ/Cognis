@@ -70,7 +70,13 @@ export function renderEntryCard(
             !isSameLibraryRecord(candidate, entry) &&
             placement.depth <= 4 &&
             isDirectlyVisible(candidate, entries, placements)
-            ? [{ entry: candidate, direction: placement.direction }]
+            ? [
+                  {
+                      entry: candidate,
+                      direction: placement.direction,
+                      distance: placement.distance ?? 1,
+                  },
+              ]
             : [];
     });
     const variantHint = variants.length
@@ -81,8 +87,8 @@ export function renderEntryCard(
         : ` data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}"`;
     return `<div class="library-entry-card-shell" data-library-variant-depth="${depth}"><button class="library-entry-card${variant ? " library-entry-variant" : ""} btn-neutral" type="button" ${entryAttributes(entry)} ${entrySearchAttribute(entry)}${filterAttribute}>${renderCardContents(entry, layer, entries, schema, i18n)}</button>${renderSelection(entry, i18n)}${variantHint}${variants
         .map(
-            ({ entry: child, direction }) =>
-                `<div class="library-entry-variant-shell library-entry-variant-${direction}" data-library-preferred-direction="${direction}">${renderEntryCard(child, layer, entries, schema, placements, i18n, depth + 1, true)}</div>`,
+            ({ entry: child, direction, distance }) =>
+                `<div class="library-entry-variant-shell library-entry-variant-${direction}" data-library-preferred-direction="${direction}" style="--library-variant-card-span: ${distance * 100}%; --library-variant-gap-span: ${distance * 0.75}rem">${renderEntryCard(child, layer, entries, schema, placements, i18n, depth + 1, true)}</div>`,
         )
         .join("")}</div>`;
 }

@@ -127,7 +127,7 @@ function offsetKey(offset) {
 
 export function assignVariantPlacements(entries, schema, layer) {
     const placements = new Map();
-    const occupiedByParent = new Map();
+    const directionCountsByParent = new Map();
     const requests = entries.flatMap((entry) => {
         const placement = variantPlacement(entry, schema, entries);
         return placement ? [{ entry, ...placement }] : [];
@@ -193,20 +193,27 @@ export function assignVariantPlacements(entries, schema, layer) {
             occupiedOffsets.add(offsetKey(ancestorPlacement.offset));
             ancestorPlacement = placements.get(ancestorPlacement.parentId);
         }
-        const occupied = occupiedByParent.get(request.parentId) ?? new Set();
+        const directionCounts =
+            directionCountsByParent.get(request.parentId) ?? new Map();
         const preferred = [
             ...(parentPlacement ? [parentPlacement.direction] : []),
             ...VARIANT_DIRECTIONS,
-        ].filter(
-            (candidate, candidateIndex, directions) =>
-                directions.indexOf(candidate) === candidateIndex,
-        );
+        ]
+            .filter(
+                (candidate, candidateIndex, directions) =>
+                    directions.indexOf(candidate) === candidateIndex,
+            )
+            .sort(
+                (left, right) =>
+                    (directionCounts.get(left) ?? 0) -
+                    (directionCounts.get(right) ?? 0),
+            );
         const candidateDetails = preferred.flatMap((candidate) => {
-            if (occupied.has(candidate)) return [];
+            const distance = (directionCounts.get(candidate) ?? 0) + 1;
             const directionOffset = VARIANT_DIRECTION_OFFSETS[candidate];
             const targetOffset = {
-                column: origin.column + directionOffset.column,
-                row: origin.row + directionOffset.row,
+                column: origin.column + directionOffset.column * distance,
+                row: origin.row + directionOffset.row * distance,
             };
             if (occupiedOffsets.has(offsetKey(targetOffset))) return [];
             const capacity = variantDirectionCapacity(
@@ -216,13 +223,14 @@ export function assignVariantPlacements(entries, schema, layer) {
                 layer?.grid?.items?.length ?? entries.length,
                 origin,
             );
-            return capacity > 0
-                ? [{ direction: candidate, capacity, targetOffset }]
+            return capacity >= distance
+                ? [{ direction: candidate, capacity, distance, targetOffset }]
                 : [];
         });
         const selected =
             candidateDetails.find(
-                ({ capacity }) => capacity >= requiredCapacity,
+                ({ capacity, distance }) =>
+                    capacity - distance + 1 >= requiredCapacity,
             ) ??
             candidateDetails.reduce(
                 (best, candidate) =>
@@ -232,12 +240,13 @@ export function assignVariantPlacements(entries, schema, layer) {
                 null,
             );
         if (!selected || !Number.isFinite(depth)) continue;
-        const { direction, targetOffset } = selected;
-        occupied.add(direction);
-        occupiedByParent.set(request.parentId, occupied);
+        const { direction, distance, targetOffset } = selected;
+        directionCounts.set(direction, distance);
+        directionCountsByParent.set(request.parentId, directionCounts);
         placements.set(request.entry.id, {
             ...request,
             direction,
+            distance,
             depth,
             rootIndex: index,
             rootId,

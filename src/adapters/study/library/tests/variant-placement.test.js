@@ -201,3 +201,38 @@ test("nested branches can reuse a pruned alternate branch slot", () => {
         placements.get(alternateChildren[3].id)?.offset,
     );
 });
+
+test("siblings stack outward when grid edges leave too few directions", () => {
+    const parent = entry("parent", { sourceRecordId: "parent" });
+    const children = Array.from({ length: 3 }, (_, index) =>
+        entry(`child-${index}`, {
+            label: `child ${index}`,
+            fields: { pronunciation: `child-${index}` },
+            references: [{ entryId: parent.id, relation: "variant-of" }],
+        }),
+    );
+    const gridLayer = {
+        ...layer,
+        grid: {
+            rowSize: 1,
+            items: [null, null, "parent", null, null],
+        },
+    };
+    const placements = assignVariantPlacements(
+        [parent, ...children],
+        { ...schema, layers: [gridLayer] },
+        gridLayer,
+    );
+
+    assert.deepEqual(
+        children.map((child) => {
+            const placement = placements.get(child.id);
+            return [placement?.direction, placement?.distance];
+        }),
+        [
+            ["up", 1],
+            ["down", 1],
+            ["up", 2],
+        ],
+    );
+});
