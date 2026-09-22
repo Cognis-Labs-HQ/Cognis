@@ -15,30 +15,6 @@ const SETTINGS_GEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" he
   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
 </svg>`;
 
-async function loadLanguageModules(languageCode) {
-    try {
-        const response = await apiFetch(
-            `/api/v1/study/languages/${encodeURIComponent(languageCode)}/modules`,
-        );
-        if (!response.ok) return [];
-        const payload = await response.json();
-        return Array.isArray(payload?.data) ? payload.data : [];
-    } catch {
-        return [];
-    }
-}
-
-async function loadRegisteredLanguages() {
-    try {
-        const response = await apiFetch("/api/v1/study/registered-languages");
-        if (!response.ok) return [];
-        const payload = await response.json();
-        return Array.isArray(payload?.data) ? payload.data : [];
-    } catch {
-        return [];
-    }
-}
-
 async function loadLearningLanguages() {
     try {
         const response = await apiFetch("/api/v1/study/preferences");
@@ -54,9 +30,7 @@ async function loadLearningLanguages() {
 }
 
 const SUB_NAV_CACHE = {
-    registeredLanguages: null,
     learningLanguages: null,
-    modulesByLanguage: new Map(),
 };
 
 export function readSelectedStudyLanguageCode() {
@@ -105,9 +79,8 @@ export function bindStudySubNavigation(root, { signal } = {}) {
  * @returns {void}
  */
 export function clearStudySubNavCache() {
-    SUB_NAV_CACHE.registeredLanguages = null;
     SUB_NAV_CACHE.learningLanguages = null;
-    SUB_NAV_CACHE.modulesByLanguage = new Map();
+    uiCtx.capabilities.get("ui:subPages")?.invalidate("study");
 }
 
 function resolveDefaultChildPageUrl(modules) {
@@ -163,12 +136,17 @@ export async function loadStudySubNavigationModel({
     fallbackLanguageCode,
 } = {}) {
     const requestedLanguageCode = parseLanguageCode(fallbackLanguageCode);
-    const [registeredLanguagesRaw, learningLanguagesRaw] = await Promise.all([
-        SUB_NAV_CACHE.registeredLanguages ?? loadRegisteredLanguages(),
-        SUB_NAV_CACHE.learningLanguages ?? loadLearningLanguages(),
-    ]);
-    SUB_NAV_CACHE.registeredLanguages = Promise.resolve(registeredLanguagesRaw);
+    const subPages = uiCtx.capabilities.get("study:subPages");
+    if (!subPages) throw new Error("Study sub-page provider unavailable.");
+    const learningLanguagesRaw = await (SUB_NAV_CACHE.learningLanguages ??
+        loadLearningLanguages());
     SUB_NAV_CACHE.learningLanguages = Promise.resolve(learningLanguagesRaw);
+
+    const requestedModel = await subPages.load("study", {
+        selectedGroupId: requestedLanguageCode,
+        groupIds: learningLanguagesRaw,
+    });
+    const registeredLanguagesRaw = requestedModel.groups;
 
     const languageCatalogByCode = new Map();
     for (const registeredLanguage of registeredLanguagesRaw) {
@@ -206,22 +184,7 @@ export async function loadStudySubNavigationModel({
     const selectedLanguageCode =
         requestedLanguageCode || activeLanguageCodes[0];
 
-    const modulesByLanguage = new Map();
-    await Promise.all(
-        activeLanguageCodes.map(async (languageCode) => {
-            const modulesForLanguagePromise =
-                SUB_NAV_CACHE.modulesByLanguage.get(languageCode) ??
-                loadLanguageModules(languageCode);
-            SUB_NAV_CACHE.modulesByLanguage.set(
-                languageCode,
-                modulesForLanguagePromise,
-            );
-            modulesByLanguage.set(
-                languageCode,
-                await modulesForLanguagePromise,
-            );
-        }),
-    );
+    const modulesByLanguage = requestedModel.pagesByGroup;
 
     const modules = [...(modulesByLanguage.get(selectedLanguageCode) ?? [])];
     const schemas = selectedLanguageCode

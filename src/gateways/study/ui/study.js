@@ -19,7 +19,6 @@ import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
-import { invalidateStudyChildComponentCache } from "/static/gateways/study/route.js";
 import {
     bindStudySubNavigation,
     clearStudySubNavCache,
@@ -32,6 +31,7 @@ import {
     buildLibraryUrl,
 } from "/static/gateways/study/ui/language.js";
 import { openPopup } from "/static/reuse/popup.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 const SETTINGS_GEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
   <circle cx="12" cy="12" r="3"/>
@@ -227,7 +227,6 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
                     );
                     if (!response.ok) throw new Error("save_failed");
                     clearStudySubNavCache();
-                    invalidateStudyChildComponentCache();
                     navigateTo("/study");
                 } catch {
                     showToast(i18n.t("ui.reuse.save_failed"), {
@@ -256,40 +255,19 @@ async function mountHub(
         ? requestedLanguageCode
         : learningLanguages[0];
 
-    const languageModulesMap = new Map();
-    const discoveredLanguageCodes = new Set();
-
-    async function loadModulesForLanguage(languageCode) {
-        try {
-            const response = await apiFetch(
-                `/api/v1/study/languages/${encodeURIComponent(languageCode)}/modules`,
-            );
-            if (!response.ok) {
-                languageModulesMap.set(languageCode, []);
-                return;
-            }
-            const payload = await response.json();
-            const childComponents = Array.isArray(payload?.data)
-                ? payload.data
-                : [];
-            languageModulesMap.set(languageCode, childComponents);
-            discoveredLanguageCodes.add(languageCode);
-        } catch {
-            languageModulesMap.set(languageCode, []);
-        }
-    }
-
-    await Promise.allSettled(
-        learningLanguages.map((languageCode) =>
-            loadModulesForLanguage(languageCode),
-        ),
-    );
+    const subPages = uiCtx.capabilities.get("study:subPages");
+    if (!subPages) throw new Error("Study sub-page provider unavailable.");
+    const subPageModel = await subPages.load("study", {
+        selectedGroupId: selectedLanguageCode,
+        groupIds: learningLanguages,
+    });
+    const languageModulesMap = subPageModel.pagesByGroup;
 
     const languageByCode = new Map();
     for (const language of registeredLanguages) {
         languageByCode.set(language.code, language);
     }
-    for (const languageCode of discoveredLanguageCodes) {
+    for (const languageCode of languageModulesMap.keys()) {
         if (!languageByCode.has(languageCode)) {
             languageByCode.set(languageCode, {
                 code: languageCode,
@@ -712,7 +690,6 @@ async function mountHub(
                     );
                     if (!response.ok) throw new Error("save_failed");
                     clearStudySubNavCache();
-                    invalidateStudyChildComponentCache();
                     navigateTo(buildSettingsUrl());
                 } catch {
                     showToast(i18n.t("ui.reuse.save_failed"), {

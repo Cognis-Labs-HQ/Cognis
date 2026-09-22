@@ -74,6 +74,10 @@ Die getestete Gateway-Obergrenze der Bibliotheks- und Fortschrittsadapter wurde 
 
 Nicht zusammenhängende Änderungen an Kern, API, Router, Adaptern, Gateways und Funktionen wurden entfernt. Dieser Pull Request enthält damit nur die Studienbibliothek, ihre Studienintegration und die dafür erforderlichen wiederverwendbaren UI-Werkzeuge.
 
+## Gruppierte Study-Unterseiten routen
+
+Eine generische UI-Fähigkeit für gruppierte Unterseitenerkennung, Zwischenspeicherung, Invalidierung und Routenauflösung wurde hinzugefügt. Study verwendet nun ein einziges anbietergestütztes Modell für die Seitenliste jeder Sprache, die Unternavigation der ausgewählten Sprache, Hub-Karten und das Laden untergeordneter Seiten. Die Navigation bewahrt die ausgewählte Sprache im privaten Verlaufstatus.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -89,3 +93,4 @@ Nicht zusammenhängende Änderungen an Kern, API, Router, Adaptern, Gateways und
 - [3c72e487](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c72e4870f99213562fb3796b4d76624486ba272)
 - [25309509](https://github.com/Cognis-Labs-HQ/Cognis/commit/25309509877018b8d1a4633636f9d45daeef45b4)
 - [de20ea2c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/de20ea2c0)
+- [92ef5510](https://github.com/Cognis-Labs-HQ/Cognis/commit/92ef5510)

@@ -74,6 +74,10 @@ upstream Development ブランチの最新変更を統合しました。廃止�
 
 無関係なコア、API、ルーター、アダプター、ゲートウェイ、機能の変更を削除しました。このプルリクエストには学習ライブラリ、その学習統合、および各コンポーネントに必要な再利用可能 UI 機能だけが含まれます。
 
+## Study のグループ化ページをルーティング
+
+グループ化されたサブページの検出、キャッシュ、無効化、ルート解決を行う汎用 UI 機能を追加しました。Study は、言語ごとのページ一覧、選択言語のサブメニュー、ハブカード、子ページの読み込みに同一のプロバイダーモデルを使用し、ナビゲーションでは選択言語を非公開の履歴状態に保持します。
+
 ## コミット
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -89,3 +93,4 @@ upstream Development ブランチの最新変更を統合しました。廃止�
 - [3c72e487](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c72e4870f99213562fb3796b4d76624486ba272)
 - [25309509](https://github.com/Cognis-Labs-HQ/Cognis/commit/25309509877018b8d1a4633636f9d45daeef45b4)
 - [de20ea2c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/de20ea2c0)
+- [92ef5510](https://github.com/Cognis-Labs-HQ/Cognis/commit/92ef5510)

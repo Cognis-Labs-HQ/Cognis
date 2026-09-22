@@ -74,6 +74,10 @@ Raised the Library and Progress adapters' tested gateway ceiling to the upstream
 
 Removed unrelated core, API, router, adapter, gateway, and feature changes so this pull request contains only the Study Library, its Study integration, and the reusable UI facilities those components require.
 
+## Route grouped Study sub-pages
+
+Added a generic UI capability for grouped sub-page discovery, caching, invalidation, and route resolution. Study now uses one provider-backed model for each language’s page list, the selected-language submenu, hub cards, and child-page loading, while navigation preserves the selected language in private history state.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -89,3 +93,4 @@ Removed unrelated core, API, router, adapter, gateway, and feature changes so th
 - [3c72e487](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c72e4870f99213562fb3796b4d76624486ba272)
 - [25309509](https://github.com/Cognis-Labs-HQ/Cognis/commit/25309509877018b8d1a4633636f9d45daeef45b4)
 - [de20ea2c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/de20ea2c0)
+- [92ef5510](https://github.com/Cognis-Labs-HQ/Cognis/commit/92ef5510)

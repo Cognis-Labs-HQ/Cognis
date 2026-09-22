@@ -74,6 +74,10 @@ Batas versi gateway yang telah diuji untuk adaptor Pustaka dan Kemajuan dinaikka
 
 Perubahan yang tidak terkait pada inti, API, router, adaptor, gateway, dan fitur telah dihapus sehingga pull request ini hanya memuat Pustaka Belajar, integrasi Belajarnya, dan perangkat UI pakai ulang yang diperlukan komponen tersebut.
 
+## Rutekan subhalaman Study berkelompok
+
+Kapabilitas UI generik ditambahkan untuk penemuan, penyimpanan tembolok, invalidasi, dan resolusi rute subhalaman berkelompok. Study kini memakai satu model berbasis penyedia untuk daftar halaman setiap bahasa, submenu bahasa terpilih, kartu hub, dan pemuatan halaman anak, sementara navigasi mempertahankan bahasa terpilih dalam status riwayat privat.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -89,3 +93,4 @@ Perubahan yang tidak terkait pada inti, API, router, adaptor, gateway, dan fitur
 - [3c72e487](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c72e4870f99213562fb3796b4d76624486ba272)
 - [25309509](https://github.com/Cognis-Labs-HQ/Cognis/commit/25309509877018b8d1a4633636f9d45daeef45b4)
 - [de20ea2c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/de20ea2c0)
+- [92ef5510](https://github.com/Cognis-Labs-HQ/Cognis/commit/92ef5510)

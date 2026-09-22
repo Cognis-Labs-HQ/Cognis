@@ -334,7 +334,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const uiHooks = createGatewayUiRegistryHooks(ctx.uiRegistry, "study");
     ctx.uiRegistry?.registerCapabilityProvider({
         scriptUrl: "/static/gateways/study/flow-contracts.js",
-        providesCapabilities: ["study:library:detailFlow"],
+        providesCapabilities: ["study:library:detailFlow", "study:subPages"],
         isEnabled: () =>
             ctx.gatewayRegistry.get("study")?.status !== "disabled",
     });
@@ -392,6 +392,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         base: "/study",
         scriptUrl: "/static/gateways/study/study.js",
         stylesheets: studyStylesheets,
+        requiredCapabilities: ["study:subPages"],
         isEnabled: isStudyAvailable,
     });
     ctx.uiRegistry?.registerSpaRoute({
@@ -400,6 +401,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         base: "/study",
         scriptUrl: "/static/gateways/study/route.js",
         stylesheets: studyStylesheets,
+        requiredCapabilities: ["study:subPages"],
         isEnabled: isStudyAvailable,
     });
 

@@ -118,6 +118,7 @@ test("Study owns its SPA routes and Library detail-flow provider", async () => {
     assert.ok(
         uiRegistry.hasActiveCapabilityProvider("study:library:detailFlow"),
     );
+    assert.ok(uiRegistry.hasActiveCapabilityProvider("study:subPages"));
     systemCtx.contributePublicCapability(
         "study:language:ja",
         japaneseLanguageCapability,

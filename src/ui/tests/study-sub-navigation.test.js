@@ -114,7 +114,7 @@ test("Study pages redirect to the unavailable page without valid languages", () 
     );
     assert.match(
         childRouteSource,
-        /languages\.length === 0[\s\S]*navigateTo\("\/error\?code=503"\)/,
+        /model\.groups\.length === 0[\s\S]*navigateTo\("\/error\?code=503"\)/,
     );
 });
 
