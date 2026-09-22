@@ -114,6 +114,10 @@ Bibliotheksaktualisierungen bewahren erzeugte Lokalisierungsschlüssel, und gel�
 
 Aktivierte externe Module werden bei der Wiederherstellung des gespeicherten Zustands nun gleichzeitig gestartet. Ein langsames oder blockiertes Modul beansprucht dadurch nur ein gemeinsames begrenztes Startzeitfenster, statt für jedes aktivierte Modul nacheinander ein weiteres Zeitlimit hinzuzufügen. So bleibt die API-Anfragesperre nicht minutenlang blockiert und die daraus entstehenden Proxy-Antworten 499 und 504 werden verhindert.
 
+## Gezielte Prüfung deaktivierter Module
+
+Beim Start wird nun ausschließlich der ausführbare Abhängigkeitsgraph des jeweiligen API-Einstiegspunkts für den deaktivierten Zustand geprüft. Die vollständige Modulgrenzprüfung bleibt vor der Aktivierung verpflichtend, während große, nicht beteiligte UI-Pakete die Node.js-Ereignisschleife bei einem Neustart nicht mehr blockieren und dadurch sämtliche HTTP-Antworten aufhalten können.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -141,3 +145,4 @@ Aktivierte externe Module werden bei der Wiederherstellung des gespeicherten Zus
 - [87275211](https://github.com/Cognis-Labs-HQ/Cognis/commit/87275211)
 - [043b1e4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/043b1e4b)
 - [cdc1240f](https://github.com/Cognis-Labs-HQ/Cognis/commit/cdc1240f)
+- [0113aacb](https://github.com/Cognis-Labs-HQ/Cognis/commit/0113aacb)

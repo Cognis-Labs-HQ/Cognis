@@ -114,6 +114,10 @@ Library updates preserve generated localization keys and deleted entries disappe
 
 Enabled external modules now bootstrap concurrently during persisted-state restoration. A slow or stalled module therefore consumes one bounded bootstrap window instead of serially adding another timeout for every enabled module, preventing the API request barrier from remaining blocked for minutes and eliminating the resulting proxy 499 and 504 responses.
 
+## Targeted disabled-module validation
+
+Startup now validates only the executable dependency graph of each dedicated disabled-state API entrypoint. Full module boundary scanning remains mandatory before activation, while large unrelated UI bundles can no longer monopolize the Node.js event loop during every restart and block all HTTP responses.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -141,3 +145,4 @@ Enabled external modules now bootstrap concurrently during persisted-state resto
 - [87275211](https://github.com/Cognis-Labs-HQ/Cognis/commit/87275211)
 - [043b1e4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/043b1e4b)
 - [cdc1240f](https://github.com/Cognis-Labs-HQ/Cognis/commit/cdc1240f)
+- [0113aacb](https://github.com/Cognis-Labs-HQ/Cognis/commit/0113aacb)

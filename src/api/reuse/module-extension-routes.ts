@@ -7,10 +7,10 @@ import type {
     RoleAccessPolicy,
     FlowApi,
 } from "@cognis/core";
-import { validateModuleBoundaries as validateModule } from "@cognis/core";
 import path from "node:path";
 import { stat } from "node:fs/promises";
 import { runWithTimeout as timeout } from "./run-with-timeout.js";
+import { validateModuleEntrypointBoundary } from "./module-entrypoint-boundary.js";
 import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
 import type { UIRegistry } from "../../api/reuse/ui-registry.js";
@@ -170,7 +170,6 @@ interface ModuleDisabledApiPlugin {
         ctx: ModuleBootstrapCtx,
     ) => Promise<void> | void;
 }
-
 export interface ModuleExtensionOptions {
     uiRegistry?: UIRegistry;
     routeContext: RouteContext;
@@ -178,7 +177,6 @@ export interface ModuleExtensionOptions {
     onBootstrapFailed?: (moduleId: string) => Promise<void> | void;
     getProtectedRoutePrefixes?: () => readonly string[];
 }
-
 export interface ModuleExtensionRoutes {
     handle(
         req: IncomingMessage,
@@ -191,7 +189,6 @@ export interface ModuleExtensionRoutes {
         options: { deleteContent: boolean },
     ): Promise<boolean>;
 }
-
 export function createModuleExtensionRoutes(
     runtime: ModuleRuntimeGateway,
     isModuleEnabled: (moduleId: string) => boolean,
@@ -221,7 +218,6 @@ export function createModuleExtensionRoutes(
         process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
         path.resolve(process.cwd(), "external-modules");
     const assuranceByModuleId = new Map<string, ModuleAssurance>();
-
     /**
      * Writes a standardized warning when a module declares an invalid access policy.
      */
@@ -243,7 +239,6 @@ export function createModuleExtensionRoutes(
             },
         );
     }
-
     function createModuleCtx(
         manifest: {
             id: string;
@@ -765,7 +760,11 @@ export function createModuleExtensionRoutes(
             if (!moduleEnabled) {
                 if (!disabledApiEntrypoint) continue;
                 try {
-                    await validateModule(moduleRoot, { moduleId: manifest.id });
+                    await validateModuleEntrypointBoundary(
+                        moduleRoot,
+                        disabledApiEntrypoint,
+                        manifest.id,
+                    );
                     const plugin = (await import(
                         `${disabledApiEntrypoint}?t=${Date.now()}`
                     )) as ModuleDisabledApiPlugin;

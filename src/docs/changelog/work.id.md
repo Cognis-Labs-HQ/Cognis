@@ -114,6 +114,10 @@ Pembaruan pustaka mempertahankan kunci pelokalan yang dibuat dan entri yang diha
 
 Modul eksternal yang aktif kini dimulai secara bersamaan ketika status tersimpan dipulihkan. Dengan demikian, modul yang lambat atau macet hanya memakai satu jendela waktu mulai yang terbatas, bukan menambahkan batas waktu secara berurutan untuk setiap modul aktif. Hal ini mencegah penghalang permintaan API tertahan selama beberapa menit dan menghilangkan respons proksi 499 serta 504 yang diakibatkannya.
 
+## Validasi terarah untuk modul nonaktif
+
+Saat dimulai, sistem kini hanya memvalidasi graf dependensi yang dapat dijalankan dari titik masuk API khusus status nonaktif. Pemindaian batas modul secara lengkap tetap wajib sebelum aktivasi, sedangkan bundel UI besar yang tidak terkait tidak lagi dapat menguasai perulangan peristiwa Node.js pada setiap mulai ulang dan memblokir seluruh respons HTTP.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -141,3 +145,4 @@ Modul eksternal yang aktif kini dimulai secara bersamaan ketika status tersimpan
 - [87275211](https://github.com/Cognis-Labs-HQ/Cognis/commit/87275211)
 - [043b1e4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/043b1e4b)
 - [cdc1240f](https://github.com/Cognis-Labs-HQ/Cognis/commit/cdc1240f)
+- [0113aacb](https://github.com/Cognis-Labs-HQ/Cognis/commit/0113aacb)

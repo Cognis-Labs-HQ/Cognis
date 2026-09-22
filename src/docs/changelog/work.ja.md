@@ -114,6 +114,10 @@ Library のプレビューではメタデータとスコープの位置を固定
 
 保存済み状態の復元時に、有効な外部モジュールを並行して起動するようにしました。遅い、または停止したモジュールが有効なモジュールごとにタイムアウトを直列で追加せず、共有された一つの制限付き起動時間内で処理されます。これにより API 要求の待機が数分間続くことを防ぎ、その結果生じていたプロキシの 499 および 504 応答を解消します。
 
+## 無効モジュールの対象限定検証
+
+起動時には、無効状態専用 API エントリポイントから実行される依存グラフだけを検証するようにしました。有効化前の完全なモジュール境界検査は引き続き必須ですが、関係のない大規模な UI バンドルが再起動のたびに Node.js のイベントループを占有し、すべての HTTP 応答を停止させることはなくなります。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -141,3 +145,4 @@ Library のプレビューではメタデータとスコープの位置を固定
 - [87275211](https://github.com/Cognis-Labs-HQ/Cognis/commit/87275211)
 - [043b1e4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/043b1e4b)
 - [cdc1240f](https://github.com/Cognis-Labs-HQ/Cognis/commit/cdc1240f)
+- [0113aacb](https://github.com/Cognis-Labs-HQ/Cognis/commit/0113aacb)
