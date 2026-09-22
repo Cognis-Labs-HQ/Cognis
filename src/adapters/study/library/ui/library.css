@@ -198,7 +198,7 @@ body[data-theme="light"] .library-browser {
     border: solid var(--surface);
     border-width: 0 0.14rem 0.14rem 0;
     content: "";
-    transform: translateY(-0.06rem) rotate(45deg);
+    transform: translateY(-0.08rem) rotate(45deg);
 }
 
 body[data-theme="dark"] .library-entry-selection {
@@ -851,29 +851,52 @@ body[data-theme="dark"] .library-audio {
 
 .library-admin-entry-row .library-entry-selection {
     position: static;
-    display: block;
 }
 
-.library-admin-entry-row > span {
+.library-selection-mode .library-admin-entry-row .library-entry-selection {
+    display: grid;
+}
+
+.library-admin-entry-detail {
     overflow: hidden;
+    justify-content: flex-start;
+    width: 100%;
+    padding: 0.5rem;
+    border-color: transparent;
+    background: transparent;
+    color: var(--text);
+    text-align: start;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .library-admin-edit {
     display: grid;
-    width: 2.25rem;
-    height: 2.25rem;
-    padding: 0.45rem;
+    width: 2rem;
+    height: 2rem;
+    padding: 0.4rem;
+    border-color: transparent;
+    background-color: transparent;
     background-image: url("./assets/edit-light.svg");
     background-repeat: no-repeat;
     background-position: center;
-    background-size: 1.15rem;
+    background-size: 0.95rem;
     place-items: center;
 }
 
 body[data-theme="dark"] .library-admin-edit {
     background-image: url("./assets/edit-dark.svg");
+}
+
+.library-admin-edit:is(:hover, :focus-visible) {
+    background-color: color-mix(in srgb, var(--accent-2) 16%, transparent);
+}
+
+.library-card-pronunciation,
+.library-card-definition {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 400;
 }
 
 .library-admin-editor {
@@ -904,22 +927,16 @@ body[data-theme="dark"] .library-admin-edit {
     align-items: center;
 }
 
-.library-relation-tree > ul,
-.library-relation-tree ul ul {
+.library-relation-groups,
+.library-relation-group {
     display: grid;
-    gap: 0.5rem;
-    margin: 0.5rem 0 0;
-    padding-inline-start: 1.25rem;
-    list-style: none;
+    gap: 0.75rem;
 }
 
-.library-relation-tree > ul > li {
-    border-inline-start: 1px solid var(--border);
-    padding-inline-start: 1rem;
-}
-
-.library-relation-tree-root {
-    font-weight: 700;
+.library-relation-group {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
 }
 
 .library-admin-editor textarea {

@@ -80,6 +80,8 @@ test("Study Library uses an administrator-only common data editor", () => {
     assert.match(indexSource, /adminLayerGroups/);
     assert.match(source, /library-admin-layer-count/);
     assert.match(source, /library-admin-entry-row/);
+    assert.match(source, /library-admin-entry-detail/);
+    assert.match(source, /data-library-entry/);
     assert.match(source, /data-library-admin-edit/);
     assert.match(source, /openPopup/);
     assert.match(source, /updateLibraryEntry/);
@@ -124,7 +126,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /library-entry-grid--minimal/);
     assert.match(source, /contentScrolling: false/);
     assert.match(source, /library-entry-minimal-content/);
-    assert.doesNotMatch(source, /library-card-pronunciation/);
+    assert.match(source, /library-card-pronunciation/);
     assert.match(
         stylesheet,
         /\.library-entry-minimal-content\s*\{[\s\S]*font-size:\s*clamp\([\s\S]*1\.8rem[\s\S]*12rem[\s\S]*2\.4rem/,
@@ -191,7 +193,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(adapterSource, /\/static\/styles\/reuse\/page-sections\.css/);
 });
 
-test("Study layer cards move pronunciations and definitions into details", () => {
+test("Study layer cards preview pronunciations and definitions", () => {
     const cards = readFileSync(
         resolve(ROOT, "src/adapters/study/library/ui/app/cards.js"),
         "utf8",
@@ -200,10 +202,13 @@ test("Study layer cards move pronunciations and definitions into details", () =>
         resolve(ROOT, "src/adapters/study/library/ui/app/detail.js"),
         "utf8",
     );
-    assert.doesNotMatch(cards, /library-card-definition/);
-    assert.doesNotMatch(cards, /pronunciationValues/);
-    assert.match(detail, /gateway\.study\.library_definitions/);
-    assert.match(detail, /pronunciationValues\(entry\)/);
+    assert.match(cards, /library-card-definition/);
+    assert.match(cards, /library-card-pronunciation/);
+    assert.match(cards, /pronunciationValues\(entry\)/);
+    assert.match(cards, /definitionText/);
+    assert.match(detail, /options\.showReferenceTree/);
+    assert.match(indexSource, /showReferenceTree: true/);
+    assert.match(indexSource, /readOnly: true/);
 });
 
 test("Study Library integrates definitions and particles into item details", () => {
@@ -518,12 +523,12 @@ test("Study Library cards use opaque theme surfaces", () => {
     assert.doesNotMatch(minimalCardRule, /background:\s*transparent/);
 });
 
-test("Study Library keeps definitions in detail cards only", () => {
-    assert.doesNotMatch(source, /library-card-definition/);
-    assert.match(source, /const definitions = references/);
-    assert.match(source, /gateway\.study\.library_definitions/);
+test("Study Library previews definitions without duplicate detail sections", () => {
+    assert.match(source, /library-card-definition/);
+    assert.match(source, /titleDefinition/);
     assert.match(source, /function relationTree/);
     assert.match(source, /library-relation-tree/);
+    assert.match(source, /options\.showReferenceTree/);
 });
 
 test("Study Library honors module-defined grid layouts", () => {

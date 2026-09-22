@@ -78,6 +78,10 @@ upstream Development ブランチの最新変更を統合しました。廃止�
 
 グループ化されたサブページの検出、キャッシュ、無効化、ルート解決を行う汎用 UI 機能を追加しました。Study は、言語ごとのページ一覧、選択言語のサブメニュー、ハブカード、子ページの読み込みに同一のプロバイダーモデルを使用し、ナビゲーションでは選択言語を非公開の履歴状態に保持します。
 
+## ライブラリ操作の仕上げを復元
+
+スクロール開始時のヘッダー折りたたみを安定させ、初回読み込みから Study のレイヤーナビゲーションを表示し、言語ボタンのはみ出しを除去して、コンパクトなポップアップ見出しを復元しました。管理者用ライブラリでは、簡略化した参照概要を持つ読み取り専用の行詳細と右クリックによる複数選択を提供します。学習カードでは発音と定義のプレビュー、深層リンクを復元し、詳細の重複区画をなくしました。アクティブなレイヤー状態、中央配置の選択マーク、テーマ対応の編集操作も一貫して表示されます。
+
 ## コミット
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -94,3 +98,4 @@ upstream Development ブランチの最新変更を統合しました。廃止�
 - [25309509](https://github.com/Cognis-Labs-HQ/Cognis/commit/25309509877018b8d1a4633636f9d45daeef45b4)
 - [de20ea2c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/de20ea2c0)
 - [92ef5510](https://github.com/Cognis-Labs-HQ/Cognis/commit/92ef5510)
+- [b38f8b31](https://github.com/Cognis-Labs-HQ/Cognis/commit/b38f8b31)

@@ -142,6 +142,8 @@ export async function mount(root, { signal } = {}) {
         languageCode,
         schemas,
         signal,
+        showReferenceTree: true,
+        readOnly: true,
         renderContent: (updatedEntries = entries) => {
             entries = updatedEntries;
             return renderAdminBrowser(schemas, entries, i18n, selectedLayer);

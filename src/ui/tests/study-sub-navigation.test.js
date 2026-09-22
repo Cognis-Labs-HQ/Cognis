@@ -40,9 +40,17 @@ test("Study submenu links use the user-dropdown button class", () => {
     );
     assert.doesNotMatch(stylesheet, /\.dropdown-item/);
     assert.match(source, /<ul class="page-subnav-list study-subnav-settings">/);
+    assert.match(studyPage, /renderStudySubNavigation/);
+});
+
+test("Study language controls suppress hover translation overflow", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/sub-navigation.js"),
+        "utf8",
+    );
     assert.match(
-        studyPage,
-        /<ul class="page-subnav-list study-subnav-settings">/,
+        source,
+        /class="dropdown-item btn-no-animation\$\{activeClass\}"/,
     );
 });
 
@@ -91,7 +99,7 @@ test("Study navigation stores language selection on buttons instead of URLs", ()
     assert.match(navigationSource, /currentPath !== "\/study\/settings"/);
     assert.match(studyPageSource, /readSelectedStudyLanguageCode\(\)/);
     assert.match(studyPageSource, /history\.state\?\.studyLastPageUrl/);
-    assert.match(studyPageSource, /!isSettingsPath && languageCode/);
+    assert.match(navigationSource, /currentPath !== "\/study\/settings"/);
     assert.match(librarySource, /readSelectedStudyLanguageCode\(\)/);
     assert.doesNotMatch(navigationSource, /withLanguageQuery/);
     assert.doesNotMatch(studyPageSource, /withLanguageQuery/);

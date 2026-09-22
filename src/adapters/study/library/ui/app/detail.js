@@ -8,25 +8,23 @@ import {
     localizedLabel,
     localizedTextValue,
     metadataFields,
-    pronunciationValues,
     relationSection,
     renderAudio,
     renderDetailFields,
     renderEntryLink,
     renderMetadataPills,
     renderScope,
-    section,
 } from "./presentation.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
 
-function relationTree(entry, references, usedBy, i18n) {
+function relationTree(references, usedBy, i18n) {
     const branch = (label, related) =>
-        `<li><strong>${escapeHtml(label)}</strong>${related.length ? `<ul>${related.map((candidate) => `<li>${renderEntryLink(candidate, "library-relation-tree-entry btn-neutral")}</li>`).join("")}</ul>` : `<span>${escapeHtml(i18n.t("gateway.study.library_no_relationships"))}</span>`}</li>`;
-    return `<section class="library-detail-section library-relation-tree"><h3>${escapeHtml(i18n.t("gateway.study.library_relation_tree"))}</h3><div class="library-relation-tree-root">${escapeHtml(entry.label)}</div><ul>${branch(i18n.t("gateway.study.library_relation_parents"), references)}${branch(i18n.t("gateway.study.library_relation_children"), usedBy)}</ul></section>`;
+        `<div class="library-relation-group"><strong>${escapeHtml(label)}</strong>${related.length ? `<div class="library-related-entries">${related.map((candidate) => renderEntryLink(candidate, "library-related-entry btn-neutral")).join("")}</div>` : `<span>${escapeHtml(i18n.t("gateway.study.library_no_relationships"))}</span>`}</div>`;
+    return `<section class="library-detail-section library-relation-tree"><h3>${escapeHtml(i18n.t("gateway.study.library_relation_tree"))}</h3><div class="library-relation-groups">${branch(i18n.t("gateway.study.library_relation_parents"), references)}${branch(i18n.t("gateway.study.library_relation_children"), usedBy)}</div></section>`;
 }
 
-function coreSections(detail, schemas, entries, i18n) {
+function coreSections(detail, schemas, entries, i18n, options = {}) {
     const { entry, references = [], usedBy = [] } = detail;
     const layer = layerForEntry(schemas, entry);
     const relatedWords = isWritingUnitLayer(layer)
@@ -95,29 +93,11 @@ function coreSections(detail, schemas, entries, i18n) {
                       ];
             }),
     );
-    const definitions = references
-        .filter((candidate) =>
-            isMeaningLayer(layerForEntry(schemas, candidate)),
-        )
-        .map((definition) =>
-            definitionText(
-                definition,
-                layerForEntry(schemas, definition),
-                entry.language,
-            ),
-        )
-        .filter(Boolean);
-    const pronunciations = pronunciationValues(entry);
     return [
         `<header class="library-detail-summary">${renderAudio(entry, layer)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
-        section(
-            i18n.t("gateway.study.library_relationship_pronunciation"),
-            pronunciations,
-        ),
-        section(i18n.t("gateway.study.library_definitions"), definitions),
-        relationTree(entry, references, usedBy, i18n),
+        options.showReferenceTree ? relationTree(references, usedBy, i18n) : "",
         renderDetailFields(genericFields),
-        relatedWords.length
+        !options.showReferenceTree && relatedWords.length
             ? relationSection(
                   i18n
                       .t("gateway.study.library_used_in_layer")
@@ -130,14 +110,14 @@ function coreSections(detail, schemas, entries, i18n) {
                   i18n.t("gateway.study.library_no_relationships"),
               )
             : "",
-        directExamples.length
+        !options.showReferenceTree && directExamples.length
             ? relationSection(
                   i18n.t("gateway.study.library_usage_examples"),
                   directExamples,
                   i18n.t("gateway.study.library_no_relationships"),
               )
             : "",
-        otherUsedBy.length
+        !options.showReferenceTree && otherUsedBy.length
             ? relationSection(
                   i18n.t("gateway.study.library_used_by"),
                   otherUsedBy,
@@ -153,6 +133,7 @@ export async function composeDetail(
     entries,
     i18n,
     languageCode,
+    options = {},
 ) {
     const flow = await uiCtx.runFlow(DETAIL_FLOW, {
         detail,
@@ -188,7 +169,7 @@ export async function composeDetail(
             .filter(Boolean)
             .join(" · ");
     const actions =
-        layer?.semanticRole === "particle"
+        options.readOnly || layer?.semanticRole === "particle"
             ? []
             : (flow.stageResults.actions ?? []).flatMap((contribution) =>
                   Array.isArray(contribution?.actions)
@@ -197,7 +178,7 @@ export async function composeDetail(
               );
     const sections = [
         ...sectionsFor("beforeCore"),
-        ...coreSections(detail, schemas, entries, i18n),
+        ...coreSections(detail, schemas, entries, i18n, options),
         ...sectionsFor("core"),
         ...sectionsFor("afterCore"),
     ];

@@ -22,21 +22,17 @@ import { navigateTo } from "/static/reuse/app-router.js";
 import {
     bindStudySubNavigation,
     clearStudySubNavCache,
+    loadStudySubNavigationModel,
     readSelectedStudyLanguageCode,
+    renderStudySubNavigation,
 } from "/static/gateways/study/ui/sub-navigation.js";
 import {
     resolveLanguageLabel,
-    isAdminScope,
     isStudentScope,
     buildLibraryUrl,
 } from "/static/gateways/study/ui/language.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
-
-const SETTINGS_GEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-  <circle cx="12" cy="12" r="3"/>
-  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-</svg>`;
 
 function toLanguageRecord(rawLanguage) {
     const languageCode = String(rawLanguage?.code ?? "").trim();
@@ -254,6 +250,9 @@ async function mountHub(
     )
         ? requestedLanguageCode
         : learningLanguages[0];
+    const navigationModel = await loadStudySubNavigationModel({
+        fallbackLanguageCode: selectedLanguageCode,
+    });
 
     const subPages = uiCtx.capabilities.get("study:subPages");
     if (!subPages) throw new Error("Study sub-page provider unavailable.");
@@ -280,9 +279,6 @@ async function mountHub(
     const languageCatalog = Array.from(languageByCode.values()).sort((a, b) =>
         a.name.localeCompare(b.name),
     );
-
-    const selectedLanguageModules =
-        languageModulesMap.get(selectedLanguageCode) ?? [];
 
     function getLanguage(languageCode) {
         return (
@@ -317,84 +313,11 @@ async function mountHub(
     }
 
     function renderSubNavigation() {
-        const hasLibraryModule = selectedLanguageModules.some(
-            (component) => String(component?.id ?? "").trim() === "library",
-        );
-        const moduleLinks = selectedLanguageModules
-            .map((component) => {
-                const rawPageUrl = String(component.pageUrl ?? "").trim();
-                if (!rawPageUrl) return "";
-                const pageUrl = rawPageUrl;
-                const activeClass =
-                    window.location.pathname === rawPageUrl ? " active" : "";
-                return `
-                    <li>
-                        <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(String(component.label ?? pageUrl))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
-                            ${escapeHtml(String(component.label ?? pageUrl))}
-                        </a>
-                    </li>
-                `;
-            })
-            .join("");
-        const libraryLink =
-            isAdminScope() && !hasLibraryModule
-                ? `
-                <li>
-                    <a class="dropdown-item${window.location.pathname === "/study/library" ? " active" : ""}" href="${escapeHtml(buildLibraryUrl(selectedLanguageCode))}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
-                        ${escapeHtml(i18n.t("gateway.study.library_label"))}
-                    </a>
-                </li>
-            `
-                : "";
-
-        const activeLanguageLinks = learningLanguages
-            .map((languageCode) => {
-                const language = getLanguage(languageCode);
-                const href = buildHubUrl(languageCode);
-                const activeClass =
-                    !isSettingsPath && languageCode === selectedLanguageCode
-                        ? " active"
-                        : "";
-                return `
-                    <li>
-                        <a class="dropdown-item${activeClass}" href="${escapeHtml(href)}" data-language-code="${escapeHtml(languageCode)}" data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
-                            ${escapeHtml(language.flag)}
-                            <span>${escapeHtml(language.name)}</span>
-                        </a>
-                    </li>
-                `;
-            })
-            .join("");
-
-        const settingsActiveClass = isSettingsPath ? " active" : "";
-        const settingsUrl = buildSettingsUrl();
-
-        return `
-            <div class="study-page-subnav">
-                <ul class="page-subnav-list study-subnav-modules">
-                    ${moduleLinks}${libraryLink}
-                </ul>
-                <ul class="page-subnav-list study-subnav-language-options">
-                    ${activeLanguageLinks}
-                </ul>
-                <ul class="page-subnav-list study-subnav-settings">
-                    <li>
-                        <a
-                            class="dropdown-item${settingsActiveClass}"
-                            href="${escapeHtml(settingsUrl)}"
-                            data-study-settings
-                            data-search-category="Pages"
-                            data-search-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-                            data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}"
-                            aria-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-                            title="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-                        >
-                            ${SETTINGS_GEAR_SVG}
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        `;
+        return renderStudySubNavigation({
+            model: navigationModel,
+            currentPath: window.location.pathname,
+            i18n,
+        });
     }
 
     function renderDashboardContent() {

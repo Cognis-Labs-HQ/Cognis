@@ -64,12 +64,12 @@ Paketaktualisierungen bewahren vom Herausgeber ausgelassene Einträge, sofern da
 
 ## Administration und Lernseiten
 
-`/study/library` ist ein Dateneditor ausschließlich für Administratoren. Sein Seitenmenü gruppiert alle Datensätze der ausgewählten Sprache nach Schema und Ebene, einschließlich Definitionen und Beziehungen. Die ausgewählte Ebene bleibt eine übersichtliche Zeilenliste; ein themengerechter Stift öffnet ein fokussiertes Fenster zum Bearbeiten von Bezeichnungen, Sichtbarkeit, Feldern und Referenzen über die Library-API. Er verlinkt weder auf die Lerndarstellung noch verwendet er diese wieder.
+`/study/library` ist ein Dateneditor ausschließlich für Administratoren. Das Seitenmenü gruppiert alle Datensätze der ausgewählten Sprache nach Schema und Ebene, einschließlich Definitionen und Beziehungen. Beim Auswählen einer Ebene wechselt der aktive Menüstatus sofort und eine übersichtliche Zeilenliste erscheint. Ein Klick auf eine Zeile öffnet ein schreibgeschütztes Detailfenster mit einer kompakten Übersicht eingehender und ausgehender Referenzen; ein Rechtsklick aktiviert die Mehrfachauswahl, während der kleine themengerechte Stift den schemagesteuerten Editor öffnet.
 
 Lernenden-Ebenen verwenden eigenständige SPA-Routen unter `/study/layers/:schema/:layer`, die direkt in der Study-Unternavigation verlinkt sind. Diese Seiten verwenden den reichhaltigen Kartenrenderer mit Filtern, Varianten, Definitionen, Metadaten und Detailfenstern, ohne administrative Bearbeitungssteuerungen anzuzeigen.
 
 ## Fokussierte Karten und Bearbeitung
 
-Lernkarten reservieren in der Vorschau eine feste Fußzeile für Metadaten-Pills und das Bereichssymbol. Aussprachen und Definitionen bleiben im Detailfenster; dort zeigt ein einstufiger Beziehungsbaum sowohl referenzierte Datensätze als auch Datensätze, die das ausgewählte Element referenzieren.
+Lernkarten zeigen in der Vorschau Aussprachen und Definitionen sowie eine feste Fußzeile für Metadaten-Pills und das Bereichssymbol. Der Detailtitel wiederholt diesen kompakten Aussprache- und Definitionskontext ohne doppelte Abschnitte im Inhalt; Beziehungssteuerelemente bleiben anklickbare tiefe Verknüpfungen. Die Referenzübersicht ist der administrativen Bibliotheksansicht vorbehalten.
 
 Das administrative Bearbeitungsfenster leitet seine Steuerelemente aus den Feld- und Beziehungsschemata der jeweiligen Ebene ab, statt Roh-JSON anzuzeigen. Lokalisierte Texte, Listen, boolesche Werte, Zahlen, Zeichenketten und Beziehungsziele erhalten passende Eingaben. Der Schließschutz verfolgt geänderte Felder, bevor das Fenster verworfen werden darf.

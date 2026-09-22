@@ -36,6 +36,17 @@ test("popup locks page scrolling while preserving popup overflow", () => {
     );
 });
 
+test("popup titles keep the compact reusable heading scale", () => {
+    const stylesSource = readFileSync(
+        resolve(ROOT, "src/ui/styles/popup.css"),
+        "utf8",
+    );
+    assert.match(
+        stylesSource,
+        /\.popup-title\s*\{[\s\S]*font-size: calc\(1\.6875em \* var\(--popup-title-scale, 1\)\)/,
+    );
+});
+
 test("popup close protection uses the silent dirty tracker before warning", () => {
     const source = readFileSync(resolve(ROOT, "src/ui/reuse/popup.js"), "utf8");
 
@@ -166,7 +177,10 @@ test("createAnchoredPopup creates, positions, and tears down anchored popups", (
 });
 
 test("config form popup keeps known 400 field errors open", () => {
-    const source = readFileSync(resolve(ROOT, "src/ui/reuse/popup.js"), "utf8");
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/popup/config-form.js"),
+        "utf8",
+    );
     assert.match(source, /export function markPopupFieldInvalid\(/);
     assert.match(source, /form-builder-floating-alert/);
     assert.match(source, /form-builder-criterion-item--unmet/);

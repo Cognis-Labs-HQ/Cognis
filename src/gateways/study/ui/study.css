@@ -234,6 +234,12 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
     justify-content: center;
 }
 
+.study-subnav-settings img {
+    display: block;
+    width: 1.125rem;
+    height: 1.125rem;
+}
+
 .study-subnav-language-options {
     display: flex;
     align-items: center;

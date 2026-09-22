@@ -23,6 +23,7 @@ export async function openEntryPopup(
     i18n,
     languageCode,
     signal,
+    options = {},
 ) {
     if (isMeaningLayer(layerForEntry(schemas, initialEntry))) return;
     let selectedEntry = initialEntry;
@@ -69,6 +70,7 @@ export async function openEntryPopup(
             entries,
             i18n,
             languageCode,
+            options,
         );
         signal?.throwIfAborted();
         const titleDetailItems = popupTitleDetailItems(

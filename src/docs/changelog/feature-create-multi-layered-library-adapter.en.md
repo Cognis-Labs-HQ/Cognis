@@ -78,6 +78,10 @@ Removed unrelated core, API, router, adapter, gateway, and feature changes so th
 
 Added a generic UI capability for grouped sub-page discovery, caching, invalidation, and route resolution. Study now uses one provider-backed model for each language’s page list, the selected-language submenu, hub cards, and child-page loading, while navigation preserves the selected language in private history state.
 
+## Restore Library interaction polish
+
+Stabilized header collapse while scrolling, populated Study layer navigation on first load, removed language-button overflow, and restored compact popup headings. The administrator Library now opens read-only row details with a simplified reference summary and right-click multi-select, while learner cards again preview pronunciations and definitions, retain deep links, and avoid duplicate detail sections. Active layer state, centered selection marks, and theme-aware edit controls now remain visually consistent.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -94,3 +98,4 @@ Added a generic UI capability for grouped sub-page discovery, caching, invalidat
 - [25309509](https://github.com/Cognis-Labs-HQ/Cognis/commit/25309509877018b8d1a4633636f9d45daeef45b4)
 - [de20ea2c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/de20ea2c0)
 - [92ef5510](https://github.com/Cognis-Labs-HQ/Cognis/commit/92ef5510)
+- [b38f8b31](https://github.com/Cognis-Labs-HQ/Cognis/commit/b38f8b31)

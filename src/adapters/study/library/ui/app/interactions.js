@@ -19,7 +19,15 @@ import {
 let activeEntryPopup = null;
 
 export function bindLibraryInteractions(root, context) {
-    const { i18n, languageCode, requestedLayer, schemas, signal } = context;
+    const {
+        i18n,
+        languageCode,
+        requestedLayer,
+        readOnly = false,
+        schemas,
+        showReferenceTree = false,
+        signal,
+    } = context;
     let entries = context.entries;
     let suppressEntryClick = false;
     bindVariantInteractions(root, {
@@ -94,7 +102,12 @@ export function bindLibraryInteractions(root, context) {
             }
             if (closeUnrelatedVariantViews(root, control)) return;
             if (root.classList.contains("library-selection-mode")) {
-                setSelectionMode(root, false, i18n);
+                const selection = selectionForCard(root, control);
+                if (selection) {
+                    selection.checked = !selection.checked;
+                    updateDeleteSelectionButton(root, i18n);
+                }
+                return;
             }
             const entry = entries.find(
                 (candidate) => candidate.id === control.dataset.libraryEntry,
@@ -108,6 +121,7 @@ export function bindLibraryInteractions(root, context) {
                 i18n,
                 languageCode,
                 signal,
+                { readOnly, showReferenceTree },
             )
                 .catch(() =>
                     showToast(i18n.t("gateway.study.library_load_error"), {
