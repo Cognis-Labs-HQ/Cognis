@@ -87,3 +87,9 @@ Learner-facing layers use independent `/study/layers/:schema/:layer` SPA routes 
 Learner card previews include pronunciations and definitions as well as a fixed footer for metadata pills and the scope icon. The detail title repeats that concise pronunciation and definition context without duplicate body sections, while relationship controls remain clickable deep links. The reference summary is reserved for the administrator Library view.
 
 The administrator edit popup derives controls from each layer's field and relationship schemas instead of exposing raw JSON. Localized text, lists, booleans, numbers, strings, and relationship targets receive suitable controls, and popup close protection tracks dirty fields before allowing dismissal.
+
+## Provider-owned editor contracts
+
+Every editable field must declare an `input.control`; its localized label and choice labels come exclusively from provider metadata. Providers choose free text, tag lists, single- or multi-select controls, checkboxes, numbers, localized text, or an audio-file browser, and may mark classification fields immutable after creation. An `audioFile` control declares its Files-gateway namespace and optional language-relative prefix so selection and upload never escape that language's audio area. A field may declare `linkRelationship` to make its reading or pronunciation values navigable through provider-authored relationships rather than guessed matches.
+
+Composition references must always target the closest available structural unit. For example, 日本語 references the lexical unit 日本 and the compound unit 語 when 日本 exists; 日本 then references 日 and 本. The resolver prefers the longest higher-level match and only descends to smaller writing units when no closer record exists.

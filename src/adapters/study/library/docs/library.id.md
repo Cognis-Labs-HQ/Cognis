@@ -73,3 +73,7 @@ Lapisan untuk pelajar menggunakan rute SPA mandiri `/study/layers/:schema/:layer
 Pratinjau kartu pelajar menampilkan pelafalan dan definisi serta footer tetap untuk pil metadata dan ikon cakupan. Judul detail mengulangi konteks pelafalan dan definisi yang ringkas tanpa bagian isi ganda, sementara kontrol relasi tetap menjadi tautan dalam yang dapat diklik. Ringkasan referensi hanya tersedia pada tampilan Pustaka administrator.
 
 Popup penyuntingan administrator membentuk kontrol dari skema bidang dan relasi setiap lapisan, bukan menampilkan JSON mentah. Teks terlokalisasi, daftar, boolean, angka, string, dan target relasi mendapatkan kontrol yang sesuai, sedangkan perlindungan penutupan melacak bidang yang berubah sebelum popup dapat ditutup.
+
+## Kontrak editor milik penyedia
+
+Setiap bidang yang dapat diedit mendeklarasikan jenis input dan semua label terlokalisasi dalam skema penyedia. Klasifikasi tetap terkunci setelah dibuat; pemilihan dan unggahan audio dibatasi pada prefiks bahasa dalam namespace gateway File. Komposisi wajib merujuk lapisan terdekat yang tersedia: 日本語 merujuk 日本 dan 語, sedangkan 日本 merujuk 日 dan 本.

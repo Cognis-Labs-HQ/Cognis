@@ -39,7 +39,7 @@ export function bindLibraryInteractions(root, context) {
     root.addEventListener(
         "contextmenu",
         (event) => {
-            const card = event.target.closest("button[data-library-entry]");
+            const card = event.target.closest("[data-library-entry]");
             if (!card) return;
             const selection = selectionForCard(root, card);
             if (!selection) return;
@@ -81,6 +81,7 @@ export function bindLibraryInteractions(root, context) {
                 return;
             }
             if (event.target.matches("[data-library-select-entry]")) return;
+            if (event.target.closest("[data-library-admin-edit]")) return;
             const filter = event.target.closest("button[data-library-filter]");
             if (filter) {
                 applyLibraryFilters(filter);
@@ -94,7 +95,7 @@ export function bindLibraryInteractions(root, context) {
                 );
                 return;
             }
-            const control = event.target.closest("button[data-library-entry]");
+            const control = event.target.closest("[data-library-entry]");
             if (!control) return;
             if (suppressEntryClick) {
                 suppressEntryClick = false;

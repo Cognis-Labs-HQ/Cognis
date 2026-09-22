@@ -82,6 +82,10 @@ upstream Development ブランチの最新変更を統合しました。廃止�
 
 スクロール開始時のヘッダー折りたたみを安定させ、初回読み込みから Study のレイヤーナビゲーションを表示し、言語ボタンのはみ出しを除去して、コンパクトなポップアップ見出しを復元しました。管理者用ライブラリでは、簡略化した参照概要を持つ読み取り専用の行詳細と右クリックによる複数選択を提供します。学習カードでは発音と定義のプレビュー、深層リンクを復元し、詳細の重複区画をなくしました。アクティブなレイヤー状態、中央配置の選択マーク、テーマ対応の編集操作も一貫して表示されます。
 
+## プロバイダー主導の Library 編集
+
+Library の行全体で読み取り専用の詳細を開き、テーマ対応の編集操作を行末に配置しました。プロバイダーのスキーマが、フィールド名、入力方式、作成後に変更できない分類、ディープリンク関係、言語別の音声ブラウザーを定義します。タグは Enter で確定し、選択肢は再クリックで解除でき、必須項目は送信前に検証され、フローティング操作には翻訳済みラベルが表示されます。カードと Study サブナビゲーションのホバー表示を安定したテーマ対応表示にし、複合要素は原子的な文字より先に最も近い上位レコードを選びます。
+
 ## コミット
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -99,3 +103,4 @@ upstream Development ブランチの最新変更を統合しました。廃止�
 - [de20ea2c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/de20ea2c0)
 - [92ef5510](https://github.com/Cognis-Labs-HQ/Cognis/commit/92ef5510)
 - [b38f8b31](https://github.com/Cognis-Labs-HQ/Cognis/commit/b38f8b31)
+- [f9ce159d](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9ce159da8ad07c2ff59f913eebab32a69f26921)

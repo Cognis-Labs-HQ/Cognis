@@ -50,6 +50,27 @@ export interface LibraryFieldSchema {
         | "asset"
         | "audio";
     required?: boolean;
+    /** Provider-owned editing and linking semantics. Labels remain in metadata. */
+    input?: {
+        control:
+            | "freeText"
+            | "tagList"
+            | "singleSelect"
+            | "multiSelect"
+            | "checkbox"
+            | "number"
+            | "localizedText"
+            | "audioFile";
+        options?: readonly {
+            value: string;
+            metadata: { labels: LocalizedText };
+        }[];
+        immutable?: boolean;
+        /** Relationship whose targets make values in this field deep-linkable. */
+        linkRelationship?: string;
+        /** File namespace and language-relative prefix used by audioFile controls. */
+        file?: { namespace: string; prefix?: string };
+    };
     detail?: LibraryDetailHint;
 }
 

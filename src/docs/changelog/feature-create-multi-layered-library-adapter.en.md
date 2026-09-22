@@ -82,6 +82,10 @@ Added a generic UI capability for grouped sub-page discovery, caching, invalidat
 
 Stabilized header collapse while scrolling, populated Study layer navigation on first load, removed language-button overflow, and restored compact popup headings. The administrator Library now opens read-only row details with a simplified reference summary and right-click multi-select, while learner cards again preview pronunciations and definitions, retain deep links, and avoid duplicate detail sections. Active layer state, centered selection marks, and theme-aware edit controls now remain visually consistent.
 
+## Provider-owned Library editing
+
+Library rows now open read-only details across their whole hit area, while theme-aware edit actions remain at the trailing edge. Provider schemas control field labels, controls, immutable classifications, deep-link relationships, and language-scoped audio browsing. Tag fields commit on Enter, selected options toggle off, required fields validate before submission, and floating actions have localized labels. Cards and Study sub-navigation now use stable, theme-aware hover treatments, and composition chooses the closest higher-level records before atomic characters.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -99,3 +103,4 @@ Stabilized header collapse while scrolling, populated Study layer navigation on 
 - [de20ea2c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/de20ea2c0)
 - [92ef5510](https://github.com/Cognis-Labs-HQ/Cognis/commit/92ef5510)
 - [b38f8b31](https://github.com/Cognis-Labs-HQ/Cognis/commit/b38f8b31)
+- [f9ce159d](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9ce159da8ad07c2ff59f913eebab32a69f26921)

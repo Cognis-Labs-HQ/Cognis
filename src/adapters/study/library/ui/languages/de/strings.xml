@@ -36,4 +36,10 @@
   <string name="gateway.study.library_relation_tree">Verknüpfte Inhalte</string>
   <string name="gateway.study.library_relation_parents">Verweise</string>
   <string name="gateway.study.library_relation_children">Verwendet von</string>
+  <string name="gateway.study.library_select_all">Alle auswählen</string>
+  <string name="gateway.study.library_delete_selected">Auswahl löschen</string>
+  <string name="gateway.study.library_validation_error">Prüfen Sie vor dem Speichern die Pflichtfelder.</string>
+  <string name="gateway.study.library_audio_list_error">Audiodateien konnten nicht geladen werden.</string>
+  <string name="gateway.study.library_audio_upload_success">Audio wurde hochgeladen.</string>
+  <string name="gateway.study.library_audio_upload_error">Die Audiodatei konnte nicht hochgeladen werden.</string>
 </resources>

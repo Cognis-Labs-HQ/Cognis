@@ -1,8 +1,12 @@
 .library-browser {
     --library-card-gap: 0.75rem;
     --library-card-half-gap: 0.375rem;
-    --library-card-surface: rgb(15, 23, 42);
-    --library-card-surface-raised: rgb(19, 29, 51);
+    --library-card-surface: color-mix(in srgb, var(--surface-2) 88%, white);
+    --library-card-surface-raised: color-mix(
+        in srgb,
+        var(--surface-2) 78%,
+        white
+    );
 
     display: grid;
     box-sizing: border-box;
@@ -99,7 +103,7 @@ body[data-theme="light"] .library-browser {
     padding: 1rem 1rem 3.25rem;
     text-align: left;
     border-color: var(--border);
-    border-radius: 12px;
+    border-radius: 16px;
     background: var(--library-card-surface);
 }
 
@@ -350,7 +354,7 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
 .library-entry-variant-hint {
     position: absolute;
     z-index: 6;
-    top: calc(100% + 0.4rem);
+    bottom: 0.55rem;
     left: 50%;
     display: none;
     width: max-content;
@@ -363,7 +367,24 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     color: var(--text-muted);
     font-size: 0.75rem;
     text-align: center;
-    transform: translateX(-50%);
+    transform: translate(-50%, 0.2rem);
+    animation: libraryHintFloat 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes libraryHintFloat {
+    to {
+        transform: translate(-50%, -0.2rem);
+    }
+}
+
+.library-tag-field,
+.library-tag-list {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.library-tag-list {
+    grid-template-columns: repeat(auto-fit, minmax(6rem, max-content));
 }
 
 .library-entry-card-shell:hover:not(.library-entry-variants-open)
@@ -847,6 +868,12 @@ body[data-theme="dark"] .library-audio {
     align-items: center;
     min-height: 3.25rem;
     border-block-end: 1px solid var(--border);
+    cursor: pointer;
+}
+
+.library-admin-entry-row:is(:hover, :focus-visible) {
+    background: color-mix(in srgb, var(--surface-2) 78%, var(--accent-2));
+    outline: none;
 }
 
 .library-admin-entry-row .library-entry-selection {
@@ -862,8 +889,6 @@ body[data-theme="dark"] .library-audio {
     justify-content: flex-start;
     width: 100%;
     padding: 0.5rem;
-    border-color: transparent;
-    background: transparent;
     color: var(--text);
     text-align: start;
     text-overflow: ellipsis;
@@ -882,6 +907,8 @@ body[data-theme="dark"] .library-audio {
     background-position: center;
     background-size: 0.95rem;
     place-items: center;
+    justify-self: end;
+    margin-inline-start: auto;
 }
 
 body[data-theme="dark"] .library-admin-edit {
@@ -889,7 +916,8 @@ body[data-theme="dark"] .library-admin-edit {
 }
 
 .library-admin-edit:is(:hover, :focus-visible) {
-    background-color: color-mix(in srgb, var(--accent-2) 16%, transparent);
+    border-color: var(--accent-2);
+    background-color: color-mix(in srgb, var(--surface) 82%, var(--accent-2));
 }
 
 .library-card-pronunciation,

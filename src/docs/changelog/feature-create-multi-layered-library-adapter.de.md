@@ -82,6 +82,10 @@ Eine generische UI-Fähigkeit für gruppierte Unterseitenerkennung, Zwischenspei
 
 Das Einklappen der Kopfzeile beim Scrollen wurde stabilisiert, die Study-Ebenennavigation wird beim ersten Laden gefüllt, Überlauf an Sprachschaltflächen wurde entfernt und kompakte Pop-up-Überschriften wurden wiederhergestellt. Die administrative Bibliothek öffnet nun schreibgeschützte Zeilendetails mit vereinfachter Referenzübersicht und Mehrfachauswahl per Rechtsklick. Lernkarten zeigen wieder Aussprachen und Definitionen in der Vorschau, behalten tiefe Verknüpfungen und vermeiden doppelte Detailabschnitte. Aktiver Ebenenstatus, zentrierte Auswahlmarken und themengerechte Bearbeitungssteuerungen bleiben visuell konsistent.
 
+## Vom Anbieter gesteuerte Library-Bearbeitung
+
+Library-Zeilen öffnen schreibgeschützte Details über ihre gesamte Trefferfläche, während themenabhängige Bearbeitungsaktionen am Zeilenende bleiben. Anbieter-Schemata steuern Feldbezeichnungen, Steuerelemente, unveränderliche Klassifizierungen, Deep-Link-Beziehungen und die sprachgebundene Audiosuche. Tags werden mit der Eingabetaste übernommen, ausgewählte Optionen lassen sich abwählen, Pflichtfelder werden vor dem Senden geprüft und schwebende Aktionen sind lokalisiert. Karten und die Study-Unternavigation verwenden stabile, themengerechte Hover-Zustände; Zusammensetzungen wählen vor atomaren Zeichen die nächstgelegenen übergeordneten Datensätze.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -99,3 +103,4 @@ Das Einklappen der Kopfzeile beim Scrollen wurde stabilisiert, die Study-Ebenenn
 - [de20ea2c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/de20ea2c0)
 - [92ef5510](https://github.com/Cognis-Labs-HQ/Cognis/commit/92ef5510)
 - [b38f8b31](https://github.com/Cognis-Labs-HQ/Cognis/commit/b38f8b31)
+- [f9ce159d](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9ce159da8ad07c2ff59f913eebab32a69f26921)

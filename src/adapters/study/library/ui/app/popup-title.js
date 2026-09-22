@@ -3,7 +3,10 @@ import {
     layerForEntry,
     relationshipPresentationRole,
 } from "./presentation.js";
-import { distinctPronunciationLabels } from "./composition-links.js";
+import {
+    distinctPronunciationLabels,
+    resolveLabelComposition,
+} from "./composition-links.js";
 
 function linkedItems(entries) {
     return entries.map((entry) => ({
@@ -61,6 +64,7 @@ export function secondarySpellingGroups(detail, schemas) {
 }
 
 export function popupTitleDetailItems(detail, schemas, titleDefinition) {
+    const layer = layerForEntry(schemas, detail.entry);
     const spellingGroups = secondarySpellingGroups(detail, schemas);
     const spellingLabels = new Set(
         spellingGroups.map((group) =>
@@ -71,15 +75,37 @@ export function popupTitleDetailItems(detail, schemas, titleDefinition) {
         ...(groupIndex ? [{ label: " · " }] : []),
         ...linkedItems(group),
     ]);
+    const pronunciationField = (layer?.fields ?? []).find(
+        ({ id }) => id === "pronunciation",
+    );
+    const linkRelationship = pronunciationField?.input?.linkRelationship;
+    const linkedPronunciationEntries = linkRelationship
+        ? (detail.entry.references ?? [])
+              .filter(({ relation }) => relation === linkRelationship)
+              .map(({ entryId }) =>
+                  (detail.references ?? []).find(({ id }) => id === entryId),
+              )
+              .filter(Boolean)
+        : [];
     const pronunciationItems = distinctPronunciationLabels(
         detail.entry,
         spellingLabels,
-    ).flatMap((label, pronunciationIndex) => [
-        ...(pronunciationIndex || spellingItems.length
-            ? [{ label: " · " }]
-            : []),
-        { label },
-    ]);
+    ).flatMap((label, pronunciationIndex) => {
+        const linked = linkRelationship
+            ? resolveLabelComposition(
+                  label,
+                  detail.entry,
+                  schemas,
+                  linkedPronunciationEntries,
+              )
+            : [];
+        return [
+            ...(pronunciationIndex || spellingItems.length
+                ? [{ label: " · " }]
+                : []),
+            ...(linked.length ? linkedItems(linked) : [{ label }]),
+        ];
+    });
     const items = [...spellingItems, ...pronunciationItems];
     if (titleDefinition) {
         items.push(...(items.length ? [{ label: " · " }] : []), {

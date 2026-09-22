@@ -36,4 +36,10 @@
   <string name="gateway.study.library_relation_tree">Konten Terkait</string>
   <string name="gateway.study.library_relation_parents">Referensi</string>
   <string name="gateway.study.library_relation_children">Dirujuk Oleh</string>
+  <string name="gateway.study.library_select_all">Pilih semua</string>
+  <string name="gateway.study.library_delete_selected">Hapus yang dipilih</string>
+  <string name="gateway.study.library_validation_error">Periksa kolom wajib sebelum menyimpan.</string>
+  <string name="gateway.study.library_audio_list_error">Berkas audio tidak dapat dimuat.</string>
+  <string name="gateway.study.library_audio_upload_success">Audio diunggah.</string>
+  <string name="gateway.study.library_audio_upload_error">Berkas audio tidak dapat diunggah.</string>
 </resources>

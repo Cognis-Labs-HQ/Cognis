@@ -36,4 +36,10 @@
   <string name="gateway.study.library_relation_tree">Related Content</string>
   <string name="gateway.study.library_relation_parents">References</string>
   <string name="gateway.study.library_relation_children">Referenced By</string>
+  <string name="gateway.study.library_select_all">Select all</string>
+  <string name="gateway.study.library_delete_selected">Delete selected</string>
+  <string name="gateway.study.library_validation_error">Review the required fields before saving.</string>
+  <string name="gateway.study.library_audio_list_error">Could not load audio files.</string>
+  <string name="gateway.study.library_audio_upload_success">Audio uploaded.</string>
+  <string name="gateway.study.library_audio_upload_error">Could not upload the audio file.</string>
 </resources>

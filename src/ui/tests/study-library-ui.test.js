@@ -439,7 +439,7 @@ test("Study Library unfolds structured character variants", () => {
     );
     assert.match(
         stylesheet,
-        /\.library-entry-variant-hint\s*\{[\s\S]*top:\s*calc\(100% \+ 0\.4rem\)/,
+        /\.library-entry-variant-hint\s*\{[\s\S]*bottom:\s*0\.55rem/,
     );
     assert.doesNotMatch(
         stylesheet,
@@ -491,11 +491,8 @@ test("Study Library gives content safe edge spacing", () => {
 });
 
 test("Study Library cards use opaque theme surfaces", () => {
-    assert.match(stylesheet, /--library-card-surface:\s*rgb\(15, 23, 42\)/);
-    assert.match(
-        stylesheet,
-        /--library-card-surface-raised:\s*rgb\(19, 29, 51\)/,
-    );
+    assert.match(stylesheet, /--library-card-surface:\s*color-mix/);
+    assert.match(stylesheet, /--library-card-surface-raised:\s*color-mix/);
     assert.match(
         stylesheet,
         /body\[data-theme="light"\] \.library-browser[\s\S]*--library-card-surface:\s*rgb\(255, 255, 255\)/,

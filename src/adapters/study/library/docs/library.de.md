@@ -73,3 +73,7 @@ Lernenden-Ebenen verwenden eigenständige SPA-Routen unter `/study/layers/:schem
 Lernkarten zeigen in der Vorschau Aussprachen und Definitionen sowie eine feste Fußzeile für Metadaten-Pills und das Bereichssymbol. Der Detailtitel wiederholt diesen kompakten Aussprache- und Definitionskontext ohne doppelte Abschnitte im Inhalt; Beziehungssteuerelemente bleiben anklickbare tiefe Verknüpfungen. Die Referenzübersicht ist der administrativen Bibliotheksansicht vorbehalten.
 
 Das administrative Bearbeitungsfenster leitet seine Steuerelemente aus den Feld- und Beziehungsschemata der jeweiligen Ebene ab, statt Roh-JSON anzuzeigen. Lokalisierte Texte, Listen, boolesche Werte, Zahlen, Zeichenketten und Beziehungsziele erhalten passende Eingaben. Der Schließschutz verfolgt geänderte Felder, bevor das Fenster verworfen werden darf.
+
+## Vom Anbieter gesteuerte Editor-Verträge
+
+Jedes bearbeitbare Feld deklariert seine Eingabeart und alle lokalisierten Bezeichnungen im Anbieter-Schema. Unveränderliche Klassifizierungen bleiben nach der Erstellung gesperrt; Audioauswahl und Upload sind auf den Sprachpräfix des Files-Gateway-Namensraums beschränkt. Zusammensetzungen müssen auf die nächstgelegene verfügbare Ebene verweisen: 日本語 verweist auf 日本 und 語, während 日本 auf 日 und 本 verweist.

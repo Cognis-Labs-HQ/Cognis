@@ -440,6 +440,14 @@ export class LibraryService implements LibraryCapability {
             throw new Error("invalid_hidden");
         const layer = findLayer(schema, input.layer);
         const fields = structuredClone(input.fields ?? {});
+        for (const field of layer.fields ?? []) {
+            if (
+                field.input?.immutable === true &&
+                JSON.stringify(fields[field.id]) !==
+                    JSON.stringify(current.fields?.[field.id])
+            )
+                throw new Error(`field_immutable:${field.id}`);
+        }
         let entryId: string | undefined;
         if (layer.semanticRole === "definition") {
             const localization = layer.definitionLocalization!;

@@ -82,6 +82,10 @@ Kapabilitas UI generik ditambahkan untuk penemuan, penyimpanan tembolok, invalid
 
 Penciutan tajuk saat menggulir kini stabil, navigasi lapisan Study terisi sejak pemuatan pertama, luapan tombol bahasa dihapus, dan judul popup ringkas dipulihkan. Pustaka administrator kini membuka detail baris hanya-baca dengan ringkasan referensi sederhana serta multi-pilih melalui klik kanan. Kartu pelajar kembali menampilkan pratinjau pelafalan dan definisi, mempertahankan tautan dalam, dan menghindari bagian detail ganda. Status lapisan aktif, tanda pilihan terpusat, dan kontrol sunting yang mengikuti tema kini tetap konsisten secara visual.
 
+## Penyuntingan Library milik penyedia
+
+Baris Library kini membuka detail hanya-baca melalui seluruh area klik, sedangkan tindakan edit yang mengikuti tema tetap berada di ujung baris. Skema penyedia menentukan label bidang, kontrol, klasifikasi yang tidak dapat diubah, relasi tautan mendalam, dan penelusuran audio sesuai bahasa. Tag disimpan dengan Enter, opsi terpilih dapat dibatalkan, bidang wajib divalidasi sebelum pengiriman, dan tindakan mengambang memiliki label terlokalisasi. Kartu serta subnavigasi Study menggunakan keadaan hover stabil yang sadar tema, sementara komposisi memilih catatan tingkat terdekat sebelum karakter atomik.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -99,3 +103,4 @@ Penciutan tajuk saat menggulir kini stabil, navigasi lapisan Study terisi sejak 
 - [de20ea2c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/de20ea2c0)
 - [92ef5510](https://github.com/Cognis-Labs-HQ/Cognis/commit/92ef5510)
 - [b38f8b31](https://github.com/Cognis-Labs-HQ/Cognis/commit/b38f8b31)
+- [f9ce159d](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9ce159da8ad07c2ff59f913eebab32a69f26921)

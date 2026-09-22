@@ -1,13 +1,14 @@
 /** Resolve complete labels into links to their canonical Library writing units. */
 
-function writingUnitLayerIds(entry, schemas) {
+function composableLayerIds(entry, schemas) {
     const schema = schemas.find(({ id }) => id === entry.schemaId);
     return new Set(
         (schema?.layers ?? [])
             .filter(
                 ({ semanticRole }) =>
                     semanticRole === "atomicWritingUnit" ||
-                    semanticRole === "compoundWritingUnit",
+                    semanticRole === "compoundWritingUnit" ||
+                    semanticRole === "lexicalUnit",
             )
             .map(({ id }) => id),
     );
@@ -15,7 +16,7 @@ function writingUnitLayerIds(entry, schemas) {
 
 export function resolveLabelComposition(label, entry, schemas, entries) {
     if (typeof label !== "string" || !label) return [];
-    const layerIds = writingUnitLayerIds(entry, schemas);
+    const layerIds = composableLayerIds(entry, schemas);
     const candidates = entries
         .filter(
             (candidate) =>
@@ -26,7 +27,22 @@ export function resolveLabelComposition(label, entry, schemas, entries) {
                 typeof candidate.label === "string" &&
                 candidate.label,
         )
-        .sort((left, right) => right.label.length - left.label.length);
+        .sort((left, right) => {
+            const schema = schemas.find(({ id }) => id === entry.schemaId);
+            const role = (candidate) =>
+                schema?.layers.find(({ id }) => id === candidate.layer)
+                    ?.semanticRole;
+            const rank = (candidate) =>
+                role(candidate) === "lexicalUnit"
+                    ? 3
+                    : role(candidate) === "compoundWritingUnit"
+                      ? 2
+                      : 1;
+            return (
+                right.label.length - left.label.length ||
+                rank(right) - rank(left)
+            );
+        });
     const resolved = new Map([[label.length, []]]);
     for (let offset = label.length - 1; offset >= 0; offset -= 1) {
         for (const candidate of candidates) {
