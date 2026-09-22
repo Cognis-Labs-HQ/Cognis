@@ -118,6 +118,10 @@ Beim Öffnen einer Vokabel über eine verwandte Karte wird deren lokalisierte De
 
 Karten bewahren jetzt die Definitionsreihenfolge des Anbieters: Die erste lokalisierte Definition wird neben dem Titel hervorgehoben, sofern sie diesen nicht dupliziert; weitere Definitionen erscheinen nur bei vorhandenem Inhalt im Abschnitt „Zusätzliche Definitionen“. Ein Rückfallwert der Ausgangskarte wird nur verwendet, wenn die Vokabel keine Definition bereitstellt.
 
+## Geschwister-Kindkarten in getrennten Plätzen halten
+
+Die Laufzeiteinpassung verfolgt nun die Stammkarte und jedes bereits positionierte sichtbare Kind als belegte Rechtecke. Freie, vom Anbieter bevorzugte Positionen innerhalb der Grenze bleiben erhalten; andernfalls wird die begrenzte Alternative mit der geringsten Überlappung gewählt, sodass Geschwister nicht mehr auf denselben Platz fallen.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -144,3 +148,4 @@ Karten bewahren jetzt die Definitionsreihenfolge des Anbieters: Die erste lokali
 - [e96d273f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e96d273fa56edd2c2ded09ca993724437ab85c93)
 - [66867a1d](https://github.com/Cognis-Labs-HQ/Cognis/commit/66867a1d08a247fa73824aeba982ccba1f9b5d8c)
 - [c113e7a1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c113e7a1f5cb7bc2a86c39b8f419ae6b953de9e3)
+- [af8bb812](https://github.com/Cognis-Labs-HQ/Cognis/commit/af8bb812d7c31626d877114ce657ca664bf4fe9f)

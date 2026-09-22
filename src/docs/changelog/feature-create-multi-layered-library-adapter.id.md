@@ -118,6 +118,10 @@ Membuka kosakata melalui kartu entri terkait kini membawa definisi terlokalkan k
 
 Kartu kini mempertahankan urutan definisi penyedia: definisi terlokalkan pertama ditampilkan di samping judul kecuali menduplikasi judul, sedangkan definisi sisanya hanya ditampilkan dalam bagian Definisi Tambahan jika tersedia. Nilai cadangan dari kartu sumber hanya digunakan jika kosakata tidak menyediakan definisi.
 
+## Pertahankan kartu anak saudara pada slot berbeda
+
+Penyesuaian varian saat jalan kini melacak kartu akar dan setiap anak terlihat yang sudah ditempatkan sebagai persegi panjang terisi. Posisi pilihan penyedia yang masih kosong dan berada dalam batas dipertahankan; jika tidak, alternatif dalam batas dengan tumpang tindih paling kecil dipilih agar kartu saudara tidak lagi jatuh ke slot yang sama.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -144,3 +148,4 @@ Kartu kini mempertahankan urutan definisi penyedia: definisi terlokalkan pertama
 - [e96d273f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e96d273fa56edd2c2ded09ca993724437ab85c93)
 - [66867a1d](https://github.com/Cognis-Labs-HQ/Cognis/commit/66867a1d08a247fa73824aeba982ccba1f9b5d8c)
 - [c113e7a1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c113e7a1f5cb7bc2a86c39b8f419ae6b953de9e3)
+- [af8bb812](https://github.com/Cognis-Labs-HQ/Cognis/commit/af8bb812d7c31626d877114ce657ca664bf4fe9f)

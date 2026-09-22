@@ -25,6 +25,27 @@ function overflowScore(rect, boundary) {
     );
 }
 
+export function overlapArea(rect, occupiedRect) {
+    const width = Math.max(
+        0,
+        Math.min(rect.right, occupiedRect.right) -
+            Math.max(rect.left, occupiedRect.left),
+    );
+    const height = Math.max(
+        0,
+        Math.min(rect.bottom, occupiedRect.bottom) -
+            Math.max(rect.top, occupiedRect.top),
+    );
+    return width * height;
+}
+
+function collisionScore(rect, occupiedRects) {
+    return occupiedRects.reduce(
+        (score, occupiedRect) => score + overlapArea(rect, occupiedRect),
+        0,
+    );
+}
+
 function setVariantDirection(slot, direction) {
     for (const candidate of VARIANT_DIRECTIONS) {
         slot.classList.toggle(
@@ -56,6 +77,12 @@ export function fitVariantBranchWithinGrid(rootShell) {
         const slots = Array.from(
             rootShell.querySelectorAll("[data-library-preferred-direction]"),
         ).filter((slot) => getComputedStyle(slot).display !== "none");
+        const rootCard = rootShell.querySelector(
+            ":scope > .library-entry-card",
+        );
+        const occupiedRects = rootCard
+            ? [rootCard.getBoundingClientRect()]
+            : [];
         for (const slot of slots) {
             const preferred = slot.dataset.libraryPreferredDirection;
             const candidates = [
@@ -66,15 +93,24 @@ export function fitVariantBranchWithinGrid(rootShell) {
             ];
             let best = {
                 direction: preferred,
-                score: Number.POSITIVE_INFINITY,
+                overflow: Number.POSITIVE_INFINITY,
+                collision: Number.POSITIVE_INFINITY,
             };
             for (const direction of candidates) {
                 setVariantDirection(slot, direction);
-                const score = overflowScore(cardBounds(slot), boundary);
-                if (score < best.score) best = { direction, score };
-                if (score === 0) break;
+                const rect = cardBounds(slot);
+                const overflow = overflowScore(rect, boundary);
+                const collision = collisionScore(rect, occupiedRects);
+                if (
+                    overflow < best.overflow ||
+                    (overflow === best.overflow && collision < best.collision)
+                ) {
+                    best = { direction, overflow, collision };
+                }
+                if (overflow === 0 && collision === 0) break;
             }
             setVariantDirection(slot, best.direction);
+            occupiedRects.push(cardBounds(slot));
         }
     });
 }

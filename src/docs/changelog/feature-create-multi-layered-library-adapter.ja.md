@@ -118,6 +118,10 @@ Library グリッドのクリップ境界は維持します。展開した分岐
 
 カードはプロバイダーの定義順序を保持するようになりました。最初のローカライズ済み定義はタイトルと重複しない場合にタイトル横へ表示され、残りは存在する場合だけ「追加の定義」セクションに表示されます。移動元カードのフォールバックは、語彙に定義がない場合だけ使用されます。
 
+## 兄弟の子カードを別々の枠に配置
+
+実行時のバリアント配置で、ルートカードと配置済みの表示中の各子カードを占有矩形として追跡するようにしました。空いている境界内のプロバイダー希望位置は維持し、埋まっている場合は重なりが最小の境界内候補を選ぶため、兄弟カードが同じ枠に重なることがなくなります。
+
 ## コミット
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -144,3 +148,4 @@ Library グリッドのクリップ境界は維持します。展開した分岐
 - [e96d273f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e96d273fa56edd2c2ded09ca993724437ab85c93)
 - [66867a1d](https://github.com/Cognis-Labs-HQ/Cognis/commit/66867a1d08a247fa73824aeba982ccba1f9b5d8c)
 - [c113e7a1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c113e7a1f5cb7bc2a86c39b8f419ae6b953de9e3)
+- [af8bb812](https://github.com/Cognis-Labs-HQ/Cognis/commit/af8bb812d7c31626d877114ce657ca664bf4fe9f)
