@@ -90,6 +90,21 @@ export interface LibraryRelationshipSchema {
     child?: boolean;
 }
 
+export interface LibraryCardConstructor {
+    /** Localized label for the card's primary label control. */
+    label: { labels: LocalizedText; descriptions?: LocalizedText };
+    /** Field IDs to render, in form order. Omitted fields receive defaults only. */
+    fields?: readonly string[];
+    /** Relationship IDs to render, in form order. */
+    relationships?: readonly string[];
+    /** Initial provider-owned field values for a new card. */
+    defaults?: Record<string, unknown>;
+    /** Expose Cognis' preview-definition switch for this layer. */
+    allowAlwaysShowDefinition?: boolean;
+    /** Expose Cognis' hidden-card switch for this layer. */
+    allowHidden?: boolean;
+}
+
 export interface LibraryLayerSchema {
     id: string;
     metadata: { labels: LocalizedText; descriptions?: LocalizedText };
@@ -106,6 +121,8 @@ export interface LibraryLayerSchema {
     };
     fields?: readonly LibraryFieldSchema[];
     relationships?: readonly LibraryRelationshipSchema[];
+    /** Provider-owned specification for composing new cards in this layer. */
+    cardConstructor?: LibraryCardConstructor;
     detail?: { titleField?: string; fieldOrder?: readonly string[] };
     grid?: {
         rowSize: number;
@@ -204,8 +221,10 @@ export interface LibraryFormContribution {
     id: string;
     schemaId: string;
     layerId: string;
-    /** Provider-defined fields appended after built-in visibility controls. */
-    fields: readonly LibraryFieldSchema[];
+    /** Complete provider-owned creation form specification for the layer. */
+    cardConstructor?: LibraryCardConstructor;
+    /** Provider-defined field-control overrides keyed by existing field IDs. */
+    fields?: readonly LibraryFieldSchema[];
 }
 
 export interface LibraryPushRequest {
@@ -214,6 +233,8 @@ export interface LibraryPushRequest {
     destination: LibraryLocation;
     requestedBy: string;
     status: "pending" | "approved" | "rejected";
+    /** Included only in authorized review listings. */
+    source?: LibraryEntry;
 }
 
 export interface LibraryContentPackManifest {

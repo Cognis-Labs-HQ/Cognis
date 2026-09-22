@@ -18,8 +18,13 @@ Cognis は、閲覧済みライブラリ項目の UUID をアカウントごと�
 
 言語プロバイダーは ctx ケイパビリティでレイヤー所有の作成項目を構成できます。グローバル重複検出は確認のため作成を一時停止し、インポート項目には永続検索インデックスを付与します。ライブラリ検索は全レイヤーを対象とし、任意の定義をカード内容の下に表示でき、複数選択コントロールを指定されたカード境界へ配置してフローティング操作を復元しました。
 
+## 言語定義の作成フローを完成
+
+言語パックは、作成可能な各レイヤーに検証済みの `cardConstructor` を宣言するか、公開 ctx ケイパビリティ `study:library:provider` から登録できるようになりました。Cognis はプロバイダー項目とロール対応の公開範囲・クラス制御を合成し、必要な場合だけクラス選択を表示して、権限のある教師と管理者へ審査リクエストを提供します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
 - [c1874177](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1874177fc1875ceab65c8b7aac58d60c5c5e091)
 - [d6f1cf21](https://github.com/Cognis-Labs-HQ/Cognis/commit/d6f1cf219f2739174c01019b358ab939a24659f7)
+- [8e38ded6](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e38ded6f03e8e36d225e8d425625c1b719fa112)

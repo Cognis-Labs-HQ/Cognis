@@ -10,10 +10,7 @@ import {
     readFields,
     readReferences,
 } from "./admin-interactions.js";
-
-function locationOption(location) {
-    return `${location.scope}:${location.scopeId ?? location.scope}`;
-}
+import { localizedLabel } from "./presentation.js";
 
 export async function openCreateEntryPopup({
     schemas,
@@ -28,19 +25,34 @@ export async function openCreateEntryPopup({
     ]);
     const schema = schemas.find(({ id }) => id === schemaId);
     const layer = schema?.layers.find(({ id }) => id === layerId);
-    if (!schema || !layer || !access.writable.length) return null;
+    const constructor = layer?.cardConstructor;
+    if (!schema || !layer || !constructor || !access.writable.length)
+        return null;
     const contributedFields = contributions
         .filter(
             (item) => item.schemaId === schemaId && item.layerId === layerId,
         )
-        .flatMap(({ fields }) => fields);
+        .flatMap(({ fields }) => fields ?? []);
     const contributedById = new Map(
         contributedFields.map((field) => [field.id, field]),
     );
+    const fieldsById = new Map(
+        (layer.fields ?? []).map((field) => [field.id, field]),
+    );
+    const relationshipsById = new Map(
+        (layer.relationships ?? []).map((relationship) => [
+            relationship.id,
+            relationship,
+        ]),
+    );
     const editingLayer = {
         ...layer,
-        fields: (layer.fields ?? []).map(
-            (field) => contributedById.get(field.id) ?? field,
+        fields: (constructor.fields ?? []).map((fieldId) => {
+            const field = fieldsById.get(fieldId);
+            return contributedById.get(fieldId) ?? field;
+        }),
+        relationships: (constructor.relationships ?? []).map((relationshipId) =>
+            relationshipsById.get(relationshipId),
         ),
     };
     const draft = {
@@ -48,10 +60,20 @@ export async function openCreateEntryPopup({
         schemaVersion: schema.version,
         layer: layerId,
         label: "",
-        fields: {},
+        fields: structuredClone(constructor.defaults ?? {}),
         references: [],
     };
-    const locationSelect = `<label><span>${escapeHtml(i18n.t("gateway.study.library_visibility"))}</span><select name="location">${access.writable.map((location) => `<option value="${escapeHtml(locationOption(location))}">${escapeHtml(location.scope === "class" ? i18n.t("gateway.study.library_scope_class").replace("{{ class name }}", location.scopeId) : i18n.t(`gateway.study.library_scope_${location.scope}`))}</option>`).join("")}</select></label>`;
+    const writableScopes = [
+        ...new Set(access.writable.map(({ scope }) => scope)),
+    ];
+    const writableClasses = access.writable.filter(
+        ({ scope }) => scope === "class",
+    );
+    const locationSelect = `<label><span>${escapeHtml(i18n.t("gateway.study.library_visibility"))}</span><select name="scope" data-library-visibility>${writableScopes.map((scope) => `<option value="${escapeHtml(scope)}">${escapeHtml(i18n.t(`gateway.study.library_scope_${scope}`))}</option>`).join("")}</select></label>${
+        writableClasses.length > 1
+            ? `<label data-library-class-choice hidden><span>${escapeHtml(i18n.t("gateway.study.library_class"))}</span><select name="classId">${writableClasses.map(({ scopeId }) => `<option value="${escapeHtml(scopeId)}">${escapeHtml(scopeId)}</option>`).join("")}</select></label>`
+            : `<input type="hidden" name="classId" value="${escapeHtml(writableClasses[0]?.scopeId ?? "")}">`
+    }`;
     const { html, builder } = editorBody(
         draft,
         [
@@ -65,6 +87,14 @@ export async function openCreateEntryPopup({
         entries,
         i18n,
         locationSelect,
+        {
+            labelText:
+                localizedLabel(constructor.label, schema.language) ||
+                i18n.t("gateway.study.library_admin_label"),
+            includeAlwaysShowDefinition:
+                constructor.allowAlwaysShowDefinition === true,
+            includeHidden: constructor.allowHidden === true,
+        },
     );
     let form;
     const action = await openPopup({
@@ -85,17 +115,34 @@ export async function openCreateEntryPopup({
         onMount(overlay) {
             form = overlay.querySelector("[data-library-admin-editor]");
             builder.attach(form);
+            const visibility = form.elements.scope;
+            const classChoice = form.querySelector(
+                "[data-library-class-choice]",
+            );
+            const updateClassChoice = () => {
+                if (classChoice)
+                    classChoice.hidden = visibility.value !== "class";
+            };
+            visibility.addEventListener("change", updateClassChoice);
+            updateClassChoice();
         },
     });
     if (action !== "create" || !form?.reportValidity()) return null;
-    const [scope, scopeId] = form.elements.location.value.split(":");
+    const scope = form.elements.scope.value;
+    const scopeId =
+        scope === "class"
+            ? form.elements.classId.value
+            : scope === "global"
+              ? "global"
+              : undefined;
     const entry = {
         ...draft,
         label: form.elements.label.value,
         fields: readFields(form, editingLayer, draft),
         references: readReferences(form, editingLayer),
-        alwaysShowDefinition: form.elements.alwaysShowDefinition.checked,
-        hidden: form.elements.hidden.checked,
+        alwaysShowDefinition:
+            form.elements.alwaysShowDefinition?.checked === true,
+        hidden: form.elements.hidden?.checked === true,
     };
     try {
         return await createLibraryEntry({ scope, scopeId }, entry);

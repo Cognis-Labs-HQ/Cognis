@@ -7,12 +7,13 @@ import type {
 } from "../../../gateways/study/gateway.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type {
+    Ctx,
     NamespaceDefinition,
     NamespaceFileClientFactory,
 } from "@cognis/core";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { createLibraryRoutes } from "./routes/index.js";
-import { LibraryService } from "./service.js";
+import { LibraryService, type LibraryProviderCapability } from "./service.js";
 import { LibraryStore } from "./store.js";
 import { LibraryAudioCache } from "./audio-cache.js";
 import {
@@ -147,10 +148,22 @@ export async function bootstrapStudyAdapter(
             : undefined,
     );
     ctx.capabilities.contribute("study:library", service);
+    const registerConstructor = service.registerFormContribution.bind(service);
     ctx.capabilities.contribute(
         "study:library:registerFormContribution",
-        service.registerFormContribution.bind(service),
+        registerConstructor,
     );
+    const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    if (!systemCtx?.hasCapability("study:library:registerConstructor"))
+        systemCtx?.contributePublicCapability(
+            "study:library:registerConstructor",
+            registerConstructor,
+        );
+    if (!systemCtx?.hasCapability("study:library:provider"))
+        systemCtx?.contributePublicCapability("study:library:provider", {
+            ingestContentPack: service.ingestContentPack.bind(service),
+            registerConstructor,
+        } satisfies LibraryProviderCapability);
     ctx.registerRoute(
         createLibraryRoutes(
             service,

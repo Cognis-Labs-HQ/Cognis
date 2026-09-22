@@ -208,6 +208,43 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
         }
         if (layer.detail?.titleField && !fieldIds.has(layer.detail.titleField))
             throw new Error("detail_title_field_not_found");
+        if (layer.cardConstructor) {
+            validateMetadata(
+                layer.cardConstructor.label,
+                "constructor_label_required",
+            );
+            const constructorFields = layer.cardConstructor.fields ?? [];
+            if (
+                new Set(constructorFields).size !== constructorFields.length ||
+                constructorFields.some((fieldId) => !fieldIds.has(fieldId))
+            )
+                throw new Error("constructor_field_not_found");
+            const relationshipIds = new Set(
+                (layer.relationships ?? []).map(({ id }) => id),
+            );
+            const constructorRelationships =
+                layer.cardConstructor.relationships ?? [];
+            if (
+                new Set(constructorRelationships).size !==
+                    constructorRelationships.length ||
+                constructorRelationships.some(
+                    (relationshipId) => !relationshipIds.has(relationshipId),
+                )
+            )
+                throw new Error("constructor_relationship_not_found");
+            const defaultIds = Object.keys(
+                layer.cardConstructor.defaults ?? {},
+            );
+            if (defaultIds.some((fieldId) => !fieldIds.has(fieldId)))
+                throw new Error("constructor_default_field_not_found");
+            for (const option of [
+                layer.cardConstructor.allowAlwaysShowDefinition,
+                layer.cardConstructor.allowHidden,
+            ]) {
+                if (option !== undefined && typeof option !== "boolean")
+                    throw new Error("invalid_constructor_option");
+            }
+        }
         if (
             layer.semanticRole === "atomicWritingUnit" ||
             layer.semanticRole === "compoundWritingUnit"

@@ -114,6 +114,12 @@ The Library stores viewed entry UUIDs per account. Global entries introduced by 
 
 ## Contributions, visibility requests, and search
 
-Users can create cards in their personal namespace, teachers can also create in classes they own, and administrators can additionally create global cards. Language providers shape layer-specific form fields through `study:library:registerFormContribution`; visibility, class selection, and definition-preview controls remain adapter-owned. Before personal or classroom creation, the Library reports an identical visible global entry and requires explicit confirmation.
+Users can create cards in their personal namespace, teachers can also create in classes they own, and administrators can additionally create global cards. Language providers shape layer-specific form fields through `study:library:registerConstructor`; visibility, class selection, and definition-preview controls remain adapter-owned. Before personal or classroom creation, the Library reports an identical visible global entry and requires explicit confirmation.
 
 Personal cards may be submitted to an enrolled class for its teacher to review or to the global collection for an administrator to review. Approval moves the original card rather than copying it. Authorized teachers and administrators may move shared content back to its original submitter's personal namespace. Provider manifests may set `protected: true`; protected entries cannot be moved or deleted. Imported and user-created records persist normalized search text, and the Library side menu searches every layer while hiding empty results.
+
+## Language-owned card constructors
+
+A language pack can place a `cardConstructor` on each creatable layer in its schema. The specification supplies the localized primary-label prompt, ordered field and relationship IDs, provider defaults, and whether Cognis should expose the hidden-card or preview-definition switches. Cognis adds role-authorized visibility and class controls around that specification; a layer without a constructor is deliberately read-only for creation.
+
+A runtime language module may instead resolve the public `study:library:provider` ctx capability, call `ingestContentPack(moduleRoot)`, and call `registerConstructor(...)`. Constructor IDs are validated against the registered schema before the form is exposed. The returned remover lets module disablement cleanly unregister a runtime constructor.

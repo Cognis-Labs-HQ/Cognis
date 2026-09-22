@@ -98,6 +98,12 @@ Die Bibliothek speichert die UUIDs angesehener Einträge pro Konto. Globale Eint
 
 ## Beiträge, Sichtbarkeitsanfragen und Suche
 
-Benutzer können Karten im persönlichen Namensraum erstellen, Lehrkräfte zusätzlich in eigenen Klassen und Administratoren außerdem global. Sprachmodule gestalten ebenenspezifische Formularfelder über `study:library:registerFormContribution`; Sichtbarkeit, Klassenauswahl und die Definitionsvorschau bleiben Eigentum des Adapters. Vor einer persönlichen oder klassenbezogenen Erstellung weist die Bibliothek auf einen identischen sichtbaren globalen Eintrag hin und verlangt eine ausdrückliche Bestätigung.
+Benutzer können Karten im persönlichen Namensraum erstellen, Lehrkräfte zusätzlich in eigenen Klassen und Administratoren außerdem global. Sprachmodule gestalten ebenenspezifische Formularfelder über `study:library:registerConstructor`; Sichtbarkeit, Klassenauswahl und die Definitionsvorschau bleiben Eigentum des Adapters. Vor einer persönlichen oder klassenbezogenen Erstellung weist die Bibliothek auf einen identischen sichtbaren globalen Eintrag hin und verlangt eine ausdrückliche Bestätigung.
 
 Persönliche Karten können einer belegten Klasse zur Prüfung durch deren Lehrkraft oder der globalen Sammlung zur Prüfung durch Administratoren vorgelegt werden. Eine Genehmigung verschiebt die Originalkarte, statt sie zu kopieren. Berechtigte Lehrkräfte und Administratoren können geteilte Inhalte in den persönlichen Namensraum des ursprünglichen Einreichers zurückverschieben. Anbieter-Manifeste können `protected: true` setzen; geschützte Einträge lassen sich weder verschieben noch löschen. Importierte und benutzererstellte Datensätze speichern normalisierten Suchtext; die Seitensuche durchsucht alle Ebenen und blendet leere Ergebnisse aus.
+
+## Spracheigene Kartenkonstruktoren
+
+Ein Sprachpaket kann in seinem Schema für jede erstellbare Ebene einen `cardConstructor` angeben. Die Spezifikation liefert die lokalisierte Beschriftung des Hauptfelds, geordnete Feld- und Beziehungs-IDs, Vorgabewerte des Anbieters sowie die Freigabe der Schalter für ausgeblendete Karten und Definitionsvorschauen. Cognis ergänzt darum rollenabhängige Sichtbarkeits- und Klassenfelder; Ebenen ohne Konstruktor sind für die Erstellung absichtlich schreibgeschützt.
+
+Ein Sprachmodul kann alternativ die öffentliche ctx-Fähigkeit `study:library:provider` beziehen, `ingestContentPack(moduleRoot)` aufrufen und mit `registerConstructor(...)` einen Laufzeitkonstruktor anmelden. Cognis prüft dessen IDs gegen das registrierte Schema. Die zurückgegebene Entfernen-Funktion meldet ihn beim Deaktivieren des Moduls sauber ab.

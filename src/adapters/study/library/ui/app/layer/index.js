@@ -15,6 +15,11 @@ import { localizedLabel } from "../presentation.js";
 import { librarySelectionFloatingMenu } from "../selection.js";
 import { openCreateEntryPopup } from "../create-entry.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import {
+    bindLibraryRequestReviews,
+    loadLibraryRequests,
+    renderLibraryRequests,
+} from "../requests.js";
 
 function requestedLayer() {
     const parts = window.location.pathname.split("/").filter(Boolean);
@@ -46,6 +51,7 @@ export async function mount(root, { signal } = {}) {
     const layer = schema?.layers?.find(
         ({ id }) => id === selectedLayer?.layerId,
     );
+    const requests = await loadLibraryRequests();
     const title = layer
         ? localizedLabel(layer.metadata, schema.language) || layer.id
         : i18n.t("gateway.study.library_label");
@@ -71,12 +77,25 @@ export async function mount(root, { signal } = {}) {
             subtitle: i18n.t("gateway.study.library_subtitle"),
         },
         toolbar: [
-            {
-                id: "library-create",
-                label: i18n.t("gateway.study.library_create"),
-                render: () =>
-                    `<button class="btn-confirm" type="button" data-library-create>${escapeHtml(i18n.t("gateway.study.library_create"))}</button>`,
-            },
+            ...(layer?.cardConstructor
+                ? [
+                      {
+                          id: "library-create",
+                          label: i18n.t("gateway.study.library_create"),
+                          render: () =>
+                              `<button class="btn-confirm" type="button" data-library-create>${escapeHtml(i18n.t("gateway.study.library_create"))}</button>`,
+                      },
+                  ]
+                : []),
+            ...(requests.length
+                ? [
+                      {
+                          id: "library-requests",
+                          label: i18n.t("gateway.study.library_requests"),
+                          render: () => renderLibraryRequests(requests, i18n),
+                      },
+                  ]
+                : []),
         ],
         floatingMenu: librarySelectionFloatingMenu(entries, i18n),
         subNavigation: [
@@ -94,6 +113,7 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     signal?.throwIfAborted();
+    bindLibraryRequestReviews(root, requests, { i18n, signal });
     root.querySelectorAll("[data-library-panel]").forEach((panel) => {
         if (panel.querySelector("button[data-library-filter].active")) {
             refreshLibraryFilterResults(panel);

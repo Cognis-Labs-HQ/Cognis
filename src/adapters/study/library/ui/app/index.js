@@ -17,11 +17,12 @@ import { bindAdminLibraryInteractions } from "./admin-interactions.js";
 import { refreshLibraryFilterResults } from "./filters.js";
 import { bindLibraryInteractions } from "./interactions.js";
 import { openCreateEntryPopup } from "./create-entry.js";
-import {
-    fetchLibraryPushRequests,
-    reviewLibraryPromotion,
-} from "/static/gateways/study/ui/library-client.js";
 import { librarySelectionFloatingMenu, setSelectionMode } from "./selection.js";
+import {
+    bindLibraryRequestReviews,
+    loadLibraryRequests,
+    renderLibraryRequests,
+} from "./requests.js";
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
@@ -44,7 +45,7 @@ export async function mount(root, { signal } = {}) {
         i18n,
     );
     let entries = loadedEntries;
-    let requests = await fetchLibraryPushRequests().catch(() => []);
+    const requests = await loadLibraryRequests();
     const firstLayer = schemas
         .flatMap((schema) =>
             schema.layers.map((layer) => ({
@@ -74,6 +75,12 @@ export async function mount(root, { signal } = {}) {
                 i18n,
                 searchQuery ? null : selectedLayer,
             );
+        const createButton = root.querySelector("[data-library-create]");
+        if (createButton)
+            createButton.hidden = !schemas
+                .find(({ id }) => id === selectedLayer?.schemaId)
+                ?.layers.find(({ id }) => id === selectedLayer?.layerId)
+                ?.cardConstructor;
     };
     const layerMenu = createSideMenu({
         groups: adminLayerGroups(schemas),
@@ -127,8 +134,7 @@ export async function mount(root, { signal } = {}) {
             {
                 id: "library-requests",
                 label: i18n.t("gateway.study.library_requests"),
-                render: () =>
-                    `<section class="library-request-list" data-library-requests>${requests.length ? requests.map((request) => `<article data-library-request="${escapeHtml(request.id)}"><span>${escapeHtml(request.sourceEntryId)} → ${escapeHtml(request.destination.scope === "class" ? request.destination.scopeId : request.destination.scope)}</span><button class="btn-confirm" type="button" data-library-review="approved">${escapeHtml(i18n.t("gateway.study.library_approve"))}</button><button class="btn-cancel" type="button" data-library-review="rejected">${escapeHtml(i18n.t("gateway.study.library_reject"))}</button></article>`).join("") : `<p>${escapeHtml(i18n.t("gateway.study.library_no_requests"))}</p>`}</section>`,
+                render: () => renderLibraryRequests(requests, i18n),
             },
         ],
         toolbarScrollable: true,
@@ -149,6 +155,8 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
     signal?.throwIfAborted();
     layerMenu.mount(root, { signal });
+    renderSelectedLayer();
+    bindLibraryRequestReviews(root, requests, { i18n, signal });
     const searchInput = root.querySelector("[data-library-quick-search]");
     const updateSearch = () => {
         searchQuery = searchInput?.value ?? "";
@@ -200,17 +208,6 @@ export async function mount(root, { signal } = {}) {
                 }
                 return;
             }
-            const review = event.target.closest("[data-library-review]");
-            if (!review) return;
-            const requestId = review.closest("[data-library-request]")?.dataset
-                .libraryRequest;
-            if (!requestId) return;
-            await reviewLibraryPromotion(
-                requestId,
-                review.dataset.libraryReview,
-            );
-            requests = requests.filter(({ id }) => id !== requestId);
-            review.closest("[data-library-request]")?.remove();
         },
         { signal },
     );

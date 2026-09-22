@@ -98,6 +98,12 @@ Pustaka menyimpan UUID entri yang telah dilihat untuk setiap akun. Entri global 
 
 ## Kontribusi, permintaan visibilitas, dan pencarian
 
-Pengguna dapat membuat kartu di namespace pribadi, guru juga di kelas miliknya, dan administrator juga secara global. Penyedia bahasa membentuk bidang formulir khusus lapisan melalui `study:library:registerFormContribution`; visibilitas, pemilihan kelas, dan kontrol pratinjau definisi tetap dimiliki adapter. Sebelum pembuatan pribadi atau kelas, Pustaka menunjukkan entri global terlihat yang identik dan meminta konfirmasi eksplisit.
+Pengguna dapat membuat kartu di namespace pribadi, guru juga di kelas miliknya, dan administrator juga secara global. Penyedia bahasa membentuk bidang formulir khusus lapisan melalui `study:library:registerConstructor`; visibilitas, pemilihan kelas, dan kontrol pratinjau definisi tetap dimiliki adapter. Sebelum pembuatan pribadi atau kelas, Pustaka menunjukkan entri global terlihat yang identik dan meminta konfirmasi eksplisit.
 
 Kartu pribadi dapat diajukan ke kelas yang diikuti untuk ditinjau gurunya atau ke koleksi global untuk ditinjau administrator. Persetujuan memindahkan kartu asli dan tidak menyalinnya. Guru dan administrator yang berwenang dapat memindahkan konten bersama kembali ke namespace pribadi pengirim awal. Manifest penyedia dapat menetapkan `protected: true`; entri terlindungi tidak dapat dipindahkan atau dihapus. Rekaman impor dan buatan pengguna menyimpan teks pencarian ternormalisasi, dan pencarian menu samping memeriksa semua lapisan serta menyembunyikan hasil kosong.
+
+## Konstruktor kartu milik bahasa
+
+Paket bahasa dapat menambahkan `cardConstructor` pada setiap lapisan yang dapat dibuat di dalam skemanya. Spesifikasi ini menyediakan label utama terlokalisasi, urutan ID bidang dan relasi, nilai awal penyedia, serta pilihan untuk menampilkan sakelar kartu tersembunyi atau pratinjau definisi. Cognis menambahkan kontrol visibilitas dan kelas sesuai peran; lapisan tanpa konstruktor sengaja hanya-baca untuk pembuatan.
+
+Modul bahasa saat runtime juga dapat mengambil kapabilitas ctx publik `study:library:provider`, memanggil `ingestContentPack(moduleRoot)`, lalu `registerConstructor(...)`. ID konstruktor divalidasi terhadap skema terdaftar sebelum formulir tersedia. Fungsi penghapus yang dikembalikan memungkinkan konstruktor dilepas saat modul dinonaktifkan.

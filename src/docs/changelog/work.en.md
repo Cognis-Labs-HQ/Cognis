@@ -18,8 +18,13 @@ Users can create personal cards, teachers can also create cards in their own cla
 
 Language providers can shape layer-owned creation fields through a ctx capability. Global duplicate detection pauses creation for confirmation, imported records carry a persistent search index, Library search spans every layer, optional preview definitions render below card content, and multi-select controls now occupy the requested card-edge positions with restored floating actions.
 
+## Language-defined creation is complete
+
+Language packs can now declare a validated `cardConstructor` for each creatable layer, or register one through the public `study:library:provider` ctx capability. Cognis composes the provider fields with role-aware visibility and class controls, shows class selection only when needed, and exposes review requests to authorized teachers as well as administrators.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
 - [c1874177](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1874177fc1875ceab65c8b7aac58d60c5c5e091)
 - [d6f1cf21](https://github.com/Cognis-Labs-HQ/Cognis/commit/d6f1cf219f2739174c01019b358ab939a24659f7)
+- [8e38ded6](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e38ded6f03e8e36d225e8d425625c1b719fa112)

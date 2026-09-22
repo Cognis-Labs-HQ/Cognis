@@ -46,6 +46,64 @@ test("schema registrations are versioned, persisted, and immutable", async () =>
     );
 });
 
+test("language providers can contribute a complete card constructor", async () => {
+    const { library } = service();
+    await library.registerSchema({
+        ...schema(1),
+        layers: [
+            {
+                id: "units",
+                metadata: { labels: { en: "Units" } },
+                fields: [
+                    {
+                        id: "reading",
+                        metadata: { labels: { en: "Reading" } },
+                        type: "string",
+                    },
+                ],
+            },
+        ],
+    });
+    const remove = library.registerFormContribution({
+        id: "test-language:unit-constructor",
+        schemaId: "test-language",
+        layerId: "units",
+        cardConstructor: {
+            label: { labels: { en: "Written form" } },
+            fields: ["reading"],
+            defaults: { reading: "default" },
+            allowAlwaysShowDefinition: true,
+        },
+    });
+
+    assert.deepEqual(library.listSchemas()[0].layers[0].cardConstructor, {
+        label: { labels: { en: "Written form" } },
+        fields: ["reading"],
+        defaults: { reading: "default" },
+        allowAlwaysShowDefinition: true,
+    });
+    remove();
+    assert.equal(library.listSchemas()[0].layers[0].cardConstructor, undefined);
+});
+
+test("card constructors reject unknown provider fields", async () => {
+    const { library } = service();
+    await library.registerSchema(schema(1));
+    assert.throws(
+        () =>
+            library.registerFormContribution({
+                id: "test-language:invalid-constructor",
+                schemaId: "test-language",
+                layerId: "units",
+                cardConstructor: {
+                    label: { labels: { en: "Unit" } },
+                    fields: ["missing"],
+                },
+            }),
+        /constructor_field_not_found/,
+    );
+});
+
 test("lookup providers are ranked and cleanly removable", async () => {
     const { library } = service();
     await library.registerSchema(schema(1));
@@ -229,6 +287,38 @@ test("promotion approval moves personal content into the requested scope", async
         "approved",
     );
     assert.deepEqual(moves, [{ scope: "global", scopeId: "global" }]);
+});
+
+test("authorized reviewers receive the source card with each request", async () => {
+    const source = {
+        id: "personal-card",
+        label: "Learner contribution",
+        scope: "user",
+        scopeId: "alice",
+        createdBy: "alice",
+    };
+    const store = {
+        listPushRequests: async () => [
+            {
+                id: "request",
+                sourceEntryId: source.id,
+                destination: { scope: "class", scopeId: "class-a" },
+                requestedBy: "alice",
+                status: "pending",
+            },
+        ],
+        get: async () => source,
+    };
+    const library = new LibraryService(store as never, {
+        canRead: async () => true,
+        canWrite: async () => true,
+    });
+
+    const requests = await library.listPushRequests({
+        accountId: "teacher",
+        role: "teacher",
+    });
+    assert.equal(requests[0].source?.label, "Learner contribution");
 });
 
 test("global downgrades return content to its original submitter", async () => {

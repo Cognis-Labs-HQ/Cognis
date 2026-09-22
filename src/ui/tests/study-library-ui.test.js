@@ -326,6 +326,19 @@ test("Study Library separates admin data browsing from learner layer pages", () 
     );
 });
 
+test("Study Library creation is driven by language card constructors", () => {
+    assert.match(adapterSource, /study:library:provider/);
+    assert.match(adapterSource, /registerConstructor/);
+    assert.match(source, /layer\?\.cardConstructor/);
+    assert.match(source, /constructor\.fields/);
+    assert.match(source, /constructor\.relationships/);
+    assert.match(source, /constructor\.defaults/);
+    assert.match(source, /data-library-visibility/);
+    assert.match(source, /writableClasses\.length > 1/);
+    assert.match(layerPageSource, /renderLibraryRequests/);
+    assert.match(layerPageSource, /bindLibraryRequestReviews/);
+});
+
 test("Study Library renders metadata and scope indicators", () => {
     assert.match(source, /detail\?\.renderer === "badge"/);
     assert.match(source, /class="library-metadata-pill"/);

@@ -52,6 +52,12 @@ export type LibraryContentNotifier = (input: {
     language?: string;
 }) => Promise<void>;
 
+/** Public surface used by language modules during their bootstrap. */
+export interface LibraryProviderCapability {
+    ingestContentPack(root: string): Promise<LibraryContentPackReceipt>;
+    registerConstructor(contribution: LibraryFormContribution): () => void;
+}
+
 export interface LibraryCapability {
     registerSchema(schema: LibrarySchema): Promise<void>;
     registerLookupProvider(provider: LibraryLookupProvider): () => void;
@@ -212,8 +218,35 @@ export class LibraryService implements LibraryCapability {
         const schema = this.schema(contribution.schemaId);
         const layer = findLayer(schema, contribution.layerId);
         const fieldIds = new Set((layer.fields ?? []).map(({ id }) => id));
-        if (contribution.fields.some(({ id }) => !fieldIds.has(id)))
+        if (
+            !contribution.cardConstructor &&
+            !(contribution.fields?.length ?? 0)
+        )
+            throw new Error("form_contribution_empty");
+        if (contribution.fields?.some(({ id }) => !fieldIds.has(id)))
             throw new Error("form_contribution_field_unknown");
+        if (contribution.cardConstructor) {
+            validateLibrarySchema({
+                ...schema,
+                layers: schema.layers.map((item) =>
+                    item.id === layer.id
+                        ? {
+                              ...item,
+                              cardConstructor: contribution.cardConstructor,
+                          }
+                        : item,
+                ),
+            });
+            if (
+                Array.from(this.formContributions.values()).some(
+                    (registered) =>
+                        registered.schemaId === contribution.schemaId &&
+                        registered.layerId === contribution.layerId &&
+                        registered.cardConstructor,
+                )
+            )
+                throw new Error("constructor_registered");
+        }
         this.formContributions.set(
             contribution.id,
             structuredClone(contribution),
@@ -230,7 +263,28 @@ export class LibraryService implements LibraryCapability {
     listSchemas(): LibrarySchema[] {
         return Array.from(this.schemas.values(), (versions) =>
             versions.get(Math.max(...versions.keys()))!,
-        ).map((schema) => structuredClone(schema));
+        ).map((schema) => {
+            const copy = structuredClone(schema);
+            return {
+                ...copy,
+                layers: copy.layers.map((layer) => {
+                    const contribution = Array.from(
+                        this.formContributions.values(),
+                    ).find(
+                        (candidate) =>
+                            candidate.schemaId === copy.id &&
+                            candidate.layerId === layer.id &&
+                            candidate.cardConstructor,
+                    );
+                    return contribution?.cardConstructor
+                        ? {
+                              ...layer,
+                              cardConstructor: contribution.cardConstructor,
+                          }
+                        : layer;
+                }),
+            };
+        });
     }
 
     getSchema(id: string, version?: number): LibrarySchema | null {
@@ -826,13 +880,16 @@ export class LibraryService implements LibraryCapability {
         const visible: LibraryPushRequest[] = [];
         for (const request of await this.store.listPushRequests()) {
             if (request.destination.scope === "global") {
-                if (actor.role === "admin" || actor.role === "owner")
-                    visible.push(request);
+                if (actor.role === "admin" || actor.role === "owner") {
+                    const source = await this.store.get(request.sourceEntryId);
+                    if (source) visible.push({ ...request, source });
+                }
                 continue;
             }
             try {
                 await this.authorize(actor, request.destination, true);
-                visible.push(request);
+                const source = await this.store.get(request.sourceEntryId);
+                if (source) visible.push({ ...request, source });
             } catch (error) {
                 if (!(error instanceof Error) || error.message !== "forbidden")
                     throw error;

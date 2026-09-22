@@ -60,7 +60,14 @@ function relationshipEditor(relationship, entry, entries, language) {
     return `<label><span>${escapeHtml(label)}</span><select name="relationship:${escapeHtml(relationship.id)}" multiple size="${Math.min(6, Math.max(2, targets.length))}">${targets.map((target) => `<option value="${escapeHtml(target.id)}"${selected.has(target.id) ? " selected" : ""}>${escapeHtml(target.label)}</option>`).join("")}</select></label>`;
 }
 
-export function editorBody(entry, schemas, entries, i18n, extraHtml = "") {
+export function editorBody(
+    entry,
+    schemas,
+    entries,
+    i18n,
+    extraHtml = "",
+    options = {},
+) {
     const schema = schemas.find(({ id }) => id === entry.schemaId);
     const layer = schema?.layers.find(({ id }) => id === entry.layer);
     const immutableStringKeyField =
@@ -94,13 +101,15 @@ export function editorBody(entry, schemas, entries, i18n, extraHtml = "") {
             fields: [
                 {
                     name: "label",
-                    label: i18n.t("gateway.study.library_admin_label"),
+                    label:
+                        options.labelText ??
+                        i18n.t("gateway.study.library_admin_label"),
                     required: true,
                     value: entry.label,
                     maxCharacters: 500,
                 },
             ],
-            trustedContentHtml: `${extraHtml}${fields}${relationships}<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label><label class="library-admin-hidden"><input name="hidden" type="checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`,
+            trustedContentHtml: `${extraHtml}${fields}${relationships}${options.includeAlwaysShowDefinition === false ? "" : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`}${options.includeHidden === false ? "" : `<label class="library-admin-hidden"><input name="hidden" type="checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}`,
         },
     );
     return { html: builder.render(), builder };
@@ -111,43 +120,54 @@ export function readFields(form, layer, entry) {
         layer?.semanticRole === "definition"
             ? layer.definitionLocalization?.stringKeyField
             : undefined;
-    return Object.fromEntries(
-        (layer?.fields ?? [])
-            .filter((field) => field.id !== immutableStringKeyField)
-            .map((field) => {
-                if (field.input?.immutable === true)
-                    return [field.id, entry.fields?.[field.id]];
-                const name = `field:${field.id}`;
-                if (field.type === "boolean")
-                    return [field.id, form.elements[name]?.checked === true];
-                if (field.type === "localizedText") {
-                    const translations = {};
-                    for (const control of form.elements) {
-                        if (control.name?.startsWith(`${name}:`))
-                            translations[control.name.slice(name.length + 1)] =
-                                control.value;
+    return {
+        ...(entry.fields ?? {}),
+        ...Object.fromEntries(
+            (layer?.fields ?? [])
+                .filter((field) => field.id !== immutableStringKeyField)
+                .map((field) => {
+                    if (field.input?.immutable === true)
+                        return [field.id, entry.fields?.[field.id]];
+                    const name = `field:${field.id}`;
+                    if (field.type === "boolean")
+                        return [
+                            field.id,
+                            form.elements[name]?.checked === true,
+                        ];
+                    if (field.type === "localizedText") {
+                        const translations = {};
+                        for (const control of form.elements) {
+                            if (control.name?.startsWith(`${name}:`))
+                                translations[
+                                    control.name.slice(name.length + 1)
+                                ] = control.value;
+                        }
+                        return [field.id, translations];
                     }
-                    return [field.id, translations];
-                }
-                const value = form.elements[name]?.value ?? "";
-                if (
-                    field.type === "stringList" ||
-                    field.input?.control === "multiSelect"
-                )
-                    return [
-                        field.id,
+                    const value = form.elements[name]?.value ?? "";
+                    if (
+                        field.type === "stringList" ||
                         field.input?.control === "multiSelect"
-                            ? Array.from(
-                                  form.elements[name]?.selectedOptions ?? [],
-                                  (option) => option.value,
-                              )
-                            : value.split("\u001f").filter(Boolean),
-                    ];
-                if (["number", "integer"].includes(field.type))
-                    return [field.id, value === "" ? undefined : Number(value)];
-                return [field.id, value];
-            }),
-    );
+                    )
+                        return [
+                            field.id,
+                            field.input?.control === "multiSelect"
+                                ? Array.from(
+                                      form.elements[name]?.selectedOptions ??
+                                          [],
+                                      (option) => option.value,
+                                  )
+                                : value.split("\u001f").filter(Boolean),
+                        ];
+                    if (["number", "integer"].includes(field.type))
+                        return [
+                            field.id,
+                            value === "" ? undefined : Number(value),
+                        ];
+                    return [field.id, value];
+                }),
+        ),
+    };
 }
 
 export function readReferences(form, layer) {
