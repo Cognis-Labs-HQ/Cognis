@@ -53,7 +53,12 @@ function relationshipEditor(relationship, entry, entries, language) {
 function editorBody(entry, schemas, entries, i18n) {
     const schema = schemas.find(({ id }) => id === entry.schemaId);
     const layer = schema?.layers.find(({ id }) => id === entry.layer);
+    const immutableStringKeyField =
+        layer?.semanticRole === "definition"
+            ? layer.definitionLocalization?.stringKeyField
+            : undefined;
     const fields = (layer?.fields ?? [])
+        .filter((field) => field.id !== immutableStringKeyField)
         .map((field) =>
             inputForField(
                 field,
@@ -91,33 +96,39 @@ function editorBody(entry, schemas, entries, i18n) {
 }
 
 function readFields(form, layer) {
+    const immutableStringKeyField =
+        layer?.semanticRole === "definition"
+            ? layer.definitionLocalization?.stringKeyField
+            : undefined;
     return Object.fromEntries(
-        (layer?.fields ?? []).map((field) => {
-            const name = `field:${field.id}`;
-            if (field.type === "boolean")
-                return [field.id, form.elements[name]?.checked === true];
-            if (field.type === "localizedText") {
-                const translations = {};
-                for (const control of form.elements) {
-                    if (control.name?.startsWith(`${name}:`))
-                        translations[control.name.slice(name.length + 1)] =
-                            control.value;
+        (layer?.fields ?? [])
+            .filter((field) => field.id !== immutableStringKeyField)
+            .map((field) => {
+                const name = `field:${field.id}`;
+                if (field.type === "boolean")
+                    return [field.id, form.elements[name]?.checked === true];
+                if (field.type === "localizedText") {
+                    const translations = {};
+                    for (const control of form.elements) {
+                        if (control.name?.startsWith(`${name}:`))
+                            translations[control.name.slice(name.length + 1)] =
+                                control.value;
+                    }
+                    return [field.id, translations];
                 }
-                return [field.id, translations];
-            }
-            const value = form.elements[name]?.value ?? "";
-            if (field.type === "stringList")
-                return [
-                    field.id,
-                    value
-                        .split("\n")
-                        .map((item) => item.trim())
-                        .filter(Boolean),
-                ];
-            if (["number", "integer"].includes(field.type))
-                return [field.id, value === "" ? undefined : Number(value)];
-            return [field.id, value];
-        }),
+                const value = form.elements[name]?.value ?? "";
+                if (field.type === "stringList")
+                    return [
+                        field.id,
+                        value
+                            .split("\n")
+                            .map((item) => item.trim())
+                            .filter(Boolean),
+                    ];
+                if (["number", "integer"].includes(field.type))
+                    return [field.id, value === "" ? undefined : Number(value)];
+                return [field.id, value];
+            }),
     );
 }
 

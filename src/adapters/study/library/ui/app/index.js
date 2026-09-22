@@ -46,7 +46,11 @@ export async function mount(root, { signal } = {}) {
         fallbackLanguageCode: readSelectedStudyLanguageCode(),
     });
     const languageCode = model.selectedLanguageCode;
-    const { schemas, entries } = await loadLibrary(languageCode, i18n);
+    const { schemas, entries: loadedEntries } = await loadLibrary(
+        languageCode,
+        i18n,
+    );
+    let entries = loadedEntries;
     const firstLayer = schemas
         .flatMap((schema) =>
             schema.layers.map((layer) => ({
@@ -138,8 +142,10 @@ export async function mount(root, { signal } = {}) {
         languageCode,
         schemas,
         signal,
-        renderContent: () =>
-            renderAdminBrowser(schemas, entries, i18n, selectedLayer),
+        renderContent: (updatedEntries = entries) => {
+            entries = updatedEntries;
+            return renderAdminBrowser(schemas, entries, i18n, selectedLayer);
+        },
     });
     bindAdminLibraryInteractions(root, {
         entries,

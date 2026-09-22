@@ -2,13 +2,22 @@ import type { Ctx, ScoringCapability } from "@cognis/core";
 import type {
     StudyAdapter,
     StudyAdapterBootstrapCtx,
+    StudyClassAccessCapability,
 } from "../../../gateways/study/gateway.js";
 import { LeaderboardService } from "./service.js";
-import type { ProgressEvidenceCapability } from "./types.js";
+import type {
+    LeaderboardCapability,
+    LeaderboardActor,
+    LeaderboardObservation,
+    ProgressEvidenceCapability,
+    StandingsQuery,
+} from "./types.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { createLeaderboardRoutes } from "./routes/index.js";
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import { DbLeaderboardStore } from "./store.js";
 
 let ready = false;
 const UI_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "ui");
@@ -56,17 +65,115 @@ export async function bootstrapStudyAdapter(
     ] as const)
         if (!systemCtx.hasFlow(id))
             systemCtx.registerFlow({ id, description, stages: [...stages] });
+    const databaseExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    const store = databaseExecutor
+        ? new DbLeaderboardStore(databaseExecutor)
+        : undefined;
+    if (store) await store.ensureSchema();
     const service = new LeaderboardService(
         () =>
             ctx.capabilities.get<ProgressEvidenceCapability>("study:progress"),
         () => ctx.isAdapterEnabled(),
         scoring,
+        ctx.capabilities.get<StudyClassAccessCapability>(
+            "study:classes:access",
+        ),
+        ctx.log,
+        store ? (state) => store.save(state) : undefined,
     );
-    ctx.capabilities.contribute("study:leaderboard", service);
-    systemCtx.contributePublicCapability("study:leaderboard", service);
+    const storedState = await store?.load();
+    if (storedState) service.restoreState(storedState);
+    systemCtx.flow.extend(
+        "study:leaderboard:submitObservation",
+        "persist",
+        { id: "study-leaderboard:persist", order: -100 },
+        async ({ input }) => {
+            const { actor, observation } = input as {
+                actor: LeaderboardActor;
+                observation: LeaderboardObservation;
+            };
+            return service.submitObservation(actor, observation);
+        },
+    );
+    systemCtx.flow.extend(
+        "study:leaderboard:queryStandings",
+        "rank",
+        { id: "study-leaderboard:rank", order: -100 },
+        ({ input }) => service.queryStandings(input as StandingsQuery),
+    );
+    systemCtx.flow.extend(
+        "study:leaderboard:rollover",
+        "archive",
+        { id: "study-leaderboard:archive", order: -100 },
+        ({ input }) => {
+            const rollover = input as {
+                definitionId: string;
+                nextSeason: { id: string; startsAt: string; endsAt: string };
+            };
+            return service.rollover(rollover.definitionId, rollover.nextSeason);
+        },
+    );
+    const capability = new Proxy(service, {
+        get(target, property, receiver) {
+            if (property === "submitObservation")
+                return async (
+                    actor: LeaderboardActor,
+                    observation: LeaderboardObservation,
+                ) => {
+                    await systemCtx.flow.run(
+                        "study:leaderboard:submitObservation",
+                        {
+                            actor,
+                            observation,
+                        },
+                    );
+                };
+            if (property === "queryStandings")
+                return async (query: StandingsQuery) => {
+                    const result = await systemCtx.flow.run(
+                        "study:leaderboard:queryStandings",
+                        query,
+                    );
+                    return result.stageResults.rank?.[0];
+                };
+            if (property === "requestTableModel")
+                return async (query: StandingsQuery, locale: string) => {
+                    const result = await systemCtx.flow.run(
+                        "study:leaderboard:queryStandings",
+                        query,
+                    );
+                    return service.requestTableModel(
+                        query,
+                        locale,
+                        result.stageResults.rank?.[0] as {
+                            rows: import("./types.js").StandingRow[];
+                            total: number;
+                        },
+                    );
+                };
+            if (property === "rollover")
+                return (
+                    definitionId: string,
+                    nextSeason: {
+                        id: string;
+                        startsAt: string;
+                        endsAt: string;
+                    },
+                ) => {
+                    void systemCtx.flow.run("study:leaderboard:rollover", {
+                        definitionId,
+                        nextSeason,
+                    });
+                };
+            const value = Reflect.get(target, property, receiver);
+            return typeof value === "function" ? value.bind(target) : value;
+        },
+    }) as LeaderboardCapability;
+    ctx.capabilities.contribute("study:leaderboard", capability);
+    systemCtx.contributePublicCapability("study:leaderboard", capability);
     ctx.registerRoute(
         createLeaderboardRoutes(
-            service,
+            capability,
             ctx.capabilities.get<RouteContext>("auth:routeContext"),
         ),
         "study",

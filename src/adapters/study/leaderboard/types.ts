@@ -88,7 +88,16 @@ export interface LeaderboardTableModel {
 }
 
 export interface LeaderboardCapability {
-    listDefinitions(): readonly LeaderboardDefinition[];
+    listDefinitions(actor?: LeaderboardActor): readonly LeaderboardDefinition[];
+    canAccessDefinition(
+        actor: LeaderboardActor,
+        definitionId: string,
+        cohortId?: string,
+    ): Promise<boolean>;
+    resolveCohort(
+        actor: LeaderboardActor,
+        definitionId: string,
+    ): string | undefined;
     registerDefinition(definition: LeaderboardDefinition): void;
     submitObservation(
         actor: LeaderboardActor,
@@ -127,6 +136,7 @@ export interface LeaderboardCapability {
         definitionId: string,
         criterionId: string,
         activity: ActivityScoreInput,
+        recordedScore?: ActivityScore,
     ): Promise<ActivityScore>;
 }
 
@@ -135,4 +145,12 @@ export interface ProgressEvidenceCapability {
         actor: LeaderboardActor,
         filters?: { eventId?: string },
     ): Promise<readonly { id: string; actorId: string; occurredAt: string }[]>;
+}
+
+export interface LeaderboardClassAccessCapability {
+    canRead(
+        classId: string,
+        accountId: string,
+        role: AccessRole,
+    ): Promise<boolean>;
 }

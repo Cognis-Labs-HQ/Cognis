@@ -1,6 +1,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { loadSpaRoutes } from "/static/reuse/spa-route-registry.js";
 import {
     resolveLanguageLabel,
     buildLibraryUrl,
@@ -226,9 +227,7 @@ export async function loadStudySubNavigationModel({
     const schemas = selectedLanguageCode
         ? await fetchLibrarySchemas(selectedLanguageCode).catch(() => [])
         : [];
-    const preferredLocales = [document.documentElement.lang, "en"].filter(
-        Boolean,
-    );
+    const activeLocale = document.documentElement.lang;
     for (const schema of schemas) {
         for (const layer of schema.layers ?? []) {
             if (
@@ -239,12 +238,7 @@ export async function loadStudySubNavigationModel({
                 continue;
             }
             const labels = layer.metadata?.labels ?? {};
-            const label =
-                preferredLocales
-                    .map((locale) => labels[locale])
-                    .find(Boolean) ??
-                Object.values(labels).find(Boolean) ??
-                layer.id;
+            const label = labels[activeLocale] ?? layer.id;
             modules.push({
                 id: `library-${schema.id}-${layer.id}`,
                 label,
@@ -253,13 +247,16 @@ export async function loadStudySubNavigationModel({
             });
         }
     }
-    modules.push({
-        id: "leaderboard",
-        label: "Leaderboard",
-        labelKey: "gateway.study.leaderboard_label",
-        pageUrl: "/study/leaderboard",
-        order: 300,
-    });
+    const spaRoutes = await loadSpaRoutes();
+    if (spaRoutes.some((route) => route.base === "/study/leaderboard")) {
+        modules.push({
+            id: "leaderboard",
+            label: "Leaderboard",
+            labelKey: "gateway.study.leaderboard_label",
+            pageUrl: "/study/leaderboard",
+            order: 300,
+        });
+    }
     modules.sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
     const rememberedPageUrl = resolveRememberedStudyPageUrl(
         window.location.pathname,

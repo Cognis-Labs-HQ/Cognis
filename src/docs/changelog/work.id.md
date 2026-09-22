@@ -98,6 +98,18 @@ Saat dimulai, status aktif modul yang tersimpan kini dipulihkan tanpa menjalanka
 
 Perbandingan dari klon lengkap terhadap development menemukan perubahan pemulihan skema basis data dan pelaksana pengujian modul eksternal yang tidak terkait di dalam cabang Study bertumpuk. Infrastruktur MariaDB, PostgreSQL, dan pengujian modul yang sensitif saat dimulai kini sama dengan implementasi development tepercaya; kode fitur Leaderboard, Progress, dan Library tetap terisolasi pada komponen pemiliknya.
 
+## Penguatan papan peringkat berdasarkan tinjauan
+
+Status papan peringkat kini disimpan secara tahan lama, peristiwa bukti bersifat tetap dan diverifikasi terhadap jendela waktu, serta peringkat menghormati seri penuh dan aturan pemecah seri yang dikonfigurasi. Akses kelas, kohort, dan acara diotorisasi sebelum definisi atau klasemen dikembalikan, sementara kait alur kini ikut dalam pengiriman, pemeringkatan, dan pergantian musim.
+
+## Antarmuka Study yang akurat dan terlokalisasi
+
+Halaman papan peringkat kini melaporkan kegagalan permintaan, mendukung pemilihan setiap papan peringkat yang dapat diakses, menampilkan nilai yang tepat untuk tiap kolom, dan melokalkan metadata aksesibilitas tabel. Navigasi Study memperoleh ketersediaan papan peringkat dari rute terdaftar dan tidak mengganti label dengan bahasa lain.
+
+## Keamanan pustaka, penilaian, dan modul
+
+Pembaruan pustaka mempertahankan kunci pelokalan yang dibuat dan entri yang dihapus langsung menghilang. Pencapaian tetap terbatas pada penyedianya, penukaran booster tidak menimpa pengubah global, dan titik masuk modul nonaktif divalidasi batasnya sebelum diimpor.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -123,3 +135,4 @@ Perbandingan dari klon lengkap terhadap development menemukan perubahan pemuliha
 - [d1cdc256](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1cdc256)
 - [9fcc23e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fcc23e3)
 - [87275211](https://github.com/Cognis-Labs-HQ/Cognis/commit/87275211)
+- [043b1e4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/043b1e4b)

@@ -308,7 +308,11 @@ export function createLibraryRoutes(
             const code =
                 error instanceof Error ? error.message : "request_failed";
             const status =
-                code === "forbidden" ? 403 : code === "not_found" ? 404 : 400;
+                code === "forbidden"
+                    ? 403
+                    : code === "not_found" || code === "entry_not_found"
+                      ? 404
+                      : 400;
             await log?.("error", "Library request failed.", {
                 component: "study-library",
                 operation: req.method ?? "unknown",

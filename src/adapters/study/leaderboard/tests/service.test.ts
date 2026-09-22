@@ -266,3 +266,129 @@ test("activity collections score through core and become evidence-backed XP", as
     });
     assert.equal(standings.rows[0].criteria.xp, score.xp);
 });
+
+test("definition validation rejects unsafe cohort thresholds and duplicate IDs", () => {
+    const service = new LeaderboardService(progress);
+    assert.throws(
+        () =>
+            service.registerDefinition({ ...definition, minimumCohortSize: 0 }),
+        /invalid_minimum_cohort_size/,
+    );
+    service.registerDefinition(definition);
+    assert.throws(
+        () => service.registerDefinition(definition),
+        /definition_exists/,
+    );
+});
+
+test("evidence is immutable, window-derived, and scored once per criterion", async () => {
+    const service = new LeaderboardService(progress);
+    service.registerDefinition({
+        ...definition,
+        minimumCohortSize: 1,
+        criteria: [definition.criteria[0]],
+    });
+    service.setParticipation("alice", "weekly", { optedIn: true });
+    const observation = {
+        id: "immutable-observation",
+        definitionId: "weekly",
+        participantId: "alice",
+        criterionId: "accuracy",
+        value: 10,
+        observedAt: "2026-09-07T00:00:00Z",
+        evidenceEventIds: ["a"],
+        seasonId: "s1",
+    };
+    await service.submitObservation(actor("alice"), observation);
+    await assert.rejects(
+        service.submitObservation(actor("alice"), {
+            ...observation,
+            id: "duplicate-evidence",
+        }),
+        /evidence_already_scored/,
+    );
+    await assert.rejects(
+        service.submitObservation(actor("alice"), {
+            ...observation,
+            value: 11,
+        }),
+        /observation_id_conflict/,
+    );
+    const result = await service.queryStandings({
+        definitionId: "weekly",
+        viewerId: "alice",
+    });
+    assert.equal(result.rows[0].updatedAt, events.get("a")!.occurredAt);
+});
+
+test("all participants in a multi-way tie retain the same rank", async () => {
+    const service = new LeaderboardService(progress);
+    service.registerDefinition({
+        ...definition,
+        minimumCohortSize: 1,
+        criteria: [definition.criteria[0]],
+    });
+    for (const participant of ["alice", "bob", "carol"]) {
+        service.setParticipation(participant, "weekly", { optedIn: true });
+        await service.submitObservation(actor(participant), {
+            id: `tie-${participant}`,
+            definitionId: "weekly",
+            participantId: participant,
+            criterionId: "accuracy",
+            value: 100,
+            observedAt: "2026-09-07T00:00:00Z",
+            evidenceEventIds: [participant[0]],
+            seasonId: "s1",
+        });
+    }
+    const result = await service.queryStandings({
+        definitionId: "weekly",
+        viewerId: "alice",
+    });
+    assert.deepEqual(
+        result.rows.map(({ rank }) => rank),
+        [1, 1, 1],
+    );
+});
+
+test("persisted competitive state can be restored after restart", async () => {
+    let saved: import("../store.js").LeaderboardState | undefined;
+    const service = new LeaderboardService(
+        progress,
+        () => true,
+        undefined,
+        undefined,
+        undefined,
+        async (state) => {
+            saved = state;
+        },
+    );
+    service.registerDefinition({
+        ...definition,
+        minimumCohortSize: 1,
+        criteria: [definition.criteria[0]],
+    });
+    service.setParticipation("alice", "weekly", { optedIn: true });
+    await service.submitObservation(actor("alice"), {
+        id: "persisted",
+        definitionId: "weekly",
+        participantId: "alice",
+        criterionId: "accuracy",
+        value: 42,
+        observedAt: "2026-09-02T00:00:00Z",
+        evidenceEventIds: ["a"],
+        seasonId: "s1",
+    });
+    const restarted = new LeaderboardService(progress);
+    restarted.restoreState(saved!);
+    assert.equal(restarted.listDefinitions().length, 1);
+    assert.equal(
+        (
+            await restarted.queryStandings({
+                definitionId: "weekly",
+                viewerId: "alice",
+            })
+        ).rows[0].score[0],
+        -42,
+    );
+});

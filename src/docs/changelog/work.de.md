@@ -98,6 +98,18 @@ Beim Start wird der gespeicherte Aktivierungszustand von Modulen jetzt wiederher
 
 Ein Vergleich aus einem vollständigen Klon mit development zeigte sachfremde Änderungen an der Datenbankschema-Reparatur und am Test-Runner für externe Module in den gestapelten Study-Zweigen. Die startsensitive Infrastruktur für MariaDB, PostgreSQL und Modultests entspricht nun wieder der vertrauenswürdigen development-Implementierung; Leaderboard-, Progress- und Library-Funktionscode bleibt auf seine zuständigen Komponenten beschränkt.
 
+## Durch Reviews gehärtete Bestenlisten
+
+Der Bestenlistenstatus wird nun dauerhaft gespeichert, Nachweisereignisse sind unveränderlich und werden gegen Zeitfenster geprüft, und die Rangfolge berücksichtigt vollständige Gleichstände sowie konfigurierte Gleichstandsregeln. Klassen-, Kohorten- und Ereigniszugriffe werden vor der Ausgabe autorisiert; außerdem wirken Flow-Hooks bei Einreichung, Rangbildung und Saisonwechsel mit.
+
+## Korrekte und lokalisierte Study-Oberfläche
+
+Die Bestenlistenseite meldet Anfragefehler, erlaubt die Auswahl aller zugänglichen Bestenlisten, zeigt für jede Tabellenspalte den richtigen Wert und lokalisiert barrierefreie Tabellenmetadaten. Die Study-Navigation leitet die Verfügbarkeit aus registrierten Routen ab und verwendet keine Beschriftung aus einer anderen Sprache.
+
+## Sicherheit für Bibliothek, Wertung und Module
+
+Bibliotheksaktualisierungen bewahren erzeugte Lokalisierungsschlüssel, und gelöschte Einträge verschwinden sofort. Erfolge bleiben auf ihren Anbieter beschränkt, Booster überschreiben keine globalen Modifikatoren, und Einstiegspunkte deaktivierter Module werden vor dem Import auf Grenzen geprüft.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -123,3 +135,4 @@ Ein Vergleich aus einem vollständigen Klon mit development zeigte sachfremde Ä
 - [d1cdc256](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1cdc256)
 - [9fcc23e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fcc23e3)
 - [87275211](https://github.com/Cognis-Labs-HQ/Cognis/commit/87275211)
+- [043b1e4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/043b1e4b)

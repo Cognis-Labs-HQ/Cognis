@@ -7,6 +7,7 @@ import type {
     RoleAccessPolicy,
     FlowApi,
 } from "@cognis/core";
+import { validateModuleBoundaries as validateModule } from "@cognis/core";
 import path from "node:path";
 import { stat } from "node:fs/promises";
 import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
@@ -790,6 +791,7 @@ export function createModuleExtensionRoutes(
             if (!moduleEnabled) {
                 if (!disabledApiEntrypoint) continue;
                 try {
+                    await validateModule(moduleRoot, { moduleId: manifest.id });
                     const plugin = (await import(
                         `${disabledApiEntrypoint}?t=${Date.now()}`
                     )) as ModuleDisabledApiPlugin;

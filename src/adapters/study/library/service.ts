@@ -529,6 +529,8 @@ export class LibraryService implements LibraryCapability {
         const fields = structuredClone(input.fields ?? {});
         if (layer.semanticRole === "definition") {
             const localization = layer.definitionLocalization!;
+            fields[localization.stringKeyField] =
+                current.fields[localization.stringKeyField];
             const translations = fields[localization.translationsField];
             if (
                 !translations ||

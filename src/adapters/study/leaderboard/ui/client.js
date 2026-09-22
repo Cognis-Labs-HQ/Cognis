@@ -6,8 +6,8 @@ export async function fetchLeaderboardDefinitions() {
     return (await response.json()).data;
 }
 
-export async function fetchLeaderboardStandings(definitionId) {
-    const query = new URLSearchParams({ definitionId });
+export async function fetchLeaderboardStandings(definitionId, locale) {
+    const query = new URLSearchParams({ definitionId, locale });
     const response = await apiFetch(
         `/api/v1/study/leaderboard/standings?${query}`,
     );

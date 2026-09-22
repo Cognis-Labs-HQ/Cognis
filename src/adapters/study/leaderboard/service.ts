@@ -7,11 +7,45 @@ import type {
     StandingRow,
     LeaderboardTableModel,
     ProgressEvidenceCapability,
+    LeaderboardClassAccessCapability,
 } from "./types.js";
-import type { ActivityScoreInput, ScoringCapability } from "@cognis/core";
+import type {
+    ActivityScore,
+    ActivityScoreInput,
+    ScoringCapability,
+} from "@cognis/core";
+import { isDeepStrictEqual } from "node:util";
+import type { LeaderboardState } from "./store.js";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,199}$/;
 const privileged = new Set(["admin", "owner"]);
+
+async function tableLabels(locale: string): Promise<Record<string, string>> {
+    const normalized = locale.toLowerCase().match(/^[a-z]{2,3}/)?.[0] ?? "en";
+    const filePath = path.join(
+        path.dirname(fileURLToPath(import.meta.url)),
+        "ui",
+        "languages",
+        normalized,
+        "strings.xml",
+    );
+    let xml: string;
+    try {
+        xml = await readFile(filePath, "utf8");
+    } catch {
+        return {};
+    }
+    return Object.fromEntries(
+        [
+            ...xml.matchAll(
+                /<string name="gateway\.study\.leaderboard_([^"]+)">([^<]*)<\/string>/g,
+            ),
+        ].map(([, key, value]) => [key, value]),
+    );
+}
 
 export class LeaderboardService implements LeaderboardCapability {
     private definitions = new Map<string, LeaderboardDefinition>();
@@ -27,6 +61,12 @@ export class LeaderboardService implements LeaderboardCapability {
         { seasonId: string; rows: StandingRow[] }[]
     >();
     private snapshots = new Map<string, Map<string, number>>();
+    private completedStandings = new Map<string, StandingRow[]>();
+    private completedParticipants = new Map<
+        string,
+        { participantId: string; rank: number }[]
+    >();
+    private persistence = Promise.resolve();
 
     constructor(
         private readonly progress:
@@ -34,7 +74,45 @@ export class LeaderboardService implements LeaderboardCapability {
             | (() => ProgressEvidenceCapability | undefined),
         private readonly enabled = () => true,
         private readonly scoring?: ScoringCapability,
+        private readonly classAccess?: LeaderboardClassAccessCapability,
+        private readonly log?: (
+            level: string,
+            message: string,
+            meta?: Record<string, unknown>,
+        ) => void | Promise<void>,
+        private readonly persistState?: (
+            state: LeaderboardState,
+        ) => Promise<void>,
     ) {}
+
+    restoreState(state: LeaderboardState): void {
+        this.definitions = new Map(state.definitions);
+        this.observations = new Map(state.observations);
+        this.invalid = new Set(state.invalid);
+        this.cohorts = new Map(state.cohorts);
+        this.participation = new Map(state.participation);
+        this.archives = new Map(state.archives);
+    }
+
+    private state(): LeaderboardState {
+        return structuredClone({
+            definitions: [...this.definitions],
+            observations: [...this.observations],
+            invalid: [...this.invalid],
+            cohorts: [...this.cohorts],
+            participation: [...this.participation],
+            archives: [...this.archives],
+        });
+    }
+
+    private persist(): Promise<void> {
+        if (!this.persistState) return Promise.resolve();
+        const state = this.state();
+        this.persistence = this.persistence.then(() =>
+            this.persistState!(state),
+        );
+        return this.persistence;
+    }
 
     private progressCapability(): ProgressEvidenceCapability {
         const progress =
@@ -50,6 +128,7 @@ export class LeaderboardService implements LeaderboardCapability {
         definitionId: string,
         criterionId: string,
         activity: ActivityScoreInput,
+        recordedScore?: ActivityScore,
     ) {
         this.requireEnabled();
         if (!this.scoring) throw new Error("scoring_unavailable");
@@ -61,7 +140,7 @@ export class LeaderboardService implements LeaderboardCapability {
         const definition = this.definitions.get(definitionId);
         if (!definition?.criteria.some(({ id }) => id === criterionId))
             throw new Error("criterion_not_found");
-        const score = this.scoring.score(activity);
+        const score = recordedScore ?? this.scoring.score(activity);
         await this.submitObservation(actor, {
             id: `${activity.activityId}:xp`,
             definitionId,
@@ -90,10 +169,57 @@ export class LeaderboardService implements LeaderboardCapability {
         );
     }
 
+    resolveCohort(
+        actor: LeaderboardActor,
+        definitionId: string,
+    ): string | undefined {
+        this.requireEnabled();
+        return this.cohorts.get(this.key(actor.accountId, definitionId));
+    }
+
+    async canAccessDefinition(
+        actor: LeaderboardActor,
+        definitionId: string,
+        cohortId?: string,
+    ): Promise<boolean> {
+        this.requireEnabled();
+        const definition = this.definitions.get(definitionId);
+        if (!definition) return false;
+        if (privileged.has(actor.role)) return true;
+        if (
+            cohortId &&
+            this.cohorts.get(this.key(actor.accountId, definitionId)) !==
+                cohortId
+        )
+            return false;
+        if (definition.kind === "classroom")
+            return (
+                !!definition.classroomId &&
+                !!this.classAccess &&
+                this.classAccess.canRead(
+                    definition.classroomId,
+                    actor.accountId,
+                    actor.role,
+                )
+            );
+        return (
+            this.participation.get(this.key(actor.accountId, definitionId))
+                ?.optedIn === true
+        );
+    }
+
     registerDefinition(input: LeaderboardDefinition): void {
         this.requireEnabled();
         if (!IDENTIFIER_PATTERN.test(input.id) || !input.criteria.length)
             throw new Error("invalid_definition");
+        if (this.definitions.has(input.id))
+            throw new Error("definition_exists");
+        if (
+            input.minimumCohortSize !== undefined &&
+            (!Number.isInteger(input.minimumCohortSize) ||
+                input.minimumCohortSize < 1)
+        )
+            throw new Error("invalid_minimum_cohort_size");
         if (input.kind === "classroom" && !input.classroomId)
             throw new Error("classroom_required");
         if (
@@ -127,6 +253,7 @@ export class LeaderboardService implements LeaderboardCapability {
                 lateJoinPolicy: input.lateJoinPolicy ?? "allow",
             }),
         );
+        void this.persist();
     }
 
     async submitObservation(
@@ -169,20 +296,77 @@ export class LeaderboardService implements LeaderboardCapability {
         const uniqueEvidence = [...new Set(observation.evidenceEventIds)];
         if (uniqueEvidence.length < criterion.minimumEvidence)
             throw new Error("insufficient_evidence");
+        const evidenceTimes: string[] = [];
         for (const eventId of uniqueEvidence) {
             const events = await this.progressCapability().listEvents(actor, {
                 eventId,
             });
+            const event = events.find(
+                (candidate) =>
+                    candidate.id === eventId &&
+                    candidate.actorId === observation.participantId,
+            );
+            if (!event) throw new Error("evidence_not_found");
+            const occurredAt = Date.parse(event.occurredAt);
             if (
-                !events.some(
-                    (event) =>
-                        event.id === eventId &&
-                        event.actorId === observation.participantId,
-                )
+                !Number.isFinite(occurredAt) ||
+                (definition.season &&
+                    (occurredAt < Date.parse(definition.season.startsAt) ||
+                        occurredAt >= Date.parse(definition.season.endsAt)))
             )
-                throw new Error("evidence_not_found");
+                throw new Error("evidence_outside_window");
+            const evidenceKey = [definition.id, criterion.id, eventId].join(
+                "\0",
+            );
+            const duplicate = [...this.observations.values()].find(
+                (candidate) =>
+                    !this.invalid.has(candidate.id) &&
+                    candidate.id !== observation.id &&
+                    candidate.definitionId === definition.id &&
+                    candidate.criterionId === criterion.id &&
+                    candidate.evidenceEventIds.includes(eventId),
+            );
+            if (duplicate) throw new Error("evidence_already_scored");
+            void evidenceKey;
+            evidenceTimes.push(event.occurredAt);
         }
-        this.observations.set(observation.id, structuredClone(observation));
+        const normalized = {
+            ...observation,
+            evidenceEventIds: uniqueEvidence,
+            observedAt: evidenceTimes.sort().at(-1)!,
+        };
+        if (
+            definition.lateJoinPolicy !== "allow" &&
+            definition.season &&
+            Date.parse(normalized.observedAt) >
+                Date.parse(definition.season.startsAt) &&
+            ![...this.observations.values()].some(
+                (candidate) =>
+                    candidate.definitionId === definition.id &&
+                    candidate.participantId === observation.participantId &&
+                    candidate.seasonId === observation.seasonId,
+            )
+        )
+            throw new Error(
+                definition.lateJoinPolicy === "nextSeason"
+                    ? "participant_waiting_for_next_season"
+                    : "late_join_denied",
+            );
+        const existing = this.observations.get(observation.id);
+        if (existing) {
+            if (!isDeepStrictEqual(existing, normalized))
+                throw new Error("observation_id_conflict");
+            return;
+        }
+        this.observations.set(observation.id, structuredClone(normalized));
+        await this.persist();
+        await this.log?.("info", "Submitted leaderboard observation.", {
+            component: "study-leaderboard",
+            operation: "submit_observation",
+            definitionId: definition.id,
+            observationId: observation.id,
+            participantId: observation.participantId,
+        });
     }
 
     async invalidateObservation(
@@ -198,6 +382,13 @@ export class LeaderboardService implements LeaderboardCapability {
         )
             throw new Error("forbidden_actor");
         this.invalid.add(observationId);
+        await this.persist();
+        await this.log?.("info", "Invalidated leaderboard observation.", {
+            component: "study-leaderboard",
+            operation: "invalidate_observation",
+            observationId,
+            accountId: actor.accountId,
+        });
     }
 
     assignCohort(
@@ -205,15 +396,48 @@ export class LeaderboardService implements LeaderboardCapability {
         definitionId: string,
         cohortId: string,
     ): void {
+        this.requireEnabled();
+        if (!this.definitions.has(definitionId))
+            throw new Error("definition_not_found");
         this.cohorts.set(this.key(participantId, definitionId), cohortId);
+        void this.persist();
+        void this.log?.("info", "Assigned leaderboard cohort.", {
+            component: "study-leaderboard",
+            operation: "assign_cohort",
+            participantId,
+            definitionId,
+            cohortId,
+        });
     }
     setParticipation(
         participantId: string,
         definitionId: string,
         options: { optedIn: boolean; alias?: string },
     ): void {
+        this.requireEnabled();
+        const definition = this.definitions.get(definitionId);
+        if (!definition) throw new Error("definition_not_found");
+        if (
+            options.optedIn &&
+            definition.lateJoinPolicy !== "allow" &&
+            definition.season &&
+            Date.now() > Date.parse(definition.season.startsAt)
+        )
+            throw new Error(
+                definition.lateJoinPolicy === "nextSeason"
+                    ? "participant_waiting_for_next_season"
+                    : "late_join_denied",
+            );
         this.participation.set(this.key(participantId, definitionId), {
             ...options,
+        });
+        void this.persist();
+        void this.log?.("info", "Changed leaderboard participation.", {
+            component: "study-leaderboard",
+            operation: "set_participation",
+            participantId,
+            definitionId,
+            optedIn: options.optedIn,
         });
     }
 
@@ -309,34 +533,82 @@ export class LeaderboardService implements LeaderboardCapability {
                 .map((o) => o.observedAt)
                 .sort()
                 .at(-1)!;
-            return { participantId, criterionValues, vector, score, updatedAt };
+            const evidenceTimes = Object.fromEntries(
+                criteria.map((criterion) => {
+                    const times = grouped
+                        .get(criterion.id)!
+                        .map((observation) =>
+                            Date.parse(observation.observedAt),
+                        );
+                    return [
+                        criterion.id,
+                        {
+                            earliest: Math.min(...times),
+                            latest: Math.max(...times),
+                        },
+                    ];
+                }),
+            );
+            return {
+                participantId,
+                criterionValues,
+                vector,
+                score,
+                updatedAt,
+                evidenceTimes,
+            };
         });
-        raw.sort((a, b) => {
-            if (definition.strategy === "weighted")
-                return (
-                    (b.score as number) - (a.score as number) ||
-                    a.participantId.localeCompare(b.participantId)
-                );
-            for (let index = 0; index < a.vector.length; index += 1)
-                if (a.vector[index] !== b.vector[index])
-                    return a.vector[index] - b.vector[index];
-            return a.participantId.localeCompare(b.participantId);
-        });
-        const previous = this.snapshots.get(definition.id) ?? new Map();
+        const compareRank = (
+            a: (typeof raw)[number],
+            b: (typeof raw)[number],
+        ) => {
+            if (definition.strategy === "weighted") {
+                const scoreDifference =
+                    (b.score as number) - (a.score as number);
+                if (scoreDifference) return scoreDifference;
+            } else {
+                for (let index = 0; index < a.vector.length; index += 1)
+                    if (a.vector[index] !== b.vector[index])
+                        return a.vector[index] - b.vector[index];
+            }
+            for (const criterion of criteria) {
+                const tieBreak = criterion.tieBreak;
+                if (tieBreak === "participantId") continue;
+                const field =
+                    tieBreak === "earliestEvidence" ? "earliest" : "latest";
+                const difference =
+                    a.evidenceTimes[criterion.id][field] -
+                    b.evidenceTimes[criterion.id][field];
+                if (difference)
+                    return tieBreak === "earliestEvidence"
+                        ? difference
+                        : -difference;
+            }
+            return 0;
+        };
+        raw.sort(
+            (a, b) =>
+                compareRank(a, b) ||
+                a.participantId.localeCompare(b.participantId),
+        );
+        const snapshotKey = [
+            definition.id,
+            query.seasonId ?? definition.season?.id ?? "all",
+            query.cohortId ?? "all",
+        ].join("\0");
+        const previous = this.snapshots.get(snapshotKey) ?? new Map();
+        let groupRank = 0;
         const rows = raw.map((item, index) => {
             const previousItem = raw[index - 1];
             const tiedWithPrevious =
-                !!previousItem &&
-                JSON.stringify(item.score) ===
-                    JSON.stringify(previousItem.score);
-            const rank = tiedWithPrevious ? index : index + 1;
+                !!previousItem && compareRank(item, previousItem) === 0;
+            if (!tiedWithPrevious) groupRank = index + 1;
+            const rank = groupRank;
             const participant = this.participation.get(
                 this.key(item.participantId, definition.id),
             );
             const tiedWithNext =
-                !!raw[index + 1] &&
-                JSON.stringify(item.score) ===
-                    JSON.stringify(raw[index + 1].score);
+                !!raw[index + 1] && compareRank(item, raw[index + 1]) === 0;
             return {
                 rank,
                 participant: {
@@ -368,13 +640,21 @@ export class LeaderboardService implements LeaderboardCapability {
             };
         });
         this.snapshots.set(
-            definition.id,
+            snapshotKey,
             new Map(
                 raw.map((item, index) => [
                     item.participantId,
                     rows[index].rank,
                 ]),
             ),
+        );
+        this.completedStandings.set(snapshotKey, structuredClone(rows));
+        this.completedParticipants.set(
+            snapshotKey,
+            raw.map((item, index) => ({
+                participantId: item.participantId,
+                rank: rows[index].rank,
+            })),
         );
         const offset = query.offset ?? 0;
         if (
@@ -396,26 +676,28 @@ export class LeaderboardService implements LeaderboardCapability {
     async requestTableModel(
         query: StandingsQuery,
         locale: string,
+        standings?: { rows: StandingRow[]; total: number },
     ): Promise<LeaderboardTableModel> {
         const definition = this.definitions.get(query.definitionId);
         if (!definition) throw new Error("definition_not_found");
-        const result = await this.queryStandings(query);
+        const result = standings ?? (await this.queryStandings(query));
+        const localized = await tableLabels(locale);
         const labels = {
-            rank: "Rank",
-            participant: "Participant",
-            score: "Score",
-            ties: "Tied",
-            movement: "Movement",
-            updatedAt: "Updated",
+            rank: localized.rank ?? "rank",
+            participant: localized.participant ?? "participant",
+            score: localized.score ?? "score",
+            ties: localized.ties ?? "ties",
+            movement: localized.movement ?? "movement",
+            updatedAt: localized.updated ?? "updatedAt",
         };
         return {
-            caption: "Leaderboard standings",
+            caption: localized.caption ?? "leaderboard",
             columns: [
                 { id: "rank", label: labels.rank },
                 { id: "participant", label: labels.participant },
                 ...definition.criteria.map((c) => ({
                     id: c.id,
-                    label: c.label[locale] ?? c.label.en ?? c.id,
+                    label: c.label[locale] ?? c.id,
                 })),
                 { id: "score", label: labels.score },
                 { id: "ties", label: labels.ties },
@@ -424,8 +706,8 @@ export class LeaderboardService implements LeaderboardCapability {
             ],
             rows: result.rows.map((row) => ({
                 ...row,
-                rankLabel: `${row.plating ? `${row.plating} medal, ` : ""}Rank ${row.rank}`,
-                screenReaderLabel: `${row.participant.alias}, rank ${row.rank}${row.tied ? ", tied" : ""}`,
+                rankLabel: `${row.plating ? `${row.plating} ${localized.medal ?? "medal"}, ` : ""}${localized.rank_word ?? "rank"} ${row.rank}`,
+                screenReaderLabel: `${row.participant.alias}, ${localized.rank_word ?? "rank"} ${row.rank}${row.tied ? `, ${localized.tied_word ?? "tied"}` : ""}`,
             })),
             total: result.total,
         };
@@ -435,26 +717,49 @@ export class LeaderboardService implements LeaderboardCapability {
         definitionId: string,
         nextSeason: { id: string; startsAt: string; endsAt: string },
     ): void {
+        this.requireEnabled();
         const definition = this.definitions.get(definitionId);
         if (!definition?.season || !definition.recurring)
             throw new Error("rollover_not_supported");
-        const rows = [...(this.snapshots.get(definitionId) ?? [])].map(
-            ([participantId, rank]) => ({
-                rank,
-                participant: {
-                    alias:
-                        this.participation.get(
-                            this.key(participantId, definitionId),
-                        )?.alias ?? "Participant",
-                    isViewer: false,
-                },
-                criteria: {},
-                score: 0,
-                tied: false,
-                movement: null,
-                updatedAt: definition.season!.endsAt,
-            }),
+        const snapshotKey = [definitionId, definition.season.id, "all"].join(
+            "\0",
         );
+        const cohortRows = [...this.completedStandings.entries()]
+            .filter(([key]) =>
+                key.startsWith(`${definitionId}\0${definition.season!.id}\0`),
+            )
+            .flatMap(([, rows]) => rows);
+        const rows = structuredClone(
+            this.completedStandings.get(snapshotKey) ?? cohortRows,
+        );
+        const rankedParticipants = [...this.completedParticipants.entries()]
+            .filter(([key]) =>
+                key.startsWith(`${definitionId}\0${definition.season!.id}\0`),
+            )
+            .flatMap(([, participants]) => participants)
+            .sort((left, right) => left.rank - right.rank);
+        for (const item of rankedParticipants.slice(
+            0,
+            definition.promotion?.count ?? 0,
+        )) {
+            if (definition.promotion)
+                this.cohorts.set(
+                    this.key(item.participantId, definitionId),
+                    definition.promotion.targetCohortId,
+                );
+        }
+        for (const item of rankedParticipants.slice(
+            Math.max(
+                0,
+                rankedParticipants.length - (definition.relegation?.count ?? 0),
+            ),
+        )) {
+            if (definition.relegation)
+                this.cohorts.set(
+                    this.key(item.participantId, definitionId),
+                    definition.relegation.targetCohortId,
+                );
+        }
         this.archives.set(definitionId, [
             ...(this.archives.get(definitionId) ?? []),
             { seasonId: definition.season.id, rows },
@@ -463,8 +768,17 @@ export class LeaderboardService implements LeaderboardCapability {
             ...definition,
             season: nextSeason,
         });
+        void this.persist();
+        void this.log?.("info", "Rolled over leaderboard season.", {
+            component: "study-leaderboard",
+            operation: "rollover",
+            definitionId,
+            previousSeasonId: definition.season.id,
+            nextSeasonId: nextSeason.id,
+        });
     }
     archivedResults(definitionId: string) {
+        this.requireEnabled();
         return structuredClone(this.archives.get(definitionId) ?? []);
     }
 }

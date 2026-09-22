@@ -55,9 +55,9 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Link Share            | `src/adapters/share/link/`          | `1.1.36`   |
 | User Share            | `src/adapters/share/user/`          | `1.1.19`   |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.11`   |
-| Library (Study)       | `src/adapters/study/library/`       | `2.9.1`    |
+| Library (Study)       | `src/adapters/study/library/`       | `2.9.2`    |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.1.7`    |
-| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.1.4`    |
+| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.1.5`    |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`    |
 | File Logging          | `src/adapters/logging/file/`        | `1.1.5`    |
 
@@ -75,20 +75,20 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration          | `src/gateways/registration/`  | `1.1.39`   |
 | Logging               | `src/gateways/logging/`       | `1.5.14`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
-| Study                 | `src/gateways/study/`         | `1.8.19`   |
+| Study                 | `src/gateways/study/`         | `1.8.20`   |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115`  |
 
 ## コア契約
 
 | コンポーネント | パス        | バージョン |
 | -------------- | ----------- | ---------- |
-| Core Package   | `src/core/` | `0.3.111`  |
+| Core Package   | `src/core/` | `0.3.112`  |
 
 ## API
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.6.4`    |
+| API Server     | `src/api/` | `0.6.5`    |
 
 ## ツール
 

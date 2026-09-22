@@ -2,6 +2,7 @@ import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { showToast } from "/static/reuse/toast.js";
 import {
     fetchLeaderboardDefinitions,
     fetchLeaderboardStandings,
@@ -24,16 +25,30 @@ export async function mount(root, { signal } = {}) {
     const model = await loadStudySubNavigationModel({
         fallbackLanguageCode: readSelectedStudyLanguageCode(),
     });
-    const definitions = await fetchLeaderboardDefinitions().catch(() => []);
-    const selectedDefinition = definitions[0];
-    const table = selectedDefinition
-        ? await fetchLeaderboardStandings(selectedDefinition.id).catch(
-              () => null,
-          )
+    let requestFailed = false;
+    const definitions = await fetchLeaderboardDefinitions().catch(() => {
+        requestFailed = true;
+        return [];
+    });
+    let selectedDefinition = definitions[0];
+    let table = selectedDefinition
+        ? await fetchLeaderboardStandings(
+              selectedDefinition.id,
+              document.documentElement.lang || "en",
+          ).catch(() => {
+              requestFailed = true;
+              return null;
+          })
         : null;
     const renderLeaderboard = () => {
+        const selector =
+            definitions.length > 1
+                ? `<label class="study-leaderboard-selector"><span>${escapeHtml(i18n.t("gateway.study.leaderboard_select"))}</span><select data-leaderboard-definition>${definitions.map((definition) => `<option value="${escapeHtml(definition.id)}"${definition.id === selectedDefinition?.id ? " selected" : ""}>${escapeHtml(definition.id)}</option>`).join("")}</select></label>`
+                : "";
+        if (requestFailed)
+            return `<section class="study-leaderboard-empty">${selector}<h2>${escapeHtml(i18n.t("gateway.study.leaderboard_heading"))}</h2><p>${escapeHtml(i18n.t("gateway.study.leaderboard_error"))}</p></section>`;
         if (!table?.rows?.length) {
-            return `<section class="study-leaderboard-empty"><h2>${escapeHtml(i18n.t("gateway.study.leaderboard_heading"))}</h2><p>${escapeHtml(i18n.t("gateway.study.leaderboard_empty"))}</p></section>`;
+            return `<section class="study-leaderboard-empty">${selector}<h2>${escapeHtml(i18n.t("gateway.study.leaderboard_heading"))}</h2><p>${escapeHtml(i18n.t("gateway.study.leaderboard_empty"))}</p></section>`;
         }
         const headings = table.columns
             .map((column) => `<th scope="col">${escapeHtml(column.label)}</th>`)
@@ -54,14 +69,22 @@ export async function mount(root, { signal } = {}) {
                                 ? row.rankLabel
                                 : column.id === "participant"
                                   ? row.participant.alias
-                                  : (row.criteria[column.id] ?? row.score);
+                                  : column.id === "score"
+                                    ? row.score
+                                    : column.id === "ties"
+                                      ? row.tied
+                                      : column.id === "movement"
+                                        ? row.movement
+                                        : column.id === "updatedAt"
+                                          ? row.updatedAt
+                                          : row.criteria[column.id];
                         return `<td>${escapeHtml(String(value))}</td>`;
                     })
                     .join("");
                 return `<tr class="leaderboard-row${row.participant.isViewer ? " leaderboard-row--viewer" : ""}${movementClass}" aria-label="${escapeHtml(row.screenReaderLabel)}" data-rank="${row.rank}">${values}</tr>`;
             })
             .join("");
-        return `<section class="study-leaderboard"><h2>${escapeHtml(selectedDefinition.id)}</h2><div class="leaderboard-table-scroll"><table><caption>${escapeHtml(table.caption)}</caption><thead><tr>${headings}</tr></thead><tbody>${rows}</tbody></table></div></section>`;
+        return `<section class="study-leaderboard">${selector}<h2>${escapeHtml(selectedDefinition.id)}</h2><div class="leaderboard-table-scroll"><table><caption>${escapeHtml(table.caption)}</caption><thead><tr>${headings}</tr></thead><tbody>${rows}</tbody></table></div></section>`;
     };
     const composer = createPageComposer(root, {
         allowCustomization: false,
@@ -96,6 +119,38 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     signal?.throwIfAborted();
+    if (requestFailed)
+        showToast(i18n.t("gateway.study.leaderboard_error"), {
+            variant: "error",
+        });
+    root.addEventListener(
+        "change",
+        async (event) => {
+            const selector = event.target.closest(
+                "[data-leaderboard-definition]",
+            );
+            if (!selector) return;
+            selectedDefinition = definitions.find(
+                ({ id }) => id === selector.value,
+            );
+            requestFailed = false;
+            table = await fetchLeaderboardStandings(
+                selectedDefinition.id,
+                document.documentElement.lang || "en",
+            ).catch(() => {
+                requestFailed = true;
+                showToast(i18n.t("gateway.study.leaderboard_error"), {
+                    variant: "error",
+                });
+                return null;
+            });
+            const section = root.querySelector(
+                "[data-page-element-id='study-leaderboard']",
+            );
+            if (section) section.innerHTML = renderLeaderboard();
+        },
+        { signal },
+    );
     bindStudySubNavigation(root, { signal });
 }
 

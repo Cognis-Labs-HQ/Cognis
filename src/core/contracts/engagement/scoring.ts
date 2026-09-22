@@ -131,8 +131,16 @@ export class ScoringEngine implements ScoringCapability {
     redeemBooster(participantId: string, modifier: ScoreModifier) {
         if (modifier.source !== "booster" || modifier.consumable !== true)
             throw new Error("invalid_booster");
-        this.registerModifier(modifier);
-        this.modifiers.delete(modifier.id);
+        if (
+            !modifier.id.trim() ||
+            !within(modifier.multiplier, 0.01, 10) ||
+            !Number.isFinite(Date.parse(modifier.startsAt)) ||
+            !Number.isFinite(Date.parse(modifier.endsAt)) ||
+            Date.parse(modifier.startsAt) >= Date.parse(modifier.endsAt)
+        )
+            throw new Error("invalid_score_modifier");
+        if (this.modifiers.has(modifier.id))
+            throw new Error("score_modifier_exists");
         const participantBoosters =
             this.boosters.get(participantId) ?? new Map();
         participantBoosters.set(modifier.id, structuredClone(modifier));
@@ -341,7 +349,11 @@ export class AchievementRegistry implements AchievementCapability {
         const awarded: AchievementAward[] = [];
         for (const definition of this.definitions.values()) {
             const key = `${input.participantId}\0${definition.id}`;
-            if (this.awards.has(key) || !definition.evaluate(input, score))
+            if (
+                definition.providerId !== input.providerId ||
+                this.awards.has(key) ||
+                !definition.evaluate(input, score)
+            )
                 continue;
             const award: AchievementAward = Object.freeze({
                 definitionId: definition.id,

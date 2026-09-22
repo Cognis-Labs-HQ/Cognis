@@ -98,6 +98,18 @@ Startup now restores persisted enabled-module state without rerunning the module
 
 A clean-clone comparison against development identified unrelated database schema-healing and external-module test-runner changes carried by the stacked Study branches. Startup-sensitive MariaDB, PostgreSQL, and module-test infrastructure now matches the trusted development implementation; leaderboard, Progress, and Library feature code remains isolated to its owning components.
 
+## Review-driven leaderboard hardening
+
+Leaderboard state is now durable, evidence events are immutable and window-verified, ranking honors complete ties and configured tie-breaks, and every competitive mutation is guarded and audited. Classroom, cohort, and event access is authorized before definitions or standings are returned, while flow hooks now participate in submissions, ranking, and rollover.
+
+## Accurate and localized Study UI
+
+The leaderboard page now reports request failures, supports selecting every accessible leaderboard, renders each table column from its own field, and localizes table accessibility metadata. Study navigation derives leaderboard availability from registered routes and never substitutes labels from another language.
+
+## Library, scoring, and module safety
+
+Library updates preserve generated localization keys and deleted entries disappear immediately. Engagement achievements stay within their provider and booster redemption cannot overwrite global modifiers. Disabled module entrypoints are boundary-validated before import.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -123,3 +135,4 @@ A clean-clone comparison against development identified unrelated database schem
 - [d1cdc256](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1cdc256)
 - [9fcc23e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fcc23e3)
 - [87275211](https://github.com/Cognis-Labs-HQ/Cognis/commit/87275211)
+- [043b1e4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/043b1e4b)
