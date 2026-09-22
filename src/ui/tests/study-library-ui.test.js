@@ -218,6 +218,14 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /field\.type === "localizedText"/);
     assert.match(source, /localizedTextValue\(fields\[field\.id\]\)/);
     assert.match(source, /function secondarySpellingGroups/);
+    assert.match(
+        source,
+        /layer\?\.semanticRole === "lexicalUnit"[\s\S]*return titleDefinition \? \[\{ label: titleDefinition \}\] : \[\]/,
+    );
+    assert.match(
+        source,
+        /parentEntry && layer\?\.semanticRole !== "lexicalUnit"/,
+    );
     assert.match(source, /group\.presentationRole === "alternateSpelling"/);
     assert.match(
         source,

@@ -83,3 +83,5 @@ Schaltflächen für verwandte Einträge wiederholen ihre Bezeichnung nicht mehr 
 Geöffnete Variantenäste bleiben auf das Basisraster begrenzt. Cognis berücksichtigt zuerst die vom Anbieter bevorzugte Richtung, prüft danach alternative Richtungen gegen die gerenderte Rastergrenze und wählt die erste passende Option; beim Schließen werden die Anbieterpräferenzen wiederhergestellt. Der Hinweis zum Gedrückthalten ist für scharfe Schrift statisch und verwendet eine um 25 % größere Beschriftung.
 
 Eine angezeigte Karte behält ihre zugewiesene Position, während ihre Nachfahren unabhängig eingepasst werden. Wenn durch die Pfadbereinigung weniger Richtungen als Geschwisterkarten verfügbar sind, werden weitere Kindkarten in derselben Zeile oder Spalte nach außen gestapelt, statt sich zu überlappen oder ihre Elternkarte zu verschieben.
+
+Detail-Popups für lexikalische Einheiten zeigen die Vokabelbezeichnung ausschließlich im Popup-Titel. Die Titeldetailzeile enthält nur die für die aktive Cognis-Sprache lokalisierte Definition, sodass neben der Überschrift keine Schreibweise oder Aussprache doppelt erscheint.

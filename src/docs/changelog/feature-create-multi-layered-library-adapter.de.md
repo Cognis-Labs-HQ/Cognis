@@ -106,6 +106,10 @@ Das Überlaufen wurde durch eine begrenzte Laufzeitplatzierung ersetzt. Anbieter
 
 Die Einpassung misst jetzt nur die jeweils platzierte Karte, sodass ein Nachfahre seine bereits positionierte Elternkarte nicht verschieben kann. Wenn der bereinigte Pfad zu wenige umliegende Plätze bietet, verwenden Geschwisterkarten eine Richtung mit zunehmendem Abstand erneut und werden in derselben Zeile oder Spalte gestapelt.
 
+## Doppelte Vokabel-Titeldetails entfernen
+
+Vokabel-Popups verwenden den Haupttitel jetzt ausschließlich für die Bezeichnung der lexikalischen Einheit und zeigen im Titeldetail nur deren für die aktive Sprache lokalisierte Definition. Alternative Schreibweisen, Aussprachen und Varianten-Elternhinweise duplizieren die Vokabelüberschrift nicht mehr.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -129,3 +133,4 @@ Die Einpassung misst jetzt nur die jeweils platzierte Karte, sodass ein Nachfahr
 - [806058fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/806058fe26c0d127f0bacf034530b1023131d380)
 - [3c0d5766](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c0d57662df962ac6b5d93f793e0c8de91e1856b)
 - [748063b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/748063b10cc208747832e7880098858db648a415)
+- [e96d273f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e96d273fa56edd2c2ded09ca993724437ab85c93)

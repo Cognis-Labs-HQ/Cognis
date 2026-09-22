@@ -78,7 +78,7 @@ export async function openEntryPopup(
             schemas,
             composed.titleDefinition,
         );
-        if (parentEntry) {
+        if (parentEntry && layer?.semanticRole !== "lexicalUnit") {
             const [parentPrefix, parentSuffix = ""] = i18n
                 .t("gateway.study.library_from_parent")
                 .split("{{ parent }}");

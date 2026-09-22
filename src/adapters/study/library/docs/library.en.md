@@ -99,3 +99,5 @@ Related-entry buttons no longer repeat their label in a hover overlay. Vocabular
 Expanded variant branches remain clipped to the base grid. Cognis first honors each provider-preferred direction, then evaluates alternate directions against the rendered grid boundary and selects the first fitting option, restoring provider preferences when the branch closes. The long-press hint is static to preserve crisp text and uses a 25% larger label.
 
 A displayed card keeps its assigned position while descendants are fitted independently. When path pruning leaves fewer directions than siblings, additional children stack outward in the same row or column rather than overlapping or displacing their parent.
+
+Lexical-unit detail popups keep the vocabulary label solely in the popup title. Their title detail contains only the definition localized for the active Cognis language, avoiding duplicate spellings or pronunciations beside the heading.

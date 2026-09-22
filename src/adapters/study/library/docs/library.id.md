@@ -83,3 +83,5 @@ Tombol entri terkait tidak lagi mengulang labelnya dalam lapisan hover. Tautan k
 Cabang varian yang terbuka tetap dibatasi oleh kisi dasar. Cognis lebih dahulu menghormati arah pilihan penyedia, lalu menguji arah alternatif terhadap batas kisi yang dirender dan memilih opsi pertama yang muat; preferensi penyedia dipulihkan saat cabang ditutup. Petunjuk tekan lama dibuat statis agar teks tetap tajam dan memakai label 25% lebih besar.
 
 Kartu yang ditampilkan mempertahankan posisi yang ditetapkan sementara turunannya disesuaikan secara mandiri. Jika pemangkasan jalur menyisakan arah yang lebih sedikit daripada jumlah saudara, anak tambahan ditumpuk ke luar pada baris atau kolom yang sama tanpa tumpang tindih atau memindahkan induknya.
+
+Popup detail unit leksikal menampilkan label kosakata hanya pada judul popup. Detail judul hanya memuat definisi yang dilokalkan untuk bahasa Cognis aktif sehingga ejaan atau pelafalan tidak terduplikasi di samping judul.

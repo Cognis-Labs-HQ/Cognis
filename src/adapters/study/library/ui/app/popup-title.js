@@ -65,6 +65,9 @@ export function secondarySpellingGroups(detail, schemas) {
 
 export function popupTitleDetailItems(detail, schemas, titleDefinition) {
     const layer = layerForEntry(schemas, detail.entry);
+    if (layer?.semanticRole === "lexicalUnit") {
+        return titleDefinition ? [{ label: titleDefinition }] : [];
+    }
     const spellingGroups = secondarySpellingGroups(detail, schemas);
     const spellingLabels = new Set(
         spellingGroups.map((group) =>

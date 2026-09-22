@@ -106,6 +106,10 @@ Replaced overflow bleed with bounded runtime placement. Provider directions rema
 
 Nested fitting now measures only the card being placed, so a descendant cannot move its already-positioned parent. When the pruned path has too few surrounding slots, sibling cards reuse a direction at increasing distance and stack along the same row or column.
 
+## Remove duplicate vocabulary title details
+
+Vocabulary popups now reserve the main title for the lexical-unit label and show only its active-language localized definition in the title detail. Alternate spellings, pronunciations, and variant-parent annotations no longer duplicate the vocabulary heading.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -129,3 +133,4 @@ Nested fitting now measures only the card being placed, so a descendant cannot m
 - [806058fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/806058fe26c0d127f0bacf034530b1023131d380)
 - [3c0d5766](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c0d57662df962ac6b5d93f793e0c8de91e1856b)
 - [748063b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/748063b10cc208747832e7880098858db648a415)
+- [e96d273f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e96d273fa56edd2c2ded09ca993724437ab85c93)

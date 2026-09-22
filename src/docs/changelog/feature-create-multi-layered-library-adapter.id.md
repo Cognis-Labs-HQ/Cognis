@@ -106,6 +106,10 @@ Luapan diganti dengan penempatan runtime berbatas. Arah penyedia tetap menjadi p
 
 Penyesuaian kini hanya mengukur kartu yang sedang ditempatkan sehingga turunan tidak dapat memindahkan induk yang sudah diposisikan. Jika jalur yang dipangkas tidak menyediakan cukup slot di sekelilingnya, kartu saudara menggunakan ulang arah dengan jarak yang bertambah dan ditumpuk pada baris atau kolom yang sama.
 
+## Hapus detail judul kosakata yang berulang
+
+Popup kosakata kini menggunakan judul utama hanya untuk label unit leksikal dan menampilkan definisi yang dilokalkan bagi bahasa aktif pada detail judul. Ejaan alternatif, pelafalan, dan keterangan induk varian tidak lagi menduplikasi judul kosakata.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -129,3 +133,4 @@ Penyesuaian kini hanya mengukur kartu yang sedang ditempatkan sehingga turunan t
 - [806058fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/806058fe26c0d127f0bacf034530b1023131d380)
 - [3c0d5766](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c0d57662df962ac6b5d93f793e0c8de91e1856b)
 - [748063b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/748063b10cc208747832e7880098858db648a415)
+- [e96d273f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e96d273fa56edd2c2ded09ca993724437ab85c93)

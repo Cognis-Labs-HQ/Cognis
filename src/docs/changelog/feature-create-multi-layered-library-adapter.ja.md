@@ -106,6 +106,10 @@ Library グリッドのクリップ境界は維持します。展開した分岐
 
 配置調整では対象カードだけを測定するため、子孫が配置済みの親カードを移動することはありません。枝刈りされた経路の周囲に十分な枠がない場合、兄弟カードは距離を広げながら同じ方向を再利用し、同じ行または列に積み重ねられます。
 
+## 語彙タイトル詳細の重複を削除
+
+語彙ポップアップでは、メインタイトルを語彙単位のラベル専用とし、タイトル詳細には現在の言語向けにローカライズされた定義だけを表示します。別表記、発音、派生元の注記が語彙見出しを重複させることはありません。
+
 ## コミット
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -129,3 +133,4 @@ Library グリッドのクリップ境界は維持します。展開した分岐
 - [806058fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/806058fe26c0d127f0bacf034530b1023131d380)
 - [3c0d5766](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c0d57662df962ac6b5d93f793e0c8de91e1856b)
 - [748063b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/748063b10cc208747832e7880098858db648a415)
+- [e96d273f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e96d273fa56edd2c2ded09ca993724437ab85c93)
