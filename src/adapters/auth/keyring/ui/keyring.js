@@ -503,7 +503,7 @@ async function renderManualUnlockButton() {
         button.type = "button";
         button.className = "keyring-manual-unlock";
         button.textContent = "🔒";
-        document.body?.append(button);
+        document.querySelector(".app-shell")?.append(button);
     }
     button.title = i18n.t("adapter.auth.keyring.manual_unlock");
     button.setAttribute(

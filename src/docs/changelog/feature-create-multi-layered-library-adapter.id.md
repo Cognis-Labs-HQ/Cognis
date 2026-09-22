@@ -70,6 +70,10 @@ Perubahan terbaru dari cabang Development upstream digabungkan. Konflik pada ada
 
 Batas versi gateway yang telah diuji untuk adaptor Pustaka dan Kemajuan dinaikkan ke versi gateway upstream, versi kedua adaptor ditingkatkan, dan catatan workspace lengkapnya dipulihkan di berkas kunci agar pemasangan dependensi bersih berhasil setelah penggabungan. Metadata integritas registri upstream juga diperbaiki agar kumpulan dependensi terkunci dapat direproduksi.
 
+## Batasi perubahan pada Pustaka
+
+Perubahan yang tidak terkait pada inti, API, router, adaptor, gateway, dan fitur telah dihapus sehingga pull request ini hanya memuat Pustaka Belajar, integrasi Belajarnya, dan perangkat UI pakai ulang yang diperlukan komponen tersebut.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -84,3 +88,4 @@ Batas versi gateway yang telah diuji untuk adaptor Pustaka dan Kemajuan dinaikka
 - [8be331f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8be331f9bc1a54edc80c10e53a4e4d2704a4f7b5)
 - [3c72e487](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c72e4870f99213562fb3796b4d76624486ba272)
 - [25309509](https://github.com/Cognis-Labs-HQ/Cognis/commit/25309509877018b8d1a4633636f9d45daeef45b4)
+- [de20ea2c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/de20ea2c0)

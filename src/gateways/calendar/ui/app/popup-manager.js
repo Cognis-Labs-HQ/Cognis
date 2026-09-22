@@ -120,6 +120,7 @@ export function createCalendarPopupManager({
         const isRecurring = eventData.event.recurrence !== "none";
         await openPopup({
             title: i18n.t("gateway.calendar.delete_event"),
+            className: "calendar-delete-event-popup",
             body: () =>
                 `<p>${escapeHtml(i18n.t(isRecurring ? "gateway.calendar.delete_event_prompt_recurring" : "gateway.calendar.delete_event_prompt"))}</p>`,
             actions: isRecurring
@@ -315,7 +316,7 @@ export function createCalendarPopupManager({
                         variant: "cancel",
                     },
                 ],
-                onOpen: (overlay, _dismiss, popupApi) => {
+                onOpen: (overlay) => {
                     hydrateEventPopupParticipants(overlay);
                     const responsePoll = window.setInterval(async () => {
                         if (!overlay.isConnected) {
@@ -345,10 +346,10 @@ export function createCalendarPopupManager({
                                     apiFetch,
                                     refreshedParticipantIds,
                                 );
-                            const popupBody = popupApi.updateBody(
-                                renderEventPopupBody(),
-                            );
+                            const popupBody =
+                                overlay.querySelector(".popup-body");
                             if (popupBody instanceof HTMLElement) {
+                                popupBody.innerHTML = renderEventPopupBody();
                                 hydrateEventPopupParticipants(popupBody);
                             }
                         } catch (error) {

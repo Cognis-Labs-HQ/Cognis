@@ -30,11 +30,7 @@ function listTrackedDocFiles() {
         for (const entry of readdirSync(currentDirectory, {
             withFileTypes: true,
         })) {
-            if (
-                entry.name === ".git" ||
-                entry.name === "node_modules" ||
-                entry.name === "dist"
-            ) {
+            if (entry.name === ".git" || entry.name === "node_modules") {
                 continue;
             }
             const absolutePath = join(currentDirectory, entry.name);
@@ -118,6 +114,7 @@ test("unsuffixed markdown docs have localized variants", () => {
     const exemptUnsuffixedDocs = new Set([
         ".github/copilot-instructions.md",
         "AGENTS.md",
+        "TODO.md",
     ]);
     const missingExemptions = [...exemptUnsuffixedDocs].filter(
         (file) => !trackedDocSet.has(file),

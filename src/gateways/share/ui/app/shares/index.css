@@ -4,6 +4,10 @@
     min-width: 0;
 }
 
+.content-panel > #shares-overview.content-section {
+    padding-block: 0;
+}
+
 .shares-summary {
     display: flex;
     flex-wrap: wrap;

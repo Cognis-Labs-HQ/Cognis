@@ -5,8 +5,8 @@
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.3.112",
-        "@cognis/gateways": "<=0.1.13"
+        "@cognis/core": "<=0.3.107",
+        "@cognis/gateways": "<=0.1.11"
     },
     "entrypoints": {
         "cli": "./cli/index.js"

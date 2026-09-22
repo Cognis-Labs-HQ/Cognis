@@ -37,12 +37,7 @@ export async function assertRequiredModulePreferences(
     try {
         values = await loadConfig(module.id);
     } catch (error) {
-        if (
-            error?.status === 404 ||
-            error?.code === "module_config_unavailable"
-        ) {
-            return false;
-        }
+        if (error?.status === 404) return false;
         throw error;
     }
     const missingKeys = missingRequiredModulePreferenceKeys(

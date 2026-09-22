@@ -29,7 +29,7 @@
     flex-wrap: wrap;
 }
 .badge {
-    font-size: 0.75rem;
+    font-size: 12px;
     background: var(--badge-bg);
     border: 0;
     border-radius: 999px;
@@ -211,9 +211,8 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
 }
 
 .content-panel {
-    overflow: var(--page-content-overflow, auto);
-    min-height: var(--page-content-min-height, 380px);
-    height: var(--page-content-height, auto);
+    overflow: auto;
+    min-height: 380px;
 }
 
 .app-page--document-scroll .composer-view-grid {
@@ -275,18 +274,10 @@ code {
     width: 100%;
 }
 .main-window--with-toolbar {
-    grid-template-columns: var(
-        --page-toolbar-columns,
-        fit-content(40vw) minmax(0, 1fr)
-    );
-    height: var(--page-main-height, auto);
-    min-height: var(--page-main-min-height, initial);
+    grid-template-columns: fit-content(40vw) minmax(0, 1fr);
 }
 .main-window--with-toolbar .toolbar {
     margin-right: 12px;
-    width: var(--page-toolbar-width, auto);
-    min-width: var(--page-toolbar-min-width, 0);
-    min-height: var(--page-toolbar-min-height, initial);
 }
 .main-window--content-only {
     grid-template-columns: minmax(0, 1fr);
@@ -304,9 +295,6 @@ code {
 }
 .main-window--with-toolbar .content-grid {
     width: 100%;
-    height: var(--page-content-height, auto);
-    min-height: var(--page-content-min-height, 0);
-    overflow: var(--page-content-overflow, visible);
 }
 
 .toolbar-mobile-toggle {
@@ -349,8 +337,7 @@ code {
 
 @media (max-width: 900px) {
     .main-window--with-toolbar {
-        grid-template-columns: var(--page-toolbar-columns-mobile, 1fr);
-        height: var(--page-main-height-mobile, var(--page-main-height, auto));
+        grid-template-columns: 1fr;
     }
     .toolbar-mobile-toggle {
         display: inline-flex;
@@ -367,7 +354,7 @@ code {
         position: fixed;
         top: 0;
         left: 0;
-        width: var(--page-toolbar-width-mobile, min(320px, 88vw));
+        width: min(320px, 88vw);
         height: 100dvh;
         border-radius: 0 14px 14px 0;
         margin-right: 0;

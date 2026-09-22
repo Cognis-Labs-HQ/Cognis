@@ -19,11 +19,6 @@ const DASHBOARD_PAGES = [
 
 const ADAPTER_BACKED_SPA_ROUTES = [
     {
-        id: "study-library-page",
-        sourceFile: "src/adapters/study/library/index.ts",
-        scriptUrl: "/static/adapters/study/library/app/index.js",
-    },
-    {
         id: "social-messages-page",
         sourceFile: "src/adapters/social/messages/index.ts",
         scriptUrl: "/static/adapters/social/messages/app.js",
@@ -44,27 +39,6 @@ const ADAPTER_BACKED_SPA_ROUTES = [
         scriptUrl: "/static/adapters/study/classes/my-classes.js",
     },
 ];
-
-test("Study Library uses the authenticated direct-mount lifecycle", () => {
-    const source = ["index.js"]
-        .map((file) =>
-            readFileSync(
-                resolve(ROOT, `src/adapters/study/library/ui/app/${file}`),
-                "utf8",
-            ),
-        )
-        .join("\n");
-    assert.match(
-        source,
-        /import\s+\{[^}]*\bmountWhenDirect\b[^}]*\}\s+from\s+["']\/static\/reuse\/page-entry\.js["'];/,
-    );
-    assert.match(source, /await mountWhenDirect\(mount\);/);
-    assert.match(
-        source,
-        /subNavigation:\s*\[\s*\{[\s\S]*?id:\s*["']study-subnav["'][\s\S]*?render:\s*\(\)\s*=>\s*renderStudySubNavigation/,
-        "Study Library must provide the composer with a renderable sub-navigation descriptor",
-    );
-});
 
 test("all dashboard pages export an async mount function", () => {
     for (const page of DASHBOARD_PAGES) {
@@ -126,14 +100,6 @@ test("router exports initRouter, navigateTo and getCurrentBase", () => {
     );
 });
 
-test("core router contains no Study gateway routes or API knowledge", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/app-router.js"),
-        "utf8",
-    );
-    assert.doesNotMatch(source, /gateway\.study|\/api\/v1\/study|STUDY_/);
-});
-
 test("router registers routes for all dashboard pages", () => {
     const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
@@ -164,37 +130,6 @@ test("router loads adapter-backed SPA routes from the UI app-routes API", () => 
                 "utf8",
             ).includes("/api/v1/ui/app-routes"),
         "router stack must fetch SPA route metadata from /api/v1/ui/app-routes",
-    );
-});
-
-test("adapter routes take precedence over neutral fallback routes", () => {
-    const src = readFileSync(
-        resolve(ROOT, "src/ui/reuse/app-router.js"),
-        "utf8",
-    );
-    assert.match(src, /primaryRoutes[\s\S]*dynamicRoutes[\s\S]*fallbackRoutes/);
-    assert.match(src, /staticRoute && !staticRoute\.fallback/);
-    assert.match(src, /canNavigateToRoute\(route, path\)/);
-    assert.doesNotMatch(src, /route\.id === "gateway\.study\.child"/);
-});
-
-test("programmatic navigation uses the provider-agnostic route guard", () => {
-    const src = readFileSync(
-        resolve(ROOT, "src/ui/reuse/app-router.js"),
-        "utf8",
-    );
-    const navigateSource = src.slice(
-        src.indexOf("export async function navigateTo("),
-        src.indexOf('uiCtx.capabilities.contribute("ui:navigate"'),
-    );
-
-    assert.match(
-        navigateSource,
-        /if \(!\(await canNavigateToRoute\(route, path\)\)\) return false;/,
-    );
-    assert.doesNotMatch(
-        navigateSource,
-        /isPotentialStudyChildPath|resolveStudyChildComponent/,
     );
 });
 
@@ -612,25 +547,4 @@ test("direct SPA entry loads capability providers before the route module", () =
         pageEntrySource,
         /if \(publicPage\) globalThis\.__cognisPublicSpaRoute = true/,
     );
-});
-
-test("Library detail composition preserves stages and dispatches contributed actions", () => {
-    const source = ["cards.js", "detail.js", "entry-popup.js"]
-        .map((file) =>
-            readFileSync(
-                resolve(ROOT, `src/adapters/study/library/ui/app/${file}`),
-                "utf8",
-            ),
-        )
-        .join("\n");
-    assert.match(
-        source,
-        /\.\.\.sectionsFor\("beforeCore"\)[\s\S]*\.\.\.coreSections\([\s\S]*\.\.\.sectionsFor\("core"\)[\s\S]*\.\.\.sectionsFor\("afterCore"\)/,
-    );
-    assert.match(source, /contributedAction\.onAction\(\{/);
-    assert.doesNotMatch(source, /registerFlow\(DETAIL_FLOW/);
-    assert.match(source, /entryAttributes\(entry\)/);
-    assert.match(source, /control\.dataset\.libraryEntry/);
-    assert.match(source, /signal\?\.throwIfAborted\(\);[\s\S]*openPopup\(\{/);
-    assert.match(source, /else selectedEntry = null;/);
 });

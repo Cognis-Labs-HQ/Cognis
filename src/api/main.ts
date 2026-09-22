@@ -12,7 +12,6 @@ import {
     CapabilityStore,
     HealthService,
     ModuleMarketplaceService,
-    registerEngagementCapabilities,
     type BootstrapLog,
 } from "@cognis/core";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
@@ -277,10 +276,6 @@ const gatewayService = new GatewayService(gatewayRegistry);
 // as ctx.flow — no capability unwrapping required.
 const systemCtx = createCtx();
 capabilities.contribute("system:ctx", systemCtx);
-const { scoring: scoringEngine, achievements: achievementRegistry } =
-    registerEngagementCapabilities(systemCtx);
-capabilities.contribute("engagement:scoring", scoringEngine);
-capabilities.contribute("engagement:achievements", achievementRegistry);
 capabilities.contribute(PASSPHRASE_CAPABILITY, generatePassphrase);
 systemCtx.contributeCapability(PASSPHRASE_CAPABILITY, generatePassphrase);
 const shutdownHandlers = new Set<() => Promise<void>>();

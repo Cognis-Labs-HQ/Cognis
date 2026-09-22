@@ -19,8 +19,6 @@ export function reconcileUserMenuEntries(dropdown) {
     const seenHrefs = new Set();
     let removed = 0;
     for (const item of Array.from(dropdown.children)) {
-        const control = item.querySelector?.("a, button");
-        control?.classList?.add("dropdown-item", "page-shell-user-menu-item");
         const link = item.querySelector?.("a[href]");
         const href = String(link?.getAttribute("href") ?? "").trim();
         if (!href) continue;

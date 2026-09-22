@@ -57,14 +57,9 @@ test("availability options open beside the profile menu", () => {
         styles,
         /\.availability-menu-options \{[\s\S]+position: absolute;[\s\S]+right: calc\(100% \+ 8px\);/,
     );
-    const reusableLayoutStyles = readFileSync(
-        resolve(PROFILE_ROOT, "../../../ui/styles/reuse/layout.css"),
-        "utf8",
-    );
-    assert.doesNotMatch(styles, /\.dropdown/);
     assert.match(
-        reusableLayoutStyles,
-        /\.dropdown \{[\s\S]+overflow: visible;/,
+        styles,
+        /\.dropdown:has\(\.availability-menu-item\) \{[\s\S]+overflow: visible;/,
     );
 });
 

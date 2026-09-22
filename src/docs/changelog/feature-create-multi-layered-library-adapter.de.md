@@ -70,6 +70,10 @@ Die neuesten Änderungen aus dem upstream Development-Zweig wurden zusammengefü
 
 Die getestete Gateway-Obergrenze der Bibliotheks- und Fortschrittsadapter wurde auf die upstream Gateway-Version angehoben, beide Adapterversionen wurden erhöht und ihre vollständigen Workspace-Einträge in der Sperrdatei wurden wiederhergestellt, damit eine saubere Abhängigkeitsinstallation nach der Zusammenführung gelingt. Korrigierte upstream Integritätsmetadaten der Paketregistrierung machen den gesperrten Abhängigkeitssatz zudem reproduzierbar.
 
+## Änderungen auf die Bibliothek begrenzen
+
+Nicht zusammenhängende Änderungen an Kern, API, Router, Adaptern, Gateways und Funktionen wurden entfernt. Dieser Pull Request enthält damit nur die Studienbibliothek, ihre Studienintegration und die dafür erforderlichen wiederverwendbaren UI-Werkzeuge.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -84,3 +88,4 @@ Die getestete Gateway-Obergrenze der Bibliotheks- und Fortschrittsadapter wurde 
 - [8be331f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8be331f9bc1a54edc80c10e53a4e4d2704a4f7b5)
 - [3c72e487](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c72e4870f99213562fb3796b4d76624486ba272)
 - [25309509](https://github.com/Cognis-Labs-HQ/Cognis/commit/25309509877018b8d1a4633636f9d45daeef45b4)
+- [de20ea2c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/de20ea2c0)

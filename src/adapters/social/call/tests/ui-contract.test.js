@@ -56,7 +56,10 @@ test("Call UI rings before provider handoff and replaces conversation content", 
         callStyles,
         /\.social-call-stage\s*\{[\s\S]*height: 100%;[\s\S]*min-height: 0/,
     );
-    assert.doesNotMatch(callStyles, /\.component-page-window/);
+    assert.match(
+        callStyles,
+        /\.social-call-stage__component > \.component-page-window\s*\{[\s\S]*height: 100%/,
+    );
 });
 
 test("Call toolbar keeps its arrow separate from mounted meeting content", () => {
@@ -115,12 +118,10 @@ test("Call PiP dimensions belong to the floating window", () => {
     assert.match(callStyles, /\.social-call-stage--floating/);
     assert.match(
         callStyles,
-        /\.social-call-stage--floating \.social-call-stage__component[\s\S]*width: min\(32vw, 24rem\)[\s\S]*height: min\(32vh, 15rem\)/,
+        /\.social-call-stage__component\.floating-window[\s\S]*width: min\(32vw, 24rem\)[\s\S]*height: min\(32vh, 15rem\)/,
     );
-    assert.doesNotMatch(
-        callStyles,
-        /\.floating-window|\.component-page-window/,
-    );
+    assert.match(callStyles, /> \.component-page-window[\s\S]*height: 100%/);
+    assert.match(callStyles, /overflow: hidden/);
     assert.match(callStyles, /grid-template-rows: minmax\(0, 1fr\)/);
 });
 

@@ -608,7 +608,7 @@ export function createComposerRenderer({
             }
             card.className = isMissing
                 ? "widget-card widget-card--missing"
-                : `widget-card${element.width === "fitContent" ? " widget-card--fit-content" : ""}`;
+                : "widget-card";
             applyCardPlacement(card, placement, scale);
         }
     }

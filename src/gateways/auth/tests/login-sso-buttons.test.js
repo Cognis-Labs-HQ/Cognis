@@ -109,13 +109,16 @@ test("plain SSO methods are excluded from login button rendering", () => {
 
 test("authentication footer links remain on one content-width row", async () => {
     const styles = await readFile(
-        new URL("../../../ui/styles/reuse/layout.css", import.meta.url),
+        new URL("../ui/login-page/index.css", import.meta.url),
         "utf8",
     );
-    assert.match(styles, /\.global-footer-links\s*\{[^}]*flex-wrap:\s*nowrap/s);
     assert.match(
         styles,
-        /\.global-footer-link\s*\{[^}]*white-space:\s*nowrap/s,
+        /\.auth-footer \[data-footer-links\][^{]*\{[^}]*flex:\s*0 0 auto[^}]*flex-wrap:\s*nowrap[^}]*width:\s*max-content/s,
+    );
+    assert.match(
+        styles,
+        /\.auth-footer \.global-footer-link\s*\{[^}]*white-space:\s*nowrap/s,
     );
 });
 

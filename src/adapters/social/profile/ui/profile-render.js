@@ -21,25 +21,6 @@ export function getDefaultPostVisibility(profileVisibility) {
     return profileVisibility === "hidden" ? "only_me" : profileVisibility;
 }
 
-function renderAchievementBadges(achievements = []) {
-    return achievements
-        .map((achievement) => {
-            const locale = document.documentElement.lang;
-            const title =
-                achievement.title?.[locale] ??
-                achievement.title?.en ??
-                Object.values(achievement.title ?? {})[0] ??
-                achievement.definitionId;
-            const description =
-                achievement.description?.[locale] ??
-                achievement.description?.en ??
-                Object.values(achievement.description ?? {})[0] ??
-                title;
-            return `<span class="profile-achievement-badge profile-achievement-badge--${escapeHtml(achievement.difficulty)}" title="${escapeHtml(description)}" aria-label="${escapeHtml(`${title}: ${description}`)}"><span aria-hidden="true">${escapeHtml(achievement.icon)}</span><span>${escapeHtml(title)}</span></span>`;
-        })
-        .join("");
-}
-
 function renderRoleIconMarkup(normalizedRole, iconClassName) {
     if (normalizedRole === "teacher") return "&#128218;";
     const iconPath = PROFILE_ROLE_ICON_PATHS[normalizedRole];
@@ -438,7 +419,7 @@ export function renderHero({
     </div>
   `;
 
-    const achievementRow = `<div class="profile-achievement-row" aria-label="${i18n.t("ui.app.profile.achievements")}">${renderAchievementBadges(profile?.achievements)}</div>`;
+    const achievementRow = `<div class="profile-achievement-row" aria-label="${i18n.t("ui.app.profile.achievements")}"></div>`;
     const archivedBanner =
         profile?.lifecycleState === "archived"
             ? `<div class="profile-archived-banner">${escapeHtml(i18n.t("ui.app.profile.archived_banner"))}</div>`

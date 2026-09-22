@@ -10,7 +10,6 @@
  *     id: string, label: string, render: () => string,
  *     onRender?: () => void, onUnmount?: () => void,
  *     pinned?: boolean,
- *     width?: 'fill' | 'fitContent',
  *     gridSize?: { default: [number, number], min: [number, number], max?: [number, number] | 'full' | 'half' | ['half'|number, 'half'|number] },
  *   }>,
  *   preferenceKey: string,

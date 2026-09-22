@@ -70,6 +70,10 @@ upstream Development ブランチの最新変更を統合しました。廃止�
 
 ライブラリおよび進捗アダプターで検証済みのゲートウェイ上限を upstream のゲートウェイ版へ引き上げ、両アダプターの版を更新しました。また、完全なワークスペース記録をロックファイルへ復元し、統合後もクリーンな依存関係インストールが成功するようにしました。upstream のレジストリ整合性メタデータも修正し、固定された依存関係一式を再現可能にしました。
 
+## 変更をライブラリ範囲に限定
+
+無関係なコア、API、ルーター、アダプター、ゲートウェイ、機能の変更を削除しました。このプルリクエストには学習ライブラリ、その学習統合、および各コンポーネントに必要な再利用可能 UI 機能だけが含まれます。
+
 ## コミット
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -84,3 +88,4 @@ upstream Development ブランチの最新変更を統合しました。廃止�
 - [8be331f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/8be331f9bc1a54edc80c10e53a4e4d2704a4f7b5)
 - [3c72e487](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c72e4870f99213562fb3796b4d76624486ba272)
 - [25309509](https://github.com/Cognis-Labs-HQ/Cognis/commit/25309509877018b8d1a4633636f9d45daeef45b4)
+- [de20ea2c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/de20ea2c0)

@@ -1,11 +1,7 @@
 .composer-view-grid {
     display: grid;
     grid-template-columns: repeat(var(--grid-cols, 1), 1fr);
-    grid-template-rows: var(--composer-grid-template-rows, none);
-    grid-auto-rows: var(
-        --composer-grid-auto-rows,
-        var(--composer-grid-row-size, 90px)
-    );
+    grid-auto-rows: var(--composer-grid-row-size, 90px);
     gap: 8px;
 }
 
@@ -13,12 +9,6 @@
     min-width: 0;
     min-height: 0;
     overflow: auto;
-}
-
-.composer-view-grid .widget-card--fit-content {
-    width: fit-content;
-    max-width: 100%;
-    justify-self: start;
 }
 
 .widget-card--missing,

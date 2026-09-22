@@ -30,9 +30,10 @@ const popupStyles = readFileSync(
     resolve(ROOT, "src/ui/styles/popup.css"),
     "utf8",
 );
-const popupSource = ["popup.js", "popup/config-form.js"]
-    .map((file) => readFileSync(resolve(ROOT, `src/ui/reuse/${file}`), "utf8"))
-    .join("\n");
+const popupSource = readFileSync(
+    resolve(ROOT, "src/ui/reuse/popup.js"),
+    "utf8",
+);
 const filterSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/filters.js"),
     "utf8",
