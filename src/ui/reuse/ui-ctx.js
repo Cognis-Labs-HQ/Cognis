@@ -10,6 +10,7 @@
  * - `uiCtx` — the singleton flow engine instance.
  * - `registerFlow(id, stages)` — declare a flow contract.
  * - `extendFlow(flowId, stageId, hookMeta, handler)` — add a stage hook.
+ * - `removeFlowHook(flowId, stageId, hookId)` — remove a registered stage hook.
  * - `runFlow(flowId, input)` — execute all stage hooks in order, returning
  *   accumulated per-stage results.
  * - `flowExists(flowId)` — check whether a flow has been registered.
@@ -28,6 +29,7 @@
 
 import { BROWSER_FLOW_CONTRACTS } from "./flow-contracts.js";
 import { createReuseResources } from "./resources.js";
+import { createSubPageRegistry } from "./sub-page-registry.js";
 
 function sortHooks(hooks) {
     return [...hooks].sort((left, right) => {
@@ -109,6 +111,12 @@ function createFlowEngine() {
         return true;
     }
 
+    function removeFlowHook(flowId, stageId, hookId) {
+        const stageHooks = flows.get(flowId)?.stageHooks.get(stageId);
+        if (!stageHooks) return false;
+        return stageHooks.delete(String(hookId ?? "").trim());
+    }
+
     async function runFlow(flowId, input) {
         const flow = flows.get(flowId);
         if (!flow) throw new Error(`Flow "${flowId}" is not registered.`);
@@ -138,7 +146,14 @@ function createFlowEngine() {
         return flows.has(flowId);
     }
 
-    return { registerFlow, extendFlow, runFlow, flowExists, capabilities };
+    return {
+        registerFlow,
+        extendFlow,
+        removeFlowHook,
+        runFlow,
+        flowExists,
+        capabilities,
+    };
 }
 
 const UI_CTX_KEY = Symbol.for("cognis.uiCtx");
@@ -146,9 +161,11 @@ export const uiCtx =
     globalThis[UI_CTX_KEY] ?? (globalThis[UI_CTX_KEY] = createFlowEngine());
 
 uiCtx.capabilities.contribute("ui:reuse", createReuseResources());
+uiCtx.capabilities.contribute("ui:subPages", createSubPageRegistry());
 
 for (const [flowId, stages] of Object.entries(BROWSER_FLOW_CONTRACTS)) {
     if (!uiCtx.flowExists(flowId)) uiCtx.registerFlow(flowId, stages);
 }
 
-export const { registerFlow, extendFlow, runFlow, flowExists } = uiCtx;
+export const { registerFlow, extendFlow, removeFlowHook, runFlow, flowExists } =
+    uiCtx;

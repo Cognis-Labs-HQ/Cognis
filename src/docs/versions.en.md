@@ -54,8 +54,10 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.34` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.36` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10` |
-| Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.0`  |
+| Library (Study)       | `src/adapters/study/library/`       | `2.15.0` |
+| Progress (Study)      | `src/adapters/study/progress/`      | `1.1.7`  |
+| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.1.5`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
 | File Logging          | `src/adapters/logging/file/`        | `1.1.5`  |
 
@@ -64,16 +66,16 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component             | Path                          | Version   |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.68`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.69`  |
 | Share                 | `src/gateways/share/`         | `1.7.48`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.13`  |
 | Social                | `src/gateways/social/`        | `1.3.6`   |
-| File Storage (files)  | `src/gateways/files/`         | `2.1.10`  |
-| Registration          | `src/gateways/registration/`  | `1.1.38`  |
+| File Storage (files)  | `src/gateways/files/`         | `2.2.0`   |
+| Registration          | `src/gateways/registration/`  | `1.1.39`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
-| Study                 | `src/gateways/study/`         | `1.5.14`  |
+| Study                 | `src/gateways/study/`         | `1.8.26`  |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115` |
 
 ## Core contracts

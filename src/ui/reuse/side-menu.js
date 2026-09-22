@@ -78,6 +78,7 @@ export function createSideMenu({
                                 block: "start",
                             });
                     }
+                    setActive(button.dataset.sideMenuItem, root);
                     onSelect?.(button.dataset.sideMenuItem);
                 },
                 { signal },

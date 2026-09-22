@@ -1,0 +1,136 @@
+import {
+    compositionReferenceGroups,
+    layerForEntry,
+    relationshipPresentationRole,
+} from "./presentation.js";
+import {
+    distinctPronunciationLabels,
+    resolveLabelComposition,
+} from "./composition-links.js";
+import { visibleTitleDefinition } from "./title-definition.js";
+
+function linkedItems(entries) {
+    return entries.map((entry) => ({
+        label: entry.label,
+        actionId: `open-title-reference:${entry.id}`,
+    }));
+}
+
+export function secondarySpellingGroups(detail, schemas) {
+    const semanticRole = layerForEntry(schemas, detail.entry)?.semanticRole;
+    if (
+        semanticRole !== "lexicalUnit" &&
+        semanticRole !== "orderedLexicalSequence"
+    ) {
+        return [];
+    }
+    const sourceLayer = layerForEntry(schemas, detail.entry);
+    const referencedSpellings = compositionReferenceGroups(detail, schemas)
+        .filter(
+            (group) =>
+                group.presentationRole === "alternateSpelling" &&
+                group.entries.length > 0,
+        )
+        .map((group) => group.entries);
+    const dependentSpellings = (detail.usedBy ?? []).flatMap((candidate) => {
+        const candidateLayer = layerForEntry(schemas, candidate);
+        const isAlternateSpelling = (candidate.references ?? []).some(
+            (reference) => {
+                if (reference.entryId !== detail.entry.id) return false;
+                const relationship = (candidateLayer?.relationships ?? []).find(
+                    ({ id }) => id === reference.relation,
+                );
+                return (
+                    relationship &&
+                    relationshipPresentationRole(
+                        relationship,
+                        candidateLayer,
+                        schemas,
+                    ) === "alternateSpelling"
+                );
+            },
+        );
+        return isAlternateSpelling &&
+            candidateLayer?.semanticRole === sourceLayer?.semanticRole
+            ? [[candidate]]
+            : [];
+    });
+    const seen = new Set();
+    return [...referencedSpellings, ...dependentSpellings].filter((group) => {
+        const key = group.map((entry) => entry.id).join("\u0000");
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
+export function popupTitleDetailItems(
+    detail,
+    schemas,
+    titleDefinition,
+    sourceDefinition = "",
+) {
+    const layer = layerForEntry(schemas, detail.entry);
+    if (layer?.semanticRole === "lexicalUnit") {
+        const localizedDefinition = visibleTitleDefinition(
+            detail.entry.label,
+            layer.semanticRole,
+            titleDefinition,
+            sourceDefinition,
+        );
+        return localizedDefinition ? [{ label: localizedDefinition }] : [];
+    }
+    const spellingGroups = secondarySpellingGroups(detail, schemas);
+    const spellingLabels = new Set(
+        spellingGroups.map((group) =>
+            group.map((entry) => entry.label).join(""),
+        ),
+    );
+    const spellingItems = spellingGroups.flatMap((group, groupIndex) => [
+        ...(groupIndex ? [{ label: " · " }] : []),
+        ...linkedItems(group),
+    ]);
+    const pronunciationField = (layer?.fields ?? []).find(
+        ({ id }) => id === "pronunciation",
+    );
+    const linkRelationship = pronunciationField?.input?.linkRelationship;
+    const linkedPronunciationEntries = linkRelationship
+        ? (detail.entry.references ?? [])
+              .filter(({ relation }) => relation === linkRelationship)
+              .map(({ entryId }) =>
+                  (detail.references ?? []).find(({ id }) => id === entryId),
+              )
+              .filter(Boolean)
+        : [];
+    const pronunciationItems = distinctPronunciationLabels(
+        detail.entry,
+        spellingLabels,
+    ).flatMap((label, pronunciationIndex) => {
+        const linked = linkRelationship
+            ? resolveLabelComposition(
+                  label,
+                  detail.entry,
+                  schemas,
+                  linkedPronunciationEntries,
+              )
+            : [];
+        return [
+            ...(pronunciationIndex || spellingItems.length
+                ? [{ label: " · " }]
+                : []),
+            ...(linked.length ? linkedItems(linked) : [{ label }]),
+        ];
+    });
+    const items = [...spellingItems, ...pronunciationItems];
+    const visibleDefinition = visibleTitleDefinition(
+        detail.entry.label,
+        layer?.semanticRole,
+        titleDefinition,
+    );
+    if (visibleDefinition) {
+        items.push(...(items.length ? [{ label: " · " }] : []), {
+            label: visibleDefinition,
+        });
+    }
+    return items;
+}

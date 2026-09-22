@@ -87,10 +87,11 @@ async function bootstrapStudyGateway() {
     capabilities.contribute("db:executor", dbExecutor);
     capabilities.contribute("system:ctx", systemCtx);
 
+    const uiRegistry = new UIRegistry();
     await bootstrap({
         capabilities,
         routeRegistry,
-        uiRegistry: new UIRegistry(),
+        uiRegistry,
         gatewayRegistry: new GatewayRegistry(),
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
         flow: systemCtx.flow,
@@ -99,8 +100,39 @@ async function bootstrapStudyGateway() {
     return {
         routeRegistry,
         systemCtx,
+        uiRegistry,
     };
 }
+
+test("Study owns its SPA routes and Library detail-flow provider", async () => {
+    const { uiRegistry, systemCtx } = await bootstrapStudyGateway();
+    const routes = uiRegistry.listSpaRoutes();
+    assert.equal(
+        routes.some((route) => route.id === "gateway.study"),
+        false,
+    );
+    assert.equal(
+        routes.some((route) => route.id === "gateway.study.child"),
+        false,
+    );
+    assert.ok(
+        uiRegistry.hasActiveCapabilityProvider("study:library:detailFlow"),
+    );
+    assert.ok(uiRegistry.hasActiveCapabilityProvider("study:subPages"));
+    systemCtx.contributePublicCapability(
+        "study:language:ja",
+        japaneseLanguageCapability,
+    );
+    const enabledRoutes = uiRegistry.listSpaRoutes();
+    assert.equal(
+        enabledRoutes.some((route) => route.id === "gateway.study"),
+        true,
+    );
+    assert.equal(
+        enabledRoutes.some((route) => route.id === "gateway.study.child"),
+        true,
+    );
+});
 
 const japaneseLanguageCapability = {
     moduleId: "study-language-ja",
@@ -117,6 +149,24 @@ const japaneseLanguageCapability = {
         },
     ],
 };
+
+test("direct Study requests redirect to unavailable when no language is valid", async () => {
+    const { routeRegistry } = await bootstrapStudyGateway();
+    const response = new ResponseRecorder();
+    const handled = await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({
+            method: "GET",
+            cookieToken: issueAccessToken("learner", "user", 60),
+        }),
+        response,
+        new URL("http://localhost/study/hiragana"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(response.statusCode, 302);
+    assert.equal(response.headers.location, "/error?code=503");
+});
 
 test("study registered languages reflect installed language capabilities", async () => {
     const { routeRegistry, systemCtx } = await bootstrapStudyGateway();

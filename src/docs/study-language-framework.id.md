@@ -125,6 +125,8 @@ interface LanguageChildComponent {
 
 Setiap komponen anak mendaftarkan rutenya sendiri selama `bootstrapLanguageModule` melalui `ctx.registerChildRoute`. Rute ini menyajikan halaman HTML atau titik akhir API. UI membuat `<nav>` di bawah halaman Studi dari daftar komponen anak yang terdaftar untuk bahasa aktif.
 
+Browser menyediakan kapabilitas generik `ui:subPages` untuk penemuan halaman berkelompok, invalidasi tembolok, dan resolusi jalur. Gateway Study mendaftarkan bahasa sebagai grup dan komponen anak setiap bahasa sebagai halaman melalui `study:subPages`; hub, submenu bahasa terpilih, dan pemuat rute anak memakai model yang sama agar daftar halaman dan navigasinya selalu selaras.
+
 ### Alur pendaftaran
 
 ```

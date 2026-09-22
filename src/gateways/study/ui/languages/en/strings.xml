@@ -11,7 +11,6 @@
   <string name="gateway.study.hiragana_subtitle">Study the basic phonetic syllabary of Japanese.</string>
   <string name="gateway.study.hiragana_section_heading">ひらがな — Hiragana</string>
   <string name="gateway.study.hiragana_description">The basic phonetic syllabary of Japanese. Data is sourced from the language library's characters layer.</string>
-  <string name="gateway.study.library_subtitle">Manage language library records</string>
   <string name="gateway.study.classroom_subtitle">View and manage your classroom</string>
   <string name="gateway.study.welcome_heading">Welcome to Cognis</string>
   <string name="gateway.study.welcome_tagline">Ready to start learning?</string>
@@ -43,4 +42,22 @@
   <string name="gateway.study.classroom_load_failed">Failed to load classroom data.</string>
   <string name="gateway.study.classroom_save_success">Classroom changes saved.</string>
   <string name="gateway.study.classroom_save_failed">Failed to save classroom changes.</string>
+  <string name="gateway.study.library_subtitle">Explore traceable building blocks across your learning materials.</string>
+  <string name="gateway.study.library_layers">Library Layers</string>
+  <string name="gateway.study.library_empty">This library has no materials yet.</string>
+  <string name="gateway.study.library_load_error">The library could not be loaded.</string>
+  <string name="gateway.study.library_back">Back to Library</string>
+  <string name="gateway.study.library_schema">Schema</string>
+  <string name="gateway.study.library_layer">Layer</string>
+  <string name="gateway.study.library_components">Components</string>
+  <string name="gateway.study.library_used_by">Used By</string>
+  <string name="gateway.study.library_no_relationships">No related entries.</string>
+  <string name="gateway.study.library_fields">Fields</string>
+  <string name="gateway.study.library_definitions">Definitions</string>
+  <string name="gateway.study.library_alternate_definitions">Alternate definitions</string>
+  <string name="gateway.study.library_provenance">Provenance</string>
+  <string name="gateway.study.library_scope">Scope</string>
+  <string name="gateway.study.library_revisions">Revisions</string>
+  <string name="gateway.study.library_progress">Progress</string>
+  <string name="gateway.study.library_strokes">Strokes</string>
 </resources>

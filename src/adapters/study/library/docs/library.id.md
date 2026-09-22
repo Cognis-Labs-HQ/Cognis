@@ -1,0 +1,109 @@
+# Adapter Pustaka
+
+Kisi bagan menyediakan inset sebesar jarak kartu agar garis tepi kartu dan fokus tetap terlihat sepenuhnya. Penempatan anak spasial mengukur kapasitas tersisa pada setiap arah, hanya mencadangkan koordinat yang dipakai jalur leluhur aktif sehingga turunan dapat memakai kembali slot cabang alternatif yang dipangkas oleh kursor, dan mengutamakan arah yang dapat memuat cabang turunan sebelum memakai kapasitas terlihat terbesar sebagai pilihan cadangan.
+
+## Skema milik konsumen
+
+Adapter Pustaka menyimpan materi studi generik yang saling terhubung. Konsumen mendaftarkan skema berversi dan tetap melalui kapabilitas ctx `study:library`. Skema mendefinisikan bahasa, lapisan, bidang bertipe, dan relasi terarah; istilah seperti alfabet, kata, atau kalimat tidak ditetapkan adapter.
+
+Relasi menentukan lapisan target, kardinalitas, urutan, dan resolver opsional. Setiap penulisan memvalidasi bidang, versi skema, target, visibilitas, dan kardinalitas. Definisi alternatif dimodelkan sebagai lapisan dan relasi deklaratif milik konsumen.
+
+Lapisan dapat menargetkan dirinya sendiri dalam suatu hubungan sehingga satu entri dapat secara eksplisit memperluas entri lain pada lapisan yang sama. Hubungan dalam lapisan yang sama ditampilkan sebagai komposisi secara default; hanya hubungan yang ditandai sebagai varian atau secara eksplisit diberi `alternateSpelling` yang menggunakan tampilan ejaan alternatif.
+
+## Resolusi, API, dan UI
+
+Anak bersarang tetap tersedia sebagai subpohon lengkap: mengarahkan penunjuk atau memfokuskan anak yang terbuka menampilkan semua anak langsungnya tanpa menutup jalur saudara. Petunjuk tekan lama hanya muncul saat diarahkan sebagai elemen mengambang di bawah kartunya. Kartu anak yang diarahkan mempertahankan permukaan terangkat yang sepenuhnya opak agar kartu di bawahnya tidak terlihat menembus.
+
+Resolver `grapheme` memakai grafem Unicode, sedangkan `longest-match` memakai blok yang dipisahkan secara eksplisit. Keduanya mengembalikan usulan dan unit yang belum terselesaikan tanpa membuat entri diam-diam. Penyedia lookup dipasang melalui `registerLookupProvider`, mengembalikan saran berperingkat beserta asalnya, dan dapat dilepas melalui callback registrasi. Pembuatan, resolusi, dan lookup mengikuti flow ctx bernama.
+
+Gateway Study menyediakan penemuan skema, daftar, pembuatan, detail, penelusuran dua arah, pratinjau resolusi, dan saran lookup. UI berbasis skema menyembunyikan lapisan definisi dan partikel yang bersifat internal dari penjelajahan langsung. Lapisan yang dapat dijelajahi memakai tab, filter metadata, kartu entri, pil metadata, dan ikon cakupan. Detail popup pakai ulang menampilkan definisi dan makna di bawah judul entri yang lebih besar. Unsur penyusun yang dikenali, termasuk partikel kalimat, muncul sebagai subkotak yang dapat dinavigasi di dalam judul tersebut alih-alih bagian Komponen terpisah; detail partikel tetap hanya-baca. Referensi berbasis resolver hanya ditampilkan sebagai kotak sorotan yang dapat dinavigasi; judul relasi dan operator komposisi yang berulang dihilangkan. Label unsur dan pelafalan disajikan melalui kontrak item judul dan judul sekunder popup; isi detail tidak pernah mengulanginya melalui wadah pelafalan atau komponen terpisah. Contoh penggunaan hanya tampil pada entri yang dirujuk langsung oleh rekaman berurutan, tidak pernah secara transitif melalui entri terkait lain. Filter metadata tampil sebagai pil yang langsung diterapkan dan memakai grup detail skema jika disediakan modul. Akses global, pengguna, dan kelas tetap ditegakkan pada batas layanan. Pemfilteran metadata kini hanya mengevaluasi kartu dasar yang membawa nilai filter terserialisasi sehingga kartu varian mengambang tidak lagi meneruskan nilai tak terdefinisi ke penguraian JSON. Kartu karakter yang memiliki varian kini menampilkan petunjuk tekan lama yang terlokalisasi saat diarahkan dan hanya membuka kartu anak setelah ambang tahan tercapai. Grup tetap terbuka selama fokus berada pada induk atau anak dan menutup saat kehilangan fokus. Relasi varian tidak diulang dalam bagian detail khusus. Kartu anak yang dibuka memakai panah arah serta garis tepi hijau, dengan jarak dari induknya yang sama seperti jarak antarkartu biasa.
+
+Pemilik konten, administrator, dan pemilik sistem dapat memilih beberapa entri yang terlihat lalu menghapusnya secara permanen beserta relasinya. Konten modul yang dihapus dipulihkan melalui siklus pengaktifan modul saat tidak ada. Konfirmasi penghapusan juga dapat memasukkan hash konten terpilih ke daftar blokir agar rekaman identik tidak dapat diimpor lagi. Tindakan pilihan ganda memakai bilah tindakan mengambang milik penyusun halaman setelah klik kanan; klik kartu biasa atau tindakan tutup keluar dari mode pemilihan. Tautan relasi berpindah ke lapisan entri rujukan yang dapat dijelajahi dan memakai penyorot target bersama. Referensi definisi diterapkan langsung pada teks yang ditampilkan, dan hanya relasi resolver yang dideklarasikan skema yang menghasilkan kotak unsur sehingga tautan sistem tulisan yang ganda atau tidak terkait tidak muncul. Kontrol audio gelap secara eksplisit menetralkan saturasi panel bawaan.
+
+Kisi minimal memperoleh lebar bagan terbatas dan skala kartu proporsional dari `grid.rowSize`; item kosong eksplisit tetap menjadi sel kisi berdimensi agar kolom bagan tidak pernah runtuh.
+
+## Paket konten deklaratif
+
+Paket bahasa terpasang memanggil `inspectContentPack(root)` untuk validasi atau `ingestContentPack(root)` untuk memasang Pustaka khusus data. Akar paket berisi `manifest.json`, berkas skema yang dirujuk, serta direktori konten dengan subdirektori ID lapisan. Berkas memuat array rekaman dengan ID stabil dan relasi eksplisit. Cognis memvalidasi seluruh graf, membuat ID bernamespace, mencatat digest dan tanda terima, lalu menulis skema, entri, serta edge secara atomik. ID entri tetap stabil di seluruh versi paket, dan pemasangan menyatukan hash konten identik dari impor lama menjadi satu entri kanonik sambil mempertahankan relasinya. Hierarki spasial memerlukan `child: true`; `variant: true` juga dapat menandai bentuk alternatif, tetapi tidak mengaktifkan atau menonaktifkan pembukaan. Rekaman dengan `hidden: true` tidak pernah menerima penempatan spasial, meskipun relasinya adalah anak. Peramban memberi setiap anak yang dideklarasikan slot kisi terbatas dan membuka rantai anak secara rekursif hingga empat tingkat. Rekaman yang hanya menjadi target komposisi menetapkan `hidden: true`; rekaman tersebut tetap dapat diresolusi dan ditautkan mendalam dalam detail, tetapi tidak pernah tampil sebagai kartu bagan. Rekaman anak merujuk induk konseptualnya yang sebenarnya dan tetap menjadi entri Pustaka mandiri. Pengguna penunjuk dapat berpindah ke varian mengambang untuk membuka detailnya. Lapisan dapat mendefinisikan `grid` dengan `rowSize` serta urutan `items` berisi ID rekaman konten, nilai numerik `displayId`, atau ruang kosong eksplisit `{ "blank": true }` (`null` tetap didukung); peramban mempertahankan posisi bagan tersebut dan menskalakan setiap kartu mengikuti lebar baris yang diminta. Bagi pemilik konten dan administrator yang berhak, kotak pilihan tetap tersembunyi hingga kartu diklik kanan, lalu muncul di seluruh Pustaka dengan dukungan tema gelap. Kontrak penulisan lengkap berada di `study-language-framework.id.md`. Grup filter metadata dapat mendeklarasikan `required: true` agar satu tag selalu terpilih serta `defaultTag` untuk memilih tag awal yang ditentukan modul; grup yang hanya merender satu tag akan memilihnya secara otomatis. Lapisan dapat menetapkan `minimal: true` untuk hanya merender label utama setiap entri dalam kartu ringkas, sambil mempertahankan interaksi klik, varian tekan lama, dan pemilihan seperti biasa. Rekaman kalimat paket konten harus sepenuhnya diwakili oleh referensi unit leksikal dan partikel yang berurutan; impor menolak label yang mengandung teks tanpa tautan. Rekaman dapat menetapkan `hidden: true` agar tetap dapat dirujuk dan tersedia dalam popup detail, tetapi tidak muncul dalam penjelajahan langsung bersama seluruh keturunannya.
+
+## Definisi yang dilokalkan
+
+Setiap lapisan dengan peran semantik `definition` mendeklarasikan awalan kunci string milik modul serta bidang kunci dan teks terlokalnya. Definisi dikelola hanya ketika menyunting entri yang membutuhkannya; definisi tidak dapat dijelajahi atau disunting secara langsung sebagai bagian Pustaka tersendiri. Bahasa Inggris tetap menjadi teks sumber wajib, kunci yang dihasilkan tetap disimpan pada rekaman definisi, dan kapabilitas opsional `localization:translateString` dapat melengkapi bahasa yang kosong.
+
+## Pelafalan dan audio unit tulisan
+
+Lapisan dengan peran `atomicWritingUnit` atau `compoundWritingUnit` mendeklarasikan bidang standar wajib `pronunciation` (`stringList`) dan `audio` (`audio`). Paket konten dapat menyediakan berkas MP3, Ogg, WAV, WebM, atau M4A maupun URL HTTPS. Berkas lokal tetap menjadi aset paket yang diautentikasi. Audio jarak jauh diambil melalui rute Pustaka yang mengotorisasi entri dan dibatasi pada host HTTPS publik serta jenis media audio yang didukung. Pustaka mendaftarkan namespace `study-library-audio` yang dikelola komponen pada gateway Berkas dan menyimpan setiap URL satu kali memakai kunci deterministik tanpa batas ukuran di tingkat adapter. Penyimpanan persisten, kuota, dan pengelolaan berkas fisik tetap menjadi tanggung jawab gateway Berkas, sementara setiap permintaan pemutaran tetap menegakkan cakupan entri. Pelafalan karakter dan karakter alternatif tampil di samping unit tulisan pada kartu dan judul detail; pelafalan kata dan kalimat tetap berada di bawah teksnya. Modul dapat memodelkan kata satu karakter yang bermakna dengan memberi rekaman `lexicalUnit` satu referensi karakter. Detail karakter kemudian menampilkan relasi kata masuk tersebut tanpa membuat konten secara otomatis di Pustaka. Pelafalan unit tulisan di samping judul popup memakai kontrak judul sekunder yang di-escape dengan teks lebih kecil dan berbobot normal. Permukaan audio menolak penggantian warna paksa dan menetralkan saturasi kontrol bawaan dalam mode gelap.
+
+## Grup filter metadata
+
+Kolom lencana dapat difilter secara bawaan. Penyedia juga dapat menetapkan `detail.filterable: true` pada kolom metadata primitif atau terlokalisasi lainnya agar nilainya tersedia sebagai filter bagi pelajar. Kolom yang dapat difilter dapat memakai `detail.group` untuk mengelompokkan filter terkait dan `detail.exclusive` untuk mengatur pilihan. Jika setiap kolom dalam grup menetapkan `exclusive: true`, memilih satu pil akan menghapus pilihan grup sebelumnya. Nilai bawaan `false` mengizinkan beberapa pil terpilih. Semua kolom dalam grup bernama harus memakai pengaturan eksklusivitas yang sama.
+
+## Pemutaran audio terautentikasi
+
+Klien gateway Study mengambil audio entri melalui klien API terautentikasi dan memberikan URL objek sementara kepada pemutar. URL dicabut ketika jendela detail ditutup. Kontrol pemutar asli mendukung skema warna terang dan gelap serta mengikuti tema aplikasi yang aktif.
+
+## Tampilan terstruktur
+
+Metadata terlokalisasi setiap lapisan menentukan nama yang ditampilkan. Lapisan selain karakter dapat menetapkan `displayDefinition: true`; hal ini mewajibkan relasi definisi dan referensi tersebut pada setiap entri impor. Modul bahasa dapat menyumbangkan definisi kalimat gabungan, termasuk dampak partikel khusus bahasa, melalui `study:library:composeEntryDetail`. Cognis tidak menciptakan konten bahasa. Hanya bidang yang dideklarasikan, tidak kosong, dan terlihat yang dirender secara generik. Kisi menerima ID rekaman, nilai numerik `displayId`, serta `{ "blank": true }` sebagai ruang kosong.
+
+Entri definisi tidak pernah dapat dibuka atau ditautkan secara langsung; entri tersebut hanya menyediakan teks terlokalisasi bagi entri lain. Terjemahan yang terlihat hanya ditampilkan dalam bahasa antarmuka aktif. Relasi resolver memakai `presentationRole` untuk membedakan `composition`, `alternateSpelling`, dan `pronunciation`, sehingga pelafalan berupa kata lengkap tidak tampil sebagai rangkaian karakter yang ambigu.
+
+Jika komposisi hanya memuat satu entri dengan label yang sama seperti entri saat ini, blok komposisi duplikat disembunyikan dan tautan dalamnya menggantikan judul popup.
+
+Widget page composer kini menyesuaikan lebarnya dengan skema Perpustakaan dan tetap dibatasi oleh lebar yang tersedia, sehingga lebar widget yang tidak terpakai tidak menimbulkan luapan horizontal.
+
+Penghapusan menyelesaikan kaskade relasi akhir dan mengotorisasi setiap entri yang terdampak dalam transaksi yang sama. Karena itu, relasi yang ditambahkan secara bersamaan tidak dapat memperluas penghapusan melampaui konten yang diizinkan bagi pelaku.
+
+Untuk unit leksikal dan urutan leksikal terurut, relasi dengan tampilan `alternateSpelling` muncul sebagai ejaan sekunder yang dapat dinavigasi tepat di bawah judul detail utama. Anak struktural atau anak varian tidak diulang sebagai bagian ejaan alternatif dalam konten detail.
+
+Pelafalan yang sama dengan ejaan utama atau sekunder hanya ditampilkan sekali. Teks pelafalan tetap menjadi metadata judul biasa dan tidak diubah secara heuristik menjadi tautan ke catatan unit tulisan dengan label serupa; tautan relasi tetap hanya berasal dari referensi Pustaka yang dideklarasikan.
+
+## Peningkatan paket konten
+
+Peningkatan paket mempertahankan rekaman yang tidak disertakan penerbit kecuali manifes secara eksplisit menetapkan `pruneOmittedRecords` ke `true`. Penerbit sebaiknya mengaktifkan pemangkasan hanya jika paket menjadi sumber otoritatif untuk seluruh kumpulan rekaman.
+
+## Administrasi dan halaman pelajar
+
+`/study/library` adalah editor data khusus administrator. Menu samping mengelompokkan seluruh rekaman bahasa terpilih berdasarkan skema dan lapisan, termasuk rekaman definisi dan relasi. Memilih lapisan langsung memindahkan status menu aktif dan menampilkan daftar baris yang bersih. Klik pada baris membuka varian hanya-baca dari popup edit berbasis skema; klik kanan mengaktifkan mode multi-pilih, sedangkan pensil kecil yang mengikuti tema membuka varian yang dapat disunting.
+
+Lapisan untuk pelajar menggunakan rute SPA mandiri `/study/layers/:schema/:layer` yang ditautkan langsung dari subnavigasi Study. Halaman ini menggunakan kembali renderer kartu kaya dengan filter, varian, definisi, metadata, dan popup detail tanpa menampilkan kontrol penyuntingan administratif.
+
+## Kartu dan penyuntingan terfokus
+
+Pratinjau kartu pelajar sengaja dibuat ringkas: label utama dan pelafalan berbagi satu baris, dengan hanya ikon cakupan di sampingnya. Definisi, metadata, relasi, dan konten pendukung lain tetap berada di popup detail, tempat tautan dalam bekerja tanpa bagian ganda.
+
+Popup penyuntingan administrator membentuk kontrol dari skema bidang dan relasi setiap lapisan, bukan menampilkan JSON mentah. Teks terlokalisasi, daftar, boolean, angka, string, dan target relasi mendapatkan kontrol yang sesuai, sedangkan perlindungan penutupan melacak bidang yang berubah sebelum popup dapat ditutup.
+
+## Kontrak editor milik penyedia
+
+Setiap bidang yang dapat diedit mendeklarasikan jenis input dan semua label terlokalisasi dalam skema penyedia. Klasifikasi tetap terkunci setelah dibuat; pemilihan dan unggahan audio dibatasi pada prefiks bahasa dalam namespace gateway File. Komposisi wajib merujuk lapisan terdekat yang tersedia: 日本語 merujuk 日本 dan 語, sedangkan 日本 merujuk 日 dan 本.
+
+Tombol entri terkait tidak lagi mengulang labelnya dalam lapisan hover. Tautan kosakata menyertakan pelafalan dari penyedia sehingga unit leksikal satu karakter yang sah seperti `人 ひと` tetap dapat dibedakan dari rekaman unit tulisan `人` tanpa menyembunyikan kata satu karakter yang bermakna. Petunjuk varian memakai sudut bawah kartu yang ringkas dan tidak menutupi konten utama. Permukaan kartu tema gelap dipadukan ke latar aplikasi, bukan ke warna putih.
+
+Cabang varian yang terbuka tetap dibatasi oleh kisi dasar. Cognis lebih dahulu menghormati arah pilihan penyedia, lalu menguji arah alternatif terhadap batas kisi yang dirender dan memilih opsi pertama yang muat; preferensi penyedia dipulihkan saat cabang ditutup. Petunjuk tekan lama dibuat statis agar teks tetap tajam dan memakai label 25% lebih besar.
+
+Kartu yang ditampilkan mempertahankan posisi yang ditetapkan sementara turunannya disesuaikan secara mandiri. Jika pemangkasan jalur menyisakan arah yang lebih sedikit daripada jumlah saudara, anak tambahan ditumpuk ke luar pada baris atau kolom yang sama tanpa tumpang tindih atau memindahkan induknya.
+
+Popup detail unit leksikal menampilkan label kosakata hanya pada judul popup. Detail judul hanya memuat definisi yang dilokalkan untuk bahasa Cognis aktif sehingga ejaan atau pelafalan tidak terduplikasi di samping judul.
+
+Saat tautan entri terkait membuka unit leksikal tanpa definisinya sendiri, popup mewarisi definisi terlokalkan yang ditampilkan kartu sumber. Definisi yang disediakan catatan kosakata selalu diutamakan sehingga beberapa catatan kosakata yang tertaut ke satu unit tulisan tetap dapat memiliki makna khusus yang berbeda. Kontrol sebelumnya/berikutnya dan tautan komposisi judul tidak membawa konteks cadangan ini.
+
+Kartu dapat merujuk beberapa catatan definisi sesuai urutan penyedia. Definisi terlokalkan pertama ditonjolkan pada detail judul kecuali isinya sama dengan judul kartu; definisi berikutnya ditampilkan dalam bagian Definisi Tambahan yang dihilangkan ketika kosong. Konteks yang diwarisi dari sumber navigasi tetap hanya menjadi cadangan saat kosakata tujuan tidak menyediakan definisi.
+
+Penyesuaian saat jalan mencadangkan kartu akar dan setiap kartu anak yang telah ditempatkan pada cabang terlihat. Anak mempertahankan arah pilihan penyedia jika slot terbatas tersebut kosong; jika tidak, Cognis memilih kandidat dalam batas dengan tumpang tindih kartu paling kecil. Hal ini mencegah kartu saudara menumpuk pada satu slot sambil tetap mendukung penumpukan ke luar pada baris atau kolom ketika posisi terdekat habis.
+
+## Pelacakan konten baru
+
+Pustaka menyimpan UUID entri yang telah dilihat untuk setiap akun. Entri global dari paket penyedia atau kontribusi pengguna dan administrator yang disetujui memicu notifikasi Pustaka bagi akun aktif. Entri yang belum ada dalam cache tampilan akun menampilkan pil **Baru** pada pratinjau dan popup detail. Mengarahkan penunjuk ke kartu atau membukanya secara langsung maupun melalui relasi akan menandainya sebagai telah dilihat; status tersimpan menghilangkan pil setelah halaman dimuat ulang.
+
+## Kontribusi, permintaan visibilitas, dan pencarian
+
+Pengguna dapat membuat kartu di namespace pribadi, guru juga di kelas miliknya, dan administrator juga secara global. Penyedia bahasa membentuk bidang formulir khusus lapisan melalui `study:library:registerConstructor`; visibilitas, pemilihan kelas, dan kontrol pratinjau definisi tetap dimiliki adapter. Sebelum pembuatan pribadi atau kelas, Pustaka menunjukkan entri global terlihat yang identik dan meminta konfirmasi eksplisit.
+
+Kartu pribadi dapat diterbitkan ke kelas yang diikuti untuk ditinjau gurunya atau ke koleksi global untuk ditinjau administrator. Permintaan tertunda dapat ditarik kembali oleh pengirim; setelah disetujui, kepemilikan berpindah dari pengguna dan kartu asli dipindahkan, bukan disalin. Sesudahnya hanya guru yang bertanggung jawab atau administrator yang dapat mengedit, menghapus, atau mengembalikannya ke namespace pribadi pengirim awal. Manifest penyedia dapat menetapkan `protected: true`; entri terlindungi tidak dapat dipindahkan atau dihapus. Rekaman impor dan buatan pengguna menyimpan teks pencarian ternormalisasi, dan pencarian menu samping memeriksa semua lapisan serta menyembunyikan hasil kosong.
+
+## Konstruktor kartu milik bahasa
+
+Paket bahasa dapat menambahkan `cardConstructor` pada setiap lapisan yang dapat dibuat di dalam skemanya. Spesifikasi ini menyediakan label utama terlokalisasi, urutan ID bidang dan relasi, nilai awal penyedia, serta pilihan untuk menampilkan sakelar kartu tersembunyi atau pratinjau definisi. Cognis menambahkan kontrol visibilitas dan kelas sesuai peran; lapisan tanpa konstruktor sengaja hanya-baca untuk pembuatan.
+
+Modul bahasa saat runtime juga dapat mengambil kapabilitas ctx publik `study:library:provider`, memanggil `ingestContentPack(moduleRoot)`, lalu `registerConstructor(...)`. ID konstruktor divalidasi terhadap skema terdaftar sebelum formulir tersedia. Fungsi penghapus yang dikembalikan memungkinkan konstruktor dilepas saat modul dinonaktifkan.

@@ -125,6 +125,8 @@ interface LanguageChildComponent {
 
 Jede untergeordnete Komponente registriert ihre eigene Route während `bootstrapLanguageModule` über `ctx.registerChildRoute`. Die Route bedient eine HTML-Seite oder einen API-Endpunkt. Die Benutzeroberfläche erstellt unter der Studienseite aus der Liste der registrierten untergeordneten Komponenten für die aktive Sprache ein `<nav>`.
 
+Der Browser stellt die generische Fähigkeit `ui:subPages` für gruppierte Seitenerkennung, Cache-Invalidierung und Pfadauflösung bereit. Das Study-Gateway registriert Sprachen als Gruppen und die untergeordneten Komponenten jeder Sprache als Seiten über `study:subPages`; Hub, Unternavigation der ausgewählten Sprache und Lader für untergeordnete Routen verwenden dasselbe Modell, damit Seitenlisten und Navigation nicht voneinander abweichen.
+
 ### Registrierungsablauf
 
 ```

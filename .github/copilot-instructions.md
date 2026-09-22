@@ -524,6 +524,7 @@ Comprehensive logging is required for every new feature and behaviour change.
 
 ## Do not
 
+- Do not install, invoke, or otherwise use Playwright. Use existing non-Playwright browser tooling or programmatic UI checks instead.
 - Do not delete or discard existing code without a clear and explicit reason. Prefer refactoring, deprecating, or commenting out with an explanation over silent removal.
 - Do not change public API contracts (route signatures, exported types, CLI command names) without flagging the breaking change.
 - Do not introduce new third-party dependencies without discussion.

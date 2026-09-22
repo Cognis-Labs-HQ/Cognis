@@ -125,6 +125,8 @@ interface LanguageChildComponent {
 
 Each child component registers its own route during `bootstrapLanguageModule` via `ctx.registerChildRoute`. The route serves an HTML page or API endpoint. The UI constructs a `<nav>` under the Study page from the list of registered child components for the active language.
 
+The browser exposes the generic `ui:subPages` capability for grouped page discovery, cache invalidation, and path resolution. The Study gateway registers languages as groups and each language’s child components as pages through `study:subPages`; the hub, selected-language submenu, and child-route loader all consume that same model so their page lists and navigation cannot drift apart.
+
 ### Registration flow
 
 ```
