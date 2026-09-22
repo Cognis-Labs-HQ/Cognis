@@ -260,7 +260,7 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.doesNotMatch(stylesheet, /\.library-composition-label/);
     assert.doesNotMatch(stylesheet, /\.popup-title/);
     assert.doesNotMatch(source, /if \(!layer\.displayDefinition\)/);
-    assert.match(source, /data-library-preview/);
+    assert.doesNotMatch(source, /data-library-preview/);
     assert.match(source, /function relationshipPresentationRole/);
     assert.match(
         source,
@@ -442,7 +442,7 @@ test("Study Library unfolds structured character variants", () => {
     );
     assert.match(
         stylesheet,
-        /\.library-entry-variant-hint\s*\{[\s\S]*bottom:\s*0\.55rem/,
+        /\.library-entry-variant-hint\s*\{[\s\S]*bottom:\s*0\.35rem/,
     );
     assert.doesNotMatch(
         stylesheet,

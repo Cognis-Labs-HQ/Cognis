@@ -90,6 +90,10 @@ Library rows now open read-only details across their whole hit area, while theme
 
 Simplified learner cards to a sleek one-line label and pronunciation treatment with a separate scope indicator, removing definitions and metadata from previews. Administrator row clicks now open the same schema-driven form as editing in a disabled, read-only mode instead of opening the learner detail popup.
 
+## Clarify compact cards and vocabulary links
+
+Darkened learner-card surfaces, reserved a compact non-obstructing corner for variant guidance, and removed redundant relationship hover overlays. Vocabulary relationship labels now include provider-supplied pronunciation so meaningful single-character words remain distinguishable from their writing-unit records.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -109,3 +113,4 @@ Simplified learner cards to a sleek one-line label and pronunciation treatment w
 - [b38f8b31](https://github.com/Cognis-Labs-HQ/Cognis/commit/b38f8b31)
 - [f9ce159d](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9ce159da8ad07c2ff59f913eebab32a69f26921)
 - [03dd55f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/03dd55f02c762ae99dc3870322ceb9864cb9e325)
+- [e8019a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8019a21e12295863fcf009a52385c85069498de)

@@ -8,6 +8,7 @@ import {
     localizedLabel,
     localizedTextValue,
     metadataFields,
+    pronunciationValues,
     relationSection,
     renderAudio,
     renderDetailFields,
@@ -108,6 +109,14 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
                       ),
                   relatedWords,
                   i18n.t("gateway.study.library_no_relationships"),
+                  (candidate) => {
+                      const pronunciation = pronunciationValues(candidate)
+                          .filter((value) => value !== candidate.label)
+                          .join(" · ");
+                      return pronunciation
+                          ? `${candidate.label} ${pronunciation}`
+                          : candidate.label;
+                  },
               )
             : "",
         !options.showReferenceTree && directExamples.length

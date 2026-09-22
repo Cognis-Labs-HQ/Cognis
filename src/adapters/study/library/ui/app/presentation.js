@@ -142,12 +142,12 @@ export function renderScope(entry, i18n) {
     return `<span class="library-scope" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><picture><source media="(prefers-color-scheme: dark)" srcset="/static/adapters/study/library/assets/scope-${icon}-dark.svg"><img src="/static/adapters/study/library/assets/scope-${icon}-light.svg" alt=""></picture></span>`;
 }
 
-export function relationSection(title, entries, emptyLabel) {
-    return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${entries.length ? `<div class="library-related-entries">${entries.map((entry) => renderEntryLink(entry, "library-related-entry btn-neutral")).join("")}</div>` : `<p>${escapeHtml(emptyLabel)}</p>`}</section>`;
+export function relationSection(title, entries, emptyLabel, labelForEntry) {
+    return `<section class="library-detail-section"><h3>${escapeHtml(title)}</h3>${entries.length ? `<div class="library-related-entries">${entries.map((entry) => renderEntryLink(entry, "library-related-entry btn-neutral", labelForEntry?.(entry) ?? entry.label)).join("")}</div>` : `<p>${escapeHtml(emptyLabel)}</p>`}</section>`;
 }
 
 export function renderEntryLink(entry, className, label = entry.label) {
-    return `<button class="${className}" type="button" ${entryAttributes(entry)} data-library-preview="${escapeHtml(label)}">${escapeHtml(label)}</button>`;
+    return `<button class="${className}" type="button" ${entryAttributes(entry)}>${escapeHtml(label)}</button>`;
 }
 
 export function isMeaningLayer(layer) {

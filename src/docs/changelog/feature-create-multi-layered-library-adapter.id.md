@@ -90,6 +90,10 @@ Baris Library kini membuka detail hanya-baca melalui seluruh area klik, sedangka
 
 Kartu pelajar disederhanakan menjadi label dan pelafalan satu baris yang rapi dengan indikator cakupan terpisah; definisi serta metadata dihapus dari pratinjau. Klik baris administrator kini membuka formulir berbasis skema yang sama dengan penyuntingan dalam mode nonaktif dan hanya-baca, bukan popup detail pelajar.
 
+## Memperjelas kartu ringkas dan tautan kosakata
+
+Permukaan kartu pelajar digelapkan, sudut ringkas yang tidak menghalangi disediakan untuk petunjuk varian, dan lapisan hover relasi yang berulang dihapus. Label relasi kosakata kini menyertakan pelafalan dari penyedia agar kata satu karakter yang bermakna tetap dapat dibedakan dari rekaman unit tulisannya.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -109,3 +113,4 @@ Kartu pelajar disederhanakan menjadi label dan pelafalan satu baris yang rapi de
 - [b38f8b31](https://github.com/Cognis-Labs-HQ/Cognis/commit/b38f8b31)
 - [f9ce159d](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9ce159da8ad07c2ff59f913eebab32a69f26921)
 - [03dd55f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/03dd55f02c762ae99dc3870322ceb9864cb9e325)
+- [e8019a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8019a21e12295863fcf009a52385c85069498de)
