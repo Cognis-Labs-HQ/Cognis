@@ -118,6 +118,10 @@ Enabled external modules now bootstrap concurrently during persisted-state resto
 
 Startup now validates only the executable dependency graph of each dedicated disabled-state API entrypoint. Full module boundary scanning remains mandatory before activation, while large unrelated UI bundles can no longer monopolize the Node.js event loop during every restart and block all HTTP responses.
 
+## Restore the development module lifecycle
+
+External-module restoration once again uses the proven development implementation. The branch-specific startup validation, concurrent loading, background refresh, and helper layers have been removed rather than compensated for, eliminating the regression at its source.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -146,3 +150,4 @@ Startup now validates only the executable dependency graph of each dedicated dis
 - [043b1e4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/043b1e4b)
 - [cdc1240f](https://github.com/Cognis-Labs-HQ/Cognis/commit/cdc1240f)
 - [0113aacb](https://github.com/Cognis-Labs-HQ/Cognis/commit/0113aacb)
+- [2eb09297](https://github.com/Cognis-Labs-HQ/Cognis/commit/2eb09297)

@@ -291,7 +291,7 @@ test("core component discovery reads adapter dependency identities", async () =>
     ]);
 });
 
-test("buildServer serves core requests while external modules bootstrap", async () => {
+test("buildServer loads external module assets before accepting requests", async () => {
     const externalRoot = await mkdtemp(
         path.join(tmpdir(), "cognis-server-external-module-"),
     );
@@ -300,8 +300,7 @@ test("buildServer serves core requests while external modules bootstrap", async 
     await mkdir(path.join(moduleRoot, "ui"), { recursive: true });
     await writeFile(
         path.join(moduleRoot, "bootstrap.js"),
-        `export async function bootstrapModule(ctx) {
-            await new Promise((resolve) => setTimeout(resolve, 1_000));
+        `export function bootstrapModule(ctx) {
             ctx.registerStaticDir("", ctx.moduleRoot + "/ui");
         }`,
     );
@@ -331,19 +330,11 @@ test("buildServer serves core requests while external modules bootstrap", async 
 
     try {
         const port = await listen(server);
-        const startedAt = Date.now();
-        const loginResponse = await fetch(`http://127.0.0.1:${port}/login`);
-        assert.equal(loginResponse.status, 200);
-        assert.ok(
-            Date.now() - startedAt < 750,
-            "core requests must not wait for module bootstrap",
-        );
-        await new Promise((resolve) => setTimeout(resolve, 1_050));
-        const assetResponse = await fetch(
+        const response = await fetch(
             `http://127.0.0.1:${port}/static/modules/external-module/app.js`,
         );
-        assert.equal(assetResponse.status, 200);
-        assert.equal(await assetResponse.text(), "export {};");
+        assert.equal(response.status, 200);
+        assert.equal(await response.text(), "export {};");
     } finally {
         await close(server);
         await rm(externalRoot, { recursive: true, force: true });
@@ -488,42 +479,6 @@ test("buildServer serves system health from the injected health service", async 
                 checkedAt: "2026-07-20T05:02:58.073Z",
             },
         ]);
-    } finally {
-        await close(server);
-    }
-});
-
-test("startup restores previously enabled modules without rerunning enablement tests", async () => {
-    let enablementTestRuns = 0;
-    const server = buildServer({
-        moduleRuntimeGateway: {
-            listManifests: async () => [
-                {
-                    id: "enabled-module",
-                    uuid: "69e97f15-299a-4e1b-9414-d142f711532b",
-                    class: "extension",
-                    entrypoints: {},
-                },
-            ],
-        } as unknown as ModuleRuntimeGateway,
-        loadModuleStates: async () => [
-            { moduleId: "enabled-module", enabled: true },
-        ],
-        runModuleTests: async () => {
-            enablementTestRuns += 1;
-        },
-        routeContext: createDefaultRouteContext(),
-    });
-
-    try {
-        const port = await listen(server);
-        const response = await fetch(`http://127.0.0.1:${port}/`, {
-            redirect: "manual",
-            signal: AbortSignal.timeout(1_000),
-        });
-
-        assert.equal(response.status, 302);
-        assert.equal(enablementTestRuns, 0);
     } finally {
         await close(server);
     }

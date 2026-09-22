@@ -118,6 +118,10 @@ Library のプレビューではメタデータとスコープの位置を固定
 
 起動時には、無効状態専用 API エントリポイントから実行される依存グラフだけを検証するようにしました。有効化前の完全なモジュール境界検査は引き続き必須ですが、関係のない大規模な UI バンドルが再起動のたびに Node.js のイベントループを占有し、すべての HTTP 応答を停止させることはなくなります。
 
+## Development のモジュール処理を復元
+
+外部モジュールの復元処理を、実績のある Development 実装に戻しました。ブランチ固有の起動時検証、並列読み込み、バックグラウンド更新、補助レイヤーを追加の回避策で補うのではなく削除し、回帰の原因そのものを解消しました。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -146,3 +150,4 @@ Library のプレビューではメタデータとスコープの位置を固定
 - [043b1e4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/043b1e4b)
 - [cdc1240f](https://github.com/Cognis-Labs-HQ/Cognis/commit/cdc1240f)
 - [0113aacb](https://github.com/Cognis-Labs-HQ/Cognis/commit/0113aacb)
+- [2eb09297](https://github.com/Cognis-Labs-HQ/Cognis/commit/2eb09297)

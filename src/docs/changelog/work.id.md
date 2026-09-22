@@ -118,6 +118,10 @@ Modul eksternal yang aktif kini dimulai secara bersamaan ketika status tersimpan
 
 Saat dimulai, sistem kini hanya memvalidasi graf dependensi yang dapat dijalankan dari titik masuk API khusus status nonaktif. Pemindaian batas modul secara lengkap tetap wajib sebelum aktivasi, sedangkan bundel UI besar yang tidak terkait tidak lagi dapat menguasai perulangan peristiwa Node.js pada setiap mulai ulang dan memblokir seluruh respons HTTP.
 
+## Memulihkan siklus hidup modul dari Development
+
+Pemulihan modul eksternal kembali menggunakan implementasi Development yang telah terbukti. Validasi saat mulai, pemuatan paralel, penyegaran latar belakang, dan lapisan pembantu khusus cabang telah dihapus alih-alih dikompensasi sehingga regresi diperbaiki pada sumbernya.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -146,3 +150,4 @@ Saat dimulai, sistem kini hanya memvalidasi graf dependensi yang dapat dijalanka
 - [043b1e4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/043b1e4b)
 - [cdc1240f](https://github.com/Cognis-Labs-HQ/Cognis/commit/cdc1240f)
 - [0113aacb](https://github.com/Cognis-Labs-HQ/Cognis/commit/0113aacb)
+- [2eb09297](https://github.com/Cognis-Labs-HQ/Cognis/commit/2eb09297)
