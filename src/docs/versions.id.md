@@ -35,7 +35,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.36` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.30` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.25` |
-| Kuota Berkas          | `src/adapters/file/quota/`          | `1.0.23` |
+| File Quota            | `src/adapters/file/quota/`          | `1.0.23` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.30` |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.51` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.37` |
@@ -49,15 +49,16 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.24` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.38` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.22` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.12` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.13` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.7.19` |
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.34` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.36` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.11` |
-| Library (Study)       | `src/adapters/study/library/`       | `2.7.16` |
-| Kemajuan (Study)      | `src/adapters/study/progress/`      | `1.1.6`  |
-| Console Logging       | `src/adapters/logging/console/`     | `1.1.5`  |
+| Library (Study)       | `src/adapters/study/library/`       | `2.9.2`  |
+| Progress (Study)      | `src/adapters/study/progress/`      | `1.1.7`  |
+| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.1.5`  |
+| Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
 | File Logging          | `src/adapters/logging/file/`        | `1.1.5`  |
 
 ## Gerbang
@@ -65,29 +66,29 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                         | Versi     |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.68`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.69`  |
 | Share                 | `src/gateways/share/`         | `1.7.48`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.13`  |
 | Social                | `src/gateways/social/`        | `1.3.6`   |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.10`  |
-| Registration          | `src/gateways/registration/`  | `1.1.38`  |
+| Registration          | `src/gateways/registration/`  | `1.1.39`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
-| Study                 | `src/gateways/study/`         | `1.5.14`  |
+| Study                 | `src/gateways/study/`         | `1.8.20`  |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115` |
 
 ## Kontrak inti
 
 | Komponen     | Jalur       | Versi     |
 | ------------ | ----------- | --------- |
-| Core Package | `src/core/` | `0.3.107` |
+| Core Package | `src/core/` | `0.3.112` |
 
 ## API
 
 | Komponen   | Jalur      | Versi   |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.6.1` |
+| API Server | `src/api/` | `0.6.8` |
 
 ## Peralatan
 

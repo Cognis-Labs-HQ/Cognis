@@ -46,6 +46,19 @@ export async function createLibraryEntry(location, entry) {
     return (await response.json()).data;
 }
 
+export async function updateLibraryEntry(entryId, entry) {
+    const response = await apiFetch(
+        `/api/v1/study/library/entries/${encodeURIComponent(entryId)}`,
+        {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ entry }),
+        },
+    );
+    if (!response.ok) throw new Error("update_failed");
+    return (await response.json()).data;
+}
+
 export async function deleteLibraryEntries(
     entryIds,
     { blacklistContentHashes = false } = {},

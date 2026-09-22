@@ -93,3 +93,16 @@ test("profile badge styles allow hover tooltip affordance", () => {
     assert.match(badgeRule[1], /pointer-events:\s*auto;/);
     assert.match(badgeRule[1], /cursor:\s*default;/);
 });
+
+test("profiles render immutable engagement achievement tiers", () => {
+    const renderSource = readSourceFile(
+        "src/adapters/social/profile/ui/profile-render.js",
+    );
+    const cssSource = readSourceFile(
+        "src/adapters/social/profile/ui/profile-social.css",
+    );
+    assert.match(renderSource, /renderAchievementBadges/);
+    assert.match(renderSource, /profile-achievement-badge--\$\{/);
+    assert.match(cssSource, /\.profile-achievement-badge--rare/);
+    assert.match(cssSource, /\.profile-achievement-badge--legendary/);
+});

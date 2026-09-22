@@ -73,6 +73,11 @@ export interface LibraryCapability {
         location: LibraryLocation,
         input: LibraryEntryInput,
     ): Promise<LibraryEntry>;
+    update(
+        actor: LibraryActor,
+        entryId: string,
+        input: LibraryEntryInput,
+    ): Promise<LibraryEntry>;
     deleteEntries(
         actor: LibraryActor,
         entryIds: readonly string[],
@@ -495,6 +500,65 @@ export class LibraryService implements LibraryCapability {
             actor.accountId,
             entryId,
         );
+    }
+
+    async update(
+        actor: LibraryActor,
+        entryId: string,
+        input: LibraryEntryInput,
+    ): Promise<LibraryEntry> {
+        const current = await this.read(actor, entryId);
+        if (!current) throw new Error("entry_not_found");
+        await this.authorize(
+            actor,
+            { scope: current.scope, scopeId: current.scopeId },
+            true,
+        );
+        if (
+            input.schemaId !== current.schemaId ||
+            input.schemaVersion !== current.schemaVersion ||
+            input.layer !== current.layer
+        )
+            throw new Error("entry_identity_immutable");
+        if (!input.label?.trim() || input.label.length > 500)
+            throw new Error("invalid_label");
+        if (input.hidden !== undefined && typeof input.hidden !== "boolean")
+            throw new Error("invalid_hidden");
+        const schema = this.schema(input.schemaId, input.schemaVersion);
+        const layer = findLayer(schema, input.layer);
+        const fields = structuredClone(input.fields ?? {});
+        if (layer.semanticRole === "definition") {
+            const localization = layer.definitionLocalization!;
+            fields[localization.stringKeyField] =
+                current.fields[localization.stringKeyField];
+            const translations = fields[localization.translationsField];
+            if (
+                !translations ||
+                typeof translations !== "object" ||
+                Array.isArray(translations) ||
+                typeof (translations as Record<string, unknown>).en !==
+                    "string" ||
+                !(translations as Record<string, string>).en.trim()
+            )
+                throw new Error("definition_english_required");
+        }
+        if (JSON.stringify(fields).length > 100_000)
+            throw new Error("fields_too_large");
+        validateFields(schema, input.layer, fields);
+        const references = input.references ?? [];
+        const targets = new Map<string, LibraryEntry>();
+        for (const reference of references) {
+            const target = await this.read(actor, reference.entryId);
+            if (!target) throw new Error("reference_not_found");
+            targets.set(target.id, target);
+        }
+        validateReferences(schema, input.layer, references, targets);
+        return this.store.update(entryId, {
+            ...input,
+            label: input.label.trim(),
+            fields,
+            references,
+        });
     }
 
     async deleteEntries(

@@ -21,6 +21,19 @@
   <string name="gateway.study.library_relationship_composition">Komposisi</string>
   <string name="gateway.study.library_relationship_alternateSpelling">Ejaan alternatif</string>
   <string name="gateway.study.library_relationship_pronunciation">Pelafalan</string>
+  <string name="gateway.study.library_definitions">Definisi</string>
   <string name="gateway.study.library_from_parent">(Dari: {{ parent }})</string>
   <string name="gateway.study.library_usage_examples">Contoh penggunaan</string>
+  <string name="gateway.study.library_admin_label">Label</string>
+  <string name="gateway.study.library_admin_fields">Bidang (JSON)</string>
+  <string name="gateway.study.library_admin_references">Relasi (JSON)</string>
+  <string name="gateway.study.library_admin_hidden">Disembunyikan dari pelajar</string>
+  <string name="gateway.study.library_update_success">Entri Pustaka telah diperbarui.</string>
+  <string name="gateway.study.library_update_error">Entri Pustaka tidak dapat diperbarui. Periksa data yang dimasukkan.</string>
+  <string name="gateway.study.library_admin_edit">Edit {{ entry }}</string>
+  <string name="gateway.study.library_admin_edit_title">Edit {{ entry }}</string>
+  <string name="gateway.study.library_admin_list_placeholder">Satu nilai per baris</string>
+  <string name="gateway.study.library_relation_tree">Konten Terkait</string>
+  <string name="gateway.study.library_relation_parents">Referensi</string>
+  <string name="gateway.study.library_relation_children">Dirujuk Oleh</string>
 </resources>

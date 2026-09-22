@@ -2,53 +2,21 @@ import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { showToast } from "/static/reuse/toast.js";
 import { navigateTo } from "/static/reuse/app-router.js";
+import { createSideMenu } from "/static/reuse/side-menu.js";
+import { loadLibrary } from "./data.js";
 import {
     bindStudySubNavigation,
     loadStudySubNavigationModel,
     readSelectedStudyLanguageCode,
     renderStudySubNavigation,
 } from "/static/gateways/study/ui/sub-navigation.js";
-import {
-    fetchLibraryEntries,
-    fetchLibrarySchemas,
-} from "/static/gateways/study/ui/library-client.js";
 import { isAdminScope } from "/static/gateways/study/ui/language.js";
-import { renderBrowser } from "./layer-cards.js";
+import { adminLayerGroups, renderAdminBrowser } from "./admin-browser.js";
+import { bindAdminLibraryInteractions } from "./admin-interactions.js";
 import { refreshLibraryFilterResults } from "./filters.js";
 import { bindLibraryInteractions } from "./interactions.js";
 import { canDeleteEntry } from "./selection.js";
-
-async function loadLibrary(languageCode, i18n) {
-    let schemas = [];
-    let entries = [];
-    try {
-        schemas = await fetchLibrarySchemas(languageCode);
-        const accountId = localStorage.getItem("cognis_account");
-        const locations = [
-            { scope: "global" },
-            ...(accountId ? [{ scope: "user", scopeId: accountId }] : []),
-        ];
-        entries = (
-            await Promise.all(
-                schemas.flatMap((schema) =>
-                    locations.map((location) =>
-                        fetchLibraryEntries({
-                            ...location,
-                            schemaId: schema.id,
-                        }),
-                    ),
-                ),
-            )
-        ).flat();
-    } catch {
-        showToast(i18n.t("gateway.study.library_load_error"), {
-            type: "error",
-        });
-    }
-    return { schemas, entries };
-}
 
 function libraryFloatingMenu(entries, i18n, isAdminDataView) {
     if (!isAdminDataView || !entries.some(canDeleteEntry)) return [];
@@ -70,13 +38,7 @@ export async function mount(root, { signal } = {}) {
         ],
     });
     applyDocumentTitle(i18n, "gateway.study.library_label");
-    const routeParts = window.location.pathname.split("/").filter(Boolean);
-    const requestedLayer =
-        routeParts.length >= 4
-            ? { schemaId: routeParts[2], layerId: routeParts[3] }
-            : null;
-    const isAdminDataView = routeParts.length === 2;
-    if (isAdminDataView && !isAdminScope()) {
+    if (!isAdminScope()) {
         await navigateTo("/study");
         return;
     }
@@ -84,7 +46,45 @@ export async function mount(root, { signal } = {}) {
         fallbackLanguageCode: readSelectedStudyLanguageCode(),
     });
     const languageCode = model.selectedLanguageCode;
-    const { schemas, entries } = await loadLibrary(languageCode, i18n);
+    const { schemas, entries: loadedEntries } = await loadLibrary(
+        languageCode,
+        i18n,
+    );
+    let entries = loadedEntries;
+    const firstLayer = schemas
+        .flatMap((schema) =>
+            schema.layers.map((layer) => ({
+                schemaId: schema.id,
+                layerId: layer.id,
+            })),
+        )
+        .at(0);
+    let selectedLayer = firstLayer;
+    const renderSelectedLayer = () => {
+        const browser = root.querySelector(".library-browser");
+        if (browser)
+            browser.innerHTML = renderAdminBrowser(
+                schemas,
+                entries,
+                i18n,
+                selectedLayer,
+            );
+    };
+    const layerMenu = createSideMenu({
+        groups: adminLayerGroups(schemas),
+        storageKeyPrefix: "study-library-admin-layer",
+        activeId: firstLayer
+            ? `${firstLayer.schemaId}:${firstLayer.layerId}`
+            : "",
+        onSelect: (id) => {
+            const separator = id.indexOf(":");
+            selectedLayer = {
+                schemaId: id.slice(0, separator),
+                layerId: id.slice(separator + 1),
+            };
+            renderSelectedLayer();
+        },
+    });
     const composer = createPageComposer(root, {
         allowCustomization: false,
         contentScrolling: false,
@@ -96,7 +96,7 @@ export async function mount(root, { signal } = {}) {
                 width: "fill",
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
                 render: () =>
-                    `<section class="library-browser">${renderBrowser(schemas, entries, i18n, requestedLayer)}</section>`,
+                    `<section class="library-browser">${renderAdminBrowser(schemas, entries, i18n, selectedLayer)}</section>`,
             },
         ],
         preferenceKey: "study-library-layout",
@@ -105,8 +105,15 @@ export async function mount(root, { signal } = {}) {
             title: i18n.t("gateway.study.library_label"),
             subtitle: i18n.t("gateway.study.library_subtitle"),
         },
-        toolbar: [],
-        floatingMenu: libraryFloatingMenu(entries, i18n, isAdminDataView),
+        toolbar: [
+            {
+                id: "library-layers",
+                label: i18n.t("gateway.study.library_layers"),
+                render: () => layerMenu.render(),
+            },
+        ],
+        toolbarScrollable: true,
+        floatingMenu: libraryFloatingMenu(entries, i18n, true),
         subNavigation: [
             {
                 id: "study-subnav",
@@ -122,6 +129,7 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     signal?.throwIfAborted();
+    layerMenu.mount(root, { signal });
     root.querySelectorAll("[data-library-panel]").forEach((panel) => {
         if (panel.querySelector("button[data-library-filter].active")) {
             refreshLibraryFilterResults(panel);
@@ -132,7 +140,17 @@ export async function mount(root, { signal } = {}) {
         entries,
         i18n,
         languageCode,
-        requestedLayer,
+        schemas,
+        signal,
+        renderContent: (updatedEntries = entries) => {
+            entries = updatedEntries;
+            return renderAdminBrowser(schemas, entries, i18n, selectedLayer);
+        },
+    });
+    bindAdminLibraryInteractions(root, {
+        entries,
+        i18n,
+        render: renderSelectedLayer,
         schemas,
         signal,
     });

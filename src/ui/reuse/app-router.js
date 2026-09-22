@@ -454,10 +454,7 @@ async function loadRoute(path) {
 export async function navigateTo(path, { bypassGuard = false } = {}) {
     const route = await resolveRoute(path);
     if (!route) return false;
-    if (isPotentialStudyChildPath(path)) {
-        const component = await resolveStudyChildComponent(path);
-        if (!component) return false;
-    }
+    if (!(await canNavigateToRoute(route, path))) return false;
     if (
         !bypassGuard &&
         !requestRouteNavigation(path, () =>

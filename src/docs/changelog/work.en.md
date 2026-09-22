@@ -42,6 +42,86 @@ External module validation now detects direct Cognis internal URLs in CSS import
 
 Progress projections now cap review intervals at fourteen days, matching event timestamp validation and ensuring every accepted event remains rebuildable.
 
+## Reliable dashboard navigation
+
+Programmatic dashboard navigation now uses the generic route authorization hook instead of calling removed Study-specific helpers, preventing navigation from failing with a reference error.
+
+## Consistent English package names
+
+Version indexes now use the canonical English package names in every language variant, while the surrounding documentation remains localized.
+
+## Focused Study library pages
+
+Detailed Library layer presentations now open as dedicated pages from the Study sub-navigation. The administrator Library root uses a compact, consistent layer index with entry counts, and the Study submenu now includes a localized Leaderboard page.
+
+## Reliable Study pages and focused Library cards
+
+More-specific adapter SPA routes now win over generic gateway child routes, so the Leaderboard mounts correctly. Study navigation falls back to its supplied label when an optional translation bundle is absent. Library previews now focus on the item and pronunciation, while detail cards expose pronunciations, definitions, metadata, relationships, and examples.
+
+## Extensible scoring, achievements, and live competition
+
+Core now orchestrates collection-based XP scoring with provider difficulty, activity weights, timed completion, first-completion and discrete repeat rewards, scoped global/provider modifiers, consumable boosters, and personal bests. Providers can register dynamic normal, rare, and legendary achievements whose evidence-backed awards are immutable and visible on permitted profiles. Study converts verified Progress event collections into leaderboard XP, serves live standings for personal, event, and classroom definitions, and animates retrospective rank movement with reduced-motion support.
+
+## Public provider engagement contracts
+
+Core now publishes scoring, achievement registration, and activity-recording capabilities through `ctx`, and the Study Leaderboard publishes its provider contract the same way. Scoring now validates bounded provider inputs, unique evidence, timing targets, and hint-assisted rewards. New localized component documentation explains registration, flow extension, evidence validation, privacy, and seasonal leaderboard operation.
+
+## Separate Library administration and learning
+
+The Library root is now an administrator-only editor for every record in the selected language, including hidden definition and relationship data. Learner layers mount on independent Study routes linked directly from the sub-navigation, while restoring the rich card presentation, definitions, metadata, filtering, variants, and detail views.
+
+## Clean Library editing and reliable Study routes
+
+Library layers now live in the administrator side menu. The selected layer renders as a clean row list whose theme-aware pencil opens a focused edit popup. Learner layer and Leaderboard routes now load the complete page-composer stylesheet bundle; the Leaderboard route no longer declares a server capability as a missing browser capability, so the app router mounts it directly instead of falling through to the generic Study child loader.
+
+## Focused Library details and stable Study startup
+
+Library previews now reserve fixed positions for metadata and scope while pronunciations and definitions live in the detail popup alongside a one-level inbound/outbound relationship tree. The administrator editor uses schema-derived controls and protected dirty tracking instead of raw JSON, and its theme-aware pencil remains visible at the row edge.
+
+## Study-scoped platform integration
+
+The implementation now retains the API and web-router behavior from the established Library baseline. Engagement capability registration remains in API composition, while module activation, boundary validation, startup request routing, authentication message loading, and generic SPA route ordering are no longer altered by this Study feature.
+
+## Study startup parity restored
+
+The branch-only Study adapter scheduler and gateways package-version escalation were removed. Study adapter discovery and startup now exactly match the development baseline. Leaderboard resolves Progress lazily through ctx, preserving its dependency without changing gateway-wide bootstrap or delaying existing modules.
+
+## Correct extension startup lifecycle
+
+Disabled external modules now load only their dedicated disabled-state API entry point. Cognis no longer executes a module’s normal API bootstrap while restoring disabled modules, eliminating the startup deadlock that blocked health checks and every proxied request. Full-suite repairs also restore UI ownership boundaries, synchronized component versions, popup headings, shell translation, and reviewable source sizes.
+
+## Fast persisted module restoration
+
+Startup now restores persisted enabled-module state without rerunning the module enablement test suite and integrity audit. Those checks remain part of explicit enablement, while ordinary restarts no longer block every HTTP request behind potentially long-running external module tests.
+
+## Development-aligned startup infrastructure
+
+A clean-clone comparison against development identified unrelated database schema-healing and external-module test-runner changes carried by the stacked Study branches. Startup-sensitive MariaDB, PostgreSQL, and module-test infrastructure now matches the trusted development implementation; leaderboard, Progress, and Library feature code remains isolated to its owning components.
+
+## Review-driven leaderboard hardening
+
+Leaderboard state is now durable, evidence events are immutable and window-verified, ranking honors complete ties and configured tie-breaks, and every competitive mutation is guarded and audited. Classroom, cohort, and event access is authorized before definitions or standings are returned, while flow hooks now participate in submissions, ranking, and rollover.
+
+## Accurate and localized Study UI
+
+The leaderboard page now reports request failures, supports selecting every accessible leaderboard, renders each table column from its own field, and localizes table accessibility metadata. Study navigation derives leaderboard availability from registered routes and never substitutes labels from another language.
+
+## Library, scoring, and module safety
+
+Library updates preserve generated localization keys and deleted entries disappear immediately. Engagement achievements stay within their provider and booster redemption cannot overwrite global modifiers. Disabled module entrypoints are boundary-validated before import.
+
+## Concurrent external module restoration
+
+Enabled external modules now bootstrap concurrently during persisted-state restoration. A slow or stalled module therefore consumes one bounded bootstrap window instead of serially adding another timeout for every enabled module, preventing the API request barrier from remaining blocked for minutes and eliminating the resulting proxy 499 and 504 responses.
+
+## Targeted disabled-module validation
+
+Startup now validates only the executable dependency graph of each dedicated disabled-state API entrypoint. Full module boundary scanning remains mandatory before activation, while large unrelated UI bundles can no longer monopolize the Node.js event loop during every restart and block all HTTP responses.
+
+## Restore the development module lifecycle
+
+External-module restoration once again uses the proven development implementation. The branch-specific startup validation, concurrent loading, background refresh, and helper layers have been removed rather than compensated for, eliminating the regression at its source.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -51,3 +131,23 @@ Progress projections now cap review intervals at fourteen days, matching event t
 - [d472ffa9](https://github.com/Cognis-Labs-HQ/Cognis/commit/d472ffa9)
 - [992973f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/992973f5a421fa0043bfa792a1b4757abcff8209)
 - [4c7366ad](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c7366adec02748038211fcdf407f8b5b2ea759e)
+- [2b097121](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b097121)
+- [223044e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/223044e0)
+- [5ae64121](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ae64121)
+- [504e4b2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/504e4b2b)
+- [a0f0832a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0f0832a)
+- [8d78ecd3](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d78ecd3)
+- [633e2579](https://github.com/Cognis-Labs-HQ/Cognis/commit/633e2579)
+- [73464474](https://github.com/Cognis-Labs-HQ/Cognis/commit/73464474)
+- [da7bfcc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/da7bfcc3)
+- [9748e38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9748e38a)
+- [dd548a27](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd548a27)
+- [5917b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/5917b511)
+- [b4ae9baf](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4ae9baf)
+- [d1cdc256](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1cdc256)
+- [9fcc23e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fcc23e3)
+- [87275211](https://github.com/Cognis-Labs-HQ/Cognis/commit/87275211)
+- [043b1e4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/043b1e4b)
+- [cdc1240f](https://github.com/Cognis-Labs-HQ/Cognis/commit/cdc1240f)
+- [0113aacb](https://github.com/Cognis-Labs-HQ/Cognis/commit/0113aacb)
+- [2eb09297](https://github.com/Cognis-Labs-HQ/Cognis/commit/2eb09297)

@@ -1,12 +1,14 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { loadSpaRoutes } from "/static/reuse/spa-route-registry.js";
 import {
     resolveLanguageLabel,
     buildLibraryUrl,
     isAdminScope,
     parseLanguageCode,
 } from "/static/gateways/study/ui/language.js";
+import { fetchLibrarySchemas } from "/static/gateways/study/ui/library-client.js";
 
 const SETTINGS_GEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
   <circle cx="12" cy="12" r="3"/>
@@ -221,7 +223,41 @@ export async function loadStudySubNavigationModel({
         }),
     );
 
-    const modules = modulesByLanguage.get(selectedLanguageCode) ?? [];
+    const modules = [...(modulesByLanguage.get(selectedLanguageCode) ?? [])];
+    const schemas = selectedLanguageCode
+        ? await fetchLibrarySchemas(selectedLanguageCode).catch(() => [])
+        : [];
+    const activeLocale = document.documentElement.lang;
+    for (const schema of schemas) {
+        for (const layer of schema.layers ?? []) {
+            if (
+                ["definition", "meaning", "particle"].includes(
+                    layer.semanticRole,
+                )
+            ) {
+                continue;
+            }
+            const labels = layer.metadata?.labels ?? {};
+            const label = labels[activeLocale] ?? layer.id;
+            modules.push({
+                id: `library-${schema.id}-${layer.id}`,
+                label,
+                pageUrl: `/study/layers/${encodeURIComponent(schema.id)}/${encodeURIComponent(layer.id)}`,
+                order: 200,
+            });
+        }
+    }
+    const spaRoutes = await loadSpaRoutes();
+    if (spaRoutes.some((route) => route.base === "/study/leaderboard")) {
+        modules.push({
+            id: "leaderboard",
+            label: "Leaderboard",
+            labelKey: "gateway.study.leaderboard_label",
+            pageUrl: "/study/leaderboard",
+            order: 300,
+        });
+    }
+    modules.sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
     const rememberedPageUrl = resolveRememberedStudyPageUrl(
         window.location.pathname,
     );
@@ -285,11 +321,18 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             const rawPageUrl = String(component?.pageUrl ?? "").trim();
             if (!rawPageUrl) return "";
             const pageUrl = rawPageUrl;
+            const translatedLabel = component?.labelKey
+                ? i18n.t(component.labelKey)
+                : "";
+            const label =
+                translatedLabel && translatedLabel !== component?.labelKey
+                    ? translatedLabel
+                    : String(component?.label ?? pageUrl);
             const activeClass = rawPageUrl === currentPath ? " active" : "";
             return `
                 <li>
-                    <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(String(component?.label ?? pageUrl))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
-                        ${escapeHtml(String(component?.label ?? pageUrl))}
+                    <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(label)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                        ${escapeHtml(label)}
                     </a>
                 </li>
             `;

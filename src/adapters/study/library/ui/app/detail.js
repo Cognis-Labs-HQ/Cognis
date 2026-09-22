@@ -1,4 +1,5 @@
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
     definitionText,
     isMeaningLayer,
@@ -7,15 +8,23 @@ import {
     localizedLabel,
     localizedTextValue,
     metadataFields,
+    pronunciationValues,
     relationSection,
     renderAudio,
     renderDetailFields,
+    renderEntryLink,
     renderMetadataPills,
     renderScope,
     section,
 } from "./presentation.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
+
+function relationTree(entry, references, usedBy, i18n) {
+    const branch = (label, related) =>
+        `<li><strong>${escapeHtml(label)}</strong>${related.length ? `<ul>${related.map((candidate) => `<li>${renderEntryLink(candidate, "library-relation-tree-entry btn-neutral")}</li>`).join("")}</ul>` : `<span>${escapeHtml(i18n.t("gateway.study.library_no_relationships"))}</span>`}</li>`;
+    return `<section class="library-detail-section library-relation-tree"><h3>${escapeHtml(i18n.t("gateway.study.library_relation_tree"))}</h3><div class="library-relation-tree-root">${escapeHtml(entry.label)}</div><ul>${branch(i18n.t("gateway.study.library_relation_parents"), references)}${branch(i18n.t("gateway.study.library_relation_children"), usedBy)}</ul></section>`;
+}
 
 function coreSections(detail, schemas, entries, i18n) {
     const { entry, references = [], usedBy = [] } = detail;
@@ -86,8 +95,27 @@ function coreSections(detail, schemas, entries, i18n) {
                       ];
             }),
     );
+    const definitions = references
+        .filter((candidate) =>
+            isMeaningLayer(layerForEntry(schemas, candidate)),
+        )
+        .map((definition) =>
+            definitionText(
+                definition,
+                layerForEntry(schemas, definition),
+                entry.language,
+            ),
+        )
+        .filter(Boolean);
+    const pronunciations = pronunciationValues(entry);
     return [
         `<header class="library-detail-summary">${renderAudio(entry, layer)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
+        section(
+            i18n.t("gateway.study.library_relationship_pronunciation"),
+            pronunciations,
+        ),
+        section(i18n.t("gateway.study.library_definitions"), definitions),
+        relationTree(entry, references, usedBy, i18n),
         renderDetailFields(genericFields),
         relatedWords.length
             ? relationSection(

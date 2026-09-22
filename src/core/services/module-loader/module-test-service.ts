@@ -160,9 +160,16 @@ export async function validateModuleBoundaries(
             const ownedApiPrefix = options.moduleId
                 ? `/api/v1/modules/${options.moduleId}`
                 : "";
+            const ownedStaticPrefix = options.moduleId
+                ? `/static/modules/${options.moduleId}`
+                : "";
             if (
-                ownedApiPrefix &&
-                (url === ownedApiPrefix || url.startsWith(`${ownedApiPrefix}/`))
+                (ownedApiPrefix &&
+                    (url === ownedApiPrefix ||
+                        url.startsWith(`${ownedApiPrefix}/`))) ||
+                (ownedStaticPrefix &&
+                    (url === ownedStaticPrefix ||
+                        url.startsWith(`${ownedStaticPrefix}/`)))
             ) {
                 continue;
             }

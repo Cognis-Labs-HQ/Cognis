@@ -6,8 +6,8 @@
     "main": "index.ts",
     "private": true,
     "dependencies": {
-        "@cognis/adapter-social-profile": "<=2.0.12",
-        "@cognis/gateways": "<=0.1.11",
+        "@cognis/adapter-social-profile": "<=2.0.13",
+        "@cognis/gateways": "<=0.1.13",
         "@cognis/adapter-auth-keyring": "<=1.0.51"
     }
 }

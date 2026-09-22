@@ -46,7 +46,7 @@ async function loadChildComponents() {
     return childComponentsPromise;
 }
 
-export async function mount(root, options = {}) {
+async function mountStudyRoute(root, options = {}) {
     if (
         ["/study", "/study/", "/study/welcome", "/study/settings"].includes(
             window.location.pathname,
@@ -79,4 +79,6 @@ export async function mount(root, options = {}) {
     await module.mount(root, options);
 }
 
-await mountWhenDirect(mount);
+export { mountStudyRoute as mount };
+
+await mountWhenDirect(mountStudyRoute);

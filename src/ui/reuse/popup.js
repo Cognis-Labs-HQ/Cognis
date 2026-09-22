@@ -583,7 +583,14 @@ export async function openPopup({
         overlay.innerHTML = `
       <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
         <div class="popup-header">
-          <h2 class="popup-title" id="popup-title">${escapeHtml(currentPage?.title ?? title ?? "")}</h2>
+          <div class="popup-heading">${renderPopupHeading(
+              currentPage?.title ?? title,
+              currentPage?.titleDetail ?? titleDetail,
+              currentPage?.titleAction ?? titleAction,
+              currentPage?.titleLeading ?? titleLeading,
+              currentPage?.titleItems ?? titleItems,
+              currentPage?.titleDetailItems ?? titleDetailItems,
+          )}</div>
           ${mandatory ? "" : `<button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>`}
         </div>
         <div class="popup-body">${resolvedBody}</div>

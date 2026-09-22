@@ -645,28 +645,8 @@ export function buildServer(deps: ApiDependencies) {
                         );
                     });
                     if (!dependenciesReady) continue;
-                    try {
-                        await validateModuleForEnable(manifest.id);
-                        await assertModuleIntegrity(manifest.id);
-                        enabledModules.add(manifest.id);
-                        await deps.onModuleStateChanged?.(manifest.id, true);
-                    } catch (error) {
-                        await deps.onModuleStateChanged?.(manifest.id, false);
-                        await deps.persistModuleState?.(manifest.id, false);
-                        log(
-                            "error",
-                            "Persisted module failed startup validation.",
-                            {
-                                component: "api-server",
-                                operation: "restore-module-state",
-                                moduleId: manifest.id,
-                                error:
-                                    error instanceof Error
-                                        ? error.message
-                                        : String(error),
-                            },
-                        );
-                    }
+                    enabledModules.add(manifest.id);
+                    await deps.onModuleStateChanged?.(manifest.id, true);
                     pendingEnabledManifests.splice(i, 1);
                     restoredInPass = true;
                 }

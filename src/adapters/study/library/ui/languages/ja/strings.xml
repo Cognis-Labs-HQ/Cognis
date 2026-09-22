@@ -21,6 +21,19 @@
   <string name="gateway.study.library_relationship_composition">構成</string>
   <string name="gateway.study.library_relationship_alternateSpelling">別表記</string>
   <string name="gateway.study.library_relationship_pronunciation">読み方</string>
+  <string name="gateway.study.library_definitions">定義</string>
   <string name="gateway.study.library_from_parent">（元: {{ parent }}）</string>
   <string name="gateway.study.library_usage_examples">使用例</string>
+  <string name="gateway.study.library_admin_label">ラベル</string>
+  <string name="gateway.study.library_admin_fields">フィールド (JSON)</string>
+  <string name="gateway.study.library_admin_references">関係 (JSON)</string>
+  <string name="gateway.study.library_admin_hidden">学習者には非表示</string>
+  <string name="gateway.study.library_update_success">ライブラリエントリを更新しました。</string>
+  <string name="gateway.study.library_update_error">ライブラリエントリを更新できませんでした。入力データを確認してください。</string>
+  <string name="gateway.study.library_admin_edit">{{ entry }} を編集</string>
+  <string name="gateway.study.library_admin_edit_title">{{ entry }} を編集</string>
+  <string name="gateway.study.library_admin_list_placeholder">1 行に 1 つの値</string>
+  <string name="gateway.study.library_relation_tree">関連コンテンツ</string>
+  <string name="gateway.study.library_relation_parents">参照先</string>
+  <string name="gateway.study.library_relation_children">参照元</string>
 </resources>

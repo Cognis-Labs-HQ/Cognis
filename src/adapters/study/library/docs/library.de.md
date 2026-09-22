@@ -61,3 +61,15 @@ Eine Aussprache, die mit der primären oder einer sekundären Schreibweise ident
 ## Aktualisierungen von Inhaltspaketen
 
 Paketaktualisierungen bewahren vom Herausgeber ausgelassene Einträge, sofern das Manifest nicht ausdrücklich `pruneOmittedRecords` auf `true` setzt. Herausgeber sollten die Bereinigung nur aktivieren, wenn das Paket den vollständigen Eintragsbestand maßgeblich festlegt.
+
+## Administration und Lernseiten
+
+`/study/library` ist ein Dateneditor ausschließlich für Administratoren. Sein Seitenmenü gruppiert alle Datensätze der ausgewählten Sprache nach Schema und Ebene, einschließlich Definitionen und Beziehungen. Die ausgewählte Ebene bleibt eine übersichtliche Zeilenliste; ein themengerechter Stift öffnet ein fokussiertes Fenster zum Bearbeiten von Bezeichnungen, Sichtbarkeit, Feldern und Referenzen über die Library-API. Er verlinkt weder auf die Lerndarstellung noch verwendet er diese wieder.
+
+Lernenden-Ebenen verwenden eigenständige SPA-Routen unter `/study/layers/:schema/:layer`, die direkt in der Study-Unternavigation verlinkt sind. Diese Seiten verwenden den reichhaltigen Kartenrenderer mit Filtern, Varianten, Definitionen, Metadaten und Detailfenstern, ohne administrative Bearbeitungssteuerungen anzuzeigen.
+
+## Fokussierte Karten und Bearbeitung
+
+Lernkarten reservieren in der Vorschau eine feste Fußzeile für Metadaten-Pills und das Bereichssymbol. Aussprachen und Definitionen bleiben im Detailfenster; dort zeigt ein einstufiger Beziehungsbaum sowohl referenzierte Datensätze als auch Datensätze, die das ausgewählte Element referenzieren.
+
+Das administrative Bearbeitungsfenster leitet seine Steuerelemente aus den Feld- und Beziehungsschemata der jeweiligen Ebene ab, statt Roh-JSON anzuzeigen. Lokalisierte Texte, Listen, boolesche Werte, Zahlen, Zeichenketten und Beziehungsziele erhalten passende Eingaben. Der Schließschutz verfolgt geänderte Felder, bevor das Fenster verworfen werden darf.
