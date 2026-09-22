@@ -9,6 +9,8 @@ import {
     loadLibraryAudio,
 } from "./presentation.js";
 import { popupTitleDetailItems } from "./popup-title.js";
+import { resolvePopupNavigation } from "./popup-navigation.js";
+import { titleDefinitionForRole } from "./title-definition.js";
 import {
     assignVariantPlacements,
     variantPlacement,
@@ -27,6 +29,7 @@ export async function openEntryPopup(
 ) {
     if (isMeaningLayer(layerForEntry(schemas, initialEntry))) return;
     let selectedEntry = initialEntry;
+    let sourceDefinition = "";
     while (selectedEntry && !signal?.aborted) {
         const detail = await fetchLibraryEntry(selectedEntry.id);
         const explicitTitleReferences = headingCompositionReferences(
@@ -77,6 +80,12 @@ export async function openEntryPopup(
             detail,
             schemas,
             composed.titleDefinition,
+            sourceDefinition,
+        );
+        const displayedDefinition = titleDefinitionForRole(
+            layer?.semanticRole,
+            composed.titleDefinition,
+            sourceDefinition,
         );
         if (parentEntry && layer?.semanticRole !== "lexicalUnit") {
             const [parentPrefix, parentSuffix = ""] = i18n
@@ -175,16 +184,16 @@ export async function openEntryPopup(
             URL.revokeObjectURL(objectUrl);
         }
         signal?.removeEventListener("abort", abortPopup);
-        if (result?.startsWith("open-title-reference:")) {
-            const entryId = result.slice("open-title-reference:".length);
-            selectedEntry = entries.find((entry) => entry.id === entryId);
-        } else if (result === "previous") selectedEntry = active[index - 1];
-        else if (result === "next") selectedEntry = active[index + 1];
-        else if (
-            relatedEntry &&
-            !isMeaningLayer(layerForEntry(schemas, relatedEntry))
-        )
-            selectedEntry = relatedEntry;
-        else selectedEntry = null;
+        const navigation = resolvePopupNavigation({
+            result,
+            relatedEntry,
+            entries,
+            active,
+            index,
+            schemas,
+            displayedDefinition,
+        });
+        selectedEntry = navigation.entry;
+        sourceDefinition = navigation.sourceDefinition;
     }
 }

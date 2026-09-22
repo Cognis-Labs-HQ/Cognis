@@ -85,3 +85,5 @@ Geöffnete Variantenäste bleiben auf das Basisraster begrenzt. Cognis berücksi
 Eine angezeigte Karte behält ihre zugewiesene Position, während ihre Nachfahren unabhängig eingepasst werden. Wenn durch die Pfadbereinigung weniger Richtungen als Geschwisterkarten verfügbar sind, werden weitere Kindkarten in derselben Zeile oder Spalte nach außen gestapelt, statt sich zu überlappen oder ihre Elternkarte zu verschieben.
 
 Detail-Popups für lexikalische Einheiten zeigen die Vokabelbezeichnung ausschließlich im Popup-Titel. Die Titeldetailzeile enthält nur die für die aktive Cognis-Sprache lokalisierte Definition, sodass neben der Überschrift keine Schreibweise oder Aussprache doppelt erscheint.
+
+Wenn ein Link zu einem verwandten Eintrag eine lexikalische Einheit ohne eigene Definition öffnet, übernimmt das Popup die lokalisierte Definition der Ausgangskarte. Eine vom Vokabeleintrag bereitgestellte Definition hat immer Vorrang, sodass mehrere mit derselben Schrifteinheit verknüpfte Vokabeleinträge unterschiedliche spezielle Bedeutungen behalten können. Zurück-/Weiter-Steuerungen und Links in der Titelzusammensetzung übertragen diesen Rückfallkontext nicht.

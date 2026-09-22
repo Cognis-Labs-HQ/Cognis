@@ -110,6 +110,10 @@ Penyesuaian kini hanya mengukur kartu yang sedang ditempatkan sehingga turunan t
 
 Popup kosakata kini menggunakan judul utama hanya untuk label unit leksikal dan menampilkan definisi yang dilokalkan bagi bahasa aktif pada detail judul. Ejaan alternatif, pelafalan, dan keterangan induk varian tidak lagi menduplikasi judul kosakata.
 
+## Warisi definisi kosakata kontekstual
+
+Membuka kosakata melalui kartu entri terkait kini membawa definisi terlokalkan kartu sumber sebagai nilai cadangan. Definisi milik catatan kosakata tetap menjadi sumber utama, sedangkan navigasi popup lain menghapus nilai cadangan agar makna tidak bocor antarjalur penelusuran.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -134,3 +138,4 @@ Popup kosakata kini menggunakan judul utama hanya untuk label unit leksikal dan 
 - [3c0d5766](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c0d57662df962ac6b5d93f793e0c8de91e1856b)
 - [748063b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/748063b10cc208747832e7880098858db648a415)
 - [e96d273f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e96d273fa56edd2c2ded09ca993724437ab85c93)
+- [66867a1d](https://github.com/Cognis-Labs-HQ/Cognis/commit/66867a1d08a247fa73824aeba982ccba1f9b5d8c)

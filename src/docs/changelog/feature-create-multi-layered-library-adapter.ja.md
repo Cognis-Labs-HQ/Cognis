@@ -110,6 +110,10 @@ Library グリッドのクリップ境界は維持します。展開した分岐
 
 語彙ポップアップでは、メインタイトルを語彙単位のラベル専用とし、タイトル詳細には現在の言語向けにローカライズされた定義だけを表示します。別表記、発音、派生元の注記が語彙見出しを重複させることはありません。
 
+## 文脈に応じた語彙定義を継承
+
+関連エントリのカードから語彙へ移動した場合、移動元カードのローカライズ済み定義をフォールバックとして引き継ぐようにしました。語彙レコード自身の定義を常に優先し、それ以外のポップアップ移動ではフォールバックを消去して、閲覧経路間で意味が混在しないようにします。
+
 ## コミット
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -134,3 +138,4 @@ Library グリッドのクリップ境界は維持します。展開した分岐
 - [3c0d5766](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c0d57662df962ac6b5d93f793e0c8de91e1856b)
 - [748063b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/748063b10cc208747832e7880098858db648a415)
 - [e96d273f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e96d273fa56edd2c2ded09ca993724437ab85c93)
+- [66867a1d](https://github.com/Cognis-Labs-HQ/Cognis/commit/66867a1d08a247fa73824aeba982ccba1f9b5d8c)

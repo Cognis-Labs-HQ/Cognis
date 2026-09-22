@@ -220,7 +220,7 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /function secondarySpellingGroups/);
     assert.match(
         source,
-        /layer\?\.semanticRole === "lexicalUnit"[\s\S]*return titleDefinition \? \[\{ label: titleDefinition \}\] : \[\]/,
+        /layer\?\.semanticRole === "lexicalUnit"[\s\S]*titleDefinitionForRole/,
     );
     assert.match(
         source,
@@ -666,8 +666,9 @@ test("Study Library relationship links consistently open entry details", () => {
     assert.match(source, /data-search-id="library-entry-/);
     assert.match(
         source,
-        /relatedEntry &&[\s\S]*!isMeaningLayer[\s\S]*selectedEntry = relatedEntry/,
+        /relatedEntry &&[\s\S]*!isMeaningLayer[\s\S]*sourceDefinition: displayedDefinition/,
     );
+    assert.match(source, /resolvePopupNavigation/);
 });
 
 test("Study Library serializes popup opening and identifies child parents", () => {

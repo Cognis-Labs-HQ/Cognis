@@ -110,6 +110,10 @@ Die Einpassung misst jetzt nur die jeweils platzierte Karte, sodass ein Nachfahr
 
 Vokabel-Popups verwenden den Haupttitel jetzt ausschließlich für die Bezeichnung der lexikalischen Einheit und zeigen im Titeldetail nur deren für die aktive Sprache lokalisierte Definition. Alternative Schreibweisen, Aussprachen und Varianten-Elternhinweise duplizieren die Vokabelüberschrift nicht mehr.
 
+## Kontextbezogene Vokabeldefinitionen übernehmen
+
+Beim Öffnen einer Vokabel über eine verwandte Karte wird deren lokalisierte Definition jetzt als Rückfallwert übernommen. Die eigene Definition des Vokabeleintrags bleibt maßgeblich; andere Popup-Navigationen löschen den Rückfallwert, damit Bedeutungen nicht zwischen Navigationspfaden übertragen werden.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -134,3 +138,4 @@ Vokabel-Popups verwenden den Haupttitel jetzt ausschließlich für die Bezeichnu
 - [3c0d5766](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c0d57662df962ac6b5d93f793e0c8de91e1856b)
 - [748063b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/748063b10cc208747832e7880098858db648a415)
 - [e96d273f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e96d273fa56edd2c2ded09ca993724437ab85c93)
+- [66867a1d](https://github.com/Cognis-Labs-HQ/Cognis/commit/66867a1d08a247fa73824aeba982ccba1f9b5d8c)
