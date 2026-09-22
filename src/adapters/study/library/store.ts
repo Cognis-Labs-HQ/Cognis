@@ -192,6 +192,47 @@ export class LibraryStore {
                 },
             ],
         });
+        await this.db.ensureTable({
+            name: "study_library_viewed_entries",
+            columns: [
+                { name: "account_id", type: "text", notNull: true },
+                { name: "entry_id", type: "text", notNull: true },
+                {
+                    name: "viewed_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+            primaryKey: ["account_id", "entry_id"],
+        });
+    }
+    async viewedEntryIds(accountId: string): Promise<string[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_library_viewed_entries",
+            where: [{ column: "account_id", value: accountId }],
+        });
+        return (result.rows ?? []).map((row) => String(row.entry_id));
+    }
+    async markEntriesViewed(
+        accountId: string,
+        entryIds: readonly string[],
+    ): Promise<void> {
+        await this.db.transaction(async (db) => {
+            for (const entryId of entryIds) {
+                await this.upsert(
+                    db,
+                    "study_library_viewed_entries",
+                    ["account_id", "entry_id"],
+                    {
+                        account_id: accountId,
+                        entry_id: entryId,
+                        viewed_at: new Date().toISOString(),
+                    },
+                );
+            }
+        });
     }
     async saveSchema(schema: LibrarySchema): Promise<void> {
         const existing = await this.db.executeCommand({

@@ -44,6 +44,11 @@ export interface LibraryClassAccess {
     ): Promise<boolean>;
 }
 
+export type LibraryContentNotifier = (input: {
+    entryCount: number;
+    language?: string;
+}) => Promise<void>;
+
 export interface LibraryCapability {
     registerSchema(schema: LibrarySchema): Promise<void>;
     registerLookupProvider(provider: LibraryLookupProvider): () => void;
@@ -63,6 +68,11 @@ export interface LibraryCapability {
         filters?: { schemaId?: string; layer?: string },
     ): Promise<LibraryEntry[]>;
     read(actor: LibraryActor, entryId: string): Promise<LibraryEntry | null>;
+    viewedEntryIds(actor: LibraryActor): Promise<string[]>;
+    markEntriesViewed(
+        actor: LibraryActor,
+        entryIds: readonly string[],
+    ): Promise<void>;
     readAudio(
         actor: LibraryActor,
         entryId: string,
@@ -144,6 +154,7 @@ export class LibraryService implements LibraryCapability {
         ) => void | Promise<void>,
         private readonly stringLocalization?: StringLocalizationCapability,
         private readonly audioCache?: LibraryAudioCache,
+        private readonly notifyNewContent?: LibraryContentNotifier,
     ) {}
 
     async registerSchema(input: LibrarySchema): Promise<void> {
@@ -208,6 +219,11 @@ export class LibraryService implements LibraryCapability {
             await this.flow?.run("study:library:ingest", { plan });
             await this.storeContentPackAudio(plan);
             const receipt = await this.store.ingestContentPack(plan);
+            if (!receipt.unchanged)
+                await this.notifyNewContent?.({
+                    entryCount: receipt.recordCount,
+                    language: plan.schema.language,
+                });
             if (!registered) this.rememberSchema(plan.schema);
             await this.log?.("info", "Ingested Study Library content pack.", {
                 component: "study-library",
@@ -350,6 +366,24 @@ export class LibraryService implements LibraryCapability {
         return entry;
     }
 
+    async viewedEntryIds(actor: LibraryActor): Promise<string[]> {
+        return this.store.viewedEntryIds(actor.accountId);
+    }
+
+    async markEntriesViewed(
+        actor: LibraryActor,
+        entryIds: readonly string[],
+    ): Promise<void> {
+        const uniqueIds = [...new Set(entryIds)];
+        if (!uniqueIds.length || uniqueIds.length > 500)
+            throw new Error("invalid_entry_selection");
+        for (const entryId of uniqueIds) {
+            if (!(await this.read(actor, entryId)))
+                throw new Error("not_found");
+        }
+        await this.store.markEntriesViewed(actor.accountId, uniqueIds);
+    }
+
     async readAudio(
         actor: LibraryActor,
         entryId: string,
@@ -440,14 +474,6 @@ export class LibraryService implements LibraryCapability {
             throw new Error("invalid_hidden");
         const layer = findLayer(schema, input.layer);
         const fields = structuredClone(input.fields ?? {});
-        for (const field of layer.fields ?? []) {
-            if (
-                field.input?.immutable === true &&
-                JSON.stringify(fields[field.id]) !==
-                    JSON.stringify(current.fields?.[field.id])
-            )
-                throw new Error(`field_immutable:${field.id}`);
-        }
         let entryId: string | undefined;
         if (layer.semanticRole === "definition") {
             const localization = layer.definitionLocalization!;
@@ -494,7 +520,7 @@ export class LibraryService implements LibraryCapability {
             targets.set(target.id, target);
         }
         validateReferences(schema, input.layer, references, targets);
-        return this.store.create(
+        const created = await this.store.create(
             location,
             {
                 ...input,
@@ -508,6 +534,12 @@ export class LibraryService implements LibraryCapability {
             actor.accountId,
             entryId,
         );
+        if (location.scope === "global")
+            await this.notifyNewContent?.({
+                entryCount: 1,
+                language: schema.language,
+            });
+        return created;
     }
 
     async update(
@@ -535,6 +567,14 @@ export class LibraryService implements LibraryCapability {
         const schema = this.schema(input.schemaId, input.schemaVersion);
         const layer = findLayer(schema, input.layer);
         const fields = structuredClone(input.fields ?? {});
+        for (const field of layer.fields ?? []) {
+            if (
+                field.input?.immutable === true &&
+                JSON.stringify(fields[field.id]) !==
+                    JSON.stringify(current.fields?.[field.id])
+            )
+                throw new Error(`field_immutable:${field.id}`);
+        }
         if (layer.semanticRole === "definition") {
             const localization = layer.definitionLocalization!;
             fields[localization.stringKeyField] =
@@ -689,6 +729,8 @@ export class LibraryService implements LibraryCapability {
                 return created.id;
             };
             await copyEntry(request.sourceEntryId);
+            if (request.destination.scope === "global")
+                await this.notifyNewContent?.({ entryCount: copied.size });
         }
         await this.store.reviewPush(requestId, decision, actor.accountId);
         return { ...request, status: decision };

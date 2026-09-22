@@ -1,5 +1,8 @@
 import { showToast } from "/static/reuse/toast.js";
-import { deleteLibraryEntries } from "/static/gateways/study/ui/library-client.js";
+import {
+    deleteLibraryEntries,
+    markLibraryEntriesViewed,
+} from "/static/gateways/study/ui/library-client.js";
 import { applyLibraryFilters } from "./filters.js";
 import { activateLibraryLayer, renderBrowser } from "./layer-cards.js";
 import { openEntryPopup } from "./entry-popup.js";
@@ -31,6 +34,29 @@ export function bindLibraryInteractions(root, context) {
     } = context;
     let entries = context.entries;
     let suppressEntryClick = false;
+    const markViewed = (control) => {
+        const entry = entries.find(
+            ({ id }) => id === control?.dataset.libraryEntry,
+        );
+        if (!entry?.isNew) return;
+        entry.isNew = false;
+        root.querySelectorAll(
+            `[data-library-entry="${CSS.escape(entry.id)}"]`,
+        ).forEach((card) =>
+            card
+                .closest(".library-entry-card-shell")
+                ?.querySelector(".library-new-pill")
+                ?.remove(),
+        );
+        void markLibraryEntriesViewed([entry.id]).catch(() => {
+            entry.isNew = true;
+        });
+    };
+    root.addEventListener(
+        "pointerover",
+        (event) => markViewed(event.target.closest("[data-library-entry]")),
+        { signal },
+    );
     bindVariantInteractions(root, {
         signal,
         suppressNextClick: () => {
@@ -98,6 +124,11 @@ export function bindLibraryInteractions(root, context) {
             }
             const control = event.target.closest("[data-library-entry]");
             if (!control) return;
+            const openedAsNew = entries.some(
+                ({ id, isNew }) =>
+                    id === control.dataset.libraryEntry && isNew === true,
+            );
+            markViewed(control);
             if (suppressEntryClick) {
                 suppressEntryClick = false;
                 return;
@@ -124,7 +155,7 @@ export function bindLibraryInteractions(root, context) {
                 i18n,
                 languageCode,
                 signal,
-                { readOnly, showReferenceTree },
+                { readOnly, showReferenceTree, showNew: openedAsNew },
             )
                 .catch(() =>
                     showToast(i18n.t("gateway.study.library_load_error"), {

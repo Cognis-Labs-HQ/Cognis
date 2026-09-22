@@ -81,6 +81,42 @@ test("schema route rejects unauthorized requests", async () => {
     assert.equal(result.body.error.code, "unauthorized");
 });
 
+test("viewed-entry routes read and update the authenticated user's cache", async () => {
+    const calls: Array<{ accountId: string; entryIds: readonly string[] }> = [];
+    const route = createLibraryRoutes(
+        {
+            viewedEntryIds: async (actor) =>
+                actor.accountId === "alice" ? ["entry-a"] : [],
+            markEntriesViewed: async (actor, entryIds) => {
+                calls.push({ accountId: actor.accountId, entryIds });
+            },
+        } as never,
+        createAuthContext(
+            new Map([["learner", { sub: "alice", role: "user" }]]),
+        ) as never,
+    );
+    const getResponse = new ResponseRecorder();
+    await route(
+        new RequestRecorder({ method: "GET", token: "learner" }) as never,
+        getResponse as never,
+        new URL("http://localhost/api/v1/study/library/viewed-entries"),
+    );
+    assert.deepEqual(JSON.parse(getResponse.payload).data, ["entry-a"]);
+
+    const putResponse = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "PUT",
+            token: "learner",
+            body: JSON.stringify({ entryIds: ["entry-b"] }),
+        }) as never,
+        putResponse as never,
+        new URL("http://localhost/api/v1/study/library/viewed-entries"),
+    );
+    assert.equal(putResponse.statusCode, 200);
+    assert.deepEqual(calls, [{ accountId: "alice", entryIds: ["entry-b"] }]);
+});
+
 test("entry deletion passes validated selections to the Library capability", async () => {
     let request:
         | {

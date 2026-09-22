@@ -27,6 +27,21 @@ export async function fetchLibraryEntry(entryId) {
     return (await response.json()).data;
 }
 
+export async function fetchViewedLibraryEntryIds() {
+    const response = await apiFetch("/api/v1/study/library/viewed-entries");
+    if (!response.ok) throw new Error("viewed_entries_failed");
+    return (await response.json()).data;
+}
+
+export async function markLibraryEntriesViewed(entryIds) {
+    const response = await apiFetch("/api/v1/study/library/viewed-entries", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ entryIds }),
+    });
+    if (!response.ok) throw new Error("mark_viewed_failed");
+}
+
 export async function fetchLibraryAudioUrl(entryId, fieldId, { signal } = {}) {
     const response = await apiFetch(
         `/api/v1/study/library/entries/${encodeURIComponent(entryId)}/audio/${encodeURIComponent(fieldId)}`,

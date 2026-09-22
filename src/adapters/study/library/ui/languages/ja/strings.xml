@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
+  <string name="gateway.study.library_new">新着</string>
   <string name="gateway.study.library_layer_empty">このレイヤーにはまだ項目がありません。</string>
   <string name="gateway.study.library_previous">前へ</string>
   <string name="gateway.study.library_next">次へ</string>

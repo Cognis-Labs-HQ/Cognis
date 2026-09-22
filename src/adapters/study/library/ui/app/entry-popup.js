@@ -75,6 +75,10 @@ export async function openEntryPopup(
             languageCode,
             options,
         );
+        if (options.showNew) {
+            composed.body = `<div class="library-popup-new"><span class="library-new-pill">${i18n.t("gateway.study.library_new")}</span></div>${composed.body}`;
+            options.showNew = false;
+        }
         signal?.throwIfAborted();
         const titleDetailItems = popupTitleDetailItems(
             detail,

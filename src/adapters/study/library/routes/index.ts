@@ -104,6 +104,29 @@ export function createLibraryRoutes(
                 });
                 return true;
             }
+            if (
+                url.pathname === "/api/v1/study/library/viewed-entries" &&
+                req.method === "GET"
+            ) {
+                sendJson(res, 200, {
+                    data: await library.viewedEntryIds(actor),
+                });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/viewed-entries" &&
+                req.method === "PUT"
+            ) {
+                const body = (await readJson(req)) as { entryIds?: unknown };
+                if (
+                    !Array.isArray(body.entryIds) ||
+                    !body.entryIds.every((id) => typeof id === "string")
+                )
+                    throw new Error("invalid_entry_selection");
+                await library.markEntriesViewed(actor, body.entryIds);
+                sendJson(res, 200, { data: { entryIds: body.entryIds } });
+                return true;
+            }
             const audioMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/entries\/([^/]+)\/audio\/([^/]+)$/,
             );

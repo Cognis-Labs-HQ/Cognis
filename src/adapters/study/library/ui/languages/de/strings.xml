@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
+  <string name="gateway.study.library_new">Neu</string>
   <string name="gateway.study.library_layer_empty">Diese Ebene enthält noch keine Einträge.</string>
   <string name="gateway.study.library_previous">Zurück</string>
   <string name="gateway.study.library_next">Weiter</string>

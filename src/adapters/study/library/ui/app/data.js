@@ -2,6 +2,7 @@ import { showToast } from "/static/reuse/toast.js";
 import {
     fetchLibraryEntries,
     fetchLibrarySchemas,
+    fetchViewedLibraryEntryIds,
 } from "/static/gateways/study/ui/library-client.js";
 
 export async function loadLibrary(languageCode, i18n) {
@@ -26,6 +27,11 @@ export async function loadLibrary(languageCode, i18n) {
                 ),
             )
         ).flat();
+        const viewed = new Set(await fetchViewedLibraryEntryIds());
+        entries = entries.map((entry) => ({
+            ...entry,
+            isNew: !viewed.has(entry.id),
+        }));
     } catch {
         showToast(i18n.t("gateway.study.library_load_error"), {
             type: "error",

@@ -107,3 +107,7 @@ When a related-entry link opens a lexical unit without its own definition, the p
 Cards may reference multiple definition records in provider order. The first localized definition is prominent in the title detail unless it duplicates the card title; later definitions appear in an Additional Definitions section, which is omitted when empty. Context inherited from a navigation source remains a fallback only when the destination vocabulary supplies no definitions.
 
 Runtime fitting reserves the root card and every child card already placed in the visible branch. A child keeps its provider-preferred direction when that bounded slot is free; otherwise Cognis chooses the bounded candidate with the least card overlap. This prevents siblings from collapsing into one slot while retaining outward row or column stacking when nearby positions are exhausted.
+
+## New-content tracking
+
+The Library stores viewed entry UUIDs per account. Global entries introduced by provider pack ingestion or approved user and administrator contributions trigger a Study Library notification for enabled accounts. Entries absent from an account's viewed cache display a **New** pill in previews and detail popups. Hovering a card or opening it through any Library relationship records it as viewed; the persisted state removes the pill after refresh.

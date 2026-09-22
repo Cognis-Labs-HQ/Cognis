@@ -91,3 +91,7 @@ Wenn ein Link zu einem verwandten Eintrag eine lexikalische Einheit ohne eigene 
 Karten können mehrere Definitionsdatensätze in der vom Anbieter festgelegten Reihenfolge referenzieren. Die erste lokalisierte Definition wird im Titeldetail hervorgehoben, sofern sie nicht mit dem Kartentitel identisch ist; weitere Definitionen erscheinen in einem Abschnitt „Zusätzliche Definitionen“, der bei leerem Inhalt entfällt. Der von einer Ausgangskarte geerbte Kontext bleibt nur dann ein Rückfallwert, wenn die Zielvokabel keine Definition bereitstellt.
 
 Die Laufzeiteinpassung reserviert die Stammkarte und jede bereits platzierte Kindkarte des sichtbaren Zweigs. Ein Kind behält die vom Anbieter bevorzugte Richtung, wenn der begrenzte Platz frei ist; andernfalls wählt Cognis den begrenzten Kandidaten mit der geringsten Kartenüberlappung. Dadurch fallen Geschwisterkarten nicht mehr auf denselben Platz, während bei erschöpften Nachbarpositionen weiterhin nach außen in derselben Zeile oder Spalte gestapelt wird.
+
+## Nachverfolgung neuer Inhalte
+
+Die Bibliothek speichert die UUIDs angesehener Einträge pro Konto. Globale Einträge aus Anbieterpaketen oder genehmigten Beiträgen von Benutzern und Administratoren lösen für aktivierte Konten eine Bibliotheksbenachrichtigung aus. Einträge außerhalb des angesehenen Caches zeigen in Vorschau und Detailfenster einmalig **Neu**. Das Überfahren einer Karte oder ihr direktes beziehungsweise indirektes Öffnen markiert sie als angesehen; nach dem Aktualisieren verschwindet die Markierung dauerhaft.

@@ -34,6 +34,9 @@ function renderSelection(entry, i18n) {
 }
 
 function renderCardContents(entry, layer, _entries, _schema, i18n) {
+    const newPill = entry.isNew
+        ? `<span class="library-new-pill">${escapeHtml(i18n.t("gateway.study.library_new"))}</span>`
+        : "";
     const pronunciations = pronunciationValues(entry).filter(
         (pronunciation) => pronunciation !== entry.label,
     );
@@ -41,9 +44,9 @@ function renderCardContents(entry, layer, _entries, _schema, i18n) {
         ? `<span class="library-card-pronunciation">${escapeHtml(pronunciations.join(" · "))}</span>`
         : "";
     if (layer.minimal) {
-        return `<span class="library-entry-minimal-content"><strong>${escapeHtml(entry.label)}</strong>${pronunciationPreview}</span>`;
+        return `<span class="library-entry-minimal-content"><strong>${escapeHtml(entry.label)}</strong>${pronunciationPreview}${newPill}</span>`;
     }
-    return `<span class="library-card-primary"><strong>${escapeHtml(entry.label)}</strong>${pronunciationPreview}</span><span class="library-entry-indicators">${renderScope(entry, i18n)}</span>`;
+    return `<span class="library-card-primary"><strong>${escapeHtml(entry.label)}</strong>${pronunciationPreview}</span><span class="library-entry-indicators">${newPill}${renderScope(entry, i18n)}</span>`;
 }
 
 export function renderEntryCard(

@@ -85,6 +85,22 @@ export async function bootstrapStudyAdapter(
         );
         return;
     }
+    ctx.capabilities.get<(id: string, label: string) => void>(
+        "notify:registerCategory",
+    )?.("study-library", "Study Library");
+    const dispatchNotification =
+        ctx.capabilities.get<
+            (envelope: {
+                category: string;
+                recipientUsername: string;
+                subject: string;
+                body: string;
+                actionUrl?: string;
+            }) => Promise<unknown>
+        >("notify:dispatch");
+    const accountStore = ctx.capabilities.get<{
+        list(): Promise<Array<{ username: string; enabled: boolean }>>;
+    }>("auth:accountStore");
     const service = new LibraryService(
         store,
         ctx.capabilities.get<StudyClassAccessCapability>(
@@ -96,6 +112,39 @@ export async function bootstrapStudyAdapter(
             STRING_LOCALIZATION_CAPABILITY,
         ),
         audioCache,
+        dispatchNotification && accountStore
+            ? async ({ entryCount, language }) => {
+                  try {
+                      const accounts = await accountStore.list();
+                      await Promise.allSettled(
+                          accounts
+                              .filter(({ enabled }) => enabled)
+                              .map(({ username }) =>
+                                  dispatchNotification({
+                                      category: "study-library",
+                                      recipientUsername: username,
+                                      subject: "New Study Library content",
+                                      body: `${entryCount} new ${language ? `${language} ` : ""}Library ${entryCount === 1 ? "entry is" : "entries are"} available.`,
+                                      actionUrl: "/study/library",
+                                  }),
+                              ),
+                      );
+                  } catch (error) {
+                      await ctx.log?.(
+                          "error",
+                          "Could not notify accounts about new Study Library content.",
+                          {
+                              component: "study-library",
+                              operation: "notify-new-content",
+                              error:
+                                  error instanceof Error
+                                      ? error.message
+                                      : String(error),
+                          },
+                      );
+                  }
+              }
+            : undefined,
     );
     ctx.capabilities.contribute("study:library", service);
     ctx.registerRoute(

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
+  <string name="gateway.study.library_new">Baru</string>
   <string name="gateway.study.library_layer_empty">Lapisan ini belum memiliki entri.</string>
   <string name="gateway.study.library_previous">Sebelumnya</string>
   <string name="gateway.study.library_next">Berikutnya</string>
