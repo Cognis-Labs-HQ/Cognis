@@ -12,6 +12,9 @@ import { renderBrowser } from "../layer-cards.js";
 import { refreshLibraryFilterResults } from "../filters.js";
 import { bindLibraryInteractions } from "../interactions.js";
 import { localizedLabel } from "../presentation.js";
+import { librarySelectionFloatingMenu } from "../selection.js";
+import { openCreateEntryPopup } from "../create-entry.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
 
 function requestedLayer() {
     const parts = window.location.pathname.split("/").filter(Boolean);
@@ -34,7 +37,11 @@ export async function mount(root, { signal } = {}) {
         fallbackLanguageCode: readSelectedStudyLanguageCode(),
     });
     const languageCode = model.selectedLanguageCode;
-    const { schemas, entries } = await loadLibrary(languageCode, i18n);
+    const { schemas, entries: loadedEntries } = await loadLibrary(
+        languageCode,
+        i18n,
+    );
+    const entries = loadedEntries;
     const schema = schemas.find(({ id }) => id === selectedLayer?.schemaId);
     const layer = schema?.layers?.find(
         ({ id }) => id === selectedLayer?.layerId,
@@ -63,7 +70,15 @@ export async function mount(root, { signal } = {}) {
             title,
             subtitle: i18n.t("gateway.study.library_subtitle"),
         },
-        toolbar: [],
+        toolbar: [
+            {
+                id: "library-create",
+                label: i18n.t("gateway.study.library_create"),
+                render: () =>
+                    `<button class="btn-confirm" type="button" data-library-create>${escapeHtml(i18n.t("gateway.study.library_create"))}</button>`,
+            },
+        ],
+        floatingMenu: librarySelectionFloatingMenu(entries, i18n),
         subNavigation: [
             {
                 id: "study-subnav",
@@ -85,6 +100,28 @@ export async function mount(root, { signal } = {}) {
         }
     });
     bindStudySubNavigation(root, { signal });
+    root.addEventListener(
+        "click",
+        async (event) => {
+            if (!event.target.closest("[data-library-create]")) return;
+            const created = await openCreateEntryPopup({
+                schemas,
+                entries,
+                schemaId: selectedLayer?.schemaId,
+                layerId: selectedLayer?.layerId,
+                i18n,
+            });
+            if (!created) return;
+            entries.push(created);
+            root.querySelector(".library-browser").innerHTML = renderBrowser(
+                schemas,
+                entries,
+                i18n,
+                selectedLayer,
+            );
+        },
+        { signal },
+    );
     bindLibraryInteractions(root, {
         entries,
         i18n,

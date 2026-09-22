@@ -95,3 +95,9 @@ Penyesuaian saat jalan mencadangkan kartu akar dan setiap kartu anak yang telah 
 ## Pelacakan konten baru
 
 Pustaka menyimpan UUID entri yang telah dilihat untuk setiap akun. Entri global dari paket penyedia atau kontribusi pengguna dan administrator yang disetujui memicu notifikasi Pustaka bagi akun aktif. Entri yang belum ada dalam cache tampilan akun menampilkan pil **Baru** pada pratinjau dan popup detail. Mengarahkan penunjuk ke kartu atau membukanya secara langsung maupun melalui relasi akan menandainya sebagai telah dilihat; status tersimpan menghilangkan pil setelah halaman dimuat ulang.
+
+## Kontribusi, permintaan visibilitas, dan pencarian
+
+Pengguna dapat membuat kartu di namespace pribadi, guru juga di kelas miliknya, dan administrator juga secara global. Penyedia bahasa membentuk bidang formulir khusus lapisan melalui `study:library:registerFormContribution`; visibilitas, pemilihan kelas, dan kontrol pratinjau definisi tetap dimiliki adapter. Sebelum pembuatan pribadi atau kelas, Pustaka menunjukkan entri global terlihat yang identik dan meminta konfirmasi eksplisit.
+
+Kartu pribadi dapat diajukan ke kelas yang diikuti untuk ditinjau gurunya atau ke koleksi global untuk ditinjau administrator. Persetujuan memindahkan kartu asli dan tidak menyalinnya. Guru dan administrator yang berwenang dapat memindahkan konten bersama kembali ke namespace pribadi pengirim awal. Manifest penyedia dapat menetapkan `protected: true`; entri terlindungi tidak dapat dipindahkan atau dihapus. Rekaman impor dan buatan pengguna menyimpan teks pencarian ternormalisasi, dan pencarian menu samping memeriksa semua lapisan serta menyembunyikan hasil kosong.

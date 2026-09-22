@@ -12,6 +12,10 @@ export function mapEntry(row: Record<string, unknown>): LibraryEntry {
                 ? undefined
                 : Number(row.display_id),
         hidden: row.hidden === true || Number(row.hidden) === 1,
+        alwaysShowDefinition:
+            row.always_show_definition === true ||
+            Number(row.always_show_definition) === 1,
+        protected: row.protected === true || Number(row.protected) === 1,
         schemaId: String(row.schema_id),
         schemaVersion: Number(row.schema_version),
         layer: String(row.layer),

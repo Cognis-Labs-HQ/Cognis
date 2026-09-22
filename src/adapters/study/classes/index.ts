@@ -324,6 +324,20 @@ export async function bootstrapStudyAdapter(
             const classRow = await store.getClass(classId);
             return classRow?.teacherAccountId === accountId;
         },
+        async listReadable(accountId: string, role: string) {
+            if (role === "admin" || role === "owner")
+                return (await store.getAvailableClasses()).map(({ id }) => id);
+            const taught = await store.getClassesForTeacher(accountId);
+            const enrolled = await store.getEnrolledClasses(accountId);
+            return [...new Set([...taught, ...enrolled].map(({ id }) => id))];
+        },
+        async listWritable(accountId: string, role: string) {
+            if (role === "admin" || role === "owner")
+                return (await store.getAvailableClasses()).map(({ id }) => id);
+            return (await store.getClassesForTeacher(accountId)).map(
+                ({ id }) => id,
+            );
+        },
     });
 
     ctx.registerRoute(createClassesPageRoute(routeContext, isEnabled), "study");

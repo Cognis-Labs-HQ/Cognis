@@ -15,7 +15,20 @@ export function adminLayerGroups(schemas) {
 export function renderAdminBrowser(schemas, entries, i18n, selectedLayer) {
     if (!schemas.length)
         return `<p>${escapeHtml(i18n.t("gateway.study.library_empty"))}</p>`;
-    const schema = schemas.find(({ id }) => id === selectedLayer?.schemaId);
+    if (!selectedLayer) {
+        return schemas
+            .flatMap((schema) =>
+                schema.layers.map((layer) =>
+                    renderAdminBrowser(schemas, entries, i18n, {
+                        schemaId: schema.id,
+                        layerId: layer.id,
+                    }),
+                ),
+            )
+            .filter((section) => section.includes("library-admin-entry-row"))
+            .join("");
+    }
+    const schema = schemas.find(({ id }) => id === selectedLayer.schemaId);
     const layer = schema?.layers.find(
         ({ id }) => id === selectedLayer?.layerId,
     );

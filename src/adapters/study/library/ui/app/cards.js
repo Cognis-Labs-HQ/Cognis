@@ -5,6 +5,9 @@ import {
     metadataFields,
     metadataValues,
     pronunciationValues,
+    definitionText,
+    isMeaningLayer,
+    layerForEntry,
     renderScope,
 } from "./presentation.js";
 import { isSameLibraryRecord } from "./variant-placement.js";
@@ -34,9 +37,6 @@ function renderSelection(entry, i18n) {
 }
 
 function renderCardContents(entry, layer, _entries, _schema, i18n) {
-    const newPill = entry.isNew
-        ? `<span class="library-new-pill">${escapeHtml(i18n.t("gateway.study.library_new"))}</span>`
-        : "";
     const pronunciations = pronunciationValues(entry).filter(
         (pronunciation) => pronunciation !== entry.label,
     );
@@ -44,9 +44,28 @@ function renderCardContents(entry, layer, _entries, _schema, i18n) {
         ? `<span class="library-card-pronunciation">${escapeHtml(pronunciations.join(" · "))}</span>`
         : "";
     if (layer.minimal) {
-        return `<span class="library-entry-minimal-content"><strong>${escapeHtml(entry.label)}</strong>${pronunciationPreview}${newPill}</span>`;
+        return `<span class="library-entry-minimal-content"><strong>${escapeHtml(entry.label)}</strong>${pronunciationPreview}</span>`;
     }
-    return `<span class="library-card-primary"><strong>${escapeHtml(entry.label)}</strong>${pronunciationPreview}</span><span class="library-entry-indicators">${newPill}${renderScope(entry, i18n)}</span>`;
+    const definition = entry.alwaysShowDefinition
+        ? _entries
+              .filter((candidate) =>
+                  (entry.references ?? []).some(
+                      ({ entryId }) => entryId === candidate.id,
+                  ),
+              )
+              .filter((candidate) =>
+                  isMeaningLayer(layerForEntry([_schema], candidate)),
+              )
+              .map((candidate) =>
+                  definitionText(
+                      candidate,
+                      layerForEntry([_schema], candidate),
+                      document.documentElement.lang,
+                  ),
+              )
+              .find(Boolean)
+        : "";
+    return `<span class="library-card-primary"><strong>${escapeHtml(entry.label)}</strong>${pronunciationPreview}${definition ? `<span class="library-card-definition">${escapeHtml(definition)}</span>` : ""}</span>`;
 }
 
 export function renderEntryCard(
@@ -88,7 +107,10 @@ export function renderEntryCard(
     const filterAttribute = variant
         ? ""
         : ` data-library-filter-values="${escapeHtml(JSON.stringify(filterValues))}"`;
-    return `<div class="library-entry-card-shell" data-library-variant-depth="${depth}"><button class="library-entry-card${variant ? " library-entry-variant" : ""} btn-neutral" type="button" ${entryAttributes(entry)} ${entrySearchAttribute(entry)}${filterAttribute}>${renderCardContents(entry, layer, entries, schema, i18n)}</button>${renderSelection(entry, i18n)}${variantHint}${variants
+    const newPill = entry.isNew
+        ? `<span class="library-new-pill">${escapeHtml(i18n.t("gateway.study.library_new"))}</span>`
+        : "";
+    return `<div class="library-entry-card-shell" data-library-variant-depth="${depth}"><span class="library-entry-card-status">${renderScope(entry, i18n)}${newPill}</span><button class="library-entry-card${variant ? " library-entry-variant" : ""} btn-neutral" type="button" ${entryAttributes(entry)} ${entrySearchAttribute(entry)}${filterAttribute}>${renderCardContents(entry, layer, entries, schema, i18n)}</button>${renderSelection(entry, i18n)}${variantHint}${variants
         .map(
             ({ entry: child, direction, distance }) =>
                 `<div class="library-entry-variant-shell library-entry-variant-${direction}" data-library-preferred-direction="${direction}" style="--library-variant-card-span: ${distance * 100}%; --library-variant-gap-span: ${distance * 0.75}rem">${renderEntryCard(child, layer, entries, schema, placements, i18n, depth + 1, true)}</div>`,

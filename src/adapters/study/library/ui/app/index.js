@@ -1,9 +1,9 @@
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
-import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { createSideMenu } from "/static/reuse/side-menu.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
 import { loadLibrary } from "./data.js";
 import {
     bindStudySubNavigation,
@@ -16,19 +16,12 @@ import { adminLayerGroups, renderAdminBrowser } from "./admin-browser.js";
 import { bindAdminLibraryInteractions } from "./admin-interactions.js";
 import { refreshLibraryFilterResults } from "./filters.js";
 import { bindLibraryInteractions } from "./interactions.js";
-import { canDeleteEntry } from "./selection.js";
-
-function libraryFloatingMenu(entries, i18n, isAdminDataView) {
-    if (!isAdminDataView || !entries.some(canDeleteEntry)) return [];
-    return [
-        {
-            id: "library-selection-actions",
-            label: i18n.t("ui.reuse.actions"),
-            render: () =>
-                `<button class="btn-neutral library-selection-action" type="button" data-library-select-all>${escapeHtml(i18n.t("gateway.study.library_select_all"))}</button><button class="btn-cancel library-selection-action" type="button" data-library-delete-selection disabled>${escapeHtml(i18n.t("gateway.study.library_delete_selected"))}</button><button class="btn-neutral library-selection-action library-selection-close" type="button" data-library-selection-close aria-label="${escapeHtml(i18n.t("ui.reuse.close"))}">×</button>`,
-        },
-    ];
-}
+import { openCreateEntryPopup } from "./create-entry.js";
+import {
+    fetchLibraryPushRequests,
+    reviewLibraryPromotion,
+} from "/static/gateways/study/ui/library-client.js";
+import { librarySelectionFloatingMenu, setSelectionMode } from "./selection.js";
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
@@ -51,6 +44,7 @@ export async function mount(root, { signal } = {}) {
         i18n,
     );
     let entries = loadedEntries;
+    let requests = await fetchLibraryPushRequests().catch(() => []);
     const firstLayer = schemas
         .flatMap((schema) =>
             schema.layers.map((layer) => ({
@@ -60,14 +54,25 @@ export async function mount(root, { signal } = {}) {
         )
         .at(0);
     let selectedLayer = firstLayer;
+    let searchQuery = "";
+    const visibleEntries = () => {
+        const query = searchQuery.trim().normalize().toLocaleLowerCase();
+        if (!query) return entries;
+        return entries.filter((entry) =>
+            `${entry.label} ${JSON.stringify(entry.fields ?? {})}`
+                .normalize()
+                .toLocaleLowerCase()
+                .includes(query),
+        );
+    };
     const renderSelectedLayer = () => {
         const browser = root.querySelector(".library-browser");
         if (browser)
             browser.innerHTML = renderAdminBrowser(
                 schemas,
-                entries,
+                visibleEntries(),
                 i18n,
-                selectedLayer,
+                searchQuery ? null : selectedLayer,
             );
     };
     const layerMenu = createSideMenu({
@@ -77,6 +82,7 @@ export async function mount(root, { signal } = {}) {
             ? `${firstLayer.schemaId}:${firstLayer.layerId}`
             : "",
         onSelect: (id) => {
+            setSelectionMode(root, false, i18n);
             const separator = id.indexOf(":");
             selectedLayer = {
                 schemaId: id.slice(0, separator),
@@ -109,11 +115,24 @@ export async function mount(root, { signal } = {}) {
             {
                 id: "library-layers",
                 label: i18n.t("gateway.study.library_layers"),
-                render: () => layerMenu.render(),
+                render: () =>
+                    `<label class="library-quick-search"><span>${escapeHtml(i18n.t("gateway.study.library_search"))}</span><span class="library-quick-search-control"><input type="search" data-library-quick-search placeholder="${escapeHtml(i18n.t("gateway.study.library_search_placeholder"))}"><button class="btn-neutral" type="button" data-library-clear-search aria-label="${escapeHtml(i18n.t("gateway.study.library_search_clear"))}"><img src="/static/adapters/study/library/assets/clear-search.svg" alt=""></button></span></label>${layerMenu.render()}`,
+            },
+            {
+                id: "library-create",
+                label: i18n.t("gateway.study.library_create"),
+                render: () =>
+                    `<button class="btn-confirm" type="button" data-library-create>${escapeHtml(i18n.t("gateway.study.library_create"))}</button>`,
+            },
+            {
+                id: "library-requests",
+                label: i18n.t("gateway.study.library_requests"),
+                render: () =>
+                    `<section class="library-request-list" data-library-requests>${requests.length ? requests.map((request) => `<article data-library-request="${escapeHtml(request.id)}"><span>${escapeHtml(request.sourceEntryId)} → ${escapeHtml(request.destination.scope === "class" ? request.destination.scopeId : request.destination.scope)}</span><button class="btn-confirm" type="button" data-library-review="approved">${escapeHtml(i18n.t("gateway.study.library_approve"))}</button><button class="btn-cancel" type="button" data-library-review="rejected">${escapeHtml(i18n.t("gateway.study.library_reject"))}</button></article>`).join("") : `<p>${escapeHtml(i18n.t("gateway.study.library_no_requests"))}</p>`}</section>`,
             },
         ],
         toolbarScrollable: true,
-        floatingMenu: libraryFloatingMenu(entries, i18n, true),
+        floatingMenu: librarySelectionFloatingMenu(entries, i18n),
         subNavigation: [
             {
                 id: "study-subnav",
@@ -130,12 +149,71 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
     signal?.throwIfAborted();
     layerMenu.mount(root, { signal });
+    const searchInput = root.querySelector("[data-library-quick-search]");
+    const updateSearch = () => {
+        searchQuery = searchInput?.value ?? "";
+        const matches = visibleEntries();
+        root.querySelectorAll("[data-side-menu-item]").forEach((item) => {
+            const [schemaId, layerId] = item.dataset.sideMenuItem.split(":");
+            item.closest("li").hidden =
+                searchQuery.length > 0 &&
+                !matches.some(
+                    (entry) =>
+                        entry.schemaId === schemaId && entry.layer === layerId,
+                );
+        });
+        root.querySelectorAll("[data-side-menu-group]").forEach((group) => {
+            group.hidden = !group.querySelector("li:not([hidden])");
+        });
+        renderSelectedLayer();
+    };
+    searchInput?.addEventListener("input", updateSearch, { signal });
+    root.querySelector("[data-library-clear-search]")?.addEventListener(
+        "click",
+        () => {
+            searchInput.value = "";
+            updateSearch();
+            searchInput.focus();
+        },
+        { signal },
+    );
     root.querySelectorAll("[data-library-panel]").forEach((panel) => {
         if (panel.querySelector("button[data-library-filter].active")) {
             refreshLibraryFilterResults(panel);
         }
     });
     bindStudySubNavigation(root, { signal });
+    root.addEventListener(
+        "click",
+        async (event) => {
+            if (event.target.closest("[data-library-create]")) {
+                const created = await openCreateEntryPopup({
+                    schemas,
+                    entries,
+                    schemaId: selectedLayer?.schemaId,
+                    layerId: selectedLayer?.layerId,
+                    i18n,
+                });
+                if (created) {
+                    entries.push(created);
+                    renderSelectedLayer();
+                }
+                return;
+            }
+            const review = event.target.closest("[data-library-review]");
+            if (!review) return;
+            const requestId = review.closest("[data-library-request]")?.dataset
+                .libraryRequest;
+            if (!requestId) return;
+            await reviewLibraryPromotion(
+                requestId,
+                review.dataset.libraryReview,
+            );
+            requests = requests.filter(({ id }) => id !== requestId);
+            review.closest("[data-library-request]")?.remove();
+        },
+        { signal },
+    );
     bindLibraryInteractions(root, {
         entries,
         i18n,

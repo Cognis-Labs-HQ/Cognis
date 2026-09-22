@@ -110,7 +110,7 @@ test("entry traces exclude self-references and duplicate dependants", async () =
     assert.deepEqual(detail.usedBy, [dependant]);
 });
 
-test("content owners and administrators can delete selected entries", async () => {
+test("users delete personal entries while administrators delete global entries", async () => {
     const deleted: Array<{
         ids: readonly string[];
         accountId: string;
@@ -121,9 +121,10 @@ test("content owners and administrators can delete selected entries", async () =
             "owned",
             {
                 id: "owned",
-                scope: "global",
-                scopeId: "global",
+                scope: "user",
+                scopeId: "alice",
                 createdBy: "alice",
+                protected: false,
             },
         ],
         [
@@ -133,6 +134,7 @@ test("content owners and administrators can delete selected entries", async () =
                 scope: "global",
                 scopeId: "global",
                 createdBy: "content-pack:language",
+                protected: false,
             },
         ],
     ]);
@@ -167,6 +169,90 @@ test("content owners and administrators can delete selected entries", async () =
         { ids: ["owned"], accountId: "alice", blacklist: false },
         { ids: ["module"], accountId: "admin", blacklist: true },
     ]);
+});
+
+test("protected provider entries cannot be deleted even by administrators", async () => {
+    const entry = {
+        id: "protected",
+        scope: "global",
+        scopeId: "global",
+        createdBy: "content-pack:language",
+        protected: true,
+    };
+    const store = {
+        deleteEntries: async (
+            _ids: readonly string[],
+            _accountId: string,
+            _blacklist: boolean,
+            authorize: (entries: readonly unknown[]) => Promise<void>,
+        ) => authorize([entry]),
+    };
+    const library = new LibraryService(store as never);
+    await assert.rejects(
+        library.deleteEntries(
+            { accountId: "admin", role: "admin" },
+            [entry.id],
+            false,
+        ),
+        /protected_content/,
+    );
+});
+
+test("promotion approval moves personal content into the requested scope", async () => {
+    const source = {
+        id: "personal-card",
+        scope: "user",
+        scopeId: "alice",
+        createdBy: "alice",
+        protected: false,
+    };
+    const moves: unknown[] = [];
+    const store = {
+        getPush: async () => ({
+            id: "request",
+            sourceEntryId: source.id,
+            destination: { scope: "global", scopeId: "global" },
+            requestedBy: "alice",
+            status: "pending",
+        }),
+        get: async () => source,
+        move: async (_id: string, destination: unknown) => {
+            moves.push(destination);
+            return { ...source, ...(destination as object) };
+        },
+        reviewPush: async () => {},
+    };
+    const library = new LibraryService(store as never);
+    await library.reviewPush(
+        { accountId: "admin", role: "admin" },
+        "request",
+        "approved",
+    );
+    assert.deepEqual(moves, [{ scope: "global", scopeId: "global" }]);
+});
+
+test("global downgrades return content to its original submitter", async () => {
+    const entry = {
+        id: "global-card",
+        scope: "global",
+        scopeId: "global",
+        createdBy: "alice",
+        protected: false,
+    };
+    let destination: unknown;
+    const store = {
+        get: async () => entry,
+        move: async (_id: string, value: unknown) => {
+            destination = value;
+            return { ...entry, ...(value as object) };
+        },
+    };
+    const library = new LibraryService(store as never);
+    await library.moveToPersonal(
+        { accountId: "admin", role: "admin" },
+        entry.id,
+    );
+    assert.deepEqual(destination, { scope: "user", scopeId: "alice" });
 });
 
 test("content deletion rejects actors who do not own every cascaded entry", async () => {

@@ -16,6 +16,19 @@ import type {
     LibrarySchema,
 } from "./types.js";
 import { mapEntry } from "./entry-row.js";
+import {
+    createPushRequest,
+    ensurePushRequestSchema,
+    getPushRequest,
+    listPushRequests,
+    reviewPushRequest,
+} from "./push-requests.js";
+import {
+    ensureEntryStateSchema,
+    markEntriesViewed,
+    moveEntry,
+    viewedEntryIds,
+} from "./entry-state.js";
 export class LibraryStore {
     constructor(private readonly db: DbExecutor) {}
     private async upsert(
@@ -104,12 +117,30 @@ export class LibraryStore {
                     default: false,
                 },
                 {
+                    name: "always_show_definition",
+                    type: "boolean",
+                    notNull: true,
+                    default: false,
+                },
+                {
+                    name: "protected",
+                    type: "boolean",
+                    notNull: true,
+                    default: false,
+                },
+                {
                     name: "fields_json",
                     type: "text",
                     notNull: true,
                     default: "{}",
                 },
                 { name: "content_hash", type: "text", unique: true },
+                {
+                    name: "search_text",
+                    type: "text",
+                    notNull: true,
+                    default: "",
+                },
                 { name: "created_by", type: "text", notNull: true },
                 {
                     name: "created_at",
@@ -163,76 +194,17 @@ export class LibraryStore {
                 "position",
             ],
         });
-        await this.db.ensureTable({
-            name: "study_library_push_requests",
-            columns: [
-                { name: "id", type: "text", primaryKey: true },
-                { name: "source_entry_id", type: "text", notNull: true },
-                { name: "destination_scope", type: "text", notNull: true },
-                { name: "destination_scope_id", type: "text", notNull: true },
-                { name: "requested_by", type: "text", notNull: true },
-                {
-                    name: "status",
-                    type: "text",
-                    notNull: true,
-                    default: "pending",
-                },
-                { name: "reviewed_by", type: "text" },
-                {
-                    name: "created_at",
-                    type: "timestamp",
-                    notNull: true,
-                    default: "now",
-                },
-                {
-                    name: "updated_at",
-                    type: "timestamp",
-                    notNull: true,
-                    default: "now",
-                },
-            ],
-        });
-        await this.db.ensureTable({
-            name: "study_library_viewed_entries",
-            columns: [
-                { name: "account_id", type: "text", notNull: true },
-                { name: "entry_id", type: "text", notNull: true },
-                {
-                    name: "viewed_at",
-                    type: "timestamp",
-                    notNull: true,
-                    default: "now",
-                },
-            ],
-            primaryKey: ["account_id", "entry_id"],
-        });
+        await ensurePushRequestSchema(this.db);
+        await ensureEntryStateSchema(this.db);
     }
     async viewedEntryIds(accountId: string): Promise<string[]> {
-        const result = await this.db.executeCommand({
-            option: "SELECT",
-            table: "study_library_viewed_entries",
-            where: [{ column: "account_id", value: accountId }],
-        });
-        return (result.rows ?? []).map((row) => String(row.entry_id));
+        return viewedEntryIds(this.db, accountId);
     }
     async markEntriesViewed(
         accountId: string,
         entryIds: readonly string[],
     ): Promise<void> {
-        await this.db.transaction(async (db) => {
-            for (const entryId of entryIds) {
-                await this.upsert(
-                    db,
-                    "study_library_viewed_entries",
-                    ["account_id", "entry_id"],
-                    {
-                        account_id: accountId,
-                        entry_id: entryId,
-                        viewed_at: new Date().toISOString(),
-                    },
-                );
-            }
-        });
+        await markEntriesViewed(this.db, accountId, entryIds);
     }
     async saveSchema(schema: LibrarySchema): Promise<void> {
         const existing = await this.db.executeCommand({
@@ -410,7 +382,13 @@ export class LibraryStore {
                         source_record_id: record.id,
                         display_id: record.displayId ?? null,
                         hidden: record.hidden === true,
+                        always_show_definition:
+                            record.alwaysShowDefinition === true,
+                        protected: manifest.protected === true,
                         fields_json: JSON.stringify(fields),
+                        search_text: `${record.label} ${JSON.stringify(fields)}`
+                            .normalize()
+                            .toLocaleLowerCase(),
                         created_by: `content-pack:${manifest.id}`,
                     },
                     manifest,
@@ -428,7 +406,13 @@ export class LibraryStore {
                     source_record_id: record.id,
                     display_id: record.displayId ?? null,
                     hidden: record.hidden === true,
+                    always_show_definition:
+                        record.alwaysShowDefinition === true,
+                    protected: manifest.protected === true,
                     fields_json: JSON.stringify(fields),
+                    search_text: `${record.label} ${JSON.stringify(fields)}`
+                        .normalize()
+                        .toLocaleLowerCase(),
                     content_hash: contentHash,
                     created_by: `content-pack:${manifest.id}`,
                     updated_at: new Date().toISOString(),
@@ -849,7 +833,13 @@ export class LibraryStore {
                     language,
                     label: input.label,
                     hidden: input.hidden === true,
+                    always_show_definition: input.alwaysShowDefinition === true,
+                    protected: false,
                     fields_json: JSON.stringify(input.fields ?? {}),
+                    search_text:
+                        `${input.label} ${JSON.stringify(input.fields ?? {})}`
+                            .normalize()
+                            .toLocaleLowerCase(),
                     created_by: accountId,
                 },
             });
@@ -878,7 +868,12 @@ export class LibraryStore {
                 values: {
                     label: input.label,
                     hidden: input.hidden === true,
+                    always_show_definition: input.alwaysShowDefinition === true,
                     fields_json: JSON.stringify(input.fields ?? {}),
+                    search_text:
+                        `${input.label} ${JSON.stringify(input.fields ?? {})}`
+                            .normalize()
+                            .toLocaleLowerCase(),
                     updated_at: new Date().toISOString(),
                 },
                 where: [{ column: "id", value: id }],
@@ -905,70 +900,39 @@ export class LibraryStore {
         });
         return (await this.get(id))!;
     }
+    async move(
+        id: string,
+        destination: LibraryLocation,
+    ): Promise<LibraryEntry> {
+        await moveEntry(this.db, id, destination);
+        return (await this.get(id))!;
+    }
     async createPush(
         sourceEntryId: string,
         destination: LibraryLocation,
         accountId: string,
     ): Promise<LibraryPushRequest> {
-        const id = randomUUID();
-        await this.db.executeCommand({
-            option: "INSERT",
-            table: "study_library_push_requests",
-            values: {
-                id,
-                source_entry_id: sourceEntryId,
-                destination_scope: destination.scope,
-                destination_scope_id: destination.scopeId ?? destination.scope,
-                requested_by: accountId,
-            },
-        });
-        return {
-            id,
+        return createPushRequest(
+            this.db,
             sourceEntryId,
             destination,
-            requestedBy: accountId,
-            status: "pending",
-        };
+            accountId,
+        );
     }
     async getPush(id: string): Promise<LibraryPushRequest | null> {
-        const result = await this.db.executeCommand({
-            option: "SELECT",
-            table: "study_library_push_requests",
-            where: [{ column: "id", value: id }],
-        });
-        const row = result.rows?.[0];
-        if (!row) return null;
-        return {
-            id: String(row.id),
-            sourceEntryId: String(row.source_entry_id),
-            destination: {
-                scope: String(
-                    row.destination_scope,
-                ) as LibraryLocation["scope"],
-                scopeId: String(row.destination_scope_id),
-            },
-            requestedBy: String(row.requested_by),
-            status: String(row.status) as LibraryPushRequest["status"],
-        };
+        return getPushRequest(this.db, id);
+    }
+    async listPushRequests(
+        status: LibraryPushRequest["status"] = "pending",
+    ): Promise<LibraryPushRequest[]> {
+        return listPushRequests(this.db, status);
     }
     async reviewPush(
         id: string,
         status: "approved" | "rejected",
         reviewerId: string,
     ): Promise<void> {
-        await this.db.executeCommand({
-            option: "UPDATE",
-            table: "study_library_push_requests",
-            values: {
-                status,
-                reviewed_by: reviewerId,
-                updated_at: new Date().toISOString(),
-            },
-            where: [
-                { column: "id", value: id },
-                { column: "status", value: "pending" },
-            ],
-        });
+        await reviewPushRequest(this.db, id, status, reviewerId);
     }
     async referencesFor(targetEntryId: string): Promise<LibraryEntry[]> {
         const result = await this.db.executeCommand({

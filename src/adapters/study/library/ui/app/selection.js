@@ -4,9 +4,20 @@ import { isAdminScope } from "/static/gateways/study/ui/language.js";
 
 export function canDeleteEntry(entry) {
     return (
-        isAdminScope() ||
-        entry.createdBy === localStorage.getItem("cognis_account")
+        entry.protected !== true && (entry.canDelete === true || isAdminScope())
     );
+}
+
+export function librarySelectionFloatingMenu(entries, i18n) {
+    if (!entries.some(canDeleteEntry)) return [];
+    return [
+        {
+            id: "library-selection-actions",
+            label: i18n.t("ui.reuse.actions"),
+            render: () =>
+                `<button class="btn-neutral library-selection-action" type="button" data-library-select-all>${escapeHtml(i18n.t("gateway.study.library_select_all"))}</button><button class="btn-confirm library-selection-action" type="button" data-library-promote-selection disabled>${escapeHtml(i18n.t("gateway.study.library_request_promotion"))}</button><button class="btn-neutral library-selection-action" type="button" data-library-downgrade-selection disabled>${escapeHtml(i18n.t("gateway.study.library_move_personal"))}</button><button class="btn-cancel library-selection-action" type="button" data-library-delete-selection disabled>${escapeHtml(i18n.t("gateway.study.library_delete_selected"))}</button><button class="btn-neutral library-selection-action library-selection-close" type="button" data-library-selection-close aria-label="${escapeHtml(i18n.t("ui.reuse.close"))}">×</button>`,
+        },
+    ];
 }
 
 export function selectedEntryIds(root) {
@@ -31,6 +42,11 @@ export function updateDeleteSelectionButton(root, i18n) {
     const count = selectedEntryIds(root).length;
     button.disabled = count === 0;
     button.textContent = i18n.t("ui.reuse.delete");
+    root.querySelectorAll(
+        "[data-library-promote-selection], [data-library-downgrade-selection]",
+    ).forEach((control) => {
+        control.disabled = count !== 1;
+    });
 }
 
 export function setSelectionMode(root, enabled, i18n) {

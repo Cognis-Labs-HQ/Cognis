@@ -95,3 +95,9 @@ Die Laufzeiteinpassung reserviert die Stammkarte und jede bereits platzierte Kin
 ## Nachverfolgung neuer Inhalte
 
 Die Bibliothek speichert die UUIDs angesehener Einträge pro Konto. Globale Einträge aus Anbieterpaketen oder genehmigten Beiträgen von Benutzern und Administratoren lösen für aktivierte Konten eine Bibliotheksbenachrichtigung aus. Einträge außerhalb des angesehenen Caches zeigen in Vorschau und Detailfenster einmalig **Neu**. Das Überfahren einer Karte oder ihr direktes beziehungsweise indirektes Öffnen markiert sie als angesehen; nach dem Aktualisieren verschwindet die Markierung dauerhaft.
+
+## Beiträge, Sichtbarkeitsanfragen und Suche
+
+Benutzer können Karten im persönlichen Namensraum erstellen, Lehrkräfte zusätzlich in eigenen Klassen und Administratoren außerdem global. Sprachmodule gestalten ebenenspezifische Formularfelder über `study:library:registerFormContribution`; Sichtbarkeit, Klassenauswahl und die Definitionsvorschau bleiben Eigentum des Adapters. Vor einer persönlichen oder klassenbezogenen Erstellung weist die Bibliothek auf einen identischen sichtbaren globalen Eintrag hin und verlangt eine ausdrückliche Bestätigung.
+
+Persönliche Karten können einer belegten Klasse zur Prüfung durch deren Lehrkraft oder der globalen Sammlung zur Prüfung durch Administratoren vorgelegt werden. Eine Genehmigung verschiebt die Originalkarte, statt sie zu kopieren. Berechtigte Lehrkräfte und Administratoren können geteilte Inhalte in den persönlichen Namensraum des ursprünglichen Einreichers zurückverschieben. Anbieter-Manifeste können `protected: true` setzen; geschützte Einträge lassen sich weder verschieben noch löschen. Importierte und benutzererstellte Datensätze speichern normalisierten Suchtext; die Seitensuche durchsucht alle Ebenen und blendet leere Ergebnisse aus.

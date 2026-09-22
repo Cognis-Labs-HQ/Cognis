@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
+  <string name="gateway.study.library_search">Search</string>
+  <string name="gateway.study.library_search_placeholder">Search all layers</string>
+  <string name="gateway.study.library_search_clear">Clear search</string>
+  <string name="gateway.study.library_create">Create card</string>
+  <string name="gateway.study.library_requests">Requests</string>
+  <string name="gateway.study.library_approve">Approve</string>
+  <string name="gateway.study.library_reject">Reject</string>
+  <string name="gateway.study.library_no_requests">No pending requests.</string>
+  <string name="gateway.study.library_visibility">Visibility</string>
+  <string name="gateway.study.library_always_show_definition">Always show definition in card preview</string>
+  <string name="gateway.study.library_conflict_title">Matching global card</string>
+  <string name="gateway.study.library_conflict_body">A global card in this layer has the same content. Review it before creating a duplicate.</string>
+  <string name="gateway.study.library_create_anyway">Create anyway</string>
+  <string name="gateway.study.library_request_promotion">Request visibility upgrade</string>
+  <string name="gateway.study.library_move_personal">Move to personal</string>
+  <string name="gateway.study.library_submit_request">Submit request</string>
   <string name="gateway.study.library_new">New</string>
   <string name="gateway.study.library_layer_empty">This layer has no entries yet.</string>
   <string name="gateway.study.library_previous">Previous</string>

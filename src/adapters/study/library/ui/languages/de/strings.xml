@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
+  <string name="gateway.study.library_search">Suchen</string>
+  <string name="gateway.study.library_search_placeholder">Alle Ebenen durchsuchen</string>
+  <string name="gateway.study.library_search_clear">Suche löschen</string>
+  <string name="gateway.study.library_create">Karte erstellen</string>
+  <string name="gateway.study.library_requests">Anfragen</string>
+  <string name="gateway.study.library_approve">Genehmigen</string>
+  <string name="gateway.study.library_reject">Ablehnen</string>
+  <string name="gateway.study.library_no_requests">Keine offenen Anfragen.</string>
+  <string name="gateway.study.library_visibility">Sichtbarkeit</string>
+  <string name="gateway.study.library_always_show_definition">Definition immer in der Kartenvorschau zeigen</string>
+  <string name="gateway.study.library_conflict_title">Übereinstimmende globale Karte</string>
+  <string name="gateway.study.library_conflict_body">Eine globale Karte in dieser Ebene hat denselben Inhalt. Prüfe sie, bevor du ein Duplikat erstellst.</string>
+  <string name="gateway.study.library_create_anyway">Trotzdem erstellen</string>
+  <string name="gateway.study.library_request_promotion">Sichtbarkeitserweiterung beantragen</string>
+  <string name="gateway.study.library_move_personal">In persönlichen Bereich verschieben</string>
+  <string name="gateway.study.library_submit_request">Anfrage senden</string>
   <string name="gateway.study.library_new">Neu</string>
   <string name="gateway.study.library_layer_empty">Diese Ebene enthält noch keine Einträge.</string>
   <string name="gateway.study.library_previous">Zurück</string>

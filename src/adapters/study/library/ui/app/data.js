@@ -3,6 +3,7 @@ import {
     fetchLibraryEntries,
     fetchLibrarySchemas,
     fetchViewedLibraryEntryIds,
+    fetchLibraryLocations,
 } from "/static/gateways/study/ui/library-client.js";
 
 export async function loadLibrary(languageCode, i18n) {
@@ -10,11 +11,8 @@ export async function loadLibrary(languageCode, i18n) {
     let entries = [];
     try {
         schemas = await fetchLibrarySchemas(languageCode);
-        const accountId = localStorage.getItem("cognis_account");
-        const locations = [
-            { scope: "global" },
-            ...(accountId ? [{ scope: "user", scopeId: accountId }] : []),
-        ];
+        const access = await fetchLibraryLocations();
+        const locations = access.readable;
         entries = (
             await Promise.all(
                 schemas.flatMap((schema) =>

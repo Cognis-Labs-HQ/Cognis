@@ -147,6 +147,10 @@ export async function bootstrapStudyAdapter(
             : undefined,
     );
     ctx.capabilities.contribute("study:library", service);
+    ctx.capabilities.contribute(
+        "study:library:registerFormContribution",
+        service.registerFormContribution.bind(service),
+    );
     ctx.registerRoute(
         createLibraryRoutes(
             service,

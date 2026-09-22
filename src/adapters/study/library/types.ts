@@ -142,10 +142,14 @@ export interface LibraryEntryInput {
     label: string;
     /** Exclude the entry and its descendants from direct browsing while retaining references. */
     hidden?: boolean;
+    /** Keep the primary localized definition visible in card previews. */
+    alwaysShowDefinition?: boolean;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
     /** Languages requested by a definition form; used by an optional localization provider. */
     definitionLanguages?: string[];
+    /** Explicit confirmation after the API reports matching global content. */
+    allowConflict?: boolean;
 }
 
 export interface LibraryEntry extends LibraryEntryInput {
@@ -159,6 +163,10 @@ export interface LibraryEntry extends LibraryEntryInput {
     createdBy: string;
     createdAt: string;
     updatedAt: string;
+    /** Provider-owned content cannot be moved or deleted by users. */
+    protected: boolean;
+    /** Request-scoped permission hint; never persisted. */
+    canDelete?: boolean;
 }
 
 export interface LibraryLocation {
@@ -192,6 +200,14 @@ export interface LibraryLookupProvider {
     }): Promise<LibraryLookupSuggestion[]>;
 }
 
+export interface LibraryFormContribution {
+    id: string;
+    schemaId: string;
+    layerId: string;
+    /** Provider-defined fields appended after built-in visibility controls. */
+    fields: readonly LibraryFieldSchema[];
+}
+
 export interface LibraryPushRequest {
     id: string;
     sourceEntryId: string;
@@ -211,6 +227,8 @@ export interface LibraryContentPackManifest {
     assets?: string;
     /** Remove records from prior pack versions when they are absent from this version. */
     pruneOmittedRecords?: boolean;
+    /** Protect every record in this provider pack from deletion and scope changes. */
+    protected?: boolean;
     license: {
         id: string;
         url?: string;
@@ -224,6 +242,7 @@ export interface LibraryContentRecord {
     displayId?: number;
     /** Exclude the record and its descendants from direct Library browsing. */
     hidden?: boolean;
+    alwaysShowDefinition?: boolean;
     label: string;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];

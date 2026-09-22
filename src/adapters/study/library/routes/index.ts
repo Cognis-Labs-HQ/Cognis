@@ -93,6 +93,22 @@ export function createLibraryRoutes(
                 return true;
             }
             if (
+                url.pathname === "/api/v1/study/library/forms" &&
+                req.method === "GET"
+            ) {
+                sendJson(res, 200, {
+                    data: library.listFormContributions(),
+                });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/locations" &&
+                req.method === "GET"
+            ) {
+                sendJson(res, 200, { data: await library.locations(actor) });
+                return true;
+            }
+            if (
                 url.pathname === "/api/v1/study/library/entries" &&
                 req.method === "GET"
             ) {
@@ -279,6 +295,15 @@ export function createLibraryRoutes(
             }
             if (
                 url.pathname === "/api/v1/study/library/push-requests" &&
+                req.method === "GET"
+            ) {
+                sendJson(res, 200, {
+                    data: await library.listPushRequests(actor),
+                });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/push-requests" &&
                 req.method === "POST"
             ) {
                 const body = (await readJson(req)) as {
@@ -297,6 +322,18 @@ export function createLibraryRoutes(
                     requestId: request.id,
                 });
                 sendJson(res, 201, { data: request });
+                return true;
+            }
+            const downgradeMatch = url.pathname.match(
+                /^\/api\/v1\/study\/library\/entries\/([^/]+)\/move-to-personal$/,
+            );
+            if (downgradeMatch && req.method === "POST") {
+                sendJson(res, 200, {
+                    data: await library.moveToPersonal(
+                        actor,
+                        decodeURIComponent(downgradeMatch[1]),
+                    ),
+                });
                 return true;
             }
             const reviewMatch = url.pathname.match(
@@ -333,9 +370,11 @@ export function createLibraryRoutes(
             const status =
                 code === "forbidden"
                     ? 403
-                    : code === "not_found" || code === "entry_not_found"
-                      ? 404
-                      : 400;
+                    : code.startsWith("content_conflict:")
+                      ? 409
+                      : code === "not_found" || code === "entry_not_found"
+                        ? 404
+                        : 400;
             await log?.("error", "Library request failed.", {
                 component: "study-library",
                 operation: req.method ?? "unknown",
@@ -344,8 +383,13 @@ export function createLibraryRoutes(
             });
             sendJson(res, status, {
                 error: {
-                    code,
+                    code: code.startsWith("content_conflict:")
+                        ? "content_conflict"
+                        : code,
                     message: "Library request could not be completed",
+                    ...(code.startsWith("content_conflict:")
+                        ? { conflictEntryId: code.slice(code.indexOf(":") + 1) }
+                        : {}),
                 },
             });
             return true;

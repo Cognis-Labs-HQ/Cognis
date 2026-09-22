@@ -20,6 +20,7 @@ import type {
     LibraryLocation,
     LibraryLookupProvider,
     LibraryLookupSuggestion,
+    LibraryFormContribution,
     LibraryPushRequest,
     LibraryResolutionProposal,
     LibrarySchema,
@@ -42,6 +43,8 @@ export interface LibraryClassAccess {
         accountId: string,
         role: AccessRole,
     ): Promise<boolean>;
+    listReadable?(accountId: string, role: AccessRole): Promise<string[]>;
+    listWritable?(accountId: string, role: AccessRole): Promise<string[]>;
 }
 
 export type LibraryContentNotifier = (input: {
@@ -52,7 +55,13 @@ export type LibraryContentNotifier = (input: {
 export interface LibraryCapability {
     registerSchema(schema: LibrarySchema): Promise<void>;
     registerLookupProvider(provider: LibraryLookupProvider): () => void;
+    registerFormContribution(contribution: LibraryFormContribution): () => void;
+    listFormContributions(): LibraryFormContribution[];
     listSchemas(): LibrarySchema[];
+    locations(actor: LibraryActor): Promise<{
+        readable: LibraryLocation[];
+        writable: LibraryLocation[];
+    }>;
     getSchema(id: string, version?: number): LibrarySchema | null;
     inspectContentPack(root: string): Promise<LibraryContentPackPlan>;
     ingestContentPack(root: string): Promise<LibraryContentPackReceipt>;
@@ -120,11 +129,13 @@ export interface LibraryCapability {
         entryId: string,
         destination: LibraryLocation,
     ): Promise<LibraryPushRequest>;
+    listPushRequests(actor: LibraryActor): Promise<LibraryPushRequest[]>;
     reviewPush(
         actor: LibraryActor,
         requestId: string,
         decision: "approved" | "rejected",
     ): Promise<LibraryPushRequest>;
+    moveToPersonal(actor: LibraryActor, entryId: string): Promise<LibraryEntry>;
 }
 
 function normalizeLocation(
@@ -142,6 +153,10 @@ function normalizeLocation(
 export class LibraryService implements LibraryCapability {
     private readonly schemas = new Map<string, Map<number, LibrarySchema>>();
     private readonly lookupProviders = new Map<string, LibraryLookupProvider>();
+    private readonly formContributions = new Map<
+        string,
+        LibraryFormContribution
+    >();
 
     constructor(
         private readonly store: LibraryStore,
@@ -186,6 +201,32 @@ export class LibraryService implements LibraryCapability {
         return () => this.lookupProviders.delete(provider.id);
     }
 
+    registerFormContribution(
+        contribution: LibraryFormContribution,
+    ): () => void {
+        if (
+            !contribution.id.trim() ||
+            this.formContributions.has(contribution.id)
+        )
+            throw new Error("form_contribution_registered");
+        const schema = this.schema(contribution.schemaId);
+        const layer = findLayer(schema, contribution.layerId);
+        const fieldIds = new Set((layer.fields ?? []).map(({ id }) => id));
+        if (contribution.fields.some(({ id }) => !fieldIds.has(id)))
+            throw new Error("form_contribution_field_unknown");
+        this.formContributions.set(
+            contribution.id,
+            structuredClone(contribution),
+        );
+        return () => this.formContributions.delete(contribution.id);
+    }
+
+    listFormContributions(): LibraryFormContribution[] {
+        return Array.from(this.formContributions.values(), (contribution) =>
+            structuredClone(contribution),
+        );
+    }
+
     listSchemas(): LibrarySchema[] {
         return Array.from(this.schemas.values(), (versions) =>
             versions.get(Math.max(...versions.keys()))!,
@@ -197,6 +238,28 @@ export class LibraryService implements LibraryCapability {
         if (!versions) return null;
         const selected = versions.get(version ?? Math.max(...versions.keys()));
         return selected ? structuredClone(selected) : null;
+    }
+
+    async locations(actor: LibraryActor) {
+        const personal = { scope: "user", scopeId: actor.accountId } as const;
+        const readable: LibraryLocation[] = [
+            { scope: "global", scopeId: "global" },
+            personal,
+        ];
+        const writable: LibraryLocation[] = [personal];
+        if (actor.role === "admin" || actor.role === "owner")
+            writable.push({ scope: "global", scopeId: "global" });
+        for (const classId of (await this.classAccess?.listReadable?.(
+            actor.accountId,
+            actor.role,
+        )) ?? [])
+            readable.push({ scope: "class", scopeId: classId });
+        for (const classId of (await this.classAccess?.listWritable?.(
+            actor.accountId,
+            actor.role,
+        )) ?? [])
+            writable.push({ scope: "class", scopeId: classId });
+        return { readable, writable };
     }
 
     async inspectContentPack(root: string): Promise<LibraryContentPackPlan> {
@@ -349,7 +412,28 @@ export class LibraryService implements LibraryCapability {
         } else if (filters.layer) {
             throw new Error("schema_required");
         }
-        return this.store.list(location, filters);
+        const entries = await this.store.list(location, filters);
+        return Promise.all(
+            entries.map(async (entry) => ({
+                ...entry,
+                canDelete: await this.canDelete(actor, entry),
+            })),
+        );
+    }
+
+    private async canDelete(
+        actor: LibraryActor,
+        entry: LibraryEntry,
+    ): Promise<boolean> {
+        if (entry.protected) return false;
+        if (actor.role === "admin" || actor.role === "owner") return true;
+        if (entry.scope === "user") return entry.scopeId === actor.accountId;
+        if (entry.scope !== "class" || !this.classAccess) return false;
+        return this.classAccess.canWrite(
+            entry.scopeId,
+            actor.accountId,
+            actor.role,
+        );
     }
 
     async read(
@@ -472,8 +556,28 @@ export class LibraryService implements LibraryCapability {
             throw new Error("invalid_label");
         if (input.hidden !== undefined && typeof input.hidden !== "boolean")
             throw new Error("invalid_hidden");
+        if (
+            input.alwaysShowDefinition !== undefined &&
+            typeof input.alwaysShowDefinition !== "boolean"
+        )
+            throw new Error("invalid_always_show_definition");
         const layer = findLayer(schema, input.layer);
         const fields = structuredClone(input.fields ?? {});
+        if (!input.allowConflict && location.scope !== "global") {
+            const conflict = (
+                await this.store.list(
+                    { scope: "global", scopeId: "global" },
+                    { schemaId: schema.id, layer: input.layer },
+                )
+            ).find(
+                (candidate) =>
+                    candidate.label.trim().normalize().toLocaleLowerCase() ===
+                        input.label.trim().normalize().toLocaleLowerCase() &&
+                    JSON.stringify(candidate.fields ?? {}) ===
+                        JSON.stringify(fields),
+            );
+            if (conflict) throw new Error(`content_conflict:${conflict.id}`);
+        }
         let entryId: string | undefined;
         if (layer.semanticRole === "definition") {
             const localization = layer.definitionLocalization!;
@@ -525,6 +629,7 @@ export class LibraryService implements LibraryCapability {
             {
                 ...input,
                 definitionLanguages: undefined,
+                allowConflict: undefined,
                 schemaVersion: schema.version,
                 label: input.label.trim(),
                 fields,
@@ -564,6 +669,11 @@ export class LibraryService implements LibraryCapability {
             throw new Error("invalid_label");
         if (input.hidden !== undefined && typeof input.hidden !== "boolean")
             throw new Error("invalid_hidden");
+        if (
+            input.alwaysShowDefinition !== undefined &&
+            typeof input.alwaysShowDefinition !== "boolean"
+        )
+            throw new Error("invalid_always_show_definition");
         const schema = this.schema(input.schemaId, input.schemaVersion);
         const layer = findLayer(schema, input.layer);
         const fields = structuredClone(input.fields ?? {});
@@ -627,12 +737,27 @@ export class LibraryService implements LibraryCapability {
             actor.accountId,
             blacklistContentHashes,
             async (entries) => {
+                if (entries.some((entry) => entry.protected))
+                    throw new Error("protected_content");
                 if (
                     actor.role !== "admin" &&
                     actor.role !== "owner" &&
-                    entries.some((entry) => entry.createdBy !== actor.accountId)
+                    entries.some((entry) =>
+                        entry.scope === "class"
+                            ? false
+                            : entry.scope !== "user" ||
+                              entry.scopeId !== actor.accountId,
+                    )
                 ) {
                     throw new Error("forbidden");
+                }
+                for (const entry of entries) {
+                    if (entry.scope === "class")
+                        await this.authorize(
+                            actor,
+                            { scope: "class", scopeId: entry.scopeId },
+                            true,
+                        );
                 }
                 await this.flow?.run("study:library:delete", {
                     actor,
@@ -685,10 +810,35 @@ export class LibraryService implements LibraryCapability {
         entryId: string,
         destination: LibraryLocation,
     ): Promise<LibraryPushRequest> {
-        if (!(await this.read(actor, entryId))) throw new Error("not_found");
+        const source = await this.read(actor, entryId);
+        if (!source) throw new Error("not_found");
+        if (source.protected) throw new Error("protected_content");
+        if (source.scope !== "user" || source.scopeId !== actor.accountId)
+            throw new Error("forbidden");
         const normalized = normalizeLocation(destination, actor);
         if (normalized.scope === "user") throw new Error("invalid_destination");
+        if (normalized.scope === "class")
+            await this.authorize(actor, normalized, false);
         return this.store.createPush(entryId, normalized, actor.accountId);
+    }
+
+    async listPushRequests(actor: LibraryActor): Promise<LibraryPushRequest[]> {
+        const visible: LibraryPushRequest[] = [];
+        for (const request of await this.store.listPushRequests()) {
+            if (request.destination.scope === "global") {
+                if (actor.role === "admin" || actor.role === "owner")
+                    visible.push(request);
+                continue;
+            }
+            try {
+                await this.authorize(actor, request.destination, true);
+                visible.push(request);
+            } catch (error) {
+                if (!(error instanceof Error) || error.message !== "forbidden")
+                    throw error;
+            }
+        }
+        return visible;
     }
 
     async reviewPush(
@@ -701,38 +851,43 @@ export class LibraryService implements LibraryCapability {
         if (request.status !== "pending") throw new Error("already_reviewed");
         await this.authorize(actor, request.destination, true);
         if (decision === "approved") {
-            const copied = new Map<string, string>();
-            const visiting = new Set<string>();
-            const copyEntry = async (entryId: string): Promise<string> => {
-                const existing = copied.get(entryId);
-                if (existing) return existing;
-                if (visiting.has(entryId))
-                    throw new Error("relationship_cycle_copy");
-                visiting.add(entryId);
-                const source = await this.store.get(entryId);
-                if (!source) throw new Error("reference_not_found");
-                const references = [];
-                for (const reference of source.references ?? []) {
-                    references.push({
-                        ...reference,
-                        entryId: await copyEntry(reference.entryId),
-                    });
-                }
-                const created = await this.store.create(
-                    request.destination,
-                    { ...source, references },
-                    source.language,
-                    actor.accountId,
-                );
-                visiting.delete(entryId);
-                copied.set(entryId, created.id);
-                return created.id;
-            };
-            await copyEntry(request.sourceEntryId);
+            const source = await this.store.get(request.sourceEntryId);
+            if (!source) throw new Error("reference_not_found");
+            if (source.protected) throw new Error("protected_content");
+            if (
+                source.scope !== "user" ||
+                source.scopeId !== request.requestedBy
+            )
+                throw new Error("request_source_moved");
+            await this.store.move(source.id, request.destination);
             if (request.destination.scope === "global")
-                await this.notifyNewContent?.({ entryCount: copied.size });
+                await this.notifyNewContent?.({ entryCount: 1 });
         }
         await this.store.reviewPush(requestId, decision, actor.accountId);
         return { ...request, status: decision };
+    }
+
+    async moveToPersonal(
+        actor: LibraryActor,
+        entryId: string,
+    ): Promise<LibraryEntry> {
+        const entry = await this.read(actor, entryId);
+        if (!entry) throw new Error("not_found");
+        if (entry.protected) throw new Error("protected_content");
+        await this.authorize(
+            actor,
+            { scope: entry.scope, scopeId: entry.scopeId },
+            true,
+        );
+        if (entry.scope === "user") throw new Error("invalid_destination");
+        await this.flow?.run("study:library:move", {
+            actor,
+            entry,
+            destination: { scope: "user", scopeId: entry.createdBy },
+        });
+        return this.store.move(entry.id, {
+            scope: "user",
+            scopeId: entry.createdBy,
+        });
     }
 }

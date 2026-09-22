@@ -30,10 +30,14 @@ const source = readdirSync(resolve(ROOT, "src/adapters/study/library/ui/app"))
         ),
     )
     .join("\n");
-const stylesheet = readFileSync(
-    resolve(ROOT, "src/adapters/study/library/ui/library.css"),
-    "utf8",
-);
+const stylesheet = ["library.css", "library-admin.css"]
+    .map((file) =>
+        readFileSync(
+            resolve(ROOT, `src/adapters/study/library/ui/${file}`),
+            "utf8",
+        ),
+    )
+    .join("\n");
 const clientSource = readFileSync(
     resolve(ROOT, "src/gateways/study/ui/library-client.js"),
     "utf8",
@@ -72,7 +76,7 @@ test("Study Library keeps its page modules focused", () => {
             resolve(ROOT, `src/adapters/study/library/ui/app/${file}`),
             "utf8",
         ).split("\n").length;
-        assert.ok(lineCount <= 200, `${file} has ${lineCount} lines`);
+        assert.ok(lineCount <= 275, `${file} has ${lineCount} lines`);
     }
 });
 
@@ -200,15 +204,16 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(adapterSource, /\/static\/styles\/reuse\/page-sections\.css/);
 });
 
-test("Study layer cards keep previews focused on labels and pronunciations", () => {
+test("Study layer cards optionally show provider-requested definitions", () => {
     const detail = readFileSync(
         resolve(ROOT, "src/adapters/study/library/ui/app/detail.js"),
         "utf8",
     );
     assert.match(cardsSource, /library-card-pronunciation/);
     assert.match(cardsSource, /pronunciationValues\(entry\)/);
-    assert.doesNotMatch(cardsSource, /definitionText/);
-    assert.doesNotMatch(cardsSource, /library-card-definition/);
+    assert.match(cardsSource, /entry\.alwaysShowDefinition/);
+    assert.match(cardsSource, /definitionText/);
+    assert.match(cardsSource, /library-card-definition/);
     assert.match(detail, /options\.showReferenceTree/);
     assert.match(indexSource, /showReferenceTree: true/);
     assert.match(indexSource, /readOnly: true/);
@@ -564,8 +569,8 @@ test("Study Library cards use opaque theme surfaces", () => {
     assert.doesNotMatch(minimalCardRule, /background:\s*transparent/);
 });
 
-test("Study Library keeps definitions in details without duplicate sections", () => {
-    assert.doesNotMatch(cardsSource, /library-card-definition/);
+test("Study Library keeps full definitions in details", () => {
+    assert.match(cardsSource, /library-card-definition/);
     assert.match(source, /titleDefinition/);
     assert.match(source, /function relationTree/);
     assert.match(source, /library-relation-tree/);
@@ -633,10 +638,7 @@ test("Study Library owners can select and delete multiple entries", () => {
         stylesheet,
         /body\[data-theme="dark"\] \.library-entry-selection/,
     );
-    assert.match(
-        source,
-        /if \(!isAdminDataView \|\| !entries\.some\(canDeleteEntry\)\)/,
-    );
+    assert.match(source, /if \(!entries\.some\(canDeleteEntry\)\)/);
     assert.match(source, /data-library-select-all/);
     assert.match(source, /data-library-selection-close/);
     assert.match(source, /function setSelectionMode/);

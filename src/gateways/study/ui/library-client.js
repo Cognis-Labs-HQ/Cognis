@@ -9,6 +9,18 @@ export async function fetchLibrarySchemas(languageCode) {
     return (await response.json()).data;
 }
 
+export async function fetchLibraryLocations() {
+    const response = await apiFetch("/api/v1/study/library/locations");
+    if (!response.ok) throw new Error("locations_failed");
+    return (await response.json()).data;
+}
+
+export async function fetchLibraryForms() {
+    const response = await apiFetch("/api/v1/study/library/forms");
+    if (!response.ok) throw new Error("forms_failed");
+    return (await response.json()).data;
+}
+
 export async function fetchLibraryEntries({ scope, scopeId, schemaId, layer }) {
     const query = new URLSearchParams({ scope });
     if (scopeId) query.set("scopeId", scopeId);
@@ -57,7 +69,50 @@ export async function createLibraryEntry(location, entry) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ location, entry }),
     });
-    if (!response.ok) throw new Error("create_failed");
+    if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const error = new Error(payload.error?.code ?? "create_failed");
+        error.details = payload.error;
+        throw error;
+    }
+    return (await response.json()).data;
+}
+
+export async function fetchLibraryPushRequests() {
+    const response = await apiFetch("/api/v1/study/library/push-requests");
+    if (!response.ok) throw new Error("requests_failed");
+    return (await response.json()).data;
+}
+
+export async function requestLibraryPromotion(entryId, destination) {
+    const response = await apiFetch("/api/v1/study/library/push-requests", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ entryId, destination }),
+    });
+    if (!response.ok) throw new Error("request_failed");
+    return (await response.json()).data;
+}
+
+export async function reviewLibraryPromotion(requestId, decision) {
+    const response = await apiFetch(
+        `/api/v1/study/library/push-requests/${encodeURIComponent(requestId)}`,
+        {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ decision }),
+        },
+    );
+    if (!response.ok) throw new Error("review_failed");
+    return (await response.json()).data;
+}
+
+export async function moveLibraryEntryToPersonal(entryId) {
+    const response = await apiFetch(
+        `/api/v1/study/library/entries/${encodeURIComponent(entryId)}/move-to-personal`,
+        { method: "POST" },
+    );
+    if (!response.ok) throw new Error("move_failed");
     return (await response.json()).data;
 }
 

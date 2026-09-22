@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
+  <string name="gateway.study.library_search">検索</string>
+  <string name="gateway.study.library_search_placeholder">すべてのレイヤーを検索</string>
+  <string name="gateway.study.library_search_clear">検索をクリア</string>
+  <string name="gateway.study.library_create">カードを作成</string>
+  <string name="gateway.study.library_requests">リクエスト</string>
+  <string name="gateway.study.library_approve">承認</string>
+  <string name="gateway.study.library_reject">拒否</string>
+  <string name="gateway.study.library_no_requests">保留中のリクエストはありません。</string>
+  <string name="gateway.study.library_visibility">公開範囲</string>
+  <string name="gateway.study.library_always_show_definition">カードのプレビューに定義を常に表示</string>
+  <string name="gateway.study.library_conflict_title">一致するグローバルカード</string>
+  <string name="gateway.study.library_conflict_body">このレイヤーには同じ内容のグローバルカードがあります。重複を作成する前に確認してください。</string>
+  <string name="gateway.study.library_create_anyway">作成を続行</string>
+  <string name="gateway.study.library_request_promotion">公開範囲の昇格を申請</string>
+  <string name="gateway.study.library_move_personal">個人領域へ移動</string>
+  <string name="gateway.study.library_submit_request">リクエストを送信</string>
   <string name="gateway.study.library_new">新着</string>
   <string name="gateway.study.library_layer_empty">このレイヤーにはまだ項目がありません。</string>
   <string name="gateway.study.library_previous">前へ</string>

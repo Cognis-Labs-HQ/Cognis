@@ -111,3 +111,9 @@ Runtime fitting reserves the root card and every child card already placed in th
 ## New-content tracking
 
 The Library stores viewed entry UUIDs per account. Global entries introduced by provider pack ingestion or approved user and administrator contributions trigger a Study Library notification for enabled accounts. Entries absent from an account's viewed cache display a **New** pill in previews and detail popups. Hovering a card or opening it through any Library relationship records it as viewed; the persisted state removes the pill after refresh.
+
+## Contributions, visibility requests, and search
+
+Users can create cards in their personal namespace, teachers can also create in classes they own, and administrators can additionally create global cards. Language providers shape layer-specific form fields through `study:library:registerFormContribution`; visibility, class selection, and definition-preview controls remain adapter-owned. Before personal or classroom creation, the Library reports an identical visible global entry and requires explicit confirmation.
+
+Personal cards may be submitted to an enrolled class for its teacher to review or to the global collection for an administrator to review. Approval moves the original card rather than copying it. Authorized teachers and administrators may move shared content back to its original submitter's personal namespace. Provider manifests may set `protected: true`; protected entries cannot be moved or deleted. Imported and user-created records persist normalized search text, and the Library side menu searches every layer while hiding empty results.

@@ -6,7 +6,7 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { updateLibraryEntry } from "/static/gateways/study/ui/library-client.js";
 import { localizedLabel } from "./presentation.js";
 
-function inputForField(field, value, language, i18n) {
+export function inputForField(field, value, language, i18n) {
     const label = localizedLabel(field.metadata, language);
     const name = `field:${field.id}`;
     const control = field.input?.control;
@@ -60,7 +60,7 @@ function relationshipEditor(relationship, entry, entries, language) {
     return `<label><span>${escapeHtml(label)}</span><select name="relationship:${escapeHtml(relationship.id)}" multiple size="${Math.min(6, Math.max(2, targets.length))}">${targets.map((target) => `<option value="${escapeHtml(target.id)}"${selected.has(target.id) ? " selected" : ""}>${escapeHtml(target.label)}</option>`).join("")}</select></label>`;
 }
 
-function editorBody(entry, schemas, entries, i18n) {
+export function editorBody(entry, schemas, entries, i18n, extraHtml = "") {
     const schema = schemas.find(({ id }) => id === entry.schemaId);
     const layer = schema?.layers.find(({ id }) => id === entry.layer);
     const immutableStringKeyField =
@@ -100,13 +100,13 @@ function editorBody(entry, schemas, entries, i18n) {
                     maxCharacters: 500,
                 },
             ],
-            trustedContentHtml: `${fields}${relationships}<label class="library-admin-hidden"><input name="hidden" type="checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`,
+            trustedContentHtml: `${extraHtml}${fields}${relationships}<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label><label class="library-admin-hidden"><input name="hidden" type="checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`,
         },
     );
     return { html: builder.render(), builder };
 }
 
-function readFields(form, layer, entry) {
+export function readFields(form, layer, entry) {
     const immutableStringKeyField =
         layer?.semanticRole === "definition"
             ? layer.definitionLocalization?.stringKeyField
@@ -150,7 +150,7 @@ function readFields(form, layer, entry) {
     );
 }
 
-function readReferences(form, layer) {
+export function readReferences(form, layer) {
     return (layer?.relationships ?? []).flatMap((relationship) =>
         Array.from(
             form.elements[`relationship:${relationship.id}`]?.selectedOptions ??
@@ -382,6 +382,8 @@ export function bindAdminLibraryInteractions(
                             layer: entry.layer,
                             label: form.elements.label.value,
                             hidden: form.elements.hidden.checked,
+                            alwaysShowDefinition:
+                                form.elements.alwaysShowDefinition.checked,
                             fields: readFields(form, layer, entry),
                             references: readReferences(form, layer),
                         });

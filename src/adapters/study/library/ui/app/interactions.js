@@ -1,8 +1,13 @@
 import { showToast } from "/static/reuse/toast.js";
 import {
     deleteLibraryEntries,
+    fetchLibraryLocations,
     markLibraryEntriesViewed,
+    moveLibraryEntryToPersonal,
+    requestLibraryPromotion,
 } from "/static/gateways/study/ui/library-client.js";
+import { openPopup } from "/static/reuse/popup.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
 import { applyLibraryFilters } from "./filters.js";
 import { activateLibraryLayer, renderBrowser } from "./layer-cards.js";
 import { openEntryPopup } from "./entry-popup.js";
@@ -107,6 +112,14 @@ export function bindLibraryInteractions(root, context) {
                 void deleteSelection();
                 return;
             }
+            if (event.target.closest("[data-library-promote-selection]")) {
+                void promoteSelection();
+                return;
+            }
+            if (event.target.closest("[data-library-downgrade-selection]")) {
+                void downgradeSelection();
+                return;
+            }
             if (event.target.matches("[data-library-select-entry]")) return;
             if (event.target.closest("[data-library-admin-edit]")) return;
             const filter = event.target.closest("button[data-library-filter]");
@@ -196,5 +209,55 @@ export function bindLibraryInteractions(root, context) {
                 variant: "error",
             });
         }
+    }
+
+    async function promoteSelection() {
+        const [entryId] = selectedEntryIds(root);
+        const entry = entries.find(({ id }) => id === entryId);
+        if (!entry || entry.protected || entry.scope !== "user") return;
+        const { readable } = await fetchLibraryLocations();
+        const destinations = readable.filter(
+            ({ scope }) => scope === "class" || scope === "global",
+        );
+        let select;
+        const action = await openPopup({
+            title: i18n.t("gateway.study.library_request_promotion"),
+            body: `<label>${escapeHtml(i18n.t("gateway.study.library_visibility"))}<select data-library-promotion-destination>${destinations.map((location) => `<option value="${escapeHtml(`${location.scope}:${location.scopeId ?? location.scope}`)}">${escapeHtml(location.scope === "class" ? location.scopeId : i18n.t("gateway.study.library_scope_global"))}</option>`).join("")}</select></label>`,
+            actions: [
+                {
+                    id: "submit",
+                    label: i18n.t("gateway.study.library_submit_request"),
+                    variant: "confirm",
+                },
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "neutral",
+                },
+            ],
+            onMount: (overlay) => {
+                select = overlay.querySelector(
+                    "[data-library-promotion-destination]",
+                );
+            },
+        });
+        if (action !== "submit" || !select?.value) return;
+        const [scope, scopeId] = select.value.split(":");
+        await requestLibraryPromotion(entry.id, { scope, scopeId });
+        setSelectionMode(root, false, i18n);
+    }
+
+    async function downgradeSelection() {
+        const [entryId] = selectedEntryIds(root);
+        const entry = entries.find(({ id }) => id === entryId);
+        if (!entry || entry.protected || entry.scope === "user") return;
+        const moved = await moveLibraryEntryToPersonal(entry.id);
+        entries = entries.filter(({ id }) => id !== entry.id);
+        if (moved.scopeId === localStorage.getItem("cognis_account"))
+            entries.push(moved);
+        root.querySelector(".library-browser").innerHTML =
+            context.renderContent?.(entries) ??
+            renderBrowser(schemas, entries, i18n, requestedLayer);
+        setSelectionMode(root, false, i18n);
     }
 }

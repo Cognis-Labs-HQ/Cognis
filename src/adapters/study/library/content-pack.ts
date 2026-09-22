@@ -80,6 +80,11 @@ function validateManifest(value: unknown): LibraryContentPackManifest {
     ) {
         throw new Error("invalid_content_pack_manifest");
     }
+    if (
+        manifest.protected !== undefined &&
+        typeof manifest.protected !== "boolean"
+    )
+        throw new Error("invalid_content_pack_manifest");
     return manifest;
 }
 
@@ -134,6 +139,7 @@ export function contentRecordHash(
                 layer: record.layer,
                 label: record.label.trim(),
                 ...(record.hidden === true ? { hidden: true } : {}),
+                ...(manifest.protected === true ? { protected: true } : {}),
                 fields: record.fields ?? {},
                 references: record.references ?? [],
             }),
