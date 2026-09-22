@@ -110,6 +110,10 @@ Library のプレビューではメタデータとスコープの位置を固定
 
 ライブラリ更新時に生成済みのローカライズキーを維持し、削除した項目を直ちに画面から除去します。実績評価を提供元に限定し、ブースターがグローバル修飾子を上書きしないようにし、無効なモジュールのエントリポイントをインポート前に境界検証します。
 
+## 外部モジュールの並行復元
+
+保存済み状態の復元時に、有効な外部モジュールを並行して起動するようにしました。遅い、または停止したモジュールが有効なモジュールごとにタイムアウトを直列で追加せず、共有された一つの制限付き起動時間内で処理されます。これにより API 要求の待機が数分間続くことを防ぎ、その結果生じていたプロキシの 499 および 504 応答を解消します。
+
 ## コミット
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -136,3 +140,4 @@ Library のプレビューではメタデータとスコープの位置を固定
 - [9fcc23e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fcc23e3)
 - [87275211](https://github.com/Cognis-Labs-HQ/Cognis/commit/87275211)
 - [043b1e4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/043b1e4b)
+- [cdc1240f](https://github.com/Cognis-Labs-HQ/Cognis/commit/cdc1240f)

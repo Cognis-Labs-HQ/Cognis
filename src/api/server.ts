@@ -695,7 +695,14 @@ export function buildServer(deps: ApiDependencies) {
                     }));
                 }
             }
-            return moduleExtensionRoutes.refresh();
+            void moduleExtensionRoutes.refresh().catch((error) => {
+                log("error", "Failed to bootstrap external module routes.", {
+                    component: "api-server",
+                    operation: "bootstrap-module-routes",
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+            });
         })
         .catch((error) => {
             log("error", "Failed to restore persisted runtime states.", {

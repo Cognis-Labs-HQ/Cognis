@@ -110,6 +110,10 @@ The leaderboard page now reports request failures, supports selecting every acce
 
 Library updates preserve generated localization keys and deleted entries disappear immediately. Engagement achievements stay within their provider and booster redemption cannot overwrite global modifiers. Disabled module entrypoints are boundary-validated before import.
 
+## Concurrent external module restoration
+
+Enabled external modules now bootstrap concurrently during persisted-state restoration. A slow or stalled module therefore consumes one bounded bootstrap window instead of serially adding another timeout for every enabled module, preventing the API request barrier from remaining blocked for minutes and eliminating the resulting proxy 499 and 504 responses.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -136,3 +140,4 @@ Library updates preserve generated localization keys and deleted entries disappe
 - [9fcc23e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fcc23e3)
 - [87275211](https://github.com/Cognis-Labs-HQ/Cognis/commit/87275211)
 - [043b1e4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/043b1e4b)
+- [cdc1240f](https://github.com/Cognis-Labs-HQ/Cognis/commit/cdc1240f)

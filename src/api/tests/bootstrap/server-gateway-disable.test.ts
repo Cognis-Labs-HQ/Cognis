@@ -291,7 +291,7 @@ test("core component discovery reads adapter dependency identities", async () =>
     ]);
 });
 
-test("buildServer loads external module assets before accepting requests", async () => {
+test("buildServer serves core requests while external modules bootstrap", async () => {
     const externalRoot = await mkdtemp(
         path.join(tmpdir(), "cognis-server-external-module-"),
     );
@@ -300,7 +300,8 @@ test("buildServer loads external module assets before accepting requests", async
     await mkdir(path.join(moduleRoot, "ui"), { recursive: true });
     await writeFile(
         path.join(moduleRoot, "bootstrap.js"),
-        `export function bootstrapModule(ctx) {
+        `export async function bootstrapModule(ctx) {
+            await new Promise((resolve) => setTimeout(resolve, 1_000));
             ctx.registerStaticDir("", ctx.moduleRoot + "/ui");
         }`,
     );
@@ -330,11 +331,19 @@ test("buildServer loads external module assets before accepting requests", async
 
     try {
         const port = await listen(server);
-        const response = await fetch(
+        const startedAt = Date.now();
+        const loginResponse = await fetch(`http://127.0.0.1:${port}/login`);
+        assert.equal(loginResponse.status, 200);
+        assert.ok(
+            Date.now() - startedAt < 750,
+            "core requests must not wait for module bootstrap",
+        );
+        await new Promise((resolve) => setTimeout(resolve, 1_050));
+        const assetResponse = await fetch(
             `http://127.0.0.1:${port}/static/modules/external-module/app.js`,
         );
-        assert.equal(response.status, 200);
-        assert.equal(await response.text(), "export {};");
+        assert.equal(assetResponse.status, 200);
+        assert.equal(await assetResponse.text(), "export {};");
     } finally {
         await close(server);
         await rm(externalRoot, { recursive: true, force: true });

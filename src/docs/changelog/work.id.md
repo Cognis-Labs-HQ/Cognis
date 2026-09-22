@@ -110,6 +110,10 @@ Halaman papan peringkat kini melaporkan kegagalan permintaan, mendukung pemiliha
 
 Pembaruan pustaka mempertahankan kunci pelokalan yang dibuat dan entri yang dihapus langsung menghilang. Pencapaian tetap terbatas pada penyedianya, penukaran booster tidak menimpa pengubah global, dan titik masuk modul nonaktif divalidasi batasnya sebelum diimpor.
 
+## Pemulihan modul eksternal secara bersamaan
+
+Modul eksternal yang aktif kini dimulai secara bersamaan ketika status tersimpan dipulihkan. Dengan demikian, modul yang lambat atau macet hanya memakai satu jendela waktu mulai yang terbatas, bukan menambahkan batas waktu secara berurutan untuk setiap modul aktif. Hal ini mencegah penghalang permintaan API tertahan selama beberapa menit dan menghilangkan respons proksi 499 serta 504 yang diakibatkannya.
+
 ## Commit
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -136,3 +140,4 @@ Pembaruan pustaka mempertahankan kunci pelokalan yang dibuat dan entri yang diha
 - [9fcc23e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fcc23e3)
 - [87275211](https://github.com/Cognis-Labs-HQ/Cognis/commit/87275211)
 - [043b1e4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/043b1e4b)
+- [cdc1240f](https://github.com/Cognis-Labs-HQ/Cognis/commit/cdc1240f)

@@ -10,6 +10,7 @@ import type {
 import { validateModuleBoundaries as validateModule } from "@cognis/core";
 import path from "node:path";
 import { stat } from "node:fs/promises";
+import { runWithTimeout as timeout } from "./run-with-timeout.js";
 import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
 import type { UIRegistry } from "../../api/reuse/ui-registry.js";
@@ -39,7 +40,6 @@ interface RouteHandler {
         res: ServerResponse,
     ) => Promise<void> | void;
 }
-
 interface ModuleUiRegistrationContext {
     moduleId: string;
     moduleUuid: string;
@@ -103,7 +103,6 @@ interface ModuleUiRegistrationContext {
         access?: RoleAccessPolicy;
     }): void;
 }
-
 interface ModuleApiRegistrationContext {
     moduleId: string;
     moduleRoot: string;
@@ -150,7 +149,6 @@ interface ModuleBootstrapCtx
     registerFlow(flow: FlowRegistration): void;
     getModuleAssurance(moduleId: string): Promise<ModuleAssurance | null>;
 }
-
 interface ModuleBootstrapPlugin {
     bootstrapModule?: (
         ctx: ModuleBootstrapCtx,
@@ -654,31 +652,6 @@ export function createModuleExtensionRoutes(
             : null;
     }
 
-    async function bootstrapWithTimeout(
-        plugin: ModuleBootstrapPlugin,
-        moduleCtx: ModuleBootstrapCtx,
-    ): Promise<void | (() => void | Promise<void>)> {
-        let timer: NodeJS.Timeout | undefined;
-        try {
-            return await Promise.race([
-                plugin.bootstrapModule!(moduleCtx),
-                new Promise<never>((_resolve, reject) => {
-                    timer = setTimeout(
-                        () =>
-                            reject(
-                                new Error(
-                                    `Module bootstrap timed out after ${bootstrapTimeoutMs}ms`,
-                                ),
-                            ),
-                        bootstrapTimeoutMs,
-                    );
-                }),
-            ]);
-        } finally {
-            if (timer) clearTimeout(timer);
-        }
-    }
-
     async function refresh(refreshOptions?: { throwOnFailure?: boolean }) {
         for (const [moduleId, loaded] of loadedModules) {
             for (const teardown of [
@@ -719,6 +692,7 @@ export function createModuleExtensionRoutes(
         loadedModules.clear();
         assuranceByModuleId.clear();
         const nextHandlers: RouteHandler[] = [];
+        const enabledModuleLoads: Promise<void>[] = [];
         const manifests = await runtime.listManifests();
 
         for (const manifest of manifests) {
@@ -816,61 +790,87 @@ export function createModuleExtensionRoutes(
                 continue;
             }
             if (!entrypoint) continue;
-            log?.("debug", "Loading module route entrypoint.", {
-                component: "module-extension-routes",
-                moduleId: manifest.id,
-                pluginPath: entrypoint,
-            });
-            try {
-                const plugin = (await import(
-                    `${entrypoint}?t=${Date.now()}`
-                )) as ModuleBootstrapPlugin;
-                if (typeof plugin.bootstrapModule !== "function") {
-                    throw new Error("module_bootstrap_export_missing");
-                }
-                const result = await bootstrapWithTimeout(plugin, moduleCtx);
-                scope.active = false;
-                loadedModules.set(manifest.id, {
-                    ctx: moduleCtx,
-                    plugin,
-                    dispose: typeof result === "function" ? result : undefined,
-                    ...scope,
-                });
-            } catch (error) {
-                scope.active = false;
-                const systemCtx =
-                    options.routeContext.getCapability<Ctx>("system:ctx");
-                for (const hook of scope.hooks) {
-                    systemCtx?.removeFlowStageHook(
-                        hook.flowId,
-                        hook.stageId,
-                        hook.hookId,
-                    );
-                }
-                for (const capability of scope.capabilities) {
-                    systemCtx?.removeCapability(capability);
-                }
-                for (const flowId of scope.flows) {
-                    systemCtx?.unregisterFlow(flowId);
-                }
-                options?.uiRegistry?.unregisterModuleContributions(manifest.id);
-                for (let index = nextHandlers.length - 1; index >= 0; index--) {
-                    if (nextHandlers[index].moduleId === manifest.id) {
-                        nextHandlers.splice(index, 1);
+            enabledModuleLoads.push(
+                (async () => {
+                    log?.("debug", "Loading module route entrypoint.", {
+                        component: "module-extension-routes",
+                        moduleId: manifest.id,
+                        pluginPath: entrypoint,
+                    });
+                    try {
+                        const plugin = (await import(
+                            `${entrypoint}?t=${Date.now()}`
+                        )) as ModuleBootstrapPlugin;
+                        if (typeof plugin.bootstrapModule !== "function") {
+                            throw new Error("module_bootstrap_export_missing");
+                        }
+                        const result = await timeout(
+                            () => plugin.bootstrapModule!(moduleCtx),
+                            bootstrapTimeoutMs,
+                            `Module bootstrap timed out after ${bootstrapTimeoutMs}ms`,
+                        );
+                        scope.active = false;
+                        loadedModules.set(manifest.id, {
+                            ctx: moduleCtx,
+                            plugin,
+                            dispose:
+                                typeof result === "function"
+                                    ? result
+                                    : undefined,
+                            ...scope,
+                        });
+                    } catch (error) {
+                        scope.active = false;
+                        const systemCtx =
+                            options.routeContext.getCapability<Ctx>(
+                                "system:ctx",
+                            );
+                        for (const hook of scope.hooks) {
+                            systemCtx?.removeFlowStageHook(
+                                hook.flowId,
+                                hook.stageId,
+                                hook.hookId,
+                            );
+                        }
+                        for (const capability of scope.capabilities) {
+                            systemCtx?.removeCapability(capability);
+                        }
+                        for (const flowId of scope.flows) {
+                            systemCtx?.unregisterFlow(flowId);
+                        }
+                        options?.uiRegistry?.unregisterModuleContributions(
+                            manifest.id,
+                        );
+                        for (
+                            let index = nextHandlers.length - 1;
+                            index >= 0;
+                            index--
+                        ) {
+                            if (nextHandlers[index].moduleId === manifest.id) {
+                                nextHandlers.splice(index, 1);
+                            }
+                        }
+                        log?.(
+                            "error",
+                            "Failed to load module API route plugin.",
+                            {
+                                component: "module-extension-routes",
+                                moduleId: manifest.id,
+                                pluginPath: entrypoint,
+                                error:
+                                    error instanceof Error
+                                        ? error.message
+                                        : String(error),
+                            },
+                        );
+                        await options.onBootstrapFailed?.(manifest.id);
+                        if (refreshOptions?.throwOnFailure) throw error;
                     }
-                }
-                log?.("error", "Failed to load module API route plugin.", {
-                    component: "module-extension-routes",
-                    moduleId: manifest.id,
-                    pluginPath: entrypoint,
-                    error:
-                        error instanceof Error ? error.message : String(error),
-                });
-                await options.onBootstrapFailed?.(manifest.id);
-                if (refreshOptions?.throwOnFailure) throw error;
-            }
+                })(),
+            );
         }
 
+        await Promise.all(enabledModuleLoads);
         handlers = nextHandlers;
     }
 

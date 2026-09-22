@@ -648,3 +648,52 @@ test("unprivileged modules cooperate through provider-owned capabilities", async
         await rm(modulesRoot, { recursive: true, force: true });
     }
 });
+
+test("enabled module bootstrap timeouts run concurrently during refresh", async () => {
+    const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
+    const manifests = [
+        { id: "slow-one", uuid: "11111111-1111-4111-8111-111111111111" },
+        { id: "slow-two", uuid: "22222222-2222-4222-8222-222222222222" },
+    ];
+    for (const manifest of manifests) {
+        const moduleRoot = path.join(modulesRoot, manifest.uuid);
+        await mkdir(moduleRoot);
+        await writeFile(
+            path.join(moduleRoot, "bootstrap.js"),
+            "export async function bootstrapModule() { await new Promise(() => {}); }",
+        );
+    }
+    const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () =>
+                manifests.map((manifest) => ({
+                    ...manifest,
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                })),
+        } as any,
+        () => true,
+        undefined,
+        {
+            bootstrapTimeoutMs: 100,
+            routeContext: createDefaultRouteContext(),
+        },
+    );
+
+    try {
+        const startedAt = Date.now();
+        await extensions.refresh();
+        assert.ok(
+            Date.now() - startedAt < 180,
+            "module timeouts must share one concurrent wait window",
+        );
+    } finally {
+        if (previousModulesRoot === undefined) {
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        } else {
+            process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
+        }
+        await rm(modulesRoot, { recursive: true, force: true });
+    }
+});

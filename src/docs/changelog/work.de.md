@@ -110,6 +110,10 @@ Die Bestenlistenseite meldet Anfragefehler, erlaubt die Auswahl aller zugänglic
 
 Bibliotheksaktualisierungen bewahren erzeugte Lokalisierungsschlüssel, und gelöschte Einträge verschwinden sofort. Erfolge bleiben auf ihren Anbieter beschränkt, Booster überschreiben keine globalen Modifikatoren, und Einstiegspunkte deaktivierter Module werden vor dem Import auf Grenzen geprüft.
 
+## Gleichzeitige Wiederherstellung externer Module
+
+Aktivierte externe Module werden bei der Wiederherstellung des gespeicherten Zustands nun gleichzeitig gestartet. Ein langsames oder blockiertes Modul beansprucht dadurch nur ein gemeinsames begrenztes Startzeitfenster, statt für jedes aktivierte Modul nacheinander ein weiteres Zeitlimit hinzuzufügen. So bleibt die API-Anfragesperre nicht minutenlang blockiert und die daraus entstehenden Proxy-Antworten 499 und 504 werden verhindert.
+
 ## Commits
 
 - [f006429b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f006429b)
@@ -136,3 +140,4 @@ Bibliotheksaktualisierungen bewahren erzeugte Lokalisierungsschlüssel, und gel�
 - [9fcc23e3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fcc23e3)
 - [87275211](https://github.com/Cognis-Labs-HQ/Cognis/commit/87275211)
 - [043b1e4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/043b1e4b)
+- [cdc1240f](https://github.com/Cognis-Labs-HQ/Cognis/commit/cdc1240f)
