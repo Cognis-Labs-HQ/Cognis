@@ -114,6 +114,10 @@ Library グリッドのクリップ境界は維持します。展開した分岐
 
 関連エントリのカードから語彙へ移動した場合、移動元カードのローカライズ済み定義をフォールバックとして引き継ぐようにしました。語彙レコード自身の定義を常に優先し、それ以外のポップアップ移動ではフォールバックを消去して、閲覧経路間で意味が混在しないようにします。
 
+## 順序付きの複数定義を表示
+
+カードはプロバイダーの定義順序を保持するようになりました。最初のローカライズ済み定義はタイトルと重複しない場合にタイトル横へ表示され、残りは存在する場合だけ「追加の定義」セクションに表示されます。移動元カードのフォールバックは、語彙に定義がない場合だけ使用されます。
+
 ## コミット
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -139,3 +143,4 @@ Library グリッドのクリップ境界は維持します。展開した分岐
 - [748063b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/748063b10cc208747832e7880098858db648a415)
 - [e96d273f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e96d273fa56edd2c2ded09ca993724437ab85c93)
 - [66867a1d](https://github.com/Cognis-Labs-HQ/Cognis/commit/66867a1d08a247fa73824aeba982ccba1f9b5d8c)
+- [c113e7a1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c113e7a1f5cb7bc2a86c39b8f419ae6b953de9e3)

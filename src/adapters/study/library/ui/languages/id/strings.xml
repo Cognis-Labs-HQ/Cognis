@@ -43,4 +43,5 @@
   <string name="gateway.study.library_audio_upload_success">Audio diunggah.</string>
   <string name="gateway.study.library_audio_upload_error">Berkas audio tidak dapat diunggah.</string>
   <string name="gateway.study.library_admin_view_title">Lihat {{ entry }}</string>
+  <string name="gateway.study.library_additional_definitions">Definisi Tambahan</string>
 </resources>

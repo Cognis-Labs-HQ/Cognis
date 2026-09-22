@@ -7,7 +7,7 @@ import {
     distinctPronunciationLabels,
     resolveLabelComposition,
 } from "./composition-links.js";
-import { titleDefinitionForRole } from "./title-definition.js";
+import { visibleTitleDefinition } from "./title-definition.js";
 
 function linkedItems(entries) {
     return entries.map((entry) => ({
@@ -72,7 +72,8 @@ export function popupTitleDetailItems(
 ) {
     const layer = layerForEntry(schemas, detail.entry);
     if (layer?.semanticRole === "lexicalUnit") {
-        const localizedDefinition = titleDefinitionForRole(
+        const localizedDefinition = visibleTitleDefinition(
+            detail.entry.label,
             layer.semanticRole,
             titleDefinition,
             sourceDefinition,
@@ -121,9 +122,14 @@ export function popupTitleDetailItems(
         ];
     });
     const items = [...spellingItems, ...pronunciationItems];
-    if (titleDefinition) {
+    const visibleDefinition = visibleTitleDefinition(
+        detail.entry.label,
+        layer?.semanticRole,
+        titleDefinition,
+    );
+    if (visibleDefinition) {
         items.push(...(items.length ? [{ label: " · " }] : []), {
-            label: titleDefinition,
+            label: visibleDefinition,
         });
     }
     return items;

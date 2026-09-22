@@ -43,4 +43,5 @@
   <string name="gateway.study.library_audio_upload_success">音声をアップロードしました。</string>
   <string name="gateway.study.library_audio_upload_error">音声ファイルをアップロードできませんでした。</string>
   <string name="gateway.study.library_admin_view_title">{{ entry }}を表示</string>
+  <string name="gateway.study.library_additional_definitions">追加の定義</string>
 </resources>

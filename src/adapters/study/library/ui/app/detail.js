@@ -1,7 +1,6 @@
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
-    definitionText,
     isMeaningLayer,
     isWritingUnitLayer,
     layerForEntry,
@@ -15,7 +14,9 @@ import {
     renderEntryLink,
     renderMetadataPills,
     renderScope,
+    section,
 } from "./presentation.js";
+import { definitionDisplay } from "./definition-display.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
 
@@ -156,27 +157,12 @@ export async function composeDetail(
                 : [],
         );
     const layer = layerForEntry(schemas, detail.entry);
-    const definitions = (detail.references ?? []).filter((candidate) =>
-        isMeaningLayer(layerForEntry(schemas, candidate)),
+    const { titleDefinition, additionalDefinitions } = definitionDisplay(
+        detail,
+        schemas,
+        languageCode,
+        flow.stageResults,
     );
-    const flowDefinition = Object.values(flow.stageResults)
-        .flat()
-        .find(
-            (contribution) =>
-                typeof contribution?.displayDefinition === "string",
-        )?.displayDefinition;
-    const titleDefinition =
-        flowDefinition ??
-        definitions
-            .map((definition) =>
-                definitionText(
-                    definition,
-                    layerForEntry(schemas, definition),
-                    languageCode,
-                ),
-            )
-            .filter(Boolean)
-            .join(" · ");
     const actions =
         options.readOnly || layer?.semanticRole === "particle"
             ? []
@@ -188,6 +174,10 @@ export async function composeDetail(
     const sections = [
         ...sectionsFor("beforeCore"),
         ...coreSections(detail, schemas, entries, i18n, options),
+        section(
+            i18n.t("gateway.study.library_additional_definitions"),
+            additionalDefinitions,
+        ),
         ...sectionsFor("core"),
         ...sectionsFor("afterCore"),
     ];

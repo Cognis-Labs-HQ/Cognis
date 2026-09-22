@@ -114,6 +114,10 @@ Popup kosakata kini menggunakan judul utama hanya untuk label unit leksikal dan 
 
 Membuka kosakata melalui kartu entri terkait kini membawa definisi terlokalkan kartu sumber sebagai nilai cadangan. Definisi milik catatan kosakata tetap menjadi sumber utama, sedangkan navigasi popup lain menghapus nilai cadangan agar makna tidak bocor antarjalur penelusuran.
 
+## Tampilkan beberapa definisi berurutan
+
+Kartu kini mempertahankan urutan definisi penyedia: definisi terlokalkan pertama ditampilkan di samping judul kecuali menduplikasi judul, sedangkan definisi sisanya hanya ditampilkan dalam bagian Definisi Tambahan jika tersedia. Nilai cadangan dari kartu sumber hanya digunakan jika kosakata tidak menyediakan definisi.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -139,3 +143,4 @@ Membuka kosakata melalui kartu entri terkait kini membawa definisi terlokalkan k
 - [748063b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/748063b10cc208747832e7880098858db648a415)
 - [e96d273f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e96d273fa56edd2c2ded09ca993724437ab85c93)
 - [66867a1d](https://github.com/Cognis-Labs-HQ/Cognis/commit/66867a1d08a247fa73824aeba982ccba1f9b5d8c)
+- [c113e7a1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c113e7a1f5cb7bc2a86c39b8f419ae6b953de9e3)

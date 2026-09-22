@@ -220,8 +220,12 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /function secondarySpellingGroups/);
     assert.match(
         source,
-        /layer\?\.semanticRole === "lexicalUnit"[\s\S]*titleDefinitionForRole/,
+        /layer\?\.semanticRole === "lexicalUnit"[\s\S]*visibleTitleDefinition/,
     );
+    assert.match(source, /function orderedDefinitionDisplay/);
+    assert.match(source, /titleDefinition: definitions\[0\]/);
+    assert.match(source, /additionalDefinitions: definitions\.slice\(1\)/);
+    assert.match(source, /gateway\.study\.library_additional_definitions/);
     assert.match(
         source,
         /parentEntry && layer\?\.semanticRole !== "lexicalUnit"/,

@@ -103,3 +103,5 @@ A displayed card keeps its assigned position while descendants are fitted indepe
 Lexical-unit detail popups keep the vocabulary label solely in the popup title. Their title detail contains only the definition localized for the active Cognis language, avoiding duplicate spellings or pronunciations beside the heading.
 
 When a related-entry link opens a lexical unit without its own definition, the popup inherits the localized definition displayed by the source card. A definition supplied by the vocabulary record always wins, allowing several vocabulary records linked to one writing unit to retain distinct niche meanings. Previous/next controls and title-composition links do not carry this fallback context.
+
+Cards may reference multiple definition records in provider order. The first localized definition is prominent in the title detail unless it duplicates the card title; later definitions appear in an Additional Definitions section, which is omitted when empty. Context inherited from a navigation source remains a fallback only when the destination vocabulary supplies no definitions.

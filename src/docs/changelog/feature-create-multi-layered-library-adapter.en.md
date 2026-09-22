@@ -114,6 +114,10 @@ Vocabulary popups now reserve the main title for the lexical-unit label and show
 
 Following a related-entry card into vocabulary now carries the source card’s localized definition as a fallback. The vocabulary record’s own definition remains authoritative, and unrelated popup navigation clears the fallback so meanings cannot leak between browsing paths.
 
+## Present ordered multiple definitions
+
+Cards now preserve provider definition order: the first localized definition is promoted beside the title unless it duplicates the title, while remaining definitions render in an Additional Definitions section only when present. A navigation-source fallback is used only when the vocabulary supplies no definitions.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -139,3 +143,4 @@ Following a related-entry card into vocabulary now carries the source card’s l
 - [748063b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/748063b10cc208747832e7880098858db648a415)
 - [e96d273f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e96d273fa56edd2c2ded09ca993724437ab85c93)
 - [66867a1d](https://github.com/Cognis-Labs-HQ/Cognis/commit/66867a1d08a247fa73824aeba982ccba1f9b5d8c)
+- [c113e7a1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c113e7a1f5cb7bc2a86c39b8f419ae6b953de9e3)

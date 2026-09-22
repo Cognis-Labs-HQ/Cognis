@@ -114,6 +114,10 @@ Vokabel-Popups verwenden den Haupttitel jetzt ausschließlich für die Bezeichnu
 
 Beim Öffnen einer Vokabel über eine verwandte Karte wird deren lokalisierte Definition jetzt als Rückfallwert übernommen. Die eigene Definition des Vokabeleintrags bleibt maßgeblich; andere Popup-Navigationen löschen den Rückfallwert, damit Bedeutungen nicht zwischen Navigationspfaden übertragen werden.
 
+## Mehrere geordnete Definitionen darstellen
+
+Karten bewahren jetzt die Definitionsreihenfolge des Anbieters: Die erste lokalisierte Definition wird neben dem Titel hervorgehoben, sofern sie diesen nicht dupliziert; weitere Definitionen erscheinen nur bei vorhandenem Inhalt im Abschnitt „Zusätzliche Definitionen“. Ein Rückfallwert der Ausgangskarte wird nur verwendet, wenn die Vokabel keine Definition bereitstellt.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -139,3 +143,4 @@ Beim Öffnen einer Vokabel über eine verwandte Karte wird deren lokalisierte De
 - [748063b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/748063b10cc208747832e7880098858db648a415)
 - [e96d273f](https://github.com/Cognis-Labs-HQ/Cognis/commit/e96d273fa56edd2c2ded09ca993724437ab85c93)
 - [66867a1d](https://github.com/Cognis-Labs-HQ/Cognis/commit/66867a1d08a247fa73824aeba982ccba1f9b5d8c)
+- [c113e7a1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c113e7a1f5cb7bc2a86c39b8f419ae6b953de9e3)

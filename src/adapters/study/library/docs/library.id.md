@@ -87,3 +87,5 @@ Kartu yang ditampilkan mempertahankan posisi yang ditetapkan sementara turunanny
 Popup detail unit leksikal menampilkan label kosakata hanya pada judul popup. Detail judul hanya memuat definisi yang dilokalkan untuk bahasa Cognis aktif sehingga ejaan atau pelafalan tidak terduplikasi di samping judul.
 
 Saat tautan entri terkait membuka unit leksikal tanpa definisinya sendiri, popup mewarisi definisi terlokalkan yang ditampilkan kartu sumber. Definisi yang disediakan catatan kosakata selalu diutamakan sehingga beberapa catatan kosakata yang tertaut ke satu unit tulisan tetap dapat memiliki makna khusus yang berbeda. Kontrol sebelumnya/berikutnya dan tautan komposisi judul tidak membawa konteks cadangan ini.
+
+Kartu dapat merujuk beberapa catatan definisi sesuai urutan penyedia. Definisi terlokalkan pertama ditonjolkan pada detail judul kecuali isinya sama dengan judul kartu; definisi berikutnya ditampilkan dalam bagian Definisi Tambahan yang dihilangkan ketika kosong. Konteks yang diwarisi dari sumber navigasi tetap hanya menjadi cadangan saat kosakata tujuan tidak menyediakan definisi.

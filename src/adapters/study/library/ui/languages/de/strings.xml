@@ -43,4 +43,5 @@
   <string name="gateway.study.library_audio_upload_success">Audio wurde hochgeladen.</string>
   <string name="gateway.study.library_audio_upload_error">Die Audiodatei konnte nicht hochgeladen werden.</string>
   <string name="gateway.study.library_admin_view_title">{{ entry }} anzeigen</string>
+  <string name="gateway.study.library_additional_definitions">Zusätzliche Definitionen</string>
 </resources>
