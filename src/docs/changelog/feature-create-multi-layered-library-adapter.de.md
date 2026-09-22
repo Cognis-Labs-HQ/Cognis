@@ -94,6 +94,10 @@ Lernkarten zeigen jetzt eine schlanke einzeilige Kombination aus Bezeichnung und
 
 Die Flächen der Lernkarten wurden abgedunkelt, Variantenhinweise erhalten eine kompakte, nicht verdeckende Ecke und redundante Hover-Einblendungen für Beziehungen wurden entfernt. Vokabelbeziehungen enthalten nun die vom Anbieter gelieferte Aussprache, damit bedeutungsvolle Ein-Zeichen-Wörter von ihren Schriftzeichen-Datensätzen unterscheidbar bleiben.
 
+## Verschachtelte Variantenäste sichtbar halten
+
+Library-Raster geben ihre Begrenzung frei, während ein Variantenast geöffnet ist, sodass alle verschachtelten Karten sichtbar bleiben. Der Hinweis zum Gedrückthalten wird nicht mehr animiert oder unscharf und seine Schrift ist 25 % größer.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -114,3 +118,4 @@ Die Flächen der Lernkarten wurden abgedunkelt, Variantenhinweise erhalten eine 
 - [f9ce159d](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9ce159da8ad07c2ff59f913eebab32a69f26921)
 - [03dd55f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/03dd55f02c762ae99dc3870322ceb9864cb9e325)
 - [e8019a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8019a21e12295863fcf009a52385c85069498de)
+- [806058fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/806058fe26c0d127f0bacf034530b1023131d380)

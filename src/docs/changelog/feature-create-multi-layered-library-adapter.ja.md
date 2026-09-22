@@ -94,6 +94,10 @@ Library の行全体で読み取り専用の詳細を開き、テーマ対応の
 
 学習カードの表面を暗くし、バリアント案内用に内容を隠さない小さな領域を確保し、関係リンクの重複するホバー表示を削除しました。語彙関係のラベルにはプロバイダー提供の発音を含め、意味のある 1 文字語を対応する書記単位レコードと区別できるようにしました。
 
+## 入れ子のバリアント分岐を表示
+
+バリアント分岐の展開中は Library グリッドのクリップ境界を解除し、入れ子のカードをすべて表示します。長押し案内のアニメーションとぼけをなくし、文字を 25% 大きくしました。
+
 ## コミット
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -114,3 +118,4 @@ Library の行全体で読み取り専用の詳細を開き、テーマ対応の
 - [f9ce159d](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9ce159da8ad07c2ff59f913eebab32a69f26921)
 - [03dd55f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/03dd55f02c762ae99dc3870322ceb9864cb9e325)
 - [e8019a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8019a21e12295863fcf009a52385c85069498de)
+- [806058fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/806058fe26c0d127f0bacf034530b1023131d380)

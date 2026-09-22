@@ -94,6 +94,10 @@ Kartu pelajar disederhanakan menjadi label dan pelafalan satu baris yang rapi de
 
 Permukaan kartu pelajar digelapkan, sudut ringkas yang tidak menghalangi disediakan untuk petunjuk varian, dan lapisan hover relasi yang berulang dihapus. Label relasi kosakata kini menyertakan pelafalan dari penyedia agar kata satu karakter yang bermakna tetap dapat dibedakan dari rekaman unit tulisannya.
 
+## Menjaga cabang varian bertingkat tetap terlihat
+
+Kisi Library melepaskan batas pemotongannya saat cabang varian dibuka sehingga semua kartu bertingkat tetap terlihat. Petunjuk tekan lama tidak lagi dianimasikan atau menjadi kabur dan teksnya 25% lebih besar.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -114,3 +118,4 @@ Permukaan kartu pelajar digelapkan, sudut ringkas yang tidak menghalangi disedia
 - [f9ce159d](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9ce159da8ad07c2ff59f913eebab32a69f26921)
 - [03dd55f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/03dd55f02c762ae99dc3870322ceb9864cb9e325)
 - [e8019a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8019a21e12295863fcf009a52385c85069498de)
+- [806058fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/806058fe26c0d127f0bacf034530b1023131d380)

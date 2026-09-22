@@ -86,6 +86,10 @@ body[data-theme="light"] .library-browser {
     pointer-events: none;
 }
 
+.library-entry-grid:has(.library-entry-variants-open) {
+    overflow: visible;
+}
+
 .library-entry-grid[style] {
     grid-template-columns: repeat(var(--library-grid-row-size), minmax(0, 1fr));
 }
@@ -393,16 +397,8 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     border-radius: 6px;
     background: var(--surface-2);
     color: var(--text-muted);
-    font-size: 0.65rem;
+    font-size: 0.8125rem;
     text-align: center;
-    transform: translateY(0.1rem);
-    animation: libraryHintFloat 1.4s ease-in-out infinite alternate;
-}
-
-@keyframes libraryHintFloat {
-    to {
-        transform: translateY(-0.1rem);
-    }
 }
 
 .library-entry-card-shell:has(> .library-entry-variant-hint)

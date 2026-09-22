@@ -95,3 +95,5 @@ Every editable field must declare an `input.control`; its localized label and ch
 Composition references must always target the closest available structural unit. For example, 日本語 references the lexical unit 日本 and the compound unit 語 when 日本 exists; 日本 then references 日 and 本. The resolver prefers the longest higher-level match and only descends to smaller writing units when no closer record exists.
 
 Related-entry buttons no longer repeat their label in a hover overlay. Vocabulary links include their provider-supplied pronunciation, so a valid single-character lexical unit such as `人 ひと` remains distinguishable from the writing-unit record `人` without suppressing meaningful one-character words. Variant hints reserve their own compact lower corner inside the card instead of covering its primary content. Dark-theme card surfaces blend toward the application background rather than white.
+
+Expanded variant branches are allowed to render beyond the base grid clipping boundary so every nested card remains visible while the branch is open. The long-press hint is static to preserve crisp text and uses a 25% larger label.

@@ -79,3 +79,5 @@ Popup penyuntingan administrator membentuk kontrol dari skema bidang dan relasi 
 Setiap bidang yang dapat diedit mendeklarasikan jenis input dan semua label terlokalisasi dalam skema penyedia. Klasifikasi tetap terkunci setelah dibuat; pemilihan dan unggahan audio dibatasi pada prefiks bahasa dalam namespace gateway File. Komposisi wajib merujuk lapisan terdekat yang tersedia: 日本語 merujuk 日本 dan 語, sedangkan 日本 merujuk 日 dan 本.
 
 Tombol entri terkait tidak lagi mengulang labelnya dalam lapisan hover. Tautan kosakata menyertakan pelafalan dari penyedia sehingga unit leksikal satu karakter yang sah seperti `人 ひと` tetap dapat dibedakan dari rekaman unit tulisan `人` tanpa menyembunyikan kata satu karakter yang bermakna. Petunjuk varian memakai sudut bawah kartu yang ringkas dan tidak menutupi konten utama. Permukaan kartu tema gelap dipadukan ke latar aplikasi, bukan ke warna putih.
+
+Cabang varian yang terbuka dapat dirender melewati batas pemotongan kisi dasar agar setiap kartu bertingkat tetap terlihat. Petunjuk tekan lama dibuat statis agar teks tetap tajam dan memakai label 25% lebih besar.
