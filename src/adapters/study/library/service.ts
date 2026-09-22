@@ -11,6 +11,7 @@ import {
 } from "./layers.js";
 import { LibraryStore } from "./store.js";
 import { LibraryAudioCache } from "./audio-cache.js";
+import { LibraryVisibilityService } from "./visibility.js";
 import type {
     LibraryAsset,
     LibraryEntry,
@@ -141,6 +142,10 @@ export interface LibraryCapability {
         requestId: string,
         decision: "approved" | "rejected",
     ): Promise<LibraryPushRequest>;
+    withdrawPush(
+        actor: LibraryActor,
+        requestId: string,
+    ): Promise<LibraryPushRequest>;
     moveToPersonal(actor: LibraryActor, entryId: string): Promise<LibraryEntry>;
 }
 
@@ -163,6 +168,7 @@ export class LibraryService implements LibraryCapability {
         string,
         LibraryFormContribution
     >();
+    private readonly visibility: LibraryVisibilityService;
 
     constructor(
         private readonly store: LibraryStore,
@@ -176,7 +182,15 @@ export class LibraryService implements LibraryCapability {
         private readonly stringLocalization?: StringLocalizationCapability,
         private readonly audioCache?: LibraryAudioCache,
         private readonly notifyNewContent?: LibraryContentNotifier,
-    ) {}
+    ) {
+        this.visibility = new LibraryVisibilityService(
+            store,
+            this.read.bind(this),
+            this.authorize.bind(this),
+            flow,
+            notifyNewContent,
+        );
+    }
 
     async registerSchema(input: LibrarySchema): Promise<void> {
         const schema = validateLibrarySchema(input);
@@ -786,6 +800,13 @@ export class LibraryService implements LibraryCapability {
             if (!entryId.trim() || entryId.length > 200)
                 throw new Error("invalid_entry_id");
         }
+        const pendingSources = new Set(
+            ((await this.store.listPushRequests?.()) ?? []).map(
+                ({ sourceEntryId }) => sourceEntryId,
+            ),
+        );
+        if (entryIds.some((entryId) => pendingSources.has(entryId)))
+            throw new Error("request_pending");
         const deletedEntryIds = await this.store.deleteEntries(
             entryIds,
             actor.accountId,
@@ -859,92 +880,37 @@ export class LibraryService implements LibraryCapability {
         return { entry, references, usedBy };
     }
 
-    async requestPush(
+    requestPush(
         actor: LibraryActor,
         entryId: string,
         destination: LibraryLocation,
     ): Promise<LibraryPushRequest> {
-        const source = await this.read(actor, entryId);
-        if (!source) throw new Error("not_found");
-        if (source.protected) throw new Error("protected_content");
-        if (source.scope !== "user" || source.scopeId !== actor.accountId)
-            throw new Error("forbidden");
-        const normalized = normalizeLocation(destination, actor);
-        if (normalized.scope === "user") throw new Error("invalid_destination");
-        if (normalized.scope === "class")
-            await this.authorize(actor, normalized, false);
-        return this.store.createPush(entryId, normalized, actor.accountId);
+        return this.visibility.requestPush(actor, entryId, destination);
     }
 
-    async listPushRequests(actor: LibraryActor): Promise<LibraryPushRequest[]> {
-        const visible: LibraryPushRequest[] = [];
-        for (const request of await this.store.listPushRequests()) {
-            if (request.destination.scope === "global") {
-                if (actor.role === "admin" || actor.role === "owner") {
-                    const source = await this.store.get(request.sourceEntryId);
-                    if (source) visible.push({ ...request, source });
-                }
-                continue;
-            }
-            try {
-                await this.authorize(actor, request.destination, true);
-                const source = await this.store.get(request.sourceEntryId);
-                if (source) visible.push({ ...request, source });
-            } catch (error) {
-                if (!(error instanceof Error) || error.message !== "forbidden")
-                    throw error;
-            }
-        }
-        return visible;
+    listPushRequests(actor: LibraryActor): Promise<LibraryPushRequest[]> {
+        return this.visibility.listPushRequests(actor);
     }
 
-    async reviewPush(
+    reviewPush(
         actor: LibraryActor,
         requestId: string,
         decision: "approved" | "rejected",
     ): Promise<LibraryPushRequest> {
-        const request = await this.store.getPush(requestId);
-        if (!request) throw new Error("not_found");
-        if (request.status !== "pending") throw new Error("already_reviewed");
-        await this.authorize(actor, request.destination, true);
-        if (decision === "approved") {
-            const source = await this.store.get(request.sourceEntryId);
-            if (!source) throw new Error("reference_not_found");
-            if (source.protected) throw new Error("protected_content");
-            if (
-                source.scope !== "user" ||
-                source.scopeId !== request.requestedBy
-            )
-                throw new Error("request_source_moved");
-            await this.store.move(source.id, request.destination);
-            if (request.destination.scope === "global")
-                await this.notifyNewContent?.({ entryCount: 1 });
-        }
-        await this.store.reviewPush(requestId, decision, actor.accountId);
-        return { ...request, status: decision };
+        return this.visibility.reviewPush(actor, requestId, decision);
     }
 
-    async moveToPersonal(
+    withdrawPush(
+        actor: LibraryActor,
+        requestId: string,
+    ): Promise<LibraryPushRequest> {
+        return this.visibility.withdrawPush(actor, requestId);
+    }
+
+    moveToPersonal(
         actor: LibraryActor,
         entryId: string,
     ): Promise<LibraryEntry> {
-        const entry = await this.read(actor, entryId);
-        if (!entry) throw new Error("not_found");
-        if (entry.protected) throw new Error("protected_content");
-        await this.authorize(
-            actor,
-            { scope: entry.scope, scopeId: entry.scopeId },
-            true,
-        );
-        if (entry.scope === "user") throw new Error("invalid_destination");
-        await this.flow?.run("study:library:move", {
-            actor,
-            entry,
-            destination: { scope: "user", scopeId: entry.createdBy },
-        });
-        return this.store.move(entry.id, {
-            scope: "user",
-            scopeId: entry.createdBy,
-        });
+        return this.visibility.moveToPersonal(actor, entryId);
     }
 }

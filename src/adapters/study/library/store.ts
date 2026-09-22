@@ -929,7 +929,7 @@ export class LibraryStore {
     }
     async reviewPush(
         id: string,
-        status: "approved" | "rejected",
+        status: "approved" | "rejected" | "withdrawn",
         reviewerId: string,
     ): Promise<void> {
         await reviewPushRequest(this.db, id, status, reviewerId);

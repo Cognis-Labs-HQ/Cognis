@@ -1,0 +1,105 @@
+.library-entry-selection {
+    position: absolute;
+    z-index: 4;
+    top: 0;
+    right: 0.35rem;
+    display: none;
+    width: 1.2rem;
+    height: 1.2rem;
+    appearance: none;
+    border: 2px solid var(--border);
+    border-radius: 0.3rem;
+    background: var(--surface-2);
+    color-scheme: light dark;
+    accent-color: var(--accent);
+    transform: translateY(-50%);
+}
+
+.library-selection-mode .library-entry-selection {
+    display: grid;
+    place-content: center;
+}
+
+.library-entry-selection:checked {
+    border-color: var(--accent);
+    background: var(--accent);
+}
+
+.library-entry-selection:checked::after {
+    display: block;
+    width: 0.28rem;
+    height: 0.55rem;
+    margin: 0;
+    border: solid var(--surface);
+    border-width: 0 0.14rem 0.14rem 0;
+    content: "";
+    transform: translateY(-0.08rem) rotate(45deg);
+}
+
+body[data-theme="dark"] .library-entry-selection {
+    border-color: color-mix(in srgb, var(--text) 45%, var(--border));
+    background: var(--surface-2);
+}
+
+body[data-theme="dark"] .library-entry-selection:checked {
+    border-color: var(--accent-2);
+    background: var(--accent-2);
+}
+
+.library-delete-permanent {
+    display: flex;
+    align-items: start;
+    gap: 0.5rem;
+}
+
+.library-delete-cascade-list {
+    display: grid;
+    max-height: min(14rem, 35vh);
+    overflow-y: auto;
+    gap: 0.35rem;
+    margin: 0.75rem 0;
+    padding: 0.75rem 0.75rem 0.75rem 2rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-2);
+}
+
+.library-selection-action + .library-selection-action,
+.library-selection-action + .library-publish-menu,
+.library-publish-menu + .library-selection-action {
+    margin-inline-start: 0.5rem;
+}
+
+.library-publish-menu {
+    position: relative;
+    display: inline-flex;
+}
+
+.library-publish-menu[hidden] {
+    display: none;
+}
+
+.library-selection-action[hidden],
+.library-publish-options button[hidden] {
+    display: none;
+}
+
+.library-publish-options {
+    position: absolute;
+    z-index: 20;
+    inset-block-end: calc(100% + 0.5rem);
+    inset-inline-start: 50%;
+    display: none;
+    width: max-content;
+    padding: 0.4rem;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--surface-2);
+    box-shadow: 0 0.6rem 1.4rem color-mix(in srgb, #000 24%, transparent);
+    gap: 0.4rem;
+    transform: translateX(-50%);
+}
+
+.library-publish-menu:is(:hover, :focus-within) .library-publish-options {
+    display: flex;
+}

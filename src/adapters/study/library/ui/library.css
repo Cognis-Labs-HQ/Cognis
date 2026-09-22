@@ -130,6 +130,7 @@ body[data-theme="light"] .library-browser {
     display: flex;
     min-width: 0;
     align-items: baseline;
+    flex-wrap: wrap;
     gap: 0.45rem;
     overflow: hidden;
 }
@@ -139,6 +140,16 @@ body[data-theme="light"] .library-browser {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.library-card-primary > strong {
+    min-width: 65%;
+    flex: 1 1 65%;
+}
+
+.library-card-primary > .library-card-pronunciation {
+    max-width: 30%;
+    flex: 0 4 auto;
 }
 
 .library-entry-grid--minimal {
@@ -195,54 +206,6 @@ body[data-theme="light"] .library-browser {
 
 .library-entry-card-shell.library-entry-variants-open {
     z-index: 7;
-}
-
-.library-entry-selection {
-    position: absolute;
-    z-index: 4;
-    top: 0;
-    right: 0;
-    display: none;
-    width: 1.2rem;
-    height: 1.2rem;
-    appearance: none;
-    border: 2px solid var(--border);
-    border-radius: 0.3rem;
-    background: var(--surface-2);
-    color-scheme: light dark;
-    accent-color: var(--accent);
-    transform: translate(38%, -38%);
-}
-
-.library-selection-mode .library-entry-selection {
-    display: grid;
-    place-content: center;
-}
-
-.library-entry-selection:checked {
-    border-color: var(--accent);
-    background: var(--accent);
-}
-
-.library-entry-selection:checked::after {
-    display: block;
-    width: 0.28rem;
-    height: 0.55rem;
-    margin: 0;
-    border: solid var(--surface);
-    border-width: 0 0.14rem 0.14rem 0;
-    content: "";
-    transform: translateY(-0.08rem) rotate(45deg);
-}
-
-body[data-theme="dark"] .library-entry-selection {
-    border-color: color-mix(in srgb, var(--text) 45%, var(--border));
-    background: var(--surface-2);
-}
-
-body[data-theme="dark"] .library-entry-selection:checked {
-    border-color: var(--accent-2);
-    background: var(--accent-2);
 }
 
 .library-entry-card-shell .library-entry-card {
@@ -426,32 +389,6 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     display: none;
 }
 
-.library-delete-permanent {
-    display: flex;
-    align-items: start;
-    gap: 0.5rem;
-}
-
-.library-delete-cascade-list {
-    display: grid;
-    max-height: min(14rem, 35vh);
-    overflow-y: auto;
-    gap: 0.35rem;
-    margin: 0.75rem 0;
-    padding: 0.75rem 0.75rem 0.75rem 2rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface-2);
-}
-
-.library-selection-close {
-    min-width: 2.5rem;
-}
-
-.library-selection-action + .library-selection-action {
-    margin-inline-start: 0.5rem;
-}
-
 .library-entry-variant-left {
     top: 50%;
     right: calc(
@@ -628,11 +565,13 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     position: absolute;
     z-index: 4;
     top: 0;
-    left: 0;
+    left: 0.35rem;
     display: flex;
+    max-width: calc(100% - 2.7rem);
+    overflow: hidden;
     align-items: center;
     gap: 0.35rem;
-    transform: translate(-38%, -50%);
+    transform: translateY(-50%);
 }
 
 .library-entry-card-status .library-scope {
@@ -641,6 +580,7 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
 
 .library-card-definition {
     display: block;
+    flex: 1 0 100%;
     margin-block-start: 0.35rem;
 }
 

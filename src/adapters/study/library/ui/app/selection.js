@@ -1,11 +1,8 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
-import { isAdminScope } from "/static/gateways/study/ui/language.js";
 
 export function canDeleteEntry(entry) {
-    return (
-        entry.protected !== true && (entry.canDelete === true || isAdminScope())
-    );
+    return entry.protected !== true && entry.canDelete === true;
 }
 
 export function librarySelectionFloatingMenu(entries, i18n) {
@@ -15,7 +12,7 @@ export function librarySelectionFloatingMenu(entries, i18n) {
             id: "library-selection-actions",
             label: i18n.t("ui.reuse.actions"),
             render: () =>
-                `<button class="btn-neutral library-selection-action" type="button" data-library-select-all>${escapeHtml(i18n.t("gateway.study.library_select_all"))}</button><button class="btn-confirm library-selection-action" type="button" data-library-promote-selection disabled>${escapeHtml(i18n.t("gateway.study.library_request_promotion"))}</button><button class="btn-neutral library-selection-action" type="button" data-library-downgrade-selection disabled>${escapeHtml(i18n.t("gateway.study.library_move_personal"))}</button><button class="btn-cancel library-selection-action" type="button" data-library-delete-selection disabled>${escapeHtml(i18n.t("gateway.study.library_delete_selected"))}</button><button class="btn-neutral library-selection-action library-selection-close" type="button" data-library-selection-close aria-label="${escapeHtml(i18n.t("ui.reuse.close"))}">×</button>`,
+                `<button class="btn-neutral library-selection-action" type="button" data-library-select-all>${escapeHtml(i18n.t("gateway.study.library_select_all"))}</button><span class="library-publish-menu" data-library-publish-menu hidden><button class="btn-confirm library-selection-action" type="button" data-library-publish-trigger>${escapeHtml(i18n.t("gateway.study.library_publish_to"))}</button><span class="library-publish-options"><button class="btn-confirm" type="button" data-library-publish="class">${escapeHtml(i18n.t("gateway.study.library_publish_class"))}</button><button class="btn-confirm" type="button" data-library-publish="global">${escapeHtml(i18n.t("gateway.study.library_publish_global"))}</button></span></span><button class="btn-cancel library-selection-action" type="button" data-library-withdraw-selection hidden>${escapeHtml(i18n.t("gateway.study.library_withdraw"))}</button><button class="btn-neutral library-selection-action" type="button" data-library-send-back-selection hidden>${escapeHtml(i18n.t("gateway.study.library_send_back"))}</button><button class="btn-cancel library-selection-action" type="button" data-library-delete-selection hidden>${escapeHtml(i18n.t("gateway.study.library_delete_selected"))}</button>`,
         },
     ];
 }
@@ -36,20 +33,47 @@ export function selectionForCard(root, card) {
     );
 }
 
-export function updateDeleteSelectionButton(root, i18n) {
-    const button = root.querySelector("[data-library-delete-selection]");
-    if (!button) return;
-    const count = selectedEntryIds(root).length;
-    button.disabled = count === 0;
-    button.textContent = i18n.t("ui.reuse.delete");
-    root.querySelectorAll(
-        "[data-library-promote-selection], [data-library-downgrade-selection]",
-    ).forEach((control) => {
-        control.disabled = count !== 1;
-    });
+export function updateSelectionActions(root, entries, requests, locations) {
+    const ids = selectedEntryIds(root);
+    const selected = entries.filter(({ id }) => ids.includes(id));
+    const entry = selected.length === 1 ? selected[0] : null;
+    const pending = entry
+        ? requests.find(
+              (request) =>
+                  request.sourceEntryId === entry.id && request.canWithdraw,
+          )
+        : null;
+    const publishMenu = root.querySelector("[data-library-publish-menu]");
+    const canPublish =
+        entry?.scope === "user" && canDeleteEntry(entry) && !pending;
+    if (publishMenu) publishMenu.hidden = !canPublish;
+    const classOption = root.querySelector('[data-library-publish="class"]');
+    if (classOption)
+        classOption.hidden = !(locations?.readable ?? []).some(
+            ({ scope }) => scope === "class",
+        );
+    const withdraw = root.querySelector("[data-library-withdraw-selection]");
+    if (withdraw) {
+        withdraw.hidden = !pending;
+        withdraw.dataset.libraryRequestId = pending?.id ?? "";
+    }
+    const sendBack = root.querySelector("[data-library-send-back-selection]");
+    if (sendBack)
+        sendBack.hidden = !(
+            entry &&
+            entry.scope !== "user" &&
+            canDeleteEntry(entry) &&
+            !entry.createdBy?.startsWith("content-pack:")
+        );
+    const deletion = root.querySelector("[data-library-delete-selection]");
+    if (deletion)
+        deletion.hidden =
+            !selected.length ||
+            Boolean(pending) ||
+            selected.some((candidate) => !canDeleteEntry(candidate));
 }
 
-export function setSelectionMode(root, enabled, i18n) {
+export function setSelectionMode(root, enabled) {
     root.classList.toggle("library-selection-mode", enabled);
     if (!enabled) {
         root.querySelectorAll("[data-library-select-entry]").forEach(
@@ -62,16 +86,14 @@ export function setSelectionMode(root, enabled, i18n) {
         '[data-floating-slot="library-selection-actions"]',
     );
     if (floatingActions) floatingActions.hidden = !enabled;
-    updateDeleteSelectionButton(root, i18n);
 }
 
-export function selectAllVisibleEntries(root, i18n) {
+export function selectAllVisibleEntries(root) {
     root.querySelectorAll(
         "[data-library-panel]:not([hidden]) .library-entry-card-shell:not([hidden]) [data-library-select-entry]",
     ).forEach((selection) => {
         selection.checked = true;
     });
-    updateDeleteSelectionButton(root, i18n);
 }
 
 export async function confirmEntryDeletion(

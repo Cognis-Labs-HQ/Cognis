@@ -146,6 +146,7 @@ export async function mount(root, { signal } = {}) {
         entries,
         i18n,
         languageCode,
+        requests,
         requestedLayer: selectedLayer,
         schemas,
         signal,

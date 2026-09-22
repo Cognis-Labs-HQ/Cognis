@@ -3,11 +3,7 @@ import {
     deleteLibraryEntries,
     fetchLibraryLocations,
     markLibraryEntriesViewed,
-    moveLibraryEntryToPersonal,
-    requestLibraryPromotion,
 } from "/static/gateways/study/ui/library-client.js";
-import { openPopup } from "/static/reuse/popup.js";
-import { escapeHtml } from "/static/reuse/escape-html.js";
 import { applyLibraryFilters } from "./filters.js";
 import { activateLibraryLayer, renderBrowser } from "./layer-cards.js";
 import { openEntryPopup } from "./entry-popup.js";
@@ -17,12 +13,13 @@ import {
     selectedEntryIds,
     selectionForCard,
     setSelectionMode,
-    updateDeleteSelectionButton,
+    updateSelectionActions,
 } from "./selection.js";
 import {
     bindVariantInteractions,
     closeUnrelatedVariantViews,
 } from "./variants.js";
+import { createLibraryVisibilityActions } from "./visibility-actions.js";
 
 let activeEntryPopup = null;
 
@@ -38,6 +35,27 @@ export function bindLibraryInteractions(root, context) {
         signal,
     } = context;
     let entries = context.entries;
+    const requests = context.requests ?? [];
+    let locations;
+    void fetchLibraryLocations().then((value) => {
+        locations = value;
+        updateSelectionActions(root, entries, requests, locations);
+    });
+    const visibilityActions = createLibraryVisibilityActions({
+        root,
+        getEntries: () => entries,
+        setEntries: (updated) => {
+            entries = updated;
+        },
+        requests,
+        getLocations: () => locations,
+        i18n,
+        render: (updated) => {
+            root.querySelector(".library-browser").innerHTML =
+                context.renderContent?.(updated) ??
+                renderBrowser(schemas, updated, i18n, requestedLayer);
+        },
+    });
     let suppressEntryClick = false;
     const markViewed = (control) => {
         const entry = entries.find(
@@ -76,9 +94,9 @@ export function bindLibraryInteractions(root, context) {
             const selection = selectionForCard(root, card);
             if (!selection) return;
             event.preventDefault();
-            setSelectionMode(root, true, i18n);
+            setSelectionMode(root, true);
             selection.checked = true;
-            updateDeleteSelectionButton(root, i18n);
+            updateSelectionActions(root, entries, requests, locations);
         },
         { signal },
     );
@@ -90,10 +108,10 @@ export function bindLibraryInteractions(root, context) {
                 root.classList.contains("library-selection-mode") &&
                 selectedEntryIds(root).length === 0
             ) {
-                setSelectionMode(root, false, i18n);
+                setSelectionMode(root, false);
                 return;
             }
-            updateDeleteSelectionButton(root, i18n);
+            updateSelectionActions(root, entries, requests, locations);
         },
         { signal },
     );
@@ -101,23 +119,25 @@ export function bindLibraryInteractions(root, context) {
         "click",
         (event) => {
             if (event.target.closest("[data-library-select-all]")) {
-                selectAllVisibleEntries(root, i18n);
-                return;
-            }
-            if (event.target.closest("[data-library-selection-close]")) {
-                setSelectionMode(root, false, i18n);
+                selectAllVisibleEntries(root);
+                updateSelectionActions(root, entries, requests, locations);
                 return;
             }
             if (event.target.closest("[data-library-delete-selection]")) {
                 void deleteSelection();
                 return;
             }
-            if (event.target.closest("[data-library-promote-selection]")) {
-                void promoteSelection();
+            const publish = event.target.closest("[data-library-publish]");
+            if (publish) {
+                void visibilityActions.publish(publish.dataset.libraryPublish);
                 return;
             }
-            if (event.target.closest("[data-library-downgrade-selection]")) {
-                void downgradeSelection();
+            if (event.target.closest("[data-library-withdraw-selection]")) {
+                void visibilityActions.withdraw();
+                return;
+            }
+            if (event.target.closest("[data-library-send-back-selection]")) {
+                void visibilityActions.sendBack();
                 return;
             }
             if (event.target.matches("[data-library-select-entry]")) return;
@@ -151,7 +171,9 @@ export function bindLibraryInteractions(root, context) {
                 const selection = selectionForCard(root, control);
                 if (selection) {
                     selection.checked = !selection.checked;
-                    updateDeleteSelectionButton(root, i18n);
+                    if (selectedEntryIds(root).length === 0)
+                        setSelectionMode(root, false);
+                    updateSelectionActions(root, entries, requests, locations);
                 }
                 return;
             }
@@ -200,7 +222,7 @@ export function bindLibraryInteractions(root, context) {
             root.querySelector(".library-browser").innerHTML =
                 context.renderContent?.(entries) ??
                 renderBrowser(schemas, entries, i18n, requestedLayer);
-            setSelectionMode(root, false, i18n);
+            setSelectionMode(root, false);
             showToast(i18n.t("gateway.study.library_delete_success"), {
                 variant: "success",
             });
@@ -209,55 +231,5 @@ export function bindLibraryInteractions(root, context) {
                 variant: "error",
             });
         }
-    }
-
-    async function promoteSelection() {
-        const [entryId] = selectedEntryIds(root);
-        const entry = entries.find(({ id }) => id === entryId);
-        if (!entry || entry.protected || entry.scope !== "user") return;
-        const { readable } = await fetchLibraryLocations();
-        const destinations = readable.filter(
-            ({ scope }) => scope === "class" || scope === "global",
-        );
-        let select;
-        const action = await openPopup({
-            title: i18n.t("gateway.study.library_request_promotion"),
-            body: `<label>${escapeHtml(i18n.t("gateway.study.library_visibility"))}<select data-library-promotion-destination>${destinations.map((location) => `<option value="${escapeHtml(`${location.scope}:${location.scopeId ?? location.scope}`)}">${escapeHtml(location.scope === "class" ? location.scopeId : i18n.t("gateway.study.library_scope_global"))}</option>`).join("")}</select></label>`,
-            actions: [
-                {
-                    id: "submit",
-                    label: i18n.t("gateway.study.library_submit_request"),
-                    variant: "confirm",
-                },
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.cancel"),
-                    variant: "neutral",
-                },
-            ],
-            onMount: (overlay) => {
-                select = overlay.querySelector(
-                    "[data-library-promotion-destination]",
-                );
-            },
-        });
-        if (action !== "submit" || !select?.value) return;
-        const [scope, scopeId] = select.value.split(":");
-        await requestLibraryPromotion(entry.id, { scope, scopeId });
-        setSelectionMode(root, false, i18n);
-    }
-
-    async function downgradeSelection() {
-        const [entryId] = selectedEntryIds(root);
-        const entry = entries.find(({ id }) => id === entryId);
-        if (!entry || entry.protected || entry.scope === "user") return;
-        const moved = await moveLibraryEntryToPersonal(entry.id);
-        entries = entries.filter(({ id }) => id !== entry.id);
-        if (moved.scopeId === localStorage.getItem("cognis_account"))
-            entries.push(moved);
-        root.querySelector(".library-browser").innerHTML =
-            context.renderContent?.(entries) ??
-            renderBrowser(schemas, entries, i18n, requestedLayer);
-        setSelectionMode(root, false, i18n);
     }
 }

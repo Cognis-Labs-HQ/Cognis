@@ -319,6 +319,53 @@ test("authorized reviewers receive the source card with each request", async () 
         role: "teacher",
     });
     assert.equal(requests[0].source?.label, "Learner contribution");
+    assert.equal(requests[0].canReview, true);
+});
+
+test("submitters can withdraw pending visibility requests", async () => {
+    const statuses: string[] = [];
+    const store = {
+        getPush: async () => ({
+            id: "request",
+            sourceEntryId: "personal-card",
+            destination: { scope: "global", scopeId: "global" },
+            requestedBy: "alice",
+            status: "pending",
+        }),
+        get: async () => ({
+            id: "personal-card",
+            scope: "user",
+            scopeId: "alice",
+        }),
+        reviewPush: async (_id: string, status: string) => {
+            statuses.push(status);
+        },
+    };
+    const library = new LibraryService(store as never);
+
+    const request = await library.withdrawPush(
+        { accountId: "alice", role: "user" },
+        "request",
+    );
+    assert.equal(request.status, "withdrawn");
+    assert.deepEqual(statuses, ["withdrawn"]);
+});
+
+test("provider cards cannot be sent to a personal namespace", async () => {
+    const entry = {
+        id: "provider-card",
+        scope: "global",
+        scopeId: "global",
+        createdBy: "content-pack:japanese-core",
+        protected: false,
+    };
+    const store = { get: async () => entry };
+    const library = new LibraryService(store as never);
+
+    await assert.rejects(
+        library.moveToPersonal({ accountId: "admin", role: "admin" }, entry.id),
+        /provider_content/,
+    );
 });
 
 test("global downgrades return content to its original submitter", async () => {

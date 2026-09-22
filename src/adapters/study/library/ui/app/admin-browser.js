@@ -1,5 +1,6 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { localizedLabel } from "./presentation.js";
+import { canDeleteEntry } from "./selection.js";
 
 export function adminLayerGroups(schemas) {
     return schemas.map((schema) => ({
@@ -45,7 +46,7 @@ export function renderAdminBrowser(schemas, entries, i18n, selectedLayer) {
             (
                 entry,
             ) => `<li class="library-admin-entry-row" role="button" tabindex="0" data-library-entry="${escapeHtml(entry.id)}">
-                <input class="library-entry-selection" type="checkbox" data-library-select-entry="${escapeHtml(entry.id)}" aria-label="${escapeHtml(entry.label)}">
+                ${canDeleteEntry(entry) ? `<input class="library-entry-selection" type="checkbox" data-library-select-entry="${escapeHtml(entry.id)}" aria-label="${escapeHtml(entry.label)}">` : ""}
                 <span class="library-admin-entry-detail">${escapeHtml(entry.label)}</span>
                 <button class="library-admin-edit btn-neutral" type="button" data-library-admin-edit="${escapeHtml(entry.id)}" aria-label="${escapeHtml(i18n.t("gateway.study.library_admin_edit").replace("{{ entry }}", entry.label))}"></button>
             </li>`,

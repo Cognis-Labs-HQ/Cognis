@@ -22,9 +22,14 @@ Cognis は、閲覧済みライブラリ項目の UUID をアカウントごと�
 
 言語パックは、作成可能な各レイヤーに検証済みの `cardConstructor` を宣言するか、公開 ctx ケイパビリティ `study:library:provider` から登録できるようになりました。Cognis はプロバイダー項目とロール対応の公開範囲・クラス制御を合成し、必要な場合だけクラス選択を表示して、権限のある教師と管理者へ審査リクエストを提供します。
 
+## カード内に収まる状態表示と状況別の公開操作
+
+カード端の公開範囲、新着、選択コントロールを各カードの左右境界内に収め、狭いプレビューでは主値へ大部分の幅を割り当てるようにしました。複数選択にはホバー式の「公開先」メニュー、内容のあるローカライズ済み削除ボタン、保留申請の取り下げ、権限付き差し戻しを追加し、不要な閉じるボタンを削除しました。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
 - [c1874177](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1874177fc1875ceab65c8b7aac58d60c5c5e091)
 - [d6f1cf21](https://github.com/Cognis-Labs-HQ/Cognis/commit/d6f1cf219f2739174c01019b358ab939a24659f7)
 - [8e38ded6](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e38ded6f03e8e36d225e8d425625c1b719fa112)
+- [c916c66f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c916c66f2095da249058883026fa7eba94005316)

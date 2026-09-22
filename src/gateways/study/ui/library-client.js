@@ -107,6 +107,15 @@ export async function reviewLibraryPromotion(requestId, decision) {
     return (await response.json()).data;
 }
 
+export async function withdrawLibraryPromotion(requestId) {
+    const response = await apiFetch(
+        `/api/v1/study/library/push-requests/${encodeURIComponent(requestId)}`,
+        { method: "DELETE" },
+    );
+    if (!response.ok) throw new Error("withdraw_failed");
+    return (await response.json()).data;
+}
+
 export async function moveLibraryEntryToPersonal(entryId) {
     const response = await apiFetch(
         `/api/v1/study/library/entries/${encodeURIComponent(entryId)}/move-to-personal`,

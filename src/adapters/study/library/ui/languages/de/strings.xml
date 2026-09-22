@@ -13,9 +13,6 @@
   <string name="gateway.study.library_conflict_title">Übereinstimmende globale Karte</string>
   <string name="gateway.study.library_conflict_body">Eine globale Karte in dieser Ebene hat denselben Inhalt. Prüfe sie, bevor du ein Duplikat erstellst.</string>
   <string name="gateway.study.library_create_anyway">Trotzdem erstellen</string>
-  <string name="gateway.study.library_request_promotion">Sichtbarkeitserweiterung beantragen</string>
-  <string name="gateway.study.library_move_personal">In persönlichen Bereich verschieben</string>
-  <string name="gateway.study.library_submit_request">Anfrage senden</string>
   <string name="gateway.study.library_new">Neu</string>
   <string name="gateway.study.library_layer_empty">Diese Ebene enthält noch keine Einträge.</string>
   <string name="gateway.study.library_previous">Zurück</string>
@@ -62,4 +59,9 @@
   <string name="gateway.study.library_admin_view_title">{{ entry }} anzeigen</string>
   <string name="gateway.study.library_additional_definitions">Zusätzliche Definitionen</string>
   <string name="gateway.study.library_class">Klasse</string>
+  <string name="gateway.study.library_publish_to">Veröffentlichen in</string>
+  <string name="gateway.study.library_publish_class">In Klasse veröffentlichen</string>
+  <string name="gateway.study.library_publish_global">Global veröffentlichen</string>
+  <string name="gateway.study.library_withdraw">Zurückziehen</string>
+  <string name="gateway.study.library_send_back">Zurücksenden</string>
 </resources>

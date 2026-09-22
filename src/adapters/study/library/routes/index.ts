@@ -339,6 +339,14 @@ export function createLibraryRoutes(
             const reviewMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/push-requests\/([^/]+)$/,
             );
+            if (reviewMatch && req.method === "DELETE") {
+                const request = await library.withdrawPush(
+                    actor,
+                    decodeURIComponent(reviewMatch[1]),
+                );
+                sendJson(res, 200, { data: request });
+                return true;
+            }
             if (reviewMatch && req.method === "PUT") {
                 const body = (await readJson(req)) as {
                     decision: "approved" | "rejected";

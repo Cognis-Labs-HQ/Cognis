@@ -30,7 +30,7 @@ const source = readdirSync(resolve(ROOT, "src/adapters/study/library/ui/app"))
         ),
     )
     .join("\n");
-const stylesheet = ["library.css", "library-admin.css"]
+const stylesheet = ["library.css", "library-admin.css", "library-selection.css"]
     .map((file) =>
         readFileSync(
             resolve(ROOT, `src/adapters/study/library/ui/${file}`),
@@ -425,7 +425,7 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /library-entry-variants-open/);
     assert.match(source, /"contextmenu"/);
     assert.match(source, /"focusout"/);
-    assert.match(source, /setSelectionMode\(root, true, i18n\)/);
+    assert.match(source, /setSelectionMode\(root, true\)/);
     assert.match(
         source,
         /shell\.classList\.add\("library-entry-variants-open"\)/,
@@ -653,7 +653,15 @@ test("Study Library owners can select and delete multiple entries", () => {
     );
     assert.match(source, /if \(!entries\.some\(canDeleteEntry\)\)/);
     assert.match(source, /data-library-select-all/);
-    assert.match(source, /data-library-selection-close/);
+    assert.doesNotMatch(source, /data-library-selection-close/);
+    assert.match(source, /data-library-publish-menu/);
+    assert.match(source, /data-library-publish="class"/);
+    assert.match(source, /data-library-publish="global"/);
+    assert.match(source, /data-library-withdraw-selection/);
+    assert.match(source, /data-library-send-back-selection/);
+    assert.match(source, /entry\?\.scope === "user" && canDeleteEntry/);
+    assert.match(source, /entry\.createdBy\?\.startsWith\("content-pack:"\)/);
+    assert.match(stylesheet, /\.library-publish-options/);
     assert.match(source, /function setSelectionMode/);
     assert.match(source, /function selectAllVisibleEntries/);
     assert.match(stylesheet, /place-content: center/);
@@ -673,6 +681,25 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /reference\.entryId === entry\.id/);
     assert.match(source, /function isSameLibraryRecord/);
     assert.match(source, /isSameLibraryRecord\(entry, parent\)/);
+});
+
+test("Study Library bounds card status and prioritizes primary previews", () => {
+    assert.match(
+        stylesheet,
+        /\.library-entry-card-status[\s\S]*left: 0\.35rem[\s\S]*max-width: calc\(100% - 2\.7rem\)/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-entry-selection[\s\S]*right: 0\.35rem[\s\S]*translateY\(-50%\)/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-card-primary > strong[\s\S]*flex: 1 1 65%/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-card-primary > \.library-card-pronunciation[\s\S]*max-width: 30%/,
+    );
 });
 
 test("Study Library popup sequencing excludes hidden and placed cards", () => {

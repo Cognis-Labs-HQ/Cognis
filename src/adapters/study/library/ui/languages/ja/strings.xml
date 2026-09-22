@@ -13,9 +13,6 @@
   <string name="gateway.study.library_conflict_title">一致するグローバルカード</string>
   <string name="gateway.study.library_conflict_body">このレイヤーには同じ内容のグローバルカードがあります。重複を作成する前に確認してください。</string>
   <string name="gateway.study.library_create_anyway">作成を続行</string>
-  <string name="gateway.study.library_request_promotion">公開範囲の昇格を申請</string>
-  <string name="gateway.study.library_move_personal">個人領域へ移動</string>
-  <string name="gateway.study.library_submit_request">リクエストを送信</string>
   <string name="gateway.study.library_new">新着</string>
   <string name="gateway.study.library_layer_empty">このレイヤーにはまだ項目がありません。</string>
   <string name="gateway.study.library_previous">前へ</string>
@@ -62,4 +59,9 @@
   <string name="gateway.study.library_admin_view_title">{{ entry }}を表示</string>
   <string name="gateway.study.library_additional_definitions">追加の定義</string>
   <string name="gateway.study.library_class">クラス</string>
+  <string name="gateway.study.library_publish_to">公開先</string>
+  <string name="gateway.study.library_publish_class">クラスに公開</string>
+  <string name="gateway.study.library_publish_global">グローバルに公開</string>
+  <string name="gateway.study.library_withdraw">取り下げ</string>
+  <string name="gateway.study.library_send_back">差し戻す</string>
 </resources>

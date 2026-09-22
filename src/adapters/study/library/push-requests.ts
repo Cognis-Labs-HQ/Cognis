@@ -99,7 +99,7 @@ export async function listPushRequests(
 export async function reviewPushRequest(
     db: DbExecutor,
     id: string,
-    status: "approved" | "rejected",
+    status: "approved" | "rejected" | "withdrawn",
     reviewerId: string,
 ): Promise<void> {
     await db.executeCommand({

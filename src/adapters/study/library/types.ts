@@ -232,9 +232,12 @@ export interface LibraryPushRequest {
     sourceEntryId: string;
     destination: LibraryLocation;
     requestedBy: string;
-    status: "pending" | "approved" | "rejected";
+    status: "pending" | "approved" | "rejected" | "withdrawn";
     /** Included only in authorized review listings. */
     source?: LibraryEntry;
+    /** Request-scoped action hints; never persisted. */
+    canReview?: boolean;
+    canWithdraw?: boolean;
 }
 
 export interface LibraryContentPackManifest {

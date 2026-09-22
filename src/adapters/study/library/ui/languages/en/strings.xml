@@ -13,9 +13,6 @@
   <string name="gateway.study.library_conflict_title">Matching global card</string>
   <string name="gateway.study.library_conflict_body">A global card in this layer has the same content. Review it before creating a duplicate.</string>
   <string name="gateway.study.library_create_anyway">Create anyway</string>
-  <string name="gateway.study.library_request_promotion">Request visibility upgrade</string>
-  <string name="gateway.study.library_move_personal">Move to personal</string>
-  <string name="gateway.study.library_submit_request">Submit request</string>
   <string name="gateway.study.library_new">New</string>
   <string name="gateway.study.library_layer_empty">This layer has no entries yet.</string>
   <string name="gateway.study.library_previous">Previous</string>
@@ -62,4 +59,9 @@
   <string name="gateway.study.library_admin_view_title">View {{ entry }}</string>
   <string name="gateway.study.library_additional_definitions">Additional Definitions</string>
   <string name="gateway.study.library_class">Class</string>
+  <string name="gateway.study.library_publish_to">Publish to</string>
+  <string name="gateway.study.library_publish_class">Publish to class</string>
+  <string name="gateway.study.library_publish_global">Publish globally</string>
+  <string name="gateway.study.library_withdraw">Withdraw</string>
+  <string name="gateway.study.library_send_back">Send back</string>
 </resources>

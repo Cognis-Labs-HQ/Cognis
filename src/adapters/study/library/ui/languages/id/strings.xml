@@ -13,9 +13,6 @@
   <string name="gateway.study.library_conflict_title">Kartu global yang cocok</string>
   <string name="gateway.study.library_conflict_body">Kartu global pada lapisan ini memiliki konten yang sama. Tinjau sebelum membuat duplikat.</string>
   <string name="gateway.study.library_create_anyway">Tetap buat</string>
-  <string name="gateway.study.library_request_promotion">Minta peningkatan visibilitas</string>
-  <string name="gateway.study.library_move_personal">Pindahkan ke pribadi</string>
-  <string name="gateway.study.library_submit_request">Kirim permintaan</string>
   <string name="gateway.study.library_new">Baru</string>
   <string name="gateway.study.library_layer_empty">Lapisan ini belum memiliki entri.</string>
   <string name="gateway.study.library_previous">Sebelumnya</string>
@@ -62,4 +59,9 @@
   <string name="gateway.study.library_admin_view_title">Lihat {{ entry }}</string>
   <string name="gateway.study.library_additional_definitions">Definisi Tambahan</string>
   <string name="gateway.study.library_class">Kelas</string>
+  <string name="gateway.study.library_publish_to">Terbitkan ke</string>
+  <string name="gateway.study.library_publish_class">Terbitkan ke kelas</string>
+  <string name="gateway.study.library_publish_global">Terbitkan secara global</string>
+  <string name="gateway.study.library_withdraw">Tarik kembali</string>
+  <string name="gateway.study.library_send_back">Kembalikan</string>
 </resources>

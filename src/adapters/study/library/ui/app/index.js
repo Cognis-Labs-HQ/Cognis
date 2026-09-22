@@ -89,7 +89,7 @@ export async function mount(root, { signal } = {}) {
             ? `${firstLayer.schemaId}:${firstLayer.layerId}`
             : "",
         onSelect: (id) => {
-            setSelectionMode(root, false, i18n);
+            setSelectionMode(root, false);
             const separator = id.indexOf(":");
             selectedLayer = {
                 schemaId: id.slice(0, separator),
@@ -215,6 +215,7 @@ export async function mount(root, { signal } = {}) {
         entries,
         i18n,
         languageCode,
+        requests,
         schemas,
         signal,
         showReferenceTree: true,

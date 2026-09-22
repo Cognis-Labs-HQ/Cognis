@@ -117,6 +117,32 @@ test("viewed-entry routes read and update the authenticated user's cache", async
     assert.deepEqual(calls, [{ accountId: "alice", entryIds: ["entry-b"] }]);
 });
 
+test("visibility requests can be withdrawn by their submitter", async () => {
+    let withdrawn = "";
+    const route = createLibraryRoutes(
+        {
+            withdrawPush: async (_actor, requestId) => {
+                withdrawn = requestId;
+                return { id: requestId, status: "withdrawn" };
+            },
+        } as never,
+        createAuthContext(
+            new Map([["learner", { sub: "alice", role: "user" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({ method: "DELETE", token: "learner" }) as never,
+        response as never,
+        new URL(
+            "http://localhost/api/v1/study/library/push-requests/request-1",
+        ),
+    );
+    assert.equal(response.statusCode, 200);
+    assert.equal(withdrawn, "request-1");
+    assert.equal(JSON.parse(response.payload).data.status, "withdrawn");
+});
+
 test("entry deletion passes validated selections to the Library capability", async () => {
     let request:
         | {
