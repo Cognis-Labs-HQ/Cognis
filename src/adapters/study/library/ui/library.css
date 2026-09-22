@@ -86,10 +86,6 @@ body[data-theme="light"] .library-browser {
     pointer-events: none;
 }
 
-.library-entry-grid:has(.library-entry-variants-open) {
-    overflow: visible;
-}
-
 .library-entry-grid[style] {
     grid-template-columns: repeat(var(--library-grid-row-size), minmax(0, 1fr));
 }

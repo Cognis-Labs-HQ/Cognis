@@ -96,7 +96,11 @@ Die Flächen der Lernkarten wurden abgedunkelt, Variantenhinweise erhalten eine 
 
 ## Verschachtelte Variantenäste sichtbar halten
 
-Library-Raster geben ihre Begrenzung frei, während ein Variantenast geöffnet ist, sodass alle verschachtelten Karten sichtbar bleiben. Der Hinweis zum Gedrückthalten wird nicht mehr animiert oder unscharf und seine Schrift ist 25 % größer.
+Library-Raster behalten ihre Begrenzung. Geöffnete Äste prüfen nun die vom Anbieter bevorzugten und alternative Richtungen gegen die gerenderten Grenzen, damit verschachtelte Karten im Kartenraster bleiben. Der Hinweis zum Gedrückthalten wird nicht mehr animiert oder unscharf und seine Schrift ist 25 % größer.
+
+## Vom Anbieter bevorzugte Variantenplatzierung begrenzen
+
+Das Überlaufen wurde durch eine begrenzte Laufzeitplatzierung ersetzt. Anbieterrichtungen bleiben die erste Wahl, aber jeder sichtbare verschachtelte Ast wird gemessen und bei Bedarf umgeleitet, sodass jede Karte innerhalb des Library-Rasters und Widgets bleibt.
 
 ## Commits
 
@@ -119,3 +123,4 @@ Library-Raster geben ihre Begrenzung frei, während ein Variantenast geöffnet i
 - [03dd55f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/03dd55f02c762ae99dc3870322ceb9864cb9e325)
 - [e8019a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8019a21e12295863fcf009a52385c85069498de)
 - [806058fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/806058fe26c0d127f0bacf034530b1023131d380)
+- [3c0d5766](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c0d57662df962ac6b5d93f793e0c8de91e1856b)

@@ -96,7 +96,11 @@ Darkened learner-card surfaces, reserved a compact non-obstructing corner for va
 
 ## Keep nested variant branches visible
 
-Opened Library grids release their clipping boundary while a variant branch is expanded, keeping all nested cards visible. The long-press hint no longer animates or blurs and its text is 25% larger.
+Library grids retain their clipping boundary. Expanded branches now evaluate provider-preferred and fallback directions against the rendered bounds so nested cards stay inside the card grid. The long-press hint no longer animates or blurs and its text is 25% larger.
+
+## Constrain provider-preferred variant placement
+
+Replaced overflow bleed with bounded runtime placement. Provider directions remain first choice, but each visible nested branch is measured and redirected when necessary so every card stays inside the Library grid and widget.
 
 ## Commits
 
@@ -119,3 +123,4 @@ Opened Library grids release their clipping boundary while a variant branch is e
 - [03dd55f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/03dd55f02c762ae99dc3870322ceb9864cb9e325)
 - [e8019a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8019a21e12295863fcf009a52385c85069498de)
 - [806058fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/806058fe26c0d127f0bacf034530b1023131d380)
+- [3c0d5766](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c0d57662df962ac6b5d93f793e0c8de91e1856b)

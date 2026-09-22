@@ -1,24 +1,10 @@
+import {
+    fitVariantBranchWithinGrid,
+    restorePreferredVariantDirections,
+} from "./variant-fit.js";
+
 const LONG_PRESS_DURATION_MS = 550;
 const LONG_PRESS_MOVE_TOLERANCE_PX = 8;
-
-function reserveVariantBranchSpace(rootShell) {
-    window.requestAnimationFrame(() => {
-        const grid = rootShell.closest(".library-entry-grid");
-        if (!grid) return;
-        grid.style.removeProperty("min-height");
-        const gridRect = grid.getBoundingClientRect();
-        const branchBottom = Array.from(
-            rootShell.querySelectorAll(".library-entry-variant-shell"),
-        ).reduce((bottom, shell) => {
-            if (getComputedStyle(shell).display === "none") return bottom;
-            return Math.max(bottom, shell.getBoundingClientRect().bottom);
-        }, gridRect.bottom);
-        const overflow = Math.ceil(branchBottom - gridRect.bottom);
-        if (overflow > 0) {
-            grid.style.minHeight = `${grid.offsetHeight + overflow + 12}px`;
-        }
-    });
-}
 
 export function closeUnrelatedVariantViews(root, control) {
     let closed = false;
@@ -28,14 +14,13 @@ export function closeUnrelatedVariantViews(root, control) {
         );
         if (!shell.contains(control) || control === parentControl) {
             shell.classList.remove("library-entry-variants-open");
+            restorePreferredVariantDirections(shell);
             closed = true;
         }
     });
-    root.querySelectorAll(".library-entry-grid").forEach((grid) => {
-        const openShell = grid.querySelector(".library-entry-variants-open");
-        if (openShell) reserveVariantBranchSpace(openShell);
-        else grid.style.removeProperty("min-height");
-    });
+    root.querySelectorAll(".library-entry-variants-open").forEach(
+        fitVariantBranchWithinGrid,
+    );
     return closed;
 }
 
@@ -77,7 +62,7 @@ export function activateVariantBranch(root, card) {
         variantSlot.classList.add("library-entry-branch-path");
         branchShell = variantSlot.parentElement;
     }
-    reserveVariantBranchSpace(rootShell);
+    fitVariantBranchWithinGrid(rootShell);
 }
 
 export function bindVariantInteractions(root, { signal, suppressNextClick }) {
@@ -111,7 +96,7 @@ export function bindVariantInteractions(root, { signal, suppressNextClick }) {
                     },
                 );
                 shell.classList.add("library-entry-variants-open");
-                reserveVariantBranchSpace(shell);
+                fitVariantBranchWithinGrid(shell);
                 card.focus();
                 suppressNextClick();
                 longPressTimer = null;
@@ -150,9 +135,7 @@ export function bindVariantInteractions(root, { signal, suppressNextClick }) {
             );
             if (!rootShell || rootShell.contains(event.relatedTarget)) return;
             rootShell.classList.remove("library-entry-variants-open");
-            rootShell
-                .closest(".library-entry-grid")
-                ?.style.removeProperty("min-height");
+            restorePreferredVariantDirections(rootShell);
             clearVariantBranch(rootShell);
         },
         { signal },

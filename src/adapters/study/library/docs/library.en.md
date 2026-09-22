@@ -96,4 +96,4 @@ Composition references must always target the closest available structural unit.
 
 Related-entry buttons no longer repeat their label in a hover overlay. Vocabulary links include their provider-supplied pronunciation, so a valid single-character lexical unit such as `人 ひと` remains distinguishable from the writing-unit record `人` without suppressing meaningful one-character words. Variant hints reserve their own compact lower corner inside the card instead of covering its primary content. Dark-theme card surfaces blend toward the application background rather than white.
 
-Expanded variant branches are allowed to render beyond the base grid clipping boundary so every nested card remains visible while the branch is open. The long-press hint is static to preserve crisp text and uses a 25% larger label.
+Expanded variant branches remain clipped to the base grid. Cognis first honors each provider-preferred direction, then evaluates alternate directions against the rendered grid boundary and selects the first fitting option, restoring provider preferences when the branch closes. The long-press hint is static to preserve crisp text and uses a 25% larger label.

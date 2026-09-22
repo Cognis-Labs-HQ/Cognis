@@ -404,9 +404,10 @@ test("Study Library unfolds structured character variants", () => {
         /if \(openShell !== shell\)[\s\S]*openShell\.classList\.remove\([\s\S]*"library-entry-variants-open"/,
     );
     assert.match(source, /function activateVariantBranch/);
-    assert.match(source, /function reserveVariantBranchSpace/);
-    assert.match(source, /branchBottom - gridRect\.bottom/);
-    assert.match(source, /grid\.style\.minHeight/);
+    assert.match(source, /function fitVariantBranchWithinGrid/);
+    assert.match(source, /function overflowScore/);
+    assert.match(source, /data-library-preferred-direction/);
+    assert.match(source, /restorePreferredVariantDirections/);
     assert.match(source, /function clearVariantBranch/);
     assert.match(source, /"pointerover"/);
     assert.match(source, /library-entry-branch-active/);
@@ -421,7 +422,7 @@ test("Study Library unfolds structured character variants", () => {
         stylesheet,
         /\.library-entry-grid:has\(\.library-entry-variants-open\)[\s\S]*\.library-entry-card-shell[\s\S]*\.library-entry-variant-hint[\s\S]*display:\s*none/,
     );
-    assert.match(
+    assert.doesNotMatch(
         stylesheet,
         /\.library-entry-grid:has\(\.library-entry-variants-open\)\s*\{[\s\S]*overflow:\s*visible/,
     );

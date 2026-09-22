@@ -96,7 +96,11 @@ Permukaan kartu pelajar digelapkan, sudut ringkas yang tidak menghalangi disedia
 
 ## Menjaga cabang varian bertingkat tetap terlihat
 
-Kisi Library melepaskan batas pemotongannya saat cabang varian dibuka sehingga semua kartu bertingkat tetap terlihat. Petunjuk tekan lama tidak lagi dianimasikan atau menjadi kabur dan teksnya 25% lebih besar.
+Kisi Library mempertahankan batas pemotongannya. Cabang terbuka kini menguji arah pilihan penyedia dan arah cadangan terhadap batas yang dirender agar kartu bertingkat tetap di dalam kisi kartu. Petunjuk tekan lama tidak lagi dianimasikan atau menjadi kabur dan teksnya 25% lebih besar.
+
+## Membatasi penempatan varian pilihan penyedia
+
+Luapan diganti dengan penempatan runtime berbatas. Arah penyedia tetap menjadi pilihan pertama, tetapi setiap cabang bertingkat yang terlihat diukur dan diarahkan ulang bila perlu agar semua kartu tetap di dalam kisi Library dan widget.
 
 ## Commit
 
@@ -119,3 +123,4 @@ Kisi Library melepaskan batas pemotongannya saat cabang varian dibuka sehingga s
 - [03dd55f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/03dd55f02c762ae99dc3870322ceb9864cb9e325)
 - [e8019a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8019a21e12295863fcf009a52385c85069498de)
 - [806058fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/806058fe26c0d127f0bacf034530b1023131d380)
+- [3c0d5766](https://github.com/Cognis-Labs-HQ/Cognis/commit/3c0d57662df962ac6b5d93f793e0c8de91e1856b)
