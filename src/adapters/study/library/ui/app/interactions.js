@@ -22,6 +22,7 @@ export function bindLibraryInteractions(root, context) {
     const {
         i18n,
         languageCode,
+        openDetails = true,
         requestedLayer,
         readOnly = false,
         schemas,
@@ -113,6 +114,7 @@ export function bindLibraryInteractions(root, context) {
             const entry = entries.find(
                 (candidate) => candidate.id === control.dataset.libraryEntry,
             );
+            if (!openDetails) return;
             if (!entry || activeEntryPopup) return;
             activeEntryPopup = openEntryPopup(
                 root,

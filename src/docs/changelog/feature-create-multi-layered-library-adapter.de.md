@@ -86,6 +86,10 @@ Das Einklappen der Kopfzeile beim Scrollen wurde stabilisiert, die Study-Ebenenn
 
 Library-Zeilen öffnen schreibgeschützte Details über ihre gesamte Trefferfläche, während themenabhängige Bearbeitungsaktionen am Zeilenende bleiben. Anbieter-Schemata steuern Feldbezeichnungen, Steuerelemente, unveränderliche Klassifizierungen, Deep-Link-Beziehungen und die sprachgebundene Audiosuche. Tags werden mit der Eingabetaste übernommen, ausgewählte Optionen lassen sich abwählen, Pflichtfelder werden vor dem Senden geprüft und schwebende Aktionen sind lokalisiert. Karten und die Study-Unternavigation verwenden stabile, themengerechte Hover-Zustände; Zusammensetzungen wählen vor atomaren Zeichen die nächstgelegenen übergeordneten Datensätze.
 
+## Library-Vorschauen und Administratorprüfung verfeinern
+
+Lernkarten zeigen jetzt eine schlanke einzeilige Kombination aus Bezeichnung und Aussprache mit getrenntem Bereichssymbol; Definitionen und Metadaten wurden aus der Vorschau entfernt. Ein Klick auf eine Administratorzeile öffnet nun dasselbe schemagesteuerte Formular wie die Bearbeitung, jedoch deaktiviert und schreibgeschützt, statt das Detailfenster für Lernende zu öffnen.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -104,3 +108,4 @@ Library-Zeilen öffnen schreibgeschützte Details über ihre gesamte Trefferflä
 - [92ef5510](https://github.com/Cognis-Labs-HQ/Cognis/commit/92ef5510)
 - [b38f8b31](https://github.com/Cognis-Labs-HQ/Cognis/commit/b38f8b31)
 - [f9ce159d](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9ce159da8ad07c2ff59f913eebab32a69f26921)
+- [03dd55f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/03dd55f02c762ae99dc3870322ceb9864cb9e325)

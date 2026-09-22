@@ -170,12 +170,32 @@ export function bindAdminLibraryInteractions(
 ) {
     let editorOpen = false;
     root.addEventListener(
+        "keydown",
+        (event) => {
+            if (!event.target.matches(".library-admin-entry-row")) return;
+            if (event.key !== "Enter" && event.key !== " ") return;
+            event.preventDefault();
+            event.target.click();
+        },
+        { signal },
+    );
+    root.addEventListener(
         "click",
         async (event) => {
             const button = event.target.closest("[data-library-admin-edit]");
-            if (!button || editorOpen) return;
+            const row = event.target.closest(".library-admin-entry-row");
+            if (
+                (!button && !row) ||
+                event.target.matches("[data-library-select-entry]") ||
+                editorOpen
+            )
+                return;
+            const readOnly = !button;
             const entry = entries.find(
-                ({ id }) => id === button.dataset.libraryAdminEdit,
+                ({ id }) =>
+                    id ===
+                    (button?.dataset.libraryAdminEdit ??
+                        row?.dataset.libraryEntry),
             );
             if (!entry) return;
             const schema = schemas.find(({ id }) => id === entry.schemaId);
@@ -185,27 +205,48 @@ export function bindAdminLibraryInteractions(
             editorOpen = true;
             await openPopup({
                 title: i18n
-                    .t("gateway.study.library_admin_edit_title")
+                    .t(
+                        readOnly
+                            ? "gateway.study.library_admin_view_title"
+                            : "gateway.study.library_admin_edit_title",
+                    )
                     .replace("{{ entry }}", entry.label),
                 body: editor.html,
                 maxWidth: "min(46rem, 94vw)",
-                closeProtection: true,
-                actions: [
-                    {
-                        id: "save",
-                        label: i18n.t("ui.reuse.save"),
-                        variant: "confirm",
-                    },
-                    {
-                        id: "cancel",
-                        label: i18n.t("ui.reuse.cancel"),
-                        variant: "neutral",
-                    },
-                ],
+                closeProtection: !readOnly,
+                actions: readOnly
+                    ? [
+                          {
+                              id: "close",
+                              label: i18n.t("ui.reuse.close"),
+                              variant: "neutral",
+                          },
+                      ]
+                    : [
+                          {
+                              id: "save",
+                              label: i18n.t("ui.reuse.save"),
+                              variant: "confirm",
+                          },
+                          {
+                              id: "cancel",
+                              label: i18n.t("ui.reuse.cancel"),
+                              variant: "neutral",
+                          },
+                      ],
                 onOpen: (overlay) => {
                     const form = overlay.querySelector(
                         "[data-library-admin-editor]",
                     );
+                    if (readOnly) {
+                        form.querySelectorAll(
+                            "input, select, textarea",
+                        ).forEach((control) => {
+                            control.disabled = true;
+                        });
+                        form.classList.add("library-admin-editor--read-only");
+                        return;
+                    }
                     formController = editor.builder.attach(form);
                     form.querySelectorAll("select[multiple]").forEach(
                         (select) => {
@@ -318,6 +359,7 @@ export function bindAdminLibraryInteractions(
                     );
                 },
                 onAction: async (action, overlay) => {
+                    if (readOnly) return true;
                     if (action !== "save") return true;
                     const form = overlay.querySelector(
                         "[data-library-admin-editor]",

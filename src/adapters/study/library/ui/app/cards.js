@@ -2,13 +2,9 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
     entryAttributes,
     entrySearchAttribute,
-    definitionText,
-    isMeaningLayer,
-    layerForEntry,
     metadataFields,
     metadataValues,
     pronunciationValues,
-    renderMetadataPills,
     renderScope,
 } from "./presentation.js";
 import { isSameLibraryRecord } from "./variant-placement.js";
@@ -37,37 +33,17 @@ function renderSelection(entry, i18n) {
     return `<input class="library-entry-selection" type="checkbox" data-library-select-entry="${escapeHtml(entry.id)}" aria-label="${escapeHtml(label)}">`;
 }
 
-function renderCardContents(entry, layer, entries, schema, i18n) {
+function renderCardContents(entry, layer, _entries, _schema, i18n) {
     const pronunciations = pronunciationValues(entry).filter(
         (pronunciation) => pronunciation !== entry.label,
     );
-    const referencedEntries = new Map(
-        entries.map((candidate) => [candidate.id, candidate]),
-    );
-    const definitions = (entry.references ?? [])
-        .map((reference) => referencedEntries.get(reference.entryId))
-        .filter(
-            (candidate) =>
-                candidate && isMeaningLayer(layerForEntry([schema], candidate)),
-        )
-        .map((candidate) =>
-            definitionText(
-                candidate,
-                layerForEntry([schema], candidate),
-                entry.language,
-            ),
-        )
-        .filter(Boolean);
     const pronunciationPreview = pronunciations.length
         ? `<span class="library-card-pronunciation">${escapeHtml(pronunciations.join(" · "))}</span>`
         : "";
     if (layer.minimal) {
         return `<span class="library-entry-minimal-content"><strong>${escapeHtml(entry.label)}</strong>${pronunciationPreview}</span>`;
     }
-    const definitionPreview = definitions.length
-        ? `<span class="library-card-definition">${escapeHtml(definitions.join(" · "))}</span>`
-        : "";
-    return `<strong>${escapeHtml(entry.label)}</strong>${pronunciationPreview}${definitionPreview}<span class="library-entry-indicators">${renderMetadataPills(entry, layer)}${renderScope(entry, i18n)}</span>`;
+    return `<span class="library-card-primary"><strong>${escapeHtml(entry.label)}</strong>${pronunciationPreview}</span><span class="library-entry-indicators">${renderScope(entry, i18n)}</span>`;
 }
 
 export function renderEntryCard(

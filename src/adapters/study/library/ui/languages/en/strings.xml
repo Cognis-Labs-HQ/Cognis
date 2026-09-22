@@ -42,4 +42,5 @@
   <string name="gateway.study.library_audio_list_error">Could not load audio files.</string>
   <string name="gateway.study.library_audio_upload_success">Audio uploaded.</string>
   <string name="gateway.study.library_audio_upload_error">Could not upload the audio file.</string>
+  <string name="gateway.study.library_admin_view_title">View {{ entry }}</string>
 </resources>

@@ -86,6 +86,10 @@ Stabilized header collapse while scrolling, populated Study layer navigation on 
 
 Library rows now open read-only details across their whole hit area, while theme-aware edit actions remain at the trailing edge. Provider schemas control field labels, controls, immutable classifications, deep-link relationships, and language-scoped audio browsing. Tag fields commit on Enter, selected options toggle off, required fields validate before submission, and floating actions have localized labels. Cards and Study sub-navigation now use stable, theme-aware hover treatments, and composition chooses the closest higher-level records before atomic characters.
 
+## Polish Library previews and administrator inspection
+
+Simplified learner cards to a sleek one-line label and pronunciation treatment with a separate scope indicator, removing definitions and metadata from previews. Administrator row clicks now open the same schema-driven form as editing in a disabled, read-only mode instead of opening the learner detail popup.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -104,3 +108,4 @@ Library rows now open read-only details across their whole hit area, while theme
 - [92ef5510](https://github.com/Cognis-Labs-HQ/Cognis/commit/92ef5510)
 - [b38f8b31](https://github.com/Cognis-Labs-HQ/Cognis/commit/b38f8b31)
 - [f9ce159d](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9ce159da8ad07c2ff59f913eebab32a69f26921)
+- [03dd55f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/03dd55f02c762ae99dc3870322ceb9864cb9e325)

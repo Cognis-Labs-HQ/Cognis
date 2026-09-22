@@ -64,13 +64,13 @@ Peningkatan paket mempertahankan rekaman yang tidak disertakan penerbit kecuali 
 
 ## Administrasi dan halaman pelajar
 
-`/study/library` adalah editor data khusus administrator. Menu samping mengelompokkan seluruh rekaman bahasa terpilih berdasarkan skema dan lapisan, termasuk rekaman definisi dan relasi. Memilih lapisan langsung memindahkan status menu aktif dan menampilkan daftar baris yang bersih. Klik pada baris membuka popup detail hanya-baca dengan ringkasan referensi masuk dan keluar yang ringkas; klik kanan mengaktifkan mode multi-pilih, sedangkan pensil kecil yang mengikuti tema membuka editor berbasis skema.
+`/study/library` adalah editor data khusus administrator. Menu samping mengelompokkan seluruh rekaman bahasa terpilih berdasarkan skema dan lapisan, termasuk rekaman definisi dan relasi. Memilih lapisan langsung memindahkan status menu aktif dan menampilkan daftar baris yang bersih. Klik pada baris membuka varian hanya-baca dari popup edit berbasis skema; klik kanan mengaktifkan mode multi-pilih, sedangkan pensil kecil yang mengikuti tema membuka varian yang dapat disunting.
 
 Lapisan untuk pelajar menggunakan rute SPA mandiri `/study/layers/:schema/:layer` yang ditautkan langsung dari subnavigasi Study. Halaman ini menggunakan kembali renderer kartu kaya dengan filter, varian, definisi, metadata, dan popup detail tanpa menampilkan kontrol penyuntingan administratif.
 
 ## Kartu dan penyuntingan terfokus
 
-Pratinjau kartu pelajar menampilkan pelafalan dan definisi serta footer tetap untuk pil metadata dan ikon cakupan. Judul detail mengulangi konteks pelafalan dan definisi yang ringkas tanpa bagian isi ganda, sementara kontrol relasi tetap menjadi tautan dalam yang dapat diklik. Ringkasan referensi hanya tersedia pada tampilan Pustaka administrator.
+Pratinjau kartu pelajar sengaja dibuat ringkas: label utama dan pelafalan berbagi satu baris, dengan hanya ikon cakupan di sampingnya. Definisi, metadata, relasi, dan konten pendukung lain tetap berada di popup detail, tempat tautan dalam bekerja tanpa bagian ganda.
 
 Popup penyuntingan administrator membentuk kontrol dari skema bidang dan relasi setiap lapisan, bukan menampilkan JSON mentah. Teks terlokalisasi, daftar, boolean, angka, string, dan target relasi mendapatkan kontrol yang sesuai, sedangkan perlindungan penutupan melacak bidang yang berubah sebelum popup dapat ditutup.
 
