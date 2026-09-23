@@ -1,0 +1,13 @@
+[
+    {
+        "id": "synthetic:character:lo",
+        "displayId": 1,
+        "label": "◇",
+        "fields": {
+            "pronunciation": ["lo"],
+            "audio": "audio/lo.mp3",
+            "frequency": 1,
+            "stroke": "strokes/lo.svg"
+        }
+    }
+]

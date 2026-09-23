@@ -1,6 +1,7 @@
 import type {
     LibraryEntry,
     LibraryFieldSchema,
+    LibraryMetadataValue,
     LibraryReferenceInput,
     LibraryRelationshipSchema,
     LibraryResolutionProposal,
@@ -11,6 +12,46 @@ import { canonicalizeLanguageTag } from "./language.js";
 const ID_PATTERN = /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/;
 const CONTENT_RECORD_ID_PATTERN = /^[a-z0-9]+(?:[-_.:][a-z0-9]+)*$/i;
 const ROLE_PATTERN = /^[a-z][a-zA-Z0-9]*(?::[a-z][a-zA-Z0-9]*)*$/;
+const BUILT_IN_FIELD_TYPES = new Set([
+    "string",
+    "number",
+    "integer",
+    "boolean",
+    "localizedText",
+    "stringList",
+    "asset",
+    "assetList",
+    "audio",
+    "audioList",
+]);
+
+export function validateLibraryMetadataValue(
+    value: unknown,
+): asserts value is LibraryMetadataValue {
+    if (
+        value === null ||
+        typeof value === "string" ||
+        typeof value === "boolean"
+    )
+        return;
+    if (typeof value === "number") {
+        if (!Number.isFinite(value)) throw new Error("invalid_metadata_value");
+        return;
+    }
+    if (Array.isArray(value)) {
+        value.forEach(validateLibraryMetadataValue);
+        return;
+    }
+    if (!value || typeof value !== "object")
+        throw new Error("invalid_metadata_value");
+    for (const [key, item] of Object.entries(
+        value as Record<string, unknown>,
+    )) {
+        if (!key.trim() || item === undefined)
+            throw new Error("invalid_metadata_value");
+        validateLibraryMetadataValue(item);
+    }
+}
 
 function validateLocalizedText(value: unknown, code: string): void {
     if (!value || typeof value !== "object" || Array.isArray(value))
@@ -33,6 +74,10 @@ function validateMetadata(
     validateLocalizedText(metadata?.labels, code);
     if (metadata.descriptions !== undefined)
         validateLocalizedText(metadata.descriptions, code);
+    for (const [key, value] of Object.entries(metadata)) {
+        if (key !== "labels" && key !== "descriptions")
+            validateLibraryMetadataValue(value);
+    }
 }
 
 function assertIdentifier(value: string, code: string): void {
@@ -43,6 +88,10 @@ function validateField(field: LibraryFieldSchema, ids: Set<string>): void {
     assertIdentifier(field.id, "invalid_field_id");
     if (ids.has(field.id)) throw new Error("duplicate_field");
     validateMetadata(field.metadata, "field_metadata_required");
+    if (!field.type?.trim()) throw new Error("invalid_field_type");
+    if (!BUILT_IN_FIELD_TYPES.has(field.type) && !field.validation)
+        throw new Error("custom_field_validation_required");
+    if (field.validation) validateFieldValidation(field.validation);
     if (
         field.detail?.exclusive !== undefined &&
         typeof field.detail.exclusive !== "boolean"
@@ -65,6 +114,53 @@ function validateField(field: LibraryFieldSchema, ids: Set<string>): void {
     )
         throw new Error("invalid_filter_group_default_tag");
     ids.add(field.id);
+}
+
+function validateFieldValidation(
+    validation: NonNullable<LibraryFieldSchema["validation"]>,
+): void {
+    if (!validation || typeof validation !== "object")
+        throw new Error("invalid_field_validation");
+    if (validation.kind === "string") {
+        if (validation.pattern !== undefined) {
+            if (typeof validation.pattern !== "string")
+                throw new Error("invalid_field_validation");
+            try {
+                new RegExp(validation.pattern, "u");
+            } catch {
+                throw new Error("invalid_field_validation");
+            }
+        }
+        return;
+    }
+    if (validation.kind === "number") {
+        if (
+            validation.integer !== undefined &&
+            typeof validation.integer !== "boolean"
+        )
+            throw new Error("invalid_field_validation");
+        for (const value of [validation.minimum, validation.maximum])
+            if (
+                value !== undefined &&
+                (typeof value !== "number" || !Number.isFinite(value))
+            )
+                throw new Error("invalid_field_validation");
+        if (
+            validation.minimum !== undefined &&
+            validation.maximum !== undefined &&
+            validation.minimum > validation.maximum
+        )
+            throw new Error("invalid_field_validation");
+        return;
+    }
+    if (validation.kind === "boolean" || validation.kind === "localizedText")
+        return;
+    if (
+        validation.kind === "list" &&
+        ["string", "number", "boolean"].includes(validation.items)
+    )
+        return;
+    throw new Error("invalid_field_validation");
 }
 
 function validateFilterGroups(fields: readonly LibraryFieldSchema[]): void {
@@ -356,6 +452,11 @@ export function validateFields(
             (field.type === "stringList" &&
                 Array.isArray(value) &&
                 value.every((item) => typeof item === "string")) ||
+            ((field.type === "assetList" || field.type === "audioList") &&
+                Array.isArray(value) &&
+                value.every(
+                    (item) => typeof item === "string" && item.length > 0,
+                )) ||
             (field.type === "localizedText" &&
                 (() => {
                     try {
@@ -367,9 +468,50 @@ export function validateFields(
                     } catch {
                         return false;
                     }
-                })());
+                })()) ||
+            validateCustomFieldValue(field, value);
         if (!valid) throw new Error(`invalid_field_type:${field.id}`);
     }
+}
+
+function validateCustomFieldValue(
+    field: LibraryFieldSchema,
+    value: unknown,
+): boolean {
+    if (BUILT_IN_FIELD_TYPES.has(field.type) || !field.validation) return false;
+    const validation = field.validation;
+    if (validation.kind === "string")
+        return (
+            typeof value === "string" &&
+            (!validation.pattern ||
+                new RegExp(validation.pattern, "u").test(value))
+        );
+    if (validation.kind === "boolean") return typeof value === "boolean";
+    if (validation.kind === "localizedText") {
+        try {
+            validateLocalizedText(value, "invalid");
+            return true;
+        } catch {
+            return false;
+        }
+    }
+    if (validation.kind === "number")
+        return (
+            typeof value === "number" &&
+            Number.isFinite(value) &&
+            (!validation.integer || Number.isSafeInteger(value)) &&
+            (validation.minimum === undefined || value >= validation.minimum) &&
+            (validation.maximum === undefined || value <= validation.maximum)
+        );
+    return (
+        validation.kind === "list" &&
+        Array.isArray(value) &&
+        value.every((item) =>
+            validation.items === "number"
+                ? typeof item === "number" && Number.isFinite(item)
+                : typeof item === validation.items,
+        )
+    );
 }
 
 export function validateReferences(

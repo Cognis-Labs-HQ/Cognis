@@ -3,6 +3,7 @@ import { readFile, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import {
     validateFields,
+    validateLibraryMetadataValue,
     validateLibrarySchema,
     validateReferences,
 } from "./layers.js";
@@ -85,6 +86,15 @@ function validateManifest(value: unknown): LibraryContentPackManifest {
         typeof manifest.protected !== "boolean"
     )
         throw new Error("invalid_content_pack_manifest");
+    if (manifest.metadata !== undefined) {
+        if (
+            !manifest.metadata ||
+            typeof manifest.metadata !== "object" ||
+            Array.isArray(manifest.metadata)
+        )
+            throw new Error("invalid_content_pack_manifest");
+        validateLibraryMetadataValue(manifest.metadata);
+    }
     return manifest;
 }
 
@@ -257,49 +267,57 @@ async function validateContentRecords(
         for (const field of layer.fields ?? []) {
             const value = record.fields?.[field.id];
             if (
-                (field.type !== "asset" && field.type !== "audio") ||
+                !["asset", "assetList", "audio", "audioList"].includes(
+                    field.type,
+                ) ||
                 value === undefined
             )
                 continue;
-            if (typeof value !== "string")
+            const references = Array.isArray(value) ? value : [value];
+            if (!references.every((reference) => typeof reference === "string"))
                 throw new Error("invalid_asset_reference");
-            if (field.type === "audio" && value.startsWith("https://"))
-                continue;
-            if (!assetsRoot) throw new Error("invalid_asset_reference");
-            const asset = await resolveInside(assetsRoot, value);
-            if (!(await stat(asset)).isFile())
-                throw new Error("asset_not_file");
-            const data = await readFile(asset);
-            const extension = path.extname(value).toLowerCase();
-            const mediaType =
-                field.type === "audio"
-                    ? (
-                          {
-                              ".mp3": "audio/mpeg",
-                              ".ogg": "audio/ogg",
-                              ".wav": "audio/wav",
-                              ".webm": "audio/webm",
-                              ".m4a": "audio/mp4",
-                          } as const
-                      )[extension]
-                    : value.endsWith(".svg")
-                      ? "image/svg+xml"
-                      : value.endsWith(".json")
-                        ? "application/json"
-                        : undefined;
-            if (!mediaType) throw new Error("unsupported_asset_type");
-            if (!assets.some(({ path }) => path === value)) {
-                assets.push({
-                    path: value,
-                    mediaType,
-                    data: data.toString("base64"),
-                });
+            for (const value of references as string[]) {
+                if (
+                    (field.type === "audio" || field.type === "audioList") &&
+                    value.startsWith("https://")
+                )
+                    continue;
+                if (!assetsRoot) throw new Error("invalid_asset_reference");
+                const asset = await resolveInside(assetsRoot, value);
+                if (!(await stat(asset)).isFile())
+                    throw new Error("asset_not_file");
+                const data = await readFile(asset);
+                const extension = path.extname(value).toLowerCase();
+                const mediaType =
+                    field.type === "audio" || field.type === "audioList"
+                        ? (
+                              {
+                                  ".mp3": "audio/mpeg",
+                                  ".ogg": "audio/ogg",
+                                  ".wav": "audio/wav",
+                                  ".webm": "audio/webm",
+                                  ".m4a": "audio/mp4",
+                              } as const
+                          )[extension]
+                        : value.endsWith(".svg")
+                          ? "image/svg+xml"
+                          : value.endsWith(".json")
+                            ? "application/json"
+                            : undefined;
+                if (!mediaType) throw new Error("unsupported_asset_type");
+                if (!assets.some(({ path }) => path === value)) {
+                    assets.push({
+                        path: value,
+                        mediaType,
+                        data: data.toString("base64"),
+                    });
+                }
+                digest
+                    .update(record.id)
+                    .update(field.id)
+                    .update(value)
+                    .update(data);
             }
-            digest
-                .update(record.id)
-                .update(field.id)
-                .update(value)
-                .update(data);
         }
         entries.set(id, {
             ...record,

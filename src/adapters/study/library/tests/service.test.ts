@@ -46,6 +46,34 @@ test("schema registrations are versioned, persisted, and immutable", async () =>
     );
 });
 
+test("provider metadata survives store and capability round trips", async () => {
+    const { library, saved } = service();
+    const external = {
+        ...schema(1),
+        metadata: {
+            labels: { en: "Test Language", de: "Testsprache" },
+            catalog: { featured: true, order: 4 },
+        },
+        layers: [
+            {
+                id: "units",
+                metadata: { labels: { en: "Units" }, icon: "shapes" },
+                fields: [
+                    {
+                        id: "score",
+                        type: "providerScore",
+                        validation: { kind: "number" as const, minimum: 0 },
+                        metadata: { labels: { en: "Score" }, unit: "points" },
+                    },
+                ],
+            },
+        ],
+    };
+    await library.registerSchema(external);
+    assert.deepEqual(saved[0], external);
+    assert.deepEqual(library.listSchemas()[0], external);
+});
+
 test("language providers can contribute a complete card constructor", async () => {
     const { library } = service();
     await library.registerSchema({

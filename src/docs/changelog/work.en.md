@@ -30,6 +30,10 @@ Card-edge scope, New, and selection controls now stay within each card’s horiz
 
 Related-item controls now show only each card's primary value. Child cards have clearer surfaces, stronger background separation, and independently hoverable New markers. Detail popups suggest similar same-layer items using writing, vocabulary metadata, and shared relationships, while language providers can expose additional metadata fields as learner-facing filters.
 
+## Authoritative external package contract
+
+The Study Library now validates and preserves localized and provider metadata, extensible declaratively validated field types, asset lists, package ownership and protection, semantic presentation, definition localization, interests, and activity compatibility. A synthetic package fixture mirrors a production provider structure, and the public provider capability can inspect a real pack without installing it.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -38,3 +42,4 @@ Related-item controls now show only each card's primary value. Child cards have 
 - [8e38ded6](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e38ded6f03e8e36d225e8d425625c1b719fa112)
 - [c916c66f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c916c66f2095da249058883026fa7eba94005316)
 - [227f2166](https://github.com/Cognis-Labs-HQ/Cognis/commit/227f21669b5ab0a3473f0bf5f547bfdb424f4ca2)
+- [64d53397](https://github.com/Cognis-Labs-HQ/Cognis/commit/64d53397)

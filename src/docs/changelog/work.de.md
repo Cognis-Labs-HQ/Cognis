@@ -30,6 +30,10 @@ Bereichs-, Neu- und Auswahlindikatoren am Kartenrand bleiben nun innerhalb der h
 
 Steuerelemente für verwandte Einträge zeigen nun ausschließlich den Hauptwert jeder Karte. Untergeordnete Karten besitzen deutlichere Oberflächen, eine stärkere Hintergrundtrennung und unabhängig per Maus aktivierbare Neu-Markierungen. Detailansichten schlagen anhand von Schriftzeichen, Wortschatzmetadaten und gemeinsamen Beziehungen ähnliche Einträge derselben Ebene vor. Sprachanbieter können außerdem zusätzliche Metadatenfelder als Filter für Lernende freigeben.
 
+## Verbindlicher Vertrag für externe Pakete
+
+Die Study Library validiert und bewahrt nun lokalisierte und anbieterspezifische Metadaten, erweiterbare deklarativ validierte Feldtypen, Asset-Listen, Paketbesitz und -schutz, semantische Darstellung, Definitionslokalisierung, Interessen und Aktivitätskompatibilität. Ein synthetisches Paket-Fixture bildet die Struktur eines Produktionsanbieters nach; die öffentliche Anbieterfähigkeit kann ein echtes Paket ohne Installation prüfen.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -38,3 +42,4 @@ Steuerelemente für verwandte Einträge zeigen nun ausschließlich den Hauptwert
 - [8e38ded6](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e38ded6f03e8e36d225e8d425625c1b719fa112)
 - [c916c66f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c916c66f2095da249058883026fa7eba94005316)
 - [227f2166](https://github.com/Cognis-Labs-HQ/Cognis/commit/227f21669b5ab0a3473f0bf5f547bfdb424f4ca2)
+- [64d53397](https://github.com/Cognis-Labs-HQ/Cognis/commit/64d53397)

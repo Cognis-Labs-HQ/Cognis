@@ -2,6 +2,21 @@ export type LibraryScope = "global" | "class" | "user";
 
 export type LocalizedText = Readonly<Record<string, string>>;
 
+export type LibraryMetadataValue =
+    | string
+    | number
+    | boolean
+    | null
+    | readonly LibraryMetadataValue[]
+    | { readonly [key: string]: LibraryMetadataValue };
+
+/** Localized presentation plus provider metadata that survives contract round trips. */
+export interface LibraryMetadata {
+    labels: LocalizedText;
+    descriptions?: LocalizedText;
+    [key: string]: LibraryMetadataValue | LocalizedText | undefined;
+}
+
 export const STRING_LOCALIZATION_CAPABILITY = "localization:translateString";
 
 export interface StringLocalizationCapability {
@@ -41,16 +56,20 @@ export interface LibraryDetailHint {
 
 export interface LibraryFieldSchema {
     id: string;
-    metadata: { labels: LocalizedText; descriptions?: LocalizedText };
-    type:
-        | "string"
-        | "number"
-        | "integer"
-        | "boolean"
-        | "localizedText"
-        | "stringList"
-        | "asset"
-        | "audio";
+    metadata: LibraryMetadata;
+    /** Built-ins are validated directly; extension types require a declarative validator. */
+    type: string;
+    validation?:
+        | { kind: "string"; pattern?: string }
+        | {
+              kind: "number";
+              integer?: boolean;
+              minimum?: number;
+              maximum?: number;
+          }
+        | { kind: "boolean" }
+        | { kind: "list"; items: "string" | "number" | "boolean" }
+        | { kind: "localizedText" };
     required?: boolean;
     /** Provider-owned editing and linking semantics. Labels remain in metadata. */
     input?: {
@@ -65,7 +84,7 @@ export interface LibraryFieldSchema {
             | "audioFile";
         options?: readonly {
             value: string;
-            metadata: { labels: LocalizedText };
+            metadata: LibraryMetadata;
         }[];
         immutable?: boolean;
         /** Relationship whose targets make values in this field deep-linkable. */
@@ -79,7 +98,7 @@ export interface LibraryFieldSchema {
 export interface LibraryRelationshipSchema {
     id: string;
     targetLayer: string;
-    metadata: { labels: LocalizedText; descriptions?: LocalizedText };
+    metadata: LibraryMetadata;
     minimum?: number;
     maximum?: number;
     ordered?: boolean;
@@ -94,7 +113,7 @@ export interface LibraryRelationshipSchema {
 
 export interface LibraryCardConstructor {
     /** Localized label for the card's primary label control. */
-    label: { labels: LocalizedText; descriptions?: LocalizedText };
+    label: LibraryMetadata;
     /** Field IDs to render, in form order. Omitted fields receive defaults only. */
     fields?: readonly string[];
     /** Relationship IDs to render, in form order. */
@@ -109,7 +128,7 @@ export interface LibraryCardConstructor {
 
 export interface LibraryLayerSchema {
     id: string;
-    metadata: { labels: LocalizedText; descriptions?: LocalizedText };
+    metadata: LibraryMetadata;
     semanticRole?: LibrarySemanticRole;
     /** Prefer the localized definition referenced by each entry as its display text. */
     displayDefinition?: boolean;
@@ -144,7 +163,7 @@ export interface LibrarySchema {
     version: number;
     namespace: string;
     language: string;
-    metadata: { labels: LocalizedText; descriptions?: LocalizedText };
+    metadata: LibraryMetadata;
     layers: readonly LibraryLayerSchema[];
 }
 
@@ -255,6 +274,8 @@ export interface LibraryContentPackManifest {
     pruneOmittedRecords?: boolean;
     /** Protect every record in this provider pack from deletion and scope changes. */
     protected?: boolean;
+    /** Validated provider metadata retained in installation receipts and plans. */
+    metadata?: Readonly<Record<string, LibraryMetadataValue>>;
     license: {
         id: string;
         url?: string;

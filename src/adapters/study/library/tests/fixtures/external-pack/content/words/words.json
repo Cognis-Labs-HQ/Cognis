@@ -1,0 +1,17 @@
+[
+    {
+        "id": "synthetic:word:lo",
+        "label": "◇",
+        "references": [
+            {
+                "entryId": "synthetic:character:lo",
+                "relation": "spelling",
+                "position": 0
+            },
+            {
+                "entryId": "synthetic:definition:greeting",
+                "relation": "definitions"
+            }
+        ]
+    }
+]

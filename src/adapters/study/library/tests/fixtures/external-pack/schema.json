@@ -1,0 +1,119 @@
+{
+    "id": "synthetic-language",
+    "version": 1,
+    "namespace": "synthetic",
+    "language": "x-fixture",
+    "metadata": {
+        "labels": { "en": "Synthetic Language", "de": "Synthetische Sprache" },
+        "provider": { "stable": true }
+    },
+    "layers": [
+        {
+            "id": "characters",
+            "semanticRole": "atomicWritingUnit",
+            "minimal": true,
+            "metadata": { "labels": { "en": "Characters", "de": "Zeichen" } },
+            "fields": [
+                {
+                    "id": "pronunciation",
+                    "type": "stringList",
+                    "required": true,
+                    "metadata": { "labels": { "en": "Pronunciation" } }
+                },
+                {
+                    "id": "audio",
+                    "type": "audio",
+                    "required": true,
+                    "metadata": { "labels": { "en": "Audio" } }
+                },
+                {
+                    "id": "frequency",
+                    "type": "fixtureScore",
+                    "validation": {
+                        "kind": "number",
+                        "integer": true,
+                        "minimum": 0
+                    },
+                    "metadata": {
+                        "labels": { "en": "Frequency" },
+                        "unit": "rank"
+                    },
+                    "detail": { "renderer": "number", "order": 1 }
+                },
+                {
+                    "id": "stroke",
+                    "type": "asset",
+                    "metadata": { "labels": { "en": "Stroke" } }
+                }
+            ],
+            "grid": {
+                "rowSize": 2,
+                "items": ["synthetic:character:lo", { "blank": true }]
+            },
+            "detail": {
+                "titleField": "pronunciation",
+                "fieldOrder": ["pronunciation", "frequency", "stroke"]
+            },
+            "activityCompatibility": ["study:recognition"],
+            "interestVeins": ["language:synthetic"],
+            "strokeAsset": {
+                "field": "stroke",
+                "format": "svg",
+                "coordinateSystem": "0 0 100 100"
+            }
+        },
+        {
+            "id": "definitions",
+            "semanticRole": "definition",
+            "metadata": { "labels": { "en": "Definitions" } },
+            "fields": [
+                {
+                    "id": "string_key",
+                    "type": "string",
+                    "required": true,
+                    "metadata": { "labels": { "en": "String key" } }
+                },
+                {
+                    "id": "translations",
+                    "type": "localizedText",
+                    "required": true,
+                    "metadata": { "labels": { "en": "Translations" } }
+                }
+            ],
+            "definitionLocalization": {
+                "stringKeyPrefix": "synthetic:definitions",
+                "stringKeyField": "string_key",
+                "translationsField": "translations"
+            }
+        },
+        {
+            "id": "words",
+            "semanticRole": "lexicalUnit",
+            "displayDefinition": true,
+            "metadata": { "labels": { "en": "Words" } },
+            "relationships": [
+                {
+                    "id": "spelling",
+                    "targetLayer": "characters",
+                    "metadata": { "labels": { "en": "Spelling" } },
+                    "minimum": 1,
+                    "ordered": true,
+                    "requiredTarget": true,
+                    "onDelete": "restrict",
+                    "resolverRole": "grapheme",
+                    "presentationRole": "composition"
+                },
+                {
+                    "id": "definitions",
+                    "targetLayer": "definitions",
+                    "metadata": { "labels": { "en": "Definitions" } },
+                    "minimum": 1,
+                    "requiredTarget": true,
+                    "onDelete": "restrict"
+                }
+            ],
+            "activityCompatibility": ["study:production"],
+            "interestVeins": ["language:synthetic"]
+        }
+    ]
+}

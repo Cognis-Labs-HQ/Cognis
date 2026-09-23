@@ -161,6 +161,7 @@ export async function bootstrapStudyAdapter(
         );
     if (!systemCtx?.hasCapability("study:library:provider"))
         systemCtx?.contributePublicCapability("study:library:provider", {
+            inspectContentPack: service.inspectContentPack.bind(service),
             ingestContentPack: service.ingestContentPack.bind(service),
             registerConstructor,
         } satisfies LibraryProviderCapability);

@@ -30,6 +30,10 @@ Cognis は、閲覧済みライブラリ項目の UUID をアカウントごと�
 
 関連項目の操作には各カードの主要値だけを表示するようになりました。子カードは表面をより明確にし、背景との分離を強め、独立してホバーできる新着マーカーを備えます。詳細ポップアップは文字、語彙メタデータ、共通の関係を基に同じレイヤーの類似項目を提案し、言語プロバイダーは追加のメタデータフィールドを学習者向けフィルターとして公開できます。
 
+## 正式な外部パッケージ契約
+
+Study Library は、ローカライズ済みおよびプロバイダー固有のメタデータ、宣言的に検証される拡張可能なフィールド型、アセット一覧、パッケージの所有権と保護、意味表現、定義のローカライズ、関心情報、アクティビティ互換性を検証して保持するようになりました。合成パッケージフィクスチャは本番プロバイダーの構造を再現し、公開プロバイダー機能は実際のパックをインストールせずに検査できます。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -38,3 +42,4 @@ Cognis は、閲覧済みライブラリ項目の UUID をアカウントごと�
 - [8e38ded6](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e38ded6f03e8e36d225e8d425625c1b719fa112)
 - [c916c66f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c916c66f2095da249058883026fa7eba94005316)
 - [227f2166](https://github.com/Cognis-Labs-HQ/Cognis/commit/227f21669b5ab0a3473f0bf5f547bfdb424f4ca2)
+- [64d53397](https://github.com/Cognis-Labs-HQ/Cognis/commit/64d53397)
