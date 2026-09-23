@@ -34,6 +34,10 @@ Steuerelemente für verwandte Einträge zeigen nun ausschließlich den Hauptwert
 
 Die Study Library validiert und bewahrt nun lokalisierte und anbieterspezifische Metadaten, erweiterbare deklarativ validierte Feldtypen, Asset-Listen, Paketbesitz und -schutz, semantische Darstellung, Definitionslokalisierung, Interessen und Aktivitätskompatibilität. Ein synthetisches Paket-Fixture bildet die Struktur eines Produktionsanbieters nach; die öffentliche Anbieterfähigkeit kann ein echtes Paket ohne Installation prüfen.
 
+## Korrekturen für Bibliotheksansicht und Anbieter-Lebenszyklus
+
+Suche und Bearbeitung der Bibliothek sind nun kompakt und designsicher gestaltet. Die Auswahl per Rechtsklick wird zuverlässig erfasst, verschachtelte Karten behalten ihre Hover-Flächen und Nicht-Zeichenkarten zeigen vollständige Lesungen und Definitionen ohne unnötige Kürzung. Inhaltsanbieter steuern die Sprachverfügbarkeit verbindlich. Inhaltsdatensätze unterstützen Namensraumklassen, Medienlisten bleiben beim Import erhalten, benutzerdefinierte Editoren folgen Validierungsverträgen, eingebaute Einschränkungen werden durchgesetzt und Installationsbelege bewahren Anbietermetadaten.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -43,3 +47,4 @@ Die Study Library validiert und bewahrt nun lokalisierte und anbieterspezifische
 - [c916c66f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c916c66f2095da249058883026fa7eba94005316)
 - [227f2166](https://github.com/Cognis-Labs-HQ/Cognis/commit/227f21669b5ab0a3473f0bf5f547bfdb424f4ca2)
 - [64d53397](https://github.com/Cognis-Labs-HQ/Cognis/commit/64d53397)
+- [84bedc67](https://github.com/Cognis-Labs-HQ/Cognis/commit/84bedc67)

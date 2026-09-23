@@ -206,6 +206,16 @@ test("study registered languages reflect installed language capabilities", async
         enabledPayload.data.some((language) => language.code === "ja"),
         true,
     );
+
+    systemCtx.removeCapability("study:language:ja");
+    const removedResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({ method: "GET", bearerToken: userToken }),
+        removedResponse,
+        new URL("http://localhost/api/v1/study/registered-languages"),
+    );
+    assert.deepEqual(JSON.parse(removedResponse.payload), { data: [] });
 });
 
 test("study child components come from installed language capabilities", async () => {

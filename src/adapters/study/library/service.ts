@@ -28,6 +28,8 @@ import type {
     StringLocalizationCapability,
 } from "./types.js";
 
+const CONTENT_CLASS_PATTERN = /^[a-z][a-zA-Z0-9]*(?::[a-z][a-zA-Z0-9]*)*$/;
+
 export interface LibraryActor {
     accountId: string;
     role: AccessRole;
@@ -391,27 +393,37 @@ export class LibraryService implements LibraryCapability {
             const fields = { ...(record.fields ?? {}) };
             for (const field of layer.fields ?? []) {
                 const value = fields[field.id];
-                if (
-                    field.type !== "audio" ||
-                    typeof value !== "string" ||
-                    value.startsWith("https://")
-                )
+                if (field.type !== "audio" && field.type !== "audioList")
                     continue;
-                const asset = plan.assets.find(({ path }) => path === value);
-                if (!asset || !asset.mediaType.startsWith("audio/"))
-                    throw new Error("audio_asset_not_found");
-                const key = `packs/${createHash("sha256")
-                    .update(
-                        `${plan.manifest.publisher}:${plan.manifest.id}:${plan.manifest.version}:${value}`,
-                    )
-                    .digest("hex")}.audio`;
-                await this.audioCache.store(
-                    key,
-                    asset.mediaType,
-                    Buffer.from(asset.data, "base64"),
-                );
-                fields[field.id] = `file:${key}`;
-                audioPaths.add(value);
+                const values = Array.isArray(value) ? value : [value];
+                const stored = [];
+                for (const audioPath of values) {
+                    if (
+                        typeof audioPath !== "string" ||
+                        audioPath.startsWith("https://")
+                    ) {
+                        stored.push(audioPath);
+                        continue;
+                    }
+                    const asset = plan.assets.find(
+                        ({ path }) => path === audioPath,
+                    );
+                    if (!asset || !asset.mediaType.startsWith("audio/"))
+                        throw new Error("audio_asset_not_found");
+                    const key = `packs/${createHash("sha256")
+                        .update(
+                            `${plan.manifest.publisher}:${plan.manifest.id}:${plan.manifest.version}:${audioPath}`,
+                        )
+                        .digest("hex")}.audio`;
+                    await this.audioCache.store(
+                        key,
+                        asset.mediaType,
+                        Buffer.from(asset.data, "base64"),
+                    );
+                    stored.push(`file:${key}`);
+                    audioPaths.add(audioPath);
+                }
+                fields[field.id] = Array.isArray(value) ? stored : stored[0];
             }
             record.fields = fields;
         }
@@ -624,6 +636,11 @@ export class LibraryService implements LibraryCapability {
         const schema = this.schema(input.schemaId, input.schemaVersion);
         if (!input.label?.trim() || input.label.length > 500)
             throw new Error("invalid_label");
+        if (
+            input.class !== undefined &&
+            !CONTENT_CLASS_PATTERN.test(input.class)
+        )
+            throw new Error("invalid_content_class");
         if (input.hidden !== undefined && typeof input.hidden !== "boolean")
             throw new Error("invalid_hidden");
         if (
@@ -737,6 +754,11 @@ export class LibraryService implements LibraryCapability {
             throw new Error("entry_identity_immutable");
         if (!input.label?.trim() || input.label.length > 500)
             throw new Error("invalid_label");
+        if (
+            input.class !== undefined &&
+            !CONTENT_CLASS_PATTERN.test(input.class)
+        )
+            throw new Error("invalid_content_class");
         if (input.hidden !== undefined && typeof input.hidden !== "boolean")
             throw new Error("invalid_hidden");
         if (

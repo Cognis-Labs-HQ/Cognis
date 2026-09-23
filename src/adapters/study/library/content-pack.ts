@@ -18,6 +18,7 @@ const ID_PATTERN = /^[a-z0-9]+(?:[-_.:][a-z0-9]+)*$/i;
 const VERSION_PATTERN =
     /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 const LICENSE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9-.+]*$/;
+const ROLE_PATTERN = /^[a-z][a-zA-Z0-9]*(?::[a-z][a-zA-Z0-9]*)*$/;
 
 function canonicalJson(value: unknown): string {
     if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
@@ -148,6 +149,7 @@ export function contentRecordHash(
                 language: schema.language,
                 layer: record.layer,
                 label: record.label.trim(),
+                ...(record.class ? { class: record.class } : {}),
                 ...(record.hidden === true ? { hidden: true } : {}),
                 ...(manifest.protected === true ? { protected: true } : {}),
                 fields: record.fields ?? {},
@@ -253,6 +255,8 @@ async function validateContentRecords(
             !record.label?.trim()
         )
             throw new Error("invalid_content_record");
+        if (record.class !== undefined && !ROLE_PATTERN.test(record.class))
+            throw new Error("invalid_content_class");
         if (
             record.displayId !== undefined &&
             (!Number.isSafeInteger(record.displayId) || record.displayId < 0)

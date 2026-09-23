@@ -34,6 +34,10 @@ Related-item controls now show only each card's primary value. Child cards have 
 
 The Study Library now validates and preserves localized and provider metadata, extensible declaratively validated field types, asset lists, package ownership and protection, semantic presentation, definition localization, interests, and activity compatibility. A synthetic package fixture mirrors a production provider structure, and the public provider capability can inspect a real pack without installing it.
 
+## Library browsing and provider lifecycle fixes
+
+Library search and edit controls now follow compact, theme-safe styling. Right-click selection is captured reliably, nested child cards retain hover hitboxes, and non-character cards show full readings and definitions without needless truncation. Content providers now authoritatively control language availability. Content records support namespaced classes, media lists survive ingestion, custom editors follow validation contracts, built-in constraints are enforced, and installation receipts retain provider metadata.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -43,3 +47,4 @@ The Study Library now validates and preserves localized and provider metadata, e
 - [c916c66f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c916c66f2095da249058883026fa7eba94005316)
 - [227f2166](https://github.com/Cognis-Labs-HQ/Cognis/commit/227f21669b5ab0a3473f0bf5f547bfdb424f4ca2)
 - [64d53397](https://github.com/Cognis-Labs-HQ/Cognis/commit/64d53397)
+- [84bedc67](https://github.com/Cognis-Labs-HQ/Cognis/commit/84bedc67)

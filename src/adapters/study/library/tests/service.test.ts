@@ -74,6 +74,47 @@ test("provider metadata survives store and capability round trips", async () => 
     assert.deepEqual(library.listSchemas()[0], external);
 });
 
+test("content-pack audio lists are cached and rewritten entry by entry", async () => {
+    const stored: string[] = [];
+    const library = new LibraryService(
+        {} as never,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        {
+            store: async (key: string) => void stored.push(key),
+        } as never,
+    );
+    const plan = {
+        manifest: { publisher: "Fixture", id: "pack", version: "1.0.0" },
+        schema: {
+            layers: [
+                { id: "words", fields: [{ id: "audio", type: "audioList" }] },
+            ],
+        },
+        records: [
+            { layer: "words", fields: { audio: ["one.mp3", "two.mp3"] } },
+        ],
+        assets: ["one.mp3", "two.mp3"].map((path) => ({
+            path,
+            mediaType: "audio/mpeg",
+            data: Buffer.from(path).toString("base64"),
+        })),
+    };
+    await (
+        library as unknown as {
+            storeContentPackAudio(value: unknown): Promise<void>;
+        }
+    ).storeContentPackAudio(plan);
+    assert.equal(stored.length, 2);
+    assert.deepEqual(plan.records[0].fields.audio, [
+        `file:${stored[0]}`,
+        `file:${stored[1]}`,
+    ]);
+    assert.deepEqual(plan.assets, []);
+});
+
 test("language providers can contribute a complete card constructor", async () => {
     const { library } = service();
     await library.registerSchema({

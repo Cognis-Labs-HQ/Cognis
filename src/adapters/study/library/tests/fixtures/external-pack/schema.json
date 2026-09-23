@@ -91,6 +91,18 @@
             "semanticRole": "lexicalUnit",
             "displayDefinition": true,
             "metadata": { "labels": { "en": "Words" } },
+            "fields": [
+                {
+                    "id": "examples",
+                    "type": "audioList",
+                    "metadata": { "labels": { "en": "Examples" } }
+                },
+                {
+                    "id": "illustrations",
+                    "type": "assetList",
+                    "metadata": { "labels": { "en": "Illustrations" } }
+                }
+            ],
             "relationships": [
                 {
                     "id": "spelling",

@@ -92,7 +92,7 @@ export function bindLibraryInteractions(root, context) {
                         : null),
             );
         },
-        { signal },
+        { capture: true, signal },
     );
     bindVariantInteractions(root, {
         signal,
@@ -112,7 +112,7 @@ export function bindLibraryInteractions(root, context) {
             selection.checked = true;
             updateSelectionActions(root, entries, requests, locations);
         },
-        { signal },
+        { capture: true, signal },
     );
     root.addEventListener(
         "change",

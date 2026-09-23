@@ -46,7 +46,10 @@ function renderCardContents(entry, layer, _entries, _schema, i18n) {
     if (layer.minimal) {
         return `<span class="library-entry-minimal-content"><strong>${escapeHtml(entry.label)}</strong>${pronunciationPreview}</span>`;
     }
-    const definition = entry.alwaysShowDefinition
+    const showDefinition =
+        entry.alwaysShowDefinition ||
+        layer.semanticRole !== "atomicWritingUnit";
+    const definition = showDefinition
         ? _entries
               .filter((candidate) =>
                   (entry.references ?? []).some(
@@ -65,7 +68,7 @@ function renderCardContents(entry, layer, _entries, _schema, i18n) {
               )
               .find(Boolean)
         : "";
-    return `<span class="library-card-primary"><strong>${escapeHtml(entry.label)}</strong>${pronunciationPreview}${definition ? `<span class="library-card-definition">${escapeHtml(definition)}</span>` : ""}</span>`;
+    return `<span class="library-card-primary"><span class="library-card-reading"><strong>${escapeHtml(entry.label)}</strong>${pronunciationPreview}</span>${definition ? `<span class="library-card-definition">${escapeHtml(definition)}</span>` : ""}</span>`;
 }
 
 export function renderEntryCard(

@@ -2,6 +2,11 @@
     {
         "id": "synthetic:word:lo",
         "label": "◇",
+        "class": "lexical:noun",
+        "fields": {
+            "examples": ["audio/lo.mp3"],
+            "illustrations": ["strokes/lo.svg"]
+        },
         "references": [
             {
                 "entryId": "synthetic:character:lo",

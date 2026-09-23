@@ -45,6 +45,7 @@ test("content pack import ignores duplicate all-key references", async () => {
             namespace: "ja",
             schema: "schema.json",
             content: "data",
+            metadata: { catalog: { featured: true } },
             license: { id: "CC-BY-4.0" },
         },
         schema,
@@ -132,6 +133,18 @@ test("content pack import ignores duplicate all-key references", async () => {
         ),
         false,
     );
+    const packInsert = commands.find(
+        (command) =>
+            command.option === "INSERT" &&
+            command.table === "study_library_content_packs",
+    );
+    assert.equal(
+        packInsert?.option === "INSERT"
+            ? packInsert.values.metadata_json
+            : undefined,
+        JSON.stringify({ catalog: { featured: true } }),
+    );
+    assert.deepEqual(receipt.metadata, { catalog: { featured: true } });
 });
 
 test("content pack updates prune omitted records only when requested", async () => {

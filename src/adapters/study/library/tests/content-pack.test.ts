@@ -17,6 +17,10 @@ test("external-package compatibility fixture preserves validated contract metada
     );
     const plan = await inspectContentPack(root);
     assert.equal(plan.records.length, 3);
+    assert.equal(
+        plan.records.find(({ layer }) => layer === "words")?.class,
+        "lexical:noun",
+    );
     assert.deepEqual(plan.manifest.metadata, {
         catalog: { featured: true, rank: 1 },
         tags: ["fixture"],

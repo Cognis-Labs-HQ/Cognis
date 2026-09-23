@@ -103,7 +103,7 @@ test("Study Library uses an administrator-only common data editor", () => {
     assert.match(stylesheet, /library-admin-edit[\s\S]*edit-light\.svg/);
     assert.match(
         stylesheet,
-        /body\[data-theme="dark"\] \.library-admin-edit[\s\S]*edit-dark\.svg/,
+        /\.library-admin-edit::before[\s\S]*background: currentColor[\s\S]*mask:[\s\S]*edit-light\.svg/,
     );
     assert.doesNotMatch(source, /const url = `\/study\/library/);
 });
@@ -688,7 +688,7 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /isSameLibraryRecord\(entry, parent\)/);
 });
 
-test("Study Library bounds card status and prioritizes primary previews", () => {
+test("Study Library bounds status and gives readings and definitions room", () => {
     assert.match(
         stylesheet,
         /\.library-entry-card-status[\s\S]*left: 0\.35rem[\s\S]*max-width: calc\(100% - 2\.7rem\)/,
@@ -697,13 +697,10 @@ test("Study Library bounds card status and prioritizes primary previews", () => 
         stylesheet,
         /\.library-entry-selection[\s\S]*right: 0\.35rem[\s\S]*translateY\(-50%\)/,
     );
+    assert.match(stylesheet, /\.library-card-primary[\s\S]*display: grid/);
     assert.match(
         stylesheet,
-        /\.library-card-primary > strong[\s\S]*flex: 1 1 65%/,
-    );
-    assert.match(
-        stylesheet,
-        /\.library-card-primary > \.library-card-pronunciation[\s\S]*max-width: 30%/,
+        /\.library-card-reading[\s\S]*flex-wrap: wrap[\s\S]*\.library-card-definition[\s\S]*white-space: normal/,
     );
 });
 

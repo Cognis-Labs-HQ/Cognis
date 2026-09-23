@@ -178,6 +178,8 @@ export interface LibraryEntryInput {
     schemaVersion?: number;
     layer: string;
     label: string;
+    /** Provider-neutral lexical/content classification, such as noun or verb. */
+    class?: string;
     /** Exclude the entry and its descendants from direct browsing while retaining references. */
     hidden?: boolean;
     /** Keep the primary localized definition visible in card previews. */
@@ -291,6 +293,8 @@ export interface LibraryContentRecord {
     hidden?: boolean;
     alwaysShowDefinition?: boolean;
     label: string;
+    /** Provider-neutral lexical/content classification, such as noun or verb. */
+    class?: string;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
 }
@@ -337,5 +341,6 @@ export interface LibraryContentPackReceipt {
     digest: string;
     recordCount: number;
     relationshipCount: number;
+    metadata?: Readonly<Record<string, LibraryMetadataValue>>;
     unchanged: boolean;
 }

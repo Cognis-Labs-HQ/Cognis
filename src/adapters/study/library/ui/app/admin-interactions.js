@@ -18,9 +18,10 @@ export function inputForField(field, value, language, i18n) {
     }
     if (control === "singleSelect" || control === "multiSelect")
         return `<label><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}"${control === "multiSelect" ? " multiple" : ""}${field.input?.immutable ? " disabled" : ""}${field.required ? " required" : ""}>${options.map((option) => `<option value="${escapeHtml(option.value)}"${(Array.isArray(value) ? value.includes(option.value) : value === option.value) ? " selected" : ""}>${escapeHtml(localizedLabel(option.metadata, language))}</option>`).join("")}</select></label>`;
-    if (field.type === "boolean")
+    const valueKind = field.validation?.kind ?? field.type;
+    if (valueKind === "boolean")
         return `<label class="library-admin-checkbox"><input name="${escapeHtml(name)}" type="checkbox"${value === true ? " checked" : ""}> <span>${escapeHtml(label)}</span></label>`;
-    if (field.type === "localizedText") {
+    if (valueKind === "localizedText") {
         const translations =
             value && typeof value === "object" && !Array.isArray(value)
                 ? value
@@ -34,12 +35,20 @@ export function inputForField(field, value, language, i18n) {
             )
             .join("")}</fieldset>`;
     }
-    if (field.type === "stringList" || control === "tagList")
+    if (
+        field.type === "stringList" ||
+        field.validation?.kind === "list" ||
+        control === "tagList"
+    )
         return `<div class="library-tag-field" data-library-tag-field><span>${escapeHtml(label)}</span><div class="library-tag-list">${(Array.isArray(value) ? value : []).map((item) => `<button type="button" class="btn-neutral" data-library-tag="${escapeHtml(item)}">${escapeHtml(item)} ×</button>`).join("")}</div><input data-library-tag-input aria-label="${escapeHtml(label)}"><input name="${escapeHtml(name)}" type="hidden" value="${escapeHtml((Array.isArray(value) ? value : []).join("\u001f"))}"${field.required ? " required" : ""}></div>`;
-    const inputType = ["number", "integer"].includes(field.type)
-        ? "number"
-        : "text";
-    const step = field.type === "integer" ? "1" : "any";
+    const inputType =
+        ["number", "integer"].includes(field.type) ||
+        field.validation?.kind === "number" ||
+        control === "number"
+            ? "number"
+            : "text";
+    const step =
+        field.type === "integer" || field.validation?.integer ? "1" : "any";
     return `<label><span>${escapeHtml(label)}</span><input name="${escapeHtml(name)}" type="${inputType}"${inputType === "number" ? ` step="${step}"` : ""} value="${escapeHtml(value ?? "")}"${field.required ? " required" : ""}${field.input?.immutable ? " disabled" : ""}></label>`;
 }
 
@@ -129,12 +138,13 @@ export function readFields(form, layer, entry) {
                     if (field.input?.immutable === true)
                         return [field.id, entry.fields?.[field.id]];
                     const name = `field:${field.id}`;
-                    if (field.type === "boolean")
+                    const valueKind = field.validation?.kind ?? field.type;
+                    if (valueKind === "boolean")
                         return [
                             field.id,
                             form.elements[name]?.checked === true,
                         ];
-                    if (field.type === "localizedText") {
+                    if (valueKind === "localizedText") {
                         const translations = {};
                         for (const control of form.elements) {
                             if (control.name?.startsWith(`${name}:`))
@@ -147,6 +157,7 @@ export function readFields(form, layer, entry) {
                     const value = form.elements[name]?.value ?? "";
                     if (
                         field.type === "stringList" ||
+                        field.validation?.kind === "list" ||
                         field.input?.control === "multiSelect"
                     )
                         return [
@@ -159,7 +170,11 @@ export function readFields(form, layer, entry) {
                                   )
                                 : value.split("\u001f").filter(Boolean),
                         ];
-                    if (["number", "integer"].includes(field.type))
+                    if (
+                        ["number", "integer"].includes(field.type) ||
+                        field.validation?.kind === "number" ||
+                        field.input?.control === "number"
+                    )
                         return [
                             field.id,
                             value === "" ? undefined : Number(value),

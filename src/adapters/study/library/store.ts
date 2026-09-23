@@ -77,6 +77,12 @@ export class LibraryStore {
                 { name: "record_count", type: "integer", notNull: true },
                 { name: "relationship_count", type: "integer", notNull: true },
                 {
+                    name: "metadata_json",
+                    type: "text",
+                    notNull: true,
+                    default: "{}",
+                },
+                {
                     name: "installed_at",
                     type: "timestamp",
                     notNull: true,
@@ -108,6 +114,7 @@ export class LibraryStore {
                 { name: "layer", type: "text", notNull: true },
                 { name: "language", type: "text", notNull: true },
                 { name: "label", type: "text", notNull: true },
+                { name: "class", type: "text" },
                 { name: "source_record_id", type: "text" },
                 { name: "display_id", type: "integer" },
                 {
@@ -367,6 +374,19 @@ export class LibraryStore {
                             assetPath,
                         );
                     }
+                    if (
+                        field.type === "assetList" &&
+                        Array.isArray(assetPath)
+                    ) {
+                        fields[field.id] = assetPath.map((item) =>
+                            this.contentPackAssetUrl(
+                                manifest.publisher,
+                                manifest.id,
+                                manifest.version,
+                                String(item),
+                            ),
+                        );
+                    }
                 }
                 const { canonicalId: id, contentHash } = identity;
                 await this.removeDuplicateContentEntries(
@@ -379,6 +399,7 @@ export class LibraryStore {
                         layer: record.layer,
                         language: schema.language,
                         label: record.label.trim(),
+                        class: record.class ?? null,
                         source_record_id: record.id,
                         display_id: record.displayId ?? null,
                         hidden: record.hidden === true,
@@ -403,6 +424,7 @@ export class LibraryStore {
                     layer: record.layer,
                     language: schema.language,
                     label: record.label.trim(),
+                    class: record.class ?? null,
                     source_record_id: record.id,
                     display_id: record.displayId ?? null,
                     hidden: record.hidden === true,
@@ -479,6 +501,7 @@ export class LibraryStore {
                                 count + (record.references?.length ?? 0),
                             0,
                         ),
+                        metadata_json: JSON.stringify(manifest.metadata ?? {}),
                     },
                 });
             }
@@ -764,6 +787,9 @@ export class LibraryStore {
                 (count, record) => count + (record.references?.length ?? 0),
                 0,
             ),
+            ...(plan.manifest.metadata
+                ? { metadata: structuredClone(plan.manifest.metadata) }
+                : {}),
             unchanged,
         };
     }
@@ -832,6 +858,7 @@ export class LibraryStore {
                     layer: input.layer,
                     language,
                     label: input.label,
+                    class: input.class ?? null,
                     hidden: input.hidden === true,
                     always_show_definition: input.alwaysShowDefinition === true,
                     protected: false,
@@ -867,6 +894,7 @@ export class LibraryStore {
                 table: "study_library_entries",
                 values: {
                     label: input.label,
+                    class: input.class ?? null,
                     hidden: input.hidden === true,
                     always_show_definition: input.alwaysShowDefinition === true,
                     fields_json: JSON.stringify(input.fields ?? {}),

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
     resolveRelationships,
+    validateFields,
     validateLibrarySchema,
     validateReferences,
 } from "../layers.js";
@@ -305,6 +306,32 @@ test("schema languages canonicalize standard and private-use tags", () => {
     assert.throws(
         () => validateLibrarySchema({ ...english, language: "not_a_tag" }),
         /invalid_language/,
+    );
+});
+
+test("declarative constraints also apply to built-in field types", () => {
+    const constrained = {
+        ...english,
+        layers: [
+            {
+                ...english.layers[0],
+                fields: [
+                    {
+                        id: "rank",
+                        type: "number",
+                        metadata: { labels: { en: "Rank" } },
+                        validation: { kind: "number" as const, minimum: 0 },
+                    },
+                ],
+            },
+        ],
+    };
+    assert.throws(
+        () => validateFields(constrained, english.layers[0].id, { rank: -1 }),
+        /invalid_field_type:rank/,
+    );
+    assert.doesNotThrow(() =>
+        validateFields(constrained, english.layers[0].id, { rank: 1 }),
     );
 });
 

@@ -439,7 +439,7 @@ export function validateFields(
         if (field.required && (value === undefined || value === ""))
             throw new Error(`field_required:${field.id}`);
         if (value === undefined) continue;
-        const valid =
+        const builtInValid =
             (field.type === "integer" && Number.isSafeInteger(value)) ||
             (field.type === "number" &&
                 typeof value === "number" &&
@@ -468,18 +468,20 @@ export function validateFields(
                     } catch {
                         return false;
                     }
-                })()) ||
-            validateCustomFieldValue(field, value);
+                })());
+        const valid = BUILT_IN_FIELD_TYPES.has(field.type)
+            ? builtInValid &&
+              (!field.validation || validateFieldValue(field.validation, value))
+            : field.validation !== undefined &&
+              validateFieldValue(field.validation, value);
         if (!valid) throw new Error(`invalid_field_type:${field.id}`);
     }
 }
 
-function validateCustomFieldValue(
-    field: LibraryFieldSchema,
+function validateFieldValue(
+    validation: NonNullable<LibraryFieldSchema["validation"]>,
     value: unknown,
 ): boolean {
-    if (BUILT_IN_FIELD_TYPES.has(field.type) || !field.validation) return false;
-    const validation = field.validation;
     if (validation.kind === "string")
         return (
             typeof value === "string" &&

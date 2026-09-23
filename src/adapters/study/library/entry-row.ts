@@ -21,6 +21,10 @@ export function mapEntry(row: Record<string, unknown>): LibraryEntry {
         layer: String(row.layer),
         language: String(row.language),
         label: String(row.label),
+        class:
+            row.class === null || row.class === undefined
+                ? undefined
+                : String(row.class),
         fields: JSON.parse(String(row.fields_json ?? "{}")),
         references: [],
         scope: String(row.scope) as LibraryEntry["scope"],

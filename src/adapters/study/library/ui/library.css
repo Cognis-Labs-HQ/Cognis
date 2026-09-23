@@ -128,29 +128,30 @@ body[data-theme="light"] .library-browser {
 }
 
 .library-card-primary {
-    display: flex;
+    display: grid;
     min-width: 0;
-    align-items: baseline;
-    flex-wrap: wrap;
+    align-items: center;
     gap: 0.45rem;
     overflow: hidden;
 }
 
-.library-card-primary > strong,
-.library-card-primary > span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.library-card-reading {
+    display: flex;
+    min-width: 0;
+    gap: 0.45rem;
+    align-items: baseline;
+    flex-wrap: wrap;
 }
 
-.library-card-primary > strong {
-    min-width: 65%;
-    flex: 1 1 65%;
+.library-card-reading > strong,
+.library-card-reading > .library-card-pronunciation {
+    overflow-wrap: anywhere;
 }
 
-.library-card-primary > .library-card-pronunciation {
-    max-width: 30%;
-    flex: 0 4 auto;
+.library-card-definition {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .library-entry-grid--minimal {
@@ -241,7 +242,14 @@ body[data-theme="light"] .library-browser {
     width: 100%;
 }
 
+.library-entry-variant-shell::after {
+    position: absolute;
+    inset: calc(-1 * var(--library-variant-gap-span, var(--library-card-gap)));
+    content: "";
+}
+
 .library-entry-variant-shell > .library-entry-card-shell {
+    z-index: 1;
     width: 100%;
 }
 
