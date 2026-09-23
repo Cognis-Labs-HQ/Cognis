@@ -1,6 +1,6 @@
 # Benutzerbezogene Nachverfolgung neuer Bibliotheksinhalte
 
-**Feature-Zweig:** work
+**Feature-Zweig:** feature-update-external-package-contract-definitions
 
 ## Dauerhafter Cache angesehener Inhalte
 

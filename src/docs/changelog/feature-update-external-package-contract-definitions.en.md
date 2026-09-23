@@ -1,6 +1,6 @@
 # Per-user tracking for new Study Library content
 
-**Feature Branch:** work
+**Feature Branch:** feature-update-external-package-contract-definitions
 
 ## Persistent viewed-content cache
 

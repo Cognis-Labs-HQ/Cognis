@@ -1,6 +1,6 @@
 # ユーザー別の新着ライブラリコンテンツ追跡
 
-**機能ブランチ:** work
+**機能ブランチ:** feature-update-external-package-contract-definitions
 
 ## 閲覧済みコンテンツの永続キャッシュ
 
