@@ -11,7 +11,6 @@ import {
     renderScope,
 } from "./presentation.js";
 import { isSameLibraryRecord } from "./variant-placement.js";
-import { canDeleteEntry } from "./selection.js";
 
 export function isDirectlyVisible(entry, entries, placements) {
     const entriesById = new Map(
@@ -29,7 +28,6 @@ export function isDirectlyVisible(entry, entries, placements) {
 }
 
 function renderSelection(entry, i18n) {
-    if (!canDeleteEntry(entry)) return "";
     const label = i18n
         .t("gateway.study.library_select_entry")
         .replace("{{ entry }}", entry.label);

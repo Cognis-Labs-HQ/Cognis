@@ -50,6 +50,10 @@ Tinjauan penerbitan kini berada pada halaman Permintaan khusus di subnavigasi St
 
 Administrasi Pustaka kini menampilkan menu lapisan datar untuk bahasa terpilih. Kelas kartu terlihat dan dapat disunting dengan aman, definisi serta komposit mendapat kelas wajib, definisi tetap tersembunyi dari pelajar, dan partikel maupun rekaman yang dikunci penyedia tidak dapat disunting. Dialog membedakan Lihat/Edit, menyediakan Simpan, dan melindungi perubahan belum tersimpan. Pembuatan kartu dipindah ke tindakan halaman `+` terpandu pada halaman pelajar, pengirim dapat melihat status permintaan, bacaan judul popup mempertahankan tautan penyedia, dan ketersediaan bahasa Study dimuat ulang pada setiap pemuatan halaman.
 
+## Tindakan kartu pelajar yang andal
+
+Kartu pelajar kini tetap memiliki kontrol pilihan terlepas dari izin penghapusan, sehingga klik kanan dapat membuka pemilihan jamak tanpa menampilkan menu peramban. Tindakan pembuatan kini menemukan konstruktor kartu kontribusi penyedia dan mendaftarkan tombol + melalui kapabilitas CTX tindakan halaman.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -64,3 +68,4 @@ Administrasi Pustaka kini menampilkan menu lapisan datar untuk bahasa terpilih. 
 - [365d5444](https://github.com/Cognis-Labs-HQ/Cognis/commit/365d5444)
 - [11bec51d](https://github.com/Cognis-Labs-HQ/Cognis/commit/11bec51d)
 - [b996336d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b996336d)
+- [8d4c4129](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d4c4129)

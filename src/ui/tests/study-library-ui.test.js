@@ -351,6 +351,12 @@ test("Study Library creation is driven by language card constructors", () => {
     assert.doesNotMatch(indexSource, /data-library-create/);
     assert.match(layerPageSource, /page:actions/);
     assert.match(layerPageSource, /textContent = "\+"/);
+    assert.match(layerPageSource, /fetchLibraryForms/);
+    assert.match(layerPageSource, /contribution\.cardConstructor/);
+    assert.match(
+        source,
+        /contributedConstructor \?\? layer\?\.cardConstructor/,
+    );
     assert.match(source, /writableClasses\.length > 1/);
     assert.doesNotMatch(layerPageSource, /renderLibraryRequests/);
     assert.doesNotMatch(indexSource, /renderLibraryRequests/);
@@ -465,8 +471,12 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /gateway\.study\.library_variant_hint/);
     assert.match(source, /library-entry-variants-open/);
     assert.match(source, /"contextmenu"/);
-    assert.match(source, /document\.addEventListener\([\s\S]*"contextmenu"/);
+    assert.match(source, /root\.addEventListener\([\s\S]*"contextmenu"/);
     assert.match(source, /\{ capture: true, signal \}/);
+    assert.doesNotMatch(
+        cardsSource,
+        /if \(!canDeleteEntry\(entry\)\) return ""/,
+    );
     assert.match(source, /"focusout"/);
     assert.match(source, /setSelectionMode\(root, true\)/);
     assert.match(

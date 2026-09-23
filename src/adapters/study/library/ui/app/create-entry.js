@@ -18,14 +18,24 @@ export async function openCreateEntryPopup({
     schemaId,
     layerId,
     i18n,
+    contributions: suppliedContributions,
 }) {
-    const [access, contributions] = await Promise.all([
+    const [access, loadedContributions] = await Promise.all([
         fetchLibraryLocations(),
-        fetchLibraryForms(),
+        suppliedContributions
+            ? Promise.resolve(suppliedContributions)
+            : fetchLibraryForms(),
     ]);
+    const contributions = loadedContributions ?? [];
     const schema = schemas.find(({ id }) => id === schemaId);
     const layer = schema?.layers.find(({ id }) => id === layerId);
-    const constructor = layer?.cardConstructor;
+    const contributedConstructor = contributions.find(
+        (item) =>
+            item.schemaId === schemaId &&
+            item.layerId === layerId &&
+            item.cardConstructor,
+    )?.cardConstructor;
+    const constructor = contributedConstructor ?? layer?.cardConstructor;
     if (!schema || !layer || !constructor || !access.writable.length)
         return null;
     const contributedFields = contributions

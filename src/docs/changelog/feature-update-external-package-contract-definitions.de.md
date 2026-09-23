@@ -50,6 +50,10 @@ Veröffentlichungsprüfungen befinden sich nun auf einer eigenen Anfragen-Seite 
 
 Die Bibliotheksverwaltung zeigt nun ein flaches Ebenenmenü für die ausgewählte Sprache. Kartenklassen sind sichtbar und sicher bearbeitbar; Definitionen und Kompositionen erhalten erzwungene Klassen, Definitionen bleiben für Lernende verborgen, und Partikel sowie anbietergesperrte Datensätze sind nicht bearbeitbar. Bearbeitungsdialoge unterscheiden klar Ansicht und Bearbeitung, bieten Speichern und schützen ungespeicherte Änderungen. Die Kartenerstellung befindet sich als geführte `+`-Seitenaktion auf Lernendenseiten, Antragstellende sehen ihren Status, Popup-Titellesungen behalten Anbieterlinks, und verfügbare Study-Sprachen werden bei jedem Seitenaufruf neu geladen.
 
+## Zuverlässige Aktionen für Lernkarten
+
+Lernkarten behalten nun unabhängig von Löschrechten ein Auswahlsteuerelement, sodass ein Rechtsklick zuverlässig die Mehrfachauswahl öffnet, ohne das Browsermenü anzuzeigen. Erstellungsaktionen erkennen nun von Anbietern beigesteuerte Kartenkonstruktoren und registrieren die +-Schaltfläche über die CTX-Fähigkeit für Seitenaktionen.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -64,3 +68,4 @@ Die Bibliotheksverwaltung zeigt nun ein flaches Ebenenmenü für die ausgewählt
 - [365d5444](https://github.com/Cognis-Labs-HQ/Cognis/commit/365d5444)
 - [11bec51d](https://github.com/Cognis-Labs-HQ/Cognis/commit/11bec51d)
 - [b996336d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b996336d)
+- [8d4c4129](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d4c4129)

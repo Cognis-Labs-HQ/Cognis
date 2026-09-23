@@ -16,6 +16,7 @@ import { librarySelectionFloatingMenu } from "../selection.js";
 import { openCreateEntryPopup } from "../create-entry.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { loadLibraryRequests } from "../requests.js";
+import { fetchLibraryForms } from "/static/gateways/study/ui/library-client.js";
 
 function requestedLayer() {
     const parts = window.location.pathname.split("/").filter(Boolean);
@@ -47,7 +48,18 @@ export async function mount(root, { signal } = {}) {
     const layer = schema?.layers?.find(
         ({ id }) => id === selectedLayer?.layerId,
     );
-    const requests = await loadLibraryRequests();
+    const [requests, formContributions] = await Promise.all([
+        loadLibraryRequests(),
+        fetchLibraryForms(),
+    ]);
+    const canCreate =
+        Boolean(layer?.cardConstructor) ||
+        formContributions.some(
+            (contribution) =>
+                contribution.schemaId === selectedLayer?.schemaId &&
+                contribution.layerId === selectedLayer?.layerId &&
+                contribution.cardConstructor,
+        );
     const title = layer
         ? localizedLabel(layer.metadata, schema.language) || layer.id
         : i18n.t("gateway.study.library_label");
@@ -95,7 +107,7 @@ export async function mount(root, { signal } = {}) {
         }
     });
     bindStudySubNavigation(root, { signal });
-    if (layer?.cardConstructor) {
+    if (canCreate) {
         const createButton = document.createElement("button");
         createButton.type = "button";
         createButton.className = "btn-confirm";
@@ -113,6 +125,7 @@ export async function mount(root, { signal } = {}) {
                     schemaId: selectedLayer?.schemaId,
                     layerId: selectedLayer?.layerId,
                     i18n,
+                    contributions: formContributions,
                 });
                 if (!created) return;
                 entries.push(created);
