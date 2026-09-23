@@ -100,9 +100,10 @@ export function bindLibraryInteractions(root, context) {
             suppressEntryClick = true;
         },
     });
-    root.addEventListener(
+    document.addEventListener(
         "contextmenu",
         (event) => {
+            if (!root.isConnected || !root.contains(event.target)) return;
             const card = event.target.closest("[data-library-entry]");
             if (!card) return;
             const selection = selectionForCard(root, card);

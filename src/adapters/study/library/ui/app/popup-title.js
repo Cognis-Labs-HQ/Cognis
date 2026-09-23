@@ -78,7 +78,22 @@ export function popupTitleDetailItems(
             titleDefinition,
             sourceDefinition,
         );
-        return localizedDefinition ? [{ label: localizedDefinition }] : [];
+        const pronunciations = distinctPronunciationLabels(
+            detail.entry,
+            new Set(),
+        ).map((label) => ({ label }));
+        return [
+            ...pronunciations.flatMap((item, index) => [
+                ...(index ? [{ label: " · " }] : []),
+                item,
+            ]),
+            ...(localizedDefinition
+                ? [
+                      ...(pronunciations.length ? [{ label: " · " }] : []),
+                      { label: localizedDefinition },
+                  ]
+                : []),
+        ];
     }
     const spellingGroups = secondarySpellingGroups(detail, schemas);
     const spellingLabels = new Set(

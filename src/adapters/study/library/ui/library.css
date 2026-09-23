@@ -154,6 +154,18 @@ body[data-theme="light"] .library-browser {
     overflow-wrap: anywhere;
 }
 
+.library-entry-card--orderedLexicalSequence {
+    height: 7.5rem;
+}
+
+.library-entry-card--orderedLexicalSequence .library-card-reading > strong,
+.library-entry-card--orderedLexicalSequence .library-card-definition {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
 .library-entry-grid--minimal {
     overflow: clip;
     width: 100%;

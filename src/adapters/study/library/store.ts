@@ -312,7 +312,7 @@ export class LibraryStore {
                     ({ canonicalId }) => canonicalId,
                 ),
             );
-            if (manifest.pruneOmittedRecords) {
+            if (manifest.pruneOmittedRecords !== false) {
                 const previousEntries = await db.executeCommand({
                     option: "SELECT",
                     table: "study_library_entries",

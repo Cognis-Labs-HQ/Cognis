@@ -311,6 +311,7 @@
   <string name="ui.reuse.reset_layout">Layout zurücksetzen</string>
   <string name="ui.reuse.close">Schließen</string>
   <string name="ui.reuse.cancel">Abbrechen</string>
+  <string name="ui.reuse.delete">Löschen</string>
   <string name="ui.reuse.return_to_dashboard">Zum Dashboard zurückkehren</string>
 
   <string name="ui.app.profile.page_subtitle">Dein Profil und soziale Aktivitäten.</string>

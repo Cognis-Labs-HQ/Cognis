@@ -103,7 +103,7 @@ test("Study Library uses an administrator-only common data editor", () => {
     assert.match(stylesheet, /library-admin-edit[\s\S]*edit-light\.svg/);
     assert.match(
         stylesheet,
-        /\.library-admin-edit::before[\s\S]*background: currentColor[\s\S]*mask:[\s\S]*edit-light\.svg/,
+        /\.library-admin-edit > span[\s\S]*background:[\s\S]*edit-light\.svg/,
     );
     assert.doesNotMatch(source, /const url = `\/study\/library/);
 });
@@ -115,7 +115,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     );
     assert.match(source, /role="tablist"/);
     assert.match(source, /role="tabpanel"/);
-    assert.match(source, /class="library-entry-card\$\{variant/);
+    assert.match(source, /class="library-entry-card\$\{roleClass\}\$\{variant/);
     assert.match(source, /library-entry-variant/);
     assert.match(source, /class="library-filter-pill btn-neutral/);
     assert.match(source, /aria-pressed="\$\{selected\}"/);
@@ -293,6 +293,10 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /distinctPronunciationLabels\(/);
     assert.match(
         source,
+        /semanticRole === "lexicalUnit"[\s\S]*distinctPronunciationLabels/,
+    );
+    assert.match(
+        source,
         /const pronunciationItems = distinctPronunciationLabels\([\s\S]*\{ label \}/,
     );
     assert.match(source, /const spellingItems = spellingGroups\.flatMap/);
@@ -425,6 +429,8 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /gateway\.study\.library_variant_hint/);
     assert.match(source, /library-entry-variants-open/);
     assert.match(source, /"contextmenu"/);
+    assert.match(source, /document\.addEventListener\([\s\S]*"contextmenu"/);
+    assert.match(source, /\{ capture: true, signal \}/);
     assert.match(source, /"focusout"/);
     assert.match(source, /setSelectionMode\(root, true\)/);
     assert.match(

@@ -311,6 +311,7 @@
   <string name="ui.reuse.reset_layout">レイアウトをリセット</string>
   <string name="ui.reuse.close">閉じる</string>
   <string name="ui.reuse.cancel">キャンセル</string>
+  <string name="ui.reuse.delete">削除</string>
   <string name="ui.reuse.return_to_dashboard">ダッシュボードに戻る</string>
 
   <string name="ui.app.profile.page_subtitle">あなたのプロフィールとソーシャル活動。</string>

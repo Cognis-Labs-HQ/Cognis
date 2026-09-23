@@ -123,7 +123,7 @@ export async function mount(root, { signal } = {}) {
                 id: "library-layers",
                 label: i18n.t("gateway.study.library_layers"),
                 render: () =>
-                    `<label class="library-quick-search"><span>${escapeHtml(i18n.t("gateway.study.library_search"))}</span><span class="library-quick-search-control"><input type="search" data-library-quick-search placeholder="${escapeHtml(i18n.t("gateway.study.library_search_placeholder"))}"><button class="btn-neutral" type="button" data-library-clear-search aria-label="${escapeHtml(i18n.t("gateway.study.library_search_clear"))}"><img src="/static/adapters/study/library/assets/clear-search.svg" alt=""></button></span></label>${layerMenu.render()}`,
+                    `<label class="library-quick-search"><span>${escapeHtml(i18n.t("gateway.study.library_search"))}</span><span class="library-quick-search-control"><input type="text" inputmode="search" data-library-quick-search placeholder="${escapeHtml(i18n.t("gateway.study.library_search_placeholder"))}"><button class="btn-neutral" type="button" data-library-clear-search aria-label="${escapeHtml(i18n.t("gateway.study.library_search_clear"))}"><img src="/static/adapters/study/library/assets/clear-search.svg" alt=""></button></span></label>${layerMenu.render()}`,
             },
             {
                 id: "library-create",

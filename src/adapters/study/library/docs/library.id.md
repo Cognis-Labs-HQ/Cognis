@@ -60,7 +60,7 @@ Pelafalan yang sama dengan ejaan utama atau sekunder hanya ditampilkan sekali. T
 
 ## Peningkatan paket konten
 
-Peningkatan paket mempertahankan rekaman yang tidak disertakan penerbit kecuali manifes secara eksplisit menetapkan `pruneOmittedRecords` ke `true`. Penerbit sebaiknya mengaktifkan pemangkasan hanya jika paket menjadi sumber otoritatif untuk seluruh kumpulan rekaman.
+Peningkatan paket memangkas rekaman yang tidak lagi disertakan penerbit karena penyedia terpasang merupakan sumber resmi bagi namespace miliknya. Manifes hanya boleh menetapkan `pruneOmittedRecords` ke `false` bila sengaja menerbitkan kumpulan rekaman parsial.
 
 ## Administrasi dan halaman pelajar
 

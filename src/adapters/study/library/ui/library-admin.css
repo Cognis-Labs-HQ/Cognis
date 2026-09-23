@@ -65,12 +65,14 @@
     margin-inline-start: auto;
 }
 
-.library-admin-edit::before {
+.library-admin-edit > span {
     width: 1rem;
     height: 1rem;
-    background: currentColor;
-    content: "";
-    mask: url("./assets/edit-light.svg") center / contain no-repeat;
+    background: url("./assets/edit-light.svg") center / contain no-repeat;
+}
+
+body[data-theme="dark"] .library-admin-edit > span {
+    background-image: url("./assets/edit-dark.svg");
 }
 
 .library-admin-edit:is(:hover, :focus-visible) {
@@ -167,6 +169,9 @@
     right: 0.3rem;
     width: 2.15rem;
     height: 2.15rem;
+    min-width: 0;
+    min-height: 0;
+    box-sizing: border-box;
     padding: 0.5rem;
     border-color: transparent;
     background: transparent;
@@ -175,7 +180,9 @@
 
 .library-quick-search-control img {
     display: block;
-    width: 100%;
+    width: 0.9rem;
+    height: 0.9rem;
+    margin: auto;
 }
 
 .library-request-list,

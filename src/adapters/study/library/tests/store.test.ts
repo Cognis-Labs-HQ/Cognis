@@ -147,7 +147,7 @@ test("content pack import ignores duplicate all-key references", async () => {
     assert.deepEqual(receipt.metadata, { catalog: { featured: true } });
 });
 
-test("content pack updates prune omitted records only when requested", async () => {
+test("authoritative content packs prune omitted records by default", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
         id: "japanese",
@@ -193,7 +193,6 @@ test("content pack updates prune omitted records only when requested", async () 
             namespace: "ja",
             schema: "schema.json",
             content: "data",
-            pruneOmittedRecords: true,
             license: { id: "CC-BY-4.0" },
         },
         schema,
@@ -221,7 +220,7 @@ test("content pack updates prune omitted records only when requested", async () 
     );
 });
 
-test("content pack updates retain omitted records by default", async () => {
+test("content packs retain omitted records only when explicitly requested", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
         id: "japanese",
@@ -250,6 +249,7 @@ test("content pack updates retain omitted records by default", async () => {
             namespace: "ja",
             schema: "schema.json",
             content: "data",
+            pruneOmittedRecords: false,
             license: { id: "CC-BY-4.0" },
         },
         schema,

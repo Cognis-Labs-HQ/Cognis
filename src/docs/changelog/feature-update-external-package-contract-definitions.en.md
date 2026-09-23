@@ -38,6 +38,10 @@ The Study Library now validates and preserves localized and provider metadata, e
 
 Library search and edit controls now follow compact, theme-safe styling. Right-click selection is captured reliably, nested child cards retain hover hitboxes, and non-character cards show full readings and definitions without needless truncation. Content providers now authoritatively control language availability. Content records support namespaced classes, media lists survive ingestion, custom editors follow validation contracts, built-in constraints are enforced, and installation receipts retain provider metadata.
 
+## Stable Library controls and balanced sentence cards
+
+Sentence cards now use a consistent bounded height, omit redundant pronunciation previews, and clamp primary text and definitions to two lines. Search exposes one controlled clear action, edit icons render from explicit themed assets, deletion dialogs have localized labels, and vocabulary details include kana readings. Right-click selection is captured at the document boundary on every mounted Study page, while authoritative provider upgrades prune records omitted from the latest pack unless a partial pack explicitly opts out.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -48,3 +52,4 @@ Library search and edit controls now follow compact, theme-safe styling. Right-c
 - [227f2166](https://github.com/Cognis-Labs-HQ/Cognis/commit/227f21669b5ab0a3473f0bf5f547bfdb424f4ca2)
 - [64d53397](https://github.com/Cognis-Labs-HQ/Cognis/commit/64d53397)
 - [84bedc67](https://github.com/Cognis-Labs-HQ/Cognis/commit/84bedc67)
+- [617a2161](https://github.com/Cognis-Labs-HQ/Cognis/commit/617a2161)

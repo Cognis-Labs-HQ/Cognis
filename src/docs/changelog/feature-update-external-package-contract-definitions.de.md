@@ -38,6 +38,10 @@ Die Study Library validiert und bewahrt nun lokalisierte und anbieterspezifische
 
 Suche und Bearbeitung der Bibliothek sind nun kompakt und designsicher gestaltet. Die Auswahl per Rechtsklick wird zuverlässig erfasst, verschachtelte Karten behalten ihre Hover-Flächen und Nicht-Zeichenkarten zeigen vollständige Lesungen und Definitionen ohne unnötige Kürzung. Inhaltsanbieter steuern die Sprachverfügbarkeit verbindlich. Inhaltsdatensätze unterstützen Namensraumklassen, Medienlisten bleiben beim Import erhalten, benutzerdefinierte Editoren folgen Validierungsverträgen, eingebaute Einschränkungen werden durchgesetzt und Installationsbelege bewahren Anbietermetadaten.
 
+## Stabile Bibliothekssteuerung und ausgewogene Satzkarten
+
+Satzkarten verwenden nun eine einheitliche begrenzte Höhe, lassen redundante Aussprachevorschauen weg und begrenzen Haupttext sowie Definitionen auf zwei Zeilen. Die Suche bietet genau eine kontrollierte Löschaktion, Bearbeitungssymbole nutzen ausdrückliche Design-Assets, Löschdialoge haben lokalisierte Beschriftungen und Wortschatzdetails zeigen Kana-Lesungen. Die Rechtsklickauswahl wird auf jeder eingebundenen Study-Seite an der Dokumentgrenze erfasst; maßgebliche Anbieteraktualisierungen entfernen Einträge, die im neuesten Paket fehlen, sofern ein Teilpaket dies nicht ausdrücklich deaktiviert.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -48,3 +52,4 @@ Suche und Bearbeitung der Bibliothek sind nun kompakt und designsicher gestaltet
 - [227f2166](https://github.com/Cognis-Labs-HQ/Cognis/commit/227f21669b5ab0a3473f0bf5f547bfdb424f4ca2)
 - [64d53397](https://github.com/Cognis-Labs-HQ/Cognis/commit/64d53397)
 - [84bedc67](https://github.com/Cognis-Labs-HQ/Cognis/commit/84bedc67)
+- [617a2161](https://github.com/Cognis-Labs-HQ/Cognis/commit/617a2161)

@@ -60,7 +60,7 @@ Eine Aussprache, die mit der primären oder einer sekundären Schreibweise ident
 
 ## Aktualisierungen von Inhaltspaketen
 
-Paketaktualisierungen bewahren vom Herausgeber ausgelassene Einträge, sofern das Manifest nicht ausdrücklich `pruneOmittedRecords` auf `true` setzt. Herausgeber sollten die Bereinigung nur aktivieren, wenn das Paket den vollständigen Eintragsbestand maßgeblich festlegt.
+Paketaktualisierungen entfernen vom Herausgeber ausgelassene Einträge, da ein installierter Anbieter für seinen Namensraum maßgeblich ist. Ein Manifest darf `pruneOmittedRecords` nur dann ausdrücklich auf `false` setzen, wenn es absichtlich einen unvollständigen Datensatz veröffentlicht.
 
 ## Administration und Lernseiten
 

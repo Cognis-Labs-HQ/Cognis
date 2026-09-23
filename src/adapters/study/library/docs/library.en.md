@@ -74,7 +74,7 @@ A pronunciation identical to the primary or a secondary spelling is displayed on
 
 ## Content-pack upgrades
 
-Pack upgrades retain records omitted by the publisher unless the manifest explicitly sets `pruneOmittedRecords` to `true`. Publishers should enable pruning only when the pack is authoritative for the complete record set.
+Pack upgrades prune records omitted by the publisher because an installed provider is authoritative for its namespace. A manifest may explicitly set `pruneOmittedRecords` to `false` only when it intentionally publishes a partial record set.
 
 ## Administration and learner pages
 
