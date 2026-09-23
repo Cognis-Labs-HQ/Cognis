@@ -349,6 +349,14 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
                         ordered: true,
                         onDelete: "restrict",
                     },
+                    {
+                        id: "pronunciation-readings",
+                        targetLayer: "words",
+                        metadata: { labels: { en: "Pronunciation readings" } },
+                        ordered: true,
+                        onDelete: "restrict",
+                        presentationRole: "pronunciation",
+                    },
                 ],
             },
         ],
@@ -375,6 +383,11 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
             entryId: "sentences:particle:ga",
             relation: "particles",
             position: 1,
+        },
+        {
+            entryId: "sentences:word:japanese",
+            relation: "pronunciation-readings",
+            position: 0,
         },
     ];
     await writeJson(sentenceFile, [

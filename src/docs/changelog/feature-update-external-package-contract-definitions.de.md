@@ -58,6 +58,10 @@ Lernkarten behalten nun unabhängig von Löschrechten ein Auswahlsteuerelement, 
 
 Der Navigationseintrag „Anfragen“ erhält nun lokalisierte Ersatzbeschriftungen von seiner eigenen Library-Route. Dadurch wird nach einem frischen Server- oder Browserstart nicht mehr der interne Pfad `/study/library/requests` angezeigt, während Übersetzungen geladen werden.
 
+## Beziehungsrollen geordneter Sequenzen
+
+Die Inhaltspaketvalidierung rekonstruiert Beschriftungen geordneter Sequenzen jetzt ausschließlich aus Kompositionsbeziehungen. Aussprache- und alternative Schreibbeziehungen können auf lexikalische Datensätze verweisen und ihre eigene Positionsfolge verwenden, ohne `ordered_sequence_content_unresolved` auszulösen; dies entspricht dem Vertrag des Japanisch-Lernanbieters.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -74,3 +78,4 @@ Der Navigationseintrag „Anfragen“ erhält nun lokalisierte Ersatzbeschriftun
 - [b996336d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b996336d)
 - [8d4c4129](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d4c4129)
 - [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)
+- [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)

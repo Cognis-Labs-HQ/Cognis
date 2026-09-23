@@ -58,6 +58,10 @@ Library 管理画面は選択中の言語のレイヤーを平坦なメニュー
 
 「リクエスト」ナビゲーション項目が、それを所有する Library ルートからローカライズ済みの代替ラベルを受け取るようになりました。翻訳バンドルの読み込み中でも、サーバーやブラウザーの初回読み込み時に内部パス `/study/library/requests` が表示されません。
 
+## 順序付きシーケンスの関係ロール
+
+コンテンツパック検証では、合成関係だけから順序付きシーケンスのラベルを再構築するようになりました。発音および代替表記の関係は字句レコードを対象にして独自の位置列を使用でき、`ordered_sequence_content_unresolved` を発生させません。これにより日本語学習プロバイダーのコントラクトと一致します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -74,3 +78,4 @@ Library 管理画面は選択中の言語のレイヤーを平坦なメニュー
 - [b996336d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b996336d)
 - [8d4c4129](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d4c4129)
 - [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)
+- [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)

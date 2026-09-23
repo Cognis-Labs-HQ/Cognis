@@ -58,6 +58,10 @@ Kartu pelajar kini tetap memiliki kontrol pilihan terlepas dari izin penghapusan
 
 Item navigasi Permintaan kini menerima label cadangan terlokalisasi dari rute Library pemiliknya, sehingga pemuatan awal server atau peramban tidak lagi menampilkan jalur internal `/study/library/requests` ketika bundel terjemahan masih dimuat.
 
+## Peran relasi urutan terurut
+
+Validasi paket konten kini merekonstruksi label urutan terurut hanya dari relasi komposisi. Relasi pelafalan dan ejaan alternatif dapat menargetkan rekaman leksikal serta memakai urutan posisinya sendiri tanpa memicu `ordered_sequence_content_unresolved`, selaras dengan kontrak penyedia pembelajaran bahasa Jepang.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -74,3 +78,4 @@ Item navigasi Permintaan kini menerima label cadangan terlokalisasi dari rute Li
 - [b996336d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b996336d)
 - [8d4c4129](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d4c4129)
 - [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)
+- [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)

@@ -58,6 +58,10 @@ Learner cards now keep a selectable control regardless of deletion rights, so ri
 
 The Requests navigation item now receives localized fallback labels from its owning Library route, so a fresh server or browser load never exposes the internal `/study/library/requests` path while translation bundles are still loading.
 
+## Ordered sequence relationship roles
+
+Content-pack validation now reconstructs ordered sequence labels only from composition relationships. Pronunciation and alternate-spelling relationships can target lexical records and use their own position sequence without causing `ordered_sequence_content_unresolved`, matching the Japanese learning provider contract.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -74,3 +78,4 @@ The Requests navigation item now receives localized fallback labels from its own
 - [b996336d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b996336d)
 - [8d4c4129](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d4c4129)
 - [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)
+- [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)

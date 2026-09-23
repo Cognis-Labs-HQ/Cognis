@@ -361,18 +361,20 @@ async function validateContentRecords(
         validateReferences(schema, record.layer, references, entries);
         const layer = schema.layers.find(({ id }) => id === record.layer)!;
         if (layer.semanticRole === "orderedLexicalSequence") {
-            const constituentLayers = new Set(
+            const constituentRelationships = new Set(
                 (layer.relationships ?? [])
                     .filter((relationship) => {
                         const target = schema.layers.find(
                             ({ id }) => id === relationship.targetLayer,
                         );
                         return (
-                            target?.semanticRole === "lexicalUnit" ||
-                            target?.semanticRole === "particle"
+                            (target?.semanticRole === "lexicalUnit" ||
+                                target?.semanticRole === "particle") &&
+                            (relationship.presentationRole === undefined ||
+                                relationship.presentationRole === "composition")
                         );
                     })
-                    .map(({ targetLayer }) => targetLayer),
+                    .map(({ id }) => id),
             );
             const constituents = references
                 .map((reference) => ({
@@ -380,8 +382,9 @@ async function validateContentRecords(
                     target: entries.get(reference.entryId),
                 }))
                 .filter(
-                    ({ target }) =>
-                        target && constituentLayers.has(target.layer),
+                    ({ reference, target }) =>
+                        target &&
+                        constituentRelationships.has(reference.relation),
                 )
                 .sort(
                     (left, right) =>

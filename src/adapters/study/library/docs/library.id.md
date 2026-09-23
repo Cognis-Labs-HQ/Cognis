@@ -92,6 +92,8 @@ Kartu dapat merujuk beberapa catatan definisi sesuai urutan penyedia. Definisi t
 
 Penyesuaian saat jalan mencadangkan kartu akar dan setiap kartu anak yang telah ditempatkan pada cabang terlihat. Anak mempertahankan arah pilihan penyedia jika slot terbatas tersebut kosong; jika tidak, Cognis memilih kandidat dalam batas dengan tumpang tindih kartu paling kecil. Hal ini mencegah kartu saudara menumpuk pada satu slot sambil tetap mendukung penumpukan ke luar pada baris atau kolom ketika posisi terdekat habis.
 
+Untuk urutan leksikal terurut, hanya relasi dengan `presentationRole: composition` (atau tanpa peran untuk relasi komposisi lama) yang digunakan untuk merekonstruksi label. Tautan pelafalan dan ejaan alternatif dapat menargetkan lapisan leksikal serta memakai ulang posisi tanpa dianggap sebagai unsur kalimat.
+
 ## Pelacakan konten baru
 
 Pustaka menyimpan UUID entri yang telah dilihat untuk setiap akun. Entri global dari paket penyedia atau kontribusi pengguna dan administrator yang disetujui memicu notifikasi Pustaka bagi akun aktif. Entri yang belum ada dalam cache tampilan akun menampilkan pil **Baru** pada pratinjau dan popup detail. Mengarahkan penunjuk ke kartu atau membukanya secara langsung maupun melalui relasi akan menandainya sebagai telah dilihat; status tersimpan menghilangkan pil setelah halaman dimuat ulang.

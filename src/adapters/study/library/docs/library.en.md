@@ -108,6 +108,8 @@ Cards may reference multiple definition records in provider order. The first loc
 
 Runtime fitting reserves the root card and every child card already placed in the visible branch. A child keeps its provider-preferred direction when that bounded slot is free; otherwise Cognis chooses the bounded candidate with the least card overlap. This prevents siblings from collapsing into one slot while retaining outward row or column stacking when nearby positions are exhausted.
 
+For ordered lexical sequences, only relationships whose `presentationRole` is `composition` (or omitted for legacy composition relationships) contribute to label reconstruction. Pronunciation and alternate-spelling links may target lexical layers and reuse positions without being mistaken for sentence constituents.
+
 ## New-content tracking
 
 The Library stores viewed entry UUIDs per account. Global entries introduced by provider pack ingestion or approved user and administrator contributions trigger a Study Library notification for enabled accounts. Entries absent from an account's viewed cache display a **New** pill in previews and detail popups. Hovering a card or opening it through any Library relationship records it as viewed; the persisted state removes the pill after refresh.
