@@ -54,6 +54,10 @@ The Library administrator now shows a flat layer menu for the selected language.
 
 Learner cards now keep a selectable control regardless of deletion rights, so right-click reliably enters multi-select without opening the browser menu. Creation actions now discover provider-contributed card constructors and register the + control through the page-action CTX capability.
 
+## Localized Requests navigation on first load
+
+The Requests navigation item now receives localized fallback labels from its owning Library route, so a fresh server or browser load never exposes the internal `/study/library/requests` path while translation bundles are still loading.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -69,3 +73,4 @@ Learner cards now keep a selectable control regardless of deletion rights, so ri
 - [11bec51d](https://github.com/Cognis-Labs-HQ/Cognis/commit/11bec51d)
 - [b996336d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b996336d)
 - [8d4c4129](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d4c4129)
+- [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)

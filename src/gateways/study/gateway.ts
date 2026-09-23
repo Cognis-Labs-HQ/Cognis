@@ -165,6 +165,7 @@ export interface StudyAdapterBootstrapCtx {
         scriptUrl: string;
         stylesheets?: string[];
         requiredCapabilities?: string[];
+        navigationLabels?: Record<string, string>;
         isEnabled?: () => boolean;
     }): void;
     registerPageExtension(

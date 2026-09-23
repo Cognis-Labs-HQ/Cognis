@@ -54,6 +54,10 @@ Die Bibliotheksverwaltung zeigt nun ein flaches Ebenenmenü für die ausgewählt
 
 Lernkarten behalten nun unabhängig von Löschrechten ein Auswahlsteuerelement, sodass ein Rechtsklick zuverlässig die Mehrfachauswahl öffnet, ohne das Browsermenü anzuzeigen. Erstellungsaktionen erkennen nun von Anbietern beigesteuerte Kartenkonstruktoren und registrieren die +-Schaltfläche über die CTX-Fähigkeit für Seitenaktionen.
 
+## Lokalisierte Anfragen-Navigation beim ersten Laden
+
+Der Navigationseintrag „Anfragen“ erhält nun lokalisierte Ersatzbeschriftungen von seiner eigenen Library-Route. Dadurch wird nach einem frischen Server- oder Browserstart nicht mehr der interne Pfad `/study/library/requests` angezeigt, während Übersetzungen geladen werden.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -69,3 +73,4 @@ Lernkarten behalten nun unabhängig von Löschrechten ein Auswahlsteuerelement, 
 - [11bec51d](https://github.com/Cognis-Labs-HQ/Cognis/commit/11bec51d)
 - [b996336d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b996336d)
 - [8d4c4129](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d4c4129)
+- [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)

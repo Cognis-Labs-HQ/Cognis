@@ -54,6 +54,10 @@ Administrasi Pustaka kini menampilkan menu lapisan datar untuk bahasa terpilih. 
 
 Kartu pelajar kini tetap memiliki kontrol pilihan terlepas dari izin penghapusan, sehingga klik kanan dapat membuka pemilihan jamak tanpa menampilkan menu peramban. Tindakan pembuatan kini menemukan konstruktor kartu kontribusi penyedia dan mendaftarkan tombol + melalui kapabilitas CTX tindakan halaman.
 
+## Navigasi Permintaan terlokalisasi saat pemuatan awal
+
+Item navigasi Permintaan kini menerima label cadangan terlokalisasi dari rute Library pemiliknya, sehingga pemuatan awal server atau peramban tidak lagi menampilkan jalur internal `/study/library/requests` ketika bundel terjemahan masih dimuat.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -69,3 +73,4 @@ Kartu pelajar kini tetap memiliki kontrol pilihan terlepas dari izin penghapusan
 - [11bec51d](https://github.com/Cognis-Labs-HQ/Cognis/commit/11bec51d)
 - [b996336d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b996336d)
 - [8d4c4129](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d4c4129)
+- [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)

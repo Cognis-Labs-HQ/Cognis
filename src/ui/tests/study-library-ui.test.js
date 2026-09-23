@@ -363,6 +363,7 @@ test("Study Library creation is driven by language card constructors", () => {
     assert.match(requestsPageSource, /renderLibraryRequests/);
     assert.match(requestsPageSource, /bindLibraryRequestReviews/);
     assert.match(adapterSource, /pattern: "\^\/study\/library\/requests\$"/);
+    assert.match(adapterSource, /navigationLabels:\s*\{/);
     assert.match(studySubNavigationSource, /study-subnav-attention/);
     assert.match(
         studyStylesheet,

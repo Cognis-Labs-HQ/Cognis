@@ -209,6 +209,12 @@ export async function bootstrapStudyAdapter(
         pattern: "^/study/library/requests$",
         base: "/study/library/requests",
         scriptUrl: "/static/adapters/study/library/app/requests/index.js",
+        navigationLabels: {
+            de: "Anfragen",
+            en: "Requests",
+            id: "Permintaan",
+            ja: "リクエスト",
+        },
         stylesheets: [
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",

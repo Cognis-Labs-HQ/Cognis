@@ -54,6 +54,10 @@ Library 管理画面は選択中の言語のレイヤーを平坦なメニュー
 
 削除権限にかかわらず学習カードに選択コントロールを保持するようにし、ブラウザーのメニューを開かず右クリックで確実に複数選択へ移行できるようにしました。作成操作はプロバイダーが提供するカードコンストラクターを検出し、ページ操作用 CTX ケイパビリティーを通して「+」ボタンを登録します。
 
+## 初回読み込み時のリクエストナビゲーションをローカライズ
+
+「リクエスト」ナビゲーション項目が、それを所有する Library ルートからローカライズ済みの代替ラベルを受け取るようになりました。翻訳バンドルの読み込み中でも、サーバーやブラウザーの初回読み込み時に内部パス `/study/library/requests` が表示されません。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -69,3 +73,4 @@ Library 管理画面は選択中の言語のレイヤーを平坦なメニュー
 - [11bec51d](https://github.com/Cognis-Labs-HQ/Cognis/commit/11bec51d)
 - [b996336d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b996336d)
 - [8d4c4129](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d4c4129)
+- [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)

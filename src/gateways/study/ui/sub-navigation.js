@@ -218,9 +218,17 @@ export async function loadStudySubNavigationModel({
             order: 300,
         });
     }
-    if (spaRoutes.some((route) => route.base === "/study/library/requests")) {
+    const requestsRoute = spaRoutes.find(
+        (route) => route.base === "/study/library/requests",
+    );
+    if (requestsRoute) {
+        const navigationLabels = requestsRoute.navigationLabels ?? {};
         modules.push({
             id: "library-requests",
+            label:
+                navigationLabels[activeLocale] ??
+                navigationLabels[activeLocale.split("-")[0]] ??
+                navigationLabels.en,
             labelKey: "gateway.study.library_requests",
             pageUrl: "/study/library/requests",
             order: 290,
