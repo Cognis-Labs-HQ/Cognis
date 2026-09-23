@@ -185,6 +185,16 @@ body[data-theme="dark"] .library-admin-edit > span {
     margin: auto;
 }
 
+body[data-theme="dark"] .library-quick-search-control img {
+    filter: invert(1);
+}
+
+@media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) .library-quick-search-control img {
+        filter: invert(1);
+    }
+}
+
 .library-request-list,
 .library-request-list article {
     display: grid;

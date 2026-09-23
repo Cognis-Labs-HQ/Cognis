@@ -8,7 +8,10 @@ import {
     isAdminScope,
     parseLanguageCode,
 } from "/static/gateways/study/ui/language.js";
-import { fetchLibrarySchemas } from "/static/gateways/study/ui/library-client.js";
+import {
+    fetchLibraryPushRequests,
+    fetchLibrarySchemas,
+} from "/static/gateways/study/ui/library-client.js";
 
 const SETTINGS_GEAR_ICON = `<picture><source media="(prefers-color-scheme: dark)" srcset="/static/assets/reuse/settings-cog-dark.svg"><img src="/static/assets/reuse/settings-cog-light.svg" alt=""></picture>`;
 
@@ -187,6 +190,9 @@ export async function loadStudySubNavigationModel({
     const schemas = selectedLanguageCode
         ? await fetchLibrarySchemas(selectedLanguageCode).catch(() => [])
         : [];
+    const pendingLibraryRequests = isAdminScope()
+        ? await fetchLibraryPushRequests().catch(() => [])
+        : [];
     const activeLocale = document.documentElement.lang;
     for (const schema of schemas) {
         for (const layer of schema.layers ?? []) {
@@ -215,6 +221,17 @@ export async function loadStudySubNavigationModel({
             labelKey: "gateway.study.leaderboard_label",
             pageUrl: "/study/leaderboard",
             order: 300,
+        });
+    }
+    if (spaRoutes.some((route) => route.base === "/study/library/requests")) {
+        modules.push({
+            id: "library-requests",
+            labelKey: "gateway.study.library_requests",
+            pageUrl: "/study/library/requests",
+            order: 290,
+            attention: pendingLibraryRequests.some(
+                (request) => request.canReview === true,
+            ),
         });
     }
     modules.sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
@@ -289,9 +306,12 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                     ? translatedLabel
                     : String(component?.label ?? pageUrl);
             const activeClass = rawPageUrl === currentPath ? " active" : "";
+            const attentionClass = component.attention
+                ? " study-subnav-attention"
+                : "";
             return `
                 <li>
-                    <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(label)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                    <a class="dropdown-item${activeClass}${attentionClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(label)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                         ${escapeHtml(label)}
                     </a>
                 </li>

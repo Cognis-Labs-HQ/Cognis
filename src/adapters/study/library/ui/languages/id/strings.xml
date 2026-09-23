@@ -5,6 +5,7 @@
   <string name="gateway.study.library_search_clear">Hapus pencarian</string>
   <string name="gateway.study.library_create">Buat kartu</string>
   <string name="gateway.study.library_requests">Permintaan</string>
+  <string name="gateway.study.library_requests_subtitle">Tinjau dan kelola permintaan penerbitan Pustaka</string>
   <string name="gateway.study.library_approve">Setujui</string>
   <string name="gateway.study.library_reject">Tolak</string>
   <string name="gateway.study.library_no_requests">Tidak ada permintaan tertunda.</string>

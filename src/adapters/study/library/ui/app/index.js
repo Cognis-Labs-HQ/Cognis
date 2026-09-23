@@ -18,11 +18,7 @@ import { refreshLibraryFilterResults } from "./filters.js";
 import { bindLibraryInteractions } from "./interactions.js";
 import { openCreateEntryPopup } from "./create-entry.js";
 import { librarySelectionFloatingMenu, setSelectionMode } from "./selection.js";
-import {
-    bindLibraryRequestReviews,
-    loadLibraryRequests,
-    renderLibraryRequests,
-} from "./requests.js";
+import { loadLibraryRequests } from "./requests.js";
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
@@ -131,11 +127,6 @@ export async function mount(root, { signal } = {}) {
                 render: () =>
                     `<button class="btn-confirm" type="button" data-library-create>${escapeHtml(i18n.t("gateway.study.library_create"))}</button>`,
             },
-            {
-                id: "library-requests",
-                label: i18n.t("gateway.study.library_requests"),
-                render: () => renderLibraryRequests(requests, i18n),
-            },
         ],
         toolbarScrollable: true,
         floatingMenu: librarySelectionFloatingMenu(entries, i18n),
@@ -156,7 +147,6 @@ export async function mount(root, { signal } = {}) {
     signal?.throwIfAborted();
     layerMenu.mount(root, { signal });
     renderSelectedLayer();
-    bindLibraryRequestReviews(root, requests, { i18n, signal });
     const searchInput = root.querySelector("[data-library-quick-search]");
     const updateSearch = () => {
         searchQuery = searchInput?.value ?? "";

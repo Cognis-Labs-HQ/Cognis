@@ -42,6 +42,10 @@ Kontrol pencarian dan penyuntingan Pustaka kini ringkas serta aman untuk semua t
 
 Kartu kalimat kini menggunakan tinggi terbatas yang konsisten, menghilangkan pratinjau pelafalan berulang, serta membatasi teks utama dan definisi menjadi dua baris. Pencarian hanya menampilkan satu tindakan hapus terkontrol, ikon sunting memakai aset tema eksplisit, dialog penghapusan memiliki label terlokalisasi, dan detail kosakata menampilkan bacaan kana. Pilihan klik kanan ditangkap pada batas dokumen di setiap halaman Study yang terpasang, sedangkan pembaruan penyedia resmi memangkas rekaman yang tidak ada dalam paket terbaru kecuali paket parsial menolaknya secara eksplisit.
 
+## Navigasi khusus permintaan penerbitan
+
+Tinjauan penerbitan kini berada pada halaman Permintaan khusus di subnavigasi Study dan tidak lagi memakai ruang bilah alat Pustaka. Permintaan tertunda yang dapat ditinjau memberi tautan Permintaan garis tepi merah bernapas dengan alternatif pengurangan gerakan, dan sinyal hilang setelah tinjauan terakhir diselesaikan. Ikon hapus pencarian Pustaka kini menyesuaikan tema terang maupun gelap.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -53,3 +57,4 @@ Kartu kalimat kini menggunakan tinggi terbatas yang konsisten, menghilangkan pra
 - [64d53397](https://github.com/Cognis-Labs-HQ/Cognis/commit/64d53397)
 - [84bedc67](https://github.com/Cognis-Labs-HQ/Cognis/commit/84bedc67)
 - [617a2161](https://github.com/Cognis-Labs-HQ/Cognis/commit/617a2161)
+- [365d5444](https://github.com/Cognis-Labs-HQ/Cognis/commit/365d5444)

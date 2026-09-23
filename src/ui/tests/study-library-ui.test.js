@@ -13,6 +13,18 @@ const layerPageSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/ui/app/layer/index.js"),
     "utf8",
 );
+const requestsPageSource = readFileSync(
+    resolve(ROOT, "src/adapters/study/library/ui/app/requests/index.js"),
+    "utf8",
+);
+const studySubNavigationSource = readFileSync(
+    resolve(ROOT, "src/gateways/study/ui/sub-navigation.js"),
+    "utf8",
+);
+const studyStylesheet = readFileSync(
+    resolve(ROOT, "src/gateways/study/ui/study.css"),
+    "utf8",
+);
 const adminInteractionsSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/ui/app/admin-interactions.js"),
     "utf8",
@@ -340,8 +352,16 @@ test("Study Library creation is driven by language card constructors", () => {
     assert.match(source, /constructor\.defaults/);
     assert.match(source, /data-library-visibility/);
     assert.match(source, /writableClasses\.length > 1/);
-    assert.match(layerPageSource, /renderLibraryRequests/);
-    assert.match(layerPageSource, /bindLibraryRequestReviews/);
+    assert.doesNotMatch(layerPageSource, /renderLibraryRequests/);
+    assert.doesNotMatch(indexSource, /renderLibraryRequests/);
+    assert.match(requestsPageSource, /renderLibraryRequests/);
+    assert.match(requestsPageSource, /bindLibraryRequestReviews/);
+    assert.match(adapterSource, /pattern: "\^\/study\/library\/requests\$"/);
+    assert.match(studySubNavigationSource, /study-subnav-attention/);
+    assert.match(
+        studyStylesheet,
+        /@keyframes study-subnav-attention-breathe[\s\S]*color-danger-outline-text/,
+    );
 });
 
 test("Study Library renders metadata and scope indicators", () => {

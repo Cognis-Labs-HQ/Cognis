@@ -5,6 +5,7 @@
   <string name="gateway.study.library_search_clear">Clear search</string>
   <string name="gateway.study.library_create">Create card</string>
   <string name="gateway.study.library_requests">Requests</string>
+  <string name="gateway.study.library_requests_subtitle">Review and manage Library publishing requests</string>
   <string name="gateway.study.library_approve">Approve</string>
   <string name="gateway.study.library_reject">Reject</string>
   <string name="gateway.study.library_no_requests">No pending requests.</string>

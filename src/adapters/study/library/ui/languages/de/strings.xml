@@ -5,6 +5,7 @@
   <string name="gateway.study.library_search_clear">Suche löschen</string>
   <string name="gateway.study.library_create">Karte erstellen</string>
   <string name="gateway.study.library_requests">Anfragen</string>
+  <string name="gateway.study.library_requests_subtitle">Veröffentlichungsanfragen der Bibliothek prüfen und verwalten</string>
   <string name="gateway.study.library_approve">Genehmigen</string>
   <string name="gateway.study.library_reject">Ablehnen</string>
   <string name="gateway.study.library_no_requests">Keine offenen Anfragen.</string>

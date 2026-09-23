@@ -42,6 +42,10 @@ Library search and edit controls now follow compact, theme-safe styling. Right-c
 
 Sentence cards now use a consistent bounded height, omit redundant pronunciation previews, and clamp primary text and definitions to two lines. Search exposes one controlled clear action, edit icons render from explicit themed assets, deletion dialogs have localized labels, and vocabulary details include kana readings. Right-click selection is captured at the document boundary on every mounted Study page, while authoritative provider upgrades prune records omitted from the latest pack unless a partial pack explicitly opts out.
 
+## Dedicated publishing-request navigation
+
+Publishing reviews now live on a dedicated Requests page in Study sub-navigation instead of consuming Library page toolbar space. Reviewable pending requests give the Requests link a red breathing outline with a reduced-motion fallback, and the signal clears when the final review is resolved. The Library search clear icon now adapts to both light and dark themes.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -53,3 +57,4 @@ Sentence cards now use a consistent bounded height, omit redundant pronunciation
 - [64d53397](https://github.com/Cognis-Labs-HQ/Cognis/commit/64d53397)
 - [84bedc67](https://github.com/Cognis-Labs-HQ/Cognis/commit/84bedc67)
 - [617a2161](https://github.com/Cognis-Labs-HQ/Cognis/commit/617a2161)
+- [365d5444](https://github.com/Cognis-Labs-HQ/Cognis/commit/365d5444)

@@ -15,11 +15,7 @@ import { localizedLabel } from "../presentation.js";
 import { librarySelectionFloatingMenu } from "../selection.js";
 import { openCreateEntryPopup } from "../create-entry.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import {
-    bindLibraryRequestReviews,
-    loadLibraryRequests,
-    renderLibraryRequests,
-} from "../requests.js";
+import { loadLibraryRequests } from "../requests.js";
 
 function requestedLayer() {
     const parts = window.location.pathname.split("/").filter(Boolean);
@@ -87,15 +83,6 @@ export async function mount(root, { signal } = {}) {
                       },
                   ]
                 : []),
-            ...(requests.length
-                ? [
-                      {
-                          id: "library-requests",
-                          label: i18n.t("gateway.study.library_requests"),
-                          render: () => renderLibraryRequests(requests, i18n),
-                      },
-                  ]
-                : []),
         ],
         floatingMenu: librarySelectionFloatingMenu(entries, i18n),
         subNavigation: [
@@ -113,7 +100,6 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     signal?.throwIfAborted();
-    bindLibraryRequestReviews(root, requests, { i18n, signal });
     root.querySelectorAll("[data-library-panel]").forEach((panel) => {
         if (panel.querySelector("button[data-library-filter].active")) {
             refreshLibraryFilterResults(panel);

@@ -43,6 +43,11 @@ export function bindLibraryRequestReviews(root, requests, { i18n, signal }) {
             const index = requests.findIndex(({ id }) => id === requestId);
             if (index >= 0) requests.splice(index, 1);
             item.remove();
+            if (!requests.some((request) => request.canReview === true)) {
+                root.querySelector(
+                    'a[href="/study/library/requests"]',
+                )?.classList.remove("study-subnav-attention");
+            }
             if (!requests.length) {
                 root.querySelector("[data-library-requests]").innerHTML =
                     `<p>${escapeHtml(i18n.t("gateway.study.library_no_requests"))}</p>`;

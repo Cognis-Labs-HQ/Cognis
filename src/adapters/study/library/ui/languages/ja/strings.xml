@@ -5,6 +5,7 @@
   <string name="gateway.study.library_search_clear">検索をクリア</string>
   <string name="gateway.study.library_create">カードを作成</string>
   <string name="gateway.study.library_requests">リクエスト</string>
+  <string name="gateway.study.library_requests_subtitle">Library の公開リクエストを確認・管理します</string>
   <string name="gateway.study.library_approve">承認</string>
   <string name="gateway.study.library_reject">拒否</string>
   <string name="gateway.study.library_no_requests">保留中のリクエストはありません。</string>

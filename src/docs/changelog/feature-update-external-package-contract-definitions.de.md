@@ -42,6 +42,10 @@ Suche und Bearbeitung der Bibliothek sind nun kompakt und designsicher gestaltet
 
 Satzkarten verwenden nun eine einheitliche begrenzte Höhe, lassen redundante Aussprachevorschauen weg und begrenzen Haupttext sowie Definitionen auf zwei Zeilen. Die Suche bietet genau eine kontrollierte Löschaktion, Bearbeitungssymbole nutzen ausdrückliche Design-Assets, Löschdialoge haben lokalisierte Beschriftungen und Wortschatzdetails zeigen Kana-Lesungen. Die Rechtsklickauswahl wird auf jeder eingebundenen Study-Seite an der Dokumentgrenze erfasst; maßgebliche Anbieteraktualisierungen entfernen Einträge, die im neuesten Paket fehlen, sofern ein Teilpaket dies nicht ausdrücklich deaktiviert.
 
+## Eigene Navigation für Veröffentlichungsanfragen
+
+Veröffentlichungsprüfungen befinden sich nun auf einer eigenen Anfragen-Seite der Study-Unternavigation, statt Platz in der Bibliothekswerkzeugleiste zu belegen. Prüfbare ausstehende Anfragen markieren den Link mit einer rot atmenden Kontur samt Alternative für reduzierte Bewegung; nach der letzten Prüfung verschwindet das Signal. Das Symbol zum Löschen der Bibliothekssuche passt sich nun an helle und dunkle Designs an.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -53,3 +57,4 @@ Satzkarten verwenden nun eine einheitliche begrenzte Höhe, lassen redundante Au
 - [64d53397](https://github.com/Cognis-Labs-HQ/Cognis/commit/64d53397)
 - [84bedc67](https://github.com/Cognis-Labs-HQ/Cognis/commit/84bedc67)
 - [617a2161](https://github.com/Cognis-Labs-HQ/Cognis/commit/617a2161)
+- [365d5444](https://github.com/Cognis-Labs-HQ/Cognis/commit/365d5444)
