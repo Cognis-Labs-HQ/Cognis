@@ -478,6 +478,14 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(stylesheet, /box-shadow:/);
     assert.match(source, /gateway\.study\.library_variant_hint/);
     assert.match(source, /library-entry-variants-open/);
+    assert.match(
+        stylesheet,
+        /library-entry-variants-open[\s\S]*library-entry-card-status[\s\S]*library-scope[\s\S]*filter:\s*blur\(2\.5px\)/,
+    );
+    assert.match(
+        stylesheet,
+        /library-entry-variants-open[\s\S]*library-entry-card-shell:not\(\.library-entry-variants-open\)[\s\S]*:hover[\s\S]*z-index:\s*auto/,
+    );
     assert.match(source, /"contextmenu"/);
     assert.match(source, /root\.addEventListener\([\s\S]*"contextmenu"/);
     assert.match(source, /\{ capture: true, signal \}/);

@@ -89,6 +89,34 @@ body[data-theme="light"] .library-browser {
     pointer-events: none;
 }
 
+.library-entry-grid:has(.library-entry-variants-open)
+    > .library-entry-card-shell:not(.library-entry-variants-open)
+    > .library-entry-card-status
+    .library-scope {
+    filter: blur(2.5px);
+    opacity: 0.45;
+}
+
+.library-entry-grid:has(.library-entry-variants-open)
+    > .library-entry-card-shell:not(.library-entry-variants-open):is(
+        :hover,
+        :focus-within
+    ) {
+    z-index: auto;
+}
+
+.library-entry-grid:has(.library-entry-variants-open)
+    > .library-entry-card-shell:not(.library-entry-variants-open)
+    > .library-entry-card.library-entry-card:is(
+        :hover,
+        :focus-visible,
+        :active
+    ) {
+    border-color: color-mix(in srgb, var(--border) 82%, var(--text-muted));
+    background: var(--library-card-surface);
+    box-shadow: 0 0.35rem 1rem color-mix(in srgb, #000 10%, transparent);
+}
+
 .library-entry-grid[style] {
     grid-template-columns: repeat(var(--library-grid-row-size), minmax(0, 1fr));
 }

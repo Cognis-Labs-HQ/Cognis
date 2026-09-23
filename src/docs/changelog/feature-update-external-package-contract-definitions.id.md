@@ -66,6 +66,10 @@ Validasi paket konten kini merekonstruksi label urutan terurut hanya dari relasi
 
 Tampilan detail kini menyembunyikan kelas struktural composite, mengubah akhiran kelas penyedia menjadi pil yang mudah dibaca, dan memakai judul komposit dua kolom dengan bacaan di bawah teks utama. Tautan kosakata terbalik berlabel sama disembunyikan tanpa menghapus relasi ejaan maju yang ditulis penyedia.
 
+## Cabang kartu anak yang terfokus
+
+Membuka cabang kartu anak kini memburamkan ikon visibilitas kartu yang tidak terkait serta menetralkan elevasi dan sorotan hover pada kartu induk lainnya. Cabang aktif tetap tajam dan interaktif.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -84,3 +88,4 @@ Tampilan detail kini menyembunyikan kelas struktural composite, mengubah akhiran
 - [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)
 - [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)
 - [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)
+- [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)

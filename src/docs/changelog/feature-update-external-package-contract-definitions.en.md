@@ -66,6 +66,10 @@ Content-pack validation now reconstructs ordered sequence labels only from compo
 
 Detail views now hide the structural composite class, humanize provider class suffixes into pills, and use a two-column composite heading with readings below the primary text. Same-label reverse vocabulary links are suppressed without removing the authored forward spelling relationship.
 
+## Focused child-card branches
+
+Opening a child-card branch now blurs unrelated cards’ visibility icons and neutralizes hover elevation and highlight styling on other parent cards. The active branch remains crisp and interactive.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -84,3 +88,4 @@ Detail views now hide the structural composite class, humanize provider class su
 - [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)
 - [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)
 - [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)
+- [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)

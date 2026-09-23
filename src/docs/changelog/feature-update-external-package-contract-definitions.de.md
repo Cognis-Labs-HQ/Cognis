@@ -66,6 +66,10 @@ Die Inhaltspaketvalidierung rekonstruiert Beschriftungen geordneter Sequenzen je
 
 Detailansichten blenden nun die strukturelle Composite-Klasse aus, wandeln Anbieter-Klassensuffixe in lesbare Pills um und verwenden für zusammengesetzte Überschriften zwei Spalten mit Lesungen unter dem Primärtext. Umgekehrte Vokabellinks mit identischer Beschriftung werden unterdrückt, ohne die vorwärts gerichtete Schreibbeziehung zu entfernen.
 
+## Fokussierte untergeordnete Kartenzweige
+
+Beim Öffnen eines untergeordneten Kartenzweigs werden die Sichtbarkeitssymbole nicht zugehöriger Karten unscharf und Hover-Anhebung sowie Hervorhebung anderer Elternkarten neutralisiert. Der aktive Zweig bleibt scharf und interaktiv.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -84,3 +88,4 @@ Detailansichten blenden nun die strukturelle Composite-Klasse aus, wandeln Anbie
 - [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)
 - [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)
 - [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)
+- [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)

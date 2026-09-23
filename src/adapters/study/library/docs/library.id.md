@@ -84,6 +84,8 @@ Cabang varian yang terbuka tetap dibatasi oleh kisi dasar. Cognis lebih dahulu m
 
 Kartu yang ditampilkan mempertahankan posisi yang ditetapkan sementara turunannya disesuaikan secara mandiri. Jika pemangkasan jalur menyisakan arah yang lebih sedikit daripada jumlah saudara, anak tambahan ditumpuk ke luar pada baris atau kolom yang sama tanpa tumpang tindih atau memindahkan induknya.
 
+Saat cabang kartu anak terbuka, kartu induk yang tidak terkait mempertahankan permukaan normalnya tanpa bereaksi terhadap hover, dan ikon cakupan/visibilitasnya ikut diburamkan di latar belakang. Induk aktif beserta jalur turunannya yang terlihat tetap tajam dan interaktif.
+
 Popup detail unit leksikal menampilkan label kosakata hanya pada judul popup. Detail judul hanya memuat definisi yang dilokalkan untuk bahasa Cognis aktif sehingga ejaan atau pelafalan tidak terduplikasi di samping judul.
 
 Saat tautan entri terkait membuka unit leksikal tanpa definisinya sendiri, popup mewarisi definisi terlokalkan yang ditampilkan kartu sumber. Definisi yang disediakan catatan kosakata selalu diutamakan sehingga beberapa catatan kosakata yang tertaut ke satu unit tulisan tetap dapat memiliki makna khusus yang berbeda. Kontrol sebelumnya/berikutnya dan tautan komposisi judul tidak membawa konteks cadangan ini.

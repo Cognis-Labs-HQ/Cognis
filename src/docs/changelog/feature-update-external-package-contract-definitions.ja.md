@@ -66,6 +66,10 @@ Library 管理画面は選択中の言語のレイヤーを平坦なメニュー
 
 詳細ビューでは構造用の composite クラスを隠し、プロバイダーのクラス末尾を読みやすい Pill に変換し、複合見出しを二列にして読みを主要テキストの下に配置します。同じラベルの逆引き語彙リンクは、作成済みの順方向表記関係を削除せずに抑止します。
 
+## 子カード分岐へのフォーカス
+
+子カードの分岐を開くと、無関係なカードの表示範囲アイコンをぼかし、他の親カードのホバー時の浮き上がりと強調を無効化します。アクティブな分岐は鮮明で操作可能なままです。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -84,3 +88,4 @@ Library 管理画面は選択中の言語のレイヤーを平坦なメニュー
 - [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)
 - [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)
 - [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)
+- [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)
