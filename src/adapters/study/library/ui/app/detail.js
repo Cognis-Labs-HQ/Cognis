@@ -20,6 +20,18 @@ import { similarEntries } from "./similar-items.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
 
+export function contentClassLabel(contentClass) {
+    const value =
+        String(contentClass ?? "")
+            .split(":")
+            .at(-1)
+            ?.trim() ?? "";
+    return value
+        .replaceAll(/([\p{Ll}\d])(\p{Lu})/gu, "$1 $2")
+        .replaceAll(/[-_]+/g, " ")
+        .replaceAll(/\b\p{L}/gu, (letter) => letter.toLocaleUpperCase());
+}
+
 function relationTree(references, usedBy, i18n) {
     const branch = (label, related) =>
         `<div class="library-relation-group"><strong>${escapeHtml(label)}</strong>${related.length ? `<div class="library-related-entries">${related.map((candidate) => renderEntryLink(candidate, "library-related-entry btn-neutral")).join("")}</div>` : `<span>${escapeHtml(i18n.t("gateway.study.library_no_relationships"))}</span>`}</div>`;
@@ -36,6 +48,10 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
                   "lexicalUnit",
           )
         : [];
+    const visibleRelatedWords = relatedWords.filter(
+        (candidate) =>
+            candidate.label.normalize("NFC") !== entry.label.normalize("NFC"),
+    );
     const structuralDependants = usedBy.filter((candidate) => {
         const candidateLayer = layerForEntry(schemas, candidate);
         return (candidate.references ?? []).some((reference) => {
@@ -62,8 +78,8 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
             !structuralDependants.includes(candidate) &&
             layerForEntry(schemas, candidate)?.semanticRole !== "definition",
     );
-    const wordLayer = relatedWords.length
-        ? layerForEntry(schemas, relatedWords[0])
+    const wordLayer = visibleRelatedWords.length
+        ? layerForEntry(schemas, visibleRelatedWords[0])
         : null;
     const fields = entry.fields ?? {};
     const metadataIds = new Set(metadataFields(layer).map(({ id }) => id));
@@ -95,15 +111,15 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
                       ];
             }),
     );
-    if (entry.class) {
-        genericFields[i18n.t("gateway.study.library_content_class")] =
-            entry.class;
-    }
+    const classPill =
+        entry.class && entry.class !== "composite"
+            ? `<span class="library-metadata-pill library-content-class-pill">${escapeHtml(contentClassLabel(entry.class))}</span>`
+            : "";
     return [
-        `<header class="library-detail-summary">${renderAudio(entry, layer)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
+        `<header class="library-detail-summary">${renderAudio(entry, layer)}<div class="library-entry-indicators">${classPill}${renderMetadataPills(entry, layer)}</div></header>`,
         options.showReferenceTree ? relationTree(references, usedBy, i18n) : "",
         renderDetailFields(genericFields),
-        !options.showReferenceTree && relatedWords.length
+        !options.showReferenceTree && visibleRelatedWords.length
             ? relationSection(
                   i18n
                       .t("gateway.study.library_used_in_layer")
@@ -112,7 +128,7 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
                           localizedLabel(wordLayer.metadata, entry.language) ||
                               wordLayer.id,
                       ),
-                  relatedWords,
+                  visibleRelatedWords,
                   i18n.t("gateway.study.library_no_relationships"),
               )
             : "",

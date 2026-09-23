@@ -62,6 +62,10 @@ Item navigasi Permintaan kini menerima label cadangan terlokalisasi dari rute Li
 
 Validasi paket konten kini merekonstruksi label urutan terurut hanya dari relasi komposisi. Relasi pelafalan dan ejaan alternatif dapat menargetkan rekaman leksikal serta memakai urutan posisinya sendiri tanpa memicu `ordered_sequence_content_unresolved`, selaras dengan kontrak penyedia pembelajaran bahasa Jepang.
 
+## Detail kelas konten dan tautan balik yang jelas
+
+Tampilan detail kini menyembunyikan kelas struktural composite, mengubah akhiran kelas penyedia menjadi pil yang mudah dibaca, dan memakai judul komposit dua kolom dengan bacaan di bawah teks utama. Tautan kosakata terbalik berlabel sama disembunyikan tanpa menghapus relasi ejaan maju yang ditulis penyedia.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -79,3 +83,4 @@ Validasi paket konten kini merekonstruksi label urutan terurut hanya dari relasi
 - [8d4c4129](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d4c4129)
 - [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)
 - [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)
+- [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)

@@ -62,6 +62,10 @@ Der Navigationseintrag „Anfragen“ erhält nun lokalisierte Ersatzbeschriftun
 
 Die Inhaltspaketvalidierung rekonstruiert Beschriftungen geordneter Sequenzen jetzt ausschließlich aus Kompositionsbeziehungen. Aussprache- und alternative Schreibbeziehungen können auf lexikalische Datensätze verweisen und ihre eigene Positionsfolge verwenden, ohne `ordered_sequence_content_unresolved` auszulösen; dies entspricht dem Vertrag des Japanisch-Lernanbieters.
 
+## Klare Inhaltsklassen und Rückverknüpfungen
+
+Detailansichten blenden nun die strukturelle Composite-Klasse aus, wandeln Anbieter-Klassensuffixe in lesbare Pills um und verwenden für zusammengesetzte Überschriften zwei Spalten mit Lesungen unter dem Primärtext. Umgekehrte Vokabellinks mit identischer Beschriftung werden unterdrückt, ohne die vorwärts gerichtete Schreibbeziehung zu entfernen.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -79,3 +83,4 @@ Die Inhaltspaketvalidierung rekonstruiert Beschriftungen geordneter Sequenzen je
 - [8d4c4129](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d4c4129)
 - [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)
 - [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)
+- [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)

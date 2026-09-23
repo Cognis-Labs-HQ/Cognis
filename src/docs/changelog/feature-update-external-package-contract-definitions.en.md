@@ -62,6 +62,10 @@ The Requests navigation item now receives localized fallback labels from its own
 
 Content-pack validation now reconstructs ordered sequence labels only from composition relationships. Pronunciation and alternate-spelling relationships can target lexical records and use their own position sequence without causing `ordered_sequence_content_unresolved`, matching the Japanese learning provider contract.
 
+## Clear content-class and reverse-link details
+
+Detail views now hide the structural composite class, humanize provider class suffixes into pills, and use a two-column composite heading with readings below the primary text. Same-label reverse vocabulary links are suppressed without removing the authored forward spelling relationship.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -79,3 +83,4 @@ Content-pack validation now reconstructs ordered sequence labels only from compo
 - [8d4c4129](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d4c4129)
 - [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)
 - [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)
+- [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)

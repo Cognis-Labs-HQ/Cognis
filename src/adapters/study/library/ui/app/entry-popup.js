@@ -151,6 +151,8 @@ export async function openEntryPopup(
             onOpen: (overlay, dismiss) => {
                 dismissPopup = dismiss;
                 overlay.classList.add("library-entry-popup");
+                if (detail.entry.class === "composite")
+                    overlay.classList.add("library-entry-popup--composite");
                 void loadLibraryAudio(
                     overlay,
                     audioObjectUrls,

@@ -36,7 +36,7 @@
  * Options:
  *   title    — heading text (rendered as plain text, HTML-escaped).
  *   titleDetail — optional secondary heading text rendered smaller beside the title.
- *   titleDetailItems — optional ordered `{ label, actionId? }` secondary heading fragments.
+ *   titleDetailItems — optional ordered `{ label, actionId?, placement? }` secondary heading fragments.
  *   titleLeading — optional trusted HTML rendered immediately before the title.
  *   titleAction — optional `{ id, label }` that renders the heading as an action.
  *   titleItems — optional ordered `{ label, actionId? }` title fragments.
@@ -80,7 +80,7 @@
  * @param {{
  *   title: string,
  *   titleDetail?: string,
- *   titleDetailItems?: Array<{ label: string, actionId?: string }>,
+ *   titleDetailItems?: Array<{ label: string, actionId?: string, placement?: "reading" | "definition" }>,
  *   titleLeading?: string,
  *   titleAction?: { id: string, label: string },
  *   titleItems?: Array<{ label: string, actionId?: string }>,
@@ -447,14 +447,31 @@ export async function openPopup({
             detailItemValues,
         ) {
             const detail = String(detailValue ?? "");
-            const renderHeadingItems = (items) =>
-                items
-                    .map((item) =>
-                        item.actionId
-                            ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(item.actionId)}" type="button">${escapeHtml(item.label)}</button>`
-                            : escapeHtml(item.label),
+            const renderHeadingItems = (items) => {
+                const rendered = items.map((item) => {
+                    const content = item.actionId
+                        ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(item.actionId)}" type="button">${escapeHtml(item.label)}</button>`
+                        : escapeHtml(item.label);
+                    return { content, placement: item.placement };
+                });
+                const groups = [];
+                for (const item of rendered) {
+                    const previous = groups.at(-1);
+                    if (
+                        item.placement &&
+                        previous?.placement === item.placement
+                    )
+                        previous.content += item.content;
+                    else groups.push({ ...item });
+                }
+                return groups
+                    .map(({ content, placement }) =>
+                        placement
+                            ? `<span data-popup-title-placement="${escapeHtml(placement)}">${content}</span>`
+                            : content,
                     )
                     .join("");
+            };
             const titleContent =
                 Array.isArray(itemValues) && itemValues.length
                     ? renderHeadingItems(itemValues)

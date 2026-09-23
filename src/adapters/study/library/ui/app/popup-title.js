@@ -112,7 +112,12 @@ export function popupTitleDetailItems(
             ...(linked.length ? linkedItems(linked) : [{ label }]),
         ];
     });
-    const items = [...spellingItems, ...pronunciationItems];
+    const placement =
+        detail.entry.class === "composite" ? "reading" : undefined;
+    const items = [...spellingItems, ...pronunciationItems].map((item) => ({
+        ...item,
+        placement,
+    }));
     const visibleDefinition = visibleTitleDefinition(
         detail.entry.label,
         layer?.semanticRole,
@@ -120,9 +125,18 @@ export function popupTitleDetailItems(
         sourceDefinition,
     );
     if (visibleDefinition) {
-        items.push(...(items.length ? [{ label: " · " }] : []), {
-            label: visibleDefinition,
-        });
+        items.push(
+            ...(items.length && detail.entry.class !== "composite"
+                ? [{ label: " · " }]
+                : []),
+            {
+                label: visibleDefinition,
+                placement:
+                    detail.entry.class === "composite"
+                        ? "definition"
+                        : undefined,
+            },
+        );
     }
     return items;
 }

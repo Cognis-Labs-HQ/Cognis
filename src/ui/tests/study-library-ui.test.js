@@ -285,7 +285,7 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.doesNotMatch(source, /library-definition-link/);
     assert.doesNotMatch(stylesheet, /\.library-definition-text/);
     assert.doesNotMatch(stylesheet, /\.library-composition-label/);
-    assert.doesNotMatch(stylesheet, /\.popup-title/);
+    assert.doesNotMatch(stylesheet, /^\.popup-title\s*\{/m);
     assert.doesNotMatch(source, /if \(!layer\.displayDefinition\)/);
     assert.doesNotMatch(source, /data-library-preview/);
     assert.match(source, /function relationshipPresentationRole/);
@@ -310,6 +310,9 @@ test("Study Library integrates definitions and particles into item details", () 
     );
     assert.match(source, /const spellingItems = spellingGroups\.flatMap/);
     assert.match(source, /const titleDetailItems = popupTitleDetailItems/);
+    assert.match(source, /detail\.entry\.class === "composite"/);
+    assert.match(source, /placement:[\s\S]*"definition"/);
+    assert.match(stylesheet, /library-entry-popup--composite/);
     assert.match(source, /function linkedItems\(entries\)/);
     assert.match(source, /titleItems: titleReferences\.map/);
     assert.match(source, /open-title-reference:\$\{entry\.id\}/);
@@ -391,6 +394,10 @@ test("Study Library renders metadata and scope indicators", () => {
     assert.match(source, /detail\?\.renderer === "badge"/);
     assert.match(source, /class="library-metadata-pill"/);
     assert.match(source, /class="library-scope"/);
+    assert.match(source, /contentClassLabel/);
+    assert.match(source, /entry\.class !== "composite"/);
+    assert.match(source, /library-content-class-pill/);
+    assert.match(source, /visibleRelatedWords/);
     assert.match(stylesheet, /\.library-metadata-pill/);
     assert.match(
         stylesheet,

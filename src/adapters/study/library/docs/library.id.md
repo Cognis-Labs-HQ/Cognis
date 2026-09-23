@@ -94,6 +94,8 @@ Penyesuaian saat jalan mencadangkan kartu akar dan setiap kartu anak yang telah 
 
 Untuk urutan leksikal terurut, hanya relasi dengan `presentationRole: composition` (atau tanpa peran untuk relasi komposisi lama) yang digunakan untuk merekonstruksi label. Tautan pelafalan dan ejaan alternatif dapat menargetkan lapisan leksikal serta memakai ulang posisi tanpa dianggap sebagai unsur kalimat.
 
+Tampilan detail menyembunyikan kelas `composite`. Kelas konten lainnya disederhanakan menjadi segmen akhir yang mudah dibaca dan ditampilkan sebagai pil (misalnya, `lexical:noun` menjadi **Noun**). Judul komposit menempatkan bacaan alternatif dan pelafalan di bawah bacaan utama, sementara definisi tetap berada di kolom sebelah. Navigasi kosakata terbalik menyembunyikan entri leksikal berlabel sama agar relasi ejaan kata-ke-unit-tulisan yang benar tidak tampak berulang ke dirinya sendiri.
+
 ## Pelacakan konten baru
 
 Pustaka menyimpan UUID entri yang telah dilihat untuk setiap akun. Entri global dari paket penyedia atau kontribusi pengguna dan administrator yang disetujui memicu notifikasi Pustaka bagi akun aktif. Entri yang belum ada dalam cache tampilan akun menampilkan pil **Baru** pada pratinjau dan popup detail. Mengarahkan penunjuk ke kartu atau membukanya secara langsung maupun melalui relasi akan menandainya sebagai telah dilihat; status tersimpan menghilangkan pil setelah halaman dimuat ulang.

@@ -31,6 +31,8 @@ test("popup exposes core-owned title actions and body updates", () => {
     assert.match(source, /titleAction/);
     assert.match(source, /titleItems/);
     assert.match(source, /item\.actionId/);
+    assert.match(source, /item\.placement/);
+    assert.match(source, /data-popup-title-placement/);
     assert.match(source, /class="popup-title-action btn-neutral"/);
     assert.match(source, /function updateBody\(nextBody\)/);
     assert.match(stylesheet, /\.popup-title-action/);
@@ -63,7 +65,7 @@ test("popup typography scales from the user font-size preference", () => {
     );
     assert.match(
         stylesheet,
-        /\.popup-title[\s\S]*font-size: calc\(2\.25em \* var\(--popup-title-scale, 1\)\)/,
+        /\.popup-title[\s\S]*font-size: calc\(1\.6875em \* var\(--popup-title-scale, 1\)\)/,
     );
     assert.doesNotMatch(stylesheet, /font-size\s*:\s*[\d.]+(?:px|pt)\b/);
 });

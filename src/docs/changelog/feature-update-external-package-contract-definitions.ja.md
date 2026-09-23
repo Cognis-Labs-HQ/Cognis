@@ -62,6 +62,10 @@ Library 管理画面は選択中の言語のレイヤーを平坦なメニュー
 
 コンテンツパック検証では、合成関係だけから順序付きシーケンスのラベルを再構築するようになりました。発音および代替表記の関係は字句レコードを対象にして独自の位置列を使用でき、`ordered_sequence_content_unresolved` を発生させません。これにより日本語学習プロバイダーのコントラクトと一致します。
 
+## コンテンツクラスと逆リンクを明確化
+
+詳細ビューでは構造用の composite クラスを隠し、プロバイダーのクラス末尾を読みやすい Pill に変換し、複合見出しを二列にして読みを主要テキストの下に配置します。同じラベルの逆引き語彙リンクは、作成済みの順方向表記関係を削除せずに抑止します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -79,3 +83,4 @@ Library 管理画面は選択中の言語のレイヤーを平坦なメニュー
 - [8d4c4129](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d4c4129)
 - [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)
 - [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)
+- [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)

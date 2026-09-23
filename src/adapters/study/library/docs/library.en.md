@@ -110,6 +110,8 @@ Runtime fitting reserves the root card and every child card already placed in th
 
 For ordered lexical sequences, only relationships whose `presentationRole` is `composition` (or omitted for legacy composition relationships) contribute to label reconstruction. Pronunciation and alternate-spelling links may target lexical layers and reuse positions without being mistaken for sentence constituents.
 
+Detail views omit the `composite` class. Other content classes are reduced to their human-facing final segment and rendered as pills (for example, `lexical:noun` becomes **Noun**). Composite headings place alternate readings and pronunciation beneath the primary reading while retaining the definition in the adjacent column. Reverse vocabulary navigation suppresses same-label lexical entries so a correct word-to-writing-unit spelling edge does not appear to recurse back into itself.
+
 ## New-content tracking
 
 The Library stores viewed entry UUIDs per account. Global entries introduced by provider pack ingestion or approved user and administrator contributions trigger a Study Library notification for enabled accounts. Entries absent from an account's viewed cache display a **New** pill in previews and detail popups. Hovering a card or opening it through any Library relationship records it as viewed; the persisted state removes the pill after refresh.
