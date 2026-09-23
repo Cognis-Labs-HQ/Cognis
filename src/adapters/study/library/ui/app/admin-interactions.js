@@ -99,6 +99,16 @@ export function editorBody(
             relationshipEditor(relationship, entry, entries, schema.language),
         )
         .join("");
+    const contentClass =
+        entry.class ??
+        (layer?.semanticRole === "definition"
+            ? "definition"
+            : layer?.semanticRole === "orderedLexicalSequence"
+              ? "composite"
+              : "");
+    const label = `<label><span>${escapeHtml(options.labelText ?? i18n.t("gateway.study.library_admin_label"))} *</span><input name="label" required maxlength="500" value="${escapeHtml(entry.label)}"></label>`;
+    const classField = `<label><span>${escapeHtml(i18n.t("gateway.study.library_content_class"))}</span><input name="class" value="${escapeHtml(contentClass)}"${["definition", "composite"].includes(contentClass) ? " readonly" : ""}></label>`;
+    const isDefinition = layer?.semanticRole === "definition";
     const builder = createFormBuilder(
         { i18n, escapeHtml },
         {
@@ -107,18 +117,8 @@ export function editorBody(
             formAttributes: { "data-library-admin-editor": true },
             includeSubmitButton: false,
             submitLabelKey: "ui.reuse.save",
-            fields: [
-                {
-                    name: "label",
-                    label:
-                        options.labelText ??
-                        i18n.t("gateway.study.library_admin_label"),
-                    required: true,
-                    value: entry.label,
-                    maxCharacters: 500,
-                },
-            ],
-            trustedContentHtml: `${extraHtml}${fields}${relationships}${options.includeAlwaysShowDefinition === false ? "" : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`}${options.includeHidden === false ? "" : `<label class="library-admin-hidden"><input name="hidden" type="checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}`,
+            fields: [],
+            trustedContentHtml: `${label}${classField}${extraHtml}${fields}${relationships}${isDefinition || options.includeAlwaysShowDefinition === false ? '<input name="alwaysShowDefinition" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`}${isDefinition ? '<input name="hidden" type="hidden" value="true">' : options.includeHidden === false ? '<input name="hidden" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="hidden" type="checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}`,
         },
     );
     return { html: builder.render(), builder };
@@ -416,7 +416,10 @@ export function bindAdminLibraryInteractions(
                             schemaVersion: entry.schemaVersion,
                             layer: entry.layer,
                             label: form.elements.label.value,
-                            hidden: form.elements.hidden.checked,
+                            class: form.elements.class.value || undefined,
+                            hidden:
+                                form.elements.hidden.value === "true" ||
+                                form.elements.hidden.checked,
                             alwaysShowDefinition:
                                 form.elements.alwaysShowDefinition.checked,
                             fields: readFields(form, layer, entry),

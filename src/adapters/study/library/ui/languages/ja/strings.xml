@@ -42,6 +42,7 @@
   <string name="gateway.study.library_similar_items">類似項目</string>
   <string name="gateway.study.library_no_similar_items">類似項目はありません。</string>
   <string name="gateway.study.library_admin_label">ラベル</string>
+  <string name="gateway.study.library_content_class">コンテンツクラス</string>
   <string name="gateway.study.library_admin_fields">フィールド (JSON)</string>
   <string name="gateway.study.library_admin_references">関係 (JSON)</string>
   <string name="gateway.study.library_admin_hidden">学習者には非表示</string>

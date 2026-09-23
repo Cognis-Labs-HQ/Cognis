@@ -117,3 +117,7 @@ Rekaman konten dapat mendeklarasikan nilai `class` bernamespace seperti `lexical
 ## Permintaan penerbitan
 
 Permintaan penerbitan Pustaka berada pada halaman subnavigasi Study **Permintaan**, bukan pada bilah alat halaman. Saat administrator atau pengajar memiliki permintaan tertunda yang dapat ditinjau, tautan Permintaan menampilkan garis tepi merah yang bernapas dan aksesibel; menyelesaikan tinjauan terakhir menghapus status perhatian. Animasi berubah menjadi garis tepi statis bila pengguna meminta pengurangan gerakan.
+
+## Administrasi dan pembuatan
+
+Pustaka administrasi hanya menampilkan lapisan untuk bahasa Study yang sudah dipilih dan memakai menu lapisan yang tidak dapat diciutkan. Editor menempatkan label dan kelas konten paling atas, membedakan mode Lihat dan Edit, melindungi perubahan yang belum disimpan, serta hanya menyediakan Simpan saat menyunting. Rekaman definisi selalu tersembunyi, memakai kelas `definition`, dan tidak menampilkan sakelar pratinjau atau visibilitas; urutan teratur memakai kelas `composite`. Rekaman konten dapat menetapkan `editable: false`, dan lapisan partikel tidak pernah dapat disunting. Pembuatan hanya tersedia sebagai tindakan halaman `+` pada halaman lapisan pengguna dan memandu pengguna melalui visibilitas, konten, dan relasi. Pengirim dapat melihat dan menarik permintaan penerbitannya sendiri pada halaman Permintaan.

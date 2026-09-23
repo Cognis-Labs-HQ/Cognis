@@ -117,3 +117,7 @@ Inhaltsdatensätze können einen Namensraumwert `class` wie `lexical:noun` oder 
 ## Veröffentlichungsanfragen
 
 Veröffentlichungsanfragen der Bibliothek befinden sich auf der eigenen Study-Unterseite **Anfragen** statt in Seitenwerkzeugleisten. Wenn eine ausstehende Anfrage von einer Administration oder Lehrkraft geprüft werden kann, zeigt der Link eine barrierearme, rot atmende Kontur; nach Abschluss der letzten Prüfung verschwindet der Hinweis. Bei reduzierter Bewegung wird eine statische Kontur verwendet.
+
+## Administration und Erstellung
+
+Die Verwaltungsbibliothek zeigt nur Ebenen der bereits ausgewählten Study-Sprache und verwendet ein nicht einklappbares Ebenenmenü. Editoren stellen Bezeichnung und Inhaltsklasse an den Anfang, unterscheiden Ansicht und Bearbeitung, schützen ungespeicherte Änderungen und zeigen Speichern nur beim Bearbeiten. Definitionsdatensätze sind immer verborgen, tragen die Klasse `definition` und zeigen keine Vorschau- oder Sichtbarkeitsschalter; geordnete Folgen tragen `composite`. Ein Inhaltsdatensatz kann `editable: false` setzen, Partikelebenen sind nie bearbeitbar. Die Erstellung ist nur als `+`-Seitenaktion auf benutzerseitigen Ebenenseiten verfügbar und führt durch Sichtbarkeit, Inhalt und Beziehungen. Einreichende können eigene Veröffentlichungsanfragen auf der Anfragenseite ansehen und zurückziehen.

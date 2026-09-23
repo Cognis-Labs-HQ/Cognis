@@ -178,6 +178,10 @@ body[data-theme="dark"] .library-admin-edit > span {
     transform: translateY(-50%);
 }
 
+.library-quick-search-control button[hidden] {
+    display: none;
+}
+
 .library-quick-search-control img {
     display: block;
     width: 0.9rem;

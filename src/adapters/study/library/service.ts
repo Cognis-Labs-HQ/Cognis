@@ -649,6 +649,12 @@ export class LibraryService implements LibraryCapability {
         )
             throw new Error("invalid_always_show_definition");
         const layer = findLayer(schema, input.layer);
+        if (layer.semanticRole === "definition") {
+            input.hidden = true;
+            input.class = "definition";
+        } else if (layer.semanticRole === "orderedLexicalSequence") {
+            input.class = "composite";
+        }
         const fields = structuredClone(input.fields ?? {});
         if (!input.allowConflict && location.scope !== "global") {
             const conflict = (
@@ -741,6 +747,7 @@ export class LibraryService implements LibraryCapability {
     ): Promise<LibraryEntry> {
         const current = await this.read(actor, entryId);
         if (!current) throw new Error("entry_not_found");
+        if (current.editable === false) throw new Error("entry_not_editable");
         await this.authorize(
             actor,
             { scope: current.scope, scopeId: current.scopeId },
@@ -768,6 +775,14 @@ export class LibraryService implements LibraryCapability {
             throw new Error("invalid_always_show_definition");
         const schema = this.schema(input.schemaId, input.schemaVersion);
         const layer = findLayer(schema, input.layer);
+        if (layer.semanticRole === "particle")
+            throw new Error("entry_not_editable");
+        if (layer.semanticRole === "definition") {
+            input.hidden = true;
+            input.class = "definition";
+        } else if (layer.semanticRole === "orderedLexicalSequence") {
+            input.class = "composite";
+        }
         const fields = structuredClone(input.fields ?? {});
         for (const field of layer.fields ?? []) {
             if (

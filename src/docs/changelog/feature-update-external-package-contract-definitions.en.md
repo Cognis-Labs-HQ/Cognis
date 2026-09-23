@@ -46,6 +46,10 @@ Sentence cards now use a consistent bounded height, omit redundant pronunciation
 
 Publishing reviews now live on a dedicated Requests page in Study sub-navigation instead of consuming Library page toolbar space. Reviewable pending requests give the Requests link a red breathing outline with a reduced-motion fallback, and the signal clears when the final review is resolved. The Library search clear icon now adapts to both light and dark themes.
 
+## Language-scoped administration and guided card editing
+
+The Library administrator now shows a flat layer menu for the selected language. Card classes are visible and safely editable, definitions and composites receive enforced classes, definitions stay learner-hidden, particles and provider-locked records cannot be edited, and edit dialogs provide clear View/Edit modes, Save actions, and unsaved-change protection. Card creation moved to a guided `+` page action on learner-facing layer pages, request status is available to submitters, popup title readings retain provider links, and Study language availability is refreshed on every page load.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -58,3 +62,5 @@ Publishing reviews now live on a dedicated Requests page in Study sub-navigation
 - [84bedc67](https://github.com/Cognis-Labs-HQ/Cognis/commit/84bedc67)
 - [617a2161](https://github.com/Cognis-Labs-HQ/Cognis/commit/617a2161)
 - [365d5444](https://github.com/Cognis-Labs-HQ/Cognis/commit/365d5444)
+- [11bec51d](https://github.com/Cognis-Labs-HQ/Cognis/commit/11bec51d)
+- [b996336d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b996336d)

@@ -138,8 +138,7 @@ export async function loadStudySubNavigationModel({
     const requestedLanguageCode = parseLanguageCode(fallbackLanguageCode);
     const subPages = uiCtx.capabilities.get("study:subPages");
     if (!subPages) throw new Error("Study sub-page provider unavailable.");
-    const learningLanguagesRaw = await (SUB_NAV_CACHE.learningLanguages ??
-        loadLearningLanguages());
+    const learningLanguagesRaw = await loadLearningLanguages();
     SUB_NAV_CACHE.learningLanguages = Promise.resolve(learningLanguagesRaw);
 
     const requestedModel = await subPages.load("study", {
@@ -164,25 +163,21 @@ export async function loadStudySubNavigationModel({
 
     const learningLanguages = learningLanguagesRaw
         .map((languageCode) => parseLanguageCode(languageCode))
-        .filter(Boolean);
+        .filter((languageCode) => languageCatalogByCode.has(languageCode));
     const activeLanguageCodes = Array.from(
         new Set([
             ...learningLanguages,
-            ...[requestedLanguageCode].filter(Boolean),
+            ...[requestedLanguageCode].filter((languageCode) =>
+                languageCatalogByCode.has(languageCode),
+            ),
         ]),
     );
-    for (const languageCode of activeLanguageCodes) {
-        if (!languageCatalogByCode.has(languageCode)) {
-            languageCatalogByCode.set(languageCode, {
-                code: languageCode,
-                flag: "",
-                name: resolveLanguageLabel(languageCode),
-            });
-        }
-    }
 
-    const selectedLanguageCode =
-        requestedLanguageCode || activeLanguageCodes[0];
+    const selectedLanguageCode = activeLanguageCodes.includes(
+        requestedLanguageCode,
+    )
+        ? requestedLanguageCode
+        : activeLanguageCodes[0];
 
     const modulesByLanguage = requestedModel.pagesByGroup;
 
@@ -190,9 +185,9 @@ export async function loadStudySubNavigationModel({
     const schemas = selectedLanguageCode
         ? await fetchLibrarySchemas(selectedLanguageCode).catch(() => [])
         : [];
-    const pendingLibraryRequests = isAdminScope()
-        ? await fetchLibraryPushRequests().catch(() => [])
-        : [];
+    const pendingLibraryRequests = await fetchLibraryPushRequests().catch(
+        () => [],
+    );
     const activeLocale = document.documentElement.lang;
     for (const schema of schemas) {
         for (const layer of schema.layers ?? []) {

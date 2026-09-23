@@ -71,30 +71,6 @@ export function popupTitleDetailItems(
     sourceDefinition = "",
 ) {
     const layer = layerForEntry(schemas, detail.entry);
-    if (layer?.semanticRole === "lexicalUnit") {
-        const localizedDefinition = visibleTitleDefinition(
-            detail.entry.label,
-            layer.semanticRole,
-            titleDefinition,
-            sourceDefinition,
-        );
-        const pronunciations = distinctPronunciationLabels(
-            detail.entry,
-            new Set(),
-        ).map((label) => ({ label }));
-        return [
-            ...pronunciations.flatMap((item, index) => [
-                ...(index ? [{ label: " · " }] : []),
-                item,
-            ]),
-            ...(localizedDefinition
-                ? [
-                      ...(pronunciations.length ? [{ label: " · " }] : []),
-                      { label: localizedDefinition },
-                  ]
-                : []),
-        ];
-    }
     const spellingGroups = secondarySpellingGroups(detail, schemas);
     const spellingLabels = new Set(
         spellingGroups.map((group) =>
@@ -141,6 +117,7 @@ export function popupTitleDetailItems(
         detail.entry.label,
         layer?.semanticRole,
         titleDefinition,
+        sourceDefinition,
     );
     if (visibleDefinition) {
         items.push(...(items.length ? [{ label: " · " }] : []), {

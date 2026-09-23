@@ -133,3 +133,7 @@ Content records may declare a namespaced `class` value such as `lexical:noun` or
 ## Publishing requests
 
 Library publishing requests live on the dedicated **Requests** Study sub-navigation page rather than in page toolbars. When an administrator or teacher has a pending request they can review, the Requests link uses an accessible red breathing outline; resolving the final review removes the attention state. The animation becomes a static outline when reduced motion is requested.
+
+## Administration and creation
+
+The administrator Library shows only layers for the already selected Study language and uses a non-collapsible layer menu. Editors place the label and content class first, distinguish View from Edit mode, protect unsaved edits, and provide Save only while editing. Definition records are always hidden, carry the `definition` class, and do not expose preview or visibility switches; ordered sequences carry the `composite` class. A content record may set `editable: false`, and particle layers are never editable. Creation is available only as a `+` page action on user-facing layer pages and guides the user through visibility, content, and relationships. Submitters can inspect and withdraw their own publishing requests on the Requests page.

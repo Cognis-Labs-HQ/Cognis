@@ -180,6 +180,8 @@ export interface LibraryEntryInput {
     label: string;
     /** Provider-neutral lexical/content classification, such as noun or verb. */
     class?: string;
+    /** Whether provider-owned content may be modified through Library editors. */
+    editable?: boolean;
     /** Exclude the entry and its descendants from direct browsing while retaining references. */
     hidden?: boolean;
     /** Keep the primary localized definition visible in card previews. */
@@ -295,6 +297,8 @@ export interface LibraryContentRecord {
     label: string;
     /** Provider-neutral lexical/content classification, such as noun or verb. */
     class?: string;
+    /** Prevent UI and API modification while keeping the record visible. */
+    editable?: boolean;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
 }

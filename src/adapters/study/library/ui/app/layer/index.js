@@ -14,7 +14,7 @@ import { bindLibraryInteractions } from "../interactions.js";
 import { localizedLabel } from "../presentation.js";
 import { librarySelectionFloatingMenu } from "../selection.js";
 import { openCreateEntryPopup } from "../create-entry.js";
-import { escapeHtml } from "/static/reuse/escape-html.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { loadLibraryRequests } from "../requests.js";
 
 function requestedLayer() {
@@ -72,18 +72,7 @@ export async function mount(root, { signal } = {}) {
             title,
             subtitle: i18n.t("gateway.study.library_subtitle"),
         },
-        toolbar: [
-            ...(layer?.cardConstructor
-                ? [
-                      {
-                          id: "library-create",
-                          label: i18n.t("gateway.study.library_create"),
-                          render: () =>
-                              `<button class="btn-confirm" type="button" data-library-create>${escapeHtml(i18n.t("gateway.study.library_create"))}</button>`,
-                      },
-                  ]
-                : []),
-        ],
+        toolbar: [],
         floatingMenu: librarySelectionFloatingMenu(entries, i18n),
         subNavigation: [
             {
@@ -106,28 +95,41 @@ export async function mount(root, { signal } = {}) {
         }
     });
     bindStudySubNavigation(root, { signal });
-    root.addEventListener(
-        "click",
-        async (event) => {
-            if (!event.target.closest("[data-library-create]")) return;
-            const created = await openCreateEntryPopup({
-                schemas,
-                entries,
-                schemaId: selectedLayer?.schemaId,
-                layerId: selectedLayer?.layerId,
-                i18n,
-            });
-            if (!created) return;
-            entries.push(created);
-            root.querySelector(".library-browser").innerHTML = renderBrowser(
-                schemas,
-                entries,
-                i18n,
-                selectedLayer,
-            );
-        },
-        { signal },
-    );
+    if (layer?.cardConstructor) {
+        const createButton = document.createElement("button");
+        createButton.type = "button";
+        createButton.className = "btn-confirm";
+        createButton.textContent = "+";
+        createButton.setAttribute(
+            "aria-label",
+            i18n.t("gateway.study.library_create"),
+        );
+        createButton.addEventListener(
+            "click",
+            async () => {
+                const created = await openCreateEntryPopup({
+                    schemas,
+                    entries,
+                    schemaId: selectedLayer?.schemaId,
+                    layerId: selectedLayer?.layerId,
+                    i18n,
+                });
+                if (!created) return;
+                entries.push(created);
+                root.querySelector(".library-browser").innerHTML =
+                    renderBrowser(schemas, entries, i18n, selectedLayer);
+            },
+            { signal },
+        );
+        const removeAction = uiCtx.capabilities.get("page:actions")?.add({
+            id: "study-library:create",
+            element: createButton,
+            order: 20,
+        });
+        signal?.addEventListener("abort", () => removeAction?.(), {
+            once: true,
+        });
+    }
     bindLibraryInteractions(root, {
         entries,
         i18n,

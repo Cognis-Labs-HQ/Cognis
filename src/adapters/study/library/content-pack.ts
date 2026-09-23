@@ -150,6 +150,7 @@ export function contentRecordHash(
                 layer: record.layer,
                 label: record.label.trim(),
                 ...(record.class ? { class: record.class } : {}),
+                ...(record.editable === false ? { editable: false } : {}),
                 ...(record.hidden === true ? { hidden: true } : {}),
                 ...(manifest.protected === true ? { protected: true } : {}),
                 fields: record.fields ?? {},
@@ -258,6 +259,11 @@ async function validateContentRecords(
         if (record.class !== undefined && !ROLE_PATTERN.test(record.class))
             throw new Error("invalid_content_class");
         if (
+            record.editable !== undefined &&
+            typeof record.editable !== "boolean"
+        )
+            throw new Error("invalid_content_editable");
+        if (
             record.displayId !== undefined &&
             (!Number.isSafeInteger(record.displayId) || record.displayId < 0)
         )
@@ -268,6 +274,15 @@ async function validateContentRecords(
         if (entries.has(id)) throw new Error("duplicate_content_record");
         validateFields(schema, record.layer, record.fields ?? {});
         const layer = schema.layers.find(({ id }) => id === record.layer)!;
+        if (layer.semanticRole === "definition") {
+            record.class = "definition";
+            record.hidden = true;
+        } else if (layer.semanticRole === "orderedLexicalSequence") {
+            record.class = "composite";
+        } else if (layer.semanticRole === "particle") {
+            record.editable = false;
+            record.class ??= "particle";
+        }
         for (const field of layer.fields ?? []) {
             const value = record.fields?.[field.id];
             if (

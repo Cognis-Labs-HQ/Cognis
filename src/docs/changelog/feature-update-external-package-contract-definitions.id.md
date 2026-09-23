@@ -46,6 +46,10 @@ Kartu kalimat kini menggunakan tinggi terbatas yang konsisten, menghilangkan pra
 
 Tinjauan penerbitan kini berada pada halaman Permintaan khusus di subnavigasi Study dan tidak lagi memakai ruang bilah alat Pustaka. Permintaan tertunda yang dapat ditinjau memberi tautan Permintaan garis tepi merah bernapas dengan alternatif pengurangan gerakan, dan sinyal hilang setelah tinjauan terakhir diselesaikan. Ikon hapus pencarian Pustaka kini menyesuaikan tema terang maupun gelap.
 
+## Administrasi berbasis bahasa dan penyuntingan kartu terpandu
+
+Administrasi Pustaka kini menampilkan menu lapisan datar untuk bahasa terpilih. Kelas kartu terlihat dan dapat disunting dengan aman, definisi serta komposit mendapat kelas wajib, definisi tetap tersembunyi dari pelajar, dan partikel maupun rekaman yang dikunci penyedia tidak dapat disunting. Dialog membedakan Lihat/Edit, menyediakan Simpan, dan melindungi perubahan belum tersimpan. Pembuatan kartu dipindah ke tindakan halaman `+` terpandu pada halaman pelajar, pengirim dapat melihat status permintaan, bacaan judul popup mempertahankan tautan penyedia, dan ketersediaan bahasa Study dimuat ulang pada setiap pemuatan halaman.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -58,3 +62,5 @@ Tinjauan penerbitan kini berada pada halaman Permintaan khusus di subnavigasi St
 - [84bedc67](https://github.com/Cognis-Labs-HQ/Cognis/commit/84bedc67)
 - [617a2161](https://github.com/Cognis-Labs-HQ/Cognis/commit/617a2161)
 - [365d5444](https://github.com/Cognis-Labs-HQ/Cognis/commit/365d5444)
+- [11bec51d](https://github.com/Cognis-Labs-HQ/Cognis/commit/11bec51d)
+- [b996336d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b996336d)

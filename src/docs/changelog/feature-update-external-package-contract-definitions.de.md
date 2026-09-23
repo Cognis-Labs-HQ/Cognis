@@ -46,6 +46,10 @@ Satzkarten verwenden nun eine einheitliche begrenzte Höhe, lassen redundante Au
 
 Veröffentlichungsprüfungen befinden sich nun auf einer eigenen Anfragen-Seite der Study-Unternavigation, statt Platz in der Bibliothekswerkzeugleiste zu belegen. Prüfbare ausstehende Anfragen markieren den Link mit einer rot atmenden Kontur samt Alternative für reduzierte Bewegung; nach der letzten Prüfung verschwindet das Signal. Das Symbol zum Löschen der Bibliothekssuche passt sich nun an helle und dunkle Designs an.
 
+## Sprachbezogene Verwaltung und geführte Kartenbearbeitung
+
+Die Bibliotheksverwaltung zeigt nun ein flaches Ebenenmenü für die ausgewählte Sprache. Kartenklassen sind sichtbar und sicher bearbeitbar; Definitionen und Kompositionen erhalten erzwungene Klassen, Definitionen bleiben für Lernende verborgen, und Partikel sowie anbietergesperrte Datensätze sind nicht bearbeitbar. Bearbeitungsdialoge unterscheiden klar Ansicht und Bearbeitung, bieten Speichern und schützen ungespeicherte Änderungen. Die Kartenerstellung befindet sich als geführte `+`-Seitenaktion auf Lernendenseiten, Antragstellende sehen ihren Status, Popup-Titellesungen behalten Anbieterlinks, und verfügbare Study-Sprachen werden bei jedem Seitenaufruf neu geladen.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -58,3 +62,5 @@ Veröffentlichungsprüfungen befinden sich nun auf einer eigenen Anfragen-Seite 
 - [84bedc67](https://github.com/Cognis-Labs-HQ/Cognis/commit/84bedc67)
 - [617a2161](https://github.com/Cognis-Labs-HQ/Cognis/commit/617a2161)
 - [365d5444](https://github.com/Cognis-Labs-HQ/Cognis/commit/365d5444)
+- [11bec51d](https://github.com/Cognis-Labs-HQ/Cognis/commit/11bec51d)
+- [b996336d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b996336d)

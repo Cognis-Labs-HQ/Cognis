@@ -138,11 +138,14 @@ export async function openCreateEntryPopup({
     const entry = {
         ...draft,
         label: form.elements.label.value,
+        class: form.elements.class.value || undefined,
         fields: readFields(form, editingLayer, draft),
         references: readReferences(form, editingLayer),
         alwaysShowDefinition:
             form.elements.alwaysShowDefinition?.checked === true,
-        hidden: form.elements.hidden?.checked === true,
+        hidden:
+            form.elements.hidden?.value === "true" ||
+            form.elements.hidden?.checked === true,
     };
     try {
         return await createLibraryEntry({ scope, scopeId }, entry);

@@ -17,6 +17,11 @@ test("external-package compatibility fixture preserves validated contract metada
     );
     const plan = await inspectContentPack(root);
     assert.equal(plan.records.length, 3);
+    const definition = plan.records.find(
+        ({ layer }) => layer === "definitions",
+    );
+    assert.equal(definition?.class, "definition");
+    assert.equal(definition?.hidden, true);
     assert.equal(
         plan.records.find(({ layer }) => layer === "words")?.class,
         "lexical:noun",

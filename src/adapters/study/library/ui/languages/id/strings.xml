@@ -42,6 +42,7 @@
   <string name="gateway.study.library_similar_items">Item Serupa</string>
   <string name="gateway.study.library_no_similar_items">Tidak ditemukan item serupa.</string>
   <string name="gateway.study.library_admin_label">Label</string>
+  <string name="gateway.study.library_content_class">Kelas konten</string>
   <string name="gateway.study.library_admin_fields">Bidang (JSON)</string>
   <string name="gateway.study.library_admin_references">Relasi (JSON)</string>
   <string name="gateway.study.library_admin_hidden">Disembunyikan dari pelajar</string>

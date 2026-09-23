@@ -46,6 +46,10 @@ Library の検索および編集コントロールをコンパクトでテーマ
 
 公開確認を Library ページのツールバーから Study サブナビゲーションの専用リクエストページへ移しました。確認可能な保留リクエストがある場合は、視差効果を減らす代替表示付きの赤い呼吸状輪郭でリンクを強調し、最後の確認が完了すると表示を解除します。Library の検索クリアアイコンはライトテーマとダークテーマの両方に対応しました。
 
+## 言語単位の管理とガイド付きカード編集
+
+Library 管理画面は選択中の言語のレイヤーを平坦なメニューで表示します。カードクラスを表示して安全に編集でき、定義と複合項目には所定のクラスを強制し、定義は学習者から常に非表示にし、助詞とプロバイダーがロックしたレコードは編集できません。ダイアログは表示と編集を明確に区別し、保存操作と未保存変更保護を備えます。カード作成は学習者向けページのガイド付き `+` アクションへ移動し、送信者は申請状態を確認でき、ポップアップタイトルの読みはプロバイダーリンクを保持し、Study 言語の可用性はページ読み込みごとに再取得されます。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -58,3 +62,5 @@ Library の検索および編集コントロールをコンパクトでテーマ
 - [84bedc67](https://github.com/Cognis-Labs-HQ/Cognis/commit/84bedc67)
 - [617a2161](https://github.com/Cognis-Labs-HQ/Cognis/commit/617a2161)
 - [365d5444](https://github.com/Cognis-Labs-HQ/Cognis/commit/365d5444)
+- [11bec51d](https://github.com/Cognis-Labs-HQ/Cognis/commit/11bec51d)
+- [b996336d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b996336d)

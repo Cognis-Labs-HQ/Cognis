@@ -95,6 +95,10 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
                       ];
             }),
     );
+    if (entry.class) {
+        genericFields[i18n.t("gateway.study.library_content_class")] =
+            entry.class;
+    }
     return [
         `<header class="library-detail-summary">${renderAudio(entry, layer)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
         options.showReferenceTree ? relationTree(references, usedBy, i18n) : "",

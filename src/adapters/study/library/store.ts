@@ -136,6 +136,12 @@ export class LibraryStore {
                     default: false,
                 },
                 {
+                    name: "editable",
+                    type: "boolean",
+                    notNull: true,
+                    default: true,
+                },
+                {
                     name: "fields_json",
                     type: "text",
                     notNull: true,
@@ -406,6 +412,7 @@ export class LibraryStore {
                         always_show_definition:
                             record.alwaysShowDefinition === true,
                         protected: manifest.protected === true,
+                        editable: record.editable !== false,
                         fields_json: JSON.stringify(fields),
                         search_text: `${record.label} ${JSON.stringify(fields)}`
                             .normalize()
@@ -431,6 +438,7 @@ export class LibraryStore {
                     always_show_definition:
                         record.alwaysShowDefinition === true,
                     protected: manifest.protected === true,
+                    editable: record.editable !== false,
                     fields_json: JSON.stringify(fields),
                     search_text: `${record.label} ${JSON.stringify(fields)}`
                         .normalize()

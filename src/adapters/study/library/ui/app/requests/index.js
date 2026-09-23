@@ -1,8 +1,6 @@
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
-import { navigateTo } from "/static/reuse/app-router.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
-import { isAdminScope } from "/static/gateways/study/ui/language.js";
 import {
     bindStudySubNavigation,
     loadStudySubNavigationModel,
@@ -22,10 +20,6 @@ export async function mount(root, { signal } = {}) {
             "/static/adapters/study/library/languages",
         ],
     });
-    if (!isAdminScope()) {
-        await navigateTo("/study");
-        return;
-    }
     const [model, requests] = await Promise.all([
         loadStudySubNavigationModel({
             fallbackLanguageCode: readSelectedStudyLanguageCode(),

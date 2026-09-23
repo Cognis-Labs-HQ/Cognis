@@ -236,10 +236,7 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /field\.type === "localizedText"/);
     assert.match(source, /localizedTextValue\(fields\[field\.id\]\)/);
     assert.match(source, /function secondarySpellingGroups/);
-    assert.match(
-        source,
-        /layer\?\.semanticRole === "lexicalUnit"[\s\S]*visibleTitleDefinition/,
-    );
+    assert.match(source, /visibleTitleDefinition\([\s\S]*sourceDefinition/);
     assert.match(source, /function orderedDefinitionDisplay/);
     assert.match(source, /titleDefinition: definitions\[0\]/);
     assert.match(source, /additionalDefinitions: definitions\.slice\(1\)/);
@@ -351,6 +348,9 @@ test("Study Library creation is driven by language card constructors", () => {
     assert.match(source, /constructor\.relationships/);
     assert.match(source, /constructor\.defaults/);
     assert.match(source, /data-library-visibility/);
+    assert.doesNotMatch(indexSource, /data-library-create/);
+    assert.match(layerPageSource, /page:actions/);
+    assert.match(layerPageSource, /textContent = "\+"/);
     assert.match(source, /writableClasses\.length > 1/);
     assert.doesNotMatch(layerPageSource, /renderLibraryRequests/);
     assert.doesNotMatch(indexSource, /renderLibraryRequests/);
@@ -362,6 +362,22 @@ test("Study Library creation is driven by language card constructors", () => {
         studyStylesheet,
         /@keyframes study-subnav-attention-breathe[\s\S]*color-danger-outline-text/,
     );
+});
+
+test("Study Library administration exposes contract-safe editing", () => {
+    assert.match(
+        adminInteractionsSource,
+        /name="label" required maxlength="500"/,
+    );
+    assert.match(adminInteractionsSource, /library_content_class/);
+    assert.match(adminInteractionsSource, /const isDefinition/);
+    assert.match(
+        adminInteractionsSource,
+        /name="hidden" type="hidden" value="true"/,
+    );
+    assert.match(adminInteractionsSource, /id: "save"/);
+    assert.match(adminInteractionsSource, /closeProtection: !readOnly/);
+    assert.match(source, /layer\.semanticRole === "particle"/);
 });
 
 test("Study Library renders metadata and scope indicators", () => {
