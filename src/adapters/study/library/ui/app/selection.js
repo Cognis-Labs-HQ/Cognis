@@ -6,7 +6,7 @@ export function canDeleteEntry(entry) {
 }
 
 export function librarySelectionFloatingMenu(entries, i18n) {
-    if (!entries.some(canDeleteEntry)) return [];
+    if (entries.length === 0) return [];
     return [
         {
             id: "library-selection-actions",

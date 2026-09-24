@@ -74,6 +74,10 @@ Library 管理画面は選択中の言語のレイヤーを平坦なメニュー
 
 権威あるコンテンツパックの新しいリリースが、同じ互換バージョンで自身の保存済みスキーマを改訂できるようになりました。所有権チェックによるスキーマ衝突防止を維持し、トランザクション取り込みの成功後にのみスキーマキャッシュを更新するため、最新の日本語パックを以前のリリース上で正常に有効化できます。
 
+## 信頼できる複数選択コントロール
+
+Study Library は、削除可能なプロバイダーレコードがない表示を含め、カードが複数選択モードに入れる場合にフローティング操作メニューを常に用意するようになりました。選択チェックボックスにはポインターカーソルも使用し、操作可能であることを明確にします。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -94,3 +98,4 @@ Library 管理画面は選択中の言語のレイヤーを平坦なメニュー
 - [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)
 - [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)
 - [d3ba08ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3ba08ef)
+- [6d6e4e53](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d6e4e53)

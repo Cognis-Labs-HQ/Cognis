@@ -74,6 +74,10 @@ Membuka cabang kartu anak kini memburamkan ikon visibilitas kartu yang tidak ter
 
 Rilis baru paket konten otoritatif kini dapat merevisi skema tersimpannya sendiri pada versi kompatibilitas yang sama. Pemeriksaan kepemilikan tetap melindungi dari benturan skema, dan cache skema hanya diperbarui setelah ingest transaksional berhasil, sehingga paket bahasa Jepang terbaru dapat diaktifkan dengan bersih di atas rilis sebelumnya.
 
+## Kontrol multipilih yang andal
+
+Study Library kini selalu menyediakan menu tindakan mengambang ketika kartu dapat memasuki mode multipilih, termasuk pada tampilan tanpa rekaman penyedia yang dapat dihapus. Kotak pilihan juga menggunakan kursor penunjuk agar sifat interaktifnya terlihat jelas.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -94,3 +98,4 @@ Rilis baru paket konten otoritatif kini dapat merevisi skema tersimpannya sendir
 - [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)
 - [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)
 - [d3ba08ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3ba08ef)
+- [6d6e4e53](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d6e4e53)

@@ -74,6 +74,10 @@ Beim Öffnen eines untergeordneten Kartenzweigs werden die Sichtbarkeitssymbole 
 
 Neue Versionen eines maßgeblichen Inhaltspakets können nun ihr eigenes gespeichertes Schema bei derselben Kompatibilitätsversion überarbeiten. Besitzerprüfungen schützen weiterhin vor Schemakollisionen, und der Schema-Cache wird erst nach erfolgreicher transaktionaler Aufnahme aktualisiert. Dadurch kann das aktuelle Japanisch-Paket sauber über der vorherigen Version aktiviert werden.
 
+## Zuverlässige Mehrfachauswahl-Steuerelemente
+
+Die Study Library hält ihr schwebendes Aktionsmenü nun immer bereit, wenn Karten in den Mehrfachauswahlmodus wechseln können, auch in Ansichten ohne löschbare Anbieter-Datensätze. Auswahlkästchen verwenden außerdem einen Zeiger-Cursor, damit ihre Interaktivität klar erkennbar ist.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -94,3 +98,4 @@ Neue Versionen eines maßgeblichen Inhaltspakets können nun ihr eigenes gespeic
 - [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)
 - [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)
 - [d3ba08ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3ba08ef)
+- [6d6e4e53](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d6e4e53)

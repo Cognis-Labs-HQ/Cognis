@@ -74,6 +74,10 @@ Opening a child-card branch now blurs unrelated cards’ visibility icons and ne
 
 New releases of an authoritative content pack can now revise their own stored schema at the same compatibility version. Ownership checks retain schema collision protection, and the schema cache updates only after transactional ingestion succeeds, allowing the latest Japanese pack to enable cleanly over its previous release.
 
+## Reliable multi-select controls
+
+Study Library now keeps its floating action menu available whenever cards can enter multi-select mode, including views without deletable provider records. Selection checkboxes also use a pointer cursor so their interactivity is visually clear.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -94,3 +98,4 @@ New releases of an authoritative content pack can now revise their own stored sc
 - [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)
 - [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)
 - [d3ba08ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3ba08ef)
+- [6d6e4e53](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d6e4e53)

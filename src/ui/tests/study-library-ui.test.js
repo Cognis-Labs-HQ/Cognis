@@ -724,7 +724,8 @@ test("Study Library owners can select and delete multiple entries", () => {
         stylesheet,
         /body\[data-theme="dark"\] \.library-entry-selection/,
     );
-    assert.match(source, /if \(!entries\.some\(canDeleteEntry\)\)/);
+    assert.doesNotMatch(source, /if \(!entries\.some\(canDeleteEntry\)\)/);
+    assert.match(source, /if \(entries\.length === 0\) return \[\]/);
     assert.match(source, /data-library-select-all/);
     assert.doesNotMatch(source, /data-library-selection-close/);
     assert.match(source, /data-library-publish-menu/);
@@ -764,6 +765,10 @@ test("Study Library bounds status and gives readings and definitions room", () =
     assert.match(
         stylesheet,
         /\.library-entry-selection[\s\S]*right: 0\.35rem[\s\S]*translateY\(-50%\)/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-entry-selection[\s\S]*cursor:\s*pointer/,
     );
     assert.match(stylesheet, /\.library-card-primary[\s\S]*display: grid/);
     assert.match(
