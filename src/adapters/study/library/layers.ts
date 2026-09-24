@@ -356,7 +356,7 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
             if (pronunciation?.type !== "stringList" || !pronunciation.required)
                 throw new Error("pronunciation_field_required");
             const audio = (layer.fields ?? []).find(({ id }) => id === "audio");
-            if (audio?.type !== "audio" || !audio.required)
+            if (audio?.type !== "audio")
                 throw new Error("audio_field_required");
         }
         if (layer.strokeAsset) {
@@ -436,7 +436,11 @@ export function validateFields(
     }
     for (const field of fields) {
         const value = values[field.id];
-        if (field.required && (value === undefined || value === ""))
+        if (
+            field.required &&
+            field.type !== "audio" &&
+            (value === undefined || value === "")
+        )
             throw new Error(`field_required:${field.id}`);
         if (value === undefined) continue;
         const builtInValid =

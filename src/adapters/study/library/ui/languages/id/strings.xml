@@ -68,4 +68,11 @@
   <string name="gateway.study.library_publish_global">Terbitkan secara global</string>
   <string name="gateway.study.library_withdraw">Tarik kembali</string>
   <string name="gateway.study.library_send_back">Kembalikan</string>
+  <string name="gateway.study.library_deselect_all">Batalkan Semua Pilihan</string>
+  <string name="gateway.study.library_requests_mine">Permintaan Saya</string>
+  <string name="gateway.study.library_requests_approved">Disetujui</string>
+  <string name="gateway.study.library_requests_rejected">Ditolak</string>
+  <string name="gateway.study.library_requests_pending">Tertunda</string>
+  <string name="gateway.study.library_requests_review">Untuk Ditinjau</string>
+  <string name="gateway.study.library_optional">Opsional</string>
 </resources>

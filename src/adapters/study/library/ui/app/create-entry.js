@@ -6,6 +6,7 @@ import {
     fetchLibraryLocations,
 } from "/static/gateways/study/ui/library-client.js";
 import {
+    bindLibraryEditorControls,
     editorBody,
     readFields,
     readReferences,
@@ -36,7 +37,13 @@ export async function openCreateEntryPopup({
             item.cardConstructor,
     )?.cardConstructor;
     const constructor = contributedConstructor ?? layer?.cardConstructor;
-    if (!schema || !layer || !constructor || !access.writable.length)
+    if (
+        !schema ||
+        !layer ||
+        layer.semanticRole === "atomicWritingUnit" ||
+        !constructor ||
+        !access.writable.length
+    )
         return null;
     const contributedFields = contributions
         .filter(
@@ -119,12 +126,13 @@ export async function openCreateEntryPopup({
             {
                 id: "cancel",
                 label: i18n.t("ui.reuse.cancel"),
-                variant: "neutral",
+                variant: "cancel",
             },
         ],
         onMount(overlay) {
             form = overlay.querySelector("[data-library-admin-editor]");
             builder.attach(form);
+            bindLibraryEditorControls(form, draft, i18n);
             const visibility = form.elements.scope;
             const classChoice = form.querySelector(
                 "[data-library-class-choice]",
@@ -137,7 +145,12 @@ export async function openCreateEntryPopup({
             updateClassChoice();
         },
     });
-    if (action !== "create" || !form?.reportValidity()) return null;
+    if (
+        action !== "create" ||
+        form?.querySelector('[data-uploading="true"]') ||
+        !form?.reportValidity()
+    )
+        return null;
     const scope = form.elements.scope.value;
     const scopeId =
         scope === "class"
@@ -173,7 +186,7 @@ export async function openCreateEntryPopup({
                 {
                     id: "cancel",
                     label: i18n.t("ui.reuse.cancel"),
-                    variant: "neutral",
+                    variant: "cancel",
                 },
             ],
         });

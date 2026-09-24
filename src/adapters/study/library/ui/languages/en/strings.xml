@@ -68,4 +68,11 @@
   <string name="gateway.study.library_publish_global">Publish globally</string>
   <string name="gateway.study.library_withdraw">Withdraw</string>
   <string name="gateway.study.library_send_back">Send back</string>
+  <string name="gateway.study.library_deselect_all">Deselect All</string>
+  <string name="gateway.study.library_requests_mine">My Requests</string>
+  <string name="gateway.study.library_requests_approved">Approved</string>
+  <string name="gateway.study.library_requests_rejected">Rejected</string>
+  <string name="gateway.study.library_requests_pending">Pending</string>
+  <string name="gateway.study.library_requests_review">For Review</string>
+  <string name="gateway.study.library_optional">Optional</string>
 </resources>

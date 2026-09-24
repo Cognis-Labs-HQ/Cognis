@@ -646,6 +646,8 @@ export class LibraryService implements LibraryCapability {
         )
             throw new Error("invalid_always_show_definition");
         const layer = findLayer(schema, input.layer);
+        if (layer.semanticRole === "atomicWritingUnit")
+            throw new Error("immutable_character_layer");
         if (layer.semanticRole === "definition") {
             input.hidden = true;
             input.class = "definition";
@@ -772,7 +774,10 @@ export class LibraryService implements LibraryCapability {
             throw new Error("invalid_always_show_definition");
         const schema = this.schema(input.schemaId, input.schemaVersion);
         const layer = findLayer(schema, input.layer);
-        if (layer.semanticRole === "particle")
+        if (
+            layer.semanticRole === "particle" ||
+            layer.semanticRole === "atomicWritingUnit"
+        )
             throw new Error("entry_not_editable");
         if (layer.semanticRole === "definition") {
             input.hidden = true;

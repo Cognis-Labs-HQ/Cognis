@@ -53,20 +53,21 @@ export async function mount(root, { signal } = {}) {
         fetchLibraryForms(),
     ]);
     const canCreate =
-        Boolean(layer?.cardConstructor) ||
-        formContributions.some(
-            (contribution) =>
-                contribution.schemaId === selectedLayer?.schemaId &&
-                contribution.layerId === selectedLayer?.layerId &&
-                contribution.cardConstructor,
-        );
+        layer?.semanticRole !== "atomicWritingUnit" &&
+        (Boolean(layer?.cardConstructor) ||
+            formContributions.some(
+                (contribution) =>
+                    contribution.schemaId === selectedLayer?.schemaId &&
+                    contribution.layerId === selectedLayer?.layerId &&
+                    contribution.cardConstructor,
+            ));
     const title = layer
         ? localizedLabel(layer.metadata, schema.language) || layer.id
         : i18n.t("gateway.study.library_label");
     applyDocumentTitle(i18n, "gateway.study.library_label");
     const composer = createPageComposer(root, {
         allowCustomization: false,
-        contentScrolling: false,
+        contentScrolling: true,
         elements: [
             {
                 id: "study-library-layer",

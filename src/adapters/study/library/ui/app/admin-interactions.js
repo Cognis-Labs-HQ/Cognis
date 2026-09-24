@@ -14,13 +14,13 @@ export function inputForField(field, value, language, i18n) {
     if (control === "audioFile") {
         const namespace = field.input?.file?.namespace ?? "";
         const prefix = field.input?.file?.prefix ?? `${language}/`;
-        return `<label class="library-audio-field" data-library-audio-field data-namespace="${escapeHtml(namespace)}" data-prefix="${escapeHtml(prefix)}"><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}"${field.required ? " required" : ""}><option value="${escapeHtml(value ?? "")}" selected>${escapeHtml(value ?? "")}</option></select><input type="file" accept="audio/mpeg,audio/ogg,audio/wav,audio/webm,audio/mp4"></label>`;
+        return `<label class="library-audio-field" data-library-audio-field data-namespace="${escapeHtml(namespace)}" data-prefix="${escapeHtml(prefix)}"><span>${escapeHtml(label)} (${escapeHtml(i18n.t("gateway.study.library_optional"))})</span><input name="${escapeHtml(name)}" type="hidden" value="${escapeHtml(value ?? "")}"><input type="file" accept="audio/mpeg,audio/ogg,audio/wav,audio/webm,audio/mp4"></label>`;
     }
     if (control === "singleSelect" || control === "multiSelect")
         return `<label><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}"${control === "multiSelect" ? " multiple" : ""}${field.input?.immutable ? " disabled" : ""}${field.required ? " required" : ""}>${options.map((option) => `<option value="${escapeHtml(option.value)}"${(Array.isArray(value) ? value.includes(option.value) : value === option.value) ? " selected" : ""}>${escapeHtml(localizedLabel(option.metadata, language))}</option>`).join("")}</select></label>`;
     const valueKind = field.validation?.kind ?? field.type;
     if (valueKind === "boolean")
-        return `<label class="library-admin-checkbox"><input name="${escapeHtml(name)}" type="checkbox"${value === true ? " checked" : ""}> <span>${escapeHtml(label)}</span></label>`;
+        return `<label class="library-admin-checkbox"><input name="${escapeHtml(name)}" type="checkbox" class="choice-checkbox"${value === true ? " checked" : ""}> <span>${escapeHtml(label)}</span></label>`;
     if (valueKind === "localizedText") {
         const translations =
             value && typeof value === "object" && !Array.isArray(value)
@@ -50,6 +50,84 @@ export function inputForField(field, value, language, i18n) {
     const step =
         field.type === "integer" || field.validation?.integer ? "1" : "any";
     return `<label><span>${escapeHtml(label)}</span><input name="${escapeHtml(name)}" type="${inputType}"${inputType === "number" ? ` step="${step}"` : ""} value="${escapeHtml(value ?? "")}"${field.required ? " required" : ""}${field.input?.immutable ? " disabled" : ""}></label>`;
+}
+
+export function bindLibraryEditorControls(form, entry, i18n) {
+    form.querySelectorAll("select[multiple]").forEach((select) => {
+        select.addEventListener("mousedown", (event) => {
+            if (event.target.tagName !== "OPTION") return;
+            event.preventDefault();
+            event.target.selected = !event.target.selected;
+            select.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+    });
+    form.querySelectorAll("[data-library-audio-field]").forEach((field) => {
+        const client = uiCtx.capabilities.get("files:uiClient");
+        const stored = field.querySelector('input[type="hidden"]');
+        const picker = field.querySelector('input[type="file"]');
+        if (!client) return;
+        picker.addEventListener("change", async () => {
+            const file = picker.files?.[0];
+            if (!file) return;
+            const identity =
+                String(form.elements.label?.value || entry.id)
+                    .normalize("NFKC")
+                    .toLocaleLowerCase()
+                    .replace(/[^\p{L}\p{N}]+/gu, "-")
+                    .replace(/^-|-$/g, "") || "card";
+            const key = `${field.dataset.prefix}${identity}-${entry.id || "new"}.audio`;
+            field.dataset.uploading = "true";
+            picker.disabled = true;
+            try {
+                await client.uploadAudio(field.dataset.namespace, key, file);
+                stored.value = `file:${key}`;
+                showToast(
+                    i18n.t("gateway.study.library_audio_upload_success"),
+                    {
+                        variant: "success",
+                    },
+                );
+            } catch {
+                showToast(i18n.t("gateway.study.library_audio_upload_error"), {
+                    variant: "error",
+                });
+            } finally {
+                delete field.dataset.uploading;
+                picker.disabled = false;
+            }
+        });
+    });
+    form.querySelectorAll("[data-library-tag-field]").forEach((field) => {
+        const input = field.querySelector("[data-library-tag-input]");
+        const hidden = field.querySelector('input[type="hidden"]');
+        const list = field.querySelector(".library-tag-list");
+        const values = () =>
+            Array.from(
+                list.querySelectorAll("[data-library-tag]"),
+                (tag) => tag.dataset.libraryTag,
+            );
+        list.addEventListener("click", (event) => {
+            const tag = event.target.closest("[data-library-tag]");
+            if (!tag) return;
+            tag.remove();
+            hidden.value = values().join("\u001f");
+        });
+        input.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter") return;
+            event.preventDefault();
+            event.stopPropagation();
+            const value = input.value.trim();
+            if (!value || values().includes(value)) return;
+            const tag = document.createElement("button");
+            tag.type = "button";
+            tag.className = "btn-neutral";
+            tag.dataset.libraryTag = value;
+            tag.textContent = `${value} ×`;
+            list.append(tag);
+            hidden.value = values().join("\u001f");
+            input.value = "";
+        });
+    });
 }
 
 function relationshipEditor(relationship, entry, entries, language) {
@@ -118,7 +196,7 @@ export function editorBody(
             includeSubmitButton: false,
             submitLabelKey: "ui.reuse.save",
             fields: [],
-            trustedContentHtml: `${label}${classField}${extraHtml}${fields}${relationships}${isDefinition || options.includeAlwaysShowDefinition === false ? '<input name="alwaysShowDefinition" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`}${isDefinition ? '<input name="hidden" type="hidden" value="true">' : options.includeHidden === false ? '<input name="hidden" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="hidden" type="checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}`,
+            trustedContentHtml: `${label}${classField}${extraHtml}${fields}${relationships}${isDefinition || options.includeAlwaysShowDefinition === false ? '<input name="alwaysShowDefinition" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox" class="choice-checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`}${isDefinition ? '<input name="hidden" type="hidden" value="true">' : options.includeHidden === false ? '<input name="hidden" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="hidden" type="checkbox" class="choice-checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}`,
         },
     );
     return { html: builder.render(), builder };
@@ -266,7 +344,7 @@ export function bindAdminLibraryInteractions(
                           {
                               id: "cancel",
                               label: i18n.t("ui.reuse.cancel"),
-                              variant: "neutral",
+                              variant: "cancel",
                           },
                       ],
                 onOpen: (overlay) => {
@@ -283,115 +361,7 @@ export function bindAdminLibraryInteractions(
                         return;
                     }
                     formController = editor.builder.attach(form);
-                    form.querySelectorAll("select[multiple]").forEach(
-                        (select) => {
-                            select.addEventListener("mousedown", (event) => {
-                                if (event.target.tagName !== "OPTION") return;
-                                event.preventDefault();
-                                event.target.selected = !event.target.selected;
-                                select.dispatchEvent(
-                                    new Event("change", { bubbles: true }),
-                                );
-                            });
-                        },
-                    );
-                    form.querySelectorAll("[data-library-audio-field]").forEach(
-                        async (field) => {
-                            const client =
-                                uiCtx.capabilities.get("files:uiClient");
-                            const select = field.querySelector("select");
-                            const picker =
-                                field.querySelector('input[type="file"]');
-                            if (!client) return;
-                            try {
-                                const files = await client.listNamespace(
-                                    field.dataset.namespace,
-                                    field.dataset.prefix,
-                                );
-                                const selected = select.value;
-                                select.innerHTML = files
-                                    .map(
-                                        ({ key }) =>
-                                            `<option value="file:${escapeHtml(key)}"${`file:${key}` === selected ? " selected" : ""}>${escapeHtml(key.slice(field.dataset.prefix.length))}</option>`,
-                                    )
-                                    .join("");
-                            } catch {
-                                showToast(
-                                    i18n.t(
-                                        "gateway.study.library_audio_list_error",
-                                    ),
-                                    { variant: "error" },
-                                );
-                            }
-                            picker.addEventListener("change", async () => {
-                                const file = picker.files?.[0];
-                                if (!file) return;
-                                const key = `${field.dataset.prefix}${crypto.randomUUID()}-${file.name.replace(/[^A-Za-z0-9._-]/g, "_")}`;
-                                try {
-                                    await client.uploadAudio(
-                                        field.dataset.namespace,
-                                        key,
-                                        file,
-                                    );
-                                    select.insertAdjacentHTML(
-                                        "beforeend",
-                                        `<option value="file:${escapeHtml(key)}" selected>${escapeHtml(file.name)}</option>`,
-                                    );
-                                    showToast(
-                                        i18n.t(
-                                            "gateway.study.library_audio_upload_success",
-                                        ),
-                                        { variant: "success" },
-                                    );
-                                } catch {
-                                    showToast(
-                                        i18n.t(
-                                            "gateway.study.library_audio_upload_error",
-                                        ),
-                                        { variant: "error" },
-                                    );
-                                }
-                            });
-                        },
-                    );
-                    form.querySelectorAll("[data-library-tag-field]").forEach(
-                        (field) => {
-                            const input = field.querySelector(
-                                "[data-library-tag-input]",
-                            );
-                            const hidden = field.querySelector(
-                                'input[type="hidden"]',
-                            );
-                            const list =
-                                field.querySelector(".library-tag-list");
-                            const values = () =>
-                                Array.from(
-                                    list.querySelectorAll("[data-library-tag]"),
-                                    (tag) => tag.dataset.libraryTag,
-                                );
-                            list.addEventListener("click", (event) => {
-                                const tag =
-                                    event.target.closest("[data-library-tag]");
-                                if (!tag) return;
-                                tag.remove();
-                                hidden.value = values().join("\u001f");
-                            });
-                            input.addEventListener("keydown", (event) => {
-                                if (event.key !== "Enter") return;
-                                event.preventDefault();
-                                const value = input.value.trim();
-                                if (!value || values().includes(value)) return;
-                                const tag = document.createElement("button");
-                                tag.type = "button";
-                                tag.className = "btn-neutral";
-                                tag.dataset.libraryTag = value;
-                                tag.textContent = `${value} ×`;
-                                list.append(tag);
-                                hidden.value = values().join("\u001f");
-                                input.value = "";
-                            });
-                        },
-                    );
+                    bindLibraryEditorControls(form, entry, i18n);
                 },
                 onAction: async (action, overlay) => {
                     if (readOnly) return true;
@@ -400,6 +370,7 @@ export function bindAdminLibraryInteractions(
                         "[data-library-admin-editor]",
                     );
                     if (
+                        form.querySelector('[data-uploading="true"]') ||
                         !formController?.validateAll(true) ||
                         !form.checkValidity()
                     ) {

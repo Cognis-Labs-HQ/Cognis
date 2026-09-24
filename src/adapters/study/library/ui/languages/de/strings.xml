@@ -68,4 +68,11 @@
   <string name="gateway.study.library_publish_global">Global veröffentlichen</string>
   <string name="gateway.study.library_withdraw">Zurückziehen</string>
   <string name="gateway.study.library_send_back">Zurücksenden</string>
+  <string name="gateway.study.library_deselect_all">Auswahl aufheben</string>
+  <string name="gateway.study.library_requests_mine">Meine Anfragen</string>
+  <string name="gateway.study.library_requests_approved">Genehmigt</string>
+  <string name="gateway.study.library_requests_rejected">Abgelehnt</string>
+  <string name="gateway.study.library_requests_pending">Ausstehend</string>
+  <string name="gateway.study.library_requests_review">Zur Prüfung</string>
+  <string name="gateway.study.library_optional">Optional</string>
 </resources>

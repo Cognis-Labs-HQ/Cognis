@@ -743,6 +743,21 @@ test("writing-unit layers require pronunciation and audio fields", () => {
     assert.doesNotThrow(() =>
         validateLibrarySchema({ ...english, layers: [writingLayer] }),
     );
+    assert.doesNotThrow(() =>
+        validateLibrarySchema({
+            ...english,
+            layers: [
+                {
+                    ...writingLayer,
+                    fields: writingLayer.fields.map((field) =>
+                        field.id === "audio"
+                            ? { ...field, required: false }
+                            : field,
+                    ),
+                },
+            ],
+        }),
+    );
     assert.throws(
         () =>
             validateLibrarySchema({

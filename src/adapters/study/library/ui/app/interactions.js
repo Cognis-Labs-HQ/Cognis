@@ -133,8 +133,8 @@ export function bindLibraryInteractions(root, context) {
         "click",
         (event) => {
             if (event.target.closest("[data-library-select-all]")) {
-                selectAllVisibleEntries(root);
-                updateSelectionActions(root, entries, requests, locations);
+                if (selectAllVisibleEntries(root))
+                    updateSelectionActions(root, entries, requests, locations);
                 return;
             }
             if (event.target.closest("[data-library-delete-selection]")) {
@@ -217,6 +217,9 @@ export function bindLibraryInteractions(root, context) {
         },
         { signal },
     );
+    signal?.addEventListener("abort", () => setSelectionMode(root, false), {
+        once: true,
+    });
 
     async function deleteSelection() {
         const request = await confirmEntryDeletion(

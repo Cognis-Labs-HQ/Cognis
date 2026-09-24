@@ -148,7 +148,7 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(stylesheet, /\.library-entry-grid/);
     assert.match(source, /layer\.minimal/);
     assert.match(source, /library-entry-grid--minimal/);
-    assert.match(source, /contentScrolling: false/);
+    assert.match(source, /contentScrolling: true/);
     assert.match(source, /library-entry-minimal-content/);
     assert.match(source, /library-card-pronunciation/);
     assert.match(
@@ -404,7 +404,10 @@ test("Study Library administration exposes contract-safe editing", () => {
     );
     assert.match(adminInteractionsSource, /id: "save"/);
     assert.match(adminInteractionsSource, /closeProtection: !readOnly/);
-    assert.match(source, /layer\.semanticRole === "particle"/);
+    assert.match(
+        source,
+        /\["particle", "atomicWritingUnit"\]\.includes\(layer\.semanticRole\)/,
+    );
 });
 
 test("Study Library renders metadata and scope indicators", () => {
@@ -750,6 +753,9 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.doesNotMatch(source, /if \(!entries\.some\(canDeleteEntry\)\)/);
     assert.match(source, /if \(entries\.length === 0\) return \[\]/);
     assert.match(source, /data-library-select-all/);
+    assert.match(source, /gateway\.study\.library_deselect_all/);
+    assert.match(source, /function allVisibleEntriesSelected/);
+    assert.match(source, /setSelectionMode\(root, false\)/);
     assert.doesNotMatch(source, /data-library-selection-close/);
     assert.match(source, /data-library-publish-menu/);
     assert.match(source, /data-library-publish="class"/);

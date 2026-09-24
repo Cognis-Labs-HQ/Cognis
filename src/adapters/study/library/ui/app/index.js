@@ -89,7 +89,7 @@ export async function mount(root, { signal } = {}) {
     });
     const composer = createPageComposer(root, {
         allowCustomization: false,
-        contentScrolling: false,
+        contentScrolling: true,
         elements: [
             {
                 id: "study-library",

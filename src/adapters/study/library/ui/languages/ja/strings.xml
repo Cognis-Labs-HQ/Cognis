@@ -68,4 +68,11 @@
   <string name="gateway.study.library_publish_global">グローバルに公開</string>
   <string name="gateway.study.library_withdraw">取り下げ</string>
   <string name="gateway.study.library_send_back">差し戻す</string>
+  <string name="gateway.study.library_deselect_all">すべて選択解除</string>
+  <string name="gateway.study.library_requests_mine">自分のリクエスト</string>
+  <string name="gateway.study.library_requests_approved">承認済み</string>
+  <string name="gateway.study.library_requests_rejected">却下済み</string>
+  <string name="gateway.study.library_requests_pending">保留中</string>
+  <string name="gateway.study.library_requests_review">要確認</string>
+  <string name="gateway.study.library_optional">任意</string>
 </resources>
