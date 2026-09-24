@@ -515,8 +515,24 @@ export class LibraryService implements LibraryCapability {
             entries.map(async (entry) => ({
                 ...entry,
                 canDelete: await this.canDelete(actor, entry),
+                ...this.editPermission(actor, entry),
             })),
         );
+    }
+
+    private editPermission(actor: LibraryActor, entry: LibraryEntry) {
+        const administrator = actor.role === "admin" || actor.role === "owner";
+        const owned =
+            entry.createdBy === actor.accountId ||
+            (entry.scope === "user" && entry.scopeId === actor.accountId);
+        if (administrator && entry.scope === "global")
+            return { canEdit: true, editRequiresReview: false };
+        if (!owned || entry.protected || entry.editable === false)
+            return { canEdit: false, editRequiresReview: false };
+        return {
+            canEdit: true,
+            editRequiresReview: entry.scope === "global",
+        };
     }
 
     private async canDelete(
@@ -767,7 +783,11 @@ export class LibraryService implements LibraryCapability {
     ): Promise<LibraryEntry> {
         const current = await this.read(actor, entryId);
         if (!current) throw new Error("entry_not_found");
-        if (current.protected || current.editable === false)
+        if (
+            (current.protected || current.editable === false) &&
+            actor.role !== "admin" &&
+            actor.role !== "owner"
+        )
             throw new Error("entry_not_editable");
         await this.authorize(
             actor,
@@ -796,11 +816,6 @@ export class LibraryService implements LibraryCapability {
             throw new Error("invalid_always_show_definition");
         const schema = this.schema(input.schemaId, input.schemaVersion);
         const layer = findLayer(schema, input.layer);
-        if (
-            layer.semanticRole === "particle" ||
-            layer.semanticRole === "atomicWritingUnit"
-        )
-            throw new Error("entry_not_editable");
         if (layer.semanticRole === "definition") {
             input.hidden = true;
             input.class = "definition";

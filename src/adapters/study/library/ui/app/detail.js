@@ -113,10 +113,12 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
                       ];
             }),
     );
-    const classPill =
-        entry.class && entry.class !== "composite"
-            ? `<span class="library-metadata-pill library-content-class-pill">${escapeHtml(contentClassLabel(entry.class))}</span>`
-            : "";
+    const displayedClass =
+        entry.class ||
+        (layer?.semanticRole === "orderedLexicalSequence" ? "composite" : "");
+    const classPill = displayedClass
+        ? `<span class="library-metadata-pill library-content-class-pill">${escapeHtml(contentClassLabel(displayedClass))}</span>`
+        : "";
     return [
         `<header class="library-detail-summary">${renderAudio(entry, layer)}<div class="library-entry-indicators">${classPill}${renderMetadataPills(entry, layer)}</div></header>`,
         options.showReferenceTree ? relationTree(references, usedBy, i18n) : "",

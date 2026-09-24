@@ -404,8 +404,11 @@ test("Study Library separates admin and user-facing editing", () => {
         source,
         /if \(event\.target\.closest\("\.library-admin-entry-row"\)\) return/,
     );
-    assert.match(source, /function userFacingEditMode/);
+    assert.match(source, /function entryEditMode/);
+    assert.match(source, /entry\.canEdit !== true/);
     assert.match(source, /headerActions: editMode/);
+    assert.match(source, /data-library-entry-edit/);
+    assert.match(stylesheet, /\.library-entry-preview-edit/);
     assert.match(source, /requestLibraryUpdate/);
     assert.match(source, /requestUpdate: editMode === "request"/);
 });
@@ -423,10 +426,7 @@ test("Study Library administration exposes contract-safe editing", () => {
     );
     assert.match(adminInteractionsSource, /id: "save"/);
     assert.match(adminInteractionsSource, /closeProtection: !readOnly/);
-    assert.match(
-        source,
-        /\["particle", "atomicWritingUnit"\]\.includes\(layer\.semanticRole\)/,
-    );
+    assert.match(source, /data-library-admin-edit/);
 });
 
 test("Study Library renders metadata and scope indicators", () => {
@@ -434,7 +434,7 @@ test("Study Library renders metadata and scope indicators", () => {
     assert.match(source, /class="library-metadata-pill"/);
     assert.match(source, /class="library-scope"/);
     assert.match(source, /contentClassLabel/);
-    assert.match(source, /entry\.class !== "composite"/);
+    assert.match(source, /semanticRole === "orderedLexicalSequence"/);
     assert.match(source, /library-content-class-pill/);
     assert.match(source, /visibleRelatedWords/);
     assert.match(source, /function uniqueRelatedEntries/);
@@ -509,7 +509,7 @@ test("Study Library unfolds structured character variants", () => {
     );
     assert.match(
         source,
-        /if \(closeUnrelatedVariantViews\(root, control\)\) return/,
+        /if \([\s\S]*!previewEdit &&[\s\S]*closeUnrelatedVariantViews\(root, control\)[\s\S]*\)[\s\S]*return/,
     );
     assert.match(source, /control === parentControl/);
     assert.doesNotMatch(source, /relationship\.variantDirection/);

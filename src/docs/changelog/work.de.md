@@ -34,9 +34,13 @@ Jede benutzerseitige Ebene außer der Zeichenebene stellt nun die Erstellen-Akti
 ## Deaktivierte Sprachanbieter verschwinden sofort
 Study schneidet gespeicherte Lernsprachen jetzt vor der Darstellung von Einstellungen, Übersichtskarten, Suchgruppen und Unterseiten mit der aktuellen Liste aktivierter Anbieter des Gateways. Ein deaktivierter Anbieter verschwindet damit aus „Aktive Sprachen“ und der Study-Übersicht, ohne die gespeicherte Auswahl zu löschen, sodass er nach erneuter Aktivierung automatisch zurückkehrt.
 
+## Sichtbare Klassen- und Bearbeitungssteuerung
+Details zusammengesetzter Einträge und geordneter Sätze zeigen nun stets eine verständliche Klassenmarkierung; ältere Datensätze ohne gespeicherte Klasse erhalten „Composite“ als Rückfallwert. Die Bibliotheksverwaltung zeigt für jeden sichtbaren Datensatz wieder eine Bearbeitungsschaltfläche und erlaubt Administratoren dort auch die Bearbeitung anbieterverwalteter Inhalte. Lernkarten zeigen bei serverseitig erteilter Berechtigung eine Bearbeitungsaktion; zulässige Detaildialoge bieten dieselbe Aktion oben rechts. Serverseitige Berechtigungshinweise halten globale Administratorbearbeitung, Eigentümerbearbeitung und prüfpflichtige Autorenänderungen konsistent, ohne sich auf veraltete Browser-Rollen zu verlassen.
+
 ## Commits
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0c9c4e376ffde5af485772367430d3122b589b0e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/32ca0df41b363566394ac0d4026ec73ed53ce9ae
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a66d08376445e937ea0e57d64c5975c9c02ed504
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/800b1809b0378fcf6aaa480461d0e22b703c2ca4
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ea81a944257040a042c1d0c0c9b2447768390221

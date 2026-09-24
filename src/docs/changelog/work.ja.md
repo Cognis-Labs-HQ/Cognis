@@ -34,9 +34,13 @@ Library 画面でページコンポーザーの自然スクロールを有効に
 ## 無効化された言語プロバイダーを即時非表示
 Study は、設定、ダッシュボードカード、検索グループ、子ページを描画する前に、保存済みの学習言語設定をゲートウェイの現在有効なプロバイダー一覧と照合します。無効化されたプロバイダーは保存設定を削除せずに「有効な言語」と Study ダッシュボードの両方から消え、管理者が再度有効化すると自然に復元されます。
 
+## クラス表示と編集操作を常に確認可能に
+複合項目と順序付き文の詳細には、読みやすいクラスピルを常に表示します。保存済みクラスがない旧データには「Composite」を補完します。Library 管理画面では表示中の全レコードに編集操作を復元し、管理者はプロバイダー管理レコードも編集できます。学習カードにはサーバーがユーザー向け編集を許可した場合に編集操作を表示し、対象の詳細ポップアップにも右上へ同じ操作を表示します。サーバー由来の権限情報により、管理者のグローバル編集、所有者編集、レビューが必要な作者更新を、古いブラウザー内ロール状態に依存せず一貫して扱います。
+
 ## コミット
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0c9c4e376ffde5af485772367430d3122b589b0e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/32ca0df41b363566394ac0d4026ec73ed53ce9ae
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a66d08376445e937ea0e57d64c5975c9c02ed504
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/800b1809b0378fcf6aaa480461d0e22b703c2ca4
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ea81a944257040a042c1d0c0c9b2447768390221

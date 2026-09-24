@@ -209,6 +209,10 @@ export interface LibraryEntry extends LibraryEntryInput {
     protected: boolean;
     /** Request-scoped permission hint; never persisted. */
     canDelete?: boolean;
+    /** Request-scoped user-facing edit permission; never persisted. */
+    canEdit?: boolean;
+    /** Whether a permitted edit must be reviewed before application. */
+    editRequiresReview?: boolean;
 }
 
 export interface LibraryLocation {
