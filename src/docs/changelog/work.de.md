@@ -31,8 +31,12 @@ Verwaltungszeilen öffnen nur noch den Verwaltungseditor und behalten ihre unabh
 ## Verfügbarkeit der Erstellen-Aktion
 Jede benutzerseitige Ebene außer der Zeichenebene stellt nun die Erstellen-Aktion bereit. Fehlt ein spezieller Anbieter-Constructor, wird ein generischer schemagesteuerter Constructor verwendet.
 
+## Deaktivierte Sprachanbieter verschwinden sofort
+Study schneidet gespeicherte Lernsprachen jetzt vor der Darstellung von Einstellungen, Übersichtskarten, Suchgruppen und Unterseiten mit der aktuellen Liste aktivierter Anbieter des Gateways. Ein deaktivierter Anbieter verschwindet damit aus „Aktive Sprachen“ und der Study-Übersicht, ohne die gespeicherte Auswahl zu löschen, sodass er nach erneuter Aktivierung automatisch zurückkehrt.
+
 ## Commits
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0c9c4e376ffde5af485772367430d3122b589b0e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/32ca0df41b363566394ac0d4026ec73ed53ce9ae
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a66d08376445e937ea0e57d64c5975c9c02ed504
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/800b1809b0378fcf6aaa480461d0e22b703c2ca4

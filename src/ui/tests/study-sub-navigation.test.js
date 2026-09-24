@@ -131,6 +131,22 @@ test("Study pages redirect to the unavailable page without valid languages", () 
     );
 });
 
+test("Study hub hides saved languages whose provider is disabled", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/study.js"),
+        "utf8",
+    );
+    assert.match(source, /const registeredLanguageCodes = new Set/);
+    assert.match(
+        source,
+        /storedLearningLanguages\.filter\(\(languageCode\) =>[\s\S]*registeredLanguageCodes\.has\(languageCode\)/,
+    );
+    assert.doesNotMatch(
+        source,
+        /for \(const languageCode of languageModulesMap\.keys\(\)\)/,
+    );
+});
+
 test("Study child loader delegates hub paths after a direct refresh", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/study/ui/route.js"),

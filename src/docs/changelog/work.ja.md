@@ -31,8 +31,12 @@ Library 画面でページコンポーザーの自然スクロールを有効に
 ## 作成操作の表示
 文字レイヤー以外のすべてのユーザー向けレイヤーに作成操作を表示します。プロバイダー固有のコンストラクターがない場合は、スキーマに基づく汎用コンストラクターを使用します。
 
+## 無効化された言語プロバイダーを即時非表示
+Study は、設定、ダッシュボードカード、検索グループ、子ページを描画する前に、保存済みの学習言語設定をゲートウェイの現在有効なプロバイダー一覧と照合します。無効化されたプロバイダーは保存設定を削除せずに「有効な言語」と Study ダッシュボードの両方から消え、管理者が再度有効化すると自然に復元されます。
+
 ## コミット
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0c9c4e376ffde5af485772367430d3122b589b0e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/32ca0df41b363566394ac0d4026ec73ed53ce9ae
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a66d08376445e937ea0e57d64c5975c9c02ed504
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/800b1809b0378fcf6aaa480461d0e22b703c2ca4
