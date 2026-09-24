@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
     distinctPronunciationLabels,
+    excludeTitleReferenceDuplicates,
     resolveLabelComposition,
 } from "../ui/app/composition-links.js";
 
@@ -85,5 +86,25 @@ test("title pronunciations do not duplicate primary or secondary spellings", () 
             ["ひと"],
         ),
         ["じん", "にん"],
+    );
+});
+
+test("title detail omits links already composing the primary title", () => {
+    const kana = { id: "kana-ka", label: "か" };
+    const otherKana = { id: "kana-ga", label: "が" };
+
+    assert.deepEqual(
+        excludeTitleReferenceDuplicates(
+            [[kana], [otherKana]],
+            [{ id: "kana-ka", label: " か " }],
+        ),
+        [[otherKana]],
+    );
+    assert.deepEqual(
+        excludeTitleReferenceDuplicates(
+            [[kana]],
+            [{ id: "different-target", label: "か" }],
+        ),
+        [[kana]],
     );
 });

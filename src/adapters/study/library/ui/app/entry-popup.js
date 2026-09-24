@@ -85,6 +85,7 @@ export async function openEntryPopup(
             schemas,
             composed.titleDefinition,
             sourceDefinition,
+            titleReferences,
         );
         const displayedDefinition = titleDefinitionForRole(
             layer?.semanticRole,

@@ -112,7 +112,7 @@ Ein Sprachmodul kann alternativ die öffentliche ctx-Fähigkeit `study:library:p
 
 Bei geordneten lexikalischen Sequenzen tragen nur Beziehungen mit `presentationRole: composition` (oder ohne Rolle bei älteren Kompositionsbeziehungen) zur Rekonstruktion der Beschriftung bei. Aussprache- und alternative Schreibweisen dürfen auf lexikalische Ebenen verweisen und Positionen wiederverwenden, ohne als Satzbestandteile behandelt zu werden.
 
-Detailansichten blenden die Klasse `composite` aus. Andere Inhaltsklassen werden auf ihr lesbares letztes Segment reduziert und als Pills dargestellt (zum Beispiel wird `lexical:noun` zu **Noun**). Zusammengesetzte Überschriften zeigen alternative Lesungen und Aussprache unter der primären Lesung, während die Definition in der benachbarten Spalte bleibt. Die umgekehrte Vokabelnavigation unterdrückt lexikalische Einträge mit identischer Beschriftung, damit eine korrekte Wort-zu-Schriftzeichen-Beziehung nicht wie eine Rekursion wirkt.
+Detailansichten blenden die Klasse `composite` aus. Andere Inhaltsklassen werden auf ihr lesbares letztes Segment reduziert und als Pills dargestellt (zum Beispiel wird `lexical:noun` zu **Noun**). Zusammengesetzte Überschriften zeigen alternative Lesungen und Aussprache unter der primären Lesung, während die Definition in der benachbarten Spalte bleibt. Die umgekehrte Vokabelnavigation unterdrückt lexikalische Einträge mit identischer Beschriftung, damit eine korrekte Wort-zu-Schriftzeichen-Beziehung nicht wie eine Rekursion wirkt. Eine verknüpfte Schreibweise im Titeldetail wird ebenfalls ausgelassen, wenn sowohl ihr normalisierter Text als auch ihr Ziel mit einem Link übereinstimmen, der bereits den Haupttitel zusammensetzt.
 
 ## Vertrag für externe Pakete
 

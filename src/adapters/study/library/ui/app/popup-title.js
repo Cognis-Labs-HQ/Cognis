@@ -5,6 +5,7 @@ import {
 } from "./presentation.js";
 import {
     distinctPronunciationLabels,
+    excludeTitleReferenceDuplicates,
     resolveLabelComposition,
 } from "./composition-links.js";
 import { visibleTitleDefinition } from "./title-definition.js";
@@ -69,9 +70,13 @@ export function popupTitleDetailItems(
     schemas,
     titleDefinition,
     sourceDefinition = "",
+    titleReferences = [],
 ) {
     const layer = layerForEntry(schemas, detail.entry);
-    const spellingGroups = secondarySpellingGroups(detail, schemas);
+    const spellingGroups = excludeTitleReferenceDuplicates(
+        secondarySpellingGroups(detail, schemas),
+        titleReferences,
+    );
     const spellingLabels = new Set(
         spellingGroups.map((group) =>
             group.map((entry) => entry.label).join(""),

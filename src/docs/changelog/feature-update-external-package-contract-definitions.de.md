@@ -82,6 +82,10 @@ Die Study Library hält ihr schwebendes Aktionsmenü nun immer bereit, wenn Kart
 
 Deaktivierte Sprachmodule fehlen nun vollständig in Study, selbst wenn während der Lebenszyklusaktualisierung vorübergehend eine veraltete Anbieter-Capability verbleibt. Inhaltsaktualisierungen behalten den Status angesehener Einträge bei und benachrichtigen Konten nur über tatsächlich neue stabile Datensätze statt erneut über das gesamte Paket.
 
+## Deduplizierte verknüpfte Titeldetails
+
+Library-Detailüberschriften vergleichen nun normalisierten Text und Linkziele zwischen Haupttitel und sekundären Schreibweisendetails. Eine bereits im Haupttitel verknüpfte Schreibweise wird aus der Detailzeile entfernt, ohne gleichlautende Links zu tatsächlich anderen Datensätzen zu unterdrücken.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -104,3 +108,4 @@ Deaktivierte Sprachmodule fehlen nun vollständig in Study, selbst wenn während
 - [d3ba08ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3ba08ef)
 - [6d6e4e53](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d6e4e53)
 - [5f8b129c](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f8b129c)
+- [9c374e3f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c374e3f)

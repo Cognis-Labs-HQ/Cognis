@@ -309,6 +309,15 @@ test("Study Library integrates definitions and particles into item details", () 
         /const pronunciationItems = distinctPronunciationLabels\([\s\S]*\{ label \}/,
     );
     assert.match(source, /const spellingItems = spellingGroups\.flatMap/);
+    assert.match(source, /function excludeTitleReferenceDuplicates/);
+    assert.match(
+        source,
+        /excludeTitleReferenceDuplicates\([\s\S]*secondarySpellingGroups/,
+    );
+    assert.match(
+        source,
+        /popupTitleDetailItems\([\s\S]*sourceDefinition,[\s\S]*titleReferences/,
+    );
     assert.match(source, /const titleDetailItems = popupTitleDetailItems/);
     assert.match(source, /detail\.entry\.class === "composite"/);
     assert.match(source, /placement:[\s\S]*"definition"/);

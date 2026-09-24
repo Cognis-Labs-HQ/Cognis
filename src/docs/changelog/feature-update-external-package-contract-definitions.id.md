@@ -82,6 +82,10 @@ Study Library kini selalu menyediakan menu tindakan mengambang ketika kartu dapa
 
 Modul bahasa yang dinonaktifkan kini sepenuhnya tidak muncul di Study meskipun capability penyedia lama masih tersisa selama penyegaran siklus hidup. Pembaruan paket konten mempertahankan pelacakan entri yang telah dilihat dan hanya memberi tahu akun tentang rekaman stabil yang benar-benar baru, bukan seluruh paket lagi.
 
+## Detail judul bertaut tanpa duplikasi
+
+Judul detail Library kini membandingkan teks ternormalisasi dan tujuan tautan antara judul utama dan detail ejaan sekundernya. Ejaan yang sudah ditautkan dalam judul utama dihilangkan dari baris detail tanpa menyembunyikan tautan berteks sama menuju rekaman yang benar-benar berbeda.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -104,3 +108,4 @@ Modul bahasa yang dinonaktifkan kini sepenuhnya tidak muncul di Study meskipun c
 - [d3ba08ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3ba08ef)
 - [6d6e4e53](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d6e4e53)
 - [5f8b129c](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f8b129c)
+- [9c374e3f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c374e3f)

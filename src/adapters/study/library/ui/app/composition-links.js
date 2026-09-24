@@ -60,6 +60,21 @@ function normalizedLabel(value) {
     return String(value).trim().normalize();
 }
 
+function entryLinkKey(entry) {
+    return `${entry.id}\u0000${normalizedLabel(entry.label)}`;
+}
+
+export function excludeTitleReferenceDuplicates(groups, titleReferences) {
+    const titleReferenceKeys = new Set(titleReferences.map(entryLinkKey));
+    return groups
+        .map((group) =>
+            group.filter(
+                (entry) => !titleReferenceKeys.has(entryLinkKey(entry)),
+            ),
+        )
+        .filter((group) => group.length > 0);
+}
+
 export function distinctPronunciationLabels(entry, secondaryLabels = []) {
     const blocked = new Set(
         [entry.label, ...secondaryLabels].map(normalizedLabel),

@@ -82,6 +82,10 @@ Study Library now keeps its floating action menu available whenever cards can en
 
 Disabled language modules are now absent from Study even if a stale provider capability remains during lifecycle refresh. Content-pack updates preserve viewed-entry tracking and notify accounts only for genuinely new stable records instead of announcing the full pack again.
 
+## Deduplicated linked title details
+
+Library detail headings now compare normalized text and link targets across the primary title and its secondary spelling details. A spelling already linked in the primary title is omitted from the detail line without suppressing same-text links to genuinely different records.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -104,3 +108,4 @@ Disabled language modules are now absent from Study even if a stale provider cap
 - [d3ba08ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3ba08ef)
 - [6d6e4e53](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d6e4e53)
 - [5f8b129c](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f8b129c)
+- [9c374e3f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c374e3f)
