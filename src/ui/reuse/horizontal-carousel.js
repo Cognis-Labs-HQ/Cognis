@@ -44,7 +44,18 @@ export function mountHorizontalCarousels(
     const previewOverlay = createAnchoredPopup({
         className: "horizontal-carousel-preview is-portal",
     });
-    const hidePreview = () => previewOverlay.hide();
+    const hidePreview = (event) => {
+        const trigger = event?.target?.closest?.(
+            ".horizontal-carousel-item, .library-composer-suggestion",
+        );
+        if (
+            trigger &&
+            event.relatedTarget instanceof Node &&
+            trigger.contains(event.relatedTarget)
+        )
+            return;
+        previewOverlay.hide();
+    };
     const showPreview = (trigger) => {
         const preview = trigger.querySelector(".horizontal-carousel-preview");
         if (!preview) return;

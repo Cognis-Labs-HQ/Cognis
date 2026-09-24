@@ -148,7 +148,13 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(stylesheet, /\.library-entry-grid/);
     assert.match(source, /layer\.minimal/);
     assert.match(source, /library-entry-grid--minimal/);
-    assert.match(source, /contentScrolling: true/);
+    for (const pageSource of [
+        indexSource,
+        layerPageSource,
+        requestsPageSource,
+    ]) {
+        assert.match(pageSource, /contentScrolling: false/);
+    }
     assert.match(source, /library-entry-minimal-content/);
     assert.match(source, /library-card-pronunciation/);
     assert.match(
@@ -402,6 +408,9 @@ test("Study Library creation offers ordered, recursive composition", () => {
     assert.match(source, /relationshipCarousels: true/);
     assert.match(source, /data-library-composer-text/);
     assert.match(source, /await openCreateEntryPopup\(/);
+    assert.match(source, /layerId: relationship\.targetLayer/);
+    assert.match(source, /library_create_typed/);
+    assert.match(source, /\.replace\("\{type\}", cardType\)/);
     assert.match(source, /library_composer_no_match/);
     assert.match(stylesheet, /library-composer-suggestions/);
     assert.match(source, /data-library-composition-blocks/);
@@ -410,6 +419,10 @@ test("Study Library creation offers ordered, recursive composition", () => {
     assert.match(source, /label\.trim\(\)\.normalize\("NFKC"\)/);
     assert.doesNotMatch(source, /function inferRelationships/);
     assert.match(source, /library-composition-input/);
+    assert.match(
+        stylesheet,
+        /\.library-entry-card\s*\{[\s\S]*height:\s*7\.5rem/,
+    );
     assert.match(source, /data-library-add-definition/);
     assert.match(adminInteractionsSource, /library-relationship-map/);
     assert.match(adminInteractionsSource, /data-library-definition-empty/);

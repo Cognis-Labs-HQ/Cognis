@@ -63,7 +63,7 @@ export async function mount(root, { signal } = {}) {
     applyDocumentTitle(i18n, "gateway.study.library_label");
     const composer = createPageComposer(root, {
         allowCustomization: false,
-        contentScrolling: true,
+        contentScrolling: false,
         elements: [
             {
                 id: "study-library-layer",

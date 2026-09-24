@@ -95,13 +95,7 @@ export async function openCreateEntryPopup({
                   defaults: {},
               }
             : null);
-    if (
-        !schema ||
-        !layer ||
-        layer.semanticRole === "atomicWritingUnit" ||
-        !constructor ||
-        !access.writable.length
-    )
+    if (!schema || !layer || !constructor || !access.writable.length)
         return null;
     const contributedFields = contributions
         .filter(
@@ -180,8 +174,12 @@ export async function openCreateEntryPopup({
         },
     );
     let form;
+    const cardType =
+        localizedLabel(layer.metadata, schema.language) || layer.id;
     const action = await openPopup({
-        title: i18n.t("gateway.study.library_create"),
+        title: i18n
+            .t("gateway.study.library_create_typed")
+            .replace("{type}", cardType),
         body: html,
         maxWidth: "min(72rem, 96vw)",
         closeProtection: true,

@@ -86,6 +86,10 @@ Karusel hubungan kini menempati tepat dua baris yang bergulir vertikal dan prati
 
 Karusel dua baris kini bergulir horizontal, data goresan tidak tampil dalam detail kartu, dan mode menggambar menutup dialog asal. Aset gambar serta warna papan yang sesuai tema meningkatkan kontras. PiP yang diskalakan memuat seluruh kanvas dan kontrol, sedangkan penilaian jalur dengan sampel ulang seragam mendukung karakter kompleks dan menyesuaikan panduan otomatis dari tingkat keberhasilan serta umpan balik kesulitan.
 
+## Pengguliran Library dan pembuatan bersarang
+
+Halaman Study Library kini menggunakan pengguliran dokumen alami dan ukuran pratinjau kartu yang konsisten. Pratinjau karusel tetap mengikuti ukuran konten dan menghilang dengan benar, sementara setiap kontrol tambah membuka komposer bersarang yang bertumpuk dengan benar, bertipe terkunci, dan menampilkan tipe kartu pada judulnya. Tindakan buat utama kini memakai gaya standar pengalih tema dan pemilih bahasa.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -105,3 +109,4 @@ Karusel dua baris kini bergulir horizontal, data goresan tidak tampil dalam deta
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d597603b3b1faf6df9d5c7a98973362312236d9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/61002cd2578510ff6d823b8ebb454364e2c930cd
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e8dac803472e1dfc8a5bb2acf3082da88dad8a05
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/a6aa6fe85403331903570c9cd20f115ea48576be

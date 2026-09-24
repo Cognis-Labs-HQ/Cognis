@@ -425,6 +425,9 @@ export async function openPopup({
     return new Promise((resolve) => {
         const overlay = document.createElement("div");
         overlay.className = "popup-overlay";
+        overlay.style.zIndex = String(
+            2000 + document.querySelectorAll(".popup-overlay").length * 10,
+        );
         overlay.setAttribute("role", "dialog");
         overlay.setAttribute("aria-modal", "true");
         overlay.setAttribute("aria-labelledby", "popup-title");

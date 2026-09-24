@@ -30,4 +30,5 @@ test("horizontal carousel mounting uses a body-level preview portal", () => {
     assert.match(mountHorizontalCarousels.toString(), /createAnchoredPopup/);
     assert.match(mountHorizontalCarousels.toString(), /is-portal/);
     assert.match(mountHorizontalCarousels.toString(), /previewOverlay\.show/);
+    assert.match(mountHorizontalCarousels.toString(), /relatedTarget/);
 });

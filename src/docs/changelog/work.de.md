@@ -86,6 +86,10 @@ Beziehungskarussells belegen jetzt genau zwei vertikal scrollende Zeilen, und Ho
 
 Zweizeilige Karussells scrollen nun horizontal, Strichdaten bleiben aus Kartendetails ausgeblendet und das Zeichnen schließt den Ausgangsdialog. Themengerechte Zeichen-Assets und Feldfarben verbessern den Kontrast. Das skalierte PiP umfasst Zeichenfläche und Steuerungen vollständig; eine gleichmäßige Pfad-Neuabtastung unterstützt komplexe Zeichen und passt die Hilfe automatisch anhand Erfolgsquote und Schwierigkeitsrückmeldung an.
 
+## Library-Bildlauf und verschachtelte Erstellung
+
+Study-Library-Seiten verwenden jetzt den natürlichen Dokumentbildlauf und einheitlich große Kartenvorschauen. Karussellvorschauen bleiben an ihre Inhalte angepasst und verschwinden zuverlässig, während jede Hinzufügen-Aktion einen korrekt gestapelten, typgebundenen Editor mit dem Kartentyp im Titel öffnet. Die primäre Erstellen-Aktion verwendet nun den Standardstil der Design- und Sprachauswahl.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -105,3 +109,4 @@ Zweizeilige Karussells scrollen nun horizontal, Strichdaten bleiben aus Kartende
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d597603b3b1faf6df9d5c7a98973362312236d9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/61002cd2578510ff6d823b8ebb454364e2c930cd
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e8dac803472e1dfc8a5bb2acf3082da88dad8a05
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/a6aa6fe85403331903570c9cd20f115ea48576be

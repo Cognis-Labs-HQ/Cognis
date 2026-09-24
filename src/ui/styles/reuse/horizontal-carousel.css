@@ -101,15 +101,17 @@
     display: block;
     transform: none;
     pointer-events: none;
+    inline-size: fit-content;
+    min-inline-size: 0;
+    white-space: normal;
+}
+
+.horizontal-carousel-preview.is-portal[hidden] {
+    display: none;
 }
 
 .horizontal-carousel-preview > span {
     display: block;
     margin-block-start: 0.25rem;
     color: var(--text-muted);
-}
-
-.horizontal-carousel-item:is(:hover, :focus-visible)
-    .horizontal-carousel-preview {
-    display: block;
 }

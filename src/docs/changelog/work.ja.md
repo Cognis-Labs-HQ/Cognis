@@ -86,6 +86,10 @@ Drawing アダプターが TypeScript パッケージエントリーポイント
 
 2行カルーセルを横スクロールにし、筆順データをカード詳細から除外し、描画開始時に元のダイアログを閉じるようにしました。テーマ対応の描画素材とパッド色でコントラストを改善しました。PiP はキャンバスと操作部全体に合うサイズとなり、均等再サンプリングによる経路採点で複雑な文字に対応し、成功率と難易度評価からガイドを自動調整します。
 
+## Library のスクロールと入れ子作成
+
+Study Library ページは自然なドキュメントスクロールと統一されたカードプレビューサイズを使用するようになりました。カルーセルのプレビューは内容に合う大きさで確実に消え、各追加操作はカード種別をタイトルに示す、種別固定の作成画面を正しい前面位置で開きます。メインの作成操作にはテーマ切替と言語選択と同じ標準スタイルを適用しました。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -105,3 +109,4 @@ Drawing アダプターが TypeScript パッケージエントリーポイント
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d597603b3b1faf6df9d5c7a98973362312236d9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/61002cd2578510ff6d823b8ebb454364e2c930cd
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e8dac803472e1dfc8a5bb2acf3082da88dad8a05
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/a6aa6fe85403331903570c9cd20f115ea48576be

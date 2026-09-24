@@ -133,7 +133,7 @@ body[data-theme="light"] .library-browser {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 0.75rem;
     align-items: center;
-    min-height: 5.5rem;
+    height: 7.5rem;
     padding: 1rem 0.9rem 1rem 1.15rem;
     text-align: left;
     border: 1px solid color-mix(in srgb, var(--border) 82%, var(--text-muted));
@@ -184,10 +184,6 @@ body[data-theme="light"] .library-browser {
     min-width: 0;
     white-space: normal;
     overflow-wrap: anywhere;
-}
-
-.library-entry-card--orderedLexicalSequence {
-    height: 7.5rem;
 }
 
 .library-entry-card--orderedLexicalSequence .library-card-reading > strong,
