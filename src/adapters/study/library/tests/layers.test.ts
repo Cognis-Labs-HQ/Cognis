@@ -73,6 +73,52 @@ test("consumers define arbitrary layers and constrained relationships", () => {
     );
 });
 
+test("fields can link values through multiple declared relationships", () => {
+    const schema: LibrarySchema = {
+        ...english,
+        layers: [
+            english.layers[0],
+            {
+                ...english.layers[1],
+                fields: [
+                    {
+                        id: "pronunciation",
+                        type: "stringList",
+                        metadata: { labels: { en: "Pronunciation" } },
+                        input: {
+                            control: "freeText",
+                            linkRelationships: ["letters"],
+                        },
+                    },
+                ],
+            },
+        ],
+    };
+    assert.deepEqual(validateLibrarySchema(schema), schema);
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...schema,
+                layers: [
+                    schema.layers[0],
+                    {
+                        ...schema.layers[1],
+                        fields: [
+                            {
+                                ...schema.layers[1].fields![0],
+                                input: {
+                                    control: "freeText",
+                                    linkRelationships: ["missing"],
+                                },
+                            },
+                        ],
+                    },
+                ],
+            }),
+        /field_link_relationship_not_found/,
+    );
+});
+
 test("layers can explicitly reference other entries in the same layer", () => {
     const schema: LibrarySchema = {
         ...english,

@@ -90,6 +90,10 @@ Drawing アダプターが TypeScript パッケージエントリーポイント
 
 Study Library ページは自然なドキュメントスクロールと統一されたカードプレビューサイズを使用するようになりました。カルーセルのプレビューは内容に合う大きさで確実に消え、各追加操作はカード種別をタイトルに示す、種別固定の作成画面を正しい前面位置で開きます。メインの作成操作にはテーマ切替と言語選択と同じ標準スタイルを適用しました。
 
+## 関係をまたぐ発音リンク
+
+発音詳細リンクは、プロバイダーが宣言した `input.linkRelationships` 配列を使用するようになりました。語彙と助詞の関係からの参照を作成時の位置順に統合し、表示する各部分を参照カードのラベルおよび発音別名と照合しながら、元のカードを移動先として維持します。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -110,3 +114,4 @@ Study Library ページは自然なドキュメントスクロールと統一さ
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/61002cd2578510ff6d823b8ebb454364e2c930cd
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e8dac803472e1dfc8a5bb2acf3082da88dad8a05
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6aa6fe85403331903570c9cd20f115ea48576be
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/1337d0a332a5ccb2d1081816d55e453f90a0c0bc

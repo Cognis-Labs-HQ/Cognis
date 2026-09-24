@@ -6,7 +6,7 @@ import {
 import {
     distinctPronunciationLabels,
     excludeTitleReferenceDuplicates,
-    resolveLabelComposition,
+    resolveReferenceAliasComposition,
 } from "./composition-links.js";
 import { visibleTitleDefinition } from "./title-definition.js";
 
@@ -89,24 +89,37 @@ export function popupTitleDetailItems(
     const pronunciationField = (layer?.fields ?? []).find(
         ({ id }) => id === "pronunciation",
     );
-    const linkRelationship = pronunciationField?.input?.linkRelationship;
-    const linkedPronunciationEntries = linkRelationship
+    const linkRelationships = new Set(
+        pronunciationField?.input?.linkRelationships ?? [],
+    );
+    const linkedPronunciationEntries = linkRelationships.size
         ? (detail.entry.references ?? [])
-              .filter(({ relation }) => relation === linkRelationship)
-              .map(({ entryId }) =>
-                  (detail.references ?? []).find(({ id }) => id === entryId),
+              .map((reference, authoredIndex) => ({
+                  entry: (detail.references ?? []).find(
+                      ({ id }) => id === reference.entryId,
+                  ),
+                  authoredIndex,
+                  position: reference.position ?? authoredIndex,
+                  relation: reference.relation,
+              }))
+              .filter(
+                  ({ entry, relation }) =>
+                      entry && linkRelationships.has(relation),
               )
-              .filter(Boolean)
+              .sort(
+                  (left, right) =>
+                      left.position - right.position ||
+                      left.authoredIndex - right.authoredIndex,
+              )
+              .map(({ entry }) => entry)
         : [];
     const pronunciationItems = distinctPronunciationLabels(
         detail.entry,
         spellingLabels,
     ).flatMap((label, pronunciationIndex) => {
-        const linked = linkRelationship
-            ? resolveLabelComposition(
+        const linked = linkRelationships.size
+            ? resolveReferenceAliasComposition(
                   label,
-                  detail.entry,
-                  schemas,
                   linkedPronunciationEntries,
               )
             : [];

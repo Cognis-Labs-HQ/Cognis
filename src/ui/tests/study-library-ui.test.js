@@ -918,6 +918,13 @@ test("Study Library serializes popup opening and identifies child parents", () =
     assert.match(source, /titleDetailItems,/);
 });
 
+test("Study Library links pronunciations through ordered relationship aliases", () => {
+    assert.match(source, /input\?\.linkRelationships/);
+    assert.match(source, /linkRelationships\.has\(relation\)/);
+    assert.match(source, /left\.position - right\.position/);
+    assert.match(source, /resolveReferenceAliasComposition/);
+});
+
 test("Study Library popup uses equal directional navigation controls", () => {
     assert.match(source, /arrow-back-light\.svg/);
     assert.match(source, /arrow-back-dark\.svg/);

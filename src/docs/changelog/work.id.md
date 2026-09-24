@@ -90,6 +90,10 @@ Karusel dua baris kini bergulir horizontal, data goresan tidak tampil dalam deta
 
 Halaman Study Library kini menggunakan pengguliran dokumen alami dan ukuran pratinjau kartu yang konsisten. Pratinjau karusel tetap mengikuti ukuran konten dan menghilang dengan benar, sementara setiap kontrol tambah membuka komposer bersarang yang bertumpuk dengan benar, bertipe terkunci, dan menampilkan tipe kartu pada judulnya. Tindakan buat utama kini memakai gaya standar pengalih tema dan pemilih bahasa.
 
+## Tautan pelafalan lintas relasi
+
+Tautan detail pelafalan kini menggunakan larik `input.linkRelationships` yang dideklarasikan penyedia. Referensi dari relasi kosakata dan partikel digabungkan berdasarkan posisi yang ditulis, lalu setiap segmen yang ditampilkan dicocokkan dengan label dan alias pelafalan kartu referensi sambil mempertahankan kartu asli sebagai tujuan navigasi.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -110,3 +114,4 @@ Halaman Study Library kini menggunakan pengguliran dokumen alami dan ukuran prat
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/61002cd2578510ff6d823b8ebb454364e2c930cd
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e8dac803472e1dfc8a5bb2acf3082da88dad8a05
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6aa6fe85403331903570c9cd20f115ea48576be
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/1337d0a332a5ccb2d1081816d55e453f90a0c0bc

@@ -440,6 +440,21 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
         for (const relationship of layer.relationships ?? []) {
             validateRelationship(relationship, layerIds, relationshipIds);
         }
+        for (const field of layer.fields ?? []) {
+            const links = field.input?.linkRelationships;
+            if (links === undefined) continue;
+            if (
+                !Array.isArray(links) ||
+                !links.length ||
+                new Set(links).size !== links.length ||
+                links.some(
+                    (relationshipId) =>
+                        typeof relationshipId !== "string" ||
+                        !relationshipIds.has(relationshipId),
+                )
+            )
+                throw new Error("field_link_relationship_not_found");
+        }
         if (layer.displayDefinition) {
             if (
                 layer.semanticRole === "atomicWritingUnit" ||

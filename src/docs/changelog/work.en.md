@@ -90,6 +90,10 @@ Two-row carousels now scroll horizontally, stroke payloads stay out of card deta
 
 Study Library pages now use natural document scrolling and consistently sized card previews. Carousel previews remain content-sized and disappear cleanly, while each add control opens a correctly stacked, type-locked composer with the card type in its title. The primary create action now shares the standard theme and language control styling.
 
+## Pronunciation links across relationships
+
+Pronunciation detail links now consume the provider-declared `input.linkRelationships` array. References from vocabulary and particle relationships are merged by authored position, and each displayed segment resolves against the referenced card’s label and pronunciation aliases while preserving the original card as the navigation target.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -110,3 +114,4 @@ Study Library pages now use natural document scrolling and consistently sized ca
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/61002cd2578510ff6d823b8ebb454364e2c930cd
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e8dac803472e1dfc8a5bb2acf3082da88dad8a05
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6aa6fe85403331903570c9cd20f115ea48576be
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/1337d0a332a5ccb2d1081816d55e453f90a0c0bc

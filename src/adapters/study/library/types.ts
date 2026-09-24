@@ -87,8 +87,8 @@ export interface LibraryFieldSchema {
             metadata: LibraryMetadata;
         }[];
         immutable?: boolean;
-        /** Relationship whose targets make values in this field deep-linkable. */
-        linkRelationship?: string;
+        /** Relationships whose ordered targets make values in this field deep-linkable. */
+        linkRelationships?: readonly string[];
         /** File namespace and language-relative prefix used by audioFile controls. */
         file?: { namespace: string; prefix?: string };
     };

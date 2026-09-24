@@ -4,6 +4,7 @@ import {
     distinctPronunciationLabels,
     excludeTitleReferenceDuplicates,
     resolveLabelComposition,
+    resolveReferenceAliasComposition,
 } from "../ui/app/composition-links.js";
 
 const schemas = [
@@ -65,6 +66,40 @@ test("word spellings resolve every writing-unit component", () => {
 test("partially resolvable spellings do not produce misleading links", () => {
     assert.deepEqual(
         resolveLabelComposition("未知", word, schemas, entries),
+        [],
+    );
+});
+
+test("ordered relationship targets resolve pronunciation aliases", () => {
+    const mountain = {
+        id: "word-yama",
+        label: "山",
+        fields: { pronunciation: ["やま"] },
+    };
+    const from = { id: "particle-kara", label: "から" };
+    const river = {
+        id: "word-kawa",
+        label: "川",
+        fields: { pronunciation: "かわ" },
+    };
+    const until = { id: "particle-made", label: "まで" };
+
+    assert.deepEqual(
+        resolveReferenceAliasComposition("やまからかわまで", [
+            mountain,
+            from,
+            river,
+            until,
+        ]).map(({ id }) => id),
+        ["word-yama", "particle-kara", "word-kawa", "particle-made"],
+    );
+    assert.deepEqual(
+        resolveReferenceAliasComposition("やまから海まで", [
+            mountain,
+            from,
+            river,
+            until,
+        ]),
         [],
     );
 });

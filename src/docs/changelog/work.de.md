@@ -90,6 +90,10 @@ Zweizeilige Karussells scrollen nun horizontal, Strichdaten bleiben aus Kartende
 
 Study-Library-Seiten verwenden jetzt den natürlichen Dokumentbildlauf und einheitlich große Kartenvorschauen. Karussellvorschauen bleiben an ihre Inhalte angepasst und verschwinden zuverlässig, während jede Hinzufügen-Aktion einen korrekt gestapelten, typgebundenen Editor mit dem Kartentyp im Titel öffnet. Die primäre Erstellen-Aktion verwendet nun den Standardstil der Design- und Sprachauswahl.
 
+## Aussprachelinks über Beziehungen
+
+Aussprachedetail-Links verwenden jetzt das vom Anbieter deklarierte Array `input.linkRelationships`. Referenzen aus Wortschatz- und Partikelbeziehungen werden nach ihrer vorgegebenen Position zusammengeführt. Jedes sichtbare Segment wird mit der Bezeichnung und den Aussprachealiasen der referenzierten Karte abgeglichen, während die ursprüngliche Karte das Navigationsziel bleibt.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -110,3 +114,4 @@ Study-Library-Seiten verwenden jetzt den natürlichen Dokumentbildlauf und einhe
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/61002cd2578510ff6d823b8ebb454364e2c930cd
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e8dac803472e1dfc8a5bb2acf3082da88dad8a05
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6aa6fe85403331903570c9cd20f115ea48576be
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/1337d0a332a5ccb2d1081816d55e453f90a0c0bc
