@@ -81,4 +81,9 @@
   <string name="gateway.study.library_composer_layer">Kartentyp</string>
   <string name="gateway.study.library_request_update">Änderungsanfrage</string>
   <string name="gateway.study.library_update_requested">Ihre Änderung wurde zur Prüfung eingereicht.</string>
+  <string name="gateway.study.library_editor_content">Inhalt</string>
+  <string name="gateway.study.library_editor_relationships">Beziehungen</string>
+  <string name="gateway.study.library_editor_no_definitions">Noch sind keine Definitionen verknüpft.</string>
+  <string name="gateway.study.library_editor_no_relationships">Dieser Kartentyp hat keine Beziehungen.</string>
+  <string name="gateway.study.library_composer_resolve_input">Lösen oder erstellen Sie jedes Textsegment auf, bevor Sie die Karte erstellen.</string>
 </resources>

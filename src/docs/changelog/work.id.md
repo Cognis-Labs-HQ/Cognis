@@ -54,6 +54,10 @@ Detail komposit dan kalimat berurutan kini selalu menampilkan pil kelas yang mud
 
 Kapasitas bawaan brankas keyring terenkripsi kini menjadi 2.000 MiB, seribu kali lipat dari batas lama 2 MiB, sehingga rahasia terenkripsi berukuran besar yang memuat audio dapat disimpan tanpa respons 413.
 
+## Penulisan dan penyuntingan kartu terstruktur
+
+Kontrol sunting kartu kini hanya muncul di dialog detail dan memakai aset sunting yang mengikuti tema. Editor yang lebih lebar memisahkan konten, hubungan, dan definisi agregat ke dalam tab; definisi terlokalisasi menyediakan semua bahasa antarmuka yang didukung dan definisi tertaut dapat disunting langsung. Pembuatan kini menghasilkan label dari bagian komposisi yang telah diselesaikan, mewajibkan teks yang belum cocok untuk diselesaikan atau dibuat, memulihkan gaya karosel horizontal, dan memperbesar tindakan buat yang mengikuti tema.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -63,3 +67,4 @@ Kapasitas bawaan brankas keyring terenkripsi kini menjadi 2.000 MiB, seribu kali
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/800b1809b0378fcf6aaa480461d0e22b703c2ca4
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea81a944257040a042c1d0c0c9b2447768390221
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3b51abc17cc6ed3a75921bfa242d16c33aae2ce0
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/2e2d092813312978c2f69640389f6401ec0230f5

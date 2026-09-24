@@ -1,4 +1,5 @@
 @import url("./library-admin.css");
+@import url("/static/styles/reuse/horizontal-carousel.css");
 
 .library-browser {
     --library-card-gap: 0.75rem;
@@ -672,30 +673,6 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     height: 1rem;
 }
 
-.library-entry-preview-edit {
-    position: absolute;
-    z-index: 5;
-    inset-block-start: 0.35rem;
-    inset-inline-end: 0.35rem;
-    display: grid;
-    width: 2rem;
-    height: 2rem;
-    padding: 0.45rem;
-    border-color: transparent;
-    background: transparent;
-    place-items: center;
-}
-
-.library-entry-preview-edit > span {
-    width: 1rem;
-    height: 1rem;
-    background: url("./assets/edit-light.svg") center / contain no-repeat;
-}
-
-body[data-theme="dark"] .library-entry-preview-edit > span {
-    background-image: url("./assets/edit-dark.svg");
-}
-
 .popup-heading > .library-scope {
     width: 2.5rem;
     height: 2.5rem;
@@ -978,4 +955,3 @@ body[data-theme="dark"] .library-audio {
     margin: 0;
     overflow-wrap: anywhere;
 }
-@import url("/static/styles/reuse/horizontal-carousel.css");

@@ -145,7 +145,10 @@ export async function openEntryPopup(
                           label: i18n
                               .t("gateway.study.library_admin_edit")
                               .replace("{{ entry }}", detail.entry.label),
-                          icon: "✎",
+                          icon: {
+                              light: "/static/adapters/study/library/assets/edit-light.svg",
+                              dark: "/static/adapters/study/library/assets/edit-dark.svg",
+                          },
                       },
                   ]
                 : [],

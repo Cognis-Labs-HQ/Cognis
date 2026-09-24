@@ -407,8 +407,11 @@ test("Study Library separates admin and user-facing editing", () => {
     assert.match(source, /function entryEditMode/);
     assert.match(source, /entry\.canEdit !== true/);
     assert.match(source, /headerActions: editMode/);
-    assert.match(source, /data-library-entry-edit/);
-    assert.match(stylesheet, /\.library-entry-preview-edit/);
+    assert.doesNotMatch(source, /data-library-entry-edit/);
+    assert.doesNotMatch(stylesheet, /\.library-entry-preview-edit/);
+    assert.match(source, /edit-light\.svg/);
+    assert.match(source, /data-library-editor-tab="relationships"/);
+    assert.match(source, /data-library-editor-panel="definitions"/);
     assert.match(source, /requestLibraryUpdate/);
     assert.match(source, /requestUpdate: editMode === "request"/);
 });
@@ -509,7 +512,7 @@ test("Study Library unfolds structured character variants", () => {
     );
     assert.match(
         source,
-        /if \([\s\S]*!previewEdit &&[\s\S]*closeUnrelatedVariantViews\(root, control\)[\s\S]*\)[\s\S]*return/,
+        /if \(closeUnrelatedVariantViews\(root, control\)\)[\s\S]*return/,
     );
     assert.match(source, /control === parentControl/);
     assert.doesNotMatch(source, /relationship\.variantDirection/);

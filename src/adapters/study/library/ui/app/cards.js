@@ -11,7 +11,6 @@ import {
     renderScope,
 } from "./presentation.js";
 import { isSameLibraryRecord } from "./variant-placement.js";
-import { entryEditMode } from "./editability.js";
 
 export function isDirectlyVisible(entry, entries, placements) {
     const entriesById = new Map(
@@ -118,11 +117,7 @@ export function renderEntryCard(
     const roleClass = layer.semanticRole
         ? ` library-entry-card--${escapeHtml(layer.semanticRole)}`
         : "";
-    const edit =
-        depth === 0 && entryEditMode(entry)
-            ? `<button class="library-entry-preview-edit btn-neutral" type="button" data-library-entry-edit="${escapeHtml(entry.id)}" aria-label="${escapeHtml(i18n.t("gateway.study.library_admin_edit").replace("{{ entry }}", entry.label))}"><span aria-hidden="true"></span></button>`
-            : "";
-    return `<div class="library-entry-card-shell" data-library-variant-depth="${depth}"><span class="library-entry-card-status" data-library-entry-status="${escapeHtml(entry.id)}">${renderScope(entry, i18n)}${newPill}</span><button class="library-entry-card${roleClass}${variant ? " library-entry-variant" : ""} btn-neutral" type="button" ${entryAttributes(entry)} ${entrySearchAttribute(entry)}${filterAttribute}>${renderCardContents(entry, layer, entries, schema, i18n)}</button>${edit}${renderSelection(entry, i18n)}${variantHint}${variants
+    return `<div class="library-entry-card-shell" data-library-variant-depth="${depth}"><span class="library-entry-card-status" data-library-entry-status="${escapeHtml(entry.id)}">${renderScope(entry, i18n)}${newPill}</span><button class="library-entry-card${roleClass}${variant ? " library-entry-variant" : ""} btn-neutral" type="button" ${entryAttributes(entry)} ${entrySearchAttribute(entry)}${filterAttribute}>${renderCardContents(entry, layer, entries, schema, i18n)}</button>${renderSelection(entry, i18n)}${variantHint}${variants
         .map(
             ({ entry: child, direction, distance }) =>
                 `<div class="library-entry-variant-shell library-entry-variant-${direction}" data-library-preferred-direction="${direction}" style="--library-variant-card-span: ${distance * 100}%; --library-variant-gap-span: ${distance * 0.75}rem">${renderEntryCard(child, layer, entries, schema, placements, i18n, depth + 1, true)}</div>`,

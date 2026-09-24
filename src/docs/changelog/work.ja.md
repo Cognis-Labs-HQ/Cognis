@@ -54,6 +54,10 @@ Study は、設定、ダッシュボードカード、検索グループ、子�
 
 暗号化キーリング保管庫の既定容量を、従来の 2 MiB 上限の 1,000 倍となる 2,000 MiB に拡大しました。これにより、音声を含む大きな暗号化シークレットも 413 応答なしで保存できます。
 
+## 構造化されたカード作成と編集
+
+カードの編集操作は詳細ダイアログ内だけに表示し、テーマ対応の編集アセットを使用するようにしました。幅を広げたエディターでは、内容、関連、集約された定義をタブで分け、ローカライズされた定義には対応するすべての UI 言語を表示し、関連付けられた定義をその場で編集できます。作成時のラベルは解決済みの構成要素から自動生成され、一致しないテキストは解決または新規作成が必須です。横方向カルーセルのスタイルも復元し、テーマ対応の作成操作を拡大しました。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -63,3 +67,4 @@ Study は、設定、ダッシュボードカード、検索グループ、子�
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/800b1809b0378fcf6aaa480461d0e22b703c2ca4
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea81a944257040a042c1d0c0c9b2447768390221
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3b51abc17cc6ed3a75921bfa242d16c33aae2ce0
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/2e2d092813312978c2f69640389f6401ec0230f5

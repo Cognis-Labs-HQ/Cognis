@@ -52,3 +52,23 @@
 .horizontal-carousel-add {
     min-width: 2.5rem;
 }
+
+.horizontal-carousel-viewport {
+    min-width: 0;
+    padding-block-end: 0.25rem;
+}
+
+.horizontal-carousel-item {
+    min-height: 2.75rem;
+    padding-inline: 1rem;
+    white-space: nowrap;
+}
+
+.horizontal-carousel-scroll,
+.horizontal-carousel-add {
+    display: grid;
+    width: 2.75rem;
+    min-width: 2.75rem;
+    padding: 0;
+    place-items: center;
+}

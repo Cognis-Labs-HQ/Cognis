@@ -81,4 +81,9 @@
   <string name="gateway.study.library_composer_layer">Card type</string>
   <string name="gateway.study.library_request_update">Update request</string>
   <string name="gateway.study.library_update_requested">Your update was submitted for review.</string>
+  <string name="gateway.study.library_editor_content">Content</string>
+  <string name="gateway.study.library_editor_relationships">Relationships</string>
+  <string name="gateway.study.library_editor_no_definitions">No definitions are linked yet.</string>
+  <string name="gateway.study.library_editor_no_relationships">This card type has no relationships.</string>
+  <string name="gateway.study.library_composer_resolve_input">Resolve or create every text segment before creating the card.</string>
 </resources>

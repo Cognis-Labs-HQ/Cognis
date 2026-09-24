@@ -81,4 +81,9 @@
   <string name="gateway.study.library_composer_layer">カードの種類</string>
   <string name="gateway.study.library_request_update">更新リクエスト</string>
   <string name="gateway.study.library_update_requested">更新内容をレビューに提出しました。</string>
+  <string name="gateway.study.library_editor_content">内容</string>
+  <string name="gateway.study.library_editor_relationships">関連</string>
+  <string name="gateway.study.library_editor_no_definitions">まだ定義が関連付けられていません。</string>
+  <string name="gateway.study.library_editor_no_relationships">このカード種別には関連がありません。</string>
+  <string name="gateway.study.library_composer_resolve_input">カードを作成する前に、すべてのテキスト部分を既存項目に解決するか新規作成してください。</string>
 </resources>

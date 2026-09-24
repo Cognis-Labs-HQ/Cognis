@@ -9,6 +9,7 @@ import {
     updateLibraryEntry,
 } from "/static/gateways/study/ui/library-client.js";
 import { localizedLabel } from "./presentation.js";
+import { entryEditMode } from "./editability.js";
 
 export function inputForField(field, value, language, i18n) {
     const label = localizedLabel(field.metadata, language);
@@ -29,13 +30,13 @@ export function inputForField(field, value, language, i18n) {
         const translations =
             value && typeof value === "object" && !Array.isArray(value)
                 ? value
-                : { en: "" };
-        return `<fieldset class="library-admin-localized-field"><legend>${escapeHtml(label)}</legend>${Object.entries(
-            translations,
-        )
+                : {};
+        const uiLanguages = ["de", "en", "id", "ja"];
+        return `<fieldset class="library-admin-localized-field"><legend>${escapeHtml(label)}</legend>${uiLanguages
+            .map((locale) => [locale, translations[locale] ?? ""])
             .map(
                 ([locale, text]) =>
-                    `<label><span>${escapeHtml(locale)}</span><input name="${escapeHtml(`${name}:${locale}`)}" value="${escapeHtml(String(text))}"></label>`,
+                    `<label><span>${escapeHtml(locale)}</span><input name="${escapeHtml(`${name}:${locale}`)}" value="${escapeHtml(String(text))}"${field.required ? " required" : ""}></label>`,
             )
             .join("")}</fieldset>`;
     }
@@ -57,6 +58,33 @@ export function inputForField(field, value, language, i18n) {
 }
 
 export function bindLibraryEditorControls(form, entry, i18n) {
+    const activateTab = (tabId) => {
+        form.querySelectorAll("[data-library-editor-tab]").forEach((button) => {
+            const active = button.dataset.libraryEditorTab === tabId;
+            button.classList.toggle("active", active);
+            button.setAttribute("aria-selected", String(active));
+        });
+        form.querySelectorAll("[data-library-editor-panel]").forEach(
+            (panel) => {
+                panel.hidden = panel.dataset.libraryEditorPanel !== tabId;
+            },
+        );
+    };
+    form.querySelector("[data-library-editor-tabs]")?.addEventListener(
+        "click",
+        (event) => {
+            const tab = event.target.closest("[data-library-editor-tab]");
+            if (tab) activateTab(tab.dataset.libraryEditorTab);
+        },
+    );
+    form.addEventListener(
+        "invalid",
+        (event) => {
+            const panel = event.target.closest("[data-library-editor-panel]");
+            if (panel) activateTab(panel.dataset.libraryEditorPanel);
+        },
+        true,
+    );
     form.querySelectorAll("select[multiple]").forEach((select) => {
         select.addEventListener("mousedown", (event) => {
             if (event.target.tagName !== "OPTION") return;
@@ -200,6 +228,30 @@ export function editorBody(
             }),
         )
         .join("");
+    const referencedEntries = (entry.references ?? [])
+        .map(({ entryId }) => entries.find(({ id }) => id === entryId))
+        .filter(Boolean);
+    const definitionEntries = referencedEntries.filter((candidate) => {
+        const candidateLayer = schema?.layers.find(
+            ({ id }) => id === candidate.layer,
+        );
+        return candidateLayer?.semanticRole === "definition";
+    });
+    const definitionSummary = definitionEntries.length
+        ? definitionEntries
+              .map(
+                  (definition) =>
+                      `<article class="library-editor-aggregate"><header><strong>${escapeHtml(definition.label)}</strong>${entryEditMode(definition) ? `<button class="btn-neutral" type="button" data-library-edit-related="${escapeHtml(definition.id)}">${escapeHtml(i18n.t("ui.reuse.edit"))}</button>` : ""}</header><dl>${Object.entries(
+                          definition.fields ?? {},
+                      )
+                          .map(
+                              ([key, value]) =>
+                                  `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(typeof value === "object" ? JSON.stringify(value) : String(value ?? ""))}</dd>`,
+                          )
+                          .join("")}</dl></article>`,
+              )
+              .join("")
+        : `<p>${escapeHtml(i18n.t("gateway.study.library_editor_no_definitions"))}</p>`;
     const contentClass =
         entry.class ??
         (layer?.semanticRole === "definition"
@@ -207,7 +259,9 @@ export function editorBody(
             : layer?.semanticRole === "orderedLexicalSequence"
               ? "composite"
               : "");
-    const label = `<label><span>${escapeHtml(options.labelText ?? i18n.t("gateway.study.library_admin_label"))} *</span><input name="label" required maxlength="500" value="${escapeHtml(entry.label)}"></label>`;
+    const label = options.generatedLabel
+        ? `<input name="label" type="hidden" required maxlength="500" value="${escapeHtml(entry.label)}">`
+        : `<label><span>${escapeHtml(options.labelText ?? i18n.t("gateway.study.library_admin_label"))} *</span><input name="label" required maxlength="500" value="${escapeHtml(entry.label)}"></label>`;
     const classField = `<label><span>${escapeHtml(i18n.t("gateway.study.library_content_class"))}</span><input name="class" value="${escapeHtml(contentClass)}"${["definition", "composite"].includes(contentClass) ? " readonly" : ""}></label>`;
     const isDefinition = layer?.semanticRole === "definition";
     const builder = createFormBuilder(
@@ -219,7 +273,7 @@ export function editorBody(
             includeSubmitButton: false,
             submitLabelKey: "ui.reuse.save",
             fields: [],
-            trustedContentHtml: `${label}${classField}${extraHtml}${fields}${relationships}${isDefinition || options.includeAlwaysShowDefinition === false ? '<input name="alwaysShowDefinition" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox" class="choice-checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`}${isDefinition ? '<input name="hidden" type="hidden" value="true">' : options.includeHidden === false ? '<input name="hidden" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="hidden" type="checkbox" class="choice-checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}`,
+            trustedContentHtml: `<nav class="library-editor-tabs" role="tablist" data-library-editor-tabs><button class="btn-neutral active" type="button" role="tab" aria-selected="true" data-library-editor-tab="content">${escapeHtml(i18n.t("gateway.study.library_editor_content"))}</button><button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="relationships">${escapeHtml(i18n.t("gateway.study.library_editor_relationships"))}</button><button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="definitions">${escapeHtml(i18n.t("gateway.study.library_definitions"))}</button></nav><section class="library-editor-panel" data-library-editor-panel="content">${label}${classField}${extraHtml}${fields}${isDefinition || options.includeAlwaysShowDefinition === false ? '<input name="alwaysShowDefinition" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox" class="choice-checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`}${isDefinition ? '<input name="hidden" type="hidden" value="true">' : options.includeHidden === false ? '<input name="hidden" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="hidden" type="checkbox" class="choice-checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}</section><section class="library-editor-panel" data-library-editor-panel="relationships" hidden>${relationships || `<p>${escapeHtml(i18n.t("gateway.study.library_editor_no_relationships"))}</p>`}</section><section class="library-editor-panel" data-library-editor-panel="definitions" hidden>${definitionSummary}</section>`,
         },
     );
     return { html: builder.render(), builder };
@@ -317,7 +371,7 @@ export async function openLibraryEntryEditor({
             .t("gateway.study.library_admin_edit_title")
             .replace("{{ entry }}", entry.label),
         body: editor.html,
-        maxWidth: "min(46rem, 94vw)",
+        maxWidth: "min(72rem, 96vw)",
         closeProtection: true,
         actions: [
             { id: "save", label: i18n.t("ui.reuse.save"), variant: "confirm" },
@@ -331,6 +385,27 @@ export async function openLibraryEntryEditor({
             const form = overlay.querySelector("[data-library-admin-editor]");
             formController = editor.builder.attach(form);
             bindLibraryEditorControls(form, entry, i18n);
+            form.addEventListener("click", (event) => {
+                const button = event.target.closest(
+                    "[data-library-edit-related]",
+                );
+                if (!button) return;
+                const related = entries.find(
+                    ({ id }) => id === button.dataset.libraryEditRelated,
+                );
+                const mode = related ? entryEditMode(related) : null;
+                if (!related || !mode) return;
+                void openLibraryEntryEditor({
+                    entry: related,
+                    entries,
+                    schemas,
+                    i18n,
+                    requestUpdate: mode === "request",
+                    onSaved: (updated) => {
+                        if (mode === "direct") Object.assign(related, updated);
+                    },
+                });
+            });
         },
         onAction: async (action, overlay) => {
             if (action !== "save") return true;
@@ -423,7 +498,7 @@ export function bindAdminLibraryInteractions(
                     )
                     .replace("{{ entry }}", entry.label),
                 body: editor.html,
-                maxWidth: "min(46rem, 94vw)",
+                maxWidth: "min(72rem, 96vw)",
                 closeProtection: !readOnly,
                 actions: readOnly
                     ? [

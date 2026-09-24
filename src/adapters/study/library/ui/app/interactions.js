@@ -163,9 +163,6 @@ export function bindLibraryInteractions(root, context) {
             }
             if (event.target.matches("[data-library-select-entry]")) return;
             if (event.target.closest("[data-library-admin-edit]")) return;
-            const previewEdit = event.target.closest(
-                "[data-library-entry-edit]",
-            );
             const filter = event.target.closest("button[data-library-filter]");
             if (filter) {
                 applyLibraryFilters(filter);
@@ -179,25 +176,18 @@ export function bindLibraryInteractions(root, context) {
                 );
                 return;
             }
-            const control = previewEdit
-                ? {
-                      dataset: {
-                          libraryEntry: previewEdit.dataset.libraryEntryEdit,
-                      },
-                  }
-                : event.target.closest("[data-library-entry]");
+            const control = event.target.closest("[data-library-entry]");
             if (!control) return;
             const openedAsNew = entries.some(
                 ({ id, isNew }) =>
                     id === control.dataset.libraryEntry && isNew === true,
             );
-            if (!previewEdit) markViewed(control);
+            markViewed(control);
             if (suppressEntryClick) {
                 suppressEntryClick = false;
                 return;
             }
-            if (!previewEdit && closeUnrelatedVariantViews(root, control))
-                return;
+            if (closeUnrelatedVariantViews(root, control)) return;
             if (root.classList.contains("library-selection-mode")) {
                 const selection = selectionForCard(root, control);
                 if (selection) {
@@ -225,7 +215,6 @@ export function bindLibraryInteractions(root, context) {
                     readOnly,
                     showReferenceTree,
                     showNew: openedAsNew,
-                    startEditing: Boolean(previewEdit),
                 },
             )
                 .catch(() =>

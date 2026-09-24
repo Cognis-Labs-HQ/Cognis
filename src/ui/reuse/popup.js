@@ -84,7 +84,7 @@
  *   titleLeading?: string,
  *   titleAction?: { id: string, label: string },
  *   titleItems?: Array<{ label: string, actionId?: string }>,
- *   headerActions?: Array<{ id: string, label: string, icon?: string }>,
+ *   headerActions?: Array<{ id: string, label: string, icon?: string | { light: string, dark?: string } }>,
  *   body: string | (() => string),
  *   variant?: 'info' | 'warning' | 'danger' | 'confirm',
  *   actions?: Array<{ id: string, label: string, variant?: string, disabled?: boolean, icon?: { light: string, dark?: string, position?: 'before' | 'after', flip?: boolean } }>,
@@ -610,7 +610,20 @@ export async function openPopup({
               currentPage?.titleItems ?? titleItems,
               currentPage?.titleDetailItems ?? titleDetailItems,
           )}</div>
-          <div class="popup-header-actions">${headerActions.map((action) => `<button class="btn-neutral popup-header-action" data-popup-action="${escapeHtml(action.id)}" type="button" aria-label="${escapeHtml(action.label)}">${action.icon ? `<span aria-hidden="true">${escapeHtml(action.icon)}</span>` : escapeHtml(action.label)}</button>`).join("")}${mandatory ? "" : `<button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>`}</div>
+          <div class="popup-header-actions">${headerActions
+              .map((action) => {
+                  const icon = action.icon;
+                  const content =
+                      icon && typeof icon === "object" && icon.light
+                          ? `<picture class="popup-header-action-icon" aria-hidden="true"><source media="(prefers-color-scheme: dark)" srcset="${escapeHtml(icon.dark ?? icon.light)}"><img src="${escapeHtml(icon.light)}" alt=""></picture>`
+                          : icon
+                            ? `<span aria-hidden="true">${escapeHtml(icon)}</span>`
+                            : escapeHtml(action.label);
+                  return `<button class="btn-neutral popup-header-action" data-popup-action="${escapeHtml(action.id)}" type="button" aria-label="${escapeHtml(action.label)}">${content}</button>`;
+              })
+              .join(
+                  "",
+              )}${mandatory ? "" : `<button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>`}</div>
         </div>
         <div class="popup-body">${resolvedBody}</div>
         ${actionButtons ? `<div class="popup-footer">${actionButtons}</div>` : ""}

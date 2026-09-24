@@ -54,6 +54,10 @@ Details zusammengesetzter Einträge und geordneter Sätze zeigen nun stets eine 
 
 Die Standardkapazität des verschlüsselten Schlüsselbund-Tresors beträgt jetzt 2.000 MiB und ist damit tausendmal so groß wie die bisherige Grenze von 2 MiB. Große verschlüsselte Geheimnisse mit Audiodaten können dadurch ohne 413-Antwort gespeichert werden.
 
+## Strukturierte Kartenerstellung und -bearbeitung
+
+Bearbeitungsaktionen für Karten erscheinen jetzt nur noch in Detaildialogen und verwenden das themenabhängige Bearbeitungssymbol. Der breitere Editor trennt Inhalt, Beziehungen und zusammengefasste Definitionen in Registerkarten. Lokalisierte Definitionen bieten alle unterstützten Oberflächensprachen, und verknüpfte Definitionen können direkt bearbeitet werden. Beim Erstellen werden Bezeichnungen aus aufgelösten Bestandteilen erzeugt, nicht zugeordneter Text muss aufgelöst oder erstellt werden, das horizontale Karussell wird wieder korrekt formatiert und die themenabhängige Erstellungsaktion ist größer.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -63,3 +67,4 @@ Die Standardkapazität des verschlüsselten Schlüsselbund-Tresors beträgt jetz
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/800b1809b0378fcf6aaa480461d0e22b703c2ca4
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea81a944257040a042c1d0c0c9b2447768390221
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3b51abc17cc6ed3a75921bfa242d16c33aae2ce0
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/2e2d092813312978c2f69640389f6401ec0230f5

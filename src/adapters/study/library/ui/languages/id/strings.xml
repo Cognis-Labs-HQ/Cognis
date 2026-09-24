@@ -81,4 +81,9 @@
   <string name="gateway.study.library_composer_layer">Jenis kartu</string>
   <string name="gateway.study.library_request_update">Permintaan pembaruan</string>
   <string name="gateway.study.library_update_requested">Pembaruan Anda telah dikirim untuk ditinjau.</string>
+  <string name="gateway.study.library_editor_content">Konten</string>
+  <string name="gateway.study.library_editor_relationships">Hubungan</string>
+  <string name="gateway.study.library_editor_no_definitions">Belum ada definisi yang ditautkan.</string>
+  <string name="gateway.study.library_editor_no_relationships">Jenis kartu ini tidak memiliki hubungan.</string>
+  <string name="gateway.study.library_composer_resolve_input">Selesaikan atau buat setiap segmen teks sebelum membuat kartu.</string>
 </resources>
