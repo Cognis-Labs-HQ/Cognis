@@ -237,6 +237,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         }
     }
 
+    const languageModuleStates = new Map<string, boolean>();
     const syncLanguageCapabilities = (): void => {
         const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
         const capabilityIds =
@@ -293,7 +294,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 },
                 { moduleId },
             );
-            gateway.setLanguageModuleEnabled(moduleId, true);
+            gateway.setLanguageModuleEnabled(
+                moduleId,
+                languageModuleStates.get(moduleId) !== false,
+            );
         }
         for (const registered of gateway.listRegisteredLanguageModules()) {
             if (
@@ -315,6 +319,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         moduleId: string,
         enabled: boolean,
     ): void => {
+        languageModuleStates.set(moduleId, enabled);
         gateway.setLanguageModuleEnabled(moduleId, enabled);
     };
     /**

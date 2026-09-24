@@ -78,6 +78,10 @@ New releases of an authoritative content pack can now revise their own stored sc
 
 Study Library now keeps its floating action menu available whenever cards can enter multi-select mode, including views without deletable provider records. Selection checkboxes also use a pointer cursor so their interactivity is visually clear.
 
+## Disabled languages and durable learning state
+
+Disabled language modules are now absent from Study even if a stale provider capability remains during lifecycle refresh. Content-pack updates preserve viewed-entry tracking and notify accounts only for genuinely new stable records instead of announcing the full pack again.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -99,3 +103,4 @@ Study Library now keeps its floating action menu available whenever cards can en
 - [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)
 - [d3ba08ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3ba08ef)
 - [6d6e4e53](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d6e4e53)
+- [5f8b129c](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f8b129c)

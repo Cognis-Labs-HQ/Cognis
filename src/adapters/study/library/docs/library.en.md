@@ -116,7 +116,7 @@ Detail views omit the `composite` class. Other content classes are reduced to th
 
 ## New-content tracking
 
-The Library stores viewed entry UUIDs per account. Global entries introduced by provider pack ingestion or approved user and administrator contributions trigger a Study Library notification for enabled accounts. Entries absent from an account's viewed cache display a **New** pill in previews and detail popups. Hovering a card or opening it through any Library relationship records it as viewed; the persisted state removes the pill after refresh.
+The Library stores viewed entry UUIDs per account. Provider updates preserve this state and notify enabled accounts only for newly introduced stable entry IDs, not for the pack's complete updated contents. Global entries introduced by provider pack ingestion or approved user and administrator contributions trigger a Study Library notification for enabled accounts. Entries absent from an account's viewed cache display a **New** pill in previews and detail popups. Hovering a card or opening it through any Library relationship records it as viewed; the persisted state removes the pill after refresh.
 
 ## Contributions, visibility requests, and search
 

@@ -100,7 +100,7 @@ Tampilan detail menyembunyikan kelas `composite`. Kelas konten lainnya disederha
 
 ## Pelacakan konten baru
 
-Pustaka menyimpan UUID entri yang telah dilihat untuk setiap akun. Entri global dari paket penyedia atau kontribusi pengguna dan administrator yang disetujui memicu notifikasi Pustaka bagi akun aktif. Entri yang belum ada dalam cache tampilan akun menampilkan pil **Baru** pada pratinjau dan popup detail. Mengarahkan penunjuk ke kartu atau membukanya secara langsung maupun melalui relasi akan menandainya sebagai telah dilihat; status tersimpan menghilangkan pil setelah halaman dimuat ulang.
+Pustaka menyimpan UUID entri yang telah dilihat untuk setiap akun. Pembaruan penyedia mempertahankan status ini dan hanya memberi tahu akun aktif tentang ID entri stabil yang baru diperkenalkan, bukan seluruh isi paket yang diperbarui. Entri global dari paket penyedia atau kontribusi pengguna dan administrator yang disetujui memicu notifikasi Pustaka bagi akun aktif. Entri yang belum ada dalam cache tampilan akun menampilkan pil **Baru** pada pratinjau dan popup detail. Mengarahkan penunjuk ke kartu atau membukanya secara langsung maupun melalui relasi akan menandainya sebagai telah dilihat; status tersimpan menghilangkan pil setelah halaman dimuat ulang.
 
 ## Kontribusi, permintaan visibilitas, dan pencarian
 

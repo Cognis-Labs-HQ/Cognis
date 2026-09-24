@@ -78,6 +78,10 @@ Rilis baru paket konten otoritatif kini dapat merevisi skema tersimpannya sendir
 
 Study Library kini selalu menyediakan menu tindakan mengambang ketika kartu dapat memasuki mode multipilih, termasuk pada tampilan tanpa rekaman penyedia yang dapat dihapus. Kotak pilihan juga menggunakan kursor penunjuk agar sifat interaktifnya terlihat jelas.
 
+## Bahasa nonaktif dan status belajar yang bertahan
+
+Modul bahasa yang dinonaktifkan kini sepenuhnya tidak muncul di Study meskipun capability penyedia lama masih tersisa selama penyegaran siklus hidup. Pembaruan paket konten mempertahankan pelacakan entri yang telah dilihat dan hanya memberi tahu akun tentang rekaman stabil yang benar-benar baru, bukan seluruh paket lagi.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -99,3 +103,4 @@ Study Library kini selalu menyediakan menu tindakan mengambang ketika kartu dapa
 - [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)
 - [d3ba08ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3ba08ef)
 - [6d6e4e53](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d6e4e53)
+- [5f8b129c](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f8b129c)

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import path from "node:path";
 import { LibraryService } from "../service.js";
 import type { LibrarySchema } from "../types.js";
 
@@ -24,6 +25,53 @@ function service() {
         saved,
     };
 }
+
+test("content-pack notifications report only newly introduced records", async () => {
+    const root = path.resolve(
+        process.cwd(),
+        "src/adapters/study/library/tests/fixtures/external-pack",
+    );
+    const notifications: Array<{ entryCount: number; language?: string }> = [];
+    const createLibrary = (newRecordCount: number) =>
+        new LibraryService(
+            {
+                ingestContentPack: async (plan: {
+                    manifest: {
+                        id: string;
+                        publisher: string;
+                        version: string;
+                        contentRevision: string;
+                    };
+                    schema: { id: string; version: number };
+                    digest: string;
+                    records: unknown[];
+                }) => ({
+                    packId: plan.manifest.id,
+                    publisher: plan.manifest.publisher,
+                    version: plan.manifest.version,
+                    contentRevision: plan.manifest.contentRevision,
+                    schemaId: plan.schema.id,
+                    schemaVersion: plan.schema.version,
+                    digest: plan.digest,
+                    recordCount: plan.records.length,
+                    newRecordCount,
+                    relationshipCount: 0,
+                    unchanged: false,
+                }),
+            } as never,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            { store: async () => {} } as never,
+            async (notification) => notifications.push(notification),
+        );
+
+    await createLibrary(0).ingestContentPack(root);
+    assert.deepEqual(notifications, []);
+    await createLibrary(2).ingestContentPack(root);
+    assert.deepEqual(notifications, [{ entryCount: 2, language: "x-fixture" }]);
+});
 
 test("schema registrations are versioned, persisted, and immutable", async () => {
     const { library, saved } = service();

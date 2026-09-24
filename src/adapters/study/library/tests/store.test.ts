@@ -150,6 +150,7 @@ test("content pack import ignores duplicate all-key references", async () => {
     const receipt = await new LibraryStore(db).ingestContentPack(plan);
 
     assert.equal(receipt.unchanged, false);
+    assert.equal(receipt.newRecordCount, 3);
     const entryInsert = commands.find(
         (command) =>
             command.option === "INSERT" &&
@@ -292,6 +293,14 @@ test("authoritative content packs prune omitted records by default", async () =>
         ).length,
         2,
     );
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "DELETE" &&
+                command.table === "study_library_viewed_entries",
+        ),
+        false,
+    );
 });
 
 test("content packs retain omitted records only when explicitly requested", async () => {
@@ -338,7 +347,7 @@ test("content packs retain omitted records only when explicitly requested", asyn
                 command.table === "study_library_entries" &&
                 command.where?.some((clause) => clause.column === "created_by"),
         ),
-        false,
+        true,
     );
 });
 

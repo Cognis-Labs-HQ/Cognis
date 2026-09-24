@@ -257,6 +257,7 @@ export class LibraryStore {
             ],
         });
         const unchanged = Boolean(existing.rows?.length);
+        let newRecordCount = 0;
         if (unchanged) {
             if (String(existing.rows[0].digest) !== digest)
                 throw new Error("content_pack_version_conflict");
@@ -286,6 +287,26 @@ export class LibraryStore {
                     return [[record.id, { canonicalId, contentHash }] as const];
                 }),
             );
+            const previousEntries = await db.executeCommand({
+                option: "SELECT",
+                table: "study_library_entries",
+                columns: ["id"],
+                where: [
+                    {
+                        column: "created_by",
+                        value: `content-pack:${manifest.id}`,
+                    },
+                    { column: "schema_id", value: schema.id },
+                ],
+            });
+            const previousEntryIds = new Set(
+                (previousEntries.rows ?? []).map((row) => String(row.id)),
+            );
+            newRecordCount = new Set(
+                Array.from(recordIdentity.values(), ({ canonicalId }) =>
+                    previousEntryIds.has(canonicalId) ? null : canonicalId,
+                ).filter((id): id is string => id !== null),
+            ).size;
             const registeredSchema = await db.executeCommand({
                 option: "SELECT",
                 table: "study_library_schemas",
@@ -347,18 +368,6 @@ export class LibraryStore {
                 ),
             );
             if (manifest.pruneOmittedRecords !== false) {
-                const previousEntries = await db.executeCommand({
-                    option: "SELECT",
-                    table: "study_library_entries",
-                    columns: ["id"],
-                    where: [
-                        {
-                            column: "created_by",
-                            value: `content-pack:${manifest.id}`,
-                        },
-                        { column: "schema_id", value: schema.id },
-                    ],
-                });
                 for (const row of previousEntries.rows ?? []) {
                     const previousId = String(row.id);
                     if (importedSourceIds.has(previousId)) continue;
@@ -542,7 +551,7 @@ export class LibraryStore {
                 });
             }
         });
-        return this.contentPackReceipt(plan, unchanged);
+        return this.contentPackReceipt(plan, unchanged, newRecordCount);
     }
     async deleteEntries(
         entryIds: readonly string[],
@@ -809,6 +818,7 @@ export class LibraryStore {
     private contentPackReceipt(
         plan: LibraryContentPackPlan,
         unchanged: boolean,
+        newRecordCount: number,
     ): LibraryContentPackReceipt {
         return {
             packId: plan.manifest.id,
@@ -819,6 +829,7 @@ export class LibraryStore {
             schemaVersion: plan.schema.version,
             digest: plan.digest,
             recordCount: plan.records.length,
+            newRecordCount,
             relationshipCount: plan.records.reduce(
                 (count, record) => count + (record.references?.length ?? 0),
                 0,

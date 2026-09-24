@@ -351,9 +351,9 @@ export class LibraryService implements LibraryCapability {
             await this.flow?.run("study:library:ingest", { plan });
             await this.storeContentPackAudio(plan);
             const receipt = await this.store.ingestContentPack(plan);
-            if (!receipt.unchanged)
+            if (receipt.newRecordCount > 0)
                 await this.notifyNewContent?.({
-                    entryCount: receipt.recordCount,
+                    entryCount: receipt.newRecordCount,
                     language: plan.schema.language,
                 });
             this.rememberSchema(plan.schema);

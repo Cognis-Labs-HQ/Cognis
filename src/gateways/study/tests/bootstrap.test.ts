@@ -98,6 +98,7 @@ async function bootstrapStudyGateway() {
     } as any);
 
     return {
+        capabilities,
         routeRegistry,
         systemCtx,
         uiRegistry,
@@ -169,7 +170,8 @@ test("direct Study requests redirect to unavailable when no language is valid", 
 });
 
 test("study registered languages reflect installed language capabilities", async () => {
-    const { routeRegistry, systemCtx } = await bootstrapStudyGateway();
+    const { capabilities, routeRegistry, systemCtx } =
+        await bootstrapStudyGateway();
     const userToken = issueAccessToken("learner", "user", 60);
 
     const disabledResponse = new ResponseRecorder();
@@ -206,6 +208,20 @@ test("study registered languages reflect installed language capabilities", async
         enabledPayload.data.some((language) => language.code === "ja"),
         true,
     );
+
+    capabilities.get<(moduleId: string, enabled: boolean) => void>(
+        "modules:onStateChanged",
+    )?.("study-language-ja", false);
+    const lifecycleDisabledResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({ method: "GET", bearerToken: userToken }),
+        lifecycleDisabledResponse,
+        new URL("http://localhost/api/v1/study/registered-languages"),
+    );
+    assert.deepEqual(JSON.parse(lifecycleDisabledResponse.payload), {
+        data: [],
+    });
 
     systemCtx.removeCapability("study:language:ja");
     const removedResponse = new ResponseRecorder();

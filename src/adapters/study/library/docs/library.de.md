@@ -96,7 +96,7 @@ Die Laufzeiteinpassung reserviert die Stammkarte und jede bereits platzierte Kin
 
 ## Nachverfolgung neuer Inhalte
 
-Die Bibliothek speichert die UUIDs angesehener Einträge pro Konto. Globale Einträge aus Anbieterpaketen oder genehmigten Beiträgen von Benutzern und Administratoren lösen für aktivierte Konten eine Bibliotheksbenachrichtigung aus. Einträge außerhalb des angesehenen Caches zeigen in Vorschau und Detailfenster einmalig **Neu**. Das Überfahren einer Karte oder ihr direktes beziehungsweise indirektes Öffnen markiert sie als angesehen; nach dem Aktualisieren verschwindet die Markierung dauerhaft.
+Die Bibliothek speichert die UUIDs angesehener Einträge pro Konto. Anbieteraktualisierungen behalten diesen Status bei und benachrichtigen aktivierte Konten nur über neu eingeführte stabile Eintrags-IDs, nicht über den gesamten aktualisierten Paketinhalt. Globale Einträge aus Anbieterpaketen oder genehmigten Beiträgen von Benutzern und Administratoren lösen für aktivierte Konten eine Bibliotheksbenachrichtigung aus. Einträge außerhalb des angesehenen Caches zeigen in Vorschau und Detailfenster einmalig **Neu**. Das Überfahren einer Karte oder ihr direktes beziehungsweise indirektes Öffnen markiert sie als angesehen; nach dem Aktualisieren verschwindet die Markierung dauerhaft.
 
 ## Beiträge, Sichtbarkeitsanfragen und Suche
 

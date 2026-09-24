@@ -78,6 +78,10 @@ Neue Versionen eines maßgeblichen Inhaltspakets können nun ihr eigenes gespeic
 
 Die Study Library hält ihr schwebendes Aktionsmenü nun immer bereit, wenn Karten in den Mehrfachauswahlmodus wechseln können, auch in Ansichten ohne löschbare Anbieter-Datensätze. Auswahlkästchen verwenden außerdem einen Zeiger-Cursor, damit ihre Interaktivität klar erkennbar ist.
 
+## Deaktivierte Sprachen und dauerhafter Lernstatus
+
+Deaktivierte Sprachmodule fehlen nun vollständig in Study, selbst wenn während der Lebenszyklusaktualisierung vorübergehend eine veraltete Anbieter-Capability verbleibt. Inhaltsaktualisierungen behalten den Status angesehener Einträge bei und benachrichtigen Konten nur über tatsächlich neue stabile Datensätze statt erneut über das gesamte Paket.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -99,3 +103,4 @@ Die Study Library hält ihr schwebendes Aktionsmenü nun immer bereit, wenn Kart
 - [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)
 - [d3ba08ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3ba08ef)
 - [6d6e4e53](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d6e4e53)
+- [5f8b129c](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f8b129c)

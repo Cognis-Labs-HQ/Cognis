@@ -78,6 +78,10 @@ Library 管理画面は選択中の言語のレイヤーを平坦なメニュー
 
 Study Library は、削除可能なプロバイダーレコードがない表示を含め、カードが複数選択モードに入れる場合にフローティング操作メニューを常に用意するようになりました。選択チェックボックスにはポインターカーソルも使用し、操作可能であることを明確にします。
 
+## 無効言語の非表示と学習状態の維持
+
+ライフサイクル更新中に古いプロバイダー capability が一時的に残っていても、無効化された言語モジュールは Study から完全に除外されます。コンテンツパック更新では閲覧済み状態を維持し、パック全体を再通知せず、実際に新規追加された安定レコードだけを通知します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -99,3 +103,4 @@ Study Library は、削除可能なプロバイダーレコードがない表示
 - [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)
 - [d3ba08ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3ba08ef)
 - [6d6e4e53](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d6e4e53)
+- [5f8b129c](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f8b129c)

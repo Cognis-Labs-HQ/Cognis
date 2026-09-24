@@ -344,6 +344,7 @@ export interface LibraryContentPackReceipt {
     schemaVersion: number;
     digest: string;
     recordCount: number;
+    newRecordCount: number;
     relationshipCount: number;
     metadata?: Readonly<Record<string, LibraryMetadataValue>>;
     unchanged: boolean;
