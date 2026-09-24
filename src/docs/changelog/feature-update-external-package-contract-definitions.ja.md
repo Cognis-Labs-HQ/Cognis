@@ -94,6 +94,10 @@ Library の詳細見出しは、主要タイトルと二次表記詳細の間で
 
 Library 詳細では、語彙での使用とその他の受信依存関係を 1 つの「使用元」セクションに統合しました。見た目が同じ正規化ラベルは 1 つのリンクにまとめ、語彙関係を優先します。
 
+## バランスの取れたタイトル配置
+
+複合ポップアップタイトルは行間を狭め、読み詳細との距離を近づけました。関係の重複排除で隣接項目がなくなった場合も、カードプレビューのタイトル、読み、定義は中央揃えを維持します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -119,3 +123,4 @@ Library 詳細では、語彙での使用とその他の受信依存関係を 1 
 - [9c374e3f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c374e3f)
 - [05838355](https://github.com/Cognis-Labs-HQ/Cognis/commit/05838355)
 - [a0016fcd](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0016fcd)
+- [0287eb84](https://github.com/Cognis-Labs-HQ/Cognis/commit/0287eb84)

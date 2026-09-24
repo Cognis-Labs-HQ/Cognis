@@ -94,6 +94,10 @@ The external-package contract now treats relationships without resolver and pres
 
 Library details now combine vocabulary usage and other inbound dependencies into one Used By section. Visually duplicate normalized labels collapse into one link, with vocabulary relationships taking priority.
 
+## Balanced title alignment
+
+Composite popup titles now sit closer to their reading detail through a compact row gap. Card preview titles, readings, and definitions remain centered when relationship deduplication removes an adjacent item.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -119,3 +123,4 @@ Library details now combine vocabulary usage and other inbound dependencies into
 - [9c374e3f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c374e3f)
 - [05838355](https://github.com/Cognis-Labs-HQ/Cognis/commit/05838355)
 - [a0016fcd](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0016fcd)
+- [0287eb84](https://github.com/Cognis-Labs-HQ/Cognis/commit/0287eb84)

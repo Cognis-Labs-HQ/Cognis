@@ -159,8 +159,10 @@ body[data-theme="light"] .library-browser {
     display: grid;
     min-width: 0;
     align-items: center;
+    justify-items: center;
     gap: 0.45rem;
     overflow: hidden;
+    text-align: center;
 }
 
 .library-card-reading {
@@ -168,6 +170,7 @@ body[data-theme="light"] .library-browser {
     min-width: 0;
     gap: 0.45rem;
     align-items: baseline;
+    justify-content: center;
     flex-wrap: wrap;
 }
 
@@ -865,6 +868,7 @@ body[data-theme="dark"] .library-audio {
     display: grid;
     grid-template-columns: auto minmax(0, auto) minmax(0, 1fr);
     grid-template-rows: auto auto;
+    row-gap: 0.15rem;
 }
 
 .library-entry-popup--composite .library-scope {

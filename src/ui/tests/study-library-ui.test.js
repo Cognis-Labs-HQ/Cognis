@@ -326,6 +326,10 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /detail\.entry\.class === "composite"/);
     assert.match(source, /placement:[\s\S]*"definition"/);
     assert.match(stylesheet, /library-entry-popup--composite/);
+    assert.match(
+        stylesheet,
+        /library-entry-popup--composite \.popup-heading[\s\S]*row-gap: 0\.15rem/,
+    );
     assert.match(source, /function linkedItems\(entries\)/);
     assert.match(source, /titleItems: titleReferences\.map/);
     assert.match(source, /open-title-reference:\$\{entry\.id\}/);
@@ -789,7 +793,14 @@ test("Study Library bounds status and gives readings and definitions room", () =
         stylesheet,
         /\.library-entry-selection[\s\S]*cursor:\s*pointer/,
     );
-    assert.match(stylesheet, /\.library-card-primary[\s\S]*display: grid/);
+    assert.match(
+        stylesheet,
+        /\.library-card-primary[\s\S]*display: grid[\s\S]*justify-items: center[\s\S]*text-align: center/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-card-reading[\s\S]*justify-content: center/,
+    );
     assert.match(
         stylesheet,
         /\.library-card-reading[\s\S]*flex-wrap: wrap[\s\S]*\.library-card-definition[\s\S]*white-space: normal/,

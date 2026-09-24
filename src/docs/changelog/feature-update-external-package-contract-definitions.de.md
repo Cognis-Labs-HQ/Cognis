@@ -94,6 +94,10 @@ Der Vertrag für externe Pakete behandelt Beziehungen ohne Resolver- und Darstel
 
 Library-Details vereinen Vokabelverwendung und andere eingehende Abhängigkeiten nun in einem Abschnitt „Verwendet von“. Optisch gleiche normalisierte Beschriftungen werden zu einem Link zusammengeführt, wobei Vokabelbeziehungen Vorrang haben.
 
+## Ausgewogene Titelausrichtung
+
+Zusammengesetzte Popup-Titel liegen durch einen kompakteren Zeilenabstand näher an ihrem Lesedetail. Titel, Lesungen und Definitionen in Kartenvorschauen bleiben zentriert, wenn die Beziehungs-Deduplizierung ein benachbartes Element entfernt.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -119,3 +123,4 @@ Library-Details vereinen Vokabelverwendung und andere eingehende Abhängigkeiten
 - [9c374e3f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c374e3f)
 - [05838355](https://github.com/Cognis-Labs-HQ/Cognis/commit/05838355)
 - [a0016fcd](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0016fcd)
+- [0287eb84](https://github.com/Cognis-Labs-HQ/Cognis/commit/0287eb84)

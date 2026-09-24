@@ -94,6 +94,10 @@ Kontrak paket eksternal kini memperlakukan relasi tanpa peran resolver dan prese
 
 Detail Library kini menggabungkan penggunaan kosakata dan dependensi masuk lainnya dalam satu bagian Digunakan Oleh. Label ternormalisasi yang tampak sama diringkas menjadi satu tautan, dengan relasi kosakata diprioritaskan.
 
+## Perataan judul yang seimbang
+
+Judul popup komposit kini lebih dekat dengan detail bacaannya melalui jarak baris yang rapat. Judul, bacaan, dan definisi pratinjau kartu tetap terpusat ketika deduplikasi relasi menghapus item di sebelahnya.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -119,3 +123,4 @@ Detail Library kini menggabungkan penggunaan kosakata dan dependensi masuk lainn
 - [9c374e3f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c374e3f)
 - [05838355](https://github.com/Cognis-Labs-HQ/Cognis/commit/05838355)
 - [a0016fcd](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0016fcd)
+- [0287eb84](https://github.com/Cognis-Labs-HQ/Cognis/commit/0287eb84)
