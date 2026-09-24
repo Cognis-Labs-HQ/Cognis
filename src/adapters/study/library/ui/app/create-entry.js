@@ -1,5 +1,6 @@
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { mountHorizontalCarousels } from "/static/reuse/horizontal-carousel.js";
 import {
     createLibraryEntry,
     fetchLibraryForms,
@@ -90,7 +91,7 @@ export async function openCreateEntryPopup({
         writableClasses.length > 1
             ? `<label data-library-class-choice hidden><span>${escapeHtml(i18n.t("gateway.study.library_class"))}</span><select name="classId">${writableClasses.map(({ scopeId }) => `<option value="${escapeHtml(scopeId)}">${escapeHtml(scopeId)}</option>`).join("")}</select></label>`
             : `<input type="hidden" name="classId" value="${escapeHtml(writableClasses[0]?.scopeId ?? "")}">`
-    }`;
+    }${layer.relationships?.length ? `<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><input data-library-composer-text autocomplete="off"></label><div data-library-composer-suggestions aria-live="polite"></div></section>` : ""}`;
     const { html, builder } = editorBody(
         draft,
         [
@@ -111,6 +112,7 @@ export async function openCreateEntryPopup({
             includeAlwaysShowDefinition:
                 constructor.allowAlwaysShowDefinition === true,
             includeHidden: constructor.allowHidden === true,
+            relationshipCarousels: true,
         },
     );
     let form;
@@ -133,6 +135,64 @@ export async function openCreateEntryPopup({
             form = overlay.querySelector("[data-library-admin-editor]");
             builder.attach(form);
             bindLibraryEditorControls(form, draft, i18n);
+            const controller = new AbortController();
+            overlay.addEventListener("close", () => controller.abort(), {
+                once: true,
+            });
+            mountHorizontalCarousels(form, {
+                signal: controller.signal,
+                onChange: ({ id, values }) => {
+                    const select = form.elements[`relationship:${id}`];
+                    if (!select) return;
+                    const selected = new Set(values);
+                    Array.from(select.options).forEach((option) => {
+                        option.selected = selected.has(option.value);
+                    });
+                    values.forEach((value) => {
+                        const option = Array.from(select.options).find(
+                            (candidate) => candidate.value === value,
+                        );
+                        if (option) select.append(option);
+                    });
+                },
+                onAdd: async ({ id, carousel }) => {
+                    const relationship = editingLayer.relationships.find(
+                        (candidate) => candidate.id === id,
+                    );
+                    if (!relationship) return;
+                    const created = await openCreateEntryPopup({
+                        schemas,
+                        entries,
+                        schemaId,
+                        layerId: relationship.targetLayer,
+                        i18n,
+                        contributions,
+                    });
+                    if (!created) return;
+                    entries.push(created);
+                    const select = form.elements[`relationship:${id}`];
+                    const option = new Option(
+                        created.label,
+                        created.id,
+                        true,
+                        true,
+                    );
+                    select.append(option);
+                    const item = document.createElement("button");
+                    item.type = "button";
+                    item.className =
+                        "btn-neutral horizontal-carousel-item is-selected";
+                    item.dataset.carouselValue = created.id;
+                    item.setAttribute("aria-pressed", "true");
+                    item.innerHTML = `<span>${escapeHtml(created.label)}</span><small data-carousel-order></small>`;
+                    carousel
+                        .querySelector(".horizontal-carousel-track")
+                        ?.append(item);
+                    item.click();
+                    item.click();
+                },
+            });
+            bindTextComposition(form, entries, editingLayer, i18n);
             const visibility = form.elements.scope;
             const classChoice = form.querySelector(
                 "[data-library-class-choice]",
@@ -197,4 +257,41 @@ export async function openCreateEntryPopup({
               )
             : null;
     }
+}
+
+function bindTextComposition(form, entries, layer, i18n) {
+    const input = form.querySelector("[data-library-composer-text]");
+    const output = form.querySelector("[data-library-composer-suggestions]");
+    if (!input || !output) return;
+    const candidates = (layer.relationships ?? []).flatMap((relationship) =>
+        entries
+            .filter((entry) => entry.layer === relationship.targetLayer)
+            .map((entry) => ({ ...entry, relationshipId: relationship.id })),
+    );
+    input.addEventListener("input", () => {
+        let remainder = input.value.trim();
+        const matches = [];
+        for (const candidate of [...candidates].sort(
+            (left, right) => right.label.length - left.label.length,
+        )) {
+            if (!remainder.includes(candidate.label)) continue;
+            matches.push(candidate);
+            remainder = remainder.replace(candidate.label, "").trim();
+        }
+        output.innerHTML = `${matches
+            .map(
+                (match) =>
+                    `<button class="btn-neutral" type="button" data-library-suggestion="${escapeHtml(match.id)}" data-relationship="${escapeHtml(match.relationshipId)}">${escapeHtml(match.label)} <small>${escapeHtml(i18n.t("gateway.study.library_composer_match"))}</small></button>`,
+            )
+            .join(
+                "",
+            )}${remainder ? `<span class="library-composer-unmatched">${escapeHtml(remainder)} — ${escapeHtml(i18n.t("gateway.study.library_composer_no_match"))}</span>` : ""}`;
+    });
+    output.addEventListener("click", (event) => {
+        const suggestion = event.target.closest("[data-library-suggestion]");
+        if (!suggestion) return;
+        form.querySelector(
+            `[data-horizontal-carousel="${CSS.escape(suggestion.dataset.relationship)}"] [data-carousel-value="${CSS.escape(suggestion.dataset.librarySuggestion)}"]`,
+        )?.click();
+    });
 }

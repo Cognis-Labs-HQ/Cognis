@@ -391,6 +391,15 @@ test("Study Library creation is driven by language card constructors", () => {
     );
 });
 
+test("Study Library creation offers ordered, recursive composition", () => {
+    assert.match(source, /mountHorizontalCarousels/);
+    assert.match(source, /relationshipCarousels: true/);
+    assert.match(source, /data-library-composer-text/);
+    assert.match(source, /await openCreateEntryPopup\(/);
+    assert.match(source, /library_composer_no_match/);
+    assert.match(stylesheet, /library-composer-suggestions/);
+});
+
 test("Study Library administration exposes contract-safe editing", () => {
     assert.match(
         adminInteractionsSource,

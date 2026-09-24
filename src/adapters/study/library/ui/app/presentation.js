@@ -262,7 +262,11 @@ export function renderAudio(entry, layer) {
         (field) => field.id === "audio" && field.type === "audio",
     );
     const value = audioField ? entry.fields?.[audioField.id] : undefined;
-    if (typeof value !== "string" || !value) return "";
+    if (
+        typeof value !== "string" ||
+        (!value.startsWith("file:") && !value.startsWith("https://"))
+    )
+        return "";
     const label =
         localizedLabel(audioField.metadata, entry.language) || audioField.id;
     return `<div class="library-audio" data-library-audio-player><audio preload="none" data-library-audio-entry="${escapeHtml(entry.id)}" data-library-audio-field="${escapeHtml(audioField.id)}" aria-label="${escapeHtml(label)}"></audio><button class="library-audio-toggle btn-neutral" type="button" data-library-audio-toggle aria-label="${escapeHtml(label)}">▶</button><span class="library-audio-time" data-library-audio-time>0:00</span><input class="library-audio-progress" type="range" min="0" max="1000" value="0" step="1" data-library-audio-progress aria-label="${escapeHtml(label)}"></div>`;

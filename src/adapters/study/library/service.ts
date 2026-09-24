@@ -30,6 +30,19 @@ import type {
 
 const CONTENT_CLASS_PATTERN = /^[a-z][a-zA-Z0-9]*(?::[a-z][a-zA-Z0-9]*)*$/;
 
+function canComposeAtLocation(
+    component: LibraryEntry,
+    composite: LibraryLocation,
+): boolean {
+    if (composite.scope === "user") return true;
+    if (component.scope === "global") return true;
+    return (
+        composite.scope === "class" &&
+        component.scope === "class" &&
+        component.scopeId === composite.scopeId
+    );
+}
+
 export interface LibraryActor {
     accountId: string;
     role: AccessRole;
@@ -713,6 +726,8 @@ export class LibraryService implements LibraryCapability {
         for (const reference of references) {
             const target = await this.read(actor, reference.entryId);
             if (!target) throw new Error("reference_not_found");
+            if (!canComposeAtLocation(target, location))
+                throw new Error("reference_visibility_too_low");
             targets.set(target.id, target);
         }
         validateReferences(schema, input.layer, references, targets);
@@ -817,6 +832,13 @@ export class LibraryService implements LibraryCapability {
         for (const reference of references) {
             const target = await this.read(actor, reference.entryId);
             if (!target) throw new Error("reference_not_found");
+            if (
+                !canComposeAtLocation(target, {
+                    scope: current.scope,
+                    scopeId: current.scopeId,
+                })
+            )
+                throw new Error("reference_visibility_too_low");
             targets.set(target.id, target);
         }
         validateReferences(schema, input.layer, references, targets);

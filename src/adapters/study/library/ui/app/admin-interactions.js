@@ -2,6 +2,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
+import { renderHorizontalCarousel } from "/static/reuse/horizontal-carousel.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { updateLibraryEntry } from "/static/gateways/study/ui/library-client.js";
 import { localizedLabel } from "./presentation.js";
@@ -130,7 +131,18 @@ export function bindLibraryEditorControls(form, entry, i18n) {
     });
 }
 
-function relationshipEditor(relationship, entry, entries, language) {
+function relationshipEditor(
+    relationship,
+    entry,
+    entries,
+    language,
+    {
+        carousel = false,
+        addLabel = "Add",
+        previousLabel = "Previous",
+        nextLabel = "Next",
+    } = {},
+) {
     const label =
         localizedLabel(relationship.metadata, language) || relationship.id;
     const selected = new Set(
@@ -144,7 +156,10 @@ function relationshipEditor(relationship, entry, entries, language) {
             candidate.layer === relationship.targetLayer &&
             candidate.id !== entry.id,
     );
-    return `<label><span>${escapeHtml(label)}</span><select name="relationship:${escapeHtml(relationship.id)}" multiple size="${Math.min(6, Math.max(2, targets.length))}">${targets.map((target) => `<option value="${escapeHtml(target.id)}"${selected.has(target.id) ? " selected" : ""}>${escapeHtml(target.label)}</option>`).join("")}</select></label>`;
+    const select = `<select name="relationship:${escapeHtml(relationship.id)}" multiple${carousel ? " hidden" : ` size="${Math.min(6, Math.max(2, targets.length))}"`}>${targets.map((target) => `<option value="${escapeHtml(target.id)}"${selected.has(target.id) ? " selected" : ""}>${escapeHtml(target.label)}</option>`).join("")}</select>`;
+    if (!carousel)
+        return `<label><span>${escapeHtml(label)}</span>${select}</label>`;
+    return `<div class="library-composer-relationship" data-library-composer-relationship="${escapeHtml(relationship.id)}" data-target-layer="${escapeHtml(relationship.targetLayer)}">${select}${renderHorizontalCarousel({ id: relationship.id, label, items: targets.map((target) => ({ value: target.id, label: target.label })), selectedValues: [...selected], addLabel, previousLabel, nextLabel })}</div>`;
 }
 
 export function editorBody(
@@ -174,7 +189,12 @@ export function editorBody(
         .join("");
     const relationships = (layer?.relationships ?? [])
         .map((relationship) =>
-            relationshipEditor(relationship, entry, entries, schema.language),
+            relationshipEditor(relationship, entry, entries, schema.language, {
+                carousel: options.relationshipCarousels === true,
+                addLabel: i18n.t("gateway.study.library_create"),
+                previousLabel: i18n.t("ui.reuse.previous"),
+                nextLabel: i18n.t("ui.reuse.next"),
+            }),
         )
         .join("");
     const contentClass =

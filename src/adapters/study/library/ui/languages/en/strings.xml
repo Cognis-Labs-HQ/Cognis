@@ -75,4 +75,7 @@
   <string name="gateway.study.library_requests_pending">Pending</string>
   <string name="gateway.study.library_requests_review">For Review</string>
   <string name="gateway.study.library_optional">Optional</string>
+  <string name="gateway.study.library_composer_text">Compose from text</string>
+  <string name="gateway.study.library_composer_match">Did you mean?</string>
+  <string name="gateway.study.library_composer_no_match">No matches found, create?</string>
 </resources>
