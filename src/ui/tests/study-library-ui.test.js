@@ -411,6 +411,12 @@ test("Study Library renders metadata and scope indicators", () => {
     assert.match(source, /entry\.class !== "composite"/);
     assert.match(source, /library-content-class-pill/);
     assert.match(source, /visibleRelatedWords/);
+    assert.match(source, /function uniqueRelatedEntries/);
+    assert.match(
+        source,
+        /const relatedDependants = uniqueRelatedEntries\(\[[\s\S]*\.\.\.visibleRelatedWords,[\s\S]*\.\.\.otherUsedBy/,
+    );
+    assert.doesNotMatch(source, /gateway\.study\.library_used_in_layer/);
     assert.match(stylesheet, /\.library-metadata-pill/);
     assert.match(
         stylesheet,

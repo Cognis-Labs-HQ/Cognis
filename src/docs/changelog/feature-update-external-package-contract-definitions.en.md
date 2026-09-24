@@ -90,6 +90,10 @@ Library detail headings now compare normalized text and link targets across the 
 
 The external-package contract now treats relationships without resolver and presentation roles as dependency-only edges. They remain persisted for reverse navigation and deletion protection without being inferred as title composition, matching the Japanese provider’s `reading-kana-dependency` graph.
 
+## Unified reverse relationships
+
+Library details now combine vocabulary usage and other inbound dependencies into one Used By section. Visually duplicate normalized labels collapse into one link, with vocabulary relationships taking priority.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -114,3 +118,4 @@ The external-package contract now treats relationships without resolver and pres
 - [5f8b129c](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f8b129c)
 - [9c374e3f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c374e3f)
 - [05838355](https://github.com/Cognis-Labs-HQ/Cognis/commit/05838355)
+- [a0016fcd](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0016fcd)

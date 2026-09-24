@@ -90,6 +90,10 @@ Library-Detailüberschriften vergleichen nun normalisierten Text und Linkziele z
 
 Der Vertrag für externe Pakete behandelt Beziehungen ohne Resolver- und Darstellungsrolle nun als reine Abhängigkeitskanten. Sie bleiben für Rückwärtsnavigation und Löschschutz gespeichert, ohne als Titelkomposition interpretiert zu werden, und entsprechen damit dem `reading-kana-dependency`-Graphen des japanischen Anbieters.
 
+## Vereinigte Rückwärtsbeziehungen
+
+Library-Details vereinen Vokabelverwendung und andere eingehende Abhängigkeiten nun in einem Abschnitt „Verwendet von“. Optisch gleiche normalisierte Beschriftungen werden zu einem Link zusammengeführt, wobei Vokabelbeziehungen Vorrang haben.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -114,3 +118,4 @@ Der Vertrag für externe Pakete behandelt Beziehungen ohne Resolver- und Darstel
 - [5f8b129c](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f8b129c)
 - [9c374e3f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c374e3f)
 - [05838355](https://github.com/Cognis-Labs-HQ/Cognis/commit/05838355)
+- [a0016fcd](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0016fcd)

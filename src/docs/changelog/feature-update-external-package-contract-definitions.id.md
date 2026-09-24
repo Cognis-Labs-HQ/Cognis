@@ -90,6 +90,10 @@ Judul detail Library kini membandingkan teks ternormalisasi dan tujuan tautan an
 
 Kontrak paket eksternal kini memperlakukan relasi tanpa peran resolver dan presentasi sebagai sisi dependensi saja. Relasi tetap disimpan untuk navigasi balik dan perlindungan penghapusan tanpa dianggap sebagai komposisi judul, selaras dengan graf `reading-kana-dependency` penyedia bahasa Jepang.
 
+## Relasi balik terpadu
+
+Detail Library kini menggabungkan penggunaan kosakata dan dependensi masuk lainnya dalam satu bagian Digunakan Oleh. Label ternormalisasi yang tampak sama diringkas menjadi satu tautan, dengan relasi kosakata diprioritaskan.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -114,3 +118,4 @@ Kontrak paket eksternal kini memperlakukan relasi tanpa peran resolver dan prese
 - [5f8b129c](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f8b129c)
 - [9c374e3f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c374e3f)
 - [05838355](https://github.com/Cognis-Labs-HQ/Cognis/commit/05838355)
+- [a0016fcd](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0016fcd)

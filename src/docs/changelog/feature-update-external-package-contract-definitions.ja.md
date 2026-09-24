@@ -90,6 +90,10 @@ Library の詳細見出しは、主要タイトルと二次表記詳細の間で
 
 外部パッケージ契約では、resolverRole と presentationRole を持たない関係を依存専用エッジとして扱うようになりました。タイトル構成とは推論せず、逆方向ナビゲーションと削除保護のために保持し、日本語プロバイダーの `reading-kana-dependency` グラフに対応します。
 
+## 逆方向関係の統合
+
+Library 詳細では、語彙での使用とその他の受信依存関係を 1 つの「使用元」セクションに統合しました。見た目が同じ正規化ラベルは 1 つのリンクにまとめ、語彙関係を優先します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -114,3 +118,4 @@ Library の詳細見出しは、主要タイトルと二次表記詳細の間で
 - [5f8b129c](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f8b129c)
 - [9c374e3f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c374e3f)
 - [05838355](https://github.com/Cognis-Labs-HQ/Cognis/commit/05838355)
+- [a0016fcd](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0016fcd)
