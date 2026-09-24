@@ -90,4 +90,6 @@
   <string name="gateway.study.library_publish_everyone_info">Beim Veröffentlichen wird eine Anfrage an die Administration gesendet, diese Karte für alle sichtbar zu machen.</string>
   <string name="gateway.study.library_add_definition">Definition hinzufügen</string>
   <string name="gateway.study.library_publish_class_option">Für Klasse veröffentlichen</string>
+  <string name="gateway.study.library_practice_writing">Schreiben üben</string>
+  <string name="gateway.study.library_play_audio">Audio abspielen</string>
 </resources>

@@ -955,3 +955,20 @@ body[data-theme="dark"] .library-audio {
     margin: 0;
     overflow-wrap: anywhere;
 }
+
+.library-audio-sequence audio {
+    display: none;
+}
+
+.library-audio-speaker {
+    display: grid;
+    width: 2.4rem;
+    height: 2.4rem;
+    padding: 0.45rem;
+    place-items: center;
+}
+
+.library-audio-speaker img {
+    width: 100%;
+    height: 100%;
+}

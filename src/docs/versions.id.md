@@ -55,7 +55,8 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Link Share            | `src/adapters/share/link/`          | `1.1.36`  |
 | User Share            | `src/adapters/share/user/`          | `1.1.19`  |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.1`   |
-| Library (Study)       | `src/adapters/study/library/`       | `2.20.21` |
+| Library (Study)       | `src/adapters/study/library/`       | `2.20.22` |
+| Drawing (Study)       | `src/adapters/study/drawing/`       | `1.0.0`   |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.1.7`   |
 | Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.1.5`   |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`   |

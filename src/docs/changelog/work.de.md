@@ -70,6 +70,10 @@ Beziehungssammlungen zeigen jetzt alle Elemente ohne Bildlaufleisten oder Richtu
 
 Aufgelöste Karten befinden sich jetzt innerhalb des Eingabefelds, die Aussprache wird während der Eingabe aktualisiert, doppelte Karussellbeschriftungen werden zusammengeführt und Vorschauen werden nicht mehr vom Dialog abgeschnitten. Beziehungen verwenden eine schreibgeschützte Hierarchie, Definitionen können als wiederholbare Sätze für alle Sprachen erstellt werden, die Veröffentlichung erklärt die Prüfung klarer und Benutzerautoren sehen das administrative Steuerelement „Ausgeblendet“ nicht mehr.
 
+## Zeichenfähige Karten und sichere Definitionen
+
+Definitionsdatensätze können jetzt nur als verknüpfte Kinder einer anderen Karte erstellt werden; beim Schließen des Composers greift der gemeinsame Schutz vor Datenverlust. Kompakte Lautsprechersteuerungen spielen vollständige Audiofolgen von Kompositionen nur ab, wenn alle Bestandteile verfügbar sind. Ein neuer validierter Strichmustervertrag versorgt einen PiP-Zeichenadapter mit geordneter Strichbewertung, Live-Fortschritt, Rückgängig/Zurücksetzen und einstellbarer Hilfestellung.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -85,3 +89,4 @@ Aufgelöste Karten befinden sich jetzt innerhalb des Eingabefelds, die Aussprach
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e1e564bf66580e7a1e8eaf24080c646f686d982c
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/344ccb5b
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/40da0c7a
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/584fb0b46ebb77bd43e585b3b41a279a0e6e9bfa

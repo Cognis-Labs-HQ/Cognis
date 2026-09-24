@@ -257,19 +257,74 @@ export function headingCompositionReferences(detail, schemas) {
     );
 }
 
-export function renderAudio(entry, layer) {
+function entryAudio(entry, layer) {
     const audioField = (layer?.fields ?? []).find(
         (field) => field.id === "audio" && field.type === "audio",
     );
     const value = audioField ? entry.fields?.[audioField.id] : undefined;
-    if (
-        typeof value !== "string" ||
-        (!value.startsWith("file:") && !value.startsWith("https://"))
-    )
-        return "";
-    const label =
-        localizedLabel(audioField.metadata, entry.language) || audioField.id;
-    return `<div class="library-audio" data-library-audio-player><audio preload="none" data-library-audio-entry="${escapeHtml(entry.id)}" data-library-audio-field="${escapeHtml(audioField.id)}" aria-label="${escapeHtml(label)}"></audio><button class="library-audio-toggle btn-neutral" type="button" data-library-audio-toggle aria-label="${escapeHtml(label)}">▶</button><span class="library-audio-time" data-library-audio-time>0:00</span><input class="library-audio-progress" type="range" min="0" max="1000" value="0" step="1" data-library-audio-progress aria-label="${escapeHtml(label)}"></div>`;
+    return {
+        audioField,
+        valid:
+            typeof value === "string" &&
+            (value.startsWith("file:") || value.startsWith("https://")),
+    };
+}
+
+export function renderAudio(
+    entry,
+    layer,
+    entries = [],
+    schemas = [],
+    fallbackLabel = "",
+) {
+    const own = entryAudio(entry, layer);
+    let sources = own.valid ? [{ entry, field: own.audioField }] : [];
+    let complete = own.valid;
+    if (!own.valid && (entry.references ?? []).length) {
+        const resolveSources = (candidate, visited = new Set()) => {
+            if (!candidate || visited.has(candidate.id)) return null;
+            visited.add(candidate.id);
+            const candidateLayer = layerForEntry(schemas, candidate);
+            const audio = entryAudio(candidate, candidateLayer);
+            if (audio.valid)
+                return [{ entry: candidate, field: audio.audioField }];
+            const content = (candidate.references ?? [])
+                .sort(
+                    (left, right) =>
+                        (left.position ?? 0) - (right.position ?? 0),
+                )
+                .map(({ entryId }) => entries.find(({ id }) => id === entryId))
+                .filter(Boolean)
+                .filter(
+                    (target) =>
+                        !["definition", "meaning"].includes(
+                            layerForEntry(schemas, target)?.semanticRole,
+                        ),
+                );
+            if (!content.length) return null;
+            const nested = content.map((target) =>
+                resolveSources(target, new Set(visited)),
+            );
+            return nested.every(Boolean) ? nested.flat() : null;
+        };
+        const resolved = resolveSources(entry);
+        sources = resolved ?? [];
+        complete = Boolean(resolved?.length);
+    }
+    const label = own.audioField
+        ? localizedLabel(own.audioField.metadata, entry.language) ||
+          own.audioField.id
+        : fallbackLabel;
+    if (!complete || !sources.length)
+        return `<button class="library-audio-speaker btn-neutral" type="button" disabled aria-label="${escapeHtml(label)}"><img src="/static/adapters/study/library/assets/speaker.svg" alt=""></button>`;
+    return `<div class="library-audio-sequence" data-library-audio-sequence>${sources
+        .map(
+            ({ entry: source, field }) =>
+                `<audio preload="none" data-library-audio-entry="${escapeHtml(source.id)}" data-library-audio-field="${escapeHtml(field.id)}"></audio>`,
+        )
+        .join(
+            "",
+        )}<button class="library-audio-speaker btn-neutral" type="button" data-library-audio-sequence-toggle aria-label="${escapeHtml(label)}"><img src="/static/adapters/study/library/assets/speaker.svg" alt=""></button></div>`;
 }
 
 export function formatAudioTime(value) {
@@ -352,4 +407,27 @@ export async function loadLibraryAudio(
             },
         ),
     );
+    overlay
+        .querySelectorAll("[data-library-audio-sequence]")
+        .forEach((group) => {
+            const audio = Array.from(group.querySelectorAll("audio"));
+            const toggle = group.querySelector(
+                "[data-library-audio-sequence-toggle]",
+            );
+            if (!toggle || audio.some((item) => !item.src)) {
+                if (toggle) toggle.disabled = true;
+                return;
+            }
+            toggle.addEventListener("click", async () => {
+                toggle.disabled = true;
+                for (const item of audio) {
+                    item.currentTime = 0;
+                    await item.play();
+                    await new Promise((resolve) =>
+                        item.addEventListener("ended", resolve, { once: true }),
+                    );
+                }
+                toggle.disabled = false;
+            });
+        });
 }

@@ -70,6 +70,10 @@ Relationship collections now show every item without scrollbars or direction arr
 
 Resolved cards now live inside Input, pronunciation updates while typing, duplicate carousel labels collapse, and previews escape dialog clipping. Relationships use a read-only hierarchy, definitions can be created as repeatable all-language sets, publication has clearer review guidance, and user authors no longer see the administrative Hidden control.
 
+## Drawing-aware cards and safe definitions
+
+Definition records can now be created only as linked children of another card, and composer closure uses shared data-loss protection. Compact speaker controls play complete composite audio sequences only when every component is available. A new validated stroke-pattern contract powers a PiP drawing adapter with ordered stroke scoring, live progress, undo/reset, and adjustable guidance.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -85,3 +89,4 @@ Resolved cards now live inside Input, pronunciation updates while typing, duplic
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e1e564bf66580e7a1e8eaf24080c646f686d982c
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/344ccb5b
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/40da0c7a
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/584fb0b46ebb77bd43e585b3b41a279a0e6e9bfa

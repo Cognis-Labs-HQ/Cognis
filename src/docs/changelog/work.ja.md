@@ -70,6 +70,10 @@ Library の作成操作は通常のボタン寸法を維持し、プラス記号
 
 解決済みカードが Input 内に表示され、入力中に発音が更新され、重複するカルーセルラベルがまとめられ、プレビューがダイアログで切り取られなくなりました。関係は読み取り専用階層で表示され、定義は全言語セットとして繰り返し作成できます。公開時の審査案内も明確になり、ユーザー作成者には管理用の「非表示」コントロールを表示しません。
 
+## 描画対応カードと安全な定義
+
+定義レコードは別カードにリンクされた子としてのみ作成でき、作成画面を閉じる際には共通のデータ損失防止が働きます。簡潔なスピーカー操作は、全構成要素の音声がそろっている場合にのみ複合音声を連続再生します。新しい検証済み筆順パターン契約により、筆順採点、進捗、元に戻す・リセット、調整可能なガイドを備えた PiP 描画アダプターが動作します。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -85,3 +89,4 @@ Library の作成操作は通常のボタン寸法を維持し、プラス記号
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e1e564bf66580e7a1e8eaf24080c646f686d982c
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/344ccb5b
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/40da0c7a
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/584fb0b46ebb77bd43e585b3b41a279a0e6e9bfa

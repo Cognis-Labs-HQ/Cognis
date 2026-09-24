@@ -1,0 +1,38 @@
+.study-drawing-pad {
+    position: fixed;
+    z-index: 9000;
+    inset: auto 1rem 1rem auto;
+    width: min(34rem, calc(100vw - 2rem));
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+.study-drawing-pad header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    cursor: move;
+}
+.study-drawing-pad canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    margin-block: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: #fff;
+    touch-action: none;
+}
+.study-drawing-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.study-drawing-progress {
+    flex: 1;
+    min-width: 8rem;
+}

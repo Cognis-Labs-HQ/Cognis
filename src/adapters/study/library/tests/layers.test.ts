@@ -782,3 +782,55 @@ test("writing-unit layers require pronunciation and audio fields", () => {
         /audio_field_required/,
     );
 });
+
+test("stroke patterns require ordered normalized pen samples", () => {
+    const schema = validateLibrarySchema({
+        ...english,
+        layers: [
+            {
+                id: "characters",
+                metadata: { labels: { en: "Characters" } },
+                fields: [
+                    {
+                        id: "strokes",
+                        type: "strokePattern",
+                        metadata: { labels: { en: "Strokes" } },
+                    },
+                ],
+            },
+        ],
+    });
+    assert.doesNotThrow(() =>
+        validateFields(schema, "characters", {
+            strokes: {
+                coordinateSystem: "normalized",
+                tolerance: 60,
+                strokes: [
+                    {
+                        points: [
+                            { x: 0.1, y: 0.2, time: 0, pressure: 0.4 },
+                            { x: 0.8, y: 0.7, time: 120, pressure: 0.7 },
+                        ],
+                    },
+                ],
+            },
+        }),
+    );
+    assert.throws(
+        () =>
+            validateFields(schema, "characters", {
+                strokes: {
+                    coordinateSystem: "normalized",
+                    strokes: [
+                        {
+                            points: [
+                                { x: 0.1, y: 0.2, time: 5 },
+                                { x: 1.2, y: 0.7, time: 4 },
+                            ],
+                        },
+                    ],
+                },
+            }),
+        /invalid_field_type:strokes/,
+    );
+});

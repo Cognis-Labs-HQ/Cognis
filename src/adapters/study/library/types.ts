@@ -95,6 +95,22 @@ export interface LibraryFieldSchema {
     detail?: LibraryDetailHint;
 }
 
+/** Normalized pen coordinates and timing for deterministic writing practice. */
+export interface LibraryStrokePattern {
+    coordinateSystem: "normalized";
+    strokes: readonly {
+        points: readonly {
+            x: number;
+            y: number;
+            /** Milliseconds from the beginning of this stroke. */
+            time: number;
+            pressure?: number;
+        }[];
+    }[];
+    /** Minimum percentage accepted by a practice renderer. */
+    tolerance?: number;
+}
+
 export interface LibraryRelationshipSchema {
     id: string;
     targetLayer: string;

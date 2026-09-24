@@ -376,7 +376,10 @@ test("Study Library creation is driven by language card constructors", () => {
     assert.match(layerPageSource, /page:actions/);
     assert.match(layerPageSource, /textContent = "\+"/);
     assert.match(layerPageSource, /fetchLibraryForms/);
-    assert.match(layerPageSource, /semanticRole !== "atomicWritingUnit"/);
+    assert.match(
+        layerPageSource,
+        /\["atomicWritingUnit", "definition", "meaning"\]\.includes/,
+    );
     assert.match(source, /contributedConstructor \?\?/);
     assert.match(source, /layer\?\.cardConstructor \?\?/);
     assert.match(source, /writableClasses\.length && !canPublishEveryone/);
@@ -420,7 +423,7 @@ test("Study Library separates admin and user-facing editing", () => {
     );
     assert.match(source, /function entryEditMode/);
     assert.match(source, /entry\.canEdit !== true/);
-    assert.match(source, /headerActions: editMode/);
+    assert.match(source, /headerActions: \[/);
     assert.doesNotMatch(source, /data-library-entry-edit/);
     assert.doesNotMatch(stylesheet, /\.library-entry-preview-edit/);
     assert.match(source, /edit-light\.svg/);

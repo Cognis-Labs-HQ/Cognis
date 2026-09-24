@@ -90,4 +90,6 @@
   <string name="gateway.study.library_publish_everyone_info">Penerbitan mengirimkan permintaan kepada administrator agar kartu ini terlihat oleh semua orang.</string>
   <string name="gateway.study.library_add_definition">Tambahkan definisi</string>
   <string name="gateway.study.library_publish_class_option">Terbitkan untuk kelas</string>
+  <string name="gateway.study.library_practice_writing">Latihan menulis</string>
+  <string name="gateway.study.library_play_audio">Putar audio</string>
 </resources>

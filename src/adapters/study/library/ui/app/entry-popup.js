@@ -18,7 +18,13 @@ import {
 import { isDirectlyVisible } from "./cards.js";
 import { openLibraryEntryEditor } from "./admin-interactions.js";
 import { entryEditMode } from "./editability.js";
-
+import {
+    canDraw,
+    drawingHeaderActions,
+    drawingPattern,
+    openDrawing,
+    placeAudioSpeaker,
+} from "./drawing.js";
 export async function openEntryPopup(
     root,
     initialEntry,
@@ -110,6 +116,8 @@ export async function openEntryPopup(
             composed.titleDefinition,
             sourceDefinition,
         );
+        const strokePattern = drawingPattern(detail.entry, layer);
+        const drawingAvailable = canDraw(strokePattern);
         if (parentEntry && layer?.semanticRole !== "lexicalUnit") {
             const [parentPrefix, parentSuffix = ""] = i18n
                 .t("gateway.study.library_from_parent")
@@ -138,20 +146,23 @@ export async function openEntryPopup(
                 actionId: `open-title-reference:${entry.id}`,
             })),
             titleDetailItems,
-            headerActions: editMode
-                ? [
-                      {
-                          id: "edit",
-                          label: i18n
-                              .t("gateway.study.library_admin_edit")
-                              .replace("{{ entry }}", detail.entry.label),
-                          icon: {
-                              light: "/static/adapters/study/library/assets/edit-light.svg",
-                              dark: "/static/adapters/study/library/assets/edit-dark.svg",
+            headerActions: [
+                ...drawingHeaderActions(strokePattern, i18n),
+                ...(editMode
+                    ? [
+                          {
+                              id: "edit",
+                              label: i18n
+                                  .t("gateway.study.library_admin_edit")
+                                  .replace("{{ entry }}", detail.entry.label),
+                              icon: {
+                                  light: "/static/adapters/study/library/assets/edit-light.svg",
+                                  dark: "/static/adapters/study/library/assets/edit-dark.svg",
+                              },
                           },
-                      },
-                  ]
-                : [],
+                      ]
+                    : []),
+            ],
             body: composed.body,
             maxWidth: "min(56rem, 94vw)",
             closeButtonVariant: "neutral",
@@ -186,6 +197,7 @@ export async function openEntryPopup(
                 overlay.classList.add("library-entry-popup");
                 if (detail.entry.class === "composite")
                     overlay.classList.add("library-entry-popup--composite");
+                placeAudioSpeaker(overlay);
                 void loadLibraryAudio(
                     overlay,
                     audioObjectUrls,
@@ -204,6 +216,10 @@ export async function openEntryPopup(
                 });
             },
             onAction: async (actionId, overlay, popupApi) => {
+                if (actionId === "draw" && drawingAvailable) {
+                    openDrawing(detail.entry, strokePattern);
+                    return false;
+                }
                 const contributedAction = composed.actions.find(
                     (action) => action.id === actionId,
                 );

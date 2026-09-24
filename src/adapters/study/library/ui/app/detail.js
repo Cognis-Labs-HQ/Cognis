@@ -120,7 +120,7 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
         ? `<span class="library-metadata-pill library-content-class-pill">${escapeHtml(contentClassLabel(displayedClass))}</span>`
         : "";
     return [
-        `<header class="library-detail-summary">${renderAudio(entry, layer)}<div class="library-entry-indicators">${classPill}${renderMetadataPills(entry, layer)}</div></header>`,
+        `<header class="library-detail-summary">${renderAudio(entry, layer, entries, schemas, i18n.t("gateway.study.library_play_audio"))}<div class="library-entry-indicators">${classPill}${renderMetadataPills(entry, layer)}</div></header>`,
         options.showReferenceTree ? relationTree(references, usedBy, i18n) : "",
         renderDetailFields(genericFields),
         !options.showReferenceTree && relatedDependants.length

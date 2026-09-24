@@ -28,7 +28,10 @@ export async function chooseCreateLayer({
     i18n,
 }) {
     const permitted = schema.layers.filter(
-        (layer) => layer.semanticRole !== "atomicWritingUnit",
+        (layer) =>
+            !["atomicWritingUnit", "definition", "meaning"].includes(
+                layer.semanticRole,
+            ),
     );
     if (!permitted.length) return null;
     let select;
@@ -181,6 +184,7 @@ export async function openCreateEntryPopup({
         title: i18n.t("gateway.study.library_create"),
         body: html,
         maxWidth: "min(72rem, 96vw)",
+        closeProtection: true,
         actions: [
             {
                 id: "create",
