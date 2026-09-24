@@ -45,7 +45,7 @@
   <string name="gateway.study.library_content_class">Content class</string>
   <string name="gateway.study.library_admin_fields">Fields (JSON)</string>
   <string name="gateway.study.library_admin_references">Relationships (JSON)</string>
-  <string name="gateway.study.library_admin_hidden">Hidden from learners</string>
+  <string name="gateway.study.library_admin_hidden">Hidden</string>
   <string name="gateway.study.library_update_success">The Library entry was updated.</string>
   <string name="gateway.study.library_update_error">Could not update the Library entry. Check the entered data.</string>
   <string name="gateway.study.library_admin_edit">Edit {{ entry }}</string>
@@ -86,6 +86,8 @@
   <string name="gateway.study.library_editor_no_definitions">No definitions are linked yet.</string>
   <string name="gateway.study.library_editor_no_relationships">This card type has no relationships.</string>
   <string name="gateway.study.library_composer_resolve_input">Resolve or create every text segment before creating the card.</string>
-  <string name="gateway.study.library_publish_everyone">Publish to everyone</string>
+  <string name="gateway.study.library_publish_everyone">Publish</string>
+  <string name="gateway.study.library_publish_everyone_info">Publishing sends a request to administrators to make this card visible to everyone.</string>
+  <string name="gateway.study.library_add_definition">Add definition</string>
   <string name="gateway.study.library_publish_class_option">Publish to class</string>
 </resources>

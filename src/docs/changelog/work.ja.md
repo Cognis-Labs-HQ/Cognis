@@ -66,6 +66,10 @@ Library の作成操作は通常のボタン寸法を維持し、プラス記号
 
 関連候補をスクロールバーや方向矢印なしですべて表示するようにしました。ホバープレビューには現在の UI 言語の定義を含む最小カードを表示し、カルーセルの選択項目と自由入力の候補はすぐにドラッグ可能な入力ブロックになります。ブロックの並べ替えは関連順序へ反映され、選択内容から関連参照を推論し、参照された表記単位から発音を導出し、定義作成では対応するすべての UI 言語を要求します。
 
+## 統合された構成フロー
+
+解決済みカードが Input 内に表示され、入力中に発音が更新され、重複するカルーセルラベルがまとめられ、プレビューがダイアログで切り取られなくなりました。関係は読み取り専用階層で表示され、定義は全言語セットとして繰り返し作成できます。公開時の審査案内も明確になり、ユーザー作成者には管理用の「非表示」コントロールを表示しません。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -79,3 +83,5 @@ Library の作成操作は通常のボタン寸法を維持し、プラス記号
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/cff7223cd64c36372e64484c362ba9b1a1f4e2f7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bbb6bb8bd8e2d70a6ec571c2a69e58665a90ca04
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e1e564bf66580e7a1e8eaf24080c646f686d982c
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/344ccb5b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/40da0c7a

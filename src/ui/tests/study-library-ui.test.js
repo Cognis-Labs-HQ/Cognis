@@ -370,6 +370,8 @@ test("Study Library creation is driven by language card constructors", () => {
     assert.match(source, /name="scope" type="hidden" value="user"/);
     assert.match(source, /data-library-publish-class-toggle/);
     assert.match(source, /publishEveryone/);
+    assert.match(source, /library_publish_everyone_info/);
+    assert.match(source, /includeHidden: false/);
     assert.doesNotMatch(indexSource, /data-library-create/);
     assert.match(layerPageSource, /page:actions/);
     assert.match(layerPageSource, /textContent = "\+"/);
@@ -403,6 +405,10 @@ test("Study Library creation offers ordered, recursive composition", () => {
     assert.match(source, /draggable="true"/);
     assert.match(source, /derivedPronunciation/);
     assert.match(source, /inferRelationships/);
+    assert.match(source, /library-composition-input/);
+    assert.match(source, /data-library-add-definition/);
+    assert.match(adminInteractionsSource, /library-relationship-map/);
+    assert.match(adminInteractionsSource, /data-library-definition-empty/);
     assert.doesNotMatch(source, /library_composer_match.*<\/small>/);
 });
 

@@ -66,6 +66,10 @@ The Library create action keeps its normal button footprint while doubling only 
 
 Relationship collections now show every item without scrollbars or direction arrows. Hover previews show a minimal card with the current-language definition, while carousel choices and free-text suggestions immediately become draggable Input blocks. Reordering blocks updates relationship order, selected content infers related references, pronunciation walks referenced writing units, and definition creation requests every supported UI language.
 
+## Integrated composition workflow
+
+Resolved cards now live inside Input, pronunciation updates while typing, duplicate carousel labels collapse, and previews escape dialog clipping. Relationships use a read-only hierarchy, definitions can be created as repeatable all-language sets, publication has clearer review guidance, and user authors no longer see the administrative Hidden control.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -79,3 +83,5 @@ Relationship collections now show every item without scrollbars or direction arr
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/cff7223cd64c36372e64484c362ba9b1a1f4e2f7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bbb6bb8bd8e2d70a6ec571c2a69e58665a90ca04
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e1e564bf66580e7a1e8eaf24080c646f686d982c
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/344ccb5b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/40da0c7a

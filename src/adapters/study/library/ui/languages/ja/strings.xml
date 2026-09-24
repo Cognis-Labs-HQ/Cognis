@@ -45,7 +45,7 @@
   <string name="gateway.study.library_content_class">コンテンツクラス</string>
   <string name="gateway.study.library_admin_fields">フィールド (JSON)</string>
   <string name="gateway.study.library_admin_references">関係 (JSON)</string>
-  <string name="gateway.study.library_admin_hidden">学習者には非表示</string>
+  <string name="gateway.study.library_admin_hidden">非表示</string>
   <string name="gateway.study.library_update_success">ライブラリエントリを更新しました。</string>
   <string name="gateway.study.library_update_error">ライブラリエントリを更新できませんでした。入力データを確認してください。</string>
   <string name="gateway.study.library_admin_edit">{{ entry }} を編集</string>
@@ -86,6 +86,8 @@
   <string name="gateway.study.library_editor_no_definitions">まだ定義が関連付けられていません。</string>
   <string name="gateway.study.library_editor_no_relationships">このカード種別には関連がありません。</string>
   <string name="gateway.study.library_composer_resolve_input">カードを作成する前に、すべてのテキスト部分を既存項目に解決するか新規作成してください。</string>
-  <string name="gateway.study.library_publish_everyone">全員に公開</string>
+  <string name="gateway.study.library_publish_everyone">公開</string>
+  <string name="gateway.study.library_publish_everyone_info">公開すると、このカードを全員に表示するためのリクエストが管理者へ送信されます。</string>
+  <string name="gateway.study.library_add_definition">定義を追加</string>
   <string name="gateway.study.library_publish_class_option">クラスに公開</string>
 </resources>

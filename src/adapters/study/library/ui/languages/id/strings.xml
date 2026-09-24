@@ -45,7 +45,7 @@
   <string name="gateway.study.library_content_class">Kelas konten</string>
   <string name="gateway.study.library_admin_fields">Bidang (JSON)</string>
   <string name="gateway.study.library_admin_references">Relasi (JSON)</string>
-  <string name="gateway.study.library_admin_hidden">Disembunyikan dari pelajar</string>
+  <string name="gateway.study.library_admin_hidden">Disembunyikan</string>
   <string name="gateway.study.library_update_success">Entri Pustaka telah diperbarui.</string>
   <string name="gateway.study.library_update_error">Entri Pustaka tidak dapat diperbarui. Periksa data yang dimasukkan.</string>
   <string name="gateway.study.library_admin_edit">Edit {{ entry }}</string>
@@ -86,6 +86,8 @@
   <string name="gateway.study.library_editor_no_definitions">Belum ada definisi yang ditautkan.</string>
   <string name="gateway.study.library_editor_no_relationships">Jenis kartu ini tidak memiliki hubungan.</string>
   <string name="gateway.study.library_composer_resolve_input">Selesaikan atau buat setiap segmen teks sebelum membuat kartu.</string>
-  <string name="gateway.study.library_publish_everyone">Terbitkan untuk semua orang</string>
+  <string name="gateway.study.library_publish_everyone">Terbitkan</string>
+  <string name="gateway.study.library_publish_everyone_info">Penerbitan mengirimkan permintaan kepada administrator agar kartu ini terlihat oleh semua orang.</string>
+  <string name="gateway.study.library_add_definition">Tambahkan definisi</string>
   <string name="gateway.study.library_publish_class_option">Terbitkan untuk kelas</string>
 </resources>

@@ -40,6 +40,19 @@ export function mountHorizontalCarousels(
     root,
     { signal, onChange = () => {}, onAdd = () => {} } = {},
 ) {
+    let previewOverlay = null;
+    const hidePreview = () => previewOverlay?.remove();
+    const showPreview = (trigger) => {
+        const preview = trigger.querySelector(".horizontal-carousel-preview");
+        if (!preview) return;
+        hidePreview();
+        const bounds = trigger.getBoundingClientRect();
+        previewOverlay = preview.cloneNode(true);
+        previewOverlay.classList.add("is-portal");
+        previewOverlay.style.left = `${Math.min(window.innerWidth - 12, Math.max(12, bounds.left + bounds.width / 2))}px`;
+        previewOverlay.style.top = `${Math.max(12, bounds.top - 8)}px`;
+        document.body.append(previewOverlay);
+    };
     const values = (carousel) =>
         Array.from(
             carousel.querySelectorAll("[data-carousel-value].is-selected"),
@@ -59,6 +72,29 @@ export function mountHorizontalCarousels(
         if (output) output.textContent = values(carousel).length || "";
     };
     root.querySelectorAll("[data-horizontal-carousel]").forEach(refresh);
+    root.addEventListener(
+        "pointerover",
+        (event) => {
+            const trigger = event.target.closest(
+                ".horizontal-carousel-item, .library-composer-suggestion",
+            );
+            if (trigger) showPreview(trigger);
+        },
+        { signal },
+    );
+    root.addEventListener("pointerout", hidePreview, { signal });
+    root.addEventListener(
+        "focusin",
+        (event) => {
+            const trigger = event.target.closest(
+                ".horizontal-carousel-item, .library-composer-suggestion",
+            );
+            if (trigger) showPreview(trigger);
+        },
+        { signal },
+    );
+    root.addEventListener("focusout", hidePreview, { signal });
+    signal?.addEventListener("abort", hidePreview, { once: true });
     root.addEventListener(
         "click",
         (event) => {

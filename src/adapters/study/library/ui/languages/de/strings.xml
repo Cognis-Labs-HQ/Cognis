@@ -45,7 +45,7 @@
   <string name="gateway.study.library_content_class">Inhaltsklasse</string>
   <string name="gateway.study.library_admin_fields">Felder (JSON)</string>
   <string name="gateway.study.library_admin_references">Beziehungen (JSON)</string>
-  <string name="gateway.study.library_admin_hidden">Vor Lernenden verborgen</string>
+  <string name="gateway.study.library_admin_hidden">Ausgeblendet</string>
   <string name="gateway.study.library_update_success">Der Bibliothekseintrag wurde aktualisiert.</string>
   <string name="gateway.study.library_update_error">Der Bibliothekseintrag konnte nicht aktualisiert werden. Prüfe die eingegebenen Daten.</string>
   <string name="gateway.study.library_admin_edit">{{ entry }} bearbeiten</string>
@@ -86,6 +86,8 @@
   <string name="gateway.study.library_editor_no_definitions">Noch sind keine Definitionen verknüpft.</string>
   <string name="gateway.study.library_editor_no_relationships">Dieser Kartentyp hat keine Beziehungen.</string>
   <string name="gateway.study.library_composer_resolve_input">Lösen oder erstellen Sie jedes Textsegment auf, bevor Sie die Karte erstellen.</string>
-  <string name="gateway.study.library_publish_everyone">Für alle veröffentlichen</string>
+  <string name="gateway.study.library_publish_everyone">Veröffentlichen</string>
+  <string name="gateway.study.library_publish_everyone_info">Beim Veröffentlichen wird eine Anfrage an die Administration gesendet, diese Karte für alle sichtbar zu machen.</string>
+  <string name="gateway.study.library_add_definition">Definition hinzufügen</string>
   <string name="gateway.study.library_publish_class_option">Für Klasse veröffentlichen</string>
 </resources>

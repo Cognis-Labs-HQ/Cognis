@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { renderHorizontalCarousel } from "../horizontal-carousel.js";
+import {
+    mountHorizontalCarousels,
+    renderHorizontalCarousel,
+} from "../horizontal-carousel.js";
 
 test("horizontal carousels preserve ordered selections and an add affordance", () => {
     const html = renderHorizontalCarousel({
@@ -21,4 +24,10 @@ test("horizontal carousels preserve ordered selections and an add affordance", (
     assert.match(html, /horizontal-carousel-preview/);
     assert.match(html, /fireworks/);
     assert.doesNotMatch(html, /data-carousel-scroll/);
+});
+
+test("horizontal carousel mounting uses a body-level preview portal", () => {
+    assert.match(mountHorizontalCarousels.toString(), /cloneNode\(true\)/);
+    assert.match(mountHorizontalCarousels.toString(), /is-portal/);
+    assert.match(mountHorizontalCarousels.toString(), /document\.body\.append/);
 });

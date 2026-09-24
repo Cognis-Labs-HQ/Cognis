@@ -181,7 +181,7 @@ function relationshipEditor(
             .filter(({ relation }) => relation === relationship.id)
             .map(({ entryId }) => entryId),
     );
-    const targets = entries.filter(
+    const availableTargets = entries.filter(
         (candidate) =>
             candidate.schemaId === entry.schemaId &&
             candidate.layer === relationship.targetLayer &&
@@ -206,7 +206,23 @@ function relationshipEditor(
               )
             : "";
     };
-    const select = `<select name="relationship:${escapeHtml(relationship.id)}" multiple${carousel ? " hidden" : ` size="${Math.min(6, Math.max(2, targets.length))}"`}>${targets.map((target) => `<option value="${escapeHtml(target.id)}"${selected.has(target.id) ? " selected" : ""}>${escapeHtml(target.label)}</option>`).join("")}</select>`;
+    const targets = carousel
+        ? [...availableTargets]
+              .sort(
+                  (left, right) =>
+                      Number(Boolean(previewFor(right))) -
+                      Number(Boolean(previewFor(left))),
+              )
+              .filter(
+                  (target, index, all) =>
+                      all.findIndex(
+                          (candidate) =>
+                              candidate.label.normalize("NFKC") ===
+                              target.label.normalize("NFKC"),
+                      ) === index,
+              )
+        : availableTargets;
+    const select = `<select name="relationship:${escapeHtml(relationship.id)}" multiple${carousel ? " hidden" : ` size="${Math.min(6, Math.max(2, targets.length))}"`}>${availableTargets.map((target) => `<option value="${escapeHtml(target.id)}"${selected.has(target.id) ? " selected" : ""}>${escapeHtml(target.label)}</option>`).join("")}</select>`;
     if (!carousel)
         return `<label><span>${escapeHtml(label)}</span>${select}</label>`;
     return `<div class="library-composer-relationship" data-library-composer-relationship="${escapeHtml(relationship.id)}" data-target-layer="${escapeHtml(relationship.targetLayer)}">${select}${renderHorizontalCarousel({ id: relationship.id, label, items: targets.map((target) => ({ value: target.id, label: target.label, preview: previewFor(target) })), selectedValues: [...selected], addLabel })}</div>`;
@@ -277,7 +293,19 @@ export function editorBody(
                           .join("")}</dl></article>`,
               )
               .join("")
-        : `<p>${escapeHtml(i18n.t("gateway.study.library_editor_no_definitions"))}</p>`;
+        : `<p data-library-definition-empty>${escapeHtml(i18n.t("gateway.study.library_editor_no_definitions"))}</p>`;
+    const relationshipMap = `<div class="library-relationship-map"><section><h3>${escapeHtml(i18n.t("gateway.study.library_relation_parents"))}</h3><div data-library-relationship-parents>${referencedEntries.map((candidate) => `<span>${escapeHtml(candidate.label)}</span>`).join("") || `<p>${escapeHtml(i18n.t("gateway.study.library_editor_no_relationships"))}</p>`}</div></section><strong aria-hidden="true">← ${escapeHtml(entry.label || i18n.t("gateway.study.library_create"))} →</strong><section><h3>${escapeHtml(i18n.t("gateway.study.library_relation_children"))}</h3><div>${
+        entries
+            .filter((candidate) =>
+                (candidate.references ?? []).some(
+                    ({ entryId }) => entryId === entry.id,
+                ),
+            )
+            .map((candidate) => `<span>${escapeHtml(candidate.label)}</span>`)
+            .join("") ||
+        `<p>${escapeHtml(i18n.t("gateway.study.library_editor_no_relationships"))}</p>`
+    }</div></section></div>`;
+    const definitionsPanel = `${definitionSummary}${options.allowDefinitionCreate ? `<button class="btn-confirm library-definition-add" type="button" data-library-add-definition aria-label="${escapeHtml(i18n.t("gateway.study.library_add_definition"))}">+</button>` : ""}`;
     const contentClass =
         entry.class ??
         (layer?.semanticRole === "definition"
@@ -307,7 +335,7 @@ export function editorBody(
             includeSubmitButton: false,
             submitLabelKey: "ui.reuse.save",
             fields: [],
-            trustedContentHtml: `${options.persistentExtra ? extraHtml : ""}<nav class="library-editor-tabs" role="tablist" data-library-editor-tabs><button class="btn-neutral active" type="button" role="tab" aria-selected="true" data-library-editor-tab="content">${escapeHtml(i18n.t("gateway.study.library_editor_content"))}</button><button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="relationships">${escapeHtml(i18n.t("gateway.study.library_editor_relationships"))}</button><button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="definitions">${escapeHtml(i18n.t("gateway.study.library_definitions"))}</button></nav><section class="library-editor-panel" data-library-editor-panel="content">${label}${classField}${options.persistentExtra ? "" : extraHtml}${fields}${isDefinition || options.includeAlwaysShowDefinition === false ? '<input name="alwaysShowDefinition" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox" class="choice-checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`}${isDefinition ? '<input name="hidden" type="hidden" value="true">' : options.includeHidden === false ? '<input name="hidden" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="hidden" type="checkbox" class="choice-checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}</section><section class="library-editor-panel" data-library-editor-panel="relationships" hidden>${relationships || `<p>${escapeHtml(i18n.t("gateway.study.library_editor_no_relationships"))}</p>`}</section><section class="library-editor-panel" data-library-editor-panel="definitions" hidden>${definitionSummary}</section>`,
+            trustedContentHtml: `${options.persistentExtra ? `${extraHtml}${relationships}` : ""}<nav class="library-editor-tabs" role="tablist" data-library-editor-tabs><button class="btn-neutral active" type="button" role="tab" aria-selected="true" data-library-editor-tab="content">${escapeHtml(i18n.t("gateway.study.library_editor_content"))}</button><button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="relationships">${escapeHtml(i18n.t("gateway.study.library_editor_relationships"))}</button><button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="definitions">${escapeHtml(i18n.t("gateway.study.library_definitions"))}</button></nav><section class="library-editor-panel" data-library-editor-panel="content">${label}${classField}${options.persistentExtra ? "" : extraHtml}${fields}${isDefinition || options.includeAlwaysShowDefinition === false ? '<input name="alwaysShowDefinition" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox" class="choice-checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`}${isDefinition ? '<input name="hidden" type="hidden" value="true">' : options.includeHidden === false ? '<input name="hidden" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="hidden" type="checkbox" class="choice-checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}</section><section class="library-editor-panel" data-library-editor-panel="relationships" hidden>${options.persistentExtra ? relationshipMap : relationships || `<p>${escapeHtml(i18n.t("gateway.study.library_editor_no_relationships"))}</p>`}</section><section class="library-editor-panel" data-library-editor-panel="definitions" hidden>${definitionsPanel}</section>`,
         },
     );
     return { html: builder.render(), builder };
@@ -398,7 +426,9 @@ export async function openLibraryEntryEditor({
 }) {
     const schema = schemas.find(({ id }) => id === entry.schemaId);
     const layer = schema?.layers.find(({ id }) => id === entry.layer);
-    const editor = editorBody(entry, schemas, entries, i18n);
+    const editor = editorBody(entry, schemas, entries, i18n, "", {
+        includeHidden: false,
+    });
     let formController;
     return openPopup({
         title: i18n
@@ -458,9 +488,7 @@ export async function openLibraryEntryEditor({
                 layer: entry.layer,
                 label: form.elements.label.value,
                 class: form.elements.class.value || undefined,
-                hidden:
-                    form.elements.hidden.value === "true" ||
-                    form.elements.hidden.checked,
+                hidden: entry.hidden,
                 alwaysShowDefinition:
                     form.elements.alwaysShowDefinition.checked,
                 fields: readFields(form, layer, entry),

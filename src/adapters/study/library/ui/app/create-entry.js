@@ -1,10 +1,12 @@
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { mountHorizontalCarousels } from "/static/reuse/horizontal-carousel.js";
 import {
     createLibraryEntry,
     fetchLibraryForms,
     fetchLibraryLocations,
+    requestLibraryPromotion,
 } from "/static/gateways/study/ui/library-client.js";
 import {
     bindLibraryEditorControls,
@@ -140,14 +142,14 @@ export async function openCreateEntryPopup({
         ({ scope }) => scope === "class",
     );
     const publishControls = `<input name="scope" type="hidden" value="user">${
-        canPublishEveryone
-            ? `<label class="library-admin-checkbox"><input name="publishEveryone" type="checkbox" class="choice-checkbox"> <span>${escapeHtml(i18n.t("gateway.study.library_publish_everyone"))}</span></label>`
+        access.readable.some(({ scope }) => scope === "global")
+            ? `<label class="library-admin-checkbox library-publish-choice"><input name="publishEveryone" type="checkbox" class="choice-checkbox"><span>${escapeHtml(i18n.t("gateway.study.library_publish_everyone"))}</span>${renderInfoTooltip(i18n.t("gateway.study.library_publish_everyone_info"), i18n.t("ui.reuse.more_information"))}</label>`
             : ""
     }${
         writableClasses.length && !canPublishEveryone
             ? `<label class="library-admin-checkbox"><input name="publishClass" type="checkbox" class="choice-checkbox" data-library-publish-class-toggle> <span>${escapeHtml(i18n.t("gateway.study.library_publish_class_option"))}</span></label><label data-library-class-choice hidden><span>${escapeHtml(i18n.t("gateway.study.library_class"))}</span><select name="classId">${writableClasses.map(({ scopeId }) => `<option value="${escapeHtml(scopeId)}">${escapeHtml(scopeId)}</option>`).join("")}</select></label>`
             : '<input type="hidden" name="classId" value="">'
-    }<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><input data-library-composer-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></label><div class="library-composition-blocks" data-library-composition-blocks aria-live="polite"></div><div data-library-composer-suggestions aria-live="polite"></div></section>`;
+    }<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><span class="library-composition-input"><span class="library-composition-blocks" data-library-composition-blocks aria-live="polite"></span><input data-library-composer-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></span></label><div data-library-composer-suggestions aria-live="polite"></div></section>`;
     const { html, builder } = editorBody(
         draft,
         [
@@ -167,10 +169,11 @@ export async function openCreateEntryPopup({
                 i18n.t("gateway.study.library_admin_label"),
             includeAlwaysShowDefinition:
                 constructor.allowAlwaysShowDefinition === true,
-            includeHidden: constructor.allowHidden === true,
+            includeHidden: false,
             relationshipCarousels: true,
             generatedLabel: true,
             persistentExtra: true,
+            allowDefinitionCreate: layer.semanticRole !== "definition",
         },
     );
     let form;
@@ -301,6 +304,40 @@ export async function openCreateEntryPopup({
                 schema,
                 i18n,
             );
+            form.querySelector(
+                "[data-library-add-definition]",
+            )?.addEventListener("click", async () => {
+                const relationship = editingLayer.relationships.find(
+                    ({ targetLayer }) =>
+                        schema.layers.find(({ id }) => id === targetLayer)
+                            ?.semanticRole === "definition",
+                );
+                if (!relationship) return;
+                const created = await openCreateEntryPopup({
+                    schemas,
+                    entries,
+                    schemaId,
+                    layerId: relationship.targetLayer,
+                    i18n,
+                    contributions,
+                });
+                if (!created) return;
+                entries.push(created);
+                const select = form.elements[`relationship:${relationship.id}`];
+                select?.append(
+                    new Option(created.label, created.id, true, true),
+                );
+                const panel = form.querySelector(
+                    '[data-library-editor-panel="definitions"]',
+                );
+                panel
+                    ?.querySelector("[data-library-definition-empty]")
+                    ?.remove();
+                panel?.insertAdjacentHTML(
+                    "afterbegin",
+                    `<article class="library-editor-aggregate"><header><strong>${escapeHtml(created.label)}</strong></header></article>`,
+                );
+            });
             const publishClass = form.elements.publishClass;
             const classChoice = form.querySelector(
                 "[data-library-class-choice]",
@@ -317,11 +354,13 @@ export async function openCreateEntryPopup({
         !form?.reportValidity()
     )
         return null;
-    const scope = form.elements.publishEveryone?.checked
-        ? "global"
-        : form.elements.publishClass?.checked
-          ? "class"
-          : "user";
+    const publishEveryone = form.elements.publishEveryone?.checked === true;
+    const scope =
+        publishEveryone && canPublishEveryone
+            ? "global"
+            : form.elements.publishClass?.checked
+              ? "class"
+              : "user";
     const scopeId =
         scope === "class"
             ? form.elements.classId.value
@@ -344,8 +383,17 @@ export async function openCreateEntryPopup({
             form.elements.hidden?.value === "true" ||
             form.elements.hidden?.checked === true,
     };
+    const createAndRequestPublication = async (candidate) => {
+        const created = await createLibraryEntry({ scope, scopeId }, candidate);
+        if (publishEveryone && !canPublishEveryone)
+            await requestLibraryPromotion(created.id, {
+                scope: "global",
+                scopeId: "global",
+            });
+        return created;
+    };
     try {
-        return await createLibraryEntry({ scope, scopeId }, entry);
+        return await createAndRequestPublication(entry);
     } catch (error) {
         if (error.message !== "content_conflict") throw error;
         const decision = await openPopup({
@@ -365,10 +413,7 @@ export async function openCreateEntryPopup({
             ],
         });
         return decision === "continue"
-            ? createLibraryEntry(
-                  { scope, scopeId },
-                  { ...entry, allowConflict: true },
-              )
+            ? createAndRequestPublication({ ...entry, allowConflict: true })
             : null;
     }
 }
@@ -466,10 +511,23 @@ function bindTextComposition(form, entries, layer, schema, i18n) {
     const syncPronunciation = () => {
         const control = form.elements["field:pronunciation"];
         if (!control) return;
-        const pronunciation = (form.compositionOrder ?? [])
+        const selectedPronunciation = (form.compositionOrder ?? [])
             .map((id) => entries.find((entry) => entry.id === id))
             .map((entry) => derivedPronunciation(entry, entries, schema))
             .join("");
+        const inputPronunciation = Array.from(input.value.trim())
+            .map((character) =>
+                entries.find((entry) => {
+                    const entryLayer = layerForEntry([schema], entry);
+                    return (
+                        entryLayer?.semanticRole === "atomicWritingUnit" &&
+                        entry.label === character
+                    );
+                }),
+            )
+            .map((entry) => derivedPronunciation(entry, entries, schema))
+            .join("");
+        const pronunciation = `${selectedPronunciation}${inputPronunciation}`;
         if (pronunciation) control.value = pronunciation;
     };
     const renderBlocks = () => {
@@ -497,6 +555,23 @@ function bindTextComposition(form, entries, layer, schema, i18n) {
         const resolved = selectedLabels().join("");
         form.elements.label.value = `${resolved}${input.value.trim()}`;
         inferRelationships();
+        const relationshipParents = form.querySelector(
+            "[data-library-relationship-parents]",
+        );
+        if (relationshipParents) {
+            const labels = relationships.flatMap((relationship) =>
+                Array.from(
+                    form.elements[`relationship:${relationship.id}`]
+                        ?.selectedOptions ?? [],
+                    (option) => option.textContent.trim(),
+                ),
+            );
+            relationshipParents.innerHTML = labels.length
+                ? labels
+                      .map((label) => `<span>${escapeHtml(label)}</span>`)
+                      .join("")
+                : `<p>${escapeHtml(i18n.t("gateway.study.library_editor_no_relationships"))}</p>`;
+        }
         syncPronunciation();
         renderBlocks();
     };
