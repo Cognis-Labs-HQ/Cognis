@@ -372,11 +372,9 @@ test("Study Library creation is driven by language card constructors", () => {
     assert.match(layerPageSource, /page:actions/);
     assert.match(layerPageSource, /textContent = "\+"/);
     assert.match(layerPageSource, /fetchLibraryForms/);
-    assert.match(layerPageSource, /contribution\.cardConstructor/);
-    assert.match(
-        source,
-        /contributedConstructor \?\? layer\?\.cardConstructor/,
-    );
+    assert.match(layerPageSource, /semanticRole !== "atomicWritingUnit"/);
+    assert.match(source, /contributedConstructor \?\?/);
+    assert.match(source, /layer\?\.cardConstructor \?\?/);
     assert.match(source, /writableClasses\.length > 1/);
     assert.doesNotMatch(layerPageSource, /renderLibraryRequests/);
     assert.doesNotMatch(indexSource, /renderLibraryRequests/);
@@ -398,6 +396,18 @@ test("Study Library creation offers ordered, recursive composition", () => {
     assert.match(source, /await openCreateEntryPopup\(/);
     assert.match(source, /library_composer_no_match/);
     assert.match(stylesheet, /library-composer-suggestions/);
+});
+
+test("Study Library separates admin and user-facing editing", () => {
+    assert.match(source, /library-admin-entry-row/);
+    assert.match(
+        source,
+        /if \(event\.target\.closest\("\.library-admin-entry-row"\)\) return/,
+    );
+    assert.match(source, /function userFacingEditMode/);
+    assert.match(source, /headerActions: editMode/);
+    assert.match(source, /requestLibraryUpdate/);
+    assert.match(source, /requestUpdate: editMode === "request"/);
 });
 
 test("Study Library administration exposes contract-safe editing", () => {

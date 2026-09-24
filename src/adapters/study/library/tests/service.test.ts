@@ -406,6 +406,45 @@ test("promotion approval moves personal content into the requested scope", async
     assert.deepEqual(moves, [{ scope: "global", scopeId: "global" }]);
 });
 
+test("authors submit global card edits as update requests", async () => {
+    const source = {
+        id: "global-card",
+        label: "Original",
+        scope: "global",
+        scopeId: "global",
+        createdBy: "alice",
+        protected: false,
+    };
+    let captured: unknown;
+    const store = {
+        get: async () => source,
+        listPushRequests: async () => [],
+        createPush: async (...args: unknown[]) => {
+            captured = args;
+            return { id: "update-request", status: "pending" };
+        },
+    };
+    const library = new LibraryService(store as never);
+    const proposed = {
+        schemaId: "test-language",
+        layer: "units",
+        label: "Updated",
+        fields: {},
+    };
+    await library.requestUpdate(
+        { accountId: "alice", role: "user" },
+        source.id,
+        proposed,
+    );
+    assert.deepEqual(captured, [
+        source.id,
+        { scope: "global", scopeId: "global" },
+        "alice",
+        "update",
+        proposed,
+    ]);
+});
+
 test("authorized reviewers receive the source card with each request", async () => {
     const source = {
         id: "personal-card",

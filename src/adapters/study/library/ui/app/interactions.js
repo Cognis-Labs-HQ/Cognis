@@ -133,6 +133,7 @@ export function bindLibraryInteractions(root, context) {
     root.addEventListener(
         "click",
         (event) => {
+            if (event.target.closest(".library-admin-entry-row")) return;
             const selectAll = event.target.closest("[data-library-select-all]");
             if (selectAll) {
                 if (selectAll.dataset.selectionAction === "deselect") {

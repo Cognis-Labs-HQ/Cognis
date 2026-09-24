@@ -4,7 +4,10 @@ import { showToast } from "/static/reuse/toast.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { renderHorizontalCarousel } from "/static/reuse/horizontal-carousel.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
-import { updateLibraryEntry } from "/static/gateways/study/ui/library-client.js";
+import {
+    requestLibraryUpdate,
+    updateLibraryEntry,
+} from "/static/gateways/study/ui/library-client.js";
 import { localizedLabel } from "./presentation.js";
 
 export function inputForField(field, value, language, i18n) {
@@ -295,6 +298,81 @@ export function readReferences(form, layer) {
             }),
         ),
     );
+}
+
+export async function openLibraryEntryEditor({
+    entry,
+    entries,
+    schemas,
+    i18n,
+    requestUpdate = false,
+    onSaved = () => {},
+}) {
+    const schema = schemas.find(({ id }) => id === entry.schemaId);
+    const layer = schema?.layers.find(({ id }) => id === entry.layer);
+    const editor = editorBody(entry, schemas, entries, i18n);
+    let formController;
+    return openPopup({
+        title: i18n
+            .t("gateway.study.library_admin_edit_title")
+            .replace("{{ entry }}", entry.label),
+        body: editor.html,
+        maxWidth: "min(46rem, 94vw)",
+        closeProtection: true,
+        actions: [
+            { id: "save", label: i18n.t("ui.reuse.save"), variant: "confirm" },
+            {
+                id: "cancel",
+                label: i18n.t("ui.reuse.cancel"),
+                variant: "cancel",
+            },
+        ],
+        onOpen(overlay) {
+            const form = overlay.querySelector("[data-library-admin-editor]");
+            formController = editor.builder.attach(form);
+            bindLibraryEditorControls(form, entry, i18n);
+        },
+        onAction: async (action, overlay) => {
+            if (action !== "save") return true;
+            const form = overlay.querySelector("[data-library-admin-editor]");
+            if (
+                form.querySelector('[data-uploading="true"]') ||
+                !formController?.validateAll(true) ||
+                !form.checkValidity()
+            ) {
+                form.reportValidity();
+                return false;
+            }
+            const proposedEntry = {
+                schemaId: entry.schemaId,
+                schemaVersion: entry.schemaVersion,
+                layer: entry.layer,
+                label: form.elements.label.value,
+                class: form.elements.class.value || undefined,
+                hidden:
+                    form.elements.hidden.value === "true" ||
+                    form.elements.hidden.checked,
+                alwaysShowDefinition:
+                    form.elements.alwaysShowDefinition.checked,
+                fields: readFields(form, layer, entry),
+                references: readReferences(form, layer),
+            };
+            const updated = requestUpdate
+                ? await requestLibraryUpdate(entry.id, proposedEntry)
+                : await updateLibraryEntry(entry.id, proposedEntry);
+            if (!requestUpdate) Object.assign(entry, updated);
+            onSaved(updated);
+            showToast(
+                i18n.t(
+                    requestUpdate
+                        ? "gateway.study.library_update_requested"
+                        : "gateway.study.library_update_success",
+                ),
+                { variant: "success" },
+            );
+            return true;
+        },
+    });
 }
 
 export function bindAdminLibraryInteractions(

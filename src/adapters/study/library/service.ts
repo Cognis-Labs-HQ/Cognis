@@ -153,6 +153,11 @@ export interface LibraryCapability {
         entryId: string,
         destination: LibraryLocation,
     ): Promise<LibraryPushRequest>;
+    requestUpdate(
+        actor: LibraryActor,
+        entryId: string,
+        proposedEntry: LibraryEntryInput,
+    ): Promise<LibraryPushRequest>;
     listPushRequests(actor: LibraryActor): Promise<LibraryPushRequest[]>;
     reviewPush(
         actor: LibraryActor,
@@ -206,6 +211,7 @@ export class LibraryService implements LibraryCapability {
             this.authorize.bind(this),
             flow,
             notifyNewContent,
+            this.update.bind(this),
         );
     }
 
@@ -761,7 +767,8 @@ export class LibraryService implements LibraryCapability {
     ): Promise<LibraryEntry> {
         const current = await this.read(actor, entryId);
         if (!current) throw new Error("entry_not_found");
-        if (current.editable === false) throw new Error("entry_not_editable");
+        if (current.protected || current.editable === false)
+            throw new Error("entry_not_editable");
         await this.authorize(
             actor,
             { scope: current.scope, scopeId: current.scopeId },
@@ -949,6 +956,14 @@ export class LibraryService implements LibraryCapability {
         destination: LibraryLocation,
     ): Promise<LibraryPushRequest> {
         return this.visibility.requestPush(actor, entryId, destination);
+    }
+
+    requestUpdate(
+        actor: LibraryActor,
+        entryId: string,
+        proposedEntry: LibraryEntryInput,
+    ): Promise<LibraryPushRequest> {
+        return this.visibility.requestUpdate(actor, entryId, proposedEntry);
     }
 
     listPushRequests(actor: LibraryActor): Promise<LibraryPushRequest[]> {

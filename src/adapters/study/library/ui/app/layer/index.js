@@ -53,14 +53,7 @@ export async function mount(root, { signal } = {}) {
         fetchLibraryForms(),
     ]);
     const canCreate =
-        layer?.semanticRole !== "atomicWritingUnit" &&
-        (Boolean(layer?.cardConstructor) ||
-            formContributions.some(
-                (contribution) =>
-                    contribution.schemaId === selectedLayer?.schemaId &&
-                    contribution.layerId === selectedLayer?.layerId &&
-                    contribution.cardConstructor,
-            ));
+        Boolean(schema && layer) && layer.semanticRole !== "atomicWritingUnit";
     const title = layer
         ? localizedLabel(layer.metadata, schema.language) || layer.id
         : i18n.t("gateway.study.library_label");

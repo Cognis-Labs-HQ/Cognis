@@ -94,6 +94,20 @@ export async function requestLibraryPromotion(entryId, destination) {
     return (await response.json()).data;
 }
 
+export async function requestLibraryUpdate(entryId, proposedEntry) {
+    const response = await apiFetch("/api/v1/study/library/push-requests", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+            entryId,
+            destination: { scope: "global", scopeId: "global" },
+            proposedEntry,
+        }),
+    });
+    if (!response.ok) throw new Error("request_failed");
+    return (await response.json()).data;
+}
+
 export async function reviewLibraryPromotion(requestId, decision) {
     const response = await apiFetch(
         `/api/v1/study/library/push-requests/${encodeURIComponent(requestId)}`,

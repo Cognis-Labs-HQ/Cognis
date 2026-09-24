@@ -14,6 +14,13 @@ export async function ensurePushRequestSchema(db: DbExecutor): Promise<void> {
             { name: "status", type: "text", notNull: true, default: "pending" },
             { name: "reviewed_by", type: "text" },
             {
+                name: "request_kind",
+                type: "text",
+                notNull: true,
+                default: "promotion",
+            },
+            { name: "proposed_entry_json", type: "text" },
+            {
                 name: "created_at",
                 type: "timestamp",
                 notNull: true,
@@ -34,6 +41,8 @@ export async function createPushRequest(
     sourceEntryId: string,
     destination: LibraryLocation,
     accountId: string,
+    kind: "promotion" | "update" = "promotion",
+    proposedEntry?: LibraryPushRequest["proposedEntry"],
 ): Promise<LibraryPushRequest> {
     const id = randomUUID();
     await db.executeCommand({
@@ -45,6 +54,10 @@ export async function createPushRequest(
             destination_scope: destination.scope,
             destination_scope_id: destination.scopeId ?? destination.scope,
             requested_by: accountId,
+            request_kind: kind,
+            proposed_entry_json: proposedEntry
+                ? JSON.stringify(proposedEntry)
+                : null,
         },
     });
     return {
@@ -53,6 +66,8 @@ export async function createPushRequest(
         destination,
         requestedBy: accountId,
         status: "pending",
+        kind,
+        proposedEntry,
     };
 }
 
@@ -76,17 +91,26 @@ export async function getPushRequest(
         },
         requestedBy: String(row.requested_by),
         status: String(row.status) as LibraryPushRequest["status"],
+        kind:
+            String(row.request_kind ?? "promotion") === "update"
+                ? "update"
+                : "promotion",
+        proposedEntry: row.proposed_entry_json
+            ? (JSON.parse(
+                  String(row.proposed_entry_json),
+              ) as LibraryPushRequest["proposedEntry"])
+            : undefined,
     };
 }
 
 export async function listPushRequests(
     db: DbExecutor,
-    status: LibraryPushRequest["status"] = "pending",
+    status?: LibraryPushRequest["status"],
 ): Promise<LibraryPushRequest[]> {
     const result = await db.executeCommand({
         option: "SELECT",
         table: "study_library_push_requests",
-        where: [{ column: "status", value: status }],
+        ...(status ? { where: [{ column: "status", value: status }] } : {}),
     });
     const requests = await Promise.all(
         (result.rows ?? []).map((row) => getPushRequest(db, String(row.id))),

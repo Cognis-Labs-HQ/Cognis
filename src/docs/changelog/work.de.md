@@ -25,7 +25,14 @@ Der Dienst lehnt zusammengesetzte Karten ab, deren referenzierte Bestandteile am
 ## Geführte Ebenen- und Textanlage
 Der Erstellungsablauf beginnt jetzt mit einer Auswahl zulässiger Kartentypen. Nicht zugeordneter Freitext ist direkt verwendbar: Ein Klick öffnet den passenden verschachtelten Composer und übernimmt den fehlenden Text in die Kartenbezeichnung.
 
+## Bereichsabhängige Bearbeitung und Änderungsprüfung
+Verwaltungszeilen öffnen nur noch den Verwaltungseditor und behalten ihre unabhängigen Bearbeitungsschaltflächen. In benutzerseitigen Detaildialogen erscheint die Bearbeitung oben rechts nur für zulässige Einträge: Eigentümer dürfen eigene Karten bearbeiten, Administratoren globale Karten und geschützte Anbieterinhalte bleiben unveränderlich. Änderungen von Autoren an global veröffentlichten Karten werden als Änderungsanfragen gespeichert und erst nach Freigabe angewendet. Die Anfrageseite kennzeichnet sie gesondert und bewahrt abgeschlossene Zustände auf.
+
+## Verfügbarkeit der Erstellen-Aktion
+Jede benutzerseitige Ebene außer der Zeichenebene stellt nun die Erstellen-Aktion bereit. Fehlt ein spezieller Anbieter-Constructor, wird ein generischer schemagesteuerter Constructor verwendet.
+
 ## Commits
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0c9c4e376ffde5af485772367430d3122b589b0e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/32ca0df41b363566394ac0d4026ec73ed53ce9ae
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/a66d08376445e937ea0e57d64c5975c9c02ed504

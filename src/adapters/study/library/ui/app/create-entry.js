@@ -20,18 +20,9 @@ export async function chooseCreateLayer({
     preferredLayerId,
     i18n,
 }) {
-    const permitted = schema.layers.filter((layer) => {
-        if (layer.semanticRole === "atomicWritingUnit") return false;
-        return (
-            layer.cardConstructor ||
-            contributions.some(
-                (item) =>
-                    item.schemaId === schema.id &&
-                    item.layerId === layer.id &&
-                    item.cardConstructor,
-            )
-        );
-    });
+    const permitted = schema.layers.filter(
+        (layer) => layer.semanticRole !== "atomicWritingUnit",
+    );
     if (!permitted.length) return null;
     let select;
     const action = await openPopup({
@@ -80,7 +71,18 @@ export async function openCreateEntryPopup({
             item.layerId === layerId &&
             item.cardConstructor,
     )?.cardConstructor;
-    const constructor = contributedConstructor ?? layer?.cardConstructor;
+    const constructor =
+        contributedConstructor ??
+        layer?.cardConstructor ??
+        (layer
+            ? {
+                  fields: (layer.fields ?? []).map(({ id }) => id),
+                  relationships: (layer.relationships ?? []).map(
+                      ({ id }) => id,
+                  ),
+                  defaults: {},
+              }
+            : null);
     if (
         !schema ||
         !layer ||

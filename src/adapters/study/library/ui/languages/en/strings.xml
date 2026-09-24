@@ -79,4 +79,6 @@
   <string name="gateway.study.library_composer_match">Did you mean?</string>
   <string name="gateway.study.library_composer_no_match">No matches found, create?</string>
   <string name="gateway.study.library_composer_layer">Card type</string>
+  <string name="gateway.study.library_request_update">Update request</string>
+  <string name="gateway.study.library_update_requested">Your update was submitted for review.</string>
 </resources>

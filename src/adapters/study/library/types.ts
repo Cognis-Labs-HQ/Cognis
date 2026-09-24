@@ -258,6 +258,8 @@ export interface LibraryPushRequest {
     destination: LibraryLocation;
     requestedBy: string;
     status: "pending" | "approved" | "rejected" | "withdrawn";
+    kind?: "promotion" | "update";
+    proposedEntry?: LibraryEntryInput;
     /** Included only in authorized review listings. */
     source?: LibraryEntry;
     /** Request-scoped action hints; never persisted. */

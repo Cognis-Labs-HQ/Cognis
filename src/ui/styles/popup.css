@@ -71,6 +71,16 @@
     white-space: nowrap;
 }
 
+.popup-header-actions {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.popup-header-action {
+    min-width: 2.25rem;
+}
+
 .popup-title {
     margin: 0;
     overflow: hidden;

@@ -5,7 +5,7 @@ import {
     type RouteContext,
 } from "../../../../api/reuse/route-context.js";
 import type { LibraryCapability, LibraryActor } from "../service.js";
-import type { LibraryLocation } from "../types.js";
+import type { LibraryEntryInput, LibraryLocation } from "../types.js";
 import { canonicalizeLanguageTag } from "../language.js";
 
 function sendJson(res: ServerResponse, status: number, body: unknown): void {
@@ -309,12 +309,19 @@ export function createLibraryRoutes(
                 const body = (await readJson(req)) as {
                     entryId: string;
                     destination: LibraryLocation;
+                    proposedEntry?: LibraryEntryInput;
                 };
-                const request = await library.requestPush(
-                    actor,
-                    body.entryId,
-                    body.destination,
-                );
+                const request = body.proposedEntry
+                    ? await library.requestUpdate(
+                          actor,
+                          body.entryId,
+                          body.proposedEntry,
+                      )
+                    : await library.requestPush(
+                          actor,
+                          body.entryId,
+                          body.destination,
+                      );
                 await log?.("info", "Submitted library push request.", {
                     component: "study-library",
                     operation: "request_push",

@@ -79,4 +79,6 @@
   <string name="gateway.study.library_composer_match">Maksud Anda?</string>
   <string name="gateway.study.library_composer_no_match">Tidak ada kecocokan, buat?</string>
   <string name="gateway.study.library_composer_layer">Jenis kartu</string>
+  <string name="gateway.study.library_request_update">Permintaan pembaruan</string>
+  <string name="gateway.study.library_update_requested">Pembaruan Anda telah dikirim untuk ditinjau.</string>
 </resources>

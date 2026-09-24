@@ -986,19 +986,23 @@ export class LibraryStore {
         sourceEntryId: string,
         destination: LibraryLocation,
         accountId: string,
+        kind: "promotion" | "update" = "promotion",
+        proposedEntry?: LibraryEntryInput,
     ): Promise<LibraryPushRequest> {
         return createPushRequest(
             this.db,
             sourceEntryId,
             destination,
             accountId,
+            kind,
+            proposedEntry,
         );
     }
     async getPush(id: string): Promise<LibraryPushRequest | null> {
         return getPushRequest(this.db, id);
     }
     async listPushRequests(
-        status: LibraryPushRequest["status"] = "pending",
+        status?: LibraryPushRequest["status"],
     ): Promise<LibraryPushRequest[]> {
         return listPushRequests(this.db, status);
     }

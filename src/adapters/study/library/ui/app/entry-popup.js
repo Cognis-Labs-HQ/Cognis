@@ -16,6 +16,27 @@ import {
     variantPlacement,
 } from "./variant-placement.js";
 import { isDirectlyVisible } from "./cards.js";
+import { isAdminScope } from "/static/gateways/study/ui/language.js";
+import { openLibraryEntryEditor } from "./admin-interactions.js";
+
+function userFacingEditMode(entry, layer) {
+    if (
+        entry.protected ||
+        entry.editable === false ||
+        ["atomicWritingUnit", "particle"].includes(layer?.semanticRole)
+    )
+        return null;
+    const accountId = localStorage.getItem("cognis_account") ?? "";
+    const owned =
+        entry.createdBy === accountId ||
+        (entry.scope === "user" && entry.scopeId === accountId);
+    if (entry.scope === "global") {
+        if (isAdminScope()) return "direct";
+        return owned ? "request" : null;
+    }
+    if (isAdminScope()) return owned ? "direct" : null;
+    return owned ? "direct" : null;
+}
 
 export async function openEntryPopup(
     root,
@@ -50,6 +71,9 @@ export async function openEntryPopup(
                 variantPlacement(detail.entry, schemas, entries)?.parentId,
         );
         const layer = layerForEntry(schemas, selectedEntry);
+        const editMode = options.readOnly
+            ? null
+            : userFacingEditMode(detail.entry, layer);
         const layerEntries = entries.filter(
             (entry) =>
                 entry.schemaId === selectedEntry.schemaId &&
@@ -120,6 +144,17 @@ export async function openEntryPopup(
                 actionId: `open-title-reference:${entry.id}`,
             })),
             titleDetailItems,
+            headerActions: editMode
+                ? [
+                      {
+                          id: "edit",
+                          label: i18n
+                              .t("gateway.study.library_admin_edit")
+                              .replace("{{ entry }}", detail.entry.label),
+                          icon: "✎",
+                      },
+                  ]
+                : [],
             body: composed.body,
             maxWidth: "min(56rem, 94vw)",
             closeButtonVariant: "neutral",
@@ -191,6 +226,21 @@ export async function openEntryPopup(
             URL.revokeObjectURL(objectUrl);
         }
         signal?.removeEventListener("abort", abortPopup);
+        if (result === "edit" && editMode) {
+            await openLibraryEntryEditor({
+                entry: detail.entry,
+                entries,
+                schemas,
+                i18n,
+                requestUpdate: editMode === "request",
+                onSaved: () => {
+                    if (editMode === "direct")
+                        Object.assign(selectedEntry, detail.entry);
+                },
+            });
+            selectedEntry = detail.entry;
+            continue;
+        }
         const navigation = resolvePopupNavigation({
             result,
             relatedEntry,
