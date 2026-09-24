@@ -82,6 +82,10 @@ Adapter Drawing kini mendeklarasikan titik masuk paket TypeScript dan dependensi
 
 Karusel hubungan kini menempati tepat dua baris yang bergulir vertikal dan pratinjau hover memakai popup tertambat yang sadar area pandang. Pencocokan tepat seluruh Input menggantikan inferensi per karakter sehingga node hubungan yang tidak terkait tidak muncul. Definisi memakai dialog khusus semua bahasa, bukan karusel atau penyusun kartu bertingkat; kontrol terbitkan/buat, audio sesuai tema, tindakan gambar/edit, dan tooltip juga disempurnakan.
 
+## Gambar adaptif dan karusel horizontal
+
+Karusel dua baris kini bergulir horizontal, data goresan tidak tampil dalam detail kartu, dan mode menggambar menutup dialog asal. Aset gambar serta warna papan yang sesuai tema meningkatkan kontras. PiP yang diskalakan memuat seluruh kanvas dan kontrol, sedangkan penilaian jalur dengan sampel ulang seragam mendukung karakter kompleks dan menyesuaikan panduan otomatis dari tingkat keberhasilan serta umpan balik kesulitan.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -100,3 +104,4 @@ Karusel hubungan kini menempati tepat dua baris yang bergulir vertikal dan prati
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/584fb0b46ebb77bd43e585b3b41a279a0e6e9bfa
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d597603b3b1faf6df9d5c7a98973362312236d9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/61002cd2578510ff6d823b8ebb454364e2c930cd
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e8dac803472e1dfc8a5bb2acf3082da88dad8a05

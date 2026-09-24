@@ -82,6 +82,10 @@ The Drawing adapter now declares its TypeScript package entrypoint and tested St
 
 Relationship carousels now occupy exactly two vertically scrolling rows and hover previews use the viewport-aware anchored popup. Exact whole-input matching replaces character-by-character inference, preventing unrelated relationship nodes. Definitions use a dedicated all-language dialog rather than a carousel or nested card composer, while publish/create controls, theme-aware audio, drawing/edit affordances, and action tooltips have been polished.
 
+## Adaptive drawing and horizontal carousels
+
+Two-row carousels now scroll horizontally, stroke payloads stay out of card details, and drawing closes the source dialog. Theme-aware drawing assets and pad colors improve contrast. The resized PiP fits its complete canvas and controls, while uniformly resampled path scoring supports complex characters and automatically adjusts guidance from success rate plus learner difficulty feedback.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -100,3 +104,4 @@ Relationship carousels now occupy exactly two vertically scrolling rows and hove
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/584fb0b46ebb77bd43e585b3b41a279a0e6e9bfa
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d597603b3b1faf6df9d5c7a98973362312236d9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/61002cd2578510ff6d823b8ebb454364e2c930cd
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e8dac803472e1dfc8a5bb2acf3082da88dad8a05

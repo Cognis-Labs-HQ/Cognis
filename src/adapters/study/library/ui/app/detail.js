@@ -85,7 +85,14 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
     ]);
     const fields = entry.fields ?? {};
     const metadataIds = new Set(metadataFields(layer).map(({ id }) => id));
-    const reserved = new Set(["pronunciation", "audio", ...metadataIds]);
+    const reserved = new Set([
+        "pronunciation",
+        "audio",
+        ...metadataIds,
+        ...(layer?.fields ?? [])
+            .filter(({ type }) => type === "strokePattern")
+            .map(({ id }) => id),
+    ]);
     const genericFields = Object.fromEntries(
         (layer?.fields ?? [])
             .filter(

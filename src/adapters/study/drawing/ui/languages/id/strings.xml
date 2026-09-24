@@ -4,4 +4,6 @@
   <string name="adapter.study.drawing.guidance">Panduan</string>
   <string name="adapter.study.drawing.undo">Urungkan</string>
   <string name="adapter.study.drawing.reset">Atur Ulang</string>
+  <string name="adapter.study.drawing.easy">Mudah</string>
+  <string name="adapter.study.drawing.hard">Sulit</string>
 </resources>

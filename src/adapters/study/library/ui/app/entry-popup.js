@@ -218,7 +218,7 @@ export async function openEntryPopup(
             onAction: async (actionId, overlay, popupApi) => {
                 if (actionId === "draw" && drawingAvailable) {
                     openDrawing(detail.entry, strokePattern);
-                    return false;
+                    return true;
                 }
                 const contributedAction = composed.actions.find(
                     (action) => action.id === actionId,

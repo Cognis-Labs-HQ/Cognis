@@ -1,14 +1,27 @@
 .study-drawing-pad {
-    position: fixed;
-    z-index: 9000;
-    inset: auto 1rem 1rem auto;
-    width: min(34rem, calc(100vw - 2rem));
+    --drawing-canvas: #ffffff;
+    --drawing-ink: #172033;
+    --drawing-guide: #c8cdd8;
+    --drawing-active: #0b8f75;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 0.65rem;
     padding: 0.75rem;
     border: 1px solid var(--border);
     border-radius: 0.75rem;
     background: var(--surface);
     box-shadow: var(--shadow);
+    color: var(--text);
+    overflow: hidden;
 }
+
+body[data-theme="dark"] .study-drawing-pad {
+    --drawing-canvas: #121a2b;
+    --drawing-ink: #f4f7ff;
+    --drawing-guide: #58647a;
+    --drawing-active: #52d8b8;
+}
+
 .study-drawing-pad header {
     display: flex;
     align-items: center;
@@ -16,23 +29,39 @@
     gap: 0.5rem;
     cursor: move;
 }
+
 .study-drawing-pad canvas {
     display: block;
-    width: 100%;
+    width: auto;
+    height: 100%;
+    min-height: 0;
+    max-width: 100%;
     aspect-ratio: 1;
-    margin-block: 0.75rem;
+    justify-self: center;
     border: 1px solid var(--border);
     border-radius: 0.5rem;
-    background: #fff;
+    background: var(--drawing-canvas);
     touch-action: none;
 }
+
 .study-drawing-controls {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 0.5rem;
 }
+
 .study-drawing-progress {
     flex: 1;
     min-width: 8rem;
+}
+
+.study-drawing-feedback {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.study-drawing-feedback[hidden] {
+    display: none;
 }

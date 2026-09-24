@@ -82,6 +82,10 @@ Drawing アダプターが TypeScript パッケージエントリーポイント
 
 関係カルーセルは縦スクロール可能な2行に収まり、ホバープレビューは表示領域対応のアンカーポップアップを使用します。文字単位の推測を入力全体の完全一致に置き換え、無関係な関係ノードを防止しました。定義はカルーセルや入れ子カード作成画面ではなく全言語専用ダイアログを使用し、公開・作成操作、テーマ対応音声、描画・編集操作、ツールチップも改善しました。
 
+## 適応型描画と横スクロール
+
+2行カルーセルを横スクロールにし、筆順データをカード詳細から除外し、描画開始時に元のダイアログを閉じるようにしました。テーマ対応の描画素材とパッド色でコントラストを改善しました。PiP はキャンバスと操作部全体に合うサイズとなり、均等再サンプリングによる経路採点で複雑な文字に対応し、成功率と難易度評価からガイドを自動調整します。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -100,3 +104,4 @@ Drawing アダプターが TypeScript パッケージエントリーポイント
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/584fb0b46ebb77bd43e585b3b41a279a0e6e9bfa
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d597603b3b1faf6df9d5c7a98973362312236d9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/61002cd2578510ff6d823b8ebb454364e2c930cd
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e8dac803472e1dfc8a5bb2acf3082da88dad8a05

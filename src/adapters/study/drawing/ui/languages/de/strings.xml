@@ -4,4 +4,6 @@
   <string name="adapter.study.drawing.guidance">Hilfestellung</string>
   <string name="adapter.study.drawing.undo">Rückgängig</string>
   <string name="adapter.study.drawing.reset">Zurücksetzen</string>
+  <string name="adapter.study.drawing.easy">Leicht</string>
+  <string name="adapter.study.drawing.hard">Schwierig</string>
 </resources>

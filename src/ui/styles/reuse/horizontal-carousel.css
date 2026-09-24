@@ -19,16 +19,19 @@
 
 .horizontal-carousel-viewport {
     max-height: 5.95rem;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
     scrollbar-gutter: stable;
 }
 
 .horizontal-carousel-track {
-    display: flex;
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(2, 2.75rem);
+    grid-auto-columns: max-content;
     gap: 0.45rem;
-    flex-wrap: wrap;
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
 }
 
 .horizontal-carousel-item {

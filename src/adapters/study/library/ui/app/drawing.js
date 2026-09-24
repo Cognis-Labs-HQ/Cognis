@@ -21,7 +21,8 @@ export function drawingHeaderActions(pattern, i18n) {
                   id: "draw",
                   label: i18n.t("gateway.study.library_practice_writing"),
                   icon: {
-                      light: "/static/adapters/study/library/assets/draw.svg",
+                      light: "/static/adapters/study/library/assets/draw-light.svg",
+                      dark: "/static/adapters/study/library/assets/draw-dark.svg",
                   },
               },
           ]

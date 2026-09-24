@@ -4,4 +4,6 @@
   <string name="adapter.study.drawing.guidance">ガイド</string>
   <string name="adapter.study.drawing.undo">元に戻す</string>
   <string name="adapter.study.drawing.reset">リセット</string>
+  <string name="adapter.study.drawing.easy">簡単</string>
+  <string name="adapter.study.drawing.hard">難しい</string>
 </resources>

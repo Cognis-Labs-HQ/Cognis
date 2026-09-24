@@ -15,8 +15,12 @@ test("drawing practice uses the PiP capability and requires card stroke data", (
     assert.match(source, /strokePattern\?\.strokes/);
 });
 
-test("drawing practice tracks ordered strokes and adjustable guidance", () => {
+test("drawing practice tracks ordered strokes and adaptive guidance", () => {
     assert.match(source, /scoreStroke/);
+    assert.match(source, /resample/);
+    assert.match(source, /rootMeanSquare/);
+    assert.match(source, /guidanceLevel/);
+    assert.match(source, /data-difficulty/);
     assert.match(source, /completed\.length/);
     assert.match(source, /data-guidance/);
     assert.match(source, /data-undo/);
