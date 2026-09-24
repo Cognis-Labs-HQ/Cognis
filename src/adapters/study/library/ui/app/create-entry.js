@@ -12,7 +12,12 @@ import {
     readFields,
     readReferences,
 } from "./admin-interactions.js";
-import { localizedLabel } from "./presentation.js";
+import {
+    definitionText,
+    layerForEntry,
+    localizedLabel,
+    pronunciationValues,
+} from "./presentation.js";
 
 export async function chooseCreateLayer({
     schema,
@@ -142,7 +147,7 @@ export async function openCreateEntryPopup({
         writableClasses.length && !canPublishEveryone
             ? `<label class="library-admin-checkbox"><input name="publishClass" type="checkbox" class="choice-checkbox" data-library-publish-class-toggle> <span>${escapeHtml(i18n.t("gateway.study.library_publish_class_option"))}</span></label><label data-library-class-choice hidden><span>${escapeHtml(i18n.t("gateway.study.library_class"))}</span><select name="classId">${writableClasses.map(({ scopeId }) => `<option value="${escapeHtml(scopeId)}">${escapeHtml(scopeId)}</option>`).join("")}</select></label>`
             : '<input type="hidden" name="classId" value="">'
-    }<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><input data-library-composer-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></label><div data-library-composer-suggestions aria-live="polite"></div></section>`;
+    }<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><input data-library-composer-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></label><div class="library-composition-blocks" data-library-composition-blocks aria-live="polite"></div><div data-library-composer-suggestions aria-live="polite"></div></section>`;
     const { html, builder } = editorBody(
         draft,
         [
@@ -165,6 +170,7 @@ export async function openCreateEntryPopup({
             includeHidden: constructor.allowHidden === true,
             relationshipCarousels: true,
             generatedLabel: true,
+            persistentExtra: true,
         },
     );
     let form;
@@ -234,6 +240,7 @@ export async function openCreateEntryPopup({
                         );
                         if (option) select.append(option);
                     });
+                    form.dispatchEvent(new Event("library-composition-change"));
                 },
                 onAdd: async ({ id, carousel }) => {
                     const relationship = editingLayer.relationships.find(
@@ -291,6 +298,7 @@ export async function openCreateEntryPopup({
                 form,
                 entries,
                 editingLayer,
+                schema,
                 i18n,
             );
             const publishClass = form.elements.publishClass;
@@ -299,29 +307,6 @@ export async function openCreateEntryPopup({
             );
             publishClass?.addEventListener("change", () => {
                 if (classChoice) classChoice.hidden = !publishClass.checked;
-            });
-            const compositionInput = form.querySelector(
-                "[data-library-composer-text]",
-            );
-            const relationshipPanel = form.querySelector(
-                '[data-library-editor-panel="relationships"]',
-            );
-            const updateCarouselVisibility = () => {
-                if (!relationshipPanel) return;
-                relationshipPanel.hidden = !(
-                    document.activeElement === compositionInput ||
-                    relationshipPanel.contains(document.activeElement)
-                );
-            };
-            compositionInput?.addEventListener(
-                "focus",
-                updateCarouselVisibility,
-            );
-            compositionInput?.addEventListener("blur", () => {
-                window.setTimeout(updateCarouselVisibility, 0);
-            });
-            relationshipPanel?.addEventListener("focusout", () => {
-                window.setTimeout(updateCarouselVisibility, 0);
             });
         },
     });
@@ -349,6 +334,10 @@ export async function openCreateEntryPopup({
         class: form.elements.class.value || undefined,
         fields: readFields(form, editingLayer, draft),
         references: readReferences(form, editingLayer),
+        definitionLanguages:
+            layer.semanticRole === "definition"
+                ? ["de", "en", "id", "ja"]
+                : undefined,
         alwaysShowDefinition:
             form.elements.alwaysShowDefinition?.checked === true,
         hidden:
@@ -384,15 +373,56 @@ export async function openCreateEntryPopup({
     }
 }
 
-function bindTextComposition(form, entries, layer, i18n) {
+function entryDefinition(entry, entries, schema) {
+    const definition = (entry.references ?? [])
+        .map(({ entryId }) => entries.find(({ id }) => id === entryId))
+        .find((candidate) => {
+            const candidateLayer = candidate
+                ? layerForEntry([schema], candidate)
+                : null;
+            return ["definition", "meaning"].includes(
+                candidateLayer?.semanticRole,
+            );
+        });
+    return definition
+        ? definitionText(
+              definition,
+              layerForEntry([schema], definition),
+              document.documentElement.lang,
+          )
+        : "";
+}
+
+function derivedPronunciation(entry, entries, schema, visited = new Set()) {
+    if (!entry || visited.has(entry.id)) return "";
+    visited.add(entry.id);
+    const direct = pronunciationValues(entry).find(Boolean);
+    const entryLayer = layerForEntry([schema], entry);
+    if (entryLayer?.semanticRole === "atomicWritingUnit")
+        return direct || entry.label;
+    const parts = (entry.references ?? [])
+        .map(({ entryId }) => entries.find(({ id }) => id === entryId))
+        .map((candidate) =>
+            derivedPronunciation(candidate, entries, schema, visited),
+        )
+        .filter(Boolean);
+    return parts.join("") || direct || "";
+}
+
+function bindTextComposition(form, entries, layer, schema, i18n) {
     const input = form.querySelector("[data-library-composer-text]");
     const output = form.querySelector("[data-library-composer-suggestions]");
-    if (!input || !output) return { validate: () => true };
+    const blocks = form.querySelector("[data-library-composition-blocks]");
+    if (!input || !output || !blocks) return { validate: () => true };
     const relationships = layer.relationships ?? [];
     const candidates = relationships.flatMap((relationship) =>
         entries
             .filter((entry) => entry.layer === relationship.targetLayer)
-            .map((entry) => ({ ...entry, relationshipId: relationship.id })),
+            .map((entry) => ({
+                ...entry,
+                relationshipId: relationship.id,
+                preview: entryDefinition(entry, entries, schema),
+            })),
     );
     const selectedLabels = () => {
         const labels = new Map(
@@ -408,9 +438,67 @@ function bindTextComposition(form, entries, layer, i18n) {
             (value) => labels.get(value) ?? "",
         );
     };
+    const inferRelationships = () => {
+        const selectedEntries = (form.compositionOrder ?? [])
+            .map((id) => entries.find((entry) => entry.id === id))
+            .filter(Boolean);
+        for (const selectedEntry of selectedEntries) {
+            for (const reference of selectedEntry.references ?? []) {
+                const target = entries.find(
+                    ({ id }) => id === reference.entryId,
+                );
+                if (!target) continue;
+                const relationship = relationships.find(
+                    ({ targetLayer }) => targetLayer === target.layer,
+                );
+                const select = relationship
+                    ? form.elements[`relationship:${relationship.id}`]
+                    : null;
+                const option = select
+                    ? Array.from(select.options).find(
+                          ({ value }) => value === target.id,
+                      )
+                    : null;
+                if (option) option.selected = true;
+            }
+        }
+    };
+    const syncPronunciation = () => {
+        const control = form.elements["field:pronunciation"];
+        if (!control) return;
+        const pronunciation = (form.compositionOrder ?? [])
+            .map((id) => entries.find((entry) => entry.id === id))
+            .map((entry) => derivedPronunciation(entry, entries, schema))
+            .join("");
+        if (pronunciation) control.value = pronunciation;
+    };
+    const renderBlocks = () => {
+        blocks.innerHTML = (form.compositionOrder ?? [])
+            .map((id) => entries.find((entry) => entry.id === id))
+            .filter(Boolean)
+            .map(
+                (entry) =>
+                    `<button class="btn-neutral library-composition-block" type="button" draggable="true" data-library-composition-id="${escapeHtml(entry.id)}"><span>${escapeHtml(entry.label)}</span><span aria-hidden="true">×</span></button>`,
+            )
+            .join("");
+    };
     const syncLabel = () => {
+        for (const relationship of relationships) {
+            const select = form.elements[`relationship:${relationship.id}`];
+            for (const id of form.compositionOrder ?? []) {
+                const option = select
+                    ? Array.from(select.options).find(
+                          ({ value }) => value === id,
+                      )
+                    : null;
+                if (option?.selected) select.append(option);
+            }
+        }
         const resolved = selectedLabels().join("");
         form.elements.label.value = `${resolved}${input.value.trim()}`;
+        inferRelationships();
+        syncPronunciation();
+        renderBlocks();
     };
     const renderSuggestions = () => {
         const text = input.value.trim();
@@ -421,7 +509,7 @@ function bindTextComposition(form, entries, layer, i18n) {
         output.innerHTML = `${matches
             .map(
                 (match) =>
-                    `<button class="btn-neutral" type="button" data-library-suggestion="${escapeHtml(match.id)}" data-relationship="${escapeHtml(match.relationshipId)}" data-suggestion-label="${escapeHtml(match.label)}">${escapeHtml(match.label)} <small>${escapeHtml(i18n.t("gateway.study.library_composer_match"))}</small></button>`,
+                    `<button class="btn-neutral library-composer-suggestion" type="button" data-library-suggestion="${escapeHtml(match.id)}" data-relationship="${escapeHtml(match.relationshipId)}" data-suggestion-label="${escapeHtml(match.label)}">${escapeHtml(match.label)}${match.preview ? `<span class="horizontal-carousel-preview" role="tooltip"><strong>${escapeHtml(match.label)}</strong><span>${escapeHtml(match.preview)}</span></span>` : ""}</button>`,
             )
             .join(
                 "",
@@ -430,6 +518,7 @@ function bindTextComposition(form, entries, layer, i18n) {
     };
     input.addEventListener("input", renderSuggestions);
     form.addEventListener("change", syncLabel);
+    form.addEventListener("library-composition-change", syncLabel);
     output.addEventListener("click", (event) => {
         const suggestion = event.target.closest("[data-library-suggestion]");
         if (suggestion) {
@@ -452,6 +541,31 @@ function bindTextComposition(form, entries, layer, i18n) {
         if (!carousel) return;
         carousel.dataset.suggestedLabel = unmatched.dataset.unmatchedLabel;
         carousel.querySelector("[data-carousel-add]")?.click();
+    });
+    let draggedId = null;
+    blocks.addEventListener("dragstart", (event) => {
+        const block = event.target.closest("[data-library-composition-id]");
+        draggedId = block?.dataset.libraryCompositionId ?? null;
+        if (draggedId) event.dataTransfer?.setData("text/plain", draggedId);
+    });
+    blocks.addEventListener("dragover", (event) => event.preventDefault());
+    blocks.addEventListener("drop", (event) => {
+        event.preventDefault();
+        const target = event.target.closest("[data-library-composition-id]");
+        const targetId = target?.dataset.libraryCompositionId;
+        if (!draggedId || !targetId || draggedId === targetId) return;
+        const order = form.compositionOrder.filter((id) => id !== draggedId);
+        order.splice(order.indexOf(targetId), 0, draggedId);
+        form.compositionOrder = order;
+        syncLabel();
+    });
+    blocks.addEventListener("click", (event) => {
+        const block = event.target.closest("[data-library-composition-id]");
+        const id = block?.dataset.libraryCompositionId;
+        if (!id) return;
+        form.querySelector(
+            `[data-carousel-value="${CSS.escape(id)}"].is-selected`,
+        )?.click();
     });
     renderSuggestions();
     return {

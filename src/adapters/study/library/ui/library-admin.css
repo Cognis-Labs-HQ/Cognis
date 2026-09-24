@@ -304,3 +304,30 @@ body[data-theme="dark"] .library-quick-search-control img {
     justify-content: space-between;
     gap: 0.75rem;
 }
+
+.library-composition-blocks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    min-height: 0;
+}
+
+.library-composition-block {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+    cursor: grab;
+}
+
+.library-composition-block:active {
+    cursor: grabbing;
+}
+
+.library-composer-suggestion {
+    position: relative;
+}
+
+.library-composer-suggestion:is(:hover, :focus-visible)
+    .horizontal-carousel-preview {
+    display: block;
+}

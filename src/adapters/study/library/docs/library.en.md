@@ -128,6 +128,8 @@ Personal cards can be published to an enrolled class for its teacher to review o
 
 A language pack can place a `cardConstructor` on each creatable layer in its schema. The specification supplies the localized primary-label prompt, ordered field and relationship IDs, provider defaults, and whether Cognis should expose the hidden-card or preview-definition switches. Cognis adds role-authorized visibility and class controls around that specification; a layer without a constructor is deliberately read-only for creation.
 
+Creation presents every relationship collection without scrollbars or directional controls. Hover previews use the current UI language definition. Selected or suggested items become draggable composition blocks, their stable IDs generate relationship references, and pronunciation is derived recursively from referenced writing units. Definition creation requests all supported UI-language translations.
+
 A runtime language module may instead resolve the public `study:library:provider` ctx capability, call `ingestContentPack(moduleRoot)`, and call `registerConstructor(...)`. Constructor IDs are validated against the registered schema before the form is exposed. The returned remover lets module disablement cleanly unregister a runtime constructor.
 
 ## External package contract

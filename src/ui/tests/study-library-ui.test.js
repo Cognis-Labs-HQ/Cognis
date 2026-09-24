@@ -399,6 +399,11 @@ test("Study Library creation offers ordered, recursive composition", () => {
     assert.match(source, /await openCreateEntryPopup\(/);
     assert.match(source, /library_composer_no_match/);
     assert.match(stylesheet, /library-composer-suggestions/);
+    assert.match(source, /data-library-composition-blocks/);
+    assert.match(source, /draggable="true"/);
+    assert.match(source, /derivedPronunciation/);
+    assert.match(source, /inferRelationships/);
+    assert.doesNotMatch(source, /library_composer_match.*<\/small>/);
 });
 
 test("Study Library separates admin and user-facing editing", () => {

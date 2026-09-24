@@ -62,6 +62,10 @@ Card edit controls now appear only inside detail dialogs and use the theme-aware
 
 The Library create action keeps its normal button footprint while doubling only the plus glyph. Creation tabs now initialize correctly, personal scope is the default, eligible administrators can opt into publishing globally, and teachers see a class-publishing option only for writable classes matching the active language. Content class uses a role-aware dropdown only where relevant, the composition field is labelled Input, and focusing it reveals the relationship carousels.
 
+## Smarter permanent composition
+
+Relationship collections now show every item without scrollbars or direction arrows. Hover previews show a minimal card with the current-language definition, while carousel choices and free-text suggestions immediately become draggable Input blocks. Reordering blocks updates relationship order, selected content infers related references, pronunciation walks referenced writing units, and definition creation requests every supported UI language.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -74,3 +78,4 @@ The Library create action keeps its normal button footprint while doubling only 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2e2d092813312978c2f69640389f6401ec0230f5
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/cff7223cd64c36372e64484c362ba9b1a1f4e2f7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bbb6bb8bd8e2d70a6ec571c2a69e58665a90ca04
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e1e564bf66580e7a1e8eaf24080c646f686d982c

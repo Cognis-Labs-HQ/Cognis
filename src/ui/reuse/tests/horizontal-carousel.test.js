@@ -7,7 +7,7 @@ test("horizontal carousels preserve ordered selections and an add affordance", (
         id: "words",
         label: "Words",
         items: [
-            { value: "flower", label: "花火" },
+            { value: "flower", label: "花火", preview: "fireworks" },
             { value: "particle", label: "が" },
         ],
         selectedValues: ["particle", "flower"],
@@ -18,4 +18,7 @@ test("horizontal carousels preserve ordered selections and an add affordance", (
     assert.match(html, /data-carousel-value="flower"[\s\S]*?>2<\/small>/);
     assert.match(html, /data-carousel-add/);
     assert.match(html, /aria-label="Create word"/);
+    assert.match(html, /horizontal-carousel-preview/);
+    assert.match(html, /fireworks/);
+    assert.doesNotMatch(html, /data-carousel-scroll/);
 });

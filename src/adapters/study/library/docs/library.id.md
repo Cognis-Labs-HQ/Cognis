@@ -112,6 +112,8 @@ Kartu pribadi dapat diterbitkan ke kelas yang diikuti untuk ditinjau gurunya ata
 
 Paket bahasa dapat menambahkan `cardConstructor` pada setiap lapisan yang dapat dibuat di dalam skemanya. Spesifikasi ini menyediakan label utama terlokalisasi, urutan ID bidang dan relasi, nilai awal penyedia, serta pilihan untuk menampilkan sakelar kartu tersembunyi atau pratinjau definisi. Cognis menambahkan kontrol visibilitas dan kelas sesuai peran; lapisan tanpa konstruktor sengaja hanya-baca untuk pembuatan.
 
+Pembuatan menampilkan seluruh koleksi hubungan tanpa bilah gulir atau kontrol arah. Pratinjau saat diarahkan memakai definisi dalam bahasa antarmuka saat ini. Item yang dipilih atau disarankan menjadi blok komposisi yang dapat diseret; ID stabilnya menghasilkan referensi hubungan, dan pelafalan diturunkan secara rekursif dari unit tulisan yang dirujuk. Pembuatan definisi meminta terjemahan untuk semua bahasa antarmuka yang didukung.
+
 Modul bahasa saat runtime juga dapat mengambil kapabilitas ctx publik `study:library:provider`, memanggil `ingestContentPack(moduleRoot)`, lalu `registerConstructor(...)`. ID konstruktor divalidasi terhadap skema terdaftar sebelum formulir tersedia. Fungsi penghapus yang dikembalikan memungkinkan konstruktor dilepas saat modul dinonaktifkan.
 
 ## Kontrak paket eksternal

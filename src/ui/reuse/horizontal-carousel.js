@@ -14,7 +14,7 @@ import { escapeHtml } from "./escape-html.js";
 
 /**
  * Render an accessible horizontal carousel.
- * @param {{id: string, label: string, items: Array<{value: string, label: string}>, selectedValues?: string[], addLabel?: string, previousLabel?: string, nextLabel?: string}} options Carousel data.
+ * @param {{id: string, label: string, items: Array<{value: string, label: string, preview?: string}>, selectedValues?: string[], addLabel?: string}} options Carousel data.
  * @returns {string} Safe carousel HTML.
  */
 export function renderHorizontalCarousel({
@@ -23,13 +23,11 @@ export function renderHorizontalCarousel({
     items,
     selectedValues = [],
     addLabel = "Add",
-    previousLabel = "Previous",
-    nextLabel = "Next",
 }) {
     const order = new Map(
         selectedValues.map((value, index) => [value, index + 1]),
     );
-    return `<section class="horizontal-carousel" data-horizontal-carousel="${escapeHtml(id)}"><header><span>${escapeHtml(label)}</span><output data-carousel-selection aria-live="polite"></output></header><div class="horizontal-carousel-row"><button class="btn-neutral horizontal-carousel-scroll" type="button" data-carousel-scroll="previous" aria-label="${escapeHtml(previousLabel)}">‹</button><div class="horizontal-carousel-viewport"><div class="horizontal-carousel-track">${items.map(({ value, label: itemLabel }) => `<button class="btn-neutral horizontal-carousel-item${order.has(value) ? " is-selected" : ""}" type="button" data-carousel-value="${escapeHtml(value)}" aria-pressed="${order.has(value)}"><span>${escapeHtml(itemLabel)}</span><small data-carousel-order>${order.get(value) ?? ""}</small></button>`).join("")}</div></div><button class="btn-neutral horizontal-carousel-scroll" type="button" data-carousel-scroll="next" aria-label="${escapeHtml(nextLabel)}">›</button><button class="btn-confirm horizontal-carousel-add" type="button" data-carousel-add aria-label="${escapeHtml(addLabel)}">+</button></div></section>`;
+    return `<section class="horizontal-carousel" data-horizontal-carousel="${escapeHtml(id)}"><header><span>${escapeHtml(label)}</span><output data-carousel-selection aria-live="polite"></output></header><div class="horizontal-carousel-row"><div class="horizontal-carousel-viewport"><div class="horizontal-carousel-track">${items.map(({ value, label: itemLabel, preview = "" }) => `<button class="btn-neutral horizontal-carousel-item${order.has(value) ? " is-selected" : ""}" type="button" data-carousel-value="${escapeHtml(value)}" aria-pressed="${order.has(value)}"><span>${escapeHtml(itemLabel)}</span><small data-carousel-order>${order.get(value) ?? ""}</small>${preview ? `<span class="horizontal-carousel-preview" role="tooltip"><strong>${escapeHtml(itemLabel)}</strong><span>${escapeHtml(preview)}</span></span>` : ""}</button>`).join("")}</div></div><button class="btn-confirm horizontal-carousel-add" type="button" data-carousel-add aria-label="${escapeHtml(addLabel)}">+</button></div></section>`;
 }
 
 /**
@@ -66,19 +64,6 @@ export function mountHorizontalCarousels(
         (event) => {
             const carousel = event.target.closest("[data-horizontal-carousel]");
             if (!carousel || !root.contains(carousel)) return;
-            const scroll = event.target.closest("[data-carousel-scroll]");
-            if (scroll) {
-                carousel
-                    .querySelector(".horizontal-carousel-viewport")
-                    ?.scrollBy({
-                        left:
-                            scroll.dataset.carouselScroll === "previous"
-                                ? -320
-                                : 320,
-                        behavior: "smooth",
-                    });
-                return;
-            }
             if (event.target.closest("[data-carousel-add]")) {
                 onAdd({ id: carousel.dataset.horizontalCarousel, carousel });
                 return;

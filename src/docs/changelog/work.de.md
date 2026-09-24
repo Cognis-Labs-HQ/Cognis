@@ -62,6 +62,10 @@ Bearbeitungsaktionen für Karten erscheinen jetzt nur noch in Detaildialogen und
 
 Die Erstellungsaktion der Bibliothek behält ihre normale Schaltflächengröße bei; nur das Pluszeichen ist doppelt so groß. Die Registerkarten werden nun korrekt initialisiert, der persönliche Bereich ist Standard, berechtigte Administratoren können die globale Veröffentlichung auswählen und Lehrkräfte sehen die Klassenveröffentlichung nur für beschreibbare Klassen der aktiven Sprache. Die Inhaltsklasse wird nur bei relevanten Rollen als Auswahl angezeigt, das Kompositionsfeld heißt „Eingabe“ und zeigt beim Fokussieren die Beziehungskarussells.
 
+## Intelligentere dauerhafte Komposition
+
+Beziehungssammlungen zeigen jetzt alle Elemente ohne Bildlaufleisten oder Richtungspfeile. Hover-Vorschauen zeigen eine minimale Karte mit der Definition in der aktuellen Oberflächensprache. Karussellauswahl und Freitextvorschläge werden sofort zu verschiebbaren Eingabeblöcken. Deren Reihenfolge aktualisiert die Beziehungen, ausgewählte Inhalte leiten zugehörige Referenzen ab, die Aussprache folgt referenzierten Schreibeinheiten und die Definitionserstellung fordert jede unterstützte Oberflächensprache an.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -74,3 +78,4 @@ Die Erstellungsaktion der Bibliothek behält ihre normale Schaltflächengröße 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2e2d092813312978c2f69640389f6401ec0230f5
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/cff7223cd64c36372e64484c362ba9b1a1f4e2f7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bbb6bb8bd8e2d70a6ec571c2a69e58665a90ca04
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e1e564bf66580e7a1e8eaf24080c646f686d982c

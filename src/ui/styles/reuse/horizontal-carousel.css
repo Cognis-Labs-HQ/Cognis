@@ -12,22 +12,20 @@
 
 .horizontal-carousel-row {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: stretch;
     gap: 0.4rem;
 }
 
 .horizontal-carousel-viewport {
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scroll-snap-type: x proximity;
+    overflow: visible;
 }
 
 .horizontal-carousel-track {
     display: flex;
     gap: 0.45rem;
-    width: max-content;
-    min-width: 100%;
+    flex-wrap: wrap;
+    width: 100%;
 }
 
 .horizontal-carousel-item {
@@ -71,4 +69,33 @@
     min-width: 2.75rem;
     padding: 0;
     place-items: center;
+}
+
+.horizontal-carousel-preview {
+    position: absolute;
+    z-index: 20;
+    inset-block-end: calc(100% + 0.45rem);
+    inset-inline-start: 50%;
+    display: none;
+    width: max-content;
+    max-width: min(18rem, 70vw);
+    padding: 0.65rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-small, 0.5rem);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    color: var(--text);
+    text-align: start;
+    transform: translateX(-50%);
+}
+
+.horizontal-carousel-preview > span {
+    display: block;
+    margin-block-start: 0.25rem;
+    color: var(--text-muted);
+}
+
+.horizontal-carousel-item:is(:hover, :focus-visible)
+    .horizontal-carousel-preview {
+    display: block;
 }
