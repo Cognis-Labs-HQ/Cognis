@@ -299,7 +299,35 @@ export class LibraryStore {
                     String(registeredSchema.rows[0].schema_json) !==
                     JSON.stringify(schema)
                 ) {
-                    throw new Error("schema_version_conflict");
+                    const schemaOwners = await db.executeCommand({
+                        option: "SELECT",
+                        table: "study_library_content_packs",
+                        columns: ["publisher", "pack_id"],
+                        where: [
+                            { column: "schema_id", value: schema.id },
+                            { column: "schema_version", value: schema.version },
+                        ],
+                    });
+                    if (
+                        !schemaOwners.rows?.length ||
+                        schemaOwners.rows.some(
+                            (owner) =>
+                                String(owner.publisher) !==
+                                    manifest.publisher ||
+                                String(owner.pack_id) !== manifest.id,
+                        )
+                    ) {
+                        throw new Error("schema_version_conflict");
+                    }
+                    await db.executeCommand({
+                        option: "UPDATE",
+                        table: "study_library_schemas",
+                        values: { schema_json: JSON.stringify(schema) },
+                        where: [
+                            { column: "schema_id", value: schema.id },
+                            { column: "version", value: schema.version },
+                        ],
+                    });
                 }
             } else {
                 await db.executeCommand({

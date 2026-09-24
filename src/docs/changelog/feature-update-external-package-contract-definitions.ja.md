@@ -70,6 +70,10 @@ Library 管理画面は選択中の言語のレイヤーを平坦なメニュー
 
 子カードの分岐を開くと、無関係なカードの表示範囲アイコンをぼかし、他の親カードのホバー時の浮き上がりと強調を無効化します。アクティブな分岐は鮮明で操作可能なままです。
 
+## 同一所有者による安全なスキーマ更新
+
+権威あるコンテンツパックの新しいリリースが、同じ互換バージョンで自身の保存済みスキーマを改訂できるようになりました。所有権チェックによるスキーマ衝突防止を維持し、トランザクション取り込みの成功後にのみスキーマキャッシュを更新するため、最新の日本語パックを以前のリリース上で正常に有効化できます。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -89,3 +93,4 @@ Library 管理画面は選択中の言語のレイヤーを平坦なメニュー
 - [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)
 - [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)
 - [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)
+- [d3ba08ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3ba08ef)

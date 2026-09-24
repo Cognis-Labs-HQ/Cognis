@@ -345,10 +345,7 @@ export class LibraryService implements LibraryCapability {
                 plan.schema.id,
                 plan.schema.version,
             );
-            if (registered) {
-                if (JSON.stringify(registered) !== JSON.stringify(plan.schema))
-                    throw new Error("schema_version_conflict");
-            } else {
+            if (!registered) {
                 this.assertSchemaVersionAvailable(plan.schema);
             }
             await this.flow?.run("study:library:ingest", { plan });
@@ -359,7 +356,7 @@ export class LibraryService implements LibraryCapability {
                     entryCount: receipt.recordCount,
                     language: plan.schema.language,
                 });
-            if (!registered) this.rememberSchema(plan.schema);
+            this.rememberSchema(plan.schema);
             await this.log?.("info", "Ingested Study Library content pack.", {
                 component: "study-library",
                 operation: "ingest-content-pack",

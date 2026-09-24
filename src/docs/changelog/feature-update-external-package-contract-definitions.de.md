@@ -70,6 +70,10 @@ Detailansichten blenden nun die strukturelle Composite-Klasse aus, wandeln Anbie
 
 Beim Öffnen eines untergeordneten Kartenzweigs werden die Sichtbarkeitssymbole nicht zugehöriger Karten unscharf und Hover-Anhebung sowie Hervorhebung anderer Elternkarten neutralisiert. Der aktive Zweig bleibt scharf und interaktiv.
 
+## Sichere Schemaentwicklung beim selben Besitzer
+
+Neue Versionen eines maßgeblichen Inhaltspakets können nun ihr eigenes gespeichertes Schema bei derselben Kompatibilitätsversion überarbeiten. Besitzerprüfungen schützen weiterhin vor Schemakollisionen, und der Schema-Cache wird erst nach erfolgreicher transaktionaler Aufnahme aktualisiert. Dadurch kann das aktuelle Japanisch-Paket sauber über der vorherigen Version aktiviert werden.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -89,3 +93,4 @@ Beim Öffnen eines untergeordneten Kartenzweigs werden die Sichtbarkeitssymbole 
 - [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)
 - [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)
 - [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)
+- [d3ba08ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3ba08ef)

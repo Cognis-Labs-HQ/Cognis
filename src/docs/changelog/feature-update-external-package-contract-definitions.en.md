@@ -70,6 +70,10 @@ Detail views now hide the structural composite class, humanize provider class su
 
 Opening a child-card branch now blurs unrelated cards’ visibility icons and neutralizes hover elevation and highlight styling on other parent cards. The active branch remains crisp and interactive.
 
+## Safe same-owner schema evolution
+
+New releases of an authoritative content pack can now revise their own stored schema at the same compatibility version. Ownership checks retain schema collision protection, and the schema cache updates only after transactional ingestion succeeds, allowing the latest Japanese pack to enable cleanly over its previous release.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -89,3 +93,4 @@ Opening a child-card branch now blurs unrelated cards’ visibility icons and ne
 - [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)
 - [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)
 - [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)
+- [d3ba08ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3ba08ef)

@@ -70,6 +70,10 @@ Tampilan detail kini menyembunyikan kelas struktural composite, mengubah akhiran
 
 Membuka cabang kartu anak kini memburamkan ikon visibilitas kartu yang tidak terkait serta menetralkan elevasi dan sorotan hover pada kartu induk lainnya. Cabang aktif tetap tajam dan interaktif.
 
+## Evolusi skema aman oleh pemilik yang sama
+
+Rilis baru paket konten otoritatif kini dapat merevisi skema tersimpannya sendiri pada versi kompatibilitas yang sama. Pemeriksaan kepemilikan tetap melindungi dari benturan skema, dan cache skema hanya diperbarui setelah ingest transaksional berhasil, sehingga paket bahasa Jepang terbaru dapat diaktifkan dengan bersih di atas rilis sebelumnya.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -89,3 +93,4 @@ Membuka cabang kartu anak kini memburamkan ikon visibilitas kartu yang tidak ter
 - [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)
 - [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)
 - [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)
+- [d3ba08ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3ba08ef)

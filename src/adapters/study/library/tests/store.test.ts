@@ -5,6 +5,80 @@ import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { LibraryStore } from "../store.js";
 import type { LibraryContentPackPlan } from "../types.js";
 
+test("new releases may replace a schema owned only by the same content pack", async () => {
+    const commands: StructuredDbCommand[] = [];
+    const previousSchema = {
+        id: "japanese",
+        version: 45,
+        namespace: "ja",
+        language: "ja",
+        metadata: { labels: { en: "Japanese" } },
+        layers: [{ id: "words", metadata: { labels: { en: "Words" } } }],
+    };
+    const nextSchema = {
+        ...previousSchema,
+        layers: [
+            {
+                ...previousSchema.layers[0],
+                displayDefinition: true,
+            },
+        ],
+    };
+    const db: DbExecutor = {
+        ensureTable: async () => {},
+        transaction: async (callback) => callback(db),
+        executeCommand: async (command) => {
+            commands.push(command);
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_schemas"
+            ) {
+                return {
+                    rows: [{ schema_json: JSON.stringify(previousSchema) }],
+                };
+            }
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_content_packs" &&
+                command.where?.some(({ column }) => column === "schema_id")
+            ) {
+                return {
+                    rows: [
+                        { publisher: "Cognis Labs HQ", pack_id: "japanese" },
+                    ],
+                };
+            }
+            if (command.option === "SELECT") return { rows: [] };
+            return { rowCount: 1 };
+        },
+    };
+    await new LibraryStore(db).ingestContentPack({
+        root: "/content",
+        manifest: {
+            id: "japanese",
+            publisher: "Cognis Labs HQ",
+            version: "2.2.16",
+            contentRevision: "12",
+            namespace: "ja",
+            schema: "schema.json",
+            content: "content",
+            license: { id: "AGPL-3.0-or-later" },
+        },
+        schema: nextSchema,
+        digest: "next",
+        records: [],
+        assets: [],
+    });
+    assert.ok(
+        commands.some(
+            (command) =>
+                command.option === "UPDATE" &&
+                command.table === "study_library_schemas" &&
+                command.values.schema_json === JSON.stringify(nextSchema),
+        ),
+    );
+});
+
 test("content pack import ignores duplicate all-key references", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
