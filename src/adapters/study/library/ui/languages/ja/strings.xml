@@ -75,7 +75,7 @@
   <string name="gateway.study.library_requests_pending">保留中</string>
   <string name="gateway.study.library_requests_review">要確認</string>
   <string name="gateway.study.library_optional">任意</string>
-  <string name="gateway.study.library_composer_text">テキストから構成</string>
+  <string name="gateway.study.library_composer_text">入力</string>
   <string name="gateway.study.library_composer_match">もしかして？</string>
   <string name="gateway.study.library_composer_no_match">一致する項目がありません。作成しますか？</string>
   <string name="gateway.study.library_composer_layer">カードの種類</string>
@@ -86,4 +86,6 @@
   <string name="gateway.study.library_editor_no_definitions">まだ定義が関連付けられていません。</string>
   <string name="gateway.study.library_editor_no_relationships">このカード種別には関連がありません。</string>
   <string name="gateway.study.library_composer_resolve_input">カードを作成する前に、すべてのテキスト部分を既存項目に解決するか新規作成してください。</string>
+  <string name="gateway.study.library_publish_everyone">全員に公開</string>
+  <string name="gateway.study.library_publish_class_option">クラスに公開</string>
 </resources>

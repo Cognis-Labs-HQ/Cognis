@@ -73,6 +73,36 @@ test("content-pack notifications report only newly introduced records", async ()
     assert.deepEqual(notifications, [{ entryCount: 2, language: "x-fixture" }]);
 });
 
+test("class publishing locations are filtered by the selected language", async () => {
+    const requestedLanguages: Array<string | undefined> = [];
+    const library = new LibraryService({} as never, {
+        async canRead() {
+            return true;
+        },
+        async canWrite() {
+            return true;
+        },
+        async listReadable() {
+            return [];
+        },
+        async listWritable(_accountId, _role, language) {
+            requestedLanguages.push(language);
+            return ["class-japanese"];
+        },
+    });
+
+    const locations = await library.locations(
+        { accountId: "teacher-1", role: "teacher" },
+        "ja",
+    );
+
+    assert.deepEqual(requestedLanguages, ["ja"]);
+    assert.deepEqual(locations.writable, [
+        { scope: "user", scopeId: "teacher-1" },
+        { scope: "class", scopeId: "class-japanese" },
+    ]);
+});
+
 test("schema registrations are versioned, persisted, and immutable", async () => {
     const { library, saved } = service();
     const input = schema(1);

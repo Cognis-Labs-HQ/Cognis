@@ -367,7 +367,9 @@ test("Study Library creation is driven by language card constructors", () => {
     assert.match(source, /constructor\.fields/);
     assert.match(source, /constructor\.relationships/);
     assert.match(source, /constructor\.defaults/);
-    assert.match(source, /data-library-visibility/);
+    assert.match(source, /name="scope" type="hidden" value="user"/);
+    assert.match(source, /data-library-publish-class-toggle/);
+    assert.match(source, /publishEveryone/);
     assert.doesNotMatch(indexSource, /data-library-create/);
     assert.match(layerPageSource, /page:actions/);
     assert.match(layerPageSource, /textContent = "\+"/);
@@ -375,7 +377,8 @@ test("Study Library creation is driven by language card constructors", () => {
     assert.match(layerPageSource, /semanticRole !== "atomicWritingUnit"/);
     assert.match(source, /contributedConstructor \?\?/);
     assert.match(source, /layer\?\.cardConstructor \?\?/);
-    assert.match(source, /writableClasses\.length > 1/);
+    assert.match(source, /writableClasses\.length && !canPublishEveryone/);
+    assert.match(source, /onOpen\(overlay\)/);
     assert.doesNotMatch(layerPageSource, /renderLibraryRequests/);
     assert.doesNotMatch(indexSource, /renderLibraryRequests/);
     assert.match(requestsPageSource, /renderLibraryRequests/);

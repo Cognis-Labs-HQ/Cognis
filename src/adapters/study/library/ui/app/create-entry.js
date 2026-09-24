@@ -57,7 +57,9 @@ export async function openCreateEntryPopup({
     initialLabel = "",
 }) {
     const [access, loadedContributions] = await Promise.all([
-        fetchLibraryLocations(),
+        fetchLibraryLocations(
+            schemas.find(({ id }) => id === schemaId)?.language,
+        ),
         suppliedContributions
             ? Promise.resolve(suppliedContributions)
             : fetchLibraryForms(),
@@ -126,16 +128,20 @@ export async function openCreateEntryPopup({
         fields: structuredClone(constructor.defaults ?? {}),
         references: [],
     };
-    const writableScopes = [
-        ...new Set(access.writable.map(({ scope }) => scope)),
-    ];
+    const canPublishEveryone = access.writable.some(
+        ({ scope }) => scope === "global",
+    );
     const writableClasses = access.writable.filter(
         ({ scope }) => scope === "class",
     );
-    const locationSelect = `<label><span>${escapeHtml(i18n.t("gateway.study.library_visibility"))}</span><select name="scope" data-library-visibility>${writableScopes.map((scope) => `<option value="${escapeHtml(scope)}">${escapeHtml(i18n.t(`gateway.study.library_scope_${scope}`))}</option>`).join("")}</select></label>${
-        writableClasses.length > 1
-            ? `<label data-library-class-choice hidden><span>${escapeHtml(i18n.t("gateway.study.library_class"))}</span><select name="classId">${writableClasses.map(({ scopeId }) => `<option value="${escapeHtml(scopeId)}">${escapeHtml(scopeId)}</option>`).join("")}</select></label>`
-            : `<input type="hidden" name="classId" value="${escapeHtml(writableClasses[0]?.scopeId ?? "")}">`
+    const publishControls = `<input name="scope" type="hidden" value="user">${
+        canPublishEveryone
+            ? `<label class="library-admin-checkbox"><input name="publishEveryone" type="checkbox" class="choice-checkbox"> <span>${escapeHtml(i18n.t("gateway.study.library_publish_everyone"))}</span></label>`
+            : ""
+    }${
+        writableClasses.length && !canPublishEveryone
+            ? `<label class="library-admin-checkbox"><input name="publishClass" type="checkbox" class="choice-checkbox" data-library-publish-class-toggle> <span>${escapeHtml(i18n.t("gateway.study.library_publish_class_option"))}</span></label><label data-library-class-choice hidden><span>${escapeHtml(i18n.t("gateway.study.library_class"))}</span><select name="classId">${writableClasses.map(({ scopeId }) => `<option value="${escapeHtml(scopeId)}">${escapeHtml(scopeId)}</option>`).join("")}</select></label>`
+            : '<input type="hidden" name="classId" value="">'
     }<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><input data-library-composer-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></label><div data-library-composer-suggestions aria-live="polite"></div></section>`;
     const { html, builder } = editorBody(
         draft,
@@ -149,7 +155,7 @@ export async function openCreateEntryPopup({
         ],
         entries,
         i18n,
-        locationSelect,
+        publishControls,
         {
             labelText:
                 localizedLabel(constructor.label, schema.language) ||
@@ -191,7 +197,7 @@ export async function openCreateEntryPopup({
                 return false;
             return true;
         },
-        onMount(overlay) {
+        onOpen(overlay) {
             form = overlay.querySelector("[data-library-admin-editor]");
             builder.attach(form);
             bindLibraryEditorControls(form, draft, i18n);
@@ -287,16 +293,36 @@ export async function openCreateEntryPopup({
                 editingLayer,
                 i18n,
             );
-            const visibility = form.elements.scope;
+            const publishClass = form.elements.publishClass;
             const classChoice = form.querySelector(
                 "[data-library-class-choice]",
             );
-            const updateClassChoice = () => {
-                if (classChoice)
-                    classChoice.hidden = visibility.value !== "class";
+            publishClass?.addEventListener("change", () => {
+                if (classChoice) classChoice.hidden = !publishClass.checked;
+            });
+            const compositionInput = form.querySelector(
+                "[data-library-composer-text]",
+            );
+            const relationshipPanel = form.querySelector(
+                '[data-library-editor-panel="relationships"]',
+            );
+            const updateCarouselVisibility = () => {
+                if (!relationshipPanel) return;
+                relationshipPanel.hidden = !(
+                    document.activeElement === compositionInput ||
+                    relationshipPanel.contains(document.activeElement)
+                );
             };
-            visibility.addEventListener("change", updateClassChoice);
-            updateClassChoice();
+            compositionInput?.addEventListener(
+                "focus",
+                updateCarouselVisibility,
+            );
+            compositionInput?.addEventListener("blur", () => {
+                window.setTimeout(updateCarouselVisibility, 0);
+            });
+            relationshipPanel?.addEventListener("focusout", () => {
+                window.setTimeout(updateCarouselVisibility, 0);
+            });
         },
     });
     form?.compositionController?.validate();
@@ -306,7 +332,11 @@ export async function openCreateEntryPopup({
         !form?.reportValidity()
     )
         return null;
-    const scope = form.elements.scope.value;
+    const scope = form.elements.publishEveryone?.checked
+        ? "global"
+        : form.elements.publishClass?.checked
+          ? "class"
+          : "user";
     const scopeId =
         scope === "class"
             ? form.elements.classId.value

@@ -197,8 +197,16 @@ export interface StudyClassAccessCapability {
         accountId: string,
         role: AccessRole,
     ): Promise<boolean>;
-    listReadable?(accountId: string, role: AccessRole): Promise<string[]>;
-    listWritable?(accountId: string, role: AccessRole): Promise<string[]>;
+    listReadable?(
+        accountId: string,
+        role: AccessRole,
+        language?: string,
+    ): Promise<string[]>;
+    listWritable?(
+        accountId: string,
+        role: AccessRole,
+        language?: string,
+    ): Promise<string[]>;
 }
 
 type StudyBootstrapBaseCtx = Omit<

@@ -58,6 +58,10 @@ Die Standardkapazität des verschlüsselten Schlüsselbund-Tresors beträgt jetz
 
 Bearbeitungsaktionen für Karten erscheinen jetzt nur noch in Detaildialogen und verwenden das themenabhängige Bearbeitungssymbol. Der breitere Editor trennt Inhalt, Beziehungen und zusammengefasste Definitionen in Registerkarten. Lokalisierte Definitionen bieten alle unterstützten Oberflächensprachen, und verknüpfte Definitionen können direkt bearbeitet werden. Beim Erstellen werden Bezeichnungen aus aufgelösten Bestandteilen erzeugt, nicht zugeordneter Text muss aufgelöst oder erstellt werden, das horizontale Karussell wird wieder korrekt formatiert und die themenabhängige Erstellungsaktion ist größer.
 
+## Verfeinerte Erstellungssteuerung
+
+Die Erstellungsaktion der Bibliothek behält ihre normale Schaltflächengröße bei; nur das Pluszeichen ist doppelt so groß. Die Registerkarten werden nun korrekt initialisiert, der persönliche Bereich ist Standard, berechtigte Administratoren können die globale Veröffentlichung auswählen und Lehrkräfte sehen die Klassenveröffentlichung nur für beschreibbare Klassen der aktiven Sprache. Die Inhaltsklasse wird nur bei relevanten Rollen als Auswahl angezeigt, das Kompositionsfeld heißt „Eingabe“ und zeigt beim Fokussieren die Beziehungskarussells.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -68,3 +72,5 @@ Bearbeitungsaktionen für Karten erscheinen jetzt nur noch in Detaildialogen und
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ea81a944257040a042c1d0c0c9b2447768390221
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3b51abc17cc6ed3a75921bfa242d16c33aae2ce0
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2e2d092813312978c2f69640389f6401ec0230f5
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/cff7223cd64c36372e64484c362ba9b1a1f4e2f7
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/bbb6bb8bd8e2d70a6ec571c2a69e58665a90ca04

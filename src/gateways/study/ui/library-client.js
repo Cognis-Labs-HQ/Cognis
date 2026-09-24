@@ -9,8 +9,11 @@ export async function fetchLibrarySchemas(languageCode) {
     return (await response.json()).data;
 }
 
-export async function fetchLibraryLocations() {
-    const response = await apiFetch("/api/v1/study/library/locations");
+export async function fetchLibraryLocations(languageCode) {
+    const query = new URLSearchParams();
+    if (languageCode) query.set("language", languageCode);
+    const suffix = query.size > 0 ? `?${query}` : "";
+    const response = await apiFetch(`/api/v1/study/library/locations${suffix}`);
     if (!response.ok) throw new Error("locations_failed");
     return (await response.json()).data;
 }

@@ -105,7 +105,12 @@ export function createLibraryRoutes(
                 url.pathname === "/api/v1/study/library/locations" &&
                 req.method === "GET"
             ) {
-                sendJson(res, 200, { data: await library.locations(actor) });
+                sendJson(res, 200, {
+                    data: await library.locations(
+                        actor,
+                        url.searchParams.get("language") || undefined,
+                    ),
+                });
                 return true;
             }
             if (

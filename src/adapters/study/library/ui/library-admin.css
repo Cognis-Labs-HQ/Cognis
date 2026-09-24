@@ -286,8 +286,8 @@ body[data-theme="dark"] .library-quick-search-control img {
 }
 
 .page-action-button[data-page-action-id="study-library:create"] {
-    width: 88px;
-    height: 88px;
+    width: 44px;
+    height: 44px;
     border-color: currentColor;
     background: var(--surface);
     color: var(--text);

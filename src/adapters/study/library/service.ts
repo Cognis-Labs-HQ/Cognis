@@ -59,8 +59,16 @@ export interface LibraryClassAccess {
         accountId: string,
         role: AccessRole,
     ): Promise<boolean>;
-    listReadable?(accountId: string, role: AccessRole): Promise<string[]>;
-    listWritable?(accountId: string, role: AccessRole): Promise<string[]>;
+    listReadable?(
+        accountId: string,
+        role: AccessRole,
+        language?: string,
+    ): Promise<string[]>;
+    listWritable?(
+        accountId: string,
+        role: AccessRole,
+        language?: string,
+    ): Promise<string[]>;
 }
 
 export type LibraryContentNotifier = (input: {
@@ -82,7 +90,10 @@ export interface LibraryCapability {
     registerFormContribution(contribution: LibraryFormContribution): () => void;
     listFormContributions(): LibraryFormContribution[];
     listSchemas(): LibrarySchema[];
-    locations(actor: LibraryActor): Promise<{
+    locations(
+        actor: LibraryActor,
+        language?: string,
+    ): Promise<{
         readable: LibraryLocation[];
         writable: LibraryLocation[];
     }>;
@@ -331,7 +342,7 @@ export class LibraryService implements LibraryCapability {
         return selected ? structuredClone(selected) : null;
     }
 
-    async locations(actor: LibraryActor) {
+    async locations(actor: LibraryActor, language?: string) {
         const personal = { scope: "user", scopeId: actor.accountId } as const;
         const readable: LibraryLocation[] = [
             { scope: "global", scopeId: "global" },
@@ -343,11 +354,13 @@ export class LibraryService implements LibraryCapability {
         for (const classId of (await this.classAccess?.listReadable?.(
             actor.accountId,
             actor.role,
+            language,
         )) ?? [])
             readable.push({ scope: "class", scopeId: classId });
         for (const classId of (await this.classAccess?.listWritable?.(
             actor.accountId,
             actor.role,
+            language,
         )) ?? [])
             writable.push({ scope: "class", scopeId: classId });
         return { readable, writable };

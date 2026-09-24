@@ -262,7 +262,15 @@ export function editorBody(
     const label = options.generatedLabel
         ? `<input name="label" type="hidden" required maxlength="500" value="${escapeHtml(entry.label)}">`
         : `<label><span>${escapeHtml(options.labelText ?? i18n.t("gateway.study.library_admin_label"))} *</span><input name="label" required maxlength="500" value="${escapeHtml(entry.label)}"></label>`;
-    const classField = `<label><span>${escapeHtml(i18n.t("gateway.study.library_content_class"))}</span><input name="class" value="${escapeHtml(contentClass)}"${["definition", "composite"].includes(contentClass) ? " readonly" : ""}></label>`;
+    const classOptions =
+        layer?.semanticRole === "orderedLexicalSequence"
+            ? ["composite", "sentence"]
+            : layer?.semanticRole === "lexicalUnit"
+              ? ["word", "particle"]
+              : [];
+    const classField = classOptions.length
+        ? `<label><span>${escapeHtml(i18n.t("gateway.study.library_content_class"))}</span><select name="class">${classOptions.map((value) => `<option value="${value}"${value === contentClass ? " selected" : ""}>${escapeHtml(value)}</option>`).join("")}</select></label>`
+        : `<input name="class" type="hidden" value="${escapeHtml(contentClass)}">`;
     const isDefinition = layer?.semanticRole === "definition";
     const builder = createFormBuilder(
         { i18n, escapeHtml },

@@ -75,7 +75,7 @@
   <string name="gateway.study.library_requests_pending">Tertunda</string>
   <string name="gateway.study.library_requests_review">Untuk Ditinjau</string>
   <string name="gateway.study.library_optional">Opsional</string>
-  <string name="gateway.study.library_composer_text">Susun dari teks</string>
+  <string name="gateway.study.library_composer_text">Input</string>
   <string name="gateway.study.library_composer_match">Maksud Anda?</string>
   <string name="gateway.study.library_composer_no_match">Tidak ada kecocokan, buat?</string>
   <string name="gateway.study.library_composer_layer">Jenis kartu</string>
@@ -86,4 +86,6 @@
   <string name="gateway.study.library_editor_no_definitions">Belum ada definisi yang ditautkan.</string>
   <string name="gateway.study.library_editor_no_relationships">Jenis kartu ini tidak memiliki hubungan.</string>
   <string name="gateway.study.library_composer_resolve_input">Selesaikan atau buat setiap segmen teks sebelum membuat kartu.</string>
+  <string name="gateway.study.library_publish_everyone">Terbitkan untuk semua orang</string>
+  <string name="gateway.study.library_publish_class_option">Terbitkan untuk kelas</string>
 </resources>
