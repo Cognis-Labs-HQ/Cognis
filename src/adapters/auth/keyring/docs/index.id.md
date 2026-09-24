@@ -20,7 +20,7 @@ Tidak bertanggung jawab atas: autentikasi pengguna, penurunan kunci, atau penafs
 
 ## Konfigurasi
 
-Adapter wajib ini menggunakan `db:executor` aktif. Administrator mengatur ukuran maksimum brankas terenkripsi dalam MiB dan jumlah iterasi penurunan kata sandi melalui pengaturan adapter. Brankas yang sudah ada mempertahankan jumlah penurunan yang tersimpan; nilai konfigurasi berlaku saat brankas dibuat.
+Adapter wajib ini menggunakan `db:executor` aktif. Administrator mengatur ukuran maksimum brankas terenkripsi dalam MiB dan jumlah iterasi penurunan kata sandi melalui pengaturan adapter. Brankas yang sudah ada mempertahankan jumlah penurunan yang tersimpan; nilai konfigurasi berlaku saat brankas dibuat. Kapasitas bawaan brankas terenkripsi adalah 2.000 MiB.
 
 ## Rute API
 
