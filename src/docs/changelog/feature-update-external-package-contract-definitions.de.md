@@ -86,6 +86,10 @@ Deaktivierte Sprachmodule fehlen nun vollständig in Study, selbst wenn während
 
 Library-Detailüberschriften vergleichen nun normalisierten Text und Linkziele zwischen Haupttitel und sekundären Schreibweisendetails. Eine bereits im Haupttitel verknüpfte Schreibweise wird aus der Detailzeile entfernt, ohne gleichlautende Links zu tatsächlich anderen Datensätzen zu unterdrücken.
 
+## Abhängige Lesebeziehungen ohne Darstellung
+
+Der Vertrag für externe Pakete behandelt Beziehungen ohne Resolver- und Darstellungsrolle nun als reine Abhängigkeitskanten. Sie bleiben für Rückwärtsnavigation und Löschschutz gespeichert, ohne als Titelkomposition interpretiert zu werden, und entsprechen damit dem `reading-kana-dependency`-Graphen des japanischen Anbieters.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -109,3 +113,4 @@ Library-Detailüberschriften vergleichen nun normalisierten Text und Linkziele z
 - [6d6e4e53](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d6e4e53)
 - [5f8b129c](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f8b129c)
 - [9c374e3f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c374e3f)
+- [05838355](https://github.com/Cognis-Labs-HQ/Cognis/commit/05838355)

@@ -16,7 +16,7 @@ test("external-package compatibility fixture preserves validated contract metada
         new URL("fixtures/external-pack", import.meta.url),
     );
     const plan = await inspectContentPack(root);
-    assert.equal(plan.records.length, 3);
+    assert.equal(plan.records.length, 4);
     const definition = plan.records.find(
         ({ layer }) => layer === "definitions",
     );
@@ -34,6 +34,21 @@ test("external-package compatibility fixture preserves validated contract metada
     assert.equal(plan.schema.layers[0].fields?.[2].type, "fixtureScore");
     assert.deepEqual(plan.schema.layers[0].fields?.[2].metadata.unit, "rank");
     assert.equal(plan.assets.length, 2);
+    const dependency = plan.schema.layers
+        .find(({ id }) => id === "symbols")
+        ?.relationships?.find(({ id }) => id === "reading-unit-dependency");
+    assert.equal(dependency?.resolverRole, undefined);
+    assert.equal(dependency?.presentationRole, undefined);
+    assert.equal(dependency?.onDelete, "restrict");
+    assert.deepEqual(
+        plan.records.find(({ layer }) => layer === "symbols")?.references,
+        [
+            {
+                entryId: "synthetic:character:lo",
+                relation: "reading-unit-dependency",
+            },
+        ],
+    );
 });
 
 test("external packages reject unvalidated field types and invalid metadata", async (t) => {

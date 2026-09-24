@@ -86,6 +86,10 @@ Study Library は、削除可能なプロバイダーレコードがない表示
 
 Library の詳細見出しは、主要タイトルと二次表記詳細の間で正規化文字列とリンク先を比較するようになりました。主要タイトルですでにリンクされている表記は詳細行から除外しつつ、同じ文字列でも実際に異なるレコードへのリンクは維持します。
 
+## 依存専用の読み関係
+
+外部パッケージ契約では、resolverRole と presentationRole を持たない関係を依存専用エッジとして扱うようになりました。タイトル構成とは推論せず、逆方向ナビゲーションと削除保護のために保持し、日本語プロバイダーの `reading-kana-dependency` グラフに対応します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -109,3 +113,4 @@ Library の詳細見出しは、主要タイトルと二次表記詳細の間で
 - [6d6e4e53](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d6e4e53)
 - [5f8b129c](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f8b129c)
 - [9c374e3f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c374e3f)
+- [05838355](https://github.com/Cognis-Labs-HQ/Cognis/commit/05838355)

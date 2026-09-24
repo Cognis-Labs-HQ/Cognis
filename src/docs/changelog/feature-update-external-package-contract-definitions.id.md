@@ -86,6 +86,10 @@ Modul bahasa yang dinonaktifkan kini sepenuhnya tidak muncul di Study meskipun c
 
 Judul detail Library kini membandingkan teks ternormalisasi dan tujuan tautan antara judul utama dan detail ejaan sekundernya. Ejaan yang sudah ditautkan dalam judul utama dihilangkan dari baris detail tanpa menyembunyikan tautan berteks sama menuju rekaman yang benar-benar berbeda.
 
+## Relasi bacaan khusus dependensi
+
+Kontrak paket eksternal kini memperlakukan relasi tanpa peran resolver dan presentasi sebagai sisi dependensi saja. Relasi tetap disimpan untuk navigasi balik dan perlindungan penghapusan tanpa dianggap sebagai komposisi judul, selaras dengan graf `reading-kana-dependency` penyedia bahasa Jepang.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -109,3 +113,4 @@ Judul detail Library kini membandingkan teks ternormalisasi dan tujuan tautan an
 - [6d6e4e53](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d6e4e53)
 - [5f8b129c](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f8b129c)
 - [9c374e3f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c374e3f)
+- [05838355](https://github.com/Cognis-Labs-HQ/Cognis/commit/05838355)

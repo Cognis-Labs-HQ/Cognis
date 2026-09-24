@@ -291,6 +291,10 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /function relationshipPresentationRole/);
     assert.match(
         source,
+        /return relationship\.resolverRole \? "composition" : undefined/,
+    );
+    assert.match(
+        source,
         /targetLayer\?\.id === sourceLayer\?\.id && relationship\.variant/,
     );
     assert.match(source, /function headingCompositionReferences/);

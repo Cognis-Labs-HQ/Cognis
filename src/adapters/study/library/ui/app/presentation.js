@@ -200,7 +200,7 @@ export function relationshipPresentationRole(
     if (targetLayer?.semanticRole === "lexicalUnit") return "pronunciation";
     if (targetLayer?.id === sourceLayer?.id && relationship.variant)
         return "alternateSpelling";
-    return "composition";
+    return relationship.resolverRole ? "composition" : undefined;
 }
 
 export function compositionReferenceGroups(detail, schemas) {

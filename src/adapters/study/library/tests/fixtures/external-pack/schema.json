@@ -63,6 +63,35 @@
             }
         },
         {
+            "id": "symbols",
+            "semanticRole": "compoundWritingUnit",
+            "metadata": { "labels": { "en": "Symbols" } },
+            "fields": [
+                {
+                    "id": "pronunciation",
+                    "type": "stringList",
+                    "required": true,
+                    "metadata": { "labels": { "en": "Pronunciation" } }
+                },
+                {
+                    "id": "audio",
+                    "type": "audio",
+                    "required": true,
+                    "metadata": { "labels": { "en": "Audio" } }
+                }
+            ],
+            "relationships": [
+                {
+                    "id": "reading-unit-dependency",
+                    "targetLayer": "characters",
+                    "metadata": {
+                        "labels": { "en": "Reading unit dependencies" }
+                    },
+                    "onDelete": "restrict"
+                }
+            ]
+        },
+        {
             "id": "definitions",
             "semanticRole": "definition",
             "metadata": { "labels": { "en": "Definitions" } },
