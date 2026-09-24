@@ -85,17 +85,36 @@ function scoreStroke(input, expected) {
     );
 }
 
-function guidanceLevel(attempts, accepted, difficulty) {
-    const successRate = attempts ? accepted / attempts : 0.5;
-    const performanceLevel =
-        successRate < 0.45
-            ? 3
-            : successRate < 0.7
-              ? 2
-              : successRate < 0.9
-                ? 1
-                : 0;
-    return Math.max(0, Math.min(3, performanceLevel + difficulty));
+function guidanceLevel(attempts, consecutiveMistakes) {
+    if (attempts === 0) return 3;
+    return Math.min(3, consecutiveMistakes);
+}
+
+function playSuccessSound() {
+    const AudioContextClass = window.AudioContext;
+    if (!AudioContextClass) return;
+    const audioContext = new AudioContextClass();
+    const gain = audioContext.createGain();
+    gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(
+        0.16,
+        audioContext.currentTime + 0.02,
+    );
+    gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        audioContext.currentTime + 0.42,
+    );
+    gain.connect(audioContext.destination);
+    [659.25, 783.99].forEach((frequency, index) => {
+        const oscillator = audioContext.createOscillator();
+        const startsAt = audioContext.currentTime + index * 0.11;
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(frequency, startsAt);
+        oscillator.connect(gain);
+        oscillator.start(startsAt);
+        oscillator.stop(startsAt + 0.28);
+    });
+    window.setTimeout(() => void audioContext.close(), 600);
 }
 
 function openDrawingPad({ card, strokePattern }) {
@@ -106,20 +125,21 @@ function openDrawingPad({ card, strokePattern }) {
     const controller = new AbortController();
     const pad = document.createElement("section");
     pad.className = "study-drawing-pad";
-    pad.innerHTML = `<header><strong></strong><button class="btn-cancel" type="button" data-close>×</button></header><canvas></canvas><div class="study-drawing-controls"><span>${i18n.t("adapter.study.drawing.guidance")}: <output data-guidance></output></span><button class="btn-neutral" type="button" data-undo>${i18n.t("adapter.study.drawing.undo")}</button><button class="btn-cancel" type="button" data-reset>${i18n.t("adapter.study.drawing.reset")}</button><progress class="study-drawing-progress" max="100" value="0"></progress><output data-progress></output><div class="study-drawing-feedback" data-feedback hidden><button class="btn-neutral" type="button" data-difficulty="-1">${i18n.t("adapter.study.drawing.easy")}</button><button class="btn-neutral" type="button" data-difficulty="1">${i18n.t("adapter.study.drawing.hard")}</button></div></div>`;
+    pad.innerHTML = `<header><strong></strong><button class="btn-cancel" type="button" data-close>×</button></header><canvas></canvas><div class="study-drawing-controls"><button class="btn-neutral" type="button" data-undo>${i18n.t("adapter.study.drawing.undo")}</button><button class="btn-cancel" type="button" data-reset>${i18n.t("adapter.study.drawing.reset")}</button></div>`;
     pad.querySelector("strong").textContent = card.label;
     document.body.append(pad);
     const canvas = pad.querySelector("canvas");
     const context = canvas.getContext("2d");
-    const progress = pad.querySelector("progress");
-    const progressOutput = pad.querySelector("[data-progress]");
-    const guidanceOutput = pad.querySelector("[data-guidance]");
-    const feedback = pad.querySelector("[data-feedback]");
     const completed = [];
     let active = null;
     let attempts = 0;
-    let accepted = 0;
-    let difficulty = 0;
+    let consecutiveMistakes = 0;
+    const animateResult = (className) => {
+        pad.classList.remove("is-error", "is-success");
+        void pad.offsetWidth;
+        pad.classList.add(className);
+        window.setTimeout(() => pad.classList.remove(className), 520);
+    };
     const resize = () => {
         const bounds = canvas.getBoundingClientRect();
         canvas.width = Math.max(240, Math.round(bounds.width));
@@ -162,22 +182,19 @@ function openDrawingPad({ card, strokePattern }) {
         const guide = styles.getPropertyValue("--drawing-guide").trim();
         const ink = styles.getPropertyValue("--drawing-ink").trim();
         const activeInk = styles.getPropertyValue("--drawing-active").trim();
-        const guidance = guidanceLevel(attempts, accepted, difficulty);
-        guidanceOutput.textContent = String(guidance);
+        const guidance = guidanceLevel(attempts, consecutiveMistakes);
         strokePattern.strokes.forEach((stroke, index) => {
             if (
                 guidance === 3 ||
-                (guidance === 2 && index === completed.length) ||
-                (guidance === 1 && index === 0)
+                (guidance === 2 &&
+                    index >= completed.length &&
+                    index <= completed.length + 1) ||
+                (guidance === 1 && index === completed.length)
             )
                 drawPath(stroke.points, guide, 5);
         });
         completed.forEach((stroke) => drawPath(stroke, ink, 5));
         if (active) drawPath(active, activeInk, 5);
-        progress.value =
-            (completed.length / strokePattern.strokes.length) * 100;
-        progressOutput.textContent = `${completed.length}/${strokePattern.strokes.length}`;
-        feedback.hidden = completed.length !== strokePattern.strokes.length;
     };
     canvas.addEventListener(
         "pointerdown",
@@ -209,10 +226,16 @@ function openDrawingPad({ card, strokePattern }) {
             const score = scoreStroke(active, expected);
             if (score >= (strokePattern.tolerance ?? 55)) {
                 completed.push(active);
-                accepted += 1;
+                consecutiveMistakes = 0;
+                if (completed.length === strokePattern.strokes.length) {
+                    animateResult("is-success");
+                    playSuccessSound();
+                }
+            } else {
+                consecutiveMistakes += 1;
+                animateResult("is-error");
             }
             active = null;
-            progressOutput.textContent = `${Math.round(score)}%`;
             draw();
         },
         { signal: controller.signal },
@@ -229,19 +252,8 @@ function openDrawingPad({ card, strokePattern }) {
         "click",
         () => {
             completed.length = 0;
-            draw();
-        },
-        { signal: controller.signal },
-    );
-    feedback.addEventListener(
-        "click",
-        (event) => {
-            const value = Number(
-                event.target.closest("[data-difficulty]")?.dataset.difficulty,
-            );
-            if (!Number.isFinite(value)) return;
-            difficulty = value;
-            completed.length = 0;
+            attempts = 0;
+            consecutiveMistakes = 0;
             draw();
         },
         { signal: controller.signal },

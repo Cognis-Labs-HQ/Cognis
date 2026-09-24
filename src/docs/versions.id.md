@@ -35,7 +35,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.36`  |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.30`  |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.25`  |
-| File Quota            | `src/adapters/file/quota/`          | `1.0.23`  |
+| File Quota            | `src/adapters/file/quota/`          | `1.0.33`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.30`  |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.52`  |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.37`  |

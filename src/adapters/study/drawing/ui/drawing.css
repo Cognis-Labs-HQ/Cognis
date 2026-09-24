@@ -47,21 +47,62 @@ body[data-theme="dark"] .study-drawing-pad {
 .study-drawing-controls {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 0.5rem;
 }
 
-.study-drawing-progress {
-    flex: 1;
-    min-width: 8rem;
+.study-drawing-pad.is-error {
+    animation: drawing-error-shake 0.42s ease-in-out;
 }
 
-.study-drawing-feedback {
-    display: flex;
-    gap: 0.5rem;
-    width: 100%;
+.study-drawing-pad.is-error canvas {
+    border-color: var(--color-danger-border);
+    box-shadow: 0 0 0 0.2rem
+        color-mix(in srgb, var(--color-danger-border) 28%, transparent);
 }
 
-.study-drawing-feedback[hidden] {
-    display: none;
+.study-drawing-pad.is-success {
+    animation: drawing-success-shake 0.48s ease-in-out;
+}
+
+.study-drawing-pad.is-success canvas {
+    border-color: var(--color-success-border);
+    box-shadow: 0 0 0 0.2rem
+        color-mix(in srgb, var(--color-success-border) 32%, transparent);
+}
+
+@keyframes drawing-error-shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-0.55rem);
+    }
+    50% {
+        transform: translateX(0.45rem);
+    }
+    75% {
+        transform: translateX(-0.25rem);
+    }
+}
+
+@keyframes drawing-success-shake {
+    0%,
+    100% {
+        transform: rotate(0deg) scale(1);
+    }
+    30% {
+        transform: rotate(-1.2deg) scale(1.012);
+    }
+    60% {
+        transform: rotate(1.2deg) scale(1.012);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .study-drawing-pad.is-error,
+    .study-drawing-pad.is-success {
+        animation: none;
+    }
 }

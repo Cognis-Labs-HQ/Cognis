@@ -94,6 +94,10 @@ Study Library ページは自然なドキュメントスクロールと統一さ
 
 発音詳細リンクは、プロバイダーが宣言した `input.linkRelationships` 配列を使用するようになりました。語彙と助詞の関係からの参照を作成時の位置順に統合し、表示する各部分を参照カードのラベルおよび発音別名と照合しながら、元のカードを移動先として維持します。
 
+## 描画の自動フィードバック
+
+描画パッドでは筆画カウンターとガイド操作を表示しません。最初は完全な見本を示し、誤りが続くと現在の筆画から最後の筆画まで段階的にガイドを増やします。誤った筆画では赤く揺れ、文字を完成すると緑の揺れと生成した成功音で祝います。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -115,3 +119,4 @@ Study Library ページは自然なドキュメントスクロールと統一さ
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e8dac803472e1dfc8a5bb2acf3082da88dad8a05
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6aa6fe85403331903570c9cd20f115ea48576be
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1337d0a332a5ccb2d1081816d55e453f90a0c0bc
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/eda8cb2ab208b458f73e79f5b89fd6413ccbab77
