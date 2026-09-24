@@ -74,6 +74,10 @@ Library の作成操作は通常のボタン寸法を維持し、プラス記号
 
 定義レコードは別カードにリンクされた子としてのみ作成でき、作成画面を閉じる際には共通のデータ損失防止が働きます。簡潔なスピーカー操作は、全構成要素の音声がそろっている場合にのみ複合音声を連続再生します。新しい検証済み筆順パターン契約により、筆順採点、進捗、元に戻す・リセット、調整可能なガイドを備えた PiP 描画アダプターが動作します。
 
+## 配備可能な Drawing アダプター
+
+Drawing アダプターが TypeScript パッケージエントリーポイントと検証済み Study ゲートウェイ依存関係を宣言し、本番サーバービルド検証で正常にインポートできるようになりました。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -90,3 +94,4 @@ Library の作成操作は通常のボタン寸法を維持し、プラス記号
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/344ccb5b
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/40da0c7a
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/584fb0b46ebb77bd43e585b3b41a279a0e6e9bfa
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/7d597603b3b1faf6df9d5c7a98973362312236d9

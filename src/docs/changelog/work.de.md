@@ -74,6 +74,10 @@ Aufgelöste Karten befinden sich jetzt innerhalb des Eingabefelds, die Aussprach
 
 Definitionsdatensätze können jetzt nur als verknüpfte Kinder einer anderen Karte erstellt werden; beim Schließen des Composers greift der gemeinsame Schutz vor Datenverlust. Kompakte Lautsprechersteuerungen spielen vollständige Audiofolgen von Kompositionen nur ab, wenn alle Bestandteile verfügbar sind. Ein neuer validierter Strichmustervertrag versorgt einen PiP-Zeichenadapter mit geordneter Strichbewertung, Live-Fortschritt, Rückgängig/Zurücksetzen und einstellbarer Hilfestellung.
 
+## Bereitstellbarer Drawing-Adapter
+
+Der Drawing-Adapter deklariert jetzt seinen TypeScript-Paketeinstiegspunkt und die getestete Study-Gateway-Abhängigkeit, sodass die Produktionsprüfung des Server-Builds ihn erfolgreich importieren kann.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -90,3 +94,4 @@ Definitionsdatensätze können jetzt nur als verknüpfte Kinder einer anderen Ka
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/344ccb5b
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/40da0c7a
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/584fb0b46ebb77bd43e585b3b41a279a0e6e9bfa
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/7d597603b3b1faf6df9d5c7a98973362312236d9
