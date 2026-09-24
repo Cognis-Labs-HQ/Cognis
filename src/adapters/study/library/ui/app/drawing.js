@@ -29,9 +29,10 @@ export function drawingHeaderActions(pattern, i18n) {
         : [];
 }
 
-export function openDrawing(entry, strokePattern) {
+export function openDrawing(entry, strokePattern, definition = "") {
     return uiCtx.capabilities.get("study:drawing:open")({
         card: entry,
+        definition,
         strokePattern,
     });
 }

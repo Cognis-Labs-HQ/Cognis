@@ -174,8 +174,13 @@ function relationshipEditor(
     language,
     { carousel = false, hiddenOnly = false, addLabel = "Add" } = {},
 ) {
+    const targetLayer = schema.layers.find(
+        ({ id }) => id === relationship.targetLayer,
+    );
     const label =
-        localizedLabel(relationship.metadata, language) || relationship.id;
+        localizedLabel(targetLayer?.metadata, language) ||
+        localizedLabel(relationship.metadata, language) ||
+        relationship.targetLayer;
     const selected = new Set(
         (entry.references ?? [])
             .filter(({ relation }) => relation === relationship.id)

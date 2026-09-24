@@ -292,6 +292,17 @@ body[data-theme="dark"] .library-quick-search-control img {
     gap: 0.75rem;
 }
 
+.page-action-button[data-page-action-id="study-library:create"] {
+    color: #f4f7ff;
+    font-size: 2rem;
+    line-height: 1;
+}
+
+body[data-theme="light"]
+    .page-action-button[data-page-action-id="study-library:create"] {
+    color: #172033;
+}
+
 .library-composition-blocks {
     display: contents;
     flex-wrap: wrap;

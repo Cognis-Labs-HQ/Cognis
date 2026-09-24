@@ -23,11 +23,11 @@ test("drawing practice tracks ordered strokes and adaptive guidance", () => {
     assert.match(source, /scoreStroke/);
     assert.match(source, /resample/);
     assert.match(source, /rootMeanSquare/);
-    assert.match(source, /guidanceLevel/);
-    assert.match(source, /consecutiveMistakes/);
+    assert.match(source, /guidedStrokePoints/);
+    assert.match(source, /guidanceExtent/);
     assert.match(source, /completed\.length/);
-    assert.match(source, /data-undo/);
     assert.match(source, /data-reset/);
+    assert.match(source, /data-definition/);
     assert.match(source, /playSuccessSound/);
     assert.match(source, /createOscillator/);
     assert.match(source, /659\.25/);
@@ -36,5 +36,11 @@ test("drawing practice tracks ordered strokes and adaptive guidance", () => {
     assert.match(source, /is-success/);
     assert.match(stylesheet, /@keyframes drawing-error-shake/);
     assert.match(stylesheet, /@keyframes drawing-success-shake/);
+    assert.match(stylesheet, /@keyframes drawing-pad-open/);
+    assert.match(stylesheet, /@keyframes drawing-pad-close/);
+    assert.match(
+        stylesheet,
+        /\[data-close\][\s\S]*width:\s*auto[\s\S]*height:\s*auto/,
+    );
     assert.match(stylesheet, /prefers-reduced-motion: reduce/);
 });

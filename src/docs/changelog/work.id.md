@@ -98,6 +98,10 @@ Tautan detail pelafalan kini menggunakan larik `input.linkRelationships` yang di
 
 Pad menggambar kini menyembunyikan penghitung goresan dan kontrol panduan. Pad dimulai dengan panduan lengkap, secara bertahap memulihkan panduan dari goresan saat ini hingga goresan terakhir setelah kesalahan berulang, berguncang merah untuk goresan salah, dan merayakan karakter yang selesai dengan guncangan hijau serta bunyi keberhasilan yang dibuat aplikasi.
 
+## Panduan menggambar terfokus dan kontrol bertema
+
+Latihan menulis kini hanya memandu goresan saat ini, memperpendek panduan setelah keberhasilan, dan memperpanjang goresan yang sama setelah kesalahan; Atur ulang mempertahankan panduan yang berkurang dan Urungkan dihapus. Pad menyejajarkan teks kartu dengan definisinya, menyesuaikan ukuran Tutup dengan konten, serta menganimasikan pembukaan dan penutupan. Pembuatan Library memakai tanda tambah dua rem sesuai tema, judul serta isi karusel lapisan tujuan penyedia, dan aset pengeras suara yang mengikuti tema aplikasi.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -120,3 +124,4 @@ Pad menggambar kini menyembunyikan penghitung goresan dan kontrol panduan. Pad d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6aa6fe85403331903570c9cd20f115ea48576be
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1337d0a332a5ccb2d1081816d55e453f90a0c0bc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/eda8cb2ab208b458f73e79f5b89fd6413ccbab77
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/337b23512bb9fd25e0ffce0d94058e4dcc959e84

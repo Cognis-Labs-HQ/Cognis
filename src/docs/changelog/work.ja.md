@@ -98,6 +98,10 @@ Study Library ページは自然なドキュメントスクロールと統一さ
 
 描画パッドでは筆画カウンターとガイド操作を表示しません。最初は完全な見本を示し、誤りが続くと現在の筆画から最後の筆画まで段階的にガイドを増やします。誤った筆画では赤く揺れ、文字を完成すると緑の揺れと生成した成功音で祝います。
 
+## 一画ごとのガイドとテーマ対応操作
+
+書き取り練習では現在の一画だけを案内し、成功後はガイドを段階的に短くし、誤り後は同じ筆画を伸ばします。リセットしても減少したガイド量を維持し、元に戻す操作は削除しました。パッドはカード本文と定義を揃え、閉じる操作を内容幅にし、開閉をアニメーション化します。Library の作成ではテーマ対応の 2rem プラス、プロバイダー対象レイヤー由来のカルーセル見出しと内容、アプリテーマ対応のスピーカーアセットを使用します。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -120,3 +124,4 @@ Study Library ページは自然なドキュメントスクロールと統一さ
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6aa6fe85403331903570c9cd20f115ea48576be
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1337d0a332a5ccb2d1081816d55e453f90a0c0bc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/eda8cb2ab208b458f73e79f5b89fd6413ccbab77
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/337b23512bb9fd25e0ffce0d94058e4dcc959e84

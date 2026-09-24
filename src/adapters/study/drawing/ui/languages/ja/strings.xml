@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
   <string name="adapter.study.drawing.title">書き取り練習</string>
-  <string name="adapter.study.drawing.undo">元に戻す</string>
   <string name="adapter.study.drawing.reset">リセット</string>
 </resources>

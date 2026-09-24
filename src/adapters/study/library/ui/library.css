@@ -964,9 +964,18 @@ body[data-theme="dark"] .library-audio {
     place-items: center;
 }
 
-.library-audio-speaker picture,
+.library-speaker-icon,
 .library-audio-speaker img {
     display: block;
     width: 100%;
     height: 100%;
+}
+
+.library-audio-speaker .library-speaker-icon-dark,
+body[data-theme="dark"] .library-audio-speaker .library-speaker-icon-light {
+    display: none;
+}
+
+body[data-theme="dark"] .library-audio-speaker .library-speaker-icon-dark {
+    display: block;
 }

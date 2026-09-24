@@ -381,6 +381,10 @@ test("Study Library creation is driven by language card constructors", () => {
     assert.doesNotMatch(indexSource, /data-library-create/);
     assert.match(layerPageSource, /page:actions/);
     assert.match(layerPageSource, /textContent = "\+"/);
+    assert.match(
+        stylesheet,
+        /page-action-button\[data-page-action-id="study-library:create"\][\s\S]*font-size:\s*2rem/,
+    );
     assert.match(layerPageSource, /fetchLibraryForms/);
     assert.match(
         layerPageSource,
@@ -425,6 +429,11 @@ test("Study Library creation offers ordered, recursive composition", () => {
     );
     assert.match(source, /data-library-add-definition/);
     assert.match(adminInteractionsSource, /library-relationship-map/);
+    assert.match(adminInteractionsSource, /targetLayer\?\.metadata/);
+    assert.match(
+        adminInteractionsSource,
+        /candidate\.layer === relationship\.targetLayer/,
+    );
     assert.match(adminInteractionsSource, /data-library-definition-empty/);
     assert.doesNotMatch(source, /library_composer_match.*<\/small>/);
 });
@@ -774,6 +783,12 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(stylesheet, /appearance: none/);
     assert.match(stylesheet, /body\[data-theme="light"\] \.library-audio/);
     assert.match(stylesheet, /body\[data-theme="dark"\] \.library-audio/);
+    assert.match(source, /library-speaker-icon-light/);
+    assert.match(source, /library-speaker-icon-dark/);
+    assert.match(
+        stylesheet,
+        /body\[data-theme="dark"\][\s\S]*library-speaker-icon-dark/,
+    );
     assert.match(stylesheet, /background: var\(--surface-2\)/);
     assert.match(stylesheet, /\.library-audio-error/);
     assert.match(stylesheet, /font-size: 0\.75em/);

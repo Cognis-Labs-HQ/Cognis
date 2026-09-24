@@ -98,6 +98,10 @@ Aussprachedetail-Links verwenden jetzt das vom Anbieter deklarierte Array `input
 
 Das Zeichenfeld blendet Strichzähler und Hilfesteuerungen nun aus. Es beginnt mit der vollständigen Vorlage, stellt bei wiederholten Fehlern schrittweise Hilfen vom aktuellen bis zu den letzten Strichen wieder her, schüttelt sich bei einem falschen Strich rot und feiert ein vollständiges Zeichen mit grünem Schütteln und einem erzeugten Erfolgsklang.
 
+## Fokussierte Zeichenhilfe und themengerechte Bedienelemente
+
+Die Schreibübung führt nur durch den aktuellen Strich, verkürzt die Hilfe nach Erfolgen schrittweise und verlängert denselben Strich nach Fehlern. Zurücksetzen bewahrt die verringerte Hilfe; Rückgängig entfällt. Das Feld richtet Kartentext und Definition aus, passt Schließen an den Inhalt an und animiert Öffnen und Schließen. Die Library-Erstellung verwendet ein themengerechtes Zwei-Rem-Plus, Zielschicht-Überschriften und -Inhalte des Anbieters sowie an das App-Design angepasste Lautsprecher-Assets.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -120,3 +124,4 @@ Das Zeichenfeld blendet Strichzähler und Hilfesteuerungen nun aus. Es beginnt m
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6aa6fe85403331903570c9cd20f115ea48576be
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1337d0a332a5ccb2d1081816d55e453f90a0c0bc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/eda8cb2ab208b458f73e79f5b89fd6413ccbab77
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/337b23512bb9fd25e0ffce0d94058e4dcc959e84

@@ -98,6 +98,10 @@ Pronunciation detail links now consume the provider-declared `input.linkRelation
 
 The drawing pad now keeps stroke counters and guidance controls out of view. It starts with the complete guide, progressively restores guidance from the current through final strokes after repeated mistakes, shakes red for an incorrect stroke, and celebrates a completed character with a green shake and generated success chime.
 
+## Focused drawing guidance and themed controls
+
+Drawing practice now guides only the current stroke, progressively shortens guidance after success, and expands that same stroke after mistakes; Reset preserves the diminished guidance and Undo is removed. The pad aligns card text with its definition, sizes Close to its content, and animates opening and closing. Library creation uses a themed two-rem plus, provider target-layer carousel headings and content, and app-theme-aware speaker assets.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -120,3 +124,4 @@ The drawing pad now keeps stroke counters and guidance controls out of view. It 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/a6aa6fe85403331903570c9cd20f115ea48576be
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1337d0a332a5ccb2d1081816d55e453f90a0c0bc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/eda8cb2ab208b458f73e79f5b89fd6413ccbab77
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/337b23512bb9fd25e0ffce0d94058e4dcc959e84

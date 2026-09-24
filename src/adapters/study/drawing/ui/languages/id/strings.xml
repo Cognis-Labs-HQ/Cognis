@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
   <string name="adapter.study.drawing.title">Latihan Menulis</string>
-  <string name="adapter.study.drawing.undo">Urungkan</string>
   <string name="adapter.study.drawing.reset">Atur Ulang</string>
 </resources>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
   <string name="adapter.study.drawing.title">Writing Practice</string>
-  <string name="adapter.study.drawing.undo">Undo</string>
   <string name="adapter.study.drawing.reset">Reset</string>
 </resources>
