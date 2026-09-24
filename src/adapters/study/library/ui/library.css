@@ -968,7 +968,9 @@ body[data-theme="dark"] .library-audio {
     place-items: center;
 }
 
+.library-audio-speaker picture,
 .library-audio-speaker img {
+    display: block;
     width: 100%;
     height: 100%;
 }

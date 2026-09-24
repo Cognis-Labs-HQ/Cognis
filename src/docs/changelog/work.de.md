@@ -78,6 +78,10 @@ Definitionsdatensätze können jetzt nur als verknüpfte Kinder einer anderen Ka
 
 Der Drawing-Adapter deklariert jetzt seinen TypeScript-Paketeinstiegspunkt und die getestete Study-Gateway-Abhängigkeit, sodass die Produktionsprüfung des Server-Builds ihn erfolgreich importieren kann.
 
+## Präzise kompakte Kartenkomposition
+
+Beziehungskarussells belegen jetzt genau zwei vertikal scrollende Zeilen, und Hover-Vorschauen verwenden das ansichtsbereichsabhängige verankerte Popup. Die exakte Übereinstimmung der gesamten Eingabe ersetzt die zeichenweise Ableitung und verhindert unbeteiligte Beziehungsknoten. Definitionen verwenden einen eigenen Dialog für alle Sprachen statt eines Karussells oder verschachtelten Karten-Composers; außerdem wurden Veröffentlichung/Erstellung, themengerechtes Audio, Zeichen-/Bearbeitungsaktionen und Tooltips verbessert.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -95,3 +99,4 @@ Der Drawing-Adapter deklariert jetzt seinen TypeScript-Paketeinstiegspunkt und d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/40da0c7a
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/584fb0b46ebb77bd43e585b3b41a279a0e6e9bfa
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d597603b3b1faf6df9d5c7a98973362312236d9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/61002cd2578510ff6d823b8ebb454364e2c930cd

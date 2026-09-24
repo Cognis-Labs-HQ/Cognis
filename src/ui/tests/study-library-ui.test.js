@@ -407,7 +407,8 @@ test("Study Library creation offers ordered, recursive composition", () => {
     assert.match(source, /data-library-composition-blocks/);
     assert.match(source, /draggable="true"/);
     assert.match(source, /derivedPronunciation/);
-    assert.match(source, /inferRelationships/);
+    assert.match(source, /label\.trim\(\)\.normalize\("NFKC"\)/);
+    assert.doesNotMatch(source, /function inferRelationships/);
     assert.match(source, /library-composition-input/);
     assert.match(source, /data-library-add-definition/);
     assert.match(adminInteractionsSource, /library-relationship-map/);

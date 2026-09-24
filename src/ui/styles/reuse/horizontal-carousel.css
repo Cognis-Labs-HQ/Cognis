@@ -18,7 +18,10 @@
 }
 
 .horizontal-carousel-viewport {
-    overflow: visible;
+    max-height: 5.95rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
 }
 
 .horizontal-carousel-track {
@@ -93,7 +96,7 @@
     position: fixed;
     z-index: 10000;
     display: block;
-    transform: translate(-50%, -100%);
+    transform: none;
     pointer-events: none;
 }
 

@@ -317,13 +317,11 @@ export async function openCreateEntryPopup({
                             ?.semanticRole === "definition",
                 );
                 if (!relationship) return;
-                const created = await openCreateEntryPopup({
-                    schemas,
-                    entries,
+                const created = await openDefinitionPopup({
+                    schema,
                     schemaId,
                     layerId: relationship.targetLayer,
                     i18n,
-                    contributions,
                 });
                 if (!created) return;
                 entries.push(created);
@@ -422,6 +420,63 @@ export async function openCreateEntryPopup({
     }
 }
 
+async function openDefinitionPopup({ schema, schemaId, layerId, i18n }) {
+    const layer = schema.layers.find(({ id }) => id === layerId);
+    const localization = layer?.definitionLocalization;
+    if (!layer || !localization) return null;
+    const languages = ["de", "en", "id", "ja"];
+    let form;
+    const action = await openPopup({
+        title: i18n.t("gateway.study.library_add_definition"),
+        body: `<form data-library-definition-form>${languages
+            .map(
+                (language) =>
+                    `<label><span>${escapeHtml(language.toUpperCase())}</span><input name="${escapeHtml(language)}" required maxlength="500"></label>`,
+            )
+            .join("")}</form>`,
+        closeProtection: true,
+        actions: [
+            {
+                id: "save",
+                label: i18n.t("ui.reuse.save"),
+                variant: "confirm",
+            },
+            {
+                id: "cancel",
+                label: i18n.t("ui.reuse.cancel"),
+                variant: "cancel",
+            },
+        ],
+        onOpen(overlay) {
+            form = overlay.querySelector("[data-library-definition-form]");
+        },
+        onAction(actionId) {
+            if (actionId !== "save") return true;
+            return form?.reportValidity() === true;
+        },
+    });
+    if (action !== "save" || !form) return null;
+    const translations = Object.fromEntries(
+        languages.map((language) => [language, form.elements[language].value]),
+    );
+    return createLibraryEntry(
+        { scope: "user" },
+        {
+            schemaId,
+            schemaVersion: schema.version,
+            layer: layerId,
+            label: translations.en,
+            class: "definition",
+            hidden: true,
+            definitionLanguages: languages,
+            fields: {
+                [localization.translationsField]: translations,
+            },
+            references: [],
+        },
+    );
+}
+
 function entryDefinition(entry, entries, schema) {
     const definition = (entry.references ?? [])
         .map(({ entryId }) => entries.find(({ id }) => id === entryId))
@@ -464,15 +519,28 @@ function bindTextComposition(form, entries, layer, schema, i18n) {
     const blocks = form.querySelector("[data-library-composition-blocks]");
     if (!input || !output || !blocks) return { validate: () => true };
     const relationships = layer.relationships ?? [];
-    const candidates = relationships.flatMap((relationship) =>
-        entries
-            .filter((entry) => entry.layer === relationship.targetLayer)
-            .map((entry) => ({
-                ...entry,
-                relationshipId: relationship.id,
-                preview: entryDefinition(entry, entries, schema),
-            })),
-    );
+    const candidates = relationships
+        .flatMap((relationship) =>
+            entries
+                .filter((entry) => entry.layer === relationship.targetLayer)
+                .map((entry) => ({
+                    ...entry,
+                    relationshipId: relationship.id,
+                    preview: entryDefinition(entry, entries, schema),
+                })),
+        )
+        .sort(
+            (left, right) =>
+                Number(Boolean(right.preview)) - Number(Boolean(left.preview)),
+        )
+        .filter(
+            (candidate, index, all) =>
+                all.findIndex(
+                    ({ label }) =>
+                        label.trim().normalize("NFKC") ===
+                        candidate.label.trim().normalize("NFKC"),
+                ) === index,
+        );
     const selectedLabels = () => {
         const labels = new Map(
             relationships.flatMap((relationship) =>
@@ -487,31 +555,6 @@ function bindTextComposition(form, entries, layer, schema, i18n) {
             (value) => labels.get(value) ?? "",
         );
     };
-    const inferRelationships = () => {
-        const selectedEntries = (form.compositionOrder ?? [])
-            .map((id) => entries.find((entry) => entry.id === id))
-            .filter(Boolean);
-        for (const selectedEntry of selectedEntries) {
-            for (const reference of selectedEntry.references ?? []) {
-                const target = entries.find(
-                    ({ id }) => id === reference.entryId,
-                );
-                if (!target) continue;
-                const relationship = relationships.find(
-                    ({ targetLayer }) => targetLayer === target.layer,
-                );
-                const select = relationship
-                    ? form.elements[`relationship:${relationship.id}`]
-                    : null;
-                const option = select
-                    ? Array.from(select.options).find(
-                          ({ value }) => value === target.id,
-                      )
-                    : null;
-                if (option) option.selected = true;
-            }
-        }
-    };
     const syncPronunciation = () => {
         const control = form.elements["field:pronunciation"];
         if (!control) return;
@@ -519,18 +562,13 @@ function bindTextComposition(form, entries, layer, schema, i18n) {
             .map((id) => entries.find((entry) => entry.id === id))
             .map((entry) => derivedPronunciation(entry, entries, schema))
             .join("");
-        const inputPronunciation = Array.from(input.value.trim())
-            .map((character) =>
-                entries.find((entry) => {
-                    const entryLayer = layerForEntry([schema], entry);
-                    return (
-                        entryLayer?.semanticRole === "atomicWritingUnit" &&
-                        entry.label === character
-                    );
-                }),
-            )
-            .map((entry) => derivedPronunciation(entry, entries, schema))
-            .join("");
+        const normalizedInput = input.value.trim().normalize("NFKC");
+        const exactInput = candidates.find(
+            ({ label }) => label.trim().normalize("NFKC") === normalizedInput,
+        );
+        const inputPronunciation = exactInput
+            ? derivedPronunciation(exactInput, entries, schema)
+            : "";
         const pronunciation = `${selectedPronunciation}${inputPronunciation}`;
         if (pronunciation) control.value = pronunciation;
     };
@@ -558,7 +596,6 @@ function bindTextComposition(form, entries, layer, schema, i18n) {
         }
         const resolved = selectedLabels().join("");
         form.elements.label.value = `${resolved}${input.value.trim()}`;
-        inferRelationships();
         const relationshipParents = form.querySelector(
             "[data-library-relationship-parents]",
         );
@@ -581,9 +618,10 @@ function bindTextComposition(form, entries, layer, schema, i18n) {
     };
     const renderSuggestions = () => {
         const text = input.value.trim();
-        const matches = candidates
-            .filter((candidate) => text.includes(candidate.label))
-            .sort((left, right) => right.label.length - left.label.length);
+        const normalizedText = text.normalize("NFKC");
+        const matches = candidates.filter(
+            ({ label }) => label.trim().normalize("NFKC") === normalizedText,
+        );
         const fallbackRelationship = relationships[0]?.id;
         output.innerHTML = `${matches
             .map(

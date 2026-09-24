@@ -619,7 +619,7 @@ export async function openPopup({
                           : icon
                             ? `<span aria-hidden="true">${escapeHtml(icon)}</span>`
                             : escapeHtml(action.label);
-                  return `<button class="btn-neutral popup-header-action" data-popup-action="${escapeHtml(action.id)}" type="button" aria-label="${escapeHtml(action.label)}">${content}</button>`;
+                  return `<button class="btn-neutral popup-header-action" data-popup-action="${escapeHtml(action.id)}" type="button" aria-label="${escapeHtml(action.label)}" title="${escapeHtml(action.label)}">${content}</button>`;
               })
               .join(
                   "",

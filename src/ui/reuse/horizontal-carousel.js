@@ -11,6 +11,7 @@
  */
 
 import { escapeHtml } from "./escape-html.js";
+import { createAnchoredPopup } from "./popup.js";
 
 /**
  * Render an accessible horizontal carousel.
@@ -40,18 +41,14 @@ export function mountHorizontalCarousels(
     root,
     { signal, onChange = () => {}, onAdd = () => {} } = {},
 ) {
-    let previewOverlay = null;
-    const hidePreview = () => previewOverlay?.remove();
+    const previewOverlay = createAnchoredPopup({
+        className: "horizontal-carousel-preview is-portal",
+    });
+    const hidePreview = () => previewOverlay.hide();
     const showPreview = (trigger) => {
         const preview = trigger.querySelector(".horizontal-carousel-preview");
         if (!preview) return;
-        hidePreview();
-        const bounds = trigger.getBoundingClientRect();
-        previewOverlay = preview.cloneNode(true);
-        previewOverlay.classList.add("is-portal");
-        previewOverlay.style.left = `${Math.min(window.innerWidth - 12, Math.max(12, bounds.left + bounds.width / 2))}px`;
-        previewOverlay.style.top = `${Math.max(12, bounds.top - 8)}px`;
-        document.body.append(previewOverlay);
+        previewOverlay.show(trigger, preview.innerHTML);
     };
     const values = (carousel) =>
         Array.from(
@@ -94,7 +91,9 @@ export function mountHorizontalCarousels(
         { signal },
     );
     root.addEventListener("focusout", hidePreview, { signal });
-    signal?.addEventListener("abort", hidePreview, { once: true });
+    signal?.addEventListener("abort", () => previewOverlay.destroy(), {
+        once: true,
+    });
     root.addEventListener(
         "click",
         (event) => {

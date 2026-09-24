@@ -78,6 +78,10 @@ Library の作成操作は通常のボタン寸法を維持し、プラス記号
 
 Drawing アダプターが TypeScript パッケージエントリーポイントと検証済み Study ゲートウェイ依存関係を宣言し、本番サーバービルド検証で正常にインポートできるようになりました。
 
+## 正確でコンパクトなカード構成
+
+関係カルーセルは縦スクロール可能な2行に収まり、ホバープレビューは表示領域対応のアンカーポップアップを使用します。文字単位の推測を入力全体の完全一致に置き換え、無関係な関係ノードを防止しました。定義はカルーセルや入れ子カード作成画面ではなく全言語専用ダイアログを使用し、公開・作成操作、テーマ対応音声、描画・編集操作、ツールチップも改善しました。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -95,3 +99,4 @@ Drawing アダプターが TypeScript パッケージエントリーポイント
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/40da0c7a
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/584fb0b46ebb77bd43e585b3b41a279a0e6e9bfa
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d597603b3b1faf6df9d5c7a98973362312236d9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/61002cd2578510ff6d823b8ebb454364e2c930cd

@@ -172,7 +172,7 @@ function relationshipEditor(
     entries,
     schema,
     language,
-    { carousel = false, addLabel = "Add" } = {},
+    { carousel = false, hiddenOnly = false, addLabel = "Add" } = {},
 ) {
     const label =
         localizedLabel(relationship.metadata, language) || relationship.id;
@@ -223,6 +223,7 @@ function relationshipEditor(
               )
         : availableTargets;
     const select = `<select name="relationship:${escapeHtml(relationship.id)}" multiple${carousel ? " hidden" : ` size="${Math.min(6, Math.max(2, targets.length))}"`}>${availableTargets.map((target) => `<option value="${escapeHtml(target.id)}"${selected.has(target.id) ? " selected" : ""}>${escapeHtml(target.label)}</option>`).join("")}</select>`;
+    if (hiddenOnly) return select.replace(" multiple", " multiple hidden");
     if (!carousel)
         return `<label><span>${escapeHtml(label)}</span>${select}</label>`;
     return `<div class="library-composer-relationship" data-library-composer-relationship="${escapeHtml(relationship.id)}" data-target-layer="${escapeHtml(relationship.targetLayer)}">${select}${renderHorizontalCarousel({ id: relationship.id, label, items: targets.map((target) => ({ value: target.id, label: target.label, preview: previewFor(target) })), selectedValues: [...selected], addLabel })}</div>`;
@@ -254,8 +255,11 @@ export function editorBody(
         )
         .join("");
     const relationships = (layer?.relationships ?? [])
-        .map((relationship) =>
-            relationshipEditor(
+        .map((relationship) => {
+            const targetRole = schema?.layers.find(
+                ({ id }) => id === relationship.targetLayer,
+            )?.semanticRole;
+            return relationshipEditor(
                 relationship,
                 entry,
                 entries,
@@ -263,12 +267,15 @@ export function editorBody(
                 schema.language,
                 {
                     carousel: options.relationshipCarousels === true,
+                    hiddenOnly:
+                        options.relationshipCarousels === true &&
+                        ["definition", "meaning"].includes(targetRole),
                     addLabel: i18n.t("gateway.study.library_create"),
                     previousLabel: i18n.t("ui.reuse.previous"),
                     nextLabel: i18n.t("ui.reuse.next"),
                 },
-            ),
-        )
+            );
+        })
         .join("");
     const referencedEntries = (entry.references ?? [])
         .map(({ entryId }) => entries.find(({ id }) => id === entryId))

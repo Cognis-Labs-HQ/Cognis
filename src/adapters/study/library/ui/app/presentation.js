@@ -316,7 +316,7 @@ export function renderAudio(
           own.audioField.id
         : fallbackLabel;
     if (!complete || !sources.length)
-        return `<button class="library-audio-speaker btn-neutral" type="button" disabled aria-label="${escapeHtml(label)}"><img src="/static/adapters/study/library/assets/speaker.svg" alt=""></button>`;
+        return `<button class="library-audio-speaker btn-neutral" type="button" disabled aria-label="${escapeHtml(label)}">${speakerPicture()}</button>`;
     return `<div class="library-audio-sequence" data-library-audio-sequence>${sources
         .map(
             ({ entry: source, field }) =>
@@ -324,7 +324,11 @@ export function renderAudio(
         )
         .join(
             "",
-        )}<button class="library-audio-speaker btn-neutral" type="button" data-library-audio-sequence-toggle aria-label="${escapeHtml(label)}"><img src="/static/adapters/study/library/assets/speaker.svg" alt=""></button></div>`;
+        )}<button class="library-audio-speaker btn-neutral" type="button" data-library-audio-sequence-toggle aria-label="${escapeHtml(label)}">${speakerPicture()}</button></div>`;
+}
+
+function speakerPicture() {
+    return '<picture><source media="(prefers-color-scheme: dark)" srcset="/static/adapters/study/library/assets/speaker-dark.svg"><img src="/static/adapters/study/library/assets/speaker-light.svg" alt=""></picture>';
 }
 
 export function formatAudioTime(value) {

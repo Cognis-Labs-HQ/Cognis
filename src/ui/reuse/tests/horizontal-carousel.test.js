@@ -27,7 +27,7 @@ test("horizontal carousels preserve ordered selections and an add affordance", (
 });
 
 test("horizontal carousel mounting uses a body-level preview portal", () => {
-    assert.match(mountHorizontalCarousels.toString(), /cloneNode\(true\)/);
+    assert.match(mountHorizontalCarousels.toString(), /createAnchoredPopup/);
     assert.match(mountHorizontalCarousels.toString(), /is-portal/);
-    assert.match(mountHorizontalCarousels.toString(), /document\.body\.append/);
+    assert.match(mountHorizontalCarousels.toString(), /previewOverlay\.show/);
 });

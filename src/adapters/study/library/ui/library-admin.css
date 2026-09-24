@@ -286,12 +286,16 @@ body[data-theme="dark"] .library-quick-search-control img {
 }
 
 .page-action-button[data-page-action-id="study-library:create"] {
+    display: grid;
     width: 44px;
     height: 44px;
-    border-color: currentColor;
+    padding: 0;
+    border-color: transparent;
     background: var(--surface);
     color: var(--text);
     font-size: 2rem;
+    line-height: 1;
+    place-items: center;
 }
 
 .page-action-button[data-page-action-id="study-library:create"]:hover {
@@ -338,10 +342,12 @@ body[data-theme="dark"] .library-quick-search-control img {
 }
 
 .library-publish-choice {
-    display: inline-flex;
+    display: inline-flex !important;
+    flex-direction: row !important;
     align-items: center;
     gap: 0.45rem;
     width: max-content;
+    white-space: nowrap;
 }
 
 .library-relationship-map {
