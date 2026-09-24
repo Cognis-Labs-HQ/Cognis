@@ -19,6 +19,13 @@ Zusammengesetzte Karten verwenden jetzt geordnete horizontale Karussells für je
 ## Sichere Sichtbarkeit und Audiowiedergabe
 Der Dienst lehnt zusammengesetzte Karten ab, deren referenzierte Bestandteile am Ziel nicht sichtbar sind. Ungültige ältere Audio-Platzhalter lösen keine fehlschlagenden Audioanfragen mehr aus.
 
+## Zuverlässiges Umschalten von „Alle auswählen“
+„Alle auswählen“ besitzt jetzt einen eindeutigen Aktionszustand, statt das Klickverhalten aus den Kontrollkästchen abzuleiten. Die erste Betätigung wählt alle sichtbaren Karten und wechselt zu „Alle abwählen“; erst diese Aktion beendet die Mehrfachauswahl. Die Erkennung sichtbarer Karten funktioniert sowohl bei Lernkarten als auch in Verwaltungszeilen.
+
+## Geführte Ebenen- und Textanlage
+Der Erstellungsablauf beginnt jetzt mit einer Auswahl zulässiger Kartentypen. Nicht zugeordneter Freitext ist direkt verwendbar: Ein Klick öffnet den passenden verschachtelten Composer und übernimmt den fehlenden Text in die Kartenbezeichnung.
+
 ## Commits
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0c9c4e376ffde5af485772367430d3122b589b0e
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/32ca0df41b363566394ac0d4026ec73ed53ce9ae

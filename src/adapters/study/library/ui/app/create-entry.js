@@ -14,6 +14,48 @@ import {
 } from "./admin-interactions.js";
 import { localizedLabel } from "./presentation.js";
 
+export async function chooseCreateLayer({
+    schema,
+    contributions,
+    preferredLayerId,
+    i18n,
+}) {
+    const permitted = schema.layers.filter((layer) => {
+        if (layer.semanticRole === "atomicWritingUnit") return false;
+        return (
+            layer.cardConstructor ||
+            contributions.some(
+                (item) =>
+                    item.schemaId === schema.id &&
+                    item.layerId === layer.id &&
+                    item.cardConstructor,
+            )
+        );
+    });
+    if (!permitted.length) return null;
+    let select;
+    const action = await openPopup({
+        title: i18n.t("gateway.study.library_create"),
+        body: `<label><span>${escapeHtml(i18n.t("gateway.study.library_composer_layer"))}</span><select data-library-create-layer>${permitted.map((layer) => `<option value="${escapeHtml(layer.id)}"${layer.id === preferredLayerId ? " selected" : ""}>${escapeHtml(localizedLabel(layer.metadata, schema.language) || layer.id)}</option>`).join("")}</select></label>`,
+        actions: [
+            {
+                id: "continue",
+                label: i18n.t("ui.reuse.next"),
+                variant: "confirm",
+            },
+            {
+                id: "cancel",
+                label: i18n.t("ui.reuse.cancel"),
+                variant: "cancel",
+            },
+        ],
+        onOpen(overlay) {
+            select = overlay.querySelector("[data-library-create-layer]");
+        },
+    });
+    return action === "continue" ? select.value : null;
+}
+
 export async function openCreateEntryPopup({
     schemas,
     entries,
@@ -21,6 +63,7 @@ export async function openCreateEntryPopup({
     layerId,
     i18n,
     contributions: suppliedContributions,
+    initialLabel = "",
 }) {
     const [access, loadedContributions] = await Promise.all([
         fetchLibraryLocations(),
@@ -77,7 +120,7 @@ export async function openCreateEntryPopup({
         schemaId,
         schemaVersion: schema.version,
         layer: layerId,
-        label: "",
+        label: initialLabel,
         fields: structuredClone(constructor.defaults ?? {}),
         references: [],
     };
@@ -167,7 +210,9 @@ export async function openCreateEntryPopup({
                         layerId: relationship.targetLayer,
                         i18n,
                         contributions,
+                        initialLabel: carousel.dataset.suggestedLabel ?? "",
                     });
+                    delete carousel.dataset.suggestedLabel;
                     if (!created) return;
                     entries.push(created);
                     const select = form.elements[`relationship:${id}`];
@@ -278,6 +323,7 @@ function bindTextComposition(form, entries, layer, i18n) {
             matches.push(candidate);
             remainder = remainder.replace(candidate.label, "").trim();
         }
+        const fallbackRelationship = layer.relationships?.[0]?.id;
         output.innerHTML = `${matches
             .map(
                 (match) =>
@@ -285,13 +331,25 @@ function bindTextComposition(form, entries, layer, i18n) {
             )
             .join(
                 "",
-            )}${remainder ? `<span class="library-composer-unmatched">${escapeHtml(remainder)} — ${escapeHtml(i18n.t("gateway.study.library_composer_no_match"))}</span>` : ""}`;
+            )}${remainder && fallbackRelationship ? `<button class="btn-confirm library-composer-unmatched" type="button" data-library-create-unmatched="${escapeHtml(fallbackRelationship)}" data-unmatched-label="${escapeHtml(remainder)}">${escapeHtml(remainder)} — ${escapeHtml(i18n.t("gateway.study.library_composer_no_match"))}</button>` : ""}`;
     });
     output.addEventListener("click", (event) => {
         const suggestion = event.target.closest("[data-library-suggestion]");
-        if (!suggestion) return;
-        form.querySelector(
-            `[data-horizontal-carousel="${CSS.escape(suggestion.dataset.relationship)}"] [data-carousel-value="${CSS.escape(suggestion.dataset.librarySuggestion)}"]`,
-        )?.click();
+        if (suggestion) {
+            form.querySelector(
+                `[data-horizontal-carousel="${CSS.escape(suggestion.dataset.relationship)}"] [data-carousel-value="${CSS.escape(suggestion.dataset.librarySuggestion)}"]`,
+            )?.click();
+            return;
+        }
+        const unmatched = event.target.closest(
+            "[data-library-create-unmatched]",
+        );
+        if (!unmatched) return;
+        const carousel = form.querySelector(
+            `[data-horizontal-carousel="${CSS.escape(unmatched.dataset.libraryCreateUnmatched)}"]`,
+        );
+        if (!carousel) return;
+        carousel.dataset.suggestedLabel = unmatched.dataset.unmatchedLabel;
+        carousel.querySelector("[data-carousel-add]")?.click();
     });
 }

@@ -776,6 +776,11 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(stylesheet, /\.library-publish-options/);
     assert.match(source, /function setSelectionMode/);
     assert.match(source, /function selectAllVisibleEntries/);
+    assert.match(source, /data-selection-action="select"/);
+    assert.match(source, /function deselectAllEntries/);
+    assert.match(source, /dataset\.selectionAction === "deselect"/);
+    assert.match(source, /function chooseCreateLayer/);
+    assert.match(source, /data-library-create-unmatched/);
     assert.match(stylesheet, /place-content: center/);
     assert.match(source, /const cascadeIds = new Set\(entryIds\)/);
     assert.match(source, /const selectedIds = new Set\(entryIds\)/);

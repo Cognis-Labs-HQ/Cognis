@@ -78,4 +78,5 @@
   <string name="gateway.study.library_composer_text">テキストから構成</string>
   <string name="gateway.study.library_composer_match">もしかして？</string>
   <string name="gateway.study.library_composer_no_match">一致する項目がありません。作成しますか？</string>
+  <string name="gateway.study.library_composer_layer">カードの種類</string>
 </resources>

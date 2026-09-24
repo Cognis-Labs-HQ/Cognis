@@ -12,7 +12,7 @@ export function librarySelectionFloatingMenu(entries, i18n) {
             id: "library-selection-actions",
             label: i18n.t("ui.reuse.actions"),
             render: () =>
-                `<button class="btn-neutral library-selection-action" type="button" data-library-select-all data-select-label="${escapeHtml(i18n.t("gateway.study.library_select_all"))}" data-deselect-label="${escapeHtml(i18n.t("gateway.study.library_deselect_all"))}">${escapeHtml(i18n.t("gateway.study.library_select_all"))}</button><span class="library-publish-menu" data-library-publish-menu hidden><button class="btn-confirm library-selection-action" type="button" data-library-publish-trigger>${escapeHtml(i18n.t("gateway.study.library_publish_to"))}</button><span class="library-publish-options"><button class="btn-confirm" type="button" data-library-publish="class">${escapeHtml(i18n.t("gateway.study.library_publish_class"))}</button><button class="btn-confirm" type="button" data-library-publish="global">${escapeHtml(i18n.t("gateway.study.library_publish_global"))}</button></span></span><button class="btn-cancel library-selection-action" type="button" data-library-withdraw-selection hidden>${escapeHtml(i18n.t("gateway.study.library_withdraw"))}</button><button class="btn-neutral library-selection-action" type="button" data-library-send-back-selection hidden>${escapeHtml(i18n.t("gateway.study.library_send_back"))}</button><button class="btn-cancel library-selection-action" type="button" data-library-delete-selection hidden>${escapeHtml(i18n.t("gateway.study.library_delete_selected"))}</button>`,
+                `<button class="btn-neutral library-selection-action" type="button" data-library-select-all data-selection-action="select" data-select-label="${escapeHtml(i18n.t("gateway.study.library_select_all"))}" data-deselect-label="${escapeHtml(i18n.t("gateway.study.library_deselect_all"))}">${escapeHtml(i18n.t("gateway.study.library_select_all"))}</button><span class="library-publish-menu" data-library-publish-menu hidden><button class="btn-confirm library-selection-action" type="button" data-library-publish-trigger>${escapeHtml(i18n.t("gateway.study.library_publish_to"))}</button><span class="library-publish-options"><button class="btn-confirm" type="button" data-library-publish="class">${escapeHtml(i18n.t("gateway.study.library_publish_class"))}</button><button class="btn-confirm" type="button" data-library-publish="global">${escapeHtml(i18n.t("gateway.study.library_publish_global"))}</button></span></span><button class="btn-cancel library-selection-action" type="button" data-library-withdraw-selection hidden>${escapeHtml(i18n.t("gateway.study.library_withdraw"))}</button><button class="btn-neutral library-selection-action" type="button" data-library-send-back-selection hidden>${escapeHtml(i18n.t("gateway.study.library_send_back"))}</button><button class="btn-cancel library-selection-action" type="button" data-library-delete-selection hidden>${escapeHtml(i18n.t("gateway.study.library_delete_selected"))}</button>`,
         },
     ];
 }
@@ -77,6 +77,7 @@ export function updateSelectionActions(root, entries, requests, locations) {
         selectAll.textContent = allSelected
             ? selectAll.dataset.deselectLabel
             : selectAll.dataset.selectLabel;
+        selectAll.dataset.selectionAction = allSelected ? "deselect" : "select";
     }
 }
 
@@ -97,22 +98,25 @@ export function setSelectionMode(root, enabled) {
 
 export function selectAllVisibleEntries(root) {
     const selections = visibleEntrySelections(root);
-    if (selections.length > 0 && selections.every(({ checked }) => checked)) {
-        setSelectionMode(root, false);
-        return false;
-    }
     selections.forEach((selection) => {
         selection.checked = true;
     });
-    return true;
+}
+
+export function deselectAllEntries(root) {
+    setSelectionMode(root, false);
 }
 
 function visibleEntrySelections(root) {
     return Array.from(
-        root.querySelectorAll(
-            "[data-library-panel]:not([hidden]) .library-entry-card-shell:not([hidden]) [data-library-select-entry]",
-        ),
-    );
+        root.querySelectorAll("[data-library-select-entry]"),
+    ).filter((selection) => {
+        const panel = selection.closest("[data-library-panel]");
+        const card = selection.closest(
+            ".library-entry-card-shell, .library-admin-entry-row",
+        );
+        return panel?.hidden !== true && card?.hidden !== true;
+    });
 }
 
 export function allVisibleEntriesSelected(root) {

@@ -78,4 +78,5 @@
   <string name="gateway.study.library_composer_text">Compose from text</string>
   <string name="gateway.study.library_composer_match">Did you mean?</string>
   <string name="gateway.study.library_composer_no_match">No matches found, create?</string>
+  <string name="gateway.study.library_composer_layer">Card type</string>
 </resources>

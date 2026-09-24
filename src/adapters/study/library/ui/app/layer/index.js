@@ -13,7 +13,7 @@ import { refreshLibraryFilterResults } from "../filters.js";
 import { bindLibraryInteractions } from "../interactions.js";
 import { localizedLabel } from "../presentation.js";
 import { librarySelectionFloatingMenu } from "../selection.js";
-import { openCreateEntryPopup } from "../create-entry.js";
+import { chooseCreateLayer, openCreateEntryPopup } from "../create-entry.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { loadLibraryRequests } from "../requests.js";
 import { fetchLibraryForms } from "/static/gateways/study/ui/library-client.js";
@@ -120,11 +120,22 @@ export async function mount(root, { signal } = {}) {
         createButton.addEventListener(
             "click",
             async () => {
+                const schema = schemas.find(
+                    ({ id }) => id === selectedLayer?.schemaId,
+                );
+                if (!schema) return;
+                const layerId = await chooseCreateLayer({
+                    schema,
+                    contributions: formContributions,
+                    preferredLayerId: selectedLayer?.layerId,
+                    i18n,
+                });
+                if (!layerId) return;
                 const created = await openCreateEntryPopup({
                     schemas,
                     entries,
                     schemaId: selectedLayer?.schemaId,
-                    layerId: selectedLayer?.layerId,
+                    layerId,
                     i18n,
                     contributions: formContributions,
                 });

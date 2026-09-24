@@ -78,4 +78,5 @@
   <string name="gateway.study.library_composer_text">Susun dari teks</string>
   <string name="gateway.study.library_composer_match">Maksud Anda?</string>
   <string name="gateway.study.library_composer_no_match">Tidak ada kecocokan, buat?</string>
+  <string name="gateway.study.library_composer_layer">Jenis kartu</string>
 </resources>

@@ -9,6 +9,7 @@ import { activateLibraryLayer, renderBrowser } from "./layer-cards.js";
 import { openEntryPopup } from "./entry-popup.js";
 import {
     confirmEntryDeletion,
+    deselectAllEntries,
     selectAllVisibleEntries,
     selectedEntryIds,
     selectionForCard,
@@ -132,9 +133,14 @@ export function bindLibraryInteractions(root, context) {
     root.addEventListener(
         "click",
         (event) => {
-            if (event.target.closest("[data-library-select-all]")) {
-                if (selectAllVisibleEntries(root))
-                    updateSelectionActions(root, entries, requests, locations);
+            const selectAll = event.target.closest("[data-library-select-all]");
+            if (selectAll) {
+                if (selectAll.dataset.selectionAction === "deselect") {
+                    deselectAllEntries(root);
+                    return;
+                }
+                selectAllVisibleEntries(root);
+                updateSelectionActions(root, entries, requests, locations);
                 return;
             }
             if (event.target.closest("[data-library-delete-selection]")) {

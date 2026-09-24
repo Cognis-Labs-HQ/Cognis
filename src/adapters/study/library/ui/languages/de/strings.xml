@@ -78,4 +78,5 @@
   <string name="gateway.study.library_composer_text">Aus Text zusammensetzen</string>
   <string name="gateway.study.library_composer_match">Meinten Sie?</string>
   <string name="gateway.study.library_composer_no_match">Keine Treffer gefunden, erstellen?</string>
+  <string name="gateway.study.library_composer_layer">Kartentyp</string>
 </resources>
