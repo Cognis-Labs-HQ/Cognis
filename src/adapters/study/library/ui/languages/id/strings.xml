@@ -37,6 +37,7 @@
   <string name="gateway.study.library_relationship_composition">Komposisi</string>
   <string name="gateway.study.library_relationship_alternateSpelling">Ejaan alternatif</string>
   <string name="gateway.study.library_relationship_pronunciation">Pelafalan</string>
+  <string name="gateway.study.library_commit_pronunciation">Simpan pelafalan</string>
   <string name="gateway.study.library_definitions">Definisi</string>
   <string name="gateway.study.library_from_parent">(Dari: {{ parent }})</string>
   <string name="gateway.study.library_usage_examples">Contoh penggunaan</string>

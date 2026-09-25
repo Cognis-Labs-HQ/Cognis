@@ -138,6 +138,10 @@ Halaman terautentikasi mengizinkan URL media yang dibuat peramban sehingga audio
 
 Kolom pelafalan yang ditautkan ke relasi penyedia kini menampilkan pemilih berurutannya langsung di dalam kolom, bukan mempertahankan masukan tag bebas. Setelah pengguna mengubah kartu yang dipasang penyedia, rekonsiliasi penyedia berikutnya mempertahankan kartu beserta relasinya.
 
+## Komposisi pelafalan dua langkah dan audio stabil
+
+Penyunting pelafalan kini memilih kartu komponen yang sesuai secara semantik, menampilkan pelafalan kartu, dan menyimpan setiap bacaan turunan sebelum menyusun bacaan berikutnya. Pratinjau karusel membungkus seluruh teksnya, kontrol audio tetap terlihat pada semua tema, dan unggahan audio pengganti memakai kembali kunci khusus kartu yang stabil.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -172,3 +176,5 @@ Kolom pelafalan yang ditautkan ke relasi penyedia kini menampilkan pemilih berur
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bec24655948ca3a64ea6ab4f95f7897aecee68ac
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1501e390dce637fb660c5b540a4235e3e7c98f29
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/71c842e2
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/3f72cfb6
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b

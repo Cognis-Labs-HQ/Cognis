@@ -37,6 +37,7 @@
   <string name="gateway.study.library_relationship_composition">Zusammensetzung</string>
   <string name="gateway.study.library_relationship_alternateSpelling">Alternative Schreibweisen</string>
   <string name="gateway.study.library_relationship_pronunciation">Aussprachen</string>
+  <string name="gateway.study.library_commit_pronunciation">Aussprache übernehmen</string>
   <string name="gateway.study.library_definitions">Definitionen</string>
   <string name="gateway.study.library_from_parent">(Von: {{ parent }})</string>
   <string name="gateway.study.library_usage_examples">Anwendungsbeispiele</string>

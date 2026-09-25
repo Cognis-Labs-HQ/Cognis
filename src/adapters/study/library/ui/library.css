@@ -964,38 +964,10 @@ body[data-theme="dark"] .library-audio {
     place-items: center;
 }
 
-.library-speaker-icon,
-.library-audio-speaker img {
+.library-speaker-icon {
     display: block;
     width: 100%;
     height: 100%;
-}
-
-.library-audio-speaker .library-speaker-icon-dark,
-body[data-theme="dark"] .library-audio-speaker .library-speaker-icon-light,
-#dashboard-shell[data-theme="dark"]
-    .library-audio-speaker
-    .library-speaker-icon-light {
-    display: none;
-}
-
-body[data-theme="dark"] .library-audio-speaker .library-speaker-icon-dark,
-#dashboard-shell[data-theme="dark"]
-    .library-audio-speaker
-    .library-speaker-icon-dark {
-    display: block;
-}
-
-body[data-theme="light"] .library-audio-speaker .library-speaker-icon-light,
-#dashboard-shell[data-theme="light"]
-    .library-audio-speaker
-    .library-speaker-icon-light {
-    display: block;
-}
-
-body[data-theme="light"] .library-audio-speaker .library-speaker-icon-dark,
-#dashboard-shell[data-theme="light"]
-    .library-audio-speaker
-    .library-speaker-icon-dark {
-    display: none;
+    background-color: currentColor;
+    mask: url("./assets/speaker-dark.svg") center / contain no-repeat;
 }

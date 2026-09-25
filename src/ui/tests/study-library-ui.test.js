@@ -513,6 +513,10 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(adminInteractionsSource, /input\?\.linkRelationships/);
     assert.match(adminInteractionsSource, /pronunciationRelationships\.length/);
     assert.match(adminInteractionsSource, /ordersPronunciation: true/);
+    assert.match(adminInteractionsSource, /pronunciationRelationshipsFor/);
+    assert.match(adminInteractionsSource, /data-library-pronunciation-commit/);
+    assert.match(adminInteractionsSource, /data-library-pronunciation-current/);
+    assert.match(adminInteractionsSource, /field\.dataset\.fieldId}\.audio/);
     assert.match(adminInteractionsSource, /const pronunciationIndex/);
     assert.match(
         adminInteractionsSource,
@@ -521,7 +525,6 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(adminInteractionsSource, /library-pronunciation-selector/);
     assert.match(adminInteractionsSource, /data-library-audio-filename/);
     assert.match(stylesheet, /\.library-audio-filename/);
-    assert.match(stylesheet, /#dashboard-shell\[data-theme="dark"\]/);
     assert.match(
         adminInteractionsSource,
         /name="hidden" type="hidden" value="true"/,
@@ -841,12 +844,9 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(stylesheet, /appearance: none/);
     assert.match(stylesheet, /body\[data-theme="light"\] \.library-audio/);
     assert.match(stylesheet, /body\[data-theme="dark"\] \.library-audio/);
-    assert.match(source, /library-speaker-icon-light/);
-    assert.match(source, /library-speaker-icon-dark/);
-    assert.match(
-        stylesheet,
-        /body\[data-theme="dark"\][\s\S]*library-speaker-icon-dark/,
-    );
+    assert.match(source, /class="library-speaker-icon"/);
+    assert.match(stylesheet, /mask: url\("\.\/assets\/speaker-dark\.svg"\)/);
+    assert.match(stylesheet, /background-color: currentColor/);
     assert.match(stylesheet, /background: var\(--surface-2\)/);
     assert.match(stylesheet, /\.library-audio-error/);
     assert.match(stylesheet, /font-size: 0\.75em/);

@@ -102,14 +102,24 @@
 .horizontal-carousel-preview.is-portal {
     position: fixed;
     z-index: 10000;
-    display: block;
     transform: none;
     pointer-events: none;
     box-sizing: border-box;
-    inline-size: max-content;
+    display: inline-grid;
+    gap: 0.25rem;
+    inline-size: fit-content;
     min-inline-size: 0;
     max-inline-size: min(18rem, calc(100vw - 1rem));
+    overflow: hidden;
+    background: var(--surface-2, var(--surface));
     white-space: normal;
+}
+
+.horizontal-carousel-preview.is-portal > strong,
+.horizontal-carousel-preview.is-portal > span {
+    display: block;
+    max-inline-size: 100%;
+    overflow-wrap: anywhere;
 }
 
 .horizontal-carousel-preview.is-portal[hidden] {

@@ -138,6 +138,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 プロバイダーの関係に紐づいた発音フィールドでは、自由入力のタグ欄ではなく、順序付きの選択カルーセルをフィールド内に直接表示します。ユーザーがプロバイダー導入済みカードを変更した後は、以降のプロバイダー同期でもそのカードと関係が保持されます。
 
+## 2段階の発音構成と安定した音声
+
+発音エディターは意味的に適合する構成カードを選び、カードの発音を表示し、生成した読み方を確定してから次の読み方を作成できるようになりました。カルーセルのプレビューは内容全体を囲み、音声操作はすべてのテーマで表示され、差し替え音声はカード固有の安定したキーを再利用します。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -172,3 +176,5 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bec24655948ca3a64ea6ab4f95f7897aecee68ac
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1501e390dce637fb660c5b540a4235e3e7c98f29
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/71c842e2
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/3f72cfb6
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b

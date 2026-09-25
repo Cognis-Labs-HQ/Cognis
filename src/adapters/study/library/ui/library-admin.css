@@ -342,6 +342,26 @@ body[data-theme="dark"] .library-quick-search-control img {
     margin-block-end: 0.35rem;
 }
 
+.library-pronunciation-values {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.library-pronunciation-values > span,
+.library-pronunciation-commit > output:not(:empty) {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-small, 0.5rem);
+    padding: 0.45rem 0.7rem;
+}
+
+.library-pronunciation-commit {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
 .page-action-button[data-page-action-id="study-library:create"] {
     color: #f4f7ff;
     font-size: 2rem;

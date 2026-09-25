@@ -138,6 +138,10 @@ Authentifizierte Seiten erlauben browsererzeugte Medien-URLs, sodass neu hochgel
 
 Aussprachefelder, die mit Anbieterbeziehungen verknüpft sind, zeigen ihre geordneten Auswahlkarussells nun direkt im Feld an, statt eine freie Tag-Eingabe beizubehalten. Sobald ein Benutzer eine vom Anbieter installierte Karte ändert, bewahrt ein späterer Anbieterabgleich diese Karte und ihre Beziehungen.
 
+## Zweistufige Aussprachekomposition und stabiles Audio
+
+Ausspracheeditoren wählen jetzt semantisch passende Komponentenkarten, zeigen deren Aussprache und übernehmen jede abgeleitete Lesung, bevor eine weitere zusammengestellt wird. Karussell-Vorschauen umschließen ihren Text vollständig, Audiosteuerungen bleiben in jedem Design sichtbar und Ersatz-Uploads verwenden einen stabilen kartenspezifischen Schlüssel.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -172,3 +176,5 @@ Aussprachefelder, die mit Anbieterbeziehungen verknüpft sind, zeigen ihre geord
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bec24655948ca3a64ea6ab4f95f7897aecee68ac
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1501e390dce637fb660c5b540a4235e3e7c98f29
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/71c842e2
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/3f72cfb6
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b

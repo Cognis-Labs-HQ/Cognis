@@ -37,6 +37,7 @@
   <string name="gateway.study.library_relationship_composition">構成</string>
   <string name="gateway.study.library_relationship_alternateSpelling">別表記</string>
   <string name="gateway.study.library_relationship_pronunciation">読み方</string>
+  <string name="gateway.study.library_commit_pronunciation">読み方を確定</string>
   <string name="gateway.study.library_definitions">定義</string>
   <string name="gateway.study.library_from_parent">（元: {{ parent }}）</string>
   <string name="gateway.study.library_usage_examples">使用例</string>

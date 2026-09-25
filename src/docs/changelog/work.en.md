@@ -138,6 +138,10 @@ Authenticated pages allow browser-generated media URLs, so newly uploaded card a
 
 Pronunciation fields linked to provider relationships now render their ordered selectors directly in the field instead of retaining free-form tag input. Once a user changes a provider-installed card, later provider reconciliation preserves that card and its relationships.
 
+## Two-step pronunciation composition and stable audio
+
+Pronunciation editors now choose semantically compatible component cards, preview card pronunciations, and commit each derived reading before composing another. Carousel previews fully contain their text, audio controls remain visible in every theme, and replacement audio uploads reuse a stable card-specific key.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -172,3 +176,5 @@ Pronunciation fields linked to provider relationships now render their ordered s
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bec24655948ca3a64ea6ab4f95f7897aecee68ac
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1501e390dce637fb660c5b540a4235e3e7c98f29
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/71c842e2
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/3f72cfb6
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b
