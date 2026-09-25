@@ -130,6 +130,10 @@ Pembaruan Pustaka kini memakai kontrak pembaruan terstruktur milik gateway basis
 
 Umpan balik menggambar kini hanya menganimasikan area kanvas sehingga akhir animasi tidak dapat mengulang transisi pembukaan papan atau membuat jendela berkedip. Percobaan baru dimulai dengan panduan karakter lengkap, lalu maju satu goresan utuh setiap kali setelah goresan pertama diterima. Penyelesaian menampilkan tanda centang, pesan Bagus Sekali, jumlah kesalahan percobaan, serta tindakan Tutup atau Coba Lagi.
 
+## Pemutaran audio dan penyuntingan pelafalan
+
+Halaman terautentikasi kini mengizinkan URL media yang dibuat peramban sehingga audio kartu yang baru diunggah dapat diputar tanpa melanggar Kebijakan Keamanan Konten. Kartu karakter gabungan yang sudah ada menampilkan karusel pelafalan berlabel penyedia saat disunting, mempertahankan urutan pilihan dalam referensi relasi, dan menyembunyikan kontrol pembuatan bertingkat dari penyunting khusus pemilihan.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -160,3 +164,4 @@ Umpan balik menggambar kini hanya menganimasikan area kanvas sehingga akhir anim
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/274fc626dbea45d3c8d66c82b98f1a0ba87a8052
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/024d7dfe05f713f390d7b9fb00410591018c9bf6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/281d2ac4dca994692513c8069ad21fe9affebedc
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f5214c148cab6eac78e3f8ee8aed3847ffba2201

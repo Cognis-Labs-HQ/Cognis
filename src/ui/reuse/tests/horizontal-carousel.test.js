@@ -33,6 +33,18 @@ test("horizontal carousels preserve ordered selections and an add affordance", (
     assert.doesNotMatch(html, /data-carousel-scroll/);
 });
 
+test("horizontal carousels support selection-only editors", () => {
+    const html = renderHorizontalCarousel({
+        id: "pronunciation",
+        label: "Pronunciation",
+        items: [{ value: "kana-a", label: "あ" }],
+        allowAdd: false,
+    });
+
+    assert.match(html, /data-horizontal-carousel="pronunciation"/);
+    assert.doesNotMatch(html, /data-carousel-add/);
+});
+
 test("horizontal carousel mounting uses a body-level preview portal", () => {
     assert.match(mountHorizontalCarousels.toString(), /createAnchoredPopup/);
     assert.match(mountHorizontalCarousels.toString(), /is-portal/);

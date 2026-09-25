@@ -130,6 +130,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 描画フィードバックはキャンバス領域だけをアニメーションするようになり、アニメーション終了時にパッドの開始動作が再実行されたり、ウィンドウが点滅したりしません。新しい試行では文字全体のガイドを表示し、最初のストロークを受け付けた後は完全な一画ずつ進みます。完了時にはチェックマーク、よくできましたというメッセージ、試行中の間違い数、閉じるまたはもう一度の操作を表示します。
 
+## 音声再生と発音編集
+
+認証済みページでブラウザ生成のメディア URL を許可し、新しくアップロードしたカード音声をコンテンツセキュリティポリシー違反なしで再生できるようにしました。既存の複合文字カードでは、編集時にプロバイダー表記の発音カルーセルを表示し、選択順を関係参照に保持します。選択専用エディターには入れ子作成操作を表示しません。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -160,3 +164,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/274fc626dbea45d3c8d66c82b98f1a0ba87a8052
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/024d7dfe05f713f390d7b9fb00410591018c9bf6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/281d2ac4dca994692513c8069ad21fe9affebedc
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f5214c148cab6eac78e3f8ee8aed3847ffba2201

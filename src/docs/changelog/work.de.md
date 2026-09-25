@@ -130,6 +130,10 @@ Bibliotheksaktualisierungen verwenden nun den strukturierten Aktualisierungsvert
 
 Die Zeichnungsrückmeldung animiert jetzt nur die Zeichenflächenstufe. Das Ende einer Animation kann daher weder die Öffnungsbewegung des Feldes erneut abspielen noch das Fenster aufblitzen lassen. Ein neuer Versuch beginnt mit der vollständigen Zeichenvorgabe und geht nach dem ersten akzeptierten Strich jeweils um einen vollständigen Strich weiter. Nach Abschluss erscheinen ein Häkchen, die Meldung Gut gemacht, die Fehlerzahl des Versuchs sowie die Aktionen Schließen und Erneut versuchen.
 
+## Audiowiedergabe und Aussprachebearbeitung
+
+Authentifizierte Seiten erlauben jetzt browsererzeugte Medien-URLs, sodass neu hochgeladenes Kartenaudio ohne Verstoß gegen die Inhaltssicherheitsrichtlinie wiedergegeben werden kann. Bestehende Karten mit zusammengesetzten Zeichen zeigen beim Bearbeiten das vom Anbieter beschriftete Aussprachekarussell, behalten die ausgewählte Reihenfolge in den Beziehungsreferenzen bei und blenden die verschachtelte Erstellen-Aktion im reinen Auswahleditor aus.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -160,3 +164,4 @@ Die Zeichnungsrückmeldung animiert jetzt nur die Zeichenflächenstufe. Das Ende
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/274fc626dbea45d3c8d66c82b98f1a0ba87a8052
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/024d7dfe05f713f390d7b9fb00410591018c9bf6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/281d2ac4dca994692513c8069ad21fe9affebedc
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f5214c148cab6eac78e3f8ee8aed3847ffba2201

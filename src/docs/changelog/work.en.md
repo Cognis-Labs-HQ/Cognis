@@ -130,6 +130,10 @@ Library updates now use the database gateway's structured update contract, so ed
 
 Drawing feedback now animates only the canvas stage, so ending an animation cannot replay the pad's opening transition or make the window flash. A new attempt begins with the complete character guide, then advances one full stroke at a time after the first accepted stroke. Completion displays a tick, Well Done message, attempt mistake count, and Close or Try Again actions.
 
+## Audio playback and pronunciation editing
+
+Authenticated pages now allow browser-generated media URLs, so newly uploaded card audio can play without violating Content Security Policy. Existing compound-character cards expose the provider-labelled pronunciation carousel during editing, preserve the selected order in relationship references, and omit the nested-create control from the selection-only editor.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -160,3 +164,4 @@ Drawing feedback now animates only the canvas stage, so ending an animation cann
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/274fc626dbea45d3c8d66c82b98f1a0ba87a8052
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/024d7dfe05f713f390d7b9fb00410591018c9bf6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/281d2ac4dca994692513c8069ad21fe9affebedc
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f5214c148cab6eac78e3f8ee8aed3847ffba2201

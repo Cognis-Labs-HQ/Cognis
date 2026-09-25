@@ -2,7 +2,10 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
-import { renderHorizontalCarousel } from "/static/reuse/horizontal-carousel.js";
+import {
+    mountHorizontalCarousels,
+    renderHorizontalCarousel,
+} from "/static/reuse/horizontal-carousel.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
     requestLibraryUpdate,
@@ -174,13 +177,40 @@ export function bindLibraryEditorControls(form, entry, i18n) {
     });
 }
 
+function mountEditableRelationshipCarousels(form, overlay) {
+    const controller = new AbortController();
+    overlay.addEventListener("close", () => controller.abort(), { once: true });
+    mountHorizontalCarousels(form, {
+        signal: controller.signal,
+        onChange: ({ id, values }) => {
+            const select = form.elements[`relationship:${id}`];
+            if (!select) return;
+            const selected = new Set(values);
+            Array.from(select.options).forEach((option) => {
+                option.selected = selected.has(option.value);
+            });
+            values.forEach((value) => {
+                const option = Array.from(select.options).find(
+                    (candidate) => candidate.value === value,
+                );
+                if (option) select.append(option);
+            });
+        },
+    });
+}
+
 function relationshipEditor(
     relationship,
     entry,
     entries,
     schema,
     language,
-    { carousel = false, hiddenOnly = false, addLabel = "Add" } = {},
+    {
+        carousel = false,
+        hiddenOnly = false,
+        addLabel = "Add",
+        allowAdd = true,
+    } = {},
 ) {
     const targetLayer = schema.layers.find(
         ({ id }) => id === relationship.targetLayer,
@@ -249,7 +279,7 @@ function relationshipEditor(
     if (hiddenOnly) return select.replace(" multiple", " multiple hidden");
     if (!carousel)
         return `<label><span>${escapeHtml(label)}</span>${select}</label>`;
-    return `<div class="library-composer-relationship" data-library-composer-relationship="${escapeHtml(relationship.id)}" data-target-layer="${escapeHtml(relationship.targetLayer)}">${select}${renderHorizontalCarousel({ id: relationship.id, label, items: targets.map((target) => ({ value: target.id, label: target.label, preview: previewFor(target) })), selectedValues: [...selected], addLabel })}</div>`;
+    return `<div class="library-composer-relationship" data-library-composer-relationship="${escapeHtml(relationship.id)}" data-target-layer="${escapeHtml(relationship.targetLayer)}">${select}${renderHorizontalCarousel({ id: relationship.id, label, items: targets.map((target) => ({ value: target.id, label: target.label, preview: previewFor(target) })), selectedValues: [...selected], addLabel, allowAdd })}</div>`;
 }
 
 export function editorBody(
@@ -296,6 +326,7 @@ export function editorBody(
                     addLabel: i18n.t("gateway.study.library_create"),
                     previousLabel: i18n.t("ui.reuse.previous"),
                     nextLabel: i18n.t("ui.reuse.next"),
+                    allowAdd: options.relationshipCarouselAdd !== false,
                 },
             );
         })
@@ -494,6 +525,9 @@ export async function openLibraryEntryEditor({
     const layer = schema?.layers.find(({ id }) => id === entry.layer);
     const editor = editorBody(entry, schemas, entries, i18n, "", {
         includeHidden: false,
+        relationshipCarousels: true,
+        relationshipCarouselAdd: false,
+        persistentExtra: true,
     });
     let formController;
     return openPopup({
@@ -515,6 +549,7 @@ export async function openLibraryEntryEditor({
             const form = overlay.querySelector("[data-library-admin-editor]");
             formController = editor.builder.attach(form);
             bindLibraryEditorControls(form, entry, i18n);
+            mountEditableRelationshipCarousels(form, overlay);
             form.addEventListener("click", (event) => {
                 const button = event.target.closest(
                     "[data-library-edit-related]",
@@ -617,6 +652,9 @@ export function bindAdminLibraryInteractions(
             const layer = schema?.layers.find(({ id }) => id === entry.layer);
             const editor = editorBody(entry, schemas, entries, i18n, "", {
                 showRelationshipTab: readOnly,
+                relationshipCarousels: !readOnly,
+                relationshipCarouselAdd: false,
+                persistentExtra: !readOnly,
             });
             let formController;
             editorOpen = true;
@@ -665,6 +703,8 @@ export function bindAdminLibraryInteractions(
                     }
                     if (!readOnly) formController = editor.builder.attach(form);
                     bindLibraryEditorControls(form, entry, i18n);
+                    if (!readOnly)
+                        mountEditableRelationshipCarousels(form, overlay);
                 },
                 onAction: async (action, overlay) => {
                     if (readOnly) return true;

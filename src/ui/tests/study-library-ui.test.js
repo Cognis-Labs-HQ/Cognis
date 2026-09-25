@@ -506,6 +506,9 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(adminInteractionsSource, /field\.type === "strokePattern"/);
     assert.match(adminInteractionsSource, /relationship\.ordered/);
     assert.match(adminInteractionsSource, /showRelationshipTab: readOnly/);
+    assert.match(adminInteractionsSource, /mountEditableRelationshipCarousels/);
+    assert.match(adminInteractionsSource, /relationshipCarousels: true/);
+    assert.match(adminInteractionsSource, /relationshipCarouselAdd: false/);
     assert.match(
         adminInteractionsSource,
         /name="hidden" type="hidden" value="true"/,

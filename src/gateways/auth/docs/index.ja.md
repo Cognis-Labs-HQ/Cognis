@@ -123,3 +123,7 @@ SSO モジュールは CTX を介して `auth:registerExternalProfileProvider` �
 ### プロバイダー別のアカウント名
 
 新しい外部アカウントでは、ローカルアカウントキーとプロフィールハンドルの両方にプロバイダーの名前空間を使用します。`accountNamespace` が `x` のプロバイダーセッションでハンドルが `firehawksystems` の場合は `x:firehawksystems` となり、ローカルの `firehawksystems` アカウントや `line:firehawksystems` などの ID とは区別されます。既存の `(provider, external_user_id)` マッピングは、プロバイダーのハンドルが変わっても、以後のログインで引き続き優先されます。
+
+## ブラウザのメディアポリシー
+
+認証済みページでは、同一オリジンのルートとブラウザが生成した `blob:` URL のメディアを許可します。これにより、任意の外部メディアオリジンを許可せずに、信頼済み UI クライアントが認証済み音声レスポンスを再生できます。
