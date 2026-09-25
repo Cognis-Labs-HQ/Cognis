@@ -102,6 +102,10 @@ Das Zeichenfeld blendet Strichzähler und Hilfesteuerungen nun aus. Es beginnt m
 
 Die Schreibübung führt nur durch den aktuellen Strich, verkürzt die Hilfe nach Erfolgen schrittweise und verlängert denselben Strich nach Fehlern. Zurücksetzen bewahrt die verringerte Hilfe; Rückgängig entfällt. Das Feld richtet Kartentext und Definition aus, passt Schließen an den Inhalt an und animiert Öffnen und Schließen. Die Library-Erstellung verwendet ein themengerechtes Zwei-Rem-Plus, Zielschicht-Überschriften und -Inhalte des Anbieters sowie an das App-Design angepasste Lautsprecher-Assets.
 
+## Ausgerichtete und kanonische Zeichenausgabe
+
+Die Überschrift der Schreibübung entspricht nun der Breite der Zeichenfläche und sitzt direkt darüber. Rückmeldungen schütteln sanfter, und akzeptierte Benutzerstriche werden durch die kanonischen Pfade des Anbieters ersetzt, damit ein fertiges Zeichen korrekt dargestellt wird.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -125,3 +129,4 @@ Die Schreibübung führt nur durch den aktuellen Strich, verkürzt die Hilfe nac
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1337d0a332a5ccb2d1081816d55e453f90a0c0bc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/eda8cb2ab208b458f73e79f5b89fd6413ccbab77
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/337b23512bb9fd25e0ffce0d94058e4dcc959e84
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/67b413b535c0a8662cfe92c1170ccfc4742e6eae

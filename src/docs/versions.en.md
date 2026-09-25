@@ -35,7 +35,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.36`  |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.30`  |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.25`  |
-| File Quota            | `src/adapters/file/quota/`          | `1.0.43`  |
+| File Quota            | `src/adapters/file/quota/`          | `1.0.53`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.30`  |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.52`  |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.37`  |

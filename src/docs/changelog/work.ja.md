@@ -102,6 +102,10 @@ Study Library ページは自然なドキュメントスクロールと統一さ
 
 書き取り練習では現在の一画だけを案内し、成功後はガイドを段階的に短くし、誤り後は同じ筆画を伸ばします。リセットしても減少したガイド量を維持し、元に戻す操作は削除しました。パッドはカード本文と定義を揃え、閉じる操作を内容幅にし、開閉をアニメーション化します。Library の作成ではテーマ対応の 2rem プラス、プロバイダー対象レイヤー由来のカルーセル見出しと内容、アプリテーマ対応のスピーカーアセットを使用します。
 
+## 整列した正規描画結果
+
+Drawing の見出しをキャンバス幅に合わせて真上に配置しました。フィードバックの揺れを穏やかにし、許容されたユーザー筆画をプロバイダーの正規経路に置き換えることで、完成文字を正しく描画します。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -125,3 +129,4 @@ Study Library ページは自然なドキュメントスクロールと統一さ
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1337d0a332a5ccb2d1081816d55e453f90a0c0bc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/eda8cb2ab208b458f73e79f5b89fd6413ccbab77
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/337b23512bb9fd25e0ffce0d94058e4dcc959e84
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/67b413b535c0a8662cfe92c1170ccfc4742e6eae

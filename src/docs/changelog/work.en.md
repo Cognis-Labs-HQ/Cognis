@@ -102,6 +102,10 @@ The drawing pad now keeps stroke counters and guidance controls out of view. It 
 
 Drawing practice now guides only the current stroke, progressively shortens guidance after success, and expands that same stroke after mistakes; Reset preserves the diminished guidance and Undo is removed. The pad aligns card text with its definition, sizes Close to its content, and animates opening and closing. Library creation uses a themed two-rem plus, provider target-layer carousel headings and content, and app-theme-aware speaker assets.
 
+## Aligned and canonical drawing output
+
+The Drawing heading now matches the canvas width and sits directly above it. Feedback shakes are gentler, and accepted user strokes are replaced with the provider’s canonical paths so a completed character renders correctly.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -125,3 +129,4 @@ Drawing practice now guides only the current stroke, progressively shortens guid
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1337d0a332a5ccb2d1081816d55e453f90a0c0bc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/eda8cb2ab208b458f73e79f5b89fd6413ccbab77
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/337b23512bb9fd25e0ffce0d94058e4dcc959e84
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/67b413b535c0a8662cfe92c1170ccfc4742e6eae

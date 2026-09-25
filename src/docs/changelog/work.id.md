@@ -102,6 +102,10 @@ Pad menggambar kini menyembunyikan penghitung goresan dan kontrol panduan. Pad d
 
 Latihan menulis kini hanya memandu goresan saat ini, memperpendek panduan setelah keberhasilan, dan memperpanjang goresan yang sama setelah kesalahan; Atur ulang mempertahankan panduan yang berkurang dan Urungkan dihapus. Pad menyejajarkan teks kartu dengan definisinya, menyesuaikan ukuran Tutup dengan konten, serta menganimasikan pembukaan dan penutupan. Pembuatan Library memakai tanda tambah dua rem sesuai tema, judul serta isi karusel lapisan tujuan penyedia, dan aset pengeras suara yang mengikuti tema aplikasi.
 
+## Hasil gambar sejajar dan kanonis
+
+Judul Drawing kini mengikuti lebar kanvas dan berada tepat di atasnya. Guncangan umpan balik dibuat lebih lembut, dan goresan pengguna yang diterima diganti dengan jalur kanonis penyedia agar karakter akhir dirender dengan benar.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -125,3 +129,4 @@ Latihan menulis kini hanya memandu goresan saat ini, memperpendek panduan setela
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1337d0a332a5ccb2d1081816d55e453f90a0c0bc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/eda8cb2ab208b458f73e79f5b89fd6413ccbab77
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/337b23512bb9fd25e0ffce0d94058e4dcc959e84
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/67b413b535c0a8662cfe92c1170ccfc4742e6eae

@@ -130,6 +130,7 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
     pad.querySelector("[data-definition]").textContent = definition;
     document.body.append(pad);
     const canvas = pad.querySelector("canvas");
+    const header = pad.querySelector("header");
     const context = canvas.getContext("2d");
     const completed = [];
     let active = null;
@@ -144,6 +145,7 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
         const bounds = canvas.getBoundingClientRect();
         canvas.width = Math.max(240, Math.round(bounds.width));
         canvas.height = Math.max(240, Math.round(bounds.height));
+        header.style.width = `${Math.round(bounds.width)}px`;
         draw();
     };
     const normalized = (event) => {
@@ -220,7 +222,7 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
                 strokePattern.strokes[completed.length]?.points ?? [];
             const score = scoreStroke(active, expected);
             if (score >= (strokePattern.tolerance ?? 55)) {
-                completed.push(active);
+                completed.push(expected);
                 guidanceExtent = Math.max(0.25, guidanceExtent - 0.18);
                 if (completed.length === strokePattern.strokes.length) {
                     animateResult("is-success");
