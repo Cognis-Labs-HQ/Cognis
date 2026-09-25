@@ -37,6 +37,18 @@ export function openDrawing(entry, strokePattern, definition = "") {
     });
 }
 
+export function loadDrawing(entry, layer, definition = "") {
+    const strokePattern = drawingPattern(entry, layer);
+    if (!strokePattern) return false;
+    return (
+        uiCtx.capabilities.get("study:drawing:load")?.({
+            card: entry,
+            definition,
+            strokePattern,
+        }) === true
+    );
+}
+
 export function placeAudioSpeaker(overlay) {
     const speaker = overlay.querySelector(
         ".library-detail-summary > :is(.library-audio-sequence, .library-audio-speaker)",

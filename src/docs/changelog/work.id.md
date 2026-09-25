@@ -142,6 +142,10 @@ Kolom pelafalan yang ditautkan ke relasi penyedia kini menampilkan pemilih berur
 
 Penyunting pelafalan kini memilih kartu komponen yang sesuai secara semantik, menampilkan pelafalan kartu, dan menyimpan setiap bacaan turunan sebelum menyusun bacaan berikutnya. Pratinjau karusel membungkus seluruh teksnya, kontrol audio tetap terlihat pada semua tema, dan unggahan audio pengganti memakai kembali kunci khusus kartu yang stabil.
 
+## Urutan goresan terpandu dan Latihan Menggambar adaptif
+
+Panduan awal kini memberi nomor pada setiap goresan dan menggambar panah arah. Sepuluh kesalahan berturut-turut menghasilkan pesan “Kalah!” dengan tanda X, sedangkan penyelesaian kartu dengan nol atau satu kesalahan menaikkan kesulitan dalam memori. Memilih kartu Pustaka lain yang dapat digambar saat pad terbuka langsung memuatnya ke pad yang sama.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -178,3 +182,4 @@ Penyunting pelafalan kini memilih kartu komponen yang sesuai secara semantik, me
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/71c842e2
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3f72cfb6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f2afaa13

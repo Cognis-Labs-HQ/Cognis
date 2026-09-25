@@ -7,6 +7,7 @@ import {
 import { applyLibraryFilters } from "./filters.js";
 import { activateLibraryLayer, renderBrowser } from "./layer-cards.js";
 import { openEntryPopup } from "./entry-popup.js";
+import { loadDrawing } from "./drawing.js";
 import {
     confirmEntryDeletion,
     deselectAllEntries,
@@ -201,6 +202,9 @@ export function bindLibraryInteractions(root, context) {
             const entry = entries.find(
                 (candidate) => candidate.id === control.dataset.libraryEntry,
             );
+            const schema = schemas.find(({ id }) => id === entry?.schemaId);
+            const layer = schema?.layers.find(({ id }) => id === entry?.layer);
+            if (entry && loadDrawing(entry, layer)) return;
             if (!openDetails) return;
             if (!entry || activeEntryPopup) return;
             activeEntryPopup = openEntryPopup(

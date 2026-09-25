@@ -142,6 +142,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 発音エディターは意味的に適合する構成カードを選び、カードの発音を表示し、生成した読み方を確定してから次の読み方を作成できるようになりました。カルーセルのプレビューは内容全体を囲み、音声操作はすべてのテーマで表示され、差し替え音声はカード固有の安定したキーを再利用します。
 
+## 画順ガイドと適応型の描画練習
+
+最初のガイドで各画に番号と方向矢印を表示します。10回連続で失敗するとX印と「負け！」を表示し、ミスが0回または1回で完了すると、そのカードについて記憶されるメモリ内難易度が上がります。パッドを開いた状態で描画可能な別のライブラリカードを選ぶと、同じパッドへ直接読み込みます。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -178,3 +182,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/71c842e2
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3f72cfb6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f2afaa13

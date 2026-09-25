@@ -142,6 +142,10 @@ Pronunciation fields linked to provider relationships now render their ordered s
 
 Pronunciation editors now choose semantically compatible component cards, preview card pronunciations, and commit each derived reading before composing another. Carousel previews fully contain their text, audio controls remain visible in every theme, and replacement audio uploads reuse a stable card-specific key.
 
+## Guided stroke order and adaptive Drawing Practice
+
+The initial guide now numbers every stroke and draws a direction arrow. Ten consecutive mistakes produce a “Loser!” result with an X, while completing a card with zero or one mistake raises its remembered in-memory difficulty. Selecting another drawable Library card while the pad is open loads it directly into the same pad.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -178,3 +182,4 @@ Pronunciation editors now choose semantically compatible component cards, previe
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/71c842e2
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3f72cfb6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f2afaa13

@@ -11,3 +11,5 @@ Papan menerima pena, sentuhan, dan tetikus, menegakkan urutan goresan dari penye
 Goresan salah menghasilkan umpan balik merah yang lembut tanpa memulai ulang animasi pembukaan papan. Saat karakter selesai, aplikasi memainkan bunyi keberhasilan singkat dan menampilkan lapisan penyelesaian stabil berisi tanda centang, jumlah kesalahan percobaan, serta tindakan Tutup dan Coba Lagi. Coba Lagi memulai percobaan baru dengan semua panduan terlihat. Masukan penunjuk digambar paling banyak sekali per bingkai animasi agar kanvas tetap stabil.
 
 Judul diukur mengikuti kanvas yang dirender dan dipusatkan tepat di atasnya. Teks kartu dan definisi terlokalisasi tetap sejajar, dan tombol tutup seukuran konten memakai animasi penutupan khusus.
+
+Tampilan panduan pertama memberi nomor pada setiap goresan dan menunjukkan arahnya. Sepuluh kesalahan berturut-turut mengakhiri percobaan dengan hasil gagal. Percobaan berhasil dengan paling banyak satu kesalahan meningkatkan tingkat kesulitan kartu tersebut dalam memori untuk percobaan berikutnya, dan pad yang terbuka dapat langsung beralih ke kartu Pustaka lain.

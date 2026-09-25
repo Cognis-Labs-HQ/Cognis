@@ -3,6 +3,7 @@
   <string name="adapter.study.drawing.title">Schreibübung</string>
   <string name="adapter.study.drawing.reset">Zurücksetzen</string>
   <string name="adapter.study.drawing.well_done">Gut gemacht</string>
+  <string name="adapter.study.drawing.loser">Verloren!</string>
   <string name="adapter.study.drawing.mistakes">Fehler: {{ count }}</string>
   <string name="adapter.study.drawing.close">Schließen</string>
   <string name="adapter.study.drawing.try_again">Erneut versuchen</string>

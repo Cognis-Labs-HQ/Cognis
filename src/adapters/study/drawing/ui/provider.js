@@ -9,6 +9,9 @@ stylesheet.rel = "stylesheet";
 stylesheet.href = "/static/adapters/study/drawing/drawing.css";
 document.head.append(stylesheet);
 
+const difficultyByCardId = new Map();
+let activeDrawingSession = null;
+
 function distance(left, right) {
     return Math.hypot(left.x - right.x, left.y - right.y);
 }
@@ -115,14 +118,16 @@ function playSuccessSound() {
 function openDrawingPad({ card, definition = "", strokePattern }) {
     if (!card?.id || !strokePattern?.strokes?.length)
         throw new Error("drawing_card_required");
+    if (activeDrawingSession) {
+        activeDrawingSession.load({ card, definition, strokePattern });
+        return activeDrawingSession;
+    }
     const makeFloatingWindow = uiCtx.capabilities.get("ui:makeFloatingWindow");
     if (!makeFloatingWindow) throw new Error("floating_window_unavailable");
     const controller = new AbortController();
     const pad = document.createElement("section");
     pad.className = "study-drawing-pad is-opening";
-    pad.innerHTML = `<header><span class="study-drawing-heading"><strong></strong><span data-definition></span></span><button class="btn-cancel" type="button" data-close>×</button></header><div class="study-drawing-stage"><canvas></canvas><section class="study-drawing-complete" data-complete hidden aria-live="polite"><span class="study-drawing-tick" aria-hidden="true"></span><strong>${i18n.t("adapter.study.drawing.well_done")}</strong><p data-mistakes></p><div><button class="btn-neutral" type="button" data-complete-close>${i18n.t("adapter.study.drawing.close")}</button><button class="btn-neutral" type="button" data-try-again>${i18n.t("adapter.study.drawing.try_again")}</button></div></section></div><div class="study-drawing-controls"><button class="btn-cancel" type="button" data-reset>${i18n.t("adapter.study.drawing.reset")}</button></div>`;
-    pad.querySelector("strong").textContent = card.label;
-    pad.querySelector("[data-definition]").textContent = definition;
+    pad.innerHTML = `<header><span class="study-drawing-heading"><strong data-card-label></strong><span data-definition></span></span><button class="btn-cancel" type="button" data-close>×</button></header><div class="study-drawing-stage"><canvas></canvas><section class="study-drawing-complete" data-complete hidden aria-live="polite"><span class="study-drawing-result" aria-hidden="true"></span><strong data-result-message></strong><p data-mistakes></p><div><button class="btn-neutral" type="button" data-complete-close>${i18n.t("adapter.study.drawing.close")}</button><button class="btn-neutral" type="button" data-try-again>${i18n.t("adapter.study.drawing.try_again")}</button></div></section></div><div class="study-drawing-controls"><button class="btn-cancel" type="button" data-reset>${i18n.t("adapter.study.drawing.reset")}</button></div>`;
     document.body.append(pad);
     const canvas = pad.querySelector("canvas");
     const stage = pad.querySelector(".study-drawing-stage");
@@ -130,8 +135,14 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
     const header = pad.querySelector("header");
     const context = canvas.getContext("2d");
     const completed = [];
+    let currentCard = card;
+    let currentDefinition = definition;
+    let currentPattern = strokePattern;
+    let difficulty = difficultyByCardId.get(card.id) ?? 0;
     let active = null;
     let mistakes = 0;
+    let successiveMistakes = 0;
+    let hasAttemptedStroke = false;
     let drawingFrame;
     const colors = {};
     const animateResult = (className) => {
@@ -148,6 +159,7 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
         colors.guide = styles.getPropertyValue("--drawing-guide").trim();
         colors.ink = styles.getPropertyValue("--drawing-ink").trim();
         colors.active = styles.getPropertyValue("--drawing-active").trim();
+        colors.canvas = styles.getPropertyValue("--drawing-canvas").trim();
         if (canvas.width === width && canvas.height === height) return;
         canvas.width = width;
         canvas.height = height;
@@ -183,16 +195,60 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
         context.lineTo(last.x * canvas.width, last.y * canvas.height);
         context.stroke();
     };
+    const drawStrokeOrder = (stroke, index) => {
+        const [start, next] = stroke.points;
+        if (!start || !next) return;
+        const startX = start.x * canvas.width;
+        const startY = start.y * canvas.height;
+        const angle = Math.atan2(next.y - start.y, next.x - start.x);
+        const labelX = startX - Math.sin(angle) * 17;
+        const labelY = startY + Math.cos(angle) * 17;
+        const arrowX = startX + Math.cos(angle) * 22;
+        const arrowY = startY + Math.sin(angle) * 22;
+        context.save();
+        context.fillStyle = colors.active;
+        context.strokeStyle = colors.active;
+        context.lineWidth = 2;
+        context.font = "700 14px sans-serif";
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.beginPath();
+        context.arc(labelX, labelY, 11, 0, Math.PI * 2);
+        context.fill();
+        context.fillStyle = colors.canvas;
+        context.fillText(String(index + 1), labelX, labelY);
+        context.beginPath();
+        context.moveTo(
+            startX + Math.cos(angle) * 13,
+            startY + Math.sin(angle) * 13,
+        );
+        context.lineTo(arrowX, arrowY);
+        context.lineTo(
+            arrowX - Math.cos(angle - Math.PI / 5) * 7,
+            arrowY - Math.sin(angle - Math.PI / 5) * 7,
+        );
+        context.moveTo(arrowX, arrowY);
+        context.lineTo(
+            arrowX - Math.cos(angle + Math.PI / 5) * 7,
+            arrowY - Math.sin(angle + Math.PI / 5) * 7,
+        );
+        context.stroke();
+        context.restore();
+    };
     const draw = () => {
         context.clearRect(0, 0, canvas.width, canvas.height);
         const guides =
-            completed.length === 0
-                ? strokePattern.strokes
-                : strokePattern.strokes.slice(
+            completed.length === 0 && !hasAttemptedStroke
+                ? currentPattern.strokes
+                : currentPattern.strokes.slice(
                       completed.length,
                       completed.length + 1,
                   );
-        guides.forEach((stroke) => drawPath(stroke.points, colors.guide, 5));
+        guides.forEach((stroke) =>
+            drawPath(stroke.points, colors.guide, Math.max(2, 5 - difficulty)),
+        );
+        if (completed.length === 0 && !hasAttemptedStroke)
+            currentPattern.strokes.forEach(drawStrokeOrder);
         completed.forEach((stroke) => drawPath(stroke, colors.ink, 5));
         if (active) drawPath(active, colors.active, 5);
     };
@@ -207,6 +263,7 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
         "pointerdown",
         (event) => {
             active = [normalized(event)];
+            hasAttemptedStroke = true;
             canvas.setPointerCapture(event.pointerId);
             scheduleDraw();
         },
@@ -228,23 +285,43 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
             if (!active) return;
             active.push(normalized(event));
             const expected =
-                strokePattern.strokes[completed.length]?.points ?? [];
+                currentPattern.strokes[completed.length]?.points ?? [];
             const score = scoreStroke(active, expected);
-            if (score >= (strokePattern.tolerance ?? 55)) {
+            if (score >= (currentPattern.tolerance ?? 55) + difficulty * 5) {
                 completed.push(expected);
-                if (completed.length === strokePattern.strokes.length) {
+                successiveMistakes = 0;
+                if (completed.length === currentPattern.strokes.length) {
                     animateResult("is-success");
                     playSuccessSound();
+                    completion.classList.remove("is-failure");
+                    completion.querySelector(
+                        "[data-result-message]",
+                    ).textContent = i18n.t("adapter.study.drawing.well_done");
                     completion.querySelector("[data-mistakes]").textContent =
                         i18n
                             .t("adapter.study.drawing.mistakes")
                             .replace("{{ count }}", String(mistakes));
                     completion.hidden = false;
                     pad.classList.add("is-complete");
+                    if (mistakes <= 1) {
+                        difficulty = Math.min(3, difficulty + 1);
+                        difficultyByCardId.set(currentCard.id, difficulty);
+                    }
                 }
             } else {
                 mistakes += 1;
+                successiveMistakes += 1;
                 animateResult("is-error");
+                if (successiveMistakes >= 10) {
+                    completion.classList.add("is-failure");
+                    completion.querySelector(
+                        "[data-result-message]",
+                    ).textContent = i18n.t("adapter.study.drawing.loser");
+                    completion.querySelector("[data-mistakes]").textContent =
+                        "";
+                    completion.hidden = false;
+                    pad.classList.add("is-complete");
+                }
             }
             active = null;
             draw();
@@ -256,6 +333,11 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
         () => {
             completed.length = 0;
             active = null;
+            mistakes = 0;
+            successiveMistakes = 0;
+            hasAttemptedStroke = false;
+            completion.hidden = true;
+            pad.classList.remove("is-complete");
             draw();
         },
         { signal: controller.signal },
@@ -279,6 +361,7 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
         observer.disconnect();
         release?.();
         pad.remove();
+        activeDrawingSession = null;
     };
     const close = () => {
         if (closing) return;
@@ -309,7 +392,10 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
             completed.length = 0;
             active = null;
             mistakes = 0;
+            successiveMistakes = 0;
+            hasAttemptedStroke = false;
             completion.hidden = true;
+            completion.classList.remove("is-failure");
             pad.classList.remove("is-complete");
             draw();
         },
@@ -326,7 +412,35 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
     window.setTimeout(() => pad.classList.remove("is-opening"), 220);
     observer.observe(canvas);
     resize();
-    return { close };
+    const load = ({
+        card: nextCard,
+        definition: nextDefinition = "",
+        strokePattern: nextPattern,
+    }) => {
+        if (!nextCard?.id || !nextPattern?.strokes?.length) return false;
+        currentCard = nextCard;
+        currentDefinition = nextDefinition;
+        currentPattern = nextPattern;
+        difficulty = difficultyByCardId.get(nextCard.id) ?? 0;
+        completed.length = 0;
+        active = null;
+        mistakes = 0;
+        successiveMistakes = 0;
+        hasAttemptedStroke = false;
+        completion.hidden = true;
+        completion.classList.remove("is-failure");
+        pad.classList.remove("is-complete");
+        pad.querySelector("[data-card-label]").textContent = currentCard.label;
+        pad.querySelector("[data-definition]").textContent = currentDefinition;
+        draw();
+        return true;
+    };
+    activeDrawingSession = { close, load };
+    load({ card, definition, strokePattern });
+    return activeDrawingSession;
 }
 
 uiCtx.capabilities.contribute("study:drawing:open", openDrawingPad);
+uiCtx.capabilities.contribute("study:drawing:load", (payload) =>
+    activeDrawingSession?.load(payload),
+);

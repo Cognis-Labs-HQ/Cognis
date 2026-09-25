@@ -853,6 +853,7 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(stylesheet, /forced-color-adjust: none/);
     assert.match(stylesheet, /::-webkit-slider-thumb/);
     assert.match(stylesheet, /::-moz-range-thumb/);
+    assert.match(source, /loadDrawing/);
 });
 
 test("Study Library owners can select and delete multiple entries", () => {

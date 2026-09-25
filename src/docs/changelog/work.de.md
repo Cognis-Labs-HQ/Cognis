@@ -142,6 +142,10 @@ Aussprachefelder, die mit Anbieterbeziehungen verknüpft sind, zeigen ihre geord
 
 Ausspracheeditoren wählen jetzt semantisch passende Komponentenkarten, zeigen deren Aussprache und übernehmen jede abgeleitete Lesung, bevor eine weitere zusammengestellt wird. Karussell-Vorschauen umschließen ihren Text vollständig, Audiosteuerungen bleiben in jedem Design sichtbar und Ersatz-Uploads verwenden einen stabilen kartenspezifischen Schlüssel.
 
+## Geführte Strichreihenfolge und adaptive Zeichenübung
+
+Die erste Anleitung nummeriert nun jeden Strich und zeigt einen Richtungspfeil. Zehn aufeinanderfolgende Fehler führen zu „Verloren!“ mit einem X; wird eine Karte mit keinem oder einem Fehler abgeschlossen, steigt ihre im Speicher gemerkte Schwierigkeit. Die Auswahl einer weiteren zeichnungsfähigen Bibliothekskarte lädt sie direkt in das geöffnete Zeichenfeld.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -178,3 +182,4 @@ Ausspracheeditoren wählen jetzt semantisch passende Komponentenkarten, zeigen d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/71c842e2
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3f72cfb6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f2afaa13

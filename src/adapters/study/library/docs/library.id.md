@@ -163,3 +163,5 @@ Kartu unit tulisan gabungan yang sudah ada menempatkan pemilih pelafalan di dala
 Penyedia dapat menetapkan `input.linkRelationships` pada kolom pelafalan. Penyunting kemudian mengganti masukan tag bebas dengan karusel berurutan tepat untuk relasi tersebut dan memakai label penyedia yang dilokalkan untuk setiap lapisan tujuan. Menyimpan kartu yang dipasang penyedia menandai rekaman sebagai telah diubah pengguna, sehingga rekonsiliasi paket konten berikutnya mempertahankan kolom dan relasi pengguna.
 
 Penyuntingan pelafalan memakai proses dua langkah yang dapat diulang: pilih kartu komponen yang sesuai dengan penyedia, lalu simpan bacaan yang diturunkan. Item karusel menampilkan pelafalannya, bukan label utamanya. Unit tulisan majemuk mengambil unit tulisan atomik, sedangkan urutan leksikal terurut mengambil unit leksikal seperti kosakata dan partikel. Unggahan audio memakai kunci objek kartu-dan-kolom yang stabil, sehingga unggahan pengganti menimpa objek sebelumnya.
+
+Saat Latihan Menggambar terbuka, memilih kartu lain yang memiliki pola goresan akan memuat kartu itu ke pad yang sama alih-alih membuka dialog rinciannya.

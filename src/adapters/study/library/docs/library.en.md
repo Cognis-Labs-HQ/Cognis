@@ -177,3 +177,5 @@ Existing compound-writing-unit cards place their pronunciation selector inside t
 A provider can set `input.linkRelationships` on a pronunciation field. The editor then replaces free-form tag entry with ordered carousels for exactly those relationships, using each target layer's localized provider label. Saving a provider-installed card marks that record as user-modified, so later content-pack reconciliation preserves the user's fields and relationships.
 
 Pronunciation editing is a repeatable two-step process: select provider-compatible component cards, then commit the derived reading. Carousel items show their pronunciation rather than their primary label. Compound writing units draw from atomic writing units, while ordered lexical sequences draw from lexical units such as vocabulary and particles. Audio uploads use a stable card-and-field object key, so replacing an upload overwrites the previous object.
+
+While Drawing Practice is open, selecting another card with a stroke pattern loads that card into the existing pad instead of opening its detail dialog.

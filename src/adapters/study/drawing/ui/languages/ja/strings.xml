@@ -3,6 +3,7 @@
   <string name="adapter.study.drawing.title">書き取り練習</string>
   <string name="adapter.study.drawing.reset">リセット</string>
   <string name="adapter.study.drawing.well_done">よくできました</string>
+  <string name="adapter.study.drawing.loser">負け！</string>
   <string name="adapter.study.drawing.mistakes">間違い: {{ count }}</string>
   <string name="adapter.study.drawing.close">閉じる</string>
   <string name="adapter.study.drawing.try_again">もう一度</string>
