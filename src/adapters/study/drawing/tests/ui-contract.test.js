@@ -23,8 +23,11 @@ test("drawing practice tracks ordered strokes and adaptive guidance", () => {
     assert.match(source, /scoreStroke/);
     assert.match(source, /resample/);
     assert.match(source, /rootMeanSquare/);
-    assert.match(source, /guidedStrokePoints/);
-    assert.match(source, /guidanceExtent/);
+    assert.match(source, /shouldShowStrokeGuide/);
+    assert.match(source, /guidanceLevel/);
+    assert.match(source, /mistakes >= 2/);
+    assert.match(source, /requestAnimationFrame/);
+    assert.match(source, /cancelAnimationFrame/);
     assert.match(source, /completed\.push\(expected\)/);
     assert.match(source, /header\.style\.width/);
     assert.match(source, /completed\.length/);

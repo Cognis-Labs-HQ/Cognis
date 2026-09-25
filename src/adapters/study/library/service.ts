@@ -82,6 +82,8 @@ export interface LibraryProviderCapability {
     inspectContentPack(root: string): Promise<LibraryContentPackPlan>;
     ingestContentPack(root: string): Promise<LibraryContentPackReceipt>;
     registerConstructor(contribution: LibraryFormContribution): () => void;
+    /** Register enrichment such as provider-sourced stroke patterns for a label. */
+    registerLookupProvider(provider: LibraryLookupProvider): () => void;
 }
 
 export interface LibraryCapability {
@@ -686,6 +688,18 @@ export class LibraryService implements LibraryCapability {
             !CONTENT_CLASS_PATTERN.test(input.class)
         )
             throw new Error("invalid_content_class");
+        if (
+            input.tags !== undefined &&
+            (!Array.isArray(input.tags) ||
+                input.tags.some(
+                    (tag) =>
+                        typeof tag !== "string" ||
+                        !tag.trim() ||
+                        tag.length > 50,
+                ) ||
+                input.tags.length > 25)
+        )
+            throw new Error("invalid_tags");
         if (input.hidden !== undefined && typeof input.hidden !== "boolean")
             throw new Error("invalid_hidden");
         if (
@@ -820,6 +834,18 @@ export class LibraryService implements LibraryCapability {
             !CONTENT_CLASS_PATTERN.test(input.class)
         )
             throw new Error("invalid_content_class");
+        if (
+            input.tags !== undefined &&
+            (!Array.isArray(input.tags) ||
+                input.tags.some(
+                    (tag) =>
+                        typeof tag !== "string" ||
+                        !tag.trim() ||
+                        tag.length > 50,
+                ) ||
+                input.tags.length > 25)
+        )
+            throw new Error("invalid_tags");
         if (input.hidden !== undefined && typeof input.hidden !== "boolean")
             throw new Error("invalid_hidden");
         if (

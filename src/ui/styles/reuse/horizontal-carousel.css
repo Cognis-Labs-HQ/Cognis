@@ -21,7 +21,11 @@
     max-height: 5.95rem;
     overflow-x: auto;
     overflow-y: hidden;
-    scrollbar-gutter: stable;
+    scrollbar-width: none;
+}
+
+.horizontal-carousel-viewport::-webkit-scrollbar {
+    display: none;
 }
 
 .horizontal-carousel-track {

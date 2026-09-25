@@ -58,6 +58,25 @@ const adapterSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/index.ts"),
     "utf8",
 );
+const createEntrySource = readFileSync(
+    resolve(ROOT, "src/adapters/study/library/ui/app/create-entry.js"),
+    "utf8",
+);
+const carouselStylesheet = readFileSync(
+    resolve(ROOT, "src/ui/styles/reuse/horizontal-carousel.css"),
+    "utf8",
+);
+
+test("Study Library keeps editor tabs active and nested card types precise", () => {
+    assert.match(
+        adminInteractionsSource,
+        /bindLibraryEditorControls\(form, entry, i18n\)/,
+    );
+    assert.match(adminInteractionsSource, /name="tags"/);
+    assert.match(createEntrySource, /supportsTextComposition/);
+    assert.match(createEntrySource, /relationship\.targetLayer/);
+    assert.match(carouselStylesheet, /scrollbar-width:\s*none/);
+});
 const variantArrowLight = readFileSync(
     resolve(
         ROOT,

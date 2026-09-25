@@ -93,4 +93,5 @@
   <string name="gateway.study.library_publish_class_option">Für Klasse veröffentlichen</string>
   <string name="gateway.study.library_practice_writing">Schreiben üben</string>
   <string name="gateway.study.library_play_audio">Audio abspielen</string>
+  <string name="gateway.study.library_tags">Tags</string>
 </resources>

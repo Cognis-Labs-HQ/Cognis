@@ -1,6 +1,6 @@
 {
     "name": "@cognis/adapter-study-drawing",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "private": true,
     "type": "module",
     "description": "Card-bound PiP writing practice with validated stroke guidance.",

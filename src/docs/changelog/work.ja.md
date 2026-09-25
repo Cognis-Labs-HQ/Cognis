@@ -106,6 +106,10 @@ Study Library ページは自然なドキュメントスクロールと統一さ
 
 Drawing の見出しをキャンバス幅に合わせて真上に配置しました。フィードバックの揺れを穏やかにし、許容されたユーザー筆画をプロバイダーの正規経路に置き換えることで、完成文字を正しく描画します。
 
+## 安定した描画とカード作成
+
+描画ガイドは完全な正規ストロークだけを表示し、キャンバス更新をアニメーションフレーム単位で行い、受理した出力を正規形に保ちます。Library の表示タブは操作可能なままになり、入れ子の作成画面は関係先の種類を尊重し、複合文字では自由なラベルと基本文字による発音関係を利用できます。重複する対象カルーセルを除去し、タグ編集を追加し、カルーセルのスクロールバーを非表示にしました。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -130,3 +134,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/eda8cb2ab208b458f73e79f5b89fd6413ccbab77
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/337b23512bb9fd25e0ffce0d94058e4dcc959e84
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/67b413b535c0a8662cfe92c1170ccfc4742e6eae
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/c8893689

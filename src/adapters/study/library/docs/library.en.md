@@ -159,3 +159,5 @@ Relationship carousels retain two rows but now scroll horizontally. Stroke-patte
 Study Library pages use document scrolling so the page never competes with an inner content scrollbar. Cards use a consistent preview height. Composer relationship add controls open a type-locked nested composer whose heading identifies that card type; nested dialogs stack above their parent. Carousel previews render only through a content-sized body portal and are removed immediately when their item loses hover or focus.
 
 The floating create action uses a two-rem black or white plus according to the active theme. Composer carousel headings come from the provider’s target-layer metadata and their items remain restricted to that target layer. Audio speaker icons switch from explicit light and dark assets according to the application theme rather than the operating-system color preference.
+
+Library cards accept searchable tags such as proficiency levels. Runtime providers can register the existing lookup-provider contract through `study:library:provider`; lookup results may supply validated fields, including a `strokePattern`, with provenance and confidence.

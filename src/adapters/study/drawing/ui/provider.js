@@ -85,9 +85,12 @@ function scoreStroke(input, expected) {
     );
 }
 
-function guidedStrokePoints(points, extent) {
-    const visibleCount = Math.max(2, Math.ceil(points.length * extent));
-    return points.slice(0, visibleCount);
+function shouldShowStrokeGuide(guidanceLevel, mistakes) {
+    return (
+        guidanceLevel >= 1 ||
+        mistakes >= 2 ||
+        (guidanceLevel > 0 && mistakes > 0)
+    );
 }
 
 function playSuccessSound() {
@@ -134,18 +137,27 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
     const context = canvas.getContext("2d");
     const completed = [];
     let active = null;
-    let guidanceExtent = 1;
+    let guidanceLevel = 1;
+    let mistakes = 0;
+    let drawingFrame;
+    const colors = {};
     const animateResult = (className) => {
         pad.classList.remove("is-error", "is-success");
-        void pad.offsetWidth;
-        pad.classList.add(className);
+        window.requestAnimationFrame(() => pad.classList.add(className));
         window.setTimeout(() => pad.classList.remove(className), 520);
     };
     const resize = () => {
         const bounds = canvas.getBoundingClientRect();
-        canvas.width = Math.max(240, Math.round(bounds.width));
-        canvas.height = Math.max(240, Math.round(bounds.height));
+        const width = Math.max(240, Math.round(bounds.width));
+        const height = Math.max(240, Math.round(bounds.height));
         header.style.width = `${Math.round(bounds.width)}px`;
+        const styles = getComputedStyle(pad);
+        colors.guide = styles.getPropertyValue("--drawing-guide").trim();
+        colors.ink = styles.getPropertyValue("--drawing-ink").trim();
+        colors.active = styles.getPropertyValue("--drawing-active").trim();
+        if (canvas.width === width && canvas.height === height) return;
+        canvas.width = width;
+        canvas.height = height;
         draw();
     };
     const normalized = (event) => {
@@ -180,26 +192,25 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
     };
     const draw = () => {
         context.clearRect(0, 0, canvas.width, canvas.height);
-        const styles = getComputedStyle(pad);
-        const guide = styles.getPropertyValue("--drawing-guide").trim();
-        const ink = styles.getPropertyValue("--drawing-ink").trim();
-        const activeInk = styles.getPropertyValue("--drawing-active").trim();
         const expected = strokePattern.strokes[completed.length];
-        if (expected)
-            drawPath(
-                guidedStrokePoints(expected.points, guidanceExtent),
-                guide,
-                5,
-            );
-        completed.forEach((stroke) => drawPath(stroke, ink, 5));
-        if (active) drawPath(active, activeInk, 5);
+        if (expected && shouldShowStrokeGuide(guidanceLevel, mistakes))
+            drawPath(expected.points, colors.guide, 5);
+        completed.forEach((stroke) => drawPath(stroke, colors.ink, 5));
+        if (active) drawPath(active, colors.active, 5);
+    };
+    const scheduleDraw = () => {
+        if (drawingFrame) return;
+        drawingFrame = window.requestAnimationFrame(() => {
+            drawingFrame = undefined;
+            draw();
+        });
     };
     canvas.addEventListener(
         "pointerdown",
         (event) => {
             active = [normalized(event)];
             canvas.setPointerCapture(event.pointerId);
-            draw();
+            scheduleDraw();
         },
         { signal: controller.signal },
     );
@@ -208,7 +219,7 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
         (event) => {
             if (active) {
                 active.push(normalized(event));
-                draw();
+                scheduleDraw();
             }
         },
         { signal: controller.signal },
@@ -223,13 +234,15 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
             const score = scoreStroke(active, expected);
             if (score >= (strokePattern.tolerance ?? 55)) {
                 completed.push(expected);
-                guidanceExtent = Math.max(0.25, guidanceExtent - 0.18);
+                guidanceLevel = Math.max(0, guidanceLevel - 0.25);
+                mistakes = 0;
                 if (completed.length === strokePattern.strokes.length) {
                     animateResult("is-success");
                     playSuccessSound();
                 }
             } else {
-                guidanceExtent = Math.min(1, guidanceExtent + 0.25);
+                mistakes += 1;
+                guidanceLevel = Math.min(1, guidanceLevel + 0.25);
                 animateResult("is-error");
             }
             active = null;
@@ -260,6 +273,7 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
         if (closed) return;
         closed = true;
         controller.abort();
+        if (drawingFrame) window.cancelAnimationFrame(drawingFrame);
         observer.disconnect();
         release?.();
         pad.remove();

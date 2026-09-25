@@ -196,6 +196,8 @@ export interface LibraryEntryInput {
     label: string;
     /** Provider-neutral lexical/content classification, such as noun or verb. */
     class?: string;
+    /** Searchable, user-authored classification labels such as proficiency levels. */
+    tags?: string[];
     /** Whether provider-owned content may be modified through Library editors. */
     editable?: boolean;
     /** Exclude the entry and its descendants from direct browsing while retaining references. */

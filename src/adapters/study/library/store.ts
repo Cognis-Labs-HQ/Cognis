@@ -115,6 +115,12 @@ export class LibraryStore {
                 { name: "language", type: "text", notNull: true },
                 { name: "label", type: "text", notNull: true },
                 { name: "class", type: "text" },
+                {
+                    name: "tags_json",
+                    type: "text",
+                    notNull: true,
+                    default: "[]",
+                },
                 { name: "source_record_id", type: "text" },
                 { name: "display_id", type: "integer" },
                 {
@@ -906,12 +912,13 @@ export class LibraryStore {
                     language,
                     label: input.label,
                     class: input.class ?? null,
+                    tags_json: JSON.stringify(input.tags ?? []),
                     hidden: input.hidden === true,
                     always_show_definition: input.alwaysShowDefinition === true,
                     protected: false,
                     fields_json: JSON.stringify(input.fields ?? {}),
                     search_text:
-                        `${input.label} ${JSON.stringify(input.fields ?? {})}`
+                        `${input.label} ${(input.tags ?? []).join(" ")} ${JSON.stringify(input.fields ?? {})}`
                             .normalize()
                             .toLocaleLowerCase(),
                     created_by: accountId,
@@ -942,11 +949,12 @@ export class LibraryStore {
                 values: {
                     label: input.label,
                     class: input.class ?? null,
+                    tags_json: JSON.stringify(input.tags ?? []),
                     hidden: input.hidden === true,
                     always_show_definition: input.alwaysShowDefinition === true,
                     fields_json: JSON.stringify(input.fields ?? {}),
                     search_text:
-                        `${input.label} ${JSON.stringify(input.fields ?? {})}`
+                        `${input.label} ${(input.tags ?? []).join(" ")} ${JSON.stringify(input.fields ?? {})}`
                             .normalize()
                             .toLocaleLowerCase(),
                     updated_at: new Date().toISOString(),

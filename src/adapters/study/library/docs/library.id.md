@@ -145,3 +145,5 @@ Halaman Study Library menggunakan pengguliran dokumen agar halaman tidak bersain
 Sebuah bidang dapat mendeklarasikan `input.linkRelationships` agar nilai bacaan atau pelafalan dapat dinavigasi melalui beberapa relasi buatan penyedia. Host menggabungkan referensi yang cocok berdasarkan posisi yang ditulis, lalu mencocokkan setiap segmen yang ditampilkan dengan label atau alias pelafalan kartu tujuan sambil mempertahankan kartu asli tersebut sebagai tujuan tautan.
 
 Tindakan buat mengambang menggunakan tanda tambah dua rem berwarna hitam atau putih sesuai tema aktif. Judul karusel komposer berasal dari metadata lapisan tujuan milik penyedia dan itemnya tetap dibatasi pada lapisan tujuan tersebut. Ikon pengeras suara audio beralih antara aset terang dan gelap secara eksplisit berdasarkan tema aplikasi, bukan preferensi warna sistem operasi.
+
+Kartu Library menerima tag yang dapat dicari, seperti tingkat kemahiran. Penyedia runtime dapat mendaftarkan kontrak penyedia pencarian yang ada melalui `study:library:provider`; hasil pencarian dapat menyediakan bidang tervalidasi, termasuk `strokePattern`, beserta asal dan tingkat keyakinan.

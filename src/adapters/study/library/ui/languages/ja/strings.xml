@@ -93,4 +93,5 @@
   <string name="gateway.study.library_publish_class_option">クラスに公開</string>
   <string name="gateway.study.library_practice_writing">書き取り練習</string>
   <string name="gateway.study.library_play_audio">音声を再生</string>
+  <string name="gateway.study.library_tags">タグ</string>
 </resources>

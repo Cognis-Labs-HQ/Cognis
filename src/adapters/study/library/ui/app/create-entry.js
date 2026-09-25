@@ -114,15 +114,32 @@ export async function openCreateEntryPopup({
             relationship,
         ]),
     );
+    const constructorRelationships = (constructor.relationships ?? [])
+        .map((relationshipId) => relationshipsById.get(relationshipId))
+        .filter(Boolean)
+        .filter((relationship, index, relationships) => {
+            const targetRole = schema.layers.find(
+                ({ id }) => id === relationship.targetLayer,
+            )?.semanticRole;
+            if (
+                layer.semanticRole === "compoundWritingUnit" &&
+                targetRole === "lexicalUnit"
+            )
+                return false;
+            return (
+                relationships.findIndex(
+                    (candidate) =>
+                        candidate.targetLayer === relationship.targetLayer,
+                ) === index
+            );
+        });
     const editingLayer = {
         ...layer,
         fields: (constructor.fields ?? []).map((fieldId) => {
             const field = fieldsById.get(fieldId);
             return contributedById.get(fieldId) ?? field;
         }),
-        relationships: (constructor.relationships ?? []).map((relationshipId) =>
-            relationshipsById.get(relationshipId),
-        ),
+        relationships: constructorRelationships,
     };
     const draft = {
         schemaId,
@@ -138,6 +155,13 @@ export async function openCreateEntryPopup({
     const writableClasses = access.writable.filter(
         ({ scope }) => scope === "class",
     );
+    const supportsTextComposition = [
+        "lexicalUnit",
+        "orderedLexicalSequence",
+    ].includes(layer.semanticRole);
+    const compositionInput = supportsTextComposition
+        ? `<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><span class="library-composition-input"><span class="library-composition-blocks" data-library-composition-blocks aria-live="polite"></span><input data-library-composer-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></span></label><div data-library-composer-suggestions aria-live="polite"></div></section>`
+        : "";
     const publishControls = `<input name="scope" type="hidden" value="user">${
         access.readable.some(({ scope }) => scope === "global")
             ? `<label class="library-admin-checkbox library-publish-choice"><input name="publishEveryone" type="checkbox" class="choice-checkbox"><span>${escapeHtml(i18n.t("gateway.study.library_publish_everyone"))}</span>${renderInfoTooltip(i18n.t("gateway.study.library_publish_everyone_info"), i18n.t("ui.reuse.more_information"))}</label>`
@@ -146,7 +170,7 @@ export async function openCreateEntryPopup({
         writableClasses.length && !canPublishEveryone
             ? `<label class="library-admin-checkbox"><input name="publishClass" type="checkbox" class="choice-checkbox" data-library-publish-class-toggle> <span>${escapeHtml(i18n.t("gateway.study.library_publish_class_option"))}</span></label><label data-library-class-choice hidden><span>${escapeHtml(i18n.t("gateway.study.library_class"))}</span><select name="classId">${writableClasses.map(({ scopeId }) => `<option value="${escapeHtml(scopeId)}">${escapeHtml(scopeId)}</option>`).join("")}</select></label>`
             : '<input type="hidden" name="classId" value="">'
-    }<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><span class="library-composition-input"><span class="library-composition-blocks" data-library-composition-blocks aria-live="polite"></span><input data-library-composer-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></span></label><div data-library-composer-suggestions aria-live="polite"></div></section>`;
+    }${compositionInput}`;
     const { html, builder } = editorBody(
         draft,
         [
@@ -168,7 +192,7 @@ export async function openCreateEntryPopup({
                 constructor.allowAlwaysShowDefinition === true,
             includeHidden: false,
             relationshipCarousels: true,
-            generatedLabel: true,
+            generatedLabel: supportsTextComposition,
             persistentExtra: true,
             allowDefinitionCreate: layer.semanticRole !== "definition",
         },
@@ -371,6 +395,7 @@ export async function openCreateEntryPopup({
         ...draft,
         label: form.elements.label.value,
         class: form.elements.class.value || undefined,
+        tags: form.elements.tags.value.split("\u001f").filter(Boolean),
         fields: readFields(form, editingLayer, draft),
         references: readReferences(form, editingLayer),
         definitionLanguages:

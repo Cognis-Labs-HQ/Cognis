@@ -164,6 +164,8 @@ export async function bootstrapStudyAdapter(
             inspectContentPack: service.inspectContentPack.bind(service),
             ingestContentPack: service.ingestContentPack.bind(service),
             registerConstructor,
+            registerLookupProvider:
+                service.registerLookupProvider.bind(service),
         } satisfies LibraryProviderCapability);
     ctx.registerRoute(
         createLibraryRoutes(
