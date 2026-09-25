@@ -151,3 +151,5 @@ Bibliothekskarten akzeptieren durchsuchbare Tags wie Kompetenzstufen. Laufzeitan
 ## Nachschlagedienste im Editor
 
 Ein Laufzeit-Inhaltsanbieter registriert eine Nachschlageimplementierung über `study:library:provider.registerLookupProvider`. Er liefert eine stabile ID, lokalisierte Dienstbezeichnungen, eine Schema-/Ebenenprüfung und eine asynchrone Suche, die die unverarbeitete Editoreingabe erhält. Cognis zeigt jeden kompatiblen Anbieter unter der Eingabe als **Nachschlagen mit: Dienstname** an. Der ausgewählte Anbieter kann eine kanonische Bezeichnung, validierte Feldwerte, geordnete Beziehungsreferenzen, Herkunft und Konfidenz zurückgeben; der Editor wendet das Ergebnis mit der höchsten Konfidenz an, während die Endpunktzuständigkeit beim Study-Gateway-Client bleibt.
+
+Beim Aktivieren eines Moduls werden erforderliche Serverfähigkeiten sowohl im injizierten Routenkontext als auch unter den öffentlichen Fähigkeiten des System-ctx geprüft. Ein Modul kann daher `study:library:provider` sicher in `requiresCapabilities` deklarieren; private ctx-Fähigkeiten bleiben nicht verfügbar.

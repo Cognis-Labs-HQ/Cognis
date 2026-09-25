@@ -114,6 +114,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 対応するコンテンツプロバイダーは、公開 Library ctx 機能を通じてローカライズ済み検索サービスを登録できるようになりました。カード作成画面はサービスごとの操作を表示し、未加工入力をそのサービスへ送り、最も信頼度の高い正規ラベル、フィールド、順序付き参照を適用します。
 
+## 公開機能の有効化
+
+モジュール有効化が system ctx を通じて提供された公開サーバー機能を認識するようになりました。日本語などの言語モジュールは、機能が利用できないという誤った競合を受けずに `study:library:provider` を必須指定できます。非公開機能は引き続き隠されます。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -140,3 +144,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/67b413b535c0a8662cfe92c1170ccfc4742e6eae
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8893689
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/79cbfa05a5409f780bb42f4ea5ac7c0f8ec67f01
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e4daa661ee08b05a48ecba33182c490d4352e660

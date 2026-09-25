@@ -151,3 +151,5 @@ Kartu Library menerima tag yang dapat dicari, seperti tingkat kemahiran. Penyedi
 ## Penyedia pencarian penyusun
 
 Penyedia konten runtime mendaftarkan implementasi pencarian melalui `study:library:provider.registerLookupProvider`. Penyedia memasok ID stabil, label layanan terlokalisasi, pemeriksaan dukungan skema/lapisan, dan pencarian asinkron yang menerima label mentah dari penyusun. Cognis menampilkan setiap penyedia yang kompatibel sebagai **Cari dengan: nama layanan** di bawah masukan. Penyedia terpilih dapat mengembalikan label kanonis, nilai bidang tervalidasi, referensi relasi berurutan, asal, dan tingkat keyakinan; penyusun menerapkan hasil dengan keyakinan tertinggi sementara kepemilikan endpoint tetap berada di klien gateway Study.
+
+Pengaktifan modul memvalidasi kapabilitas server yang diperlukan terhadap konteks rute yang diinjeksi dan kapabilitas publik yang dikontribusikan ke ctx sistem. Karena itu, modul dapat mendeklarasikan `study:library:provider` dengan aman di `requiresCapabilities`; kapabilitas ctx privat tetap tidak tersedia.

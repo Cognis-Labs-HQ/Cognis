@@ -114,6 +114,10 @@ Die Zeichenhilfe zeigt nur noch vollständige kanonische Striche, plant Leinwand
 
 Kompatible Inhaltsanbieter können jetzt lokalisierte Nachschlagedienste über die öffentliche Library-ctx-Fähigkeit registrieren. Der Karteneditor zeigt eine Aktion pro Dienst, übermittelt diesem die unverarbeitete Eingabe und wendet dessen kanonische Bezeichnung, Felder und geordnete Referenzen mit der höchsten Konfidenz an.
 
+## Aktivierung öffentlicher Fähigkeiten
+
+Die Modulaktivierung erkennt jetzt öffentliche Serverfähigkeiten, die über den System-ctx bereitgestellt werden. Japanische und andere Sprachmodule können `study:library:provider` voraussetzen, ohne einen falschen Konflikt wegen einer nicht verfügbaren Fähigkeit zu erhalten; private Fähigkeiten bleiben verborgen.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -140,3 +144,4 @@ Kompatible Inhaltsanbieter können jetzt lokalisierte Nachschlagedienste über d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/67b413b535c0a8662cfe92c1170ccfc4742e6eae
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8893689
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/79cbfa05a5409f780bb42f4ea5ac7c0f8ec67f01
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e4daa661ee08b05a48ecba33182c490d4352e660

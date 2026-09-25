@@ -114,6 +114,10 @@ Drawing guidance now displays only complete canonical strokes, schedules canvas 
 
 Compatible content providers can now register localized lookup services through the public Library ctx capability. The card composer displays one action per service, sends that service the raw input, and applies its highest-confidence canonical label, fields, and ordered references.
 
+## Public capability enablement
+
+Module enablement now recognizes public server capabilities contributed through the system ctx. Japanese and other language modules can require `study:library:provider` without receiving a false unavailable-capability conflict, while private capabilities remain hidden.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -140,3 +144,4 @@ Compatible content providers can now register localized lookup services through 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/67b413b535c0a8662cfe92c1170ccfc4742e6eae
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8893689
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/79cbfa05a5409f780bb42f4ea5ac7c0f8ec67f01
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e4daa661ee08b05a48ecba33182c490d4352e660

@@ -114,6 +114,10 @@ Panduan menggambar kini hanya menampilkan goresan kanonis yang lengkap, menjadwa
 
 Penyedia konten yang kompatibel kini dapat mendaftarkan layanan pencarian terlokalisasi melalui kapabilitas ctx Library publik. Penyusun kartu menampilkan satu tindakan per layanan, mengirim masukan mentah ke layanan tersebut, lalu menerapkan label kanonis, bidang, dan referensi berurutan dengan tingkat keyakinan tertinggi.
 
+## Pengaktifan kapabilitas publik
+
+Pengaktifan modul kini mengenali kapabilitas server publik yang dikontribusikan melalui ctx sistem. Modul bahasa Jepang dan bahasa lainnya dapat memerlukan `study:library:provider` tanpa menerima konflik palsu bahwa kapabilitas tidak tersedia, sementara kapabilitas privat tetap tersembunyi.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -140,3 +144,4 @@ Penyedia konten yang kompatibel kini dapat mendaftarkan layanan pencarian terlok
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/67b413b535c0a8662cfe92c1170ccfc4742e6eae
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8893689
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/79cbfa05a5409f780bb42f4ea5ac7c0f8ec67f01
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e4daa661ee08b05a48ecba33182c490d4352e660

@@ -165,3 +165,5 @@ Library cards accept searchable tags such as proficiency levels. Runtime provide
 ## Composer lookup providers
 
 A runtime content provider registers a lookup implementation through `study:library:provider.registerLookupProvider`. It supplies a stable ID, localized service labels, a schema/layer support predicate, and an asynchronous lookup that receives the raw composer label. Cognis lists each compatible provider as **Lookup with: service name** below the input. The selected provider may return a canonical label, validated field values, ordered relationship references, provenance, and confidence; the composer applies the highest-confidence result while keeping endpoint ownership in the Study gateway client.
+
+Module enablement validates required server capabilities against both the injected route context and public capabilities contributed to the system ctx. Therefore, a module may safely declare `study:library:provider` in `requiresCapabilities`; private ctx capabilities remain unavailable.
