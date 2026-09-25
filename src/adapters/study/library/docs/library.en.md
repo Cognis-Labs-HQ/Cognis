@@ -161,3 +161,7 @@ Study Library pages use document scrolling so the page never competes with an in
 The floating create action uses a two-rem black or white plus according to the active theme. Composer carousel headings come from the provider’s target-layer metadata and their items remain restricted to that target layer. Audio speaker icons switch from explicit light and dark assets according to the application theme rather than the operating-system color preference.
 
 Library cards accept searchable tags such as proficiency levels. Runtime providers can register the existing lookup-provider contract through `study:library:provider`; lookup results may supply validated fields, including a `strokePattern`, with provenance and confidence.
+
+## Composer lookup providers
+
+A runtime content provider registers a lookup implementation through `study:library:provider.registerLookupProvider`. It supplies a stable ID, localized service labels, a schema/layer support predicate, and an asynchronous lookup that receives the raw composer label. Cognis lists each compatible provider as **Lookup with: service name** below the input. The selected provider may return a canonical label, validated field values, ordered relationship references, provenance, and confidence; the composer applies the highest-confidence result while keeping endpoint ownership in the Study gateway client.

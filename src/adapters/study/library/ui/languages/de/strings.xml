@@ -94,4 +94,8 @@
   <string name="gateway.study.library_practice_writing">Schreiben üben</string>
   <string name="gateway.study.library_play_audio">Audio abspielen</string>
   <string name="gateway.study.library_tags">Tags</string>
+  <string name="gateway.study.library_lookup_with">Nachschlagen mit: {{ service }}</string>
+  <string name="gateway.study.library_lookup_empty">Der Dienst hat keine passenden Kartendaten gefunden.</string>
+  <string name="gateway.study.library_lookup_applied">Die Kartendaten wurden vom Nachschlagedienst ausgefüllt.</string>
+  <string name="gateway.study.library_lookup_error">Der Nachschlagedienst konnte diese Eingabe nicht verarbeiten.</string>
 </resources>

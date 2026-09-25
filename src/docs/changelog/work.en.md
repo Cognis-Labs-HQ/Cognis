@@ -110,6 +110,10 @@ The Drawing heading now matches the canvas width and sits directly above it. Fee
 
 Drawing guidance now displays only complete canonical strokes, schedules canvas updates per animation frame, and keeps accepted output canonical. Library view tabs remain interactive, nested composers honor the relationship target type, compound characters accept free labels with atomic pronunciation relationships, duplicate target carousels are removed, tags are editable, and carousels hide their scrollbar.
 
+## Provider-assisted composer lookup
+
+Compatible content providers can now register localized lookup services through the public Library ctx capability. The card composer displays one action per service, sends that service the raw input, and applies its highest-confidence canonical label, fields, and ordered references.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -135,3 +139,4 @@ Drawing guidance now displays only complete canonical strokes, schedules canvas 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/337b23512bb9fd25e0ffce0d94058e4dcc959e84
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/67b413b535c0a8662cfe92c1170ccfc4742e6eae
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8893689
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/79cbfa05a5409f780bb42f4ea5ac7c0f8ec67f01

@@ -178,11 +178,26 @@ export async function previewLibraryResolution(location, entry) {
     return (await response.json()).data;
 }
 
-export async function fetchLibraryLookupSuggestions(entry) {
+export async function fetchLibraryLookupProviders({
+    schemaId,
+    schemaVersion,
+    layer,
+}) {
+    const parameters = new URLSearchParams({ schemaId, layer });
+    if (schemaVersion !== undefined)
+        parameters.set("schemaVersion", String(schemaVersion));
+    const response = await apiFetch(
+        `/api/v1/study/library/lookup/providers?${parameters}`,
+    );
+    if (!response.ok) throw new Error("lookup_providers_failed");
+    return (await response.json()).data;
+}
+
+export async function fetchLibraryLookupSuggestions(providerId, entry) {
     const response = await apiFetch("/api/v1/study/library/lookup", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(entry),
+        body: JSON.stringify({ providerId, entry }),
     });
     if (!response.ok) throw new Error("lookup_failed");
     return (await response.json()).data;

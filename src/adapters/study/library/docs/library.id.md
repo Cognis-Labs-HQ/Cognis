@@ -147,3 +147,7 @@ Sebuah bidang dapat mendeklarasikan `input.linkRelationships` agar nilai bacaan 
 Tindakan buat mengambang menggunakan tanda tambah dua rem berwarna hitam atau putih sesuai tema aktif. Judul karusel komposer berasal dari metadata lapisan tujuan milik penyedia dan itemnya tetap dibatasi pada lapisan tujuan tersebut. Ikon pengeras suara audio beralih antara aset terang dan gelap secara eksplisit berdasarkan tema aplikasi, bukan preferensi warna sistem operasi.
 
 Kartu Library menerima tag yang dapat dicari, seperti tingkat kemahiran. Penyedia runtime dapat mendaftarkan kontrak penyedia pencarian yang ada melalui `study:library:provider`; hasil pencarian dapat menyediakan bidang tervalidasi, termasuk `strokePattern`, beserta asal dan tingkat keyakinan.
+
+## Penyedia pencarian penyusun
+
+Penyedia konten runtime mendaftarkan implementasi pencarian melalui `study:library:provider.registerLookupProvider`. Penyedia memasok ID stabil, label layanan terlokalisasi, pemeriksaan dukungan skema/lapisan, dan pencarian asinkron yang menerima label mentah dari penyusun. Cognis menampilkan setiap penyedia yang kompatibel sebagai **Cari dengan: nama layanan** di bawah masukan. Penyedia terpilih dapat mengembalikan label kanonis, nilai bidang tervalidasi, referensi relasi berurutan, asal, dan tingkat keyakinan; penyusun menerapkan hasil dengan keyakinan tertinggi sementara kepemilikan endpoint tetap berada di klien gateway Study.

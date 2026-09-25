@@ -147,3 +147,7 @@ Ein Feld kann `input.linkRelationships` angeben, um Lese- oder Aussprachewerte �
 Die schwebende Erstellen-Aktion verwendet je nach aktivem Design ein zwei Rem großes schwarzes oder weißes Pluszeichen. Überschriften der Editor-Karussells stammen aus den Metadaten der Zielschicht des Anbieters, und ihre Einträge bleiben auf diese Zielschicht beschränkt. Audio-Lautsprechersymbole wechseln anhand des Anwendungsdesigns zwischen ausdrücklichen hellen und dunklen Assets statt anhand der Farbvorgabe des Betriebssystems.
 
 Bibliothekskarten akzeptieren durchsuchbare Tags wie Kompetenzstufen. Laufzeitanbieter können den vorhandenen Lookup-Provider-Vertrag über `study:library:provider` registrieren; Suchergebnisse können validierte Felder einschließlich eines `strokePattern` mit Herkunft und Konfidenz bereitstellen.
+
+## Nachschlagedienste im Editor
+
+Ein Laufzeit-Inhaltsanbieter registriert eine Nachschlageimplementierung über `study:library:provider.registerLookupProvider`. Er liefert eine stabile ID, lokalisierte Dienstbezeichnungen, eine Schema-/Ebenenprüfung und eine asynchrone Suche, die die unverarbeitete Editoreingabe erhält. Cognis zeigt jeden kompatiblen Anbieter unter der Eingabe als **Nachschlagen mit: Dienstname** an. Der ausgewählte Anbieter kann eine kanonische Bezeichnung, validierte Feldwerte, geordnete Beziehungsreferenzen, Herkunft und Konfidenz zurückgeben; der Editor wendet das Ergebnis mit der höchsten Konfidenz an, während die Endpunktzuständigkeit beim Study-Gateway-Client bleibt.

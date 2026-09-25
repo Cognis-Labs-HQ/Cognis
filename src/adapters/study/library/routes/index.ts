@@ -289,13 +289,39 @@ export function createLibraryRoutes(
                 return true;
             }
             if (
+                url.pathname === "/api/v1/study/library/lookup/providers" &&
+                req.method === "GET"
+            ) {
+                sendJson(res, 200, {
+                    data: library.listLookupProviders({
+                        schemaId: url.searchParams.get("schemaId") ?? "",
+                        schemaVersion: url.searchParams.has("schemaVersion")
+                            ? Number(url.searchParams.get("schemaVersion"))
+                            : undefined,
+                        layer: url.searchParams.get("layer") ?? "",
+                    }),
+                });
+                return true;
+            }
+            if (
                 url.pathname === "/api/v1/study/library/lookup" &&
                 req.method === "POST"
             ) {
-                const entry = (await readJson(req)) as Parameters<
-                    LibraryCapability["lookup"]
-                >[0];
-                sendJson(res, 200, { data: await library.lookup(entry) });
+                const body = (await readJson(req)) as {
+                    providerId: string;
+                    entry: Parameters<LibraryCapability["lookup"]>[1];
+                };
+                sendJson(res, 200, {
+                    data: await library.lookup(body.providerId, body.entry),
+                });
+                await log?.("info", "Looked up Library composer input.", {
+                    component: "study-library",
+                    operation: "lookup",
+                    accountId: actor.accountId,
+                    providerId: body.providerId,
+                    schemaId: body.entry.schemaId,
+                    layer: body.entry.layer,
+                });
                 return true;
             }
             if (

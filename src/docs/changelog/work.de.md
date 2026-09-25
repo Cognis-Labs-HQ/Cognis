@@ -110,6 +110,10 @@ Die Überschrift der Schreibübung entspricht nun der Breite der Zeichenfläche 
 
 Die Zeichenhilfe zeigt nur noch vollständige kanonische Striche, plant Leinwandaktualisierungen pro Animationsbild und hält akzeptierte Ausgaben kanonisch. Bibliotheksansichtsregister bleiben interaktiv, verschachtelte Editoren berücksichtigen den Zieltyp der Beziehung, zusammengesetzte Zeichen akzeptieren freie Bezeichnungen mit atomaren Aussprachebeziehungen, doppelte Zielkarussells werden entfernt, Tags sind bearbeitbar und Karussells verbergen ihre Bildlaufleiste.
 
+## Anbieterunterstützte Editorsuche
+
+Kompatible Inhaltsanbieter können jetzt lokalisierte Nachschlagedienste über die öffentliche Library-ctx-Fähigkeit registrieren. Der Karteneditor zeigt eine Aktion pro Dienst, übermittelt diesem die unverarbeitete Eingabe und wendet dessen kanonische Bezeichnung, Felder und geordnete Referenzen mit der höchsten Konfidenz an.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -135,3 +139,4 @@ Die Zeichenhilfe zeigt nur noch vollständige kanonische Striche, plant Leinwand
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/337b23512bb9fd25e0ffce0d94058e4dcc959e84
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/67b413b535c0a8662cfe92c1170ccfc4742e6eae
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8893689
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/79cbfa05a5409f780bb42f4ea5ac7c0f8ec67f01

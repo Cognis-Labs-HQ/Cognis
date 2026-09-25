@@ -77,6 +77,18 @@ test("Study Library keeps editor tabs active and nested card types precise", () 
     assert.match(createEntrySource, /relationship\.targetLayer/);
     assert.match(carouselStylesheet, /scrollbar-width:\s*none/);
 });
+
+test("Study Library composer exposes provider-owned raw-input lookup", () => {
+    assert.match(clientSource, /fetchLibraryLookupProviders/);
+    assert.match(
+        clientSource,
+        /fetchLibraryLookupSuggestions\(providerId, entry\)/,
+    );
+    assert.match(createEntrySource, /data-library-lookup-provider/);
+    assert.match(createEntrySource, /bindLookupProviders/);
+    assert.match(createEntrySource, /suggestion\.references/);
+    assert.match(adapterSource, /registerLookupProvider/);
+});
 const variantArrowLight = readFileSync(
     resolve(
         ROOT,

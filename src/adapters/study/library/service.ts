@@ -21,6 +21,7 @@ import type {
     LibraryLocation,
     LibraryLookupProvider,
     LibraryLookupSuggestion,
+    LibraryMetadata,
     LibraryFormContribution,
     LibraryPushRequest,
     LibraryResolutionProposal,
@@ -89,6 +90,11 @@ export interface LibraryProviderCapability {
 export interface LibraryCapability {
     registerSchema(schema: LibrarySchema): Promise<void>;
     registerLookupProvider(provider: LibraryLookupProvider): () => void;
+    listLookupProviders(input: {
+        schemaId: string;
+        schemaVersion?: number;
+        layer: string;
+    }): Array<{ id: string; metadata: LibraryMetadata }>;
     registerFormContribution(contribution: LibraryFormContribution): () => void;
     listFormContributions(): LibraryFormContribution[];
     listSchemas(): LibrarySchema[];
@@ -148,6 +154,7 @@ export interface LibraryCapability {
         >,
     ): Promise<LibraryResolutionProposal[]>;
     lookup(
+        providerId: string,
         input: Pick<
             LibraryEntryInput,
             "schemaId" | "schemaVersion" | "layer" | "label"
@@ -251,10 +258,29 @@ export class LibraryService implements LibraryCapability {
     }
 
     registerLookupProvider(provider: LibraryLookupProvider): () => void {
-        if (!provider.id.trim() || this.lookupProviders.has(provider.id))
+        if (
+            !provider.id.trim() ||
+            !Object.keys(provider.metadata?.labels ?? {}).length ||
+            this.lookupProviders.has(provider.id)
+        )
             throw new Error("lookup_provider_registered");
         this.lookupProviders.set(provider.id, provider);
         return () => this.lookupProviders.delete(provider.id);
+    }
+
+    listLookupProviders(input: {
+        schemaId: string;
+        schemaVersion?: number;
+        layer: string;
+    }): Array<{ id: string; metadata: LibraryMetadata }> {
+        const schema = this.schema(input.schemaId, input.schemaVersion);
+        const layer = findLayer(schema, input.layer);
+        return Array.from(this.lookupProviders.values())
+            .filter((provider) => provider.supports(schema, layer))
+            .map(({ id, metadata }) => ({
+                id,
+                metadata: structuredClone(metadata),
+            }));
     }
 
     registerFormContribution(
@@ -641,6 +667,7 @@ export class LibraryService implements LibraryCapability {
     }
 
     async lookup(
+        providerId: string,
         input: Pick<
             LibraryEntryInput,
             "schemaId" | "schemaVersion" | "layer" | "label"
@@ -649,12 +676,13 @@ export class LibraryService implements LibraryCapability {
         await this.flow?.run("study:library:lookup", input);
         const schema = this.schema(input.schemaId, input.schemaVersion);
         const layer = findLayer(schema, input.layer);
+        const selectedProvider = this.lookupProviders.get(providerId);
+        if (!selectedProvider || !selectedProvider.supports(schema, layer))
+            throw new Error("lookup_provider_not_found");
         const suggestions = await Promise.all(
-            Array.from(this.lookupProviders.values())
-                .filter((provider) => provider.supports(schema, layer))
-                .map((provider) =>
-                    provider.lookup({ schema, layer, label: input.label }),
-                ),
+            [selectedProvider].map((provider) =>
+                provider.lookup({ schema, layer, label: input.label }),
+            ),
         );
         return suggestions
             .flat()

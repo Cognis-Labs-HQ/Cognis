@@ -248,6 +248,7 @@ export interface LibraryResolutionProposal {
 
 export interface LibraryLookupSuggestion {
     provider: string;
+    label?: string;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
     provenance: string;
@@ -256,6 +257,7 @@ export interface LibraryLookupSuggestion {
 
 export interface LibraryLookupProvider {
     id: string;
+    metadata: LibraryMetadata;
     supports(schema: LibrarySchema, layer: LibraryLayerSchema): boolean;
     lookup(input: {
         schema: LibrarySchema;

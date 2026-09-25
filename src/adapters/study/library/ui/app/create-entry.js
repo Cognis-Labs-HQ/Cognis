@@ -1,10 +1,13 @@
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
+import { showToast } from "/static/reuse/toast.js";
 import { mountHorizontalCarousels } from "/static/reuse/horizontal-carousel.js";
 import {
     createLibraryEntry,
     fetchLibraryForms,
+    fetchLibraryLookupProviders,
+    fetchLibraryLookupSuggestions,
     fetchLibraryLocations,
     requestLibraryPromotion,
 } from "/static/gateways/study/ui/library-client.js";
@@ -66,17 +69,21 @@ export async function openCreateEntryPopup({
     contributions: suppliedContributions,
     initialLabel = "",
 }) {
-    const [access, loadedContributions] = await Promise.all([
-        fetchLibraryLocations(
-            schemas.find(({ id }) => id === schemaId)?.language,
-        ),
+    const schema = schemas.find(({ id }) => id === schemaId);
+    const layer = schema?.layers.find(({ id }) => id === layerId);
+    if (!schema || !layer) return null;
+    const [access, loadedContributions, lookupProviders] = await Promise.all([
+        fetchLibraryLocations(schema.language),
         suppliedContributions
             ? Promise.resolve(suppliedContributions)
             : fetchLibraryForms(),
+        fetchLibraryLookupProviders({
+            schemaId,
+            schemaVersion: schema.version,
+            layer: layerId,
+        }),
     ]);
     const contributions = loadedContributions ?? [];
-    const schema = schemas.find(({ id }) => id === schemaId);
-    const layer = schema?.layers.find(({ id }) => id === layerId);
     const contributedConstructor = contributions.find(
         (item) =>
             item.schemaId === schemaId &&
@@ -95,8 +102,7 @@ export async function openCreateEntryPopup({
                   defaults: {},
               }
             : null);
-    if (!schema || !layer || !constructor || !access.writable.length)
-        return null;
+    if (!constructor || !access.writable.length) return null;
     const contributedFields = contributions
         .filter(
             (item) => item.schemaId === schemaId && item.layerId === layerId,
@@ -160,7 +166,7 @@ export async function openCreateEntryPopup({
         "orderedLexicalSequence",
     ].includes(layer.semanticRole);
     const compositionInput = supportsTextComposition
-        ? `<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><span class="library-composition-input"><span class="library-composition-blocks" data-library-composition-blocks aria-live="polite"></span><input data-library-composer-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></span></label><div data-library-composer-suggestions aria-live="polite"></div></section>`
+        ? `<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><span class="library-composition-input"><span class="library-composition-blocks" data-library-composition-blocks aria-live="polite"></span><input data-library-composer-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></span></label><div data-library-composer-suggestions aria-live="polite"></div><div class="library-composer-lookups">${lookupProviders.map((provider) => `<button class="btn-neutral" type="button" data-library-lookup-provider="${escapeHtml(provider.id)}">${escapeHtml(i18n.t("gateway.study.library_lookup_with").replace("{{ service }}", localizedLabel(provider.metadata, document.documentElement.lang) || provider.id))}</button>`).join("")}</div></section>`
         : "";
     const publishControls = `<input name="scope" type="hidden" value="user">${
         access.readable.some(({ scope }) => scope === "global")
@@ -330,6 +336,7 @@ export async function openCreateEntryPopup({
                 schema,
                 i18n,
             );
+            bindLookupProviders(form, draft, i18n);
             form.querySelector(
                 "[data-library-add-definition]",
             )?.addEventListener("click", async () => {
@@ -534,6 +541,98 @@ function derivedPronunciation(entry, entries, schema, visited = new Set()) {
         )
         .filter(Boolean);
     return parts.join("") || direct || "";
+}
+
+function applyLookupFields(form, fields) {
+    Object.entries(fields ?? {}).forEach(([fieldId, value]) => {
+        const control = form.elements[`field:${fieldId}`];
+        if (!control) return;
+        if (control instanceof RadioNodeList) {
+            Array.from(control).forEach((option) => {
+                option.checked = Array.isArray(value)
+                    ? value.includes(option.value)
+                    : option.value === value;
+            });
+            return;
+        }
+        if (control.type === "checkbox") {
+            control.checked = value === true;
+            return;
+        }
+        if (control.multiple) {
+            Array.from(control.options).forEach((option) => {
+                option.selected = Array.isArray(value)
+                    ? value.includes(option.value)
+                    : option.value === value;
+            });
+            return;
+        }
+        control.value = Array.isArray(value) ? value.join("\u001f") : value;
+        const tagList = control
+            .closest("[data-library-tag-field]")
+            ?.querySelector(".library-tag-list");
+        if (tagList && Array.isArray(value)) {
+            tagList.replaceChildren(
+                ...value.map((item) => {
+                    const tag = document.createElement("button");
+                    tag.type = "button";
+                    tag.className = "btn-neutral";
+                    tag.dataset.libraryTag = item;
+                    tag.textContent = `${item} ×`;
+                    return tag;
+                }),
+            );
+        }
+    });
+}
+
+function bindLookupProviders(form, draft, i18n) {
+    form.querySelector(".library-composer-lookups")?.addEventListener(
+        "click",
+        async (event) => {
+            const button = event.target.closest(
+                "[data-library-lookup-provider]",
+            );
+            if (!button) return;
+            const input = form.querySelector("[data-library-composer-text]");
+            const label = input?.value.trim();
+            if (!label) return;
+            button.disabled = true;
+            try {
+                const [suggestion] = await fetchLibraryLookupSuggestions(
+                    button.dataset.libraryLookupProvider,
+                    { ...draft, label },
+                );
+                if (!suggestion) {
+                    showToast(i18n.t("gateway.study.library_lookup_empty"), {
+                        variant: "info",
+                    });
+                    return;
+                }
+                applyLookupFields(form, suggestion.fields);
+                for (const reference of suggestion.references ?? []) {
+                    const item = form.querySelector(
+                        `[data-horizontal-carousel="${CSS.escape(reference.relation)}"] [data-carousel-value="${CSS.escape(reference.entryId)}"]`,
+                    );
+                    if (item && !item.classList.contains("is-selected"))
+                        item.click();
+                }
+                input.value = "";
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+                if (suggestion.label || !(suggestion.references ?? []).length)
+                    form.elements.label.value = suggestion.label ?? label;
+                showToast(i18n.t("gateway.study.library_lookup_applied"), {
+                    variant: "success",
+                });
+            } catch {
+                showToast(i18n.t("gateway.study.library_lookup_error"), {
+                    variant: "error",
+                });
+            } finally {
+                button.disabled = false;
+            }
+        },
+    );
 }
 
 function bindTextComposition(form, entries, layer, schema, i18n) {

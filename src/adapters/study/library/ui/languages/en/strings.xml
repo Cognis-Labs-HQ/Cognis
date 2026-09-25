@@ -94,4 +94,8 @@
   <string name="gateway.study.library_practice_writing">Practice writing</string>
   <string name="gateway.study.library_play_audio">Play audio</string>
   <string name="gateway.study.library_tags">Tags</string>
+  <string name="gateway.study.library_lookup_with">Lookup with: {{ service }}</string>
+  <string name="gateway.study.library_lookup_empty">The service found no matching card data.</string>
+  <string name="gateway.study.library_lookup_applied">Card data was filled from the lookup service.</string>
+  <string name="gateway.study.library_lookup_error">The lookup service could not process this input.</string>
 </resources>

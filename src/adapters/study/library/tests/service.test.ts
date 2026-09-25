@@ -254,22 +254,39 @@ test("card constructors reject unknown provider fields", async () => {
 test("lookup providers are ranked and cleanly removable", async () => {
     const { library } = service();
     await library.registerSchema(schema(1));
+    let lookupLabel = "";
     const remove = library.registerLookupProvider({
         id: "dictionary",
+        metadata: { labels: { en: "Test Dictionary" } },
         supports: () => true,
-        lookup: async () => [
-            {
-                provider: "dictionary",
-                provenance: "dictionary:test",
-                confidence: 0.8,
-                fields: { gloss: "result" },
-            },
-        ],
+        lookup: async ({ label }) => {
+            lookupLabel = label;
+            return [
+                {
+                    provider: "dictionary",
+                    provenance: "dictionary:test",
+                    confidence: 0.8,
+                    fields: { gloss: "result" },
+                },
+            ];
+        },
     });
 
+    assert.deepEqual(
+        library.listLookupProviders({
+            schemaId: "test-language",
+            layer: "units",
+        }),
+        [
+            {
+                id: "dictionary",
+                metadata: { labels: { en: "Test Dictionary" } },
+            },
+        ],
+    );
     assert.equal(
         (
-            await library.lookup({
+            await library.lookup("dictionary", {
                 schemaId: "test-language",
                 layer: "units",
                 label: "item",
@@ -277,14 +294,22 @@ test("lookup providers are ranked and cleanly removable", async () => {
         ).length,
         1,
     );
+    assert.equal(lookupLabel, "item");
     remove();
     assert.deepEqual(
-        await library.lookup({
+        library.listLookupProviders({
+            schemaId: "test-language",
+            layer: "units",
+        }),
+        [],
+    );
+    await assert.rejects(
+        library.lookup("dictionary", {
             schemaId: "test-language",
             layer: "units",
             label: "item",
         }),
-        [],
+        /lookup_provider_not_found/,
     );
 });
 
