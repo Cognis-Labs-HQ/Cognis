@@ -264,9 +264,7 @@ function entryAudio(entry, layer) {
     const value = audioField ? entry.fields?.[audioField.id] : undefined;
     return {
         audioField,
-        valid:
-            typeof value === "string" &&
-            (value.startsWith("file:") || value.startsWith("https://")),
+        valid: typeof value === "string" && value.startsWith("file:"),
     };
 }
 

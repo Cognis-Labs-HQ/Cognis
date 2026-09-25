@@ -48,7 +48,7 @@ export async function createPushRequest(
     await db.executeCommand({
         option: "INSERT",
         table: "study_library_push_requests",
-        values: {
+        set: {
             id,
             source_entry_id: sourceEntryId,
             destination_scope: destination.scope,
@@ -129,7 +129,7 @@ export async function reviewPushRequest(
     await db.executeCommand({
         option: "UPDATE",
         table: "study_library_push_requests",
-        values: {
+        set: {
             status,
             reviewed_by: reviewerId,
             updated_at: new Date().toISOString(),

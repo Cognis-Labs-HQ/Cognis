@@ -349,7 +349,7 @@ export class LibraryStore {
                     await db.executeCommand({
                         option: "UPDATE",
                         table: "study_library_schemas",
-                        values: { schema_json: JSON.stringify(schema) },
+                        set: { schema_json: JSON.stringify(schema) },
                         where: [
                             { column: "schema_id", value: schema.id },
                             { column: "version", value: schema.version },
@@ -946,7 +946,7 @@ export class LibraryStore {
             await transactionDb.executeCommand({
                 option: "UPDATE",
                 table: "study_library_entries",
-                values: {
+                set: {
                     label: input.label,
                     class: input.class ?? null,
                     tags_json: JSON.stringify(input.tags ?? []),

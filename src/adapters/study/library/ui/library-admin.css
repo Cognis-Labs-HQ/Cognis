@@ -298,6 +298,31 @@ body[data-theme="dark"] .library-quick-search-control img {
     gap: 0.75rem;
 }
 
+.library-definition-summary dl {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0.75rem 0 0;
+}
+
+.library-definition-translation {
+    align-items: baseline;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 3rem minmax(0, 1fr);
+}
+
+.library-definition-translation dt {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.library-definition-translation dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
 .page-action-button[data-page-action-id="study-library:create"] {
     color: #f4f7ff;
     font-size: 2rem;

@@ -309,18 +309,25 @@ export function editorBody(
         );
         return candidateLayer?.semanticRole === "definition";
     });
+    const definitionSummaryFields = (definition) => {
+        const definitionLayer = layerForEntry([schema], definition);
+        const translationsField =
+            definitionLayer?.definitionLocalization?.translationsField;
+        const translations = definition.fields?.[translationsField];
+        if (!translations || typeof translations !== "object") return "";
+        return Object.entries(translations)
+            .filter(([, value]) => typeof value === "string" && value.trim())
+            .map(
+                ([languageCode, value]) =>
+                    `<div class="library-definition-translation"><dt lang="${escapeHtml(languageCode)}">${escapeHtml(languageCode.toLocaleUpperCase())}</dt><dd lang="${escapeHtml(languageCode)}">${escapeHtml(value)}</dd></div>`,
+            )
+            .join("");
+    };
     const definitionSummary = definitionEntries.length
         ? definitionEntries
               .map(
                   (definition) =>
-                      `<article class="library-editor-aggregate"><header><strong>${escapeHtml(definition.label)}</strong>${entryEditMode(definition) ? `<button class="btn-neutral" type="button" data-library-edit-related="${escapeHtml(definition.id)}">${escapeHtml(i18n.t("ui.reuse.edit"))}</button>` : ""}</header><dl>${Object.entries(
-                          definition.fields ?? {},
-                      )
-                          .map(
-                              ([key, value]) =>
-                                  `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(typeof value === "object" ? JSON.stringify(value) : String(value ?? ""))}</dd>`,
-                          )
-                          .join("")}</dl></article>`,
+                      `<article class="library-editor-aggregate library-definition-summary"><header><strong>${escapeHtml(definitionText(definition, layerForEntry([schema], definition), schema.language) || definition.label)}</strong>${entryEditMode(definition) ? `<button class="btn-neutral" type="button" data-library-edit-related="${escapeHtml(definition.id)}">${escapeHtml(i18n.t("ui.reuse.edit"))}</button>` : ""}</header><dl>${definitionSummaryFields(definition)}</dl></article>`,
               )
               .join("")
         : `<p data-library-definition-empty>${escapeHtml(i18n.t("gateway.study.library_editor_no_definitions"))}</p>`;

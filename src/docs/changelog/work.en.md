@@ -120,7 +120,11 @@ Module enablement now recognizes public server capabilities contributed through 
 
 ## Reliable Library forms
 
-Card updates now preserve unordered references without invalid positions. Relationship tabs are view-only, compound characters use a free Input field and pronunciation carousel, lookup actions appear inline after typing, stroke patterns stay provider-owned and hidden, definition add controls are larger and neutral, audio transport failures are normalized, and hover previews fully enclose their content.
+Card updates now preserve unordered references without invalid positions. Relationship tabs are view-only, compound characters use a free Input field and pronunciation carousel, lookup actions appear inline after typing, stroke patterns stay provider-owned and hidden, definition add controls are larger and neutral, and hover previews fully enclose their content.
+
+## Reliable built-in card editing and packaged audio
+
+Library updates now use the database gateway's structured update contract, so editing built-in cards no longer fails inside PostgreSQL. Audio playback is offered only for files shipped through a content pack and stored by the Files gateway; external placeholder URLs are neither displayed nor fetched. Definition summaries show localized translations in a compact language-labelled layout instead of exposing provider keys and raw JSON.
 
 ## Commits
 
@@ -150,3 +154,4 @@ Card updates now preserve unordered references without invalid positions. Relati
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/79cbfa05a5409f780bb42f4ea5ac7c0f8ec67f01
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e4daa661ee08b05a48ecba33182c490d4352e660
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/274fc626dbea45d3c8d66c82b98f1a0ba87a8052
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/024d7dfe05f713f390d7b9fb00410591018c9bf6

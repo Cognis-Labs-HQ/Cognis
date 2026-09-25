@@ -74,7 +74,7 @@ test("new releases may replace a schema owned only by the same content pack", as
             (command) =>
                 command.option === "UPDATE" &&
                 command.table === "study_library_schemas" &&
-                command.values.schema_json === JSON.stringify(nextSchema),
+                command.set.schema_json === JSON.stringify(nextSchema),
         ),
     );
 });
@@ -817,7 +817,12 @@ test("entry updates replace editable fields and relationships atomically", async
         fields: {},
         references: [{ entryId: "definition-1", relation: "means" }],
     });
-    assert.ok(commands.some((command) => command.option === "UPDATE"));
+    assert.ok(
+        commands.some(
+            (command) =>
+                command.option === "UPDATE" && command.set.label === "updated",
+        ),
+    );
     assert.ok(
         commands.some(
             (command) =>

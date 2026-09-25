@@ -296,11 +296,6 @@ async function validateContentRecords(
             if (!references.every((reference) => typeof reference === "string"))
                 throw new Error("invalid_asset_reference");
             for (const value of references as string[]) {
-                if (
-                    (field.type === "audio" || field.type === "audioList") &&
-                    value.startsWith("https://")
-                )
-                    continue;
                 if (!assetsRoot) throw new Error("invalid_asset_reference");
                 const asset = await resolveInside(assetsRoot, value);
                 if (!(await stat(asset)).isFile())

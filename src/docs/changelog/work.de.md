@@ -120,7 +120,11 @@ Die Modulaktivierung erkennt jetzt öffentliche Serverfähigkeiten, die über de
 
 ## Zuverlässige Bibliotheksformulare
 
-Kartenaktualisierungen behalten ungeordnete Referenzen jetzt ohne ungültige Positionen. Beziehungsregister sind nur in der Ansicht sichtbar, zusammengesetzte Zeichen verwenden ein freies Eingabefeld und ein Aussprachekarussell, Nachschlageaktionen erscheinen nach der Eingabe in derselben Zeile, Strichmuster bleiben anbietereigen und verborgen, Steuerelemente zum Hinzufügen von Definitionen sind größer und neutral, Audioübertragungsfehler werden normalisiert und Vorschauen umschließen ihren Inhalt vollständig.
+Kartenaktualisierungen behalten ungeordnete Referenzen jetzt ohne ungültige Positionen. Beziehungsregister sind nur in der Ansicht sichtbar, zusammengesetzte Zeichen verwenden ein freies Eingabefeld und ein Aussprachekarussell, Nachschlageaktionen erscheinen nach der Eingabe in derselben Zeile, Strichmuster bleiben anbietereigen und verborgen, Steuerelemente zum Hinzufügen von Definitionen sind größer und neutral, und Vorschauen umschließen ihren Inhalt vollständig.
+
+## Zuverlässige Bearbeitung integrierter Karten und paketiertes Audio
+
+Bibliotheksaktualisierungen verwenden nun den strukturierten Aktualisierungsvertrag des Datenbank-Gateways, sodass die Bearbeitung integrierter Karten nicht mehr innerhalb von PostgreSQL fehlschlägt. Die Audiowiedergabe wird nur für Dateien angeboten, die mit einem Inhaltspaket ausgeliefert und vom Datei-Gateway gespeichert wurden; externe Platzhalter-URLs werden weder angezeigt noch abgerufen. Definitionsübersichten zeigen lokalisierte Übersetzungen in einer kompakten, nach Sprache beschrifteten Darstellung statt Anbieterschlüssel und Roh-JSON offenzulegen.
 
 ## Commits
 
@@ -150,3 +154,4 @@ Kartenaktualisierungen behalten ungeordnete Referenzen jetzt ohne ungültige Pos
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/79cbfa05a5409f780bb42f4ea5ac7c0f8ec67f01
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e4daa661ee08b05a48ecba33182c490d4352e660
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/274fc626dbea45d3c8d66c82b98f1a0ba87a8052
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/024d7dfe05f713f390d7b9fb00410591018c9bf6

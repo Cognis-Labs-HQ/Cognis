@@ -489,6 +489,13 @@ test("Study Library separates admin and user-facing editing", () => {
     assert.match(source, /requestUpdate: editMode === "request"/);
 });
 
+test("Study Library presents localized definitions as readable translations", () => {
+    assert.match(adminInteractionsSource, /library-definition-summary/);
+    assert.match(adminInteractionsSource, /library-definition-translation/);
+    assert.match(adminInteractionsSource, /definitionLocalization/);
+    assert.match(stylesheet, /\.library-definition-translation/);
+});
+
 test("Study Library administration exposes contract-safe editing", () => {
     assert.match(
         adminInteractionsSource,
@@ -808,6 +815,7 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(source, /audio\.src = objectUrl/);
     assert.match(source, /replaceWith\(message\)/);
     assert.match(source, /gateway\.study\.library_audio_load_error/);
+    assert.match(source, /value\.startsWith\("file:"\)/);
     assert.match(source, /URL\.revokeObjectURL/);
     assert.match(clientSource, /apiFetch\([\s\S]*\/audio\//);
     assert.match(

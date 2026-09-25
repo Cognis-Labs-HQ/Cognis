@@ -120,7 +120,11 @@ Pengaktifan modul kini mengenali kapabilitas server publik yang dikontribusikan 
 
 ## Formulir Library yang andal
 
-Pembaruan kartu kini mempertahankan referensi tak berurutan tanpa posisi yang tidak valid. Tab relasi hanya tersedia dalam tampilan, karakter gabungan memakai bidang Masukan bebas dan karusel pelafalan, tindakan pencarian muncul sebaris setelah mengetik, pola goresan tetap dimiliki penyedia dan tersembunyi, kontrol tambah definisi lebih besar dan netral, kegagalan pengiriman audio dinormalisasi, serta pratinjau mengelilingi seluruh isinya.
+Pembaruan kartu kini mempertahankan referensi tak berurutan tanpa posisi yang tidak valid. Tab relasi hanya tersedia dalam tampilan, karakter gabungan memakai bidang Masukan bebas dan karusel pelafalan, tindakan pencarian muncul sebaris setelah mengetik, pola goresan tetap dimiliki penyedia dan tersembunyi, kontrol tambah definisi lebih besar dan netral, serta pratinjau mengelilingi seluruh isinya.
+
+## Penyuntingan kartu bawaan yang andal dan audio dalam paket
+
+Pembaruan Pustaka kini memakai kontrak pembaruan terstruktur milik gateway basis data sehingga penyuntingan kartu bawaan tidak lagi gagal di PostgreSQL. Pemutaran audio hanya tersedia untuk berkas yang dikirim melalui paket konten dan disimpan oleh gateway Berkas; URL placeholder eksternal tidak ditampilkan maupun diambil. Ringkasan definisi menampilkan terjemahan yang dilokalkan dalam tata letak ringkas berlabel bahasa, bukan mengekspos kunci penyedia dan JSON mentah.
 
 ## Commit
 
@@ -150,3 +154,4 @@ Pembaruan kartu kini mempertahankan referensi tak berurutan tanpa posisi yang ti
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/79cbfa05a5409f780bb42f4ea5ac7c0f8ec67f01
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e4daa661ee08b05a48ecba33182c490d4352e660
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/274fc626dbea45d3c8d66c82b98f1a0ba87a8052
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/024d7dfe05f713f390d7b9fb00410591018c9bf6

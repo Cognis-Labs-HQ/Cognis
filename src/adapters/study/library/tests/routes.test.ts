@@ -240,7 +240,7 @@ test("Library browser resolves labels from localized schema metadata", async () 
     );
 });
 
-test("remote audio cache remains behind authenticated entry access", async () => {
+test("packaged audio remains behind authenticated entry access", async () => {
     let requestedEntry = "";
     let requestedField = "";
     const route = createLibraryRoutes(

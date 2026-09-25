@@ -455,10 +455,7 @@ export class LibraryService implements LibraryCapability {
                 const values = Array.isArray(value) ? value : [value];
                 const stored = [];
                 for (const audioPath of values) {
-                    if (
-                        typeof audioPath !== "string" ||
-                        audioPath.startsWith("https://")
-                    ) {
+                    if (typeof audioPath !== "string") {
                         stored.push(audioPath);
                         continue;
                     }
@@ -635,15 +632,15 @@ export class LibraryService implements LibraryCapability {
             entry.layer,
         );
         const field = (layer.fields ?? []).find(({ id }) => id === fieldId);
-        const remoteUrl = entry.fields?.[fieldId];
-        if (field?.type !== "audio" || typeof remoteUrl !== "string")
+        const storedAudio = entry.fields?.[fieldId];
+        if (
+            field?.type !== "audio" ||
+            typeof storedAudio !== "string" ||
+            !storedAudio.startsWith("file:")
+        )
             throw new Error("audio_not_found");
         if (!this.audioCache) throw new Error("file_gateway_unavailable");
-        if (remoteUrl.startsWith("file:"))
-            return this.audioCache.readStored(remoteUrl.slice("file:".length));
-        if (!remoteUrl.startsWith("https://"))
-            throw new Error("invalid_audio_url");
-        return this.audioCache.read(remoteUrl);
+        return this.audioCache.readStored(storedAudio.slice("file:".length));
     }
 
     async resolve(
