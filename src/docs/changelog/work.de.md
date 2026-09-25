@@ -118,6 +118,10 @@ Kompatible Inhaltsanbieter können jetzt lokalisierte Nachschlagedienste über d
 
 Die Modulaktivierung erkennt jetzt öffentliche Serverfähigkeiten, die über den System-ctx bereitgestellt werden. Japanische und andere Sprachmodule können `study:library:provider` voraussetzen, ohne einen falschen Konflikt wegen einer nicht verfügbaren Fähigkeit zu erhalten; private Fähigkeiten bleiben verborgen.
 
+## Zuverlässige Bibliotheksformulare
+
+Kartenaktualisierungen behalten ungeordnete Referenzen jetzt ohne ungültige Positionen. Beziehungsregister sind nur in der Ansicht sichtbar, zusammengesetzte Zeichen verwenden ein freies Eingabefeld und ein Aussprachekarussell, Nachschlageaktionen erscheinen nach der Eingabe in derselben Zeile, Strichmuster bleiben anbietereigen und verborgen, Steuerelemente zum Hinzufügen von Definitionen sind größer und neutral, Audioübertragungsfehler werden normalisiert und Vorschauen umschließen ihren Inhalt vollständig.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -145,3 +149,4 @@ Die Modulaktivierung erkennt jetzt öffentliche Serverfähigkeiten, die über de
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8893689
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/79cbfa05a5409f780bb42f4ea5ac7c0f8ec67f01
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e4daa661ee08b05a48ecba33182c490d4352e660
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/274fc626dbea45d3c8d66c82b98f1a0ba87a8052

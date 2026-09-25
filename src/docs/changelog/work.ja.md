@@ -118,6 +118,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 モジュール有効化が system ctx を通じて提供された公開サーバー機能を認識するようになりました。日本語などの言語モジュールは、機能が利用できないという誤った競合を受けずに `study:library:provider` を必須指定できます。非公開機能は引き続き隠されます。
 
+## 信頼できる Library フォーム
+
+カード更新で、順序のない参照を無効な位置情報なしに保持するようになりました。関係タブは表示専用になり、複合文字では自由な入力欄と発音カルーセルを使います。検索操作は入力後に同じ行へ現れ、ストロークパターンはプロバイダー所有の非表示データとして維持されます。定義追加操作は大きなニュートラル表示になり、音声転送エラーを正規化し、プレビュー背景が内容全体を包みます。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -145,3 +149,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8893689
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/79cbfa05a5409f780bb42f4ea5ac7c0f8ec67f01
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e4daa661ee08b05a48ecba33182c490d4352e660
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/274fc626dbea45d3c8d66c82b98f1a0ba87a8052

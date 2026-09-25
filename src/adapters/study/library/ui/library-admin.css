@@ -217,11 +217,17 @@ body[data-theme="dark"] .library-quick-search-control img {
     min-width: 0;
 }
 
-.library-composer-suggestions {
+.library-composer-assistance,
+.library-composer-suggestions,
+.library-composer-lookups {
     display: flex;
     flex-wrap: wrap;
     gap: 0.45rem;
     align-items: center;
+}
+
+.library-composer-lookups[hidden] {
+    display: none;
 }
 
 .library-composer-unmatched {
@@ -371,9 +377,12 @@ body[data-theme="light"]
 }
 
 .library-definition-add {
-    width: 2.75rem;
-    height: 2.75rem;
-    font-size: 1.5rem;
+    width: max-content;
+    min-width: 3rem;
+    min-height: 3rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 2rem;
+    line-height: 1;
 }
 
 .library-composition-block {

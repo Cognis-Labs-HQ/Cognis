@@ -61,6 +61,31 @@ test("remote audio rejects non-HTTPS and private destinations", async () => {
     );
 });
 
+test("remote transport failures are normalized and logged", async () => {
+    const events: Array<{
+        level: string;
+        message: string;
+        metadata?: Record<string, unknown>;
+    }> = [];
+    const cache = new LibraryAudioCache(
+        memoryFiles().client,
+        async () => {
+            throw new TypeError("fetch failed");
+        },
+        async () => ["93.184.216.34"],
+        (level, message, metadata) => {
+            events.push({ level, message, metadata });
+        },
+    );
+
+    await assert.rejects(
+        cache.read("https://audio.example.test/a.mp3"),
+        /audio_download_failed/,
+    );
+    assert.equal(events[0]?.level, "error");
+    assert.equal(events[0]?.metadata?.hostname, "audio.example.test");
+});
+
 test("pack audio round-trips through the Files gateway", async () => {
     const files = memoryFiles();
     const cache = new LibraryAudioCache(files.client);

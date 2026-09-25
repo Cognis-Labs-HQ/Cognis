@@ -105,8 +105,10 @@
     display: block;
     transform: none;
     pointer-events: none;
-    inline-size: fit-content;
+    box-sizing: border-box;
+    inline-size: max-content;
     min-inline-size: 0;
+    max-inline-size: min(18rem, calc(100vw - 1rem));
     white-space: normal;
 }
 

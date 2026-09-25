@@ -87,6 +87,11 @@ export class LibraryAudioCache {
             (await lookup(hostname, { all: true })).map(
                 ({ address }) => address,
             ),
+        private readonly log?: (
+            level: string,
+            message: string,
+            metadata?: Record<string, unknown>,
+        ) => void | Promise<void>,
     ) {}
 
     async store(
@@ -132,10 +137,21 @@ export class LibraryAudioCache {
         let url = await validateRemoteUrl(remoteUrl, this.resolveHost);
         let response: Response | undefined;
         for (let redirect = 0; redirect <= REDIRECT_LIMIT; redirect += 1) {
-            response = await this.fetcher(url, {
-                redirect: "manual",
-                signal: AbortSignal.timeout(15_000),
-            });
+            try {
+                response = await this.fetcher(url, {
+                    redirect: "manual",
+                    signal: AbortSignal.timeout(15_000),
+                });
+            } catch (error) {
+                await this.log?.("error", "Library audio download failed.", {
+                    component: "study-library",
+                    operation: "download-audio",
+                    hostname: url.hostname,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+                throw new Error("audio_download_failed");
+            }
             if (![301, 302, 303, 307, 308].includes(response.status)) break;
             const location = response.headers.get("location");
             if (!location || redirect === REDIRECT_LIMIT)

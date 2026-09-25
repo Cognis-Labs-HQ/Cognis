@@ -69,6 +69,9 @@ export async function bootstrapStudyAdapter(
             namespaceId: "study-library-audio",
             callerComponent: "study-library",
         }),
+        undefined,
+        undefined,
+        ctx.log,
     );
     const store = new LibraryStore(databaseExecutor);
     try {

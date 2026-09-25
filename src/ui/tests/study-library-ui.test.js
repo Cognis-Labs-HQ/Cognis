@@ -86,6 +86,8 @@ test("Study Library composer exposes provider-owned raw-input lookup", () => {
     );
     assert.match(createEntrySource, /data-library-lookup-provider/);
     assert.match(createEntrySource, /bindLookupProviders/);
+    assert.match(createEntrySource, /data-library-free-text/);
+    assert.match(createEntrySource, /lookups\.hidden = !text/);
     assert.match(createEntrySource, /suggestion\.references/);
     assert.match(adapterSource, /registerLookupProvider/);
 });
@@ -494,6 +496,9 @@ test("Study Library administration exposes contract-safe editing", () => {
     );
     assert.match(adminInteractionsSource, /library_content_class/);
     assert.match(adminInteractionsSource, /const isDefinition/);
+    assert.match(adminInteractionsSource, /field\.type === "strokePattern"/);
+    assert.match(adminInteractionsSource, /relationship\.ordered/);
+    assert.match(adminInteractionsSource, /showRelationshipTab: readOnly/);
     assert.match(
         adminInteractionsSource,
         /name="hidden" type="hidden" value="true"/,

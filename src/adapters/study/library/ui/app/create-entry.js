@@ -165,9 +165,13 @@ export async function openCreateEntryPopup({
         "lexicalUnit",
         "orderedLexicalSequence",
     ].includes(layer.semanticRole);
+    const supportsRawInput = layer.semanticRole === "compoundWritingUnit";
+    const lookupActions = `<div class="library-composer-lookups" hidden>${lookupProviders.map((provider) => `<button class="btn-neutral" type="button" data-library-lookup-provider="${escapeHtml(provider.id)}">${escapeHtml(i18n.t("gateway.study.library_lookup_with").replace("{{ service }}", localizedLabel(provider.metadata, document.documentElement.lang) || provider.id))}</button>`).join("")}</div>`;
     const compositionInput = supportsTextComposition
-        ? `<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><span class="library-composition-input"><span class="library-composition-blocks" data-library-composition-blocks aria-live="polite"></span><input data-library-composer-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></span></label><div data-library-composer-suggestions aria-live="polite"></div><div class="library-composer-lookups">${lookupProviders.map((provider) => `<button class="btn-neutral" type="button" data-library-lookup-provider="${escapeHtml(provider.id)}">${escapeHtml(i18n.t("gateway.study.library_lookup_with").replace("{{ service }}", localizedLabel(provider.metadata, document.documentElement.lang) || provider.id))}</button>`).join("")}</div></section>`
-        : "";
+        ? `<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><span class="library-composition-input"><span class="library-composition-blocks" data-library-composition-blocks aria-live="polite"></span><input data-library-composer-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></span></label><div class="library-composer-assistance"><div data-library-composer-suggestions aria-live="polite"></div>${lookupActions}</div></section>`
+        : supportsRawInput
+          ? `<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><input data-library-composer-text data-library-free-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></label><div class="library-composer-assistance">${lookupActions}</div></section>`
+          : "";
     const publishControls = `<input name="scope" type="hidden" value="user">${
         access.readable.some(({ scope }) => scope === "global")
             ? `<label class="library-admin-checkbox library-publish-choice"><input name="publishEveryone" type="checkbox" class="choice-checkbox"><span>${escapeHtml(i18n.t("gateway.study.library_publish_everyone"))}</span>${renderInfoTooltip(i18n.t("gateway.study.library_publish_everyone_info"), i18n.t("ui.reuse.more_information"))}</label>`
@@ -192,13 +196,15 @@ export async function openCreateEntryPopup({
         publishControls,
         {
             labelText:
-                localizedLabel(constructor.label, schema.language) ||
-                i18n.t("gateway.study.library_admin_label"),
+                layer.semanticRole === "compoundWritingUnit"
+                    ? i18n.t("gateway.study.library_composer_text")
+                    : localizedLabel(constructor.label, schema.language) ||
+                      i18n.t("gateway.study.library_admin_label"),
             includeAlwaysShowDefinition:
                 constructor.allowAlwaysShowDefinition === true,
             includeHidden: false,
             relationshipCarousels: true,
-            generatedLabel: supportsTextComposition,
+            generatedLabel: supportsTextComposition || supportsRawInput,
             persistentExtra: true,
             allowDefinitionCreate: layer.semanticRole !== "definition",
         },
@@ -336,6 +342,7 @@ export async function openCreateEntryPopup({
                 schema,
                 i18n,
             );
+            if (supportsRawInput) bindRawInput(form);
             bindLookupProviders(form, draft, i18n);
             form.querySelector(
                 "[data-library-add-definition]",
@@ -547,6 +554,10 @@ function applyLookupFields(form, fields) {
     Object.entries(fields ?? {}).forEach(([fieldId, value]) => {
         const control = form.elements[`field:${fieldId}`];
         if (!control) return;
+        if (control.hasAttribute("data-library-provider-field")) {
+            control.libraryFieldValue = value;
+            return;
+        }
         if (control instanceof RadioNodeList) {
             Array.from(control).forEach((option) => {
                 option.checked = Array.isArray(value)
@@ -567,7 +578,11 @@ function applyLookupFields(form, fields) {
             });
             return;
         }
-        control.value = Array.isArray(value) ? value.join("\u001f") : value;
+        control.value = Array.isArray(value)
+            ? value.join("\u001f")
+            : value && typeof value === "object"
+              ? JSON.stringify(value)
+              : value;
         const tagList = control
             .closest("[data-library-tag-field]")
             ?.querySelector(".library-tag-list");
@@ -584,6 +599,18 @@ function applyLookupFields(form, fields) {
             );
         }
     });
+}
+
+function bindRawInput(form) {
+    const input = form.querySelector("[data-library-free-text]");
+    const lookups = form.querySelector(".library-composer-lookups");
+    const sync = () => {
+        const value = input.value.trim();
+        form.elements.label.value = value;
+        if (lookups) lookups.hidden = !value;
+    };
+    input.addEventListener("input", sync);
+    sync();
 }
 
 function bindLookupProviders(form, draft, i18n) {
@@ -617,9 +644,15 @@ function bindLookupProviders(form, draft, i18n) {
                     if (item && !item.classList.contains("is-selected"))
                         item.click();
                 }
-                input.value = "";
-                input.dispatchEvent(new Event("input", { bubbles: true }));
-                if (suggestion.label || !(suggestion.references ?? []).length)
+                if (!input.hasAttribute("data-library-free-text")) {
+                    input.value = "";
+                    input.dispatchEvent(new Event("input", { bubbles: true }));
+                }
+                if (
+                    input.hasAttribute("data-library-free-text") ||
+                    suggestion.label ||
+                    !(suggestion.references ?? []).length
+                )
                     form.elements.label.value = suggestion.label ?? label;
                 showToast(i18n.t("gateway.study.library_lookup_applied"), {
                     variant: "success",
@@ -639,6 +672,7 @@ function bindTextComposition(form, entries, layer, schema, i18n) {
     const input = form.querySelector("[data-library-composer-text]");
     const output = form.querySelector("[data-library-composer-suggestions]");
     const blocks = form.querySelector("[data-library-composition-blocks]");
+    const lookups = form.querySelector(".library-composer-lookups");
     if (!input || !output || !blocks) return { validate: () => true };
     const relationships = layer.relationships ?? [];
     const candidates = relationships
@@ -740,6 +774,7 @@ function bindTextComposition(form, entries, layer, schema, i18n) {
     };
     const renderSuggestions = () => {
         const text = input.value.trim();
+        if (lookups) lookups.hidden = !text;
         const normalizedText = text.normalize("NFKC");
         const matches = candidates.filter(
             ({ label }) => label.trim().normalize("NFKC") === normalizedText,

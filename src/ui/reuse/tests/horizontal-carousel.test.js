@@ -4,6 +4,13 @@ import {
     mountHorizontalCarousels,
     renderHorizontalCarousel,
 } from "../horizontal-carousel.js";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const stylesheet = readFileSync(
+    resolve("src/ui/styles/reuse/horizontal-carousel.css"),
+    "utf8",
+);
 
 test("horizontal carousels preserve ordered selections and an add affordance", () => {
     const html = renderHorizontalCarousel({
@@ -31,4 +38,6 @@ test("horizontal carousel mounting uses a body-level preview portal", () => {
     assert.match(mountHorizontalCarousels.toString(), /is-portal/);
     assert.match(mountHorizontalCarousels.toString(), /previewOverlay\.show/);
     assert.match(mountHorizontalCarousels.toString(), /relatedTarget/);
+    assert.match(stylesheet, /inline-size:\s*max-content/);
+    assert.match(stylesheet, /max-inline-size:/);
 });

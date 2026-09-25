@@ -424,6 +424,7 @@ export function createLibraryRoutes(
             await log?.("error", "Library request failed.", {
                 component: "study-library",
                 operation: req.method ?? "unknown",
+                path: url.pathname,
                 accountId: actor.accountId,
                 code,
             });

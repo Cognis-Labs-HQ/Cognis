@@ -118,6 +118,10 @@ Compatible content providers can now register localized lookup services through 
 
 Module enablement now recognizes public server capabilities contributed through the system ctx. Japanese and other language modules can require `study:library:provider` without receiving a false unavailable-capability conflict, while private capabilities remain hidden.
 
+## Reliable Library forms
+
+Card updates now preserve unordered references without invalid positions. Relationship tabs are view-only, compound characters use a free Input field and pronunciation carousel, lookup actions appear inline after typing, stroke patterns stay provider-owned and hidden, definition add controls are larger and neutral, audio transport failures are normalized, and hover previews fully enclose their content.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -145,3 +149,4 @@ Module enablement now recognizes public server capabilities contributed through 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8893689
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/79cbfa05a5409f780bb42f4ea5ac7c0f8ec67f01
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e4daa661ee08b05a48ecba33182c490d4352e660
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/274fc626dbea45d3c8d66c82b98f1a0ba87a8052
