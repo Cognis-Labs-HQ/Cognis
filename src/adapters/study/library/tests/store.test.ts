@@ -3,6 +3,7 @@ import test from "node:test";
 import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { LibraryStore } from "../store.js";
+import { contentEntryId } from "../content-pack.js";
 import type { LibraryContentPackPlan } from "../types.js";
 
 test("new releases may replace a schema owned only by the same content pack", async () => {
@@ -242,8 +243,7 @@ test("authoritative content packs prune omitted records by default", async () =>
             if (
                 command.option === "SELECT" &&
                 command.table === "study_library_entries" &&
-                command.columns?.length === 1 &&
-                command.columns[0] === "id" &&
+                command.columns?.includes("provider_modified") &&
                 command.where?.some((clause) => clause.column === "created_by")
             ) {
                 return { rows: [{ id: "removed-entry" }] };
@@ -298,6 +298,84 @@ test("authoritative content packs prune omitted records by default", async () =>
             (command) =>
                 command.option === "DELETE" &&
                 command.table === "study_library_viewed_entries",
+        ),
+        false,
+    );
+});
+
+test("content packs preserve provider records after a user modifies them", async () => {
+    const commands: StructuredDbCommand[] = [];
+    const manifest = {
+        id: "study-language-ja",
+        publisher: "Cognis Labs HQ",
+        version: "2.0.0",
+        contentRevision: "2",
+        namespace: "ja",
+        schema: "schema.json",
+        content: "data",
+        license: { id: "CC-BY-4.0" },
+    };
+    const schema = {
+        id: "japanese",
+        version: 1,
+        namespace: "ja",
+        language: "ja",
+        metadata: { labels: { en: "Japanese" } },
+        layers: [
+            { id: "characters", metadata: { labels: { en: "Characters" } } },
+        ],
+    };
+    const protectedId = contentEntryId(manifest, "neko");
+    const db: DbExecutor = {
+        ensureTable: async () => {},
+        transaction: async (callback) => callback(db),
+        executeCommand: async (command) => {
+            commands.push(command);
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_entries" &&
+                command.columns?.includes("provider_modified") &&
+                command.where?.some(({ column }) => column === "created_by")
+            ) {
+                return {
+                    rows: [{ id: protectedId, provider_modified: true }],
+                };
+            }
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_schemas"
+            ) {
+                return { rows: [{ schema_json: JSON.stringify(schema) }] };
+            }
+            if (command.option === "SELECT") return { rows: [] };
+            return { rowCount: 1 };
+        },
+    };
+    await new LibraryStore(db).ingestContentPack({
+        root: "/content",
+        manifest,
+        schema,
+        digest: "digest-two",
+        records: [
+            { id: "neko", layer: "characters", label: "Provider version" },
+        ],
+        assets: [],
+    });
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "INSERT" &&
+                command.table === "study_library_entries" &&
+                command.values.id === protectedId,
+        ),
+        false,
+    );
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "DELETE" &&
+                command.table === "study_library_references" &&
+                command.where?.some(({ value }) => value === protectedId),
         ),
         false,
     );
@@ -809,18 +887,29 @@ test("entry updates replace editable fields and relationships atomically", async
             return { rowCount: 1 };
         },
     };
-    await new LibraryStore(db).update("entry-1", {
-        schemaId: "japanese",
-        schemaVersion: 1,
-        layer: "words",
-        label: "updated",
-        fields: {},
-        references: [{ entryId: "definition-1", relation: "means" }],
-    });
+    await new LibraryStore(db).update(
+        "entry-1",
+        {
+            schemaId: "japanese",
+            schemaVersion: 1,
+            layer: "words",
+            label: "updated",
+            fields: {},
+            references: [{ entryId: "definition-1", relation: "means" }],
+        },
+        true,
+    );
     assert.ok(
         commands.some(
             (command) =>
                 command.option === "UPDATE" && command.set.label === "updated",
+        ),
+    );
+    assert.ok(
+        commands.some(
+            (command) =>
+                command.option === "UPDATE" &&
+                command.set.provider_modified === true,
         ),
     );
     assert.ok(

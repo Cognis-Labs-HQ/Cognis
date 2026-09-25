@@ -195,6 +195,10 @@ function mountEditableRelationshipCarousels(
     schema,
     layer,
 ) {
+    const pronunciationRelationshipIds = new Set(
+        layer.fields?.find(({ id }) => id === "pronunciation")?.input
+            ?.linkRelationships ?? [],
+    );
     const controller = new AbortController();
     overlay.addEventListener("close", () => controller.abort(), { once: true });
     mountHorizontalCarousels(form, {
@@ -212,28 +216,27 @@ function mountEditableRelationshipCarousels(
                 );
                 if (option) select.append(option);
             });
-            const relationship = layer.relationships?.find(
-                (candidate) => candidate.id === id,
-            );
-            const targetLayer = schema.layers.find(
-                (candidate) => candidate.id === relationship?.targetLayer,
-            );
             const pronunciation = form.elements["field:pronunciation"];
-            if (
-                pronunciation &&
-                layer.semanticRole === "compoundWritingUnit" &&
-                targetLayer?.semanticRole === "atomicWritingUnit"
-            ) {
-                pronunciation.value = values
+            if (pronunciation && pronunciationRelationshipIds.has(id)) {
+                pronunciation.value = Array.from(pronunciationRelationshipIds)
+                    .flatMap((relationshipId) =>
+                        Array.from(
+                            form.elements[`relationship:${relationshipId}`]
+                                ?.selectedOptions ?? [],
+                            (option) => option.value,
+                        ),
+                    )
                     .map((value) =>
                         entries.find((candidate) => candidate.id === value),
                     )
                     .filter(Boolean)
                     .map((candidate) => {
-                        const values = candidate.fields?.pronunciation;
+                        const candidatePronunciation =
+                            candidate.fields?.pronunciation;
                         return (
-                            (Array.isArray(values) ? values[0] : values) ||
-                            candidate.label
+                            (Array.isArray(candidatePronunciation)
+                                ? candidatePronunciation[0]
+                                : candidatePronunciation) || candidate.label
                         );
                     })
                     .join("");
@@ -253,18 +256,12 @@ function relationshipEditor(
         hiddenOnly = false,
         addLabel = "Add",
         allowAdd = true,
+        ordersPronunciation = false,
     } = {},
 ) {
     const targetLayer = schema.layers.find(
         ({ id }) => id === relationship.targetLayer,
     );
-    const sourceLayer = schema.layers.find(({ id }) => id === entry.layer);
-    const pronunciationField = targetLayer?.fields?.find(
-        ({ id }) => id === "pronunciation",
-    );
-    const usesPronunciation =
-        sourceLayer?.semanticRole === "compoundWritingUnit" &&
-        targetLayer?.semanticRole === "atomicWritingUnit";
     const label =
         localizedLabel(targetLayer?.metadata, language) ||
         relationship.targetLayer;
@@ -276,7 +273,7 @@ function relationshipEditor(
     const selectedValues = (entry.references ?? [])
         .filter(({ relation }) => relation === relationship.id)
         .sort((left, right) => {
-            if (usesPronunciation) {
+            if (ordersPronunciation) {
                 const pronunciationIndex = (reference) => {
                     const candidate = entries.find(
                         ({ id }) => id === reference.entryId,
@@ -365,27 +362,43 @@ export function editorBody(
         layer?.semanticRole === "definition"
             ? layer.definitionLocalization?.stringKeyField
             : undefined;
-    const pronunciationRelationship = (layer?.relationships ?? []).find(
-        (relationship) =>
-            layer.semanticRole === "compoundWritingUnit" &&
-            schema.layers.find(({ id }) => id === relationship.targetLayer)
-                ?.semanticRole === "atomicWritingUnit",
+    const pronunciationField = layer?.fields?.find(
+        ({ id }) => id === "pronunciation",
+    );
+    const pronunciationRelationshipIds = new Set(
+        pronunciationField?.input?.linkRelationships ?? [],
+    );
+    const pronunciationRelationships = (layer?.relationships ?? []).filter(
+        ({ id }) => pronunciationRelationshipIds.has(id),
     );
     const inlinePronunciationCarousel =
-        options.inlinePronunciationCarousel && pronunciationRelationship
-            ? relationshipEditor(
-                  pronunciationRelationship,
-                  entry,
-                  entries,
-                  schema,
-                  schema.language,
-                  { carousel: true, allowAdd: false },
-              )
+        options.inlinePronunciationCarousel &&
+        pronunciationRelationships.length > 0
+            ? pronunciationRelationships
+                  .map((relationship) =>
+                      relationshipEditor(
+                          relationship,
+                          entry,
+                          entries,
+                          schema,
+                          schema.language,
+                          {
+                              carousel: true,
+                              allowAdd: false,
+                              ordersPronunciation: true,
+                          },
+                      ),
+                  )
+                  .join("")
             : "";
     const fields = (layer?.fields ?? [])
         .filter((field) => field.id !== immutableStringKeyField)
         .map((field) => {
-            if (field.id === "pronunciation" && pronunciationRelationship) {
+            if (
+                field.id === "pronunciation" &&
+                options.inlinePronunciationCarousel &&
+                pronunciationRelationships.length > 0
+            ) {
                 const value = entry.fields?.[field.id];
                 const fieldLabel = localizedLabel(
                     field.metadata,
@@ -514,7 +527,7 @@ export function editorBody(
                   .filter(
                       (relationship) =>
                           !options.inlinePronunciationCarousel ||
-                          relationship.id !== pronunciationRelationship?.id,
+                          !pronunciationRelationshipIds.has(relationship.id),
                   )
                   .map((relationship) =>
                       relationshipEditor(

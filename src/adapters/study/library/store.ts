@@ -122,6 +122,12 @@ export class LibraryStore {
                     default: "[]",
                 },
                 { name: "source_record_id", type: "text" },
+                {
+                    name: "provider_modified",
+                    type: "boolean",
+                    notNull: true,
+                    default: false,
+                },
                 { name: "display_id", type: "integer" },
                 {
                     name: "hidden",
@@ -296,7 +302,7 @@ export class LibraryStore {
             const previousEntries = await db.executeCommand({
                 option: "SELECT",
                 table: "study_library_entries",
-                columns: ["id"],
+                columns: ["id", "provider_modified"],
                 where: [
                     {
                         column: "created_by",
@@ -307,6 +313,15 @@ export class LibraryStore {
             });
             const previousEntryIds = new Set(
                 (previousEntries.rows ?? []).map((row) => String(row.id)),
+            );
+            const providerModifiedEntryIds = new Set(
+                (previousEntries.rows ?? [])
+                    .filter(
+                        (row) =>
+                            row.provider_modified === true ||
+                            Number(row.provider_modified) === 1,
+                    )
+                    .map((row) => String(row.id)),
             );
             newRecordCount = new Set(
                 Array.from(recordIdentity.values(), ({ canonicalId }) =>
@@ -376,7 +391,11 @@ export class LibraryStore {
             if (manifest.pruneOmittedRecords !== false) {
                 for (const row of previousEntries.rows ?? []) {
                     const previousId = String(row.id);
-                    if (importedSourceIds.has(previousId)) continue;
+                    if (
+                        importedSourceIds.has(previousId) ||
+                        providerModifiedEntryIds.has(previousId)
+                    )
+                        continue;
                     for (const column of [
                         "source_entry_id",
                         "target_entry_id",
@@ -395,6 +414,7 @@ export class LibraryStore {
                 }
             }
             for (const sourceEntryId of importedSourceIds) {
+                if (providerModifiedEntryIds.has(sourceEntryId)) continue;
                 await db.executeCommand({
                     option: "DELETE",
                     table: "study_library_references",
@@ -406,6 +426,8 @@ export class LibraryStore {
             for (const record of records) {
                 const identity = recordIdentity.get(record.id);
                 if (!identity) continue;
+                if (providerModifiedEntryIds.has(identity.canonicalId))
+                    continue;
                 const layer = schema.layers.find(
                     ({ id }) => id === record.layer,
                 )!;
@@ -509,6 +531,7 @@ export class LibraryStore {
             for (const record of records) {
                 const source = recordIdentity.get(record.id);
                 if (!source) continue;
+                if (providerModifiedEntryIds.has(source.canonicalId)) continue;
                 for (const [index, reference] of (
                     record.references ?? []
                 ).entries()) {
@@ -941,7 +964,11 @@ export class LibraryStore {
         });
         return (await this.get(id))!;
     }
-    async update(id: string, input: LibraryEntryInput): Promise<LibraryEntry> {
+    async update(
+        id: string,
+        input: LibraryEntryInput,
+        providerModified = false,
+    ): Promise<LibraryEntry> {
         await this.db.transaction(async (transactionDb) => {
             await transactionDb.executeCommand({
                 option: "UPDATE",
@@ -957,6 +984,7 @@ export class LibraryStore {
                         `${input.label} ${(input.tags ?? []).join(" ")} ${JSON.stringify(input.fields ?? {})}`
                             .normalize()
                             .toLocaleLowerCase(),
+                    provider_modified: providerModified,
                     updated_at: new Date().toISOString(),
                 },
                 where: [{ column: "id", value: id }],

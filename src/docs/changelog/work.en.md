@@ -134,6 +134,10 @@ Drawing feedback now animates only the canvas stage, so ending an animation cann
 
 Authenticated pages allow browser-generated media URLs, so newly uploaded card audio can play without violating Content Security Policy. Audio editors show the current filename, and speaker icons follow the application theme. Compound-character pronunciation carousels now replace the tag-entry control inside the Pronunciation field, use provider target-layer names, and number characters by their order in the card text rather than stale relationship positions.
 
+## Provider-linked pronunciation and durable card edits
+
+Pronunciation fields linked to provider relationships now render their ordered selectors directly in the field instead of retaining free-form tag input. Once a user changes a provider-installed card, later provider reconciliation preserves that card and its relationships.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -167,3 +171,4 @@ Authenticated pages allow browser-generated media URLs, so newly uploaded card a
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/f5214c148cab6eac78e3f8ee8aed3847ffba2201
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bec24655948ca3a64ea6ab4f95f7897aecee68ac
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1501e390dce637fb660c5b540a4235e3e7c98f29
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/71c842e2

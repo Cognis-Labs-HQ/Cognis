@@ -134,6 +134,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 認証済みページでブラウザ生成のメディア URL を許可し、新しくアップロードしたカード音声をコンテンツセキュリティポリシー違反なしで再生できるようにしました。音声エディターには現在のファイル名を表示し、スピーカーアイコンはアプリのテーマに従います。複合文字の発音カルーセルは発音フィールド内のタグ入力を置き換え、プロバイダーの対象レイヤー名を使用し、古い関係位置ではなくカード本文内の文字順で番号を付けます。
 
+## プロバイダー連携の発音と保持されるカード編集
+
+プロバイダーの関係に紐づいた発音フィールドでは、自由入力のタグ欄ではなく、順序付きの選択カルーセルをフィールド内に直接表示します。ユーザーがプロバイダー導入済みカードを変更した後は、以降のプロバイダー同期でもそのカードと関係が保持されます。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -167,3 +171,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/f5214c148cab6eac78e3f8ee8aed3847ffba2201
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bec24655948ca3a64ea6ab4f95f7897aecee68ac
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1501e390dce637fb660c5b540a4235e3e7c98f29
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/71c842e2

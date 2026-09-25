@@ -928,12 +928,16 @@ export class LibraryService implements LibraryCapability {
             targets.set(target.id, target);
         }
         validateReferences(schema, input.layer, references, targets);
-        return this.store.update(entryId, {
-            ...input,
-            label: input.label.trim(),
-            fields,
-            references,
-        });
+        return this.store.update(
+            entryId,
+            {
+                ...input,
+                label: input.label.trim(),
+                fields,
+                references,
+            },
+            current.sourceRecordId !== undefined,
+        );
     }
 
     async deleteEntries(
