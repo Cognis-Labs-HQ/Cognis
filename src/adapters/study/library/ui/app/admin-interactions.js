@@ -28,7 +28,11 @@ export function inputForField(field, value, language, i18n) {
     if (control === "audioFile") {
         const namespace = field.input?.file?.namespace ?? "";
         const prefix = field.input?.file?.prefix ?? `${language}/`;
-        return `<label class="library-audio-field" data-library-audio-field data-namespace="${escapeHtml(namespace)}" data-prefix="${escapeHtml(prefix)}"><span>${escapeHtml(label)} (${escapeHtml(i18n.t("gateway.study.library_optional"))})</span><input name="${escapeHtml(name)}" type="hidden" value="${escapeHtml(value ?? "")}"><input type="file" accept="audio/mpeg,audio/ogg,audio/wav,audio/webm,audio/mp4"></label>`;
+        const filename =
+            typeof value === "string" && value.startsWith("file:")
+                ? value.slice("file:".length).split("/").at(-1)
+                : "";
+        return `<label class="library-audio-field" data-library-audio-field data-namespace="${escapeHtml(namespace)}" data-prefix="${escapeHtml(prefix)}"><span>${escapeHtml(label)} (${escapeHtml(i18n.t("gateway.study.library_optional"))})</span><span class="library-audio-filename" data-library-audio-filename${filename ? "" : " hidden"}>${escapeHtml(filename)}</span><input name="${escapeHtml(name)}" type="hidden" value="${escapeHtml(value ?? "")}"><input type="file" accept="audio/mpeg,audio/ogg,audio/wav,audio/webm,audio/mp4"></label>`;
     }
     if (control === "singleSelect" || control === "multiSelect")
         return `<label><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}"${control === "multiSelect" ? " multiple" : ""}${field.input?.immutable ? " disabled" : ""}${field.required ? " required" : ""}>${options.map((option) => `<option value="${escapeHtml(option.value)}"${(Array.isArray(value) ? value.includes(option.value) : value === option.value) ? " selected" : ""}>${escapeHtml(localizedLabel(option.metadata, language))}</option>`).join("")}</select></label>`;
@@ -112,6 +116,7 @@ export function bindLibraryEditorControls(form, entry, i18n) {
         const client = uiCtx.capabilities.get("files:uiClient");
         const stored = field.querySelector('input[type="hidden"]');
         const picker = field.querySelector('input[type="file"]');
+        const filename = field.querySelector("[data-library-audio-filename]");
         if (!client) return;
         picker.addEventListener("change", async () => {
             const file = picker.files?.[0];
@@ -122,12 +127,18 @@ export function bindLibraryEditorControls(form, entry, i18n) {
                     .toLocaleLowerCase()
                     .replace(/[^\p{L}\p{N}]+/gu, "-")
                     .replace(/^-|-$/g, "") || "card";
-            const key = `${field.dataset.prefix}${identity}-${entry.id || "new"}.audio`;
+            const safeFilename = file.name
+                .normalize("NFKC")
+                .replace(/[^\p{L}\p{N}._-]+/gu, "-")
+                .replace(/^-|-$/g, "");
+            const key = `${field.dataset.prefix}${identity}-${entry.id || "new"}-${safeFilename || "audio"}`;
             field.dataset.uploading = "true";
             picker.disabled = true;
             try {
                 await client.uploadAudio(field.dataset.namespace, key, file);
                 stored.value = `file:${key}`;
+                filename.textContent = file.name;
+                filename.hidden = false;
                 showToast(
                     i18n.t("gateway.study.library_audio_upload_success"),
                     {
@@ -255,19 +266,41 @@ function relationshipEditor(
         sourceLayer?.semanticRole === "compoundWritingUnit" &&
         targetLayer?.semanticRole === "atomicWritingUnit";
     const label =
-        (usesPronunciation
-            ? localizedLabel(pronunciationField?.metadata, language)
-            : "") ||
-        localizedLabel(relationship.metadata, language) ||
         localizedLabel(targetLayer?.metadata, language) ||
         relationship.targetLayer;
+    const pronunciationText = [entry.fields?.pronunciation]
+        .flat()
+        .filter((value) => typeof value === "string")
+        .join("");
+    const authoredText = pronunciationText || entry.label;
     const selectedValues = (entry.references ?? [])
         .filter(({ relation }) => relation === relationship.id)
-        .sort(
-            (left, right) =>
+        .sort((left, right) => {
+            if (usesPronunciation) {
+                const pronunciationIndex = (reference) => {
+                    const candidate = entries.find(
+                        ({ id }) => id === reference.entryId,
+                    );
+                    const values = [candidate?.fields?.pronunciation]
+                        .flat()
+                        .filter((value) => typeof value === "string");
+                    const indexes = [...values, candidate?.label]
+                        .filter(Boolean)
+                        .map((value) => authoredText.indexOf(value))
+                        .filter((index) => index >= 0);
+                    return indexes.length
+                        ? Math.min(...indexes)
+                        : Number.MAX_SAFE_INTEGER;
+                };
+                const indexDifference =
+                    pronunciationIndex(left) - pronunciationIndex(right);
+                if (indexDifference) return indexDifference;
+            }
+            return (
                 (left.position ?? Number.MAX_SAFE_INTEGER) -
-                (right.position ?? Number.MAX_SAFE_INTEGER),
-        )
+                (right.position ?? Number.MAX_SAFE_INTEGER)
+            );
+        })
         .map(({ entryId }) => entryId);
     const selected = new Set(selectedValues);
     const availableTargets = entries.filter(
@@ -338,12 +371,27 @@ export function editorBody(
             schema.layers.find(({ id }) => id === relationship.targetLayer)
                 ?.semanticRole === "atomicWritingUnit",
     );
+    const inlinePronunciationCarousel =
+        options.inlinePronunciationCarousel && pronunciationRelationship
+            ? relationshipEditor(
+                  pronunciationRelationship,
+                  entry,
+                  entries,
+                  schema,
+                  schema.language,
+                  { carousel: true, allowAdd: false },
+              )
+            : "";
     const fields = (layer?.fields ?? [])
         .filter((field) => field.id !== immutableStringKeyField)
         .map((field) => {
             if (field.id === "pronunciation" && pronunciationRelationship) {
                 const value = entry.fields?.[field.id];
-                return `<input name="field:pronunciation" type="hidden" value="${escapeHtml(Array.isArray(value) ? value.join("") : (value ?? ""))}">`;
+                const fieldLabel = localizedLabel(
+                    field.metadata,
+                    schema.language,
+                );
+                return `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(fieldLabel)}</legend><input name="field:pronunciation" type="hidden" value="${escapeHtml(Array.isArray(value) ? value.join("") : (value ?? ""))}">${inlinePronunciationCarousel}</fieldset>`;
             }
             return inputForField(
                 field,
@@ -463,6 +511,11 @@ export function editorBody(
     const preservedRelationships =
         !options.persistentExtra && !options.showRelationshipTab
             ? (layer?.relationships ?? [])
+                  .filter(
+                      (relationship) =>
+                          !options.inlinePronunciationCarousel ||
+                          relationship.id !== pronunciationRelationship?.id,
+                  )
                   .map((relationship) =>
                       relationshipEditor(
                           relationship,
@@ -583,9 +636,8 @@ export async function openLibraryEntryEditor({
     const layer = schema?.layers.find(({ id }) => id === entry.layer);
     const editor = editorBody(entry, schemas, entries, i18n, "", {
         includeHidden: false,
-        relationshipCarousels: true,
         relationshipCarouselAdd: false,
-        persistentExtra: true,
+        inlinePronunciationCarousel: true,
     });
     let formController;
     return openPopup({
@@ -716,9 +768,8 @@ export function bindAdminLibraryInteractions(
             const layer = schema?.layers.find(({ id }) => id === entry.layer);
             const editor = editorBody(entry, schemas, entries, i18n, "", {
                 showRelationshipTab: readOnly,
-                relationshipCarousels: !readOnly,
                 relationshipCarouselAdd: false,
-                persistentExtra: !readOnly,
+                inlinePronunciationCarousel: !readOnly,
             });
             let formController;
             editorOpen = true;

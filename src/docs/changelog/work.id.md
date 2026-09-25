@@ -132,7 +132,7 @@ Umpan balik menggambar kini hanya menganimasikan area kanvas sehingga akhir anim
 
 ## Pemutaran audio dan penyuntingan pelafalan
 
-Halaman terautentikasi kini mengizinkan URL media yang dibuat peramban sehingga audio kartu yang baru diunggah dapat diputar tanpa melanggar Kebijakan Keamanan Konten. Kartu karakter gabungan yang sudah ada menampilkan pilihan pelafalan berlabel penyedia pada tab Konten. Penyunting mengurutkan referensi yang ditulis sebelum memberi nomor, menghapus karusel duplikat untuk lapisan tujuan yang sama, memperoleh pelafalan langsung dari pilihan karakter terurut, serta menyembunyikan lapisan yang tidak terkait dan kontrol pembuatan bertingkat.
+Halaman terautentikasi mengizinkan URL media yang dibuat peramban sehingga audio kartu yang baru diunggah dapat diputar tanpa melanggar Kebijakan Keamanan Konten. Penyunting audio menampilkan nama berkas saat ini dan ikon pengeras suara mengikuti tema aplikasi. Karusel pelafalan karakter gabungan menggantikan kontrol masukan tag di dalam bidang Pelafalan, memakai nama lapisan tujuan dari penyedia, dan memberi nomor karakter menurut urutannya dalam teks kartu, bukan posisi relasi yang usang.
 
 ## Commit
 
@@ -166,3 +166,4 @@ Halaman terautentikasi kini mengizinkan URL media yang dibuat peramban sehingga 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/281d2ac4dca994692513c8069ad21fe9affebedc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/f5214c148cab6eac78e3f8ee8aed3847ffba2201
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/bec24655948ca3a64ea6ab4f95f7897aecee68ac
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/1501e390dce637fb660c5b540a4235e3e7c98f29

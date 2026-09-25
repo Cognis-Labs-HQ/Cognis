@@ -323,6 +323,25 @@ body[data-theme="dark"] .library-quick-search-control img {
     overflow-wrap: anywhere;
 }
 
+.library-audio-filename {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    overflow-wrap: anywhere;
+}
+
+.library-pronunciation-selector {
+    border: 0;
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    min-width: 0;
+    padding: 0;
+}
+
+.library-pronunciation-selector > legend {
+    margin-block-end: 0.35rem;
+}
+
 .page-action-button[data-page-action-id="study-library:create"] {
     color: #f4f7ff;
     font-size: 2rem;

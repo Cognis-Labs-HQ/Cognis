@@ -507,16 +507,18 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(adminInteractionsSource, /relationship\.ordered/);
     assert.match(adminInteractionsSource, /showRelationshipTab: readOnly/);
     assert.match(adminInteractionsSource, /mountEditableRelationshipCarousels/);
-    assert.match(adminInteractionsSource, /relationshipCarousels: true/);
     assert.match(adminInteractionsSource, /relationshipCarouselAdd: false/);
-    assert.match(adminInteractionsSource, /const carouselEligible/);
-    assert.match(adminInteractionsSource, /targetRole === "atomicWritingUnit"/);
-    assert.match(adminInteractionsSource, /const duplicateTarget/);
-    assert.match(adminInteractionsSource, /left\.position/);
+    assert.match(adminInteractionsSource, /inlinePronunciationCarousel: true/);
+    assert.match(adminInteractionsSource, /const inlinePronunciationCarousel/);
+    assert.match(adminInteractionsSource, /const pronunciationIndex/);
     assert.match(
         adminInteractionsSource,
         /name="field:pronunciation" type="hidden"/,
     );
+    assert.match(adminInteractionsSource, /library-pronunciation-selector/);
+    assert.match(adminInteractionsSource, /data-library-audio-filename/);
+    assert.match(stylesheet, /\.library-audio-filename/);
+    assert.match(stylesheet, /#dashboard-shell\[data-theme="dark"\]/);
     assert.match(
         adminInteractionsSource,
         /name="hidden" type="hidden" value="true"/,
@@ -815,8 +817,6 @@ test("Study Library honors module-defined grid layouts", () => {
 });
 
 test("Study Library renders writing-unit pronunciation and audio", () => {
-    assert.doesNotMatch(source, /function renderPronunciation/);
-    assert.doesNotMatch(source, /library-pronunciation/);
     assert.match(source, /function renderAudio/);
     assert.match(source, /data-library-audio-player/);
     assert.match(source, /data-library-audio-toggle/);

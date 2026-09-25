@@ -972,10 +972,30 @@ body[data-theme="dark"] .library-audio {
 }
 
 .library-audio-speaker .library-speaker-icon-dark,
-body[data-theme="dark"] .library-audio-speaker .library-speaker-icon-light {
+body[data-theme="dark"] .library-audio-speaker .library-speaker-icon-light,
+#dashboard-shell[data-theme="dark"]
+    .library-audio-speaker
+    .library-speaker-icon-light {
     display: none;
 }
 
-body[data-theme="dark"] .library-audio-speaker .library-speaker-icon-dark {
+body[data-theme="dark"] .library-audio-speaker .library-speaker-icon-dark,
+#dashboard-shell[data-theme="dark"]
+    .library-audio-speaker
+    .library-speaker-icon-dark {
     display: block;
+}
+
+body[data-theme="light"] .library-audio-speaker .library-speaker-icon-light,
+#dashboard-shell[data-theme="light"]
+    .library-audio-speaker
+    .library-speaker-icon-light {
+    display: block;
+}
+
+body[data-theme="light"] .library-audio-speaker .library-speaker-icon-dark,
+#dashboard-shell[data-theme="light"]
+    .library-audio-speaker
+    .library-speaker-icon-dark {
+    display: none;
 }

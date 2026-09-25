@@ -62,11 +62,23 @@ export function mountHorizontalCarousels(
         if (!preview) return;
         previewOverlay.show(trigger, preview.innerHTML);
     };
-    const values = (carousel) =>
+    const selectedItems = (carousel) =>
         Array.from(
             carousel.querySelectorAll("[data-carousel-value].is-selected"),
-            (item) => item.dataset.carouselValue,
-        );
+        ).sort((left, right) => {
+            const leftOrder = Number(
+                left.querySelector("[data-carousel-order]").textContent,
+            );
+            const rightOrder = Number(
+                right.querySelector("[data-carousel-order]").textContent,
+            );
+            return (
+                (leftOrder || Number.MAX_SAFE_INTEGER) -
+                (rightOrder || Number.MAX_SAFE_INTEGER)
+            );
+        });
+    const values = (carousel) =>
+        selectedItems(carousel).map((item) => item.dataset.carouselValue);
     const refresh = (carousel) => {
         carousel.querySelectorAll("[data-carousel-value]").forEach((item) => {
             const selected = item.classList.contains("is-selected");
@@ -117,6 +129,9 @@ export function mountHorizontalCarousels(
             }
             const item = event.target.closest("[data-carousel-value]");
             if (!item) return;
+            if (!item.classList.contains("is-selected"))
+                item.querySelector("[data-carousel-order]").textContent =
+                    String(selectedItems(carousel).length + 1);
             item.classList.toggle("is-selected");
             refresh(carousel);
             onChange({
