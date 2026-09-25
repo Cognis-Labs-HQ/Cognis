@@ -6,10 +6,8 @@ Der Drawing-Adapter stellt `study:drawing:open` im Browser-`uiCtx` bereit. Aufru
 
 ## Übungsmodell
 
-Das Feld unterstützt Stift, Touch und Maus, prüft die vom Anbieter festgelegte Strichreihenfolge, bewertet Richtung und Pfadnähe, verfolgt abgeschlossene Striche und bietet Zurücksetzen, ohne die erlernte Hilfestufe rückgängig zu machen.
+Das Feld unterstützt Stift, Touch und Maus, prüft die vom Anbieter festgelegte Strichreihenfolge, bewertet Richtung und Pfadnähe und ersetzt jede akzeptierte Eingabe durch den kanonischen Strich des Anbieters. Zu Beginn eines Versuchs sind alle Striche sichtbar. Nach dem ersten akzeptierten Strich zeigt das Feld nur noch den jeweils nächsten erforderlichen Strich und behält die abgeschlossenen kanonischen Striche bei.
 
-Nur der aktuelle Strich wird vorgegeben. Sein vollständiger Pfad ist anfangs sichtbar; erfolgreiche Striche verkürzen die spätere Hilfe schrittweise, während wiederholte Fehler die aktuelle Vorgabe vom Anfang bis zum Endpunkt verlängern. Zurücksetzen löscht die geschriebenen Striche, ohne den früheren Umfang der Hilfe wiederherzustellen. Falsche Striche lösen ein rotes Schütteln aus; ein vollständiges Zeichen ein grünes Schütteln und einen kurzen erzeugten Erfolgsklang. In der Überschrift stehen Kartentext und lokalisierte Definition nebeneinander; die inhaltsgroße Schließen-Schaltfläche ist in die Öffnungs- und Schließanimation eingebunden.
+Falsche Striche erzeugen eine zurückhaltende rote Rückmeldung, ohne die Öffnungsanimation des Feldes neu zu starten. Nach Abschluss des Zeichens ertönt ein kurzer Erfolgsklang und eine stabile Abschlussanzeige zeigt ein Häkchen, die Fehlerzahl des Versuchs sowie die Aktionen Schließen und Erneut versuchen. Erneut versuchen beginnt einen neuen Versuch mit allen sichtbaren Vorgaben. Zeigereingaben werden höchstens einmal pro Animationsbild gezeichnet, damit die Zeichenfläche stabil bleibt.
 
-Die Überschrift wird an der gerenderten Zeichenfläche gemessen und direkt darüber zentriert. Rückmeldungen verwenden zurückhaltende Verschiebungen und Drehungen; jeder akzeptierte Eingabestrich wird durch den kanonischen Strichpfad des Anbieters ersetzt, damit das fertige Zeichen optisch korrekt bleibt.
-
-Die Führung zeigt immer einen vollständigen kanonischen Strich. Wenn die Unterstützung abnimmt, werden ganze Führungen ausgelassen statt verkürzt; wiederholte Fehler stellen die nächste vollständige Führung wieder her. Zeigereingaben werden höchstens einmal pro Animationsbild gezeichnet, damit das Feld stabil bleibt.
+Die Überschrift wird an der gerenderten Zeichenfläche gemessen und direkt darüber zentriert. Kartentext und lokalisierte Definition bleiben ausgerichtet, und die inhaltsgroße Schließen-Schaltfläche verwendet eine eigene Schließanimation.

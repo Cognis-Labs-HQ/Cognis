@@ -126,6 +126,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 ライブラリの更新でデータベースゲートウェイの構造化更新契約を使用するようにし、組み込みカードの編集が PostgreSQL 内で失敗しないようにしました。音声再生は、コンテンツパックに同梱され、ファイルゲートウェイに保存されたファイルにのみ表示されます。外部の仮 URL は表示も取得もされません。定義の概要では、プロバイダーキーや未加工の JSON の代わりに、言語ラベル付きの簡潔なレイアウトで翻訳を表示します。
 
+## 安定した書き取り完了表示
+
+描画フィードバックはキャンバス領域だけをアニメーションするようになり、アニメーション終了時にパッドの開始動作が再実行されたり、ウィンドウが点滅したりしません。新しい試行では文字全体のガイドを表示し、最初のストロークを受け付けた後は完全な一画ずつ進みます。完了時にはチェックマーク、よくできましたというメッセージ、試行中の間違い数、閉じるまたはもう一度の操作を表示します。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -155,3 +159,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e4daa661ee08b05a48ecba33182c490d4352e660
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/274fc626dbea45d3c8d66c82b98f1a0ba87a8052
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/024d7dfe05f713f390d7b9fb00410591018c9bf6
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/281d2ac4dca994692513c8069ad21fe9affebedc

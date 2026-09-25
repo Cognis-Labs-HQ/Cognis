@@ -126,6 +126,10 @@ Kartenaktualisierungen behalten ungeordnete Referenzen jetzt ohne ungültige Pos
 
 Bibliotheksaktualisierungen verwenden nun den strukturierten Aktualisierungsvertrag des Datenbank-Gateways, sodass die Bearbeitung integrierter Karten nicht mehr innerhalb von PostgreSQL fehlschlägt. Die Audiowiedergabe wird nur für Dateien angeboten, die mit einem Inhaltspaket ausgeliefert und vom Datei-Gateway gespeichert wurden; externe Platzhalter-URLs werden weder angezeigt noch abgerufen. Definitionsübersichten zeigen lokalisierte Übersetzungen in einer kompakten, nach Sprache beschrifteten Darstellung statt Anbieterschlüssel und Roh-JSON offenzulegen.
 
+## Stabiler Abschluss der Schreibübung
+
+Die Zeichnungsrückmeldung animiert jetzt nur die Zeichenflächenstufe. Das Ende einer Animation kann daher weder die Öffnungsbewegung des Feldes erneut abspielen noch das Fenster aufblitzen lassen. Ein neuer Versuch beginnt mit der vollständigen Zeichenvorgabe und geht nach dem ersten akzeptierten Strich jeweils um einen vollständigen Strich weiter. Nach Abschluss erscheinen ein Häkchen, die Meldung Gut gemacht, die Fehlerzahl des Versuchs sowie die Aktionen Schließen und Erneut versuchen.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -155,3 +159,4 @@ Bibliotheksaktualisierungen verwenden nun den strukturierten Aktualisierungsvert
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e4daa661ee08b05a48ecba33182c490d4352e660
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/274fc626dbea45d3c8d66c82b98f1a0ba87a8052
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/024d7dfe05f713f390d7b9fb00410591018c9bf6
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/281d2ac4dca994692513c8069ad21fe9affebedc

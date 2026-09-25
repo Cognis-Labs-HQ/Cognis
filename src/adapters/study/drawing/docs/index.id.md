@@ -6,10 +6,8 @@ Adapter Drawing menyediakan `study:drawing:open` melalui `uiCtx` peramban. Peman
 
 ## Model latihan
 
-Papan menerima pena, sentuhan, dan tetikus, menegakkan urutan goresan dari penyedia, menilai arah serta kedekatan jalur, melacak goresan selesai, dan menyediakan Atur ulang tanpa membalikkan panduan yang sudah dipelajari.
+Papan menerima pena, sentuhan, dan tetikus, menegakkan urutan goresan dari penyedia, menilai arah serta kedekatan jalur, dan mengganti setiap masukan yang diterima dengan goresan kanonis milik penyedia. Pada awal percobaan, semua goresan terlihat. Setelah goresan pertama diterima, papan hanya menampilkan goresan berikutnya yang diperlukan sambil mempertahankan goresan kanonis yang sudah selesai.
 
-Hanya goresan saat ini yang dipandu. Jalur lengkapnya ditampilkan pada awalnya; goresan yang berhasil secara bertahap memperpendek panduan berikutnya, sedangkan kesalahan berulang memperpanjang panduan saat ini dari awal hingga titik akhirnya. Atur ulang menghapus goresan tertulis tanpa mengembalikan cakupan panduan sebelumnya. Goresan salah memicu guncangan merah; karakter lengkap memicu guncangan hijau dan bunyi keberhasilan singkat yang dibuat aplikasi. Judul menyejajarkan teks kartu dan definisi terlokalisasi, sedangkan tombol tutup seukuran konten mengikuti animasi buka dan tutup.
+Goresan salah menghasilkan umpan balik merah yang lembut tanpa memulai ulang animasi pembukaan papan. Saat karakter selesai, aplikasi memainkan bunyi keberhasilan singkat dan menampilkan lapisan penyelesaian stabil berisi tanda centang, jumlah kesalahan percobaan, serta tindakan Tutup dan Coba Lagi. Coba Lagi memulai percobaan baru dengan semua panduan terlihat. Masukan penunjuk digambar paling banyak sekali per bingkai animasi agar kanvas tetap stabil.
 
-Judul diukur mengikuti kanvas yang dirender dan dipusatkan tepat di atasnya. Gerakan umpan balik menggunakan pergeseran dan rotasi yang lebih lembut, dan setiap goresan input yang diterima diganti dengan jalur goresan kanonis milik penyedia agar karakter akhir tetap akurat secara visual.
-
-Panduan selalu menampilkan goresan kanonis yang lengkap. Saat bantuan berkurang, panduan utuh dihilangkan alih-alih dipendekkan, sedangkan kesalahan berulang mengembalikan panduan lengkap berikutnya. Masukan penunjuk digambar paling banyak sekali per bingkai animasi agar papan tetap stabil.
+Judul diukur mengikuti kanvas yang dirender dan dipusatkan tepat di atasnya. Teks kartu dan definisi terlokalisasi tetap sejajar, dan tombol tutup seukuran konten memakai animasi penutupan khusus.

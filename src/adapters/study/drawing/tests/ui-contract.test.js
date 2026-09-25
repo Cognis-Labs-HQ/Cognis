@@ -19,13 +19,12 @@ test("drawing practice uses the PiP capability and requires card stroke data", (
     assert.match(source, /strokePattern\?\.strokes/);
 });
 
-test("drawing practice tracks ordered strokes and adaptive guidance", () => {
+test("drawing practice tracks ordered strokes and progressive guidance", () => {
     assert.match(source, /scoreStroke/);
     assert.match(source, /resample/);
     assert.match(source, /rootMeanSquare/);
-    assert.match(source, /shouldShowStrokeGuide/);
-    assert.match(source, /guidanceLevel/);
-    assert.match(source, /mistakes >= 2/);
+    assert.match(source, /completed\.length === 0/);
+    assert.match(source, /strokePattern\.strokes\.slice/);
     assert.match(source, /requestAnimationFrame/);
     assert.match(source, /cancelAnimationFrame/);
     assert.match(source, /completed\.push\(expected\)/);
@@ -39,6 +38,16 @@ test("drawing practice tracks ordered strokes and adaptive guidance", () => {
     assert.match(source, /783\.99/);
     assert.match(source, /is-error/);
     assert.match(source, /is-success/);
+    assert.match(source, /data-complete/);
+    assert.match(source, /data-mistakes/);
+    assert.match(source, /data-try-again/);
+    assert.match(source, /data-complete-close/);
+    assert.match(source, /completion\.hidden = false/);
+    assert.match(source, /mistakes = 0/);
+    assert.match(source, /is-opening/);
+    assert.match(source, /drawing-pad-open/);
+    assert.match(stylesheet, /\.study-drawing-complete/);
+    assert.match(stylesheet, /\.study-drawing-tick/);
     assert.match(stylesheet, /@keyframes drawing-error-shake/);
     assert.match(stylesheet, /@keyframes drawing-success-shake/);
     assert.match(stylesheet, /@keyframes drawing-pad-open/);

@@ -126,6 +126,10 @@ Card updates now preserve unordered references without invalid positions. Relati
 
 Library updates now use the database gateway's structured update contract, so editing built-in cards no longer fails inside PostgreSQL. Audio playback is offered only for files shipped through a content pack and stored by the Files gateway; external placeholder URLs are neither displayed nor fetched. Definition summaries show localized translations in a compact language-labelled layout instead of exposing provider keys and raw JSON.
 
+## Stable drawing completion
+
+Drawing feedback now animates only the canvas stage, so ending an animation cannot replay the pad's opening transition or make the window flash. A new attempt begins with the complete character guide, then advances one full stroke at a time after the first accepted stroke. Completion displays a tick, Well Done message, attempt mistake count, and Close or Try Again actions.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -155,3 +159,4 @@ Library updates now use the database gateway's structured update contract, so ed
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e4daa661ee08b05a48ecba33182c490d4352e660
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/274fc626dbea45d3c8d66c82b98f1a0ba87a8052
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/024d7dfe05f713f390d7b9fb00410591018c9bf6
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/281d2ac4dca994692513c8069ad21fe9affebedc

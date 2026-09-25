@@ -13,6 +13,9 @@
     box-shadow: var(--shadow);
     color: var(--text);
     overflow: hidden;
+}
+
+.study-drawing-pad.is-opening {
     animation: drawing-pad-open 0.18s ease-out;
 }
 
@@ -69,6 +72,64 @@ body[data-theme="dark"] .study-drawing-pad {
     touch-action: none;
 }
 
+.study-drawing-stage {
+    display: grid;
+    height: 100%;
+    min-height: 0;
+    position: relative;
+}
+
+.study-drawing-stage canvas {
+    grid-area: 1 / 1;
+}
+
+.study-drawing-complete {
+    align-content: center;
+    align-items: center;
+    background: color-mix(in srgb, var(--drawing-canvas) 94%, transparent);
+    border: 1px solid var(--color-success-border);
+    border-radius: 0.5rem;
+    display: grid;
+    gap: 0.85rem;
+    grid-area: 1 / 1;
+    justify-items: center;
+    padding: 1.5rem;
+    text-align: center;
+    z-index: 1;
+}
+
+.study-drawing-complete[hidden] {
+    display: none;
+}
+
+.study-drawing-complete > strong {
+    font-size: 1.5rem;
+}
+
+.study-drawing-complete p {
+    margin: 0;
+}
+
+.study-drawing-complete > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    justify-content: center;
+}
+
+.study-drawing-tick {
+    border-bottom: 0.45rem solid var(--color-success-border);
+    border-right: 0.45rem solid var(--color-success-border);
+    display: block;
+    height: 2.8rem;
+    transform: rotate(45deg);
+    width: 1.5rem;
+}
+
+.study-drawing-pad.is-complete .study-drawing-controls {
+    visibility: hidden;
+}
+
 .study-drawing-controls {
     display: flex;
     align-items: center;
@@ -76,17 +137,17 @@ body[data-theme="dark"] .study-drawing-pad {
     gap: 0.5rem;
 }
 
-.study-drawing-pad.is-error {
+.study-drawing-stage.is-error {
     animation: drawing-error-shake 0.42s ease-in-out;
 }
 
-.study-drawing-pad.is-error canvas {
+.study-drawing-stage.is-error canvas {
     border-color: var(--color-danger-border);
     box-shadow: 0 0 0 0.2rem
         color-mix(in srgb, var(--color-danger-border) 28%, transparent);
 }
 
-.study-drawing-pad.is-success {
+.study-drawing-stage.is-success {
     animation: drawing-success-shake 0.48s ease-in-out;
 }
 
@@ -95,7 +156,7 @@ body[data-theme="dark"] .study-drawing-pad {
     pointer-events: none;
 }
 
-.study-drawing-pad.is-success canvas {
+.study-drawing-stage.is-success canvas {
     border-color: var(--color-success-border);
     box-shadow: 0 0 0 0.2rem
         color-mix(in srgb, var(--color-success-border) 32%, transparent);
@@ -153,9 +214,9 @@ body[data-theme="dark"] .study-drawing-pad {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .study-drawing-pad.is-error,
-    .study-drawing-pad.is-success,
-    .study-drawing-pad,
+    .study-drawing-stage.is-error,
+    .study-drawing-stage.is-success,
+    .study-drawing-pad.is-opening,
     .study-drawing-pad.is-closing {
         animation: none;
     }

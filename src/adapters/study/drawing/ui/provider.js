@@ -85,14 +85,6 @@ function scoreStroke(input, expected) {
     );
 }
 
-function shouldShowStrokeGuide(guidanceLevel, mistakes) {
-    return (
-        guidanceLevel >= 1 ||
-        mistakes >= 2 ||
-        (guidanceLevel > 0 && mistakes > 0)
-    );
-}
-
 function playSuccessSound() {
     const AudioContextClass = window.AudioContext;
     if (!AudioContextClass) return;
@@ -127,24 +119,25 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
     if (!makeFloatingWindow) throw new Error("floating_window_unavailable");
     const controller = new AbortController();
     const pad = document.createElement("section");
-    pad.className = "study-drawing-pad";
-    pad.innerHTML = `<header><span class="study-drawing-heading"><strong></strong><span data-definition></span></span><button class="btn-cancel" type="button" data-close>×</button></header><canvas></canvas><div class="study-drawing-controls"><button class="btn-cancel" type="button" data-reset>${i18n.t("adapter.study.drawing.reset")}</button></div>`;
+    pad.className = "study-drawing-pad is-opening";
+    pad.innerHTML = `<header><span class="study-drawing-heading"><strong></strong><span data-definition></span></span><button class="btn-cancel" type="button" data-close>×</button></header><div class="study-drawing-stage"><canvas></canvas><section class="study-drawing-complete" data-complete hidden aria-live="polite"><span class="study-drawing-tick" aria-hidden="true"></span><strong>${i18n.t("adapter.study.drawing.well_done")}</strong><p data-mistakes></p><div><button class="btn-neutral" type="button" data-complete-close>${i18n.t("adapter.study.drawing.close")}</button><button class="btn-neutral" type="button" data-try-again>${i18n.t("adapter.study.drawing.try_again")}</button></div></section></div><div class="study-drawing-controls"><button class="btn-cancel" type="button" data-reset>${i18n.t("adapter.study.drawing.reset")}</button></div>`;
     pad.querySelector("strong").textContent = card.label;
     pad.querySelector("[data-definition]").textContent = definition;
     document.body.append(pad);
     const canvas = pad.querySelector("canvas");
+    const stage = pad.querySelector(".study-drawing-stage");
+    const completion = pad.querySelector("[data-complete]");
     const header = pad.querySelector("header");
     const context = canvas.getContext("2d");
     const completed = [];
     let active = null;
-    let guidanceLevel = 1;
     let mistakes = 0;
     let drawingFrame;
     const colors = {};
     const animateResult = (className) => {
-        pad.classList.remove("is-error", "is-success");
-        window.requestAnimationFrame(() => pad.classList.add(className));
-        window.setTimeout(() => pad.classList.remove(className), 520);
+        stage.classList.remove("is-error", "is-success");
+        window.requestAnimationFrame(() => stage.classList.add(className));
+        window.setTimeout(() => stage.classList.remove(className), 520);
     };
     const resize = () => {
         const bounds = canvas.getBoundingClientRect();
@@ -192,9 +185,14 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
     };
     const draw = () => {
         context.clearRect(0, 0, canvas.width, canvas.height);
-        const expected = strokePattern.strokes[completed.length];
-        if (expected && shouldShowStrokeGuide(guidanceLevel, mistakes))
-            drawPath(expected.points, colors.guide, 5);
+        const guides =
+            completed.length === 0
+                ? strokePattern.strokes
+                : strokePattern.strokes.slice(
+                      completed.length,
+                      completed.length + 1,
+                  );
+        guides.forEach((stroke) => drawPath(stroke.points, colors.guide, 5));
         completed.forEach((stroke) => drawPath(stroke, colors.ink, 5));
         if (active) drawPath(active, colors.active, 5);
     };
@@ -234,15 +232,18 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
             const score = scoreStroke(active, expected);
             if (score >= (strokePattern.tolerance ?? 55)) {
                 completed.push(expected);
-                guidanceLevel = Math.max(0, guidanceLevel - 0.25);
-                mistakes = 0;
                 if (completed.length === strokePattern.strokes.length) {
                     animateResult("is-success");
                     playSuccessSound();
+                    completion.querySelector("[data-mistakes]").textContent =
+                        i18n
+                            .t("adapter.study.drawing.mistakes")
+                            .replace("{{ count }}", String(mistakes));
+                    completion.hidden = false;
+                    pad.classList.add("is-complete");
                 }
             } else {
                 mistakes += 1;
-                guidanceLevel = Math.min(1, guidanceLevel + 0.25);
                 animateResult("is-error");
             }
             active = null;
@@ -254,6 +255,7 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
         "click",
         () => {
             completed.length = 0;
+            active = null;
             draw();
         },
         { signal: controller.signal },
@@ -294,6 +296,34 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
     pad.querySelector("[data-close]").addEventListener("click", close, {
         signal: controller.signal,
     });
+    pad.querySelector("[data-complete-close]").addEventListener(
+        "click",
+        close,
+        {
+            signal: controller.signal,
+        },
+    );
+    pad.querySelector("[data-try-again]").addEventListener(
+        "click",
+        () => {
+            completed.length = 0;
+            active = null;
+            mistakes = 0;
+            completion.hidden = true;
+            pad.classList.remove("is-complete");
+            draw();
+        },
+        { signal: controller.signal },
+    );
+    pad.addEventListener(
+        "animationend",
+        (event) => {
+            if (event.animationName === "drawing-pad-open")
+                pad.classList.remove("is-opening");
+        },
+        { signal: controller.signal },
+    );
+    window.setTimeout(() => pad.classList.remove("is-opening"), 220);
     observer.observe(canvas);
     resize();
     return { close };
