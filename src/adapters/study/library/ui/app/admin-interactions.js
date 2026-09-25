@@ -177,7 +177,13 @@ export function bindLibraryEditorControls(form, entry, i18n) {
     });
 }
 
-function mountEditableRelationshipCarousels(form, overlay) {
+function mountEditableRelationshipCarousels(
+    form,
+    overlay,
+    entries,
+    schema,
+    layer,
+) {
     const controller = new AbortController();
     overlay.addEventListener("close", () => controller.abort(), { once: true });
     mountHorizontalCarousels(form, {
@@ -195,6 +201,32 @@ function mountEditableRelationshipCarousels(form, overlay) {
                 );
                 if (option) select.append(option);
             });
+            const relationship = layer.relationships?.find(
+                (candidate) => candidate.id === id,
+            );
+            const targetLayer = schema.layers.find(
+                (candidate) => candidate.id === relationship?.targetLayer,
+            );
+            const pronunciation = form.elements["field:pronunciation"];
+            if (
+                pronunciation &&
+                layer.semanticRole === "compoundWritingUnit" &&
+                targetLayer?.semanticRole === "atomicWritingUnit"
+            ) {
+                pronunciation.value = values
+                    .map((value) =>
+                        entries.find((candidate) => candidate.id === value),
+                    )
+                    .filter(Boolean)
+                    .map((candidate) => {
+                        const values = candidate.fields?.pronunciation;
+                        return (
+                            (Array.isArray(values) ? values[0] : values) ||
+                            candidate.label
+                        );
+                    })
+                    .join("");
+            }
         },
     });
 }
@@ -226,14 +258,18 @@ function relationshipEditor(
         (usesPronunciation
             ? localizedLabel(pronunciationField?.metadata, language)
             : "") ||
-        localizedLabel(targetLayer?.metadata, language) ||
         localizedLabel(relationship.metadata, language) ||
+        localizedLabel(targetLayer?.metadata, language) ||
         relationship.targetLayer;
-    const selected = new Set(
-        (entry.references ?? [])
-            .filter(({ relation }) => relation === relationship.id)
-            .map(({ entryId }) => entryId),
-    );
+    const selectedValues = (entry.references ?? [])
+        .filter(({ relation }) => relation === relationship.id)
+        .sort(
+            (left, right) =>
+                (left.position ?? Number.MAX_SAFE_INTEGER) -
+                (right.position ?? Number.MAX_SAFE_INTEGER),
+        )
+        .map(({ entryId }) => entryId);
+    const selected = new Set(selectedValues);
     const availableTargets = entries.filter(
         (candidate) =>
             candidate.schemaId === entry.schemaId &&
@@ -279,7 +315,7 @@ function relationshipEditor(
     if (hiddenOnly) return select.replace(" multiple", " multiple hidden");
     if (!carousel)
         return `<label><span>${escapeHtml(label)}</span>${select}</label>`;
-    return `<div class="library-composer-relationship" data-library-composer-relationship="${escapeHtml(relationship.id)}" data-target-layer="${escapeHtml(relationship.targetLayer)}">${select}${renderHorizontalCarousel({ id: relationship.id, label, items: targets.map((target) => ({ value: target.id, label: target.label, preview: previewFor(target) })), selectedValues: [...selected], addLabel, allowAdd })}</div>`;
+    return `<div class="library-composer-relationship" data-library-composer-relationship="${escapeHtml(relationship.id)}" data-target-layer="${escapeHtml(relationship.targetLayer)}">${select}${renderHorizontalCarousel({ id: relationship.id, label, items: targets.map((target) => ({ value: target.id, label: target.label, preview: previewFor(target) })), selectedValues, addLabel, allowAdd })}</div>`;
 }
 
 export function editorBody(
@@ -296,22 +332,44 @@ export function editorBody(
         layer?.semanticRole === "definition"
             ? layer.definitionLocalization?.stringKeyField
             : undefined;
+    const pronunciationRelationship = (layer?.relationships ?? []).find(
+        (relationship) =>
+            layer.semanticRole === "compoundWritingUnit" &&
+            schema.layers.find(({ id }) => id === relationship.targetLayer)
+                ?.semanticRole === "atomicWritingUnit",
+    );
     const fields = (layer?.fields ?? [])
         .filter((field) => field.id !== immutableStringKeyField)
-        .map((field) =>
-            inputForField(
+        .map((field) => {
+            if (field.id === "pronunciation" && pronunciationRelationship) {
+                const value = entry.fields?.[field.id];
+                return `<input name="field:pronunciation" type="hidden" value="${escapeHtml(Array.isArray(value) ? value.join("") : (value ?? ""))}">`;
+            }
+            return inputForField(
                 field,
                 entry.fields?.[field.id],
                 schema.language,
                 i18n,
-            ),
-        )
+            );
+        })
         .join("");
     const relationships = (layer?.relationships ?? [])
-        .map((relationship) => {
+        .map((relationship, relationshipIndex, allRelationships) => {
             const targetRole = schema?.layers.find(
                 ({ id }) => id === relationship.targetLayer,
             )?.semanticRole;
+            const duplicateTarget = allRelationships
+                .slice(0, relationshipIndex)
+                .some(
+                    (candidate) =>
+                        candidate.targetLayer === relationship.targetLayer,
+                );
+            const carouselEligible =
+                options.relationshipCarousels === true &&
+                !duplicateTarget &&
+                !["definition", "meaning"].includes(targetRole) &&
+                (layer?.semanticRole !== "compoundWritingUnit" ||
+                    targetRole === "atomicWritingUnit");
             return relationshipEditor(
                 relationship,
                 entry,
@@ -319,10 +377,10 @@ export function editorBody(
                 schema,
                 schema.language,
                 {
-                    carousel: options.relationshipCarousels === true,
+                    carousel: carouselEligible,
                     hiddenOnly:
                         options.relationshipCarousels === true &&
-                        ["definition", "meaning"].includes(targetRole),
+                        !carouselEligible,
                     addLabel: i18n.t("gateway.study.library_create"),
                     previousLabel: i18n.t("ui.reuse.previous"),
                     nextLabel: i18n.t("ui.reuse.next"),
@@ -549,7 +607,13 @@ export async function openLibraryEntryEditor({
             const form = overlay.querySelector("[data-library-admin-editor]");
             formController = editor.builder.attach(form);
             bindLibraryEditorControls(form, entry, i18n);
-            mountEditableRelationshipCarousels(form, overlay);
+            mountEditableRelationshipCarousels(
+                form,
+                overlay,
+                entries,
+                schema,
+                layer,
+            );
             form.addEventListener("click", (event) => {
                 const button = event.target.closest(
                     "[data-library-edit-related]",
@@ -704,7 +768,13 @@ export function bindAdminLibraryInteractions(
                     if (!readOnly) formController = editor.builder.attach(form);
                     bindLibraryEditorControls(form, entry, i18n);
                     if (!readOnly)
-                        mountEditableRelationshipCarousels(form, overlay);
+                        mountEditableRelationshipCarousels(
+                            form,
+                            overlay,
+                            entries,
+                            schema,
+                            layer,
+                        );
                 },
                 onAction: async (action, overlay) => {
                     if (readOnly) return true;

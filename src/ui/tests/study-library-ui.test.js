@@ -509,6 +509,14 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(adminInteractionsSource, /mountEditableRelationshipCarousels/);
     assert.match(adminInteractionsSource, /relationshipCarousels: true/);
     assert.match(adminInteractionsSource, /relationshipCarouselAdd: false/);
+    assert.match(adminInteractionsSource, /const carouselEligible/);
+    assert.match(adminInteractionsSource, /targetRole === "atomicWritingUnit"/);
+    assert.match(adminInteractionsSource, /const duplicateTarget/);
+    assert.match(adminInteractionsSource, /left\.position/);
+    assert.match(
+        adminInteractionsSource,
+        /name="field:pronunciation" type="hidden"/,
+    );
     assert.match(
         adminInteractionsSource,
         /name="hidden" type="hidden" value="true"/,

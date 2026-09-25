@@ -132,7 +132,7 @@ Drawing feedback now animates only the canvas stage, so ending an animation cann
 
 ## Audio playback and pronunciation editing
 
-Authenticated pages now allow browser-generated media URLs, so newly uploaded card audio can play without violating Content Security Policy. Existing compound-character cards expose the provider-labelled pronunciation carousel during editing, preserve the selected order in relationship references, and omit the nested-create control from the selection-only editor.
+Authenticated pages now allow browser-generated media URLs, so newly uploaded card audio can play without violating Content Security Policy. Existing compound-character cards expose provider-labelled pronunciation choices in their Content tab. The editor sorts authored references before numbering them, removes duplicate target-layer carousels, derives pronunciation directly from ordered character selections, and omits unrelated layers and nested-create controls.
 
 ## Commits
 
@@ -165,3 +165,4 @@ Authenticated pages now allow browser-generated media URLs, so newly uploaded ca
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/024d7dfe05f713f390d7b9fb00410591018c9bf6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/281d2ac4dca994692513c8069ad21fe9affebedc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/f5214c148cab6eac78e3f8ee8aed3847ffba2201
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/bec24655948ca3a64ea6ab4f95f7897aecee68ac

@@ -132,7 +132,7 @@ Die Zeichnungsrückmeldung animiert jetzt nur die Zeichenflächenstufe. Das Ende
 
 ## Audiowiedergabe und Aussprachebearbeitung
 
-Authentifizierte Seiten erlauben jetzt browsererzeugte Medien-URLs, sodass neu hochgeladenes Kartenaudio ohne Verstoß gegen die Inhaltssicherheitsrichtlinie wiedergegeben werden kann. Bestehende Karten mit zusammengesetzten Zeichen zeigen beim Bearbeiten das vom Anbieter beschriftete Aussprachekarussell, behalten die ausgewählte Reihenfolge in den Beziehungsreferenzen bei und blenden die verschachtelte Erstellen-Aktion im reinen Auswahleditor aus.
+Authentifizierte Seiten erlauben jetzt browsererzeugte Medien-URLs, sodass neu hochgeladenes Kartenaudio ohne Verstoß gegen die Inhaltssicherheitsrichtlinie wiedergegeben werden kann. Bestehende Karten mit zusammengesetzten Zeichen zeigen vom Anbieter beschriftete Ausspracheoptionen im Tab Inhalt. Der Editor sortiert erfasste Referenzen vor der Nummerierung, entfernt doppelte Karussells derselben Zielschicht, leitet die Aussprache direkt aus geordneten Zeichenauswahlen ab und blendet nicht zugehörige Schichten sowie verschachtelte Erstellen-Aktionen aus.
 
 ## Commits
 
@@ -165,3 +165,4 @@ Authentifizierte Seiten erlauben jetzt browsererzeugte Medien-URLs, sodass neu h
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/024d7dfe05f713f390d7b9fb00410591018c9bf6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/281d2ac4dca994692513c8069ad21fe9affebedc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/f5214c148cab6eac78e3f8ee8aed3847ffba2201
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/bec24655948ca3a64ea6ab4f95f7897aecee68ac
