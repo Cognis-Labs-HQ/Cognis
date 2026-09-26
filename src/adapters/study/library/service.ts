@@ -1,4 +1,4 @@
-import type { AccessRole, FlowApi } from "@cognis/core";
+import type { FlowApi } from "@cognis/core";
 import { createHash, randomUUID } from "node:crypto";
 import { canonicalizeLanguageTag } from "./language.js";
 import { inspectContentPack } from "./content-pack.js";
@@ -44,152 +44,19 @@ function canComposeAtLocation(
     );
 }
 
-export interface LibraryActor {
-    accountId: string;
-    role: AccessRole;
-}
-
-export interface LibraryClassAccess {
-    canRead(
-        classId: string,
-        accountId: string,
-        role: AccessRole,
-    ): Promise<boolean>;
-    canWrite(
-        classId: string,
-        accountId: string,
-        role: AccessRole,
-    ): Promise<boolean>;
-    listReadable?(
-        accountId: string,
-        role: AccessRole,
-        language?: string,
-    ): Promise<string[]>;
-    listWritable?(
-        accountId: string,
-        role: AccessRole,
-        language?: string,
-    ): Promise<string[]>;
-}
-
-export type LibraryContentNotifier = (input: {
-    entryCount: number;
-    language?: string;
-}) => Promise<void>;
-
-/** Public surface used by language modules during their bootstrap. */
-export interface LibraryProviderCapability {
-    /** Validate a provider pack against the installed contract without mutating storage. */
-    inspectContentPack(root: string): Promise<LibraryContentPackPlan>;
-    ingestContentPack(root: string): Promise<LibraryContentPackReceipt>;
-    registerConstructor(contribution: LibraryFormContribution): () => void;
-    /** Register enrichment such as provider-sourced stroke patterns for a label. */
-    registerLookupProvider(provider: LibraryLookupProvider): () => void;
-}
-
-export interface LibraryCapability {
-    registerSchema(schema: LibrarySchema): Promise<void>;
-    registerLookupProvider(provider: LibraryLookupProvider): () => void;
-    listLookupProviders(input: {
-        schemaId: string;
-        schemaVersion?: number;
-        layer: string;
-    }): Array<{ id: string; metadata: LibraryMetadata }>;
-    registerFormContribution(contribution: LibraryFormContribution): () => void;
-    listFormContributions(): LibraryFormContribution[];
-    listSchemas(): LibrarySchema[];
-    locations(
-        actor: LibraryActor,
-        language?: string,
-    ): Promise<{
-        readable: LibraryLocation[];
-        writable: LibraryLocation[];
-    }>;
-    getSchema(id: string, version?: number): LibrarySchema | null;
-    inspectContentPack(root: string): Promise<LibraryContentPackPlan>;
-    ingestContentPack(root: string): Promise<LibraryContentPackReceipt>;
-    readContentPackAsset(
-        publisher: string,
-        packId: string,
-        version: string,
-        assetPath: string,
-    ): Promise<LibraryAsset | null>;
-    list(
-        actor: LibraryActor,
-        location: LibraryLocation,
-        filters?: { schemaId?: string; layer?: string },
-    ): Promise<LibraryEntry[]>;
-    read(actor: LibraryActor, entryId: string): Promise<LibraryEntry | null>;
-    viewedEntryIds(actor: LibraryActor): Promise<string[]>;
-    markEntriesViewed(
-        actor: LibraryActor,
-        entryIds: readonly string[],
-    ): Promise<void>;
-    readAudio(
-        actor: LibraryActor,
-        entryId: string,
-        fieldId: string,
-    ): Promise<{ mediaType: string; data: Buffer }>;
-    create(
-        actor: LibraryActor,
-        location: LibraryLocation,
-        input: LibraryEntryInput,
-    ): Promise<LibraryEntry>;
-    update(
-        actor: LibraryActor,
-        entryId: string,
-        input: LibraryEntryInput,
-    ): Promise<LibraryEntry>;
-    deleteEntries(
-        actor: LibraryActor,
-        entryIds: readonly string[],
-        blacklistContentHashes: boolean,
-    ): Promise<readonly string[]>;
-    resolve(
-        actor: LibraryActor,
-        location: LibraryLocation,
-        input: Pick<
-            LibraryEntryInput,
-            "schemaId" | "schemaVersion" | "layer" | "label"
-        >,
-    ): Promise<LibraryResolutionProposal[]>;
-    lookup(
-        providerId: string,
-        input: Pick<
-            LibraryEntryInput,
-            "schemaId" | "schemaVersion" | "layer" | "label"
-        >,
-    ): Promise<LibraryLookupSuggestion[]>;
-    trace(
-        actor: LibraryActor,
-        entryId: string,
-    ): Promise<{
-        entry: LibraryEntry;
-        references: LibraryEntry[];
-        usedBy: LibraryEntry[];
-    }>;
-    requestPush(
-        actor: LibraryActor,
-        entryId: string,
-        destination: LibraryLocation,
-    ): Promise<LibraryPushRequest>;
-    requestUpdate(
-        actor: LibraryActor,
-        entryId: string,
-        proposedEntry: LibraryEntryInput,
-    ): Promise<LibraryPushRequest>;
-    listPushRequests(actor: LibraryActor): Promise<LibraryPushRequest[]>;
-    reviewPush(
-        actor: LibraryActor,
-        requestId: string,
-        decision: "approved" | "rejected",
-    ): Promise<LibraryPushRequest>;
-    withdrawPush(
-        actor: LibraryActor,
-        requestId: string,
-    ): Promise<LibraryPushRequest>;
-    moveToPersonal(actor: LibraryActor, entryId: string): Promise<LibraryEntry>;
-}
+export type {
+    LibraryActor,
+    LibraryCapability,
+    LibraryClassAccess,
+    LibraryContentNotifier,
+    LibraryProviderCapability,
+} from "./contracts.js";
+import type {
+    LibraryActor,
+    LibraryCapability,
+    LibraryClassAccess,
+    LibraryContentNotifier,
+} from "./contracts.js";
 
 function normalizeLocation(
     location: LibraryLocation,
@@ -627,10 +494,7 @@ export class LibraryService implements LibraryCapability {
     ): Promise<{ mediaType: string; data: Buffer }> {
         const entry = await this.read(actor, entryId);
         if (!entry) throw new Error("not_found");
-        const layer = findLayer(
-            this.schema(entry.schemaId, entry.schemaVersion),
-            entry.layer,
-        );
+        const layer = findLayer(this.schema(entry.schemaId), entry.layer);
         const field = (layer.fields ?? []).find(({ id }) => id === fieldId);
         const storedAudio = entry.fields?.[fieldId];
         if (
@@ -848,7 +712,6 @@ export class LibraryService implements LibraryCapability {
         );
         if (
             input.schemaId !== current.schemaId ||
-            input.schemaVersion !== current.schemaVersion ||
             input.layer !== current.layer
         )
             throw new Error("entry_identity_immutable");
@@ -878,7 +741,8 @@ export class LibraryService implements LibraryCapability {
             typeof input.alwaysShowDefinition !== "boolean"
         )
             throw new Error("invalid_always_show_definition");
-        const schema = this.schema(input.schemaId, input.schemaVersion);
+        const schema = this.schema(current.schemaId);
+        input.schemaVersion = schema.version;
         const layer = findLayer(schema, input.layer);
         if (layer.semanticRole === "definition") {
             input.hidden = true;
@@ -1030,7 +894,15 @@ export class LibraryService implements LibraryCapability {
                     throw error;
             }
         }
-        return { entry, references, usedBy };
+        return {
+            entry: {
+                ...entry,
+                canDelete: await this.canDelete(actor, entry),
+                ...this.editPermission(actor, entry),
+            },
+            references,
+            usedBy,
+        };
     }
 
     requestPush(

@@ -124,6 +124,68 @@ test("schema registrations are versioned, persisted, and immutable", async () =>
     );
 });
 
+test("entry updates migrate stored records to the current schema version", async () => {
+    const current = {
+        id: "entry-1",
+        schemaId: "test-language",
+        schemaVersion: 1,
+        layer: "units",
+        label: "before",
+        fields: {},
+        references: [],
+        scope: "global",
+        scopeId: "global",
+        createdBy: "admin",
+    };
+    let updatedInput: Record<string, unknown> | undefined;
+    const library = new LibraryService({
+        saveSchema: async () => {},
+        get: async () => current,
+        update: async (_id: string, input: Record<string, unknown>) => {
+            updatedInput = input;
+            return { ...current, ...input };
+        },
+    } as never);
+    await library.registerSchema(schema(1));
+    await library.registerSchema(schema(2));
+
+    const updated = await library.update(
+        { accountId: "admin", role: "admin" },
+        current.id,
+        { ...current, label: "after" },
+    );
+
+    assert.equal(updated.schemaVersion, 2);
+    assert.equal(updatedInput?.schemaVersion, 2);
+});
+
+test("entry traces retain edit permission metadata", async () => {
+    const entry = {
+        id: "entry-1",
+        schemaId: "test-language",
+        schemaVersion: 1,
+        layer: "units",
+        label: "editable",
+        fields: {},
+        references: [],
+        scope: "user",
+        scopeId: "alice",
+        createdBy: "alice",
+    };
+    const library = new LibraryService({
+        get: async () => entry,
+        referencesFor: async () => [],
+    } as never);
+
+    const detail = await library.trace(
+        { accountId: "alice", role: "user" },
+        entry.id,
+    );
+
+    assert.equal(detail.entry.canEdit, true);
+    assert.equal(detail.entry.editRequiresReview, false);
+});
+
 test("provider metadata survives store and capability round trips", async () => {
     const { library, saved } = service();
     const external = {

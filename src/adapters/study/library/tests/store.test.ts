@@ -891,7 +891,7 @@ test("entry updates replace editable fields and relationships atomically", async
         "entry-1",
         {
             schemaId: "japanese",
-            schemaVersion: 1,
+            schemaVersion: 2,
             layer: "words",
             label: "updated",
             fields: {},
@@ -902,7 +902,9 @@ test("entry updates replace editable fields and relationships atomically", async
     assert.ok(
         commands.some(
             (command) =>
-                command.option === "UPDATE" && command.set.label === "updated",
+                command.option === "UPDATE" &&
+                command.set.label === "updated" &&
+                command.set.schema_version === 2,
         ),
     );
     assert.ok(

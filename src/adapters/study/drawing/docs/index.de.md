@@ -17,3 +17,5 @@ Die erste Hilfsansicht nummeriert jeden Strich und zeigt seine Richtung. Zehn au
 Die vollständige Anleitung erscheint nur vor dem ersten Versuch einer Karte oder nachdem der Benutzer ausdrücklich die Zurücksetz-Aktion **?** betätigt hat. Beim erneuten Versuch bleibt die fortschreitende Anleitung erhalten. Zusammengesetzte Muster enthalten Abschnittsgrenzen, sodass jedes neu erreichte Zeichen einmal vollständig mit Anmerkungen angezeigt wird.
 
 Zusammengesetzte Karten ordnen jetzt alle Schreibmuster des primären Schriftwerts nebeneinander in einheitlicher Größe und mit minimalem Abstand an. Der Zeichenblock wird entsprechend breiter; seine kompakte Überschrift zeigt verfügbare Aussprachen und die lokalisierte Definition.
+
+Der Zeichenblock bleibt innerhalb des Ansichtsbereichs, verwendet eine kompakte inhaltsabhängige Höhe und begrenzt seine Breite auf vierzig Prozent des Ansichtsbereichs, sodass längere Wörter skaliert werden, statt ein übergroßes Fenster zu erzeugen. Beim Ändern der Größe werden die Mindestmaße nicht mehr vertauscht, und jede einzelne Strichhilfe behält ihre Reihenfolge- und Richtungsmarkierung.

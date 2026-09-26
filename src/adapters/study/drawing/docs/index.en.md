@@ -17,3 +17,5 @@ The first guide view labels every stroke and shows its direction. Ten consecutiv
 Full guidance appears only before a card's first attempt or after the user explicitly presses the **?** reset action. Retrying keeps progressive guidance. Composite patterns carry piece boundaries so each newly reached character receives one complete annotated preview.
 
 Composite cards now arrange every writing-unit pattern from the primary written value side by side at a consistent scale with minimal spacing. The pad expands to preserve character size, and its compact heading includes available pronunciations and the localized definition.
+
+The pad remains inside the viewport, uses a compact content-derived height, and caps its width at forty percent of the viewport so longer words scale rather than producing an oversized window. Resizing no longer swaps the pad's minimum dimensions, and every single-stroke guide retains its order and direction annotation.

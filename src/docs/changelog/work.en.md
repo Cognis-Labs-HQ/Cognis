@@ -154,6 +154,10 @@ Full drawing guidance now appears only on the first attempt or after the explici
 
 Vocabulary drawing now follows the primary written form and arranges every resolved character side by side while the pad heading includes readings and meaning. Shared form composition now marks required creation fields consistently, preserves provider-supplied stroke patterns, validates alternate characters through dictionary lookup, embeds character pronunciation selectors, and cleans up carousel previews when dialogs close.
 
+## Reliable editing, drawing, and composition
+
+Card updates and audio playback now migrate through the provider’s current schema, and detail dialogs retain their edit action after editing. Drawing practice stays bounded, resizes predictably, annotates single-stroke guidance, uses vocabulary spelling instead of pronunciation, and excludes sentences and composites. Card creation excludes particle cards, restores all composition carousels for sentences and composites, and provides staged character-based pronunciation selectors for vocabulary and alternate characters.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -194,3 +198,4 @@ Vocabulary drawing now follows the primary written form and arranges every resol
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e894f166
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/64d1ac04
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/23587bd7
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/c8c8deb9

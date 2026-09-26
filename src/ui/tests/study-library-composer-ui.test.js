@@ -4,15 +4,19 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const read = (path) => readFileSync(resolve(path), "utf8");
-const adminInteractionsSource = read(
-    "src/adapters/study/library/ui/app/admin-interactions.js",
-);
+const adminInteractionsSource = [
+    "admin-interactions.js",
+    "pronunciation-editor.js",
+]
+    .map((file) => read(`src/adapters/study/library/ui/app/${file}`))
+    .join("\n");
 const createEntrySource = read(
     "src/adapters/study/library/ui/app/create-entry.js",
 );
 const clientSource = read("src/gateways/study/ui/library-client.js");
 const adapterSource = read("src/adapters/study/library/index.ts");
 const carouselStylesheet = read("src/ui/styles/reuse/horizontal-carousel.css");
+const drawingSource = read("src/adapters/study/library/ui/app/drawing.js");
 
 test("Study Library keeps editor tabs active and nested card types precise", () => {
     for (const [content, pattern] of [
@@ -37,6 +41,12 @@ test("Study Library composer exposes provider-owned raw-input lookup", () => {
         [createEntrySource, /event\.key === "Enter"/],
         [createEntrySource, /draft\.fields\[fieldId\] = value/],
         [createEntrySource, /inlinePronunciationCarousel:\s*true/],
+        [createEntrySource, /"particle"/],
+        [createEntrySource, /constructorRelationshipIds\.add/],
+        [createEntrySource, /constructorFieldIds\.add\("pronunciation"\)/],
+        [adminInteractionsSource, /library-pronunciation-stage/],
+        [adminInteractionsSource, /target\.label/],
+        [drawingSource, /orderedLexicalSequence/],
         [adapterSource, /registerLookupProvider/],
     ])
         assert.match(content, pattern);

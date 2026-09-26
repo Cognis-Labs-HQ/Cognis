@@ -154,6 +154,10 @@ Panduan menggambar lengkap kini hanya muncul pada percobaan pertama atau setelah
 
 Gambar kosakata kini mengikuti bentuk tulisan utama dan menyusun setiap karakter yang ditemukan secara berdampingan, sementara judul papan menampilkan bacaan dan arti. Komposisi formulir bersama kini menandai bidang wajib secara konsisten, mempertahankan pola goresan dari penyedia, memvalidasi karakter alternatif melalui pencarian kamus, menyematkan pemilih pelafalan karakter, dan membersihkan pratinjau karusel saat dialog ditutup.
 
+## Penyuntingan, gambar, dan komposisi andal
+
+Pembaruan kartu dan pemutaran audio kini dimigrasikan melalui skema penyedia terkini, dan dialog detail mempertahankan tindakan sunting setelah penyuntingan. Latihan gambar tetap terbatas di area pandang, dapat diubah ukurannya dengan tepat, memberi anotasi pada panduan satu goresan, memakai ejaan kosakata alih-alih pelafalan, serta mengecualikan kalimat dan gabungan. Pembuatan kartu mengecualikan kartu partikel, memulihkan semua karusel komposisi untuk kalimat dan gabungan, serta menyediakan pemilih pelafalan berbasis karakter dengan tahap persiapan untuk kosakata dan karakter alternatif.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -194,3 +198,4 @@ Gambar kosakata kini mengikuti bentuk tulisan utama dan menyusun setiap karakter
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e894f166
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/64d1ac04
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/23587bd7
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/c8c8deb9

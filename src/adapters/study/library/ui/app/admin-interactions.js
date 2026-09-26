@@ -2,10 +2,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
-import {
-    mountHorizontalCarousels,
-    renderHorizontalCarousel,
-} from "/static/reuse/horizontal-carousel.js";
+import { renderHorizontalCarousel } from "/static/reuse/horizontal-carousel.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
     requestLibraryUpdate,
@@ -17,6 +14,10 @@ import {
     localizedLabel,
 } from "./presentation.js";
 import { entryEditMode } from "./editability.js";
+import {
+    mountEditableRelationshipCarousels,
+    pronunciationRelationshipsFor,
+} from "./pronunciation-editor.js";
 
 export { inputForField } from "./field-input.js";
 import { inputForField } from "./field-input.js";
@@ -138,177 +139,6 @@ export function bindLibraryEditorControls(form, entry, i18n) {
     });
 }
 
-function mountEditableRelationshipCarousels(
-    form,
-    overlay,
-    entries,
-    schema,
-    layer,
-) {
-    const pronunciationRelationshipIds = new Set(
-        layer.fields?.find(({ id }) => id === "pronunciation")?.input
-            ?.linkRelationships ?? [],
-    );
-    pronunciationRelationshipsFor(
-        layer,
-        schema,
-        pronunciationRelationshipIds,
-    ).forEach(({ id }) => pronunciationRelationshipIds.add(id));
-    const controller = new AbortController();
-    const committedValues = new Map();
-    const draftValues = new Map();
-    pronunciationRelationshipIds.forEach((relationshipId) => {
-        const select = form.elements[`relationship:${relationshipId}`];
-        committedValues.set(
-            relationshipId,
-            new Set(
-                Array.from(select?.selectedOptions ?? [], (option) =>
-                    String(option.value),
-                ),
-            ),
-        );
-        draftValues.set(relationshipId, []);
-    });
-    overlay.addEventListener("close", () => controller.abort(), { once: true });
-    mountHorizontalCarousels(form, {
-        signal: controller.signal,
-        onChange: ({ id, values }) => {
-            const select = form.elements[`relationship:${id}`];
-            if (!select) return;
-            if (pronunciationRelationshipIds.has(id))
-                draftValues.set(id, values);
-            const selected = new Set([
-                ...(committedValues.get(id) ?? []),
-                ...values,
-            ]);
-            Array.from(select.options).forEach((option) => {
-                option.selected = selected.has(option.value);
-            });
-            values.forEach((value) => {
-                const option = Array.from(select.options).find(
-                    (candidate) => candidate.value === value,
-                );
-                if (option) select.append(option);
-            });
-            const pronunciation = form.elements["field:pronunciation"];
-            if (pronunciation && pronunciationRelationshipIds.has(id)) {
-                const current = form.querySelector(
-                    "[data-library-pronunciation-current]",
-                );
-                const pronunciationValue = Array.from(
-                    pronunciationRelationshipIds,
-                )
-                    .flatMap(
-                        (relationshipId) =>
-                            draftValues.get(relationshipId) ?? [],
-                    )
-                    .map((value) =>
-                        entries.find((candidate) => candidate.id === value),
-                    )
-                    .filter(Boolean)
-                    .map((candidate) => {
-                        const candidatePronunciation =
-                            candidate.fields?.pronunciation;
-                        return (
-                            (Array.isArray(candidatePronunciation)
-                                ? candidatePronunciation[0]
-                                : candidatePronunciation) || candidate.label
-                        );
-                    })
-                    .join("");
-                if (current) current.textContent = pronunciationValue;
-            }
-        },
-    });
-    pronunciationRelationshipIds.forEach((relationshipId) => {
-        const carousel = form.querySelector(
-            `[data-horizontal-carousel="${CSS.escape(relationshipId)}"]`,
-        );
-        carousel?.querySelectorAll("[data-carousel-value]").forEach((item) => {
-            item.classList.remove("is-selected");
-            item.setAttribute("aria-pressed", "false");
-            item.querySelector("[data-carousel-order]").textContent = "";
-        });
-        const output = carousel?.querySelector("[data-carousel-selection]");
-        if (output) output.textContent = "";
-    });
-    form.querySelectorAll("[data-library-pronunciation-commit]").forEach(
-        (button) => {
-            button.addEventListener("click", () => {
-                const pronunciation = form.elements["field:pronunciation"];
-                const current = form.querySelector(
-                    "[data-library-pronunciation-current]",
-                );
-                const value = current?.textContent?.trim();
-                if (!pronunciation || !value) return;
-                const values = pronunciation.value
-                    .split("\u001f")
-                    .filter(Boolean);
-                if (!values.includes(value)) values.push(value);
-                pronunciation.value = values.join("\u001f");
-                const list = form.querySelector(
-                    "[data-library-pronunciation-values]",
-                );
-                if (
-                    list &&
-                    !list.querySelector(`[data-value="${CSS.escape(value)}"]`)
-                ) {
-                    const item = document.createElement("span");
-                    item.dataset.value = value;
-                    item.textContent = value;
-                    list.append(item);
-                }
-                pronunciationRelationshipIds.forEach((relationshipId) => {
-                    const committed = committedValues.get(relationshipId);
-                    (draftValues.get(relationshipId) ?? []).forEach((entryId) =>
-                        committed.add(entryId),
-                    );
-                    draftValues.set(relationshipId, []);
-                    const carousel = form.querySelector(
-                        `[data-horizontal-carousel="${CSS.escape(relationshipId)}"]`,
-                    );
-                    carousel
-                        ?.querySelectorAll("[data-carousel-value]")
-                        .forEach((item) => {
-                            item.classList.remove("is-selected");
-                            item.setAttribute("aria-pressed", "false");
-                            item.querySelector(
-                                "[data-carousel-order]",
-                            ).textContent = "";
-                        });
-                    const output = carousel?.querySelector(
-                        "[data-carousel-selection]",
-                    );
-                    if (output) output.textContent = "";
-                });
-                current.textContent = "";
-            });
-        },
-    );
-}
-
-function pronunciationRelationshipsFor(layer, schema, configuredIds) {
-    const targetRoles =
-        layer?.semanticRole === "orderedLexicalSequence"
-            ? new Set(["lexicalUnit"])
-            : ["compoundWritingUnit", "lexicalUnit"].includes(
-                    layer?.semanticRole,
-                )
-              ? new Set(["atomicWritingUnit"])
-              : null;
-    const semanticMatches = (layer?.relationships ?? []).filter(
-        (relationship) =>
-            targetRoles?.has(
-                schema.layers.find(({ id }) => id === relationship.targetLayer)
-                    ?.semanticRole,
-            ),
-    );
-    if (semanticMatches.length > 0) return semanticMatches;
-    return (layer?.relationships ?? []).filter(({ id }) =>
-        configuredIds.has(id),
-    );
-}
-
 function relationshipEditor(
     relationship,
     entry,
@@ -409,7 +239,7 @@ function relationshipEditor(
     if (hiddenOnly) return select.replace(" multiple", " multiple hidden");
     if (!carousel)
         return `<label><span>${escapeHtml(label)}</span>${select}</label>`;
-    return `<div class="library-composer-relationship" data-library-composer-relationship="${escapeHtml(relationship.id)}" data-target-layer="${escapeHtml(relationship.targetLayer)}">${select}${renderHorizontalCarousel({ id: relationship.id, label, items: targets.map((target) => ({ value: target.id, label: ordersPronunciation ? [target.fields?.pronunciation].flat().filter(Boolean).join(" · ") || target.label : target.label, preview: previewFor(target) })), selectedValues, addLabel, allowAdd })}</div>`;
+    return `<div class="library-composer-relationship" data-library-composer-relationship="${escapeHtml(relationship.id)}" data-target-layer="${escapeHtml(relationship.targetLayer)}">${select}${renderHorizontalCarousel({ id: relationship.id, label, items: targets.map((target) => ({ value: target.id, label: target.label, preview: previewFor(target) })), selectedValues, addLabel, allowAdd })}</div>`;
 }
 
 export function editorBody(
@@ -478,8 +308,13 @@ export function editorBody(
                     : value
                       ? [value]
                       : [];
-                return `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(fieldLabel)}</legend><div class="library-pronunciation-values" data-library-pronunciation-values>${pronunciations.map((pronunciation) => `<span data-value="${escapeHtml(pronunciation)}">${escapeHtml(pronunciation)}</span>`).join("")}</div><input name="field:pronunciation" type="hidden" value="${escapeHtml(pronunciations.join("\u001f"))}">${inlinePronunciationCarousel}<div class="library-pronunciation-commit"><output data-library-pronunciation-current></output><button class="btn-confirm" type="button" data-library-pronunciation-commit>${escapeHtml(i18n.t("gateway.study.library_commit_pronunciation"))}</button></div></fieldset>`;
+                return `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(fieldLabel)}</legend><div class="library-pronunciation-values" data-library-pronunciation-values>${pronunciations.map((pronunciation) => `<span data-value="${escapeHtml(pronunciation)}">${escapeHtml(pronunciation)}</span>`).join("")}</div><input name="field:pronunciation" type="hidden" value="${escapeHtml(pronunciations.join("\u001f"))}">${inlinePronunciationCarousel}<div class="library-pronunciation-stage"><output data-library-pronunciation-current></output></div><div class="library-pronunciation-commit"><button class="btn-confirm" type="button" data-library-pronunciation-commit>${escapeHtml(i18n.t("gateway.study.library_commit_pronunciation"))}</button></div></fieldset>`;
             }
+            if (
+                field.id === "pronunciation" &&
+                layer?.semanticRole === "orderedLexicalSequence"
+            )
+                return `<input name="field:pronunciation" type="hidden" value="${escapeHtml(entry.fields?.pronunciation ?? "")}">`;
             return inputForField(
                 field,
                 entry.fields?.[field.id],
@@ -522,8 +357,6 @@ export function editorBody(
                         options.relationshipCarousels === true &&
                         !carouselEligible,
                     addLabel: i18n.t("gateway.study.library_create"),
-                    previousLabel: i18n.t("ui.reuse.previous"),
-                    nextLabel: i18n.t("ui.reuse.next"),
                     allowAdd: options.relationshipCarouselAdd !== false,
                 },
             );

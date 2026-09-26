@@ -154,6 +154,10 @@ Die vollständige Zeichenanleitung erscheint nur beim ersten Versuch oder nach d
 
 Vokabelzeichnungen folgen jetzt der primären Schreibweise und ordnen alle aufgelösten Zeichen nebeneinander an; die Überschrift des Zeichenblocks enthält Lesungen und Bedeutung. Die gemeinsame Formularkomposition kennzeichnet Pflichtfelder einheitlich, bewahrt vom Anbieter gelieferte Strichmuster, validiert alternative Zeichen über die Wörterbuchsuche, bettet Ausspracheauswahlen für Zeichen ein und entfernt Karussellvorschauen beim Schließen von Dialogen.
 
+## Zuverlässiges Bearbeiten, Zeichnen und Zusammensetzen
+
+Kartenaktualisierungen und Audiowiedergabe werden jetzt über das aktuelle Anbieterschema migriert, und Detaildialoge behalten ihre Bearbeitungsaktion nach dem Bearbeiten. Die Zeichenübung bleibt begrenzt, lässt sich vorhersehbar skalieren, beschriftet einzelne Strichhilfen, verwendet bei Vokabeln die Schreibweise statt der Aussprache und schließt Sätze sowie Komposita aus. Die Kartenerstellung schließt Partikelkarten aus, stellt für Sätze und Komposita alle Zusammensetzungskarussells wieder her und bietet eine vorbereitende zeichenbasierte Ausspracheauswahl für Vokabeln und alternative Zeichen.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -194,3 +198,4 @@ Vokabelzeichnungen folgen jetzt der primären Schreibweise und ordnen alle aufge
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e894f166
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/64d1ac04
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/23587bd7
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/c8c8deb9

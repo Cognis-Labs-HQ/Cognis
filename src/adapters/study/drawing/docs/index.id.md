@@ -17,3 +17,5 @@ Tampilan panduan pertama memberi nomor pada setiap goresan dan menunjukkan arahn
 Panduan lengkap hanya muncul sebelum percobaan pertama sebuah kartu atau setelah pengguna menekan tindakan atur ulang **?**. Mencoba lagi mempertahankan panduan progresif. Pola gabungan membawa batas tiap bagian sehingga setiap karakter yang baru dicapai memperoleh satu pratinjau beranotasi lengkap.
 
 Kartu gabungan kini menyusun semua pola unit tulisan dari nilai tulisan utama secara berdampingan dengan skala konsisten dan jarak minimal. Papan gambar melebar agar ukuran karakter tetap terjaga, sedangkan judul ringkasnya menampilkan pelafalan dan definisi yang tersedia.
+
+Papan gambar tetap berada di dalam area pandang, memakai tinggi ringkas yang mengikuti konten, dan membatasi lebarnya hingga empat puluh persen area pandang agar kata yang lebih panjang diperkecil alih-alih menghasilkan jendela terlalu besar. Pengubahan ukuran tidak lagi menukar ukuran minimum papan, dan setiap panduan satu goresan tetap menampilkan anotasi urutan serta arah.

@@ -13,6 +13,7 @@
     box-shadow: var(--shadow);
     color: var(--text);
     overflow: hidden;
+    max-width: 40vw;
 }
 
 .study-drawing-pad.is-opening {

@@ -300,7 +300,11 @@ function openDrawingPad({
             ])[groupIndex];
             currentPattern.strokes
                 .slice(groupStart, groupStart + groupLength)
-                .forEach(drawStrokeOrder);
+                .forEach((stroke, index) =>
+                    drawStrokeOrder(stroke, groupStart + index),
+                );
+        } else if (guides.length === 1) {
+            drawStrokeOrder(guides[0], completed.length);
         }
         completed.forEach((stroke) => drawPath(stroke, colors.ink, 5));
         if (active) drawPath(active, colors.active, 5);
@@ -411,10 +415,11 @@ function openDrawingPad({
     const release = makeFloatingWindow(pad, {
         handle: pad.querySelector("header"),
         signal: controller.signal,
-        minWidth: 320,
-        minHeight: 480,
-        width: `min(96vw, ${Math.min(72, 28 * (strokePattern.columns ?? 1))}rem)`,
-        height: "min(88vh, 38rem)",
+        minWidth: 280,
+        minHeight: 240,
+        width: "min(40vw, 28rem)",
+        height: "min(70vh, 35rem)",
+        allowOrientationSwap: false,
     });
     const observer = new ResizeObserver(resize);
     let closing = false;
@@ -508,10 +513,16 @@ function openDrawingPad({
         currentDefinition = nextDefinition;
         currentPronunciations = nextPronunciations;
         currentPattern = nextPattern;
-        pad.style.setProperty(
-            "--drawing-columns",
-            String(currentPattern.columns ?? 1),
+        const columns = currentPattern.columns ?? 1;
+        const maximumWidth = window.innerWidth * 0.4;
+        const fittedWidth = Math.min(maximumWidth, 448 * columns);
+        const fittedHeight = Math.min(
+            window.innerHeight * 0.7,
+            fittedWidth / columns + 112,
         );
+        pad.style.width = `${fittedWidth}px`;
+        pad.style.height = `${fittedHeight}px`;
+        pad.style.setProperty("--drawing-columns", String(columns));
         difficulty = difficultyByCardId.get(nextCard.id) ?? 0;
         completed.length = 0;
         active = null;

@@ -33,9 +33,12 @@ export async function chooseCreateLayer({
 }) {
     const permitted = schema.layers.filter(
         (layer) =>
-            !["atomicWritingUnit", "definition", "meaning"].includes(
-                layer.semanticRole,
-            ),
+            ![
+                "atomicWritingUnit",
+                "definition",
+                "meaning",
+                "particle",
+            ].includes(layer.semanticRole),
     );
     if (!permitted.length) return null;
     let select;
@@ -121,31 +124,42 @@ export async function openCreateEntryPopup({
             relationship,
         ]),
     );
-    const constructorRelationships = (constructor.relationships ?? [])
-        .map((relationshipId) => relationshipsById.get(relationshipId))
-        .filter(Boolean)
-        .filter((relationship, index, relationships) => {
+    const constructorRelationshipIds = new Set(constructor.relationships ?? []);
+    if (
+        ["lexicalUnit", "orderedLexicalSequence"].includes(layer.semanticRole)
+    ) {
+        for (const relationship of layer.relationships ?? []) {
             const targetRole = schema.layers.find(
                 ({ id }) => id === relationship.targetLayer,
             )?.semanticRole;
-            if (
-                layer.semanticRole === "compoundWritingUnit" &&
-                targetRole === "lexicalUnit"
-            )
-                return false;
-            return (
-                relationships.findIndex(
-                    (candidate) =>
-                        candidate.targetLayer === relationship.targetLayer,
-                ) === index
-            );
-        });
+            if (!["definition", "meaning"].includes(targetRole))
+                constructorRelationshipIds.add(relationship.id);
+        }
+    } else if (layer.semanticRole === "compoundWritingUnit") {
+        for (const relationship of layer.relationships ?? []) {
+            const targetRole = schema.layers.find(
+                ({ id }) => id === relationship.targetLayer,
+            )?.semanticRole;
+            if (targetRole === "atomicWritingUnit")
+                constructorRelationshipIds.add(relationship.id);
+        }
+    }
+    const constructorRelationships = Array.from(constructorRelationshipIds)
+        .map((relationshipId) => relationshipsById.get(relationshipId))
+        .filter(Boolean);
+    const constructorFieldIds = new Set(constructor.fields ?? []);
+    if (["compoundWritingUnit", "lexicalUnit"].includes(layer.semanticRole))
+        constructorFieldIds.add("pronunciation");
+    if (layer.semanticRole === "orderedLexicalSequence")
+        constructorFieldIds.delete("pronunciation");
     const editingLayer = {
         ...layer,
-        fields: (constructor.fields ?? []).map((fieldId) => {
-            const field = fieldsById.get(fieldId);
-            return contributedById.get(fieldId) ?? field;
-        }),
+        fields: Array.from(constructorFieldIds)
+            .map((fieldId) => {
+                const field = fieldsById.get(fieldId);
+                return contributedById.get(fieldId) ?? field;
+            })
+            .filter(Boolean),
         relationships: constructorRelationships,
     };
     const draft = {
@@ -406,13 +420,23 @@ export async function openCreateEntryPopup({
             : scope === "global"
               ? "global"
               : undefined;
+    const references = readReferences(form, editingLayer);
+    const fields = readFields(form, editingLayer, draft);
+    if (layer.semanticRole === "orderedLexicalSequence") {
+        fields.pronunciation = (form.compositionOrder ?? [])
+            .map((entryId) => entries.find(({ id }) => id === entryId))
+            .map((candidate) =>
+                derivedPronunciation(candidate, entries, schema),
+            )
+            .join("");
+    }
     const entry = {
         ...draft,
         label: form.elements.label.value,
         class: form.elements.class.value || undefined,
         tags: form.elements.tags.value.split("\u001f").filter(Boolean),
-        fields: readFields(form, editingLayer, draft),
-        references: readReferences(form, editingLayer),
+        fields,
+        references,
         definitionLanguages:
             layer.semanticRole === "definition"
                 ? ["de", "en", "id", "ja"]

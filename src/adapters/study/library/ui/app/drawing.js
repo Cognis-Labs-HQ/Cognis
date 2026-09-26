@@ -8,52 +8,46 @@ function ownDrawingPattern(entry, layer) {
         .find(Boolean);
 }
 
-function orderedDrawingPieces(entry, entries, schemas, visited = new Set()) {
-    if (!entry || visited.has(entry.id)) return [];
-    visited.add(entry.id);
-    const schema = schemas.find(({ id }) => id === entry.schemaId);
-    const layer = schema?.layers.find(({ id }) => id === entry.layer);
-    const own = ownDrawingPattern(entry, layer);
-    if (
-        own &&
-        ["atomicWritingUnit", "compoundWritingUnit"].includes(
-            layer?.semanticRole,
-        )
-    )
-        return [{ entry, pattern: own }];
-    const candidates = (entry.references ?? [])
-        .slice()
+function orderedDrawingPieces(entry, entries, schemas) {
+    const drawable = entries
+        .map((candidate) => {
+            const schema = schemas.find(({ id }) => id === candidate.schemaId);
+            const layer = schema?.layers.find(
+                ({ id }) => id === candidate.layer,
+            );
+            const pattern = ownDrawingPattern(candidate, layer);
+            return pattern &&
+                ["atomicWritingUnit", "compoundWritingUnit"].includes(
+                    layer?.semanticRole,
+                )
+                ? { entry: candidate, pattern }
+                : null;
+        })
+        .filter(Boolean)
         .sort(
-            (left, right) =>
-                (left.position ?? Number.MAX_SAFE_INTEGER) -
-                (right.position ?? Number.MAX_SAFE_INTEGER),
-        )
-        .map(({ entryId }) => entries.find(({ id }) => id === entryId))
-        .filter(Boolean);
+            (left, right) => right.entry.label.length - left.entry.label.length,
+        );
     const written = [];
     let offset = 0;
     while (offset < entry.label.length) {
-        const candidate = candidates.find(
-            (item) => item.label && entry.label.startsWith(item.label, offset),
+        const candidate = drawable.find(
+            ({ entry: item }) =>
+                item.label && entry.label.startsWith(item.label, offset),
         );
         if (!candidate) break;
-        const pieces = orderedDrawingPieces(
-            candidate,
-            entries,
-            schemas,
-            new Set(visited),
-        );
-        if (!pieces.length) break;
-        written.push(...pieces);
-        offset += candidate.label.length;
+        written.push(candidate);
+        offset += candidate.entry.label.length;
     }
     if (written.length && offset === entry.label.length) return written;
-    return candidates.flatMap((candidate) =>
-        orderedDrawingPieces(candidate, entries, schemas, new Set(visited)),
-    );
+    return [];
 }
 
 export function drawingPattern(entry, layer, entries = [], schemas = []) {
+    if (
+        layer?.semanticRole === "orderedLexicalSequence" ||
+        ["composite", "sentence"].includes(entry.class)
+    )
+        return undefined;
     const own = ownDrawingPattern(entry, layer);
     if (
         own &&

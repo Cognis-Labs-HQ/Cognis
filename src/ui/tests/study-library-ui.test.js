@@ -25,10 +25,17 @@ const studyStylesheet = readFileSync(
     resolve(ROOT, "src/gateways/study/ui/study.css"),
     "utf8",
 );
-const adminInteractionsSource = readFileSync(
-    resolve(ROOT, "src/adapters/study/library/ui/app/admin-interactions.js"),
-    "utf8",
-);
+const adminInteractionsSource = [
+    "admin-interactions.js",
+    "pronunciation-editor.js",
+]
+    .map((file) =>
+        readFileSync(
+            resolve(ROOT, `src/adapters/study/library/ui/app/${file}`),
+            "utf8",
+        ),
+    )
+    .join("\n");
 const cardsSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/ui/app/cards.js"),
     "utf8",
