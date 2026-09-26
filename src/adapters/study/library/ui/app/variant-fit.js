@@ -85,10 +85,17 @@ export function fitVariantBranchWithinGrid(rootShell) {
             : [];
         for (const slot of slots) {
             const preferred = slot.dataset.libraryPreferredDirection;
+            const horizontalSide = preferred.includes("right")
+                ? "right"
+                : preferred.includes("left")
+                  ? "left"
+                  : null;
             const candidates = [
                 preferred,
                 ...VARIANT_DIRECTIONS.filter(
-                    (direction) => direction !== preferred,
+                    (direction) =>
+                        direction !== preferred &&
+                        (!horizontalSide || direction.includes(horizontalSide)),
                 ),
             ];
             let best = {
@@ -101,6 +108,10 @@ export function fitVariantBranchWithinGrid(rootShell) {
                 const rect = cardBounds(slot);
                 const overflow = overflowScore(rect, boundary);
                 const collision = collisionScore(rect, occupiedRects);
+                if (direction === preferred && overflow === 0) {
+                    best = { direction, overflow, collision };
+                    break;
+                }
                 if (
                     overflow < best.overflow ||
                     (overflow === best.overflow && collision < best.collision)

@@ -161,8 +161,11 @@ export async function bootstrapStudyAdapter(
         );
     if (!systemCtx?.hasCapability("study:library:provider"))
         systemCtx?.contributePublicCapability("study:library:provider", {
+            inspectContentPack: service.inspectContentPack.bind(service),
             ingestContentPack: service.ingestContentPack.bind(service),
             registerConstructor,
+            registerLookupProvider:
+                service.registerLookupProvider.bind(service),
         } satisfies LibraryProviderCapability);
     ctx.registerRoute(
         createLibraryRoutes(
@@ -199,6 +202,26 @@ export async function bootstrapStudyAdapter(
             "/static/gateways/study/study.css",
             "/static/adapters/study/library/library.css",
             "/static/adapters/study/library/library-selection.css",
+        ],
+        requiredCapabilities: ["study:library:detailFlow"],
+        isEnabled: () => ctx.isAdapterEnabled(),
+    });
+    ctx.registerSpaRoute?.({
+        id: "study-library-requests-page",
+        pattern: "^/study/library/requests$",
+        base: "/study/library/requests",
+        scriptUrl: "/static/adapters/study/library/app/requests/index.js",
+        navigationLabels: {
+            de: "Anfragen",
+            en: "Requests",
+            id: "Permintaan",
+            ja: "リクエスト",
+        },
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/gateways/study/study.css",
+            "/static/adapters/study/library/library.css",
         ],
         requiredCapabilities: ["study:library:detailFlow"],
         isEnabled: () => ctx.isAdapterEnabled(),

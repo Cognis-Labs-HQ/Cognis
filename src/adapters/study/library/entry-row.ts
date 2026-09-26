@@ -16,11 +16,17 @@ export function mapEntry(row: Record<string, unknown>): LibraryEntry {
             row.always_show_definition === true ||
             Number(row.always_show_definition) === 1,
         protected: row.protected === true || Number(row.protected) === 1,
+        editable: row.editable !== false && Number(row.editable) !== 0,
         schemaId: String(row.schema_id),
         schemaVersion: Number(row.schema_version),
         layer: String(row.layer),
         language: String(row.language),
         label: String(row.label),
+        class:
+            row.class === null || row.class === undefined
+                ? undefined
+                : String(row.class),
+        tags: JSON.parse(String(row.tags_json ?? "[]")),
         fields: JSON.parse(String(row.fields_json ?? "{}")),
         references: [],
         scope: String(row.scope) as LibraryEntry["scope"],

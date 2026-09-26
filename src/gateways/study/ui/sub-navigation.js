@@ -8,7 +8,10 @@ import {
     isAdminScope,
     parseLanguageCode,
 } from "/static/gateways/study/ui/language.js";
-import { fetchLibrarySchemas } from "/static/gateways/study/ui/library-client.js";
+import {
+    fetchLibraryPushRequests,
+    fetchLibrarySchemas,
+} from "/static/gateways/study/ui/library-client.js";
 
 const SETTINGS_GEAR_ICON = `<picture><source media="(prefers-color-scheme: dark)" srcset="/static/assets/reuse/settings-cog-dark.svg"><img src="/static/assets/reuse/settings-cog-light.svg" alt=""></picture>`;
 
@@ -135,8 +138,7 @@ export async function loadStudySubNavigationModel({
     const requestedLanguageCode = parseLanguageCode(fallbackLanguageCode);
     const subPages = uiCtx.capabilities.get("study:subPages");
     if (!subPages) throw new Error("Study sub-page provider unavailable.");
-    const learningLanguagesRaw = await (SUB_NAV_CACHE.learningLanguages ??
-        loadLearningLanguages());
+    const learningLanguagesRaw = await loadLearningLanguages();
     SUB_NAV_CACHE.learningLanguages = Promise.resolve(learningLanguagesRaw);
 
     const requestedModel = await subPages.load("study", {
@@ -161,25 +163,21 @@ export async function loadStudySubNavigationModel({
 
     const learningLanguages = learningLanguagesRaw
         .map((languageCode) => parseLanguageCode(languageCode))
-        .filter(Boolean);
+        .filter((languageCode) => languageCatalogByCode.has(languageCode));
     const activeLanguageCodes = Array.from(
         new Set([
             ...learningLanguages,
-            ...[requestedLanguageCode].filter(Boolean),
+            ...[requestedLanguageCode].filter((languageCode) =>
+                languageCatalogByCode.has(languageCode),
+            ),
         ]),
     );
-    for (const languageCode of activeLanguageCodes) {
-        if (!languageCatalogByCode.has(languageCode)) {
-            languageCatalogByCode.set(languageCode, {
-                code: languageCode,
-                flag: "",
-                name: resolveLanguageLabel(languageCode),
-            });
-        }
-    }
 
-    const selectedLanguageCode =
-        requestedLanguageCode || activeLanguageCodes[0];
+    const selectedLanguageCode = activeLanguageCodes.includes(
+        requestedLanguageCode,
+    )
+        ? requestedLanguageCode
+        : activeLanguageCodes[0];
 
     const modulesByLanguage = requestedModel.pagesByGroup;
 
@@ -187,6 +185,9 @@ export async function loadStudySubNavigationModel({
     const schemas = selectedLanguageCode
         ? await fetchLibrarySchemas(selectedLanguageCode).catch(() => [])
         : [];
+    const pendingLibraryRequests = await fetchLibraryPushRequests().catch(
+        () => [],
+    );
     const activeLocale = document.documentElement.lang;
     for (const schema of schemas) {
         for (const layer of schema.layers ?? []) {
@@ -215,6 +216,25 @@ export async function loadStudySubNavigationModel({
             labelKey: "gateway.study.leaderboard_label",
             pageUrl: "/study/leaderboard",
             order: 300,
+        });
+    }
+    const requestsRoute = spaRoutes.find(
+        (route) => route.base === "/study/library/requests",
+    );
+    if (requestsRoute) {
+        const navigationLabels = requestsRoute.navigationLabels ?? {};
+        modules.push({
+            id: "library-requests",
+            label:
+                navigationLabels[activeLocale] ??
+                navigationLabels[activeLocale.split("-")[0]] ??
+                navigationLabels.en,
+            labelKey: "gateway.study.library_requests",
+            pageUrl: "/study/library/requests",
+            order: 290,
+            attention: pendingLibraryRequests.some(
+                (request) => request.canReview === true,
+            ),
         });
     }
     modules.sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
@@ -289,9 +309,12 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                     ? translatedLabel
                     : String(component?.label ?? pageUrl);
             const activeClass = rawPageUrl === currentPath ? " active" : "";
+            const attentionClass = component.attention
+                ? " study-subnav-attention"
+                : "";
             return `
                 <li>
-                    <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(label)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                    <a class="dropdown-item${activeClass}${attentionClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(label)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                         ${escapeHtml(label)}
                     </a>
                 </li>

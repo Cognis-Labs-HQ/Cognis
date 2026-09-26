@@ -17,8 +17,21 @@ import {
 } from "./presentation.js";
 import { definitionDisplay } from "./definition-display.js";
 import { similarEntries } from "./similar-items.js";
+import { uniqueRelatedEntries } from "./related-entries.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
+
+export function contentClassLabel(contentClass) {
+    const value =
+        String(contentClass ?? "")
+            .split(":")
+            .at(-1)
+            ?.trim() ?? "";
+    return value
+        .replaceAll(/([\p{Ll}\d])(\p{Lu})/gu, "$1 $2")
+        .replaceAll(/[-_]+/g, " ")
+        .replaceAll(/\b\p{L}/gu, (letter) => letter.toLocaleUpperCase());
+}
 
 function relationTree(references, usedBy, i18n) {
     const branch = (label, related) =>
@@ -36,6 +49,10 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
                   "lexicalUnit",
           )
         : [];
+    const visibleRelatedWords = relatedWords.filter(
+        (candidate) =>
+            candidate.label.normalize("NFC") !== entry.label.normalize("NFC"),
+    );
     const structuralDependants = usedBy.filter((candidate) => {
         const candidateLayer = layerForEntry(schemas, candidate);
         return (candidate.references ?? []).some((reference) => {
@@ -62,12 +79,20 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
             !structuralDependants.includes(candidate) &&
             layerForEntry(schemas, candidate)?.semanticRole !== "definition",
     );
-    const wordLayer = relatedWords.length
-        ? layerForEntry(schemas, relatedWords[0])
-        : null;
+    const relatedDependants = uniqueRelatedEntries([
+        ...visibleRelatedWords,
+        ...otherUsedBy,
+    ]);
     const fields = entry.fields ?? {};
     const metadataIds = new Set(metadataFields(layer).map(({ id }) => id));
-    const reserved = new Set(["pronunciation", "audio", ...metadataIds]);
+    const reserved = new Set([
+        "pronunciation",
+        "audio",
+        ...metadataIds,
+        ...(layer?.fields ?? [])
+            .filter(({ type }) => type === "strokePattern")
+            .map(({ id }) => id),
+    ]);
     const genericFields = Object.fromEntries(
         (layer?.fields ?? [])
             .filter(
@@ -95,20 +120,26 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
                       ];
             }),
     );
+    const displayedClass =
+        entry.class ||
+        (layer?.semanticRole === "orderedLexicalSequence" ? "composite" : "");
+    const classPill = displayedClass
+        ? `<span class="library-metadata-pill library-content-class-pill">${escapeHtml(contentClassLabel(displayedClass))}</span>`
+        : "";
+    const tagPills = (entry.tags ?? [])
+        .map(
+            (tag) =>
+                `<span class="library-metadata-pill">${escapeHtml(tag)}</span>`,
+        )
+        .join("");
     return [
-        `<header class="library-detail-summary">${renderAudio(entry, layer)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
+        `<header class="library-detail-summary">${renderAudio(entry, layer, entries, schemas, i18n.t("gateway.study.library_play_audio"))}<div class="library-entry-indicators">${classPill}${tagPills}${renderMetadataPills(entry, layer)}</div></header>`,
         options.showReferenceTree ? relationTree(references, usedBy, i18n) : "",
         renderDetailFields(genericFields),
-        !options.showReferenceTree && relatedWords.length
+        !options.showReferenceTree && relatedDependants.length
             ? relationSection(
-                  i18n
-                      .t("gateway.study.library_used_in_layer")
-                      .replace(
-                          "{{ layer }}",
-                          localizedLabel(wordLayer.metadata, entry.language) ||
-                              wordLayer.id,
-                      ),
-                  relatedWords,
+                  i18n.t("gateway.study.library_used_by"),
+                  relatedDependants,
                   i18n.t("gateway.study.library_no_relationships"),
               )
             : "",
@@ -116,13 +147,6 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
             ? relationSection(
                   i18n.t("gateway.study.library_usage_examples"),
                   directExamples,
-                  i18n.t("gateway.study.library_no_relationships"),
-              )
-            : "",
-        !options.showReferenceTree && otherUsedBy.length
-            ? relationSection(
-                  i18n.t("gateway.study.library_used_by"),
-                  otherUsedBy,
                   i18n.t("gateway.study.library_no_relationships"),
               )
             : "",

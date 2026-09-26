@@ -336,3 +336,37 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
         grid-template-columns: 1fr;
     }
 }
+@keyframes study-subnav-attention-breathe {
+    from {
+        box-shadow: 0 0 0 0
+            color-mix(
+                in srgb,
+                var(--color-danger-outline-text) 24%,
+                transparent
+            );
+    }
+
+    to {
+        box-shadow:
+            inset 0 0 0 1px var(--color-danger-outline-text),
+            0 0 0 0.22rem
+                color-mix(
+                    in srgb,
+                    var(--color-danger-outline-text) 52%,
+                    transparent
+                );
+    }
+}
+
+.study-subnav-attention {
+    border-color: var(--color-danger-outline-text);
+    animation: study-subnav-attention-breathe 1.5s ease-in-out infinite
+        alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .study-subnav-attention {
+        animation: none;
+        box-shadow: inset 0 0 0 1px var(--color-danger-outline-text);
+    }
+}

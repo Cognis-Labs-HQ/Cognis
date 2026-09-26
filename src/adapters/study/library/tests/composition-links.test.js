@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
     distinctPronunciationLabels,
+    excludeTitleReferenceDuplicates,
     resolveLabelComposition,
+    resolveReferenceAliasComposition,
 } from "../ui/app/composition-links.js";
 
 const schemas = [
@@ -68,6 +70,40 @@ test("partially resolvable spellings do not produce misleading links", () => {
     );
 });
 
+test("ordered relationship targets resolve pronunciation aliases", () => {
+    const mountain = {
+        id: "word-yama",
+        label: "山",
+        fields: { pronunciation: ["やま"] },
+    };
+    const from = { id: "particle-kara", label: "から" };
+    const river = {
+        id: "word-kawa",
+        label: "川",
+        fields: { pronunciation: "かわ" },
+    };
+    const until = { id: "particle-made", label: "まで" };
+
+    assert.deepEqual(
+        resolveReferenceAliasComposition("やまからかわまで", [
+            mountain,
+            from,
+            river,
+            until,
+        ]).map(({ id }) => id),
+        ["word-yama", "particle-kara", "word-kawa", "particle-made"],
+    );
+    assert.deepEqual(
+        resolveReferenceAliasComposition("やまから海まで", [
+            mountain,
+            from,
+            river,
+            until,
+        ]),
+        [],
+    );
+});
+
 test("title pronunciations do not duplicate primary or secondary spellings", () => {
     assert.deepEqual(
         distinctPronunciationLabels({
@@ -85,5 +121,25 @@ test("title pronunciations do not duplicate primary or secondary spellings", () 
             ["ひと"],
         ),
         ["じん", "にん"],
+    );
+});
+
+test("title detail omits links already composing the primary title", () => {
+    const kana = { id: "kana-ka", label: "か" };
+    const otherKana = { id: "kana-ga", label: "が" };
+
+    assert.deepEqual(
+        excludeTitleReferenceDuplicates(
+            [[kana], [otherKana]],
+            [{ id: "kana-ka", label: " か " }],
+        ),
+        [[otherKana]],
+    );
+    assert.deepEqual(
+        excludeTitleReferenceDuplicates(
+            [[kana]],
+            [{ id: "different-target", label: "か" }],
+        ),
+        [[kana]],
     );
 });

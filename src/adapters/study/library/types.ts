@@ -2,6 +2,21 @@ export type LibraryScope = "global" | "class" | "user";
 
 export type LocalizedText = Readonly<Record<string, string>>;
 
+export type LibraryMetadataValue =
+    | string
+    | number
+    | boolean
+    | null
+    | readonly LibraryMetadataValue[]
+    | { readonly [key: string]: LibraryMetadataValue };
+
+/** Localized presentation plus provider metadata that survives contract round trips. */
+export interface LibraryMetadata {
+    labels: LocalizedText;
+    descriptions?: LocalizedText;
+    [key: string]: LibraryMetadataValue | LocalizedText | undefined;
+}
+
 export const STRING_LOCALIZATION_CAPABILITY = "localization:translateString";
 
 export interface StringLocalizationCapability {
@@ -41,16 +56,20 @@ export interface LibraryDetailHint {
 
 export interface LibraryFieldSchema {
     id: string;
-    metadata: { labels: LocalizedText; descriptions?: LocalizedText };
-    type:
-        | "string"
-        | "number"
-        | "integer"
-        | "boolean"
-        | "localizedText"
-        | "stringList"
-        | "asset"
-        | "audio";
+    metadata: LibraryMetadata;
+    /** Built-ins are validated directly; extension types require a declarative validator. */
+    type: string;
+    validation?:
+        | { kind: "string"; pattern?: string }
+        | {
+              kind: "number";
+              integer?: boolean;
+              minimum?: number;
+              maximum?: number;
+          }
+        | { kind: "boolean" }
+        | { kind: "list"; items: "string" | "number" | "boolean" }
+        | { kind: "localizedText" };
     required?: boolean;
     /** Provider-owned editing and linking semantics. Labels remain in metadata. */
     input?: {
@@ -65,21 +84,37 @@ export interface LibraryFieldSchema {
             | "audioFile";
         options?: readonly {
             value: string;
-            metadata: { labels: LocalizedText };
+            metadata: LibraryMetadata;
         }[];
         immutable?: boolean;
-        /** Relationship whose targets make values in this field deep-linkable. */
-        linkRelationship?: string;
+        /** Relationships whose ordered targets make values in this field deep-linkable. */
+        linkRelationships?: readonly string[];
         /** File namespace and language-relative prefix used by audioFile controls. */
         file?: { namespace: string; prefix?: string };
     };
     detail?: LibraryDetailHint;
 }
 
+/** Normalized pen coordinates and timing for deterministic writing practice. */
+export interface LibraryStrokePattern {
+    coordinateSystem: "normalized";
+    strokes: readonly {
+        points: readonly {
+            x: number;
+            y: number;
+            /** Milliseconds from the beginning of this stroke. */
+            time: number;
+            pressure?: number;
+        }[];
+    }[];
+    /** Minimum percentage accepted by a practice renderer. */
+    tolerance?: number;
+}
+
 export interface LibraryRelationshipSchema {
     id: string;
     targetLayer: string;
-    metadata: { labels: LocalizedText; descriptions?: LocalizedText };
+    metadata: LibraryMetadata;
     minimum?: number;
     maximum?: number;
     ordered?: boolean;
@@ -94,11 +129,15 @@ export interface LibraryRelationshipSchema {
 
 export interface LibraryCardConstructor {
     /** Localized label for the card's primary label control. */
-    label: { labels: LocalizedText; descriptions?: LocalizedText };
+    label: LibraryMetadata;
     /** Field IDs to render, in form order. Omitted fields receive defaults only. */
     fields?: readonly string[];
     /** Relationship IDs to render, in form order. */
     relationships?: readonly string[];
+    /** Target layer IDs rendered as carousels beneath the primary input composer. */
+    input_carousels: readonly string[];
+    /** Target layer IDs rendered inside the staged pronunciation composer. */
+    pronunciation_carousels: readonly string[];
     /** Initial provider-owned field values for a new card. */
     defaults?: Record<string, unknown>;
     /** Expose Cognis' preview-definition switch for this layer. */
@@ -109,7 +148,7 @@ export interface LibraryCardConstructor {
 
 export interface LibraryLayerSchema {
     id: string;
-    metadata: { labels: LocalizedText; descriptions?: LocalizedText };
+    metadata: LibraryMetadata;
     semanticRole?: LibrarySemanticRole;
     /** Prefer the localized definition referenced by each entry as its display text. */
     displayDefinition?: boolean;
@@ -144,7 +183,7 @@ export interface LibrarySchema {
     version: number;
     namespace: string;
     language: string;
-    metadata: { labels: LocalizedText; descriptions?: LocalizedText };
+    metadata: LibraryMetadata;
     layers: readonly LibraryLayerSchema[];
 }
 
@@ -159,6 +198,12 @@ export interface LibraryEntryInput {
     schemaVersion?: number;
     layer: string;
     label: string;
+    /** Provider-neutral lexical/content classification, such as noun or verb. */
+    class?: string;
+    /** Searchable, user-authored classification labels such as proficiency levels. */
+    tags?: string[];
+    /** Whether provider-owned content may be modified through Library editors. */
+    editable?: boolean;
     /** Exclude the entry and its descendants from direct browsing while retaining references. */
     hidden?: boolean;
     /** Keep the primary localized definition visible in card previews. */
@@ -186,6 +231,10 @@ export interface LibraryEntry extends LibraryEntryInput {
     protected: boolean;
     /** Request-scoped permission hint; never persisted. */
     canDelete?: boolean;
+    /** Request-scoped user-facing edit permission; never persisted. */
+    canEdit?: boolean;
+    /** Whether a permitted edit must be reviewed before application. */
+    editRequiresReview?: boolean;
 }
 
 export interface LibraryLocation {
@@ -203,20 +252,31 @@ export interface LibraryResolutionProposal {
 
 export interface LibraryLookupSuggestion {
     provider: string;
+    label?: string;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
     provenance: string;
     confidence: number;
 }
 
+export interface LibraryLookupProposal {
+    provider?: string;
+    label?: string;
+    fields?: Record<string, unknown>;
+    references?: LibraryReferenceInput[];
+    provenance?: string;
+    confidence?: number;
+}
+
 export interface LibraryLookupProvider {
     id: string;
+    metadata: LibraryMetadata;
     supports(schema: LibrarySchema, layer: LibraryLayerSchema): boolean;
     lookup(input: {
         schema: LibrarySchema;
         layer: LibraryLayerSchema;
         label: string;
-    }): Promise<LibraryLookupSuggestion[]>;
+    }): Promise<LibraryLookupProposal[]>;
 }
 
 export interface LibraryFormContribution {
@@ -235,6 +295,8 @@ export interface LibraryPushRequest {
     destination: LibraryLocation;
     requestedBy: string;
     status: "pending" | "approved" | "rejected" | "withdrawn";
+    kind?: "promotion" | "update";
+    proposedEntry?: LibraryEntryInput;
     /** Included only in authorized review listings. */
     source?: LibraryEntry;
     /** Request-scoped action hints; never persisted. */
@@ -255,6 +317,8 @@ export interface LibraryContentPackManifest {
     pruneOmittedRecords?: boolean;
     /** Protect every record in this provider pack from deletion and scope changes. */
     protected?: boolean;
+    /** Validated provider metadata retained in installation receipts and plans. */
+    metadata?: Readonly<Record<string, LibraryMetadataValue>>;
     license: {
         id: string;
         url?: string;
@@ -270,6 +334,10 @@ export interface LibraryContentRecord {
     hidden?: boolean;
     alwaysShowDefinition?: boolean;
     label: string;
+    /** Provider-neutral lexical/content classification, such as noun or verb. */
+    class?: string;
+    /** Prevent UI and API modification while keeping the record visible. */
+    editable?: boolean;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
 }
@@ -315,6 +383,8 @@ export interface LibraryContentPackReceipt {
     schemaVersion: number;
     digest: string;
     recordCount: number;
+    newRecordCount: number;
     relationshipCount: number;
+    metadata?: Readonly<Record<string, LibraryMetadataValue>>;
     unchanged: boolean;
 }

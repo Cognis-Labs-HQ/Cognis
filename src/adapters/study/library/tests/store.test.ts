@@ -3,7 +3,82 @@ import test from "node:test";
 import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { LibraryStore } from "../store.js";
+import { contentEntryId } from "../content-pack.js";
 import type { LibraryContentPackPlan } from "../types.js";
+
+test("new releases may replace a schema owned only by the same content pack", async () => {
+    const commands: StructuredDbCommand[] = [];
+    const previousSchema = {
+        id: "japanese",
+        version: 45,
+        namespace: "ja",
+        language: "ja",
+        metadata: { labels: { en: "Japanese" } },
+        layers: [{ id: "words", metadata: { labels: { en: "Words" } } }],
+    };
+    const nextSchema = {
+        ...previousSchema,
+        layers: [
+            {
+                ...previousSchema.layers[0],
+                displayDefinition: true,
+            },
+        ],
+    };
+    const db: DbExecutor = {
+        ensureTable: async () => {},
+        transaction: async (callback) => callback(db),
+        executeCommand: async (command) => {
+            commands.push(command);
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_schemas"
+            ) {
+                return {
+                    rows: [{ schema_json: JSON.stringify(previousSchema) }],
+                };
+            }
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_content_packs" &&
+                command.where?.some(({ column }) => column === "schema_id")
+            ) {
+                return {
+                    rows: [
+                        { publisher: "Cognis Labs HQ", pack_id: "japanese" },
+                    ],
+                };
+            }
+            if (command.option === "SELECT") return { rows: [] };
+            return { rowCount: 1 };
+        },
+    };
+    await new LibraryStore(db).ingestContentPack({
+        root: "/content",
+        manifest: {
+            id: "japanese",
+            publisher: "Cognis Labs HQ",
+            version: "2.2.16",
+            contentRevision: "12",
+            namespace: "ja",
+            schema: "schema.json",
+            content: "content",
+            license: { id: "AGPL-3.0-or-later" },
+        },
+        schema: nextSchema,
+        digest: "next",
+        records: [],
+        assets: [],
+    });
+    assert.ok(
+        commands.some(
+            (command) =>
+                command.option === "UPDATE" &&
+                command.table === "study_library_schemas" &&
+                command.set.schema_json === JSON.stringify(nextSchema),
+        ),
+    );
+});
 
 test("content pack import ignores duplicate all-key references", async () => {
     const commands: StructuredDbCommand[] = [];
@@ -45,6 +120,7 @@ test("content pack import ignores duplicate all-key references", async () => {
             namespace: "ja",
             schema: "schema.json",
             content: "data",
+            metadata: { catalog: { featured: true } },
             license: { id: "CC-BY-4.0" },
         },
         schema,
@@ -75,6 +151,7 @@ test("content pack import ignores duplicate all-key references", async () => {
     const receipt = await new LibraryStore(db).ingestContentPack(plan);
 
     assert.equal(receipt.unchanged, false);
+    assert.equal(receipt.newRecordCount, 3);
     const entryInsert = commands.find(
         (command) =>
             command.option === "INSERT" &&
@@ -132,9 +209,21 @@ test("content pack import ignores duplicate all-key references", async () => {
         ),
         false,
     );
+    const packInsert = commands.find(
+        (command) =>
+            command.option === "INSERT" &&
+            command.table === "study_library_content_packs",
+    );
+    assert.equal(
+        packInsert?.option === "INSERT"
+            ? packInsert.values.metadata_json
+            : undefined,
+        JSON.stringify({ catalog: { featured: true } }),
+    );
+    assert.deepEqual(receipt.metadata, { catalog: { featured: true } });
 });
 
-test("content pack updates prune omitted records only when requested", async () => {
+test("authoritative content packs prune omitted records by default", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
         id: "japanese",
@@ -154,8 +243,7 @@ test("content pack updates prune omitted records only when requested", async () 
             if (
                 command.option === "SELECT" &&
                 command.table === "study_library_entries" &&
-                command.columns?.length === 1 &&
-                command.columns[0] === "id" &&
+                command.columns?.includes("provider_modified") &&
                 command.where?.some((clause) => clause.column === "created_by")
             ) {
                 return { rows: [{ id: "removed-entry" }] };
@@ -180,7 +268,6 @@ test("content pack updates prune omitted records only when requested", async () 
             namespace: "ja",
             schema: "schema.json",
             content: "data",
-            pruneOmittedRecords: true,
             license: { id: "CC-BY-4.0" },
         },
         schema,
@@ -206,9 +293,95 @@ test("content pack updates prune omitted records only when requested", async () 
         ).length,
         2,
     );
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "DELETE" &&
+                command.table === "study_library_viewed_entries",
+        ),
+        false,
+    );
 });
 
-test("content pack updates retain omitted records by default", async () => {
+test("content packs preserve provider records after a user modifies them", async () => {
+    const commands: StructuredDbCommand[] = [];
+    const manifest = {
+        id: "study-language-ja",
+        publisher: "Cognis Labs HQ",
+        version: "2.0.0",
+        contentRevision: "2",
+        namespace: "ja",
+        schema: "schema.json",
+        content: "data",
+        license: { id: "CC-BY-4.0" },
+    };
+    const schema = {
+        id: "japanese",
+        version: 1,
+        namespace: "ja",
+        language: "ja",
+        metadata: { labels: { en: "Japanese" } },
+        layers: [
+            { id: "characters", metadata: { labels: { en: "Characters" } } },
+        ],
+    };
+    const protectedId = contentEntryId(manifest, "neko");
+    const db: DbExecutor = {
+        ensureTable: async () => {},
+        transaction: async (callback) => callback(db),
+        executeCommand: async (command) => {
+            commands.push(command);
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_entries" &&
+                command.columns?.includes("provider_modified") &&
+                command.where?.some(({ column }) => column === "created_by")
+            ) {
+                return {
+                    rows: [{ id: protectedId, provider_modified: true }],
+                };
+            }
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_schemas"
+            ) {
+                return { rows: [{ schema_json: JSON.stringify(schema) }] };
+            }
+            if (command.option === "SELECT") return { rows: [] };
+            return { rowCount: 1 };
+        },
+    };
+    await new LibraryStore(db).ingestContentPack({
+        root: "/content",
+        manifest,
+        schema,
+        digest: "digest-two",
+        records: [
+            { id: "neko", layer: "characters", label: "Provider version" },
+        ],
+        assets: [],
+    });
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "INSERT" &&
+                command.table === "study_library_entries" &&
+                command.values.id === protectedId,
+        ),
+        false,
+    );
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "DELETE" &&
+                command.table === "study_library_references" &&
+                command.where?.some(({ value }) => value === protectedId),
+        ),
+        false,
+    );
+});
+
+test("content packs retain omitted records only when explicitly requested", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
         id: "japanese",
@@ -237,6 +410,7 @@ test("content pack updates retain omitted records by default", async () => {
             namespace: "ja",
             schema: "schema.json",
             content: "data",
+            pruneOmittedRecords: false,
             license: { id: "CC-BY-4.0" },
         },
         schema,
@@ -251,7 +425,7 @@ test("content pack updates retain omitted records by default", async () => {
                 command.table === "study_library_entries" &&
                 command.where?.some((clause) => clause.column === "created_by"),
         ),
-        false,
+        true,
     );
 });
 
@@ -713,15 +887,33 @@ test("entry updates replace editable fields and relationships atomically", async
             return { rowCount: 1 };
         },
     };
-    await new LibraryStore(db).update("entry-1", {
-        schemaId: "japanese",
-        schemaVersion: 1,
-        layer: "words",
-        label: "updated",
-        fields: {},
-        references: [{ entryId: "definition-1", relation: "means" }],
-    });
-    assert.ok(commands.some((command) => command.option === "UPDATE"));
+    await new LibraryStore(db).update(
+        "entry-1",
+        {
+            schemaId: "japanese",
+            schemaVersion: 2,
+            layer: "words",
+            label: "updated",
+            fields: {},
+            references: [{ entryId: "definition-1", relation: "means" }],
+        },
+        true,
+    );
+    assert.ok(
+        commands.some(
+            (command) =>
+                command.option === "UPDATE" &&
+                command.set.label === "updated" &&
+                command.set.schema_version === 2,
+        ),
+    );
+    assert.ok(
+        commands.some(
+            (command) =>
+                command.option === "UPDATE" &&
+                command.set.provider_modified === true,
+        ),
+    );
     assert.ok(
         commands.some(
             (command) =>

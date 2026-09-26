@@ -1,0 +1,16 @@
+{
+    "id": "synthetic-language-core",
+    "publisher": "Contract Fixture Publisher",
+    "version": "1.0.0",
+    "contentRevision": "fixture-1",
+    "namespace": "synthetic",
+    "schema": "schema.json",
+    "content": "content",
+    "assets": "assets",
+    "protected": true,
+    "metadata": {
+        "catalog": { "featured": true, "rank": 1 },
+        "tags": ["fixture"]
+    },
+    "license": { "id": "CC0-1.0" }
+}

@@ -1,0 +1,16 @@
+[
+    {
+        "id": "synthetic:symbol:lo",
+        "label": "⬦",
+        "fields": {
+            "pronunciation": ["lo"],
+            "audio": "audio/lo.mp3"
+        },
+        "references": [
+            {
+                "entryId": "synthetic:character:lo",
+                "relation": "reading-unit-dependency"
+            }
+        ]
+    }
+]

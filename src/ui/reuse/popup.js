@@ -36,7 +36,7 @@
  * Options:
  *   title    — heading text (rendered as plain text, HTML-escaped).
  *   titleDetail — optional secondary heading text rendered smaller beside the title.
- *   titleDetailItems — optional ordered `{ label, actionId? }` secondary heading fragments.
+ *   titleDetailItems — optional ordered `{ label, actionId?, placement? }` secondary heading fragments.
  *   titleLeading — optional trusted HTML rendered immediately before the title.
  *   titleAction — optional `{ id, label }` that renders the heading as an action.
  *   titleItems — optional ordered `{ label, actionId? }` title fragments.
@@ -80,10 +80,11 @@
  * @param {{
  *   title: string,
  *   titleDetail?: string,
- *   titleDetailItems?: Array<{ label: string, actionId?: string }>,
+ *   titleDetailItems?: Array<{ label: string, actionId?: string, placement?: "reading" | "definition" }>,
  *   titleLeading?: string,
  *   titleAction?: { id: string, label: string },
  *   titleItems?: Array<{ label: string, actionId?: string }>,
+ *   headerActions?: Array<{ id: string, label: string, icon?: string | { light: string, dark?: string } }>,
  *   body: string | (() => string),
  *   variant?: 'info' | 'warning' | 'danger' | 'confirm',
  *   actions?: Array<{ id: string, label: string, variant?: string, disabled?: boolean, icon?: { light: string, dark?: string, position?: 'before' | 'after', flip?: boolean } }>,
@@ -405,6 +406,7 @@ export async function openPopup({
     titleLeading,
     titleAction,
     titleItems,
+    headerActions = [],
     body,
     variant = "info",
     actions,
@@ -423,6 +425,11 @@ export async function openPopup({
     return new Promise((resolve) => {
         const overlay = document.createElement("div");
         overlay.className = "popup-overlay";
+        const highestPopupZIndex = Array.from(
+            document.querySelectorAll(".popup-overlay"),
+            (candidate) => Number.parseInt(candidate.style.zIndex, 10) || 2000,
+        ).reduce((highest, zIndex) => Math.max(highest, zIndex), 1990);
+        overlay.style.zIndex = String(highestPopupZIndex + 10);
         overlay.setAttribute("role", "dialog");
         overlay.setAttribute("aria-modal", "true");
         overlay.setAttribute("aria-labelledby", "popup-title");
@@ -447,14 +454,31 @@ export async function openPopup({
             detailItemValues,
         ) {
             const detail = String(detailValue ?? "");
-            const renderHeadingItems = (items) =>
-                items
-                    .map((item) =>
-                        item.actionId
-                            ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(item.actionId)}" type="button">${escapeHtml(item.label)}</button>`
-                            : escapeHtml(item.label),
+            const renderHeadingItems = (items) => {
+                const rendered = items.map((item) => {
+                    const content = item.actionId
+                        ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(item.actionId)}" type="button">${escapeHtml(item.label)}</button>`
+                        : escapeHtml(item.label);
+                    return { content, placement: item.placement };
+                });
+                const groups = [];
+                for (const item of rendered) {
+                    const previous = groups.at(-1);
+                    if (
+                        item.placement &&
+                        previous?.placement === item.placement
+                    )
+                        previous.content += item.content;
+                    else groups.push({ ...item });
+                }
+                return groups
+                    .map(({ content, placement }) =>
+                        placement
+                            ? `<span data-popup-title-placement="${escapeHtml(placement)}">${content}</span>`
+                            : content,
                     )
                     .join("");
+            };
             const titleContent =
                 Array.isArray(itemValues) && itemValues.length
                     ? renderHeadingItems(itemValues)
@@ -591,7 +615,20 @@ export async function openPopup({
               currentPage?.titleItems ?? titleItems,
               currentPage?.titleDetailItems ?? titleDetailItems,
           )}</div>
-          ${mandatory ? "" : `<button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>`}
+          <div class="popup-header-actions">${headerActions
+              .map((action) => {
+                  const icon = action.icon;
+                  const content =
+                      icon && typeof icon === "object" && icon.light
+                          ? `<picture class="popup-header-action-icon" aria-hidden="true"><source media="(prefers-color-scheme: dark)" srcset="${escapeHtml(icon.dark ?? icon.light)}"><img src="${escapeHtml(icon.light)}" alt=""></picture>`
+                          : icon
+                            ? `<span aria-hidden="true">${escapeHtml(icon)}</span>`
+                            : escapeHtml(action.label);
+                  return `<button class="btn-neutral popup-header-action" data-popup-action="${escapeHtml(action.id)}" type="button" aria-label="${escapeHtml(action.label)}" title="${escapeHtml(action.label)}">${content}</button>`;
+              })
+              .join(
+                  "",
+              )}${mandatory ? "" : `<button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>`}</div>
         </div>
         <div class="popup-body">${resolvedBody}</div>
         ${actionButtons ? `<div class="popup-footer">${actionButtons}</div>` : ""}

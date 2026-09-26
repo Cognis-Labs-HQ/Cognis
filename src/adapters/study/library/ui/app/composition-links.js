@@ -57,7 +57,48 @@ export function resolveLabelComposition(label, entry, schemas, entries) {
 }
 
 function normalizedLabel(value) {
-    return String(value).trim().normalize();
+    return String(value).trim().normalize("NFKC");
+}
+
+function entryAliases(entry) {
+    const pronunciation = entry.fields?.pronunciation;
+    const values = Array.isArray(pronunciation)
+        ? pronunciation
+        : pronunciation
+          ? [pronunciation]
+          : [];
+    return Array.from(
+        new Set([entry.label, ...values].map(normalizedLabel).filter(Boolean)),
+    ).sort((left, right) => right.length - left.length);
+}
+
+export function resolveReferenceAliasComposition(label, entries) {
+    const normalized = normalizedLabel(label);
+    if (!normalized || !entries.length) return [];
+    let offset = 0;
+    for (const entry of entries) {
+        const alias = entryAliases(entry).find((candidate) =>
+            normalized.startsWith(candidate, offset),
+        );
+        if (!alias) return [];
+        offset += alias.length;
+    }
+    return offset === normalized.length ? entries : [];
+}
+
+function entryLinkKey(entry) {
+    return `${entry.id}\u0000${normalizedLabel(entry.label)}`;
+}
+
+export function excludeTitleReferenceDuplicates(groups, titleReferences) {
+    const titleReferenceKeys = new Set(titleReferences.map(entryLinkKey));
+    return groups
+        .map((group) =>
+            group.filter(
+                (entry) => !titleReferenceKeys.has(entryLinkKey(entry)),
+            ),
+        )
+        .filter((group) => group.length > 0);
 }
 
 export function distinctPronunciationLabels(entry, secondaryLabels = []) {

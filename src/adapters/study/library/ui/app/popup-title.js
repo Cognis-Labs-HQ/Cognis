@@ -5,7 +5,8 @@ import {
 } from "./presentation.js";
 import {
     distinctPronunciationLabels,
-    resolveLabelComposition,
+    excludeTitleReferenceDuplicates,
+    resolveReferenceAliasComposition,
 } from "./composition-links.js";
 import { visibleTitleDefinition } from "./title-definition.js";
 
@@ -69,18 +70,13 @@ export function popupTitleDetailItems(
     schemas,
     titleDefinition,
     sourceDefinition = "",
+    titleReferences = [],
 ) {
     const layer = layerForEntry(schemas, detail.entry);
-    if (layer?.semanticRole === "lexicalUnit") {
-        const localizedDefinition = visibleTitleDefinition(
-            detail.entry.label,
-            layer.semanticRole,
-            titleDefinition,
-            sourceDefinition,
-        );
-        return localizedDefinition ? [{ label: localizedDefinition }] : [];
-    }
-    const spellingGroups = secondarySpellingGroups(detail, schemas);
+    const spellingGroups = excludeTitleReferenceDuplicates(
+        secondarySpellingGroups(detail, schemas),
+        titleReferences,
+    );
     const spellingLabels = new Set(
         spellingGroups.map((group) =>
             group.map((entry) => entry.label).join(""),
@@ -93,24 +89,37 @@ export function popupTitleDetailItems(
     const pronunciationField = (layer?.fields ?? []).find(
         ({ id }) => id === "pronunciation",
     );
-    const linkRelationship = pronunciationField?.input?.linkRelationship;
-    const linkedPronunciationEntries = linkRelationship
+    const linkRelationships = new Set(
+        pronunciationField?.input?.linkRelationships ?? [],
+    );
+    const linkedPronunciationEntries = linkRelationships.size
         ? (detail.entry.references ?? [])
-              .filter(({ relation }) => relation === linkRelationship)
-              .map(({ entryId }) =>
-                  (detail.references ?? []).find(({ id }) => id === entryId),
+              .map((reference, authoredIndex) => ({
+                  entry: (detail.references ?? []).find(
+                      ({ id }) => id === reference.entryId,
+                  ),
+                  authoredIndex,
+                  position: reference.position ?? authoredIndex,
+                  relation: reference.relation,
+              }))
+              .filter(
+                  ({ entry, relation }) =>
+                      entry && linkRelationships.has(relation),
               )
-              .filter(Boolean)
+              .sort(
+                  (left, right) =>
+                      left.position - right.position ||
+                      left.authoredIndex - right.authoredIndex,
+              )
+              .map(({ entry }) => entry)
         : [];
     const pronunciationItems = distinctPronunciationLabels(
         detail.entry,
         spellingLabels,
     ).flatMap((label, pronunciationIndex) => {
-        const linked = linkRelationship
-            ? resolveLabelComposition(
+        const linked = linkRelationships.size
+            ? resolveReferenceAliasComposition(
                   label,
-                  detail.entry,
-                  schemas,
                   linkedPronunciationEntries,
               )
             : [];
@@ -121,16 +130,31 @@ export function popupTitleDetailItems(
             ...(linked.length ? linkedItems(linked) : [{ label }]),
         ];
     });
-    const items = [...spellingItems, ...pronunciationItems];
+    const placement =
+        detail.entry.class === "composite" ? "reading" : undefined;
+    const items = [...spellingItems, ...pronunciationItems].map((item) => ({
+        ...item,
+        placement,
+    }));
     const visibleDefinition = visibleTitleDefinition(
         detail.entry.label,
         layer?.semanticRole,
         titleDefinition,
+        sourceDefinition,
     );
     if (visibleDefinition) {
-        items.push(...(items.length ? [{ label: " · " }] : []), {
-            label: visibleDefinition,
-        });
+        items.push(
+            ...(items.length && detail.entry.class !== "composite"
+                ? [{ label: " · " }]
+                : []),
+            {
+                label: visibleDefinition,
+                placement:
+                    detail.entry.class === "composite"
+                        ? "definition"
+                        : undefined,
+            },
+        );
     }
     return items;
 }

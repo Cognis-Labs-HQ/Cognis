@@ -3,6 +3,7 @@ import { readFile, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import {
     validateFields,
+    validateLibraryMetadataValue,
     validateLibrarySchema,
     validateReferences,
 } from "./layers.js";
@@ -17,6 +18,7 @@ const ID_PATTERN = /^[a-z0-9]+(?:[-_.:][a-z0-9]+)*$/i;
 const VERSION_PATTERN =
     /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 const LICENSE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9-.+]*$/;
+const ROLE_PATTERN = /^[a-z][a-zA-Z0-9]*(?::[a-z][a-zA-Z0-9]*)*$/;
 
 function canonicalJson(value: unknown): string {
     if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
@@ -85,6 +87,15 @@ function validateManifest(value: unknown): LibraryContentPackManifest {
         typeof manifest.protected !== "boolean"
     )
         throw new Error("invalid_content_pack_manifest");
+    if (manifest.metadata !== undefined) {
+        if (
+            !manifest.metadata ||
+            typeof manifest.metadata !== "object" ||
+            Array.isArray(manifest.metadata)
+        )
+            throw new Error("invalid_content_pack_manifest");
+        validateLibraryMetadataValue(manifest.metadata);
+    }
     return manifest;
 }
 
@@ -138,6 +149,8 @@ export function contentRecordHash(
                 language: schema.language,
                 layer: record.layer,
                 label: record.label.trim(),
+                ...(record.class ? { class: record.class } : {}),
+                ...(record.editable === false ? { editable: false } : {}),
                 ...(record.hidden === true ? { hidden: true } : {}),
                 ...(manifest.protected === true ? { protected: true } : {}),
                 fields: record.fields ?? {},
@@ -243,6 +256,13 @@ async function validateContentRecords(
             !record.label?.trim()
         )
             throw new Error("invalid_content_record");
+        if (record.class !== undefined && !ROLE_PATTERN.test(record.class))
+            throw new Error("invalid_content_class");
+        if (
+            record.editable !== undefined &&
+            typeof record.editable !== "boolean"
+        )
+            throw new Error("invalid_content_editable");
         if (
             record.displayId !== undefined &&
             (!Number.isSafeInteger(record.displayId) || record.displayId < 0)
@@ -254,52 +274,64 @@ async function validateContentRecords(
         if (entries.has(id)) throw new Error("duplicate_content_record");
         validateFields(schema, record.layer, record.fields ?? {});
         const layer = schema.layers.find(({ id }) => id === record.layer)!;
+        if (layer.semanticRole === "definition") {
+            record.class = "definition";
+            record.hidden = true;
+        } else if (layer.semanticRole === "orderedLexicalSequence") {
+            record.class = "composite";
+        } else if (layer.semanticRole === "particle") {
+            record.editable = false;
+            record.class ??= "particle";
+        }
         for (const field of layer.fields ?? []) {
             const value = record.fields?.[field.id];
             if (
-                (field.type !== "asset" && field.type !== "audio") ||
+                !["asset", "assetList", "audio", "audioList"].includes(
+                    field.type,
+                ) ||
                 value === undefined
             )
                 continue;
-            if (typeof value !== "string")
+            const references = Array.isArray(value) ? value : [value];
+            if (!references.every((reference) => typeof reference === "string"))
                 throw new Error("invalid_asset_reference");
-            if (field.type === "audio" && value.startsWith("https://"))
-                continue;
-            if (!assetsRoot) throw new Error("invalid_asset_reference");
-            const asset = await resolveInside(assetsRoot, value);
-            if (!(await stat(asset)).isFile())
-                throw new Error("asset_not_file");
-            const data = await readFile(asset);
-            const extension = path.extname(value).toLowerCase();
-            const mediaType =
-                field.type === "audio"
-                    ? (
-                          {
-                              ".mp3": "audio/mpeg",
-                              ".ogg": "audio/ogg",
-                              ".wav": "audio/wav",
-                              ".webm": "audio/webm",
-                              ".m4a": "audio/mp4",
-                          } as const
-                      )[extension]
-                    : value.endsWith(".svg")
-                      ? "image/svg+xml"
-                      : value.endsWith(".json")
-                        ? "application/json"
-                        : undefined;
-            if (!mediaType) throw new Error("unsupported_asset_type");
-            if (!assets.some(({ path }) => path === value)) {
-                assets.push({
-                    path: value,
-                    mediaType,
-                    data: data.toString("base64"),
-                });
+            for (const value of references as string[]) {
+                if (!assetsRoot) throw new Error("invalid_asset_reference");
+                const asset = await resolveInside(assetsRoot, value);
+                if (!(await stat(asset)).isFile())
+                    throw new Error("asset_not_file");
+                const data = await readFile(asset);
+                const extension = path.extname(value).toLowerCase();
+                const mediaType =
+                    field.type === "audio" || field.type === "audioList"
+                        ? (
+                              {
+                                  ".mp3": "audio/mpeg",
+                                  ".ogg": "audio/ogg",
+                                  ".wav": "audio/wav",
+                                  ".webm": "audio/webm",
+                                  ".m4a": "audio/mp4",
+                              } as const
+                          )[extension]
+                        : value.endsWith(".svg")
+                          ? "image/svg+xml"
+                          : value.endsWith(".json")
+                            ? "application/json"
+                            : undefined;
+                if (!mediaType) throw new Error("unsupported_asset_type");
+                if (!assets.some(({ path }) => path === value)) {
+                    assets.push({
+                        path: value,
+                        mediaType,
+                        data: data.toString("base64"),
+                    });
+                }
+                digest
+                    .update(record.id)
+                    .update(field.id)
+                    .update(value)
+                    .update(data);
             }
-            digest
-                .update(record.id)
-                .update(field.id)
-                .update(value)
-                .update(data);
         }
         entries.set(id, {
             ...record,
@@ -324,18 +356,20 @@ async function validateContentRecords(
         validateReferences(schema, record.layer, references, entries);
         const layer = schema.layers.find(({ id }) => id === record.layer)!;
         if (layer.semanticRole === "orderedLexicalSequence") {
-            const constituentLayers = new Set(
+            const constituentRelationships = new Set(
                 (layer.relationships ?? [])
                     .filter((relationship) => {
                         const target = schema.layers.find(
                             ({ id }) => id === relationship.targetLayer,
                         );
                         return (
-                            target?.semanticRole === "lexicalUnit" ||
-                            target?.semanticRole === "particle"
+                            (target?.semanticRole === "lexicalUnit" ||
+                                target?.semanticRole === "particle") &&
+                            (relationship.presentationRole === undefined ||
+                                relationship.presentationRole === "composition")
                         );
                     })
-                    .map(({ targetLayer }) => targetLayer),
+                    .map(({ id }) => id),
             );
             const constituents = references
                 .map((reference) => ({
@@ -343,8 +377,9 @@ async function validateContentRecords(
                     target: entries.get(reference.entryId),
                 }))
                 .filter(
-                    ({ target }) =>
-                        target && constituentLayers.has(target.layer),
+                    ({ reference, target }) =>
+                        target &&
+                        constituentRelationships.has(reference.relation),
                 )
                 .sort(
                     (left, right) =>

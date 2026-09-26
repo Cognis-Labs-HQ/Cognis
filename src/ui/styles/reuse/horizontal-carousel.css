@@ -1,0 +1,133 @@
+.horizontal-carousel {
+    display: grid;
+    gap: 0.55rem;
+    min-width: 0;
+}
+
+.horizontal-carousel > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.horizontal-carousel-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: stretch;
+    gap: 0.4rem;
+}
+
+.horizontal-carousel-viewport {
+    max-height: 5.95rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+}
+
+.horizontal-carousel-viewport::-webkit-scrollbar {
+    display: none;
+}
+
+.horizontal-carousel-track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(2, 2.75rem);
+    grid-auto-columns: max-content;
+    gap: 0.45rem;
+    width: max-content;
+    min-width: 100%;
+}
+
+.horizontal-carousel-item {
+    position: relative;
+    flex: 0 0 auto;
+    min-width: 5rem;
+    scroll-snap-align: start;
+}
+
+.horizontal-carousel-item.is-selected {
+    border-color: var(--color-success-border, var(--color-accent));
+    box-shadow: inset 0 0 0 1px var(--color-success-border, var(--color-accent));
+}
+
+.horizontal-carousel-item small {
+    position: absolute;
+    inset-block-start: 0.15rem;
+    inset-inline-end: 0.25rem;
+}
+
+.horizontal-carousel-scroll,
+.horizontal-carousel-add {
+    min-width: 2.5rem;
+}
+
+.horizontal-carousel-viewport {
+    min-width: 0;
+    padding-block-end: 0.25rem;
+}
+
+.horizontal-carousel-item {
+    min-height: 2.75rem;
+    padding-inline: 1rem;
+    white-space: nowrap;
+}
+
+.horizontal-carousel-scroll,
+.horizontal-carousel-add {
+    display: grid;
+    width: 2.75rem;
+    min-width: 2.75rem;
+    padding: 0;
+    place-items: center;
+}
+
+.horizontal-carousel-preview {
+    position: absolute;
+    z-index: 20;
+    inset-block-end: calc(100% + 0.45rem);
+    inset-inline-start: 50%;
+    display: none;
+    width: max-content;
+    max-width: min(18rem, 70vw);
+    padding: 0.65rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-small, 0.5rem);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    color: var(--text);
+    text-align: start;
+    transform: translateX(-50%);
+}
+
+.horizontal-carousel-preview.is-portal {
+    position: fixed;
+    z-index: 10000;
+    transform: none;
+    pointer-events: none;
+    box-sizing: border-box;
+    display: inline-grid;
+    gap: 0.25rem;
+    inline-size: max-content;
+    min-inline-size: min(10rem, calc(100vw - 1rem));
+    max-inline-size: min(18rem, calc(100vw - 1rem));
+    overflow: hidden;
+    background: var(--surface-2, var(--surface));
+    white-space: normal;
+}
+
+.horizontal-carousel-preview.is-portal > strong,
+.horizontal-carousel-preview.is-portal > span {
+    display: block;
+    max-inline-size: 100%;
+    overflow-wrap: anywhere;
+}
+
+.horizontal-carousel-preview.is-portal[hidden] {
+    display: none;
+}
+
+.horizontal-carousel-preview > span {
+    display: block;
+    margin-block-start: 0.25rem;
+    color: var(--text-muted);
+}

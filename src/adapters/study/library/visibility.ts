@@ -30,6 +30,11 @@ export class LibraryVisibilityService {
             entryCount: number;
             language?: string;
         }) => Promise<void>,
+        private readonly applyUpdate?: (
+            actor: VisibilityActor,
+            entryId: string,
+            input: NonNullable<LibraryPushRequest["proposedEntry"]>,
+        ) => Promise<LibraryEntry>,
     ) {}
 
     async requestPush(
@@ -46,12 +51,37 @@ export class LibraryVisibilityService {
             throw new Error("invalid_destination");
         const normalized = await this.authorize(actor, destination, false);
         if (
-            (await this.store.listPushRequests()).some(
+            (await this.store.listPushRequests("pending")).some(
                 (request) => request.sourceEntryId === source.id,
             )
         )
             throw new Error("request_pending");
         return this.store.createPush(entryId, normalized, actor.accountId);
+    }
+
+    async requestUpdate(
+        actor: VisibilityActor,
+        entryId: string,
+        proposedEntry: NonNullable<LibraryPushRequest["proposedEntry"]>,
+    ): Promise<LibraryPushRequest> {
+        const source = await this.read(actor, entryId);
+        if (!source) throw new Error("not_found");
+        if (source.protected) throw new Error("protected_content");
+        if (source.scope !== "global" || source.createdBy !== actor.accountId)
+            throw new Error("forbidden");
+        if (
+            (await this.store.listPushRequests("pending")).some(
+                (request) => request.sourceEntryId === source.id,
+            )
+        )
+            throw new Error("request_pending");
+        return this.store.createPush(
+            entryId,
+            { scope: "global", scopeId: "global" },
+            actor.accountId,
+            "update",
+            proposedEntry,
+        );
     }
 
     async listPushRequests(
@@ -62,9 +92,14 @@ export class LibraryVisibilityService {
             const source = await this.store.get(request.sourceEntryId);
             if (!source) continue;
             if (request.requestedBy === actor.accountId) {
-                visible.push({ ...request, source, canWithdraw: true });
+                visible.push({
+                    ...request,
+                    source,
+                    canWithdraw: request.status === "pending",
+                });
                 continue;
             }
+            if (request.status !== "pending") continue;
             try {
                 await this.authorize(actor, request.destination, true);
                 visible.push({ ...request, source, canReview: true });
@@ -87,14 +122,22 @@ export class LibraryVisibilityService {
             const source = await this.store.get(request.sourceEntryId);
             if (!source) throw new Error("reference_not_found");
             if (source.protected) throw new Error("protected_content");
-            if (
+            if (request.kind === "update" && request.proposedEntry) {
+                await this.applyUpdate?.(
+                    actor,
+                    request.sourceEntryId,
+                    request.proposedEntry,
+                );
+            } else if (
                 source.scope !== "user" ||
                 source.scopeId !== request.requestedBy
             )
                 throw new Error("request_source_moved");
-            await this.store.move(source.id, request.destination);
-            if (request.destination.scope === "global")
-                await this.notifyNewContent?.({ entryCount: 1 });
+            else {
+                await this.store.move(source.id, request.destination);
+                if (request.destination.scope === "global")
+                    await this.notifyNewContent?.({ entryCount: 1 });
+            }
         }
         await this.store.reviewPush(requestId, decision, actor.accountId);
         return { ...request, status: decision };
@@ -108,11 +151,13 @@ export class LibraryVisibilityService {
         if (request.requestedBy !== actor.accountId)
             throw new Error("forbidden");
         const source = await this.store.get(request.sourceEntryId);
-        if (
-            !source ||
-            source.scope !== "user" ||
-            source.scopeId !== actor.accountId
-        )
+        const validUpdateSource =
+            request.kind === "update" &&
+            source?.scope === "global" &&
+            source.createdBy === actor.accountId;
+        const validPromotionSource =
+            source?.scope === "user" && source.scopeId === actor.accountId;
+        if (!validUpdateSource && !validPromotionSource)
             throw new Error("request_source_moved");
         await this.store.reviewPush(requestId, "withdrawn", actor.accountId);
         return { ...request, status: "withdrawn" };

@@ -13,13 +13,10 @@ import { refreshLibraryFilterResults } from "../filters.js";
 import { bindLibraryInteractions } from "../interactions.js";
 import { localizedLabel } from "../presentation.js";
 import { librarySelectionFloatingMenu } from "../selection.js";
-import { openCreateEntryPopup } from "../create-entry.js";
-import { escapeHtml } from "/static/reuse/escape-html.js";
-import {
-    bindLibraryRequestReviews,
-    loadLibraryRequests,
-    renderLibraryRequests,
-} from "../requests.js";
+import { chooseCreateLayer, openCreateEntryPopup } from "../create-entry.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { loadLibraryRequests } from "../requests.js";
+import { fetchLibraryForms } from "/static/gateways/study/ui/library-client.js";
 
 function requestedLayer() {
     const parts = window.location.pathname.split("/").filter(Boolean);
@@ -51,7 +48,15 @@ export async function mount(root, { signal } = {}) {
     const layer = schema?.layers?.find(
         ({ id }) => id === selectedLayer?.layerId,
     );
-    const requests = await loadLibraryRequests();
+    const [requests, formContributions] = await Promise.all([
+        loadLibraryRequests(),
+        fetchLibraryForms(),
+    ]);
+    const canCreate =
+        Boolean(schema && layer) &&
+        !["atomicWritingUnit", "definition", "meaning"].includes(
+            layer.semanticRole,
+        );
     const title = layer
         ? localizedLabel(layer.metadata, schema.language) || layer.id
         : i18n.t("gateway.study.library_label");
@@ -76,27 +81,7 @@ export async function mount(root, { signal } = {}) {
             title,
             subtitle: i18n.t("gateway.study.library_subtitle"),
         },
-        toolbar: [
-            ...(layer?.cardConstructor
-                ? [
-                      {
-                          id: "library-create",
-                          label: i18n.t("gateway.study.library_create"),
-                          render: () =>
-                              `<button class="btn-confirm" type="button" data-library-create>${escapeHtml(i18n.t("gateway.study.library_create"))}</button>`,
-                      },
-                  ]
-                : []),
-            ...(requests.length
-                ? [
-                      {
-                          id: "library-requests",
-                          label: i18n.t("gateway.study.library_requests"),
-                          render: () => renderLibraryRequests(requests, i18n),
-                      },
-                  ]
-                : []),
-        ],
+        toolbar: [],
         floatingMenu: librarySelectionFloatingMenu(entries, i18n),
         subNavigation: [
             {
@@ -113,35 +98,59 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     signal?.throwIfAborted();
-    bindLibraryRequestReviews(root, requests, { i18n, signal });
     root.querySelectorAll("[data-library-panel]").forEach((panel) => {
         if (panel.querySelector("button[data-library-filter].active")) {
             refreshLibraryFilterResults(panel);
         }
     });
     bindStudySubNavigation(root, { signal });
-    root.addEventListener(
-        "click",
-        async (event) => {
-            if (!event.target.closest("[data-library-create]")) return;
-            const created = await openCreateEntryPopup({
-                schemas,
-                entries,
-                schemaId: selectedLayer?.schemaId,
-                layerId: selectedLayer?.layerId,
-                i18n,
-            });
-            if (!created) return;
-            entries.push(created);
-            root.querySelector(".library-browser").innerHTML = renderBrowser(
-                schemas,
-                entries,
-                i18n,
-                selectedLayer,
-            );
-        },
-        { signal },
-    );
+    if (canCreate) {
+        const createButton = document.createElement("button");
+        createButton.type = "button";
+        createButton.className = "btn-confirm";
+        createButton.textContent = "+";
+        createButton.setAttribute(
+            "aria-label",
+            i18n.t("gateway.study.library_create"),
+        );
+        createButton.addEventListener(
+            "click",
+            async () => {
+                const schema = schemas.find(
+                    ({ id }) => id === selectedLayer?.schemaId,
+                );
+                if (!schema) return;
+                const layerId = await chooseCreateLayer({
+                    schema,
+                    contributions: formContributions,
+                    preferredLayerId: selectedLayer?.layerId,
+                    i18n,
+                });
+                if (!layerId) return;
+                const created = await openCreateEntryPopup({
+                    schemas,
+                    entries,
+                    schemaId: selectedLayer?.schemaId,
+                    layerId,
+                    i18n,
+                    contributions: formContributions,
+                });
+                if (!created) return;
+                entries.push(created);
+                root.querySelector(".library-browser").innerHTML =
+                    renderBrowser(schemas, entries, i18n, selectedLayer);
+            },
+            { signal },
+        );
+        const removeAction = uiCtx.capabilities.get("page:actions")?.add({
+            id: "study-library:create",
+            element: createButton,
+            order: 20,
+        });
+        signal?.addEventListener("abort", () => removeAction?.(), {
+            once: true,
+        });
+    }
     bindLibraryInteractions(root, {
         entries,
         i18n,

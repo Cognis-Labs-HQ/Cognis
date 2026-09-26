@@ -7,8 +7,10 @@ import {
 import { applyLibraryFilters } from "./filters.js";
 import { activateLibraryLayer, renderBrowser } from "./layer-cards.js";
 import { openEntryPopup } from "./entry-popup.js";
+import { loadDrawing } from "./drawing.js";
 import {
     confirmEntryDeletion,
+    deselectAllEntries,
     selectAllVisibleEntries,
     selectedEntryIds,
     selectionForCard,
@@ -92,7 +94,7 @@ export function bindLibraryInteractions(root, context) {
                         : null),
             );
         },
-        { signal },
+        { capture: true, signal },
     );
     bindVariantInteractions(root, {
         signal,
@@ -112,7 +114,7 @@ export function bindLibraryInteractions(root, context) {
             selection.checked = true;
             updateSelectionActions(root, entries, requests, locations);
         },
-        { signal },
+        { capture: true, signal },
     );
     root.addEventListener(
         "change",
@@ -132,7 +134,13 @@ export function bindLibraryInteractions(root, context) {
     root.addEventListener(
         "click",
         (event) => {
-            if (event.target.closest("[data-library-select-all]")) {
+            if (event.target.closest(".library-admin-entry-row")) return;
+            const selectAll = event.target.closest("[data-library-select-all]");
+            if (selectAll) {
+                if (selectAll.dataset.selectionAction === "deselect") {
+                    deselectAllEntries(root);
+                    return;
+                }
                 selectAllVisibleEntries(root);
                 updateSelectionActions(root, entries, requests, locations);
                 return;
@@ -194,6 +202,9 @@ export function bindLibraryInteractions(root, context) {
             const entry = entries.find(
                 (candidate) => candidate.id === control.dataset.libraryEntry,
             );
+            const schema = schemas.find(({ id }) => id === entry?.schemaId);
+            const layer = schema?.layers.find(({ id }) => id === entry?.layer);
+            if (entry && loadDrawing(entry, layer, entries, schemas)) return;
             if (!openDetails) return;
             if (!entry || activeEntryPopup) return;
             activeEntryPopup = openEntryPopup(
@@ -204,7 +215,11 @@ export function bindLibraryInteractions(root, context) {
                 i18n,
                 languageCode,
                 signal,
-                { readOnly, showReferenceTree, showNew: openedAsNew },
+                {
+                    readOnly,
+                    showReferenceTree,
+                    showNew: openedAsNew,
+                },
             )
                 .catch(() =>
                     showToast(i18n.t("gateway.study.library_load_error"), {
@@ -217,6 +232,9 @@ export function bindLibraryInteractions(root, context) {
         },
         { signal },
     );
+    signal?.addEventListener("abort", () => setSelectionMode(root, false), {
+        once: true,
+    });
 
     async function deleteSelection() {
         const request = await confirmEntryDeletion(

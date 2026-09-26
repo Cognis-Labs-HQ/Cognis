@@ -311,6 +311,7 @@
   <string name="ui.reuse.reset_layout">Setel ulang tata letak</string>
   <string name="ui.reuse.close">Tutup</string>
   <string name="ui.reuse.cancel">Batal</string>
+  <string name="ui.reuse.delete">Hapus</string>
   <string name="ui.reuse.return_to_dashboard">Kembali ke Dasbor</string>
 
   <string name="ui.app.profile.page_subtitle">Profil dan aktivitas sosial Anda.</string>

@@ -16,7 +16,15 @@ import {
     variantPlacement,
 } from "./variant-placement.js";
 import { isDirectlyVisible } from "./cards.js";
-
+import { openLibraryEntryEditor } from "./admin-interactions.js";
+import { entryEditMode } from "./editability.js";
+import {
+    canDraw,
+    drawingHeaderActions,
+    resolveDraw,
+    openDrawing,
+    placeAudioSpeaker,
+} from "./drawing.js";
 export async function openEntryPopup(
     root,
     initialEntry,
@@ -50,6 +58,22 @@ export async function openEntryPopup(
                 variantPlacement(detail.entry, schemas, entries)?.parentId,
         );
         const layer = layerForEntry(schemas, selectedEntry);
+        const editMode = options.readOnly ? null : entryEditMode(selectedEntry);
+        if (options.startEditing && editMode) {
+            options.startEditing = false;
+            await openLibraryEntryEditor({
+                entry: detail.entry,
+                entries,
+                schemas,
+                i18n,
+                requestUpdate: editMode === "request",
+                onSaved: () => {
+                    if (editMode === "direct")
+                        Object.assign(selectedEntry, detail.entry);
+                },
+            });
+            continue;
+        }
         const layerEntries = entries.filter(
             (entry) =>
                 entry.schemaId === selectedEntry.schemaId &&
@@ -85,12 +109,17 @@ export async function openEntryPopup(
             schemas,
             composed.titleDefinition,
             sourceDefinition,
+            titleReferences,
         );
         const displayedDefinition = titleDefinitionForRole(
             layer?.semanticRole,
             composed.titleDefinition,
             sourceDefinition,
         );
+        const strokePattern = resolveDraw(detail.entry, layer, {
+            entries,
+            schemas,
+        });
         if (parentEntry && layer?.semanticRole !== "lexicalUnit") {
             const [parentPrefix, parentSuffix = ""] = i18n
                 .t("gateway.study.library_from_parent")
@@ -105,8 +134,7 @@ export async function openEntryPopup(
                 { label: parentSuffix },
             );
         }
-        let dismissPopup;
-        let relatedEntry;
+        let dismissPopup, relatedEntry;
         const audioObjectUrls = new Set();
         const audioController = new AbortController();
         const abortPopup = () => dismissPopup?.();
@@ -119,6 +147,23 @@ export async function openEntryPopup(
                 actionId: `open-title-reference:${entry.id}`,
             })),
             titleDetailItems,
+            headerActions: [
+                ...drawingHeaderActions(strokePattern, i18n),
+                ...(editMode
+                    ? [
+                          {
+                              id: "edit",
+                              label: i18n
+                                  .t("gateway.study.library_admin_edit")
+                                  .replace("{{ entry }}", detail.entry.label),
+                              icon: {
+                                  light: "/static/adapters/study/library/assets/edit-light.svg",
+                                  dark: "/static/adapters/study/library/assets/edit-dark.svg",
+                              },
+                          },
+                      ]
+                    : []),
+            ],
             body: composed.body,
             maxWidth: "min(56rem, 94vw)",
             closeButtonVariant: "neutral",
@@ -151,6 +196,9 @@ export async function openEntryPopup(
             onOpen: (overlay, dismiss) => {
                 dismissPopup = dismiss;
                 overlay.classList.add("library-entry-popup");
+                if (detail.entry.class === "composite")
+                    overlay.classList.add("library-entry-popup--composite");
+                placeAudioSpeaker(overlay);
                 void loadLibraryAudio(
                     overlay,
                     audioObjectUrls,
@@ -169,6 +217,14 @@ export async function openEntryPopup(
                 });
             },
             onAction: async (actionId, overlay, popupApi) => {
+                if (actionId === "draw" && canDraw(strokePattern)) {
+                    openDrawing(
+                        detail.entry,
+                        strokePattern,
+                        displayedDefinition,
+                    );
+                    return true;
+                }
                 const contributedAction = composed.actions.find(
                     (action) => action.id === actionId,
                 );
@@ -188,6 +244,21 @@ export async function openEntryPopup(
             URL.revokeObjectURL(objectUrl);
         }
         signal?.removeEventListener("abort", abortPopup);
+        if (result === "edit" && editMode) {
+            await openLibraryEntryEditor({
+                entry: detail.entry,
+                entries,
+                schemas,
+                i18n,
+                requestUpdate: editMode === "request",
+                onSaved: () => {
+                    if (editMode === "direct")
+                        Object.assign(selectedEntry, detail.entry);
+                },
+            });
+            selectedEntry = detail.entry;
+            continue;
+        }
         const navigation = resolvePopupNavigation({
             result,
             relatedEntry,

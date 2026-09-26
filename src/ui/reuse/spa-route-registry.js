@@ -46,6 +46,18 @@ function normalizeRoute(rawRoute) {
                 .trim()
                 .toLowerCase(),
             componentPage: rawRoute.componentPage ?? null,
+            navigationLabels:
+                rawRoute.navigationLabels &&
+                typeof rawRoute.navigationLabels === "object"
+                    ? Object.fromEntries(
+                          Object.entries(rawRoute.navigationLabels)
+                              .map(([locale, label]) => [
+                                  String(locale).trim(),
+                                  String(label).trim(),
+                              ])
+                              .filter(([locale, label]) => locale && label),
+                      )
+                    : {},
             public: rawRoute.public === true,
             pattern: routePattern,
             base: basePath,

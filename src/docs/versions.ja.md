@@ -37,7 +37,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.25`   |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.23`   |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.30`   |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.51`   |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.52`   |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.37`   |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.23`   |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.23`   |
@@ -50,12 +50,13 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.38`   |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.22`   |
 | Profile (Social)      | `src/adapters/social/profile/`      | `2.0.12`   |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.19`   |
-| Calls (Social)        | `src/adapters/social/call/`         | `0.5.34`   |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.20`   |
+| Calls (Social)        | `src/adapters/social/call/`         | `0.5.35`   |
 | Link Share            | `src/adapters/share/link/`          | `1.1.36`   |
 | User Share            | `src/adapters/share/user/`          | `1.1.19`   |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.0`    |
-| Library (Study)       | `src/adapters/study/library/`       | `2.15.0`   |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.1`    |
+| Library (Study)       | `src/adapters/study/library/`       | `2.20.44`  |
+| Drawing (Study)       | `src/adapters/study/drawing/`       | `1.0.11`   |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.1.7`    |
 | Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.1.5`    |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`    |
@@ -75,7 +76,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration          | `src/gateways/registration/`  | `1.1.39`   |
 | Logging               | `src/gateways/logging/`       | `1.5.14`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
-| Study                 | `src/gateways/study/`         | `1.8.26`   |
+| Study                 | `src/gateways/study/`         | `1.8.34`   |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115`  |
 
 ## コア契約
@@ -88,7 +89,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.6.1`    |
+| API Server     | `src/api/` | `0.6.2`    |
 
 ## ツール
 

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import path from "node:path";
 import { LibraryService } from "../service.js";
 import type { LibrarySchema } from "../types.js";
 
@@ -25,6 +26,83 @@ function service() {
     };
 }
 
+test("content-pack notifications report only newly introduced records", async () => {
+    const root = path.resolve(
+        process.cwd(),
+        "src/adapters/study/library/tests/fixtures/external-pack",
+    );
+    const notifications: Array<{ entryCount: number; language?: string }> = [];
+    const createLibrary = (newRecordCount: number) =>
+        new LibraryService(
+            {
+                ingestContentPack: async (plan: {
+                    manifest: {
+                        id: string;
+                        publisher: string;
+                        version: string;
+                        contentRevision: string;
+                    };
+                    schema: { id: string; version: number };
+                    digest: string;
+                    records: unknown[];
+                }) => ({
+                    packId: plan.manifest.id,
+                    publisher: plan.manifest.publisher,
+                    version: plan.manifest.version,
+                    contentRevision: plan.manifest.contentRevision,
+                    schemaId: plan.schema.id,
+                    schemaVersion: plan.schema.version,
+                    digest: plan.digest,
+                    recordCount: plan.records.length,
+                    newRecordCount,
+                    relationshipCount: 0,
+                    unchanged: false,
+                }),
+            } as never,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            { store: async () => {} } as never,
+            async (notification) => notifications.push(notification),
+        );
+
+    await createLibrary(0).ingestContentPack(root);
+    assert.deepEqual(notifications, []);
+    await createLibrary(2).ingestContentPack(root);
+    assert.deepEqual(notifications, [{ entryCount: 2, language: "x-fixture" }]);
+});
+
+test("class publishing locations are filtered by the selected language", async () => {
+    const requestedLanguages: Array<string | undefined> = [];
+    const library = new LibraryService({} as never, {
+        async canRead() {
+            return true;
+        },
+        async canWrite() {
+            return true;
+        },
+        async listReadable() {
+            return [];
+        },
+        async listWritable(_accountId, _role, language) {
+            requestedLanguages.push(language);
+            return ["class-japanese"];
+        },
+    });
+
+    const locations = await library.locations(
+        { accountId: "teacher-1", role: "teacher" },
+        "ja",
+    );
+
+    assert.deepEqual(requestedLanguages, ["ja"]);
+    assert.deepEqual(locations.writable, [
+        { scope: "user", scopeId: "teacher-1" },
+        { scope: "class", scopeId: "class-japanese" },
+    ]);
+});
+
 test("schema registrations are versioned, persisted, and immutable", async () => {
     const { library, saved } = service();
     const input = schema(1);
@@ -44,6 +122,137 @@ test("schema registrations are versioned, persisted, and immutable", async () =>
         library.registerSchema(schema(1)),
         /schema_version_registered/,
     );
+});
+
+test("entry updates migrate stored records to the current schema version", async () => {
+    const current = {
+        id: "entry-1",
+        schemaId: "test-language",
+        schemaVersion: 1,
+        layer: "units",
+        label: "before",
+        fields: {},
+        references: [],
+        scope: "global",
+        scopeId: "global",
+        createdBy: "admin",
+    };
+    let updatedInput: Record<string, unknown> | undefined;
+    const library = new LibraryService({
+        saveSchema: async () => {},
+        get: async () => current,
+        update: async (_id: string, input: Record<string, unknown>) => {
+            updatedInput = input;
+            return { ...current, ...input };
+        },
+    } as never);
+    await library.registerSchema(schema(1));
+    await library.registerSchema(schema(2));
+
+    const updated = await library.update(
+        { accountId: "admin", role: "admin" },
+        current.id,
+        { ...current, label: "after" },
+    );
+
+    assert.equal(updated.schemaVersion, 2);
+    assert.equal(updatedInput?.schemaVersion, 2);
+});
+
+test("entry traces retain edit permission metadata", async () => {
+    const entry = {
+        id: "entry-1",
+        schemaId: "test-language",
+        schemaVersion: 1,
+        layer: "units",
+        label: "editable",
+        fields: {},
+        references: [],
+        scope: "user",
+        scopeId: "alice",
+        createdBy: "alice",
+    };
+    const library = new LibraryService({
+        get: async () => entry,
+        referencesFor: async () => [],
+    } as never);
+
+    const detail = await library.trace(
+        { accountId: "alice", role: "user" },
+        entry.id,
+    );
+
+    assert.equal(detail.entry.canEdit, true);
+    assert.equal(detail.entry.editRequiresReview, false);
+});
+
+test("provider metadata survives store and capability round trips", async () => {
+    const { library, saved } = service();
+    const external = {
+        ...schema(1),
+        metadata: {
+            labels: { en: "Test Language", de: "Testsprache" },
+            catalog: { featured: true, order: 4 },
+        },
+        layers: [
+            {
+                id: "units",
+                metadata: { labels: { en: "Units" }, icon: "shapes" },
+                fields: [
+                    {
+                        id: "score",
+                        type: "providerScore",
+                        validation: { kind: "number" as const, minimum: 0 },
+                        metadata: { labels: { en: "Score" }, unit: "points" },
+                    },
+                ],
+            },
+        ],
+    };
+    await library.registerSchema(external);
+    assert.deepEqual(saved[0], external);
+    assert.deepEqual(library.listSchemas()[0], external);
+});
+
+test("content-pack audio lists are cached and rewritten entry by entry", async () => {
+    const stored: string[] = [];
+    const library = new LibraryService(
+        {} as never,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        {
+            store: async (key: string) => void stored.push(key),
+        } as never,
+    );
+    const plan = {
+        manifest: { publisher: "Fixture", id: "pack", version: "1.0.0" },
+        schema: {
+            layers: [
+                { id: "words", fields: [{ id: "audio", type: "audioList" }] },
+            ],
+        },
+        records: [
+            { layer: "words", fields: { audio: ["one.mp3", "two.mp3"] } },
+        ],
+        assets: ["one.mp3", "two.mp3"].map((path) => ({
+            path,
+            mediaType: "audio/mpeg",
+            data: Buffer.from(path).toString("base64"),
+        })),
+    };
+    await (
+        library as unknown as {
+            storeContentPackAudio(value: unknown): Promise<void>;
+        }
+    ).storeContentPackAudio(plan);
+    assert.equal(stored.length, 2);
+    assert.deepEqual(plan.records[0].fields.audio, [
+        `file:${stored[0]}`,
+        `file:${stored[1]}`,
+    ]);
+    assert.deepEqual(plan.assets, []);
 });
 
 test("language providers can contribute a complete card constructor", async () => {
@@ -71,6 +280,8 @@ test("language providers can contribute a complete card constructor", async () =
         cardConstructor: {
             label: { labels: { en: "Written form" } },
             fields: ["reading"],
+            input_carousels: [],
+            pronunciation_carousels: [],
             defaults: { reading: "default" },
             allowAlwaysShowDefinition: true,
         },
@@ -79,6 +290,8 @@ test("language providers can contribute a complete card constructor", async () =
     assert.deepEqual(library.listSchemas()[0].layers[0].cardConstructor, {
         label: { labels: { en: "Written form" } },
         fields: ["reading"],
+        input_carousels: [],
+        pronunciation_carousels: [],
         defaults: { reading: "default" },
         allowAlwaysShowDefinition: true,
     });
@@ -98,6 +311,8 @@ test("card constructors reject unknown provider fields", async () => {
                 cardConstructor: {
                     label: { labels: { en: "Unit" } },
                     fields: ["missing"],
+                    input_carousels: [],
+                    pronunciation_carousels: [],
                 },
             }),
         /constructor_field_not_found/,
@@ -107,22 +322,39 @@ test("card constructors reject unknown provider fields", async () => {
 test("lookup providers are ranked and cleanly removable", async () => {
     const { library } = service();
     await library.registerSchema(schema(1));
+    let lookupLabel = "";
     const remove = library.registerLookupProvider({
         id: "dictionary",
+        metadata: { labels: { en: "Test Dictionary" } },
         supports: () => true,
-        lookup: async () => [
-            {
-                provider: "dictionary",
-                provenance: "dictionary:test",
-                confidence: 0.8,
-                fields: { gloss: "result" },
-            },
-        ],
+        lookup: async ({ label }) => {
+            lookupLabel = label;
+            return [
+                {
+                    provider: "dictionary",
+                    provenance: "dictionary:test",
+                    confidence: 0.8,
+                    fields: { gloss: "result" },
+                },
+            ];
+        },
     });
 
+    assert.deepEqual(
+        library.listLookupProviders({
+            schemaId: "test-language",
+            layer: "units",
+        }),
+        [
+            {
+                id: "dictionary",
+                metadata: { labels: { en: "Test Dictionary" } },
+            },
+        ],
+    );
     assert.equal(
         (
-            await library.lookup({
+            await library.lookup("dictionary", {
                 schemaId: "test-language",
                 layer: "units",
                 label: "item",
@@ -130,14 +362,49 @@ test("lookup providers are ranked and cleanly removable", async () => {
         ).length,
         1,
     );
+    assert.equal(lookupLabel, "item");
     remove();
     assert.deepEqual(
-        await library.lookup({
+        library.listLookupProviders({
+            schemaId: "test-language",
+            layer: "units",
+        }),
+        [],
+    );
+    await assert.rejects(
+        library.lookup("dictionary", {
             schemaId: "test-language",
             layer: "units",
             label: "item",
         }),
-        [],
+        /lookup_provider_not_found/,
+    );
+});
+
+test("lookup providers may omit service-owned ranking metadata", async () => {
+    const { library } = service();
+    await library.registerSchema(schema(1));
+    library.registerLookupProvider({
+        id: "dictionary",
+        metadata: { labels: { en: "Dictionary" } },
+        supports: () => true,
+        lookup: async () => [{ fields: { gloss: "match" } }],
+    });
+
+    assert.deepEqual(
+        await library.lookup("dictionary", {
+            schemaId: "test-language",
+            layer: "units",
+            label: "item",
+        }),
+        [
+            {
+                provider: "dictionary",
+                provenance: "dictionary",
+                confidence: 1,
+                fields: { gloss: "match" },
+            },
+        ],
     );
 });
 
@@ -287,6 +554,45 @@ test("promotion approval moves personal content into the requested scope", async
         "approved",
     );
     assert.deepEqual(moves, [{ scope: "global", scopeId: "global" }]);
+});
+
+test("authors submit global card edits as update requests", async () => {
+    const source = {
+        id: "global-card",
+        label: "Original",
+        scope: "global",
+        scopeId: "global",
+        createdBy: "alice",
+        protected: false,
+    };
+    let captured: unknown;
+    const store = {
+        get: async () => source,
+        listPushRequests: async () => [],
+        createPush: async (...args: unknown[]) => {
+            captured = args;
+            return { id: "update-request", status: "pending" };
+        },
+    };
+    const library = new LibraryService(store as never);
+    const proposed = {
+        schemaId: "test-language",
+        layer: "units",
+        label: "Updated",
+        fields: {},
+    };
+    await library.requestUpdate(
+        { accountId: "alice", role: "user" },
+        source.id,
+        proposed,
+    );
+    assert.deepEqual(captured, [
+        source.id,
+        { scope: "global", scopeId: "global" },
+        "alice",
+        "update",
+        proposed,
+    ]);
 });
 
 test("authorized reviewers receive the source card with each request", async () => {

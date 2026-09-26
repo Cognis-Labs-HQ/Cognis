@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
     resolveRelationships,
+    validateFields,
     validateLibrarySchema,
     validateReferences,
 } from "../layers.js";
@@ -69,6 +70,52 @@ test("consumers define arbitrary layers and constrained relationships", () => {
                 ],
             }),
         /relationship_target_not_found/,
+    );
+});
+
+test("fields can link values through multiple declared relationships", () => {
+    const schema: LibrarySchema = {
+        ...english,
+        layers: [
+            english.layers[0],
+            {
+                ...english.layers[1],
+                fields: [
+                    {
+                        id: "pronunciation",
+                        type: "stringList",
+                        metadata: { labels: { en: "Pronunciation" } },
+                        input: {
+                            control: "freeText",
+                            linkRelationships: ["letters"],
+                        },
+                    },
+                ],
+            },
+        ],
+    };
+    assert.deepEqual(validateLibrarySchema(schema), schema);
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...schema,
+                layers: [
+                    schema.layers[0],
+                    {
+                        ...schema.layers[1],
+                        fields: [
+                            {
+                                ...schema.layers[1].fields![0],
+                                input: {
+                                    control: "freeText",
+                                    linkRelationships: ["missing"],
+                                },
+                            },
+                        ],
+                    },
+                ],
+            }),
+        /field_link_relationship_not_found/,
     );
 });
 
@@ -305,6 +352,32 @@ test("schema languages canonicalize standard and private-use tags", () => {
     assert.throws(
         () => validateLibrarySchema({ ...english, language: "not_a_tag" }),
         /invalid_language/,
+    );
+});
+
+test("declarative constraints also apply to built-in field types", () => {
+    const constrained = {
+        ...english,
+        layers: [
+            {
+                ...english.layers[0],
+                fields: [
+                    {
+                        id: "rank",
+                        type: "number",
+                        metadata: { labels: { en: "Rank" } },
+                        validation: { kind: "number" as const, minimum: 0 },
+                    },
+                ],
+            },
+        ],
+    };
+    assert.throws(
+        () => validateFields(constrained, english.layers[0].id, { rank: -1 }),
+        /invalid_field_type:rank/,
+    );
+    assert.doesNotThrow(() =>
+        validateFields(constrained, english.layers[0].id, { rank: 1 }),
     );
 });
 
@@ -716,6 +789,21 @@ test("writing-unit layers require pronunciation and audio fields", () => {
     assert.doesNotThrow(() =>
         validateLibrarySchema({ ...english, layers: [writingLayer] }),
     );
+    assert.doesNotThrow(() =>
+        validateLibrarySchema({
+            ...english,
+            layers: [
+                {
+                    ...writingLayer,
+                    fields: writingLayer.fields.map((field) =>
+                        field.id === "audio"
+                            ? { ...field, required: false }
+                            : field,
+                    ),
+                },
+            ],
+        }),
+    );
     assert.throws(
         () =>
             validateLibrarySchema({
@@ -739,4 +827,85 @@ test("writing-unit layers require pronunciation and audio fields", () => {
             }),
         /audio_field_required/,
     );
+});
+
+test("stroke patterns require ordered normalized pen samples", () => {
+    const schema = validateLibrarySchema({
+        ...english,
+        layers: [
+            {
+                id: "characters",
+                metadata: { labels: { en: "Characters" } },
+                fields: [
+                    {
+                        id: "strokes",
+                        type: "strokePattern",
+                        metadata: { labels: { en: "Strokes" } },
+                    },
+                ],
+            },
+        ],
+    });
+    assert.doesNotThrow(() =>
+        validateFields(schema, "characters", {
+            strokes: {
+                coordinateSystem: "normalized",
+                tolerance: 60,
+                strokes: [
+                    {
+                        points: [
+                            { x: 0.1, y: 0.2, time: 0, pressure: 0.4 },
+                            { x: 0.8, y: 0.7, time: 120, pressure: 0.7 },
+                        ],
+                    },
+                ],
+            },
+        }),
+    );
+    assert.throws(
+        () =>
+            validateFields(schema, "characters", {
+                strokes: {
+                    coordinateSystem: "normalized",
+                    strokes: [
+                        {
+                            points: [
+                                { x: 0.1, y: 0.2, time: 5 },
+                                { x: 1.2, y: 0.7, time: 4 },
+                            ],
+                        },
+                    ],
+                },
+            }),
+        /invalid_field_type:strokes/,
+    );
+});
+
+test("lexical and composite layers derive rather than own stroke patterns", () => {
+    for (const semanticRole of [
+        "lexicalUnit",
+        "orderedLexicalSequence",
+    ] as const) {
+        assert.throws(
+            () =>
+                validateLibrarySchema({
+                    ...english,
+                    layers: [
+                        {
+                            id: "derived",
+                            semanticRole,
+                            metadata: { labels: { en: "Derived" } },
+                            fields: [
+                                {
+                                    id: "strokes",
+                                    type: "strokePattern",
+                                    metadata: { labels: { en: "Strokes" } },
+                                },
+                            ],
+                        },
+                    ],
+                }),
+            /stroke_pattern_writing_unit_required/,
+        );
+    }
 });

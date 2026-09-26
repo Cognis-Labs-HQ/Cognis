@@ -3,11 +3,81 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import {
     contentEntryId,
     inspectContentPack,
     versionedContentEntryId,
 } from "../content-pack.js";
+import { validateLibrarySchema } from "../layers.js";
+
+test("external-package compatibility fixture preserves validated contract metadata", async () => {
+    const root = fileURLToPath(
+        new URL("fixtures/external-pack", import.meta.url),
+    );
+    const plan = await inspectContentPack(root);
+    assert.equal(plan.records.length, 4);
+    const definition = plan.records.find(
+        ({ layer }) => layer === "definitions",
+    );
+    assert.equal(definition?.class, "definition");
+    assert.equal(definition?.hidden, true);
+    assert.equal(
+        plan.records.find(({ layer }) => layer === "words")?.class,
+        "lexical:noun",
+    );
+    assert.deepEqual(plan.manifest.metadata, {
+        catalog: { featured: true, rank: 1 },
+        tags: ["fixture"],
+    });
+    assert.deepEqual(plan.schema.metadata.provider, { stable: true });
+    assert.equal(plan.schema.layers[0].fields?.[2].type, "fixtureScore");
+    assert.deepEqual(plan.schema.layers[0].fields?.[2].metadata.unit, "rank");
+    assert.equal(plan.assets.length, 2);
+    const dependency = plan.schema.layers
+        .find(({ id }) => id === "symbols")
+        ?.relationships?.find(({ id }) => id === "reading-unit-dependency");
+    assert.equal(dependency?.resolverRole, undefined);
+    assert.equal(dependency?.presentationRole, undefined);
+    assert.equal(dependency?.onDelete, "restrict");
+    assert.deepEqual(
+        plan.records.find(({ layer }) => layer === "symbols")?.references,
+        [
+            {
+                entryId: "synthetic:character:lo",
+                relation: "reading-unit-dependency",
+            },
+        ],
+    );
+});
+
+test("external packages reject unvalidated field types and invalid metadata", async (t) => {
+    const source = fileURLToPath(
+        new URL("fixtures/external-pack", import.meta.url),
+    );
+    const root = await mkdtemp(
+        path.join(os.tmpdir(), "cognis-library-contract-"),
+    );
+    t.after(() => rm(root, { recursive: true, force: true }));
+    const { cp } = await import("node:fs/promises");
+    await cp(source, root, { recursive: true });
+    const schemaFile = path.join(root, "schema.json");
+    const schema = JSON.parse(
+        await (await import("node:fs/promises")).readFile(schemaFile, "utf8"),
+    );
+    delete schema.layers[0].fields[2].validation;
+    await writeJson(schemaFile, schema);
+    await assert.rejects(
+        inspectContentPack(root),
+        /custom_field_validation_required/,
+    );
+    schema.layers[0].fields[2].validation = { kind: "number" };
+    schema.metadata.provider.bad = Number.NaN;
+    assert.throws(
+        () => validateLibrarySchema(schema),
+        /invalid_metadata_value/,
+    );
+});
 
 async function writeJson(file: string, value: unknown): Promise<void> {
     await writeFile(file, JSON.stringify(value), "utf8");
@@ -71,6 +141,8 @@ test("declarative language packs are inspected deterministically", async (t) => 
                 cardConstructor: {
                     label: { labels: { en: "Letter" } },
                     fields: ["pronunciation", "audio", "strokes"],
+                    input_carousels: [],
+                    pronunciation_carousels: [],
                     allowHidden: true,
                 },
                 strokeAsset: { field: "strokes", format: "svg" },
@@ -125,6 +197,8 @@ test("declarative language packs are inspected deterministically", async (t) => 
     assert.deepEqual(first.schema.layers[0].cardConstructor, {
         label: { labels: { en: "Letter" } },
         fields: ["pronunciation", "audio", "strokes"],
+        input_carousels: [],
+        pronunciation_carousels: [],
         allowHidden: true,
     });
     assert.deepEqual(first.schema.layers[0].grid, {
@@ -294,6 +368,14 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
                         ordered: true,
                         onDelete: "restrict",
                     },
+                    {
+                        id: "pronunciation-readings",
+                        targetLayer: "words",
+                        metadata: { labels: { en: "Pronunciation readings" } },
+                        ordered: true,
+                        onDelete: "restrict",
+                        presentationRole: "pronunciation",
+                    },
                 ],
             },
         ],
@@ -320,6 +402,11 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
             entryId: "sentences:particle:ga",
             relation: "particles",
             position: 1,
+        },
+        {
+            entryId: "sentences:word:japanese",
+            relation: "pronunciation-readings",
+            position: 0,
         },
     ];
     await writeJson(sentenceFile, [

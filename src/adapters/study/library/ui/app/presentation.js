@@ -200,7 +200,7 @@ export function relationshipPresentationRole(
     if (targetLayer?.semanticRole === "lexicalUnit") return "pronunciation";
     if (targetLayer?.id === sourceLayer?.id && relationship.variant)
         return "alternateSpelling";
-    return "composition";
+    return relationship.resolverRole ? "composition" : undefined;
 }
 
 export function compositionReferenceGroups(detail, schemas) {
@@ -257,15 +257,88 @@ export function headingCompositionReferences(detail, schemas) {
     );
 }
 
-export function renderAudio(entry, layer) {
+function entryAudio(entry, layer) {
     const audioField = (layer?.fields ?? []).find(
         (field) => field.id === "audio" && field.type === "audio",
     );
     const value = audioField ? entry.fields?.[audioField.id] : undefined;
-    if (typeof value !== "string" || !value) return "";
-    const label =
-        localizedLabel(audioField.metadata, entry.language) || audioField.id;
-    return `<div class="library-audio" data-library-audio-player><audio preload="none" data-library-audio-entry="${escapeHtml(entry.id)}" data-library-audio-field="${escapeHtml(audioField.id)}" aria-label="${escapeHtml(label)}"></audio><button class="library-audio-toggle btn-neutral" type="button" data-library-audio-toggle aria-label="${escapeHtml(label)}">▶</button><span class="library-audio-time" data-library-audio-time>0:00</span><input class="library-audio-progress" type="range" min="0" max="1000" value="0" step="1" data-library-audio-progress aria-label="${escapeHtml(label)}"></div>`;
+    return {
+        audioField,
+        valid: typeof value === "string" && value.startsWith("file:"),
+    };
+}
+
+export function renderAudio(
+    entry,
+    layer,
+    entries = [],
+    schemas = [],
+    fallbackLabel = "",
+) {
+    const own = entryAudio(entry, layer);
+    const useRelatedProviderAudio =
+        own.valid &&
+        layer?.semanticRole === "compoundWritingUnit" &&
+        entry.createdBy?.startsWith("content-pack:") &&
+        (entry.references ?? []).length > 0;
+    let sources =
+        own.valid && !useRelatedProviderAudio
+            ? [{ entry, field: own.audioField }]
+            : [];
+    let complete = sources.length > 0;
+    if (!complete && (entry.references ?? []).length) {
+        const resolveSources = (candidate, visited = new Set()) => {
+            if (!candidate || visited.has(candidate.id)) return null;
+            visited.add(candidate.id);
+            const candidateLayer = layerForEntry(schemas, candidate);
+            const audio = entryAudio(candidate, candidateLayer);
+            if (audio.valid)
+                return [{ entry: candidate, field: audio.audioField }];
+            const content = (candidate.references ?? [])
+                .sort(
+                    (left, right) =>
+                        (left.position ?? 0) - (right.position ?? 0),
+                )
+                .map(({ entryId }) => entries.find(({ id }) => id === entryId))
+                .filter(Boolean)
+                .filter(
+                    (target) =>
+                        !["definition", "meaning"].includes(
+                            layerForEntry(schemas, target)?.semanticRole,
+                        ),
+                );
+            if (!content.length) return null;
+            const nested = content.map((target) =>
+                resolveSources(target, new Set(visited)),
+            );
+            return nested.every(Boolean) ? nested.flat() : null;
+        };
+        const resolved = resolveSources(entry);
+        sources = resolved ?? [];
+        complete = Boolean(resolved?.length);
+    }
+    if (!complete && own.valid) {
+        sources = [{ entry, field: own.audioField }];
+        complete = true;
+    }
+    const label = own.audioField
+        ? localizedLabel(own.audioField.metadata, entry.language) ||
+          own.audioField.id
+        : fallbackLabel;
+    if (!complete || !sources.length)
+        return `<button class="library-audio-speaker btn-neutral" type="button" disabled aria-label="${escapeHtml(label)}">${speakerPicture()}</button>`;
+    return `<div class="library-audio-sequence" data-library-audio-sequence>${sources
+        .map(
+            ({ entry: source, field }) =>
+                `<audio preload="none" data-library-audio-entry="${escapeHtml(source.id)}" data-library-audio-field="${escapeHtml(field.id)}"></audio>`,
+        )
+        .join(
+            "",
+        )}<button class="library-audio-speaker btn-neutral" type="button" data-library-audio-sequence-toggle aria-label="${escapeHtml(label)}">${speakerPicture()}</button></div>`;
+}
+
+function speakerPicture() {
+    return '<svg class="library-speaker-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h4l5-4v14l-5-4H5z"></path><path d="M17 9a4 4 0 0 1 0 6"></path><path d="M19.5 6.5a8 8 0 0 1 0 11"></path></svg>';
 }
 
 export function formatAudioTime(value) {
@@ -348,4 +421,27 @@ export async function loadLibraryAudio(
             },
         ),
     );
+    overlay
+        .querySelectorAll("[data-library-audio-sequence]")
+        .forEach((group) => {
+            const audio = Array.from(group.querySelectorAll("audio"));
+            const toggle = group.querySelector(
+                "[data-library-audio-sequence-toggle]",
+            );
+            if (!toggle || audio.some((item) => !item.src)) {
+                if (toggle) toggle.disabled = true;
+                return;
+            }
+            toggle.addEventListener("click", async () => {
+                toggle.disabled = true;
+                for (const item of audio) {
+                    item.currentTime = 0;
+                    await item.play();
+                    await new Promise((resolve) =>
+                        item.addEventListener("ended", resolve, { once: true }),
+                    );
+                }
+                toggle.disabled = false;
+            });
+        });
 }
