@@ -166,6 +166,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 カードコンストラクターは主入力と発音カルーセルの関係 ID を明示的に分離するようになりました。代替文字は主参照を必須とせず、解決済みの発音関係だけを必要とします。lookup 結果には安全なプロバイダーメタデータの既定値が入り、宣言済みグリッドの容量が不足しても子カードの枝を省略しません。
 
+## 厳密なコンポーザー宣言
+
+推測によるカルーセル動作を削除し、すべてのカードコンストラクターに両方のカルーセル配列を必須化しました。サーバー検証は実行時フォームコンストラクターを使用し、編集フォームは宣言済み発音カルーセルを表示します。音声置換キーには正規化したカード名を使い、斜めの子カードは割り当て位置を維持します。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -209,3 +213,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8c8deb9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/48d14c1ba63d887a04305306f8c9de7565361dfa
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/872484294f2d3b777c6123286db62c78dc08f7f8
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/452e3eb3fc5b9e2ca86464904e7f6477992b7c32

@@ -166,6 +166,10 @@ Verschachtelte untergeordnete Karten behalten jetzt ihre vom Anbieter zugewiesen
 
 Kartenkonstruktoren trennen nun ausdrücklich die Beziehungs-IDs für Primäreingabe- und Aussprachekarussells. Alternative Zeichen benötigen aufgelöste Aussprachebeziehungen, aber keine Primärreferenzen. Lookup-Ergebnisse erhalten sichere Standardwerte für Anbietermetadaten, und die Platzierung untergeordneter Karten lässt keine Zweige mehr aus, wenn im deklarierten Raster keine Kapazität verbleibt.
 
+## Strikte Composer-Deklarationen
+
+Das abgeleitete Karussellverhalten wurde entfernt: Jeder Kartenkonstruktor muss beide Karussell-Arrays deklarieren. Die Serverprüfung verwendet nun Laufzeit-Formularkonstruktoren, Bearbeitungsformulare zeigen das deklarierte Aussprachekarussell, Audio-Ersatzschlüssel verwenden normalisierte Kartennamen und diagonale untergeordnete Karten behalten ihren zugewiesenen Platz.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -209,3 +213,4 @@ Kartenkonstruktoren trennen nun ausdrücklich die Beziehungs-IDs für Primärein
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8c8deb9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/48d14c1ba63d887a04305306f8c9de7565361dfa
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/872484294f2d3b777c6123286db62c78dc08f7f8
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/452e3eb3fc5b9e2ca86464904e7f6477992b7c32

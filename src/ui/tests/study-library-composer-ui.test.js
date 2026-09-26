@@ -48,11 +48,12 @@ test("Study Library composer exposes provider-owned raw-input lookup", () => {
         [createEntrySource, /constructor\.pronunciation_carousels/],
         [adminInteractionsSource, /data-library-pronunciation-text/],
         [adminInteractionsSource, /data-library-pronunciation-blocks/],
-        [adminInteractionsSource, /requiresCharacters/],
-        [adminInteractionsSource, /atomicWritingUnit/],
+        [adminInteractionsSource, /configuredIds\.has\(id\)/],
         [adminInteractionsSource, /target\.label/],
         [drawingSource, /orderedLexicalSequence/],
         [adapterSource, /registerLookupProvider/],
     ])
         assert.match(content, pattern);
+    assert.doesNotMatch(createEntrySource, /fallbackInputCarouselIds/);
+    assert.doesNotMatch(adminInteractionsSource, /linkRelationships/);
 });

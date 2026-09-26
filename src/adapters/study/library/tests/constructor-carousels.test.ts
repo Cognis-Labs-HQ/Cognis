@@ -85,6 +85,16 @@ test("card constructors assign input and pronunciation carousels explicitly", ()
         () =>
             validateLibrarySchema(
                 schemaFor({
+                    label: { labels: { en: "Alternate character" } },
+                    relationships: ["readings"],
+                } as never),
+            ),
+        /constructor_carousels_required/,
+    );
+    assert.throws(
+        () =>
+            validateLibrarySchema(
+                schemaFor({
                     ...constructor,
                     pronunciation_carousels: ["missing"],
                 }),

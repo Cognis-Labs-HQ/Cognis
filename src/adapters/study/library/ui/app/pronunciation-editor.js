@@ -6,17 +6,17 @@ export function mountEditableRelationshipCarousels(
     entries,
     schema,
     layer,
-    { onChange = () => {}, onAdd = () => {} } = {},
+    {
+        onChange = () => {},
+        onAdd = () => {},
+        pronunciationCarouselIds = new Set(),
+    } = {},
 ) {
-    const configuredPronunciationRelationshipIds = new Set(
-        layer.fields?.find(({ id }) => id === "pronunciation")?.input
-            ?.linkRelationships ?? [],
-    );
     const pronunciationRelationshipIds = new Set(
         pronunciationRelationshipsFor(
             layer,
             schema,
-            configuredPronunciationRelationshipIds,
+            pronunciationCarouselIds,
         ).map(({ id }) => id),
     );
     const controller = new AbortController();
@@ -166,29 +166,9 @@ export function mountEditableRelationshipCarousels(
     return controller;
 }
 
-export function pronunciationRelationshipsFor(layer, schema, configuredIds) {
+export function pronunciationRelationshipsFor(layer, _schema, configuredIds) {
     if (layer?.semanticRole === "orderedLexicalSequence") return [];
-    const requiresCharacters = ["compoundWritingUnit", "lexicalUnit"].includes(
-        layer?.semanticRole,
+    return (layer?.relationships ?? []).filter(({ id }) =>
+        configuredIds.has(id),
     );
-    const isCharacterRelationship = (relationship) =>
-        schema?.layers.find(({ id }) => id === relationship.targetLayer)
-            ?.semanticRole === "atomicWritingUnit";
-    const configured = (layer?.relationships ?? []).filter(
-        (relationship) =>
-            configuredIds.has(relationship.id) &&
-            (!requiresCharacters || isCharacterRelationship(relationship)),
-    );
-    if (configured.length) return configured;
-    const targetRoles = requiresCharacters
-        ? new Set(["atomicWritingUnit"])
-        : null;
-    const semanticMatches = (layer?.relationships ?? []).filter(
-        (relationship) =>
-            targetRoles?.has(
-                schema.layers.find(({ id }) => id === relationship.targetLayer)
-                    ?.semanticRole,
-            ),
-    );
-    return semanticMatches;
 }

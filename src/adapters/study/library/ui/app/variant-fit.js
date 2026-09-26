@@ -108,6 +108,10 @@ export function fitVariantBranchWithinGrid(rootShell) {
                 const rect = cardBounds(slot);
                 const overflow = overflowScore(rect, boundary);
                 const collision = collisionScore(rect, occupiedRects);
+                if (direction === preferred && overflow === 0) {
+                    best = { direction, overflow, collision };
+                    break;
+                }
                 if (
                     overflow < best.overflow ||
                     (overflow === best.overflow && collision < best.collision)

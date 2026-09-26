@@ -206,28 +206,30 @@ export class LibraryService implements LibraryCapability {
     listSchemas(): LibrarySchema[] {
         return Array.from(this.schemas.values(), (versions) =>
             versions.get(Math.max(...versions.keys()))!,
-        ).map((schema) => {
-            const copy = structuredClone(schema);
-            return {
-                ...copy,
-                layers: copy.layers.map((layer) => {
-                    const contribution = Array.from(
-                        this.formContributions.values(),
-                    ).find(
-                        (candidate) =>
-                            candidate.schemaId === copy.id &&
-                            candidate.layerId === layer.id &&
-                            candidate.cardConstructor,
-                    );
-                    return contribution?.cardConstructor
-                        ? {
-                              ...layer,
-                              cardConstructor: contribution.cardConstructor,
-                          }
-                        : layer;
-                }),
-            };
-        });
+        ).map((schema) => this.schemaWithFormConstructors(schema));
+    }
+
+    private schemaWithFormConstructors(schema: LibrarySchema): LibrarySchema {
+        const copy = structuredClone(schema);
+        return {
+            ...copy,
+            layers: copy.layers.map((layer) => {
+                const contribution = Array.from(
+                    this.formContributions.values(),
+                ).find(
+                    (candidate) =>
+                        candidate.schemaId === copy.id &&
+                        candidate.layerId === layer.id &&
+                        candidate.cardConstructor,
+                );
+                return contribution?.cardConstructor
+                    ? {
+                          ...layer,
+                          cardConstructor: contribution.cardConstructor,
+                      }
+                    : layer;
+            }),
+        };
     }
 
     getSchema(id: string, version?: number): LibrarySchema | null {
@@ -517,7 +519,9 @@ export class LibraryService implements LibraryCapability {
     ): Promise<LibraryResolutionProposal[]> {
         await this.flow?.run("study:library:resolve", input);
         const location = await this.authorize(actor, raw, false);
-        const schema = this.schema(input.schemaId, input.schemaVersion);
+        const schema = this.schemaWithFormConstructors(
+            this.schema(input.schemaId, input.schemaVersion),
+        );
         findLayer(schema, input.layer);
         return resolveRelationships(
             schema,
@@ -578,7 +582,9 @@ export class LibraryService implements LibraryCapability {
             entry: input,
         });
         const location = await this.authorize(actor, raw, true);
-        const schema = this.schema(input.schemaId, input.schemaVersion);
+        const schema = this.schemaWithFormConstructors(
+            this.schema(input.schemaId, input.schemaVersion),
+        );
         if (!input.label?.trim() || input.label.length > 500)
             throw new Error("invalid_label");
         if (
@@ -750,7 +756,9 @@ export class LibraryService implements LibraryCapability {
             typeof input.alwaysShowDefinition !== "boolean"
         )
             throw new Error("invalid_always_show_definition");
-        const schema = this.schema(current.schemaId);
+        const schema = this.schemaWithFormConstructors(
+            this.schema(current.schemaId),
+        );
         input.schemaVersion = schema.version;
         const layer = findLayer(schema, input.layer);
         if (layer.semanticRole === "definition") {

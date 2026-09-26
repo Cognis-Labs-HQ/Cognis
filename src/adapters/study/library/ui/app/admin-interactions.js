@@ -78,17 +78,14 @@ export function bindLibraryEditorControls(form, entry, i18n) {
                     .toLocaleLowerCase()
                     .replace(/[^\p{L}\p{N}]+/gu, "-")
                     .replace(/^-|-$/g, "") || "card";
-            const cardIdentifier = String(entry.id || identity)
-                .normalize("NFKC")
-                .replace(/[^\p{L}\p{N}._-]+/gu, "-")
-                .replace(/^-|-$/g, "");
-            const key = `${field.dataset.prefix}${cardIdentifier}-${field.dataset.fieldId}.audio`;
+            const normalizedFilename = `${identity}-${field.dataset.fieldId}.audio`;
+            const key = `${field.dataset.prefix}${normalizedFilename}`;
             field.dataset.uploading = "true";
             picker.disabled = true;
             try {
                 await client.uploadAudio(field.dataset.namespace, key, file);
                 stored.value = `file:${key}`;
-                filename.textContent = file.name;
+                filename.textContent = normalizedFilename;
                 filename.hidden = false;
                 showToast(
                     i18n.t("gateway.study.library_audio_upload_success"),
@@ -256,13 +253,8 @@ export function editorBody(
         layer?.semanticRole === "definition"
             ? layer.definitionLocalization?.stringKeyField
             : undefined;
-    const pronunciationField = layer?.fields?.find(
-        ({ id }) => id === "pronunciation",
-    );
     const configuredPronunciationRelationshipIds = new Set(
-        options.pronunciationCarouselIds ??
-            pronunciationField?.input?.linkRelationships ??
-            [],
+        options.pronunciationCarouselIds ?? [],
     );
     const pronunciationRelationships = pronunciationRelationshipsFor(
         layer,
@@ -579,6 +571,9 @@ export async function openLibraryEntryEditor({
         includeHidden: false,
         relationshipCarouselAdd: false,
         inlinePronunciationCarousel: true,
+        pronunciationCarouselIds: new Set(
+            layer?.cardConstructor?.pronunciation_carousels ?? [],
+        ),
     });
     let formController;
     return openPopup({
@@ -606,6 +601,11 @@ export async function openLibraryEntryEditor({
                 entries,
                 schema,
                 layer,
+                {
+                    pronunciationCarouselIds: new Set(
+                        layer?.cardConstructor?.pronunciation_carousels ?? [],
+                    ),
+                },
             );
             form.addEventListener("click", (event) => {
                 const button = event.target.closest(
@@ -711,6 +711,9 @@ export function bindAdminLibraryInteractions(
                 showRelationshipTab: readOnly,
                 relationshipCarouselAdd: false,
                 inlinePronunciationCarousel: !readOnly,
+                pronunciationCarouselIds: new Set(
+                    layer?.cardConstructor?.pronunciation_carousels ?? [],
+                ),
             });
             let formController;
             editorOpen = true;
@@ -766,6 +769,12 @@ export function bindAdminLibraryInteractions(
                             entries,
                             schema,
                             layer,
+                            {
+                                pronunciationCarouselIds: new Set(
+                                    layer?.cardConstructor
+                                        ?.pronunciation_carousels ?? [],
+                                ),
+                            },
                         );
                 },
                 onAction: async (action, overlay) => {

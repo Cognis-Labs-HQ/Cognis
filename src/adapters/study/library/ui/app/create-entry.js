@@ -165,33 +165,9 @@ export async function openCreateEntryPopup({
             .filter(Boolean),
         relationships: constructorRelationships,
     };
-    const fallbackInputCarouselIds = constructorRelationships
-        .filter((relationship) => {
-            const targetRole = schema.layers.find(
-                ({ id }) => id === relationship.targetLayer,
-            )?.semanticRole;
-            return (
-                ["lexicalUnit", "orderedLexicalSequence"].includes(
-                    layer.semanticRole,
-                ) && !["definition", "meaning"].includes(targetRole)
-            );
-        })
-        .map(({ id }) => id);
-    const fallbackPronunciationCarouselIds = constructorRelationships
-        .filter(
-            (relationship) =>
-                ["compoundWritingUnit", "lexicalUnit"].includes(
-                    layer.semanticRole,
-                ) &&
-                schema.layers.find(({ id }) => id === relationship.targetLayer)
-                    ?.semanticRole === "atomicWritingUnit",
-        )
-        .map(({ id }) => id);
-    const inputCarouselIds = new Set(
-        constructor.input_carousels ?? fallbackInputCarouselIds,
-    );
+    const inputCarouselIds = new Set(constructor.input_carousels);
     const pronunciationCarouselIds = new Set(
-        constructor.pronunciation_carousels ?? fallbackPronunciationCarouselIds,
+        constructor.pronunciation_carousels,
     );
     const configuredPronunciationRelationshipIds = new Set(
         pronunciationCarouselIds,
@@ -316,6 +292,7 @@ export async function openCreateEntryPopup({
                 schema,
                 editingLayer,
                 {
+                    pronunciationCarouselIds,
                     onChange: ({ id, values }) => {
                         const select = form.elements[`relationship:${id}`];
                         if (!select) return;
@@ -407,6 +384,7 @@ export async function openCreateEntryPopup({
                 editingLayer,
                 schema,
                 i18n,
+                inputCarouselIds,
             );
             if (supportsRawInput) bindRawInput(form, i18n);
             bindLookupProviders(form, draft, i18n);
@@ -767,13 +745,22 @@ function bindLookupProviders(form, draft, i18n) {
     );
 }
 
-function bindTextComposition(form, entries, layer, schema, i18n) {
+function bindTextComposition(
+    form,
+    entries,
+    layer,
+    schema,
+    i18n,
+    inputCarouselIds,
+) {
     const input = form.querySelector("[data-library-composer-text]");
     const output = form.querySelector("[data-library-composer-suggestions]");
     const blocks = form.querySelector("[data-library-composition-blocks]");
     const lookups = form.querySelector(".library-composer-lookups");
     if (!input || !output || !blocks) return { validate: () => true };
-    const relationships = layer.relationships ?? [];
+    const relationships = (layer.relationships ?? []).filter(({ id }) =>
+        inputCarouselIds.has(id),
+    );
     const candidates = relationships
         .flatMap((relationship) =>
             entries

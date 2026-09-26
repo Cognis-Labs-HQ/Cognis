@@ -491,7 +491,8 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(adminInteractionsSource, /relationshipCarouselAdd: false/);
     assert.match(adminInteractionsSource, /inlinePronunciationCarousel: true/);
     assert.match(adminInteractionsSource, /const inlinePronunciationCarousel/);
-    assert.match(adminInteractionsSource, /input\?\.linkRelationships/);
+    assert.match(adminInteractionsSource, /pronunciationCarouselIds/);
+    assert.doesNotMatch(adminInteractionsSource, /linkRelationships/);
     assert.match(adminInteractionsSource, /pronunciationRelationships\.length/);
     assert.match(adminInteractionsSource, /ordersPronunciation: true/);
     assert.match(adminInteractionsSource, /pronunciationRelationshipsFor/);
@@ -499,6 +500,7 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(adminInteractionsSource, /data-library-pronunciation-text/);
     assert.match(adminInteractionsSource, /data-library-pronunciation-blocks/);
     assert.match(adminInteractionsSource, /field\.dataset\.fieldId}\.audio/);
+    assert.match(adminInteractionsSource, /normalizedFilename/);
     assert.match(adminInteractionsSource, /const pronunciationIndex/);
     assert.match(
         adminInteractionsSource,

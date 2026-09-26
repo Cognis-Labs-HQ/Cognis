@@ -291,11 +291,6 @@ function validateRelationship(
 
 export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
     schema = structuredClone(schema);
-    for (const layer of schema.layers) {
-        if (!layer.cardConstructor) continue;
-        layer.cardConstructor.input_carousels ??= [];
-        layer.cardConstructor.pronunciation_carousels ??= [];
-    }
     assertIdentifier(schema.id, "invalid_schema_id");
     if (!Number.isSafeInteger(schema.version) || schema.version < 1)
         throw new Error("invalid_schema_version");
@@ -382,6 +377,11 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
             );
             const constructorRelationships =
                 layer.cardConstructor.relationships ?? [];
+            if (
+                !Array.isArray(layer.cardConstructor.input_carousels) ||
+                !Array.isArray(layer.cardConstructor.pronunciation_carousels)
+            )
+                throw new Error("constructor_carousels_required");
             if (
                 new Set(constructorRelationships).size !==
                     constructorRelationships.length ||

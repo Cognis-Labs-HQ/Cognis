@@ -166,6 +166,10 @@ Cabang kartu anak bertingkat kini mempertahankan sisi yang ditetapkan penyedia s
 
 Constructor kartu kini memisahkan ID relasi karusel input primer dan pelafalan secara eksplisit. Karakter alternatif memerlukan relasi pelafalan yang terselesaikan tanpa mewajibkan referensi primer, hasil lookup memperoleh nilai bawaan metadata penyedia yang aman, dan penempatan kartu anak tidak lagi menghilangkan cabang ketika kapasitas grid yang dideklarasikan habis.
 
+## Deklarasi composer yang ketat
+
+Perilaku karusel hasil inferensi dihapus: setiap constructor kartu wajib mendeklarasikan kedua larik karusel. Validasi server kini memakai constructor formulir runtime, formulir edit merender karusel pelafalan terdeklarasi, kunci pengganti audio memakai nama kartu ternormalisasi, dan kartu anak diagonal mempertahankan penempatannya.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -209,3 +213,4 @@ Constructor kartu kini memisahkan ID relasi karusel input primer dan pelafalan s
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8c8deb9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/48d14c1ba63d887a04305306f8c9de7565361dfa
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/872484294f2d3b777c6123286db62c78dc08f7f8
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/452e3eb3fc5b9e2ca86464904e7f6477992b7c32

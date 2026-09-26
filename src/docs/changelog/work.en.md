@@ -166,6 +166,10 @@ Nested child-card branches now retain their provider-assigned side when they fit
 
 Card constructors now explicitly separate primary-input and pronunciation carousel relationship IDs. Alternate characters require resolved pronunciation relationships without requiring primary references, lookup results receive safe provider metadata defaults, and child-card placement no longer drops branches when the declared grid has no remaining capacity.
 
+## Strict composer declarations
+
+Removed inferred carousel behavior: every card constructor must declare both carousel arrays. Server validation now uses runtime form constructors, edit forms render the declared pronunciation carousel, audio replacement keys use normalized card names, and diagonal child cards retain their assigned placement.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -209,3 +213,4 @@ Card constructors now explicitly separate primary-input and pronunciation carous
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8c8deb9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/48d14c1ba63d887a04305306f8c9de7565361dfa
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/872484294f2d3b777c6123286db62c78dc08f7f8
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/452e3eb3fc5b9e2ca86464904e7f6477992b7c32
