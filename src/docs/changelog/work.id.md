@@ -150,6 +150,10 @@ Panduan awal kini memberi nomor pada setiap goresan dan menggambar panah arah. S
 
 Panduan menggambar lengkap kini hanya muncul pada percobaan pertama atau setelah reset ? secara eksplisit. Coba lagi mempertahankan panduan progresif, sedangkan kartu gabungan menurunkan kelompok goresan karakter berurutan dan menampilkan setiap bagian baru secara lengkap. Kartu leksikal dan kalimat tidak boleh memiliki pola goresan sendiri. Karakter alternatif penyedia memakai ulang audio karakter terkait, unggahan pengguna tetap utama, dan pengeras suara memakai SVG inline yang aman untuk tema.
 
+## Tulisan gabungan dan pembuatan andal
+
+Gambar kosakata kini mengikuti bentuk tulisan utama dan menyusun setiap karakter yang ditemukan secara berdampingan, sementara judul papan menampilkan bacaan dan arti. Komposisi formulir bersama kini menandai bidang wajib secara konsisten, mempertahankan pola goresan dari penyedia, memvalidasi karakter alternatif melalui pencarian kamus, menyematkan pemilih pelafalan karakter, dan membersihkan pratinjau karusel saat dialog ditutup.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -188,3 +192,5 @@ Panduan menggambar lengkap kini hanya muncul pada percobaan pertama atau setelah
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/f2afaa13
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e894f166
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/64d1ac04
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/23587bd7

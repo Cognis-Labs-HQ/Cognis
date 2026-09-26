@@ -150,6 +150,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 全描画ガイドは初回試行または明示的な ? リセット後だけ表示します。「もう一度」では段階的ガイドを維持し、複合カードは順序付き文字の画グループを生成して新しい要素ごとに全体を表示します。語彙・文カードは独自の画パターンを持てません。プロバイダーの代替文字は関連文字の音声を再利用し、ユーザーのアップロードは優先され、スピーカーはテーマ対応のインラインSVGを使用します。
 
+## 複合筆記と確実な作成
+
+語彙の描画は主表記を基準に、解決したすべての文字を横に並べ、描画パッドの見出しに読みと意味も表示します。共通フォーム構成により必須項目を一貫して示し、プロバイダー提供の筆順を保持し、辞書検索で代替文字を検証し、文字の発音セレクターを埋め込み、ダイアログを閉じた際にカルーセルのプレビューを確実に破棄します。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -188,3 +192,5 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/f2afaa13
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e894f166
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/64d1ac04
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/23587bd7

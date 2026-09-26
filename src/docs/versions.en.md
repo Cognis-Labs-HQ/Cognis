@@ -35,7 +35,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.36`  |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.30`  |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.25`  |
-| File Quota            | `src/adapters/file/quota/`          | `1.0.53`  |
+| File Quota            | `src/adapters/file/quota/`          | `1.0.23`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.30`  |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.52`  |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.37`  |
@@ -55,8 +55,8 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Link Share            | `src/adapters/share/link/`          | `1.1.36`  |
 | User Share            | `src/adapters/share/user/`          | `1.1.19`  |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.1`   |
-| Library (Study)       | `src/adapters/study/library/`       | `2.20.38` |
-| Drawing (Study)       | `src/adapters/study/drawing/`       | `1.0.9`   |
+| Library (Study)       | `src/adapters/study/library/`       | `2.20.39` |
+| Drawing (Study)       | `src/adapters/study/drawing/`       | `1.0.10`  |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.1.7`   |
 | Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.1.5`   |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`   |

@@ -150,6 +150,10 @@ The initial guide now numbers every stroke and draws a direction arrow. Ten cons
 
 Full drawing guidance now appears only on the first attempt or after the explicit ? reset. Retry preserves progressive guidance, while composite cards derive ordered character stroke groups and preview each newly reached piece. Lexical and sentence cards cannot own stroke patterns. Provider alternate characters reuse related character audio, user uploads remain authoritative, and the speaker uses an inline theme-safe SVG.
 
+## Composite writing and reliable creation
+
+Vocabulary drawing now follows the primary written form and arranges every resolved character side by side while the pad heading includes readings and meaning. Shared form composition now marks required creation fields consistently, preserves provider-supplied stroke patterns, validates alternate characters through dictionary lookup, embeds character pronunciation selectors, and cleans up carousel previews when dialogs close.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -188,3 +192,5 @@ Full drawing guidance now appears only on the first attempt or after the explici
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/f2afaa13
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/e894f166
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/64d1ac04
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/23587bd7

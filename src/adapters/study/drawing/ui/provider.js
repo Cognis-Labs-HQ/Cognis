@@ -116,11 +116,21 @@ function playSuccessSound() {
     window.setTimeout(() => void audioContext.close(), 600);
 }
 
-function openDrawingPad({ card, definition = "", strokePattern }) {
+function openDrawingPad({
+    card,
+    definition = "",
+    pronunciations = [],
+    strokePattern,
+}) {
     if (!card?.id || !strokePattern?.strokes?.length)
         throw new Error("drawing_card_required");
     if (activeDrawingSession) {
-        activeDrawingSession.load({ card, definition, strokePattern });
+        activeDrawingSession.load({
+            card,
+            definition,
+            pronunciations,
+            strokePattern,
+        });
         return activeDrawingSession;
     }
     const makeFloatingWindow = uiCtx.capabilities.get("ui:makeFloatingWindow");
@@ -128,7 +138,7 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
     const controller = new AbortController();
     const pad = document.createElement("section");
     pad.className = "study-drawing-pad is-opening";
-    pad.innerHTML = `<header><span class="study-drawing-heading"><strong data-card-label></strong><span data-definition></span></span><span class="study-drawing-header-actions"><button class="btn-neutral" type="button" data-guidance hidden aria-label="${i18n.t("adapter.study.drawing.guidance")}">?</button><button class="btn-cancel" type="button" data-close>×</button></span></header><div class="study-drawing-stage"><canvas></canvas><section class="study-drawing-complete" data-complete hidden aria-live="polite"><span class="study-drawing-result" aria-hidden="true"></span><strong data-result-message></strong><p data-mistakes></p><div><button class="btn-neutral" type="button" data-complete-close>${i18n.t("adapter.study.drawing.close")}</button><button class="btn-neutral" type="button" data-try-again>${i18n.t("adapter.study.drawing.try_again")}</button></div></section></div><div class="study-drawing-controls"><button class="btn-cancel" type="button" data-reset>${i18n.t("adapter.study.drawing.reset")}</button></div>`;
+    pad.innerHTML = `<header><span class="study-drawing-heading"><strong data-card-label></strong><span data-pronunciations></span><span data-definition></span></span><span class="study-drawing-header-actions"><button class="btn-neutral" type="button" data-guidance hidden aria-label="${i18n.t("adapter.study.drawing.guidance")}">?</button><button class="btn-cancel" type="button" data-close>×</button></span></header><div class="study-drawing-stage"><canvas></canvas><section class="study-drawing-complete" data-complete hidden aria-live="polite"><span class="study-drawing-result" aria-hidden="true"></span><strong data-result-message></strong><p data-mistakes></p><div><button class="btn-neutral" type="button" data-complete-close>${i18n.t("adapter.study.drawing.close")}</button><button class="btn-neutral" type="button" data-try-again>${i18n.t("adapter.study.drawing.try_again")}</button></div></section></div><div class="study-drawing-controls"><button class="btn-cancel" type="button" data-reset>${i18n.t("adapter.study.drawing.reset")}</button></div>`;
     document.body.append(pad);
     const canvas = pad.querySelector("canvas");
     const stage = pad.querySelector(".study-drawing-stage");
@@ -138,6 +148,7 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
     const completed = [];
     let currentCard = card;
     let currentDefinition = definition;
+    let currentPronunciations = pronunciations;
     let currentPattern = strokePattern;
     let difficulty = difficultyByCardId.get(card.id) ?? 0;
     let active = null;
@@ -154,7 +165,10 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
     const resize = () => {
         const bounds = canvas.getBoundingClientRect();
         const width = Math.max(240, Math.round(bounds.width));
-        const height = Math.max(240, Math.round(bounds.height));
+        const height = Math.max(
+            240,
+            Math.round(bounds.width / (currentPattern.columns ?? 1)),
+        );
         header.style.width = `${Math.round(bounds.width)}px`;
         const styles = getComputedStyle(pad);
         colors.guide = styles.getPropertyValue("--drawing-guide").trim();
@@ -399,7 +413,7 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
         signal: controller.signal,
         minWidth: 320,
         minHeight: 480,
-        width: "min(92vw, 30rem)",
+        width: `min(96vw, ${Math.min(72, 28 * (strokePattern.columns ?? 1))}rem)`,
         height: "min(88vh, 38rem)",
     });
     const observer = new ResizeObserver(resize);
@@ -486,12 +500,18 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
     const load = ({
         card: nextCard,
         definition: nextDefinition = "",
+        pronunciations: nextPronunciations = [],
         strokePattern: nextPattern,
     }) => {
         if (!nextCard?.id || !nextPattern?.strokes?.length) return false;
         currentCard = nextCard;
         currentDefinition = nextDefinition;
+        currentPronunciations = nextPronunciations;
         currentPattern = nextPattern;
+        pad.style.setProperty(
+            "--drawing-columns",
+            String(currentPattern.columns ?? 1),
+        );
         difficulty = difficultyByCardId.get(nextCard.id) ?? 0;
         completed.length = 0;
         active = null;
@@ -502,6 +522,12 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
         completion.classList.remove("is-failure");
         pad.classList.remove("is-complete");
         pad.querySelector("[data-card-label]").textContent = currentCard.label;
+        pad.querySelector("[data-pronunciations]").textContent = [
+            currentPronunciations,
+        ]
+            .flat()
+            .filter(Boolean)
+            .join(" · ");
         pad.querySelector("[data-definition]").textContent = currentDefinition;
         pad.querySelector("[data-guidance]").hidden = !attemptedCardIds.has(
             nextCard.id,
@@ -510,7 +536,7 @@ function openDrawingPad({ card, definition = "", strokePattern }) {
         return true;
     };
     activeDrawingSession = { close, load };
-    load({ card, definition, strokePattern });
+    load({ card, definition, pronunciations, strokePattern });
     return activeDrawingSession;
 }
 

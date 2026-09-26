@@ -15,3 +15,5 @@ The heading is measured to the rendered canvas and centered directly above it. T
 The first guide view labels every stroke and shows its direction. Ten consecutive misses end the attempt with a failure result. Successful attempts with at most one mistake raise that card's in-memory difficulty for later attempts, and an open pad can switch directly to another Library card.
 
 Full guidance appears only before a card's first attempt or after the user explicitly presses the **?** reset action. Retrying keeps progressive guidance. Composite patterns carry piece boundaries so each newly reached character receives one complete annotated preview.
+
+Composite cards now arrange every writing-unit pattern from the primary written value side by side at a consistent scale with minimal spacing. The pad expands to preserve character size, and its compact heading includes available pronunciations and the localized definition.

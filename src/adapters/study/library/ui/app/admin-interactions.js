@@ -18,58 +18,8 @@ import {
 } from "./presentation.js";
 import { entryEditMode } from "./editability.js";
 
-export function inputForField(field, value, language, i18n) {
-    const label = localizedLabel(field.metadata, language);
-    const name = `field:${field.id}`;
-    const control = field.input?.control;
-    const options = field.input?.options ?? [];
-    if (field.type === "strokePattern")
-        return `<input name="${escapeHtml(name)}" type="hidden" data-library-provider-field>`;
-    if (control === "audioFile") {
-        const namespace = field.input?.file?.namespace ?? "";
-        const prefix = field.input?.file?.prefix ?? `${language}/`;
-        const filename =
-            typeof value === "string" && value.startsWith("file:")
-                ? value.slice("file:".length).split("/").at(-1)
-                : "";
-        return `<label class="library-audio-field" data-library-audio-field data-field-id="${escapeHtml(field.id)}" data-namespace="${escapeHtml(namespace)}" data-prefix="${escapeHtml(prefix)}"><span>${escapeHtml(label)} (${escapeHtml(i18n.t("gateway.study.library_optional"))})</span><span class="library-audio-filename" data-library-audio-filename${filename ? "" : " hidden"}>${escapeHtml(filename)}</span><input name="${escapeHtml(name)}" type="hidden" value="${escapeHtml(value ?? "")}"><input type="file" accept="audio/mpeg,audio/ogg,audio/wav,audio/webm,audio/mp4"></label>`;
-    }
-    if (control === "singleSelect" || control === "multiSelect")
-        return `<label><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}"${control === "multiSelect" ? " multiple" : ""}${field.input?.immutable ? " disabled" : ""}${field.required ? " required" : ""}>${options.map((option) => `<option value="${escapeHtml(option.value)}"${(Array.isArray(value) ? value.includes(option.value) : value === option.value) ? " selected" : ""}>${escapeHtml(localizedLabel(option.metadata, language))}</option>`).join("")}</select></label>`;
-    const valueKind = field.validation?.kind ?? field.type;
-    if (valueKind === "boolean")
-        return `<label class="library-admin-checkbox"><input name="${escapeHtml(name)}" type="checkbox" class="choice-checkbox"${value === true ? " checked" : ""}> <span>${escapeHtml(label)}</span></label>`;
-    if (valueKind === "localizedText") {
-        const translations =
-            value && typeof value === "object" && !Array.isArray(value)
-                ? value
-                : {};
-        const uiLanguages = ["de", "en", "id", "ja"];
-        return `<fieldset class="library-admin-localized-field"><legend>${escapeHtml(label)}</legend>${uiLanguages
-            .map((locale) => [locale, translations[locale] ?? ""])
-            .map(
-                ([locale, text]) =>
-                    `<label><span>${escapeHtml(locale)}</span><input name="${escapeHtml(`${name}:${locale}`)}" value="${escapeHtml(String(text))}"${field.required ? " required" : ""}></label>`,
-            )
-            .join("")}</fieldset>`;
-    }
-    if (
-        field.type === "stringList" ||
-        field.validation?.kind === "list" ||
-        control === "tagList"
-    )
-        return `<div class="library-tag-field" data-library-tag-field><span>${escapeHtml(label)}</span><div class="library-tag-list">${(Array.isArray(value) ? value : []).map((item) => `<button type="button" class="btn-neutral" data-library-tag="${escapeHtml(item)}">${escapeHtml(item)} ×</button>`).join("")}</div><input data-library-tag-input aria-label="${escapeHtml(label)}"><input name="${escapeHtml(name)}" type="hidden" value="${escapeHtml((Array.isArray(value) ? value : []).join("\u001f"))}"${field.required ? " required" : ""}></div>`;
-    const inputType =
-        ["number", "integer"].includes(field.type) ||
-        field.validation?.kind === "number" ||
-        control === "number"
-            ? "number"
-            : "text";
-    const step =
-        field.type === "integer" || field.validation?.integer ? "1" : "any";
-    return `<label><span>${escapeHtml(label)}</span><input name="${escapeHtml(name)}" type="${inputType}"${inputType === "number" ? ` step="${step}"` : ""} value="${escapeHtml(value ?? "")}"${field.required ? " required" : ""}${field.input?.immutable ? " disabled" : ""}></label>`;
-}
-
+export { inputForField } from "./field-input.js";
+import { inputForField } from "./field-input.js";
 export function bindLibraryEditorControls(form, entry, i18n) {
     form.querySelectorAll("[data-library-provider-field]").forEach(
         (control) => {
@@ -539,6 +489,11 @@ export function editorBody(
         })
         .join("");
     const relationships = (layer?.relationships ?? [])
+        .filter(
+            (relationship) =>
+                !options.inlinePronunciationCarousel ||
+                !pronunciationRelationshipIds.has(relationship.id),
+        )
         .map((relationship, relationshipIndex, allRelationships) => {
             const targetRole = schema?.layers.find(
                 ({ id }) => id === relationship.targetLayer,
@@ -624,14 +579,14 @@ export function editorBody(
             : layer?.semanticRole === "orderedLexicalSequence"
               ? "composite"
               : "");
-    const label = options.generatedLabel
+    const generatedLabel = options.generatedLabel
         ? `<input name="label" type="hidden" required maxlength="500" value="${escapeHtml(entry.label)}">`
-        : `<label><span>${escapeHtml(options.labelText ?? i18n.t("gateway.study.library_admin_label"))} *</span><input name="label" required maxlength="500" value="${escapeHtml(entry.label)}"></label>`;
+        : "";
     const classOptions =
         layer?.semanticRole === "orderedLexicalSequence"
             ? ["composite", "sentence"]
             : layer?.semanticRole === "lexicalUnit"
-              ? ["word", "particle"]
+              ? ["word"]
               : [];
     const classField = classOptions.length
         ? `<label><span>${escapeHtml(i18n.t("gateway.study.library_content_class"))}</span><select name="class">${classOptions.map((value) => `<option value="${value}"${value === contentClass ? " selected" : ""}>${escapeHtml(value)}</option>`).join("")}</select></label>`
@@ -673,8 +628,20 @@ export function editorBody(
             formAttributes: { "data-library-admin-editor": true },
             includeSubmitButton: false,
             submitLabelKey: "ui.reuse.save",
-            fields: [],
-            trustedContentHtml: `${options.persistentExtra ? `${extraHtml}${relationships}` : preservedRelationships}<nav class="library-editor-tabs" role="tablist" data-library-editor-tabs><button class="btn-neutral active" type="button" role="tab" aria-selected="true" data-library-editor-tab="content">${escapeHtml(i18n.t("gateway.study.library_editor_content"))}</button>${relationshipTab}<button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="definitions">${escapeHtml(i18n.t("gateway.study.library_definitions"))}</button></nav><section class="library-editor-panel" data-library-editor-panel="content">${label}${classField}${tagsField}${options.persistentExtra ? "" : extraHtml}${fields}${isDefinition || options.includeAlwaysShowDefinition === false ? '<input name="alwaysShowDefinition" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox" class="choice-checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`}${isDefinition ? '<input name="hidden" type="hidden" value="true">' : options.includeHidden === false ? '<input name="hidden" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="hidden" type="checkbox" class="choice-checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}</section>${relationshipPanel}<section class="library-editor-panel" data-library-editor-panel="definitions" hidden>${definitionsPanel}</section>`,
+            fields: options.generatedLabel
+                ? []
+                : [
+                      {
+                          name: "label",
+                          label:
+                              options.labelText ??
+                              i18n.t("gateway.study.library_admin_label"),
+                          required: true,
+                          maxCharacters: 500,
+                          value: entry.label,
+                      },
+                  ],
+            trustedContentHtml: `${options.persistentExtra ? `${extraHtml}${relationships}` : preservedRelationships}<nav class="library-editor-tabs" role="tablist" data-library-editor-tabs><button class="btn-neutral active" type="button" role="tab" aria-selected="true" data-library-editor-tab="content">${escapeHtml(i18n.t("gateway.study.library_editor_content"))}</button>${relationshipTab}<button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="definitions">${escapeHtml(i18n.t("gateway.study.library_definitions"))}</button></nav><section class="library-editor-panel" data-library-editor-panel="content">${generatedLabel}${classField}${tagsField}${options.persistentExtra ? "" : extraHtml}${fields}${isDefinition || options.includeAlwaysShowDefinition === false ? '<input name="alwaysShowDefinition" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox" class="choice-checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`}${isDefinition ? '<input name="hidden" type="hidden" value="true">' : options.includeHidden === false ? '<input name="hidden" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="hidden" type="checkbox" class="choice-checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}</section>${relationshipPanel}<section class="library-editor-panel" data-library-editor-panel="definitions" hidden>${definitionsPanel}</section>`,
         },
     );
     return { html: builder.render(), builder };

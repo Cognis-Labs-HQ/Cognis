@@ -15,3 +15,5 @@ Judul diukur mengikuti kanvas yang dirender dan dipusatkan tepat di atasnya. Tek
 Tampilan panduan pertama memberi nomor pada setiap goresan dan menunjukkan arahnya. Sepuluh kesalahan berturut-turut mengakhiri percobaan dengan hasil gagal. Percobaan berhasil dengan paling banyak satu kesalahan meningkatkan tingkat kesulitan kartu tersebut dalam memori untuk percobaan berikutnya, dan pad yang terbuka dapat langsung beralih ke kartu Pustaka lain.
 
 Panduan lengkap hanya muncul sebelum percobaan pertama sebuah kartu atau setelah pengguna menekan tindakan atur ulang **?**. Mencoba lagi mempertahankan panduan progresif. Pola gabungan membawa batas tiap bagian sehingga setiap karakter yang baru dicapai memperoleh satu pratinjau beranotasi lengkap.
+
+Kartu gabungan kini menyusun semua pola unit tulisan dari nilai tulisan utama secara berdampingan dengan skala konsisten dan jarak minimal. Papan gambar melebar agar ukuran karakter tetap terjaga, sedangkan judul ringkasnya menampilkan pelafalan dan definisi yang tersedia.

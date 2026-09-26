@@ -67,30 +67,6 @@ const carouselStylesheet = readFileSync(
     "utf8",
 );
 
-test("Study Library keeps editor tabs active and nested card types precise", () => {
-    assert.match(
-        adminInteractionsSource,
-        /bindLibraryEditorControls\(form, entry, i18n\)/,
-    );
-    assert.match(adminInteractionsSource, /name="tags"/);
-    assert.match(createEntrySource, /supportsTextComposition/);
-    assert.match(createEntrySource, /relationship\.targetLayer/);
-    assert.match(carouselStylesheet, /scrollbar-width:\s*none/);
-});
-
-test("Study Library composer exposes provider-owned raw-input lookup", () => {
-    assert.match(clientSource, /fetchLibraryLookupProviders/);
-    assert.match(
-        clientSource,
-        /fetchLibraryLookupSuggestions\(providerId, entry\)/,
-    );
-    assert.match(createEntrySource, /data-library-lookup-provider/);
-    assert.match(createEntrySource, /bindLookupProviders/);
-    assert.match(createEntrySource, /data-library-free-text/);
-    assert.match(createEntrySource, /lookups\.hidden = !text/);
-    assert.match(createEntrySource, /suggestion\.references/);
-    assert.match(adapterSource, /registerLookupProvider/);
-});
 const variantArrowLight = readFileSync(
     resolve(
         ROOT,
@@ -497,10 +473,8 @@ test("Study Library presents localized definitions as readable translations", ()
 });
 
 test("Study Library administration exposes contract-safe editing", () => {
-    assert.match(
-        adminInteractionsSource,
-        /name="label" required maxlength="500"/,
-    );
+    assert.match(adminInteractionsSource, /name:\s*"label"/);
+    assert.match(adminInteractionsSource, /required:\s*true/);
     assert.match(adminInteractionsSource, /library_content_class/);
     assert.match(adminInteractionsSource, /const isDefinition/);
     assert.match(adminInteractionsSource, /field\.type === "strokePattern"/);

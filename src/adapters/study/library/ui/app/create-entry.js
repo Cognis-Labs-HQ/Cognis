@@ -2,6 +2,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { showToast } from "/static/reuse/toast.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { mountHorizontalCarousels } from "/static/reuse/horizontal-carousel.js";
 import {
     createLibraryEntry,
@@ -204,12 +205,14 @@ export async function openCreateEntryPopup({
                 constructor.allowAlwaysShowDefinition === true,
             includeHidden: false,
             relationshipCarousels: true,
+            inlinePronunciationCarousel: true,
             generatedLabel: supportsTextComposition || supportsRawInput,
             persistentExtra: true,
             allowDefinitionCreate: layer.semanticRole !== "definition",
         },
     );
     let form;
+    let carouselController;
     const cardType =
         localizedLabel(layer.metadata, schema.language) || layer.id;
     const action = await openPopup({
@@ -248,13 +251,10 @@ export async function openCreateEntryPopup({
             form = overlay.querySelector("[data-library-admin-editor]");
             builder.attach(form);
             bindLibraryEditorControls(form, draft, i18n);
-            const controller = new AbortController();
-            overlay.addEventListener("close", () => controller.abort(), {
-                once: true,
-            });
+            carouselController = new AbortController();
             form.compositionOrder = [];
             mountHorizontalCarousels(form, {
-                signal: controller.signal,
+                signal: carouselController.signal,
                 onChange: ({ id, values }) => {
                     const select = form.elements[`relationship:${id}`];
                     if (!select) return;
@@ -342,7 +342,7 @@ export async function openCreateEntryPopup({
                 schema,
                 i18n,
             );
-            if (supportsRawInput) bindRawInput(form);
+            if (supportsRawInput) bindRawInput(form, i18n);
             bindLookupProviders(form, draft, i18n);
             form.querySelector(
                 "[data-library-add-definition]",
@@ -385,6 +385,7 @@ export async function openCreateEntryPopup({
             });
         },
     });
+    carouselController?.abort();
     form?.compositionController?.validate();
     if (
         action !== "create" ||
@@ -462,15 +463,24 @@ async function openDefinitionPopup({ schema, schemaId, layerId, i18n }) {
     const localization = layer?.definitionLocalization;
     if (!layer || !localization) return null;
     const languages = ["de", "en", "id", "ja"];
+    const builder = createFormBuilder(
+        { i18n, escapeHtml },
+        {
+            formId: "library-definition-form",
+            formAttributes: { "data-library-definition-form": true },
+            includeSubmitButton: false,
+            fields: languages.map((language) => ({
+                name: language,
+                label: language.toUpperCase(),
+                required: true,
+                maxCharacters: 500,
+            })),
+        },
+    );
     let form;
     const action = await openPopup({
         title: i18n.t("gateway.study.library_add_definition"),
-        body: `<form data-library-definition-form>${languages
-            .map(
-                (language) =>
-                    `<label><span>${escapeHtml(language.toUpperCase())}</span><input name="${escapeHtml(language)}" required maxlength="500"></label>`,
-            )
-            .join("")}</form>`,
+        body: builder.render(),
         closeProtection: true,
         actions: [
             {
@@ -486,6 +496,7 @@ async function openDefinitionPopup({ schema, schemaId, layerId, i18n }) {
         ],
         onOpen(overlay) {
             form = overlay.querySelector("[data-library-definition-form]");
+            builder.attach(form);
         },
         onAction(actionId) {
             if (actionId !== "save") return true;
@@ -550,8 +561,9 @@ function derivedPronunciation(entry, entries, schema, visited = new Set()) {
     return parts.join("") || direct || "";
 }
 
-function applyLookupFields(form, fields) {
+function applyLookupFields(form, fields, draft) {
     Object.entries(fields ?? {}).forEach(([fieldId, value]) => {
+        draft.fields[fieldId] = value;
         const control = form.elements[`field:${fieldId}`];
         if (!control) return;
         if (control.hasAttribute("data-library-provider-field")) {
@@ -601,15 +613,22 @@ function applyLookupFields(form, fields) {
     });
 }
 
-function bindRawInput(form) {
+function bindRawInput(form, i18n) {
     const input = form.querySelector("[data-library-free-text]");
     const lookups = form.querySelector(".library-composer-lookups");
     const sync = () => {
         const value = input.value.trim();
         form.elements.label.value = value;
+        input.dataset.lookupApproved = "";
+        input.setCustomValidity(
+            value ? i18n.t("gateway.study.library_lookup_empty") : "",
+        );
         if (lookups) lookups.hidden = !value;
     };
     input.addEventListener("input", sync);
+    input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") event.preventDefault();
+    });
     sync();
 }
 
@@ -636,7 +655,7 @@ function bindLookupProviders(form, draft, i18n) {
                     });
                     return;
                 }
-                applyLookupFields(form, suggestion.fields);
+                applyLookupFields(form, suggestion.fields, draft);
                 for (const reference of suggestion.references ?? []) {
                     const item = form.querySelector(
                         `[data-horizontal-carousel="${CSS.escape(reference.relation)}"] [data-carousel-value="${CSS.escape(reference.entryId)}"]`,
@@ -654,6 +673,10 @@ function bindLookupProviders(form, draft, i18n) {
                     !(suggestion.references ?? []).length
                 )
                     form.elements.label.value = suggestion.label ?? label;
+                if (input.hasAttribute("data-library-free-text")) {
+                    input.dataset.lookupApproved = "true";
+                    input.setCustomValidity("");
+                }
                 showToast(i18n.t("gateway.study.library_lookup_applied"), {
                     variant: "success",
                 });
@@ -752,6 +775,7 @@ function bindTextComposition(form, entries, layer, schema, i18n) {
         }
         const resolved = selectedLabels().join("");
         form.elements.label.value = `${resolved}${input.value.trim()}`;
+        input.required = !resolved;
         const relationshipParents = form.querySelector(
             "[data-library-relationship-parents]",
         );

@@ -167,3 +167,5 @@ Penyuntingan pelafalan memakai proses dua langkah yang dapat diulang: pilih kart
 Saat Latihan Menggambar terbuka, memilih kartu lain yang memiliki pola goresan akan memuat kartu itu ke pad yang sama alih-alih membuka dialog rinciannya.
 
 Kartu kosakata, kalimat, dan gabungan menurunkan panduan menggambar secara rekursif dari referensi unit tulisan terurut dan tidak boleh mendeklarasikan pola goresannya sendiri. Karakter alternatif milik penyedia memakai ulang audio karakter terkait bila memungkinkan; audio yang diunggah secara eksplisit pada kartu milik pengguna tetap menjadi sumber utama.
+
+Formulir pembuatan memakai pembuat formulir bersama untuk label wajib dan bidang definisi terlokalisasi. Masukan karakter alternatif berupa teks bebas, tetapi baru sah setelah dikonfirmasi penyedia kamus; hasil penyedia mempertahankan bidang wajib tersembunyi seperti pola goresan. Pemilih pelafalan berada di dalam bidang Pelafalan, kata dapat menyusun pelafalan dari kartu karakter, dan partikel tidak lagi menjadi kelas konten yang dapat dipilih penulis. Penyelesaian gambar gabungan mengikuti tulisan utama sebelum tautan pelafalan.

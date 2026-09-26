@@ -181,3 +181,5 @@ Pronunciation editing is a repeatable two-step process: select provider-compatib
 While Drawing Practice is open, selecting another card with a stroke pattern loads that card into the existing pad instead of opening its detail dialog.
 
 Vocabulary, sentences, and composite cards derive drawing guidance recursively from their ordered writing-unit references and cannot declare their own stroke patterns. Provider-owned alternate characters reuse related character audio when possible; a user-owned card's explicitly uploaded audio remains authoritative.
+
+Creation forms use the shared form builder for required labels and localized definition fields. Alternate-character input is free text but becomes valid only after a dictionary provider confirms it; provider results persist hidden required fields such as stroke patterns. Pronunciation selectors are embedded in the Pronunciation field, words may compose pronunciations from character cards, and particle is no longer an author-selectable content class. Composite drawing resolution follows the primary written label before pronunciation links.

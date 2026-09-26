@@ -107,8 +107,8 @@
     box-sizing: border-box;
     display: inline-grid;
     gap: 0.25rem;
-    inline-size: fit-content;
-    min-inline-size: 0;
+    inline-size: max-content;
+    min-inline-size: min(10rem, calc(100vw - 1rem));
     max-inline-size: min(18rem, calc(100vw - 1rem));
     overflow: hidden;
     background: var(--surface-2, var(--surface));

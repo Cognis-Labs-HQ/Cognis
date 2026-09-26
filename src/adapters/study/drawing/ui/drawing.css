@@ -43,11 +43,17 @@ body[data-theme="dark"] .study-drawing-pad {
     min-width: 0;
 }
 
+.study-drawing-heading [data-pronunciations],
 .study-drawing-heading [data-definition] {
     overflow: hidden;
     color: var(--text-muted);
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.study-drawing-heading [data-pronunciations]:empty,
+.study-drawing-heading [data-definition]:empty {
+    display: none;
 }
 
 .study-drawing-pad [data-close] {
@@ -75,11 +81,11 @@ body[data-theme="dark"] .study-drawing-pad {
 
 .study-drawing-pad canvas {
     display: block;
-    width: auto;
-    height: 100%;
+    width: 100%;
+    height: auto;
     min-height: 0;
     max-width: 100%;
-    aspect-ratio: 1;
+    aspect-ratio: var(--drawing-columns, 1);
     justify-self: center;
     border: 1px solid var(--border);
     border-radius: 0.5rem;
