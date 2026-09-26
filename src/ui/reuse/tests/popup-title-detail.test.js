@@ -57,10 +57,8 @@ test("popup supports leading title content, standard close controls, and action 
 });
 
 test("nested popups stack above their parent dialog", () => {
-    assert.match(
-        source,
-        /2000 \+ document\.querySelectorAll\("\.popup-overlay"\)\.length \* 10/,
-    );
+    assert.match(source, /highestPopupZIndex \+ 10/);
+    assert.match(source, /candidate\.style\.zIndex/);
 });
 
 test("popup typography scales from the user font-size preference", () => {

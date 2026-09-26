@@ -158,6 +158,10 @@ Gambar kosakata kini mengikuti bentuk tulisan utama dan menyusun setiap karakter
 
 Pembaruan kartu dan pemutaran audio kini dimigrasikan melalui skema penyedia terkini, dan dialog detail mempertahankan tindakan sunting setelah penyuntingan. Latihan gambar tetap terbatas di area pandang, dapat diubah ukurannya dengan tepat, memberi anotasi pada panduan satu goresan, memakai ejaan kosakata alih-alih pelafalan, serta mengecualikan kalimat dan gabungan. Pembuatan kartu mengecualikan kartu partikel, memulihkan semua karusel komposisi untuk kalimat dan gabungan, serta menyediakan pemilih pelafalan berbasis karakter dengan tahap persiapan untuk kosakata dan karakter alternatif.
 
+## Komposisi bertingkat yang tepat
+
+Cabang kartu anak bertingkat kini mempertahankan sisi yang ditetapkan penyedia saat ruangnya mencukupi, dialog pembuatan bertingkat selalu berada di atas dialog induknya, dan komposisi pelafalan kini sama dengan composer input dengan bidang teks bertahap serta karusel karakter atomik.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -199,3 +203,4 @@ Pembaruan kartu dan pemutaran audio kini dimigrasikan melalui skema penyedia ter
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/64d1ac04
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/23587bd7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8c8deb9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/48d14c1ba63d887a04305306f8c9de7565361dfa

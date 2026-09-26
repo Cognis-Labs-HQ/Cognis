@@ -158,6 +158,10 @@ Vokabelzeichnungen folgen jetzt der primären Schreibweise und ordnen alle aufge
 
 Kartenaktualisierungen und Audiowiedergabe werden jetzt über das aktuelle Anbieterschema migriert, und Detaildialoge behalten ihre Bearbeitungsaktion nach dem Bearbeiten. Die Zeichenübung bleibt begrenzt, lässt sich vorhersehbar skalieren, beschriftet einzelne Strichhilfen, verwendet bei Vokabeln die Schreibweise statt der Aussprache und schließt Sätze sowie Komposita aus. Die Kartenerstellung schließt Partikelkarten aus, stellt für Sätze und Komposita alle Zusammensetzungskarussells wieder her und bietet eine vorbereitende zeichenbasierte Ausspracheauswahl für Vokabeln und alternative Zeichen.
 
+## Präzise verschachtelte Komposition
+
+Verschachtelte untergeordnete Karten behalten jetzt ihre vom Anbieter zugewiesene Seite, wenn sie dort Platz finden. Verschachtelte Erstellungsdialoge liegen immer über ihrem übergeordneten Dialog, und die Aussprachekomposition entspricht nun dem Eingabe-Composer mit einem vorbereiteten Textfeld und einem Karussell für atomare Zeichen.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -199,3 +203,4 @@ Kartenaktualisierungen und Audiowiedergabe werden jetzt über das aktuelle Anbie
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/64d1ac04
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/23587bd7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8c8deb9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/48d14c1ba63d887a04305306f8c9de7565361dfa

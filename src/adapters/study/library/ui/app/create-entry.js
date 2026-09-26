@@ -3,7 +3,6 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { showToast } from "/static/reuse/toast.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
-import { mountHorizontalCarousels } from "/static/reuse/horizontal-carousel.js";
 import {
     createLibraryEntry,
     fetchLibraryForms,
@@ -24,6 +23,10 @@ import {
     localizedLabel,
     pronunciationValues,
 } from "./presentation.js";
+import {
+    mountEditableRelationshipCarousels,
+    pronunciationRelationshipsFor,
+} from "./pronunciation-editor.js";
 
 export async function chooseCreateLayer({
     schema,
@@ -162,6 +165,17 @@ export async function openCreateEntryPopup({
             .filter(Boolean),
         relationships: constructorRelationships,
     };
+    const configuredPronunciationRelationshipIds = new Set(
+        editingLayer.fields?.find(({ id }) => id === "pronunciation")?.input
+            ?.linkRelationships ?? [],
+    );
+    const pronunciationRelationshipIds = new Set(
+        pronunciationRelationshipsFor(
+            editingLayer,
+            schema,
+            configuredPronunciationRelationshipIds,
+        ).map(({ id }) => id),
+    );
     const draft = {
         schemaId,
         schemaVersion: schema.version,
@@ -265,90 +279,99 @@ export async function openCreateEntryPopup({
             form = overlay.querySelector("[data-library-admin-editor]");
             builder.attach(form);
             bindLibraryEditorControls(form, draft, i18n);
-            carouselController = new AbortController();
             form.compositionOrder = [];
-            mountHorizontalCarousels(form, {
-                signal: carouselController.signal,
-                onChange: ({ id, values }) => {
-                    const select = form.elements[`relationship:${id}`];
-                    if (!select) return;
-                    const selected = new Set(values);
-                    const previous = new Set(
-                        Array.from(
-                            select.selectedOptions,
-                            (option) => option.value,
-                        ),
-                    );
-                    form.compositionOrder = form.compositionOrder.filter(
-                        (value) => selected.has(value) || !previous.has(value),
-                    );
-                    values.forEach((value) => {
-                        if (!previous.has(value))
-                            form.compositionOrder.push(value);
-                    });
-                    Array.from(select.options).forEach((option) => {
-                        option.selected = selected.has(option.value);
-                    });
-                    values.forEach((value) => {
-                        const option = Array.from(select.options).find(
-                            (candidate) => candidate.value === value,
+            carouselController = mountEditableRelationshipCarousels(
+                form,
+                overlay,
+                entries,
+                schema,
+                editingLayer,
+                {
+                    onChange: ({ id, values }) => {
+                        const select = form.elements[`relationship:${id}`];
+                        if (!select) return;
+                        if (pronunciationRelationshipIds.has(id)) return;
+                        const selected = new Set(values);
+                        const previous = new Set(
+                            Array.from(
+                                select.selectedOptions,
+                                (option) => option.value,
+                            ),
                         );
-                        if (option) select.append(option);
-                    });
-                    form.dispatchEvent(new Event("library-composition-change"));
-                },
-                onAdd: async ({ id, carousel }) => {
-                    const relationship = editingLayer.relationships.find(
-                        (candidate) => candidate.id === id,
-                    );
-                    if (!relationship) return;
-                    const suggestedLabel =
-                        carousel.dataset.suggestedLabel ?? "";
-                    const created = await openCreateEntryPopup({
-                        schemas,
-                        entries,
-                        schemaId,
-                        layerId: relationship.targetLayer,
-                        i18n,
-                        contributions,
-                        initialLabel: suggestedLabel,
-                    });
-                    delete carousel.dataset.suggestedLabel;
-                    if (!created) return;
-                    const compositionInput = form.querySelector(
-                        "[data-library-composer-text]",
-                    );
-                    if (compositionInput && suggestedLabel) {
-                        compositionInput.value = compositionInput.value
-                            .replace(suggestedLabel, "")
-                            .trim();
-                        compositionInput.dispatchEvent(
-                            new Event("input", { bubbles: true }),
+                        form.compositionOrder = form.compositionOrder.filter(
+                            (value) =>
+                                selected.has(value) || !previous.has(value),
                         );
-                    }
-                    entries.push(created);
-                    const select = form.elements[`relationship:${id}`];
-                    const option = new Option(
-                        created.label,
-                        created.id,
-                        true,
-                        true,
-                    );
-                    select.append(option);
-                    const item = document.createElement("button");
-                    item.type = "button";
-                    item.className =
-                        "btn-neutral horizontal-carousel-item is-selected";
-                    item.dataset.carouselValue = created.id;
-                    item.setAttribute("aria-pressed", "true");
-                    item.innerHTML = `<span>${escapeHtml(created.label)}</span><small data-carousel-order></small>`;
-                    carousel
-                        .querySelector(".horizontal-carousel-track")
-                        ?.append(item);
-                    item.click();
-                    item.click();
+                        values.forEach((value) => {
+                            if (!previous.has(value))
+                                form.compositionOrder.push(value);
+                        });
+                        Array.from(select.options).forEach((option) => {
+                            option.selected = selected.has(option.value);
+                        });
+                        values.forEach((value) => {
+                            const option = Array.from(select.options).find(
+                                (candidate) => candidate.value === value,
+                            );
+                            if (option) select.append(option);
+                        });
+                        form.dispatchEvent(
+                            new Event("library-composition-change"),
+                        );
+                    },
+                    onAdd: async ({ id, carousel }) => {
+                        const relationship = editingLayer.relationships.find(
+                            (candidate) => candidate.id === id,
+                        );
+                        if (!relationship) return;
+                        const suggestedLabel =
+                            carousel.dataset.suggestedLabel ?? "";
+                        const created = await openCreateEntryPopup({
+                            schemas,
+                            entries,
+                            schemaId,
+                            layerId: relationship.targetLayer,
+                            i18n,
+                            contributions,
+                            initialLabel: suggestedLabel,
+                        });
+                        delete carousel.dataset.suggestedLabel;
+                        if (!created) return;
+                        const compositionInput = form.querySelector(
+                            "[data-library-composer-text]",
+                        );
+                        if (compositionInput && suggestedLabel) {
+                            compositionInput.value = compositionInput.value
+                                .replace(suggestedLabel, "")
+                                .trim();
+                            compositionInput.dispatchEvent(
+                                new Event("input", { bubbles: true }),
+                            );
+                        }
+                        entries.push(created);
+                        const select = form.elements[`relationship:${id}`];
+                        const option = new Option(
+                            created.label,
+                            created.id,
+                            true,
+                            true,
+                        );
+                        select.append(option);
+                        const item = document.createElement("button");
+                        item.type = "button";
+                        item.className =
+                            "btn-neutral horizontal-carousel-item is-selected";
+                        item.dataset.carouselValue = created.id;
+                        item.setAttribute("aria-pressed", "true");
+                        item.innerHTML = `<span>${escapeHtml(created.label)}</span><small data-carousel-order></small>`;
+                        carousel
+                            .querySelector(".horizontal-carousel-track")
+                            ?.append(item);
+                        item.click();
+                        item.click();
+                    },
                 },
-            });
+            );
             form.compositionController = bindTextComposition(
                 form,
                 entries,

@@ -6,16 +6,19 @@ export function mountEditableRelationshipCarousels(
     entries,
     schema,
     layer,
+    { onChange = () => {}, onAdd = () => {} } = {},
 ) {
-    const pronunciationRelationshipIds = new Set(
+    const configuredPronunciationRelationshipIds = new Set(
         layer.fields?.find(({ id }) => id === "pronunciation")?.input
             ?.linkRelationships ?? [],
     );
-    pronunciationRelationshipsFor(
-        layer,
-        schema,
-        pronunciationRelationshipIds,
-    ).forEach(({ id }) => pronunciationRelationshipIds.add(id));
+    const pronunciationRelationshipIds = new Set(
+        pronunciationRelationshipsFor(
+            layer,
+            schema,
+            configuredPronunciationRelationshipIds,
+        ).map(({ id }) => id),
+    );
     const controller = new AbortController();
     const committedValues = new Map();
     const draftValues = new Map();
@@ -37,6 +40,7 @@ export function mountEditableRelationshipCarousels(
         onChange: ({ id, values }) => {
             const select = form.elements[`relationship:${id}`];
             if (!select) return;
+            onChange({ id, values });
             if (pronunciationRelationshipIds.has(id))
                 draftValues.set(id, values);
             const selected = new Set([
@@ -54,8 +58,8 @@ export function mountEditableRelationshipCarousels(
             });
             const pronunciation = form.elements["field:pronunciation"];
             if (pronunciation && pronunciationRelationshipIds.has(id)) {
-                const current = form.querySelector(
-                    "[data-library-pronunciation-current]",
+                const blocks = form.querySelector(
+                    "[data-library-pronunciation-blocks]",
                 );
                 const selectedEntries = Array.from(pronunciationRelationshipIds)
                     .flatMap(
@@ -66,25 +70,18 @@ export function mountEditableRelationshipCarousels(
                         entries.find((candidate) => candidate.id === value),
                     )
                     .filter(Boolean);
-                const pronunciationValue = selectedEntries
-                    .map((candidate) => {
-                        const candidatePronunciation =
-                            candidate.fields?.pronunciation;
-                        return (
-                            (Array.isArray(candidatePronunciation)
-                                ? candidatePronunciation[0]
-                                : candidatePronunciation) || candidate.label
-                        );
-                    })
-                    .join("");
-                if (current) {
-                    current.dataset.pronunciationValue = pronunciationValue;
-                    current.textContent = selectedEntries
-                        .map((candidate) => candidate.label)
-                        .join("");
+                if (blocks) {
+                    blocks.replaceChildren();
+                    selectedEntries.forEach((candidate) => {
+                        const block = document.createElement("span");
+                        block.dataset.pronunciationEntry = candidate.id;
+                        block.textContent = candidate.label;
+                        blocks.append(block);
+                    });
                 }
             }
         },
+        onAdd,
     });
     pronunciationRelationshipIds.forEach((relationshipId) => {
         const carousel = form.querySelector(
@@ -102,10 +99,22 @@ export function mountEditableRelationshipCarousels(
         (button) => {
             button.addEventListener("click", () => {
                 const pronunciation = form.elements["field:pronunciation"];
-                const current = form.querySelector(
-                    "[data-library-pronunciation-current]",
+                const textInput = form.querySelector(
+                    "[data-library-pronunciation-text]",
                 );
-                const value = current?.dataset.pronunciationValue?.trim();
+                const selectedLabels = Array.from(pronunciationRelationshipIds)
+                    .flatMap(
+                        (relationshipId) =>
+                            draftValues.get(relationshipId) ?? [],
+                    )
+                    .map((entryId) =>
+                        entries.find((candidate) => candidate.id === entryId),
+                    )
+                    .filter(Boolean)
+                    .map((candidate) => candidate.label)
+                    .join("");
+                const value =
+                    `${selectedLabels}${textInput?.value ?? ""}`.trim();
                 if (!pronunciation || !value) return;
                 const values = pronunciation.value
                     .split("\u001f")
@@ -147,22 +156,31 @@ export function mountEditableRelationshipCarousels(
                     );
                     if (output) output.textContent = "";
                 });
-                current.textContent = "";
-                delete current.dataset.pronunciationValue;
+                form.querySelector(
+                    "[data-library-pronunciation-blocks]",
+                )?.replaceChildren();
+                if (textInput) textInput.value = "";
             });
         },
     );
+    return controller;
 }
 
 export function pronunciationRelationshipsFor(layer, schema, configuredIds) {
     if (layer?.semanticRole === "orderedLexicalSequence") return [];
-    const configured = (layer?.relationships ?? []).filter(({ id }) =>
-        configuredIds.has(id),
+    const requiresCharacters = ["compoundWritingUnit", "lexicalUnit"].includes(
+        layer?.semanticRole,
+    );
+    const isCharacterRelationship = (relationship) =>
+        schema?.layers.find(({ id }) => id === relationship.targetLayer)
+            ?.semanticRole === "atomicWritingUnit";
+    const configured = (layer?.relationships ?? []).filter(
+        (relationship) =>
+            configuredIds.has(relationship.id) &&
+            (!requiresCharacters || isCharacterRelationship(relationship)),
     );
     if (configured.length) return configured;
-    const targetRoles = ["compoundWritingUnit", "lexicalUnit"].includes(
-        layer?.semanticRole,
-    )
+    const targetRoles = requiresCharacters
         ? new Set(["atomicWritingUnit"])
         : null;
     const semanticMatches = (layer?.relationships ?? []).filter(

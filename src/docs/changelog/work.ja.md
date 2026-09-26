@@ -158,6 +158,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 カード更新と音声再生はプロバイダーの最新スキーマを通じて移行され、編集後も詳細ダイアログの編集操作が維持されます。描画練習は表示範囲内に収まり、予測どおりにサイズ変更でき、1画ガイドにも注記を付け、語彙では発音でなく表記を使用し、文と複合カードを対象外にします。カード作成では助詞カードを除外し、文と複合カードのすべての構成カルーセルを復元し、語彙と代替文字にステージ欄付きの文字ベース発音セレクターを提供します。
 
+## 正確な入れ子構成
+
+入れ子の子カードは収まる場合にプロバイダー指定の側を維持し、入れ子の作成ダイアログは常に親ダイアログより前面に表示されます。発音構成は、段階テキスト入力と基本文字カルーセルを備えた入力コンポーザーと同じ構成になりました。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -199,3 +203,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/64d1ac04
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/23587bd7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8c8deb9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/48d14c1ba63d887a04305306f8c9de7565361dfa

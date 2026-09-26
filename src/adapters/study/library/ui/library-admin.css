@@ -348,17 +348,15 @@ body[data-theme="dark"] .library-quick-search-control img {
     gap: 0.4rem;
 }
 
-.library-pronunciation-values > span,
-.library-pronunciation-stage > output:not(:empty) {
+.library-pronunciation-values > span {
     border: 1px solid var(--border);
     border-radius: var(--radius-small, 0.5rem);
     padding: 0.45rem 0.7rem;
 }
 
-.library-pronunciation-stage {
-    align-items: center;
-    display: flex;
-    min-height: 2.4rem;
+.library-pronunciation-input {
+    display: grid;
+    gap: 0.4rem;
 }
 
 .library-pronunciation-commit {

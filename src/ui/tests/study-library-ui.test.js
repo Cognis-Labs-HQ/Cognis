@@ -496,7 +496,8 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(adminInteractionsSource, /ordersPronunciation: true/);
     assert.match(adminInteractionsSource, /pronunciationRelationshipsFor/);
     assert.match(adminInteractionsSource, /data-library-pronunciation-commit/);
-    assert.match(adminInteractionsSource, /data-library-pronunciation-current/);
+    assert.match(adminInteractionsSource, /data-library-pronunciation-text/);
+    assert.match(adminInteractionsSource, /data-library-pronunciation-blocks/);
     assert.match(adminInteractionsSource, /field\.dataset\.fieldId}\.audio/);
     assert.match(adminInteractionsSource, /const pronunciationIndex/);
     assert.match(
@@ -646,6 +647,7 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /function collisionScore/);
     assert.match(source, /function overlapArea/);
     assert.match(source, /const occupiedRects/);
+    assert.match(source, /direction === preferred && overflow === 0/);
     assert.match(source, /overflow === 0 && collision === 0/);
     assert.match(source, /data-library-preferred-direction/);
     assert.match(source, /--library-variant-card-span/);

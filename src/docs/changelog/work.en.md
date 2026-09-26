@@ -158,6 +158,10 @@ Vocabulary drawing now follows the primary written form and arranges every resol
 
 Card updates and audio playback now migrate through the provider’s current schema, and detail dialogs retain their edit action after editing. Drawing practice stays bounded, resizes predictably, annotates single-stroke guidance, uses vocabulary spelling instead of pronunciation, and excludes sentences and composites. Card creation excludes particle cards, restores all composition carousels for sentences and composites, and provides staged character-based pronunciation selectors for vocabulary and alternate characters.
 
+## Precise nested composition
+
+Nested child-card branches now retain their provider-assigned side when they fit, nested creation dialogs always stack above their parent, and pronunciation composition now matches the input composer with a staged text field and atomic-character carousel.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -199,3 +203,4 @@ Card updates and audio playback now migrate through the provider’s current sch
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/64d1ac04
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/23587bd7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8c8deb9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/48d14c1ba63d887a04305306f8c9de7565361dfa

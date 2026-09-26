@@ -259,16 +259,16 @@ export function editorBody(
     const pronunciationField = layer?.fields?.find(
         ({ id }) => id === "pronunciation",
     );
-    const pronunciationRelationshipIds = new Set(
+    const configuredPronunciationRelationshipIds = new Set(
         pronunciationField?.input?.linkRelationships ?? [],
     );
     const pronunciationRelationships = pronunciationRelationshipsFor(
         layer,
         schema,
-        pronunciationRelationshipIds,
+        configuredPronunciationRelationshipIds,
     );
-    pronunciationRelationships.forEach(({ id }) =>
-        pronunciationRelationshipIds.add(id),
+    const pronunciationRelationshipIds = new Set(
+        pronunciationRelationships.map(({ id }) => id),
     );
     const inlinePronunciationCarousel =
         options.inlinePronunciationCarousel &&
@@ -308,7 +308,7 @@ export function editorBody(
                     : value
                       ? [value]
                       : [];
-                return `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(fieldLabel)}</legend><div class="library-pronunciation-values" data-library-pronunciation-values>${pronunciations.map((pronunciation) => `<span data-value="${escapeHtml(pronunciation)}">${escapeHtml(pronunciation)}</span>`).join("")}</div><input name="field:pronunciation" type="hidden" value="${escapeHtml(pronunciations.join("\u001f"))}">${inlinePronunciationCarousel}<div class="library-pronunciation-stage"><output data-library-pronunciation-current></output></div><div class="library-pronunciation-commit"><button class="btn-confirm" type="button" data-library-pronunciation-commit>${escapeHtml(i18n.t("gateway.study.library_commit_pronunciation"))}</button></div></fieldset>`;
+                return `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(fieldLabel)}</legend><div class="library-pronunciation-values" data-library-pronunciation-values>${pronunciations.map((pronunciation) => `<span data-value="${escapeHtml(pronunciation)}">${escapeHtml(pronunciation)}</span>`).join("")}</div><input name="field:pronunciation" type="hidden" value="${escapeHtml(pronunciations.join("\u001f"))}"><label class="library-pronunciation-input"><span>${escapeHtml(fieldLabel)}</span><span class="library-composition-input"><span class="library-composition-blocks" data-library-pronunciation-blocks aria-live="polite"></span><input data-library-pronunciation-text autocomplete="off"></span></label>${inlinePronunciationCarousel}<div class="library-pronunciation-commit"><button class="btn-confirm" type="button" data-library-pronunciation-commit>${escapeHtml(i18n.t("gateway.study.library_commit_pronunciation"))}</button></div></fieldset>`;
             }
             if (
                 field.id === "pronunciation" &&
