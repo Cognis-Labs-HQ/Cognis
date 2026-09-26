@@ -162,6 +162,10 @@ Kartenaktualisierungen und Audiowiedergabe werden jetzt über das aktuelle Anbie
 
 Verschachtelte untergeordnete Karten behalten jetzt ihre vom Anbieter zugewiesene Seite, wenn sie dort Platz finden. Verschachtelte Erstellungsdialoge liegen immer über ihrem übergeordneten Dialog, und die Aussprachekomposition entspricht nun dem Eingabe-Composer mit einem vorbereiteten Textfeld und einem Karussell für atomare Zeichen.
 
+## Anbietergesteuerte Composer-Karussells
+
+Kartenkonstruktoren trennen nun ausdrücklich die Beziehungs-IDs für Primäreingabe- und Aussprachekarussells. Alternative Zeichen benötigen aufgelöste Aussprachebeziehungen, aber keine Primärreferenzen. Lookup-Ergebnisse erhalten sichere Standardwerte für Anbietermetadaten, und die Platzierung untergeordneter Karten lässt keine Zweige mehr aus, wenn im deklarierten Raster keine Kapazität verbleibt.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -204,3 +208,4 @@ Verschachtelte untergeordnete Karten behalten jetzt ihre vom Anbieter zugewiesen
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/23587bd7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8c8deb9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/48d14c1ba63d887a04305306f8c9de7565361dfa
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/872484294f2d3b777c6123286db62c78dc08f7f8

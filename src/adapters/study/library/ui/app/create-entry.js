@@ -165,9 +165,36 @@ export async function openCreateEntryPopup({
             .filter(Boolean),
         relationships: constructorRelationships,
     };
+    const fallbackInputCarouselIds = constructorRelationships
+        .filter((relationship) => {
+            const targetRole = schema.layers.find(
+                ({ id }) => id === relationship.targetLayer,
+            )?.semanticRole;
+            return (
+                ["lexicalUnit", "orderedLexicalSequence"].includes(
+                    layer.semanticRole,
+                ) && !["definition", "meaning"].includes(targetRole)
+            );
+        })
+        .map(({ id }) => id);
+    const fallbackPronunciationCarouselIds = constructorRelationships
+        .filter(
+            (relationship) =>
+                ["compoundWritingUnit", "lexicalUnit"].includes(
+                    layer.semanticRole,
+                ) &&
+                schema.layers.find(({ id }) => id === relationship.targetLayer)
+                    ?.semanticRole === "atomicWritingUnit",
+        )
+        .map(({ id }) => id);
+    const inputCarouselIds = new Set(
+        constructor.input_carousels ?? fallbackInputCarouselIds,
+    );
+    const pronunciationCarouselIds = new Set(
+        constructor.pronunciation_carousels ?? fallbackPronunciationCarouselIds,
+    );
     const configuredPronunciationRelationshipIds = new Set(
-        editingLayer.fields?.find(({ id }) => id === "pronunciation")?.input
-            ?.linkRelationships ?? [],
+        pronunciationCarouselIds,
     );
     const pronunciationRelationshipIds = new Set(
         pronunciationRelationshipsFor(
@@ -234,6 +261,8 @@ export async function openCreateEntryPopup({
             includeHidden: false,
             relationshipCarousels: true,
             inlinePronunciationCarousel: true,
+            inputCarouselIds,
+            pronunciationCarouselIds,
             generatedLabel: supportsTextComposition || supportsRawInput,
             persistentExtra: true,
             allowDefinitionCreate: layer.semanticRole !== "definition",

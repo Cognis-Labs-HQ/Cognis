@@ -260,7 +260,9 @@ export function editorBody(
         ({ id }) => id === "pronunciation",
     );
     const configuredPronunciationRelationshipIds = new Set(
-        pronunciationField?.input?.linkRelationships ?? [],
+        options.pronunciationCarouselIds ??
+            pronunciationField?.input?.linkRelationships ??
+            [],
     );
     const pronunciationRelationships = pronunciationRelationshipsFor(
         layer,
@@ -341,7 +343,9 @@ export function editorBody(
                 );
             const carouselEligible =
                 options.relationshipCarousels === true &&
-                !duplicateTarget &&
+                (!options.inputCarouselIds ||
+                    options.inputCarouselIds.has(relationship.id)) &&
+                (options.inputCarouselIds || !duplicateTarget) &&
                 !["definition", "meaning"].includes(targetRole) &&
                 (layer?.semanticRole !== "compoundWritingUnit" ||
                     targetRole === "atomicWritingUnit");

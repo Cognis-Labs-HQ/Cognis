@@ -162,6 +162,10 @@ Card updates and audio playback now migrate through the provider’s current sch
 
 Nested child-card branches now retain their provider-assigned side when they fit, nested creation dialogs always stack above their parent, and pronunciation composition now matches the input composer with a staged text field and atomic-character carousel.
 
+## Provider-directed composer carousels
+
+Card constructors now explicitly separate primary-input and pronunciation carousel relationship IDs. Alternate characters require resolved pronunciation relationships without requiring primary references, lookup results receive safe provider metadata defaults, and child-card placement no longer drops branches when the declared grid has no remaining capacity.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -204,3 +208,4 @@ Nested child-card branches now retain their provider-assigned side when they fit
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/23587bd7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8c8deb9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/48d14c1ba63d887a04305306f8c9de7565361dfa
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/872484294f2d3b777c6123286db62c78dc08f7f8

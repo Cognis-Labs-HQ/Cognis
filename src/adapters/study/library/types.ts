@@ -134,6 +134,10 @@ export interface LibraryCardConstructor {
     fields?: readonly string[];
     /** Relationship IDs to render, in form order. */
     relationships?: readonly string[];
+    /** Relationship IDs rendered as carousels beneath the primary input composer. */
+    input_carousels: readonly string[];
+    /** Relationship IDs rendered inside the staged pronunciation composer. */
+    pronunciation_carousels: readonly string[];
     /** Initial provider-owned field values for a new card. */
     defaults?: Record<string, unknown>;
     /** Expose Cognis' preview-definition switch for this layer. */
@@ -255,6 +259,15 @@ export interface LibraryLookupSuggestion {
     confidence: number;
 }
 
+export interface LibraryLookupProposal {
+    provider?: string;
+    label?: string;
+    fields?: Record<string, unknown>;
+    references?: LibraryReferenceInput[];
+    provenance?: string;
+    confidence?: number;
+}
+
 export interface LibraryLookupProvider {
     id: string;
     metadata: LibraryMetadata;
@@ -263,7 +276,7 @@ export interface LibraryLookupProvider {
         schema: LibrarySchema;
         layer: LibraryLayerSchema;
         label: string;
-    }): Promise<LibraryLookupSuggestion[]>;
+    }): Promise<LibraryLookupProposal[]>;
 }
 
 export interface LibraryFormContribution {

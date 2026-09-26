@@ -162,6 +162,10 @@ Pembaruan kartu dan pemutaran audio kini dimigrasikan melalui skema penyedia ter
 
 Cabang kartu anak bertingkat kini mempertahankan sisi yang ditetapkan penyedia saat ruangnya mencukupi, dialog pembuatan bertingkat selalu berada di atas dialog induknya, dan komposisi pelafalan kini sama dengan composer input dengan bidang teks bertahap serta karusel karakter atomik.
 
+## Karusel composer arahan penyedia
+
+Constructor kartu kini memisahkan ID relasi karusel input primer dan pelafalan secara eksplisit. Karakter alternatif memerlukan relasi pelafalan yang terselesaikan tanpa mewajibkan referensi primer, hasil lookup memperoleh nilai bawaan metadata penyedia yang aman, dan penempatan kartu anak tidak lagi menghilangkan cabang ketika kapasitas grid yang dideklarasikan habis.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -204,3 +208,4 @@ Cabang kartu anak bertingkat kini mempertahankan sisi yang ditetapkan penyedia s
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/23587bd7
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c8c8deb9
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/48d14c1ba63d887a04305306f8c9de7565361dfa
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/872484294f2d3b777c6123286db62c78dc08f7f8

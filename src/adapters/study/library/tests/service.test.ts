@@ -280,6 +280,8 @@ test("language providers can contribute a complete card constructor", async () =
         cardConstructor: {
             label: { labels: { en: "Written form" } },
             fields: ["reading"],
+            input_carousels: [],
+            pronunciation_carousels: [],
             defaults: { reading: "default" },
             allowAlwaysShowDefinition: true,
         },
@@ -288,6 +290,8 @@ test("language providers can contribute a complete card constructor", async () =
     assert.deepEqual(library.listSchemas()[0].layers[0].cardConstructor, {
         label: { labels: { en: "Written form" } },
         fields: ["reading"],
+        input_carousels: [],
+        pronunciation_carousels: [],
         defaults: { reading: "default" },
         allowAlwaysShowDefinition: true,
     });
@@ -307,6 +311,8 @@ test("card constructors reject unknown provider fields", async () => {
                 cardConstructor: {
                     label: { labels: { en: "Unit" } },
                     fields: ["missing"],
+                    input_carousels: [],
+                    pronunciation_carousels: [],
                 },
             }),
         /constructor_field_not_found/,
@@ -372,6 +378,33 @@ test("lookup providers are ranked and cleanly removable", async () => {
             label: "item",
         }),
         /lookup_provider_not_found/,
+    );
+});
+
+test("lookup providers may omit service-owned ranking metadata", async () => {
+    const { library } = service();
+    await library.registerSchema(schema(1));
+    library.registerLookupProvider({
+        id: "dictionary",
+        metadata: { labels: { en: "Dictionary" } },
+        supports: () => true,
+        lookup: async () => [{ fields: { gloss: "match" } }],
+    });
+
+    assert.deepEqual(
+        await library.lookup("dictionary", {
+            schemaId: "test-language",
+            layer: "units",
+            label: "item",
+        }),
+        [
+            {
+                provider: "dictionary",
+                provenance: "dictionary",
+                confidence: 1,
+                fields: { gloss: "match" },
+            },
+        ],
     );
 });
 

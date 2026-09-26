@@ -141,6 +141,8 @@ test("declarative language packs are inspected deterministically", async (t) => 
                 cardConstructor: {
                     label: { labels: { en: "Letter" } },
                     fields: ["pronunciation", "audio", "strokes"],
+                    input_carousels: [],
+                    pronunciation_carousels: [],
                     allowHidden: true,
                 },
                 strokeAsset: { field: "strokes", format: "svg" },
@@ -195,6 +197,8 @@ test("declarative language packs are inspected deterministically", async (t) => 
     assert.deepEqual(first.schema.layers[0].cardConstructor, {
         label: { labels: { en: "Letter" } },
         fields: ["pronunciation", "audio", "strokes"],
+        input_carousels: [],
+        pronunciation_carousels: [],
         allowHidden: true,
     });
     assert.deepEqual(first.schema.layers[0].grid, {

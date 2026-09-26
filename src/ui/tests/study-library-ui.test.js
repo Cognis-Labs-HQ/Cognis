@@ -647,7 +647,7 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /function collisionScore/);
     assert.match(source, /function overlapArea/);
     assert.match(source, /const occupiedRects/);
-    assert.match(source, /direction === preferred && overflow === 0/);
+    assert.match(source, /const horizontalSide = preferred\.includes/);
     assert.match(source, /overflow === 0 && collision === 0/);
     assert.match(source, /data-library-preferred-direction/);
     assert.match(source, /--library-variant-card-span/);

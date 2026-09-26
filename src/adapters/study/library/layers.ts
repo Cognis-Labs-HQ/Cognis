@@ -290,6 +290,12 @@ function validateRelationship(
 }
 
 export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
+    schema = structuredClone(schema);
+    for (const layer of schema.layers) {
+        if (!layer.cardConstructor) continue;
+        layer.cardConstructor.input_carousels ??= [];
+        layer.cardConstructor.pronunciation_carousels ??= [];
+    }
     assertIdentifier(schema.id, "invalid_schema_id");
     if (!Number.isSafeInteger(schema.version) || schema.version < 1)
         throw new Error("invalid_schema_version");
@@ -384,6 +390,20 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
                 )
             )
                 throw new Error("constructor_relationship_not_found");
+            for (const carouselIds of [
+                layer.cardConstructor.input_carousels ?? [],
+                layer.cardConstructor.pronunciation_carousels ?? [],
+            ]) {
+                if (
+                    new Set(carouselIds).size !== carouselIds.length ||
+                    carouselIds.some(
+                        (relationshipId) =>
+                            !relationshipIds.has(relationshipId) ||
+                            !constructorRelationships.includes(relationshipId),
+                    )
+                )
+                    throw new Error("constructor_carousel_not_found");
+            }
             const defaultIds = Object.keys(
                 layer.cardConstructor.defaults ?? {},
             );
@@ -600,11 +620,12 @@ export function validateReferences(
     references: readonly LibraryReferenceInput[],
     targets: ReadonlyMap<string, LibraryEntry>,
 ): void {
+    const layer = findLayer(schema, layerId);
     const relationships = new Map(
-        (findLayer(schema, layerId).relationships ?? []).map((item) => [
-            item.id,
-            item,
-        ]),
+        (layer.relationships ?? []).map((item) => [item.id, item]),
+    );
+    const requiredPronunciationRelationships = new Set(
+        layer.cardConstructor?.pronunciation_carousels ?? [],
     );
     for (const reference of references) {
         const relationship = relationships.get(reference.relation);
@@ -623,7 +644,13 @@ export function validateReferences(
         const matching = references.filter(
             ({ relation }) => relation === relationship.id,
         );
-        if (matching.length < (relationship.minimum ?? 0))
+        const minimum =
+            layer.semanticRole === "compoundWritingUnit" &&
+            layer.cardConstructor &&
+            !requiredPronunciationRelationships.has(relationship.id)
+                ? 0
+                : (relationship.minimum ?? 0);
+        if (matching.length < minimum)
             throw new Error(`relationship_minimum:${relationship.id}`);
         if (
             relationship.maximum !== undefined &&

@@ -44,6 +44,8 @@ test("Study Library composer exposes provider-owned raw-input lookup", () => {
         [createEntrySource, /"particle"/],
         [createEntrySource, /constructorRelationshipIds\.add/],
         [createEntrySource, /constructorFieldIds\.add\("pronunciation"\)/],
+        [createEntrySource, /constructor\.input_carousels/],
+        [createEntrySource, /constructor\.pronunciation_carousels/],
         [adminInteractionsSource, /data-library-pronunciation-text/],
         [adminInteractionsSource, /data-library-pronunciation-blocks/],
         [adminInteractionsSource, /requiresCharacters/],

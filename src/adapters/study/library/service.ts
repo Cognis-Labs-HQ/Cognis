@@ -547,6 +547,15 @@ export class LibraryService implements LibraryCapability {
         );
         return suggestions
             .flat()
+            .map((suggestion) => ({
+                ...suggestion,
+                provider: suggestion.provider?.trim() || selectedProvider.id,
+                provenance:
+                    suggestion.provenance?.trim() || selectedProvider.id,
+                confidence: Number.isFinite(suggestion.confidence)
+                    ? suggestion.confidence
+                    : 1,
+            }))
             .filter(
                 (suggestion) =>
                     suggestion.provider.trim() &&
