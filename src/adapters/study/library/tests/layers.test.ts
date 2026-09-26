@@ -880,3 +880,32 @@ test("stroke patterns require ordered normalized pen samples", () => {
         /invalid_field_type:strokes/,
     );
 });
+
+test("lexical and composite layers derive rather than own stroke patterns", () => {
+    for (const semanticRole of [
+        "lexicalUnit",
+        "orderedLexicalSequence",
+    ] as const) {
+        assert.throws(
+            () =>
+                validateLibrarySchema({
+                    ...english,
+                    layers: [
+                        {
+                            id: "derived",
+                            semanticRole,
+                            metadata: { labels: { en: "Derived" } },
+                            fields: [
+                                {
+                                    id: "strokes",
+                                    type: "strokePattern",
+                                    metadata: { labels: { en: "Strokes" } },
+                                },
+                            ],
+                        },
+                    ],
+                }),
+            /stroke_pattern_writing_unit_required/,
+        );
+    }
+});

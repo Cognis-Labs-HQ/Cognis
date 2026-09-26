@@ -276,9 +276,17 @@ export function renderAudio(
     fallbackLabel = "",
 ) {
     const own = entryAudio(entry, layer);
-    let sources = own.valid ? [{ entry, field: own.audioField }] : [];
-    let complete = own.valid;
-    if (!own.valid && (entry.references ?? []).length) {
+    const useRelatedProviderAudio =
+        own.valid &&
+        layer?.semanticRole === "compoundWritingUnit" &&
+        entry.createdBy?.startsWith("content-pack:") &&
+        (entry.references ?? []).length > 0;
+    let sources =
+        own.valid && !useRelatedProviderAudio
+            ? [{ entry, field: own.audioField }]
+            : [];
+    let complete = sources.length > 0;
+    if (!complete && (entry.references ?? []).length) {
         const resolveSources = (candidate, visited = new Set()) => {
             if (!candidate || visited.has(candidate.id)) return null;
             visited.add(candidate.id);
@@ -309,6 +317,10 @@ export function renderAudio(
         sources = resolved ?? [];
         complete = Boolean(resolved?.length);
     }
+    if (!complete && own.valid) {
+        sources = [{ entry, field: own.audioField }];
+        complete = true;
+    }
     const label = own.audioField
         ? localizedLabel(own.audioField.metadata, entry.language) ||
           own.audioField.id
@@ -326,7 +338,7 @@ export function renderAudio(
 }
 
 function speakerPicture() {
-    return '<span class="library-speaker-icon" aria-hidden="true"></span>';
+    return '<svg class="library-speaker-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h4l5-4v14l-5-4H5z"></path><path d="M17 9a4 4 0 0 1 0 6"></path><path d="M19.5 6.5a8 8 0 0 1 0 11"></path></svg>';
 }
 
 export function formatAudioTime(value) {

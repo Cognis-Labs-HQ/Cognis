@@ -146,6 +146,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 最初のガイドで各画に番号と方向矢印を表示します。10回連続で失敗するとX印と「負け！」を表示し、ミスが0回または1回で完了すると、そのカードについて記憶されるメモリ内難易度が上がります。パッドを開いた状態で描画可能な別のライブラリカードを選ぶと、同じパッドへ直接読み込みます。
 
+## 一度限りのガイド、複合練習、共有音声
+
+全描画ガイドは初回試行または明示的な ? リセット後だけ表示します。「もう一度」では段階的ガイドを維持し、複合カードは順序付き文字の画グループを生成して新しい要素ごとに全体を表示します。語彙・文カードは独自の画パターンを持てません。プロバイダーの代替文字は関連文字の音声を再利用し、ユーザーのアップロードは優先され、スピーカーはテーマ対応のインラインSVGを使用します。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -183,3 +187,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3f72cfb6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/f2afaa13
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e894f166

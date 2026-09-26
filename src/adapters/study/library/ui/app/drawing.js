@@ -1,10 +1,64 @@
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 
-export function drawingPattern(entry, layer) {
+function ownDrawingPattern(entry, layer) {
     return (layer?.fields ?? [])
         .filter(({ type }) => type === "strokePattern")
         .map(({ id }) => entry.fields?.[id])
         .find(Boolean);
+}
+
+export function drawingPattern(entry, layer, entries = [], schemas = []) {
+    const own = ownDrawingPattern(entry, layer);
+    if (
+        own &&
+        ["atomicWritingUnit", "compoundWritingUnit"].includes(
+            layer?.semanticRole,
+        )
+    )
+        return { ...own, groups: [own.strokes.length] };
+    const resolve = (candidate, visited = new Set()) => {
+        if (!candidate || visited.has(candidate.id)) return [];
+        visited.add(candidate.id);
+        const candidateSchema = schemas.find(
+            ({ id }) => id === candidate.schemaId,
+        );
+        const candidateLayer = candidateSchema?.layers.find(
+            ({ id }) => id === candidate.layer,
+        );
+        const pattern = ownDrawingPattern(candidate, candidateLayer);
+        if (
+            pattern &&
+            ["atomicWritingUnit", "compoundWritingUnit"].includes(
+                candidateLayer?.semanticRole,
+            )
+        )
+            return [pattern];
+        return (candidate.references ?? [])
+            .slice()
+            .sort(
+                (left, right) =>
+                    (left.position ?? Number.MAX_SAFE_INTEGER) -
+                    (right.position ?? Number.MAX_SAFE_INTEGER),
+            )
+            .flatMap(({ entryId }) =>
+                resolve(
+                    entries.find(({ id }) => id === entryId),
+                    new Set(visited),
+                ),
+            );
+    };
+    const pieces = resolve(entry);
+    if (!pieces.length) return undefined;
+    return {
+        coordinateSystem: "normalized",
+        tolerance: Math.min(...pieces.map(({ tolerance = 55 }) => tolerance)),
+        strokes: pieces.flatMap(({ strokes }) => strokes),
+        groups: pieces.map(({ strokes }) => strokes.length),
+    };
+}
+
+export function resolveDraw(entry, layer, context) {
+    return drawingPattern(entry, layer, context.entries, context.schemas);
 }
 
 export function canDraw(pattern) {
@@ -37,8 +91,8 @@ export function openDrawing(entry, strokePattern, definition = "") {
     });
 }
 
-export function loadDrawing(entry, layer, definition = "") {
-    const strokePattern = drawingPattern(entry, layer);
+export function loadDrawing(entry, layer, entries, schemas, definition = "") {
+    const strokePattern = drawingPattern(entry, layer, entries, schemas);
     if (!strokePattern) return false;
     return (
         uiCtx.capabilities.get("study:drawing:load")?.({

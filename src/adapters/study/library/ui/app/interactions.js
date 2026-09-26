@@ -204,7 +204,7 @@ export function bindLibraryInteractions(root, context) {
             );
             const schema = schemas.find(({ id }) => id === entry?.schemaId);
             const layer = schema?.layers.find(({ id }) => id === entry?.layer);
-            if (entry && loadDrawing(entry, layer)) return;
+            if (entry && loadDrawing(entry, layer, entries, schemas)) return;
             if (!openDetails) return;
             if (!entry || activeEntryPopup) return;
             activeEntryPopup = openEntryPopup(

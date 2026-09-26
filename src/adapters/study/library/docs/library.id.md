@@ -165,3 +165,5 @@ Penyedia dapat menetapkan `input.linkRelationships` pada kolom pelafalan. Penyun
 Penyuntingan pelafalan memakai proses dua langkah yang dapat diulang: pilih kartu komponen yang sesuai dengan penyedia, lalu simpan bacaan yang diturunkan. Item karusel menampilkan pelafalannya, bukan label utamanya. Unit tulisan majemuk mengambil unit tulisan atomik, sedangkan urutan leksikal terurut mengambil unit leksikal seperti kosakata dan partikel. Unggahan audio memakai kunci objek kartu-dan-kolom yang stabil, sehingga unggahan pengganti menimpa objek sebelumnya.
 
 Saat Latihan Menggambar terbuka, memilih kartu lain yang memiliki pola goresan akan memuat kartu itu ke pad yang sama alih-alih membuka dialog rinciannya.
+
+Kartu kosakata, kalimat, dan gabungan menurunkan panduan menggambar secara rekursif dari referensi unit tulisan terurut dan tidak boleh mendeklarasikan pola goresannya sendiri. Karakter alternatif milik penyedia memakai ulang audio karakter terkait bila memungkinkan; audio yang diunggah secara eksplisit pada kartu milik pengguna tetap menjadi sumber utama.

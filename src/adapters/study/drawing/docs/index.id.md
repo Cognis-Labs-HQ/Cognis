@@ -13,3 +13,5 @@ Goresan salah menghasilkan umpan balik merah yang lembut tanpa memulai ulang ani
 Judul diukur mengikuti kanvas yang dirender dan dipusatkan tepat di atasnya. Teks kartu dan definisi terlokalisasi tetap sejajar, dan tombol tutup seukuran konten memakai animasi penutupan khusus.
 
 Tampilan panduan pertama memberi nomor pada setiap goresan dan menunjukkan arahnya. Sepuluh kesalahan berturut-turut mengakhiri percobaan dengan hasil gagal. Percobaan berhasil dengan paling banyak satu kesalahan meningkatkan tingkat kesulitan kartu tersebut dalam memori untuk percobaan berikutnya, dan pad yang terbuka dapat langsung beralih ke kartu Pustaka lain.
+
+Panduan lengkap hanya muncul sebelum percobaan pertama sebuah kartu atau setelah pengguna menekan tindakan atur ulang **?**. Mencoba lagi mempertahankan panduan progresif. Pola gabungan membawa batas tiap bagian sehingga setiap karakter yang baru dicapai memperoleh satu pratinjau beranotasi lengkap.

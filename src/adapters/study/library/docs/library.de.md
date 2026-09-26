@@ -165,3 +165,5 @@ Ein Anbieter kann `input.linkRelationships` für ein Aussprachefeld festlegen. D
 Die Aussprachebearbeitung ist ein wiederholbarer zweistufiger Vorgang: Zuerst werden anbieterkompatible Komponentenkarten ausgewählt, danach wird die abgeleitete Lesung übernommen. Karusselleinträge zeigen ihre Aussprache statt ihrer primären Bezeichnung. Zusammengesetzte Schrifteinheiten verwenden atomare Schrifteinheiten, geordnete lexikalische Folgen dagegen lexikalische Einheiten wie Wortschatz und Partikeln. Audio-Uploads verwenden einen stabilen Objekt-Schlüssel aus Karte und Feld, sodass ein erneuter Upload das vorherige Objekt überschreibt.
 
 Während die Zeichenübung geöffnet ist, lädt die Auswahl einer anderen Karte mit Strichmuster diese Karte in das vorhandene Zeichenfeld, statt ihren Detaildialog zu öffnen.
+
+Vokabel-, Satz- und Verbundkarten leiten ihre Zeichenanleitung rekursiv aus geordneten Schrifteinheiten-Beziehungen ab und dürfen keine eigenen Strichmuster deklarieren. Anbietergebundene alternative Zeichen verwenden nach Möglichkeit das Audio eines verknüpften Zeichens; ausdrücklich hochgeladenes Audio einer benutzereigenen Karte bleibt maßgeblich.

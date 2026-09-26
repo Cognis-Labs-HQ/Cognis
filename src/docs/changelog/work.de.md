@@ -146,6 +146,10 @@ Ausspracheeditoren wählen jetzt semantisch passende Komponentenkarten, zeigen d
 
 Die erste Anleitung nummeriert nun jeden Strich und zeigt einen Richtungspfeil. Zehn aufeinanderfolgende Fehler führen zu „Verloren!“ mit einem X; wird eine Karte mit keinem oder einem Fehler abgeschlossen, steigt ihre im Speicher gemerkte Schwierigkeit. Die Auswahl einer weiteren zeichnungsfähigen Bibliothekskarte lädt sie direkt in das geöffnete Zeichenfeld.
 
+## Einmalige Anleitung, Verbundübung und geteiltes Audio
+
+Die vollständige Zeichenanleitung erscheint nur beim ersten Versuch oder nach dem ausdrücklichen Zurücksetzen mit ?. „Noch einmal“ behält die schrittweise Anleitung bei; Verbundkarten leiten geordnete Zeichen-Gruppen ab und zeigen jedes neu erreichte Element vollständig. Wort- und Satzkarten dürfen keine eigenen Strichmuster besitzen. Alternative Anbieterzeichen verwenden verknüpftes Zeichen-Audio, Benutzer-Uploads bleiben maßgeblich und der Lautsprecher nutzt ein Theme-sicheres Inline-SVG.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -183,3 +187,4 @@ Die erste Anleitung nummeriert nun jeden Strich und zeigt einen Richtungspfeil. 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3f72cfb6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/f2afaa13
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e894f166

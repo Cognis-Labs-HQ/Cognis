@@ -58,6 +58,21 @@ body[data-theme="dark"] .study-drawing-pad {
     line-height: 1;
 }
 
+.study-drawing-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.study-drawing-pad [data-guidance] {
+    width: 1.9rem;
+    min-width: 0;
+    height: 1.9rem;
+    padding: 0;
+    border-radius: 50%;
+    font-weight: 700;
+}
+
 .study-drawing-pad canvas {
     display: block;
     width: auto;

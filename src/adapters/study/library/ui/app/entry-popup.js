@@ -21,7 +21,7 @@ import { entryEditMode } from "./editability.js";
 import {
     canDraw,
     drawingHeaderActions,
-    drawingPattern,
+    resolveDraw,
     openDrawing,
     placeAudioSpeaker,
 } from "./drawing.js";
@@ -116,8 +116,10 @@ export async function openEntryPopup(
             composed.titleDefinition,
             sourceDefinition,
         );
-        const strokePattern = drawingPattern(detail.entry, layer);
-        const drawingAvailable = canDraw(strokePattern);
+        const strokePattern = resolveDraw(detail.entry, layer, {
+            entries,
+            schemas,
+        });
         if (parentEntry && layer?.semanticRole !== "lexicalUnit") {
             const [parentPrefix, parentSuffix = ""] = i18n
                 .t("gateway.study.library_from_parent")
@@ -132,8 +134,7 @@ export async function openEntryPopup(
                 { label: parentSuffix },
             );
         }
-        let dismissPopup;
-        let relatedEntry;
+        let dismissPopup, relatedEntry;
         const audioObjectUrls = new Set();
         const audioController = new AbortController();
         const abortPopup = () => dismissPopup?.();
@@ -216,7 +217,7 @@ export async function openEntryPopup(
                 });
             },
             onAction: async (actionId, overlay, popupApi) => {
-                if (actionId === "draw" && drawingAvailable) {
+                if (actionId === "draw" && canDraw(strokePattern)) {
                     openDrawing(
                         detail.entry,
                         strokePattern,

@@ -146,6 +146,10 @@ Penyunting pelafalan kini memilih kartu komponen yang sesuai secara semantik, me
 
 Panduan awal kini memberi nomor pada setiap goresan dan menggambar panah arah. Sepuluh kesalahan berturut-turut menghasilkan pesan “Kalah!” dengan tanda X, sedangkan penyelesaian kartu dengan nol atau satu kesalahan menaikkan kesulitan dalam memori. Memilih kartu Pustaka lain yang dapat digambar saat pad terbuka langsung memuatnya ke pad yang sama.
 
+## Panduan sekali, latihan gabungan, dan audio bersama
+
+Panduan menggambar lengkap kini hanya muncul pada percobaan pertama atau setelah reset ? secara eksplisit. Coba lagi mempertahankan panduan progresif, sedangkan kartu gabungan menurunkan kelompok goresan karakter berurutan dan menampilkan setiap bagian baru secara lengkap. Kartu leksikal dan kalimat tidak boleh memiliki pola goresan sendiri. Karakter alternatif penyedia memakai ulang audio karakter terkait, unggahan pengguna tetap utama, dan pengeras suara memakai SVG inline yang aman untuk tema.
+
 ## Commit
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -183,3 +187,4 @@ Panduan awal kini memberi nomor pada setiap goresan dan menggambar panah arah. S
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3f72cfb6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/f2afaa13
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e894f166

@@ -13,3 +13,5 @@ Falsche Striche erzeugen eine zurückhaltende rote Rückmeldung, ohne die Öffnu
 Die Überschrift wird an der gerenderten Zeichenfläche gemessen und direkt darüber zentriert. Kartentext und lokalisierte Definition bleiben ausgerichtet, und die inhaltsgroße Schließen-Schaltfläche verwendet eine eigene Schließanimation.
 
 Die erste Hilfsansicht nummeriert jeden Strich und zeigt seine Richtung. Zehn aufeinanderfolgende Fehler beenden den Versuch mit einem Misserfolg. Erfolgreiche Versuche mit höchstens einem Fehler erhöhen den im Speicher gehaltenen Schwierigkeitsgrad dieser Karte für spätere Versuche; außerdem kann ein geöffnetes Zeichenfeld direkt zu einer anderen Bibliothekskarte wechseln.
+
+Die vollständige Anleitung erscheint nur vor dem ersten Versuch einer Karte oder nachdem der Benutzer ausdrücklich die Zurücksetz-Aktion **?** betätigt hat. Beim erneuten Versuch bleibt die fortschreitende Anleitung erhalten. Zusammengesetzte Muster enthalten Abschnittsgrenzen, sodass jedes neu erreichte Zeichen einmal vollständig mit Anmerkungen angezeigt wird.

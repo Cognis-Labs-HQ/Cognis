@@ -2,6 +2,7 @@
 <resources>
   <string name="adapter.study.drawing.title">Schreibübung</string>
   <string name="adapter.study.drawing.reset">Zurücksetzen</string>
+  <string name="adapter.study.drawing.guidance">Vollständige Anleitung zeigen und Schwierigkeit zurücksetzen</string>
   <string name="adapter.study.drawing.well_done">Gut gemacht</string>
   <string name="adapter.study.drawing.loser">Verloren!</string>
   <string name="adapter.study.drawing.mistakes">Fehler: {{ count }}</string>

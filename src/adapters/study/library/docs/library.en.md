@@ -179,3 +179,5 @@ A provider can set `input.linkRelationships` on a pronunciation field. The edito
 Pronunciation editing is a repeatable two-step process: select provider-compatible component cards, then commit the derived reading. Carousel items show their pronunciation rather than their primary label. Compound writing units draw from atomic writing units, while ordered lexical sequences draw from lexical units such as vocabulary and particles. Audio uploads use a stable card-and-field object key, so replacing an upload overwrites the previous object.
 
 While Drawing Practice is open, selecting another card with a stroke pattern loads that card into the existing pad instead of opening its detail dialog.
+
+Vocabulary, sentences, and composite cards derive drawing guidance recursively from their ordered writing-unit references and cannot declare their own stroke patterns. Provider-owned alternate characters reuse related character audio when possible; a user-owned card's explicitly uploaded audio remains authoritative.

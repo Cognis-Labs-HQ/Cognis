@@ -24,12 +24,14 @@ test("drawing practice tracks ordered strokes and progressive guidance", () => {
     assert.match(source, /scoreStroke/);
     assert.match(source, /resample/);
     assert.match(source, /rootMeanSquare/);
-    assert.match(source, /completed\.length === 0/);
     assert.match(source, /drawStrokeOrder/);
     assert.match(source, /fillText\(String\(index \+ 1\)/);
     assert.match(source, /successiveMistakes >= 10/);
     assert.match(source, /adapter\.study\.drawing\.loser/);
     assert.match(source, /difficultyByCardId/);
+    assert.match(source, /attemptedCardIds/);
+    assert.match(source, /data-guidance/);
+    assert.match(source, /currentPattern\.groups/);
     assert.match(source, /mistakes <= 1/);
     assert.match(source, /currentPattern\.strokes\.slice/);
     assert.match(source, /requestAnimationFrame/);

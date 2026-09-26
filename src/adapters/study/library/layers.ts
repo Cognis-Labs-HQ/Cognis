@@ -417,6 +417,13 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
             if (field?.type !== "asset")
                 throw new Error("stroke_asset_field_not_found");
         }
+        if (
+            ["lexicalUnit", "orderedLexicalSequence"].includes(
+                layer.semanticRole ?? "",
+            ) &&
+            (layer.fields ?? []).some(({ type }) => type === "strokePattern")
+        )
+            throw new Error("stroke_pattern_writing_unit_required");
         if (layer.semanticRole === "definition") {
             const localization = layer.definitionLocalization;
             if (!localization)

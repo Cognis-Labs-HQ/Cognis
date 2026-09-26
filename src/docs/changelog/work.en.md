@@ -146,6 +146,10 @@ Pronunciation editors now choose semantically compatible component cards, previe
 
 The initial guide now numbers every stroke and draws a direction arrow. Ten consecutive mistakes produce a “Loser!” result with an X, while completing a card with zero or one mistake raises its remembered in-memory difficulty. Selecting another drawable Library card while the pad is open loads it directly into the same pad.
 
+## One-time guidance, composite practice, and shared audio
+
+Full drawing guidance now appears only on the first attempt or after the explicit ? reset. Retry preserves progressive guidance, while composite cards derive ordered character stroke groups and preview each newly reached piece. Lexical and sentence cards cannot own stroke patterns. Provider alternate characters reuse related character audio, user uploads remain authoritative, and the speaker uses an inline theme-safe SVG.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -183,3 +187,4 @@ The initial guide now numbers every stroke and draws a direction arrow. Ten cons
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3f72cfb6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/f2afaa13
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e894f166

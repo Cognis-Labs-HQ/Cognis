@@ -2,6 +2,7 @@
 <resources>
   <string name="adapter.study.drawing.title">Writing Practice</string>
   <string name="adapter.study.drawing.reset">Reset</string>
+  <string name="adapter.study.drawing.guidance">Show full guidance and reset difficulty</string>
   <string name="adapter.study.drawing.well_done">Well Done</string>
   <string name="adapter.study.drawing.loser">Loser!</string>
   <string name="adapter.study.drawing.mistakes">Mistakes: {{ count }}</string>

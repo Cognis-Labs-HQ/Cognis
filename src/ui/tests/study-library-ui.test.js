@@ -845,8 +845,8 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(stylesheet, /body\[data-theme="light"\] \.library-audio/);
     assert.match(stylesheet, /body\[data-theme="dark"\] \.library-audio/);
     assert.match(source, /class="library-speaker-icon"/);
-    assert.match(stylesheet, /mask: url\("\.\/assets\/speaker-dark\.svg"\)/);
-    assert.match(stylesheet, /background-color: currentColor/);
+    assert.match(source, /stroke="currentColor"/);
+    assert.match(source, /M5 9h4l5-4v14l-5-4H5z/);
     assert.match(stylesheet, /background: var\(--surface-2\)/);
     assert.match(stylesheet, /\.library-audio-error/);
     assert.match(stylesheet, /font-size: 0\.75em/);
@@ -854,6 +854,8 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(stylesheet, /::-webkit-slider-thumb/);
     assert.match(stylesheet, /::-moz-range-thumb/);
     assert.match(source, /loadDrawing/);
+    assert.match(source, /groups: pieces\.map/);
+    assert.match(source, /ownDrawingPattern/);
 });
 
 test("Study Library owners can select and delete multiple entries", () => {
