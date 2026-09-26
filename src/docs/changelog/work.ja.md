@@ -170,6 +170,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 推測によるカルーセル動作を削除し、すべてのカードコンストラクターに両方のカルーセル配列を必須化しました。サーバー検証は実行時フォームコンストラクターを使用し、編集フォームは宣言済み発音カルーセルを表示します。音声置換キーには正規化したカード名を使い、斜めの子カードは割り当て位置を維持します。
 
+## プロバイダー主導カルーセルの復旧
+
+カードコンストラクターは、入力および発音カルーセルの参照元を対象レイヤーで指定するようになりました。Cognis は一致する表示ロールの関係だけに宣言を対応付けるため、発音カルーセルが再表示され、代替文字の主参照は任意のままです。
+
 ## コミット
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -214,3 +218,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/48d14c1ba63d887a04305306f8c9de7565361dfa
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/872484294f2d3b777c6123286db62c78dc08f7f8
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/452e3eb3fc5b9e2ca86464904e7f6477992b7c32
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/039dc5c1

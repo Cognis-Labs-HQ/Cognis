@@ -134,9 +134,9 @@ export interface LibraryCardConstructor {
     fields?: readonly string[];
     /** Relationship IDs to render, in form order. */
     relationships?: readonly string[];
-    /** Relationship IDs rendered as carousels beneath the primary input composer. */
+    /** Target layer IDs rendered as carousels beneath the primary input composer. */
     input_carousels: readonly string[];
-    /** Relationship IDs rendered inside the staged pronunciation composer. */
+    /** Target layer IDs rendered inside the staged pronunciation composer. */
     pronunciation_carousels: readonly string[];
     /** Initial provider-owned field values for a new card. */
     defaults?: Record<string, unknown>;

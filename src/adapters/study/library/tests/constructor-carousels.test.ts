@@ -57,6 +57,7 @@ function schemaFor(
                         targetLayer: "characters",
                         minimum: 1,
                         onDelete: "restrict",
+                        presentationRole: "alternateSpelling",
                     },
                     {
                         id: "readings",
@@ -64,6 +65,7 @@ function schemaFor(
                         targetLayer: "characters",
                         minimum: 1,
                         onDelete: "restrict",
+                        presentationRole: "pronunciation",
                     },
                 ],
                 cardConstructor,
@@ -76,7 +78,7 @@ const constructor = {
     label: { labels: { en: "Alternate character" } },
     relationships: ["primary", "readings"],
     input_carousels: [],
-    pronunciation_carousels: ["readings"],
+    pronunciation_carousels: ["characters"],
 } as const;
 
 test("card constructors assign input and pronunciation carousels explicitly", () => {

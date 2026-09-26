@@ -491,7 +491,7 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(adminInteractionsSource, /relationshipCarouselAdd: false/);
     assert.match(adminInteractionsSource, /inlinePronunciationCarousel: true/);
     assert.match(adminInteractionsSource, /const inlinePronunciationCarousel/);
-    assert.match(adminInteractionsSource, /pronunciationCarouselIds/);
+    assert.match(adminInteractionsSource, /pronunciationCarouselLayers/);
     assert.doesNotMatch(adminInteractionsSource, /linkRelationships/);
     assert.match(adminInteractionsSource, /pronunciationRelationships\.length/);
     assert.match(adminInteractionsSource, /ordersPronunciation: true/);

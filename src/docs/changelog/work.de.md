@@ -170,6 +170,10 @@ Kartenkonstruktoren trennen nun ausdrücklich die Beziehungs-IDs für Primärein
 
 Das abgeleitete Karussellverhalten wurde entfernt: Jeder Kartenkonstruktor muss beide Karussell-Arrays deklarieren. Die Serverprüfung verwendet nun Laufzeit-Formularkonstruktoren, Bearbeitungsformulare zeigen das deklarierte Aussprachekarussell, Audio-Ersatzschlüssel verwenden normalisierte Kartennamen und diagonale untergeordnete Karten behalten ihren zugewiesenen Platz.
 
+## Wiederherstellung anbietergesteuerter Karussells
+
+Kartenkonstruktoren kennzeichnen die Quellen der Eingabe- und Aussprachekarussells jetzt anhand der Zielschicht. Cognis ordnet diese Angaben nur Beziehungen mit der passenden Darstellungsrolle zu, sodass Aussprachekarussells wieder erscheinen und primäre Referenzen alternativer Zeichen optional bleiben.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
@@ -214,3 +218,4 @@ Das abgeleitete Karussellverhalten wurde entfernt: Jeder Kartenkonstruktor muss 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/48d14c1ba63d887a04305306f8c9de7565361dfa
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/872484294f2d3b777c6123286db62c78dc08f7f8
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/452e3eb3fc5b9e2ca86464904e7f6477992b7c32
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/039dc5c1

@@ -254,7 +254,7 @@ export function editorBody(
             ? layer.definitionLocalization?.stringKeyField
             : undefined;
     const configuredPronunciationRelationshipIds = new Set(
-        options.pronunciationCarouselIds ?? [],
+        options.pronunciationCarouselLayers ?? [],
     );
     const pronunciationRelationships = pronunciationRelationshipsFor(
         layer,
@@ -571,7 +571,7 @@ export async function openLibraryEntryEditor({
         includeHidden: false,
         relationshipCarouselAdd: false,
         inlinePronunciationCarousel: true,
-        pronunciationCarouselIds: new Set(
+        pronunciationCarouselLayers: new Set(
             layer?.cardConstructor?.pronunciation_carousels ?? [],
         ),
     });
@@ -602,7 +602,7 @@ export async function openLibraryEntryEditor({
                 schema,
                 layer,
                 {
-                    pronunciationCarouselIds: new Set(
+                    pronunciationCarouselLayers: new Set(
                         layer?.cardConstructor?.pronunciation_carousels ?? [],
                     ),
                 },
@@ -711,7 +711,7 @@ export function bindAdminLibraryInteractions(
                 showRelationshipTab: readOnly,
                 relationshipCarouselAdd: false,
                 inlinePronunciationCarousel: !readOnly,
-                pronunciationCarouselIds: new Set(
+                pronunciationCarouselLayers: new Set(
                     layer?.cardConstructor?.pronunciation_carousels ?? [],
                 ),
             });
@@ -770,7 +770,7 @@ export function bindAdminLibraryInteractions(
                             schema,
                             layer,
                             {
-                                pronunciationCarouselIds: new Set(
+                                pronunciationCarouselLayers: new Set(
                                     layer?.cardConstructor
                                         ?.pronunciation_carousels ?? [],
                                 ),

@@ -165,18 +165,24 @@ export async function openCreateEntryPopup({
             .filter(Boolean),
         relationships: constructorRelationships,
     };
-    const inputCarouselIds = new Set(constructor.input_carousels);
-    const pronunciationCarouselIds = new Set(
+    const inputCarouselLayers = new Set(constructor.input_carousels);
+    const pronunciationCarouselLayers = new Set(
         constructor.pronunciation_carousels,
     );
-    const configuredPronunciationRelationshipIds = new Set(
-        pronunciationCarouselIds,
+    const inputCarouselIds = new Set(
+        constructorRelationships
+            .filter(
+                ({ targetLayer, presentationRole }) =>
+                    presentationRole !== "pronunciation" &&
+                    inputCarouselLayers.has(targetLayer),
+            )
+            .map(({ id }) => id),
     );
     const pronunciationRelationshipIds = new Set(
         pronunciationRelationshipsFor(
             editingLayer,
             schema,
-            configuredPronunciationRelationshipIds,
+            pronunciationCarouselLayers,
         ).map(({ id }) => id),
     );
     const draft = {
@@ -238,7 +244,7 @@ export async function openCreateEntryPopup({
             relationshipCarousels: true,
             inlinePronunciationCarousel: true,
             inputCarouselIds,
-            pronunciationCarouselIds,
+            pronunciationCarouselLayers,
             generatedLabel: supportsTextComposition || supportsRawInput,
             persistentExtra: true,
             allowDefinitionCreate: layer.semanticRole !== "definition",
@@ -292,7 +298,7 @@ export async function openCreateEntryPopup({
                 schema,
                 editingLayer,
                 {
-                    pronunciationCarouselIds,
+                    pronunciationCarouselLayers,
                     onChange: ({ id, values }) => {
                         const select = form.elements[`relationship:${id}`];
                         if (!select) return;

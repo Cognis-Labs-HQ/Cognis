@@ -390,17 +390,29 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
                 )
             )
                 throw new Error("constructor_relationship_not_found");
-            for (const carouselIds of [
-                layer.cardConstructor.input_carousels ?? [],
-                layer.cardConstructor.pronunciation_carousels ?? [],
-            ]) {
+            for (const [carouselIds, pronunciation] of [
+                [layer.cardConstructor.input_carousels, false],
+                [layer.cardConstructor.pronunciation_carousels, true],
+            ] as const) {
                 if (
                     new Set(carouselIds).size !== carouselIds.length ||
-                    carouselIds.some(
-                        (relationshipId) =>
-                            !relationshipIds.has(relationshipId) ||
-                            !constructorRelationships.includes(relationshipId),
-                    )
+                    carouselIds.some((targetLayerId) => {
+                        if (!layerIds.has(targetLayerId)) return true;
+                        return !constructorRelationships.some(
+                            (relationshipId) => {
+                                const relationship = (
+                                    layer.relationships ?? []
+                                ).find(({ id }) => id === relationshipId);
+                                return (
+                                    relationship?.targetLayer ===
+                                        targetLayerId &&
+                                    (relationship.presentationRole ===
+                                        "pronunciation") ===
+                                        pronunciation
+                                );
+                            },
+                        );
+                    })
                 )
                     throw new Error("constructor_carousel_not_found");
             }
@@ -625,7 +637,15 @@ export function validateReferences(
         (layer.relationships ?? []).map((item) => [item.id, item]),
     );
     const requiredPronunciationRelationships = new Set(
-        layer.cardConstructor?.pronunciation_carousels ?? [],
+        (layer.relationships ?? [])
+            .filter(
+                ({ targetLayer, presentationRole }) =>
+                    presentationRole === "pronunciation" &&
+                    layer.cardConstructor?.pronunciation_carousels.includes(
+                        targetLayer,
+                    ),
+            )
+            .map(({ id }) => id),
     );
     for (const reference of references) {
         const relationship = relationships.get(reference.relation);

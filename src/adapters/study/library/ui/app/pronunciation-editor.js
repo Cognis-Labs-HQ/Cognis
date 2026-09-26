@@ -9,14 +9,14 @@ export function mountEditableRelationshipCarousels(
     {
         onChange = () => {},
         onAdd = () => {},
-        pronunciationCarouselIds = new Set(),
+        pronunciationCarouselLayers = new Set(),
     } = {},
 ) {
     const pronunciationRelationshipIds = new Set(
         pronunciationRelationshipsFor(
             layer,
             schema,
-            pronunciationCarouselIds,
+            pronunciationCarouselLayers,
         ).map(({ id }) => id),
     );
     const controller = new AbortController();
@@ -168,7 +168,9 @@ export function mountEditableRelationshipCarousels(
 
 export function pronunciationRelationshipsFor(layer, _schema, configuredIds) {
     if (layer?.semanticRole === "orderedLexicalSequence") return [];
-    return (layer?.relationships ?? []).filter(({ id }) =>
-        configuredIds.has(id),
+    return (layer?.relationships ?? []).filter(
+        ({ targetLayer, presentationRole }) =>
+            presentationRole === "pronunciation" &&
+            configuredIds.has(targetLayer),
     );
 }
