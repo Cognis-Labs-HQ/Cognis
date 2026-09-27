@@ -344,11 +344,15 @@ Input and Pronunciation sections now always show their selected-card field when 
 
 ## Multi-value carousel composition and safe deletion
 
-Provider fields can opt into multi-value composition with `input.multi_value`. The composer adds a field-specific save action and committed-value pills, supports reopening values for replacement, limits typed suggestions to cards in the configured carousels, rejects unresolved floating text, and confines confirmed deletion to dedicated × controls. Existing-entry editors now mount their declared carousels consistently with creation forms.
+Provider fields can opt into multi-value composition with `multi_value`. The composer adds a field-specific save action and committed-value pills, supports reopening values for replacement, limits typed suggestions to cards in the configured carousels, rejects unresolved floating text, and confines confirmed deletion to dedicated × controls. Existing-entry editors now mount their declared carousels consistently with creation forms.
 
 ## Multi-value staging no longer mutates committed values
 
 Field-level `multi_value` is now ingested as the canonical contract. Committed pills remain separate from an initially empty staging field, the visible Save action alone commits staged references, and compact × controls remove staged cards without confirmation or changing saved values. Clicking a committed pill no longer reloads it into staging.
+
+## Canonical labels and immediate previews
+
+Card forms no longer expose a separate Label field for non-definition cards. The label is generated from the ordered primary Input composition, and saving a direct edit immediately rerenders the card browser so its preview matches the stored entry. Multi-value fields now accept only the field-level `multi_value` contract; the nested spelling introduced during this branch has been removed rather than retained as compatibility code.
 
 ## Commits
 
@@ -440,3 +444,4 @@ Field-level `multi_value` is now ingested as the canonical contract. Committed p
 - [82df83ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/82df83ce)
 - [501b4459](https://github.com/Cognis-Labs-HQ/Cognis/commit/501b4459)
 - [65340e2d](https://github.com/Cognis-Labs-HQ/Cognis/commit/65340e2d)
+- [b6dfb282](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6dfb282)

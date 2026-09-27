@@ -344,11 +344,15 @@ Bagian Input dan Pelafalan kini selalu menampilkan bidang kartu terpilih ketika 
 
 ## Komposisi karosel multi-nilai dan penghapusan aman
 
-Bidang penyedia dapat mengaktifkan komposisi multi-nilai dengan `input.multi_value`. Composer menambahkan tindakan simpan khusus bidang dan pil nilai tersimpan, mendukung pembukaan kembali nilai untuk penggantian, membatasi saran teks pada kartu dalam karosel terkonfigurasi, menolak teks bebas yang tidak terselesaikan, dan membatasi penghapusan terkonfirmasi pada kontrol × khusus. Editor entri yang sudah ada kini memasang karosel terdeklarasi secara konsisten dengan formulir pembuatan.
+Bidang penyedia dapat mengaktifkan komposisi multi-nilai dengan `multi_value`. Composer menambahkan tindakan simpan khusus bidang dan pil nilai tersimpan, mendukung pembukaan kembali nilai untuk penggantian, membatasi saran teks pada kartu dalam karosel terkonfigurasi, menolak teks bebas yang tidak terselesaikan, dan membatasi penghapusan terkonfirmasi pada kontrol × khusus. Editor entri yang sudah ada kini memasang karosel terdeklarasi secara konsisten dengan formulir pembuatan.
 
 ## Area sementara multi-nilai tidak lagi mengubah nilai tersimpan
 
 `multi_value` pada tingkat bidang kini dibaca sebagai kontrak kanonis. Pil tersimpan tetap terpisah dari bidang sementara yang awalnya kosong, hanya tindakan Simpan yang terlihat yang menyimpan referensi sementara, dan kontrol × ringkas menghapus kartu sementara tanpa konfirmasi atau mengubah nilai tersimpan. Mengeklik pil tersimpan tidak lagi memuatnya ke area sementara.
+
+## Label kanonis dan pratinjau langsung
+
+Formulir kartu tidak lagi menampilkan bidang Label terpisah untuk kartu non-definisi. Label dibuat dari komposisi Input utama yang berurutan, dan penyimpanan edit langsung segera merender ulang peramban kartu agar pratinjaunya sesuai dengan entri tersimpan. Bidang multi-nilai kini hanya menerima kontrak `multi_value` pada tingkat bidang; bentuk bertingkat yang diperkenalkan di cabang ini dihapus dan tidak dipertahankan sebagai kode kompatibilitas.
 
 ## Commit
 
@@ -440,3 +444,4 @@ Bidang penyedia dapat mengaktifkan komposisi multi-nilai dengan `input.multi_val
 - [82df83ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/82df83ce)
 - [501b4459](https://github.com/Cognis-Labs-HQ/Cognis/commit/501b4459)
 - [65340e2d](https://github.com/Cognis-Labs-HQ/Cognis/commit/65340e2d)
+- [b6dfb282](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6dfb282)

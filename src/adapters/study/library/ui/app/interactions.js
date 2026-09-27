@@ -39,6 +39,11 @@ export function bindLibraryInteractions(root, context) {
     let entries = context.entries;
     const requests = context.requests ?? [];
     let locations;
+    const renderEntries = (updated = entries) => {
+        root.querySelector(".library-browser").innerHTML =
+            context.renderContent?.(updated) ??
+            renderBrowser(schemas, updated, i18n, requestedLayer);
+    };
     void fetchLibraryLocations().then((value) => {
         locations = value;
         updateSelectionActions(root, entries, requests, locations);
@@ -52,11 +57,7 @@ export function bindLibraryInteractions(root, context) {
         requests,
         getLocations: () => locations,
         i18n,
-        render: (updated) => {
-            root.querySelector(".library-browser").innerHTML =
-                context.renderContent?.(updated) ??
-                renderBrowser(schemas, updated, i18n, requestedLayer);
-        },
+        render: renderEntries,
     });
     let suppressEntryClick = false;
     const markViewed = (control) => {
@@ -219,6 +220,7 @@ export function bindLibraryInteractions(root, context) {
                     readOnly,
                     showReferenceTree,
                     showNew: openedAsNew,
+                    onEntryUpdated: renderEntries,
                 },
             )
                 .catch(() =>
@@ -251,9 +253,7 @@ export function bindLibraryInteractions(root, context) {
             entries = entries.filter(
                 (entry) => !deletion.entryIds.includes(entry.id),
             );
-            root.querySelector(".library-browser").innerHTML =
-                context.renderContent?.(entries) ??
-                renderBrowser(schemas, entries, i18n, requestedLayer);
+            renderEntries();
             setSelectionMode(root, false);
             showToast(i18n.t("gateway.study.library_delete_success"), {
                 variant: "success",

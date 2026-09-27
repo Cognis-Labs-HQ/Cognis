@@ -323,7 +323,7 @@ export function editorBody(
                     : value
                       ? [value]
                       : [];
-                return `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(fieldLabel)}</legend><input name="field:pronunciation" type="hidden" value="${escapeHtml(pronunciations.join("\n"))}">${pronunciationRelationshipIds.size ? selectedReferenceField("pronunciation", pronunciationRelationshipIds, { fieldLabel, multiValue: field.multi_value === true || field.input?.multi_value === true, values: pronunciations }) : ""}${inlinePronunciationCarousel}</fieldset>`;
+                return `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(fieldLabel)}</legend><input name="field:pronunciation" type="hidden" value="${escapeHtml(pronunciations.join("\n"))}">${pronunciationRelationshipIds.size ? selectedReferenceField("pronunciation", pronunciationRelationshipIds, { fieldLabel, multiValue: field.multi_value === true, values: pronunciations }) : ""}${inlinePronunciationCarousel}</fieldset>`;
             }
             if (
                 field.id === "pronunciation" &&
@@ -579,6 +579,38 @@ export function readReferences(form, layer, compositionOrder = []) {
     );
 }
 
+function syncGeneratedCardLabel(form, inputCarouselIds, entries) {
+    if (!inputCarouselIds.size) return;
+    const selected = new Set(
+        Array.from(inputCarouselIds).flatMap((relationshipId) =>
+            Array.from(
+                form.elements[`relationship:${relationshipId}`]
+                    ?.selectedOptions ?? [],
+                ({ value }) => value,
+            ),
+        ),
+    );
+    form.elements.label.value = (form.compositionOrder ?? [])
+        .filter((entryId) => selected.has(entryId))
+        .map((entryId) => entries.find(({ id }) => id === entryId)?.label)
+        .filter(Boolean)
+        .join("");
+}
+
+function updateCompositionOrder(form, relationshipId, values) {
+    const select = form.elements[`relationship:${relationshipId}`];
+    const previous = new Set(
+        Array.from(select?.selectedOptions ?? [], ({ value }) => value),
+    );
+    const selected = new Set(values);
+    form.compositionOrder = (form.compositionOrder ?? []).filter(
+        (value) => selected.has(value) || !previous.has(value),
+    );
+    values.forEach((value) => {
+        if (!previous.has(value)) form.compositionOrder.push(value);
+    });
+}
+
 export async function openLibraryEntryEditor({
     entry,
     entries,
@@ -595,6 +627,7 @@ export async function openLibraryEntryEditor({
         layer?.cardConstructor,
     );
     const editor = editorBody(entry, schemas, entries, i18n, "", {
+        generatedLabel: layer?.semanticRole !== "definition",
         includeHidden: false,
         relationshipCarousels: true,
         relationshipCarouselAdd: false,
@@ -661,25 +694,18 @@ export async function openLibraryEntryEditor({
                     },
                     onChange: ({ id, values }) => {
                         if (pronunciationRelationshipIds.has(id)) return;
-                        const select = form.elements[`relationship:${id}`];
-                        const previous = new Set(
-                            Array.from(
-                                select?.selectedOptions ?? [],
-                                ({ value }) => value,
+                        updateCompositionOrder(form, id, values);
+                        queueMicrotask(() =>
+                            syncGeneratedCardLabel(
+                                form,
+                                composer.inputCarouselIds,
+                                entries,
                             ),
                         );
-                        const selected = new Set(values);
-                        form.compositionOrder = form.compositionOrder.filter(
-                            (value) =>
-                                selected.has(value) || !previous.has(value),
-                        );
-                        values.forEach((value) => {
-                            if (!previous.has(value))
-                                form.compositionOrder.push(value);
-                        });
                     },
                 },
             );
+            syncGeneratedCardLabel(form, composer.inputCarouselIds, entries);
             form.addEventListener("click", (event) => {
                 const button = event.target.closest(
                     "[data-library-edit-related]",
@@ -800,6 +826,7 @@ export function bindAdminLibraryInteractions(
                 layer?.cardConstructor,
             );
             const editor = editorBody(entry, schemas, entries, i18n, "", {
+                generatedLabel: layer?.semanticRole !== "definition",
                 showRelationshipTab: readOnly,
                 relationshipCarousels: !readOnly,
                 relationshipCarouselAdd: false,
@@ -857,7 +884,25 @@ export function bindAdminLibraryInteractions(
                     }
                     if (!readOnly) formController = editor.builder.attach(form);
                     bindLibraryEditorControls(form, entry, i18n);
-                    if (!readOnly)
+                    if (!readOnly) {
+                        const pronunciationRelationshipIds = new Set(
+                            pronunciationRelationshipsFor(
+                                composer.layer,
+                                schema,
+                                composer.pronunciationCarouselLayers,
+                            ).map(({ id }) => id),
+                        );
+                        form.compositionOrder = (entry.references ?? [])
+                            .filter(
+                                ({ relation }) =>
+                                    !pronunciationRelationshipIds.has(relation),
+                            )
+                            .toSorted(
+                                (left, right) =>
+                                    (left.position ?? Number.MAX_SAFE_INTEGER) -
+                                    (right.position ?? Number.MAX_SAFE_INTEGER),
+                            )
+                            .map(({ entryId }) => entryId);
                         mountEditableRelationshipCarousels(
                             form,
                             overlay,
@@ -869,8 +914,33 @@ export function bindAdminLibraryInteractions(
                                 inputCarouselIds: composer.inputCarouselIds,
                                 pronunciationCarouselLayers:
                                     composer.pronunciationCarouselLayers,
+                                selectionOrder: ({ id, value, localIndex }) => {
+                                    if (pronunciationRelationshipIds.has(id))
+                                        return localIndex;
+                                    const index =
+                                        form.compositionOrder.indexOf(value);
+                                    return index < 0 ? localIndex : index + 1;
+                                },
+                                onChange: ({ id, values }) => {
+                                    if (pronunciationRelationshipIds.has(id))
+                                        return;
+                                    updateCompositionOrder(form, id, values);
+                                    queueMicrotask(() =>
+                                        syncGeneratedCardLabel(
+                                            form,
+                                            composer.inputCarouselIds,
+                                            entries,
+                                        ),
+                                    );
+                                },
                             },
                         );
+                        syncGeneratedCardLabel(
+                            form,
+                            composer.inputCarouselIds,
+                            entries,
+                        );
+                    }
                 },
                 onAction: async (action, overlay) => {
                     if (readOnly) return true;
@@ -891,7 +961,11 @@ export function bindAdminLibraryInteractions(
                         return false;
                     }
                     try {
-                        const references = readReferences(form, composer.layer);
+                        const references = readReferences(
+                            form,
+                            composer.layer,
+                            form.compositionOrder,
+                        );
                         const fields = readFields(form, composer.layer, entry);
                         applyDerivedPronunciation(
                             fields,

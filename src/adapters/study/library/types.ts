@@ -88,8 +88,6 @@ export interface LibraryFieldSchema {
             value: string;
             metadata: LibraryMetadata;
         }[];
-        /** @deprecated Prefer the field-level multi_value declaration. */
-        multi_value?: boolean;
         immutable?: boolean;
         /** Relationships whose ordered targets make values in this field deep-linkable. */
         linkRelationships?: readonly string[];

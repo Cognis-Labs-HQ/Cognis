@@ -59,6 +59,11 @@ export async function openEntryPopup(
         );
         const layer = layerForEntry(schemas, selectedEntry);
         const editMode = options.readOnly ? null : entryEditMode(selectedEntry);
+        const handleSaved = (updated) => {
+            if (editMode !== "direct") return;
+            Object.assign(selectedEntry, updated);
+            options.onEntryUpdated?.(updated);
+        };
         if (options.startEditing && editMode) {
             options.startEditing = false;
             await openLibraryEntryEditor({
@@ -67,10 +72,7 @@ export async function openEntryPopup(
                 schemas,
                 i18n,
                 requestUpdate: editMode === "request",
-                onSaved: () => {
-                    if (editMode === "direct")
-                        Object.assign(selectedEntry, detail.entry);
-                },
+                onSaved: handleSaved,
             });
             continue;
         }
@@ -251,10 +253,7 @@ export async function openEntryPopup(
                 schemas,
                 i18n,
                 requestUpdate: editMode === "request",
-                onSaved: () => {
-                    if (editMode === "direct")
-                        Object.assign(selectedEntry, detail.entry);
-                },
+                onSaved: handleSaved,
             });
             selectedEntry = detail.entry;
             continue;

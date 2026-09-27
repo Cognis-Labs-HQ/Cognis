@@ -149,11 +149,6 @@ function validateField(field: LibraryFieldSchema, ids: Set<string>): void {
     )
         throw new Error("invalid_field_multi_value");
     if (
-        field.input?.multi_value !== undefined &&
-        typeof field.input.multi_value !== "boolean"
-    )
-        throw new Error("invalid_field_multi_value");
-    if (
         field.detail?.exclusive !== undefined &&
         typeof field.detail.exclusive !== "boolean"
     )

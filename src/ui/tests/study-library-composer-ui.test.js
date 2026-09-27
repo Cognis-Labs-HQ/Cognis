@@ -108,4 +108,9 @@ test("Study Library keeps selected-card fields beside configured carousels", () 
     assert.match(adminInteractionsSource, /isMultiValueKind\(kind\)/);
     assert.match(adminInteractionsSource, /stagedValues\.set/);
     assert.doesNotMatch(adminInteractionsSource, /editingSavedIndex/);
+    assert.match(
+        adminInteractionsSource,
+        /generatedLabel: layer\?\.semanticRole !== "definition"/,
+    );
+    assert.match(adminInteractionsSource, /function syncGeneratedCardLabel\(/);
 });
