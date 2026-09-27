@@ -70,11 +70,18 @@ export function mountEditableRelationshipCarousels(
     return controller;
 }
 
-export function pronunciationRelationshipsFor(layer, _schema, configuredIds) {
+export function pronunciationRelationshipsFor(layer, schema, configuredIds) {
     if (layer?.semanticRole === "orderedLexicalSequence") return [];
-    return (layer?.relationships ?? []).filter(
-        ({ targetLayer, presentationRole }) =>
-            presentationRole === "pronunciation" &&
-            configuredIds.has(targetLayer),
+    const configured = (layer?.relationships ?? []).filter(({ targetLayer }) =>
+        configuredIds.has(targetLayer),
     );
+    const explicit = configured.filter(
+        ({ presentationRole }) => presentationRole === "pronunciation",
+    );
+    if (explicit.length > 0) return explicit;
+    if (layer?.semanticRole !== "compoundWritingUnit") return [];
+    return configured.filter(({ targetLayer }) => {
+        const target = schema?.layers?.find(({ id }) => id === targetLayer);
+        return target?.semanticRole === "atomicWritingUnit";
+    });
 }

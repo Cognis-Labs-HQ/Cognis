@@ -310,6 +310,10 @@ Vocabulary and sentence cards without their own upload play the audio of their o
 
 The unified composer interface now adds relationships implied by input or pronunciation carousel layers to the effective constructor automatically. Pronunciation carousels therefore load reliably in create and edit dialogs, and their selection updates the hidden pronunciation field immediately without a separate free-text field or commit button.
 
+## Pronunciation carousels restored from schema relationships
+
+When a visible pronunciation field receives no carousel layers from its runtime constructor, the unified composer now uses the target layers of every declared pronunciation relationship. The Kanji composer therefore renders its character carousel even for legacy contributions with an empty `pronunciation_carousels` array.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -391,3 +395,4 @@ The unified composer interface now adds relationships implied by input or pronun
 - [3e48b191](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e48b191)
 - [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)
 - [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)
+- [a0af7d1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0af7d1a)

@@ -190,3 +190,5 @@ Formulir kosakata, kalimat, dan gabungan tidak pernah merender penyunting nilai 
 Kartu kosakata dan kalimat memutar audio dependensi terurutnya sebagai satu rangkaian ketika tidak memiliki audio unggahan sendiri. Unggahan audio opsional pada kartu menggantikan rangkaian turunan tersebut. Jika salah satu dependensi tidak memiliki audio, ikon pengeras suara yang dinonaktifkan menjelaskannya saat penunjuk diarahkan.
 
 Carousel pelafalan kini memuat setiap relasi yang tersirat oleh deklarasi lapisan carousel milik konstruktor, meskipun kontribusi formulir runtime menghilangkan relasi itu dari daftar relasi skalarnya. Memilih item carousel langsung memperbarui nilai pelafalan; input teks bebas dan tombol commit pelafalan yang berlebihan telah dihapus dari formulir pembuatan dan penyuntingan.
+
+Ketika konstruktor menyediakan bidang pelafalan tetapi membiarkan `pronunciation_carousels` kosong, composer kini menurunkan lapisan carousel dari relasi pelafalan yang dideklarasikan skema. Hal ini menjaga kontribusi formulir runtime lama atau tidak lengkap tetap berfungsi, sementara deklarasi carousel eksplisit tetap menjadi acuan utama.

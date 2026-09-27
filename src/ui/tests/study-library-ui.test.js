@@ -512,6 +512,14 @@ test("Study Library administration exposes contract-safe editing", () => {
         composerContractSource,
         /constructorRelationshipIds\.add\(relationship\.id\)/,
     );
+    assert.match(
+        composerContractSource,
+        /pronunciationCarouselLayers\.add\(relationship\.targetLayer\)/,
+    );
+    assert.match(
+        composerContractSource,
+        /target\?\.semanticRole === "atomicWritingUnit"/,
+    );
     assert.match(composerContractSource, /constructorFieldIds\.add\("audio"\)/);
     assert.match(composerContractSource, /"lexicalUnit"/);
     assert.match(composerContractSource, /"orderedLexicalSequence"/);
@@ -534,6 +542,10 @@ test("Study Library administration exposes contract-safe editing", () => {
     );
     assert.match(adminInteractionsSource, /ordersPronunciation: true/);
     assert.match(adminInteractionsSource, /pronunciationRelationshipsFor/);
+    assert.match(
+        adminInteractionsSource,
+        /if \(explicit\.length > 0\) return explicit/,
+    );
     assert.doesNotMatch(
         adminInteractionsSource,
         /data-library-pronunciation-commit/,

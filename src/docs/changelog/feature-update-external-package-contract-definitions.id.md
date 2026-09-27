@@ -310,6 +310,10 @@ Kartu kosakata dan kalimat tanpa unggahan sendiri memutar audio bagian terurutny
 
 Antarmuka composer terpadu kini otomatis menambahkan relasi yang tersirat oleh lapisan carousel input atau pelafalan ke konstruktor efektif. Karena itu carousel pelafalan dimuat secara andal dalam dialog pembuatan dan penyuntingan, dan pilihannya langsung memperbarui bidang pelafalan tersembunyi tanpa bidang teks bebas atau tombol commit terpisah.
 
+## Carousel pelafalan dipulihkan dari relasi skema
+
+Ketika bidang pelafalan yang terlihat tidak menerima lapisan carousel dari konstruktor runtime, composer terpadu kini memakai lapisan target dari setiap relasi pelafalan yang dideklarasikan. Karena itu composer Kanji merender carousel karakter bahkan untuk kontribusi lama dengan larik `pronunciation_carousels` kosong.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -391,3 +395,4 @@ Antarmuka composer terpadu kini otomatis menambahkan relasi yang tersirat oleh l
 - [3e48b191](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e48b191)
 - [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)
 - [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)
+- [a0af7d1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0af7d1a)

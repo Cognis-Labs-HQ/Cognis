@@ -202,3 +202,5 @@ Vocabulary, sentence, and composite forms never render the generic list-value ed
 Vocabulary and sentence cards play their ordered dependencies’ audio as one sequence when they have no uploaded audio of their own. An optional audio upload on the card overrides that derived sequence. If any dependency is missing audio, the disabled speaker explains the missing dependency on hover.
 
 Pronunciation carousels now load every relationship implied by the constructor’s carousel layer declarations, even when a runtime form contribution omits that relationship from its scalar relationship list. Selecting carousel items updates the pronunciation value immediately; the redundant free-text pronunciation input and commit button have been removed from both create and edit forms.
+
+When a constructor exposes a pronunciation field but leaves `pronunciation_carousels` empty, the composer now derives the carousel layers from the schema’s declared pronunciation relationships. This keeps legacy or incomplete runtime form contributions functional while still treating explicit carousel declarations as authoritative.

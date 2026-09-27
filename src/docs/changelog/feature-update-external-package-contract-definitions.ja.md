@@ -310,6 +310,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 統一コンポーザーインターフェースは、入力または発音カルーセルのレイヤーが示す関係を有効なコンストラクターへ自動追加するようになりました。これにより作成・編集ダイアログで発音カルーセルが確実に読み込まれ、選択内容は別の自由入力欄や確定ボタンを介さず、非表示の発音フィールドへ即座に反映されます。
 
+## スキーマ関係から発音カルーセルを復元
+
+表示される発音フィールドに実行時コンストラクターからカルーセルレイヤーが渡されない場合、統一コンポーザーは宣言済みの全発音関係の対象レイヤーを使用するようになりました。そのため `pronunciation_carousels` が空の旧形式コントリビューションでも、漢字コンポーザーに文字カルーセルが表示されます。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -391,3 +395,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - [3e48b191](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e48b191)
 - [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)
 - [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)
+- [a0af7d1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0af7d1a)

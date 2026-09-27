@@ -310,6 +310,10 @@ Wortschatz- und Satzkarten spielen ohne eigenen Upload die Audiodateien ihrer ge
 
 Die einheitliche Composer-Schnittstelle ergänzt Beziehungen, die durch Eingabe- oder Aussprachekarussell-Schichten deklariert sind, automatisch in den effektiven Konstruktor. Aussprachekarussells erscheinen dadurch zuverlässig in Erstellungs- und Bearbeitungsdialogen, und ihre Auswahl aktualisiert das versteckte Aussprachefeld unmittelbar, ohne separates Freitextfeld oder Bestätigungsschaltfläche.
 
+## Aussprachekarussells aus dem Schema wiederhergestellt
+
+Wenn ein sichtbares Aussprachefeld keine Karussellschichten aus dem Laufzeit-Konstruktor erhält, verwendet der einheitliche Composer nun die Zielschichten aller deklarierten Aussprachebeziehungen. Dadurch rendert der Kanji-Composer das Zeichenkarussell auch bei älteren Beiträgen mit leerem `pronunciation_carousels`.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -391,3 +395,4 @@ Die einheitliche Composer-Schnittstelle ergänzt Beziehungen, die durch Eingabe-
 - [3e48b191](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e48b191)
 - [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)
 - [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)
+- [a0af7d1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0af7d1a)

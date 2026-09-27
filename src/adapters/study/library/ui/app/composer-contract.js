@@ -37,6 +37,28 @@ export function resolveComposerContract(schema, layer, constructor) {
     const pronunciationCarouselLayers = new Set(
         effectiveConstructor.pronunciation_carousels ?? [],
     );
+    if (
+        constructorFieldIds.has("pronunciation") &&
+        pronunciationCarouselLayers.size === 0
+    ) {
+        const pronunciationRelationships = (layer?.relationships ?? []).filter(
+            (relationship) => relationship.presentationRole === "pronunciation",
+        );
+        const fallbackRelationships =
+            pronunciationRelationships.length > 0
+                ? pronunciationRelationships
+                : (layer?.relationships ?? []).filter((relationship) => {
+                      const target = schema?.layers?.find(
+                          ({ id }) => id === relationship.targetLayer,
+                      );
+                      return (
+                          layer?.semanticRole === "compoundWritingUnit" &&
+                          target?.semanticRole === "atomicWritingUnit"
+                      );
+                  });
+        for (const relationship of fallbackRelationships)
+            pronunciationCarouselLayers.add(relationship.targetLayer);
+    }
     const constructorRelationshipIds = new Set(
         effectiveConstructor.relationships ?? [],
     );
