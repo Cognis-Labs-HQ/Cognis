@@ -1,4 +1,5 @@
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { createAnchoredPopup } from "/static/reuse/popup.js";
 import { pronunciationValues } from "./presentation.js";
 
 function ownDrawingPattern(entry, layer) {
@@ -127,9 +128,21 @@ export function loadDrawing(entry, layer, entries, schemas, definition = "") {
     );
 }
 
-export function placeAudioSpeaker(overlay) {
+export function placeAudioSpeaker(overlay, signal) {
     const speaker = overlay.querySelector(
         ".library-detail-summary > :is(.library-audio-sequence, .library-audio-speaker, .library-audio-unavailable)",
     );
-    if (speaker) overlay.querySelector(".popup-heading")?.append(speaker);
+    if (!speaker) return;
+    overlay.querySelector(".popup-heading")?.append(speaker);
+    const source = speaker.querySelector(".library-audio-unavailable-tooltip");
+    if (!source) return;
+    const tooltip = createAnchoredPopup({
+        className: "library-audio-unavailable-tooltip is-portal",
+    });
+    const show = () => tooltip.show(speaker, source.innerHTML);
+    speaker.addEventListener("pointerenter", show);
+    speaker.addEventListener("pointerleave", tooltip.hide);
+    speaker.addEventListener("focusin", show);
+    speaker.addEventListener("focusout", tooltip.hide);
+    signal?.addEventListener("abort", () => tooltip.destroy(), { once: true });
 }

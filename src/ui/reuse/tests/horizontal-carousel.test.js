@@ -43,6 +43,8 @@ test("horizontal carousels support selection-only editors", () => {
 
     assert.match(html, /data-horizontal-carousel="pronunciation"/);
     assert.doesNotMatch(html, /data-carousel-add/);
+    assert.match(html, /horizontal-carousel-preview/);
+    assert.match(html, /<strong>あ<\/strong>/);
 });
 
 test("horizontal carousel mounting uses a body-level preview portal", () => {

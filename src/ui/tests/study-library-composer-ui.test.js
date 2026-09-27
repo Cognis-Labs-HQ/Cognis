@@ -95,6 +95,7 @@ test("Study Library keeps selected-card fields beside configured carousels", () 
     assert.match(adminInteractionsSource, /renderSelectedReferences\(\)/);
     assert.match(adminInteractionsSource, /data-library-selected-reference/);
     assert.match(createEntrySource, /inputCarouselIds,/);
+    assert.match(createEntrySource, /horizontal-carousel-preview/);
     assert.match(adminInteractionsSource, /persistentExtra: true/);
     assert.match(adminInteractionsSource, /field\.multi_value === true/);
     assert.match(adminInteractionsSource, /data-library-save-composed-value/);

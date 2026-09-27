@@ -200,7 +200,7 @@ export async function openEntryPopup(
                 overlay.classList.add("library-entry-popup");
                 if (layer?.semanticRole === "orderedLexicalSequence")
                     overlay.classList.add("library-entry-popup--composite");
-                placeAudioSpeaker(overlay);
+                placeAudioSpeaker(overlay, audioController.signal);
                 void loadLibraryAudio(
                     overlay,
                     audioObjectUrls,

@@ -354,6 +354,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 定義以外のカードフォームでは、独立したラベル欄を表示しません。ラベルは順序付きの主要 Input 構成から生成され、直接編集を保存するとカードブラウザーを直ちに再描画して、プレビューを保存済み項目と一致させます。複数値フィールドが受け付ける契約はフィールド直下の `multi_value` だけです。このブランチで導入したネスト形式は互換コードとして残さず削除しました。
 
+## 切れないツールチップとプレビュー
+
+音声不足ツールチップはカード内の絶対配置ではなく、ビューポートを考慮する body ポータルを使用します。これにより、ポップアップやカードのオーバーフローで文字が切れません。追加の定義文がない場合も含め、すべてのカルーセル項目でホバー時とキーボードフォーカス時のプレビューを再表示します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -445,3 +449,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - [501b4459](https://github.com/Cognis-Labs-HQ/Cognis/commit/501b4459)
 - [65340e2d](https://github.com/Cognis-Labs-HQ/Cognis/commit/65340e2d)
 - [b6dfb282](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6dfb282)
+- [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)

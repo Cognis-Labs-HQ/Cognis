@@ -354,6 +354,10 @@ Anbieterfelder können mit `multi_value` die mehrwertige Komposition aktivieren.
 
 Kartenformulare zeigen für Karten außerhalb der Definitionsebene kein separates Feld „Bezeichnung“ mehr. Die Bezeichnung wird aus der geordneten primären Input-Komposition erzeugt; nach einer direkt gespeicherten Änderung wird der Kartenbrowser sofort neu gerendert, sodass seine Vorschau dem gespeicherten Eintrag entspricht. Mehrwertige Felder akzeptieren ausschließlich den Vertrag `multi_value` auf Feldebene; die in diesem Zweig eingeführte verschachtelte Schreibweise wurde entfernt und nicht als Kompatibilitätscode beibehalten.
 
+## Unbeschnittene Hinweise und Karussellvorschauen
+
+Hinweise auf fehlendes Audio verwenden nun ansichtsfensterbewusste Body-Portale statt einer absoluten Position innerhalb der Karte. Dadurch schneiden Überlaufregeln von Pop-ups und Karten den Text nicht mehr ab. Jeder Karusselleintrag besitzt wieder eine Vorschau bei Mauszeigerkontakt und Tastaturfokus, auch wenn kein zusätzlicher Definitionstext vorhanden ist.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -445,3 +449,4 @@ Kartenformulare zeigen für Karten außerhalb der Definitionsebene kein separate
 - [501b4459](https://github.com/Cognis-Labs-HQ/Cognis/commit/501b4459)
 - [65340e2d](https://github.com/Cognis-Labs-HQ/Cognis/commit/65340e2d)
 - [b6dfb282](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6dfb282)
+- [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)

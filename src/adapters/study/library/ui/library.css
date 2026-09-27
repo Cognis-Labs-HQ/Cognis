@@ -847,9 +847,17 @@ body[data-theme="dark"] .library-audio {
     white-space: nowrap;
     z-index: 4;
 }
-.library-audio-unavailable:hover .library-audio-unavailable-tooltip,
-.library-audio-unavailable:focus-within .library-audio-unavailable-tooltip {
+.library-audio-unavailable-tooltip.is-portal {
+    position: fixed;
+    z-index: 10000;
+    inset: auto;
     display: block;
+    max-width: min(22rem, calc(100vw - 1rem));
+    transform: none;
+    white-space: normal;
+}
+.library-audio-unavailable-tooltip.is-portal[hidden] {
+    display: none;
 }
 .library-speaker-icon {
     display: block;

@@ -835,7 +835,16 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(source, /dependenciesMissingAudio/);
     assert.match(source, /gateway\.study\.library_dependencies_missing_audio/);
     assert.match(source, /library-audio-unavailable-tooltip/);
-    assert.match(stylesheet, /\.library-audio-unavailable:hover/);
+    assert.match(source, /createAnchoredPopup/);
+    assert.match(source, /tooltip\.show\(speaker, source\.innerHTML\)/);
+    assert.match(
+        source,
+        /placeAudioSpeaker\(overlay, audioController\.signal\)/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-audio-unavailable-tooltip\.is-portal[\s\S]*position:\s*fixed/,
+    );
     assert.match(source, /data-library-audio-sequence/);
     assert.match(source, /own\.valid && !useRelatedProviderAudio/);
     assert.match(source, /data-library-audio-player/);

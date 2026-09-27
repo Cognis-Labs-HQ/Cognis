@@ -354,6 +354,10 @@ Bidang penyedia dapat mengaktifkan komposisi multi-nilai dengan `multi_value`. C
 
 Formulir kartu tidak lagi menampilkan bidang Label terpisah untuk kartu non-definisi. Label dibuat dari komposisi Input utama yang berurutan, dan penyimpanan edit langsung segera merender ulang peramban kartu agar pratinjaunya sesuai dengan entri tersimpan. Bidang multi-nilai kini hanya menerima kontrak `multi_value` pada tingkat bidang; bentuk bertingkat yang diperkenalkan di cabang ini dihapus dan tidak dipertahankan sebagai kode kompatibilitas.
 
+## Tooltip utuh dan pratinjau karosel
+
+Tooltip audio yang tidak tersedia kini memakai portal body yang memperhitungkan viewport, bukan posisi absolut di dalam kartu, sehingga luapan popup dan kartu tidak memotong teks. Setiap item karosel kembali memiliki pratinjau saat diarahkan atau difokuskan dengan papan ketik, termasuk saat teks definisi tambahan tidak tersedia.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -445,3 +449,4 @@ Formulir kartu tidak lagi menampilkan bidang Label terpisah untuk kartu non-defi
 - [501b4459](https://github.com/Cognis-Labs-HQ/Cognis/commit/501b4459)
 - [65340e2d](https://github.com/Cognis-Labs-HQ/Cognis/commit/65340e2d)
 - [b6dfb282](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6dfb282)
+- [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)

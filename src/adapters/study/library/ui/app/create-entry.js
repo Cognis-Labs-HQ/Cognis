@@ -352,7 +352,7 @@ export async function openCreateEntryPopup({
                             "btn-neutral horizontal-carousel-item is-selected";
                         item.dataset.carouselValue = created.id;
                         item.setAttribute("aria-pressed", "true");
-                        item.innerHTML = `<span>${escapeHtml(created.label)}</span><small data-carousel-order></small>`;
+                        item.innerHTML = `<span>${escapeHtml(created.label)}</span><small data-carousel-order></small><span class="horizontal-carousel-preview" role="tooltip"><strong>${escapeHtml(created.label)}</strong></span>`;
                         carousel
                             .querySelector(".horizontal-carousel-track")
                             ?.append(item);

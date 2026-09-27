@@ -354,6 +354,10 @@ Field-level `multi_value` is now ingested as the canonical contract. Committed p
 
 Card forms no longer expose a separate Label field for non-definition cards. The label is generated from the ordered primary Input composition, and saving a direct edit immediately rerenders the card browser so its preview matches the stored entry. Multi-value fields now accept only the field-level `multi_value` contract; the nested spelling introduced during this branch has been removed rather than retained as compatibility code.
 
+## Unclipped tooltips and carousel previews
+
+Missing-audio tooltips now use viewport-aware body portals instead of card-local absolute positioning, preventing popup and card overflow from clipping their text. Every carousel item again carries a hover and keyboard-focus preview, even when no secondary definition text is available.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -445,3 +449,4 @@ Card forms no longer expose a separate Label field for non-definition cards. The
 - [501b4459](https://github.com/Cognis-Labs-HQ/Cognis/commit/501b4459)
 - [65340e2d](https://github.com/Cognis-Labs-HQ/Cognis/commit/65340e2d)
 - [b6dfb282](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6dfb282)
+- [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)
