@@ -314,6 +314,10 @@ The unified composer interface now adds relationships implied by input or pronun
 
 When a visible pronunciation field receives no carousel layers from its runtime constructor, the unified composer now uses the target layers of every declared pronunciation relationship. The Kanji composer therefore renders its character carousel even for legacy contributions with an empty `pronunciation_carousels` array.
 
+## Semantic carousel profiles match the authoring contract
+
+The composer now normalizes card constructors to the requested semantic profiles: alternate characters receive free Input plus character Pronunciation; vocabulary receives character, alternate-character, and vocabulary Input plus character Pronunciation; sentences receive particle, alternate-character, and vocabulary Input with no editable Pronunciation. Vocabulary pronunciation is pre-populated down to the character layer, while sentence pronunciation is derived exclusively from it.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -396,3 +400,4 @@ When a visible pronunciation field receives no carousel layers from its runtime 
 - [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)
 - [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)
 - [a0af7d1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0af7d1a)
+- [54242971](https://github.com/Cognis-Labs-HQ/Cognis/commit/54242971)

@@ -17,12 +17,19 @@ export function resolveComposerContract(schema, layer, constructor) {
             relationship,
         ]),
     );
-    const derivesPronunciation = [
-        "lexicalUnit",
-        "orderedLexicalSequence",
-    ].includes(layer?.semanticRole);
+    const derivesPronunciation =
+        layer?.semanticRole === "orderedLexicalSequence";
+    const prepopulatesPronunciation = layer?.semanticRole === "lexicalUnit";
     const constructorFieldIds = new Set(effectiveConstructor.fields ?? []);
-    if (derivesPronunciation && fieldsById.get("audio")?.type === "audio")
+    if (
+        ["compoundWritingUnit", "lexicalUnit"].includes(layer?.semanticRole) &&
+        fieldsById.has("pronunciation")
+    )
+        constructorFieldIds.add("pronunciation");
+    if (
+        (derivesPronunciation || prepopulatesPronunciation) &&
+        fieldsById.get("audio")?.type === "audio"
+    )
         constructorFieldIds.add("audio");
     const fields = Array.from(constructorFieldIds)
         .map((fieldId) => fieldsById.get(fieldId))
@@ -37,6 +44,36 @@ export function resolveComposerContract(schema, layer, constructor) {
     const pronunciationCarouselLayers = new Set(
         effectiveConstructor.pronunciation_carousels ?? [],
     );
+    const layerIdsForRoles = (...roles) =>
+        (schema?.layers ?? [])
+            .filter(({ semanticRole }) => roles.includes(semanticRole))
+            .map(({ id }) => id);
+    if (layer?.semanticRole === "compoundWritingUnit") {
+        inputCarouselLayers.clear();
+        pronunciationCarouselLayers.clear();
+        layerIdsForRoles("atomicWritingUnit").forEach((id) =>
+            pronunciationCarouselLayers.add(id),
+        );
+    } else if (layer?.semanticRole === "lexicalUnit") {
+        inputCarouselLayers.clear();
+        pronunciationCarouselLayers.clear();
+        layerIdsForRoles(
+            "atomicWritingUnit",
+            "compoundWritingUnit",
+            "lexicalUnit",
+        ).forEach((id) => inputCarouselLayers.add(id));
+        layerIdsForRoles("atomicWritingUnit").forEach((id) =>
+            pronunciationCarouselLayers.add(id),
+        );
+    } else if (layer?.semanticRole === "orderedLexicalSequence") {
+        inputCarouselLayers.clear();
+        pronunciationCarouselLayers.clear();
+        layerIdsForRoles(
+            "particle",
+            "compoundWritingUnit",
+            "lexicalUnit",
+        ).forEach((id) => inputCarouselLayers.add(id));
+    }
     if (
         constructorFieldIds.has("pronunciation") &&
         pronunciationCarouselLayers.size === 0
@@ -90,6 +127,7 @@ export function resolveComposerContract(schema, layer, constructor) {
         inputCarouselIds,
         pronunciationCarouselLayers,
         derivesPronunciation,
+        prepopulatesPronunciation,
     };
 }
 

@@ -523,6 +523,18 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(composerContractSource, /constructorFieldIds\.add\("audio"\)/);
     assert.match(composerContractSource, /"lexicalUnit"/);
     assert.match(composerContractSource, /"orderedLexicalSequence"/);
+    assert.match(
+        composerContractSource,
+        /layer\?\.semanticRole === "orderedLexicalSequence"/,
+    );
+    assert.match(
+        composerContractSource,
+        /prepopulatesPronunciation = layer\?\.semanticRole === "lexicalUnit"/,
+    );
+    assert.match(
+        composerContractSource,
+        /"particle",\s*"compoundWritingUnit",\s*"lexicalUnit"/,
+    );
     assert.match(composerContractSource, /fields\.pronunciation =/);
     assert.match(
         composerContractSource,

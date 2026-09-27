@@ -314,6 +314,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 表示される発音フィールドに実行時コンストラクターからカルーセルレイヤーが渡されない場合、統一コンポーザーは宣言済みの全発音関係の対象レイヤーを使用するようになりました。そのため `pronunciation_carousels` が空の旧形式コントリビューションでも、漢字コンポーザーに文字カルーセルが表示されます。
 
+## セマンティックカルーセルを作成契約に一致
+
+コンポーザーはカードコンストラクターを指定されたセマンティックプロファイルへ正規化するようになりました。代替文字は自由入力と文字発音、語彙は文字・代替文字・語彙入力と文字発音、文は助詞・代替文字・語彙入力を使用し、編集可能な発音は表示しません。語彙の発音は文字レイヤーまでたどって事前入力され、文の発音はその値だけから派生されます。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -396,3 +400,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)
 - [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)
 - [a0af7d1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0af7d1a)
+- [54242971](https://github.com/Cognis-Labs-HQ/Cognis/commit/54242971)

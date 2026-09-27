@@ -314,6 +314,10 @@ Antarmuka composer terpadu kini otomatis menambahkan relasi yang tersirat oleh l
 
 Ketika bidang pelafalan yang terlihat tidak menerima lapisan carousel dari konstruktor runtime, composer terpadu kini memakai lapisan target dari setiap relasi pelafalan yang dideklarasikan. Karena itu composer Kanji merender carousel karakter bahkan untuk kontribusi lama dengan larik `pronunciation_carousels` kosong.
 
+## Profil carousel semantik sesuai kontrak penulisan
+
+Composer kini menormalkan konstruktor kartu ke profil semantik yang diminta: karakter alternatif memperoleh Input bebas serta Pelafalan karakter; kosakata memperoleh Input karakter, karakter alternatif, dan kosakata serta Pelafalan karakter; kalimat memperoleh Input partikel, karakter alternatif, dan kosakata tanpa Pelafalan yang dapat disunting. Pelafalan kosakata dipraisi hingga lapisan karakter, sedangkan pelafalan kalimat hanya diturunkan darinya.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -396,3 +400,4 @@ Ketika bidang pelafalan yang terlihat tidak menerima lapisan carousel dari konst
 - [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)
 - [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)
 - [a0af7d1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0af7d1a)
+- [54242971](https://github.com/Cognis-Labs-HQ/Cognis/commit/54242971)

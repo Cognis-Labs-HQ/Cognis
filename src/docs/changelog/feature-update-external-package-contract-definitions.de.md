@@ -314,6 +314,10 @@ Die einheitliche Composer-Schnittstelle ergänzt Beziehungen, die durch Eingabe-
 
 Wenn ein sichtbares Aussprachefeld keine Karussellschichten aus dem Laufzeit-Konstruktor erhält, verwendet der einheitliche Composer nun die Zielschichten aller deklarierten Aussprachebeziehungen. Dadurch rendert der Kanji-Composer das Zeichenkarussell auch bei älteren Beiträgen mit leerem `pronunciation_carousels`.
 
+## Semantische Karussellprofile entsprechen dem Autorenvertrag
+
+Der Composer normalisiert Kartenkonstruktoren nun auf die verlangten semantischen Profile: alternative Zeichen erhalten freie Eingabe plus Zeichen-Aussprache; Wortschatz erhält Zeichen-, Alternativzeichen- und Wortschatz-Eingabe plus Zeichen-Aussprache; Sätze erhalten Partikel-, Alternativzeichen- und Wortschatz-Eingabe ohne bearbeitbare Aussprache. Wortschatzaussprache wird bis zur Zeichenebene vorbelegt, Satzaussprache ausschließlich daraus abgeleitet.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -396,3 +400,4 @@ Wenn ein sichtbares Aussprachefeld keine Karussellschichten aus dem Laufzeit-Kon
 - [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)
 - [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)
 - [a0af7d1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0af7d1a)
+- [54242971](https://github.com/Cognis-Labs-HQ/Cognis/commit/54242971)
