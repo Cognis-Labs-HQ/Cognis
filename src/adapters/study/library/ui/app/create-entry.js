@@ -267,6 +267,7 @@ export async function openCreateEntryPopup({
                 schema,
                 editingLayer,
                 {
+                    inputCarouselIds,
                     pronunciationCarouselLayers,
                     selectionOrder: ({ id, value, localIndex }) => {
                         if (pronunciationRelationshipIds.has(id))

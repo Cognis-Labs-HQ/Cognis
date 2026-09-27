@@ -81,3 +81,18 @@ test("Study Library derives pronunciation using the provider field type", () => 
     assert.match(adminInteractionsSource, /name="class" type="hidden"/);
     assert.doesNotMatch(adminInteractionsSource, /<select name="class">/);
 });
+
+test("Study Library keeps selected-card fields beside configured carousels", () => {
+    assert.match(
+        adminInteractionsSource,
+        /data-library-selected-references="\$\{kind\}"/,
+    );
+    assert.match(
+        adminInteractionsSource,
+        /pronunciationRelationshipIds\.size \? selectedReferenceField\("pronunciation"/,
+    );
+    assert.match(adminInteractionsSource, /selectedReferenceField\("input"/);
+    assert.match(adminInteractionsSource, /renderSelectedReferences\(\)/);
+    assert.match(adminInteractionsSource, /data-library-selected-reference/);
+    assert.match(createEntrySource, /inputCarouselIds,/);
+});

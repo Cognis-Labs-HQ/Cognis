@@ -338,6 +338,10 @@ Die Bibliotheksbearbeitung zeigt keine interne Inhaltsklassenauswahl zwischen se
 
 Der Composer löst Definitionen abgeleiteter Aussprachefelder nun aus dem vollständigen Anbieterschema statt aus seiner für die Anzeige gefilterten Editorschicht auf. Satz- und andere abgeleitete Composer füllen erforderliche Aussprachefelder daher auch ohne direktes Eingabefeld.
 
+## Ausgewählte Karten begleiten jede konfigurierte Karussellgruppe
+
+Eingabe- und Aussprachebereiche zeigen nun immer ihr Feld für ausgewählte Karten, wenn der Konstruktor für den jeweiligen Bereich Karussells deklariert. Bestehende Auswahlen füllen das Feld, Karusselländerungen aktualisieren es sofort, und das Anklicken einer angezeigten Karte entfernt sie über denselben Karussellzustand.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -425,3 +429,4 @@ Der Composer löst Definitionen abgeleiteter Aussprachefelder nun aus dem vollst
 - [109f583e](https://github.com/Cognis-Labs-HQ/Cognis/commit/109f583e)
 - [b17ebe21](https://github.com/Cognis-Labs-HQ/Cognis/commit/b17ebe21)
 - [aef137a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/aef137a4)
+- [82df83ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/82df83ce)

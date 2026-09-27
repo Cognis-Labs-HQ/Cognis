@@ -338,6 +338,10 @@ Library authoring no longer presents an internal Content Class choice between se
 
 The composer now resolves derived pronunciation field definitions from the complete provider schema rather than its display-filtered editor layer. Sentence and other derived composers therefore populate required pronunciation fields even though those fields have no direct input control.
 
+## Selected-card fields accompany every configured carousel group
+
+Input and Pronunciation sections now always show their selected-card field when the constructor declares carousels for that section. Existing selections populate the field, carousel changes update it immediately, and selecting a displayed card removes it through the same carousel state.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -425,3 +429,4 @@ The composer now resolves derived pronunciation field definitions from the compl
 - [109f583e](https://github.com/Cognis-Labs-HQ/Cognis/commit/109f583e)
 - [b17ebe21](https://github.com/Cognis-Labs-HQ/Cognis/commit/b17ebe21)
 - [aef137a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/aef137a4)
+- [82df83ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/82df83ce)

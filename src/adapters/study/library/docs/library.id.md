@@ -202,3 +202,5 @@ Pilihan berurutan kini memakai satu urutan posisi komposisi yang sama di seluruh
 Formulir penulisan tidak lagi menampilkan pemilih kelas konten internal Cognis. Nama lapisan penyedia yang dilokalkan mengidentifikasi kartu dalam tampilan detail, dan rekaman urutan teratur memakai ID lapisan penyedia, bukan label semantik `sentence` atau `composite`. Pelafalan turunan diserialkan sesuai kontrak bidang yang dideklarasikan penyedia, termasuk bidang pelafalan bernilai daftar.
 
 Serialisasi bidang turunan mengambil kontraknya dari skema penyedia, bukan dari lapisan editor yang telah difilter konstruktor. Karena itu bidang pelafalan wajib tetap dapat ditemukan walaupun composer sengaja menghilangkan kontrol input langsungnya.
+
+Setiap kali konstruktor mendeklarasikan lapisan karosel Input atau Pelafalan, judul terkait menyertakan bidang kartu terpilih yang persisten di atas karosel tersebut. Bidang ini diinisialisasi untuk entri yang sudah ada, langsung diperbarui bersama pilihan karosel, mempertahankan urutan komposisi, dan memungkinkan penulis menghapus kartu terpilih secara langsung.

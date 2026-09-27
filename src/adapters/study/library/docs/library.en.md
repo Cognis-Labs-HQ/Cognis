@@ -214,3 +214,5 @@ Ordered selections now share one composition-wide position sequence across every
 Authoring forms no longer expose Cognis' internal content-class selector. The provider's localized layer name identifies the card in detail views, and ordered-sequence records use the provider layer ID instead of semantic `sentence` or `composite` labels. Derived pronunciation is serialized according to the provider's declared field contract, including list-valued pronunciation fields.
 
 Derived-field serialization resolves its contract from the provider schema rather than the constructor-filtered editor layer. Required pronunciation fields therefore remain discoverable even when the composer intentionally omits their direct input control.
+
+Whenever a constructor declares Input or Pronunciation carousel layers, the corresponding heading includes a persistent selected-card field above those carousels. The field is initialized for existing entries, updates immediately with carousel selection, preserves composition order, and lets authors remove a selected card directly.

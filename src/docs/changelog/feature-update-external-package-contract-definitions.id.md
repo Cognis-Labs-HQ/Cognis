@@ -338,6 +338,10 @@ Penulisan Pustaka tidak lagi menampilkan pilihan Kelas Konten internal antara la
 
 Composer kini mengambil definisi bidang pelafalan turunan dari skema penyedia lengkap, bukan dari lapisan editor yang difilter untuk tampilan. Karena itu composer kalimat dan composer turunan lainnya mengisi bidang pelafalan wajib walaupun tidak memiliki kontrol input langsung.
 
+## Bidang kartu terpilih menyertai setiap grup karosel terkonfigurasi
+
+Bagian Input dan Pelafalan kini selalu menampilkan bidang kartu terpilih ketika konstruktor mendeklarasikan karosel untuk bagian tersebut. Pilihan yang sudah ada mengisi bidang, perubahan karosel langsung memperbaruinya, dan memilih kartu yang ditampilkan akan menghapusnya melalui status karosel yang sama.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -425,3 +429,4 @@ Composer kini mengambil definisi bidang pelafalan turunan dari skema penyedia le
 - [109f583e](https://github.com/Cognis-Labs-HQ/Cognis/commit/109f583e)
 - [b17ebe21](https://github.com/Cognis-Labs-HQ/Cognis/commit/b17ebe21)
 - [aef137a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/aef137a4)
+- [82df83ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/82df83ce)

@@ -338,6 +338,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 コンポーザーは、表示用に絞り込まれた編集レイヤーではなく、完全なプロバイダースキーマから派生発音フィールドの定義を解決するようになりました。これにより、文などの派生コンポーザーは直接入力欄がなくても必須の発音フィールドを設定します。
 
+## 設定済みカルーセルグループに選択済みカード欄を常設
+
+入力および発音の各セクションでは、コンストラクターがそのセクションのカルーセルを宣言している場合、選択済みカード欄を常に表示します。既存の選択内容で欄を初期化し、カルーセルの変更を即時反映し、表示中のカードを選ぶと同じカルーセル状態を通じて削除できます。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -425,3 +429,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - [109f583e](https://github.com/Cognis-Labs-HQ/Cognis/commit/109f583e)
 - [b17ebe21](https://github.com/Cognis-Labs-HQ/Cognis/commit/b17ebe21)
 - [aef137a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/aef137a4)
+- [82df83ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/82df83ce)
