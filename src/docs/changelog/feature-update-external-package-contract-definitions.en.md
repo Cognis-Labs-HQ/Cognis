@@ -318,6 +318,10 @@ When a visible pronunciation field receives no carousel layers from its runtime 
 
 The composer now normalizes card constructors to the requested semantic profiles: alternate characters receive free Input plus character Pronunciation; vocabulary receives character, alternate-character, and vocabulary Input plus character Pronunciation; sentences receive particle, alternate-character, and vocabulary Input with no editable Pronunciation. Vocabulary pronunciation is pre-populated down to the character layer, while sentence pronunciation is derived exclusively from it.
 
+## Characters and particles are immutable
+
+Atomic characters and particles can no longer be created, edited, submitted for update, or deleted through either the UI or direct API calls. Permission projections remove edit and delete actions even for administrators and owners, while entries remain available for read-only browsing.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -401,3 +405,4 @@ The composer now normalizes card constructors to the requested semantic profiles
 - [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)
 - [a0af7d1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0af7d1a)
 - [54242971](https://github.com/Cognis-Labs-HQ/Cognis/commit/54242971)
+- [125495f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/125495f3)

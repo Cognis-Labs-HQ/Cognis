@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync, readdirSync } from "node:fs";
-
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const indexSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/ui/app/index.js"),
@@ -73,7 +72,6 @@ const carouselStylesheet = readFileSync(
     resolve(ROOT, "src/ui/styles/reuse/horizontal-carousel.css"),
     "utf8",
 );
-
 const variantArrowLight = readFileSync(
     resolve(
         ROOT,
@@ -88,7 +86,6 @@ const variantArrowDark = readFileSync(
     ),
     "utf8",
 );
-
 test("Study Library keeps its page modules focused", () => {
     for (const file of [
         "cards.js",
@@ -107,7 +104,6 @@ test("Study Library keeps its page modules focused", () => {
         assert.ok(lineCount <= 275, `${file} has ${lineCount} lines`);
     }
 });
-
 test("Study Library uses an administrator-only common data editor", () => {
     assert.match(indexSource, /renderAdminBrowser/);
     assert.match(indexSource, /if \(!isAdminScope\(\)\)/);
@@ -119,6 +115,7 @@ test("Study Library uses an administrator-only common data editor", () => {
     assert.match(source, /library-admin-entry-detail/);
     assert.match(source, /data-library-entry/);
     assert.match(source, /data-library-admin-edit/);
+    assert.match(source, /entry\.canEdit === true/);
     assert.match(source, /openPopup/);
     assert.match(source, /updateLibraryEntry/);
     assert.match(adminInteractionsSource, /layer\?\.fields/);
@@ -135,7 +132,6 @@ test("Study Library uses an administrator-only common data editor", () => {
     );
     assert.doesNotMatch(source, /const url = `\/study\/library/);
 });
-
 test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(
         source,
@@ -238,7 +234,6 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(adapterSource, /\/static\/styles\/page-builder\.css/);
     assert.match(adapterSource, /\/static\/styles\/reuse\/page-sections\.css/);
 });
-
 test("Study layer cards optionally show provider-requested definitions", () => {
     const detail = readFileSync(
         resolve(ROOT, "src/adapters/study/library/ui/app/detail.js"),
@@ -253,7 +248,6 @@ test("Study layer cards optionally show provider-requested definitions", () => {
     assert.match(indexSource, /showReferenceTree: true/);
     assert.match(indexSource, /readOnly: true/);
 });
-
 test("Study Library integrates definitions and particles into item details", () => {
     assert.match(source, /field\.type === "localizedText"/);
     assert.match(source, /localizedTextValue\(fields\[field\.id\]\)/);
@@ -366,7 +360,6 @@ test("Study Library integrates definitions and particles into item details", () 
         /i18n\.t\("gateway\.study\.library_alternate_definitions"\)/,
     );
 });
-
 test("Study Library separates admin data browsing from learner layer pages", () => {
     assert.match(indexSource, /if \(!isAdminScope\(\)\)/);
     assert.match(layerPageSource, /renderBrowser\(/);
@@ -381,7 +374,6 @@ test("Study Library separates admin data browsing from learner layer pages", () 
         /pattern: "\^\/study\/layers\/\[\^\/\]\+\/\[\^\/\]\+\$"/,
     );
 });
-
 test("Study Library creation is driven by language card constructors", () => {
     assert.match(adapterSource, /study:library:provider/);
     assert.match(adapterSource, /registerConstructor/);
@@ -426,7 +418,6 @@ test("Study Library creation is driven by language card constructors", () => {
         /@keyframes study-subnav-attention-breathe[\s\S]*color-danger-outline-text/,
     );
 });
-
 test("Study Library creation offers ordered, recursive composition", () => {
     assert.match(source, /mountHorizontalCarousels/);
     assert.match(source, /relationshipCarousels: true/);
@@ -457,7 +448,6 @@ test("Study Library creation offers ordered, recursive composition", () => {
     assert.match(adminInteractionsSource, /data-library-definition-empty/);
     assert.doesNotMatch(source, /library_composer_match.*<\/small>/);
 });
-
 test("Study Library separates admin and user-facing editing", () => {
     assert.match(source, /library-admin-entry-row/);
     assert.match(
@@ -475,14 +465,12 @@ test("Study Library separates admin and user-facing editing", () => {
     assert.match(source, /requestLibraryUpdate/);
     assert.match(source, /requestUpdate: editMode === "request"/);
 });
-
 test("Study Library presents localized definitions as readable translations", () => {
     assert.match(adminInteractionsSource, /library-definition-summary/);
     assert.match(adminInteractionsSource, /library-definition-translation/);
     assert.match(adminInteractionsSource, /definitionLocalization/);
     assert.match(stylesheet, /\.library-definition-translation/);
 });
-
 test("Study Library administration exposes contract-safe editing", () => {
     const composerContractSource = readFileSync(
         resolve(ROOT, "src/adapters/study/library/ui/app/composer-contract.js"),
@@ -581,29 +569,6 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(adminInteractionsSource, /closeProtection: !readOnly/);
     assert.match(source, /data-library-admin-edit/);
 });
-
-test("Study Library renders metadata and scope indicators", () => {
-    assert.match(source, /detail\?\.renderer === "badge"/);
-    assert.match(source, /class="library-metadata-pill"/);
-    assert.match(source, /class="library-scope"/);
-    assert.match(source, /contentClassLabel/);
-    assert.match(source, /semanticRole === "orderedLexicalSequence"/);
-    assert.match(source, /library-content-class-pill/);
-    assert.match(source, /visibleRelatedWords/);
-    assert.match(source, /function uniqueRelatedEntries/);
-    assert.match(
-        source,
-        /const relatedDependants = uniqueRelatedEntries\(\[[\s\S]*\.\.\.visibleRelatedWords,[\s\S]*\.\.\.otherUsedBy/,
-    );
-    assert.doesNotMatch(source, /gateway\.study\.library_used_in_layer/);
-    assert.match(stylesheet, /\.library-metadata-pill/);
-    assert.match(
-        stylesheet,
-        /\.library-entry-card \.library-entry-indicators[\s\S]*position:\s*static/,
-    );
-    assert.match(stylesheet, /\.popup-heading > \.library-scope/);
-});
-
 test("Study Library positions pronunciations by semantic role", () => {
     assert.match(source, /function isWritingUnitLayer/);
     assert.match(source, /function pronunciationValues/);
@@ -621,7 +586,6 @@ test("Study Library positions pronunciations by semantic role", () => {
     assert.match(stylesheet, /\.library-entry-heading/);
     assert.match(stylesheet, /\.library-card-pronunciation/);
 });
-
 test("Study Library unfolds structured character variants", () => {
     assert.match(source, /function variantPlacement/);
     assert.match(source, /relationship\?\.child === true/);
@@ -804,7 +768,6 @@ test("Study Library unfolds structured character variants", () => {
         /\.library-entry-card-shell\.library-entry-variants-open[\s\S]*z-index:\s*7/,
     );
 });
-
 test("Study Library gives content safe edge spacing", () => {
     assert.match(
         stylesheet,
@@ -823,7 +786,6 @@ test("Study Library gives content safe edge spacing", () => {
         /\.library-entry-grid\s*\{[\s\S]*padding:\s*var\(--library-card-gap\)/,
     );
 });
-
 test("Study Library cards use opaque theme surfaces", () => {
     assert.match(stylesheet, /--library-card-surface:\s*color-mix/);
     assert.match(stylesheet, /--library-card-surface-raised:\s*color-mix/);
@@ -853,7 +815,6 @@ test("Study Library cards use opaque theme surfaces", () => {
     assert.ok(minimalCardRule);
     assert.doesNotMatch(minimalCardRule, /background:\s*transparent/);
 });
-
 test("Study Library keeps full definitions in details", () => {
     assert.match(cardsSource, /library-card-definition/);
     assert.match(source, /titleDefinition/);
@@ -861,7 +822,6 @@ test("Study Library keeps full definitions in details", () => {
     assert.match(source, /library-relation-tree/);
     assert.match(source, /options\.showReferenceTree/);
 });
-
 test("Study Library honors module-defined grid layouts", () => {
     assert.match(source, /function renderLayerCards/);
     assert.match(source, /entry\.sourceRecordId/);
@@ -870,7 +830,6 @@ test("Study Library honors module-defined grid layouts", () => {
     assert.match(stylesheet, /\.library-entry-grid\[style\]/);
     assert.match(stylesheet, /var\(--library-grid-row-size\)/);
 });
-
 test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(source, /function renderAudio/);
     assert.match(source, /dependenciesMissingAudio/);
@@ -915,7 +874,6 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(source, /groups: pieces\.map/);
     assert.match(source, /ownDrawingPattern/);
 });
-
 test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /function canDeleteEntry/);
     assert.match(source, /data-library-select-entry/);

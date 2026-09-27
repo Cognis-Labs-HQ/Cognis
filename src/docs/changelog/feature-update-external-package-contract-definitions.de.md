@@ -318,6 +318,10 @@ Wenn ein sichtbares Aussprachefeld keine Karussellschichten aus dem Laufzeit-Kon
 
 Der Composer normalisiert Kartenkonstruktoren nun auf die verlangten semantischen Profile: alternative Zeichen erhalten freie Eingabe plus Zeichen-Aussprache; Wortschatz erhält Zeichen-, Alternativzeichen- und Wortschatz-Eingabe plus Zeichen-Aussprache; Sätze erhalten Partikel-, Alternativzeichen- und Wortschatz-Eingabe ohne bearbeitbare Aussprache. Wortschatzaussprache wird bis zur Zeichenebene vorbelegt, Satzaussprache ausschließlich daraus abgeleitet.
 
+## Zeichen und Partikel sind unveränderlich
+
+Atomare Zeichen und Partikel können weder über die Benutzeroberfläche noch über direkte API-Aufrufe erstellt, bearbeitet, zur Aktualisierung eingereicht oder gelöscht werden. Die Berechtigungsprojektion entfernt Bearbeitungs- und Löschaktionen auch für Administratoren und Eigentümer, während Einträge weiterhin schreibgeschützt betrachtet werden können.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -401,3 +405,4 @@ Der Composer normalisiert Kartenkonstruktoren nun auf die verlangten semantische
 - [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)
 - [a0af7d1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0af7d1a)
 - [54242971](https://github.com/Cognis-Labs-HQ/Cognis/commit/54242971)
+- [125495f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/125495f3)

@@ -318,6 +318,10 @@ Ketika bidang pelafalan yang terlihat tidak menerima lapisan carousel dari konst
 
 Composer kini menormalkan konstruktor kartu ke profil semantik yang diminta: karakter alternatif memperoleh Input bebas serta Pelafalan karakter; kosakata memperoleh Input karakter, karakter alternatif, dan kosakata serta Pelafalan karakter; kalimat memperoleh Input partikel, karakter alternatif, dan kosakata tanpa Pelafalan yang dapat disunting. Pelafalan kosakata dipraisi hingga lapisan karakter, sedangkan pelafalan kalimat hanya diturunkan darinya.
 
+## Karakter dan partikel tidak dapat diubah
+
+Karakter atomik dan partikel tidak lagi dapat dibuat, disunting, diajukan untuk pembaruan, atau dihapus melalui UI maupun panggilan API langsung. Proyeksi izin menghapus tindakan sunting dan hapus bahkan bagi administrator dan pemilik, sementara entri tetap tersedia untuk penjelajahan hanya-baca.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -401,3 +405,4 @@ Composer kini menormalkan konstruktor kartu ke profil semantik yang diminta: kar
 - [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)
 - [a0af7d1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0af7d1a)
 - [54242971](https://github.com/Cognis-Labs-HQ/Cognis/commit/54242971)
+- [125495f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/125495f3)

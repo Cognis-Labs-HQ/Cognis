@@ -124,6 +124,99 @@ test("schema registrations are versioned, persisted, and immutable", async () =>
     );
 });
 
+test("character and particle layers are immutable through service mutations", async () => {
+    const immutableSchema: LibrarySchema = {
+        ...schema(1),
+        layers: [
+            {
+                id: "characters",
+                metadata: { labels: { en: "Characters" } },
+                semanticRole: "atomicWritingUnit",
+                fields: [
+                    {
+                        id: "pronunciation",
+                        metadata: { labels: { en: "Pronunciation" } },
+                        type: "stringList",
+                        required: true,
+                    },
+                    {
+                        id: "audio",
+                        metadata: { labels: { en: "Audio" } },
+                        type: "audio",
+                    },
+                ],
+            },
+            {
+                id: "particles",
+                metadata: { labels: { en: "Particles" } },
+                semanticRole: "particle",
+            },
+        ],
+    };
+    const entries = immutableSchema.layers.map((layer) => ({
+        id: layer.id,
+        schemaId: immutableSchema.id,
+        schemaVersion: immutableSchema.version,
+        language: immutableSchema.language,
+        layer: layer.id,
+        label: layer.id,
+        scope: "global" as const,
+        scopeId: "global",
+        createdBy: "owner",
+        createdAt: "2026-01-01",
+        updatedAt: "2026-01-01",
+        fields: {},
+    }));
+    const store = {
+        saveSchema: async () => {},
+        list: async () => entries,
+        get: async (id: string) =>
+            entries.find((entry) => entry.id === id) ?? null,
+        listPushRequests: async () => [],
+        deleteEntries: async (
+            _ids: readonly string[],
+            _accountId: string,
+            _blacklist: boolean,
+            authorize: (selected: typeof entries) => Promise<void>,
+        ) => authorize(entries),
+    };
+    const library = new LibraryService(store as never);
+    await library.registerSchema(immutableSchema);
+    const actor = { accountId: "owner", role: "owner" as const };
+
+    const listed = await library.list(actor, { scope: "global" });
+    assert.ok(listed.every((entry) => !entry.canEdit && !entry.canDelete));
+    for (const entry of entries) {
+        const input = {
+            schemaId: immutableSchema.id,
+            schemaVersion: immutableSchema.version,
+            layer: entry.layer,
+            label: entry.label,
+            fields: {},
+        };
+        await assert.rejects(
+            library.create(actor, { scope: "global" }, input),
+            /immutable_layer/,
+        );
+        await assert.rejects(
+            library.update(actor, entry.id, input),
+            /immutable_layer/,
+        );
+        await assert.rejects(
+            library.requestUpdate(actor, entry.id, input),
+            /immutable_layer/,
+        );
+    }
+    await assert.rejects(
+        library.deleteEntries(
+            actor,
+            entries.map(({ id }) => id),
+            false,
+        ),
+        /immutable_layer/,
+    );
+});
+
 test("entry updates migrate stored records to the current schema version", async () => {
     const current = {
         id: "entry-1",

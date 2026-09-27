@@ -318,6 +318,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 コンポーザーはカードコンストラクターを指定されたセマンティックプロファイルへ正規化するようになりました。代替文字は自由入力と文字発音、語彙は文字・代替文字・語彙入力と文字発音、文は助詞・代替文字・語彙入力を使用し、編集可能な発音は表示しません。語彙の発音は文字レイヤーまでたどって事前入力され、文の発音はその値だけから派生されます。
 
+## 文字と助詞を不変化
+
+原子的文字と助詞は、UI または直接の API 呼び出しのどちらからも、作成・編集・更新申請・削除できなくなりました。権限プロジェクションは管理者や所有者に対しても編集・削除操作を除外し、エントリの読み取り専用閲覧は引き続き利用できます。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -401,3 +405,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)
 - [a0af7d1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0af7d1a)
 - [54242971](https://github.com/Cognis-Labs-HQ/Cognis/commit/54242971)
+- [125495f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/125495f3)

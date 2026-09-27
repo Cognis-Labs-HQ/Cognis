@@ -12,6 +12,10 @@ import {
 import { LibraryStore } from "./store.js";
 import { LibraryAudioCache } from "./audio-cache.js";
 import { LibraryVisibilityService } from "./visibility.js";
+import {
+    isImmutableEntry as immutableEntry,
+    isImmutableLayer,
+} from "./immutability.js";
 import type {
     LibraryAsset,
     LibraryEntry,
@@ -416,6 +420,8 @@ export class LibraryService implements LibraryCapability {
         );
     }
     private editPermission(actor: LibraryActor, entry: LibraryEntry) {
+        if (this.immutable(entry))
+            return { canEdit: false, editRequiresReview: false };
         const administrator = actor.role === "admin" || actor.role === "owner";
         const owned =
             entry.createdBy === actor.accountId ||
@@ -424,16 +430,16 @@ export class LibraryService implements LibraryCapability {
             return { canEdit: true, editRequiresReview: false };
         if (!owned || entry.protected || entry.editable === false)
             return { canEdit: false, editRequiresReview: false };
-        return {
-            canEdit: true,
-            editRequiresReview: entry.scope === "global",
-        };
+        return { canEdit: true, editRequiresReview: entry.scope === "global" };
+    }
+    private immutable(entry: LibraryEntry): boolean {
+        return immutableEntry(this.getSchema(entry.schemaId), entry);
     }
     private async canDelete(
         actor: LibraryActor,
         entry: LibraryEntry,
     ): Promise<boolean> {
-        if (entry.protected) return false;
+        if (entry.protected || this.immutable(entry)) return false;
         if (actor.role === "admin" || actor.role === "owner") return true;
         if (entry.scope === "user") return entry.scopeId === actor.accountId;
         if (entry.scope !== "class" || !this.classAccess) return false;
@@ -592,8 +598,7 @@ export class LibraryService implements LibraryCapability {
         )
             throw new Error("invalid_always_show_definition");
         const layer = findLayer(schema, input.layer);
-        if (layer.semanticRole === "atomicWritingUnit")
-            throw new Error("immutable_character_layer");
+        if (isImmutableLayer(layer)) throw new Error("immutable_layer");
         if (layer.semanticRole === "definition") {
             input.hidden = true;
             input.class = "definition";
@@ -740,6 +745,7 @@ export class LibraryService implements LibraryCapability {
         );
         input.schemaVersion = schema.version;
         const layer = findLayer(schema, input.layer);
+        if (isImmutableLayer(layer)) throw new Error("immutable_layer");
         if (layer.semanticRole === "definition") {
             input.hidden = true;
             input.class = "definition";
@@ -824,6 +830,8 @@ export class LibraryService implements LibraryCapability {
             actor.accountId,
             blacklistContentHashes,
             async (entries) => {
+                if (entries.some((entry) => this.immutable(entry)))
+                    throw new Error("immutable_layer");
                 if (entries.some((entry) => entry.protected))
                     throw new Error("protected_content");
                 if (
@@ -905,11 +913,14 @@ export class LibraryService implements LibraryCapability {
     ): Promise<LibraryPushRequest> {
         return this.visibility.requestPush(actor, entryId, destination);
     }
-    requestUpdate(
+    async requestUpdate(
         actor: LibraryActor,
         entryId: string,
         proposedEntry: LibraryEntryInput,
     ): Promise<LibraryPushRequest> {
+        const current = await this.read(actor, entryId);
+        if (!current) throw new Error("entry_not_found");
+        if (this.immutable(current)) throw new Error("immutable_layer");
         return this.visibility.requestUpdate(actor, entryId, proposedEntry);
     }
     listPushRequests(actor: LibraryActor): Promise<LibraryPushRequest[]> {

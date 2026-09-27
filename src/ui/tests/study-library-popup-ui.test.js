@@ -23,6 +23,28 @@ const stylesheet = ["library.css", "library-admin.css", "library-selection.css"]
     )
     .join("\n");
 
+test("Study Library renders metadata and scope indicators", () => {
+    assert.match(source, /detail\?\.renderer === "badge"/);
+    assert.match(source, /class="library-metadata-pill"/);
+    assert.match(source, /class="library-scope"/);
+    assert.match(source, /contentClassLabel/);
+    assert.match(source, /semanticRole === "orderedLexicalSequence"/);
+    assert.match(source, /library-content-class-pill/);
+    assert.match(source, /visibleRelatedWords/);
+    assert.match(source, /function uniqueRelatedEntries/);
+    assert.match(
+        source,
+        /const relatedDependants = uniqueRelatedEntries\(\[[\s\S]*\.\.\.visibleRelatedWords,[\s\S]*\.\.\.otherUsedBy/,
+    );
+    assert.doesNotMatch(source, /gateway\.study\.library_used_in_layer/);
+    assert.match(stylesheet, /\.library-metadata-pill/);
+    assert.match(
+        stylesheet,
+        /\.library-entry-card \.library-entry-indicators[\s\S]*position:\s*static/,
+    );
+    assert.match(stylesheet, /\.popup-heading > \.library-scope/);
+});
+
 test("Study Library bounds status and gives readings and definitions room", () => {
     assert.match(
         stylesheet,
