@@ -508,6 +508,10 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(adminInteractionsSource, /applyDerivedPronunciation/);
     assert.match(composerContractSource, /effectiveConstructor\.fields/);
     assert.match(composerContractSource, /effectiveConstructor\.relationships/);
+    assert.match(
+        composerContractSource,
+        /constructorRelationshipIds\.add\(relationship\.id\)/,
+    );
     assert.match(composerContractSource, /constructorFieldIds\.add\("audio"\)/);
     assert.match(composerContractSource, /"lexicalUnit"/);
     assert.match(composerContractSource, /"orderedLexicalSequence"/);
@@ -530,9 +534,11 @@ test("Study Library administration exposes contract-safe editing", () => {
     );
     assert.match(adminInteractionsSource, /ordersPronunciation: true/);
     assert.match(adminInteractionsSource, /pronunciationRelationshipsFor/);
-    assert.match(adminInteractionsSource, /data-library-pronunciation-commit/);
-    assert.match(adminInteractionsSource, /data-library-pronunciation-text/);
-    assert.match(adminInteractionsSource, /data-library-pronunciation-blocks/);
+    assert.doesNotMatch(
+        adminInteractionsSource,
+        /data-library-pronunciation-commit/,
+    );
+    assert.doesNotMatch(adminInteractionsSource, /pronunciation-commit/);
     assert.match(adminInteractionsSource, /field\.dataset\.fieldId}\.audio/);
     assert.match(adminInteractionsSource, /normalizedFilename/);
     assert.match(adminInteractionsSource, /const pronunciationIndex/);

@@ -188,3 +188,5 @@ Aturan konstruktor saat ini menggantikan pemilih pelafalan kosakata sebelumnya: 
 Formulir kosakata, kalimat, dan gabungan tidak pernah merender penyunting nilai daftar generik untuk pelafalan, meskipun payload penyedia menyertakan bidang turunan tersebut. Bidang penyedia bernilai daftar lainnya memakai area teks biasa yang dipisahkan per baris, bukan chip tag yang dapat dihapus; tag klasifikasi entri tetap memakai kontrol metadata khususnya.
 
 Kartu kosakata dan kalimat memutar audio dependensi terurutnya sebagai satu rangkaian ketika tidak memiliki audio unggahan sendiri. Unggahan audio opsional pada kartu menggantikan rangkaian turunan tersebut. Jika salah satu dependensi tidak memiliki audio, ikon pengeras suara yang dinonaktifkan menjelaskannya saat penunjuk diarahkan.
+
+Carousel pelafalan kini memuat setiap relasi yang tersirat oleh deklarasi lapisan carousel milik konstruktor, meskipun kontribusi formulir runtime menghilangkan relasi itu dari daftar relasi skalarnya. Memilih item carousel langsung memperbarui nilai pelafalan; input teks bebas dan tombol commit pelafalan yang berlebihan telah dihapus dari formulir pembuatan dan penyuntingan.

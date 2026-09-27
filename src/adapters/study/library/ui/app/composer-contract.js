@@ -31,15 +31,28 @@ export function resolveComposerContract(schema, layer, constructor) {
                 field &&
                 !(derivesPronunciation && field.id === "pronunciation"),
         );
-    const relationships = (effectiveConstructor.relationships ?? [])
-        .map((relationshipId) => relationshipsById.get(relationshipId))
-        .filter(Boolean);
     const inputCarouselLayers = new Set(
         effectiveConstructor.input_carousels ?? [],
     );
     const pronunciationCarouselLayers = new Set(
         effectiveConstructor.pronunciation_carousels ?? [],
     );
+    const constructorRelationshipIds = new Set(
+        effectiveConstructor.relationships ?? [],
+    );
+    for (const relationship of layer?.relationships ?? []) {
+        const configuredForPronunciation =
+            relationship.presentationRole === "pronunciation" &&
+            pronunciationCarouselLayers.has(relationship.targetLayer);
+        const configuredForInput =
+            relationship.presentationRole !== "pronunciation" &&
+            inputCarouselLayers.has(relationship.targetLayer);
+        if (configuredForPronunciation || configuredForInput)
+            constructorRelationshipIds.add(relationship.id);
+    }
+    const relationships = Array.from(constructorRelationshipIds)
+        .map((relationshipId) => relationshipsById.get(relationshipId))
+        .filter(Boolean);
     const inputCarouselIds = new Set(
         relationships
             .filter(

@@ -306,6 +306,10 @@ Sichtbare Aussprachefelder verwenden nun in Erstellungs- und Bearbeitungsdialoge
 
 Wortschatz- und Satzkarten spielen ohne eigenen Upload die Audiodateien ihrer geordneten Bestandteile nacheinander ab. Ein optionaler Karten-Upload überschreibt die abgeleitete Sequenz; fehlt Audio bei einer Abhängigkeit, erklärt ein lokalisierter Hover-Hinweis den deaktivierten Lautsprecher.
 
+## Karussells direkt mit der Aussprache verbunden
+
+Die einheitliche Composer-Schnittstelle ergänzt Beziehungen, die durch Eingabe- oder Aussprachekarussell-Schichten deklariert sind, automatisch in den effektiven Konstruktor. Aussprachekarussells erscheinen dadurch zuverlässig in Erstellungs- und Bearbeitungsdialogen, und ihre Auswahl aktualisiert das versteckte Aussprachefeld unmittelbar, ohne separates Freitextfeld oder Bestätigungsschaltfläche.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -386,3 +390,4 @@ Wortschatz- und Satzkarten spielen ohne eigenen Upload die Audiodateien ihrer ge
 - [004b39e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/004b39e5)
 - [3e48b191](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e48b191)
 - [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)
+- [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)

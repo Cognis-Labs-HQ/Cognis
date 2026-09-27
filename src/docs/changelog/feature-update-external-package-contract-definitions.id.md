@@ -306,6 +306,10 @@ Bidang pelafalan yang terlihat kini selalu memakai composer pelafalan dalam dial
 
 Kartu kosakata dan kalimat tanpa unggahan sendiri memutar audio bagian terurutnya secara berurutan. Unggahan opsional pada tingkat kartu menggantikan rangkaian turunan; ketika dependensi tidak memiliki audio, tooltip hover yang dilokalkan menjelaskan alasan pengeras suara dinonaktifkan.
 
+## Carousel terhubung langsung ke pelafalan
+
+Antarmuka composer terpadu kini otomatis menambahkan relasi yang tersirat oleh lapisan carousel input atau pelafalan ke konstruktor efektif. Karena itu carousel pelafalan dimuat secara andal dalam dialog pembuatan dan penyuntingan, dan pilihannya langsung memperbarui bidang pelafalan tersembunyi tanpa bidang teks bebas atau tombol commit terpisah.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -386,3 +390,4 @@ Kartu kosakata dan kalimat tanpa unggahan sendiri memutar audio bagian terurutny
 - [004b39e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/004b39e5)
 - [3e48b191](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e48b191)
 - [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)
+- [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)

@@ -306,6 +306,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 独自の音声アップロードがない語彙カードと文カードは、順序付き構成要素の音声を連続再生します。カード単位の任意アップロードは派生シーケンスより優先され、依存項目に音声がない場合は、ローカライズされたホバーツールチップがスピーカーを無効化した理由を説明します。
 
+## カルーセルを発音へ直接接続
+
+統一コンポーザーインターフェースは、入力または発音カルーセルのレイヤーが示す関係を有効なコンストラクターへ自動追加するようになりました。これにより作成・編集ダイアログで発音カルーセルが確実に読み込まれ、選択内容は別の自由入力欄や確定ボタンを介さず、非表示の発音フィールドへ即座に反映されます。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -386,3 +390,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - [004b39e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/004b39e5)
 - [3e48b191](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e48b191)
 - [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)
+- [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)

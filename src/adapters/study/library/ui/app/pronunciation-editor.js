@@ -51,9 +51,6 @@ export function mountEditableRelationshipCarousels(
             });
             const pronunciation = form.elements["field:pronunciation"];
             if (pronunciation && pronunciationRelationshipIds.has(id)) {
-                const blocks = form.querySelector(
-                    "[data-library-pronunciation-blocks]",
-                );
                 const selectedEntries = Array.from(pronunciationRelationshipIds)
                     .flatMap(
                         (relationshipId) =>
@@ -63,61 +60,13 @@ export function mountEditableRelationshipCarousels(
                         entries.find((candidate) => candidate.id === value),
                     )
                     .filter(Boolean);
-                if (blocks) {
-                    blocks.replaceChildren();
-                    selectedEntries.forEach((candidate) => {
-                        const block = document.createElement("span");
-                        block.dataset.pronunciationEntry = candidate.id;
-                        block.textContent = candidate.label;
-                        blocks.append(block);
-                    });
-                }
+                pronunciation.value = selectedEntries
+                    .map((candidate) => candidate.label)
+                    .join("");
             }
         },
         onAdd,
     });
-    form.querySelectorAll("[data-library-pronunciation-commit]").forEach(
-        (button) => {
-            button.addEventListener("click", () => {
-                const pronunciation = form.elements["field:pronunciation"];
-                const textInput = form.querySelector(
-                    "[data-library-pronunciation-text]",
-                );
-                const selectedLabels = Array.from(pronunciationRelationshipIds)
-                    .flatMap(
-                        (relationshipId) =>
-                            draftValues.get(relationshipId) ?? [],
-                    )
-                    .map((entryId) =>
-                        entries.find((candidate) => candidate.id === entryId),
-                    )
-                    .filter(Boolean)
-                    .map((candidate) => candidate.label)
-                    .join("");
-                const value =
-                    `${selectedLabels}${textInput?.value ?? ""}`.trim();
-                if (!pronunciation || !value) return;
-                const values = pronunciation.value
-                    .split("\u001f")
-                    .filter(Boolean);
-                if (!values.includes(value)) values.push(value);
-                pronunciation.value = values.join("\u001f");
-                const list = form.querySelector(
-                    "[data-library-pronunciation-values]",
-                );
-                if (
-                    list &&
-                    !list.querySelector(`[data-value="${CSS.escape(value)}"]`)
-                ) {
-                    const item = document.createElement("span");
-                    item.dataset.value = value;
-                    item.textContent = value;
-                    list.append(item);
-                }
-                if (textInput) textInput.value = "";
-            });
-        },
-    );
     return controller;
 }
 

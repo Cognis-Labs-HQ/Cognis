@@ -306,6 +306,10 @@ Visible pronunciation fields now always use the pronunciation composer in create
 
 Vocabulary and sentence cards without their own upload play the audio of their ordered parts in sequence. An optional card-level upload overrides the derived sequence; when a dependency lacks audio, a localized hover tooltip explains why the speaker is disabled.
 
+## Carousels connected directly to pronunciation
+
+The unified composer interface now adds relationships implied by input or pronunciation carousel layers to the effective constructor automatically. Pronunciation carousels therefore load reliably in create and edit dialogs, and their selection updates the hidden pronunciation field immediately without a separate free-text field or commit button.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -386,3 +390,4 @@ Vocabulary and sentence cards without their own upload play the audio of their o
 - [004b39e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/004b39e5)
 - [3e48b191](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e48b191)
 - [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)
+- [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)

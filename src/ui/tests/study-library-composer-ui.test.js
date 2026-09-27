@@ -42,8 +42,6 @@ test("Study Library composer exposes provider-owned raw-input lookup", () => {
         [createEntrySource, /draft\.fields\[fieldId\] = value/],
         [createEntrySource, /inlinePronunciationCarousel:\s*true/],
         [createEntrySource, /"particle"/],
-        [adminInteractionsSource, /data-library-pronunciation-text/],
-        [adminInteractionsSource, /data-library-pronunciation-blocks/],
         [adminInteractionsSource, /configuredIds\.has\(targetLayer\)/],
         [adminInteractionsSource, /presentationRole === "pronunciation"/],
         [adminInteractionsSource, /target\.label/],
@@ -53,4 +51,8 @@ test("Study Library composer exposes provider-owned raw-input lookup", () => {
         assert.match(content, pattern);
     assert.doesNotMatch(createEntrySource, /fallbackInputCarouselIds/);
     assert.doesNotMatch(adminInteractionsSource, /linkRelationships/);
+    assert.doesNotMatch(
+        adminInteractionsSource,
+        /data-library-pronunciation-commit/,
+    );
 });

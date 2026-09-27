@@ -200,3 +200,5 @@ Whenever a pronunciation field is visible in a create or edit form, Library rend
 Vocabulary, sentence, and composite forms never render the generic list-value editor for pronunciation, even if a provider payload includes that derived field. Other list-valued provider fields use a plain newline-separated text area rather than removable tag chips; entry classification tags retain their dedicated metadata control.
 
 Vocabulary and sentence cards play their ordered dependencies’ audio as one sequence when they have no uploaded audio of their own. An optional audio upload on the card overrides that derived sequence. If any dependency is missing audio, the disabled speaker explains the missing dependency on hover.
+
+Pronunciation carousels now load every relationship implied by the constructor’s carousel layer declarations, even when a runtime form contribution omits that relationship from its scalar relationship list. Selecting carousel items updates the pronunciation value immediately; the redundant free-text pronunciation input and commit button have been removed from both create and edit forms.
