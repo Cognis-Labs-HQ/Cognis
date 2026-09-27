@@ -492,6 +492,14 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(adminInteractionsSource, /relationship\.ordered/);
     assert.match(adminInteractionsSource, /showRelationshipTab: readOnly/);
     assert.match(adminInteractionsSource, /mountEditableRelationshipCarousels/);
+    assert.match(adminInteractionsSource, /function carouselOptionsForLayer/);
+    assert.match(
+        adminInteractionsSource,
+        /inputCarouselLayers\.has\(targetLayer\)/,
+    );
+    assert.match(adminInteractionsSource, /relationshipCarousels: !readOnly/);
+    assert.match(adminInteractionsSource, /relationshipCarousels: true/);
+    assert.match(adminInteractionsSource, /inputCarouselIds/);
     assert.match(adminInteractionsSource, /relationshipCarouselAdd: false/);
     assert.match(adminInteractionsSource, /inlinePronunciationCarousel: true/);
     assert.match(adminInteractionsSource, /const inlinePronunciationCarousel/);

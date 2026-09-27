@@ -274,6 +274,10 @@ Card constructors now identify input and pronunciation carousel sources by targe
 
 Content-pack pruning is now publisher-qualified, push requests use the database contract correctly, and deletion checks consider only pending requests. Generic constructors, class publishing, raw compound labels, repeated pronunciation branches, nested-definition rollback, unique audio uploads, compatible schema evolution, and removable pronunciation links are reliable. Speaker assets now render through explicit themed images, while relationship carousels live beneath their intended content fields.
 
+## Existing-card carousel editing
+
+Existing cards now derive both input and pronunciation carousel configuration from their provider constructor. User-facing and administrative edit popups render the same ordered carousel controls as creation while retaining existing selections.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -344,3 +348,4 @@ Content-pack pruning is now publisher-qualified, push requests use the database 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/452e3eb3fc5b9e2ca86464904e7f6477992b7c32
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/039dc5c1
 - [8b08718f](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b08718f)
+- [7841f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/7841f27)

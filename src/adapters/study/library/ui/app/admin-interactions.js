@@ -21,6 +21,26 @@ import {
 
 export { inputForField } from "./field-input.js";
 import { inputForField } from "./field-input.js";
+
+function carouselOptionsForLayer(layer) {
+    const inputCarouselLayers = new Set(
+        layer?.cardConstructor?.input_carousels ?? [],
+    );
+    const pronunciationCarouselLayers = new Set(
+        layer?.cardConstructor?.pronunciation_carousels ?? [],
+    );
+    const inputCarouselIds = new Set(
+        (layer?.relationships ?? [])
+            .filter(
+                ({ targetLayer, presentationRole }) =>
+                    presentationRole !== "pronunciation" &&
+                    inputCarouselLayers.has(targetLayer),
+            )
+            .map(({ id }) => id),
+    );
+    return { inputCarouselIds, pronunciationCarouselLayers };
+}
+
 export function bindLibraryEditorControls(form, entry, i18n) {
     form.querySelectorAll("[data-library-provider-field]").forEach(
         (control) => {
@@ -562,13 +582,15 @@ export async function openLibraryEntryEditor({
 }) {
     const schema = schemas.find(({ id }) => id === entry.schemaId);
     const layer = schema?.layers.find(({ id }) => id === entry.layer);
+    const { inputCarouselIds, pronunciationCarouselLayers } =
+        carouselOptionsForLayer(layer);
     const editor = editorBody(entry, schemas, entries, i18n, "", {
         includeHidden: false,
+        relationshipCarousels: true,
         relationshipCarouselAdd: false,
         inlinePronunciationCarousel: true,
-        pronunciationCarouselLayers: new Set(
-            layer?.cardConstructor?.pronunciation_carousels ?? [],
-        ),
+        inputCarouselIds,
+        pronunciationCarouselLayers,
     });
     let formController;
     return openPopup({
@@ -597,9 +619,7 @@ export async function openLibraryEntryEditor({
                 schema,
                 layer,
                 {
-                    pronunciationCarouselLayers: new Set(
-                        layer?.cardConstructor?.pronunciation_carousels ?? [],
-                    ),
+                    pronunciationCarouselLayers,
                 },
             );
             form.addEventListener("click", (event) => {
@@ -702,13 +722,15 @@ export function bindAdminLibraryInteractions(
             if (!entry) return;
             const schema = schemas.find(({ id }) => id === entry.schemaId);
             const layer = schema?.layers.find(({ id }) => id === entry.layer);
+            const { inputCarouselIds, pronunciationCarouselLayers } =
+                carouselOptionsForLayer(layer);
             const editor = editorBody(entry, schemas, entries, i18n, "", {
                 showRelationshipTab: readOnly,
+                relationshipCarousels: !readOnly,
                 relationshipCarouselAdd: false,
                 inlinePronunciationCarousel: !readOnly,
-                pronunciationCarouselLayers: new Set(
-                    layer?.cardConstructor?.pronunciation_carousels ?? [],
-                ),
+                inputCarouselIds,
+                pronunciationCarouselLayers,
             });
             let formController;
             editorOpen = true;
@@ -765,10 +787,7 @@ export function bindAdminLibraryInteractions(
                             schema,
                             layer,
                             {
-                                pronunciationCarouselLayers: new Set(
-                                    layer?.cardConstructor
-                                        ?.pronunciation_carousels ?? [],
-                                ),
+                                pronunciationCarouselLayers,
                             },
                         );
                 },

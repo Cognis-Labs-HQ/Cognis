@@ -274,6 +274,10 @@ Constructor kartu kini mengenali sumber karusel input dan pelafalan berdasarkan 
 
 Pemangkasan paket konten kini mempertimbangkan penerbit, permintaan publikasi menggunakan kontrak basis data dengan benar, dan pemeriksaan penghapusan hanya mempertimbangkan permintaan tertunda. Konstruktor generik, publikasi kelas, label gabungan bebas, cabang pelafalan berulang, pembatalan definisi bertingkat, unggahan audio unik, evolusi skema yang kompatibel, dan tautan pelafalan yang dapat dihapus kini andal. Aset pengeras suara dirender melalui gambar bertema eksplisit, sedangkan carousel relasi berada di bawah bidang konten yang dimaksud.
 
+## Penyuntingan carousel kartu yang ada
+
+Kartu yang ada kini memperoleh konfigurasi carousel input dan pelafalan dari konstruktor penyedia. Popup penyuntingan pengguna dan administrasi menampilkan kontrol carousel terurut yang sama seperti pembuatan sambil mempertahankan pilihan yang ada.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -344,3 +348,4 @@ Pemangkasan paket konten kini mempertimbangkan penerbit, permintaan publikasi me
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/452e3eb3fc5b9e2ca86464904e7f6477992b7c32
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/039dc5c1
 - [8b08718f](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b08718f)
+- [7841f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/7841f27)

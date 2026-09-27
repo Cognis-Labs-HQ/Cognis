@@ -274,6 +274,10 @@ Kartenkonstruktoren kennzeichnen die Quellen der Eingabe- und Aussprachekarussel
 
 Die Bereinigung von Inhaltspaketen berücksichtigt jetzt den Herausgeber, Push-Anfragen verwenden den Datenbankvertrag korrekt und Löschprüfungen berücksichtigen nur ausstehende Anfragen. Generische Konstruktoren, Klassenveröffentlichung, freie zusammengesetzte Bezeichnungen, wiederholte Aussprachezweige, das Zurücksetzen verschachtelter Definitionen, eindeutige Audio-Uploads, kompatible Schemaentwicklung und entfernbare Ausspracheverknüpfungen funktionieren zuverlässig. Lautsprecher-Assets werden nun über explizite themenabhängige Bilder dargestellt, während Beziehungskarussells unter den vorgesehenen Inhaltsfeldern stehen.
 
+## Karussellbearbeitung bestehender Karten
+
+Bestehende Karten leiten nun sowohl Eingabe- als auch Aussprachekarussells aus ihrem Anbieter-Konstruktor ab. Benutzer- und Administrationsdialoge zeigen dieselben geordneten Karussellsteuerelemente wie die Erstellung und behalten vorhandene Auswahlen bei.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -344,3 +348,4 @@ Die Bereinigung von Inhaltspaketen berücksichtigt jetzt den Herausgeber, Push-A
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/452e3eb3fc5b9e2ca86464904e7f6477992b7c32
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/039dc5c1
 - [8b08718f](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b08718f)
+- [7841f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/7841f27)
