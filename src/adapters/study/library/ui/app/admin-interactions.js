@@ -265,33 +265,30 @@ export function editorBody(
     const pronunciationRelationshipIds = new Set(
         pronunciationRelationships.map(({ id }) => id),
     );
-    const inlinePronunciationCarousel =
-        options.inlinePronunciationCarousel &&
-        pronunciationRelationships.length > 0
-            ? pronunciationRelationships
-                  .map((relationship) =>
-                      relationshipEditor(
-                          relationship,
-                          entry,
-                          entries,
-                          schema,
-                          schema.language,
-                          {
-                              carousel: true,
-                              allowAdd: false,
-                              ordersPronunciation: true,
-                          },
-                      ),
-                  )
-                  .join("")
-            : "";
+    const inlinePronunciationCarousel = options.inlinePronunciationCarousel
+        ? pronunciationRelationships
+              .map((relationship) =>
+                  relationshipEditor(
+                      relationship,
+                      entry,
+                      entries,
+                      schema,
+                      schema.language,
+                      {
+                          carousel: true,
+                          allowAdd: false,
+                          ordersPronunciation: true,
+                      },
+                  ),
+              )
+              .join("")
+        : "";
     const fields = (layer?.fields ?? [])
         .filter((field) => field.id !== immutableStringKeyField)
         .map((field) => {
             if (
                 field.id === "pronunciation" &&
-                options.inlinePronunciationCarousel &&
-                pronunciationRelationships.length > 0
+                options.inlinePronunciationCarousel
             ) {
                 const value = entry.fields?.[field.id];
                 const fieldLabel = localizedLabel(

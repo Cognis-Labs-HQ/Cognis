@@ -298,6 +298,10 @@ Bearbeitungsformulare für Wortschatz, Sätze und Verbünde unterdrücken nun be
 
 Abschlüsse mit wenigen Fehlern blenden nun pro Karte eine weitere zufällige Strichhilfe aus, während die normale Validierung erhalten bleibt. Ein Fragezeichen auf der Zeichenfläche kennzeichnet verborgene Hilfe, das obere ? zeigt sie ohne Fortschrittsverlust, und Anmerkungen verwenden nähere sichere Positionen.
 
+## Aussprache immer mit dem Composer bearbeiten
+
+Sichtbare Aussprachefelder verwenden nun in Erstellungs- und Bearbeitungsdialogen immer den Aussprache-Composer. Die im Kartenkonstruktor deklarierten Aussprachekarussells bleiben schichtspezifisch und erscheinen innerhalb dieses Composers, während Schichten ohne deklarierte Beziehungskarussells weiterhin freie Ausspracheanteile eingeben können.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -376,3 +380,4 @@ Abschlüsse mit wenigen Fehlern blenden nun pro Karte eine weitere zufällige St
 - [efd006d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/efd006d2)
 - [fb046ce2](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb046ce2)
 - [004b39e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/004b39e5)
+- [3e48b191](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e48b191)

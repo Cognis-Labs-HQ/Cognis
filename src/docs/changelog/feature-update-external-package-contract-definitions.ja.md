@@ -298,6 +298,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 ミスの少ない完了では、通常の検証を維持したままカードごとにランダムなストロークガイドを追加で1本隠します。キャンバスの疑問符が隠れたガイドを示し、右上の ? は進捗を消さずに表示し、注釈ラベルはより近い安全な位置を使用します。
 
+## 発音は常にコンポーザーで編集
+
+表示される発音フィールドは、作成・編集ダイアログのどちらでも常に発音コンポーザーを使用するようになりました。カードコンストラクターで宣言された発音カルーセルはレイヤー固有のままコンポーザー内に表示され、関係カルーセルを宣言していないレイヤーでも自由な発音部分を入力できます。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -376,3 +380,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - [efd006d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/efd006d2)
 - [fb046ce2](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb046ce2)
 - [004b39e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/004b39e5)
+- [3e48b191](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e48b191)

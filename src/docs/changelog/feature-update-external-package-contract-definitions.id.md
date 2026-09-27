@@ -298,6 +298,10 @@ Formulir penyuntingan kosakata, kalimat, dan gabungan kini selalu menyembunyikan
 
 Penyelesaian dengan sedikit kesalahan kini menyembunyikan satu panduan goresan acak tambahan per kartu sambil mempertahankan validasi normal. Tanda tanya pada kanvas menandai panduan tersembunyi, ? kanan atas menampilkannya tanpa menghapus kemajuan, dan label anotasi memakai posisi aman yang lebih dekat.
 
+## Selalu sunting pelafalan dengan composer
+
+Bidang pelafalan yang terlihat kini selalu memakai composer pelafalan dalam dialog pembuatan dan penyuntingan. Carousel pelafalan yang dideklarasikan oleh konstruktor kartu tetap khusus per lapisan dan muncul di dalam composer tersebut, sedangkan lapisan tanpa carousel relasi yang dideklarasikan tetap dapat memasukkan bagian pelafalan tanpa batasan.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -376,3 +380,4 @@ Penyelesaian dengan sedikit kesalahan kini menyembunyikan satu panduan goresan a
 - [efd006d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/efd006d2)
 - [fb046ce2](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb046ce2)
 - [004b39e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/004b39e5)
+- [3e48b191](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e48b191)
