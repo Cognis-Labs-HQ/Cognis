@@ -210,3 +210,5 @@ The built-in semantic composer profile now applies the requested carousel contra
 Atomic character and particle layers are immutable catalog data. The Library API now rejects create, update, update-request, and delete operations for those layers for every role, including administrators and owners. UI capability responses suppress edit and delete controls while retaining read-only browsing.
 
 Ordered selections now share one composition-wide position sequence across every Input carousel. Position badges therefore describe the saved card order rather than restarting at one for each relationship carousel.
+
+Authoring forms no longer expose Cognis' internal content-class selector. The provider's localized layer name identifies the card in detail views, and ordered-sequence records use the provider layer ID instead of semantic `sentence` or `composite` labels. Derived pronunciation is serialized according to the provider's declared field contract, including list-valued pronunciation fields.

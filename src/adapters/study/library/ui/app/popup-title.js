@@ -130,8 +130,8 @@ export function popupTitleDetailItems(
             ...(linked.length ? linkedItems(linked) : [{ label }]),
         ];
     });
-    const placement =
-        detail.entry.class === "composite" ? "reading" : undefined;
+    const isOrderedSequence = layer?.semanticRole === "orderedLexicalSequence";
+    const placement = isOrderedSequence ? "reading" : undefined;
     const items = [...spellingItems, ...pronunciationItems].map((item) => ({
         ...item,
         placement,
@@ -144,15 +144,10 @@ export function popupTitleDetailItems(
     );
     if (visibleDefinition) {
         items.push(
-            ...(items.length && detail.entry.class !== "composite"
-                ? [{ label: " · " }]
-                : []),
+            ...(items.length && !isOrderedSequence ? [{ label: " · " }] : []),
             {
                 label: visibleDefinition,
-                placement:
-                    detail.entry.class === "composite"
-                        ? "definition"
-                        : undefined,
+                placement: isOrderedSequence ? "definition" : undefined,
             },
         );
     }

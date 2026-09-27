@@ -330,6 +330,10 @@ Drawing Practice now shows the canvas question mark only when the currently requ
 
 Study Library Input carousels now share one ordered counter sequence in create and edit popups. The badges reflect the complete saved composition across relationship carousels instead of restarting at one in each carousel.
 
+## Provider-owned layer names and valid derived pronunciation
+
+Library authoring no longer presents an internal Content Class choice between semantic labels such as sentence and composite. Provider-localized layer names identify cards instead, ordered records persist the provider layer ID, and automatically derived pronunciation now follows the provider field type so list-valued pronunciation fields submit successfully.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -415,3 +419,4 @@ Study Library Input carousels now share one ordered counter sequence in create a
 - [54242971](https://github.com/Cognis-Labs-HQ/Cognis/commit/54242971)
 - [125495f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/125495f3)
 - [109f583e](https://github.com/Cognis-Labs-HQ/Cognis/commit/109f583e)
+- [b17ebe21](https://github.com/Cognis-Labs-HQ/Cognis/commit/b17ebe21)

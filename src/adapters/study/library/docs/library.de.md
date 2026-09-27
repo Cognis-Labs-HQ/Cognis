@@ -198,3 +198,5 @@ Das integrierte semantische Composer-Profil wendet den gewünschten Karussellver
 Schichten für atomare Zeichen und Partikel sind unveränderliche Katalogdaten. Die Library-API lehnt nun Erstellen, Aktualisieren, Aktualisierungsanfragen und Löschen für diese Schichten bei jeder Rolle ab, einschließlich Administratoren und Eigentümern. UI-Berechtigungsantworten blenden Bearbeitungs- und Löschsteuerungen aus, während die schreibgeschützte Ansicht erhalten bleibt.
 
 Geordnete Auswahlen verwenden nun über alle Eingabe-Karussells hinweg eine gemeinsame Positionsfolge. Positionsmarken beschreiben damit die gespeicherte Kartenreihenfolge, statt bei jedem Beziehungskarussell wieder bei eins zu beginnen.
+
+Autorenformulare zeigen die interne Inhaltsklassenauswahl von Cognis nicht mehr an. In Detailansichten kennzeichnet der lokalisierte Schichtname des Anbieters die Karte, und Datensätze geordneter Folgen verwenden die Schicht-ID des Anbieters statt semantischer Bezeichnungen wie `sentence` oder `composite`. Abgeleitete Aussprachen werden gemäß dem deklarierten Feldvertrag des Anbieters serialisiert, einschließlich listenwertiger Aussprachefelder.

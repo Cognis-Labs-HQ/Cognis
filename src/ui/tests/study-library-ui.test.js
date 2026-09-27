@@ -339,7 +339,7 @@ test("Study Library integrates definitions and particles into item details", () 
         /popupTitleDetailItems\([\s\S]*sourceDefinition,[\s\S]*titleReferences/,
     );
     assert.match(source, /const titleDetailItems = popupTitleDetailItems/);
-    assert.match(source, /detail\.entry\.class === "composite"/);
+    assert.match(source, /semanticRole === "orderedLexicalSequence"/);
     assert.match(source, /placement:[\s\S]*"definition"/);
     assert.match(stylesheet, /library-entry-popup--composite/);
     assert.match(
@@ -478,7 +478,7 @@ test("Study Library administration exposes contract-safe editing", () => {
     );
     assert.match(adminInteractionsSource, /name:\s*"label"/);
     assert.match(adminInteractionsSource, /required:\s*true/);
-    assert.match(adminInteractionsSource, /library_content_class/);
+    assert.doesNotMatch(adminInteractionsSource, /library_content_class/);
     assert.match(adminInteractionsSource, /const isDefinition/);
     assert.match(adminInteractionsSource, /field\.type === "strokePattern"/);
     assert.match(adminInteractionsSource, /relationship\.ordered/);

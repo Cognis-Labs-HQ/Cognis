@@ -330,6 +330,10 @@ Die Zeichenübung zeigt das Fragezeichen auf der Leinwand nun nur an, wenn die a
 
 Die Eingabe-Karussells der Studienbibliothek verwenden in Erstellungs- und Bearbeitungsdialogen nun eine gemeinsame Reihenfolge. Die Positionsmarken zeigen die vollständig gespeicherte Komposition über alle Beziehungskarussells hinweg, statt in jedem Karussell erneut bei eins zu beginnen.
 
+## Anbietereigene Schichtnamen und gültige abgeleitete Aussprache
+
+Die Bibliotheksbearbeitung zeigt keine interne Inhaltsklassenauswahl zwischen semantischen Bezeichnungen wie Satz und Kompositum mehr. Stattdessen kennzeichnen lokalisierte Schichtnamen des Anbieters die Karten, geordnete Datensätze speichern die Anbieter-Schicht-ID, und automatisch abgeleitete Aussprachen folgen nun dem Feldtyp des Anbieters, sodass listenwertige Aussprachefelder erfolgreich übermittelt werden.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -415,3 +419,4 @@ Die Eingabe-Karussells der Studienbibliothek verwenden in Erstellungs- und Bearb
 - [54242971](https://github.com/Cognis-Labs-HQ/Cognis/commit/54242971)
 - [125495f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/125495f3)
 - [109f583e](https://github.com/Cognis-Labs-HQ/Cognis/commit/109f583e)
+- [b17ebe21](https://github.com/Cognis-Labs-HQ/Cognis/commit/b17ebe21)

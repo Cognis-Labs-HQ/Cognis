@@ -170,10 +170,22 @@ export function applyDerivedPronunciation(
     references,
     entries,
     schema,
+    layer,
     derivesPronunciation,
 ) {
     if (!derivesPronunciation) return fields;
     const draft = { fields, references };
-    fields.pronunciation = derivedPronunciation(draft, entries, schema);
+    const pronunciation = derivedPronunciation(draft, entries, schema);
+    const pronunciationField = layer?.fields?.find(
+        ({ id }) => id === "pronunciation",
+    );
+    if (!pronunciationField) return fields;
+    fields.pronunciation =
+        pronunciationField.type === "stringList" ||
+        pronunciationField.validation?.kind === "list"
+            ? pronunciation
+                ? [pronunciation]
+                : []
+            : pronunciation;
     return fields;
 }

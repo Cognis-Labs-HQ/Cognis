@@ -445,6 +445,7 @@ export async function openCreateEntryPopup({
         references,
         entries,
         schema,
+        editingLayer,
         derivesPronunciation,
     );
     const entry = {

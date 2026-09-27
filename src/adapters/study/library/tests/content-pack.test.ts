@@ -412,7 +412,11 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
     await writeJson(sentenceFile, [
         { id: "sentences:sentence:valid", label: "日本語が", references },
     ]);
-    await assert.doesNotReject(inspectContentPack(root));
+    const plan = await inspectContentPack(root);
+    assert.equal(
+        plan.records.find(({ layer }) => layer === "sentences")?.class,
+        "sentences",
+    );
 
     await writeJson(sentenceFile, [
         {

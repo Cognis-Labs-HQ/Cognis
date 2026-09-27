@@ -603,7 +603,7 @@ export class LibraryService implements LibraryCapability {
             input.hidden = true;
             input.class = "definition";
         } else if (layer.semanticRole === "orderedLexicalSequence") {
-            input.class = "composite";
+            input.class = layer.id;
         }
         const fields = structuredClone(input.fields ?? {});
         if (!input.allowConflict && location.scope !== "global") {
@@ -750,7 +750,7 @@ export class LibraryService implements LibraryCapability {
             input.hidden = true;
             input.class = "definition";
         } else if (layer.semanticRole === "orderedLexicalSequence") {
-            input.class = "composite";
+            input.class = layer.id;
         }
         const fields = structuredClone(input.fields ?? {});
         for (const field of layer.fields ?? []) {

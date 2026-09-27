@@ -21,18 +21,6 @@ import { uniqueRelatedEntries } from "./related-entries.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
 
-export function contentClassLabel(contentClass) {
-    const value =
-        String(contentClass ?? "")
-            .split(":")
-            .at(-1)
-            ?.trim() ?? "";
-    return value
-        .replaceAll(/([\p{Ll}\d])(\p{Lu})/gu, "$1 $2")
-        .replaceAll(/[-_]+/g, " ")
-        .replaceAll(/\b\p{L}/gu, (letter) => letter.toLocaleUpperCase());
-}
-
 function relationTree(references, usedBy, i18n) {
     const branch = (label, related) =>
         `<div class="library-relation-group"><strong>${escapeHtml(label)}</strong>${related.length ? `<div class="library-related-entries">${related.map((candidate) => renderEntryLink(candidate, "library-related-entry btn-neutral")).join("")}</div>` : `<span>${escapeHtml(i18n.t("gateway.study.library_no_relationships"))}</span>`}</div>`;
@@ -120,11 +108,9 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
                       ];
             }),
     );
-    const displayedClass =
-        entry.class ||
-        (layer?.semanticRole === "orderedLexicalSequence" ? "composite" : "");
-    const classPill = displayedClass
-        ? `<span class="library-metadata-pill library-content-class-pill">${escapeHtml(contentClassLabel(displayedClass))}</span>`
+    const layerLabel = localizedLabel(layer?.metadata, entry.language);
+    const classPill = layerLabel
+        ? `<span class="library-metadata-pill library-content-class-pill">${escapeHtml(layerLabel)}</span>`
         : "";
     const tagPills = (entry.tags ?? [])
         .map(

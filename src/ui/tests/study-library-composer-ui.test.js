@@ -17,6 +17,9 @@ const clientSource = read("src/gateways/study/ui/library-client.js");
 const adapterSource = read("src/adapters/study/library/index.ts");
 const carouselStylesheet = read("src/ui/styles/reuse/horizontal-carousel.css");
 const drawingSource = read("src/adapters/study/library/ui/app/drawing.js");
+const composerContractSource = read(
+    "src/adapters/study/library/ui/app/composer-contract.js",
+);
 
 test("Study Library keeps editor tabs active and nested card types precise", () => {
     for (const [content, pattern] of [
@@ -55,4 +58,18 @@ test("Study Library composer exposes provider-owned raw-input lookup", () => {
         adminInteractionsSource,
         /data-library-pronunciation-commit/,
     );
+});
+
+test("Study Library derives pronunciation using the provider field type", () => {
+    assert.match(
+        composerContractSource,
+        /pronunciationField\.type === "stringList"/,
+    );
+    assert.match(
+        composerContractSource,
+        /pronunciationField\.validation\?\.kind === "list"/,
+    );
+    assert.match(composerContractSource, /\? \[pronunciation\]/);
+    assert.match(adminInteractionsSource, /name="class" type="hidden"/);
+    assert.doesNotMatch(adminInteractionsSource, /<select name="class">/);
 });

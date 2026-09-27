@@ -278,7 +278,7 @@ async function validateContentRecords(
             record.class = "definition";
             record.hidden = true;
         } else if (layer.semanticRole === "orderedLexicalSequence") {
-            record.class = "composite";
+            record.class = layer.id;
         } else if (layer.semanticRole === "particle") {
             record.editable = false;
             record.class ??= "particle";

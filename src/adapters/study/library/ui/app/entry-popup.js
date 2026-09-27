@@ -196,7 +196,7 @@ export async function openEntryPopup(
             onOpen: (overlay, dismiss) => {
                 dismissPopup = dismiss;
                 overlay.classList.add("library-entry-popup");
-                if (detail.entry.class === "composite")
+                if (layer?.semanticRole === "orderedLexicalSequence")
                     overlay.classList.add("library-entry-popup--composite");
                 placeAudioSpeaker(overlay);
                 void loadLibraryAudio(

@@ -198,3 +198,5 @@ Profil composer semantik bawaan kini menerapkan kontrak carousel yang diminta se
 Lapisan karakter atomik dan partikel adalah data katalog yang tidak dapat diubah. API Library kini menolak pembuatan, pembaruan, permintaan pembaruan, dan penghapusan untuk lapisan tersebut bagi semua peran, termasuk administrator dan pemilik. Respons kemampuan UI menyembunyikan kontrol sunting dan hapus sambil mempertahankan penjelajahan hanya-baca.
 
 Pilihan berurutan kini memakai satu urutan posisi komposisi yang sama di seluruh karosel Input. Lencana posisi menggambarkan urutan kartu yang disimpan dan tidak lagi dimulai ulang dari satu pada setiap karosel relasi.
+
+Formulir penulisan tidak lagi menampilkan pemilih kelas konten internal Cognis. Nama lapisan penyedia yang dilokalkan mengidentifikasi kartu dalam tampilan detail, dan rekaman urutan teratur memakai ID lapisan penyedia, bukan label semantik `sentence` atau `composite`. Pelafalan turunan diserialkan sesuai kontrak bidang yang dideklarasikan penyedia, termasuk bidang pelafalan bernilai daftar.

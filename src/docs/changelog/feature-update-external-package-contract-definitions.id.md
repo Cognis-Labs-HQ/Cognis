@@ -330,6 +330,10 @@ Latihan Menggambar kini menampilkan tanda tanya pada kanvas hanya ketika goresan
 
 Karosel Input Pustaka Studi kini berbagi satu urutan penghitung dalam dialog buat dan edit. Lencana mencerminkan seluruh komposisi tersimpan di semua karosel relasi, bukan dimulai ulang dari satu pada setiap karosel.
 
+## Nama lapisan milik penyedia dan pelafalan turunan yang valid
+
+Penulisan Pustaka tidak lagi menampilkan pilihan Kelas Konten internal antara label semantik seperti kalimat dan komposit. Nama lapisan penyedia yang dilokalkan kini mengidentifikasi kartu, rekaman terurut menyimpan ID lapisan penyedia, dan pelafalan yang diturunkan otomatis mengikuti tipe bidang penyedia sehingga bidang pelafalan bernilai daftar dapat dikirim dengan berhasil.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -415,3 +419,4 @@ Karosel Input Pustaka Studi kini berbagi satu urutan penghitung dalam dialog bua
 - [54242971](https://github.com/Cognis-Labs-HQ/Cognis/commit/54242971)
 - [125495f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/125495f3)
 - [109f583e](https://github.com/Cognis-Labs-HQ/Cognis/commit/109f583e)
+- [b17ebe21](https://github.com/Cognis-Labs-HQ/Cognis/commit/b17ebe21)

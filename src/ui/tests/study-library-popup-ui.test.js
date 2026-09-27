@@ -27,7 +27,10 @@ test("Study Library renders metadata and scope indicators", () => {
     assert.match(source, /detail\?\.renderer === "badge"/);
     assert.match(source, /class="library-metadata-pill"/);
     assert.match(source, /class="library-scope"/);
-    assert.match(source, /contentClassLabel/);
+    assert.match(
+        source,
+        /localizedLabel\(layer\?\.metadata, entry\.language\)/,
+    );
     assert.match(source, /semanticRole === "orderedLexicalSequence"/);
     assert.match(source, /library-content-class-pill/);
     assert.match(source, /visibleRelatedWords/);

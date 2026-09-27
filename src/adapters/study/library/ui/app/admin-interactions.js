@@ -399,25 +399,11 @@ export function editorBody(
         `<p>${escapeHtml(i18n.t("gateway.study.library_editor_no_relationships"))}</p>`
     }</div></section></div>`;
     const definitionsPanel = `${definitionSummary}${options.allowDefinitionCreate ? `<button class="btn-neutral library-definition-add" type="button" data-library-add-definition aria-label="${escapeHtml(i18n.t("gateway.study.library_add_definition"))}">+</button>` : ""}`;
-    const contentClass =
-        entry.class ??
-        (layer?.semanticRole === "definition"
-            ? "definition"
-            : layer?.semanticRole === "orderedLexicalSequence"
-              ? "composite"
-              : "");
+    const contentClass = entry.class ?? layer?.id ?? "";
     const generatedLabel = options.generatedLabel
         ? `<input name="label" type="hidden" required maxlength="500" value="${escapeHtml(entry.label)}">`
         : "";
-    const classOptions =
-        layer?.semanticRole === "orderedLexicalSequence"
-            ? ["composite", "sentence"]
-            : layer?.semanticRole === "lexicalUnit"
-              ? ["word"]
-              : [];
-    const classField = classOptions.length
-        ? `<label><span>${escapeHtml(i18n.t("gateway.study.library_content_class"))}</span><select name="class">${classOptions.map((value) => `<option value="${value}"${value === contentClass ? " selected" : ""}>${escapeHtml(value)}</option>`).join("")}</select></label>`
-        : `<input name="class" type="hidden" value="${escapeHtml(contentClass)}">`;
+    const classField = `<input name="class" type="hidden" value="${escapeHtml(contentClass)}">`;
     const isDefinition = layer?.semanticRole === "definition";
     const tags = Array.isArray(entry.tags) ? entry.tags : [];
     const tagsField = `<div class="library-tag-field" data-library-entry-tags><span>${escapeHtml(i18n.t("gateway.study.library_tags"))}</span><div class="library-tag-list">${tags.map((tag) => `<button type="button" class="btn-neutral" data-library-tag="${escapeHtml(tag)}">${escapeHtml(tag)} ×</button>`).join("")}</div><input data-library-tag-input aria-label="${escapeHtml(i18n.t("gateway.study.library_tags"))}"><input name="tags" type="hidden" value="${escapeHtml(tags.join("\u001f"))}"></div>`;
@@ -708,6 +694,7 @@ export async function openLibraryEntryEditor({
                 references,
                 entries,
                 schema,
+                composer.layer,
                 composer.derivesPronunciation,
             );
             const proposedEntry = {
@@ -878,6 +865,7 @@ export function bindAdminLibraryInteractions(
                             references,
                             entries,
                             schema,
+                            composer.layer,
                             composer.derivesPronunciation,
                         );
                         const updated = await updateLibraryEntry(entry.id, {
