@@ -278,6 +278,10 @@ Pemangkasan paket konten kini mempertimbangkan penerbit, permintaan publikasi me
 
 Kartu yang ada kini memperoleh konfigurasi carousel input dan pelafalan dari konstruktor penyedia. Popup penyuntingan pengguna dan administrasi menampilkan kontrol carousel terurut yang sama seperti pembuatan sambil mempertahankan pilihan yang ada.
 
+## Panduan gambar panjang yang akurat
+
+Anotasi gambar kini menghitung arah dalam koordinat kanvas yang dirender sehingga tidak bergeser pada karakter kedua dan berikutnya dari input panjang. Tindakan panduan ? mempertahankan goresan pengguna yang diterima dan hanya memberi anotasi pada bagian yang belum selesai.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -349,3 +353,4 @@ Kartu yang ada kini memperoleh konfigurasi carousel input dan pelafalan dari kon
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/039dc5c1
 - [8b08718f](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b08718f)
 - [7841f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/7841f27)
+- [9aedc46](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aedc46)

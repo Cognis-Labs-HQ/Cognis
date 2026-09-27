@@ -215,7 +215,10 @@ function openDrawingPad({
         if (!start || !next) return;
         const startX = start.x * canvas.width;
         const startY = start.y * canvas.height;
-        const angle = Math.atan2(next.y - start.y, next.x - start.x);
+        const angle = Math.atan2(
+            (next.y - start.y) * canvas.height,
+            (next.x - start.x) * canvas.width,
+        );
         const labelX = startX - Math.sin(angle) * 17;
         const labelY = startY + Math.cos(angle) * 17;
         const arrowX = startX + Math.cos(angle) * 22;
@@ -487,14 +490,7 @@ function openDrawingPad({
             difficultyByCardId.delete(currentCard.id);
             attemptedCardIds.delete(currentCard.id);
             difficulty = 0;
-            completed.length = 0;
-            active = null;
-            mistakes = 0;
-            successiveMistakes = 0;
             hasAttemptedPiece = false;
-            completion.hidden = true;
-            completion.classList.remove("is-failure");
-            pad.classList.remove("is-complete");
             pad.querySelector("[data-guidance]").hidden = true;
             draw();
         },

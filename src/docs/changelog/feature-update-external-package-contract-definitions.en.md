@@ -278,6 +278,10 @@ Content-pack pruning is now publisher-qualified, push requests use the database 
 
 Existing cards now derive both input and pronunciation carousel configuration from their provider constructor. User-facing and administrative edit popups render the same ordered carousel controls as creation while retaining existing selections.
 
+## Accurate extended drawing guidance
+
+Drawing annotations now calculate their direction in rendered canvas coordinates, preventing drift on the second and later characters of extended inputs. The ? guidance action preserves accepted user strokes and annotates only unfinished work.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -349,3 +353,4 @@ Existing cards now derive both input and pronunciation carousel configuration fr
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/039dc5c1
 - [8b08718f](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b08718f)
 - [7841f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/7841f27)
+- [9aedc46](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aedc46)

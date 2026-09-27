@@ -278,6 +278,10 @@ Die Bereinigung von Inhaltspaketen berücksichtigt jetzt den Herausgeber, Push-A
 
 Bestehende Karten leiten nun sowohl Eingabe- als auch Aussprachekarussells aus ihrem Anbieter-Konstruktor ab. Benutzer- und Administrationsdialoge zeigen dieselben geordneten Karussellsteuerelemente wie die Erstellung und behalten vorhandene Auswahlen bei.
 
+## Präzise Anleitung für lange Eingaben
+
+Zeichenanmerkungen berechnen ihre Richtung nun in gerenderten Canvas-Koordinaten, wodurch ein Abdriften ab dem zweiten Zeichen längerer Eingaben verhindert wird. Die Anleitungsschaltfläche ? bewahrt akzeptierte Benutzerstriche und markiert nur noch nicht abgeschlossene Arbeit.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -349,3 +353,4 @@ Bestehende Karten leiten nun sowohl Eingabe- als auch Aussprachekarussells aus i
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/039dc5c1
 - [8b08718f](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b08718f)
 - [7841f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/7841f27)
+- [9aedc46](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aedc46)

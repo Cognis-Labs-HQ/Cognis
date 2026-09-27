@@ -278,6 +278,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 既存カードでも、入力用と発音用のカルーセル設定をプロバイダーのコンストラクターから取得するようになりました。ユーザー向けと管理向けの編集ポップアップは、既存の選択を維持しながら作成時と同じ順序付きカルーセルを表示します。
 
+## 長い入力で正確な描画ガイド
+
+描画注釈の方向を描画後のキャンバス座標で計算し、長い入力の2文字目以降でずれる問題を防ぎました。? ガイド操作は受理済みのユーザーストロークを保持し、未完了部分だけに注釈を表示します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -349,3 +353,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/039dc5c1
 - [8b08718f](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b08718f)
 - [7841f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/7841f27)
+- [9aedc46](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aedc46)

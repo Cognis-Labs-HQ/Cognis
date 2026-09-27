@@ -14,7 +14,7 @@ Die Überschrift wird an der gerenderten Zeichenfläche gemessen und direkt dar�
 
 Die erste Hilfsansicht nummeriert jeden Strich und zeigt seine Richtung. Zehn aufeinanderfolgende Fehler beenden den Versuch mit einem Misserfolg. Erfolgreiche Versuche mit höchstens einem Fehler erhöhen den im Speicher gehaltenen Schwierigkeitsgrad dieser Karte für spätere Versuche; außerdem kann ein geöffnetes Zeichenfeld direkt zu einer anderen Bibliothekskarte wechseln.
 
-Die vollständige Anleitung erscheint nur vor dem ersten Versuch einer Karte oder nachdem der Benutzer ausdrücklich die Zurücksetz-Aktion **?** betätigt hat. Beim erneuten Versuch bleibt die fortschreitende Anleitung erhalten. Zusammengesetzte Muster enthalten Abschnittsgrenzen, sodass jedes neu erreichte Zeichen einmal vollständig mit Anmerkungen angezeigt wird.
+Die Anleitungsschaltfläche **?** bewahrt akzeptierte Striche und Versuchsergebnisse und zeigt Anmerkungen nur für noch nicht abgeschlossene Striche. Beim erneuten Versuch bleibt die fortschreitende Anleitung erhalten. Zusammengesetzte Muster enthalten Abschnittsgrenzen, sodass jedes neu erreichte Zeichen einmal vollständig mit Anmerkungen angezeigt wird. Die Anmerkungsrichtung wird in den gerenderten Canvas-Koordinaten berechnet, sodass Pfeile auch bei längeren Mustern mit mehreren Zeichen korrekt bleiben.
 
 Zusammengesetzte Karten ordnen jetzt alle Schreibmuster des primären Schriftwerts nebeneinander in einheitlicher Größe und mit minimalem Abstand an. Der Zeichenblock wird entsprechend breiter; seine kompakte Überschrift zeigt verfügbare Aussprachen und die lokalisierte Definition.
 
