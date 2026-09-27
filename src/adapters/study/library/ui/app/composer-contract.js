@@ -17,9 +17,17 @@ export function resolveComposerContract(schema, layer, constructor) {
             relationship,
         ]),
     );
+    const derivesPronunciation = [
+        "lexicalUnit",
+        "orderedLexicalSequence",
+    ].includes(layer?.semanticRole);
     const fields = (effectiveConstructor.fields ?? [])
         .map((fieldId) => fieldsById.get(fieldId))
-        .filter(Boolean);
+        .filter(
+            (field) =>
+                field &&
+                !(derivesPronunciation && field.id === "pronunciation"),
+        );
     const relationships = (effectiveConstructor.relationships ?? [])
         .map((relationshipId) => relationshipsById.get(relationshipId))
         .filter(Boolean);
@@ -43,10 +51,7 @@ export function resolveComposerContract(schema, layer, constructor) {
         layer: { ...layer, fields, relationships },
         inputCarouselIds,
         pronunciationCarouselLayers,
-        derivesPronunciation: [
-            "lexicalUnit",
-            "orderedLexicalSequence",
-        ].includes(layer?.semanticRole),
+        derivesPronunciation,
     };
 }
 

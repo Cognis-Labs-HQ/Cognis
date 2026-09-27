@@ -631,21 +631,6 @@ function applyLookupFields(form, fields, draft) {
             : value && typeof value === "object"
               ? JSON.stringify(value)
               : value;
-        const tagList = control
-            .closest("[data-library-tag-field]")
-            ?.querySelector(".library-tag-list");
-        if (tagList && Array.isArray(value)) {
-            tagList.replaceChildren(
-                ...value.map((item) => {
-                    const tag = document.createElement("button");
-                    tag.type = "button";
-                    tag.className = "btn-neutral";
-                    tag.dataset.libraryTag = item;
-                    tag.textContent = `${item} ×`;
-                    return tag;
-                }),
-            );
-        }
     });
 }
 

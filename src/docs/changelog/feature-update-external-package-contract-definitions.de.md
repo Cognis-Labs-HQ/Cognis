@@ -290,6 +290,10 @@ Strichnummern wählen nun die freiste verfügbare Position um jeden Startpunkt u
 
 Erstellungs- und Bearbeitungsdialoge verwenden nun denselben Kartenkonstruktor-Vertrag des Anbieters für Felder und Beziehungskarussells. Alternative Zeichen können die Aussprache aus Zeichen zusammensetzen und zugleich freie Eingabe behalten; die Aussprache von Wortschatz, Sätzen und Verbünden wird rekursiv aus den konfigurierten Eingabeteilen abgeleitet.
 
+## Abgeleitete Aussprache-Tags entfernt
+
+Bearbeitungsformulare für Wortschatz, Sätze und Verbünde unterdrücken nun bedingungslos die generische Ausspracheliste und leiten die Aussprache weiterhin aus ihren geordneten Bestandteilen ab. Generische Listenfelder verwenden zeilengetrennten Text statt Tag-Chips.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -365,3 +369,4 @@ Erstellungs- und Bearbeitungsdialoge verwenden nun denselben Kartenkonstruktor-V
 - [f405a3e](https://github.com/Cognis-Labs-HQ/Cognis/commit/f405a3e)
 - [641d87a](https://github.com/Cognis-Labs-HQ/Cognis/commit/641d87a)
 - [bbed779](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbed779)
+- [efd006d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/efd006d2)

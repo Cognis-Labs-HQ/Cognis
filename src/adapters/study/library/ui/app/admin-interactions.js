@@ -103,7 +103,7 @@ export function bindLibraryEditorControls(form, entry, i18n) {
             }
         });
     });
-    form.querySelectorAll("[data-library-tag-field]").forEach((field) => {
+    form.querySelectorAll("[data-library-entry-tags]").forEach((field) => {
         const input = field.querySelector("[data-library-tag-input]");
         const hidden = field.querySelector('input[type="hidden"]');
         const list = field.querySelector(".library-tag-list");
@@ -423,7 +423,7 @@ export function editorBody(
         : `<input name="class" type="hidden" value="${escapeHtml(contentClass)}">`;
     const isDefinition = layer?.semanticRole === "definition";
     const tags = Array.isArray(entry.tags) ? entry.tags : [];
-    const tagsField = `<div class="library-tag-field" data-library-tag-field><span>${escapeHtml(i18n.t("gateway.study.library_tags"))}</span><div class="library-tag-list">${tags.map((tag) => `<button type="button" class="btn-neutral" data-library-tag="${escapeHtml(tag)}">${escapeHtml(tag)} ×</button>`).join("")}</div><input data-library-tag-input aria-label="${escapeHtml(i18n.t("gateway.study.library_tags"))}"><input name="tags" type="hidden" value="${escapeHtml(tags.join("\u001f"))}"></div>`;
+    const tagsField = `<div class="library-tag-field" data-library-entry-tags><span>${escapeHtml(i18n.t("gateway.study.library_tags"))}</span><div class="library-tag-list">${tags.map((tag) => `<button type="button" class="btn-neutral" data-library-tag="${escapeHtml(tag)}">${escapeHtml(tag)} ×</button>`).join("")}</div><input data-library-tag-input aria-label="${escapeHtml(i18n.t("gateway.study.library_tags"))}"><input name="tags" type="hidden" value="${escapeHtml(tags.join("\u001f"))}"></div>`;
     const relationshipTab = options.showRelationshipTab
         ? `<button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="relationships">${escapeHtml(i18n.t("gateway.study.library_editor_relationships"))}</button>`
         : "";
@@ -527,7 +527,10 @@ export function readFields(form, layer, entry) {
                                           [],
                                       (option) => option.value,
                                   )
-                                : value.split("\u001f").filter(Boolean),
+                                : value
+                                      .split(/\r?\n/u)
+                                      .map((item) => item.trim())
+                                      .filter(Boolean),
                         ];
                     if (
                         ["number", "integer"].includes(field.type) ||

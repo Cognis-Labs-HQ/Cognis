@@ -290,6 +290,10 @@ Stroke numbers now choose the clearest available position around each start poin
 
 Creation and edit popups now consume the same provider card-constructor contract for fields and relationship carousels. Alternate characters can compose pronunciation from characters while keeping unrestricted input; vocabulary, sentence, and composite pronunciation is derived recursively from configured input parts.
 
+## Remove derived pronunciation tags
+
+Vocabulary, sentence, and composite edit forms now suppress the generic pronunciation list control unconditionally and continue deriving pronunciation from their ordered parts. Generic list fields use newline-separated text instead of tag chips.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -365,3 +369,4 @@ Creation and edit popups now consume the same provider card-constructor contract
 - [f405a3e](https://github.com/Cognis-Labs-HQ/Cognis/commit/f405a3e)
 - [641d87a](https://github.com/Cognis-Labs-HQ/Cognis/commit/641d87a)
 - [bbed779](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbed779)
+- [efd006d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/efd006d2)

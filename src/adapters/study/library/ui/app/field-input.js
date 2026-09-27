@@ -41,7 +41,7 @@ export function inputForField(field, value, language, i18n) {
         field.validation?.kind === "list" ||
         control === "tagList"
     )
-        return `<div class="library-tag-field" data-library-tag-field><span>${escapeHtml(label)}</span><div class="library-tag-list">${(Array.isArray(value) ? value : []).map((item) => `<button type="button" class="btn-neutral" data-library-tag="${escapeHtml(item)}">${escapeHtml(item)} ×</button>`).join("")}</div><input data-library-tag-input aria-label="${escapeHtml(label)}"><input name="${escapeHtml(name)}" type="hidden" value="${escapeHtml((Array.isArray(value) ? value : []).join("\u001f"))}"${field.required ? " required" : ""}></div>`;
+        return `<label><span>${escapeHtml(label)}</span><textarea name="${escapeHtml(name)}"${field.required ? " required" : ""}${field.input?.immutable ? " disabled" : ""}>${escapeHtml((Array.isArray(value) ? value : []).join("\n"))}</textarea></label>`;
     const inputType =
         ["number", "integer"].includes(field.type) ||
         field.validation?.kind === "number" ||

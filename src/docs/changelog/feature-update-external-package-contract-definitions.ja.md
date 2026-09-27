@@ -290,6 +290,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 作成ポップアップと編集ポップアップは、フィールドと関係カルーセルについて同じプロバイダーのカードコンストラクター契約を使用するようになりました。代替文字は自由入力を保ちながら文字から発音を構成でき、語彙、文、複合の発音は設定された入力要素から再帰的に導出されます。
 
+## 派生発音タグを削除
+
+語彙、文、複合の編集フォームは汎用の発音リストコントロールを常に非表示にし、順序付き構成要素から発音を引き続き導出します。汎用リストフィールドにはタグチップではなく改行区切りテキストを使用します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -365,3 +369,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - [f405a3e](https://github.com/Cognis-Labs-HQ/Cognis/commit/f405a3e)
 - [641d87a](https://github.com/Cognis-Labs-HQ/Cognis/commit/641d87a)
 - [bbed779](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbed779)
+- [efd006d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/efd006d2)
