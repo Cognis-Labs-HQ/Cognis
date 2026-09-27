@@ -35,12 +35,17 @@ export function renderHorizontalCarousel({
 /**
  * Bind every horizontal carousel below a root element.
  * @param {ParentNode} root Carousel container.
- * @param {{signal?: AbortSignal, onChange?: (detail: {id: string, values: string[]}) => void, onAdd?: (detail: {id: string, carousel: HTMLElement}) => void}} options Event callbacks.
+ * @param {{signal?: AbortSignal, onChange?: (detail: {id: string, values: string[]}) => void, onAdd?: (detail: {id: string, carousel: HTMLElement}) => void, selectionOrder?: (detail: {id: string, value: string, localIndex: number}) => number | undefined}} options Event callbacks and optional shared selection ordering.
  * @returns {void}
  */
 export function mountHorizontalCarousels(
     root,
-    { signal, onChange = () => {}, onAdd = () => {} } = {},
+    {
+        signal,
+        onChange = () => {},
+        onAdd = () => {},
+        selectionOrder = ({ localIndex }) => localIndex,
+    } = {},
 ) {
     const previewOverlay = createAnchoredPopup({
         className: "horizontal-carousel-preview is-portal",
@@ -83,9 +88,15 @@ export function mountHorizontalCarousels(
         carousel.querySelectorAll("[data-carousel-value]").forEach((item) => {
             const selected = item.classList.contains("is-selected");
             item.setAttribute("aria-pressed", String(selected));
+            const localIndex =
+                values(carousel).indexOf(item.dataset.carouselValue) + 1;
             item.querySelector("[data-carousel-order]").textContent = selected
                 ? String(
-                      values(carousel).indexOf(item.dataset.carouselValue) + 1,
+                      selectionOrder({
+                          id: carousel.dataset.horizontalCarousel,
+                          value: item.dataset.carouselValue,
+                          localIndex,
+                      }) ?? localIndex,
                   )
                 : "";
         });
@@ -138,6 +149,9 @@ export function mountHorizontalCarousels(
                 id: carousel.dataset.horizontalCarousel,
                 values: values(carousel),
             });
+            root.querySelectorAll("[data-horizontal-carousel]").forEach(
+                refresh,
+            );
         },
         { signal },
     );

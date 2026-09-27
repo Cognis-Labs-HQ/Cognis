@@ -610,6 +610,24 @@ export async function openLibraryEntryEditor({
             const form = overlay.querySelector("[data-library-admin-editor]");
             formController = editor.builder.attach(form);
             bindLibraryEditorControls(form, entry, i18n);
+            const pronunciationRelationshipIds = new Set(
+                pronunciationRelationshipsFor(
+                    composer.layer,
+                    schema,
+                    composer.pronunciationCarouselLayers,
+                ).map(({ id }) => id),
+            );
+            form.compositionOrder = (entry.references ?? [])
+                .filter(
+                    ({ relation }) =>
+                        !pronunciationRelationshipIds.has(relation),
+                )
+                .toSorted(
+                    (left, right) =>
+                        (left.position ?? Number.MAX_SAFE_INTEGER) -
+                        (right.position ?? Number.MAX_SAFE_INTEGER),
+                )
+                .map(({ entryId }) => entryId);
             mountEditableRelationshipCarousels(
                 form,
                 overlay,
@@ -619,6 +637,31 @@ export async function openLibraryEntryEditor({
                 {
                     pronunciationCarouselLayers:
                         composer.pronunciationCarouselLayers,
+                    selectionOrder: ({ id, value, localIndex }) => {
+                        if (pronunciationRelationshipIds.has(id))
+                            return localIndex;
+                        const index = form.compositionOrder.indexOf(value);
+                        return index < 0 ? localIndex : index + 1;
+                    },
+                    onChange: ({ id, values }) => {
+                        if (pronunciationRelationshipIds.has(id)) return;
+                        const select = form.elements[`relationship:${id}`];
+                        const previous = new Set(
+                            Array.from(
+                                select?.selectedOptions ?? [],
+                                ({ value }) => value,
+                            ),
+                        );
+                        const selected = new Set(values);
+                        form.compositionOrder = form.compositionOrder.filter(
+                            (value) =>
+                                selected.has(value) || !previous.has(value),
+                        );
+                        values.forEach((value) => {
+                            if (!previous.has(value))
+                                form.compositionOrder.push(value);
+                        });
+                    },
                 },
             );
             form.addEventListener("click", (event) => {
@@ -654,7 +697,11 @@ export async function openLibraryEntryEditor({
                 form.reportValidity();
                 return false;
             }
-            const references = readReferences(form, composer.layer);
+            const references = readReferences(
+                form,
+                composer.layer,
+                form.compositionOrder,
+            );
             const fields = readFields(form, composer.layer, entry);
             applyDerivedPronunciation(
                 fields,

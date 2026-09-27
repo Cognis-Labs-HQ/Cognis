@@ -322,6 +322,14 @@ Composer kini menormalkan konstruktor kartu ke profil semantik yang diminta: kar
 
 Karakter atomik dan partikel tidak lagi dapat dibuat, disunting, diajukan untuk pembaruan, atau dihapus melalui UI maupun panggilan API langsung. Proyeksi izin menghapus tindakan sunting dan hapus bahkan bagi administrator dan pemilik, sementara entri tetap tersedia untuk penjelajahan hanya-baca.
 
+## Petunjuk panduan tersembunyi yang tepat waktu
+
+Latihan Menggambar kini menampilkan tanda tanya pada kanvas hanya ketika goresan yang sedang diminta memiliki panduan tersembunyi. Goresan tersembunyi yang baru diperlukan nanti tidak lagi menampilkan petunjuk terlalu awal.
+
+## Posisi karosel menyeluruh dalam komposisi
+
+Karosel Input Pustaka Studi kini berbagi satu urutan penghitung dalam dialog buat dan edit. Lencana mencerminkan seluruh komposisi tersimpan di semua karosel relasi, bukan dimulai ulang dari satu pada setiap karosel.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -406,3 +414,4 @@ Karakter atomik dan partikel tidak lagi dapat dibuat, disunting, diajukan untuk 
 - [a0af7d1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0af7d1a)
 - [54242971](https://github.com/Cognis-Labs-HQ/Cognis/commit/54242971)
 - [125495f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/125495f3)
+- [109f583e](https://github.com/Cognis-Labs-HQ/Cognis/commit/109f583e)

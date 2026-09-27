@@ -322,6 +322,14 @@ The composer now normalizes card constructors to the requested semantic profiles
 
 Atomic characters and particles can no longer be created, edited, submitted for update, or deleted through either the UI or direct API calls. Permission projections remove edit and delete actions even for administrators and owners, while entries remain available for read-only browsing.
 
+## Timely hidden-guide prompts
+
+Drawing Practice now shows the canvas question mark only when the currently required stroke has a hidden guide. Future hidden strokes no longer produce an early prompt.
+
+## Composition-wide carousel positions
+
+Study Library Input carousels now share one ordered counter sequence in create and edit popups. The badges reflect the complete saved composition across relationship carousels instead of restarting at one in each carousel.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -406,3 +414,4 @@ Atomic characters and particles can no longer be created, edited, submitted for 
 - [a0af7d1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0af7d1a)
 - [54242971](https://github.com/Cognis-Labs-HQ/Cognis/commit/54242971)
 - [125495f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/125495f3)
+- [109f583e](https://github.com/Cognis-Labs-HQ/Cognis/commit/109f583e)

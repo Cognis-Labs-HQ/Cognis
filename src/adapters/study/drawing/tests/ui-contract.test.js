@@ -42,6 +42,7 @@ test("drawing practice tracks ordered strokes and progressive guidance", () => {
     assert.match(source, /function addRandomHiddenGuide/);
     assert.match(source, /window\.crypto\.getRandomValues/);
     assert.match(source, /hiddenGuideIndices\.has\(index\)/);
+    assert.match(source, /hiddenGuideIndices\.has\(completed\.length\)/);
     assert.match(source, /context\.fillText\("\?", 20, 22\)/);
     assert.match(source, /attemptedCardIds/);
     assert.match(source, /data-guidance/);

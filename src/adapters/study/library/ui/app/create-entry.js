@@ -268,6 +268,12 @@ export async function openCreateEntryPopup({
                 editingLayer,
                 {
                     pronunciationCarouselLayers,
+                    selectionOrder: ({ id, value, localIndex }) => {
+                        if (pronunciationRelationshipIds.has(id))
+                            return localIndex;
+                        const index = form.compositionOrder.indexOf(value);
+                        return index < 0 ? localIndex : index + 1;
+                    },
                     onChange: ({ id, values }) => {
                         const select = form.elements[`relationship:${id}`];
                         if (!select) return;

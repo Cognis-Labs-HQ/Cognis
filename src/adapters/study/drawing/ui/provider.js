@@ -367,10 +367,7 @@ function openDrawingPad({
             })),
         );
         const hasHiddenGuide =
-            !revealHiddenGuides &&
-            Array.from(hiddenGuideIndices).some(
-                (index) => index >= completed.length,
-            );
+            !revealHiddenGuides && hiddenGuideIndices.has(completed.length);
         const occupiedAnnotations = hasHiddenGuide ? [{ x: 20, y: 22 }] : [];
         const guides = (() => {
             const groupLengths = currentPattern.groups?.length

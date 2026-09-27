@@ -322,6 +322,14 @@ Der Composer normalisiert Kartenkonstruktoren nun auf die verlangten semantische
 
 Atomare Zeichen und Partikel können weder über die Benutzeroberfläche noch über direkte API-Aufrufe erstellt, bearbeitet, zur Aktualisierung eingereicht oder gelöscht werden. Die Berechtigungsprojektion entfernt Bearbeitungs- und Löschaktionen auch für Administratoren und Eigentümer, während Einträge weiterhin schreibgeschützt betrachtet werden können.
 
+## Rechtzeitige Hinweise für ausgeblendete Führungen
+
+Die Zeichenübung zeigt das Fragezeichen auf der Leinwand nun nur an, wenn die aktuell erforderliche Strichführung ausgeblendet ist. Spätere ausgeblendete Striche lösen keinen vorzeitigen Hinweis mehr aus.
+
+## Karussellübergreifende Kompositionspositionen
+
+Die Eingabe-Karussells der Studienbibliothek verwenden in Erstellungs- und Bearbeitungsdialogen nun eine gemeinsame Reihenfolge. Die Positionsmarken zeigen die vollständig gespeicherte Komposition über alle Beziehungskarussells hinweg, statt in jedem Karussell erneut bei eins zu beginnen.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -406,3 +414,4 @@ Atomare Zeichen und Partikel können weder über die Benutzeroberfläche noch ü
 - [a0af7d1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0af7d1a)
 - [54242971](https://github.com/Cognis-Labs-HQ/Cognis/commit/54242971)
 - [125495f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/125495f3)
+- [109f583e](https://github.com/Cognis-Labs-HQ/Cognis/commit/109f583e)

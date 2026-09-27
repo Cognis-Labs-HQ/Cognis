@@ -55,4 +55,9 @@ test("horizontal carousel mounting uses a body-level preview portal", () => {
     assert.match(stylesheet, /max-inline-size:/);
     assert.match(mountHorizontalCarousels.toString(), /selectedItems/);
     assert.match(mountHorizontalCarousels.toString(), /data-carousel-order/);
+    assert.match(mountHorizontalCarousels.toString(), /selectionOrder/);
+    assert.match(
+        mountHorizontalCarousels.toString(),
+        /root\.querySelectorAll\("\[data-horizontal-carousel\]"\)\.forEach\(refresh\)/,
+    );
 });

@@ -23,3 +23,5 @@ The pad remains inside the viewport, uses a compact content-derived height, and 
 Annotation labels evaluate nearby placements around each stroke start and choose the first position that clears other labels and every rendered stroke path. This keeps numbered bubbles readable and close to their strokes without covering completed user work.
 
 Successful attempts with no more than one mistake now increase card-specific recall difficulty by hiding one additional randomly selected stroke guide. Hidden strokes are represented by a question mark in the canvas corner and are still validated normally. The top-right guidance action reveals hidden strokes for the current attempt without clearing accepted input or reducing the card’s learned difficulty. Annotation placement prefers the first nearby collision-free position instead of maximizing empty distance, keeping labels closer to their stroke starts.
+
+The hidden-guide question mark appears only when the learner reaches a stroke whose guide is hidden; it no longer warns early about hidden strokes later in the pattern.

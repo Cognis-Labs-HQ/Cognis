@@ -126,6 +126,16 @@ test("Study Library links pronunciations through ordered relationship aliases", 
     assert.match(source, /resolveReferenceAliasComposition/);
 });
 
+test("Study Library numbers composed carousel selections holistically", () => {
+    assert.match(source, /selectionOrder: \(\{ id, value, localIndex \}\)/);
+    assert.match(source, /form\.compositionOrder\.indexOf\(value\)/);
+    assert.match(
+        source,
+        /form\.compositionOrder = \(entry\.references \?\? \[\]\)/,
+    );
+    assert.match(source, /readReferences\([\s\S]*form\.compositionOrder/);
+});
+
 test("Study Library popup uses equal directional navigation controls", () => {
     assert.match(source, /arrow-back-light\.svg/);
     assert.match(source, /arrow-back-dark\.svg/);

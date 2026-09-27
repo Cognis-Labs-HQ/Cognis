@@ -9,6 +9,7 @@ export function mountEditableRelationshipCarousels(
     {
         onChange = () => {},
         onAdd = () => {},
+        selectionOrder,
         pronunciationCarouselLayers = new Set(),
     } = {},
 ) {
@@ -33,6 +34,7 @@ export function mountEditableRelationshipCarousels(
     overlay.addEventListener("close", () => controller.abort(), { once: true });
     mountHorizontalCarousels(form, {
         signal: controller.signal,
+        selectionOrder,
         onChange: ({ id, values }) => {
             const select = form.elements[`relationship:${id}`];
             if (!select) return;
