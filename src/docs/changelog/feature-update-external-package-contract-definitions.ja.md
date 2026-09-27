@@ -294,6 +294,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 語彙、文、複合の編集フォームは汎用の発音リストコントロールを常に非表示にし、順序付き構成要素から発音を引き続き導出します。汎用リストフィールドにはタグチップではなく改行区切りテキストを使用します。
 
+## 段階的な記憶描画
+
+ミスの少ない完了では、通常の検証を維持したままカードごとにランダムなストロークガイドを追加で1本隠します。キャンバスの疑問符が隠れたガイドを示し、右上の ? は進捗を消さずに表示し、注釈ラベルはより近い安全な位置を使用します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -370,3 +374,5 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - [641d87a](https://github.com/Cognis-Labs-HQ/Cognis/commit/641d87a)
 - [bbed779](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbed779)
 - [efd006d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/efd006d2)
+- [fb046ce2](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb046ce2)
+- [004b39e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/004b39e5)

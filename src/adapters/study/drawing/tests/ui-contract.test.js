@@ -28,8 +28,8 @@ test("drawing practice tracks ordered strokes and progressive guidance", () => {
     assert.match(source, /function distanceToSegment/);
     assert.match(source, /function annotationPosition/);
     assert.match(source, /occupiedAnnotations\.push\(label\)/);
-    assert.match(source, /distance\(candidate, position\) - 24/);
-    assert.match(source, /distanceToSegment\([\s\S]*?\)\s*-\s*15/);
+    assert.match(source, /distance\(candidate, position\) - 21/);
+    assert.match(source, /distanceToSegment\([\s\S]*?\)\s*-\s*12/);
     assert.match(
         source,
         /Math\.atan2\([\s\S]*\* canvas\.height,[\s\S]*\* canvas\.width/,
@@ -38,15 +38,20 @@ test("drawing practice tracks ordered strokes and progressive guidance", () => {
     assert.match(source, /successiveMistakes >= 10/);
     assert.match(source, /adapter\.study\.drawing\.loser/);
     assert.match(source, /difficultyByCardId/);
+    assert.match(source, /hiddenGuideIndicesByCardId/);
+    assert.match(source, /function addRandomHiddenGuide/);
+    assert.match(source, /window\.crypto\.getRandomValues/);
+    assert.match(source, /hiddenGuideIndices\.has\(index\)/);
+    assert.match(source, /context\.fillText\("\?", 20, 22\)/);
     assert.match(source, /attemptedCardIds/);
     assert.match(source, /data-guidance/);
     assert.match(
         source,
-        /difficultyByCardId\.delete\(currentCard\.id\);[\s\S]*hasAttemptedPiece = false;[\s\S]*draw\(\);/,
+        /hasAttemptedPiece = false;[\s\S]*revealHiddenGuides = true;[\s\S]*draw\(\);/,
     );
     assert.match(source, /currentPattern\.groups/);
     assert.match(source, /mistakes <= 1/);
-    assert.match(source, /currentPattern\.strokes\.slice/);
+    assert.match(source, /currentPattern\.strokes[\s\S]*?\.slice/);
     assert.match(source, /requestAnimationFrame/);
     assert.match(source, /cancelAnimationFrame/);
     assert.match(source, /completed\.push\(expected\)/);
@@ -60,7 +65,7 @@ test("drawing practice tracks ordered strokes and progressive guidance", () => {
     assert.match(source, /allowOrientationSwap:\s*false/);
     assert.match(
         source,
-        /drawStrokeOrder\([\s\S]*guides\[0\],[\s\S]*completed\.length,[\s\S]*occupiedAnnotations,[\s\S]*annotationPaths/,
+        /drawStrokeOrder\([\s\S]*visibleGuides\[0\]\.stroke,[\s\S]*visibleGuides\[0\]\.index,[\s\S]*occupiedAnnotations,[\s\S]*annotationPaths/,
     );
     assert.match(source, /playSuccessSound/);
     assert.match(source, /createOscillator/);

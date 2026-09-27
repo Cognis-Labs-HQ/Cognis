@@ -294,6 +294,10 @@ Popup pembuatan dan penyuntingan kini memakai kontrak konstruktor kartu penyedia
 
 Formulir penyuntingan kosakata, kalimat, dan gabungan kini selalu menyembunyikan kontrol daftar pelafalan generik dan tetap menurunkan pelafalan dari bagian terurutnya. Bidang daftar generik memakai teks per baris, bukan chip tag.
 
+## Menggambar ingatan progresif
+
+Penyelesaian dengan sedikit kesalahan kini menyembunyikan satu panduan goresan acak tambahan per kartu sambil mempertahankan validasi normal. Tanda tanya pada kanvas menandai panduan tersembunyi, ? kanan atas menampilkannya tanpa menghapus kemajuan, dan label anotasi memakai posisi aman yang lebih dekat.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -370,3 +374,5 @@ Formulir penyuntingan kosakata, kalimat, dan gabungan kini selalu menyembunyikan
 - [641d87a](https://github.com/Cognis-Labs-HQ/Cognis/commit/641d87a)
 - [bbed779](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbed779)
 - [efd006d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/efd006d2)
+- [fb046ce2](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb046ce2)
+- [004b39e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/004b39e5)
