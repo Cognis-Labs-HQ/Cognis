@@ -274,6 +274,7 @@ export function renderAudio(
     entries = [],
     schemas = [],
     fallbackLabel = "",
+    missingDependencyLabel = "",
 ) {
     const own = entryAudio(entry, layer);
     const useRelatedProviderAudio =
@@ -325,8 +326,19 @@ export function renderAudio(
         ? localizedLabel(own.audioField.metadata, entry.language) ||
           own.audioField.id
         : fallbackLabel;
-    if (!complete || !sources.length)
-        return `<button class="library-audio-speaker btn-neutral" type="button" disabled aria-label="${escapeHtml(label)}">${speakerPicture()}</button>`;
+    if (!complete || !sources.length) {
+        const dependenciesMissingAudio =
+            ["lexicalUnit", "orderedLexicalSequence"].includes(
+                layer?.semanticRole,
+            ) && (entry.references ?? []).length > 0;
+        const unavailableLabel = dependenciesMissingAudio
+            ? missingDependencyLabel
+            : "";
+        const button = `<button class="library-audio-speaker btn-neutral" type="button" disabled aria-label="${escapeHtml(unavailableLabel || label)}">${speakerPicture()}</button>`;
+        return unavailableLabel
+            ? `<span class="library-audio-unavailable">${button}<span class="library-audio-unavailable-tooltip" role="tooltip">${escapeHtml(unavailableLabel)}</span></span>`
+            : button;
+    }
     return `<div class="library-audio-sequence" data-library-audio-sequence>${sources
         .map(
             ({ entry: source, field }) =>

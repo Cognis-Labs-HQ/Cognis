@@ -198,3 +198,5 @@ Card constructors are the single form contract for both creation and editing. Th
 Whenever a pronunciation field is visible in a create or edit form, Library renders the pronunciation composer rather than a generic list textarea. The constructor’s `pronunciation_carousels` continue to determine which layer-specific relationship carousels appear inside it.
 
 Vocabulary, sentence, and composite forms never render the generic list-value editor for pronunciation, even if a provider payload includes that derived field. Other list-valued provider fields use a plain newline-separated text area rather than removable tag chips; entry classification tags retain their dedicated metadata control.
+
+Vocabulary and sentence cards play their ordered dependencies’ audio as one sequence when they have no uploaded audio of their own. An optional audio upload on the card overrides that derived sequence. If any dependency is missing audio, the disabled speaker explains the missing dependency on hover.

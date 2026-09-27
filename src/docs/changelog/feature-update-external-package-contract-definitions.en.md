@@ -302,6 +302,10 @@ Low-mistake completions now hide one additional random stroke guide per card whi
 
 Visible pronunciation fields now always use the pronunciation composer in create and edit dialogs. Pronunciation carousels declared by the card constructor remain layer-specific and appear inside that composer, while layers without declared relationship carousels can still enter unrestricted pronunciation segments.
 
+## Derived audio sequences with clear missing-audio feedback
+
+Vocabulary and sentence cards without their own upload play the audio of their ordered parts in sequence. An optional card-level upload overrides the derived sequence; when a dependency lacks audio, a localized hover tooltip explains why the speaker is disabled.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -381,3 +385,4 @@ Visible pronunciation fields now always use the pronunciation composer in create
 - [fb046ce2](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb046ce2)
 - [004b39e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/004b39e5)
 - [3e48b191](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e48b191)
+- [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)

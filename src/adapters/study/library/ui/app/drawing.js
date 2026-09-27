@@ -129,7 +129,7 @@ export function loadDrawing(entry, layer, entries, schemas, definition = "") {
 
 export function placeAudioSpeaker(overlay) {
     const speaker = overlay.querySelector(
-        ".library-detail-summary > :is(.library-audio-sequence, .library-audio-speaker)",
+        ".library-detail-summary > :is(.library-audio-sequence, .library-audio-speaker, .library-audio-unavailable)",
     );
     if (speaker) overlay.querySelector(".popup-heading")?.append(speaker);
 }

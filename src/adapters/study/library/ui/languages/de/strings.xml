@@ -94,6 +94,7 @@
   <string name="gateway.study.library_publish_class_option">Für Klasse veröffentlichen</string>
   <string name="gateway.study.library_practice_writing">Schreiben üben</string>
   <string name="gateway.study.library_play_audio">Audio abspielen</string>
+  <string name="gateway.study.library_dependencies_missing_audio">Bei Abhängigkeiten dieser Karte fehlt Audio</string>
   <string name="gateway.study.library_tags">Tags</string>
   <string name="gateway.study.library_lookup_with">Nachschlagen mit: {{ service }}</string>
   <string name="gateway.study.library_lookup_empty">Der Dienst hat keine passenden Kartendaten gefunden.</string>

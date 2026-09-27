@@ -828,6 +828,29 @@ body[data-theme="dark"] .library-audio {
     padding: 0.45rem;
     place-items: center;
 }
+.library-audio-unavailable {
+    display: inline-flex;
+    position: relative;
+}
+.library-audio-unavailable-tooltip {
+    background: var(--surface-raised, #182338);
+    border: 1px solid var(--border-color, #3a4a66);
+    border-radius: 0.35rem;
+    bottom: calc(100% + 0.4rem);
+    color: var(--text-color, #f4f7ff);
+    display: none;
+    font-size: 0.78rem;
+    left: 50%;
+    padding: 0.35rem 0.5rem;
+    position: absolute;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    z-index: 4;
+}
+.library-audio-unavailable:hover .library-audio-unavailable-tooltip,
+.library-audio-unavailable:focus-within .library-audio-unavailable-tooltip {
+    display: block;
+}
 .library-speaker-icon {
     display: block;
     width: 1.4rem;

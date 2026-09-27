@@ -302,6 +302,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 表示される発音フィールドは、作成・編集ダイアログのどちらでも常に発音コンポーザーを使用するようになりました。カードコンストラクターで宣言された発音カルーセルはレイヤー固有のままコンポーザー内に表示され、関係カルーセルを宣言していないレイヤーでも自由な発音部分を入力できます。
 
+## 派生音声シーケンスと明確な欠落表示
+
+独自の音声アップロードがない語彙カードと文カードは、順序付き構成要素の音声を連続再生します。カード単位の任意アップロードは派生シーケンスより優先され、依存項目に音声がない場合は、ローカライズされたホバーツールチップがスピーカーを無効化した理由を説明します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -381,3 +385,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - [fb046ce2](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb046ce2)
 - [004b39e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/004b39e5)
 - [3e48b191](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e48b191)
+- [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)

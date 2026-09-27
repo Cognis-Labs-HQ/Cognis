@@ -302,6 +302,10 @@ Penyelesaian dengan sedikit kesalahan kini menyembunyikan satu panduan goresan a
 
 Bidang pelafalan yang terlihat kini selalu memakai composer pelafalan dalam dialog pembuatan dan penyuntingan. Carousel pelafalan yang dideklarasikan oleh konstruktor kartu tetap khusus per lapisan dan muncul di dalam composer tersebut, sedangkan lapisan tanpa carousel relasi yang dideklarasikan tetap dapat memasukkan bagian pelafalan tanpa batasan.
 
+## Rangkaian audio turunan dengan umpan balik audio yang hilang
+
+Kartu kosakata dan kalimat tanpa unggahan sendiri memutar audio bagian terurutnya secara berurutan. Unggahan opsional pada tingkat kartu menggantikan rangkaian turunan; ketika dependensi tidak memiliki audio, tooltip hover yang dilokalkan menjelaskan alasan pengeras suara dinonaktifkan.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -381,3 +385,4 @@ Bidang pelafalan yang terlihat kini selalu memakai composer pelafalan dalam dial
 - [fb046ce2](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb046ce2)
 - [004b39e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/004b39e5)
 - [3e48b191](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e48b191)
+- [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)

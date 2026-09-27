@@ -94,6 +94,7 @@
   <string name="gateway.study.library_publish_class_option">Terbitkan untuk kelas</string>
   <string name="gateway.study.library_practice_writing">Latihan menulis</string>
   <string name="gateway.study.library_play_audio">Putar audio</string>
+  <string name="gateway.study.library_dependencies_missing_audio">Dependensi kartu ini tidak memiliki audio</string>
   <string name="gateway.study.library_tags">Tag</string>
   <string name="gateway.study.library_lookup_with">Cari dengan: {{ service }}</string>
   <string name="gateway.study.library_lookup_empty">Layanan tidak menemukan data kartu yang cocok.</string>

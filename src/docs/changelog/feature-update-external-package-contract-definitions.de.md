@@ -302,6 +302,10 @@ Abschlüsse mit wenigen Fehlern blenden nun pro Karte eine weitere zufällige St
 
 Sichtbare Aussprachefelder verwenden nun in Erstellungs- und Bearbeitungsdialogen immer den Aussprache-Composer. Die im Kartenkonstruktor deklarierten Aussprachekarussells bleiben schichtspezifisch und erscheinen innerhalb dieses Composers, während Schichten ohne deklarierte Beziehungskarussells weiterhin freie Ausspracheanteile eingeben können.
 
+## Abgeleitete Audiosequenzen mit klarer Fehleranzeige
+
+Wortschatz- und Satzkarten spielen ohne eigenen Upload die Audiodateien ihrer geordneten Bestandteile nacheinander ab. Ein optionaler Karten-Upload überschreibt die abgeleitete Sequenz; fehlt Audio bei einer Abhängigkeit, erklärt ein lokalisierter Hover-Hinweis den deaktivierten Lautsprecher.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -381,3 +385,4 @@ Sichtbare Aussprachefelder verwenden nun in Erstellungs- und Bearbeitungsdialoge
 - [fb046ce2](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb046ce2)
 - [004b39e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/004b39e5)
 - [3e48b191](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e48b191)
+- [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)

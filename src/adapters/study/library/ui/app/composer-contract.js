@@ -21,7 +21,10 @@ export function resolveComposerContract(schema, layer, constructor) {
         "lexicalUnit",
         "orderedLexicalSequence",
     ].includes(layer?.semanticRole);
-    const fields = (effectiveConstructor.fields ?? [])
+    const constructorFieldIds = new Set(effectiveConstructor.fields ?? []);
+    if (derivesPronunciation && fieldsById.get("audio")?.type === "audio")
+        constructorFieldIds.add("audio");
+    const fields = Array.from(constructorFieldIds)
         .map((fieldId) => fieldsById.get(fieldId))
         .filter(
             (field) =>

@@ -508,6 +508,7 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(adminInteractionsSource, /applyDerivedPronunciation/);
     assert.match(composerContractSource, /effectiveConstructor\.fields/);
     assert.match(composerContractSource, /effectiveConstructor\.relationships/);
+    assert.match(composerContractSource, /constructorFieldIds\.add\("audio"\)/);
     assert.match(composerContractSource, /"lexicalUnit"/);
     assert.match(composerContractSource, /"orderedLexicalSequence"/);
     assert.match(composerContractSource, /fields\.pronunciation =/);
@@ -842,6 +843,12 @@ test("Study Library honors module-defined grid layouts", () => {
 
 test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(source, /function renderAudio/);
+    assert.match(source, /dependenciesMissingAudio/);
+    assert.match(source, /gateway\.study\.library_dependencies_missing_audio/);
+    assert.match(source, /library-audio-unavailable-tooltip/);
+    assert.match(stylesheet, /\.library-audio-unavailable:hover/);
+    assert.match(source, /data-library-audio-sequence/);
+    assert.match(source, /own\.valid && !useRelatedProviderAudio/);
     assert.match(source, /data-library-audio-player/);
     assert.match(source, /data-library-audio-toggle/);
     assert.match(source, /data-library-audio-progress/);
