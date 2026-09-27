@@ -18,28 +18,13 @@ import {
     mountEditableRelationshipCarousels,
     pronunciationRelationshipsFor,
 } from "./pronunciation-editor.js";
+import {
+    applyDerivedPronunciation,
+    resolveComposerContract,
+} from "./composer-contract.js";
 
 export { inputForField } from "./field-input.js";
 import { inputForField } from "./field-input.js";
-
-function carouselOptionsForLayer(layer) {
-    const inputCarouselLayers = new Set(
-        layer?.cardConstructor?.input_carousels ?? [],
-    );
-    const pronunciationCarouselLayers = new Set(
-        layer?.cardConstructor?.pronunciation_carousels ?? [],
-    );
-    const inputCarouselIds = new Set(
-        (layer?.relationships ?? [])
-            .filter(
-                ({ targetLayer, presentationRole }) =>
-                    presentationRole !== "pronunciation" &&
-                    inputCarouselLayers.has(targetLayer),
-            )
-            .map(({ id }) => id),
-    );
-    return { inputCarouselIds, pronunciationCarouselLayers };
-}
 
 export function bindLibraryEditorControls(form, entry, i18n) {
     form.querySelectorAll("[data-library-provider-field]").forEach(
@@ -263,7 +248,8 @@ export function editorBody(
     options = {},
 ) {
     const schema = schemas.find(({ id }) => id === entry.schemaId);
-    const layer = schema?.layers.find(({ id }) => id === entry.layer);
+    const schemaLayer = schema?.layers.find(({ id }) => id === entry.layer);
+    const layer = options.editingLayer ?? schemaLayer;
     const immutableStringKeyField =
         layer?.semanticRole === "definition"
             ? layer.definitionLocalization?.stringKeyField
@@ -558,7 +544,10 @@ export function readFields(form, layer, entry) {
     };
 }
 
-export function readReferences(form, layer) {
+export function readReferences(form, layer, compositionOrder = []) {
+    const authoredPositions = new Map(
+        compositionOrder.map((entryId, position) => [entryId, position]),
+    );
     return (layer?.relationships ?? []).flatMap((relationship) =>
         Array.from(
             form.elements[`relationship:${relationship.id}`]?.selectedOptions ??
@@ -566,7 +555,12 @@ export function readReferences(form, layer) {
             (option, position) => ({
                 entryId: option.value,
                 relation: relationship.id,
-                ...(relationship.ordered ? { position } : {}),
+                ...(relationship.ordered
+                    ? {
+                          position:
+                              authoredPositions.get(option.value) ?? position,
+                      }
+                    : {}),
             }),
         ),
     );
@@ -582,15 +576,19 @@ export async function openLibraryEntryEditor({
 }) {
     const schema = schemas.find(({ id }) => id === entry.schemaId);
     const layer = schema?.layers.find(({ id }) => id === entry.layer);
-    const { inputCarouselIds, pronunciationCarouselLayers } =
-        carouselOptionsForLayer(layer);
+    const composer = resolveComposerContract(
+        schema,
+        layer,
+        layer?.cardConstructor,
+    );
     const editor = editorBody(entry, schemas, entries, i18n, "", {
         includeHidden: false,
         relationshipCarousels: true,
         relationshipCarouselAdd: false,
         inlinePronunciationCarousel: true,
-        inputCarouselIds,
-        pronunciationCarouselLayers,
+        inputCarouselIds: composer.inputCarouselIds,
+        pronunciationCarouselLayers: composer.pronunciationCarouselLayers,
+        editingLayer: composer.layer,
     });
     let formController;
     return openPopup({
@@ -617,9 +615,10 @@ export async function openLibraryEntryEditor({
                 overlay,
                 entries,
                 schema,
-                layer,
+                composer.layer,
                 {
-                    pronunciationCarouselLayers,
+                    pronunciationCarouselLayers:
+                        composer.pronunciationCarouselLayers,
                 },
             );
             form.addEventListener("click", (event) => {
@@ -655,6 +654,15 @@ export async function openLibraryEntryEditor({
                 form.reportValidity();
                 return false;
             }
+            const references = readReferences(form, composer.layer);
+            const fields = readFields(form, composer.layer, entry);
+            applyDerivedPronunciation(
+                fields,
+                references,
+                entries,
+                schema,
+                composer.derivesPronunciation,
+            );
             const proposedEntry = {
                 schemaId: entry.schemaId,
                 schemaVersion: entry.schemaVersion,
@@ -665,8 +673,8 @@ export async function openLibraryEntryEditor({
                 hidden: entry.hidden,
                 alwaysShowDefinition:
                     form.elements.alwaysShowDefinition.checked,
-                fields: readFields(form, layer, entry),
-                references: readReferences(form, layer),
+                fields,
+                references,
             };
             const updated = requestUpdate
                 ? await requestLibraryUpdate(entry.id, proposedEntry)
@@ -722,15 +730,20 @@ export function bindAdminLibraryInteractions(
             if (!entry) return;
             const schema = schemas.find(({ id }) => id === entry.schemaId);
             const layer = schema?.layers.find(({ id }) => id === entry.layer);
-            const { inputCarouselIds, pronunciationCarouselLayers } =
-                carouselOptionsForLayer(layer);
+            const composer = resolveComposerContract(
+                schema,
+                layer,
+                layer?.cardConstructor,
+            );
             const editor = editorBody(entry, schemas, entries, i18n, "", {
                 showRelationshipTab: readOnly,
                 relationshipCarousels: !readOnly,
                 relationshipCarouselAdd: false,
                 inlinePronunciationCarousel: !readOnly,
-                inputCarouselIds,
-                pronunciationCarouselLayers,
+                inputCarouselIds: composer.inputCarouselIds,
+                pronunciationCarouselLayers:
+                    composer.pronunciationCarouselLayers,
+                editingLayer: composer.layer,
             });
             let formController;
             editorOpen = true;
@@ -785,9 +798,10 @@ export function bindAdminLibraryInteractions(
                             overlay,
                             entries,
                             schema,
-                            layer,
+                            composer.layer,
                             {
-                                pronunciationCarouselLayers,
+                                pronunciationCarouselLayers:
+                                    composer.pronunciationCarouselLayers,
                             },
                         );
                 },
@@ -810,6 +824,15 @@ export function bindAdminLibraryInteractions(
                         return false;
                     }
                     try {
+                        const references = readReferences(form, composer.layer);
+                        const fields = readFields(form, composer.layer, entry);
+                        applyDerivedPronunciation(
+                            fields,
+                            references,
+                            entries,
+                            schema,
+                            composer.derivesPronunciation,
+                        );
                         const updated = await updateLibraryEntry(entry.id, {
                             schemaId: entry.schemaId,
                             schemaVersion: entry.schemaVersion,
@@ -824,8 +847,8 @@ export function bindAdminLibraryInteractions(
                                 form.elements.hidden.checked,
                             alwaysShowDefinition:
                                 form.elements.alwaysShowDefinition.checked,
-                            fields: readFields(form, layer, entry),
-                            references: readReferences(form, layer),
+                            fields,
+                            references,
                         });
                         Object.assign(entry, updated);
                         render();

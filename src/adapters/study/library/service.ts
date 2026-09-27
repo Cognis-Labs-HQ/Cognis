@@ -214,20 +214,33 @@ export class LibraryService implements LibraryCapability {
         return {
             ...copy,
             layers: copy.layers.map((layer) => {
-                const contribution = Array.from(
+                const contributions = Array.from(
                     this.formContributions.values(),
-                ).find(
+                ).filter(
                     (candidate) =>
                         candidate.schemaId === copy.id &&
-                        candidate.layerId === layer.id &&
-                        candidate.cardConstructor,
+                        candidate.layerId === layer.id,
                 );
-                return contribution?.cardConstructor
-                    ? {
-                          ...layer,
-                          cardConstructor: contribution.cardConstructor,
-                      }
-                    : layer;
+                const contributedFields = new Map(
+                    contributions
+                        .flatMap(({ fields }) => fields ?? [])
+                        .map((field) => [field.id, field]),
+                );
+                const fields = (layer.fields ?? []).map(
+                    (field) => contributedFields.get(field.id) ?? field,
+                );
+                for (const [fieldId, field] of contributedFields) {
+                    if (!fields.some(({ id }) => id === fieldId))
+                        fields.push(field);
+                }
+                const cardConstructor = contributions.find(
+                    (contribution) => contribution.cardConstructor,
+                )?.cardConstructor;
+                return {
+                    ...layer,
+                    fields,
+                    ...(cardConstructor ? { cardConstructor } : {}),
+                };
             }),
         };
     }

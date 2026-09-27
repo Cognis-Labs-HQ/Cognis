@@ -277,6 +277,13 @@ test("language providers can contribute a complete card constructor", async () =
         id: "test-language:unit-constructor",
         schemaId: "test-language",
         layerId: "units",
+        fields: [
+            {
+                id: "reading",
+                metadata: { labels: { en: "Provider Reading" } },
+                type: "string",
+            },
+        ],
         cardConstructor: {
             label: { labels: { en: "Written form" } },
             fields: ["reading"],
@@ -287,13 +294,17 @@ test("language providers can contribute a complete card constructor", async () =
         },
     });
 
-    assert.deepEqual(library.listSchemas()[0].layers[0].cardConstructor, {
+    const contributedLayer = library.listSchemas()[0].layers[0];
+    assert.deepEqual(contributedLayer.cardConstructor, {
         label: { labels: { en: "Written form" } },
         fields: ["reading"],
         input_carousels: [],
         pronunciation_carousels: [],
         defaults: { reading: "default" },
         allowAlwaysShowDefinition: true,
+    });
+    assert.deepEqual(contributedLayer.fields?.[0].metadata.labels, {
+        en: "Provider Reading",
     });
     remove();
     assert.equal(library.listSchemas()[0].layers[0].cardConstructor, undefined);

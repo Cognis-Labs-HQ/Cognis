@@ -286,6 +286,10 @@ Anotasi gambar kini menghitung arah dalam koordinat kanvas yang dirender sehingg
 
 Nomor goresan kini memilih posisi paling lapang di sekitar setiap titik awal serta menghindari penanda anotasi lain dan jalur goresan yang dirender agar panduan tidak menutupi pekerjaan pengguna yang selesai.
 
+## Kontrak pembuatan dan penyuntingan terpadu
+
+Popup pembuatan dan penyuntingan kini memakai kontrak konstruktor kartu penyedia yang sama untuk bidang dan carousel relasi. Karakter alternatif dapat menyusun pelafalan dari karakter sambil mempertahankan input bebas; pelafalan kosakata, kalimat, dan gabungan diturunkan secara rekursif dari bagian input yang dikonfigurasi.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -359,3 +363,5 @@ Nomor goresan kini memilih posisi paling lapang di sekitar setiap titik awal ser
 - [7841f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/7841f27)
 - [9aedc46](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aedc46)
 - [f405a3e](https://github.com/Cognis-Labs-HQ/Cognis/commit/f405a3e)
+- [641d87a](https://github.com/Cognis-Labs-HQ/Cognis/commit/641d87a)
+- [bbed779](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbed779)

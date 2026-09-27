@@ -286,6 +286,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 ストローク番号は各開始点の周囲で最も空いている位置を選び、ほかの注釈マーカーや描画済み経路を避けるため、ガイドが完了済みのユーザー入力を覆いません。
 
+## 作成と編集の統一契約
+
+作成ポップアップと編集ポップアップは、フィールドと関係カルーセルについて同じプロバイダーのカードコンストラクター契約を使用するようになりました。代替文字は自由入力を保ちながら文字から発音を構成でき、語彙、文、複合の発音は設定された入力要素から再帰的に導出されます。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -359,3 +363,5 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - [7841f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/7841f27)
 - [9aedc46](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aedc46)
 - [f405a3e](https://github.com/Cognis-Labs-HQ/Cognis/commit/f405a3e)
+- [641d87a](https://github.com/Cognis-Labs-HQ/Cognis/commit/641d87a)
+- [bbed779](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbed779)

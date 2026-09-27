@@ -386,8 +386,8 @@ test("Study Library creation is driven by language card constructors", () => {
     assert.match(adapterSource, /study:library:provider/);
     assert.match(adapterSource, /registerConstructor/);
     assert.match(source, /layer\?\.cardConstructor/);
-    assert.match(source, /constructor\.fields/);
-    assert.match(source, /constructor\.relationships/);
+    assert.match(source, /effectiveConstructor\.fields/);
+    assert.match(source, /effectiveConstructor\.relationships/);
     assert.match(source, /constructor\.defaults/);
     assert.match(source, /name="scope" type="hidden" value="user"/);
     assert.match(source, /data-library-publish-class-toggle/);
@@ -484,6 +484,10 @@ test("Study Library presents localized definitions as readable translations", ()
 });
 
 test("Study Library administration exposes contract-safe editing", () => {
+    const composerContractSource = readFileSync(
+        resolve(ROOT, "src/adapters/study/library/ui/app/composer-contract.js"),
+        "utf8",
+    );
     assert.match(adminInteractionsSource, /name:\s*"label"/);
     assert.match(adminInteractionsSource, /required:\s*true/);
     assert.match(adminInteractionsSource, /library_content_class/);
@@ -492,14 +496,21 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(adminInteractionsSource, /relationship\.ordered/);
     assert.match(adminInteractionsSource, /showRelationshipTab: readOnly/);
     assert.match(adminInteractionsSource, /mountEditableRelationshipCarousels/);
-    assert.match(adminInteractionsSource, /function carouselOptionsForLayer/);
+    assert.match(adminInteractionsSource, /resolveComposerContract/);
     assert.match(
-        adminInteractionsSource,
+        composerContractSource,
         /inputCarouselLayers\.has\(targetLayer\)/,
     );
     assert.match(adminInteractionsSource, /relationshipCarousels: !readOnly/);
     assert.match(adminInteractionsSource, /relationshipCarousels: true/);
     assert.match(adminInteractionsSource, /inputCarouselIds/);
+    assert.match(adminInteractionsSource, /editingLayer: composer\.layer/);
+    assert.match(adminInteractionsSource, /applyDerivedPronunciation/);
+    assert.match(composerContractSource, /effectiveConstructor\.fields/);
+    assert.match(composerContractSource, /effectiveConstructor\.relationships/);
+    assert.match(composerContractSource, /"lexicalUnit"/);
+    assert.match(composerContractSource, /"orderedLexicalSequence"/);
+    assert.match(composerContractSource, /fields\.pronunciation =/);
     assert.match(adminInteractionsSource, /relationshipCarouselAdd: false/);
     assert.match(adminInteractionsSource, /inlinePronunciationCarousel: true/);
     assert.match(adminInteractionsSource, /const inlinePronunciationCarousel/);

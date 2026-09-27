@@ -22,12 +22,16 @@ import {
     definitionText,
     layerForEntry,
     localizedLabel,
-    pronunciationValues,
 } from "./presentation.js";
 import {
     mountEditableRelationshipCarousels,
     pronunciationRelationshipsFor,
 } from "./pronunciation-editor.js";
+import {
+    applyDerivedPronunciation,
+    derivedPronunciation,
+    resolveComposerContract,
+} from "./composer-contract.js";
 
 export async function chooseCreateLayer({
     schema,
@@ -107,6 +111,8 @@ export async function openCreateEntryPopup({
                   relationships: (layer.relationships ?? []).map(
                       ({ id }) => id,
                   ),
+                  input_carousels: [],
+                  pronunciation_carousels: [],
                   defaults: {},
               }
             : null);
@@ -116,69 +122,21 @@ export async function openCreateEntryPopup({
             (item) => item.schemaId === schemaId && item.layerId === layerId,
         )
         .flatMap(({ fields }) => fields ?? []);
-    const contributedById = new Map(
+    const contributedFieldsById = new Map(
         contributedFields.map((field) => [field.id, field]),
     );
-    const fieldsById = new Map(
-        (layer.fields ?? []).map((field) => [field.id, field]),
-    );
-    const relationshipsById = new Map(
-        (layer.relationships ?? []).map((relationship) => [
-            relationship.id,
-            relationship,
-        ]),
-    );
-    const constructorRelationshipIds = new Set(constructor.relationships ?? []);
-    if (
-        ["lexicalUnit", "orderedLexicalSequence"].includes(layer.semanticRole)
-    ) {
-        for (const relationship of layer.relationships ?? []) {
-            const targetRole = schema.layers.find(
-                ({ id }) => id === relationship.targetLayer,
-            )?.semanticRole;
-            if (!["definition", "meaning"].includes(targetRole))
-                constructorRelationshipIds.add(relationship.id);
-        }
-    } else if (layer.semanticRole === "compoundWritingUnit") {
-        for (const relationship of layer.relationships ?? []) {
-            const targetRole = schema.layers.find(
-                ({ id }) => id === relationship.targetLayer,
-            )?.semanticRole;
-            if (targetRole === "atomicWritingUnit")
-                constructorRelationshipIds.add(relationship.id);
-        }
-    }
-    const constructorRelationships = Array.from(constructorRelationshipIds)
-        .map((relationshipId) => relationshipsById.get(relationshipId))
-        .filter(Boolean);
-    const constructorFieldIds = new Set(constructor.fields ?? []);
-    if (["compoundWritingUnit", "lexicalUnit"].includes(layer.semanticRole))
-        constructorFieldIds.add("pronunciation");
-    if (layer.semanticRole === "orderedLexicalSequence")
-        constructorFieldIds.delete("pronunciation");
-    const editingLayer = {
+    const composerLayer = {
         ...layer,
-        fields: Array.from(constructorFieldIds)
-            .map((fieldId) => {
-                const field = fieldsById.get(fieldId);
-                return contributedById.get(fieldId) ?? field;
-            })
-            .filter(Boolean),
-        relationships: constructorRelationships,
+        fields: (layer.fields ?? []).map(
+            (field) => contributedFieldsById.get(field.id) ?? field,
+        ),
     };
-    const inputCarouselLayers = new Set(constructor.input_carousels ?? []);
-    const pronunciationCarouselLayers = new Set(
-        constructor.pronunciation_carousels ?? [],
-    );
-    const inputCarouselIds = new Set(
-        constructorRelationships
-            .filter(
-                ({ targetLayer, presentationRole }) =>
-                    presentationRole !== "pronunciation" &&
-                    inputCarouselLayers.has(targetLayer),
-            )
-            .map(({ id }) => id),
-    );
+    const {
+        layer: editingLayer,
+        inputCarouselIds,
+        pronunciationCarouselLayers,
+        derivesPronunciation,
+    } = resolveComposerContract(schema, composerLayer, constructor);
     const pronunciationRelationshipIds = new Set(
         pronunciationRelationshipsFor(
             editingLayer,
@@ -470,16 +428,19 @@ export async function openCreateEntryPopup({
             : scope === "global"
               ? "global"
               : undefined;
-    const references = readReferences(form, editingLayer);
+    const references = readReferences(
+        form,
+        editingLayer,
+        form.compositionOrder ?? [],
+    );
     const fields = readFields(form, editingLayer, draft);
-    if (layer.semanticRole === "orderedLexicalSequence") {
-        fields.pronunciation = (form.compositionOrder ?? [])
-            .map((entryId) => entries.find(({ id }) => id === entryId))
-            .map((candidate) =>
-                derivedPronunciation(candidate, entries, schema),
-            )
-            .join("");
-    }
+    applyDerivedPronunciation(
+        fields,
+        references,
+        entries,
+        schema,
+        derivesPronunciation,
+    );
     const entry = {
         ...draft,
         label: form.elements.label.value,
@@ -634,23 +595,6 @@ function entryDefinition(entry, entries, schema) {
               document.documentElement.lang,
           )
         : "";
-}
-
-function derivedPronunciation(entry, entries, schema, visited = new Set()) {
-    if (!entry || visited.has(entry.id)) return "";
-    const path = new Set(visited);
-    path.add(entry.id);
-    const direct = pronunciationValues(entry).find(Boolean);
-    const entryLayer = layerForEntry([schema], entry);
-    if (entryLayer?.semanticRole === "atomicWritingUnit")
-        return direct || entry.label;
-    const parts = (entry.references ?? [])
-        .map(({ entryId }) => entries.find(({ id }) => id === entryId))
-        .map((candidate) =>
-            derivedPronunciation(candidate, entries, schema, path),
-        )
-        .filter(Boolean);
-    return parts.join("") || direct || "";
 }
 
 function applyLookupFields(form, fields, draft) {

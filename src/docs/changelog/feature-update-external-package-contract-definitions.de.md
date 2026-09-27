@@ -286,6 +286,10 @@ Zeichenanmerkungen berechnen ihre Richtung nun in gerenderten Canvas-Koordinaten
 
 Strichnummern wählen nun die freiste verfügbare Position um jeden Startpunkt und vermeiden andere Anmerkungsmarkierungen sowie gerenderte Strichpfade, damit die Anleitung abgeschlossene Benutzerarbeit nicht verdeckt.
 
+## Einheitliche Verträge für Erstellung und Bearbeitung
+
+Erstellungs- und Bearbeitungsdialoge verwenden nun denselben Kartenkonstruktor-Vertrag des Anbieters für Felder und Beziehungskarussells. Alternative Zeichen können die Aussprache aus Zeichen zusammensetzen und zugleich freie Eingabe behalten; die Aussprache von Wortschatz, Sätzen und Verbünden wird rekursiv aus den konfigurierten Eingabeteilen abgeleitet.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -359,3 +363,5 @@ Strichnummern wählen nun die freiste verfügbare Position um jeden Startpunkt u
 - [7841f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/7841f27)
 - [9aedc46](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aedc46)
 - [f405a3e](https://github.com/Cognis-Labs-HQ/Cognis/commit/f405a3e)
+- [641d87a](https://github.com/Cognis-Labs-HQ/Cognis/commit/641d87a)
+- [bbed779](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbed779)

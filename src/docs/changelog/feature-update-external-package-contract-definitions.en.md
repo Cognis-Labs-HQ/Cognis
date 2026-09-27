@@ -286,6 +286,10 @@ Drawing annotations now calculate their direction in rendered canvas coordinates
 
 Stroke numbers now choose the clearest available position around each start point, avoiding other annotation bubbles and rendered stroke paths so guidance does not cover completed user work.
 
+## Unified creation and editing contracts
+
+Creation and edit popups now consume the same provider card-constructor contract for fields and relationship carousels. Alternate characters can compose pronunciation from characters while keeping unrestricted input; vocabulary, sentence, and composite pronunciation is derived recursively from configured input parts.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -359,3 +363,5 @@ Stroke numbers now choose the clearest available position around each start poin
 - [7841f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/7841f27)
 - [9aedc46](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aedc46)
 - [f405a3e](https://github.com/Cognis-Labs-HQ/Cognis/commit/f405a3e)
+- [641d87a](https://github.com/Cognis-Labs-HQ/Cognis/commit/641d87a)
+- [bbed779](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbed779)
