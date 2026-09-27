@@ -282,6 +282,10 @@ Existing cards now derive both input and pronunciation carousel configuration fr
 
 Drawing annotations now calculate their direction in rendered canvas coordinates, preventing drift on the second and later characters of extended inputs. The ? guidance action preserves accepted user strokes and annotates only unfinished work.
 
+## Collision-aware drawing annotations
+
+Stroke numbers now choose the clearest available position around each start point, avoiding other annotation bubbles and rendered stroke paths so guidance does not cover completed user work.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -354,3 +358,4 @@ Drawing annotations now calculate their direction in rendered canvas coordinates
 - [8b08718f](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b08718f)
 - [7841f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/7841f27)
 - [9aedc46](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aedc46)
+- [f405a3e](https://github.com/Cognis-Labs-HQ/Cognis/commit/f405a3e)

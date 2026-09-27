@@ -282,6 +282,10 @@ Bestehende Karten leiten nun sowohl Eingabe- als auch Aussprachekarussells aus i
 
 Zeichenanmerkungen berechnen ihre Richtung nun in gerenderten Canvas-Koordinaten, wodurch ein Abdriften ab dem zweiten Zeichen längerer Eingaben verhindert wird. Die Anleitungsschaltfläche ? bewahrt akzeptierte Benutzerstriche und markiert nur noch nicht abgeschlossene Arbeit.
 
+## Kollisionsfreie Zeichenanmerkungen
+
+Strichnummern wählen nun die freiste verfügbare Position um jeden Startpunkt und vermeiden andere Anmerkungsmarkierungen sowie gerenderte Strichpfade, damit die Anleitung abgeschlossene Benutzerarbeit nicht verdeckt.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -354,3 +358,4 @@ Zeichenanmerkungen berechnen ihre Richtung nun in gerenderten Canvas-Koordinaten
 - [8b08718f](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b08718f)
 - [7841f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/7841f27)
 - [9aedc46](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aedc46)
+- [f405a3e](https://github.com/Cognis-Labs-HQ/Cognis/commit/f405a3e)

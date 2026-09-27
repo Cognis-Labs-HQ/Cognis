@@ -19,3 +19,5 @@ The **?** guidance action preserves accepted strokes and attempt results while r
 Composite cards now arrange every writing-unit pattern from the primary written value side by side at a consistent scale with minimal spacing. The pad expands to preserve character size, and its compact heading includes available pronunciations and the localized definition.
 
 The pad remains inside the viewport, uses a compact content-derived height, and caps its width at forty percent of the viewport so longer words scale rather than producing an oversized window. Resizing no longer swaps the pad's minimum dimensions, and every single-stroke guide retains its order and direction annotation.
+
+Annotation labels evaluate multiple placements around each stroke start and choose the position with the greatest clearance from other labels and every rendered stroke path. This keeps numbered bubbles readable without covering completed user work.

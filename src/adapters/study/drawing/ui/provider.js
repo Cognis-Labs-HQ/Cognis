@@ -26,6 +26,75 @@ function pathLength(points) {
         );
 }
 
+function distanceToSegment(point, start, end) {
+    const deltaX = end.x - start.x;
+    const deltaY = end.y - start.y;
+    const lengthSquared = deltaX ** 2 + deltaY ** 2;
+    if (!lengthSquared) return distance(point, start);
+    const projection = Math.max(
+        0,
+        Math.min(
+            1,
+            ((point.x - start.x) * deltaX + (point.y - start.y) * deltaY) /
+                lengthSquared,
+        ),
+    );
+    return distance(point, {
+        x: start.x + projection * deltaX,
+        y: start.y + projection * deltaY,
+    });
+}
+
+function annotationPosition(start, angle, canvas, occupied, paths) {
+    const directions = [
+        angle - Math.PI / 2,
+        angle + Math.PI / 2,
+        angle + Math.PI,
+        angle - (Math.PI * 3) / 4,
+        angle + (Math.PI * 3) / 4,
+        angle - Math.PI / 4,
+        angle + Math.PI / 4,
+        angle,
+    ];
+    const candidates = [22, 30, 38].flatMap((radius) =>
+        directions.map((direction) => ({
+            x: start.x + Math.cos(direction) * radius,
+            y: start.y + Math.sin(direction) * radius,
+        })),
+    );
+    const clearance = (candidate) =>
+        Math.min(
+            ...occupied.map((position) => distance(candidate, position) - 24),
+            ...paths.flatMap((path) =>
+                path
+                    .slice(1)
+                    .map(
+                        (point, index) =>
+                            distanceToSegment(candidate, path[index], point) -
+                            15,
+                    ),
+            ),
+        );
+    return candidates
+        .filter(
+            ({ x, y }) =>
+                x >= 12 &&
+                y >= 12 &&
+                x <= canvas.width - 12 &&
+                y <= canvas.height - 12,
+        )
+        .map((candidate, preference) => ({
+            candidate,
+            preference,
+            clearance: clearance(candidate),
+        }))
+        .sort(
+            (left, right) =>
+                right.clearance - left.clearance ||
+                left.preference - right.preference,
+        )[0]?.candidate;
+}
+
 function resample(points, count = 48) {
     if (points.length < 2) return points;
     const total = pathLength(points);
@@ -210,7 +279,7 @@ function openDrawingPad({
         context.lineTo(last.x * canvas.width, last.y * canvas.height);
         context.stroke();
     };
-    const drawStrokeOrder = (stroke, index) => {
+    const drawStrokeOrder = (stroke, index, occupiedAnnotations, paths) => {
         const [start, next] = stroke.points;
         if (!start || !next) return;
         const startX = start.x * canvas.width;
@@ -219,8 +288,17 @@ function openDrawingPad({
             (next.y - start.y) * canvas.height,
             (next.x - start.x) * canvas.width,
         );
-        const labelX = startX - Math.sin(angle) * 17;
-        const labelY = startY + Math.cos(angle) * 17;
+        const label = annotationPosition(
+            { x: startX, y: startY },
+            angle,
+            canvas,
+            occupiedAnnotations,
+            paths,
+        );
+        if (!label) return;
+        occupiedAnnotations.push(label);
+        const labelX = label.x;
+        const labelY = label.y;
         const arrowX = startX + Math.cos(angle) * 22;
         const arrowY = startY + Math.sin(angle) * 22;
         context.save();
@@ -255,6 +333,13 @@ function openDrawingPad({
     };
     const draw = () => {
         context.clearRect(0, 0, canvas.width, canvas.height);
+        const annotationPaths = currentPattern.strokes.map(({ points }) =>
+            points.map(({ x, y }) => ({
+                x: x * canvas.width,
+                y: y * canvas.height,
+            })),
+        );
+        const occupiedAnnotations = [];
         const guides = (() => {
             const groupLengths = currentPattern.groups?.length
                 ? currentPattern.groups
@@ -304,10 +389,20 @@ function openDrawingPad({
             currentPattern.strokes
                 .slice(groupStart, groupStart + groupLength)
                 .forEach((stroke, index) =>
-                    drawStrokeOrder(stroke, groupStart + index),
+                    drawStrokeOrder(
+                        stroke,
+                        groupStart + index,
+                        occupiedAnnotations,
+                        annotationPaths,
+                    ),
                 );
         } else if (guides.length === 1) {
-            drawStrokeOrder(guides[0], completed.length);
+            drawStrokeOrder(
+                guides[0],
+                completed.length,
+                occupiedAnnotations,
+                annotationPaths,
+            );
         }
         completed.forEach((stroke) => drawPath(stroke, colors.ink, 5));
         if (active) drawPath(active, colors.active, 5);

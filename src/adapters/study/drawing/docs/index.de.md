@@ -19,3 +19,5 @@ Die Anleitungsschaltfläche **?** bewahrt akzeptierte Striche und Versuchsergebn
 Zusammengesetzte Karten ordnen jetzt alle Schreibmuster des primären Schriftwerts nebeneinander in einheitlicher Größe und mit minimalem Abstand an. Der Zeichenblock wird entsprechend breiter; seine kompakte Überschrift zeigt verfügbare Aussprachen und die lokalisierte Definition.
 
 Der Zeichenblock bleibt innerhalb des Ansichtsbereichs, verwendet eine kompakte inhaltsabhängige Höhe und begrenzt seine Breite auf vierzig Prozent des Ansichtsbereichs, sodass längere Wörter skaliert werden, statt ein übergroßes Fenster zu erzeugen. Beim Ändern der Größe werden die Mindestmaße nicht mehr vertauscht, und jede einzelne Strichhilfe behält ihre Reihenfolge- und Richtungsmarkierung.
+
+Anmerkungsbeschriftungen prüfen mehrere Positionen um jeden Strichanfang und wählen die Stelle mit dem größten Abstand zu anderen Beschriftungen und allen gerenderten Strichpfaden. Dadurch bleiben nummerierte Markierungen lesbar, ohne abgeschlossene Benutzerstriche zu verdecken.

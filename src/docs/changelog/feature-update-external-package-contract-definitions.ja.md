@@ -282,6 +282,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 描画注釈の方向を描画後のキャンバス座標で計算し、長い入力の2文字目以降でずれる問題を防ぎました。? ガイド操作は受理済みのユーザーストロークを保持し、未完了部分だけに注釈を表示します。
 
+## 重なりを避ける描画注釈
+
+ストローク番号は各開始点の周囲で最も空いている位置を選び、ほかの注釈マーカーや描画済み経路を避けるため、ガイドが完了済みのユーザー入力を覆いません。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -354,3 +358,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - [8b08718f](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b08718f)
 - [7841f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/7841f27)
 - [9aedc46](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aedc46)
+- [f405a3e](https://github.com/Cognis-Labs-HQ/Cognis/commit/f405a3e)

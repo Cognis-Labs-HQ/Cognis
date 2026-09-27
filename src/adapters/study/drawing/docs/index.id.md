@@ -19,3 +19,5 @@ Tindakan panduan **?** mempertahankan goresan yang diterima dan hasil percobaan 
 Kartu gabungan kini menyusun semua pola unit tulisan dari nilai tulisan utama secara berdampingan dengan skala konsisten dan jarak minimal. Papan gambar melebar agar ukuran karakter tetap terjaga, sedangkan judul ringkasnya menampilkan pelafalan dan definisi yang tersedia.
 
 Papan gambar tetap berada di dalam area pandang, memakai tinggi ringkas yang mengikuti konten, dan membatasi lebarnya hingga empat puluh persen area pandang agar kata yang lebih panjang diperkecil alih-alih menghasilkan jendela terlalu besar. Pengubahan ukuran tidak lagi menukar ukuran minimum papan, dan setiap panduan satu goresan tetap menampilkan anotasi urutan serta arah.
+
+Label anotasi mengevaluasi beberapa posisi di sekitar awal setiap goresan dan memilih tempat dengan jarak terbesar dari label lain serta semua jalur goresan yang dirender. Dengan demikian, penanda bernomor tetap terbaca tanpa menutupi goresan pengguna yang sudah selesai.

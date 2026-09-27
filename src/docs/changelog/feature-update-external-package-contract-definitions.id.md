@@ -282,6 +282,10 @@ Kartu yang ada kini memperoleh konfigurasi carousel input dan pelafalan dari kon
 
 Anotasi gambar kini menghitung arah dalam koordinat kanvas yang dirender sehingga tidak bergeser pada karakter kedua dan berikutnya dari input panjang. Tindakan panduan ? mempertahankan goresan pengguna yang diterima dan hanya memberi anotasi pada bagian yang belum selesai.
 
+## Anotasi gambar bebas tumpang tindih
+
+Nomor goresan kini memilih posisi paling lapang di sekitar setiap titik awal serta menghindari penanda anotasi lain dan jalur goresan yang dirender agar panduan tidak menutupi pekerjaan pengguna yang selesai.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -354,3 +358,4 @@ Anotasi gambar kini menghitung arah dalam koordinat kanvas yang dirender sehingg
 - [8b08718f](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b08718f)
 - [7841f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/7841f27)
 - [9aedc46](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aedc46)
+- [f405a3e](https://github.com/Cognis-Labs-HQ/Cognis/commit/f405a3e)

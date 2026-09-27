@@ -25,6 +25,11 @@ test("drawing practice tracks ordered strokes and progressive guidance", () => {
     assert.match(source, /resample/);
     assert.match(source, /rootMeanSquare/);
     assert.match(source, /drawStrokeOrder/);
+    assert.match(source, /function distanceToSegment/);
+    assert.match(source, /function annotationPosition/);
+    assert.match(source, /occupiedAnnotations\.push\(label\)/);
+    assert.match(source, /distance\(candidate, position\) - 24/);
+    assert.match(source, /distanceToSegment\([\s\S]*?\)\s*-\s*15/);
     assert.match(
         source,
         /Math\.atan2\([\s\S]*\* canvas\.height,[\s\S]*\* canvas\.width/,
@@ -53,7 +58,10 @@ test("drawing practice tracks ordered strokes and progressive guidance", () => {
     assert.match(source, /currentPattern\.columns/);
     assert.match(source, /--drawing-columns/);
     assert.match(source, /allowOrientationSwap:\s*false/);
-    assert.match(source, /drawStrokeOrder\(guides\[0\], completed\.length\)/);
+    assert.match(
+        source,
+        /drawStrokeOrder\([\s\S]*guides\[0\],[\s\S]*completed\.length,[\s\S]*occupiedAnnotations,[\s\S]*annotationPaths/,
+    );
     assert.match(source, /playSuccessSound/);
     assert.match(source, /createOscillator/);
     assert.match(source, /659\.25/);
