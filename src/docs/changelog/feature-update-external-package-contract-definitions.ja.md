@@ -346,6 +346,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 プロバイダーフィールドは `input.multi_value` で複数値構成を有効化できます。コンポーザーはフィールド別の保存操作と確定値ピルを追加し、置換のための再編集、設定済みカルーセル内カードだけを対象とするテキスト候補、未解決自由入力の拒否、専用 × 操作による確認付き削除を提供します。既存項目の編集画面にも、作成フォームと同様に宣言済みカルーセルを表示します。
 
+## 複数値ステージングで確定済み値を変更しない
+
+フィールド直下の `multi_value` を正式な契約として取り込むようになりました。確定済みピルは空で始まるステージング欄から分離され、表示中の保存操作だけがステージ中の参照を確定します。小型の × 操作は確認なしでステージ中カードだけを削除し、保存済み値を変更しません。確定済みピルをクリックしてもステージングへ再読込しません。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -435,3 +439,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - [aef137a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/aef137a4)
 - [82df83ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/82df83ce)
 - [501b4459](https://github.com/Cognis-Labs-HQ/Cognis/commit/501b4459)
+- [65340e2d](https://github.com/Cognis-Labs-HQ/Cognis/commit/65340e2d)

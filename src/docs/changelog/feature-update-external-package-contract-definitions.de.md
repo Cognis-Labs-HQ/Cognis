@@ -346,6 +346,10 @@ Eingabe- und Aussprachebereiche zeigen nun immer ihr Feld für ausgewählte Kart
 
 Anbieterfelder können mit `input.multi_value` die mehrwertige Komposition aktivieren. Der Composer ergänzt eine feldspezifische Speicheraktion und Pillen für bestätigte Werte, ermöglicht deren erneutes Öffnen zum Ersetzen, begrenzt Texteingabevorschläge auf Karten der konfigurierten Karussells, weist nicht aufgelösten freien Text zurück und beschränkt bestätigtes Löschen auf eigene ×-Steuerelemente. Editoren bestehender Einträge binden ihre deklarierten Karussells nun wie Erstellungsformulare ein.
 
+## Mehrwertige Zwischenablage verändert bestätigte Werte nicht mehr
+
+`multi_value` auf Feldebene wird nun als maßgeblicher Vertrag eingelesen. Bestätigte Pillen bleiben von einem anfangs leeren Zwischenfeld getrennt, nur die sichtbare Speicheraktion bestätigt vorgemerkte Referenzen, und kompakte ×-Steuerelemente entfernen vorgemerkte Karten ohne Bestätigung oder Änderung gespeicherter Werte. Das Anklicken einer bestätigten Pille lädt sie nicht mehr in die Zwischenablage.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -435,3 +439,4 @@ Anbieterfelder können mit `input.multi_value` die mehrwertige Komposition aktiv
 - [aef137a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/aef137a4)
 - [82df83ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/82df83ce)
 - [501b4459](https://github.com/Cognis-Labs-HQ/Cognis/commit/501b4459)
+- [65340e2d](https://github.com/Cognis-Labs-HQ/Cognis/commit/65340e2d)

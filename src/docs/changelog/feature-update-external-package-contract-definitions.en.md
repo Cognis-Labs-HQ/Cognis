@@ -346,6 +346,10 @@ Input and Pronunciation sections now always show their selected-card field when 
 
 Provider fields can opt into multi-value composition with `input.multi_value`. The composer adds a field-specific save action and committed-value pills, supports reopening values for replacement, limits typed suggestions to cards in the configured carousels, rejects unresolved floating text, and confines confirmed deletion to dedicated × controls. Existing-entry editors now mount their declared carousels consistently with creation forms.
 
+## Multi-value staging no longer mutates committed values
+
+Field-level `multi_value` is now ingested as the canonical contract. Committed pills remain separate from an initially empty staging field, the visible Save action alone commits staged references, and compact × controls remove staged cards without confirmation or changing saved values. Clicking a committed pill no longer reloads it into staging.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -435,3 +439,4 @@ Provider fields can opt into multi-value composition with `input.multi_value`. T
 - [aef137a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/aef137a4)
 - [82df83ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/82df83ce)
 - [501b4459](https://github.com/Cognis-Labs-HQ/Cognis/commit/501b4459)
+- [65340e2d](https://github.com/Cognis-Labs-HQ/Cognis/commit/65340e2d)

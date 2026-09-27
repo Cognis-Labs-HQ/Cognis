@@ -270,7 +270,7 @@ export function editorBody(
         relationshipIds,
         { fieldLabel = kind, multiValue = false, values = [] } = {},
     ) => {
-        const selected = (entry.references ?? [])
+        const selected = (multiValue ? [] : (entry.references ?? []))
             .filter(({ relation }) => relationshipIds.has(relation))
             .toSorted(
                 (left, right) =>
@@ -323,7 +323,7 @@ export function editorBody(
                     : value
                       ? [value]
                       : [];
-                return `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(fieldLabel)}</legend><input name="field:pronunciation" type="hidden" value="${escapeHtml(pronunciations.join("\n"))}">${pronunciationRelationshipIds.size ? selectedReferenceField("pronunciation", pronunciationRelationshipIds, { fieldLabel, multiValue: field.input?.multi_value === true, values: pronunciations }) : ""}${inlinePronunciationCarousel}</fieldset>`;
+                return `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(fieldLabel)}</legend><input name="field:pronunciation" type="hidden" value="${escapeHtml(pronunciations.join("\n"))}">${pronunciationRelationshipIds.size ? selectedReferenceField("pronunciation", pronunciationRelationshipIds, { fieldLabel, multiValue: field.multi_value === true || field.input?.multi_value === true, values: pronunciations }) : ""}${inlinePronunciationCarousel}</fieldset>`;
             }
             if (
                 field.id === "pronunciation" &&

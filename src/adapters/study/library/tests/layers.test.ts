@@ -126,11 +126,12 @@ test("fields validate multi-value composer declarations", () => {
             id: "pronunciation",
             type: "stringList",
             metadata: { labels: { en: "Pronunciation" } },
-            input: { control: "freeText", multi_value: true },
+            input: { control: "freeText" },
+            multi_value: true,
         },
     ];
     assert.doesNotThrow(() => validateLibrarySchema(schema));
-    schema.layers[1].fields[0].input!.multi_value = "yes" as never;
+    schema.layers[1].fields[0].multi_value = "yes" as never;
     assert.throws(
         () => validateLibrarySchema(schema),
         /invalid_field_multi_value/,

@@ -346,6 +346,10 @@ Bagian Input dan Pelafalan kini selalu menampilkan bidang kartu terpilih ketika 
 
 Bidang penyedia dapat mengaktifkan komposisi multi-nilai dengan `input.multi_value`. Composer menambahkan tindakan simpan khusus bidang dan pil nilai tersimpan, mendukung pembukaan kembali nilai untuk penggantian, membatasi saran teks pada kartu dalam karosel terkonfigurasi, menolak teks bebas yang tidak terselesaikan, dan membatasi penghapusan terkonfirmasi pada kontrol × khusus. Editor entri yang sudah ada kini memasang karosel terdeklarasi secara konsisten dengan formulir pembuatan.
 
+## Area sementara multi-nilai tidak lagi mengubah nilai tersimpan
+
+`multi_value` pada tingkat bidang kini dibaca sebagai kontrak kanonis. Pil tersimpan tetap terpisah dari bidang sementara yang awalnya kosong, hanya tindakan Simpan yang terlihat yang menyimpan referensi sementara, dan kontrol × ringkas menghapus kartu sementara tanpa konfirmasi atau mengubah nilai tersimpan. Mengeklik pil tersimpan tidak lagi memuatnya ke area sementara.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -435,3 +439,4 @@ Bidang penyedia dapat mengaktifkan komposisi multi-nilai dengan `input.multi_val
 - [aef137a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/aef137a4)
 - [82df83ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/82df83ce)
 - [501b4459](https://github.com/Cognis-Labs-HQ/Cognis/commit/501b4459)
+- [65340e2d](https://github.com/Cognis-Labs-HQ/Cognis/commit/65340e2d)

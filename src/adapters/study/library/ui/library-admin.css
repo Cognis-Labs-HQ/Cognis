@@ -425,9 +425,11 @@ body[data-theme="light"]
 
 .library-composer-saved-value > .btn-cancel,
 .library-composition-block > .btn-cancel {
-    min-width: 1.5rem;
-    min-height: 1.5rem;
-    padding: 0.1rem 0.35rem;
+    min-width: 1rem;
+    min-height: 1rem;
+    padding: 0 0.2rem;
+    font-size: 0.7rem;
+    line-height: 1;
 }
 
 .library-composer-suggestions:not(:empty) {

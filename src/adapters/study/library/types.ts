@@ -71,6 +71,8 @@ export interface LibraryFieldSchema {
         | { kind: "list"; items: "string" | "number" | "boolean" }
         | { kind: "localizedText" };
     required?: boolean;
+    /** Commit multiple carousel-composed values independently. */
+    multi_value?: boolean;
     /** Provider-owned editing and linking semantics. Labels remain in metadata. */
     input?: {
         control:
@@ -86,7 +88,7 @@ export interface LibraryFieldSchema {
             value: string;
             metadata: LibraryMetadata;
         }[];
-        /** Commit multiple composed values independently before saving the card. */
+        /** @deprecated Prefer the field-level multi_value declaration. */
         multi_value?: boolean;
         immutable?: boolean;
         /** Relationships whose ordered targets make values in this field deep-linkable. */
