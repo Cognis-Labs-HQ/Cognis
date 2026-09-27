@@ -409,6 +409,34 @@ body[data-theme="light"]
     box-shadow: none;
 }
 
+.library-composer-saved-values:not([hidden]) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-block-end: 0.4rem;
+}
+
+.library-composer-saved-value,
+.library-composition-block {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.library-composer-saved-value > .btn-cancel,
+.library-composition-block > .btn-cancel {
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+    padding: 0.1rem 0.35rem;
+}
+
+.library-composer-suggestions:not(:empty) {
+    display: flex;
+    flex: 1 0 100%;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
 .library-publish-choice {
     display: inline-flex !important;
     flex-direction: row !important;

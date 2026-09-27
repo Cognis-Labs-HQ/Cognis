@@ -265,7 +265,11 @@ export function editorBody(
     const pronunciationRelationshipIds = new Set(
         pronunciationRelationships.map(({ id }) => id),
     );
-    const selectedReferenceField = (kind, relationshipIds) => {
+    const selectedReferenceField = (
+        kind,
+        relationshipIds,
+        { fieldLabel = kind, multiValue = false, values = [] } = {},
+    ) => {
         const selected = (entry.references ?? [])
             .filter(({ relation }) => relationshipIds.has(relation))
             .toSorted(
@@ -275,7 +279,14 @@ export function editorBody(
             )
             .map(({ entryId }) => entries.find(({ id }) => id === entryId))
             .filter(Boolean);
-        return `<span class="library-composition-input"><span class="library-composition-blocks" data-library-selected-references="${kind}" aria-live="polite">${selected.map((candidate) => `<button class="btn-neutral library-composition-block" type="button" data-library-selected-reference="${escapeHtml(candidate.id)}"><span>${escapeHtml(candidate.label)}</span><span aria-hidden="true">×</span></button>`).join("")}</span></span>`;
+        const savedValues =
+            multiValue && values.length
+                ? `<span class="library-composer-saved-values" data-library-saved-values>${values.map((value, index) => `<span class="library-composer-saved-value" data-library-saved-index="${index}"><button class="btn-neutral" type="button" data-library-edit-saved-value>${escapeHtml(value)}</button><button class="btn-cancel" type="button" data-library-delete-saved-value aria-label="${escapeHtml(i18n.t("gateway.study.library_delete_saved_value").replace("{{ field }}", fieldLabel))}">×</button></span>`).join("")}</span>`
+                : `<span class="library-composer-saved-values" data-library-saved-values hidden></span>`;
+        const saveButton = multiValue
+            ? `<button class="btn-confirm" type="button" data-library-save-composed-value>${escapeHtml(i18n.t("gateway.study.library_save_field").replace("{{ field }}", fieldLabel))}</button>`
+            : "";
+        return `${savedValues}<span class="library-composition-input" data-library-composition-field="${kind}" data-multi-value="${multiValue}"><span class="library-composition-blocks" data-library-selected-references="${kind}" aria-live="polite">${selected.map((candidate) => `<span class="btn-neutral library-composition-block" data-library-selected-reference="${escapeHtml(candidate.id)}"><span>${escapeHtml(candidate.label)}</span><button class="btn-cancel" type="button" data-library-remove-selected-reference aria-label="${escapeHtml(i18n.t("gateway.study.library_remove_selected_card").replace("{{ card }}", candidate.label))}">×</button></span>`).join("")}</span><input data-library-carousel-text autocomplete="off" aria-label="${escapeHtml(fieldLabel)}"><span class="library-composer-suggestions" data-library-carousel-suggestions></span>${saveButton}</span>`;
     };
     const inlinePronunciationCarousel = options.inlinePronunciationCarousel
         ? pronunciationRelationships
@@ -312,7 +323,7 @@ export function editorBody(
                     : value
                       ? [value]
                       : [];
-                return `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(fieldLabel)}</legend><input name="field:pronunciation" type="hidden" value="${escapeHtml(pronunciations.join("\u001f"))}">${pronunciationRelationshipIds.size ? selectedReferenceField("pronunciation", pronunciationRelationshipIds) : ""}${inlinePronunciationCarousel}</fieldset>`;
+                return `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(fieldLabel)}</legend><input name="field:pronunciation" type="hidden" value="${escapeHtml(pronunciations.join("\n"))}">${pronunciationRelationshipIds.size ? selectedReferenceField("pronunciation", pronunciationRelationshipIds, { fieldLabel, multiValue: field.input?.multi_value === true, values: pronunciations }) : ""}${inlinePronunciationCarousel}</fieldset>`;
             }
             if (
                 field.id === "pronunciation" &&
@@ -418,7 +429,7 @@ export function editorBody(
     const classField = `<input name="class" type="hidden" value="${escapeHtml(contentClass)}">`;
     const inputSelectionField =
         entry.id && options.inputCarouselIds?.size
-            ? `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</legend>${selectedReferenceField("input", options.inputCarouselIds)}</fieldset>`
+            ? `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</legend>${selectedReferenceField("input", options.inputCarouselIds, { fieldLabel: i18n.t("gateway.study.library_composer_text") })}</fieldset>`
             : "";
     const isDefinition = layer?.semanticRole === "definition";
     const tags = Array.isArray(entry.tags) ? entry.tags : [];
@@ -591,6 +602,7 @@ export async function openLibraryEntryEditor({
         inputCarouselIds: composer.inputCarouselIds,
         pronunciationCarouselLayers: composer.pronunciationCarouselLayers,
         editingLayer: composer.layer,
+        persistentExtra: true,
     });
     let formController;
     return openPopup({
@@ -637,6 +649,7 @@ export async function openLibraryEntryEditor({
                 schema,
                 composer.layer,
                 {
+                    i18n,
                     inputCarouselIds: composer.inputCarouselIds,
                     pronunciationCarouselLayers:
                         composer.pronunciationCarouselLayers,
@@ -795,6 +808,7 @@ export function bindAdminLibraryInteractions(
                 pronunciationCarouselLayers:
                     composer.pronunciationCarouselLayers,
                 editingLayer: composer.layer,
+                persistentExtra: !readOnly,
             });
             let formController;
             editorOpen = true;
@@ -851,6 +865,7 @@ export function bindAdminLibraryInteractions(
                             schema,
                             composer.layer,
                             {
+                                i18n,
                                 inputCarouselIds: composer.inputCarouselIds,
                                 pronunciationCarouselLayers:
                                     composer.pronunciationCarouselLayers,

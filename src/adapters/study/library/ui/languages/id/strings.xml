@@ -98,4 +98,12 @@
   <string name="gateway.study.library_lookup_empty">Layanan tidak menemukan data kartu yang cocok.</string>
   <string name="gateway.study.library_lookup_applied">Data kartu diisi dari layanan pencarian.</string>
   <string name="gateway.study.library_lookup_error">Layanan pencarian tidak dapat memproses masukan ini.</string>
+  <string name="gateway.study.library_save_field">Simpan {{ field }}</string>
+  <string name="gateway.study.library_delete_saved_value">Hapus {{ field }} tersimpan</string>
+  <string name="gateway.study.library_remove_selected_card">Hapus {{ card }}</string>
+  <string name="gateway.study.library_remove_selection">Hapus kartu terpilih</string>
+  <string name="gateway.study.library_remove_selection_confirm">Hapus kartu ini dari komposisi?</string>
+  <string name="gateway.study.library_delete_saved_value_title">Hapus entri tersimpan</string>
+  <string name="gateway.study.library_delete_saved_value_confirm">Hapus permanen entri tersimpan ini saat kartu disimpan?</string>
+  <string name="gateway.study.library_select_suggestion">Pilih saran kartu yang cocok; teks bebas tidak dapat disimpan.</string>
 </resources>

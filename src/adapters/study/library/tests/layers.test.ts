@@ -119,6 +119,24 @@ test("fields can link values through multiple declared relationships", () => {
     );
 });
 
+test("fields validate multi-value composer declarations", () => {
+    const schema: LibrarySchema = structuredClone(english);
+    schema.layers[1].fields = [
+        {
+            id: "pronunciation",
+            type: "stringList",
+            metadata: { labels: { en: "Pronunciation" } },
+            input: { control: "freeText", multi_value: true },
+        },
+    ];
+    assert.doesNotThrow(() => validateLibrarySchema(schema));
+    schema.layers[1].fields[0].input!.multi_value = "yes" as never;
+    assert.throws(
+        () => validateLibrarySchema(schema),
+        /invalid_field_multi_value/,
+    );
+});
+
 test("layers can explicitly reference other entries in the same layer", () => {
     const schema: LibrarySchema = {
         ...english,

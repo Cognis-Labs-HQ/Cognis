@@ -267,6 +267,7 @@ export async function openCreateEntryPopup({
                 schema,
                 editingLayer,
                 {
+                    i18n,
                     inputCarouselIds,
                     pronunciationCarouselLayers,
                     selectionOrder: ({ id, value, localIndex }) => {

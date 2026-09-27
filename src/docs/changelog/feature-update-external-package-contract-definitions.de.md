@@ -342,6 +342,10 @@ Der Composer löst Definitionen abgeleiteter Aussprachefelder nun aus dem vollst
 
 Eingabe- und Aussprachebereiche zeigen nun immer ihr Feld für ausgewählte Karten, wenn der Konstruktor für den jeweiligen Bereich Karussells deklariert. Bestehende Auswahlen füllen das Feld, Karusselländerungen aktualisieren es sofort, und das Anklicken einer angezeigten Karte entfernt sie über denselben Karussellzustand.
 
+## Mehrwertige Karussellkomposition und sicheres Löschen
+
+Anbieterfelder können mit `input.multi_value` die mehrwertige Komposition aktivieren. Der Composer ergänzt eine feldspezifische Speicheraktion und Pillen für bestätigte Werte, ermöglicht deren erneutes Öffnen zum Ersetzen, begrenzt Texteingabevorschläge auf Karten der konfigurierten Karussells, weist nicht aufgelösten freien Text zurück und beschränkt bestätigtes Löschen auf eigene ×-Steuerelemente. Editoren bestehender Einträge binden ihre deklarierten Karussells nun wie Erstellungsformulare ein.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -430,3 +434,4 @@ Eingabe- und Aussprachebereiche zeigen nun immer ihr Feld für ausgewählte Kart
 - [b17ebe21](https://github.com/Cognis-Labs-HQ/Cognis/commit/b17ebe21)
 - [aef137a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/aef137a4)
 - [82df83ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/82df83ce)
+- [501b4459](https://github.com/Cognis-Labs-HQ/Cognis/commit/501b4459)

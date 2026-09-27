@@ -342,6 +342,10 @@ Composer kini mengambil definisi bidang pelafalan turunan dari skema penyedia le
 
 Bagian Input dan Pelafalan kini selalu menampilkan bidang kartu terpilih ketika konstruktor mendeklarasikan karosel untuk bagian tersebut. Pilihan yang sudah ada mengisi bidang, perubahan karosel langsung memperbaruinya, dan memilih kartu yang ditampilkan akan menghapusnya melalui status karosel yang sama.
 
+## Komposisi karosel multi-nilai dan penghapusan aman
+
+Bidang penyedia dapat mengaktifkan komposisi multi-nilai dengan `input.multi_value`. Composer menambahkan tindakan simpan khusus bidang dan pil nilai tersimpan, mendukung pembukaan kembali nilai untuk penggantian, membatasi saran teks pada kartu dalam karosel terkonfigurasi, menolak teks bebas yang tidak terselesaikan, dan membatasi penghapusan terkonfirmasi pada kontrol × khusus. Editor entri yang sudah ada kini memasang karosel terdeklarasi secara konsisten dengan formulir pembuatan.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -430,3 +434,4 @@ Bagian Input dan Pelafalan kini selalu menampilkan bidang kartu terpilih ketika 
 - [b17ebe21](https://github.com/Cognis-Labs-HQ/Cognis/commit/b17ebe21)
 - [aef137a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/aef137a4)
 - [82df83ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/82df83ce)
+- [501b4459](https://github.com/Cognis-Labs-HQ/Cognis/commit/501b4459)

@@ -98,4 +98,12 @@
   <string name="gateway.study.library_lookup_empty">Der Dienst hat keine passenden Kartendaten gefunden.</string>
   <string name="gateway.study.library_lookup_applied">Die Kartendaten wurden vom Nachschlagedienst ausgefüllt.</string>
   <string name="gateway.study.library_lookup_error">Der Nachschlagedienst konnte diese Eingabe nicht verarbeiten.</string>
+  <string name="gateway.study.library_save_field">{{ field }} speichern</string>
+  <string name="gateway.study.library_delete_saved_value">Gespeicherte {{ field }} löschen</string>
+  <string name="gateway.study.library_remove_selected_card">{{ card }} entfernen</string>
+  <string name="gateway.study.library_remove_selection">Ausgewählte Karte entfernen</string>
+  <string name="gateway.study.library_remove_selection_confirm">Diese Karte aus der Komposition entfernen?</string>
+  <string name="gateway.study.library_delete_saved_value_title">Gespeicherten Eintrag löschen</string>
+  <string name="gateway.study.library_delete_saved_value_confirm">Diesen gespeicherten Eintrag beim Speichern der Karte dauerhaft löschen?</string>
+  <string name="gateway.study.library_select_suggestion">Wählen Sie einen passenden Kartenvorschlag; freier Text kann nicht gespeichert werden.</string>
 </resources>

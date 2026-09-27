@@ -98,4 +98,12 @@
   <string name="gateway.study.library_lookup_empty">一致するカードデータが見つかりませんでした。</string>
   <string name="gateway.study.library_lookup_applied">検索サービスからカードデータを入力しました。</string>
   <string name="gateway.study.library_lookup_error">検索サービスはこの入力を処理できませんでした。</string>
+  <string name="gateway.study.library_save_field">{{ field }}を保存</string>
+  <string name="gateway.study.library_delete_saved_value">保存済みの{{ field }}を削除</string>
+  <string name="gateway.study.library_remove_selected_card">{{ card }}を削除</string>
+  <string name="gateway.study.library_remove_selection">選択済みカードを削除</string>
+  <string name="gateway.study.library_remove_selection_confirm">このカードを構成から削除しますか？</string>
+  <string name="gateway.study.library_delete_saved_value_title">保存済み項目を削除</string>
+  <string name="gateway.study.library_delete_saved_value_confirm">カード保存時にこの保存済み項目を完全に削除しますか？</string>
+  <string name="gateway.study.library_select_suggestion">一致するカード候補を選択してください。自由入力テキストは保存できません。</string>
 </resources>

@@ -98,4 +98,12 @@
   <string name="gateway.study.library_lookup_empty">The service found no matching card data.</string>
   <string name="gateway.study.library_lookup_applied">Card data was filled from the lookup service.</string>
   <string name="gateway.study.library_lookup_error">The lookup service could not process this input.</string>
+  <string name="gateway.study.library_save_field">Save {{ field }}</string>
+  <string name="gateway.study.library_delete_saved_value">Delete saved {{ field }}</string>
+  <string name="gateway.study.library_remove_selected_card">Remove {{ card }}</string>
+  <string name="gateway.study.library_remove_selection">Remove selected card</string>
+  <string name="gateway.study.library_remove_selection_confirm">Remove this card from the composition?</string>
+  <string name="gateway.study.library_delete_saved_value_title">Delete saved entry</string>
+  <string name="gateway.study.library_delete_saved_value_confirm">Permanently delete this saved entry when the card is saved?</string>
+  <string name="gateway.study.library_select_suggestion">Select a matching card suggestion; free text cannot be saved.</string>
 </resources>

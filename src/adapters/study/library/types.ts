@@ -86,6 +86,8 @@ export interface LibraryFieldSchema {
             value: string;
             metadata: LibraryMetadata;
         }[];
+        /** Commit multiple composed values independently before saving the card. */
+        multi_value?: boolean;
         immutable?: boolean;
         /** Relationships whose ordered targets make values in this field deep-linkable. */
         linkRelationships?: readonly string[];
