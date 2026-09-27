@@ -63,6 +63,14 @@ test("Study Library composer exposes provider-owned raw-input lookup", () => {
 test("Study Library derives pronunciation using the provider field type", () => {
     assert.match(
         composerContractSource,
+        /schema\?\.layers\?\.find\([\s\S]*\(\{ id \}\) => id === layer\?\.id/,
+    );
+    assert.match(
+        composerContractSource,
+        /\(providerLayer \?\? layer\)\?\.fields/,
+    );
+    assert.match(
+        composerContractSource,
         /pronunciationField\.type === "stringList"/,
     );
     assert.match(

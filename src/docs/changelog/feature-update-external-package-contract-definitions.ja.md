@@ -334,6 +334,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 ライブラリ作成画面では、文や複合といった意味上のラベルを選ぶ内部コンテンツクラス欄を表示しなくなりました。代わりにプロバイダーが定義したローカライズ済みレイヤー名でカードを識別し、順序付きレコードにはプロバイダーのレイヤー ID を保存します。また、自動派生した発音はプロバイダーのフィールド型に従うため、リスト値の発音フィールドも正常に送信できます。
 
+## 必須の派生発音フィールドを確実に検出
+
+コンポーザーは、表示用に絞り込まれた編集レイヤーではなく、完全なプロバイダースキーマから派生発音フィールドの定義を解決するようになりました。これにより、文などの派生コンポーザーは直接入力欄がなくても必須の発音フィールドを設定します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -420,3 +424,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - [125495f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/125495f3)
 - [109f583e](https://github.com/Cognis-Labs-HQ/Cognis/commit/109f583e)
 - [b17ebe21](https://github.com/Cognis-Labs-HQ/Cognis/commit/b17ebe21)
+- [aef137a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/aef137a4)

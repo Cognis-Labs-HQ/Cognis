@@ -334,6 +334,10 @@ Study Library Input carousels now share one ordered counter sequence in create a
 
 Library authoring no longer presents an internal Content Class choice between semantic labels such as sentence and composite. Provider-localized layer names identify cards instead, ordered records persist the provider layer ID, and automatically derived pronunciation now follows the provider field type so list-valued pronunciation fields submit successfully.
 
+## Required derived pronunciation fields remain discoverable
+
+The composer now resolves derived pronunciation field definitions from the complete provider schema rather than its display-filtered editor layer. Sentence and other derived composers therefore populate required pronunciation fields even though those fields have no direct input control.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -420,3 +424,4 @@ Library authoring no longer presents an internal Content Class choice between se
 - [125495f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/125495f3)
 - [109f583e](https://github.com/Cognis-Labs-HQ/Cognis/commit/109f583e)
 - [b17ebe21](https://github.com/Cognis-Labs-HQ/Cognis/commit/b17ebe21)
+- [aef137a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/aef137a4)

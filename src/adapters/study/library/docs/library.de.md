@@ -200,3 +200,5 @@ Schichten für atomare Zeichen und Partikel sind unveränderliche Katalogdaten. 
 Geordnete Auswahlen verwenden nun über alle Eingabe-Karussells hinweg eine gemeinsame Positionsfolge. Positionsmarken beschreiben damit die gespeicherte Kartenreihenfolge, statt bei jedem Beziehungskarussell wieder bei eins zu beginnen.
 
 Autorenformulare zeigen die interne Inhaltsklassenauswahl von Cognis nicht mehr an. In Detailansichten kennzeichnet der lokalisierte Schichtname des Anbieters die Karte, und Datensätze geordneter Folgen verwenden die Schicht-ID des Anbieters statt semantischer Bezeichnungen wie `sentence` oder `composite`. Abgeleitete Aussprachen werden gemäß dem deklarierten Feldvertrag des Anbieters serialisiert, einschließlich listenwertiger Aussprachefelder.
+
+Die Serialisierung abgeleiteter Felder löst ihren Vertrag aus dem Anbieterschema statt aus der vom Konstruktor gefilterten Editorschicht auf. Erforderliche Aussprachefelder bleiben dadurch auffindbar, auch wenn der Composer ihr direktes Eingabefeld absichtlich ausblendet.

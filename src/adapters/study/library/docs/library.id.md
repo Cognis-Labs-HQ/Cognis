@@ -200,3 +200,5 @@ Lapisan karakter atomik dan partikel adalah data katalog yang tidak dapat diubah
 Pilihan berurutan kini memakai satu urutan posisi komposisi yang sama di seluruh karosel Input. Lencana posisi menggambarkan urutan kartu yang disimpan dan tidak lagi dimulai ulang dari satu pada setiap karosel relasi.
 
 Formulir penulisan tidak lagi menampilkan pemilih kelas konten internal Cognis. Nama lapisan penyedia yang dilokalkan mengidentifikasi kartu dalam tampilan detail, dan rekaman urutan teratur memakai ID lapisan penyedia, bukan label semantik `sentence` atau `composite`. Pelafalan turunan diserialkan sesuai kontrak bidang yang dideklarasikan penyedia, termasuk bidang pelafalan bernilai daftar.
+
+Serialisasi bidang turunan mengambil kontraknya dari skema penyedia, bukan dari lapisan editor yang telah difilter konstruktor. Karena itu bidang pelafalan wajib tetap dapat ditemukan walaupun composer sengaja menghilangkan kontrol input langsungnya.

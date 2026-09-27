@@ -176,7 +176,8 @@ export function applyDerivedPronunciation(
     if (!derivesPronunciation) return fields;
     const draft = { fields, references };
     const pronunciation = derivedPronunciation(draft, entries, schema);
-    const pronunciationField = layer?.fields?.find(
+    const providerLayer = schema?.layers?.find(({ id }) => id === layer?.id);
+    const pronunciationField = (providerLayer ?? layer)?.fields?.find(
         ({ id }) => id === "pronunciation",
     );
     if (!pronunciationField) return fields;

@@ -334,6 +334,10 @@ Die Eingabe-Karussells der Studienbibliothek verwenden in Erstellungs- und Bearb
 
 Die Bibliotheksbearbeitung zeigt keine interne Inhaltsklassenauswahl zwischen semantischen Bezeichnungen wie Satz und Kompositum mehr. Stattdessen kennzeichnen lokalisierte Schichtnamen des Anbieters die Karten, geordnete Datensätze speichern die Anbieter-Schicht-ID, und automatisch abgeleitete Aussprachen folgen nun dem Feldtyp des Anbieters, sodass listenwertige Aussprachefelder erfolgreich übermittelt werden.
 
+## Erforderliche abgeleitete Aussprachefelder bleiben auffindbar
+
+Der Composer löst Definitionen abgeleiteter Aussprachefelder nun aus dem vollständigen Anbieterschema statt aus seiner für die Anzeige gefilterten Editorschicht auf. Satz- und andere abgeleitete Composer füllen erforderliche Aussprachefelder daher auch ohne direktes Eingabefeld.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -420,3 +424,4 @@ Die Bibliotheksbearbeitung zeigt keine interne Inhaltsklassenauswahl zwischen se
 - [125495f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/125495f3)
 - [109f583e](https://github.com/Cognis-Labs-HQ/Cognis/commit/109f583e)
 - [b17ebe21](https://github.com/Cognis-Labs-HQ/Cognis/commit/b17ebe21)
+- [aef137a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/aef137a4)

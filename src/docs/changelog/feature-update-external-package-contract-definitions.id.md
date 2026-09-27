@@ -334,6 +334,10 @@ Karosel Input Pustaka Studi kini berbagi satu urutan penghitung dalam dialog bua
 
 Penulisan Pustaka tidak lagi menampilkan pilihan Kelas Konten internal antara label semantik seperti kalimat dan komposit. Nama lapisan penyedia yang dilokalkan kini mengidentifikasi kartu, rekaman terurut menyimpan ID lapisan penyedia, dan pelafalan yang diturunkan otomatis mengikuti tipe bidang penyedia sehingga bidang pelafalan bernilai daftar dapat dikirim dengan berhasil.
 
+## Bidang pelafalan turunan wajib tetap dapat ditemukan
+
+Composer kini mengambil definisi bidang pelafalan turunan dari skema penyedia lengkap, bukan dari lapisan editor yang difilter untuk tampilan. Karena itu composer kalimat dan composer turunan lainnya mengisi bidang pelafalan wajib walaupun tidak memiliki kontrol input langsung.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -420,3 +424,4 @@ Penulisan Pustaka tidak lagi menampilkan pilihan Kelas Konten internal antara la
 - [125495f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/125495f3)
 - [109f583e](https://github.com/Cognis-Labs-HQ/Cognis/commit/109f583e)
 - [b17ebe21](https://github.com/Cognis-Labs-HQ/Cognis/commit/b17ebe21)
+- [aef137a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/aef137a4)

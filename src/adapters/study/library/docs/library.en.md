@@ -212,3 +212,5 @@ Atomic character and particle layers are immutable catalog data. The Library API
 Ordered selections now share one composition-wide position sequence across every Input carousel. Position badges therefore describe the saved card order rather than restarting at one for each relationship carousel.
 
 Authoring forms no longer expose Cognis' internal content-class selector. The provider's localized layer name identifies the card in detail views, and ordered-sequence records use the provider layer ID instead of semantic `sentence` or `composite` labels. Derived pronunciation is serialized according to the provider's declared field contract, including list-valued pronunciation fields.
+
+Derived-field serialization resolves its contract from the provider schema rather than the constructor-filtered editor layer. Required pronunciation fields therefore remain discoverable even when the composer intentionally omits their direct input control.
