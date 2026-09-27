@@ -20,19 +20,15 @@ export function mountEditableRelationshipCarousels(
         ).map(({ id }) => id),
     );
     const controller = new AbortController();
-    const committedValues = new Map();
     const draftValues = new Map();
     pronunciationRelationshipIds.forEach((relationshipId) => {
         const select = form.elements[`relationship:${relationshipId}`];
-        committedValues.set(
+        draftValues.set(
             relationshipId,
-            new Set(
-                Array.from(select?.selectedOptions ?? [], (option) =>
-                    String(option.value),
-                ),
+            Array.from(select?.selectedOptions ?? [], (option) =>
+                String(option.value),
             ),
         );
-        draftValues.set(relationshipId, []);
     });
     overlay.addEventListener("close", () => controller.abort(), { once: true });
     mountHorizontalCarousels(form, {
@@ -43,10 +39,7 @@ export function mountEditableRelationshipCarousels(
             onChange({ id, values });
             if (pronunciationRelationshipIds.has(id))
                 draftValues.set(id, values);
-            const selected = new Set([
-                ...(committedValues.get(id) ?? []),
-                ...values,
-            ]);
+            const selected = new Set(values);
             Array.from(select.options).forEach((option) => {
                 option.selected = selected.has(option.value);
             });
@@ -82,18 +75,6 @@ export function mountEditableRelationshipCarousels(
             }
         },
         onAdd,
-    });
-    pronunciationRelationshipIds.forEach((relationshipId) => {
-        const carousel = form.querySelector(
-            `[data-horizontal-carousel="${CSS.escape(relationshipId)}"]`,
-        );
-        carousel?.querySelectorAll("[data-carousel-value]").forEach((item) => {
-            item.classList.remove("is-selected");
-            item.setAttribute("aria-pressed", "false");
-            item.querySelector("[data-carousel-order]").textContent = "";
-        });
-        const output = carousel?.querySelector("[data-carousel-selection]");
-        if (output) output.textContent = "";
     });
     form.querySelectorAll("[data-library-pronunciation-commit]").forEach(
         (button) => {
@@ -133,32 +114,6 @@ export function mountEditableRelationshipCarousels(
                     item.textContent = value;
                     list.append(item);
                 }
-                pronunciationRelationshipIds.forEach((relationshipId) => {
-                    const committed = committedValues.get(relationshipId);
-                    (draftValues.get(relationshipId) ?? []).forEach((entryId) =>
-                        committed.add(entryId),
-                    );
-                    draftValues.set(relationshipId, []);
-                    const carousel = form.querySelector(
-                        `[data-horizontal-carousel="${CSS.escape(relationshipId)}"]`,
-                    );
-                    carousel
-                        ?.querySelectorAll("[data-carousel-value]")
-                        .forEach((item) => {
-                            item.classList.remove("is-selected");
-                            item.setAttribute("aria-pressed", "false");
-                            item.querySelector(
-                                "[data-carousel-order]",
-                            ).textContent = "";
-                        });
-                    const output = carousel?.querySelector(
-                        "[data-carousel-selection]",
-                    );
-                    if (output) output.textContent = "";
-                });
-                form.querySelector(
-                    "[data-library-pronunciation-blocks]",
-                )?.replaceChildren();
                 if (textInput) textInput.value = "";
             });
         },

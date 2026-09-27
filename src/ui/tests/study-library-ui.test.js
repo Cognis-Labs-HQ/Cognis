@@ -408,7 +408,11 @@ test("Study Library creation is driven by language card constructors", () => {
     );
     assert.match(source, /contributedConstructor \?\?/);
     assert.match(source, /layer\?\.cardConstructor \?\?/);
-    assert.match(source, /writableClasses\.length && !canPublishEveryone/);
+    assert.match(source, /writableClasses\.length/);
+    assert.doesNotMatch(
+        source,
+        /writableClasses\.length && !canPublishEveryone/,
+    );
     assert.match(source, /onOpen\(overlay\)/);
     assert.doesNotMatch(layerPageSource, /renderLibraryRequests/);
     assert.doesNotMatch(indexSource, /renderLibraryRequests/);
@@ -829,9 +833,12 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(stylesheet, /appearance: none/);
     assert.match(stylesheet, /body\[data-theme="light"\] \.library-audio/);
     assert.match(stylesheet, /body\[data-theme="dark"\] \.library-audio/);
-    assert.match(source, /class="library-speaker-icon"/);
-    assert.match(source, /stroke="currentColor"/);
-    assert.match(source, /M5 9h4l5-4v14l-5-4H5z/);
+    assert.match(source, /speaker-light\.svg/);
+    assert.match(source, /speaker-dark\.svg/);
+    assert.match(
+        stylesheet,
+        /body\[data-theme="dark"\] \.library-speaker-icon-dark/,
+    );
     assert.match(stylesheet, /background: var\(--surface-2\)/);
     assert.match(stylesheet, /\.library-audio-error/);
     assert.match(stylesheet, /font-size: 0\.75em/);

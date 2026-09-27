@@ -835,7 +835,7 @@ export class LibraryService implements LibraryCapability {
                 throw new Error("invalid_entry_id");
         }
         const pendingSources = new Set(
-            ((await this.store.listPushRequests?.()) ?? []).map(
+            ((await this.store.listPushRequests?.("pending")) ?? []).map(
                 ({ sourceEntryId }) => sourceEntryId,
             ),
         );

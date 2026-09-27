@@ -5,6 +5,7 @@ import { showToast } from "/static/reuse/toast.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import {
     createLibraryEntry,
+    deleteLibraryEntries,
     fetchLibraryForms,
     fetchLibraryLookupProviders,
     fetchLibraryLookupSuggestions,
@@ -165,9 +166,9 @@ export async function openCreateEntryPopup({
             .filter(Boolean),
         relationships: constructorRelationships,
     };
-    const inputCarouselLayers = new Set(constructor.input_carousels);
+    const inputCarouselLayers = new Set(constructor.input_carousels ?? []);
     const pronunciationCarouselLayers = new Set(
-        constructor.pronunciation_carousels,
+        constructor.pronunciation_carousels ?? [],
     );
     const inputCarouselIds = new Set(
         constructorRelationships
@@ -215,7 +216,7 @@ export async function openCreateEntryPopup({
             ? `<label class="library-admin-checkbox library-publish-choice"><input name="publishEveryone" type="checkbox" class="choice-checkbox"><span>${escapeHtml(i18n.t("gateway.study.library_publish_everyone"))}</span>${renderInfoTooltip(i18n.t("gateway.study.library_publish_everyone_info"), i18n.t("ui.reuse.more_information"))}</label>`
             : ""
     }${
-        writableClasses.length && !canPublishEveryone
+        writableClasses.length
             ? `<label class="library-admin-checkbox"><input name="publishClass" type="checkbox" class="choice-checkbox" data-library-publish-class-toggle> <span>${escapeHtml(i18n.t("gateway.study.library_publish_class_option"))}</span></label><label data-library-class-choice hidden><span>${escapeHtml(i18n.t("gateway.study.library_class"))}</span><select name="classId">${writableClasses.map(({ scopeId }) => `<option value="${escapeHtml(scopeId)}">${escapeHtml(scopeId)}</option>`).join("")}</select></label>`
             : '<input type="hidden" name="classId" value="">'
     }${compositionInput}`;
@@ -254,6 +255,16 @@ export async function openCreateEntryPopup({
     let carouselController;
     const cardType =
         localizedLabel(layer.metadata, schema.language) || layer.id;
+    const nestedDefinitionIds = [];
+    const rollbackNestedDefinitions = async () => {
+        if (!nestedDefinitionIds.length) return;
+        await deleteLibraryEntries(nestedDefinitionIds);
+        for (let index = entries.length - 1; index >= 0; index -= 1) {
+            if (nestedDefinitionIds.includes(entries[index].id))
+                entries.splice(index, 1);
+        }
+        nestedDefinitionIds.length = 0;
+    };
     const action = await openPopup({
         title: i18n
             .t("gateway.study.library_create_typed")
@@ -410,6 +421,7 @@ export async function openCreateEntryPopup({
                     i18n,
                 });
                 if (!created) return;
+                nestedDefinitionIds.push(created.id);
                 entries.push(created);
                 const select = form.elements[`relationship:${relationship.id}`];
                 select?.append(
@@ -441,8 +453,10 @@ export async function openCreateEntryPopup({
         action !== "create" ||
         form?.querySelector('[data-uploading="true"]') ||
         !form?.reportValidity()
-    )
+    ) {
+        await rollbackNestedDefinitions();
         return null;
+    }
     const publishEveryone = form.elements.publishEveryone?.checked === true;
     const scope =
         publishEveryone && canPublishEveryone
@@ -493,9 +507,14 @@ export async function openCreateEntryPopup({
         return created;
     };
     try {
-        return await createAndRequestPublication(entry);
+        const created = await createAndRequestPublication(entry);
+        nestedDefinitionIds.length = 0;
+        return created;
     } catch (error) {
-        if (error.message !== "content_conflict") throw error;
+        if (error.message !== "content_conflict") {
+            await rollbackNestedDefinitions();
+            throw error;
+        }
         const decision = await openPopup({
             title: i18n.t("gateway.study.library_conflict_title"),
             body: `<p>${escapeHtml(i18n.t("gateway.study.library_conflict_body"))}</p>`,
@@ -512,9 +531,21 @@ export async function openCreateEntryPopup({
                 },
             ],
         });
-        return decision === "continue"
-            ? createAndRequestPublication({ ...entry, allowConflict: true })
-            : null;
+        if (decision !== "continue") {
+            await rollbackNestedDefinitions();
+            return null;
+        }
+        try {
+            const created = await createAndRequestPublication({
+                ...entry,
+                allowConflict: true,
+            });
+            nestedDefinitionIds.length = 0;
+            return created;
+        } catch (retryError) {
+            await rollbackNestedDefinitions();
+            throw retryError;
+        }
     }
 }
 
@@ -607,7 +638,8 @@ function entryDefinition(entry, entries, schema) {
 
 function derivedPronunciation(entry, entries, schema, visited = new Set()) {
     if (!entry || visited.has(entry.id)) return "";
-    visited.add(entry.id);
+    const path = new Set(visited);
+    path.add(entry.id);
     const direct = pronunciationValues(entry).find(Boolean);
     const entryLayer = layerForEntry([schema], entry);
     if (entryLayer?.semanticRole === "atomicWritingUnit")
@@ -615,7 +647,7 @@ function derivedPronunciation(entry, entries, schema, visited = new Set()) {
     const parts = (entry.references ?? [])
         .map(({ entryId }) => entries.find(({ id }) => id === entryId))
         .map((candidate) =>
-            derivedPronunciation(candidate, entries, schema, visited),
+            derivedPronunciation(candidate, entries, schema, path),
         )
         .filter(Boolean);
     return parts.join("") || direct || "";
@@ -673,16 +705,14 @@ function applyLookupFields(form, fields, draft) {
     });
 }
 
-function bindRawInput(form, i18n) {
+function bindRawInput(form, _i18n) {
     const input = form.querySelector("[data-library-free-text]");
     const lookups = form.querySelector(".library-composer-lookups");
     const sync = () => {
         const value = input.value.trim();
         form.elements.label.value = value;
         input.dataset.lookupApproved = "";
-        input.setCustomValidity(
-            value ? i18n.t("gateway.study.library_lookup_empty") : "",
-        );
+        input.setCustomValidity("");
         if (lookups) lookups.hidden = !value;
     };
     input.addEventListener("input", sync);

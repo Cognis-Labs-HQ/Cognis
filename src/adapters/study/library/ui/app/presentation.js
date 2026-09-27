@@ -338,7 +338,7 @@ export function renderAudio(
 }
 
 function speakerPicture() {
-    return '<svg class="library-speaker-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h4l5-4v14l-5-4H5z"></path><path d="M17 9a4 4 0 0 1 0 6"></path><path d="M19.5 6.5a8 8 0 0 1 0 11"></path></svg>';
+    return '<img class="library-speaker-icon library-speaker-icon-light" src="/static/adapters/study/library/assets/speaker-light.svg" alt="" aria-hidden="true"><img class="library-speaker-icon library-speaker-icon-dark" src="/static/adapters/study/library/assets/speaker-dark.svg" alt="" aria-hidden="true">';
 }
 
 export function formatAudioTime(value) {

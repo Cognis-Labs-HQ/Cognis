@@ -654,7 +654,7 @@ export function validateReferences(
         if (!target) throw new Error("reference_not_found");
         if (
             target.schemaId !== schema.id ||
-            target.schemaVersion !== schema.version ||
+            target.schemaVersion > schema.version ||
             target.layer !== relationship.targetLayer
         ) {
             throw new Error("invalid_relationship_target");

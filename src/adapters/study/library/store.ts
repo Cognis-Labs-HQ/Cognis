@@ -130,7 +130,7 @@ export class LibraryStore {
                 where: [
                     {
                         column: "created_by",
-                        value: `content-pack:${manifest.id}`,
+                        value: `content-pack:${manifest.publisher}:${manifest.id}`,
                     },
                     { column: "schema_id", value: schema.id },
                 ],
@@ -306,7 +306,7 @@ export class LibraryStore {
                         search_text: `${record.label} ${JSON.stringify(fields)}`
                             .normalize()
                             .toLocaleLowerCase(),
-                        created_by: `content-pack:${manifest.id}`,
+                        created_by: `content-pack:${manifest.publisher}:${manifest.id}`,
                     },
                     manifest,
                     record.id,
@@ -333,7 +333,7 @@ export class LibraryStore {
                         .normalize()
                         .toLocaleLowerCase(),
                     content_hash: contentHash,
-                    created_by: `content-pack:${manifest.id}`,
+                    created_by: `content-pack:${manifest.publisher}:${manifest.id}`,
                     updated_at: new Date().toISOString(),
                 });
             }

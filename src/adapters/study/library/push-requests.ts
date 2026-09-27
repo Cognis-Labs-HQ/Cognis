@@ -48,7 +48,7 @@ export async function createPushRequest(
     await db.executeCommand({
         option: "INSERT",
         table: "study_library_push_requests",
-        set: {
+        values: {
             id,
             source_entry_id: sourceEntryId,
             destination_scope: destination.scope,

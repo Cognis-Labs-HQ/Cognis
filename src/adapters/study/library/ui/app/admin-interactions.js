@@ -72,12 +72,7 @@ export function bindLibraryEditorControls(form, entry, i18n) {
         picker.addEventListener("change", async () => {
             const file = picker.files?.[0];
             if (!file) return;
-            const identity =
-                String(form.elements.label?.value || entry.id)
-                    .normalize("NFKC")
-                    .toLocaleLowerCase()
-                    .replace(/[^\p{L}\p{N}]+/gu, "-")
-                    .replace(/^-|-$/g, "") || "card";
+            const identity = entry.id || crypto.randomUUID();
             const normalizedFilename = `${identity}-${field.dataset.fieldId}.audio`;
             const key = `${field.dataset.prefix}${normalizedFilename}`;
             field.dataset.uploading = "true";
@@ -470,7 +465,7 @@ export function editorBody(
                           value: entry.label,
                       },
                   ],
-            trustedContentHtml: `${options.persistentExtra ? `${extraHtml}${relationships}` : preservedRelationships}<nav class="library-editor-tabs" role="tablist" data-library-editor-tabs><button class="btn-neutral active" type="button" role="tab" aria-selected="true" data-library-editor-tab="content">${escapeHtml(i18n.t("gateway.study.library_editor_content"))}</button>${relationshipTab}<button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="definitions">${escapeHtml(i18n.t("gateway.study.library_definitions"))}</button></nav><section class="library-editor-panel" data-library-editor-panel="content">${generatedLabel}${classField}${tagsField}${options.persistentExtra ? "" : extraHtml}${fields}${isDefinition || options.includeAlwaysShowDefinition === false ? '<input name="alwaysShowDefinition" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox" class="choice-checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`}${isDefinition ? '<input name="hidden" type="hidden" value="true">' : options.includeHidden === false ? '<input name="hidden" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="hidden" type="checkbox" class="choice-checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}</section>${relationshipPanel}<section class="library-editor-panel" data-library-editor-panel="definitions" hidden>${definitionsPanel}</section>`,
+            trustedContentHtml: `${options.persistentExtra ? "" : preservedRelationships}<nav class="library-editor-tabs" role="tablist" data-library-editor-tabs><button class="btn-neutral active" type="button" role="tab" aria-selected="true" data-library-editor-tab="content">${escapeHtml(i18n.t("gateway.study.library_editor_content"))}</button>${relationshipTab}<button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="definitions">${escapeHtml(i18n.t("gateway.study.library_definitions"))}</button></nav><section class="library-editor-panel" data-library-editor-panel="content">${generatedLabel}${classField}${tagsField}${extraHtml}${fields}${options.persistentExtra ? relationships : ""}${isDefinition || options.includeAlwaysShowDefinition === false ? '<input name="alwaysShowDefinition" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox" class="choice-checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`}${isDefinition ? '<input name="hidden" type="hidden" value="true">' : options.includeHidden === false ? '<input name="hidden" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="hidden" type="checkbox" class="choice-checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}</section>${relationshipPanel}<section class="library-editor-panel" data-library-editor-panel="definitions" hidden>${definitionsPanel}</section>`,
         },
     );
     return { html: builder.render(), builder };
