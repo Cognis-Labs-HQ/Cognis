@@ -214,3 +214,5 @@ Kartu karosel kembali menampilkan pratinjau saat diarahkan atau difokuskan denga
 Relasi berkelompok mempertahankan larik referensi bertingkat untuk bidang multi-nilai. Dengan demikian, setiap pelafalan dapat memiliki urutan karakter terurut tersendiri yang tetap berkelompok selama pemeriksaan paket konten, validasi, penyimpanan, pengeditan API, dan penyajian judul tertaut, bukan diratakan menjadi satu daftar ambigu.
 
 Kartu tersembunyi dikecualikan dari setiap karosel dan daftar kandidat saran ketik. Dependensi tersembunyi yang sudah ada tetap dipertahankan dalam kontrol relasi dasar saat kartu diedit, tetapi tidak pernah ditawarkan sebagai pilihan karosel yang dapat dipilih penulis.
+
+Relasi berkelompok yang dimuat dari penyimpanan dipadatkan sebelum entri diurutkan berdasarkan posisi. Dengan demikian, indeks grup yang hilang tidak dapat menggagalkan endpoint entri Pustaka, sedangkan urutan setiap grup pelafalan tersimpan tetap deterministik.

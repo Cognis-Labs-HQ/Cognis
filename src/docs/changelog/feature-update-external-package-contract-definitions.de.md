@@ -366,6 +366,10 @@ Der Library-Vertrag wurde an den gruppierten Aussprachegraphen des Japanisch-Ler
 
 Composer-Karussells, Kartenvorschläge für freie Texteingaben und Aussprachevorschläge schließen nun als ausgeblendet markierte Einträge aus. Vorhandene Karten behalten bereits erstellte ausgeblendete Abhängigkeiten über ihren zugrunde liegenden Beziehungswert, ohne diese Abhängigkeit als auswählbare Karussellkarte anzuzeigen.
 
+## Lückenhafte Aussprachegruppen verhindern das Laden nicht mehr
+
+Der Bibliotheksspeicher schließt nun Lücken in gruppierten Referenzindizes, bevor jede Gruppe sortiert wird. Einträge mit lückenhaften gespeicherten Gruppenindizes werden wieder geladen, während die Aussprachefolge deterministisch bleibt.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -460,3 +464,4 @@ Composer-Karussells, Kartenvorschläge für freie Texteingaben und Aussprachevor
 - [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)
 - [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)
 - [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)
+- [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)

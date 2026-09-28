@@ -366,6 +366,10 @@ Aligned the Library contract with the Japanese learning provider’s grouped pro
 
 Composer carousels, free-text card suggestions, and pronunciation suggestions now exclude entries marked hidden. Existing cards retain any already-authored hidden dependency through their underlying relationship value, without exposing that dependency as a selectable carousel card.
 
+## Sparse pronunciation groups no longer break entry reads
+
+The Library store now compacts missing grouped-reference indexes before sorting each group. Loading entries with sparse persisted group indexes no longer throws while preserving deterministic pronunciation order.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -460,3 +464,4 @@ Composer carousels, free-text card suggestions, and pronunciation suggestions no
 - [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)
 - [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)
 - [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)
+- [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)

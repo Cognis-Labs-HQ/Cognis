@@ -214,3 +214,5 @@ Karussellkarten zeigen wieder für jeden Eintrag eine Vorschau bei Mauszeigerkon
 Gruppierte Beziehungen bewahren verschachtelte Referenzfelder für mehrwertige Felder. Jede Aussprache kann dadurch eine eigene geordnete Zeichenfolge besitzen, die bei Inhaltsprüfung, Validierung, Speicherung, API-Bearbeitung und verlinkter Titeldarstellung gruppiert bleibt, statt zu einer mehrdeutigen Liste abgeflacht zu werden.
 
 Ausgeblendete Karten werden aus allen Karussells und Vorschlagslisten für Texteingaben ausgeschlossen. Bereits vorhandene ausgeblendete Abhängigkeiten bleiben beim Bearbeiten einer Karte in den zugrunde liegenden Beziehungssteuerelementen erhalten, werden aber nie als auswählbare Karusselloptionen angeboten.
+
+Aus dem Speicher geladene gruppierte Beziehungen werden vor der Sortierung ihrer Einträge nach Position komprimiert. Ein fehlender Gruppenindex kann daher den Endpunkt für Bibliothekseinträge nicht mehr fehlschlagen lassen, während die Reihenfolge jeder gespeicherten Aussprachegruppe deterministisch bleibt.

@@ -366,6 +366,10 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 
 コンポーザーカルーセル、自由入力のカード候補、発音候補から、非表示に設定された項目を除外します。既存カードにすでに設定された非表示依存関係は基礎となる関係値として維持しますが、選択可能なカルーセルカードとしては公開しません。
 
+## 発音グループの欠番による読込失敗を修正
+
+ライブラリストアは各グループを並べ替える前に、グループ化参照番号の欠番を詰めるようになりました。保存済みグループ番号に欠番があるエントリも例外なく読み込め、発音順は一定に保たれます。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -460,3 +464,4 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 - [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)
 - [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)
 - [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)
+- [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)

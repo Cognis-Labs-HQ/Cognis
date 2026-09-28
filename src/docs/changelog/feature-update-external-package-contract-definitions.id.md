@@ -366,6 +366,10 @@ Kontrak Library diselaraskan dengan graf pelafalan berkelompok milik penyedia pe
 
 Karosel composer, saran kartu untuk teks bebas, dan saran pelafalan kini mengecualikan entri yang ditandai tersembunyi. Kartu yang sudah ada tetap mempertahankan dependensi tersembunyi yang telah dibuat melalui nilai relasi dasarnya tanpa menampilkan dependensi tersebut sebagai kartu karosel yang dapat dipilih.
 
+## Grup pelafalan renggang tidak lagi menggagalkan pembacaan entri
+
+Penyimpanan Pustaka kini memadatkan indeks referensi berkelompok yang hilang sebelum mengurutkan setiap grup. Entri dengan indeks grup tersimpan yang renggang dapat dimuat tanpa galat dan urutan pelafalan tetap deterministik.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -460,3 +464,4 @@ Karosel composer, saran kartu untuk teks bebas, dan saran pelafalan kini mengecu
 - [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)
 - [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)
 - [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)
+- [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)

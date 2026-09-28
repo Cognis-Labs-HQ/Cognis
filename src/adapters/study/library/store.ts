@@ -742,9 +742,17 @@ export class LibraryStore {
             const groups = (entry.referenceGroups[value.relation] ??= []);
             (groups[groupIndex] ??= []).push(value);
         }
-        for (const groups of Object.values(entry.referenceGroups))
-            for (const group of groups)
-                group.sort((left, right) => left.position! - right.position!);
+        for (const [relation, groups] of Object.entries(
+            entry.referenceGroups,
+        )) {
+            entry.referenceGroups[relation] = groups
+                .filter((group) => Array.isArray(group))
+                .map((group) =>
+                    group.sort(
+                        (left, right) => left.position! - right.position!,
+                    ),
+                );
+        }
         return entry;
     }
     async list(
