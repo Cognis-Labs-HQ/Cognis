@@ -390,6 +390,10 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 
 カード値と一致する発音は同じ表記を繰り返さず、リンク先カードの発音値まで解決するようになりました。描画練習では、開いたウィンドウが異なる列数のパターンを読み込む際にステージ比率を再適用し、キャンバスを同期します。
 
+## Escapeで描画練習を閉じる
+
+アクティブな描画練習ウィンドウをEscapeキーで閉じ、通常のアニメーション付き後処理を実行できるようになりました。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -490,3 +494,4 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 - [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)
 - [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)
 - [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)
+- [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)

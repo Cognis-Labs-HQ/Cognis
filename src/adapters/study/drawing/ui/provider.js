@@ -597,6 +597,15 @@ function openDrawingPad({
         );
         window.setTimeout(finishClose, 220);
     };
+    window.addEventListener(
+        "keydown",
+        (event) => {
+            if (event.key !== "Escape") return;
+            event.preventDefault();
+            close();
+        },
+        { signal: controller.signal },
+    );
     pad.querySelector("[data-close]").addEventListener("click", close, {
         signal: controller.signal,
     });

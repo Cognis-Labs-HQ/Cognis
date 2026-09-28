@@ -390,6 +390,10 @@ Aligned group indexes across multiple field link relationships now represent the
 
 Pronunciations matching a card value now descend to the linked cards’ pronunciation values instead of repeating the same spelling. Drawing Practice also reapplies stage proportions and synchronizes its canvas when an open window loads a pattern with a different column count.
 
+## Escape closes Drawing Practice
+
+The active Drawing Practice window now closes with the Escape key using its normal animated cleanup path.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -490,3 +494,4 @@ Pronunciations matching a card value now descend to the linked cards’ pronunci
 - [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)
 - [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)
 - [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)
+- [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)

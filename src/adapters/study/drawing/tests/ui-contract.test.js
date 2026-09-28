@@ -82,6 +82,10 @@ test("drawing practice tracks ordered strokes and progressive guidance", () => {
     assert.match(source, /data-mistakes/);
     assert.match(source, /data-try-again/);
     assert.match(source, /data-complete-close/);
+    assert.match(
+        source,
+        /window\.addEventListener\([\s\S]*"keydown"[\s\S]*event\.key !== "Escape"[\s\S]*close\(\)/,
+    );
     assert.match(source, /completion\.hidden = false/);
     assert.match(source, /mistakes = 0/);
     assert.match(source, /is-opening/);

@@ -27,3 +27,5 @@ Percobaan berhasil dengan paling banyak satu kesalahan kini meningkatkan kesulit
 Tanda tanya panduan tersembunyi hanya muncul saat pelajar mencapai goresan yang panduannya disembunyikan; tanda tersebut tidak lagi muncul terlalu awal untuk goresan tersembunyi berikutnya.
 
 Saat jendela Latihan Menggambar yang terbuka beralih ke kartu dengan jumlah kolom berbeda, rasio aspek area gambar kini diterapkan ulang dan bitmap kanvas diselaraskan setelah tata letak. Pola multikarakter tidak lagi meregang secara vertikal ketika jendela mengambang digambar ulang.
+
+Menekan Escape menutup jendela Latihan Menggambar aktif melalui alur penutupan beranimasi dan pembersihan penuh yang sama seperti kontrol tutupnya.

@@ -390,6 +390,10 @@ Die Deduplizierung von Aussprachen vergleicht nun die verbundenen Beschriftungen
 
 Aussprachen, die dem Kartenwert entsprechen, werden nun bis zu den Aussprachewerten der verknüpften Karten aufgelöst, statt dieselbe Schreibweise zu wiederholen. Die Zeichenübung wendet außerdem die Proportionen der Zeichenfläche erneut an und synchronisiert das Canvas, wenn ein geöffnetes Fenster ein Muster mit anderer Spaltenzahl lädt.
 
+## Escape schließt die Zeichenübung
+
+Das aktive Zeichenübungsfenster lässt sich nun mit der Escape-Taste über den normalen animierten Bereinigungspfad schließen.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -490,3 +494,4 @@ Aussprachen, die dem Kartenwert entsprechen, werden nun bis zu den Aussprachewer
 - [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)
 - [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)
 - [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)
+- [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)

@@ -27,3 +27,5 @@ Erfolgreiche Versuche mit höchstens einem Fehler erhöhen nun die kartenspezifi
 Das Fragezeichen für eine ausgeblendete Führung erscheint erst, wenn Lernende einen tatsächlich ausgeblendeten Strich erreichen; es weist nicht mehr vorzeitig auf spätere ausgeblendete Striche hin.
 
 Beim Wechsel eines geöffneten Zeichenübungsfensters zu einer Karte mit einer anderen Spaltenzahl wird nun das Seitenverhältnis der Zeichenfläche erneut angewendet und die Canvas-Bitmap nach dem Layout synchronisiert. Mehrteilige Zeichenmuster werden beim Neuzeichnen des schwebenden Fensters nicht mehr vertikal gestreckt.
+
+Durch Drücken der Escape-Taste wird das aktive Zeichenübungsfenster über denselben animierten und vollständig bereinigten Schließpfad wie bei den Schaltflächen geschlossen.

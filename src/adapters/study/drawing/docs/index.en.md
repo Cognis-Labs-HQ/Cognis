@@ -27,3 +27,5 @@ Successful attempts with no more than one mistake now increase card-specific rec
 The hidden-guide question mark appears only when the learner reaches a stroke whose guide is hidden; it no longer warns early about hidden strokes later in the pattern.
 
 Switching an open Drawing Practice window to a card with a different column count now reapplies the stage aspect ratio and synchronizes the canvas bitmap after layout. Multi-character patterns no longer stretch vertically while the floating window redraws.
+
+Pressing Escape closes the active Drawing Practice window through the same animated and fully cleaned-up close path as its close controls.

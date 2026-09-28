@@ -390,6 +390,10 @@ Indeks grup yang sejajar di beberapa relasi tautan bidang kini mewakili item bid
 
 Pelafalan yang sama dengan nilai kartu kini diturunkan ke nilai pelafalan kartu tertaut, bukan mengulang ejaan yang sama. Latihan Menggambar juga menerapkan ulang proporsi area dan menyelaraskan kanvas ketika jendela terbuka memuat pola dengan jumlah kolom berbeda.
 
+## Escape menutup Latihan Menggambar
+
+Jendela Latihan Menggambar aktif kini dapat ditutup dengan tombol Escape melalui alur pembersihan beranimasi normal.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -490,3 +494,4 @@ Pelafalan yang sama dengan nilai kartu kini diturunkan ke nilai pelafalan kartu 
 - [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)
 - [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)
 - [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)
+- [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)
