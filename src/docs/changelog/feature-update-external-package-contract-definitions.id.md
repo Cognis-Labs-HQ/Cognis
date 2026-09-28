@@ -374,6 +374,10 @@ Penyimpanan Pustaka kini memadatkan indeks referensi berkelompok yang hilang seb
 
 Kartu Pustaka kini hanya menampilkan dua pelafalan pertama. Pelafalan tambahan tetap tersedia dalam tampilan detail entri lengkap.
 
+## Pelafalan berkelompok dideduplikasi dengan benar
+
+Urutan karakter bertingkat kini disatukan menjadi bacaan lengkap sebelum label pelafalan dibandingkan. Bacaan berkelompok yang sama dengan nilai kartu tidak lagi ditampilkan dua kali.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -470,3 +474,4 @@ Kartu Pustaka kini hanya menampilkan dua pelafalan pertama. Pelafalan tambahan t
 - [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)
 - [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)
 - [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)
+- [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)

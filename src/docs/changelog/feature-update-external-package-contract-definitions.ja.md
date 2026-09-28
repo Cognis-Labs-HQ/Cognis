@@ -374,6 +374,10 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 
 ライブラリカードには先頭2件の発音だけを表示するようになりました。それ以外の発音は、完全なエントリ詳細画面で引き続き確認できます。
 
+## グループ化された発音の重複を修正
+
+発音ラベルを比較する前に、入れ子の文字列を完全な読みに連結するようになりました。カードの値と一致するグループ化された読みが重複表示されなくなりました。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -470,3 +474,4 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 - [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)
 - [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)
 - [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)
+- [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)

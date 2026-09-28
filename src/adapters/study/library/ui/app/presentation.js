@@ -184,7 +184,10 @@ export function pronunciationValues(entry) {
     const pronunciation = entry.fields?.pronunciation;
     if (!pronunciation) return [];
     return (Array.isArray(pronunciation) ? pronunciation : [pronunciation]).map(
-        (value) => String(value),
+        (value) =>
+            Array.isArray(value)
+                ? value.flat(Infinity).map(String).join("")
+                : String(value),
     );
 }
 

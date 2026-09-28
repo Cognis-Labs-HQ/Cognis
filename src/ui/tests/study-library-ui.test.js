@@ -576,6 +576,8 @@ test("Study Library administration exposes contract-safe editing", () => {
 test("Study Library positions pronunciations by semantic role", () => {
     assert.match(source, /function isWritingUnitLayer/);
     assert.match(source, /function pronunciationValues/);
+    assert.match(source, /value\.flat\(Infinity\)\.map\(String\)\.join\(""\)/);
+    assert.match(source, /pronunciationValues\(entry\)/);
     assert.doesNotMatch(source, /function detailTitlePronunciation/);
     assert.match(
         source,

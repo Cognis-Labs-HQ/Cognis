@@ -374,6 +374,10 @@ Der Bibliotheksspeicher schließt nun Lücken in gruppierten Referenzindizes, be
 
 Bibliothekskarten zeigen jetzt nur die ersten beiden Aussprachen. Weitere Aussprachen bleiben in der vollständigen Detailansicht des Eintrags verfügbar.
 
+## Gruppierte Aussprachen werden korrekt dedupliziert
+
+Verschachtelte Zeichenfolgen werden nun vor dem Vergleich von Aussprachebeschriftungen zu vollständigen Lesungen verbunden. Eine gruppierte Lesung, die dem Kartenwert entspricht, wird nicht mehr doppelt angezeigt.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -470,3 +474,4 @@ Bibliothekskarten zeigen jetzt nur die ersten beiden Aussprachen. Weitere Ausspr
 - [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)
 - [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)
 - [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)
+- [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)

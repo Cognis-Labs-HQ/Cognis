@@ -218,3 +218,5 @@ Kartu tersembunyi dikecualikan dari setiap karosel dan daftar kandidat saran ket
 Relasi berkelompok yang dimuat dari penyimpanan dipadatkan sebelum entri diurutkan berdasarkan posisi. Dengan demikian, indeks grup yang hilang tidak dapat menggagalkan endpoint entri Pustaka, sedangkan urutan setiap grup pelafalan tersimpan tetap deterministik.
 
 Pratinjau kartu Pustaka menampilkan paling banyak dua pelafalan berbeda pertama. Tampilan detail entri tetap menyediakan seluruh rangkaian pelafalan tanpa membuat kartu penjelajahan terlalu tinggi atau padat.
+
+Tampilan pelafalan menyatukan setiap urutan karakter bertingkat menjadi bacaan lengkap sebelum membandingkannya dengan label kartu. Pelafalan berkelompok seperti `["さ", "き"]` karena itu ditampilkan sebagai `さき` dan dihilangkan ketika kartu sudah memakai nilai yang sama.

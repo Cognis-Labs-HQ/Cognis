@@ -218,3 +218,5 @@ Ausgeblendete Karten werden aus allen Karussells und Vorschlagslisten für Texte
 Aus dem Speicher geladene gruppierte Beziehungen werden vor der Sortierung ihrer Einträge nach Position komprimiert. Ein fehlender Gruppenindex kann daher den Endpunkt für Bibliothekseinträge nicht mehr fehlschlagen lassen, während die Reihenfolge jeder gespeicherten Aussprachegruppe deterministisch bleibt.
 
 Kartenvorschauen der Bibliothek zeigen höchstens die ersten beiden unterschiedlichen Aussprachen. Die Detailansicht des Eintrags stellt weiterhin alle Aussprachen bereit, ohne die Kartenübersicht unnötig hoch oder dicht zu machen.
+
+Die Ausspracheanzeige setzt jede verschachtelte Zeichenfolge zu ihrer vollständigen Lesung zusammen, bevor sie mit der Kartenbeschriftung verglichen wird. Eine gruppierte Aussprache wie `["さ", "き"]` wird daher als `さき` dargestellt und weggelassen, wenn die Karte bereits denselben Wert verwendet.

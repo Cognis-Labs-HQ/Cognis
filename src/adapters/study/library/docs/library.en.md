@@ -230,3 +230,5 @@ Hidden cards are excluded from every carousel and type-ahead candidate list. Exi
 Grouped relationships loaded from storage are compacted before their entries are position-sorted. A missing group index therefore cannot make the Library entries endpoint fail, while the order of every stored pronunciation group remains deterministic.
 
 Library card previews show at most the first two distinct pronunciations. The entry detail view continues to expose the complete pronunciation set without making browsing cards excessively tall or dense.
+
+Pronunciation display normalizes each nested character sequence into its complete reading before comparing it with the card label. A grouped pronunciation such as `["さ", "き"]` therefore renders as `さき` and is omitted when the card already uses that same value.

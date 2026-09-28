@@ -374,6 +374,10 @@ The Library store now compacts missing grouped-reference indexes before sorting 
 
 Library cards now show only the first two pronunciations. Additional pronunciations remain available in the complete entry detail view.
 
+## Grouped pronunciations de-duplicate correctly
+
+Nested character sequences are now joined into complete readings before pronunciation labels are compared. A grouped reading matching the card value is no longer displayed twice.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -470,3 +474,4 @@ Library cards now show only the first two pronunciations. Additional pronunciati
 - [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)
 - [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)
 - [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)
+- [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)

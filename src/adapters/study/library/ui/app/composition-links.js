@@ -1,5 +1,7 @@
 /** Resolve complete labels into links to their canonical Library writing units. */
 
+import { pronunciationValues } from "./presentation.js";
+
 function composableLayerIds(entry, schemas) {
     const schema = schemas.find(({ id }) => id === entry.schemaId);
     return new Set(
@@ -61,14 +63,12 @@ function normalizedLabel(value) {
 }
 
 function entryAliases(entry) {
-    const pronunciation = entry.fields?.pronunciation;
-    const values = Array.isArray(pronunciation)
-        ? pronunciation
-        : pronunciation
-          ? [pronunciation]
-          : [];
     return Array.from(
-        new Set([entry.label, ...values].map(normalizedLabel).filter(Boolean)),
+        new Set(
+            [entry.label, ...pronunciationValues(entry)]
+                .map(normalizedLabel)
+                .filter(Boolean),
+        ),
     ).sort((left, right) => right.length - left.length);
 }
 
@@ -105,14 +105,9 @@ export function distinctPronunciationLabels(entry, secondaryLabels = []) {
     const blocked = new Set(
         [entry.label, ...secondaryLabels].map(normalizedLabel),
     );
-    const pronunciation = entry.fields?.pronunciation;
-    if (!pronunciation) return [];
-    const labels = Array.isArray(pronunciation)
-        ? pronunciation
-        : [pronunciation];
     return Array.from(
         new Set(
-            labels
+            pronunciationValues(entry)
                 .map(normalizedLabel)
                 .filter((label) => label && !blocked.has(label)),
         ),
