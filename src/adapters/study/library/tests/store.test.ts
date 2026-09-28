@@ -896,6 +896,22 @@ test("entry updates replace editable fields and relationships atomically", async
             label: "updated",
             fields: {},
             references: [{ entryId: "definition-1", relation: "means" }],
+            referenceGroups: {
+                readings: [
+                    [
+                        {
+                            entryId: "character-1",
+                            relation: "readings",
+                            position: 0,
+                        },
+                        {
+                            entryId: "character-2",
+                            relation: "readings",
+                            position: 1,
+                        },
+                    ],
+                ],
+            },
         },
         true,
     );
@@ -927,5 +943,23 @@ test("entry updates replace editable fields and relationships atomically", async
                 command.option === "INSERT" &&
                 command.table === "study_library_references",
         ),
+    );
+    assert.deepEqual(
+        commands
+            .filter(
+                (command) =>
+                    command.option === "INSERT" &&
+                    command.table === "study_library_references" &&
+                    command.values.relation === "readings",
+            )
+            .map((command) => ({
+                target: command.values.target_entry_id,
+                group: command.values.group_index,
+                position: command.values.position,
+            })),
+        [
+            { target: "character-1", group: 0, position: 0 },
+            { target: "character-2", group: 0, position: 1 },
+        ],
     );
 });

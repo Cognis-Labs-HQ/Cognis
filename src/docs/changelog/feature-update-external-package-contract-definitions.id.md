@@ -358,6 +358,10 @@ Formulir kartu tidak lagi menampilkan bidang Label terpisah untuk kartu non-defi
 
 Tooltip audio yang tidak tersedia kini memakai portal body yang memperhitungkan viewport, bukan posisi absolut di dalam kartu, sehingga luapan popup dan kartu tidak memotong teks. Setiap item karosel kembali memiliki pratinjau saat diarahkan atau difokuskan dengan papan ketik, termasuk saat teks definisi tambahan tidak tersedia.
 
+## Pelafalan multi-nilai berkelompok
+
+Kontrak Library diselaraskan dengan graf pelafalan berkelompok milik penyedia pembelajaran bahasa Jepang. Relasi dapat mendeklarasikan `grouped: true`, dan entri dapat membawa `referenceGroups` berkunci relasi, dengan setiap larik karakter terurut bertingkat menjadi milik satu pelafalan yang berbeda. Validasi paket konten, hashing, penyimpanan, API, composer pembuatan/pengeditan, tautan judul, serta penelusuran audio turunan kini mempertahankan batas tersebut dari ujung ke ujung.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -450,3 +454,4 @@ Tooltip audio yang tidak tersedia kini memakai portal body yang memperhitungkan 
 - [65340e2d](https://github.com/Cognis-Labs-HQ/Cognis/commit/65340e2d)
 - [b6dfb282](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6dfb282)
 - [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)
+- [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)

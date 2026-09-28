@@ -155,6 +155,7 @@ export function contentRecordHash(
                 ...(manifest.protected === true ? { protected: true } : {}),
                 fields: record.fields ?? {},
                 references: record.references ?? [],
+                referenceGroups: record.referenceGroups ?? {},
             }),
         )
         .digest("hex");
@@ -353,7 +354,31 @@ async function validateContentRecords(
             ...reference,
             entryId: contentEntryId(manifest, reference.entryId),
         }));
-        validateReferences(schema, record.layer, references, entries);
+        const referenceGroups = Object.fromEntries(
+            Object.entries(record.referenceGroups ?? {}).map(
+                ([relation, groups]) => [
+                    relation,
+                    groups.map((group) =>
+                        group.map((reference) => ({
+                            ...reference,
+                            relation,
+                            entryId: contentEntryId(
+                                manifest,
+                                reference.entryId,
+                            ),
+                        })),
+                    ),
+                ],
+            ),
+        );
+        validateReferences(
+            schema,
+            record.layer,
+            references,
+            entries,
+            referenceGroups,
+            record.fields,
+        );
         const layer = schema.layers.find(({ id }) => id === record.layer)!;
         if (layer.semanticRole === "orderedLexicalSequence") {
             const constituentRelationships = new Set(

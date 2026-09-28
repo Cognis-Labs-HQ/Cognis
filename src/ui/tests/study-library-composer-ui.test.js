@@ -20,6 +20,9 @@ const drawingSource = read("src/adapters/study/library/ui/app/drawing.js");
 const composerContractSource = read(
     "src/adapters/study/library/ui/app/composer-contract.js",
 );
+const popupTitleSource = read(
+    "src/adapters/study/library/ui/app/popup-title.js",
+);
 
 test("Study Library keeps editor tabs active and nested card types precise", () => {
     for (const [content, pattern] of [
@@ -114,4 +117,16 @@ test("Study Library keeps selected-card fields beside configured carousels", () 
         /generatedLabel: layer\?\.semanticRole !== "definition"/,
     );
     assert.match(adminInteractionsSource, /function syncGeneratedCardLabel\(/);
+});
+
+test("Study Library preserves each multi-value pronunciation reference group", () => {
+    assert.match(adminInteractionsSource, /form\.referenceGroups/);
+    assert.match(adminInteractionsSource, /groups\[groupIndex\]/);
+    assert.match(adminInteractionsSource, /readReferenceGroups/);
+    assert.match(createEntrySource, /referenceGroups: readReferenceGroups/);
+    assert.match(popupTitleSource, /linkedPronunciationGroups/);
+    assert.match(
+        popupTitleSource,
+        /linkedPronunciationGroups\[pronunciationIndex\]/,
+    );
 });

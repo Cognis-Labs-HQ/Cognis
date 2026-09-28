@@ -358,6 +358,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 音声不足ツールチップはカード内の絶対配置ではなく、ビューポートを考慮する body ポータルを使用します。これにより、ポップアップやカードのオーバーフローで文字が切れません。追加の定義文がない場合も含め、すべてのカルーセル項目でホバー時とキーボードフォーカス時のプレビューを再表示します。
 
+## グループ化した複数発音
+
+Library 契約を日本語学習プロバイダーのグループ化発音グラフへ合わせました。関係は `grouped: true` を宣言でき、項目は関係 ID をキーとする `referenceGroups` を持てます。各入れ子の順序付き文字配列は、それぞれ独立した発音に属します。コンテンツパック検証、ハッシュ化、保存、API、作成・編集コンポーザー、タイトルリンク、派生音声の走査まで、その境界を一貫して保持します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -450,3 +454,4 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 - [65340e2d](https://github.com/Cognis-Labs-HQ/Cognis/commit/65340e2d)
 - [b6dfb282](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6dfb282)
 - [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)
+- [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)

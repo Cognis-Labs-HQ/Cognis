@@ -138,6 +138,56 @@ test("fields validate multi-value composer declarations", () => {
     );
 });
 
+test("grouped relationships preserve separate pronunciation sequences", () => {
+    const schema: LibrarySchema = structuredClone(english);
+    schema.layers[1].relationships![0].grouped = true;
+    schema.layers[1].fields = [
+        {
+            id: "pronunciation",
+            metadata: { labels: { en: "Pronunciation" } },
+            type: "stringList",
+            multi_value: true,
+            input: {
+                control: "tagList",
+                linkRelationships: ["letters"],
+            },
+        },
+    ];
+    const a = entry("letter:a", "a");
+    const y = entry("letter:y", "y");
+    const targets = new Map([
+        [a.id, a],
+        [y.id, y],
+    ]);
+    const groups = {
+        letters: [
+            [
+                { entryId: a.id, relation: "letters", position: 0 },
+                { entryId: y.id, relation: "letters", position: 1 },
+            ],
+            [{ entryId: a.id, relation: "letters", position: 0 }],
+        ],
+    };
+
+    assert.deepEqual(validateLibrarySchema(schema), schema);
+    assert.doesNotThrow(() =>
+        validateReferences(schema, "words", [], targets, groups, {
+            pronunciation: ["ay", "a"],
+        }),
+    );
+    assert.throws(
+        () =>
+            validateReferences(
+                schema,
+                "words",
+                [{ entryId: a.id, relation: "letters", position: 0 }],
+                targets,
+                groups,
+            ),
+        /relationship_group_required:letters/,
+    );
+});
+
 test("layers can explicitly reference other entries in the same layer", () => {
     const schema: LibrarySchema = {
         ...english,

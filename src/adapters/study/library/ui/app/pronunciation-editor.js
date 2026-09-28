@@ -295,6 +295,14 @@ export function mountEditableRelationshipCarousels(
                 if (confirmed !== "delete") return;
             } else return;
             values.splice(index, 1);
+            for (const relationshipId of relationshipIdsForKind(
+                compositionField.dataset.libraryCompositionField,
+            )) {
+                const groups = form.referenceGroups?.[relationshipId];
+                if (!groups) continue;
+                groups.splice(index, 1);
+                if (!groups.length) delete form.referenceGroups[relationshipId];
+            }
             field.value = values.join("\n");
             renderSavedValues(compositionField);
         },
@@ -357,11 +365,30 @@ export function mountEditableRelationshipCarousels(
             if (!value) return;
             const field = form.elements["field:pronunciation"];
             const values = valuesForField(field);
+            const groupIndex = values.length;
             values.push(value);
             field.value = values.join("\n");
             for (const relationshipId of relationshipIds) {
                 const staged = stagedValues.get(relationshipId) ?? [];
                 const select = form.elements[`relationship:${relationshipId}`];
+                const relationship = layer?.relationships?.find(
+                    ({ id }) => id === relationshipId,
+                );
+                if (relationship?.grouped) {
+                    if (staged.length) {
+                        const groups = (form.referenceGroups[relationshipId] ??=
+                            []);
+                        groups[groupIndex] = staged.map(
+                            (entryId, position) => ({
+                                entryId,
+                                relation: relationshipId,
+                                position,
+                            }),
+                        );
+                    }
+                    stagedValues.set(relationshipId, []);
+                    continue;
+                }
                 const committed = new Set(
                     Array.from(select.selectedOptions, ({ value }) => value),
                 );

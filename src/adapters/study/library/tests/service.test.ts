@@ -253,6 +253,11 @@ test("entry updates migrate stored records to the current schema version", async
 });
 
 test("entry traces retain edit permission metadata", async () => {
+    const character = {
+        id: "character-a",
+        scope: "global",
+        scopeId: "global",
+    };
     const entry = {
         id: "entry-1",
         schemaId: "test-language",
@@ -261,12 +266,23 @@ test("entry traces retain edit permission metadata", async () => {
         label: "editable",
         fields: {},
         references: [],
+        referenceGroups: {
+            pronunciation: [
+                [
+                    {
+                        entryId: character.id,
+                        relation: "pronunciation",
+                        position: 0,
+                    },
+                ],
+            ],
+        },
         scope: "user",
         scopeId: "alice",
         createdBy: "alice",
     };
     const library = new LibraryService({
-        get: async () => entry,
+        get: async (id: string) => (id === entry.id ? entry : character),
         referencesFor: async () => [],
     } as never);
 
@@ -277,6 +293,7 @@ test("entry traces retain edit permission metadata", async () => {
 
     assert.equal(detail.entry.canEdit, true);
     assert.equal(detail.entry.editRequiresReview, false);
+    assert.deepEqual(detail.references, [character]);
 });
 
 test("provider metadata survives store and capability round trips", async () => {

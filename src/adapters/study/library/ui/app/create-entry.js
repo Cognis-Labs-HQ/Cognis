@@ -16,6 +16,7 @@ import {
     bindLibraryEditorControls,
     editorBody,
     readFields,
+    readReferenceGroups,
     readReferences,
 } from "./admin-interactions.js";
 import {
@@ -260,6 +261,7 @@ export async function openCreateEntryPopup({
             builder.attach(form);
             bindLibraryEditorControls(form, draft, i18n);
             form.compositionOrder = [];
+            form.referenceGroups = {};
             carouselController = mountEditableRelationshipCarousels(
                 form,
                 overlay,
@@ -457,6 +459,7 @@ export async function openCreateEntryPopup({
         tags: form.elements.tags.value.split("\u001f").filter(Boolean),
         fields,
         references,
+        referenceGroups: readReferenceGroups(form),
         definitionLanguages:
             layer.semanticRole === "definition"
                 ? ["de", "en", "id", "ja"]
@@ -683,13 +686,37 @@ function bindLookupProviders(form, draft, i18n) {
                     });
                     return;
                 }
-                applyLookupFields(form, suggestion.fields, draft);
+                const suggestedFields = { ...(suggestion.fields ?? {}) };
+                if (Object.keys(suggestion.referenceGroups ?? {}).length)
+                    delete suggestedFields.pronunciation;
+                applyLookupFields(form, suggestedFields, draft);
                 for (const reference of suggestion.references ?? []) {
                     const item = form.querySelector(
                         `[data-horizontal-carousel="${CSS.escape(reference.relation)}"] [data-carousel-value="${CSS.escape(reference.entryId)}"]`,
                     );
                     if (item && !item.classList.contains("is-selected"))
                         item.click();
+                }
+                for (const [relation, groups] of Object.entries(
+                    suggestion.referenceGroups ?? {},
+                )) {
+                    for (const group of groups) {
+                        for (const reference of group) {
+                            const item = form.querySelector(
+                                `[data-horizontal-carousel="${CSS.escape(relation)}"] [data-carousel-value="${CSS.escape(reference.entryId)}"]`,
+                            );
+                            if (item && !item.classList.contains("is-selected"))
+                                item.click();
+                        }
+                        form.querySelector(
+                            `[data-library-composer-relationship="${CSS.escape(relation)}"]`,
+                        )
+                            ?.closest("fieldset")
+                            ?.querySelector(
+                                "[data-library-save-composed-value]",
+                            )
+                            ?.click();
+                    }
                 }
                 if (!input.hasAttribute("data-library-free-text")) {
                     input.value = "";

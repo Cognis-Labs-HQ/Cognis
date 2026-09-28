@@ -358,6 +358,10 @@ Kartenformulare zeigen für Karten außerhalb der Definitionsebene kein separate
 
 Hinweise auf fehlendes Audio verwenden nun ansichtsfensterbewusste Body-Portale statt einer absoluten Position innerhalb der Karte. Dadurch schneiden Überlaufregeln von Pop-ups und Karten den Text nicht mehr ab. Jeder Karusselleintrag besitzt wieder eine Vorschau bei Mauszeigerkontakt und Tastaturfokus, auch wenn kein zusätzlicher Definitionstext vorhanden ist.
 
+## Gruppierte mehrwertige Aussprachen
+
+Der Library-Vertrag wurde an den gruppierten Aussprachegraphen des Japanisch-Lernanbieters angepasst. Beziehungen können `grouped: true` deklarieren, und Einträge können beziehungsspezifische `referenceGroups` enthalten, in denen jedes verschachtelte geordnete Zeichenfeld zu genau einer Aussprache gehört. Inhaltsprüfung, Hashbildung, Speicherung, APIs, Erstellungs- und Bearbeitungscomposer, Titellinks sowie die abgeleitete Audioauflösung bewahren diese Grenzen nun durchgängig.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -450,3 +454,4 @@ Hinweise auf fehlendes Audio verwenden nun ansichtsfensterbewusste Body-Portale 
 - [65340e2d](https://github.com/Cognis-Labs-HQ/Cognis/commit/65340e2d)
 - [b6dfb282](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6dfb282)
 - [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)
+- [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)

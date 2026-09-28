@@ -124,6 +124,8 @@ export interface LibraryRelationshipSchema {
     onDelete: "restrict" | "detach" | "cascade";
     resolverRole?: "grapheme" | "token" | "longestMatch" | "explicit";
     presentationRole?: "composition" | "alternateSpelling" | "pronunciation";
+    /** Preserve references as distinct ordered values instead of one flat edge list. */
+    grouped?: boolean;
     variant?: boolean;
     /** Unfold this relationship as a spatial parent/child card hierarchy. */
     child?: boolean;
@@ -195,6 +197,8 @@ export interface LibraryReferenceInput {
     position?: number;
 }
 
+export type LibraryReferenceGroups = Record<string, LibraryReferenceInput[][]>;
+
 export interface LibraryEntryInput {
     schemaId: string;
     schemaVersion?: number;
@@ -212,6 +216,8 @@ export interface LibraryEntryInput {
     alwaysShowDefinition?: boolean;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
+    /** Relationship-keyed ordered groups aligned with multi-value fields. */
+    referenceGroups?: LibraryReferenceGroups;
     /** Languages requested by a definition form; used by an optional localization provider. */
     definitionLanguages?: string[];
     /** Explicit confirmation after the API reports matching global content. */
@@ -257,6 +263,7 @@ export interface LibraryLookupSuggestion {
     label?: string;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
+    referenceGroups?: LibraryReferenceGroups;
     provenance: string;
     confidence: number;
 }
@@ -266,6 +273,7 @@ export interface LibraryLookupProposal {
     label?: string;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
+    referenceGroups?: LibraryReferenceGroups;
     provenance?: string;
     confidence?: number;
 }
@@ -342,6 +350,7 @@ export interface LibraryContentRecord {
     editable?: boolean;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
+    referenceGroups?: LibraryReferenceGroups;
 }
 
 export interface LibraryContentPackPlan {

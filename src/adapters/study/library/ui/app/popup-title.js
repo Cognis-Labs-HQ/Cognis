@@ -113,6 +113,23 @@ export function popupTitleDetailItems(
               )
               .map(({ entry }) => entry)
         : [];
+    const linkedPronunciationGroups = Array.from(linkRelationships).flatMap(
+        (relation) =>
+            (detail.entry.referenceGroups?.[relation] ?? []).map((group) =>
+                group
+                    .slice()
+                    .sort(
+                        (left, right) =>
+                            (left.position ?? 0) - (right.position ?? 0),
+                    )
+                    .map(({ entryId }) =>
+                        (detail.references ?? []).find(
+                            ({ id }) => id === entryId,
+                        ),
+                    )
+                    .filter(Boolean),
+            ),
+    );
     const pronunciationItems = distinctPronunciationLabels(
         detail.entry,
         spellingLabels,
@@ -120,7 +137,9 @@ export function popupTitleDetailItems(
         const linked = linkRelationships.size
             ? resolveReferenceAliasComposition(
                   label,
-                  linkedPronunciationEntries,
+                  linkedPronunciationGroups.length
+                      ? (linkedPronunciationGroups[pronunciationIndex] ?? [])
+                      : linkedPronunciationEntries,
               )
             : [];
         return [

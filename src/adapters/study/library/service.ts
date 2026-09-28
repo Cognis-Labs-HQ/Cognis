@@ -33,6 +33,17 @@ import type {
     StringLocalizationCapability,
 } from "./types.js";
 const CONTENT_CLASS_PATTERN = /^[a-z][a-zA-Z0-9]*(?::[a-z][a-zA-Z0-9]*)*$/;
+function allInputReferences(input: LibraryEntryInput) {
+    return [
+        ...(input.references ?? []),
+        ...Object.entries(input.referenceGroups ?? {}).flatMap(
+            ([relation, groups]) =>
+                groups.flatMap((group) =>
+                    group.map((reference) => ({ ...reference, relation })),
+                ),
+        ),
+    ];
+}
 function canComposeAtLocation(
     component: LibraryEntry,
     composite: LibraryLocation,
@@ -661,14 +672,21 @@ export class LibraryService implements LibraryCapability {
         validateFields(schema, input.layer, fields);
         const references = input.references ?? [];
         const targets = new Map<string, LibraryEntry>();
-        for (const reference of references) {
+        for (const reference of allInputReferences(input)) {
             const target = await this.read(actor, reference.entryId);
             if (!target) throw new Error("reference_not_found");
             if (!canComposeAtLocation(target, location))
                 throw new Error("reference_visibility_too_low");
             targets.set(target.id, target);
         }
-        validateReferences(schema, input.layer, references, targets);
+        validateReferences(
+            schema,
+            input.layer,
+            references,
+            targets,
+            input.referenceGroups,
+            fields,
+        );
         const created = await this.store.create(
             location,
             {
@@ -781,7 +799,7 @@ export class LibraryService implements LibraryCapability {
         validateFields(schema, input.layer, fields);
         const references = input.references ?? [];
         const targets = new Map<string, LibraryEntry>();
-        for (const reference of references) {
+        for (const reference of allInputReferences(input)) {
             const target = await this.read(actor, reference.entryId);
             if (!target) throw new Error("reference_not_found");
             if (
@@ -793,7 +811,14 @@ export class LibraryService implements LibraryCapability {
                 throw new Error("reference_visibility_too_low");
             targets.set(target.id, target);
         }
-        validateReferences(schema, input.layer, references, targets);
+        validateReferences(
+            schema,
+            input.layer,
+            references,
+            targets,
+            input.referenceGroups,
+            fields,
+        );
         return this.store.update(
             entryId,
             {
@@ -874,7 +899,7 @@ export class LibraryService implements LibraryCapability {
         const entry = await this.read(actor, entryId);
         if (!entry) throw new Error("not_found");
         const references: LibraryEntry[] = [];
-        for (const reference of entry.references ?? []) {
+        for (const reference of allInputReferences(entry)) {
             const target = await this.read(actor, reference.entryId);
             if (target) references.push(target);
         }

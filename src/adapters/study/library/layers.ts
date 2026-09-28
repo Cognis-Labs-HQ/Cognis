@@ -1,5 +1,6 @@
 import type {
     LibraryEntry,
+    LibraryEntryInput,
     LibraryFieldSchema,
     LibraryMetadataValue,
     LibraryReferenceInput,
@@ -284,6 +285,11 @@ function validateRelationship(
         typeof relationship.child !== "boolean"
     )
         throw new Error("invalid_child_relationship");
+    if (
+        relationship.grouped !== undefined &&
+        typeof relationship.grouped !== "boolean"
+    )
+        throw new Error("invalid_grouped_relationship");
     if (
         relationship.presentationRole !== undefined &&
         !["composition", "alternateSpelling", "pronunciation"].includes(
@@ -636,11 +642,26 @@ export function validateReferences(
     layerId: string,
     references: readonly LibraryReferenceInput[],
     targets: ReadonlyMap<string, LibraryEntry>,
+    referenceGroups: LibraryEntryInput["referenceGroups"] = {},
+    fields: Readonly<Record<string, unknown>> = {},
 ): void {
     const layer = findLayer(schema, layerId);
     const relationships = new Map(
         (layer.relationships ?? []).map((item) => [item.id, item]),
     );
+    for (const field of layer.fields ?? []) {
+        if (!field.multi_value || !field.input?.linkRelationships?.length)
+            continue;
+        const values = fields[field.id];
+        if (!Array.isArray(values)) continue;
+        const groupCount = field.input.linkRelationships.reduce(
+            (count, relation) =>
+                count + (referenceGroups[relation]?.length ?? 0),
+            0,
+        );
+        if (groupCount !== values.length)
+            throw new Error(`field_reference_group_mismatch:${field.id}`);
+    }
     const requiredPronunciationRelationships = new Set(
         (layer.relationships ?? [])
             .filter(
@@ -652,7 +673,31 @@ export function validateReferences(
             )
             .map(({ id }) => id),
     );
-    for (const reference of references) {
+    for (const [relation, groups] of Object.entries(referenceGroups)) {
+        const relationship = relationships.get(relation);
+        if (!relationship) throw new Error("relationship_not_found");
+        if (!relationship.grouped)
+            throw new Error(`relationship_not_grouped:${relation}`);
+        if (
+            !Array.isArray(groups) ||
+            !groups.length ||
+            groups.some((group) => !Array.isArray(group) || !group.length)
+        )
+            throw new Error(`relationship_group_empty:${relation}`);
+        if (
+            groups.some((group) =>
+                group.some((reference) => reference.relation !== relation),
+            )
+        )
+            throw new Error(`relationship_group_mismatch:${relation}`);
+    }
+    const groupedReferences = Object.entries(referenceGroups).flatMap(
+        ([relation, groups]) =>
+            groups.flatMap((group) =>
+                group.map((reference) => ({ ...reference, relation })),
+            ),
+    );
+    for (const reference of [...references, ...groupedReferences]) {
         const relationship = relationships.get(reference.relation);
         if (!relationship) throw new Error("relationship_not_found");
         const target = targets.get(reference.entryId);
@@ -666,9 +711,14 @@ export function validateReferences(
         }
     }
     for (const relationship of relationships.values()) {
-        const matching = references.filter(
+        const matching = [...references, ...groupedReferences].filter(
             ({ relation }) => relation === relationship.id,
         );
+        if (
+            relationship.grouped &&
+            references.some(({ relation }) => relation === relationship.id)
+        )
+            throw new Error(`relationship_group_required:${relationship.id}`);
         const minimum =
             layer.semanticRole === "compoundWritingUnit" &&
             layer.cardConstructor &&
@@ -688,7 +738,7 @@ export function validateReferences(
             matching.some(({ position }) => position !== undefined)
         )
             throw new Error(`relationship_not_ordered:${relationship.id}`);
-        if (relationship.ordered) {
+        if (relationship.ordered && !relationship.grouped) {
             const positions = matching.map(({ position }) => position);
             if (
                 positions.some(
@@ -703,6 +753,21 @@ export function validateReferences(
                 throw new Error(
                     `relationship_position_duplicate:${relationship.id}`,
                 );
+        }
+        if (relationship.ordered && relationship.grouped) {
+            for (const group of referenceGroups[relationship.id] ?? []) {
+                const positions = group.map(({ position }) => position);
+                if (
+                    positions.some(
+                        (position) =>
+                            !Number.isSafeInteger(position) || position! < 0,
+                    ) ||
+                    new Set(positions).size !== positions.length
+                )
+                    throw new Error(
+                        `relationship_group_position_invalid:${relationship.id}`,
+                    );
+            }
         }
     }
 }

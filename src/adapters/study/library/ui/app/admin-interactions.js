@@ -561,22 +561,29 @@ export function readReferences(form, layer, compositionOrder = []) {
     const authoredPositions = new Map(
         compositionOrder.map((entryId, position) => [entryId, position]),
     );
-    return (layer?.relationships ?? []).flatMap((relationship) =>
-        Array.from(
-            form.elements[`relationship:${relationship.id}`]?.selectedOptions ??
-                [],
-            (option, position) => ({
-                entryId: option.value,
-                relation: relationship.id,
-                ...(relationship.ordered
-                    ? {
-                          position:
-                              authoredPositions.get(option.value) ?? position,
-                      }
-                    : {}),
-            }),
-        ),
-    );
+    return (layer?.relationships ?? [])
+        .filter((relationship) => !relationship.grouped)
+        .flatMap((relationship) =>
+            Array.from(
+                form.elements[`relationship:${relationship.id}`]
+                    ?.selectedOptions ?? [],
+                (option, position) => ({
+                    entryId: option.value,
+                    relation: relationship.id,
+                    ...(relationship.ordered
+                        ? {
+                              position:
+                                  authoredPositions.get(option.value) ??
+                                  position,
+                          }
+                        : {}),
+                }),
+            ),
+        );
+}
+
+export function readReferenceGroups(form) {
+    return structuredClone(form.referenceGroups ?? {});
 }
 
 function syncGeneratedCardLabel(form, inputCarouselIds, entries) {
@@ -675,6 +682,7 @@ export async function openLibraryEntryEditor({
                         (right.position ?? Number.MAX_SAFE_INTEGER),
                 )
                 .map(({ entryId }) => entryId);
+            form.referenceGroups = structuredClone(entry.referenceGroups ?? {});
             mountEditableRelationshipCarousels(
                 form,
                 overlay,
@@ -765,6 +773,7 @@ export async function openLibraryEntryEditor({
                     form.elements.alwaysShowDefinition.checked,
                 fields,
                 references,
+                referenceGroups: readReferenceGroups(form),
             };
             const updated = requestUpdate
                 ? await requestLibraryUpdate(entry.id, proposedEntry)
@@ -903,6 +912,9 @@ export function bindAdminLibraryInteractions(
                                     (right.position ?? Number.MAX_SAFE_INTEGER),
                             )
                             .map(({ entryId }) => entryId);
+                        form.referenceGroups = structuredClone(
+                            entry.referenceGroups ?? {},
+                        );
                         mountEditableRelationshipCarousels(
                             form,
                             overlay,
@@ -991,6 +1003,7 @@ export function bindAdminLibraryInteractions(
                                 form.elements.alwaysShowDefinition.checked,
                             fields,
                             references,
+                            referenceGroups: readReferenceGroups(form),
                         });
                         Object.assign(entry, updated);
                         render();

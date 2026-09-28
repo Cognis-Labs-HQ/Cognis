@@ -24,6 +24,26 @@ import {
     reviewPushRequest,
 } from "./push-requests.js";
 import { markEntriesViewed, moveEntry, viewedEntryIds } from "./entry-state.js";
+
+function entryReferenceRows(input: LibraryEntryInput) {
+    return [
+        ...(input.references ?? []).map((reference, index) => ({
+            reference,
+            groupIndex: -1,
+            position: reference.position ?? index,
+        })),
+        ...Object.entries(input.referenceGroups ?? {}).flatMap(
+            ([relation, groups]) =>
+                groups.flatMap((group, groupIndex) =>
+                    group.map((reference, position) => ({
+                        reference: { ...reference, relation },
+                        groupIndex,
+                        position: reference.position ?? position,
+                    })),
+                ),
+        ),
+    ];
+}
 export class LibraryStore {
     constructor(private readonly db: DbExecutor) {}
     private async upsert(
@@ -356,13 +376,11 @@ export class LibraryStore {
                 const source = recordIdentity.get(record.id);
                 if (!source) continue;
                 if (providerModifiedEntryIds.has(source.canonicalId)) continue;
-                for (const [index, reference] of (
-                    record.references ?? []
-                ).entries()) {
-                    const target = recordIdentity.get(reference.entryId);
+                for (const row of entryReferenceRows(record)) {
+                    const target = recordIdentity.get(row.reference.entryId);
                     if (!target) continue;
                     if (
-                        record.id === reference.entryId ||
+                        record.id === row.reference.entryId ||
                         source.canonicalId === target.canonicalId
                     ) {
                         continue;
@@ -370,8 +388,9 @@ export class LibraryStore {
                     const values = {
                         source_entry_id: source.canonicalId,
                         target_entry_id: target.canonicalId,
-                        relation: reference.relation,
-                        position: reference.position ?? index,
+                        relation: row.reference.relation,
+                        group_index: row.groupIndex,
+                        position: row.position,
                     };
                     await db.executeCommand({
                         option: "INSERT",
@@ -396,7 +415,7 @@ export class LibraryStore {
                         record_count: records.length,
                         relationship_count: records.reduce(
                             (count, record) =>
-                                count + (record.references?.length ?? 0),
+                                count + entryReferenceRows(record).length,
                             0,
                         ),
                         metadata_json: JSON.stringify(manifest.metadata ?? {}),
@@ -684,7 +703,7 @@ export class LibraryStore {
             recordCount: plan.records.length,
             newRecordCount,
             relationshipCount: plan.records.reduce(
-                (count, record) => count + (record.references?.length ?? 0),
+                (count, record) => count + entryReferenceRows(record).length,
                 0,
             ),
             ...(plan.manifest.metadata
@@ -707,11 +726,25 @@ export class LibraryStore {
             table: "study_library_references",
             where: [{ column: "source_entry_id", value: id }],
         });
-        entry.references = (references.rows ?? []).map((reference) => ({
-            entryId: String(reference.target_entry_id),
-            relation: String(reference.relation),
-            position: Number(reference.position),
-        }));
+        entry.references = [];
+        entry.referenceGroups = {};
+        for (const reference of references.rows ?? []) {
+            const value = {
+                entryId: String(reference.target_entry_id),
+                relation: String(reference.relation),
+                position: Number(reference.position),
+            };
+            const groupIndex = Number(reference.group_index);
+            if (groupIndex < 0) {
+                entry.references.push(value);
+                continue;
+            }
+            const groups = (entry.referenceGroups[value.relation] ??= []);
+            (groups[groupIndex] ??= []).push(value);
+        }
+        for (const groups of Object.values(entry.referenceGroups))
+            for (const group of groups)
+                group.sort((left, right) => left.position! - right.position!);
         return entry;
     }
     async list(
@@ -771,17 +804,16 @@ export class LibraryStore {
                     created_by: accountId,
                 },
             });
-            for (const [position, reference] of (
-                input.references ?? []
-            ).entries()) {
+            for (const row of entryReferenceRows(input)) {
                 await transactionDb.executeCommand({
                     option: "INSERT",
                     table: "study_library_references",
                     values: {
                         source_entry_id: id,
-                        target_entry_id: reference.entryId,
-                        relation: reference.relation ?? "contains",
-                        position: reference.position ?? position,
+                        target_entry_id: row.reference.entryId,
+                        relation: row.reference.relation,
+                        group_index: row.groupIndex,
+                        position: row.position,
                     },
                 });
             }
@@ -819,17 +851,16 @@ export class LibraryStore {
                 table: "study_library_references",
                 where: [{ column: "source_entry_id", value: id }],
             });
-            for (const [position, reference] of (
-                input.references ?? []
-            ).entries()) {
+            for (const row of entryReferenceRows(input)) {
                 await transactionDb.executeCommand({
                     option: "INSERT",
                     table: "study_library_references",
                     values: {
                         source_entry_id: id,
-                        target_entry_id: reference.entryId,
-                        relation: reference.relation ?? "contains",
-                        position: reference.position ?? position,
+                        target_entry_id: row.reference.entryId,
+                        relation: row.reference.relation,
+                        group_index: row.groupIndex,
+                        position: row.position,
                     },
                 });
             }

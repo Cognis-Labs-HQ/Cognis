@@ -213,6 +213,41 @@ export function compositionReferenceGroups(detail, schemas) {
             .filter((relationship) => relationship.resolverRole)
             .map((relationship) => [relationship.id, relationship]),
     );
+    const grouped = Object.entries(detail.entry.referenceGroups ?? {}).flatMap(
+        ([relation, groups]) =>
+            groups.map((references, groupIndex) => ({
+                relation,
+                groupIndex,
+                references,
+            })),
+    );
+    const groupedResults = grouped.flatMap(
+        ({ relation, groupIndex, references }) => {
+            const relationship = relationshipsById.get(relation);
+            if (!relationship) return [];
+            const entries = references
+                .slice()
+                .sort(
+                    (left, right) =>
+                        (left.position ?? 0) - (right.position ?? 0),
+                )
+                .map(({ entryId }) => entriesById.get(entryId))
+                .filter(Boolean);
+            return entries.length
+                ? [
+                      {
+                          id: `${relation}:${groupIndex}`,
+                          presentationRole: relationshipPresentationRole(
+                              relationship,
+                              sourceLayer,
+                              schemas,
+                          ),
+                          entries,
+                      },
+                  ]
+                : [];
+        },
+    );
     const groupsByRole = new Map();
     for (const reference of detail.entry.references ?? []) {
         const relationship = relationshipsById.get(reference.relation);
@@ -236,13 +271,16 @@ export function compositionReferenceGroups(detail, schemas) {
         group.references.push({ entry, position: reference.position ?? 0 });
         groupsByRole.set(presentationRole, group);
     }
-    return Array.from(groupsByRole.values(), (group) => ({
-        id: group.id,
-        presentationRole: group.presentationRole,
-        entries: group.references
-            .sort((left, right) => left.position - right.position)
-            .map(({ entry }) => entry),
-    }));
+    return [
+        ...groupedResults,
+        ...Array.from(groupsByRole.values(), (group) => ({
+            id: group.id,
+            presentationRole: group.presentationRole,
+            entries: group.references
+                .sort((left, right) => left.position - right.position)
+                .map(({ entry }) => entry),
+        })),
+    ];
 }
 
 export function headingCompositionReferences(detail, schemas) {
@@ -268,6 +306,13 @@ function entryAudio(entry, layer) {
     };
 }
 
+function allEntryReferences(entry) {
+    return [
+        ...(entry.references ?? []),
+        ...Object.values(entry.referenceGroups ?? {}).flat(2),
+    ];
+}
+
 export function renderAudio(
     entry,
     layer,
@@ -281,13 +326,13 @@ export function renderAudio(
         own.valid &&
         layer?.semanticRole === "compoundWritingUnit" &&
         entry.createdBy?.startsWith("content-pack:") &&
-        (entry.references ?? []).length > 0;
+        allEntryReferences(entry).length > 0;
     let sources =
         own.valid && !useRelatedProviderAudio
             ? [{ entry, field: own.audioField }]
             : [];
     let complete = sources.length > 0;
-    if (!complete && (entry.references ?? []).length) {
+    if (!complete && allEntryReferences(entry).length) {
         const resolveSources = (candidate, visited = new Set()) => {
             if (!candidate || visited.has(candidate.id)) return null;
             visited.add(candidate.id);
@@ -295,7 +340,7 @@ export function renderAudio(
             const audio = entryAudio(candidate, candidateLayer);
             if (audio.valid)
                 return [{ entry: candidate, field: audio.audioField }];
-            const content = (candidate.references ?? [])
+            const content = allEntryReferences(candidate)
                 .sort(
                     (left, right) =>
                         (left.position ?? 0) - (right.position ?? 0),
@@ -330,7 +375,7 @@ export function renderAudio(
         const dependenciesMissingAudio =
             ["lexicalUnit", "orderedLexicalSequence"].includes(
                 layer?.semanticRole,
-            ) && (entry.references ?? []).length > 0;
+            ) && allEntryReferences(entry).length > 0;
         const unavailableLabel = dependenciesMissingAudio
             ? missingDependencyLabel
             : "";

@@ -358,6 +358,10 @@ Card forms no longer expose a separate Label field for non-definition cards. The
 
 Missing-audio tooltips now use viewport-aware body portals instead of card-local absolute positioning, preventing popup and card overflow from clipping their text. Every carousel item again carries a hover and keyboard-focus preview, even when no secondary definition text is available.
 
+## Grouped multi-value pronunciations
+
+Aligned the Library contract with the Japanese learning provider’s grouped pronunciation graph. Relationships can declare `grouped: true`, and entries can carry relationship-keyed `referenceGroups`, where every nested ordered character array belongs to one distinct pronunciation. Content-pack validation, hashing, storage, APIs, create/edit composers, title links, and derived audio traversal now preserve those boundaries end to end.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -450,3 +454,4 @@ Missing-audio tooltips now use viewport-aware body portals instead of card-local
 - [65340e2d](https://github.com/Cognis-Labs-HQ/Cognis/commit/65340e2d)
 - [b6dfb282](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6dfb282)
 - [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)
+- [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)
