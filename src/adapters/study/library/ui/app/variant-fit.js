@@ -8,6 +8,20 @@ const VARIANT_DIRECTIONS = [
     "down-right",
     "down-left",
 ];
+const DIAGONAL_VARIANT_DIRECTIONS = VARIANT_DIRECTIONS.filter((direction) =>
+    direction.includes("-"),
+);
+
+export function variantDirectionCandidates(preferred) {
+    return [
+        preferred,
+        ...DIAGONAL_VARIANT_DIRECTIONS,
+        ...VARIANT_DIRECTIONS,
+    ].filter(
+        (direction, index, directions) =>
+            direction && directions.indexOf(direction) === index,
+    );
+}
 
 function cardBounds(slot) {
     const card = slot.querySelector(
@@ -77,27 +91,15 @@ export function fitVariantBranchWithinGrid(rootShell) {
         const slots = Array.from(
             rootShell.querySelectorAll("[data-library-preferred-direction]"),
         ).filter((slot) => getComputedStyle(slot).display !== "none");
-        const rootCard = rootShell.querySelector(
-            ":scope > .library-entry-card",
+        const occupiedRects = Array.from(
+            grid.querySelectorAll(
+                ":scope > .library-entry-card-shell > .library-entry-card",
+            ),
+            (card) => card.getBoundingClientRect(),
         );
-        const occupiedRects = rootCard
-            ? [rootCard.getBoundingClientRect()]
-            : [];
         for (const slot of slots) {
             const preferred = slot.dataset.libraryPreferredDirection;
-            const horizontalSide = preferred.includes("right")
-                ? "right"
-                : preferred.includes("left")
-                  ? "left"
-                  : null;
-            const candidates = [
-                preferred,
-                ...VARIANT_DIRECTIONS.filter(
-                    (direction) =>
-                        direction !== preferred &&
-                        (!horizontalSide || direction.includes(horizontalSide)),
-                ),
-            ];
+            const candidates = variantDirectionCandidates(preferred);
             let best = {
                 direction: preferred,
                 overflow: Number.POSITIVE_INFINITY,
@@ -108,7 +110,11 @@ export function fitVariantBranchWithinGrid(rootShell) {
                 const rect = cardBounds(slot);
                 const overflow = overflowScore(rect, boundary);
                 const collision = collisionScore(rect, occupiedRects);
-                if (direction === preferred && overflow === 0) {
+                if (
+                    direction === preferred &&
+                    overflow === 0 &&
+                    collision === 0
+                ) {
                     best = { direction, overflow, collision };
                     break;
                 }

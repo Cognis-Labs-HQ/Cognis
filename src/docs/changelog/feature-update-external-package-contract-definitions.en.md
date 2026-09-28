@@ -410,6 +410,10 @@ Long pronunciation and definition details now remain beside the primary value wi
 
 Pronunciation-driven headings now place the speaker below the scope icon, keep readings in a 40%-wide wrapping cluster, and let definitions form independent rows to the right. The same tag, definition, and pronunciation limits are now enforced by both create and edit composers.
 
+## Adaptive diagonal child-card placement
+
+Expanded character-child branches now test diagonal positions across both sides whenever their preferred direction overflows or collides. Visible root cards participate in collision scoring, so child cards and connector arrows remain inside the Library canvas while choosing genuinely free diagonal slots.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -515,3 +519,4 @@ Pronunciation-driven headings now place the speaker below the scope icon, keep r
 - [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)
 - [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)
 - [bdd1961e](https://github.com/Cognis-Labs-HQ/Cognis/commit/bdd1961e)
+- [e397588c](https://github.com/Cognis-Labs-HQ/Cognis/commit/e397588c)

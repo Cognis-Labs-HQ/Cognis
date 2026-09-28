@@ -246,3 +246,5 @@ Removing a staged composer card requires clicking its compact × button exactly;
 Long pronunciation and definition details in entry headings keep their original starting position but use at most 40% of the heading width and wrap onto additional rows. An em dash now separates definitions from pronunciations. Creation composers accept no more than 8 tags, 10 definitions, and 16 pronunciations, showing a localized toast when an author reaches a limit.
 
 Dense pronunciation headings now use a four-column arrangement only when readings are present: the speaker sits beneath the scope icon, the pronunciation cluster retains up to 40% of the heading, and definitions wrap independently to its right. The 8-tag, 10-definition, and 16-pronunciation limits now apply equally to create and edit composers.
+
+When an expanded character-child branch would cross the visible Library grid, runtime fitting now evaluates every diagonal slot before falling back to the opposite cardinal directions. It also treats all visible root cards as occupied, selecting the first in-bounds, collision-free diagonal and keeping both the child card and its connector on the canvas.

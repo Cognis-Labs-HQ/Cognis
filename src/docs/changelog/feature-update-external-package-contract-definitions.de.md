@@ -410,6 +410,10 @@ Lange Aussprache- und Definitionsangaben bleiben nun neben dem Hauptwert innerha
 
 Durch Aussprachen erweiterte Überschriften platzieren den Lautsprecher nun unter dem Bereichssymbol, halten Lesungen in einem umbrechenden Block mit 40 % Breite und lassen Definitionen rechts davon eigene Zeilen bilden. Dieselben Grenzen für Tags, Definitionen und Aussprachen werden jetzt in Erstellungs- und Bearbeitungsdialogen durchgesetzt.
 
+## Adaptive diagonale Platzierung von Unterkarten
+
+Aufgeklappte Zweige mit untergeordneten Zeichen prüfen nun diagonale Positionen auf beiden Seiten, wenn die bevorzugte Richtung überläuft oder kollidiert. Sichtbare Stammkarten fließen in die Kollisionsbewertung ein, sodass Unterkarten und Verbindungspfeile innerhalb der Bibliotheksfläche bleiben und tatsächlich freie diagonale Plätze verwenden.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -515,3 +519,4 @@ Durch Aussprachen erweiterte Überschriften platzieren den Lautsprecher nun unte
 - [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)
 - [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)
 - [bdd1961e](https://github.com/Cognis-Labs-HQ/Cognis/commit/bdd1961e)
+- [e397588c](https://github.com/Cognis-Labs-HQ/Cognis/commit/e397588c)

@@ -410,6 +410,10 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 
 発音によって拡張される見出しでは、スピーカーをスコープアイコンの下に配置し、読みを幅 40% の折り返しブロックに収め、定義を右側の独立した行として表示します。タグ、定義、発音の同じ上限を作成と編集の両コンポーザーで適用します。
 
+## 子カードの適応的な斜め配置
+
+展開した文字の子ブランチは、優先方向が境界を越えるか衝突する場合に両側の斜め位置を試します。表示中のルートカードも衝突判定に含めるため、子カードと接続矢印をライブラリのキャンバス内に保ちながら、実際に空いている斜めスロットを選択します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -515,3 +519,4 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 - [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)
 - [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)
 - [bdd1961e](https://github.com/Cognis-Labs-HQ/Cognis/commit/bdd1961e)
+- [e397588c](https://github.com/Cognis-Labs-HQ/Cognis/commit/e397588c)

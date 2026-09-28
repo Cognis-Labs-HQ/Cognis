@@ -410,6 +410,10 @@ Rincian pelafalan dan definisi yang panjang kini tetap berada di samping nilai u
 
 Judul yang diperluas oleh pelafalan kini menempatkan pengeras suara di bawah ikon cakupan, mempertahankan bacaan dalam kelompok pembungkus selebar 40%, dan membiarkan definisi membentuk baris mandiri di sebelah kanan. Batas tag, definisi, dan pelafalan yang sama kini diterapkan pada komposer pembuatan maupun pengeditan.
 
+## Penempatan diagonal adaptif untuk kartu anak
+
+Cabang anak karakter yang diperluas kini menguji posisi diagonal di kedua sisi ketika arah pilihannya meluap atau bertabrakan. Kartu akar yang terlihat disertakan dalam penilaian tabrakan, sehingga kartu anak dan panah penghubung tetap berada di dalam kanvas Pustaka sambil memilih slot diagonal yang benar-benar kosong.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -515,3 +519,4 @@ Judul yang diperluas oleh pelafalan kini menempatkan pengeras suara di bawah iko
 - [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)
 - [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)
 - [bdd1961e](https://github.com/Cognis-Labs-HQ/Cognis/commit/bdd1961e)
+- [e397588c](https://github.com/Cognis-Labs-HQ/Cognis/commit/e397588c)
