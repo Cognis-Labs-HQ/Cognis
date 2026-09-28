@@ -241,6 +241,10 @@ test("Study layer cards optionally show provider-requested definitions", () => {
     );
     assert.match(cardsSource, /library-card-pronunciation/);
     assert.match(cardsSource, /pronunciationValues\(entry\)/);
+    assert.match(
+        cardsSource,
+        /pronunciationValues\(entry\)[\s\S]*\.filter\([\s\S]*\.slice\(0, 2\)/,
+    );
     assert.match(cardsSource, /entry\.alwaysShowDefinition/);
     assert.match(cardsSource, /definitionText/);
     assert.match(cardsSource, /library-card-definition/);

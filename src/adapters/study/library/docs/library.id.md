@@ -216,3 +216,5 @@ Relasi berkelompok mempertahankan larik referensi bertingkat untuk bidang multi-
 Kartu tersembunyi dikecualikan dari setiap karosel dan daftar kandidat saran ketik. Dependensi tersembunyi yang sudah ada tetap dipertahankan dalam kontrol relasi dasar saat kartu diedit, tetapi tidak pernah ditawarkan sebagai pilihan karosel yang dapat dipilih penulis.
 
 Relasi berkelompok yang dimuat dari penyimpanan dipadatkan sebelum entri diurutkan berdasarkan posisi. Dengan demikian, indeks grup yang hilang tidak dapat menggagalkan endpoint entri Pustaka, sedangkan urutan setiap grup pelafalan tersimpan tetap deterministik.
+
+Pratinjau kartu Pustaka menampilkan paling banyak dua pelafalan berbeda pertama. Tampilan detail entri tetap menyediakan seluruh rangkaian pelafalan tanpa membuat kartu penjelajahan terlalu tinggi atau padat.

@@ -228,3 +228,5 @@ Grouped relationships preserve nested reference arrays for multi-value fields. E
 Hidden cards are excluded from every carousel and type-ahead candidate list. Existing hidden dependencies remain preserved in the underlying relationship controls when editing a card, but they are never offered as author-selectable carousel choices.
 
 Grouped relationships loaded from storage are compacted before their entries are position-sorted. A missing group index therefore cannot make the Library entries endpoint fail, while the order of every stored pronunciation group remains deterministic.
+
+Library card previews show at most the first two distinct pronunciations. The entry detail view continues to expose the complete pronunciation set without making browsing cards excessively tall or dense.

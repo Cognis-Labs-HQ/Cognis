@@ -370,6 +370,10 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 
 ライブラリストアは各グループを並べ替える前に、グループ化参照番号の欠番を詰めるようになりました。保存済みグループ番号に欠番があるエントリも例外なく読み込め、発音順は一定に保たれます。
 
+## カードの発音表示を簡潔化
+
+ライブラリカードには先頭2件の発音だけを表示するようになりました。それ以外の発音は、完全なエントリ詳細画面で引き続き確認できます。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -465,3 +469,4 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 - [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)
 - [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)
 - [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)
+- [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)

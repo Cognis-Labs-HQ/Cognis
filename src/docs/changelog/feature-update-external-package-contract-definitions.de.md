@@ -370,6 +370,10 @@ Composer-Karussells, Kartenvorschläge für freie Texteingaben und Aussprachevor
 
 Der Bibliotheksspeicher schließt nun Lücken in gruppierten Referenzindizes, bevor jede Gruppe sortiert wird. Einträge mit lückenhaften gespeicherten Gruppenindizes werden wieder geladen, während die Aussprachefolge deterministisch bleibt.
 
+## Kartenvorschauen zeigen Aussprachen kompakt
+
+Bibliothekskarten zeigen jetzt nur die ersten beiden Aussprachen. Weitere Aussprachen bleiben in der vollständigen Detailansicht des Eintrags verfügbar.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -465,3 +469,4 @@ Der Bibliotheksspeicher schließt nun Lücken in gruppierten Referenzindizes, be
 - [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)
 - [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)
 - [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)
+- [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)

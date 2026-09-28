@@ -38,9 +38,9 @@ function renderCardContents(entry, layer, _entries, _schema, i18n) {
     const pronunciations =
         layer.semanticRole === "orderedLexicalSequence"
             ? []
-            : pronunciationValues(entry).filter(
-                  (pronunciation) => pronunciation !== entry.label,
-              );
+            : pronunciationValues(entry)
+                  .filter((pronunciation) => pronunciation !== entry.label)
+                  .slice(0, 2);
     const pronunciationPreview = pronunciations.length
         ? `<span class="library-card-pronunciation">${escapeHtml(pronunciations.join(" · "))}</span>`
         : "";

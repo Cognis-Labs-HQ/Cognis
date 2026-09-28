@@ -370,6 +370,10 @@ Composer carousels, free-text card suggestions, and pronunciation suggestions no
 
 The Library store now compacts missing grouped-reference indexes before sorting each group. Loading entries with sparse persisted group indexes no longer throws while preserving deterministic pronunciation order.
 
+## Card previews keep pronunciations concise
+
+Library cards now show only the first two pronunciations. Additional pronunciations remain available in the complete entry detail view.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -465,3 +469,4 @@ The Library store now compacts missing grouped-reference indexes before sorting 
 - [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)
 - [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)
 - [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)
+- [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)

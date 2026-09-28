@@ -370,6 +370,10 @@ Karosel composer, saran kartu untuk teks bebas, dan saran pelafalan kini mengecu
 
 Penyimpanan Pustaka kini memadatkan indeks referensi berkelompok yang hilang sebelum mengurutkan setiap grup. Entri dengan indeks grup tersimpan yang renggang dapat dimuat tanpa galat dan urutan pelafalan tetap deterministik.
 
+## Pratinjau kartu meringkas pelafalan
+
+Kartu Pustaka kini hanya menampilkan dua pelafalan pertama. Pelafalan tambahan tetap tersedia dalam tampilan detail entri lengkap.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -465,3 +469,4 @@ Penyimpanan Pustaka kini memadatkan indeks referensi berkelompok yang hilang seb
 - [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)
 - [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)
 - [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)
+- [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)
