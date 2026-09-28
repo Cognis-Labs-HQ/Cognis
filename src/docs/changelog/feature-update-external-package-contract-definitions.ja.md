@@ -386,6 +386,10 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 
 複数のフィールドリンク関係で一致するグループ番号を、同じ複数値フィールド項目として扱うようになりました。並行する関係のグループ数を合計せず最大値で検証するため、最新の日本語コンテンツパックを正常に有効化できます。
 
+## 発音詳細を深く解決し再描画の比率を維持
+
+カード値と一致する発音は同じ表記を繰り返さず、リンク先カードの発音値まで解決するようになりました。描画練習では、開いたウィンドウが異なる列数のパターンを読み込む際にステージ比率を再適用し、キャンバスを同期します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -485,3 +489,4 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 - [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)
 - [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)
 - [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)
+- [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)

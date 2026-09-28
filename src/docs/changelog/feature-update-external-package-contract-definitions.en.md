@@ -386,6 +386,10 @@ Pronunciation de-duplication now compares the joined labels of linked character 
 
 Aligned group indexes across multiple field link relationships now represent the same multi-value field item. Validation uses the greatest linked group count rather than summing parallel relationship counts, allowing the latest Japanese content pack to enable successfully.
 
+## Pronunciation details descend and drawing redraws stay proportional
+
+Pronunciations matching a card value now descend to the linked cards’ pronunciation values instead of repeating the same spelling. Drawing Practice also reapplies stage proportions and synchronizes its canvas when an open window loads a pattern with a different column count.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -485,3 +489,4 @@ Aligned group indexes across multiple field link relationships now represent the
 - [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)
 - [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)
 - [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)
+- [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)

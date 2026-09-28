@@ -25,3 +25,5 @@ Annotation labels evaluate nearby placements around each stroke start and choose
 Successful attempts with no more than one mistake now increase card-specific recall difficulty by hiding one additional randomly selected stroke guide. Hidden strokes are represented by a question mark in the canvas corner and are still validated normally. The top-right guidance action reveals hidden strokes for the current attempt without clearing accepted input or reducing the card’s learned difficulty. Annotation placement prefers the first nearby collision-free position instead of maximizing empty distance, keeping labels closer to their stroke starts.
 
 The hidden-guide question mark appears only when the learner reaches a stroke whose guide is hidden; it no longer warns early about hidden strokes later in the pattern.
+
+Switching an open Drawing Practice window to a card with a different column count now reapplies the stage aspect ratio and synchronizes the canvas bitmap after layout. Multi-character patterns no longer stretch vertically while the floating window redraws.

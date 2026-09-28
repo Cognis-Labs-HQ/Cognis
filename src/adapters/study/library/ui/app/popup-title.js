@@ -1,6 +1,7 @@
 import {
     compositionReferenceGroups,
     layerForEntry,
+    pronunciationValues,
     relationshipPresentationRole,
 } from "./presentation.js";
 import {
@@ -148,7 +149,17 @@ export function popupTitleDetailItems(
                           : linkedPronunciationEntries,
                   )
                 : [];
-            return { label, linked };
+            const linkedLabel = linked.map((entry) => entry.label).join("");
+            const displayedLinked =
+                linked.length &&
+                normalizedTitleText(linkedLabel) ===
+                    normalizedTitleText(detail.entry.label)
+                    ? linked.map((entry) => ({
+                          ...entry,
+                          label: pronunciationValues(entry)[0] ?? entry.label,
+                      }))
+                    : linked;
+            return { label, linked: displayedLinked };
         })
         .filter(({ label, linked }) => {
             const displayedPronunciation = linked.length

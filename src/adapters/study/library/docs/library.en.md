@@ -236,3 +236,5 @@ Pronunciation display normalizes each nested character sequence into its complet
 Linked pronunciation titles are also de-duplicated from what the UI actually renders: the linked character labels are joined, whitespace and Unicode forms are normalized, and the resulting reading is compared with the card value. This prevents a linked `さ` + `き` sequence from repeating a `さき` title even when its stored pronunciation representation differs.
 
 A single multi-value field group may span several declared link relationships. Group indexes align across those relationships, so validation compares the field value count with the greatest linked relationship group count rather than adding the counts together. This supports pronunciations composed jointly from meaningful reading segments and direct character suffixes.
+
+When a linked pronunciation spells the card's primary value exactly, title details descend one presentation level and show the linked cards' own pronunciation values. A Kana spelling such as `さ` + `き` can therefore present its character-layer readings instead of redundantly repeating `さき`.

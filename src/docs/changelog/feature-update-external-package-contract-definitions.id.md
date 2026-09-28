@@ -386,6 +386,10 @@ Deduplikasi pelafalan kini membandingkan gabungan label kartu karakter tertaut d
 
 Indeks grup yang sejajar di beberapa relasi tautan bidang kini mewakili item bidang multinilai yang sama. Validasi memakai jumlah grup tertaut terbesar alih-alih menjumlahkan relasi paralel, sehingga paket konten bahasa Jepang terbaru dapat diaktifkan.
 
+## Detail pelafalan diturunkan dan gambar ulang tetap proporsional
+
+Pelafalan yang sama dengan nilai kartu kini diturunkan ke nilai pelafalan kartu tertaut, bukan mengulang ejaan yang sama. Latihan Menggambar juga menerapkan ulang proporsi area dan menyelaraskan kanvas ketika jendela terbuka memuat pola dengan jumlah kolom berbeda.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -485,3 +489,4 @@ Indeks grup yang sejajar di beberapa relasi tautan bidang kini mewakili item bid
 - [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)
 - [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)
 - [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)
+- [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)

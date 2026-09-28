@@ -63,6 +63,10 @@ test("drawing practice tracks ordered strokes and progressive guidance", () => {
     assert.match(source, /data-pronunciations/);
     assert.match(source, /currentPattern\.columns/);
     assert.match(source, /--drawing-columns/);
+    assert.match(
+        source,
+        /resize\(\);\s*window\.requestAnimationFrame\(resize\)/,
+    );
     assert.match(source, /allowOrientationSwap:\s*false/);
     assert.match(
         source,
@@ -84,6 +88,10 @@ test("drawing practice tracks ordered strokes and progressive guidance", () => {
     assert.match(source, /drawing-pad-open/);
     assert.match(stylesheet, /\.study-drawing-complete/);
     assert.match(stylesheet, /aspect-ratio:\s*var\(--drawing-columns/);
+    assert.match(
+        stylesheet,
+        /\.study-drawing-stage\s*\{[\s\S]*align-self:\s*start;[\s\S]*height:\s*auto;/,
+    );
     assert.match(stylesheet, /max-width:\s*40vw/);
     assert.match(stylesheet, /\.study-drawing-result/);
     assert.match(stylesheet, /\.study-drawing-complete\.is-failure/);

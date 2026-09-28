@@ -224,3 +224,5 @@ Tampilan pelafalan menyatukan setiap urutan karakter bertingkat menjadi bacaan l
 Judul pelafalan tertaut juga dideduplikasi berdasarkan tampilan UI yang sebenarnya: label karakter tertaut digabungkan, spasi dan bentuk Unicode dinormalisasi, lalu bacaan hasilnya dibandingkan dengan nilai kartu. Dengan demikian, urutan tertaut `さ` + `き` tidak mengulang judul `さき` meskipun representasi pelafalan yang tersimpan berbeda.
 
 Satu grup bidang multinilai dapat mencakup beberapa relasi tautan yang dideklarasikan. Indeks grup sejajar di seluruh relasi tersebut, sehingga validasi membandingkan jumlah nilai bidang dengan jumlah grup relasi tertaut terbesar, bukan menjumlahkan semuanya. Ini mendukung pelafalan yang disusun bersama dari segmen bacaan bermakna dan akhiran karakter langsung.
+
+Ketika pelafalan tertaut mengeja nilai utama kartu secara tepat, detail judul turun satu tingkat presentasi dan menampilkan nilai pelafalan milik kartu tertaut. Ejaan Kana seperti `さ` + `き` karena itu dapat menampilkan bacaan lapisan karakternya alih-alih mengulang `さき`.

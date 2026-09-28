@@ -386,6 +386,10 @@ Die Deduplizierung von Aussprachen vergleicht nun die verbundenen Beschriftungen
 
 Übereinstimmende Gruppenindizes über mehrere Feldverknüpfungen repräsentieren nun denselben mehrwertigen Feldeintrag. Die Validierung verwendet die größte verknüpfte Gruppenzahl, statt parallele Beziehungszahlen zu addieren, sodass das aktuelle japanische Inhaltspaket erfolgreich aktiviert werden kann.
 
+## Aussprachedetails werden tiefer aufgelöst und Zeichnungen bleiben proportional
+
+Aussprachen, die dem Kartenwert entsprechen, werden nun bis zu den Aussprachewerten der verknüpften Karten aufgelöst, statt dieselbe Schreibweise zu wiederholen. Die Zeichenübung wendet außerdem die Proportionen der Zeichenfläche erneut an und synchronisiert das Canvas, wenn ein geöffnetes Fenster ein Muster mit anderer Spaltenzahl lädt.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -485,3 +489,4 @@ Die Deduplizierung von Aussprachen vergleicht nun die verbundenen Beschriftungen
 - [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)
 - [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)
 - [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)
+- [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)

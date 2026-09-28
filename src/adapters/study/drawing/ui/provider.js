@@ -688,7 +688,8 @@ function openDrawingPad({
         pad.querySelector("[data-definition]").textContent = currentDefinition;
         pad.querySelector("[data-guidance]").hidden =
             !attemptedCardIds.has(nextCard.id) && !hiddenGuideIndices.size;
-        draw();
+        resize();
+        window.requestAnimationFrame(resize);
         return true;
     };
     activeDrawingSession = { close, load };

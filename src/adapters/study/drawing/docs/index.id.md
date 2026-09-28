@@ -25,3 +25,5 @@ Label anotasi mengevaluasi posisi terdekat di sekitar awal setiap goresan dan me
 Percobaan berhasil dengan paling banyak satu kesalahan kini meningkatkan kesulitan ingatan khusus kartu dengan menyembunyikan satu panduan goresan tambahan yang dipilih secara acak. Goresan tersembunyi diwakili tanda tanya di sudut kanvas dan tetap divalidasi seperti biasa. Tindakan panduan kanan atas menampilkan goresan tersembunyi untuk percobaan saat ini tanpa menghapus input yang diterima atau mengurangi kesulitan kartu yang telah dipelajari. Penempatan anotasi memilih posisi dekat pertama yang bebas benturan alih-alih memaksimalkan jarak kosong, sehingga label tetap lebih dekat ke awal goresan.
 
 Tanda tanya panduan tersembunyi hanya muncul saat pelajar mencapai goresan yang panduannya disembunyikan; tanda tersebut tidak lagi muncul terlalu awal untuk goresan tersembunyi berikutnya.
+
+Saat jendela Latihan Menggambar yang terbuka beralih ke kartu dengan jumlah kolom berbeda, rasio aspek area gambar kini diterapkan ulang dan bitmap kanvas diselaraskan setelah tata letak. Pola multikarakter tidak lagi meregang secara vertikal ketika jendela mengambang digambar ulang.
