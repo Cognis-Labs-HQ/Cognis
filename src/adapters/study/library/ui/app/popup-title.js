@@ -22,6 +22,9 @@ function normalizedTitleText(value) {
     return String(value).trim().normalize("NFKC").replaceAll(/\s+/g, "");
 }
 
+export const hasReadingDetails = (items) =>
+    items.some(({ placement }) => placement === "reading");
+
 export function secondarySpellingGroups(detail, schemas) {
     const semanticRole = layerForEntry(schemas, detail.entry)?.semanticRole;
     if (

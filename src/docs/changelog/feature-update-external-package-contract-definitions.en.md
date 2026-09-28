@@ -406,6 +406,10 @@ Only the compact × button now removes a staged card; the rest of the compositio
 
 Long pronunciation and definition details now remain beside the primary value within a 40% width and wrap into additional rows, with an em dash clearly introducing definitions. Card creation limits authors to 8 tags, 10 definitions, and 16 pronunciations and reports each limit through a localized toast.
 
+## Dense heading arrangement and edit limits
+
+Pronunciation-driven headings now place the speaker below the scope icon, keep readings in a 40%-wide wrapping cluster, and let definitions form independent rows to the right. The same tag, definition, and pronunciation limits are now enforced by both create and edit composers.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -510,3 +514,4 @@ Long pronunciation and definition details now remain beside the primary value wi
 - [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)
 - [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)
 - [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)
+- [bdd1961e](https://github.com/Cognis-Labs-HQ/Cognis/commit/bdd1961e)

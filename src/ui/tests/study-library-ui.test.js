@@ -353,7 +353,7 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(stylesheet, /library-entry-popup--composite/);
     assert.match(
         stylesheet,
-        /library-entry-popup--composite \.popup-title-detail[\s\S]*max-width: 40%[\s\S]*flex-wrap: wrap/,
+        /library-entry-popup--composite \.popup-heading[\s\S]*minmax\(0, 40%\)/,
     );
     assert.match(source, /function linkedItems\(entries\)/);
     assert.match(source, /titleItems: titleReferences\.map/);

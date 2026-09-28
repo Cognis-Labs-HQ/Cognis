@@ -406,6 +406,10 @@ Kini hanya tombol × yang ringkas yang menghapus kartu yang sedang disiapkan; ba
 
 Rincian pelafalan dan definisi yang panjang kini tetap berada di samping nilai utama dalam lebar 40% dan membungkus ke baris tambahan, dengan tanda pisah yang memperjelas awal definisi. Pembuatan kartu membatasi penulis hingga 8 tag, 10 definisi, dan 16 pelafalan serta melaporkan setiap batas melalui toast yang dilokalkan.
 
+## Susunan judul padat dan batas pengeditan
+
+Judul yang diperluas oleh pelafalan kini menempatkan pengeras suara di bawah ikon cakupan, mempertahankan bacaan dalam kelompok pembungkus selebar 40%, dan membiarkan definisi membentuk baris mandiri di sebelah kanan. Batas tag, definisi, dan pelafalan yang sama kini diterapkan pada komposer pembuatan maupun pengeditan.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -510,3 +514,4 @@ Rincian pelafalan dan definisi yang panjang kini tetap berada di samping nilai u
 - [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)
 - [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)
 - [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)
+- [bdd1961e](https://github.com/Cognis-Labs-HQ/Cognis/commit/bdd1961e)

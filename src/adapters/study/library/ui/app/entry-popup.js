@@ -8,7 +8,7 @@ import {
     layerForEntry,
     loadLibraryAudio,
 } from "./presentation.js";
-import { popupTitleDetailItems } from "./popup-title.js";
+import { hasReadingDetails, popupTitleDetailItems } from "./popup-title.js";
 import { resolvePopupNavigation } from "./popup-navigation.js";
 import { titleDefinitionForRole } from "./title-definition.js";
 import {
@@ -198,7 +198,7 @@ export async function openEntryPopup(
             onOpen: (overlay, dismiss) => {
                 dismissPopup = dismiss;
                 overlay.classList.add("library-entry-popup");
-                if (titleDetailItems.some(({ placement }) => placement))
+                if (hasReadingDetails(titleDetailItems))
                     overlay.classList.add("library-entry-popup--composite");
                 placeAudioSpeaker(overlay, audioController.signal);
                 void loadLibraryAudio(

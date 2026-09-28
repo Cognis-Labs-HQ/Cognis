@@ -25,6 +25,9 @@ const composerContractSource = read(
 const popupTitleSource = read(
     "src/adapters/study/library/ui/app/popup-title.js",
 );
+const composerLimitsSource = read(
+    "src/adapters/study/library/ui/app/composer-limits.js",
+);
 
 test("Study Library keeps editor tabs active and nested card types precise", () => {
     for (const [content, pattern] of [
@@ -161,17 +164,21 @@ test("Study Library keeps staged-card deletion precise and validation recoverabl
     );
 });
 
-test("Study Library wraps dense title details and limits create-card collections", () => {
+test("Study Library arranges dense title details and limits composer collections", () => {
     assert.match(popupTitleSource, /const placement = "reading"/);
     assert.match(popupTitleSource, /label: " — "/);
     assert.match(popupTitleSource, /placement: "definition"/);
     assert.match(
         libraryStylesheet,
-        /popup-title-detail[\s\S]*flex: 0 1 40%;[\s\S]*max-width: 40%;[\s\S]*flex-wrap: wrap/,
+        /grid-template-columns:[\s\S]*minmax\(0, 40%\)[\s\S]*data-popup-title-placement="reading"[\s\S]*grid-column: 3[\s\S]*data-popup-title-placement="definition"[\s\S]*grid-column: 4/,
     );
     assert.match(
-        createEntrySource,
-        /CREATE_LIMITS = Object\.freeze\(\{[\s\S]*tags: 8,[\s\S]*definitions: 10,[\s\S]*pronunciations: 16/,
+        libraryStylesheet,
+        /library-audio-sequence,[\s\S]*library-audio-speaker,[\s\S]*library-audio-unavailable[\s\S]*grid-column: 1;[\s\S]*grid-row: 2/,
+    );
+    assert.match(
+        composerLimitsSource,
+        /LIBRARY_COMPOSER_LIMITS = Object\.freeze\(\{[\s\S]*tags: 8,[\s\S]*definitions: 10,[\s\S]*pronunciations: 16/,
     );
     assert.match(adminInteractionsSource, /values\(\)\.length >= maxTags/);
     assert.match(
@@ -180,6 +187,18 @@ test("Study Library wraps dense title details and limits create-card collections
     );
     assert.match(
         createEntrySource,
-        /selectedOptions[\s\S]*CREATE_LIMITS\.definitions/,
+        /selectedOptions[\s\S]*LIBRARY_COMPOSER_LIMITS\.definitions/,
+    );
+    assert.match(
+        adminInteractionsSource,
+        /showComposerLimitViolation\(form, composer\.layer, schema, i18n\)/,
+    );
+    assert.match(
+        adminInteractionsSource,
+        /maxTags: LIBRARY_COMPOSER_LIMITS\.tags/,
+    );
+    assert.match(
+        adminInteractionsSource,
+        /maxPronunciations:[\s\S]*LIBRARY_COMPOSER_LIMITS\.pronunciations/,
     );
 });

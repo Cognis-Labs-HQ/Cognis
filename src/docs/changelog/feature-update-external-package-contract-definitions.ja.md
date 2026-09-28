@@ -406,6 +406,10 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 
 長い発音と定義は主値の横で幅 40% 以内に収まり、追加の行へ折り返されます。定義の先頭にはダッシュを表示して区別を明確にしました。カード作成ではタグ 8 件、定義 10 件、発音 16 件を上限とし、各上限をローカライズされたトーストで通知します。
 
+## 密な見出し配置と編集上限
+
+発音によって拡張される見出しでは、スピーカーをスコープアイコンの下に配置し、読みを幅 40% の折り返しブロックに収め、定義を右側の独立した行として表示します。タグ、定義、発音の同じ上限を作成と編集の両コンポーザーで適用します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -510,3 +514,4 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 - [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)
 - [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)
 - [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)
+- [bdd1961e](https://github.com/Cognis-Labs-HQ/Cognis/commit/bdd1961e)

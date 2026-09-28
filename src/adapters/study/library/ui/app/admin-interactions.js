@@ -22,9 +22,26 @@ import {
     applyDerivedPronunciation,
     resolveComposerContract,
 } from "./composer-contract.js";
+import {
+    composerLimitViolation,
+    LIBRARY_COMPOSER_LIMITS,
+} from "./composer-limits.js";
 
 export { inputForField } from "./field-input.js";
 import { inputForField } from "./field-input.js";
+
+function showComposerLimitViolation(form, layer, schema, i18n) {
+    const violation = composerLimitViolation(form, layer, schema);
+    if (!violation) return false;
+    const [messageKey, limitName] = violation;
+    showToast(
+        i18n
+            .t(messageKey)
+            .replace("{{ count }}", String(LIBRARY_COMPOSER_LIMITS[limitName])),
+        { variant: "error" },
+    );
+    return true;
+}
 
 export function bindLibraryEditorControls(
     form,
@@ -680,7 +697,9 @@ export async function openLibraryEntryEditor({
         onOpen(overlay) {
             const form = overlay.querySelector("[data-library-admin-editor]");
             formController = editor.builder.attach(form);
-            bindLibraryEditorControls(form, entry, i18n);
+            bindLibraryEditorControls(form, entry, i18n, {
+                maxTags: LIBRARY_COMPOSER_LIMITS.tags,
+            });
             const pronunciationRelationshipIds = new Set(
                 pronunciationRelationshipsFor(
                     composer.layer,
@@ -711,6 +730,7 @@ export async function openLibraryEntryEditor({
                     inputCarouselIds: composer.inputCarouselIds,
                     pronunciationCarouselLayers:
                         composer.pronunciationCarouselLayers,
+                    maxPronunciations: LIBRARY_COMPOSER_LIMITS.pronunciations,
                     selectionOrder: ({ id, value, localIndex }) => {
                         if (pronunciationRelationshipIds.has(id))
                             return localIndex;
@@ -764,6 +784,8 @@ export async function openLibraryEntryEditor({
                 form.reportValidity();
                 return false;
             }
+            if (showComposerLimitViolation(form, composer.layer, schema, i18n))
+                return false;
             const references = readReferences(
                 form,
                 composer.layer,
@@ -909,7 +931,9 @@ export function bindAdminLibraryInteractions(
                         form.classList.add("library-admin-editor--read-only");
                     }
                     if (!readOnly) formController = editor.builder.attach(form);
-                    bindLibraryEditorControls(form, entry, i18n);
+                    bindLibraryEditorControls(form, entry, i18n, {
+                        maxTags: LIBRARY_COMPOSER_LIMITS.tags,
+                    });
                     if (!readOnly) {
                         const pronunciationRelationshipIds = new Set(
                             pronunciationRelationshipsFor(
@@ -943,6 +967,8 @@ export function bindAdminLibraryInteractions(
                                 inputCarouselIds: composer.inputCarouselIds,
                                 pronunciationCarouselLayers:
                                     composer.pronunciationCarouselLayers,
+                                maxPronunciations:
+                                    LIBRARY_COMPOSER_LIMITS.pronunciations,
                                 selectionOrder: ({ id, value, localIndex }) => {
                                     if (pronunciationRelationshipIds.has(id))
                                         return localIndex;
@@ -989,6 +1015,15 @@ export function bindAdminLibraryInteractions(
                         form.reportValidity();
                         return false;
                     }
+                    if (
+                        showComposerLimitViolation(
+                            form,
+                            composer.layer,
+                            schema,
+                            i18n,
+                        )
+                    )
+                        return false;
                     try {
                         const references = readReferences(
                             form,

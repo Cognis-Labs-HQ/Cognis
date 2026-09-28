@@ -33,12 +33,10 @@ import {
     derivedPronunciation,
     resolveComposerContract,
 } from "./composer-contract.js";
-
-const CREATE_LIMITS = Object.freeze({
-    tags: 8,
-    definitions: 10,
-    pronunciations: 16,
-});
+import {
+    composerLimitViolation,
+    LIBRARY_COMPOSER_LIMITS,
+} from "./composer-limits.js";
 
 export async function chooseCreateLayer({
     schema,
@@ -264,6 +262,24 @@ export async function openCreateEntryPopup({
                 });
                 return false;
             }
+            const limitViolation = composerLimitViolation(
+                activeForm,
+                editingLayer,
+                schema,
+            );
+            if (limitViolation) {
+                const [messageKey, limitName] = limitViolation;
+                showToast(
+                    i18n
+                        .t(messageKey)
+                        .replace(
+                            "{{ count }}",
+                            String(LIBRARY_COMPOSER_LIMITS[limitName]),
+                        ),
+                    { variant: "error" },
+                );
+                return false;
+            }
             const references = readReferences(
                 activeForm,
                 editingLayer,
@@ -295,7 +311,7 @@ export async function openCreateEntryPopup({
             form = overlay.querySelector("[data-library-admin-editor]");
             builder.attach(form);
             bindLibraryEditorControls(form, draft, i18n, {
-                maxTags: CREATE_LIMITS.tags,
+                maxTags: LIBRARY_COMPOSER_LIMITS.tags,
             });
             form.compositionOrder = [];
             form.referenceGroups = {};
@@ -309,7 +325,7 @@ export async function openCreateEntryPopup({
                     i18n,
                     inputCarouselIds,
                     pronunciationCarouselLayers,
-                    maxPronunciations: CREATE_LIMITS.pronunciations,
+                    maxPronunciations: LIBRARY_COMPOSER_LIMITS.pronunciations,
                     selectionOrder: ({ id, value, localIndex }) => {
                         if (pronunciationRelationshipIds.has(id))
                             return localIndex;
@@ -423,14 +439,14 @@ export async function openCreateEntryPopup({
                 const select = form.elements[`relationship:${relationship.id}`];
                 if (
                     Array.from(select?.selectedOptions ?? []).length >=
-                    CREATE_LIMITS.definitions
+                    LIBRARY_COMPOSER_LIMITS.definitions
                 ) {
                     showToast(
                         i18n
                             .t("gateway.study.library_definition_limit")
                             .replace(
                                 "{{ count }}",
-                                String(CREATE_LIMITS.definitions),
+                                String(LIBRARY_COMPOSER_LIMITS.definitions),
                             ),
                         { variant: "error" },
                     );

@@ -406,6 +406,10 @@ Nur die kompakte ×-Schaltfläche entfernt jetzt eine vorgemerkte Karte; der üb
 
 Lange Aussprache- und Definitionsangaben bleiben nun neben dem Hauptwert innerhalb einer Breite von 40 % und werden in zusätzliche Zeilen umgebrochen; ein Gedankenstrich leitet Definitionen deutlich ein. Beim Erstellen von Karten gelten Grenzen von 8 Tags, 10 Definitionen und 16 Aussprachen, die jeweils mit einer lokalisierten Meldung erklärt werden.
 
+## Anordnung dichter Überschriften und Bearbeitungsgrenzen
+
+Durch Aussprachen erweiterte Überschriften platzieren den Lautsprecher nun unter dem Bereichssymbol, halten Lesungen in einem umbrechenden Block mit 40 % Breite und lassen Definitionen rechts davon eigene Zeilen bilden. Dieselben Grenzen für Tags, Definitionen und Aussprachen werden jetzt in Erstellungs- und Bearbeitungsdialogen durchgesetzt.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -510,3 +514,4 @@ Lange Aussprache- und Definitionsangaben bleiben nun neben dem Hauptwert innerha
 - [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)
 - [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)
 - [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)
+- [bdd1961e](https://github.com/Cognis-Labs-HQ/Cognis/commit/bdd1961e)
