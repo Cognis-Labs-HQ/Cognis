@@ -142,12 +142,48 @@ export interface LibraryCardConstructor {
     input_carousels: readonly string[];
     /** Target layer IDs rendered inside the staged pronunciation composer. */
     pronunciation_carousels: readonly string[];
+    /** Entry carousels filtered by provider-owned tags, such as sentence transitions. */
+    tag_carousels?: readonly {
+        id: string;
+        metadata: LibraryMetadata;
+        relationship: string;
+        tag: string;
+    }[];
+    /** Repeatable provider-owned literals, such as sentence punctuation. */
+    literal_carousels?: readonly {
+        id: string;
+        metadata: LibraryMetadata;
+        values: readonly string[];
+    }[];
     /** Initial provider-owned field values for a new card. */
     defaults?: Record<string, unknown>;
     /** Expose Cognis' preview-definition switch for this layer. */
     allowAlwaysShowDefinition?: boolean;
     /** Expose Cognis' hidden-card switch for this layer. */
     allowHidden?: boolean;
+}
+
+export interface LibraryLayerView {
+    id: string;
+    metadata: LibraryMetadata;
+    /** Include entries matching any of these provider-owned tags. */
+    includeTags: readonly string[];
+    layout: "cards" | "transformTree";
+}
+
+export interface LibraryTransformSet {
+    id: string;
+    metadata: LibraryMetadata;
+    matchTags: readonly string[];
+    baseState: string;
+    rules: readonly {
+        id: string;
+        metadata: LibraryMetadata;
+        fromState: string;
+        toState: string;
+        removeSuffix: string;
+        append: string;
+    }[];
 }
 
 export interface LibraryLayerSchema {
@@ -168,6 +204,8 @@ export interface LibraryLayerSchema {
     relationships?: readonly LibraryRelationshipSchema[];
     /** Provider-owned specification for composing new cards in this layer. */
     cardConstructor?: LibraryCardConstructor;
+    /** Provider-declared, tag-filtered learner views of this layer. */
+    views?: readonly LibraryLayerView[];
     detail?: { titleField?: string; fieldOrder?: readonly string[] };
     grid?: {
         rowSize: number;
@@ -189,6 +227,8 @@ export interface LibrarySchema {
     language: string;
     metadata: LibraryMetadata;
     layers: readonly LibraryLayerSchema[];
+    /** Declarative transformations applied to base-form entries at presentation time. */
+    transformSets?: readonly LibraryTransformSet[];
 }
 
 export interface LibraryReferenceInput {

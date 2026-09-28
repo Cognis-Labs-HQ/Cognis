@@ -236,3 +236,44 @@ Lange Aussprache- und Definitionsangaben in Eintragsüberschriften behalten ihre
 Dichte Überschriften mit Aussprachen verwenden nun nur bei vorhandenen Lesungen eine vierspaltige Anordnung: Der Lautsprecher befindet sich unter dem Bereichssymbol, der Ausspracheblock belegt bis zu 40 % der Überschrift und Definitionen werden rechts davon unabhängig umgebrochen. Die Grenzen von 8 Tags, 10 Definitionen und 16 Aussprachen gelten nun gleichermaßen für Erstellungs- und Bearbeitungsdialoge.
 
 Wenn ein aufgeklappter Zweig mit untergeordneten Zeichen das sichtbare Bibliotheksraster überschreiten würde, prüft die Laufzeitanpassung nun alle diagonalen Plätze, bevor sie auf die entgegengesetzten Hauptrichtungen zurückfällt. Dabei gelten alle sichtbaren Stammkarten als belegt, sodass die erste innerhalb der Grenzen liegende, kollisionsfreie Diagonale gewählt wird und sowohl die untergeordnete Karte als auch ihre Verbindung auf der Zeichenfläche bleiben.
+
+## Satzaufbau und Transformationen
+
+Anbieter kennzeichnen Wortschatz für Satzenden oder Übergänge mit einem stabilen Tag wie `sentence-transition` und deklarieren anschließend ein `tag_carousels`-Element im Satzkarten-Konstruktor. Diese Einträge werden aus der normalen Wortschatzansicht entfernt und erscheinen in einem eigenen, nur beim Satzbau sichtbaren Karussell. `literal_carousels` stellt eine einzeilige, schreibgeschützte Auswahl wiederholt nutzbarer Satzzeichen bereit; Anbieter führen die Satzzeichen ihrer Sprache auf, etwa `, . ? !` für Englisch oder `？！。、` für Japanisch.
+
+Anbieter markieren Grundformen von Verben und Adverbien mit `verb` oder `adverb` und deklarieren eine Ebenenansicht `views` mit `layout: transformTree`. Solche Einträge werden von der normalen Wortschatzseite auf die separate, vom Anbieter benannte Seite verschoben. Inhaltspakete liefern ausschließlich die lexikalische Grundform (beispielsweise `歩く`) und niemals je eine Karte pro Flexionsform. Eine schemaweite `transformSets`-Deklaration beschreibt deterministische Zustandsübergänge. Jede Regel nennt Ausgangs- und Zielzustand und ersetzt genau ein Suffix über `removeSuffix` und `append`; mehrere Regeln dürfen denselben Zustand verlassen und weitere Regeln auf erzeugten Zuständen aufbauen. `matchTags` wählt die passende Grundformklasse aus, sodass Anbieter Konjugationsfamilien etwa mit `godan-ku` unterscheiden können.
+
+```json
+{
+    "transformSets": [
+        {
+            "id": "godan-ku",
+            "matchTags": ["verb", "godan-ku"],
+            "baseState": "base",
+            "rules": [
+                {
+                    "id": "potential",
+                    "fromState": "base",
+                    "toState": "potential",
+                    "removeSuffix": "く",
+                    "append": "ける"
+                },
+                {
+                    "id": "negative",
+                    "fromState": "base",
+                    "toState": "negative",
+                    "removeSuffix": "く",
+                    "append": "かない"
+                },
+                {
+                    "id": "desiderative",
+                    "fromState": "base",
+                    "toState": "desiderative",
+                    "removeSuffix": "く",
+                    "append": "きたい"
+                }
+            ]
+        }
+    ]
+}
+```

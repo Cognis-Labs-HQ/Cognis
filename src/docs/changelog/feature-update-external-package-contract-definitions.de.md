@@ -414,6 +414,10 @@ Durch Aussprachen erweiterte Überschriften platzieren den Lautsprecher nun unte
 
 Aufgeklappte Zweige mit untergeordneten Zeichen prüfen nun diagonale Positionen auf beiden Seiten, wenn die bevorzugte Richtung überläuft oder kollidiert. Sichtbare Stammkarten fließen in die Kollisionsbewertung ein, sodass Unterkarten und Verbindungspfeile innerhalb der Bibliotheksfläche bleiben und tatsächlich freie diagonale Plätze verwenden.
 
+## Satzbausteine und Transformationsbäume
+
+Sprachanbieter können Satzübergänge mit einem anbietereigenen Tag kennzeichnen und über ein nur für Sätze bestimmtes, gefiltertes Karussell bereitstellen; wiederholbare Satzzeichen erscheinen in einem einzeiligen, schreibgeschützten Karussell. Taggefilterte Ebenenansichten verschieben Verben und Adverbien aus der normalen Wortschatzseite auf vollbreite Transformationsbaum-Seiten. Deklarative Transformationssätze im Schema erzeugen suffixbasierte Zustandswege aus Grundformkarten, ohne jede Flexion als Karte anzulegen.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -520,3 +524,4 @@ Aufgeklappte Zweige mit untergeordneten Zeichen prüfen nun diagonale Positionen
 - [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)
 - [bdd1961e](https://github.com/Cognis-Labs-HQ/Cognis/commit/bdd1961e)
 - [e397588c](https://github.com/Cognis-Labs-HQ/Cognis/commit/e397588c)
+- [21e3d8ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/21e3d8ae)

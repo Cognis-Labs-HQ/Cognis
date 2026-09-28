@@ -248,3 +248,44 @@ Long pronunciation and definition details in entry headings keep their original 
 Dense pronunciation headings now use a four-column arrangement only when readings are present: the speaker sits beneath the scope icon, the pronunciation cluster retains up to 40% of the heading, and definitions wrap independently to its right. The 8-tag, 10-definition, and 16-pronunciation limits now apply equally to create and edit composers.
 
 When an expanded character-child branch would cross the visible Library grid, runtime fitting now evaluates every diagonal slot before falling back to the opposite cardinal directions. It also treats all visible root cards as occupied, selecting the first in-bounds, collision-free diagonal and keeping both the child card and its connector on the canvas.
+
+## Sentence composition and transformations
+
+Providers mark sentence-ending or transition vocabulary with a stable tag such as `sentence-transition`, then declare a `tag_carousels` item on the sentence card constructor. Those entries are removed from the ordinary vocabulary view and appear in their own sentence-only carousel. `literal_carousels` supplies a one-line, read-only set of repeatable punctuation literals; providers should list the punctuation used by their language, such as `, . ? !` for English or `？！。、` for Japanese.
+
+Providers tag base-form verbs and adverbs with `verb` or `adverb` and declare a layer `views` item using `layout: transformTree`. Entries claimed by such a view are removed from the ordinary vocabulary page and exposed through the separate provider-named page. Content packs must ship only the base lexical entry (for example `歩く`), never one card per inflection. A schema-level `transformSets` declaration supplies deterministic state transitions. Every rule identifies its source and target state and performs one suffix replacement with `removeSuffix` plus `append`; multiple rules can leave a state, and later rules can continue from generated states. `matchTags` selects the applicable base-form class, allowing providers to distinguish conjugation families with tags such as `godan-ku`.
+
+```json
+{
+    "transformSets": [
+        {
+            "id": "godan-ku",
+            "matchTags": ["verb", "godan-ku"],
+            "baseState": "base",
+            "rules": [
+                {
+                    "id": "potential",
+                    "fromState": "base",
+                    "toState": "potential",
+                    "removeSuffix": "く",
+                    "append": "ける"
+                },
+                {
+                    "id": "negative",
+                    "fromState": "base",
+                    "toState": "negative",
+                    "removeSuffix": "く",
+                    "append": "かない"
+                },
+                {
+                    "id": "desiderative",
+                    "fromState": "base",
+                    "toState": "desiderative",
+                    "removeSuffix": "く",
+                    "append": "きたい"
+                }
+            ]
+        }
+    ]
+}
+```

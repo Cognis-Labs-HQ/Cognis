@@ -360,6 +360,22 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
             if (!ROLE_PATTERN.test(vein))
                 throw new Error("invalid_interest_vein");
         }
+        const viewIds = new Set<string>();
+        for (const view of layer.views ?? []) {
+            assertIdentifier(view.id, "invalid_layer_view_id");
+            if (viewIds.has(view.id)) throw new Error("duplicate_layer_view");
+            viewIds.add(view.id);
+            validateMetadata(view.metadata, "layer_view_metadata_required");
+            if (
+                !["cards", "transformTree"].includes(view.layout) ||
+                !Array.isArray(view.includeTags) ||
+                !view.includeTags.length ||
+                view.includeTags.some(
+                    (tag) => typeof tag !== "string" || !tag.trim(),
+                )
+            )
+                throw new Error("invalid_layer_view");
+        }
         layerIds.add(layer.id);
     }
     for (const layer of schema.layers) {
@@ -432,6 +448,41 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
             );
             if (defaultIds.some((fieldId) => !fieldIds.has(fieldId)))
                 throw new Error("constructor_default_field_not_found");
+            const extraCarouselIds = new Set<string>();
+            for (const carousel of layer.cardConstructor.tag_carousels ?? []) {
+                assertIdentifier(carousel.id, "invalid_tag_carousel_id");
+                if (extraCarouselIds.has(carousel.id))
+                    throw new Error("duplicate_constructor_carousel");
+                extraCarouselIds.add(carousel.id);
+                validateMetadata(
+                    carousel.metadata,
+                    "constructor_carousel_metadata_required",
+                );
+                if (
+                    !relationshipIds.has(carousel.relationship) ||
+                    !carousel.tag.trim()
+                )
+                    throw new Error("invalid_tag_carousel");
+            }
+            for (const carousel of layer.cardConstructor.literal_carousels ??
+                []) {
+                assertIdentifier(carousel.id, "invalid_literal_carousel_id");
+                if (extraCarouselIds.has(carousel.id))
+                    throw new Error("duplicate_constructor_carousel");
+                extraCarouselIds.add(carousel.id);
+                validateMetadata(
+                    carousel.metadata,
+                    "constructor_carousel_metadata_required",
+                );
+                if (
+                    !Array.isArray(carousel.values) ||
+                    !carousel.values.length ||
+                    carousel.values.some(
+                        (value) => typeof value !== "string" || !value,
+                    )
+                )
+                    throw new Error("invalid_literal_carousel");
+            }
             for (const option of [
                 layer.cardConstructor.allowAlwaysShowDefinition,
                 layer.cardConstructor.allowHidden,
@@ -526,6 +577,26 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
             );
             if (!hasDefinitionRelationship)
                 throw new Error("display_definition_relationship_required");
+        }
+    }
+    const transformSetIds = new Set<string>();
+    for (const set of schema.transformSets ?? []) {
+        assertIdentifier(set.id, "invalid_transform_set_id");
+        if (transformSetIds.has(set.id))
+            throw new Error("duplicate_transform_set");
+        transformSetIds.add(set.id);
+        validateMetadata(set.metadata, "transform_set_metadata_required");
+        if (!set.baseState.trim() || !set.matchTags.length)
+            throw new Error("invalid_transform_set");
+        const ruleIds = new Set<string>();
+        for (const rule of set.rules) {
+            assertIdentifier(rule.id, "invalid_transform_rule_id");
+            if (ruleIds.has(rule.id))
+                throw new Error("duplicate_transform_rule");
+            ruleIds.add(rule.id);
+            validateMetadata(rule.metadata, "transform_rule_metadata_required");
+            if (!rule.fromState.trim() || !rule.toState.trim())
+                throw new Error("invalid_transform_rule");
         }
     }
     return structuredClone({

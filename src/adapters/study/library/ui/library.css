@@ -180,6 +180,44 @@ body[data-theme="light"] .library-browser {
 .library-entry-grid--minimal[style] {
     width: 100%;
 }
+.library-entry-grid--transform-tree {
+    grid-template-columns: minmax(0, 1fr);
+}
+.library-transform-card {
+    display: grid;
+    grid-template-columns: minmax(12rem, 0.3fr) minmax(0, 1fr);
+    gap: 1rem;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--library-card-surface);
+}
+.library-transform-card:has(.library-transform-tree[hidden]) {
+    grid-template-columns: minmax(0, 1fr);
+}
+.library-transform-tree {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.library-transform-tree[hidden] {
+    display: none;
+}
+.library-transform-tree li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.65rem;
+    margin-inline-start: calc(var(--library-transform-depth) * 1.25rem);
+    padding: 0.45rem 0.65rem;
+    border-inline-start: 2px solid var(--accent-2);
+    background: var(--surface-2);
+}
+.library-transform-tree li span {
+    color: var(--text-muted);
+}
 .library-entry-grid--minimal .library-entry-card {
     place-content: center;
     width: 100%;

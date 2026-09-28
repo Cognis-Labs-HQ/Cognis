@@ -229,6 +229,25 @@ body[data-theme="dark"] .library-quick-search-control img {
 .library-composer-lookups[hidden] {
     display: none;
 }
+.library-composer-extra {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+.library-composer-extra-row {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding-block: 0.35rem;
+    scrollbar-width: thin;
+}
+.library-composer-extra-row > button {
+    flex: 0 0 auto;
+}
+.library-composer-extra-row--literal {
+    flex-wrap: nowrap;
+}
 
 .library-composer-unmatched {
     padding: 0.45rem 0.7rem;

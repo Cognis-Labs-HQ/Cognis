@@ -37,6 +37,11 @@ import {
     composerLimitViolation,
     LIBRARY_COMPOSER_LIMITS,
 } from "./composer-limits.js";
+import {
+    bindComposerExtras,
+    compositionTokenLabel,
+    renderComposerExtras,
+} from "./composer-extras.js";
 
 export async function chooseCreateLayer({
     schema,
@@ -182,7 +187,7 @@ export async function openCreateEntryPopup({
         writableClasses.length
             ? `<label class="library-admin-checkbox"><input name="publishClass" type="checkbox" class="choice-checkbox" data-library-publish-class-toggle> <span>${escapeHtml(i18n.t("gateway.study.library_publish_class_option"))}</span></label><label data-library-class-choice hidden><span>${escapeHtml(i18n.t("gateway.study.library_class"))}</span><select name="classId">${writableClasses.map(({ scopeId }) => `<option value="${escapeHtml(scopeId)}">${escapeHtml(scopeId)}</option>`).join("")}</select></label>`
             : '<input type="hidden" name="classId" value="">'
-    }${compositionInput}`;
+    }${compositionInput}${renderComposerExtras(constructor, editingLayer, entries, schema)}`;
     const { html, builder } = editorBody(
         draft,
         [
@@ -315,6 +320,7 @@ export async function openCreateEntryPopup({
             });
             form.compositionOrder = [];
             form.referenceGroups = {};
+            bindComposerExtras(form);
             carouselController = mountEditableRelationshipCarousels(
                 form,
                 overlay,
@@ -868,7 +874,8 @@ function bindTextComposition(
             ),
         );
         return (form.compositionOrder ?? []).map(
-            (value) => labels.get(value) ?? "",
+            (value) =>
+                labels.get(value) ?? compositionTokenLabel(value, entries),
         );
     };
     const syncPronunciation = () => {
@@ -876,6 +883,7 @@ function bindTextComposition(
         if (!control) return;
         const selectedPronunciation = (form.compositionOrder ?? [])
             .map((id) => entries.find((entry) => entry.id === id))
+            .filter(Boolean)
             .map((entry) => derivedPronunciation(entry, entries, schema))
             .join("");
         const normalizedInput = input.value.trim().normalize("NFKC");
@@ -890,8 +898,11 @@ function bindTextComposition(
     };
     const renderBlocks = () => {
         blocks.innerHTML = (form.compositionOrder ?? [])
-            .map((id) => entries.find((entry) => entry.id === id))
-            .filter(Boolean)
+            .map((id) => ({
+                id,
+                label: compositionTokenLabel(id, entries),
+            }))
+            .filter(({ label }) => label)
             .map(
                 (entry) =>
                     `<button class="btn-neutral library-composition-block" type="button" draggable="true" data-library-composition-id="${escapeHtml(entry.id)}"><span>${escapeHtml(entry.label)}</span><span aria-hidden="true">×</span></button>`,

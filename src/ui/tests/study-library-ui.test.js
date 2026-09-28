@@ -852,6 +852,16 @@ test("Study Library honors module-defined grid layouts", () => {
     assert.match(stylesheet, /\.library-entry-grid\[style\]/);
     assert.match(stylesheet, /var\(--library-grid-row-size\)/);
 });
+
+test("Study Library provides tag-filtered transform tree views", () => {
+    assert.match(layerPageSource, /viewId/);
+    assert.match(studySubNavigationSource, /layer\.views/);
+    assert.match(source, /transformationPathways/);
+    assert.match(source, /library-transform-tree/);
+    assert.match(source, /view\.includeTags\.some/);
+    assert.match(stylesheet, /library-entry-grid--transform-tree/);
+    assert.match(stylesheet, /--library-transform-depth/);
+});
 test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(source, /function renderAudio/);
     assert.match(source, /dependenciesMissingAudio/);

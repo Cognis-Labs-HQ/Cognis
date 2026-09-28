@@ -28,6 +28,9 @@ const popupTitleSource = read(
 const composerLimitsSource = read(
     "src/adapters/study/library/ui/app/composer-limits.js",
 );
+const composerExtrasSource = read(
+    "src/adapters/study/library/ui/app/composer-extras.js",
+);
 
 test("Study Library keeps editor tabs active and nested card types precise", () => {
     for (const [content, pattern] of [
@@ -201,4 +204,15 @@ test("Study Library arranges dense title details and limits composer collections
         adminInteractionsSource,
         /maxPronunciations:[\s\S]*LIBRARY_COMPOSER_LIMITS\.pronunciations/,
     );
+});
+
+test("Study Library exposes tagged sentence components and repeatable literals", () => {
+    assert.match(composerExtrasSource, /constructor\.tag_carousels/);
+    assert.match(composerExtrasSource, /entry\.tags \?\? \[\]/);
+    assert.match(composerExtrasSource, /constructor\.literal_carousels/);
+    assert.match(composerExtrasSource, /aria-readonly="true"/);
+    assert.match(composerExtrasSource, /compositionOrder\.push/);
+    assert.match(createEntrySource, /bindComposerExtras\(form\)/);
+    assert.match(adminInteractionsSource, /bindComposerExtras\(form,/);
+    assert.match(adminStylesheet, /library-composer-extra-row--literal/);
 });

@@ -414,6 +414,10 @@ Pronunciation-driven headings now place the speaker below the scope icon, keep r
 
 Expanded character-child branches now test diagonal positions across both sides whenever their preferred direction overflows or collides. Visible root cards participate in collision scoring, so child cards and connector arrows remain inside the Library canvas while choosing genuinely free diagonal slots.
 
+## Sentence components and transformation trees
+
+Language providers can mark sentence transitions with a provider-owned tag and expose them through a sentence-only filtered carousel, while repeatable punctuation literals use a one-line read-only carousel. Tag-filtered layer views move verbs and adverbs out of the ordinary vocabulary page into full-width transformation-tree pages. Declarative schema transform sets generate suffix-based state pathways from base-form cards without materializing every inflection.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -520,3 +524,4 @@ Expanded character-child branches now test diagonal positions across both sides 
 - [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)
 - [bdd1961e](https://github.com/Cognis-Labs-HQ/Cognis/commit/bdd1961e)
 - [e397588c](https://github.com/Cognis-Labs-HQ/Cognis/commit/e397588c)
+- [21e3d8ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/21e3d8ae)

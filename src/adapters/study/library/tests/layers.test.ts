@@ -73,6 +73,66 @@ test("consumers define arbitrary layers and constrained relationships", () => {
     );
 });
 
+test("providers declare sentence carousels, views, and transform rules", () => {
+    const schema: LibrarySchema = {
+        ...english,
+        transformSets: [
+            {
+                id: "verbs",
+                metadata: { labels: { en: "Verbs" } },
+                matchTags: ["verb"],
+                baseState: "base",
+                rules: [
+                    {
+                        id: "past",
+                        metadata: { labels: { en: "Past" } },
+                        fromState: "base",
+                        toState: "past",
+                        removeSuffix: "",
+                        append: "ed",
+                    },
+                ],
+            },
+        ],
+        layers: [
+            english.layers[0],
+            {
+                ...english.layers[1],
+                views: [
+                    {
+                        id: "verbs",
+                        metadata: { labels: { en: "Verbs" } },
+                        includeTags: ["verb", "adverb"],
+                        layout: "transformTree",
+                    },
+                ],
+                cardConstructor: {
+                    label: { labels: { en: "Sentence" } },
+                    relationships: ["letters"],
+                    input_carousels: ["letters"],
+                    pronunciation_carousels: [],
+                    tag_carousels: [
+                        {
+                            id: "transitions",
+                            metadata: { labels: { en: "Transitions" } },
+                            relationship: "letters",
+                            tag: "sentence-transition",
+                        },
+                    ],
+                    literal_carousels: [
+                        {
+                            id: "punctuation",
+                            metadata: { labels: { en: "Punctuation" } },
+                            values: [".", ",", "?", "!"],
+                        },
+                    ],
+                },
+            },
+        ],
+    };
+    assert.deepEqual(validateLibrarySchema(schema), schema);
+});
+
 test("fields can link values through multiple declared relationships", () => {
     const schema: LibrarySchema = {
         ...english,

@@ -20,10 +20,11 @@ import { fetchLibraryForms } from "/static/gateways/study/ui/library-client.js";
 
 function requestedLayer() {
     const parts = window.location.pathname.split("/").filter(Boolean);
-    if (parts.length !== 4 || parts[1] !== "layers") return null;
+    if (![4, 5].includes(parts.length) || parts[1] !== "layers") return null;
     return {
         schemaId: decodeURIComponent(parts[2]),
         layerId: decodeURIComponent(parts[3]),
+        viewId: parts[4] ? decodeURIComponent(parts[4]) : undefined,
     };
 }
 
@@ -57,9 +58,12 @@ export async function mount(root, { signal } = {}) {
         !["atomicWritingUnit", "definition", "meaning"].includes(
             layer.semanticRole,
         );
-    const title = layer
-        ? localizedLabel(layer.metadata, schema.language) || layer.id
-        : i18n.t("gateway.study.library_label");
+    const view = layer?.views?.find(({ id }) => id === selectedLayer?.viewId);
+    const title = view
+        ? localizedLabel(view.metadata, schema.language) || view.id
+        : layer
+          ? localizedLabel(layer.metadata, schema.language) || layer.id
+          : i18n.t("gateway.study.library_label");
     applyDocumentTitle(i18n, "gateway.study.library_label");
     const composer = createPageComposer(root, {
         allowCustomization: false,

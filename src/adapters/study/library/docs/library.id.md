@@ -236,3 +236,44 @@ Rincian pelafalan dan definisi yang panjang pada judul entri mempertahankan posi
 Judul dengan banyak pelafalan kini memakai susunan empat kolom hanya ketika bacaan tersedia: pengeras suara berada di bawah ikon cakupan, kelompok pelafalan menggunakan hingga 40% judul, dan definisi membungkus secara mandiri di sebelah kanannya. Batas 8 tag, 10 definisi, dan 16 pelafalan kini berlaku sama pada komposer pembuatan dan pengeditan.
 
 Saat cabang anak karakter yang diperluas akan melewati kisi Pustaka yang terlihat, penyesuaian waktu proses kini memeriksa semua slot diagonal sebelum beralih ke arah utama yang berlawanan. Semua kartu akar yang terlihat juga dianggap terisi, sehingga diagonal pertama yang berada dalam batas dan bebas tabrakan dipilih agar kartu anak beserta penghubungnya tetap berada di kanvas.
+
+## Komposisi kalimat dan transformasi
+
+Penyedia menandai kosakata akhir kalimat atau transisi dengan tag stabil seperti `sentence-transition`, lalu mendeklarasikan item `tag_carousels` pada konstruktor kartu kalimat. Entri tersebut dikeluarkan dari tampilan kosakata biasa dan muncul dalam karusel khusus yang hanya tersedia saat menyusun kalimat. `literal_carousels` menyediakan satu baris tanda baca berulang yang hanya dapat dibaca; penyedia mencantumkan tanda baca bahasanya, misalnya `, . ? !` untuk bahasa Inggris atau `？！。、` untuk bahasa Jepang.
+
+Penyedia menandai bentuk dasar verba dan adverbia dengan `verb` atau `adverb`, lalu mendeklarasikan tampilan lapisan `views` dengan `layout: transformTree`. Entri yang dimiliki tampilan ini dipindahkan dari halaman kosakata biasa ke halaman terpisah yang dinamai penyedia. Paket konten hanya boleh mengirim entri leksikal bentuk dasar (misalnya `歩く`), bukan satu kartu untuk setiap infleksi. Deklarasi `transformSets` tingkat skema memasok transisi keadaan deterministik. Setiap aturan menentukan keadaan asal dan tujuan serta mengganti satu sufiks melalui `removeSuffix` dan `append`; beberapa aturan dapat keluar dari keadaan yang sama dan aturan lanjutan dapat bekerja pada keadaan hasil. `matchTags` memilih kelas bentuk dasar yang sesuai agar keluarga konjugasi dapat dibedakan dengan tag seperti `godan-ku`.
+
+```json
+{
+    "transformSets": [
+        {
+            "id": "godan-ku",
+            "matchTags": ["verb", "godan-ku"],
+            "baseState": "base",
+            "rules": [
+                {
+                    "id": "potential",
+                    "fromState": "base",
+                    "toState": "potential",
+                    "removeSuffix": "く",
+                    "append": "ける"
+                },
+                {
+                    "id": "negative",
+                    "fromState": "base",
+                    "toState": "negative",
+                    "removeSuffix": "く",
+                    "append": "かない"
+                },
+                {
+                    "id": "desiderative",
+                    "fromState": "base",
+                    "toState": "desiderative",
+                    "removeSuffix": "く",
+                    "append": "きたい"
+                }
+            ]
+        }
+    ]
+}
+```

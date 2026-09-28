@@ -414,6 +414,10 @@ Judul yang diperluas oleh pelafalan kini menempatkan pengeras suara di bawah iko
 
 Cabang anak karakter yang diperluas kini menguji posisi diagonal di kedua sisi ketika arah pilihannya meluap atau bertabrakan. Kartu akar yang terlihat disertakan dalam penilaian tabrakan, sehingga kartu anak dan panah penghubung tetap berada di dalam kanvas Pustaka sambil memilih slot diagonal yang benar-benar kosong.
 
+## Komponen kalimat dan pohon transformasi
+
+Penyedia bahasa dapat menandai transisi kalimat dengan tag milik penyedia dan menampilkannya melalui karusel terfilter khusus kalimat, sedangkan tanda baca berulang memakai karusel satu baris yang hanya dapat dibaca. Tampilan lapisan terfilter tag memindahkan verba dan adverbia dari halaman kosakata biasa ke halaman pohon transformasi selebar widget. Set transformasi deklaratif pada skema menghasilkan jalur keadaan berbasis sufiks dari kartu bentuk dasar tanpa membuat setiap infleksi sebagai kartu.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -520,3 +524,4 @@ Cabang anak karakter yang diperluas kini menguji posisi diagonal di kedua sisi k
 - [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)
 - [bdd1961e](https://github.com/Cognis-Labs-HQ/Cognis/commit/bdd1961e)
 - [e397588c](https://github.com/Cognis-Labs-HQ/Cognis/commit/e397588c)
+- [21e3d8ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/21e3d8ae)

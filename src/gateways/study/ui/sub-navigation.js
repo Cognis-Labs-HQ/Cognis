@@ -206,6 +206,15 @@ export async function loadStudySubNavigationModel({
                 pageUrl: `/study/layers/${encodeURIComponent(schema.id)}/${encodeURIComponent(layer.id)}`,
                 order: 200,
             });
+            for (const [viewIndex, view] of (layer.views ?? []).entries()) {
+                const viewLabels = view.metadata?.labels ?? {};
+                modules.push({
+                    id: `library-${schema.id}-${layer.id}-${view.id}`,
+                    label: viewLabels[activeLocale] ?? view.id,
+                    pageUrl: `/study/layers/${encodeURIComponent(schema.id)}/${encodeURIComponent(layer.id)}/${encodeURIComponent(view.id)}`,
+                    order: 201 + viewIndex,
+                });
+            }
         }
     }
     const spaRoutes = await loadSpaRoutes();

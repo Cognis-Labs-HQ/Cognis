@@ -414,6 +414,10 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 
 展開した文字の子ブランチは、優先方向が境界を越えるか衝突する場合に両側の斜め位置を試します。表示中のルートカードも衝突判定に含めるため、子カードと接続矢印をライブラリのキャンバス内に保ちながら、実際に空いている斜めスロットを選択します。
 
+## 文の構成要素と変形ツリー
+
+言語プロバイダーは文の接続表現にプロバイダー所有のタグを付け、文専用のフィルター済みカルーセルで提供できます。繰り返し使える句読点は 1 行の読み取り専用カルーセルに表示されます。タグで絞り込むレイヤービューは動詞と副詞を通常の語彙ページから分離し、ウィジェット幅いっぱいの変形ツリーページに移します。スキーマの宣言的な変形セットは、すべての活用をカード化せず、基本形カードから接尾辞ベースの状態経路を生成します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -520,3 +524,4 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 - [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)
 - [bdd1961e](https://github.com/Cognis-Labs-HQ/Cognis/commit/bdd1961e)
 - [e397588c](https://github.com/Cognis-Labs-HQ/Cognis/commit/e397588c)
+- [21e3d8ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/21e3d8ae)

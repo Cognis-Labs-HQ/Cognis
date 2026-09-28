@@ -26,6 +26,11 @@ import {
     composerLimitViolation,
     LIBRARY_COMPOSER_LIMITS,
 } from "./composer-limits.js";
+import {
+    bindComposerExtras,
+    compositionTokenLabel,
+    renderComposerExtras,
+} from "./composer-extras.js";
 
 export { inputForField } from "./field-input.js";
 import { inputForField } from "./field-input.js";
@@ -632,8 +637,11 @@ function syncGeneratedCardLabel(form, inputCarouselIds, entries) {
         ),
     );
     form.elements.label.value = (form.compositionOrder ?? [])
-        .filter((entryId) => selected.has(entryId))
-        .map((entryId) => entries.find(({ id }) => id === entryId)?.label)
+        .filter(
+            (entryId) =>
+                selected.has(entryId) || entryId.startsWith("literal:"),
+        )
+        .map((entryId) => compositionTokenLabel(entryId, entries))
         .filter(Boolean)
         .join("");
 }
@@ -667,17 +675,29 @@ export async function openLibraryEntryEditor({
         layer,
         layer?.cardConstructor,
     );
-    const editor = editorBody(entry, schemas, entries, i18n, "", {
-        generatedLabel: layer?.semanticRole !== "definition",
-        includeHidden: false,
-        relationshipCarousels: true,
-        relationshipCarouselAdd: false,
-        inlinePronunciationCarousel: true,
-        inputCarouselIds: composer.inputCarouselIds,
-        pronunciationCarouselLayers: composer.pronunciationCarouselLayers,
-        editingLayer: composer.layer,
-        persistentExtra: true,
-    });
+    const editor = editorBody(
+        entry,
+        schemas,
+        entries,
+        i18n,
+        renderComposerExtras(
+            composer.constructor,
+            composer.layer,
+            entries,
+            schema,
+        ),
+        {
+            generatedLabel: layer?.semanticRole !== "definition",
+            includeHidden: false,
+            relationshipCarousels: true,
+            relationshipCarouselAdd: false,
+            inlinePronunciationCarousel: true,
+            inputCarouselIds: composer.inputCarouselIds,
+            pronunciationCarouselLayers: composer.pronunciationCarouselLayers,
+            editingLayer: composer.layer,
+            persistentExtra: true,
+        },
+    );
     let formController;
     return openPopup({
         title: i18n
@@ -719,6 +739,13 @@ export async function openLibraryEntryEditor({
                 )
                 .map(({ entryId }) => entryId);
             form.referenceGroups = structuredClone(entry.referenceGroups ?? {});
+            bindComposerExtras(form, () =>
+                syncGeneratedCardLabel(
+                    form,
+                    composer.inputCarouselIds,
+                    entries,
+                ),
+            );
             mountEditableRelationshipCarousels(
                 form,
                 overlay,
@@ -873,18 +900,32 @@ export function bindAdminLibraryInteractions(
                 layer,
                 layer?.cardConstructor,
             );
-            const editor = editorBody(entry, schemas, entries, i18n, "", {
-                generatedLabel: layer?.semanticRole !== "definition",
-                showRelationshipTab: readOnly,
-                relationshipCarousels: !readOnly,
-                relationshipCarouselAdd: false,
-                inlinePronunciationCarousel: !readOnly,
-                inputCarouselIds: composer.inputCarouselIds,
-                pronunciationCarouselLayers:
-                    composer.pronunciationCarouselLayers,
-                editingLayer: composer.layer,
-                persistentExtra: !readOnly,
-            });
+            const editor = editorBody(
+                entry,
+                schemas,
+                entries,
+                i18n,
+                readOnly
+                    ? ""
+                    : renderComposerExtras(
+                          composer.constructor,
+                          composer.layer,
+                          entries,
+                          schema,
+                      ),
+                {
+                    generatedLabel: layer?.semanticRole !== "definition",
+                    showRelationshipTab: readOnly,
+                    relationshipCarousels: !readOnly,
+                    relationshipCarouselAdd: false,
+                    inlinePronunciationCarousel: !readOnly,
+                    inputCarouselIds: composer.inputCarouselIds,
+                    pronunciationCarouselLayers:
+                        composer.pronunciationCarouselLayers,
+                    editingLayer: composer.layer,
+                    persistentExtra: !readOnly,
+                },
+            );
             let formController;
             editorOpen = true;
             await openPopup({
@@ -955,6 +996,13 @@ export function bindAdminLibraryInteractions(
                             .map(({ entryId }) => entryId);
                         form.referenceGroups = structuredClone(
                             entry.referenceGroups ?? {},
+                        );
+                        bindComposerExtras(form, () =>
+                            syncGeneratedCardLabel(
+                                form,
+                                composer.inputCarouselIds,
+                                entries,
+                            ),
                         );
                         mountEditableRelationshipCarousels(
                             form,
