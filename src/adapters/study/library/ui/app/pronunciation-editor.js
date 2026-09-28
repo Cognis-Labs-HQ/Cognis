@@ -1,6 +1,7 @@
 import { mountHorizontalCarousels } from "/static/reuse/horizontal-carousel.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
+import { showToast } from "/static/reuse/toast.js";
 
 export function mountEditableRelationshipCarousels(
     form,
@@ -14,6 +15,7 @@ export function mountEditableRelationshipCarousels(
         selectionOrder,
         inputCarouselIds = new Set(),
         pronunciationCarouselLayers = new Set(),
+        maxPronunciations = Number.POSITIVE_INFINITY,
         i18n,
     } = {},
 ) {
@@ -366,6 +368,18 @@ export function mountEditableRelationshipCarousels(
             if (!value) return;
             const field = form.elements["field:pronunciation"];
             const values = valuesForField(field);
+            if (
+                kind === "pronunciation" &&
+                values.length >= maxPronunciations
+            ) {
+                showToast(
+                    i18n
+                        .t("gateway.study.library_pronunciation_limit")
+                        .replace("{{ count }}", String(maxPronunciations)),
+                    { variant: "error" },
+                );
+                return;
+            }
             const groupIndex = values.length;
             values.push(value);
             field.value = values.join("\n");

@@ -402,6 +402,10 @@ Deduplikasi judul kini hanya menghapus urutan referensi duplikat yang lengkap, b
 
 Kini hanya tombol × yang ringkas yang menghapus kartu yang sedang disiapkan; bagian lain bidang komposisi tidak memicu penghapusan. Pembuatan memvalidasi jumlah minimum relasi sebelum menutup popup, sehingga definisi yang kurang menampilkan toast dan mempertahankan seluruh input composer untuk diperbaiki.
 
+## Detail judul yang mudah dibaca dan batas komposer
+
+Rincian pelafalan dan definisi yang panjang kini tetap berada di samping nilai utama dalam lebar 40% dan membungkus ke baris tambahan, dengan tanda pisah yang memperjelas awal definisi. Pembuatan kartu membatasi penulis hingga 8 tag, 10 definisi, dan 16 pelafalan serta melaporkan setiap batas melalui toast yang dilokalkan.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -505,3 +509,4 @@ Kini hanya tombol × yang ringkas yang menghapus kartu yang sedang disiapkan; ba
 - [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)
 - [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)
 - [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)
+- [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)

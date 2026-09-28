@@ -26,7 +26,12 @@ import {
 export { inputForField } from "./field-input.js";
 import { inputForField } from "./field-input.js";
 
-export function bindLibraryEditorControls(form, entry, i18n) {
+export function bindLibraryEditorControls(
+    form,
+    entry,
+    i18n,
+    { maxTags = Number.POSITIVE_INFINITY } = {},
+) {
     form.querySelectorAll("[data-library-provider-field]").forEach(
         (control) => {
             const fieldId = control.name.slice("field:".length);
@@ -124,6 +129,15 @@ export function bindLibraryEditorControls(form, entry, i18n) {
             event.stopPropagation();
             const value = input.value.trim();
             if (!value || values().includes(value)) return;
+            if (values().length >= maxTags) {
+                showToast(
+                    i18n
+                        .t("gateway.study.library_tag_limit")
+                        .replace("{{ count }}", String(maxTags)),
+                    { variant: "error" },
+                );
+                return;
+            }
             const tag = document.createElement("button");
             tag.type = "button";
             tag.className = "btn-neutral";

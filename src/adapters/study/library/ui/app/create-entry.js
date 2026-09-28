@@ -34,6 +34,12 @@ import {
     resolveComposerContract,
 } from "./composer-contract.js";
 
+const CREATE_LIMITS = Object.freeze({
+    tags: 8,
+    definitions: 10,
+    pronunciations: 16,
+});
+
 export async function chooseCreateLayer({
     schema,
     contributions,
@@ -288,7 +294,9 @@ export async function openCreateEntryPopup({
         onOpen(overlay) {
             form = overlay.querySelector("[data-library-admin-editor]");
             builder.attach(form);
-            bindLibraryEditorControls(form, draft, i18n);
+            bindLibraryEditorControls(form, draft, i18n, {
+                maxTags: CREATE_LIMITS.tags,
+            });
             form.compositionOrder = [];
             form.referenceGroups = {};
             carouselController = mountEditableRelationshipCarousels(
@@ -301,6 +309,7 @@ export async function openCreateEntryPopup({
                     i18n,
                     inputCarouselIds,
                     pronunciationCarouselLayers,
+                    maxPronunciations: CREATE_LIMITS.pronunciations,
                     selectionOrder: ({ id, value, localIndex }) => {
                         if (pronunciationRelationshipIds.has(id))
                             return localIndex;
@@ -411,6 +420,22 @@ export async function openCreateEntryPopup({
                             ?.semanticRole === "definition",
                 );
                 if (!relationship) return;
+                const select = form.elements[`relationship:${relationship.id}`];
+                if (
+                    Array.from(select?.selectedOptions ?? []).length >=
+                    CREATE_LIMITS.definitions
+                ) {
+                    showToast(
+                        i18n
+                            .t("gateway.study.library_definition_limit")
+                            .replace(
+                                "{{ count }}",
+                                String(CREATE_LIMITS.definitions),
+                            ),
+                        { variant: "error" },
+                    );
+                    return;
+                }
                 const created = await openDefinitionPopup({
                     schema,
                     schemaId,
@@ -420,7 +445,6 @@ export async function openCreateEntryPopup({
                 if (!created) return;
                 nestedDefinitionIds.push(created.id);
                 entries.push(created);
-                const select = form.elements[`relationship:${relationship.id}`];
                 select?.append(
                     new Option(created.label, created.id, true, true),
                 );

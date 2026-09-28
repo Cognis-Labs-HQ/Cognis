@@ -402,6 +402,10 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 
 ステージ中のカードはコンパクトな×ボタンだけで削除され、構成フィールドの他の部分では削除されなくなりました。作成ポップアップを閉じる前に関係の最小数を検証するため、定義不足ではトーストを表示し、修正用にすべてのComposer入力を保持します。
 
+## 読みやすい見出し詳細と作成上限
+
+長い発音と定義は主値の横で幅 40% 以内に収まり、追加の行へ折り返されます。定義の先頭にはダッシュを表示して区別を明確にしました。カード作成ではタグ 8 件、定義 10 件、発音 16 件を上限とし、各上限をローカライズされたトーストで通知します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -505,3 +509,4 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 - [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)
 - [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)
 - [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)
+- [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)

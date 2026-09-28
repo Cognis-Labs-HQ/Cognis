@@ -189,8 +189,7 @@ export function popupTitleDetailItems(
             ...(linked.length ? linkedItems(linked) : [{ label }]),
         ],
     );
-    const isOrderedSequence = layer?.semanticRole === "orderedLexicalSequence";
-    const placement = isOrderedSequence ? "reading" : undefined;
+    const placement = "reading";
     const items = [...spellingItems, ...pronunciationItems].map((item) => ({
         ...item,
         placement,
@@ -203,10 +202,12 @@ export function popupTitleDetailItems(
     );
     if (visibleDefinition) {
         items.push(
-            ...(items.length && !isOrderedSequence ? [{ label: " · " }] : []),
+            ...(items.length
+                ? [{ label: " — ", placement: "definition" }]
+                : []),
             {
                 label: visibleDefinition,
-                placement: isOrderedSequence ? "definition" : undefined,
+                placement: "definition",
             },
         );
     }

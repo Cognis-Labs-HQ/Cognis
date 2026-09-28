@@ -402,6 +402,10 @@ Die Deduplizierung von Titeln entfernt nur noch vollständig doppelte Referenzfo
 
 Nur die kompakte ×-Schaltfläche entfernt jetzt eine vorgemerkte Karte; der übrige Kompositionsbereich löst kein Löschen aus. Die Erstellung prüft Beziehungsminima vor dem Schließen, sodass fehlende Definitionen eine Meldung anzeigen und alle Composer-Eingaben zur Korrektur erhalten bleiben.
 
+## Lesbare Titeldetails und Composer-Grenzen
+
+Lange Aussprache- und Definitionsangaben bleiben nun neben dem Hauptwert innerhalb einer Breite von 40 % und werden in zusätzliche Zeilen umgebrochen; ein Gedankenstrich leitet Definitionen deutlich ein. Beim Erstellen von Karten gelten Grenzen von 8 Tags, 10 Definitionen und 16 Aussprachen, die jeweils mit einer lokalisierten Meldung erklärt werden.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -505,3 +509,4 @@ Nur die kompakte ×-Schaltfläche entfernt jetzt eine vorgemerkte Karte; der üb
 - [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)
 - [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)
 - [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)
+- [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)

@@ -402,6 +402,10 @@ Title de-duplication now removes only complete duplicate reference sequences, ne
 
 Only the compact × button now removes a staged card; the rest of the composition field is inert for deletion. Creation validates provider relationship minimums before dismissing the popup, so missing definitions show a toast and preserve all composer input for correction.
 
+## Readable title details and composer limits
+
+Long pronunciation and definition details now remain beside the primary value within a 40% width and wrap into additional rows, with an em dash clearly introducing definitions. Card creation limits authors to 8 tags, 10 definitions, and 16 pronunciations and reports each limit through a localized toast.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -505,3 +509,4 @@ Only the compact × button now removes a staged card; the rest of the compositio
 - [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)
 - [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)
 - [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)
+- [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)

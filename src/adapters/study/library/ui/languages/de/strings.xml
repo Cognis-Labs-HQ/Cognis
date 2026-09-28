@@ -57,6 +57,9 @@
   <string name="gateway.study.library_select_all">Alle auswählen</string>
   <string name="gateway.study.library_delete_selected">Auswahl löschen</string>
   <string name="gateway.study.library_validation_error">Prüfen Sie vor dem Speichern die Pflichtfelder.</string>
+  <string name="gateway.study.library_tag_limit">Eine Karte kann höchstens {{ count }} Tags haben.</string>
+  <string name="gateway.study.library_definition_limit">Eine Karte kann höchstens {{ count }} Definitionen haben.</string>
+  <string name="gateway.study.library_pronunciation_limit">Eine Karte kann höchstens {{ count }} Aussprachen haben.</string>
   <string name="gateway.study.library_audio_list_error">Audiodateien konnten nicht geladen werden.</string>
   <string name="gateway.study.library_audio_upload_success">Audio wurde hochgeladen.</string>
   <string name="gateway.study.library_audio_upload_error">Die Audiodatei konnte nicht hochgeladen werden.</string>

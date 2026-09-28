@@ -57,6 +57,9 @@
   <string name="gateway.study.library_select_all">すべて選択</string>
   <string name="gateway.study.library_delete_selected">選択項目を削除</string>
   <string name="gateway.study.library_validation_error">保存する前に必須項目を確認してください。</string>
+  <string name="gateway.study.library_tag_limit">カードに追加できるタグは最大 {{ count }} 件です。</string>
+  <string name="gateway.study.library_definition_limit">カードに追加できる定義は最大 {{ count }} 件です。</string>
+  <string name="gateway.study.library_pronunciation_limit">カードに追加できる発音は最大 {{ count }} 件です。</string>
   <string name="gateway.study.library_audio_list_error">音声ファイルを読み込めませんでした。</string>
   <string name="gateway.study.library_audio_upload_success">音声をアップロードしました。</string>
   <string name="gateway.study.library_audio_upload_error">音声ファイルをアップロードできませんでした。</string>

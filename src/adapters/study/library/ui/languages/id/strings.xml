@@ -57,6 +57,9 @@
   <string name="gateway.study.library_select_all">Pilih semua</string>
   <string name="gateway.study.library_delete_selected">Hapus yang dipilih</string>
   <string name="gateway.study.library_validation_error">Periksa kolom wajib sebelum menyimpan.</string>
+  <string name="gateway.study.library_tag_limit">Satu kartu dapat memiliki paling banyak {{ count }} tag.</string>
+  <string name="gateway.study.library_definition_limit">Satu kartu dapat memiliki paling banyak {{ count }} definisi.</string>
+  <string name="gateway.study.library_pronunciation_limit">Satu kartu dapat memiliki paling banyak {{ count }} pelafalan.</string>
   <string name="gateway.study.library_audio_list_error">Berkas audio tidak dapat dimuat.</string>
   <string name="gateway.study.library_audio_upload_success">Audio diunggah.</string>
   <string name="gateway.study.library_audio_upload_error">Berkas audio tidak dapat diunggah.</string>

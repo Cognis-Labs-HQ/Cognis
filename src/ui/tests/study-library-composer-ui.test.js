@@ -17,6 +17,7 @@ const clientSource = read("src/gateways/study/ui/library-client.js");
 const adapterSource = read("src/adapters/study/library/index.ts");
 const carouselStylesheet = read("src/ui/styles/reuse/horizontal-carousel.css");
 const adminStylesheet = read("src/adapters/study/library/ui/library-admin.css");
+const libraryStylesheet = read("src/adapters/study/library/ui/library.css");
 const drawingSource = read("src/adapters/study/library/ui/app/drawing.js");
 const composerContractSource = read(
     "src/adapters/study/library/ui/app/composer-contract.js",
@@ -157,5 +158,28 @@ test("Study Library keeps staged-card deletion precise and validation recoverabl
     assert.match(
         createEntrySource,
         /missingRequiredRelationship[\s\S]*library_validation_error[\s\S]*return false/,
+    );
+});
+
+test("Study Library wraps dense title details and limits create-card collections", () => {
+    assert.match(popupTitleSource, /const placement = "reading"/);
+    assert.match(popupTitleSource, /label: " — "/);
+    assert.match(popupTitleSource, /placement: "definition"/);
+    assert.match(
+        libraryStylesheet,
+        /popup-title-detail[\s\S]*flex: 0 1 40%;[\s\S]*max-width: 40%;[\s\S]*flex-wrap: wrap/,
+    );
+    assert.match(
+        createEntrySource,
+        /CREATE_LIMITS = Object\.freeze\(\{[\s\S]*tags: 8,[\s\S]*definitions: 10,[\s\S]*pronunciations: 16/,
+    );
+    assert.match(adminInteractionsSource, /values\(\)\.length >= maxTags/);
+    assert.match(
+        adminInteractionsSource,
+        /values\.length >= maxPronunciations/,
+    );
+    assert.match(
+        createEntrySource,
+        /selectedOptions[\s\S]*CREATE_LIMITS\.definitions/,
     );
 });
