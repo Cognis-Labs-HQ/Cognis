@@ -87,10 +87,21 @@ export function popupTitleDetailItems(
             group.map((entry) => entry.label).join(""),
         ),
     );
-    const spellingItems = spellingGroups.flatMap((group, groupIndex) => [
-        ...(groupIndex ? [{ label: " · " }] : []),
-        ...linkedItems(group),
-    ]);
+    const displayedSpellingGroups = spellingGroups.map((group) =>
+        normalizedTitleText(group.map((entry) => entry.label).join("")) ===
+        normalizedTitleText(detail.entry.label)
+            ? group.map((entry) => ({
+                  ...entry,
+                  label: pronunciationValues(entry)[0] ?? entry.label,
+              }))
+            : group,
+    );
+    const spellingItems = displayedSpellingGroups.flatMap(
+        (group, groupIndex) => [
+            ...(groupIndex ? [{ label: " · " }] : []),
+            ...linkedItems(group),
+        ],
+    );
     const pronunciationField = (layer?.fields ?? []).find(
         ({ id }) => id === "pronunciation",
     );

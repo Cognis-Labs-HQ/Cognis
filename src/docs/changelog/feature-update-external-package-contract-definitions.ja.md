@@ -394,6 +394,10 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 
 アクティブな描画練習ウィンドウをEscapeキーで閉じ、通常のアニメーション付き後処理を実行できるようになりました。
 
+## 読みタイトルで完全な表記グループを維持
+
+タイトルの重複除去は、発音内の個別文字ではなく、完全に重複する参照列だけを削除するようになりました。主値と一致する表記は文字レイヤーの発音へ解決され、部分的な読みや主値との不一致を防ぎつつ、プロバイダーが記録した漢字の読み一覧を維持します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -495,3 +499,4 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 - [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)
 - [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)
 - [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)
+- [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)

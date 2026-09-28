@@ -394,6 +394,10 @@ Aussprachen, die dem Kartenwert entsprechen, werden nun bis zu den Aussprachewer
 
 Das aktive Zeichenübungsfenster lässt sich nun mit der Escape-Taste über den normalen animierten Bereinigungspfad schließen.
 
+## Lesetitel bewahren vollständige Schreibgruppen
+
+Die Deduplizierung von Titeln entfernt nur noch vollständig doppelte Referenzfolgen und niemals einzelne Zeichen einer Aussprache. Eine mit dem primären Wert übereinstimmende Schreibweise wird zu den Aussprachen der Zeichenebene aufgelöst. Dadurch werden unvollständige Lesungen und Abweichungen vom primären Wert verhindert, während die vom Anbieter erfasste Kanji-Leseliste erhalten bleibt.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -495,3 +499,4 @@ Das aktive Zeichenübungsfenster lässt sich nun mit der Escape-Taste über den 
 - [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)
 - [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)
 - [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)
+- [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)

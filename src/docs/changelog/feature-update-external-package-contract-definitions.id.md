@@ -394,6 +394,10 @@ Pelafalan yang sama dengan nilai kartu kini diturunkan ke nilai pelafalan kartu 
 
 Jendela Latihan Menggambar aktif kini dapat ditutup dengan tombol Escape melalui alur pembersihan beranimasi normal.
 
+## Judul bacaan mempertahankan grup ejaan lengkap
+
+Deduplikasi judul kini hanya menghapus urutan referensi duplikat yang lengkap, bukan karakter individual dari pelafalan. Ejaan yang sama dengan nilai utama diturunkan ke pelafalan lapisan karakter, mencegah bacaan parsial dan ketidaksesuaian nilai utama sambil mempertahankan daftar bacaan Kanji buatan penyedia.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -495,3 +499,4 @@ Jendela Latihan Menggambar aktif kini dapat ditutup dengan tombol Escape melalui
 - [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)
 - [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)
 - [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)
+- [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)

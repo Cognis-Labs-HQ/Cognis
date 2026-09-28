@@ -91,14 +91,10 @@ function entryLinkKey(entry) {
 }
 
 export function excludeTitleReferenceDuplicates(groups, titleReferences) {
-    const titleReferenceKeys = new Set(titleReferences.map(entryLinkKey));
-    return groups
-        .map((group) =>
-            group.filter(
-                (entry) => !titleReferenceKeys.has(entryLinkKey(entry)),
-            ),
-        )
-        .filter((group) => group.length > 0);
+    const titleReferenceKey = titleReferences.map(entryLinkKey).join("\u0001");
+    return groups.filter(
+        (group) => group.map(entryLinkKey).join("\u0001") !== titleReferenceKey,
+    );
 }
 
 export function distinctPronunciationLabels(entry, secondaryLabels = []) {

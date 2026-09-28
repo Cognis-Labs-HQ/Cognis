@@ -394,6 +394,10 @@ Pronunciations matching a card value now descend to the linked cards’ pronunci
 
 The active Drawing Practice window now closes with the Escape key using its normal animated cleanup path.
 
+## Reading titles preserve complete spelling groups
+
+Title de-duplication now removes only complete duplicate reference sequences, never individual characters from a pronunciation. A spelling matching the primary value resolves to its character-layer pronunciations, preventing partial readings and primary-value discrepancies while retaining the provider-authored Kanji reading list.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -495,3 +499,4 @@ The active Drawing Practice window now closes with the Escape key using its norm
 - [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)
 - [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)
 - [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)
+- [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)
