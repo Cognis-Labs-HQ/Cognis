@@ -362,6 +362,10 @@ Hinweise auf fehlendes Audio verwenden nun ansichtsfensterbewusste Body-Portale 
 
 Der Library-Vertrag wurde an den gruppierten Aussprachegraphen des Japanisch-Lernanbieters angepasst. Beziehungen können `grouped: true` deklarieren, und Einträge können beziehungsspezifische `referenceGroups` enthalten, in denen jedes verschachtelte geordnete Zeichenfeld zu genau einer Aussprache gehört. Inhaltsprüfung, Hashbildung, Speicherung, APIs, Erstellungs- und Bearbeitungscomposer, Titellinks sowie die abgeleitete Audioauflösung bewahren diese Grenzen nun durchgängig.
 
+## Ausgeblendete Karten bleiben aus Karussells
+
+Composer-Karussells, Kartenvorschläge für freie Texteingaben und Aussprachevorschläge schließen nun als ausgeblendet markierte Einträge aus. Vorhandene Karten behalten bereits erstellte ausgeblendete Abhängigkeiten über ihren zugrunde liegenden Beziehungswert, ohne diese Abhängigkeit als auswählbare Karussellkarte anzuzeigen.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -455,3 +459,4 @@ Der Library-Vertrag wurde an den gruppierten Aussprachegraphen des Japanisch-Ler
 - [b6dfb282](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6dfb282)
 - [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)
 - [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)
+- [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)

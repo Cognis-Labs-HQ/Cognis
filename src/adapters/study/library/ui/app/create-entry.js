@@ -765,7 +765,11 @@ function bindTextComposition(
     const candidates = relationships
         .flatMap((relationship) =>
             entries
-                .filter((entry) => entry.layer === relationship.targetLayer)
+                .filter(
+                    (entry) =>
+                        entry.layer === relationship.targetLayer &&
+                        entry.hidden !== true,
+                )
                 .map((entry) => ({
                     ...entry,
                     relationshipId: relationship.id,

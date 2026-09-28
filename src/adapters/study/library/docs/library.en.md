@@ -224,3 +224,5 @@ The field-level `multi_value` boolean is the sole multi-value declaration. Commi
 Carousel cards once again show a hover and keyboard-focus preview for every item, including entries without a definition. Carousel previews and missing-audio tooltips are rendered in body-level anchored portals so card, carousel, and popup overflow cannot clip them.
 
 Grouped relationships preserve nested reference arrays for multi-value fields. Each pronunciation can therefore own an independent ordered character sequence, which remains grouped through content-pack inspection, validation, persistence, API editing, and linked title presentation instead of being flattened into one ambiguous list.
+
+Hidden cards are excluded from every carousel and type-ahead candidate list. Existing hidden dependencies remain preserved in the underlying relationship controls when editing a card, but they are never offered as author-selectable carousel choices.

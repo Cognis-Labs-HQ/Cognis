@@ -212,3 +212,5 @@ Der boolesche Wert `multi_value` auf Feldebene ist die einzige Mehrwertdeklarati
 Karussellkarten zeigen wieder für jeden Eintrag eine Vorschau bei Mauszeigerkontakt und Tastaturfokus, auch wenn keine Definition vorhanden ist. Karussellvorschauen und Hinweise auf fehlendes Audio werden in verankerten Portalen auf Body-Ebene gerendert, sodass Überlaufregeln von Karten, Karussells und Pop-ups sie nicht abschneiden.
 
 Gruppierte Beziehungen bewahren verschachtelte Referenzfelder für mehrwertige Felder. Jede Aussprache kann dadurch eine eigene geordnete Zeichenfolge besitzen, die bei Inhaltsprüfung, Validierung, Speicherung, API-Bearbeitung und verlinkter Titeldarstellung gruppiert bleibt, statt zu einer mehrdeutigen Liste abgeflacht zu werden.
+
+Ausgeblendete Karten werden aus allen Karussells und Vorschlagslisten für Texteingaben ausgeschlossen. Bereits vorhandene ausgeblendete Abhängigkeiten bleiben beim Bearbeiten einer Karte in den zugrunde liegenden Beziehungssteuerelementen erhalten, werden aber nie als auswählbare Karusselloptionen angeboten.

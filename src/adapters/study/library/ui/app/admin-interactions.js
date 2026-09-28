@@ -197,6 +197,9 @@ function relationshipEditor(
             candidate.layer === relationship.targetLayer &&
             candidate.id !== entry.id,
     );
+    const visibleTargets = availableTargets.filter(
+        (candidate) => candidate.hidden !== true,
+    );
     const previewFor = (target) => {
         const definition = (target.references ?? [])
             .map(({ entryId }) => entries.find(({ id }) => id === entryId))
@@ -217,7 +220,7 @@ function relationshipEditor(
             : "";
     };
     const targets = carousel
-        ? [...availableTargets]
+        ? [...visibleTargets]
               .sort(
                   (left, right) =>
                       Number(Boolean(previewFor(right))) -

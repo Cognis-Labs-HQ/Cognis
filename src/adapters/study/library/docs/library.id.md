@@ -212,3 +212,5 @@ Boolean `multi_value` pada tingkat bidang adalah satu-satunya deklarasi multi-ni
 Kartu karosel kembali menampilkan pratinjau saat diarahkan atau difokuskan dengan papan ketik untuk setiap item, termasuk entri tanpa definisi. Pratinjau karosel dan tooltip audio yang tidak tersedia dirender dalam portal berjangkar pada tingkat body sehingga luapan kartu, karosel, dan popup tidak memotongnya.
 
 Relasi berkelompok mempertahankan larik referensi bertingkat untuk bidang multi-nilai. Dengan demikian, setiap pelafalan dapat memiliki urutan karakter terurut tersendiri yang tetap berkelompok selama pemeriksaan paket konten, validasi, penyimpanan, pengeditan API, dan penyajian judul tertaut, bukan diratakan menjadi satu daftar ambigu.
+
+Kartu tersembunyi dikecualikan dari setiap karosel dan daftar kandidat saran ketik. Dependensi tersembunyi yang sudah ada tetap dipertahankan dalam kontrol relasi dasar saat kartu diedit, tetapi tidak pernah ditawarkan sebagai pilihan karosel yang dapat dipilih penulis.

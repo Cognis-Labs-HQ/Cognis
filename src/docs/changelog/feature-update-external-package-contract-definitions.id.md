@@ -362,6 +362,10 @@ Tooltip audio yang tidak tersedia kini memakai portal body yang memperhitungkan 
 
 Kontrak Library diselaraskan dengan graf pelafalan berkelompok milik penyedia pembelajaran bahasa Jepang. Relasi dapat mendeklarasikan `grouped: true`, dan entri dapat membawa `referenceGroups` berkunci relasi, dengan setiap larik karakter terurut bertingkat menjadi milik satu pelafalan yang berbeda. Validasi paket konten, hashing, penyimpanan, API, composer pembuatan/pengeditan, tautan judul, serta penelusuran audio turunan kini mempertahankan batas tersebut dari ujung ke ujung.
 
+## Kartu tersembunyi tidak masuk karosel
+
+Karosel composer, saran kartu untuk teks bebas, dan saran pelafalan kini mengecualikan entri yang ditandai tersembunyi. Kartu yang sudah ada tetap mempertahankan dependensi tersembunyi yang telah dibuat melalui nilai relasi dasarnya tanpa menampilkan dependensi tersebut sebagai kartu karosel yang dapat dipilih.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -455,3 +459,4 @@ Kontrak Library diselaraskan dengan graf pelafalan berkelompok milik penyedia pe
 - [b6dfb282](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6dfb282)
 - [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)
 - [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)
+- [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)

@@ -362,6 +362,10 @@ Missing-audio tooltips now use viewport-aware body portals instead of card-local
 
 Aligned the Library contract with the Japanese learning provider’s grouped pronunciation graph. Relationships can declare `grouped: true`, and entries can carry relationship-keyed `referenceGroups`, where every nested ordered character array belongs to one distinct pronunciation. Content-pack validation, hashing, storage, APIs, create/edit composers, title links, and derived audio traversal now preserve those boundaries end to end.
 
+## Hidden cards stay out of carousels
+
+Composer carousels, free-text card suggestions, and pronunciation suggestions now exclude entries marked hidden. Existing cards retain any already-authored hidden dependency through their underlying relationship value, without exposing that dependency as a selectable carousel card.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -455,3 +459,4 @@ Aligned the Library contract with the Japanese learning provider’s grouped pro
 - [b6dfb282](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6dfb282)
 - [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)
 - [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)
+- [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)

@@ -362,6 +362,10 @@ Drawing の見出しをキャンバス幅に合わせて真上に配置しまし
 
 Library 契約を日本語学習プロバイダーのグループ化発音グラフへ合わせました。関係は `grouped: true` を宣言でき、項目は関係 ID をキーとする `referenceGroups` を持てます。各入れ子の順序付き文字配列は、それぞれ独立した発音に属します。コンテンツパック検証、ハッシュ化、保存、API、作成・編集コンポーザー、タイトルリンク、派生音声の走査まで、その境界を一貫して保持します。
 
+## 非表示カードを候補から除外
+
+コンポーザーカルーセル、自由入力のカード候補、発音候補から、非表示に設定された項目を除外します。既存カードにすでに設定された非表示依存関係は基礎となる関係値として維持しますが、選択可能なカルーセルカードとしては公開しません。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -455,3 +459,4 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 - [b6dfb282](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6dfb282)
 - [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)
 - [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)
+- [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)

@@ -97,8 +97,9 @@ export function mountEditableRelationshipCarousels(
                     )?.targetLayer,
             ),
         );
-        return entries.filter(({ layer: entryLayer }) =>
-            targetLayers.has(entryLayer),
+        return entries.filter(
+            ({ layer: entryLayer, hidden }) =>
+                hidden !== true && targetLayers.has(entryLayer),
         );
     };
     const carouselItem = (kind, entryId, selectedOnly = false) =>

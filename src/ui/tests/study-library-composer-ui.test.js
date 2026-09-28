@@ -130,3 +130,15 @@ test("Study Library preserves each multi-value pronunciation reference group", (
         /linkedPronunciationGroups\[pronunciationIndex\]/,
     );
 });
+
+test("Study Library excludes hidden cards from every composer candidate list", () => {
+    assert.match(
+        adminInteractionsSource,
+        /visibleTargets = availableTargets\.filter\([\s\S]*candidate\.hidden !== true/,
+    );
+    assert.match(createEntrySource, /entry\.hidden !== true/);
+    assert.match(
+        adminInteractionsSource,
+        /hidden !== true && targetLayers\.has/,
+    );
+});
