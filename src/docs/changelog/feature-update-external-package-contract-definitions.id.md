@@ -378,6 +378,10 @@ Kartu Pustaka kini hanya menampilkan dua pelafalan pertama. Pelafalan tambahan t
 
 Urutan karakter bertingkat kini disatukan menjadi bacaan lengkap sebelum label pelafalan dibandingkan. Bacaan berkelompok yang sama dengan nilai kartu tidak lagi ditampilkan dua kali.
 
+## Tautan pelafalan tidak lagi mengulang judul
+
+Deduplikasi pelafalan kini membandingkan gabungan label kartu karakter tertaut dengan nilai kartu yang ditampilkan. Perbandingan menormalkan spasi dan representasi Unicode sehingga bacaan tertaut yang setara dihilangkan terlepas dari bentuk bidang yang tersimpan.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -475,3 +479,4 @@ Urutan karakter bertingkat kini disatukan menjadi bacaan lengkap sebelum label p
 - [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)
 - [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)
 - [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)
+- [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)

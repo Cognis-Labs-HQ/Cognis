@@ -378,6 +378,10 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 
 発音ラベルを比較する前に、入れ子の文字列を完全な読みに連結するようになりました。カードの値と一致するグループ化された読みが重複表示されなくなりました。
 
+## 表示された発音リンクのタイトル重複を修正
+
+発音の重複判定で、リンクされた文字カードのラベルを連結し、表示中のカード値と比較するようになりました。空白とUnicode表現を正規化するため、保存されたフィールド形式にかかわらず同じリンク読みは省略されます。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -475,3 +479,4 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 - [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)
 - [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)
 - [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)
+- [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)

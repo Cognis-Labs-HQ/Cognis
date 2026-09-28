@@ -378,6 +378,10 @@ Bibliothekskarten zeigen jetzt nur die ersten beiden Aussprachen. Weitere Ausspr
 
 Verschachtelte Zeichenfolgen werden nun vor dem Vergleich von Aussprachebeschriftungen zu vollständigen Lesungen verbunden. Eine gruppierte Lesung, die dem Kartenwert entspricht, wird nicht mehr doppelt angezeigt.
 
+## Dargestellte Aussprachelinks wiederholen Titel nicht mehr
+
+Die Deduplizierung von Aussprachen vergleicht nun die verbundenen Beschriftungen verknüpfter Zeichenkarten mit dem angezeigten Kartenwert. Der Vergleich normalisiert Leerraum und Unicode-Darstellung, sodass gleichwertige verknüpfte Lesungen unabhängig von ihrer gespeicherten Feldform entfallen.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -475,3 +479,4 @@ Verschachtelte Zeichenfolgen werden nun vor dem Vergleich von Aussprachebeschrif
 - [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)
 - [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)
 - [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)
+- [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)

@@ -220,3 +220,5 @@ Relasi berkelompok yang dimuat dari penyimpanan dipadatkan sebelum entri diurutk
 Pratinjau kartu Pustaka menampilkan paling banyak dua pelafalan berbeda pertama. Tampilan detail entri tetap menyediakan seluruh rangkaian pelafalan tanpa membuat kartu penjelajahan terlalu tinggi atau padat.
 
 Tampilan pelafalan menyatukan setiap urutan karakter bertingkat menjadi bacaan lengkap sebelum membandingkannya dengan label kartu. Pelafalan berkelompok seperti `["さ", "き"]` karena itu ditampilkan sebagai `さき` dan dihilangkan ketika kartu sudah memakai nilai yang sama.
+
+Judul pelafalan tertaut juga dideduplikasi berdasarkan tampilan UI yang sebenarnya: label karakter tertaut digabungkan, spasi dan bentuk Unicode dinormalisasi, lalu bacaan hasilnya dibandingkan dengan nilai kartu. Dengan demikian, urutan tertaut `さ` + `き` tidak mengulang judul `さき` meskipun representasi pelafalan yang tersimpan berbeda.

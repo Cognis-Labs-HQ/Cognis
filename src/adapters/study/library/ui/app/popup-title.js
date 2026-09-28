@@ -17,6 +17,10 @@ function linkedItems(entries) {
     }));
 }
 
+function normalizedTitleText(value) {
+    return String(value).trim().normalize("NFKC").replaceAll(/\s+/g, "");
+}
+
 export function secondarySpellingGroups(detail, schemas) {
     const semanticRole = layerForEntry(schemas, detail.entry)?.semanticRole;
     if (
@@ -130,25 +134,39 @@ export function popupTitleDetailItems(
                     .filter(Boolean),
             ),
     );
-    const pronunciationItems = distinctPronunciationLabels(
+    const pronunciationGroups = distinctPronunciationLabels(
         detail.entry,
         spellingLabels,
-    ).flatMap((label, pronunciationIndex) => {
-        const linked = linkRelationships.size
-            ? resolveReferenceAliasComposition(
-                  label,
-                  linkedPronunciationGroups.length
-                      ? (linkedPronunciationGroups[pronunciationIndex] ?? [])
-                      : linkedPronunciationEntries,
-              )
-            : [];
-        return [
+    )
+        .map((label, pronunciationIndex) => {
+            const linked = linkRelationships.size
+                ? resolveReferenceAliasComposition(
+                      label,
+                      linkedPronunciationGroups.length
+                          ? (linkedPronunciationGroups[pronunciationIndex] ??
+                                [])
+                          : linkedPronunciationEntries,
+                  )
+                : [];
+            return { label, linked };
+        })
+        .filter(({ label, linked }) => {
+            const displayedPronunciation = linked.length
+                ? linked.map((entry) => entry.label).join("")
+                : label;
+            return (
+                normalizedTitleText(displayedPronunciation) !==
+                normalizedTitleText(detail.entry.label)
+            );
+        });
+    const pronunciationItems = pronunciationGroups.flatMap(
+        ({ label, linked }, pronunciationIndex) => [
             ...(pronunciationIndex || spellingItems.length
                 ? [{ label: " · " }]
                 : []),
             ...(linked.length ? linkedItems(linked) : [{ label }]),
-        ];
-    });
+        ],
+    );
     const isOrderedSequence = layer?.semanticRole === "orderedLexicalSequence";
     const placement = isOrderedSequence ? "reading" : undefined;
     const items = [...spellingItems, ...pronunciationItems].map((item) => ({

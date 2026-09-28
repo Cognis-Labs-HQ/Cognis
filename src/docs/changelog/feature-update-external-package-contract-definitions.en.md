@@ -378,6 +378,10 @@ Library cards now show only the first two pronunciations. Additional pronunciati
 
 Nested character sequences are now joined into complete readings before pronunciation labels are compared. A grouped reading matching the card value is no longer displayed twice.
 
+## Rendered pronunciation links no longer repeat titles
+
+Pronunciation de-duplication now compares the joined labels of linked character cards with the displayed card value. The comparison normalizes whitespace and Unicode representation, so equivalent linked readings are omitted regardless of their stored field shape.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -475,3 +479,4 @@ Nested character sequences are now joined into complete readings before pronunci
 - [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)
 - [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)
 - [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)
+- [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)
