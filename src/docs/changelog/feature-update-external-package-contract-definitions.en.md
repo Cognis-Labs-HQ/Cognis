@@ -382,6 +382,10 @@ Nested character sequences are now joined into complete readings before pronunci
 
 Pronunciation de-duplication now compares the joined labels of linked character cards with the displayed card value. The comparison normalizes whitespace and Unicode representation, so equivalent linked readings are omitted regardless of their stored field shape.
 
+## Multi-relationship pronunciation groups validate correctly
+
+Aligned group indexes across multiple field link relationships now represent the same multi-value field item. Validation uses the greatest linked group count rather than summing parallel relationship counts, allowing the latest Japanese content pack to enable successfully.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -480,3 +484,4 @@ Pronunciation de-duplication now compares the joined labels of linked character 
 - [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)
 - [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)
 - [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)
+- [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)

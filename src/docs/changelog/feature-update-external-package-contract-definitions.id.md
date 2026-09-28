@@ -382,6 +382,10 @@ Urutan karakter bertingkat kini disatukan menjadi bacaan lengkap sebelum label p
 
 Deduplikasi pelafalan kini membandingkan gabungan label kartu karakter tertaut dengan nilai kartu yang ditampilkan. Perbandingan menormalkan spasi dan representasi Unicode sehingga bacaan tertaut yang setara dihilangkan terlepas dari bentuk bidang yang tersimpan.
 
+## Grup pelafalan lintas relasi divalidasi dengan benar
+
+Indeks grup yang sejajar di beberapa relasi tautan bidang kini mewakili item bidang multinilai yang sama. Validasi memakai jumlah grup tertaut terbesar alih-alih menjumlahkan relasi paralel, sehingga paket konten bahasa Jepang terbaru dapat diaktifkan.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -480,3 +484,4 @@ Deduplikasi pelafalan kini membandingkan gabungan label kartu karakter tertaut d
 - [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)
 - [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)
 - [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)
+- [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)

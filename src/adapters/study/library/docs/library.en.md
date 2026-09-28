@@ -234,3 +234,5 @@ Library card previews show at most the first two distinct pronunciations. The en
 Pronunciation display normalizes each nested character sequence into its complete reading before comparing it with the card label. A grouped pronunciation such as `["さ", "き"]` therefore renders as `さき` and is omitted when the card already uses that same value.
 
 Linked pronunciation titles are also de-duplicated from what the UI actually renders: the linked character labels are joined, whitespace and Unicode forms are normalized, and the resulting reading is compared with the card value. This prevents a linked `さ` + `き` sequence from repeating a `さき` title even when its stored pronunciation representation differs.
+
+A single multi-value field group may span several declared link relationships. Group indexes align across those relationships, so validation compares the field value count with the greatest linked relationship group count rather than adding the counts together. This supports pronunciations composed jointly from meaningful reading segments and direct character suffixes.

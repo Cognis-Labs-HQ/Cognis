@@ -382,6 +382,10 @@ Verschachtelte Zeichenfolgen werden nun vor dem Vergleich von Aussprachebeschrif
 
 Die Deduplizierung von Aussprachen vergleicht nun die verbundenen Beschriftungen verknüpfter Zeichenkarten mit dem angezeigten Kartenwert. Der Vergleich normalisiert Leerraum und Unicode-Darstellung, sodass gleichwertige verknüpfte Lesungen unabhängig von ihrer gespeicherten Feldform entfallen.
 
+## Aussprachegruppen über mehrere Beziehungen werden korrekt validiert
+
+Übereinstimmende Gruppenindizes über mehrere Feldverknüpfungen repräsentieren nun denselben mehrwertigen Feldeintrag. Die Validierung verwendet die größte verknüpfte Gruppenzahl, statt parallele Beziehungszahlen zu addieren, sodass das aktuelle japanische Inhaltspaket erfolgreich aktiviert werden kann.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -480,3 +484,4 @@ Die Deduplizierung von Aussprachen vergleicht nun die verbundenen Beschriftungen
 - [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)
 - [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)
 - [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)
+- [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)

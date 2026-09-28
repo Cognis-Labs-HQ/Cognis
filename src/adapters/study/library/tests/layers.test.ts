@@ -188,6 +188,52 @@ test("grouped relationships preserve separate pronunciation sequences", () => {
     );
 });
 
+test("one pronunciation group may span multiple linked relationships", () => {
+    const schema: LibrarySchema = structuredClone(english);
+    const letters = schema.layers[1].relationships![0];
+    letters.grouped = true;
+    schema.layers[1].relationships!.push({
+        ...letters,
+        id: "suffixes",
+    });
+    schema.layers[1].fields = [
+        {
+            id: "pronunciation",
+            metadata: { labels: { en: "Pronunciation" } },
+            type: "stringList",
+            multi_value: true,
+            input: {
+                control: "tagList",
+                linkRelationships: ["letters", "suffixes"],
+            },
+        },
+    ];
+    const a = entry("letter:a", "a");
+    const y = entry("letter:y", "y");
+    const targets = new Map([
+        [a.id, a],
+        [y.id, y],
+    ]);
+
+    assert.doesNotThrow(() =>
+        validateReferences(
+            schema,
+            "words",
+            [],
+            targets,
+            {
+                letters: [
+                    [{ entryId: a.id, relation: "letters", position: 0 }],
+                ],
+                suffixes: [
+                    [{ entryId: y.id, relation: "suffixes", position: 0 }],
+                ],
+            },
+            { pronunciation: ["ay"] },
+        ),
+    );
+});
+
 test("layers can explicitly reference other entries in the same layer", () => {
     const schema: LibrarySchema = {
         ...english,

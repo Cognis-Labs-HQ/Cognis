@@ -654,10 +654,11 @@ export function validateReferences(
             continue;
         const values = fields[field.id];
         if (!Array.isArray(values)) continue;
-        const groupCount = field.input.linkRelationships.reduce(
-            (count, relation) =>
-                count + (referenceGroups[relation]?.length ?? 0),
+        const groupCount = Math.max(
             0,
+            ...field.input.linkRelationships.map(
+                (relation) => referenceGroups[relation]?.length ?? 0,
+            ),
         );
         if (groupCount !== values.length)
             throw new Error(`field_reference_group_mismatch:${field.id}`);

@@ -382,6 +382,10 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 
 発音の重複判定で、リンクされた文字カードのラベルを連結し、表示中のカード値と比較するようになりました。空白とUnicode表現を正規化するため、保存されたフィールド形式にかかわらず同じリンク読みは省略されます。
 
+## 複数関係にまたがる発音グループを正しく検証
+
+複数のフィールドリンク関係で一致するグループ番号を、同じ複数値フィールド項目として扱うようになりました。並行する関係のグループ数を合計せず最大値で検証するため、最新の日本語コンテンツパックを正常に有効化できます。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -480,3 +484,4 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 - [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)
 - [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)
 - [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)
+- [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)
