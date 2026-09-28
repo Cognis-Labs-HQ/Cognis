@@ -203,7 +203,7 @@ export function mountEditableRelationshipCarousels(
             );
             if (selected) {
                 if (
-                    !event.target.closest(
+                    !event.target.matches(
                         "[data-library-remove-selected-reference]",
                     )
                 )

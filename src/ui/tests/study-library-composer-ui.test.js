@@ -16,6 +16,7 @@ const createEntrySource = read(
 const clientSource = read("src/gateways/study/ui/library-client.js");
 const adapterSource = read("src/adapters/study/library/index.ts");
 const carouselStylesheet = read("src/ui/styles/reuse/horizontal-carousel.css");
+const adminStylesheet = read("src/adapters/study/library/ui/library-admin.css");
 const drawingSource = read("src/adapters/study/library/ui/app/drawing.js");
 const composerContractSource = read(
     "src/adapters/study/library/ui/app/composer-contract.js",
@@ -140,5 +141,21 @@ test("Study Library excludes hidden cards from every composer candidate list", (
     assert.match(
         adminInteractionsSource,
         /hidden !== true && targetLayers\.has/,
+    );
+});
+
+test("Study Library keeps staged-card deletion precise and validation recoverable", () => {
+    assert.match(
+        adminInteractionsSource,
+        /event\.target\.matches\(\s*"\[data-library-remove-selected-reference\]"/,
+    );
+    assert.match(
+        adminStylesheet,
+        /library-composition-block > \.btn-cancel[\s\S]*flex:\s*0 0 1rem;[\s\S]*width:\s*1rem;[\s\S]*height:\s*1rem;/,
+    );
+    assert.match(createEntrySource, /missingRequiredRelationship/);
+    assert.match(
+        createEntrySource,
+        /missingRequiredRelationship[\s\S]*library_validation_error[\s\S]*return false/,
     );
 });

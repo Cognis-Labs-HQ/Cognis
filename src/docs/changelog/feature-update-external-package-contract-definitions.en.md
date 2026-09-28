@@ -398,6 +398,10 @@ The active Drawing Practice window now closes with the Escape key using its norm
 
 Title de-duplication now removes only complete duplicate reference sequences, never individual characters from a pronunciation. A spelling matching the primary value resolves to its character-layer pronunciations, preventing partial readings and primary-value discrepancies while retaining the provider-authored Kanji reading list.
 
+## Composer deletion is precise and missing definitions preserve work
+
+Only the compact × button now removes a staged card; the rest of the composition field is inert for deletion. Creation validates provider relationship minimums before dismissing the popup, so missing definitions show a toast and preserve all composer input for correction.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -500,3 +504,4 @@ Title de-duplication now removes only complete duplicate reference sequences, ne
 - [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)
 - [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)
 - [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)
+- [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)

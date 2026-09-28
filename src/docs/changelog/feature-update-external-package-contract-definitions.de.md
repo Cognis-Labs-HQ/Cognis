@@ -398,6 +398,10 @@ Das aktive Zeichenübungsfenster lässt sich nun mit der Escape-Taste über den 
 
 Die Deduplizierung von Titeln entfernt nur noch vollständig doppelte Referenzfolgen und niemals einzelne Zeichen einer Aussprache. Eine mit dem primären Wert übereinstimmende Schreibweise wird zu den Aussprachen der Zeichenebene aufgelöst. Dadurch werden unvollständige Lesungen und Abweichungen vom primären Wert verhindert, während die vom Anbieter erfasste Kanji-Leseliste erhalten bleibt.
 
+## Präzises Löschen und Erhalt der Eingaben bei fehlenden Definitionen
+
+Nur die kompakte ×-Schaltfläche entfernt jetzt eine vorgemerkte Karte; der übrige Kompositionsbereich löst kein Löschen aus. Die Erstellung prüft Beziehungsminima vor dem Schließen, sodass fehlende Definitionen eine Meldung anzeigen und alle Composer-Eingaben zur Korrektur erhalten bleiben.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -500,3 +504,4 @@ Die Deduplizierung von Titeln entfernt nur noch vollständig doppelte Referenzfo
 - [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)
 - [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)
 - [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)
+- [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)

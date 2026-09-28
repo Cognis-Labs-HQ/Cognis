@@ -398,6 +398,10 @@ Jendela Latihan Menggambar aktif kini dapat ditutup dengan tombol Escape melalui
 
 Deduplikasi judul kini hanya menghapus urutan referensi duplikat yang lengkap, bukan karakter individual dari pelafalan. Ejaan yang sama dengan nilai utama diturunkan ke pelafalan lapisan karakter, mencegah bacaan parsial dan ketidaksesuaian nilai utama sambil mempertahankan daftar bacaan Kanji buatan penyedia.
 
+## Penghapusan tepat dan input tetap tersimpan saat definisi kurang
+
+Kini hanya tombol × yang ringkas yang menghapus kartu yang sedang disiapkan; bagian lain bidang komposisi tidak memicu penghapusan. Pembuatan memvalidasi jumlah minimum relasi sebelum menutup popup, sehingga definisi yang kurang menampilkan toast dan mempertahankan seluruh input composer untuk diperbaiki.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -500,3 +504,4 @@ Deduplikasi judul kini hanya menghapus urutan referensi duplikat yang lengkap, b
 - [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)
 - [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)
 - [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)
+- [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)

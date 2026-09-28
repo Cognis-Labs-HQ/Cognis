@@ -398,6 +398,10 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 
 タイトルの重複除去は、発音内の個別文字ではなく、完全に重複する参照列だけを削除するようになりました。主値と一致する表記は文字レイヤーの発音へ解決され、部分的な読みや主値との不一致を防ぎつつ、プロバイダーが記録した漢字の読み一覧を維持します。
 
+## 削除範囲を限定し定義不足時の入力を保持
+
+ステージ中のカードはコンパクトな×ボタンだけで削除され、構成フィールドの他の部分では削除されなくなりました。作成ポップアップを閉じる前に関係の最小数を検証するため、定義不足ではトーストを表示し、修正用にすべてのComposer入力を保持します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -500,3 +504,4 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 - [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)
 - [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)
 - [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)
+- [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)

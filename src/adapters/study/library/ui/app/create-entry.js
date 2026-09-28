@@ -249,11 +249,40 @@ export async function openCreateEntryPopup({
                 "[data-library-admin-editor]",
             );
             activeForm?.compositionController?.validate();
-            if (
+            const invalidForm =
                 activeForm?.querySelector('[data-uploading="true"]') ||
-                !activeForm?.reportValidity()
-            )
+                !activeForm?.reportValidity();
+            if (invalidForm) {
+                showToast(i18n.t("gateway.study.library_validation_error"), {
+                    variant: "error",
+                });
                 return false;
+            }
+            const references = readReferences(
+                activeForm,
+                editingLayer,
+                activeForm.compositionOrder ?? [],
+            );
+            const referenceGroups = readReferenceGroups(activeForm);
+            const missingRequiredRelationship = (
+                editingLayer.relationships ?? []
+            ).some((relationship) => {
+                const count =
+                    references.filter(
+                        ({ relation }) => relation === relationship.id,
+                    ).length +
+                    (referenceGroups[relationship.id] ?? []).reduce(
+                        (total, group) => total + group.length,
+                        0,
+                    );
+                return count < (relationship.minimum ?? 0);
+            });
+            if (missingRequiredRelationship) {
+                showToast(i18n.t("gateway.study.library_validation_error"), {
+                    variant: "error",
+                });
+                return false;
+            }
             return true;
         },
         onOpen(overlay) {
