@@ -18,9 +18,14 @@
 
 カルーセルの追加操作から作成したカードは、既存カードと同じ選択処理を通して返され、作業中の構成ステージへ直ちに追加されます。代替文字の発音フィールドでは、プロバイダー関係がより一般的な表示ロールを使用している場合でも、原子文字カルーセルが表示されます。
 
+## 画検索と検証ガイド
+
+画データに対応するコンポーザーでは、フィールド対応の検索操作を専用の画パターン見出しの下へ配置し、読み込んだデータを小さなプレビューに描画します。必須関係の検証では、該当するタブを強調し、最初の無効フィールドを含むタブを開いて、修正が必要なフィールドまたは定義操作へフォーカスを移します。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
 - [db0728af](https://github.com/Cognis-Labs-HQ/Cognis/commit/db0728af)
 - [9c77e48f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c77e48f)
 - [41d895c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/41d895c6)
+- [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)

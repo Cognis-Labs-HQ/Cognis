@@ -37,7 +37,7 @@ import {
 } from "./composition-tokens.js";
 
 export { inputForField } from "./field-input.js";
-import { inputForField } from "./field-input.js";
+import { inputForField, renderStrokePatternPreviews } from "./field-input.js";
 
 function showComposerLimitViolation(form, layer, schema, i18n) {
     const violation = composerLimitViolation(form, layer, schema);
@@ -76,6 +76,41 @@ export function bindLibraryEditorControls(
             },
         );
     };
+    const refreshInvalidTabs = () => {
+        const invalidPanels = new Set(
+            Array.from(
+                form.querySelectorAll(":invalid"),
+                (field) =>
+                    field.dataset.libraryValidationPanel ??
+                    field.closest("[data-library-editor-panel]")?.dataset
+                        .libraryEditorPanel,
+            ).filter(Boolean),
+        );
+        form.querySelectorAll("[data-library-editor-tab]").forEach((tab) => {
+            const invalid = invalidPanels.has(tab.dataset.libraryEditorTab);
+            tab.classList.toggle("library-editor-tab--required", invalid);
+            tab.toggleAttribute("aria-invalid", invalid);
+        });
+        return invalidPanels;
+    };
+    form.revealFirstInvalidField = () => {
+        const invalid = form.querySelector(":invalid");
+        refreshInvalidTabs();
+        if (!invalid) return false;
+        const panelId =
+            invalid.dataset.libraryValidationPanel ??
+            invalid.closest("[data-library-editor-panel]")?.dataset
+                .libraryEditorPanel;
+        if (panelId) activateTab(panelId);
+        const focusTarget =
+            panelId === "definitions"
+                ? form.querySelector("[data-library-add-definition]")
+                : invalid;
+        focusTarget?.scrollIntoView({ block: "center", behavior: "smooth" });
+        focusTarget?.focus({ preventScroll: true });
+        if (focusTarget === invalid) invalid.reportValidity();
+        return true;
+    };
     form.querySelector("[data-library-editor-tabs]")?.addEventListener(
         "click",
         (event) => {
@@ -88,9 +123,12 @@ export function bindLibraryEditorControls(
         (event) => {
             const panel = event.target.closest("[data-library-editor-panel]");
             if (panel) activateTab(panel.dataset.libraryEditorPanel);
+            refreshInvalidTabs();
         },
         true,
     );
+    form.addEventListener("input", refreshInvalidTabs);
+    form.addEventListener("change", refreshInvalidTabs);
     form.querySelectorAll("select[multiple]").forEach((select) => {
         select.addEventListener("mousedown", (event) => {
             if (event.target.tagName !== "OPTION") return;
@@ -134,6 +172,8 @@ export function bindLibraryEditorControls(
             }
         });
     });
+    renderStrokePatternPreviews(form);
+    refreshInvalidTabs();
     form.querySelectorAll("[data-library-entry-tags]").forEach((field) => {
         const input = field.querySelector("[data-library-tag-input]");
         const hidden = field.querySelector('input[type="hidden"]');
@@ -731,6 +771,31 @@ export function readReferenceGroups(form) {
     return structuredClone(form.referenceGroups ?? {});
 }
 
+export function validateRequiredRelationships(form, layer, schema, message) {
+    const groups = readReferenceGroups(form);
+    let valid = true;
+    for (const relationship of layer?.relationships ?? []) {
+        const select = form.elements[`relationship:${relationship.id}`];
+        if (!select) continue;
+        const selectedCount = select.selectedOptions?.length ?? 0;
+        const groupedCount = (groups[relationship.id] ?? []).reduce(
+            (total, group) => total + group.length,
+            0,
+        );
+        const missing =
+            selectedCount + groupedCount < (relationship.minimum ?? 0);
+        select.setCustomValidity(missing ? message : "");
+        const targetLayer = schema?.layers?.find(
+            ({ id }) => id === relationship.targetLayer,
+        );
+        if (["definition", "meaning"].includes(targetLayer?.semanticRole))
+            select.dataset.libraryValidationPanel = "definitions";
+        else delete select.dataset.libraryValidationPanel;
+        valid &&= !missing;
+    }
+    return valid;
+}
+
 function syncGeneratedCardLabel(form, inputCarouselIds, entries) {
     if (!inputCarouselIds.size) return;
     const selected = new Set(
@@ -949,12 +1014,18 @@ export async function openLibraryEntryEditor({
         onAction: async (action, overlay) => {
             if (action !== "save") return true;
             const form = overlay.querySelector("[data-library-admin-editor]");
+            validateRequiredRelationships(
+                form,
+                composer.layer,
+                schema,
+                i18n.t("gateway.study.library_validation_error"),
+            );
             if (
                 form.querySelector('[data-uploading="true"]') ||
                 !formController?.validateAll(true) ||
                 !form.checkValidity()
             ) {
-                form.reportValidity();
+                form.revealFirstInvalidField?.();
                 return false;
             }
             if (showComposerLimitViolation(form, composer.layer, schema, i18n))
@@ -1208,6 +1279,12 @@ export function bindAdminLibraryInteractions(
                     const form = overlay.querySelector(
                         "[data-library-admin-editor]",
                     );
+                    validateRequiredRelationships(
+                        form,
+                        composer.layer,
+                        schema,
+                        i18n.t("gateway.study.library_validation_error"),
+                    );
                     if (
                         form.querySelector('[data-uploading="true"]') ||
                         !formController?.validateAll(true) ||
@@ -1217,7 +1294,7 @@ export function bindAdminLibraryInteractions(
                             i18n.t("gateway.study.library_validation_error"),
                             { variant: "error" },
                         );
-                        form.reportValidity();
+                        form.revealFirstInvalidField?.();
                         return false;
                     }
                     if (

@@ -19,6 +19,7 @@ import {
     readFields,
     readReferenceGroups,
     readReferences,
+    validateRequiredRelationships,
 } from "./admin-interactions.js";
 import {
     definitionText,
@@ -40,6 +41,7 @@ import {
 } from "./composer-limits.js";
 import { bindComposerExtras, renderComposerExtras } from "./composer-extras.js";
 import { compositionTokenLabel } from "./composition-tokens.js";
+import { renderStrokePatternPreviews } from "./field-input.js";
 
 export async function chooseCreateLayer({
     schema,
@@ -171,7 +173,23 @@ export async function openCreateEntryPopup({
         "orderedLexicalSequence",
     ].includes(layer.semanticRole);
     const supportsRawInput = layer.semanticRole === "compoundWritingUnit";
-    const lookupActions = `<div class="library-composer-lookups" hidden>${lookupProviders.map((provider) => `<button class="btn-neutral" type="button" data-library-lookup-provider="${escapeHtml(provider.id)}">${escapeHtml(i18n.t("gateway.study.library_lookup_with").replace("{{ service }}", localizedLabel(provider.metadata, document.documentElement.lang) || provider.id))}</button>`).join("")}</div>`;
+    const strokeField = editingLayer.fields?.find(
+        ({ type }) => type === "strokePattern",
+    );
+    const strokeLookupProviders = strokeField
+        ? lookupProviders.filter(({ fields }) =>
+              fields?.includes(strokeField.id),
+          )
+        : [];
+    const generalLookupProviders = lookupProviders.filter(
+        (provider) => !strokeLookupProviders.includes(provider),
+    );
+    const lookupButton = (provider, focused = false) =>
+        `<button class="btn-neutral" type="button" data-library-lookup-provider="${escapeHtml(provider.id)}"${focused ? ` aria-label="${escapeHtml(`${i18n.t("ui.reuse.lookup")}: ${localizedLabel(provider.metadata, document.documentElement.lang) || provider.id}`)}"` : ""}>${escapeHtml(focused ? i18n.t("ui.reuse.lookup") : i18n.t("gateway.study.library_lookup_with").replace("{{ service }}", localizedLabel(provider.metadata, document.documentElement.lang) || provider.id))}</button>`;
+    const lookupActions = `<div class="library-composer-lookups" hidden>${generalLookupProviders.map((provider) => lookupButton(provider)).join("")}</div>`;
+    const strokeLookupActions = strokeLookupProviders
+        .map((provider) => lookupButton(provider, true))
+        .join("");
     const compositionInput = supportsTextComposition
         ? lookupActions
         : supportsRawInput
@@ -257,13 +275,20 @@ export async function openCreateEntryPopup({
                 "[data-library-admin-editor]",
             );
             activeForm?.compositionController?.validate();
+            validateRequiredRelationships(
+                activeForm,
+                editingLayer,
+                schema,
+                i18n.t("gateway.study.library_validation_error"),
+            );
             const invalidForm =
                 activeForm?.querySelector('[data-uploading="true"]') ||
-                !activeForm?.reportValidity();
+                !activeForm?.checkValidity();
             if (invalidForm) {
                 showToast(i18n.t("gateway.study.library_validation_error"), {
                     variant: "error",
                 });
+                activeForm?.revealFirstInvalidField?.();
                 return false;
             }
             const limitViolation = composerLimitViolation(
@@ -282,31 +307,6 @@ export async function openCreateEntryPopup({
                         ),
                     { variant: "error" },
                 );
-                return false;
-            }
-            const references = readReferences(
-                activeForm,
-                editingLayer,
-                activeForm.compositionOrder ?? [],
-            );
-            const referenceGroups = readReferenceGroups(activeForm);
-            const missingRequiredRelationship = (
-                editingLayer.relationships ?? []
-            ).some((relationship) => {
-                const count =
-                    references.filter(
-                        ({ relation }) => relation === relationship.id,
-                    ).length +
-                    (referenceGroups[relationship.id] ?? []).reduce(
-                        (total, group) => total + group.length,
-                        0,
-                    );
-                return count < (relationship.minimum ?? 0);
-            });
-            if (missingRequiredRelationship) {
-                showToast(i18n.t("gateway.study.library_validation_error"), {
-                    variant: "error",
-                });
                 return false;
             }
             return true;
@@ -424,6 +424,11 @@ export async function openCreateEntryPopup({
             );
             if (supportsRawInput) bindRawInput(form, i18n);
             bindLookupProviders(form, draft, i18n);
+            const strokeLookup = form.querySelector(
+                "[data-library-stroke-lookup]",
+            );
+            if (strokeLookup) strokeLookup.innerHTML = strokeLookupActions;
+            renderStrokePatternPreviews(form);
             form.querySelector(
                 "[data-library-add-definition]",
             )?.addEventListener("click", async () => {
@@ -682,6 +687,7 @@ function applyLookupFields(form, fields, draft) {
         if (!control) return;
         if (control.hasAttribute("data-library-provider-field")) {
             control.libraryFieldValue = value;
+            renderStrokePatternPreviews(form);
             return;
         }
         if (control instanceof RadioNodeList) {
@@ -730,86 +736,79 @@ function bindRawInput(form, _i18n) {
 }
 
 function bindLookupProviders(form, draft, i18n) {
-    form.querySelector(".library-composer-lookups")?.addEventListener(
-        "click",
-        async (event) => {
-            const button = event.target.closest(
-                "[data-library-lookup-provider]",
+    form.addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-library-lookup-provider]");
+        if (!button) return;
+        const input = form.querySelector("[data-library-composer-text]");
+        const label = input?.value.trim();
+        if (!label) return;
+        button.disabled = true;
+        try {
+            const [suggestion] = await fetchLibraryLookupSuggestions(
+                button.dataset.libraryLookupProvider,
+                { ...draft, label },
             );
-            if (!button) return;
-            const input = form.querySelector("[data-library-composer-text]");
-            const label = input?.value.trim();
-            if (!label) return;
-            button.disabled = true;
-            try {
-                const [suggestion] = await fetchLibraryLookupSuggestions(
-                    button.dataset.libraryLookupProvider,
-                    { ...draft, label },
-                );
-                if (!suggestion) {
-                    showToast(i18n.t("gateway.study.library_lookup_empty"), {
-                        variant: "info",
-                    });
-                    return;
-                }
-                const suggestedFields = { ...(suggestion.fields ?? {}) };
-                if (Object.keys(suggestion.referenceGroups ?? {}).length)
-                    delete suggestedFields.pronunciation;
-                applyLookupFields(form, suggestedFields, draft);
-                for (const reference of suggestion.references ?? []) {
-                    const item = form.querySelector(
-                        `[data-horizontal-carousel="${CSS.escape(reference.relation)}"] [data-carousel-value="${CSS.escape(reference.entryId)}"]`,
-                    );
-                    if (item && !item.classList.contains("is-selected"))
-                        item.click();
-                }
-                for (const [relation, groups] of Object.entries(
-                    suggestion.referenceGroups ?? {},
-                )) {
-                    for (const group of groups) {
-                        for (const reference of group) {
-                            const item = form.querySelector(
-                                `[data-horizontal-carousel="${CSS.escape(relation)}"] [data-carousel-value="${CSS.escape(reference.entryId)}"]`,
-                            );
-                            if (item && !item.classList.contains("is-selected"))
-                                item.click();
-                        }
-                        form.querySelector(
-                            `[data-library-composer-relationship="${CSS.escape(relation)}"]`,
-                        )
-                            ?.closest("fieldset")
-                            ?.querySelector(
-                                "[data-library-save-composed-value]",
-                            )
-                            ?.click();
-                    }
-                }
-                if (!input.hasAttribute("data-library-free-text")) {
-                    input.value = "";
-                    input.dispatchEvent(new Event("input", { bubbles: true }));
-                }
-                if (
-                    input.hasAttribute("data-library-free-text") ||
-                    suggestion.label ||
-                    !(suggestion.references ?? []).length
-                )
-                    form.elements.label.value = suggestion.label ?? label;
-                if (input.hasAttribute("data-library-free-text")) {
-                    input.dataset.lookupApproved = "true";
-                    input.setCustomValidity("");
-                }
-                showToast(i18n.t("gateway.study.library_lookup_applied"), {
-                    variant: "success",
+            if (!suggestion) {
+                showToast(i18n.t("gateway.study.library_lookup_empty"), {
+                    variant: "info",
                 });
-            } catch {
-                showToast(i18n.t("gateway.study.library_lookup_error"), {
-                    variant: "error",
-                });
-            } finally {
-                button.disabled = false;
+                return;
             }
-        },
-    );
+            const suggestedFields = { ...(suggestion.fields ?? {}) };
+            if (Object.keys(suggestion.referenceGroups ?? {}).length)
+                delete suggestedFields.pronunciation;
+            applyLookupFields(form, suggestedFields, draft);
+            for (const reference of suggestion.references ?? []) {
+                const item = form.querySelector(
+                    `[data-horizontal-carousel="${CSS.escape(reference.relation)}"] [data-carousel-value="${CSS.escape(reference.entryId)}"]`,
+                );
+                if (item && !item.classList.contains("is-selected"))
+                    item.click();
+            }
+            for (const [relation, groups] of Object.entries(
+                suggestion.referenceGroups ?? {},
+            )) {
+                for (const group of groups) {
+                    for (const reference of group) {
+                        const item = form.querySelector(
+                            `[data-horizontal-carousel="${CSS.escape(relation)}"] [data-carousel-value="${CSS.escape(reference.entryId)}"]`,
+                        );
+                        if (item && !item.classList.contains("is-selected"))
+                            item.click();
+                    }
+                    form.querySelector(
+                        `[data-library-composer-relationship="${CSS.escape(relation)}"]`,
+                    )
+                        ?.closest("fieldset")
+                        ?.querySelector("[data-library-save-composed-value]")
+                        ?.click();
+                }
+            }
+            if (!input.hasAttribute("data-library-free-text")) {
+                input.value = "";
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+            if (
+                input.hasAttribute("data-library-free-text") ||
+                suggestion.label ||
+                !(suggestion.references ?? []).length
+            )
+                form.elements.label.value = suggestion.label ?? label;
+            if (input.hasAttribute("data-library-free-text")) {
+                input.dataset.lookupApproved = "true";
+                input.setCustomValidity("");
+            }
+            showToast(i18n.t("gateway.study.library_lookup_applied"), {
+                variant: "success",
+            });
+        } catch {
+            showToast(i18n.t("gateway.study.library_lookup_error"), {
+                variant: "error",
+            });
+        } finally {
+            button.disabled = false;
+        }
+    });
 }
 
 function bindTextComposition(

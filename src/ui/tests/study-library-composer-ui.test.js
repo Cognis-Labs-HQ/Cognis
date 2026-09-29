@@ -72,6 +72,30 @@ test("Study Library composer exposes provider-owned raw-input lookup", () => {
     );
 });
 
+test("Study Library separates stroke lookup and renders a compact preview", () => {
+    for (const [content, pattern] of [
+        [createEntrySource, /strokeLookupProviders/],
+        [createEntrySource, /data-library-stroke-lookup/],
+        [adminInteractionsSource, /renderStrokePatternPreviews/],
+        [adminStylesheet, /\.library-stroke-pattern-preview/],
+        [adminStylesheet, /width:\s*4rem/],
+        [adminStylesheet, /height:\s*4rem/],
+    ])
+        assert.match(content, pattern);
+});
+
+test("Study Library validation reveals invalid fields across editor tabs", () => {
+    for (const pattern of [
+        /revealFirstInvalidField/,
+        /libraryValidationPanel/,
+        /library-editor-tab--required/,
+        /scrollIntoView/,
+        /validateRequiredRelationships/,
+    ])
+        assert.match(adminInteractionsSource, pattern);
+    assert.match(adminStylesheet, /\.library-editor-tab--required/);
+});
+
 test("Study Library selects newly created dependencies through the carousel", () => {
     assert.match(
         createEntrySource,
@@ -179,10 +203,9 @@ test("Study Library keeps staged-card deletion precise and validation recoverabl
         compositionStylesheet,
         /composition-input-item > \.btn-cancel[\s\S]*flex:\s*0 0 1rem;[\s\S]*width:\s*1rem;[\s\S]*height:\s*1rem;/,
     );
-    assert.match(createEntrySource, /missingRequiredRelationship/);
     assert.match(
         createEntrySource,
-        /missingRequiredRelationship[\s\S]*library_validation_error[\s\S]*return false/,
+        /validateRequiredRelationships[\s\S]*library_validation_error[\s\S]*revealFirstInvalidField/,
     );
 });
 

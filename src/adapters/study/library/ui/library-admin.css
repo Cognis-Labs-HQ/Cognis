@@ -275,6 +275,56 @@ body[data-theme="dark"] .library-quick-search-control img {
     color: var(--accent-2);
 }
 
+.library-editor-tabs button.library-editor-tab--required {
+    border-color: var(--color-danger-outline-text);
+    color: var(--color-danger-outline-text);
+}
+
+.library-editor-tabs button.library-editor-tab--required::after {
+    content: " *";
+    font-weight: 700;
+}
+
+.library-stroke-pattern {
+    display: grid;
+    grid-template-columns: 4rem minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: end;
+}
+
+.library-stroke-pattern h3 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font: inherit;
+}
+
+.library-stroke-pattern-preview {
+    width: 4rem;
+    height: 4rem;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-small, 0.45rem);
+    background:
+        linear-gradient(
+            to right,
+            transparent 49%,
+            var(--border) 50%,
+            transparent 51%
+        ),
+        linear-gradient(
+            to bottom,
+            transparent 49%,
+            var(--border) 50%,
+            transparent 51%
+        );
+}
+
+.library-stroke-pattern [data-library-stroke-lookup] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
 .library-editor-panel {
     display: grid;
     gap: 1rem;

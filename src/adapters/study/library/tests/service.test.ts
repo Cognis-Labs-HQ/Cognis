@@ -447,6 +447,7 @@ test("lookup providers are ranked and cleanly removable", async () => {
     const remove = library.registerLookupProvider({
         id: "dictionary",
         metadata: { labels: { en: "Test Dictionary" } },
+        fields: ["gloss"],
         supports: () => true,
         lookup: async ({ label }) => {
             lookupLabel = label;
@@ -470,6 +471,7 @@ test("lookup providers are ranked and cleanly removable", async () => {
             {
                 id: "dictionary",
                 metadata: { labels: { en: "Test Dictionary" } },
+                fields: ["gloss"],
             },
         ],
     );

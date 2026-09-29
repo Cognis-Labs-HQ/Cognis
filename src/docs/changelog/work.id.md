@@ -18,9 +18,14 @@ Input dan pelafalan kini memakai input token serta perenderan karosel yang sama 
 
 Kartu yang dibuat melalui kontrol tambah carousel kini kembali melalui alur pemilihan yang sama seperti kartu yang sudah ada, sehingga langsung ditambahkan ke tahap aktif. Bidang pelafalan karakter alternatif kini menyertakan carousel karakter atomiknya meskipun relasi penyedia menggunakan peran presentasi yang lebih umum.
 
+## Pencarian Guratan dan Validasi Terpandu
+
+Composer yang mendukung guratan kini menempatkan tindakan pencarian berbasis bidang di bawah judul khusus Pola Guratan dan menggambar data yang dimuat dalam pratinjau ringkas. Validasi relasi wajib kini menandai tab yang terdampak, membuka tab dengan bidang tidak valid paling awal, lalu memfokuskan bidang atau tindakan definisi yang perlu diperbaiki.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
 - [db0728af](https://github.com/Cognis-Labs-HQ/Cognis/commit/db0728af)
 - [9c77e48f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c77e48f)
 - [41d895c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/41d895c6)
+- [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)

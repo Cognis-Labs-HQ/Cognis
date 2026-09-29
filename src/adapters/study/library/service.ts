@@ -143,14 +143,19 @@ export class LibraryService implements LibraryCapability {
         schemaId: string;
         schemaVersion?: number;
         layer: string;
-    }): Array<{ id: string; metadata: LibraryMetadata }> {
+    }): Array<{
+        id: string;
+        metadata: LibraryMetadata;
+        fields?: readonly string[];
+    }> {
         const schema = this.schema(input.schemaId, input.schemaVersion);
         const layer = findLayer(schema, input.layer);
         return Array.from(this.lookupProviders.values())
             .filter((provider) => provider.supports(schema, layer))
-            .map(({ id, metadata }) => ({
+            .map(({ id, metadata, fields }) => ({
                 id,
                 metadata: structuredClone(metadata),
+                ...(fields?.length ? { fields: [...fields] } : {}),
             }));
     }
     registerFormContribution(

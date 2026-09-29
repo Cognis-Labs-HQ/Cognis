@@ -18,9 +18,14 @@ Input and pronunciation now use the same reusable token input and carousel rende
 
 Cards created from a carousel’s add control now return through the same selection path as existing cards, so they are immediately added to the active stage. Alternate-character pronunciation fields now include their atomic-character carousel even when the provider relationship uses a broader presentation role.
 
+## Stroke Lookup and Guided Validation
+
+Stroke-capable composers now place field-aware lookup actions under a dedicated Stroke Pattern heading and draw loaded data in a compact preview. Required relationship validation now marks affected tabs, opens the tab containing the earliest invalid field, and focuses the field or definition action that needs attention.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
 - [db0728af](https://github.com/Cognis-Labs-HQ/Cognis/commit/db0728af)
 - [9c77e48f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c77e48f)
 - [41d895c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/41d895c6)
+- [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)

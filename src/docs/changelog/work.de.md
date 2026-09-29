@@ -18,9 +18,14 @@ Eingabe und Aussprache verwenden jetzt dieselbe wiederverwendbare Token-Eingabe 
 
 Karten, die über die Hinzufügen-Steuerung eines Karussells erstellt werden, durchlaufen nun denselben Auswahlpfad wie bestehende Karten und werden sofort der aktiven Kompositionsfläche hinzugefügt. Aussprachefelder für alternative Zeichen enthalten nun auch dann ihr Karussell für atomare Zeichen, wenn die Anbieterbeziehung eine allgemeinere Darstellungsrolle verwendet.
 
+## Strichsuche und geführte Validierung
+
+Composer mit Strichunterstützung platzieren feldbezogene Nachschlageaktionen nun unter einer eigenen Überschrift für Strichmuster und zeichnen geladene Daten in einer kompakten Vorschau. Die Validierung erforderlicher Beziehungen kennzeichnet betroffene Reiter, öffnet den Reiter mit dem ersten ungültigen Feld und fokussiert das Feld oder die Definitionsaktion, die Aufmerksamkeit benötigt.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
 - [db0728af](https://github.com/Cognis-Labs-HQ/Cognis/commit/db0728af)
 - [9c77e48f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c77e48f)
 - [41d895c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/41d895c6)
+- [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)

@@ -321,6 +321,8 @@ export interface LibraryLookupProposal {
 export interface LibraryLookupProvider {
     id: string;
     metadata: LibraryMetadata;
+    /** Field IDs this provider can populate, used to place focused lookup actions. */
+    fields?: readonly string[];
     supports(schema: LibrarySchema, layer: LibraryLayerSchema): boolean;
     lookup(input: {
         schema: LibrarySchema;
