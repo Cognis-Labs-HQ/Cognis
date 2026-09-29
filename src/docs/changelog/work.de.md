@@ -22,6 +22,10 @@ Karten, die über die Hinzufügen-Steuerung eines Karussells erstellt werden, du
 
 Composer mit Strichunterstützung platzieren feldbezogene Nachschlageaktionen nun unter einer eigenen Überschrift für Strichmuster und zeichnen geladene Daten in einer kompakten Vorschau. Die Validierung erforderlicher Beziehungen kennzeichnet betroffene Reiter, öffnet den Reiter mit dem ersten ungültigen Feld und fokussiert das Feld oder die Definitionsaktion, die Aufmerksamkeit benötigt.
 
+## Ausgerichtete Popup-Titeldetails
+
+Popup-Definitionen tragen keinen vorangestellten Gedankenstrich mehr. Aussprache- und Definitionsgruppen teilen nun die primäre Titelzeile und sind vertikal am Kartentitel zentriert.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -29,3 +33,4 @@ Composer mit Strichunterstützung platzieren feldbezogene Nachschlageaktionen nu
 - [9c77e48f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c77e48f)
 - [41d895c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/41d895c6)
 - [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)
+- [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)

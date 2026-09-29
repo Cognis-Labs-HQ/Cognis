@@ -204,15 +204,10 @@ export function popupTitleDetailItems(
         sourceDefinition,
     );
     if (visibleDefinition) {
-        items.push(
-            ...(items.length
-                ? [{ label: " — ", placement: "definition" }]
-                : []),
-            {
-                label: visibleDefinition,
-                placement: "definition",
-            },
-        );
+        items.push({
+            label: visibleDefinition,
+            placement: "definition",
+        });
     }
     return items;
 }

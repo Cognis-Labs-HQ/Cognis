@@ -75,6 +75,22 @@ test("Study Library bounds status and gives readings and definitions room", () =
     );
 });
 
+test("Study Library centers popup readings and definitions without a dash", () => {
+    assert.match(
+        stylesheet,
+        /\[data-popup-title-placement="reading"\][\s\S]*grid-row:\s*1;/,
+    );
+    assert.match(
+        stylesheet,
+        /\[data-popup-title-placement="definition"\][\s\S]*grid-row:\s*1;/,
+    );
+    assert.match(
+        stylesheet,
+        /\[data-popup-title-placement="reading"\],[\s\S]*\[data-popup-title-placement="definition"\][\s\S]*align-self:\s*center;/,
+    );
+    assert.doesNotMatch(source, /label:\s*" — "/);
+});
+
 test("Study Library popup sequencing excludes hidden and placed cards", () => {
     assert.match(source, /const active = layerEntries\.filter/);
     assert.match(source, /!placements\.has\(entry\.id\)/);

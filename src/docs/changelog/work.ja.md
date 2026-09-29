@@ -22,6 +22,10 @@
 
 画データに対応するコンポーザーでは、フィールド対応の検索操作を専用の画パターン見出しの下へ配置し、読み込んだデータを小さなプレビューに描画します。必須関係の検証では、該当するタブを強調し、最初の無効フィールドを含むタブを開いて、修正が必要なフィールドまたは定義操作へフォーカスを移します。
 
+## ポップアップ題名の整列
+
+ポップアップの定義から先頭のダッシュを削除しました。発音グループと定義グループは主タイトル行を共有し、カードタイトルに対して垂直方向の中央を揃えます。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -29,3 +33,4 @@
 - [9c77e48f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c77e48f)
 - [41d895c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/41d895c6)
 - [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)
+- [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)

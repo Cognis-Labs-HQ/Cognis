@@ -832,15 +832,15 @@ body[data-theme="dark"] .library-audio {
 }
 .library-entry-popup--composite [data-popup-title-placement="reading"] {
     grid-column: 3;
-    grid-row: 1 / 3;
+    grid-row: 1;
 }
 .library-entry-popup--composite [data-popup-title-placement="definition"] {
     grid-column: 4;
-    grid-row: 1 / 3;
+    grid-row: 1;
 }
 .library-entry-popup--composite [data-popup-title-placement="reading"],
 .library-entry-popup--composite [data-popup-title-placement="definition"] {
-    align-self: start;
+    align-self: center;
     max-width: 100%;
     overflow: visible;
     line-height: 1.35;

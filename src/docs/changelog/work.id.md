@@ -22,6 +22,10 @@ Kartu yang dibuat melalui kontrol tambah carousel kini kembali melalui alur pemi
 
 Composer yang mendukung guratan kini menempatkan tindakan pencarian berbasis bidang di bawah judul khusus Pola Guratan dan menggambar data yang dimuat dalam pratinjau ringkas. Validasi relasi wajib kini menandai tab yang terdampak, membuka tab dengan bidang tidak valid paling awal, lalu memfokuskan bidang atau tindakan definisi yang perlu diperbaiki.
 
+## Detail Judul Popup Selaras
+
+Definisi popup tidak lagi memakai awalan tanda pisah panjang. Kelompok pelafalan dan definisi kini berbagi baris judul utama dan disejajarkan secara vertikal dengan judul kartu.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -29,3 +33,4 @@ Composer yang mendukung guratan kini menempatkan tindakan pencarian berbasis bid
 - [9c77e48f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c77e48f)
 - [41d895c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/41d895c6)
 - [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)
+- [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)

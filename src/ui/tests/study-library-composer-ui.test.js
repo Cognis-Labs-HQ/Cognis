@@ -211,7 +211,7 @@ test("Study Library keeps staged-card deletion precise and validation recoverabl
 
 test("Study Library arranges dense title details and limits composer collections", () => {
     assert.match(popupTitleSource, /const placement = "reading"/);
-    assert.match(popupTitleSource, /label: " — "/);
+    assert.doesNotMatch(popupTitleSource, /label: " — "/);
     assert.match(popupTitleSource, /placement: "definition"/);
     assert.match(
         libraryStylesheet,
