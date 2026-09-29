@@ -26,6 +26,10 @@ Stroke-capable composers now place field-aware lookup actions under a dedicated 
 
 Popup definitions no longer carry a leading em dash. Pronunciation and definition groups now share the primary title row and are vertically centered against the card title.
 
+## Accurate Composer Requirements
+
+Definition requirements now mark the Definitions tab and add action, while invalid pronunciation fields identify themselves directly. Tabs retain their normal color and show only a red asterisk. Alternate characters may omit definitions and now load all non-definition pronunciation relationships. Stroke and dictionary lookup providers declare neutral capabilities for correct placement and per-layer dictionary opt-out. Tags now appear last in Content forms.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -34,3 +38,4 @@ Popup definitions no longer carry a leading em dash. Pronunciation and definitio
 - [41d895c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/41d895c6)
 - [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)
 - [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)
+- [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)

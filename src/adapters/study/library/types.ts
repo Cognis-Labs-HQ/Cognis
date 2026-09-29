@@ -194,6 +194,8 @@ export interface LibraryLayerSchema {
     displayDefinition?: boolean;
     /** Render entry cards using only their primary display content. */
     minimal?: boolean;
+    /** Suppress lookup providers that advertise dictionary capability. */
+    dictionary_lookup?: boolean;
     definitionLocalization?: {
         /** Module-owned prefix used to generate a stable key for each definition. */
         stringKeyPrefix: string;
@@ -323,6 +325,7 @@ export interface LibraryLookupProvider {
     metadata: LibraryMetadata;
     /** Field IDs this provider can populate, used to place focused lookup actions. */
     fields?: readonly string[];
+    capabilities?: readonly ("dictionary" | "strokePattern")[];
     supports(schema: LibrarySchema, layer: LibraryLayerSchema): boolean;
     lookup(input: {
         schema: LibrarySchema;

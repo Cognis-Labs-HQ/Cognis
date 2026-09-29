@@ -51,9 +51,13 @@ export function resolveComposerContract(schema, layer, constructor) {
     if (layer?.semanticRole === "compoundWritingUnit") {
         inputCarouselLayers.clear();
         pronunciationCarouselLayers.clear();
-        layerIdsForRoles("atomicWritingUnit").forEach((id) =>
-            pronunciationCarouselLayers.add(id),
-        );
+        for (const relationship of layer.relationships ?? []) {
+            const target = schema?.layers?.find(
+                ({ id }) => id === relationship.targetLayer,
+            );
+            if (!["definition", "meaning"].includes(target?.semanticRole))
+                pronunciationCarouselLayers.add(relationship.targetLayer);
+        }
     } else if (layer?.semanticRole === "lexicalUnit") {
         inputCarouselLayers.clear();
         pronunciationCarouselLayers.clear();
@@ -106,8 +110,7 @@ export function resolveComposerContract(schema, layer, constructor) {
         const configuredForPronunciation =
             pronunciationCarouselLayers.has(relationship.targetLayer) &&
             (relationship.presentationRole === "pronunciation" ||
-                (layer?.semanticRole === "compoundWritingUnit" &&
-                    targetLayer?.semanticRole === "atomicWritingUnit"));
+                layer?.semanticRole === "compoundWritingUnit");
         const configuredForInput =
             relationship.presentationRole !== "pronunciation" &&
             inputCarouselLayers.has(relationship.targetLayer);

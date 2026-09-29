@@ -379,6 +379,11 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
         layerIds.add(layer.id);
     }
     for (const layer of schema.layers) {
+        if (
+            layer.dictionary_lookup !== undefined &&
+            typeof layer.dictionary_lookup !== "boolean"
+        )
+            throw new Error("invalid_dictionary_lookup");
         const fieldIds = new Set<string>();
         for (const field of layer.fields ?? []) validateField(field, fieldIds);
         validateFilterGroups(layer.fields ?? []);

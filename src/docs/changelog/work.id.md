@@ -26,6 +26,10 @@ Composer yang mendukung guratan kini menempatkan tindakan pencarian berbasis bid
 
 Definisi popup tidak lagi memakai awalan tanda pisah panjang. Kelompok pelafalan dan definisi kini berbagi baris judul utama dan disejajarkan secara vertikal dengan judul kartu.
 
+## Persyaratan Composer Akurat
+
+Persyaratan definisi kini menandai tab Definisi dan tindakan tambah, sedangkan bidang pelafalan yang tidak valid menandai dirinya langsung. Tab mempertahankan warna normal dan hanya menampilkan tanda bintang merah. Karakter alternatif boleh tanpa definisi dan kini memuat semua relasi pelafalan non-definisi. Penyedia pencarian guratan dan kamus mendeklarasikan kapabilitas netral untuk penempatan yang tepat serta pilihan keluar kamus per lapisan. Tag kini tampil terakhir pada formulir Konten.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -34,3 +38,4 @@ Definisi popup tidak lagi memakai awalan tanda pisah panjang. Kelompok pelafalan
 - [41d895c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/41d895c6)
 - [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)
 - [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)
+- [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)

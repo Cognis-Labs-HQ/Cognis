@@ -176,12 +176,19 @@ export async function openCreateEntryPopup({
     const strokeField = editingLayer.fields?.find(
         ({ type }) => type === "strokePattern",
     );
+    const enabledLookupProviders = lookupProviders.filter(
+        ({ capabilities }) =>
+            layer.dictionary_lookup !== false ||
+            !capabilities?.includes("dictionary"),
+    );
     const strokeLookupProviders = strokeField
-        ? lookupProviders.filter(({ fields }) =>
-              fields?.includes(strokeField.id),
+        ? enabledLookupProviders.filter(
+              ({ fields, capabilities }) =>
+                  fields?.includes(strokeField.id) ||
+                  capabilities?.includes("strokePattern"),
           )
         : [];
-    const generalLookupProviders = lookupProviders.filter(
+    const generalLookupProviders = enabledLookupProviders.filter(
         (provider) => !strokeLookupProviders.includes(provider),
     );
     const lookupButton = (provider, focused = false) =>

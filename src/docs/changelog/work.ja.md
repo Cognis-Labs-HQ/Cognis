@@ -26,6 +26,10 @@
 
 ポップアップの定義から先頭のダッシュを削除しました。発音グループと定義グループは主タイトル行を共有し、カードタイトルに対して垂直方向の中央を揃えます。
 
+## 正確なコンポーザー必須表示
+
+定義の必須条件は定義タブと追加操作を強調し、無効な発音フィールドはフィールド自体を明示するようになりました。タブの通常色は維持され、赤いアスタリスクだけが表示されます。代替文字では定義を省略でき、定義以外のすべての発音関係を読み込みます。画検索と辞書検索のプロバイダーは中立的な機能を宣言し、正しい配置とレイヤー単位の辞書無効化に対応します。タグはコンテンツフォームの末尾に表示されます。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -34,3 +38,4 @@
 - [41d895c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/41d895c6)
 - [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)
 - [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)
+- [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)

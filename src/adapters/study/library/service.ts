@@ -147,15 +147,19 @@ export class LibraryService implements LibraryCapability {
         id: string;
         metadata: LibraryMetadata;
         fields?: readonly string[];
+        capabilities?: readonly ("dictionary" | "strokePattern")[];
     }> {
         const schema = this.schema(input.schemaId, input.schemaVersion);
         const layer = findLayer(schema, input.layer);
         return Array.from(this.lookupProviders.values())
             .filter((provider) => provider.supports(schema, layer))
-            .map(({ id, metadata, fields }) => ({
+            .map(({ id, metadata, fields, capabilities }) => ({
                 id,
                 metadata: structuredClone(metadata),
                 ...(fields?.length ? { fields: [...fields] } : {}),
+                ...(capabilities?.length
+                    ? { capabilities: [...capabilities] }
+                    : {}),
             }));
     }
     registerFormContribution(

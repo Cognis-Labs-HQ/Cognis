@@ -26,6 +26,10 @@ Composer mit Strichunterstützung platzieren feldbezogene Nachschlageaktionen nu
 
 Popup-Definitionen tragen keinen vorangestellten Gedankenstrich mehr. Aussprache- und Definitionsgruppen teilen nun die primäre Titelzeile und sind vertikal am Kartentitel zentriert.
 
+## Präzise Composer-Pflichten
+
+Definitionspflichten kennzeichnen nun den Reiter Definitionen und die Hinzufügen-Aktion, während ungültige Aussprachefelder sich direkt ausweisen. Reiter behalten ihre normale Farbe und zeigen nur ein rotes Sternchen. Alternative Zeichen dürfen Definitionen auslassen und laden nun alle Aussprachebeziehungen außerhalb von Definitionen. Anbieter für Strich- und Wörterbuchsuche deklarieren neutrale Fähigkeiten für korrekte Platzierung und schichtweise Wörterbuch-Abwahl. Schlagwörter stehen nun zuletzt in Inhaltsformularen.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -34,3 +38,4 @@ Popup-Definitionen tragen keinen vorangestellten Gedankenstrich mehr. Aussprache
 - [41d895c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/41d895c6)
 - [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)
 - [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)
+- [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)

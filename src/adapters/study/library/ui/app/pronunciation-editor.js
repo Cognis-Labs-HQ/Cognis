@@ -472,6 +472,6 @@ export function pronunciationRelationshipsFor(layer, schema, configuredIds) {
     if (layer?.semanticRole !== "compoundWritingUnit") return [];
     return configured.filter(({ targetLayer }) => {
         const target = schema?.layers?.find(({ id }) => id === targetLayer);
-        return target?.semanticRole === "atomicWritingUnit";
+        return !["definition", "meaning"].includes(target?.semanticRole);
     });
 }

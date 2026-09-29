@@ -75,6 +75,8 @@ test("Study Library composer exposes provider-owned raw-input lookup", () => {
 test("Study Library separates stroke lookup and renders a compact preview", () => {
     for (const [content, pattern] of [
         [createEntrySource, /strokeLookupProviders/],
+        [createEntrySource, /capabilities\?\.includes\("strokePattern"\)/],
+        [createEntrySource, /dictionary_lookup !== false/],
         [createEntrySource, /data-library-stroke-lookup/],
         [adminInteractionsSource, /renderStrokePatternPreviews/],
         [adminStylesheet, /\.library-stroke-pattern-preview/],
@@ -94,6 +96,20 @@ test("Study Library validation reveals invalid fields across editor tabs", () =>
     ])
         assert.match(adminInteractionsSource, pattern);
     assert.match(adminStylesheet, /\.library-editor-tab--required/);
+    assert.match(
+        adminStylesheet,
+        /library-editor-tab--required::after[\s\S]*color:\s*var\(--color-danger-outline-text\)/,
+    );
+    assert.match(adminStylesheet, /library-definition-add--required/);
+    assert.match(
+        adminStylesheet,
+        /library-pronunciation-selector:has\(:invalid\)[\s\S]*color:\s*var\(--color-danger-outline-text\)/,
+    );
+    assert.doesNotMatch(
+        adminStylesheet,
+        /button\.library-editor-tab--required\s*\{[^}]+color:/,
+    );
+    assert.match(adminInteractionsSource, /\$\{tagsField\}<\/section>/);
 });
 
 test("Study Library selects newly created dependencies through the carousel", () => {
@@ -110,7 +126,7 @@ test("Study Library selects newly created dependencies through the carousel", ()
 test("alternate-character pronunciation includes atomic character relationships", () => {
     assert.match(
         composerContractSource,
-        /layer\?\.semanticRole === "compoundWritingUnit"[\s\S]*?targetLayer\?\.semanticRole === "atomicWritingUnit"/,
+        /layer\?\.semanticRole === "compoundWritingUnit"[\s\S]*?\["definition", "meaning"\]/,
     );
 });
 

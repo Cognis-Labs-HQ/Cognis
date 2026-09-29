@@ -1090,3 +1090,28 @@ test("lexical and composite layers derive rather than own stroke patterns", () =
         );
     }
 });
+
+test("layers accept only boolean dictionary lookup opt-outs", () => {
+    assert.doesNotThrow(() =>
+        validateLibrarySchema({
+            ...english,
+            layers: english.layers.map((layer) => ({
+                ...layer,
+                dictionary_lookup: false,
+            })),
+        }),
+    );
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...english,
+                layers: english.layers.map((layer, index) => ({
+                    ...layer,
+                    ...(index === 0
+                        ? { dictionary_lookup: "false" as never }
+                        : {}),
+                })),
+            }),
+        /invalid_dictionary_lookup/,
+    );
+});
