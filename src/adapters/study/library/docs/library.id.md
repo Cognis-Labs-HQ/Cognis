@@ -277,3 +277,5 @@ Penyedia menandai bentuk dasar verba dan adverbia dengan `verb` atau `adverb`, l
     ]
 }
 ```
+
+Tag transisi kalimat kini dikeluarkan dari karusel masukan biasa sekaligus halaman kosakata, sehingga karusel komposer terfilternya benar-benar terpisah. Komposer pengeditan merekonstruksi token tanda baca berulang dari label kalimat tersimpan dan referensi berurutan. Pohon transformasi kini memiliki simpul yang dapat dijalankan: memilih bentuk hasil memperbarui pratinjau jalur, sementara kartu bentuk dasar tetap menjadi entri kanonis yang disimpan. Validasi kontrak menolak literal tanda baca duplikat, set transformasi kosong, transisi keadaan duplikat, dan aturan tanpa perubahan.

@@ -1,17 +1,6 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { localizedLabel } from "./presentation.js";
-
-const LITERAL_PREFIX = "literal:";
-
-export function literalCompositionToken(value) {
-    return `${LITERAL_PREFIX}${encodeURIComponent(value)}`;
-}
-
-export function compositionTokenLabel(token, entries) {
-    if (token.startsWith(LITERAL_PREFIX))
-        return decodeURIComponent(token.slice(LITERAL_PREFIX.length));
-    return entries.find(({ id }) => id === token)?.label ?? "";
-}
+import { literalCompositionToken } from "./composition-tokens.js";
 
 export function renderComposerExtras(constructor, layer, entries, schema) {
     const tagCarousels = (constructor.tag_carousels ?? []).map((carousel) => {

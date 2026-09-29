@@ -37,11 +37,8 @@ import {
     composerLimitViolation,
     LIBRARY_COMPOSER_LIMITS,
 } from "./composer-limits.js";
-import {
-    bindComposerExtras,
-    compositionTokenLabel,
-    renderComposerExtras,
-} from "./composer-extras.js";
+import { bindComposerExtras, renderComposerExtras } from "./composer-extras.js";
+import { compositionTokenLabel } from "./composition-tokens.js";
 
 export async function chooseCreateLayer({
     schema,
@@ -214,6 +211,7 @@ export async function openCreateEntryPopup({
             inlinePronunciationCarousel: true,
             inputCarouselIds,
             pronunciationCarouselLayers,
+            tagCarousels: constructor.tag_carousels,
             generatedLabel: supportsTextComposition || supportsRawInput,
             persistentExtra: true,
             allowDefinitionCreate: layer.semanticRole !== "definition",

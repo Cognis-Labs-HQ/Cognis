@@ -26,11 +26,11 @@ import {
     composerLimitViolation,
     LIBRARY_COMPOSER_LIMITS,
 } from "./composer-limits.js";
+import { bindComposerExtras, renderComposerExtras } from "./composer-extras.js";
 import {
-    bindComposerExtras,
     compositionTokenLabel,
-    renderComposerExtras,
-} from "./composer-extras.js";
+    restoreCompositionTokens,
+} from "./composition-tokens.js";
 
 export { inputForField } from "./field-input.js";
 import { inputForField } from "./field-input.js";
@@ -184,6 +184,7 @@ function relationshipEditor(
         addLabel = "Add",
         allowAdd = true,
         ordersPronunciation = false,
+        excludedTags = new Set(),
     } = {},
 ) {
     const targetLayer = schema.layers.find(
@@ -234,7 +235,9 @@ function relationshipEditor(
             candidate.id !== entry.id,
     );
     const visibleTargets = availableTargets.filter(
-        (candidate) => candidate.hidden !== true,
+        (candidate) =>
+            candidate.hidden !== true &&
+            !(candidate.tags ?? []).some((tag) => excludedTags.has(tag)),
     );
     const previewFor = (target) => {
         const definition = (target.references ?? [])
@@ -414,6 +417,14 @@ export function editorBody(
                         !carouselEligible,
                     addLabel: i18n.t("gateway.study.library_create"),
                     allowAdd: options.relationshipCarouselAdd !== false,
+                    excludedTags: new Set(
+                        (options.tagCarousels ?? [])
+                            .filter(
+                                (carousel) =>
+                                    carousel.relationship === relationship.id,
+                            )
+                            .map(({ tag }) => tag),
+                    ),
                 },
             );
         })
@@ -694,6 +705,7 @@ export async function openLibraryEntryEditor({
             inlinePronunciationCarousel: true,
             inputCarouselIds: composer.inputCarouselIds,
             pronunciationCarouselLayers: composer.pronunciationCarouselLayers,
+            tagCarousels: composer.constructor.tag_carousels,
             editingLayer: composer.layer,
             persistentExtra: true,
         },
@@ -727,17 +739,12 @@ export async function openLibraryEntryEditor({
                     composer.pronunciationCarouselLayers,
                 ).map(({ id }) => id),
             );
-            form.compositionOrder = (entry.references ?? [])
-                .filter(
-                    ({ relation }) =>
-                        !pronunciationRelationshipIds.has(relation),
-                )
-                .toSorted(
-                    (left, right) =>
-                        (left.position ?? Number.MAX_SAFE_INTEGER) -
-                        (right.position ?? Number.MAX_SAFE_INTEGER),
-                )
-                .map(({ entryId }) => entryId);
+            form.compositionOrder = restoreCompositionTokens(
+                entry,
+                entries,
+                composer.constructor,
+                composer.inputCarouselIds,
+            );
             form.referenceGroups = structuredClone(entry.referenceGroups ?? {});
             bindComposerExtras(form, () =>
                 syncGeneratedCardLabel(
@@ -922,6 +929,7 @@ export function bindAdminLibraryInteractions(
                     inputCarouselIds: composer.inputCarouselIds,
                     pronunciationCarouselLayers:
                         composer.pronunciationCarouselLayers,
+                    tagCarousels: composer.constructor.tag_carousels,
                     editingLayer: composer.layer,
                     persistentExtra: !readOnly,
                 },
@@ -983,17 +991,12 @@ export function bindAdminLibraryInteractions(
                                 composer.pronunciationCarouselLayers,
                             ).map(({ id }) => id),
                         );
-                        form.compositionOrder = (entry.references ?? [])
-                            .filter(
-                                ({ relation }) =>
-                                    !pronunciationRelationshipIds.has(relation),
-                            )
-                            .toSorted(
-                                (left, right) =>
-                                    (left.position ?? Number.MAX_SAFE_INTEGER) -
-                                    (right.position ?? Number.MAX_SAFE_INTEGER),
-                            )
-                            .map(({ entryId }) => entryId);
+                        form.compositionOrder = restoreCompositionTokens(
+                            entry,
+                            entries,
+                            composer.constructor,
+                            composer.inputCarouselIds,
+                        );
                         form.referenceGroups = structuredClone(
                             entry.referenceGroups ?? {},
                         );

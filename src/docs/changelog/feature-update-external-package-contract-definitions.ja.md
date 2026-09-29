@@ -418,6 +418,10 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 
 言語プロバイダーは文の接続表現にプロバイダー所有のタグを付け、文専用のフィルター済みカルーセルで提供できます。繰り返し使える句読点は 1 行の読み取り専用カルーセルに表示されます。タグで絞り込むレイヤービューは動詞と副詞を通常の語彙ページから分離し、ウィジェット幅いっぱいの変形ツリーページに移します。スキーマの宣言的な変形セットは、すべての活用をカード化せず、基本形カードから接尾辞ベースの状態経路を生成します。
 
+## 成熟した文構成・変形ワークフロー
+
+文の接続表現カードは専用のフィルター済みコンポーザーカルーセルだけに表示され、編集時には繰り返し句読点が作成順に復元されます。変形ノードは生成形のインラインプレビューを更新します。スキーマ検証では、曖昧または無効な句読点・変形宣言も拒否します。
+
 ## コミット
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -525,3 +529,4 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 - [bdd1961e](https://github.com/Cognis-Labs-HQ/Cognis/commit/bdd1961e)
 - [e397588c](https://github.com/Cognis-Labs-HQ/Cognis/commit/e397588c)
 - [21e3d8ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/21e3d8ae)
+- [fd2d93e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fd2d93e)

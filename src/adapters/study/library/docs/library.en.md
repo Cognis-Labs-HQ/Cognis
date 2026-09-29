@@ -289,3 +289,5 @@ Providers tag base-form verbs and adverbs with `verb` or `adverb` and declare a 
     ]
 }
 ```
+
+Sentence transition tags are now excluded from the ordinary input carousel as well as the vocabulary page, so their filtered composer carousel is genuinely separate. Edit composers reconstruct repeatable punctuation tokens from the stored sentence label and ordered references. Transformation trees now expose actionable nodes: selecting a generated form updates the pathway preview, while the base card remains the canonical stored entry. Contract validation rejects duplicate punctuation literals, empty transform sets, duplicate state transitions, and no-op rules.

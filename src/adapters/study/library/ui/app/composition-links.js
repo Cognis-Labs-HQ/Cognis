@@ -1,7 +1,5 @@
 /** Resolve complete labels into links to their canonical Library writing units. */
 
-import { pronunciationValues } from "./presentation.js";
-
 function composableLayerIds(entry, schemas) {
     const schema = schemas.find(({ id }) => id === entry.schemaId);
     return new Set(
@@ -13,6 +11,17 @@ function composableLayerIds(entry, schemas) {
                     semanticRole === "lexicalUnit",
             )
             .map(({ id }) => id),
+    );
+}
+
+function pronunciationValues(entry) {
+    const pronunciation = entry.fields?.pronunciation;
+    if (!pronunciation) return [];
+    return (Array.isArray(pronunciation) ? pronunciation : [pronunciation]).map(
+        (value) =>
+            Array.isArray(value)
+                ? value.flat(Infinity).map(String).join("")
+                : String(value),
     );
 }
 

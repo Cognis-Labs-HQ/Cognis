@@ -418,6 +418,10 @@ Cabang anak karakter yang diperluas kini menguji posisi diagonal di kedua sisi k
 
 Penyedia bahasa dapat menandai transisi kalimat dengan tag milik penyedia dan menampilkannya melalui karusel terfilter khusus kalimat, sedangkan tanda baca berulang memakai karusel satu baris yang hanya dapat dibaca. Tampilan lapisan terfilter tag memindahkan verba dan adverbia dari halaman kosakata biasa ke halaman pohon transformasi selebar widget. Set transformasi deklaratif pada skema menghasilkan jalur keadaan berbasis sufiks dari kartu bentuk dasar tanpa membuat setiap infleksi sebagai kartu.
 
+## Alur kalimat dan transformasi yang matang
+
+Kartu transisi kalimat kini hanya muncul dalam karusel komposer terfilternya, pengeditan memulihkan tanda baca berulang sesuai urutan penulisan, dan simpul transformasi memperbarui pratinjau bentuk hasil secara langsung. Validasi skema juga menolak deklarasi tanda baca dan transformasi yang ambigu atau tidak efektif.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -525,3 +529,4 @@ Penyedia bahasa dapat menandai transisi kalimat dengan tag milik penyedia dan me
 - [bdd1961e](https://github.com/Cognis-Labs-HQ/Cognis/commit/bdd1961e)
 - [e397588c](https://github.com/Cognis-Labs-HQ/Cognis/commit/e397588c)
 - [21e3d8ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/21e3d8ae)
+- [fd2d93e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fd2d93e)

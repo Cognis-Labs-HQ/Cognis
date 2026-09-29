@@ -141,10 +141,7 @@ test("Study Library links pronunciations through ordered relationship aliases", 
 test("Study Library numbers composed carousel selections holistically", () => {
     assert.match(source, /selectionOrder: \(\{ id, value, localIndex \}\)/);
     assert.match(source, /form\.compositionOrder\.indexOf\(value\)/);
-    assert.match(
-        source,
-        /form\.compositionOrder = \(entry\.references \?\? \[\]\)/,
-    );
+    assert.match(source, /restoreCompositionTokens\(/);
     assert.match(source, /readReferences\([\s\S]*form\.compositionOrder/);
 });
 

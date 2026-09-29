@@ -213,19 +213,19 @@ test("grouped relationships preserve separate pronunciation sequences", () => {
             },
         },
     ];
-    const a = entry("letter:a", "a");
+    const letterA = entry("letter:a", "a");
     const y = entry("letter:y", "y");
     const targets = new Map([
-        [a.id, a],
+        [letterA.id, letterA],
         [y.id, y],
     ]);
     const groups = {
         letters: [
             [
-                { entryId: a.id, relation: "letters", position: 0 },
+                { entryId: letterA.id, relation: "letters", position: 0 },
                 { entryId: y.id, relation: "letters", position: 1 },
             ],
-            [{ entryId: a.id, relation: "letters", position: 0 }],
+            [{ entryId: letterA.id, relation: "letters", position: 0 }],
         ],
     };
 
@@ -240,7 +240,7 @@ test("grouped relationships preserve separate pronunciation sequences", () => {
             validateReferences(
                 schema,
                 "words",
-                [{ entryId: a.id, relation: "letters", position: 0 }],
+                [{ entryId: letterA.id, relation: "letters", position: 0 }],
                 targets,
                 groups,
             ),
@@ -268,10 +268,10 @@ test("one pronunciation group may span multiple linked relationships", () => {
             },
         },
     ];
-    const a = entry("letter:a", "a");
+    const letterA = entry("letter:a", "a");
     const y = entry("letter:y", "y");
     const targets = new Map([
-        [a.id, a],
+        [letterA.id, letterA],
         [y.id, y],
     ]);
 
@@ -283,7 +283,13 @@ test("one pronunciation group may span multiple linked relationships", () => {
             targets,
             {
                 letters: [
-                    [{ entryId: a.id, relation: "letters", position: 0 }],
+                    [
+                        {
+                            entryId: letterA.id,
+                            relation: "letters",
+                            position: 0,
+                        },
+                    ],
                 ],
                 suffixes: [
                     [{ entryId: y.id, relation: "suffixes", position: 0 }],

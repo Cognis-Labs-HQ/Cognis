@@ -193,27 +193,45 @@ body[data-theme="light"] .library-browser {
     border-radius: 14px;
     background: var(--library-card-surface);
 }
-.library-transform-card:has(.library-transform-tree[hidden]) {
+.library-transform-card:has(.library-transform-pathway[hidden]) {
     grid-template-columns: minmax(0, 1fr);
 }
+.library-transform-pathway,
 .library-transform-tree {
     display: grid;
     gap: 0.45rem;
+}
+.library-transform-pathway[hidden] {
+    display: none;
+}
+.library-transform-pathway output {
+    padding: 0.65rem;
+    border: 1px solid var(--accent-2);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+.library-transform-tree {
     margin: 0;
     padding: 0;
     list-style: none;
 }
-.library-transform-tree[hidden] {
-    display: none;
-}
 .library-transform-tree li {
+    margin-inline-start: calc(var(--library-transform-depth) * 1.25rem);
+    border-inline-start: 2px solid var(--accent-2);
+}
+.library-transform-tree button {
     display: flex;
+    width: 100%;
     align-items: baseline;
     gap: 0.65rem;
-    margin-inline-start: calc(var(--library-transform-depth) * 1.25rem);
     padding: 0.45rem 0.65rem;
-    border-inline-start: 2px solid var(--accent-2);
-    background: var(--surface-2);
+    text-align: start;
+}
+.library-transform-tree button.active {
+    border-color: var(--accent-2);
+    background: color-mix(in srgb, var(--accent-2) 16%, var(--surface-2));
 }
 .library-transform-tree li span {
     color: var(--text-muted);

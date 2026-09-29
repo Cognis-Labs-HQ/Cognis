@@ -477,6 +477,7 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
                 if (
                     !Array.isArray(carousel.values) ||
                     !carousel.values.length ||
+                    new Set(carousel.values).size !== carousel.values.length ||
                     carousel.values.some(
                         (value) => typeof value !== "string" || !value,
                     )
@@ -586,9 +587,16 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
             throw new Error("duplicate_transform_set");
         transformSetIds.add(set.id);
         validateMetadata(set.metadata, "transform_set_metadata_required");
-        if (!set.baseState.trim() || !set.matchTags.length)
+        if (
+            !set.baseState.trim() ||
+            !Array.isArray(set.matchTags) ||
+            !set.matchTags.length ||
+            !Array.isArray(set.rules) ||
+            !set.rules.length
+        )
             throw new Error("invalid_transform_set");
         const ruleIds = new Set<string>();
+        const transitions = new Set<string>();
         for (const rule of set.rules) {
             assertIdentifier(rule.id, "invalid_transform_rule_id");
             if (ruleIds.has(rule.id))
@@ -597,6 +605,13 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
             validateMetadata(rule.metadata, "transform_rule_metadata_required");
             if (!rule.fromState.trim() || !rule.toState.trim())
                 throw new Error("invalid_transform_rule");
+            const transition = `${rule.fromState}\u0000${rule.toState}\u0000${rule.removeSuffix}`;
+            if (
+                transitions.has(transition) ||
+                (rule.removeSuffix === "" && rule.append === "")
+            )
+                throw new Error("invalid_transform_rule");
+            transitions.add(transition);
         }
     }
     return structuredClone({

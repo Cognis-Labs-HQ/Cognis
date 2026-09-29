@@ -77,10 +77,10 @@ export function renderLayerCards(
                     .flatMap(({ nodes: pathwayNodes }) => pathwayNodes.slice(1))
                     .map(
                         (node) =>
-                            `<li style="--library-transform-depth: ${node.depth}"><span>${escapeHtml(localizedLabel(node.rule.metadata, schema.language) || node.rule.id)}</span><strong>${escapeHtml(node.value)}</strong></li>`,
+                            `<li style="--library-transform-depth: ${node.depth}"><button class="btn-neutral" type="button" data-library-transform-value="${escapeHtml(node.value)}"><span>${escapeHtml(localizedLabel(node.rule.metadata, schema.language) || node.rule.id)}</span><strong>${escapeHtml(node.value)}</strong></button></li>`,
                     )
                     .join("");
-                return `<article class="library-transform-card">${renderEntryCard(entry, layer, allEntries, schema, placements, i18n)}<ol class="library-transform-tree" hidden data-library-transform-tree>${nodes}</ol></article>`;
+                return `<article class="library-transform-card">${renderEntryCard(entry, layer, allEntries, schema, placements, i18n)}<section class="library-transform-pathway" hidden data-library-transform-tree><output>${escapeHtml(entry.label)}</output><ol class="library-transform-tree">${nodes}</ol></section></article>`;
             })
             .join("");
     }

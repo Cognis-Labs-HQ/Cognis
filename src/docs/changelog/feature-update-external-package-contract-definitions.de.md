@@ -418,6 +418,10 @@ Aufgeklappte Zweige mit untergeordneten Zeichen prüfen nun diagonale Positionen
 
 Sprachanbieter können Satzübergänge mit einem anbietereigenen Tag kennzeichnen und über ein nur für Sätze bestimmtes, gefiltertes Karussell bereitstellen; wiederholbare Satzzeichen erscheinen in einem einzeiligen, schreibgeschützten Karussell. Taggefilterte Ebenenansichten verschieben Verben und Adverbien aus der normalen Wortschatzseite auf vollbreite Transformationsbaum-Seiten. Deklarative Transformationssätze im Schema erzeugen suffixbasierte Zustandswege aus Grundformkarten, ohne jede Flexion als Karte anzulegen.
 
+## Ausgereifte Satz- und Transformationsabläufe
+
+Karten für Satzübergänge erscheinen nun ausschließlich in ihrem gefilterten Composer-Karussell, die Bearbeitung stellt wiederholte Satzzeichen in der verfassten Reihenfolge wieder her und Transformationsknoten aktualisieren eine eingebettete Vorschau der erzeugten Form. Die Schemavalidierung weist außerdem mehrdeutige oder wirkungslose Satzzeichen- und Transformationsdeklarationen zurück.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
@@ -525,3 +529,4 @@ Sprachanbieter können Satzübergänge mit einem anbietereigenen Tag kennzeichne
 - [bdd1961e](https://github.com/Cognis-Labs-HQ/Cognis/commit/bdd1961e)
 - [e397588c](https://github.com/Cognis-Labs-HQ/Cognis/commit/e397588c)
 - [21e3d8ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/21e3d8ae)
+- [fd2d93e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fd2d93e)

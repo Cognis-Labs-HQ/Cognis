@@ -22,6 +22,7 @@ import {
     closeUnrelatedVariantViews,
 } from "./variants.js";
 import { createLibraryVisibilityActions } from "./visibility-actions.js";
+import { bindTransformationInteractions } from "./transformation-interactions.js";
 let activeEntryPopup = null;
 
 export function bindLibraryInteractions(root, context) {
@@ -102,6 +103,7 @@ export function bindLibraryInteractions(root, context) {
             suppressEntryClick = true;
         },
     });
+    bindTransformationInteractions(root, { signal });
     root.addEventListener(
         "contextmenu",
         (event) => {
@@ -179,14 +181,7 @@ export function bindLibraryInteractions(root, context) {
             }
             const control = event.target.closest("[data-library-entry]");
             if (!control) return;
-            const transformCard = control.closest(".library-transform-card");
-            if (transformCard) {
-                const tree = transformCard.querySelector(
-                    ".library-transform-tree",
-                );
-                if (tree) tree.hidden = !tree.hidden;
-                return;
-            }
+            if (control.closest(".library-transform-card")) return;
             const openedAsNew = entries.some(
                 ({ id, isNew }) =>
                     id === control.dataset.libraryEntry && isNew === true,
