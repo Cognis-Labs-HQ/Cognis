@@ -279,3 +279,5 @@ Anbieter markieren Grundformen von Verben und Adverbien mit `verb` oder `adverb`
 ```
 
 Tags für Satzübergänge werden nun sowohl aus dem normalen Eingabekarussell als auch aus der Wortschatzseite ausgeschlossen, sodass ihr gefiltertes Composer-Karussell tatsächlich getrennt ist. Bearbeitungsdialoge rekonstruieren wiederholbare Satzzeichen aus der gespeicherten Satzbeschriftung und den geordneten Referenzen. Transformationsbäume bieten nun ausführbare Knoten: Die Auswahl einer erzeugten Form aktualisiert die Pfadvorschau, während die Grundformkarte der kanonische gespeicherte Eintrag bleibt. Die Vertragsvalidierung weist doppelte Satzzeichen, leere Transformationssätze, doppelte Zustandsübergänge und wirkungslose Regeln zurück.
+
+Unterkarten-Zweige behalten nun jede bereits eingepasste Kartenposition bei, während tiefere Nachfahren geöffnet werden. Neu eingeblendete Nachfahren werden nach Tiefe vermessen und nur in sichtbare, kollisionsfreie Flächenplätze umgeleitet. Dadurch werden Sprünge von Vorfahren, Kartenüberlappungen und gedrängte Verbindungen bei der natürlichen Baumnavigation verhindert.

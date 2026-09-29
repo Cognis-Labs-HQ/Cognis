@@ -39,6 +39,16 @@ function overflowScore(rect, boundary) {
     );
 }
 
+function collisionBounds(rect) {
+    const clearance = 8;
+    return {
+        top: rect.top - clearance,
+        right: rect.right + clearance,
+        bottom: rect.bottom + clearance,
+        left: rect.left - clearance,
+    };
+}
+
 export function overlapArea(rect, occupiedRect) {
     const width = Math.max(
         0,
@@ -54,8 +64,10 @@ export function overlapArea(rect, occupiedRect) {
 }
 
 function collisionScore(rect, occupiedRects) {
+    const candidateBounds = collisionBounds(rect);
     return occupiedRects.reduce(
-        (score, occupiedRect) => score + overlapArea(rect, occupiedRect),
+        (score, occupiedRect) =>
+            score + overlapArea(candidateBounds, occupiedRect),
         0,
     );
 }
@@ -69,12 +81,31 @@ function setVariantDirection(slot, direction) {
     }
 }
 
+function visibleVariantSlots(rootShell) {
+    return Array.from(
+        rootShell.querySelectorAll("[data-library-preferred-direction]"),
+    )
+        .filter((slot) => slot.getClientRects().length > 0)
+        .sort((left, right) => {
+            const leftDepth = Number(
+                left.querySelector(":scope > .library-entry-card-shell")
+                    ?.dataset.libraryVariantDepth ?? 0,
+            );
+            const rightDepth = Number(
+                right.querySelector(":scope > .library-entry-card-shell")
+                    ?.dataset.libraryVariantDepth ?? 0,
+            );
+            return leftDepth - rightDepth;
+        });
+}
+
 export function restorePreferredVariantDirections(rootShell) {
     rootShell
         .querySelectorAll("[data-library-preferred-direction]")
-        .forEach((slot) =>
-            setVariantDirection(slot, slot.dataset.libraryPreferredDirection),
-        );
+        .forEach((slot) => {
+            setVariantDirection(slot, slot.dataset.libraryPreferredDirection);
+            delete slot.dataset.libraryFittedDirection;
+        });
 }
 
 export function fitVariantBranchWithinGrid(rootShell) {
@@ -88,16 +119,20 @@ export function fitVariantBranchWithinGrid(rootShell) {
             bottom: gridRect.bottom - 2,
             left: gridRect.left + 2,
         };
-        const slots = Array.from(
-            rootShell.querySelectorAll("[data-library-preferred-direction]"),
-        ).filter((slot) => getComputedStyle(slot).display !== "none");
+        const slots = visibleVariantSlots(rootShell);
         const occupiedRects = Array.from(
             grid.querySelectorAll(
                 ":scope > .library-entry-card-shell > .library-entry-card",
             ),
-            (card) => card.getBoundingClientRect(),
+            (card) => collisionBounds(card.getBoundingClientRect()),
         );
         for (const slot of slots) {
+            if (slot.dataset.libraryFittedDirection) {
+                occupiedRects.push(collisionBounds(cardBounds(slot)));
+            }
+        }
+        for (const slot of slots) {
+            if (slot.dataset.libraryFittedDirection) continue;
             const preferred = slot.dataset.libraryPreferredDirection;
             const candidates = variantDirectionCandidates(preferred);
             let best = {
@@ -127,7 +162,8 @@ export function fitVariantBranchWithinGrid(rootShell) {
                 if (overflow === 0 && collision === 0) break;
             }
             setVariantDirection(slot, best.direction);
-            occupiedRects.push(cardBounds(slot));
+            slot.dataset.libraryFittedDirection = best.direction;
+            occupiedRects.push(collisionBounds(cardBounds(slot)));
         }
     });
 }
