@@ -7,6 +7,14 @@ const source = readFileSync(
     new URL("../ui/app/variant-fit.js", import.meta.url),
     "utf8",
 );
+const interactionSource = readFileSync(
+    new URL("../ui/app/variants.js", import.meta.url),
+    "utf8",
+);
+const stylesheet = readFileSync(
+    new URL("../ui/library.css", import.meta.url),
+    "utf8",
+);
 
 test("overlap area detects cards assigned to the same slot", () => {
     assert.equal(
@@ -39,4 +47,14 @@ test("fitted child cards keep their position while deeper branches open", () => 
     );
     assert.match(source, /delete slot\.dataset\.libraryFittedDirection/);
     assert.match(source, /slot\.getClientRects\(\)\.length > 0/);
+});
+
+test("diagonal child navigation uses hover intent and a continuous hit area", () => {
+    assert.match(interactionSource, /BRANCH_HOVER_INTENT_MS = 100/);
+    assert.match(interactionSource, /pendingBranchShell\?\.contains/);
+    assert.match(
+        stylesheet,
+        /\.library-entry-variant-down-right[\s\S]*::after/,
+    );
+    assert.doesNotMatch(stylesheet, /library-entry-focus-pulse/);
 });

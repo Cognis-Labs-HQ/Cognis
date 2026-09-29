@@ -8,15 +8,85 @@ const VARIANT_DIRECTIONS = [
     "down-right",
     "down-left",
 ];
-const DIAGONAL_VARIANT_DIRECTIONS = VARIANT_DIRECTIONS.filter((direction) =>
-    direction.includes("-"),
-);
+const DIRECTION_ALTERNATIVES = {
+    up: [
+        "up-left",
+        "up-right",
+        "left",
+        "right",
+        "down-left",
+        "down-right",
+        "down",
+    ],
+    down: [
+        "down-left",
+        "down-right",
+        "left",
+        "right",
+        "up-left",
+        "up-right",
+        "up",
+    ],
+    left: [
+        "up-left",
+        "down-left",
+        "up",
+        "down",
+        "up-right",
+        "down-right",
+        "right",
+    ],
+    right: [
+        "up-right",
+        "down-right",
+        "up",
+        "down",
+        "up-left",
+        "down-left",
+        "left",
+    ],
+    "up-left": [
+        "up",
+        "left",
+        "up-right",
+        "down-left",
+        "right",
+        "down",
+        "down-right",
+    ],
+    "up-right": [
+        "up",
+        "right",
+        "up-left",
+        "down-right",
+        "left",
+        "down",
+        "down-left",
+    ],
+    "down-right": [
+        "down",
+        "right",
+        "down-left",
+        "up-right",
+        "left",
+        "up",
+        "up-left",
+    ],
+    "down-left": [
+        "down",
+        "left",
+        "down-right",
+        "up-left",
+        "right",
+        "up",
+        "up-right",
+    ],
+};
 
 export function variantDirectionCandidates(preferred) {
     return [
         preferred,
-        ...DIAGONAL_VARIANT_DIRECTIONS,
-        ...VARIANT_DIRECTIONS,
+        ...(DIRECTION_ALTERNATIVES[preferred] ?? VARIANT_DIRECTIONS),
     ].filter(
         (direction, index, directions) =>
             direction && directions.indexOf(direction) === index,
@@ -40,7 +110,7 @@ function overflowScore(rect, boundary) {
 }
 
 function collisionBounds(rect) {
-    const clearance = 8;
+    const clearance = 2;
     return {
         top: rect.top - clearance,
         right: rect.right + clearance,

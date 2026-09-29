@@ -24,11 +24,11 @@ test("overflow fitting tries diagonal free slots before opposite cardinals", () 
     assert.deepEqual(variantDirectionCandidates("left"), [
         "left",
         "up-left",
-        "up-right",
-        "down-right",
         "down-left",
         "up",
         "down",
+        "up-right",
+        "down-right",
         "right",
     ]);
 });
