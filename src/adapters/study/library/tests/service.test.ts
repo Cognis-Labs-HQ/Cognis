@@ -528,6 +528,7 @@ test("alternate-character forms copy vocabulary pronunciation carousels", async 
     assert.deepEqual(alternate?.cardConstructor?.pronunciation_carousels, [
         "characters",
     ]);
+    assert.deepEqual(alternate?.cardConstructor?.relationships, ["characters"]);
 });
 
 test("lookup providers are ranked and cleanly removable", async () => {

@@ -50,6 +50,10 @@ Provider-declared Verbs and Adverbs views now resolve through the Library layer 
 
 Alternate-character form payloads now copy their pronunciation carousel list directly from the vocabulary form payload in the same schema. The previous alternate-character-specific carousel inference and filtering code has been removed.
 
+## Replace the Vocabulary Carousel
+
+Alternate-character form alignment now replaces both the Vocabulary pronunciation target and its rendering relationship with the character relationship used by Vocabulary cards. Kanji pronunciation creation therefore shows the character carousel instead of Vocabulary.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -64,3 +68,4 @@ Alternate-character form payloads now copy their pronunciation carousel list dir
 - [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)
 - [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)
 - [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)
+- [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)

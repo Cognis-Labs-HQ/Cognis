@@ -50,6 +50,10 @@ Vom Anbieter deklarierte Verben- und Adverbienansichten werden jetzt über die S
 
 Formularnutzlasten für alternative Zeichen kopieren ihre Liste der Aussprachekarussells jetzt direkt aus der Wortschatz-Formularnutzlast desselben Schemas. Die bisherige spezielle Karussellableitung und Filterung für alternative Zeichen wurde entfernt.
 
+## Wortschatzkarussell ersetzt
+
+Die Formularangleichung für alternative Zeichen ersetzt jetzt sowohl das Wortschatz-Ausspracheziel als auch dessen Darstellungsbeziehung durch die Zeichenbeziehung der Wortschatzkarten. Beim Erstellen einer Kanji-Aussprache erscheint daher das Zeichenkarussell statt Wortschatz.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -64,3 +68,4 @@ Formularnutzlasten für alternative Zeichen kopieren ihre Liste der Ausspracheka
 - [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)
 - [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)
 - [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)
+- [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)

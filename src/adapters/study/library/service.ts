@@ -234,13 +234,43 @@ export class LibraryService implements LibraryCapability {
                     lexicalLayerIds.has(candidate.layerId) &&
                     candidate.cardConstructor,
             )?.cardConstructor;
-            if (lexicalConstructor)
+            if (lexicalConstructor) {
+                const pronunciationTargets = new Set(
+                    lexicalConstructor.pronunciation_carousels,
+                );
+                const replacedTargets = new Set(
+                    contribution.cardConstructor.pronunciation_carousels,
+                );
+                const relationships = new Set(
+                    (contribution.cardConstructor.relationships ?? []).filter(
+                        (relationshipId) => {
+                            const relationship = (
+                                layer.relationships ?? []
+                            ).find(({ id }) => id === relationshipId);
+                            return (
+                                !relationship ||
+                                !replacedTargets.has(
+                                    relationship.targetLayer,
+                                ) ||
+                                pronunciationTargets.has(
+                                    relationship.targetLayer,
+                                )
+                            );
+                        },
+                    ),
+                );
+                for (const relationship of layer.relationships ?? []) {
+                    if (pronunciationTargets.has(relationship.targetLayer))
+                        relationships.add(relationship.id);
+                }
                 contribution.cardConstructor = {
                     ...contribution.cardConstructor,
+                    relationships: [...relationships],
                     pronunciation_carousels: [
                         ...lexicalConstructor.pronunciation_carousels,
                     ],
                 };
+            }
         }
         return contributions;
     }

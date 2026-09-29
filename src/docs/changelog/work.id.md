@@ -50,6 +50,10 @@ Tampilan Kata Kerja dan Kata Keterangan yang dideklarasikan penyedia kini disele
 
 Payload formulir karakter alternatif kini menyalin daftar carousel pelafalannya langsung dari payload formulir kosakata pada skema yang sama. Kode inferensi dan penyaringan carousel khusus karakter alternatif sebelumnya telah dihapus.
 
+## Mengganti Carousel Kosakata
+
+Penyelarasan formulir karakter alternatif kini mengganti target pelafalan Kosakata beserta relasi perendernya dengan relasi karakter yang digunakan kartu Kosakata. Pembuatan pelafalan Kanji kini menampilkan carousel karakter, bukan Kosakata.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -64,3 +68,4 @@ Payload formulir karakter alternatif kini menyalin daftar carousel pelafalannya 
 - [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)
 - [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)
 - [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)
+- [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)

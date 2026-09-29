@@ -50,6 +50,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 代替文字のフォームペイロードは、同じスキーマの語彙フォームペイロードから発音カルーセル一覧を直接コピーするようになりました。従来の代替文字専用カルーセル推論・フィルタリング処理は削除されました。
 
+## 語彙カルーセルを置換
+
+代替文字フォームの整合処理は、語彙の発音対象とその描画関係の両方を、語彙カードが使う文字関係に置き換えます。これにより、漢字の発音作成には語彙ではなく文字カルーセルが表示されます。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -64,3 +68,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)
 - [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)
 - [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)
+- [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)
