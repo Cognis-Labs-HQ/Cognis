@@ -38,6 +38,10 @@ Validasi multi-tab Library kini menggunakan pengontrol validasi tab milik compos
 
 Composer karakter alternatif kini mempertahankan karusel pelafalan karakter yang dinyatakan penyedia dan hanya menggunakan relasi karakter atomik sebagai cadangan, sehingga kartu kosakata tidak lagi muncul di bawah Pelafalan. Penyedia pola guratan diklasifikasikan melalui metadata kontrak netral atau label bidang yang dilokalkan, sehingga aksinya dipindahkan dari baris pencarian umum dan ditampilkan sebagai “Cari” di dalam Pola Guratan.
 
+## Pembatasan Pelafalan Karakter Alternatif
+
+Carousel pelafalan karakter alternatif kini ditentukan hanya dari relasi yang menargetkan unit tulisan atomik. Daftar carousel konstruktor tetap menjadi referensi payload formulir dan tidak lagi dapat memunculkan carousel kosakata dalam editor pelafalan karakter alternatif.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -49,3 +53,4 @@ Composer karakter alternatif kini mempertahankan karusel pelafalan karakter yang
 - [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)
 - [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)
 - [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)
+- [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)

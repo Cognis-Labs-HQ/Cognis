@@ -38,6 +38,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 代替文字コンポーザーは、プロバイダーが宣言した文字の発音カルーセルを維持し、未宣言の場合だけ基本文字の関係を代替として使うようになりました。これにより、発音の下に語彙カードが表示されません。筆順プロバイダーは中立な契約メタデータまたはローカライズ済みフィールド名で分類され、一般検索行から除外されて、筆順セクション内に「検索」として表示されます。
 
+## 代替文字の発音対象を限定
+
+代替文字の発音カルーセルは、基本文字を対象とする関係だけから解決されるようになりました。コンストラクターのカルーセル一覧はフォームペイロードの参照にとどまり、代替文字の発音エディターに語彙カルーセルを表示させることはありません。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -49,3 +53,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)
 - [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)
 - [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)
+- [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)

@@ -38,6 +38,10 @@ Library multi-tab validation now uses the shared form composer’s tab-validatio
 
 Alternate-character composers now keep provider-declared character pronunciation carousels and fall back only to atomic character relationships, preventing vocabulary cards from appearing under Pronunciation. Stroke-pattern providers are classified by their neutral contract metadata or localized field label, so their action is removed from the general lookup row and rendered as “Lookup” inside Stroke Pattern.
 
+## Constrain Alternate-Character Pronunciation
+
+Alternate-character pronunciation carousels now resolve exclusively from relationships targeting atomic writing units. Constructor carousel lists remain form-payload references and can no longer cause a vocabulary carousel to appear in an alternate-character pronunciation editor.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -49,3 +53,4 @@ Alternate-character composers now keep provider-declared character pronunciation
 - [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)
 - [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)
 - [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)
+- [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)

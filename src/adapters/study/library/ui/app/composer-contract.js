@@ -1,4 +1,5 @@
 import { layerForEntry, pronunciationValues } from "./presentation.js";
+import { atomicWritingUnitCarouselLayers } from "./composer-carousels.js";
 
 export function resolveComposerContract(schema, layer, constructor) {
     const effectiveConstructor = constructor ?? {
@@ -50,23 +51,10 @@ export function resolveComposerContract(schema, layer, constructor) {
             .map(({ id }) => id);
     if (layer?.semanticRole === "compoundWritingUnit") {
         inputCarouselLayers.clear();
-        if (pronunciationCarouselLayers.size === 0) {
-            const atomicTargets = (layer.relationships ?? []).filter(
-                (relationship) =>
-                    schema?.layers?.find(
-                        ({ id }) => id === relationship.targetLayer,
-                    )?.semanticRole === "atomicWritingUnit",
-            );
-            const pronunciationTargets = atomicTargets.length
-                ? atomicTargets
-                : (layer.relationships ?? []).filter(
-                      ({ presentationRole }) =>
-                          presentationRole === "pronunciation",
-                  );
-            pronunciationTargets.forEach(({ targetLayer }) =>
-                pronunciationCarouselLayers.add(targetLayer),
-            );
-        }
+        pronunciationCarouselLayers.clear();
+        atomicWritingUnitCarouselLayers(schema, layer).forEach((targetLayer) =>
+            pronunciationCarouselLayers.add(targetLayer),
+        );
     } else if (layer?.semanticRole === "lexicalUnit") {
         inputCarouselLayers.clear();
         pronunciationCarouselLayers.clear();

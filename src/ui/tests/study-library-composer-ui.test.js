@@ -131,11 +131,7 @@ test("alternate-character pronunciation includes atomic character relationships"
     assert.ok(compoundBranch);
     assert.match(
         compoundBranch,
-        /pronunciationCarouselLayers\.size === 0[\s\S]*?semanticRole === "atomicWritingUnit"/,
-    );
-    assert.doesNotMatch(
-        compoundBranch,
-        /pronunciationCarouselLayers\.clear\(\)/,
+        /pronunciationCarouselLayers\.clear\(\)[\s\S]*?atomicWritingUnitCarouselLayers\(schema, layer\)/,
     );
 });
 

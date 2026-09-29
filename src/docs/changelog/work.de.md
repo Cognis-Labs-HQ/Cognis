@@ -38,6 +38,10 @@ Die mehrteilige Library-Validierung verwendet nun den Tab-Validierungscontroller
 
 Composer für alternative Zeichen behalten jetzt die vom Anbieter deklarierten Zeichenkarussells für die Aussprache und greifen nur ersatzweise auf atomare Zeichenbeziehungen zurück, sodass unter Aussprache keine Wortschatzkarten mehr erscheinen. Anbieter von Strichmustern werden anhand neutraler Vertragsmetadaten oder der lokalisierten Feldbezeichnung zugeordnet; ihre Aktion wird daher aus der allgemeinen Nachschlagezeile entfernt und als „Nachschlagen“ im Abschnitt Strichmuster angezeigt.
 
+## Aussprache alternativer Zeichen begrenzt
+
+Aussprachekarussells für alternative Zeichen werden jetzt ausschließlich aus Beziehungen zu atomaren Schrifteinheiten bestimmt. Karusselllisten des Konstruktors bleiben Referenzen der Formularnutzlast und können im Ausspracheeditor alternativer Zeichen kein Wortschatzkarussell mehr auslösen.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -49,3 +53,4 @@ Composer für alternative Zeichen behalten jetzt die vom Anbieter deklarierten Z
 - [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)
 - [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)
 - [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)
+- [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)
