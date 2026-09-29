@@ -4,6 +4,7 @@
  * Public exports:
  * - `renderHorizontalCarousel`: renders carousel markup for a collection of items.
  * - `mountHorizontalCarousels`: binds scrolling, ordered selection, and add actions.
+ * - `appendHorizontalCarouselItem`: appends a newly created item using the canonical item markup.
  *
  * @example
  * root.innerHTML = renderHorizontalCarousel({ id: "words", label: "Words", items });
@@ -12,6 +13,10 @@
 
 import { escapeHtml } from "./escape-html.js";
 import { createAnchoredPopup } from "./popup.js";
+
+function carouselItemMarkup({ value, label, preview = "" }, selected, order) {
+    return `<button class="btn-neutral horizontal-carousel-item${selected ? " is-selected" : ""}" type="button" data-carousel-value="${escapeHtml(value)}" aria-pressed="${selected}"><span>${escapeHtml(label)}</span><small data-carousel-order>${selected ? order : ""}</small><span class="horizontal-carousel-preview" role="tooltip"><strong>${escapeHtml(label)}</strong>${preview ? `<span>${escapeHtml(preview)}</span>` : ""}</span></button>`;
+}
 
 /**
  * Render an accessible horizontal carousel.
@@ -29,7 +34,32 @@ export function renderHorizontalCarousel({
     const order = new Map(
         selectedValues.map((value, index) => [value, index + 1]),
     );
-    return `<section class="horizontal-carousel" data-horizontal-carousel="${escapeHtml(id)}"><header><span>${escapeHtml(label)}</span><output data-carousel-selection aria-live="polite"></output></header><div class="horizontal-carousel-row"><div class="horizontal-carousel-viewport"><div class="horizontal-carousel-track">${items.map(({ value, label: itemLabel, preview = "" }) => `<button class="btn-neutral horizontal-carousel-item${order.has(value) ? " is-selected" : ""}" type="button" data-carousel-value="${escapeHtml(value)}" aria-pressed="${order.has(value)}"><span>${escapeHtml(itemLabel)}</span><small data-carousel-order>${order.get(value) ?? ""}</small><span class="horizontal-carousel-preview" role="tooltip"><strong>${escapeHtml(itemLabel)}</strong>${preview ? `<span>${escapeHtml(preview)}</span>` : ""}</span></button>`).join("")}</div></div>${allowAdd ? `<button class="btn-confirm horizontal-carousel-add" type="button" data-carousel-add aria-label="${escapeHtml(addLabel)}">+</button>` : ""}</div></section>`;
+    return `<section class="horizontal-carousel" data-horizontal-carousel="${escapeHtml(id)}"><header><span>${escapeHtml(label)}</span><output data-carousel-selection aria-live="polite"></output></header><div class="horizontal-carousel-row"><div class="horizontal-carousel-viewport"><div class="horizontal-carousel-track">${items.map((item) => carouselItemMarkup(item, order.has(item.value), order.get(item.value))).join("")}</div></div>${allowAdd ? `<button class="btn-confirm horizontal-carousel-add" type="button" data-carousel-add aria-label="${escapeHtml(addLabel)}">+</button>` : ""}</div></section>`;
+}
+
+/**
+ * Append a carousel item using the same markup as initial rendering.
+ * @param {HTMLElement} carousel Carousel root.
+ * @param {{value: string, label: string, preview?: string}} item Item data.
+ * @param {{selected?: boolean}} options Initial selection state.
+ * @returns {HTMLElement | null} The appended item element.
+ */
+export function appendHorizontalCarouselItem(
+    carousel,
+    item,
+    { selected = false } = {},
+) {
+    const track = carousel.querySelector(".horizontal-carousel-track");
+    if (!track) return null;
+    const order = selected
+        ? carousel.querySelectorAll("[data-carousel-value].is-selected")
+              .length + 1
+        : "";
+    track.insertAdjacentHTML(
+        "beforeend",
+        carouselItemMarkup(item, selected, order),
+    );
+    return track.lastElementChild;
 }
 
 /**

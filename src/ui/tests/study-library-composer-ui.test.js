@@ -16,6 +16,7 @@ const createEntrySource = read(
 const clientSource = read("src/gateways/study/ui/library-client.js");
 const adapterSource = read("src/adapters/study/library/index.ts");
 const carouselStylesheet = read("src/ui/styles/reuse/horizontal-carousel.css");
+const compositionStylesheet = read("src/ui/styles/reuse/composition-input.css");
 const adminStylesheet = read("src/adapters/study/library/ui/library-admin.css");
 const libraryStylesheet = read("src/adapters/study/library/ui/library.css");
 const drawingSource = read("src/adapters/study/library/ui/app/drawing.js");
@@ -96,7 +97,7 @@ test("Study Library derives pronunciation using the provider field type", () => 
 test("Study Library keeps selected-card fields beside configured carousels", () => {
     assert.match(
         adminInteractionsSource,
-        /data-library-selected-references="\$\{kind\}"/,
+        /"data-library-selected-references": kind/,
     );
     assert.match(
         adminInteractionsSource,
@@ -111,10 +112,7 @@ test("Study Library keeps selected-card fields beside configured carousels", () 
     assert.match(adminInteractionsSource, /field\.multi_value === true/);
     assert.match(adminInteractionsSource, /data-library-save-composed-value/);
     assert.match(adminInteractionsSource, /data-library-carousel-text/);
-    assert.match(
-        adminInteractionsSource,
-        /data-library-remove-selected-reference/,
-    );
+    assert.match(adminInteractionsSource, /data-composition-remove/);
     assert.match(adminInteractionsSource, /openPopup/);
     assert.match(adminInteractionsSource, /setCustomValidity/);
     assert.match(adminInteractionsSource, /isMultiValueKind\(kind\)/);
@@ -125,6 +123,9 @@ test("Study Library keeps selected-card fields beside configured carousels", () 
         /generatedLabel: layer\?\.semanticRole !== "definition"/,
     );
     assert.match(adminInteractionsSource, /function syncGeneratedCardLabel\(/);
+    assert.match(adminInteractionsSource, /const inlineInputCarousel/);
+    assert.match(adminInteractionsSource, /canCreateLayerEntries/);
+    assert.match(adminInteractionsSource, /createRelationshipDependency/);
 });
 
 test("Study Library preserves each multi-value pronunciation reference group", () => {
@@ -154,11 +155,11 @@ test("Study Library excludes hidden cards from every composer candidate list", (
 test("Study Library keeps staged-card deletion precise and validation recoverable", () => {
     assert.match(
         adminInteractionsSource,
-        /event\.target\.matches\(\s*"\[data-library-remove-selected-reference\]"/,
+        /event\.target\.matches\(\s*"\[data-composition-remove\]"/,
     );
     assert.match(
-        adminStylesheet,
-        /library-composition-block > \.btn-cancel[\s\S]*flex:\s*0 0 1rem;[\s\S]*width:\s*1rem;[\s\S]*height:\s*1rem;/,
+        compositionStylesheet,
+        /composition-input-item > \.btn-cancel[\s\S]*flex:\s*0 0 1rem;[\s\S]*width:\s*1rem;[\s\S]*height:\s*1rem;/,
     );
     assert.match(createEntrySource, /missingRequiredRelationship/);
     assert.match(

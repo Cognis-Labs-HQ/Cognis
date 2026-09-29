@@ -17,6 +17,7 @@ import { chooseCreateLayer, openCreateEntryPopup } from "../create-entry.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { loadLibraryRequests } from "../requests.js";
 import { fetchLibraryForms } from "/static/gateways/study/ui/library-client.js";
+import { canCreateLayerEntries } from "../editability.js";
 
 function requestedLayer() {
     const parts = window.location.pathname.split("/").filter(Boolean);
@@ -53,11 +54,7 @@ export async function mount(root, { signal } = {}) {
         loadLibraryRequests(),
         fetchLibraryForms(),
     ]);
-    const canCreate =
-        Boolean(schema && layer) &&
-        !["atomicWritingUnit", "definition", "meaning"].includes(
-            layer.semanticRole,
-        );
+    const canCreate = Boolean(schema) && canCreateLayerEntries(layer);
     const view = layer?.views?.find(({ id }) => id === selectedLayer?.viewId);
     const title = view
         ? localizedLabel(view.metadata, schema.language) || view.id

@@ -1,5 +1,6 @@
 @import url("./library-admin.css");
 @import url("/static/styles/reuse/horizontal-carousel.css");
+@import url("/static/styles/reuse/composition-input.css");
 .library-browser {
     --library-card-gap: 0.75rem;
     --library-card-half-gap: 0.375rem;

@@ -3,6 +3,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { showToast } from "/static/reuse/toast.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
+import { appendHorizontalCarouselItem } from "/static/reuse/horizontal-carousel.js";
 import {
     createLibraryEntry,
     deleteLibraryEntries,
@@ -172,7 +173,7 @@ export async function openCreateEntryPopup({
     const supportsRawInput = layer.semanticRole === "compoundWritingUnit";
     const lookupActions = `<div class="library-composer-lookups" hidden>${lookupProviders.map((provider) => `<button class="btn-neutral" type="button" data-library-lookup-provider="${escapeHtml(provider.id)}">${escapeHtml(i18n.t("gateway.study.library_lookup_with").replace("{{ service }}", localizedLabel(provider.metadata, document.documentElement.lang) || provider.id))}</button>`).join("")}</div>`;
     const compositionInput = supportsTextComposition
-        ? `<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><span class="library-composition-input"><span class="library-composition-blocks" data-library-composition-blocks aria-live="polite"></span><input data-library-composer-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></span></label><div class="library-composer-assistance"><div data-library-composer-suggestions aria-live="polite"></div>${lookupActions}</div></section>`
+        ? lookupActions
         : supportsRawInput
           ? `<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><input data-library-composer-text data-library-free-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></label><div class="library-composer-assistance">${lookupActions}</div></section>`
           : "";
@@ -406,18 +407,10 @@ export async function openCreateEntryPopup({
                             true,
                         );
                         select.append(option);
-                        const item = document.createElement("button");
-                        item.type = "button";
-                        item.className =
-                            "btn-neutral horizontal-carousel-item is-selected";
-                        item.dataset.carouselValue = created.id;
-                        item.setAttribute("aria-pressed", "true");
-                        item.innerHTML = `<span>${escapeHtml(created.label)}</span><small data-carousel-order></small><span class="horizontal-carousel-preview" role="tooltip"><strong>${escapeHtml(created.label)}</strong></span>`;
-                        carousel
-                            .querySelector(".horizontal-carousel-track")
-                            ?.append(item);
-                        item.click();
-                        item.click();
+                        appendHorizontalCarouselItem(carousel, {
+                            value: created.id,
+                            label: created.label,
+                        })?.click();
                     },
                 },
             );
@@ -828,7 +821,7 @@ function bindTextComposition(
     inputCarouselIds,
 ) {
     const input = form.querySelector("[data-library-composer-text]");
-    const output = form.querySelector("[data-library-composer-suggestions]");
+    const output = form.querySelector("[data-composition-suggestions]");
     const blocks = form.querySelector("[data-library-composition-blocks]");
     const lookups = form.querySelector(".library-composer-lookups");
     if (!input || !output || !blocks) return { validate: () => true };
@@ -894,19 +887,6 @@ function bindTextComposition(
         const pronunciation = `${selectedPronunciation}${inputPronunciation}`;
         if (pronunciation) control.value = pronunciation;
     };
-    const renderBlocks = () => {
-        blocks.innerHTML = (form.compositionOrder ?? [])
-            .map((id) => ({
-                id,
-                label: compositionTokenLabel(id, entries),
-            }))
-            .filter(({ label }) => label)
-            .map(
-                (entry) =>
-                    `<button class="btn-neutral library-composition-block" type="button" draggable="true" data-library-composition-id="${escapeHtml(entry.id)}"><span>${escapeHtml(entry.label)}</span><span aria-hidden="true">×</span></button>`,
-            )
-            .join("");
-    };
     const syncLabel = () => {
         for (const relationship of relationships) {
             const select = form.elements[`relationship:${relationship.id}`];
@@ -940,7 +920,6 @@ function bindTextComposition(
                 : `<p>${escapeHtml(i18n.t("gateway.study.library_editor_no_relationships"))}</p>`;
         }
         syncPronunciation();
-        renderBlocks();
     };
     const renderSuggestions = () => {
         const text = input.value.trim();
@@ -1002,14 +981,6 @@ function bindTextComposition(
         order.splice(order.indexOf(targetId), 0, draggedId);
         form.compositionOrder = order;
         syncLabel();
-    });
-    blocks.addEventListener("click", (event) => {
-        const block = event.target.closest("[data-library-composition-id]");
-        const id = block?.dataset.libraryCompositionId;
-        if (!id) return;
-        form.querySelector(
-            `[data-carousel-value="${CSS.escape(id)}"].is-selected`,
-        )?.click();
     });
     renderSuggestions();
     return {

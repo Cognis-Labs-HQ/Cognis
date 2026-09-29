@@ -403,10 +403,7 @@ test("Study Library creation is driven by language card constructors", () => {
         /page-action-button\[data-page-action-id="study-library:create"\][\s\S]*font-size:\s*2rem/,
     );
     assert.match(layerPageSource, /fetchLibraryForms/);
-    assert.match(
-        layerPageSource,
-        /\["atomicWritingUnit", "definition", "meaning"\]\.includes/,
-    );
+    assert.match(layerPageSource, /canCreateLayerEntries/);
     assert.match(source, /contributedConstructor \?\?/);
     assert.match(source, /layer\?\.cardConstructor \?\?/);
     assert.match(source, /writableClasses\.length/);
@@ -436,13 +433,13 @@ test("Study Library creation offers ordered, recursive composition", () => {
     assert.match(source, /library_create_typed/);
     assert.match(source, /\.replace\("\{type\}", cardType\)/);
     assert.match(source, /library_composer_no_match/);
-    assert.match(stylesheet, /library-composer-suggestions/);
+    assert.match(source, /data-composition-suggestions/);
     assert.match(source, /data-library-composition-blocks/);
-    assert.match(source, /draggable="true"/);
+    assert.match(source, /draggable: true/);
     assert.match(source, /derivedPronunciation/);
     assert.match(source, /label\.trim\(\)\.normalize\("NFKC"\)/);
     assert.doesNotMatch(source, /function inferRelationships/);
-    assert.match(source, /library-composition-input/);
+    assert.match(source, /renderCompositionInput/);
     assert.match(
         stylesheet,
         /\.library-entry-card\s*\{[\s\S]*height:\s*7\.5rem/,
@@ -540,7 +537,8 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(adminInteractionsSource, /data-library-entry-tags/);
     assert.match(source, /join\("\\n"\)/);
     assert.match(source, /split\(\/\\r\?\\n\/u\)/);
-    assert.match(adminInteractionsSource, /relationshipCarouselAdd: false/);
+    assert.match(adminInteractionsSource, /relationshipAllowsCreate/);
+    assert.match(adminInteractionsSource, /const inlineInputCarousel/);
     assert.match(adminInteractionsSource, /inlinePronunciationCarousel: true/);
     assert.match(adminInteractionsSource, /const inlinePronunciationCarousel/);
     assert.match(adminInteractionsSource, /pronunciationCarouselLayers/);

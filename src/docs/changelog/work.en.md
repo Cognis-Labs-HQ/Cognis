@@ -10,7 +10,12 @@ Child cards preserve their fitted positions while deeper branches open. New desc
 
 Diagonal routes now have a larger continuous hit corridor, branch changes use a short hover-intent delay, and active cards no longer pulse. Direction fallback ordering also keeps initial child layouts compact around their preferred axis.
 
+## Unified Composition Carousels
+
+Input and pronunciation now use the same reusable token input and carousel rendering. Input carousels sit directly under their field, selected tokens share the compact contained remove button, and dependency creation controls appear only for layers that users can normally create.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
 - [db0728af](https://github.com/Cognis-Labs-HQ/Cognis/commit/db0728af)
+- [9c77e48f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c77e48f)

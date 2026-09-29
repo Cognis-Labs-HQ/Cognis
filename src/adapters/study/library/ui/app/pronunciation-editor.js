@@ -2,6 +2,8 @@ import { mountHorizontalCarousels } from "/static/reuse/horizontal-carousel.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
+import { renderCompositionItems } from "/static/reuse/composition-input.js";
+import { compositionTokenLabel } from "./composition-tokens.js";
 
 export function mountEditableRelationshipCarousels(
     form,
@@ -77,17 +79,37 @@ export function mountEditableRelationshipCarousels(
             const relationshipIds = relationshipIdsForKind(
                 container.dataset.librarySelectedReferences,
             );
-            container.innerHTML = selectedReferenceIds(
-                relationshipIds,
-                container.dataset.librarySelectedReferences,
-            )
-                .map((id) => entries.find((entry) => entry.id === id))
-                .filter(Boolean)
-                .map(
-                    (entry) =>
-                        `<span class="btn-neutral library-composition-block" data-library-selected-reference="${escapeHtml(entry.id)}"><span>${escapeHtml(entry.label)}</span><button class="btn-cancel" type="button" data-library-remove-selected-reference aria-label="${escapeHtml(i18n.t("gateway.study.library_remove_selected_card").replace("{{ card }}", entry.label))}">×</button></span>`,
-                )
-                .join("");
+            const kind = container.dataset.librarySelectedReferences;
+            const selected =
+                kind === "input"
+                    ? (form.compositionOrder ?? [])
+                          .map((value) => ({
+                              id: value,
+                              label: compositionTokenLabel(value, entries),
+                          }))
+                          .filter(({ label }) => label)
+                    : selectedReferenceIds(relationshipIds, kind)
+                          .map((id) => entries.find((entry) => entry.id === id))
+                          .filter(Boolean);
+            container.innerHTML = renderCompositionItems({
+                items: selected.map((entry) => ({
+                    value: entry.id,
+                    label: entry.label,
+                })),
+                removeLabel: (label) =>
+                    i18n
+                        .t("gateway.study.library_remove_selected_card")
+                        .replace("{{ card }}", label),
+                itemAttributes: ({ value }) => ({
+                    "data-library-selected-reference": value,
+                    ...(kind === "input"
+                        ? {
+                              "data-library-composition-id": value,
+                              draggable: true,
+                          }
+                        : {}),
+                }),
+            });
         }
     };
     const entriesForKind = (kind) => {
@@ -204,12 +226,7 @@ export function mountEditableRelationshipCarousels(
                 "[data-library-selected-reference]",
             );
             if (selected) {
-                if (
-                    !event.target.matches(
-                        "[data-library-remove-selected-reference]",
-                    )
-                )
-                    return;
+                if (!event.target.matches("[data-composition-remove]")) return;
                 const kind = selected.closest(
                     "[data-library-selected-references]",
                 )?.dataset.librarySelectedReferences;
@@ -238,11 +255,25 @@ export function mountEditableRelationshipCarousels(
                     ],
                 });
                 if (confirmed !== "remove") return;
-                carouselItem(
+                const item = carouselItem(
                     kind,
                     selected.dataset.librarySelectedReference,
                     true,
-                )?.click();
+                );
+                if (item) {
+                    item.click();
+                } else if (kind === "input") {
+                    form.compositionOrder = (
+                        form.compositionOrder ?? []
+                    ).filter(
+                        (value) =>
+                            value !== selected.dataset.librarySelectedReference,
+                    );
+                    renderSelectedReferences();
+                    form.dispatchEvent(
+                        new CustomEvent("library-composition-change"),
+                    );
+                }
                 return;
             }
             const suggestion = event.target.closest(
@@ -262,7 +293,7 @@ export function mountEditableRelationshipCarousels(
                 input.value = "";
                 input.setCustomValidity("");
                 compositionField.querySelector(
-                    "[data-library-carousel-suggestions]",
+                    "[data-composition-suggestions]",
                 ).innerHTML = "";
                 return;
             }
@@ -324,7 +355,7 @@ export function mountEditableRelationshipCarousels(
                 text ? i18n.t("gateway.study.library_select_suggestion") : "",
             );
             compositionField.querySelector(
-                "[data-library-carousel-suggestions]",
+                "[data-composition-suggestions]",
             ).innerHTML = text
                 ? entriesForKind(
                       compositionField.dataset.libraryCompositionField,

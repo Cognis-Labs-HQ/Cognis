@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+    appendHorizontalCarouselItem,
     mountHorizontalCarousels,
     renderHorizontalCarousel,
 } from "../horizontal-carousel.js";
@@ -62,4 +63,9 @@ test("horizontal carousel mounting uses a body-level preview portal", () => {
         mountHorizontalCarousels.toString(),
         /root\.querySelectorAll\("\[data-horizontal-carousel\]"\)\.forEach\(refresh\)/,
     );
+});
+
+test("new dependency cards reuse canonical carousel item markup", () => {
+    assert.match(appendHorizontalCarouselItem.toString(), /carouselItemMarkup/);
+    assert.match(appendHorizontalCarouselItem.toString(), /lastElementChild/);
 });

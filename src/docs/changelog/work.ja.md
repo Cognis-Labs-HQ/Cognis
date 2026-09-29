@@ -10,7 +10,12 @@
 
 斜め経路に広く連続したヒット領域を設け、分岐切り替えに短いホバー待機を加え、選択中カードの脈動を廃止しました。代替方向の順序も優先軸の近傍を先に選び、初期の子カード配置をコンパクトに保ちます。
 
+## 統一された合成カルーセル
+
+入力と発音は、同じ再利用可能なトークン入力とカルーセル表示を使用します。入力カルーセルは欄の直下に配置され、選択トークンは共通の小型削除ボタンを使用し、依存カード作成操作は通常ユーザーが作成できるレイヤーにだけ表示されます。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
 - [db0728af](https://github.com/Cognis-Labs-HQ/Cognis/commit/db0728af)
+- [9c77e48f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c77e48f)

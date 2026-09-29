@@ -10,7 +10,12 @@ Kartu anak mempertahankan posisi yang telah disesuaikan saat cabang yang lebih d
 
 Rute diagonal kini memiliki koridor sasaran berkelanjutan yang lebih besar, perubahan cabang memakai jeda singkat untuk mengenali niat penunjuk, dan kartu aktif tidak lagi berdenyut. Urutan arah alternatif juga menjaga tata letak awal kartu anak tetap rapat di sekitar sumbu pilihan.
 
+## Karosel Komposisi Terpadu
+
+Input dan pelafalan kini memakai input token serta perenderan karosel yang sama dan dapat digunakan kembali. Karosel input berada tepat di bawah bidangnya, token terpilih memakai tombol hapus ringkas yang sama, dan kontrol pembuatan dependensi hanya tampil untuk lapisan yang biasanya dapat dibuat pengguna.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
 - [db0728af](https://github.com/Cognis-Labs-HQ/Cognis/commit/db0728af)
+- [9c77e48f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c77e48f)

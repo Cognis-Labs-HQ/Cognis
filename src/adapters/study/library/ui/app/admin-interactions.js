@@ -2,7 +2,11 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
-import { renderHorizontalCarousel } from "/static/reuse/horizontal-carousel.js";
+import {
+    appendHorizontalCarouselItem,
+    renderHorizontalCarousel,
+} from "/static/reuse/horizontal-carousel.js";
+import { renderCompositionInput } from "/static/reuse/composition-input.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
     requestLibraryUpdate,
@@ -13,7 +17,7 @@ import {
     layerForEntry,
     localizedLabel,
 } from "./presentation.js";
-import { entryEditMode } from "./editability.js";
+import { canCreateLayerEntries, entryEditMode } from "./editability.js";
 import {
     mountEditableRelationshipCarousels,
     pronunciationRelationshipsFor,
@@ -310,7 +314,13 @@ export function editorBody(
     const selectedReferenceField = (
         kind,
         relationshipIds,
-        { fieldLabel = kind, multiValue = false, values = [] } = {},
+        {
+            fieldLabel = kind,
+            multiValue = false,
+            values = [],
+            inputValue = "",
+            required = false,
+        } = {},
     ) => {
         const selected = (multiValue ? [] : (entry.references ?? []))
             .filter(({ relation }) => relationshipIds.has(relation))
@@ -325,11 +335,91 @@ export function editorBody(
             multiValue && values.length
                 ? `<span class="library-composer-saved-values" data-library-saved-values>${values.map((value, index) => `<span class="library-composer-saved-value" data-library-saved-index="${index}"><button class="btn-neutral" type="button" data-library-edit-saved-value>${escapeHtml(value)}</button><button class="btn-cancel" type="button" data-library-delete-saved-value aria-label="${escapeHtml(i18n.t("gateway.study.library_delete_saved_value").replace("{{ field }}", fieldLabel))}">×</button></span>`).join("")}</span>`
                 : `<span class="library-composer-saved-values" data-library-saved-values hidden></span>`;
-        const saveButton = multiValue
-            ? `<button class="btn-confirm" type="button" data-library-save-composed-value>${escapeHtml(i18n.t("gateway.study.library_save_field").replace("{{ field }}", fieldLabel))}</button>`
-            : "";
-        return `${savedValues}<span class="library-composition-input" data-library-composition-field="${kind}" data-multi-value="${multiValue}"><span class="library-composition-blocks" data-library-selected-references="${kind}" aria-live="polite">${selected.map((candidate) => `<span class="btn-neutral library-composition-block" data-library-selected-reference="${escapeHtml(candidate.id)}"><span>${escapeHtml(candidate.label)}</span><button class="btn-cancel" type="button" data-library-remove-selected-reference aria-label="${escapeHtml(i18n.t("gateway.study.library_remove_selected_card").replace("{{ card }}", candidate.label))}">×</button></span>`).join("")}</span><input data-library-carousel-text autocomplete="off" aria-label="${escapeHtml(fieldLabel)}"><span class="library-composer-suggestions" data-library-carousel-suggestions></span>${saveButton}</span>`;
+        return `${savedValues}${renderCompositionInput({
+            id: kind,
+            label: fieldLabel,
+            value: inputValue,
+            required,
+            items: selected.map((candidate) => ({
+                value: candidate.id,
+                label: candidate.label,
+            })),
+            removeLabel: (label) =>
+                i18n
+                    .t("gateway.study.library_remove_selected_card")
+                    .replace("{{ card }}", label),
+            containerAttributes: {
+                "data-library-composition-field": kind,
+                "data-multi-value": multiValue,
+            },
+            inputAttributes: {
+                "data-library-carousel-text": true,
+                ...(kind === "input"
+                    ? { "data-library-composer-text": true }
+                    : {}),
+            },
+            itemsAttributes: {
+                "data-library-selected-references": kind,
+                ...(kind === "input"
+                    ? { "data-library-composition-blocks": true }
+                    : {}),
+            },
+            itemAttributes: ({ value }) => ({
+                "data-library-selected-reference": value,
+                ...(kind === "input"
+                    ? {
+                          "data-library-composition-id": value,
+                          draggable: true,
+                      }
+                    : {}),
+            }),
+            saveAction: multiValue
+                ? {
+                      label: i18n
+                          .t("gateway.study.library_save_field")
+                          .replace("{{ field }}", fieldLabel),
+                      attributes: {
+                          "data-library-save-composed-value": true,
+                      },
+                  }
+                : undefined,
+        })}`;
     };
+    const inputRelationships = (layer?.relationships ?? []).filter(({ id }) =>
+        options.inputCarouselIds?.has(id),
+    );
+    const relationshipAllowsCreate = (relationship) => {
+        const targetLayer = schema?.layers.find(
+            ({ id }) => id === relationship.targetLayer,
+        );
+        return canCreateLayerEntries(targetLayer);
+    };
+    const inlineInputCarousel = inputRelationships
+        .map((relationship) =>
+            relationshipEditor(
+                relationship,
+                entry,
+                entries,
+                schema,
+                schema.language,
+                {
+                    carousel: true,
+                    addLabel: i18n.t("gateway.study.library_create"),
+                    allowAdd:
+                        options.relationshipCarouselAdd !== false &&
+                        relationshipAllowsCreate(relationship),
+                    excludedTags: new Set(
+                        (options.tagCarousels ?? [])
+                            .filter(
+                                (carousel) =>
+                                    carousel.relationship === relationship.id,
+                            )
+                            .map(({ tag }) => tag),
+                    ),
+                },
+            ),
+        )
+        .join("");
     const inlinePronunciationCarousel = options.inlinePronunciationCarousel
         ? pronunciationRelationships
               .map((relationship) =>
@@ -341,7 +431,10 @@ export function editorBody(
                       schema.language,
                       {
                           carousel: true,
-                          allowAdd: false,
+                          addLabel: i18n.t("gateway.study.library_create"),
+                          allowAdd:
+                              options.relationshipCarouselAdd !== false &&
+                              relationshipAllowsCreate(relationship),
                           ordersPronunciation: true,
                       },
                   ),
@@ -383,8 +476,9 @@ export function editorBody(
     const relationships = (layer?.relationships ?? [])
         .filter(
             (relationship) =>
-                !options.inlinePronunciationCarousel ||
-                !pronunciationRelationshipIds.has(relationship.id),
+                !options.inputCarouselIds?.has(relationship.id) &&
+                (!options.inlinePronunciationCarousel ||
+                    !pronunciationRelationshipIds.has(relationship.id)),
         )
         .map((relationship, relationshipIndex, allRelationships) => {
             const targetRole = schema?.layers.find(
@@ -416,7 +510,9 @@ export function editorBody(
                         options.relationshipCarousels === true &&
                         !carouselEligible,
                     addLabel: i18n.t("gateway.study.library_create"),
-                    allowAdd: options.relationshipCarouselAdd !== false,
+                    allowAdd:
+                        options.relationshipCarouselAdd !== false &&
+                        relationshipAllowsCreate(relationship),
                     excludedTags: new Set(
                         (options.tagCarousels ?? [])
                             .filter(
@@ -477,10 +573,9 @@ export function editorBody(
         ? `<input name="label" type="hidden" required maxlength="500" value="${escapeHtml(entry.label)}">`
         : "";
     const classField = `<input name="class" type="hidden" value="${escapeHtml(contentClass)}">`;
-    const inputSelectionField =
-        entry.id && options.inputCarouselIds?.size
-            ? `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</legend>${selectedReferenceField("input", options.inputCarouselIds, { fieldLabel: i18n.t("gateway.study.library_composer_text") })}</fieldset>`
-            : "";
+    const inputSelectionField = options.inputCarouselIds?.size
+        ? `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</legend>${selectedReferenceField("input", options.inputCarouselIds, { fieldLabel: i18n.t("gateway.study.library_composer_text"), inputValue: entry.id ? "" : entry.label, required: !entry.id })}${inlineInputCarousel}</fieldset>`
+        : "";
     const isDefinition = layer?.semanticRole === "definition";
     const tags = Array.isArray(entry.tags) ? entry.tags : [];
     const tagsField = `<div class="library-tag-field" data-library-entry-tags><span>${escapeHtml(i18n.t("gateway.study.library_tags"))}</span><div class="library-tag-list">${tags.map((tag) => `<button type="button" class="btn-neutral" data-library-tag="${escapeHtml(tag)}">${escapeHtml(tag)} ×</button>`).join("")}</div><input data-library-tag-input aria-label="${escapeHtml(i18n.t("gateway.study.library_tags"))}"><input name="tags" type="hidden" value="${escapeHtml(tags.join("\u001f"))}"></div>`;
@@ -671,6 +766,36 @@ function updateCompositionOrder(form, relationshipId, values) {
     });
 }
 
+async function createRelationshipDependency({
+    schemas,
+    entries,
+    schema,
+    relationship,
+    carousel,
+    form,
+    i18n,
+}) {
+    const { openCreateEntryPopup } = await import("./create-entry.js");
+    const suggestedLabel = carousel.dataset.suggestedLabel ?? "";
+    const created = await openCreateEntryPopup({
+        schemas,
+        entries,
+        schemaId: schema.id,
+        layerId: relationship.targetLayer,
+        i18n,
+        initialLabel: suggestedLabel,
+    });
+    delete carousel.dataset.suggestedLabel;
+    if (!created) return;
+    entries.push(created);
+    const select = form.elements[`relationship:${relationship.id}`];
+    select?.append(new Option(created.label, created.id, false, false));
+    appendHorizontalCarouselItem(carousel, {
+        value: created.id,
+        label: created.label,
+    })?.click();
+}
+
 export async function openLibraryEntryEditor({
     entry,
     entries,
@@ -701,7 +826,6 @@ export async function openLibraryEntryEditor({
             generatedLabel: layer?.semanticRole !== "definition",
             includeHidden: false,
             relationshipCarousels: true,
-            relationshipCarouselAdd: false,
             inlinePronunciationCarousel: true,
             inputCarouselIds: composer.inputCarouselIds,
             pronunciationCarouselLayers: composer.pronunciationCarouselLayers,
@@ -781,6 +905,21 @@ export async function openLibraryEntryEditor({
                                 entries,
                             ),
                         );
+                    },
+                    onAdd: ({ id, carousel }) => {
+                        const relationship = composer.layer.relationships.find(
+                            (candidate) => candidate.id === id,
+                        );
+                        if (!relationship) return;
+                        void createRelationshipDependency({
+                            schemas,
+                            entries,
+                            schema,
+                            relationship,
+                            carousel,
+                            form,
+                            i18n,
+                        });
                     },
                 },
             );
@@ -924,7 +1063,6 @@ export function bindAdminLibraryInteractions(
                     generatedLabel: layer?.semanticRole !== "definition",
                     showRelationshipTab: readOnly,
                     relationshipCarousels: !readOnly,
-                    relationshipCarouselAdd: false,
                     inlinePronunciationCarousel: !readOnly,
                     inputCarouselIds: composer.inputCarouselIds,
                     pronunciationCarouselLayers:
@@ -1038,6 +1176,22 @@ export function bindAdminLibraryInteractions(
                                             entries,
                                         ),
                                     );
+                                },
+                                onAdd: ({ id, carousel }) => {
+                                    const relationship =
+                                        composer.layer.relationships.find(
+                                            (candidate) => candidate.id === id,
+                                        );
+                                    if (!relationship) return;
+                                    void createRelationshipDependency({
+                                        schemas,
+                                        entries,
+                                        schema,
+                                        relationship,
+                                        carousel,
+                                        form,
+                                        i18n,
+                                    });
                                 },
                             },
                         );
