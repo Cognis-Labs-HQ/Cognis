@@ -72,6 +72,24 @@ test("Study Library composer exposes provider-owned raw-input lookup", () => {
     );
 });
 
+test("Study Library selects newly created dependencies through the carousel", () => {
+    assert.match(
+        createEntrySource,
+        /new Option\(\s*created\.label,\s*created\.id,\s*false,\s*false,\s*\)/,
+    );
+    assert.match(
+        createEntrySource,
+        /appendHorizontalCarouselItem\(carousel,[\s\S]*?\}\)\?\.click\(\)/,
+    );
+});
+
+test("alternate-character pronunciation includes atomic character relationships", () => {
+    assert.match(
+        composerContractSource,
+        /layer\?\.semanticRole === "compoundWritingUnit"[\s\S]*?targetLayer\?\.semanticRole === "atomicWritingUnit"/,
+    );
+});
+
 test("Study Library derives pronunciation using the provider field type", () => {
     assert.match(
         composerContractSource,

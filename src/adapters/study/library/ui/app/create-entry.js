@@ -403,8 +403,8 @@ export async function openCreateEntryPopup({
                         const option = new Option(
                             created.label,
                             created.id,
-                            true,
-                            true,
+                            false,
+                            false,
                         );
                         select.append(option);
                         appendHorizontalCarouselItem(carousel, {

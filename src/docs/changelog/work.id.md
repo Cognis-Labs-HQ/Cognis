@@ -14,8 +14,13 @@ Rute diagonal kini memiliki koridor sasaran berkelanjutan yang lebih besar, peru
 
 Input dan pelafalan kini memakai input token serta perenderan karosel yang sama dan dapat digunakan kembali. Karosel input berada tepat di bawah bidangnya, token terpilih memakai tombol hapus ringkas yang sama, dan kontrol pembuatan dependensi hanya tampil untuk lapisan yang biasanya dapat dibuat pengguna.
 
+## Komposisi Dependensi Langsung
+
+Kartu yang dibuat melalui kontrol tambah carousel kini kembali melalui alur pemilihan yang sama seperti kartu yang sudah ada, sehingga langsung ditambahkan ke tahap aktif. Bidang pelafalan karakter alternatif kini menyertakan carousel karakter atomiknya meskipun relasi penyedia menggunakan peran presentasi yang lebih umum.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
 - [db0728af](https://github.com/Cognis-Labs-HQ/Cognis/commit/db0728af)
 - [9c77e48f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c77e48f)
+- [41d895c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/41d895c6)

@@ -14,8 +14,13 @@
 
 入力と発音は、同じ再利用可能なトークン入力とカルーセル表示を使用します。入力カルーセルは欄の直下に配置され、選択トークンは共通の小型削除ボタンを使用し、依存カード作成操作は通常ユーザーが作成できるレイヤーにだけ表示されます。
 
+## 依存カードの即時構成
+
+カルーセルの追加操作から作成したカードは、既存カードと同じ選択処理を通して返され、作業中の構成ステージへ直ちに追加されます。代替文字の発音フィールドでは、プロバイダー関係がより一般的な表示ロールを使用している場合でも、原子文字カルーセルが表示されます。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
 - [db0728af](https://github.com/Cognis-Labs-HQ/Cognis/commit/db0728af)
 - [9c77e48f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c77e48f)
+- [41d895c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/41d895c6)

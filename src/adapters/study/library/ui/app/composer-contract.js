@@ -100,9 +100,14 @@ export function resolveComposerContract(schema, layer, constructor) {
         effectiveConstructor.relationships ?? [],
     );
     for (const relationship of layer?.relationships ?? []) {
+        const targetLayer = schema?.layers?.find(
+            ({ id }) => id === relationship.targetLayer,
+        );
         const configuredForPronunciation =
-            relationship.presentationRole === "pronunciation" &&
-            pronunciationCarouselLayers.has(relationship.targetLayer);
+            pronunciationCarouselLayers.has(relationship.targetLayer) &&
+            (relationship.presentationRole === "pronunciation" ||
+                (layer?.semanticRole === "compoundWritingUnit" &&
+                    targetLayer?.semanticRole === "atomicWritingUnit"));
         const configuredForInput =
             relationship.presentationRole !== "pronunciation" &&
             inputCarouselLayers.has(relationship.targetLayer);
