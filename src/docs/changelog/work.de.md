@@ -34,6 +34,10 @@ Definitionspflichten kennzeichnen nun den Reiter Definitionen und die Hinzufüge
 
 Die mehrteilige Library-Validierung verwendet nun den Tab-Validierungscontroller des gemeinsamen Formular-Composers statt einer adapterspezifischen Implementierung. Der wiederverwendbare Controller verwaltet Tab-Aktivierung, Ungültigkeitsmarkierungen und den Fokus auf das erste ungültige Feld; Library liefert nur das definitionsspezifische Fokusziel und die Stilklasse.
 
+## Korrigierte Zuordnung im Altzeichen-Composer
+
+Composer für alternative Zeichen behalten jetzt die vom Anbieter deklarierten Zeichenkarussells für die Aussprache und greifen nur ersatzweise auf atomare Zeichenbeziehungen zurück, sodass unter Aussprache keine Wortschatzkarten mehr erscheinen. Anbieter von Strichmustern werden anhand neutraler Vertragsmetadaten oder der lokalisierten Feldbezeichnung zugeordnet; ihre Aktion wird daher aus der allgemeinen Nachschlagezeile entfernt und als „Nachschlagen“ im Abschnitt Strichmuster angezeigt.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -44,3 +48,4 @@ Die mehrteilige Library-Validierung verwendet nun den Tab-Validierungscontroller
 - [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)
 - [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)
 - [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)
+- [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)

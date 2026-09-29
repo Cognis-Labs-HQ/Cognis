@@ -34,6 +34,10 @@ Persyaratan definisi kini menandai tab Definisi dan tindakan tambah, sedangkan b
 
 Validasi multi-tab Library kini menggunakan pengontrol validasi tab milik composer formulir bersama, bukan implementasi khusus adapter. Pengontrol pakai ulang mengelola aktivasi tab, penanda tidak valid, dan fokus ke bidang tidak valid pertama; Library hanya menyediakan target fokus khusus definisi dan kelas gayanya.
 
+## Perutean Composer Karakter Alternatif
+
+Composer karakter alternatif kini mempertahankan karusel pelafalan karakter yang dinyatakan penyedia dan hanya menggunakan relasi karakter atomik sebagai cadangan, sehingga kartu kosakata tidak lagi muncul di bawah Pelafalan. Penyedia pola guratan diklasifikasikan melalui metadata kontrak netral atau label bidang yang dilokalkan, sehingga aksinya dipindahkan dari baris pencarian umum dan ditampilkan sebagai “Cari” di dalam Pola Guratan.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -44,3 +48,4 @@ Validasi multi-tab Library kini menggunakan pengontrol validasi tab milik compos
 - [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)
 - [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)
 - [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)
+- [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)

@@ -34,6 +34,10 @@ Definition requirements now mark the Definitions tab and add action, while inval
 
 Library multi-tab validation now uses the shared form composer’s tab-validation controller instead of maintaining an adapter-specific implementation. The reusable controller owns tab activation, invalid markers, and earliest-invalid-field focus; Library supplies only its definition-specific focus target and styling class.
 
+## Correct Alt-Character Composer Routing
+
+Alternate-character composers now keep provider-declared character pronunciation carousels and fall back only to atomic character relationships, preventing vocabulary cards from appearing under Pronunciation. Stroke-pattern providers are classified by their neutral contract metadata or localized field label, so their action is removed from the general lookup row and rendered as “Lookup” inside Stroke Pattern.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -44,3 +48,4 @@ Library multi-tab validation now uses the shared form composer’s tab-validatio
 - [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)
 - [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)
 - [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)
+- [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)

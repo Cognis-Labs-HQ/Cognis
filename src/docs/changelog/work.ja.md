@@ -34,6 +34,10 @@
 
 Library の複数タブ検証は、アダプター固有の実装ではなく、共有フォームコンポーザーのタブ検証コントローラーを使用するようになりました。再利用コントローラーがタブ切り替え、無効表示、最初の無効フィールドへのフォーカスを担当し、Library は定義固有のフォーカス先とスタイルクラスだけを指定します。
 
+## 代替文字コンポーザーの振り分け修正
+
+代替文字コンポーザーは、プロバイダーが宣言した文字の発音カルーセルを維持し、未宣言の場合だけ基本文字の関係を代替として使うようになりました。これにより、発音の下に語彙カードが表示されません。筆順プロバイダーは中立な契約メタデータまたはローカライズ済みフィールド名で分類され、一般検索行から除外されて、筆順セクション内に「検索」として表示されます。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -44,3 +48,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)
 - [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)
 - [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)
+- [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)

@@ -76,6 +76,7 @@ test("Study Library separates stroke lookup and renders a compact preview", () =
     for (const [content, pattern] of [
         [createEntrySource, /strokeLookupProviders/],
         [createEntrySource, /capabilities\?\.includes\("strokePattern"\)/],
+        [createEntrySource, /providerMatchesField/],
         [createEntrySource, /dictionary_lookup !== false/],
         [createEntrySource, /data-library-stroke-lookup/],
         [adminInteractionsSource, /renderStrokePatternPreviews/],
@@ -124,9 +125,17 @@ test("Study Library selects newly created dependencies through the carousel", ()
 });
 
 test("alternate-character pronunciation includes atomic character relationships", () => {
+    const compoundBranch = composerContractSource.match(
+        /if \(layer\?\.semanticRole === "compoundWritingUnit"\) \{([\s\S]*?)\} else if/,
+    )?.[1];
+    assert.ok(compoundBranch);
     assert.match(
-        composerContractSource,
-        /layer\?\.semanticRole === "compoundWritingUnit"[\s\S]*?\["definition", "meaning"\]/,
+        compoundBranch,
+        /pronunciationCarouselLayers\.size === 0[\s\S]*?semanticRole === "atomicWritingUnit"/,
+    );
+    assert.doesNotMatch(
+        compoundBranch,
+        /pronunciationCarouselLayers\.clear\(\)/,
     );
 });
 

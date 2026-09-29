@@ -50,13 +50,22 @@ export function resolveComposerContract(schema, layer, constructor) {
             .map(({ id }) => id);
     if (layer?.semanticRole === "compoundWritingUnit") {
         inputCarouselLayers.clear();
-        pronunciationCarouselLayers.clear();
-        for (const relationship of layer.relationships ?? []) {
-            const target = schema?.layers?.find(
-                ({ id }) => id === relationship.targetLayer,
+        if (pronunciationCarouselLayers.size === 0) {
+            const atomicTargets = (layer.relationships ?? []).filter(
+                (relationship) =>
+                    schema?.layers?.find(
+                        ({ id }) => id === relationship.targetLayer,
+                    )?.semanticRole === "atomicWritingUnit",
             );
-            if (!["definition", "meaning"].includes(target?.semanticRole))
-                pronunciationCarouselLayers.add(relationship.targetLayer);
+            const pronunciationTargets = atomicTargets.length
+                ? atomicTargets
+                : (layer.relationships ?? []).filter(
+                      ({ presentationRole }) =>
+                          presentationRole === "pronunciation",
+                  );
+            pronunciationTargets.forEach(({ targetLayer }) =>
+                pronunciationCarouselLayers.add(targetLayer),
+            );
         }
     } else if (layer?.semanticRole === "lexicalUnit") {
         inputCarouselLayers.clear();

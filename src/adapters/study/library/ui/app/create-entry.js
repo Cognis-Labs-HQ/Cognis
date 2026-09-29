@@ -181,11 +181,24 @@ export async function openCreateEntryPopup({
             layer.dictionary_lookup !== false ||
             !capabilities?.includes("dictionary"),
     );
+    const normalizedLookupLabels = (metadata) =>
+        Object.values(metadata?.labels ?? {}).map((label) =>
+            label.trim().normalize("NFKC").toLocaleLowerCase(),
+        );
+    const providerMatchesField = (provider, field) => {
+        if (provider.fields?.includes(field.id)) return true;
+        if (provider.capabilities?.includes("strokePattern")) return true;
+        const fieldLabels = normalizedLookupLabels(field.metadata);
+        return normalizedLookupLabels(provider.metadata).some((providerLabel) =>
+            fieldLabels.some(
+                (fieldLabel) =>
+                    fieldLabel.length > 3 && providerLabel.includes(fieldLabel),
+            ),
+        );
+    };
     const strokeLookupProviders = strokeField
-        ? enabledLookupProviders.filter(
-              ({ fields, capabilities }) =>
-                  fields?.includes(strokeField.id) ||
-                  capabilities?.includes("strokePattern"),
+        ? enabledLookupProviders.filter((provider) =>
+              providerMatchesField(provider, strokeField),
           )
         : [];
     const generalLookupProviders = enabledLookupProviders.filter(
