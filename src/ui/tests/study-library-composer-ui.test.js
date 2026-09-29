@@ -88,10 +88,10 @@ test("Study Library separates stroke lookup and renders a compact preview", () =
 
 test("Study Library validation reveals invalid fields across editor tabs", () => {
     for (const pattern of [
-        /revealFirstInvalidField/,
-        /libraryValidationPanel/,
+        /revealFirstInvalid/,
+        /formValidationPanel/,
+        /bindTabbedFormValidation/,
         /library-editor-tab--required/,
-        /scrollIntoView/,
         /validateRequiredRelationships/,
     ])
         assert.match(adminInteractionsSource, pattern);

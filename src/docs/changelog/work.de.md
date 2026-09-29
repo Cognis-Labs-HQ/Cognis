@@ -30,6 +30,10 @@ Popup-Definitionen tragen keinen vorangestellten Gedankenstrich mehr. Aussprache
 
 Definitionspflichten kennzeichnen nun den Reiter Definitionen und die Hinzufügen-Aktion, während ungültige Aussprachefelder sich direkt ausweisen. Reiter behalten ihre normale Farbe und zeigen nur ein rotes Sternchen. Alternative Zeichen dürfen Definitionen auslassen und laden nun alle Aussprachebeziehungen außerhalb von Definitionen. Anbieter für Strich- und Wörterbuchsuche deklarieren neutrale Fähigkeiten für korrekte Platzierung und schichtweise Wörterbuch-Abwahl. Schlagwörter stehen nun zuletzt in Inhaltsformularen.
 
+## Wiederverwendbare Tab-Validierung
+
+Die mehrteilige Library-Validierung verwendet nun den Tab-Validierungscontroller des gemeinsamen Formular-Composers statt einer adapterspezifischen Implementierung. Der wiederverwendbare Controller verwaltet Tab-Aktivierung, Ungültigkeitsmarkierungen und den Fokus auf das erste ungültige Feld; Library liefert nur das definitionsspezifische Fokusziel und die Stilklasse.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -39,3 +43,4 @@ Definitionspflichten kennzeichnen nun den Reiter Definitionen und die Hinzufüge
 - [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)
 - [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)
 - [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)
+- [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)

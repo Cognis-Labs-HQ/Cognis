@@ -1,7 +1,10 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
-import { createFormBuilder } from "/static/reuse/form-builder.js";
+import {
+    bindTabbedFormValidation,
+    createFormBuilder,
+} from "/static/reuse/form-builder.js";
 import {
     appendHorizontalCarouselItem,
     renderHorizontalCarousel,
@@ -64,71 +67,14 @@ export function bindLibraryEditorControls(
             control.libraryFieldValue = entry.fields?.[fieldId];
         },
     );
-    const activateTab = (tabId) => {
-        form.querySelectorAll("[data-library-editor-tab]").forEach((button) => {
-            const active = button.dataset.libraryEditorTab === tabId;
-            button.classList.toggle("active", active);
-            button.setAttribute("aria-selected", String(active));
-        });
-        form.querySelectorAll("[data-library-editor-panel]").forEach(
-            (panel) => {
-                panel.hidden = panel.dataset.libraryEditorPanel !== tabId;
-            },
-        );
-    };
-    const refreshInvalidTabs = () => {
-        const invalidPanels = new Set(
-            Array.from(
-                form.querySelectorAll(":invalid"),
-                (field) =>
-                    field.dataset.libraryValidationPanel ??
-                    field.closest("[data-library-editor-panel]")?.dataset
-                        .libraryEditorPanel,
-            ).filter(Boolean),
-        );
-        form.querySelectorAll("[data-library-editor-tab]").forEach((tab) => {
-            const invalid = invalidPanels.has(tab.dataset.libraryEditorTab);
-            tab.classList.toggle("library-editor-tab--required", invalid);
-            tab.toggleAttribute("aria-invalid", invalid);
-        });
-        return invalidPanels;
-    };
-    form.revealFirstInvalidField = () => {
-        const invalid = form.querySelector(":invalid");
-        refreshInvalidTabs();
-        if (!invalid) return false;
-        const panelId =
-            invalid.dataset.libraryValidationPanel ??
-            invalid.closest("[data-library-editor-panel]")?.dataset
-                .libraryEditorPanel;
-        if (panelId) activateTab(panelId);
-        const focusTarget =
+    const tabValidation = bindTabbedFormValidation(form, {
+        invalidClassName: "library-editor-tab--required",
+        resolveFocusTarget: (invalid, panelId) =>
             panelId === "definitions"
                 ? form.querySelector("[data-library-add-definition]")
-                : invalid;
-        focusTarget?.scrollIntoView({ block: "center", behavior: "smooth" });
-        focusTarget?.focus({ preventScroll: true });
-        if (focusTarget === invalid) invalid.reportValidity();
-        return true;
-    };
-    form.querySelector("[data-library-editor-tabs]")?.addEventListener(
-        "click",
-        (event) => {
-            const tab = event.target.closest("[data-library-editor-tab]");
-            if (tab) activateTab(tab.dataset.libraryEditorTab);
-        },
-    );
-    form.addEventListener(
-        "invalid",
-        (event) => {
-            const panel = event.target.closest("[data-library-editor-panel]");
-            if (panel) activateTab(panel.dataset.libraryEditorPanel);
-            refreshInvalidTabs();
-        },
-        true,
-    );
-    form.addEventListener("input", refreshInvalidTabs);
-    form.addEventListener("change", refreshInvalidTabs);
+                : invalid,
+    });
+    form.revealFirstInvalidField = tabValidation.revealFirstInvalid;
     form.querySelectorAll("select[multiple]").forEach((select) => {
         select.addEventListener("mousedown", (event) => {
             if (event.target.tagName !== "OPTION") return;
@@ -173,7 +119,6 @@ export function bindLibraryEditorControls(
         });
     });
     renderStrokePatternPreviews(form);
-    refreshInvalidTabs();
     form.querySelectorAll("[data-library-entry-tags]").forEach((field) => {
         const input = field.querySelector("[data-library-tag-input]");
         const hidden = field.querySelector('input[type="hidden"]');
@@ -620,10 +565,10 @@ export function editorBody(
     const tags = Array.isArray(entry.tags) ? entry.tags : [];
     const tagsField = `<div class="library-tag-field" data-library-entry-tags><span>${escapeHtml(i18n.t("gateway.study.library_tags"))}</span><div class="library-tag-list">${tags.map((tag) => `<button type="button" class="btn-neutral" data-library-tag="${escapeHtml(tag)}">${escapeHtml(tag)} ×</button>`).join("")}</div><input data-library-tag-input aria-label="${escapeHtml(i18n.t("gateway.study.library_tags"))}"><input name="tags" type="hidden" value="${escapeHtml(tags.join("\u001f"))}"></div>`;
     const relationshipTab = options.showRelationshipTab
-        ? `<button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="relationships">${escapeHtml(i18n.t("gateway.study.library_editor_relationships"))}</button>`
+        ? `<button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="relationships" data-form-tab="relationships">${escapeHtml(i18n.t("gateway.study.library_editor_relationships"))}</button>`
         : "";
     const relationshipPanel = options.showRelationshipTab
-        ? `<section class="library-editor-panel" data-library-editor-panel="relationships" hidden>${relationshipMap}</section>`
+        ? `<section class="library-editor-panel" data-library-editor-panel="relationships" data-form-panel="relationships" hidden>${relationshipMap}</section>`
         : "";
     const preservedRelationships =
         !options.persistentExtra && !options.showRelationshipTab
@@ -666,7 +611,7 @@ export function editorBody(
                           value: entry.label,
                       },
                   ],
-            trustedContentHtml: `${options.persistentExtra ? "" : preservedRelationships}<nav class="library-editor-tabs" role="tablist" data-library-editor-tabs><button class="btn-neutral active" type="button" role="tab" aria-selected="true" data-library-editor-tab="content">${escapeHtml(i18n.t("gateway.study.library_editor_content"))}</button>${relationshipTab}<button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="definitions">${escapeHtml(i18n.t("gateway.study.library_definitions"))}</button></nav><section class="library-editor-panel" data-library-editor-panel="content">${generatedLabel}${classField}${extraHtml}${inputSelectionField}${fields}${options.persistentExtra ? relationships : ""}${isDefinition || options.includeAlwaysShowDefinition === false ? '<input name="alwaysShowDefinition" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox" class="choice-checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`}${isDefinition ? '<input name="hidden" type="hidden" value="true">' : options.includeHidden === false ? '<input name="hidden" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="hidden" type="checkbox" class="choice-checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}${tagsField}</section>${relationshipPanel}<section class="library-editor-panel" data-library-editor-panel="definitions" hidden>${definitionsPanel}</section>`,
+            trustedContentHtml: `${options.persistentExtra ? "" : preservedRelationships}<nav class="library-editor-tabs" role="tablist" data-library-editor-tabs><button class="btn-neutral active" type="button" role="tab" aria-selected="true" data-library-editor-tab="content" data-form-tab="content">${escapeHtml(i18n.t("gateway.study.library_editor_content"))}</button>${relationshipTab}<button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="definitions" data-form-tab="definitions">${escapeHtml(i18n.t("gateway.study.library_definitions"))}</button></nav><section class="library-editor-panel" data-library-editor-panel="content" data-form-panel="content">${generatedLabel}${classField}${extraHtml}${inputSelectionField}${fields}${options.persistentExtra ? relationships : ""}${isDefinition || options.includeAlwaysShowDefinition === false ? '<input name="alwaysShowDefinition" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox" class="choice-checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`}${isDefinition ? '<input name="hidden" type="hidden" value="true">' : options.includeHidden === false ? '<input name="hidden" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="hidden" type="checkbox" class="choice-checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}${tagsField}</section>${relationshipPanel}<section class="library-editor-panel" data-library-editor-panel="definitions" data-form-panel="definitions" hidden>${definitionsPanel}</section>`,
         },
     );
     return { html: builder.render(), builder };
@@ -796,8 +741,8 @@ export function validateRequiredRelationships(form, layer, schema, message) {
         const missing = selectedCount + groupedCount < minimum;
         select.setCustomValidity(missing ? message : "");
         if (["definition", "meaning"].includes(targetLayer?.semanticRole))
-            select.dataset.libraryValidationPanel = "definitions";
-        else delete select.dataset.libraryValidationPanel;
+            select.dataset.formValidationPanel = "definitions";
+        else delete select.dataset.formValidationPanel;
         if (isDefinitionRelationship)
             form.querySelector(
                 "[data-library-add-definition]",

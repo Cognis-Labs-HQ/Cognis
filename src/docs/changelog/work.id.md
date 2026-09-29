@@ -30,6 +30,10 @@ Definisi popup tidak lagi memakai awalan tanda pisah panjang. Kelompok pelafalan
 
 Persyaratan definisi kini menandai tab Definisi dan tindakan tambah, sedangkan bidang pelafalan yang tidak valid menandai dirinya langsung. Tab mempertahankan warna normal dan hanya menampilkan tanda bintang merah. Karakter alternatif boleh tanpa definisi dan kini memuat semua relasi pelafalan non-definisi. Penyedia pencarian guratan dan kamus mendeklarasikan kapabilitas netral untuk penempatan yang tepat serta pilihan keluar kamus per lapisan. Tag kini tampil terakhir pada formulir Konten.
 
+## Validasi Formulir Bertab Pakai Ulang
+
+Validasi multi-tab Library kini menggunakan pengontrol validasi tab milik composer formulir bersama, bukan implementasi khusus adapter. Pengontrol pakai ulang mengelola aktivasi tab, penanda tidak valid, dan fokus ke bidang tidak valid pertama; Library hanya menyediakan target fokus khusus definisi dan kelas gayanya.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -39,3 +43,4 @@ Persyaratan definisi kini menandai tab Definisi dan tindakan tambah, sedangkan b
 - [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)
 - [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)
 - [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)
+- [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)

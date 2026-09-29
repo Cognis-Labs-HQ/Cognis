@@ -30,6 +30,10 @@ Popup definitions no longer carry a leading em dash. Pronunciation and definitio
 
 Definition requirements now mark the Definitions tab and add action, while invalid pronunciation fields identify themselves directly. Tabs retain their normal color and show only a red asterisk. Alternate characters may omit definitions and now load all non-definition pronunciation relationships. Stroke and dictionary lookup providers declare neutral capabilities for correct placement and per-layer dictionary opt-out. Tags now appear last in Content forms.
 
+## Reusable Tabbed Form Validation
+
+Library multi-tab validation now uses the shared form composer’s tab-validation controller instead of maintaining an adapter-specific implementation. The reusable controller owns tab activation, invalid markers, and earliest-invalid-field focus; Library supplies only its definition-specific focus target and styling class.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -39,3 +43,4 @@ Definition requirements now mark the Definitions tab and add action, while inval
 - [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)
 - [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)
 - [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)
+- [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)

@@ -305,3 +305,5 @@ Stroke-capable card composers display a dedicated **Stroke Pattern** section. Lo
 Popup title definitions now render without a leading em dash. Pronunciation and definition groups occupy the title row and align vertically with the primary card title.
 
 Layer schemas can set `dictionary_lookup: false` to suppress lookup providers that declare the `dictionary` capability. Lookup providers declare their neutral capabilities and populated field IDs so stroke lookup actions are placed only in the Stroke Pattern section. Alternate-character composers treat non-definition relationships as pronunciation sources and do not require definitions. Tags render last in every Content form. Required tabs retain their normal styling and show only a red asterisk; a missing required definition also marks its add action.
+
+The Library editor delegates tab activation, invalid-tab markers, and earliest-invalid-field focus to the reusable form composer’s `bindTabbedFormValidation` controller. Library code supplies only its domain-specific definition focus target and required-marker class.

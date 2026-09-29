@@ -30,6 +30,10 @@
 
 定義の必須条件は定義タブと追加操作を強調し、無効な発音フィールドはフィールド自体を明示するようになりました。タブの通常色は維持され、赤いアスタリスクだけが表示されます。代替文字では定義を省略でき、定義以外のすべての発音関係を読み込みます。画検索と辞書検索のプロバイダーは中立的な機能を宣言し、正しい配置とレイヤー単位の辞書無効化に対応します。タグはコンテンツフォームの末尾に表示されます。
 
+## 再利用可能なタブ検証
+
+Library の複数タブ検証は、アダプター固有の実装ではなく、共有フォームコンポーザーのタブ検証コントローラーを使用するようになりました。再利用コントローラーがタブ切り替え、無効表示、最初の無効フィールドへのフォーカスを担当し、Library は定義固有のフォーカス先とスタイルクラスだけを指定します。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -39,3 +43,4 @@
 - [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)
 - [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)
 - [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)
+- [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)
