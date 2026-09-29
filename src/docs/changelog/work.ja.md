@@ -46,6 +46,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 プロバイダー定義の動詞・副詞ビューは、404 を返さずライブラリレイヤーの SPA ルートで解決されるようになりました。代替文字コンポーザーはスキーマ全体の基本文字レイヤーから発音を構成し、定義を維持しながら無関係な語彙関係を除外します。
 
+## 代替文字ペイロードを統一
+
+代替文字のフォームペイロードは、同じスキーマの語彙フォームペイロードから発音カルーセル一覧を直接コピーするようになりました。従来の代替文字専用カルーセル推論・フィルタリング処理は削除されました。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -59,3 +63,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)
 - [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)
 - [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)
+- [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)

@@ -209,9 +209,40 @@ export class LibraryService implements LibraryCapability {
         return () => this.formContributions.delete(contribution.id);
     }
     listFormContributions(): LibraryFormContribution[] {
-        return Array.from(this.formContributions.values(), (contribution) =>
-            structuredClone(contribution),
+        return this.alignedFormContributions();
+    }
+    private alignedFormContributions(): LibraryFormContribution[] {
+        const contributions = Array.from(
+            this.formContributions.values(),
+            (contribution) => structuredClone(contribution),
         );
+        for (const contribution of contributions) {
+            if (!contribution.cardConstructor) continue;
+            const schema = this.schema(contribution.schemaId);
+            const layer = findLayer(schema, contribution.layerId);
+            if (layer.semanticRole !== "compoundWritingUnit") continue;
+            const lexicalLayerIds = new Set(
+                schema.layers
+                    .filter(
+                        ({ semanticRole }) => semanticRole === "lexicalUnit",
+                    )
+                    .map(({ id }) => id),
+            );
+            const lexicalConstructor = contributions.find(
+                (candidate) =>
+                    candidate.schemaId === contribution.schemaId &&
+                    lexicalLayerIds.has(candidate.layerId) &&
+                    candidate.cardConstructor,
+            )?.cardConstructor;
+            if (lexicalConstructor)
+                contribution.cardConstructor = {
+                    ...contribution.cardConstructor,
+                    pronunciation_carousels: [
+                        ...lexicalConstructor.pronunciation_carousels,
+                    ],
+                };
+        }
+        return contributions;
     }
     listSchemas(): LibrarySchema[] {
         return Array.from(this.schemas.values(), (versions) =>
@@ -223,9 +254,7 @@ export class LibraryService implements LibraryCapability {
         return {
             ...copy,
             layers: copy.layers.map((layer) => {
-                const contributions = Array.from(
-                    this.formContributions.values(),
-                ).filter(
+                const contributions = this.alignedFormContributions().filter(
                     (candidate) =>
                         candidate.schemaId === copy.id &&
                         candidate.layerId === layer.id,

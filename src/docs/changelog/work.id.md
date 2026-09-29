@@ -46,6 +46,10 @@ Carousel pelafalan karakter alternatif kini ditentukan hanya dari relasi yang me
 
 Tampilan Kata Kerja dan Kata Keterangan yang dideklarasikan penyedia kini diselesaikan melalui rute SPA lapisan Library, bukan menghasilkan 404. Composer karakter alternatif kini mengisi pelafalan dari lapisan karakter atomik di seluruh skema dan menghilangkan relasi kosakata yang tidak terkait sambil tetap mempertahankan definisi.
 
+## Penyelarasan Payload Karakter Alternatif
+
+Payload formulir karakter alternatif kini menyalin daftar carousel pelafalannya langsung dari payload formulir kosakata pada skema yang sama. Kode inferensi dan penyaringan carousel khusus karakter alternatif sebelumnya telah dihapus.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -59,3 +63,4 @@ Tampilan Kata Kerja dan Kata Keterangan yang dideklarasikan penyedia kini disele
 - [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)
 - [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)
 - [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)
+- [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)

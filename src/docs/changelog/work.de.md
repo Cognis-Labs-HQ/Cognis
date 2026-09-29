@@ -46,6 +46,10 @@ Aussprachekarussells für alternative Zeichen werden jetzt ausschließlich aus B
 
 Vom Anbieter deklarierte Verben- und Adverbienansichten werden jetzt über die SPA-Route der Bibliotheksschicht aufgelöst, statt 404 zurückzugeben. Composer für alternative Zeichen befüllen die Aussprache nun aus schemaweiten atomaren Zeichenschichten und lassen sachfremde Wortschatzbeziehungen weg, während Definitionen erhalten bleiben.
 
+## Nutzlasten alternativer Zeichen angeglichen
+
+Formularnutzlasten für alternative Zeichen kopieren ihre Liste der Aussprachekarussells jetzt direkt aus der Wortschatz-Formularnutzlast desselben Schemas. Die bisherige spezielle Karussellableitung und Filterung für alternative Zeichen wurde entfernt.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -59,3 +63,4 @@ Vom Anbieter deklarierte Verben- und Adverbienansichten werden jetzt über die S
 - [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)
 - [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)
 - [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)
+- [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)

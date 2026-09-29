@@ -124,17 +124,6 @@ test("Study Library selects newly created dependencies through the carousel", ()
     );
 });
 
-test("alternate-character pronunciation includes atomic character relationships", () => {
-    const compoundBranch = composerContractSource.match(
-        /if \(layer\?\.semanticRole === "compoundWritingUnit"\) \{([\s\S]*?)\} else if/,
-    )?.[1];
-    assert.ok(compoundBranch);
-    assert.match(
-        compoundBranch,
-        /pronunciationCarouselLayers\.clear\(\)[\s\S]*?atomicWritingUnitCarouselLayers\(schema\)/,
-    );
-});
-
 test("Study Library registers schema layer views as SPA routes", () => {
     assert.ok(
         adapterSource.includes(

@@ -440,6 +440,96 @@ test("card constructors reject unknown provider fields", async () => {
     );
 });
 
+test("alternate-character forms copy vocabulary pronunciation carousels", async () => {
+    const { library } = service();
+    await library.registerSchema({
+        ...schema(1),
+        layers: [
+            {
+                id: "characters",
+                metadata: { labels: { en: "Characters" } },
+            },
+            {
+                id: "alternates",
+                metadata: { labels: { en: "Alternate characters" } },
+                semanticRole: "compoundWritingUnit",
+                fields: [
+                    {
+                        id: "pronunciation",
+                        metadata: { labels: { en: "Pronunciation" } },
+                        type: "stringList",
+                        required: true,
+                    },
+                    {
+                        id: "audio",
+                        metadata: { labels: { en: "Audio" } },
+                        type: "audio",
+                    },
+                ],
+                relationships: [
+                    {
+                        id: "characters",
+                        metadata: { labels: { en: "Characters" } },
+                        targetLayer: "characters",
+                        onDelete: "restrict",
+                        presentationRole: "pronunciation",
+                    },
+                    {
+                        id: "vocabulary",
+                        metadata: { labels: { en: "Vocabulary" } },
+                        targetLayer: "vocabulary",
+                        onDelete: "restrict",
+                        presentationRole: "pronunciation",
+                    },
+                ],
+            },
+            {
+                id: "vocabulary",
+                metadata: { labels: { en: "Vocabulary" } },
+                semanticRole: "lexicalUnit",
+                relationships: [
+                    {
+                        id: "characters",
+                        metadata: { labels: { en: "Characters" } },
+                        targetLayer: "characters",
+                        onDelete: "restrict",
+                        presentationRole: "pronunciation",
+                    },
+                ],
+            },
+        ],
+    });
+    library.registerFormContribution({
+        id: "vocabulary-form",
+        schemaId: "test-language",
+        layerId: "vocabulary",
+        cardConstructor: {
+            label: { labels: { en: "Vocabulary" } },
+            relationships: ["characters"],
+            input_carousels: [],
+            pronunciation_carousels: ["characters"],
+        },
+    });
+    library.registerFormContribution({
+        id: "alternate-form",
+        schemaId: "test-language",
+        layerId: "alternates",
+        cardConstructor: {
+            label: { labels: { en: "Alternate character" } },
+            relationships: ["characters", "vocabulary"],
+            input_carousels: [],
+            pronunciation_carousels: ["vocabulary"],
+        },
+    });
+
+    const alternate = library
+        .listFormContributions()
+        .find(({ layerId }) => layerId === "alternates");
+    assert.deepEqual(alternate?.cardConstructor?.pronunciation_carousels, [
+        "characters",
+    ]);
+});
+
 test("lookup providers are ranked and cleanly removable", async () => {
     const { library } = service();
     await library.registerSchema(schema(1));
