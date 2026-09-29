@@ -42,6 +42,10 @@ Alternate-character composers now keep provider-declared character pronunciation
 
 Alternate-character pronunciation carousels now resolve exclusively from relationships targeting atomic writing units. Constructor carousel lists remain form-payload references and can no longer cause a vocabulary carousel to appear in an alternate-character pronunciation editor.
 
+## Restore Library Views and Character Carousels
+
+Provider-declared Verbs and Adverbs views now resolve through the Library layer SPA route instead of returning 404. Alternate-character composers now populate pronunciation from schema-wide atomic character layers and omit unrelated vocabulary relationships while retaining definitions.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -54,3 +58,4 @@ Alternate-character pronunciation carousels now resolve exclusively from relatio
 - [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)
 - [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)
 - [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)
+- [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)

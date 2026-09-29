@@ -42,6 +42,10 @@ Composer für alternative Zeichen behalten jetzt die vom Anbieter deklarierten Z
 
 Aussprachekarussells für alternative Zeichen werden jetzt ausschließlich aus Beziehungen zu atomaren Schrifteinheiten bestimmt. Karusselllisten des Konstruktors bleiben Referenzen der Formularnutzlast und können im Ausspracheeditor alternativer Zeichen kein Wortschatzkarussell mehr auslösen.
 
+## Bibliotheksansichten und Zeichenkarussells wiederhergestellt
+
+Vom Anbieter deklarierte Verben- und Adverbienansichten werden jetzt über die SPA-Route der Bibliotheksschicht aufgelöst, statt 404 zurückzugeben. Composer für alternative Zeichen befüllen die Aussprache nun aus schemaweiten atomaren Zeichenschichten und lassen sachfremde Wortschatzbeziehungen weg, während Definitionen erhalten bleiben.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -54,3 +58,4 @@ Aussprachekarussells für alternative Zeichen werden jetzt ausschließlich aus B
 - [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)
 - [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)
 - [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)
+- [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)

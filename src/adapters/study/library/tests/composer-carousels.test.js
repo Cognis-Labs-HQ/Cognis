@@ -9,15 +9,8 @@ test("alternate-character pronunciation uses characters instead of vocabulary", 
             { id: "vocabulary", semanticRole: "lexicalUnit" },
         ],
     };
-    const layer = {
-        relationships: [
-            { id: "characters", targetLayer: "characters" },
-            { id: "words", targetLayer: "vocabulary" },
-        ],
-    };
-
     assert.deepEqual(
-        [...atomicWritingUnitCarouselLayers(schema, layer)],
+        [...atomicWritingUnitCarouselLayers(schema)],
         ["characters"],
     );
 });

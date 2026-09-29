@@ -42,6 +42,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 代替文字の発音カルーセルは、基本文字を対象とする関係だけから解決されるようになりました。コンストラクターのカルーセル一覧はフォームペイロードの参照にとどまり、代替文字の発音エディターに語彙カルーセルを表示させることはありません。
 
+## ライブラリビューと文字カルーセルを復元
+
+プロバイダー定義の動詞・副詞ビューは、404 を返さずライブラリレイヤーの SPA ルートで解決されるようになりました。代替文字コンポーザーはスキーマ全体の基本文字レイヤーから発音を構成し、定義を維持しながら無関係な語彙関係を除外します。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -54,3 +58,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)
 - [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)
 - [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)
+- [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)

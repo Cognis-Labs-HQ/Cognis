@@ -131,7 +131,15 @@ test("alternate-character pronunciation includes atomic character relationships"
     assert.ok(compoundBranch);
     assert.match(
         compoundBranch,
-        /pronunciationCarouselLayers\.clear\(\)[\s\S]*?atomicWritingUnitCarouselLayers\(schema, layer\)/,
+        /pronunciationCarouselLayers\.clear\(\)[\s\S]*?atomicWritingUnitCarouselLayers\(schema\)/,
+    );
+});
+
+test("Study Library registers schema layer views as SPA routes", () => {
+    assert.ok(
+        adapterSource.includes(
+            'pattern: "^/study/layers/[^/]+/[^/]+(?:/[^/]+)?$"',
+        ),
     );
 });
 

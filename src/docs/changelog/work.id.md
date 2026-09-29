@@ -42,6 +42,10 @@ Composer karakter alternatif kini mempertahankan karusel pelafalan karakter yang
 
 Carousel pelafalan karakter alternatif kini ditentukan hanya dari relasi yang menargetkan unit tulisan atomik. Daftar carousel konstruktor tetap menjadi referensi payload formulir dan tidak lagi dapat memunculkan carousel kosakata dalam editor pelafalan karakter alternatif.
 
+## Pemulihan Tampilan Library dan Carousel Karakter
+
+Tampilan Kata Kerja dan Kata Keterangan yang dideklarasikan penyedia kini diselesaikan melalui rute SPA lapisan Library, bukan menghasilkan 404. Composer karakter alternatif kini mengisi pelafalan dari lapisan karakter atomik di seluruh skema dan menghilangkan relasi kosakata yang tidak terkait sambil tetap mempertahankan definisi.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -54,3 +58,4 @@ Carousel pelafalan karakter alternatif kini ditentukan hanya dari relasi yang me
 - [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)
 - [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)
 - [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)
+- [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)

@@ -52,7 +52,7 @@ export function resolveComposerContract(schema, layer, constructor) {
     if (layer?.semanticRole === "compoundWritingUnit") {
         inputCarouselLayers.clear();
         pronunciationCarouselLayers.clear();
-        atomicWritingUnitCarouselLayers(schema, layer).forEach((targetLayer) =>
+        atomicWritingUnitCarouselLayers(schema).forEach((targetLayer) =>
             pronunciationCarouselLayers.add(targetLayer),
         );
     } else if (layer?.semanticRole === "lexicalUnit") {
@@ -114,9 +114,19 @@ export function resolveComposerContract(schema, layer, constructor) {
         if (configuredForPronunciation || configuredForInput)
             constructorRelationshipIds.add(relationship.id);
     }
-    const relationships = Array.from(constructorRelationshipIds)
+    let relationships = Array.from(constructorRelationshipIds)
         .map((relationshipId) => relationshipsById.get(relationshipId))
         .filter(Boolean);
+    if (layer?.semanticRole === "compoundWritingUnit")
+        relationships = relationships.filter(({ targetLayer }) => {
+            const targetRole = schema?.layers?.find(
+                ({ id }) => id === targetLayer,
+            )?.semanticRole;
+            return (
+                pronunciationCarouselLayers.has(targetLayer) ||
+                ["definition", "meaning"].includes(targetRole)
+            );
+        });
     const inputCarouselIds = new Set(
         relationships
             .filter(
