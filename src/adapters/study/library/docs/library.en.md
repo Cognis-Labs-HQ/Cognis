@@ -315,3 +315,5 @@ Alternate-character form payload alignment now updates both `pronunciation_carou
 Pronunciation derivation now stops at the first explicit pronunciation and only falls back to a label for atomic character cards, preventing newly created words and sentences from being flattened into character readings. Creation rejects visible duplicates by normalized input alone; the confirmation explains that continuing selects the existing card rather than creating another row. Push-request persistence and review recognize both `update` and `merge` request kinds.
 
 Popup definitions now occupy the second grid row beginning directly beneath the card title instead of a dedicated right-hand column. Readings remain centered in the title row, while long definitions wrap naturally under the title.
+
+Particle pronunciation resolution is terminal, like atomic characters: an explicit particle pronunciation is used first, and otherwise the particle label is used. The resolver no longer descends through a particle’s character references, so context-sensitive particles such as は and が remain pronounced as authored.

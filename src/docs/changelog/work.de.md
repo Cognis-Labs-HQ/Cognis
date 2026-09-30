@@ -62,6 +62,10 @@ Explizite Wort- und Satzaussprachen beenden nun die rekursive Zeichenableitung. 
 
 Definitionen in Pop-ups beginnen jetzt unter dem Kartentitel und umbrechen im verfügbaren Titelbereich, statt an den rechten Rand gedrängt zu werden.
 
+## Partikelaussprache bewahrt
+
+Die Ausspracheauflösung endet jetzt bei der Partikel selbst, sodass Zeichenreferenzen kontextabhängige verfasste Lesungen nicht ersetzen.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -79,3 +83,4 @@ Definitionen in Pop-ups beginnen jetzt unter dem Kartentitel und umbrechen im ve
 - [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)
 - [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)
 - [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)
+- [492cf08](https://github.com/Cognis-Labs-HQ/Cognis/commit/492cf08)

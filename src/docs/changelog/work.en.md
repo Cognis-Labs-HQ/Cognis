@@ -62,6 +62,10 @@ Explicit word and sentence pronunciations now stop recursive character derivatio
 
 Popup definitions now begin beneath the card title and wrap across the available title area instead of being forced into the right-hand edge.
 
+## Preserve Particle Pronunciation
+
+Particle pronunciation now terminates resolution at the particle itself, preventing character references from replacing context-sensitive authored readings.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -79,3 +83,4 @@ Popup definitions now begin beneath the card title and wrap across the available
 - [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)
 - [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)
 - [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)
+- [492cf08](https://github.com/Cognis-Labs-HQ/Cognis/commit/492cf08)

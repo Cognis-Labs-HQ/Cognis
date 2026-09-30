@@ -143,7 +143,8 @@ export function derivedPronunciation(
     const direct = pronunciationValues(entry).find(Boolean);
     const entryLayer = layerForEntry([schema], entry);
     if (direct) return direct;
-    if (entryLayer?.semanticRole === "atomicWritingUnit") return entry.label;
+    if (["atomicWritingUnit", "particle"].includes(entryLayer?.semanticRole))
+        return entry.label;
     const parts = (entry.references ?? [])
         .slice()
         .sort(

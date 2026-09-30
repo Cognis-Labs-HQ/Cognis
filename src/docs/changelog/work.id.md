@@ -62,6 +62,10 @@ Pelafalan kata dan kalimat eksplisit kini menghentikan penurunan karakter rekurs
 
 Definisi popup kini dimulai di bawah judul kartu dan membungkus pada area judul yang tersedia, bukan dipaksa ke sisi kanan.
 
+## Pelafalan Partikel Dipertahankan
+
+Resolusi pelafalan kini berhenti pada partikel itu sendiri sehingga referensi karakter tidak menggantikan bacaan kontekstual yang telah ditulis.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -79,3 +83,4 @@ Definisi popup kini dimulai di bawah judul kartu dan membungkus pada area judul 
 - [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)
 - [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)
 - [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)
+- [492cf08](https://github.com/Cognis-Labs-HQ/Cognis/commit/492cf08)

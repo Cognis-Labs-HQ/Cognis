@@ -303,3 +303,5 @@ Die Angleichung der Formularnutzlast für alternative Zeichen aktualisiert jetzt
 Die Ausspracheableitung endet jetzt bei der ersten expliziten Aussprache und verwendet nur bei atomaren Zeichenkarten ersatzweise die Beschriftung. Neue Wörter und Sätze werden dadurch nicht mehr zu Zeichenlesungen abgeflacht. Die Erstellung lehnt sichtbare Duplikate allein anhand der normalisierten Eingabe ab; die Bestätigung erklärt, dass beim Fortfahren die vorhandene Karte ausgewählt wird, statt eine weitere Zeile anzulegen. Speicherung und Prüfung von Push-Anfragen erkennen die Typen `update` und `merge`.
 
 Definitionen in Pop-ups belegen jetzt die zweite Rasterzeile direkt unter dem Kartentitel statt einer eigenen rechten Spalte. Lesungen bleiben in der Titelzeile zentriert, während lange Definitionen unter dem Titel natürlich umbrechen.
+
+Die Ausspracheauflösung für Partikeln endet wie bei atomaren Zeichen: Zuerst wird eine explizite Partikelaussprache verwendet, andernfalls die Partikelbeschriftung. Der Resolver steigt nicht mehr in die Zeichenreferenzen einer Partikel ab, sodass kontextabhängige Partikeln wie は und が wie verfasst ausgesprochen bleiben.

@@ -135,6 +135,10 @@ test("Study Library registers schema layer views as SPA routes", () => {
 test("Study Library derives pronunciation using the provider field type", () => {
     assert.match(
         composerContractSource,
+        /\["atomicWritingUnit", "particle"\]\.includes\(entryLayer\?\.semanticRole\)[\s\S]*return entry\.label/,
+    );
+    assert.match(
+        composerContractSource,
         /schema\?\.layers\?\.find\([\s\S]*\(\{ id \}\) => id === layer\?\.id/,
     );
     assert.match(
@@ -233,7 +237,7 @@ test("Study Library arranges dense title details and limits composer collections
     assert.match(popupTitleSource, /placement: "definition"/);
     assert.match(
         libraryStylesheet,
-        /grid-template-columns:[\s\S]*minmax\(0, 40%\)[\s\S]*data-popup-title-placement="reading"[\s\S]*grid-column: 3[\s\S]*data-popup-title-placement="definition"[\s\S]*grid-column: 4/,
+        /grid-template-columns:[\s\S]*minmax\(0, 40%\)[\s\S]*data-popup-title-placement="reading"[\s\S]*grid-column: 3[\s\S]*data-popup-title-placement="definition"[\s\S]*grid-column: 2 \/ 4/,
     );
     assert.match(
         libraryStylesheet,
