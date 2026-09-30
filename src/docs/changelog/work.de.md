@@ -90,6 +90,10 @@ Verb- und Adverbtransformationen unterstützen nun erweiterte verzweigte Ketten,
 
 Die Platzierung von Kindkarten schließt nun jede Vorfahrenposition aus und durchsucht diagonale sowie kardinale Positionen in zunehmend größeren Abständen. Blockierte Kinder rücken um weitere Positionen nach außen, statt einen Vorfahren zu überdecken oder zurückgehalten zu werden.
 
+## Interaktive Transformationsbäume über die gesamte Breite
+
+Transformationsbaum-Ansichten beginnen jetzt als dichtes Kartenraster über die gesamte Breite. Karten ohne verfügbare Transformationen bleiben inaktiv. Beim Öffnen wird eine erweiterbare Karte nach oben verschoben, die übrigen Karten werden animiert ausgeblendet und der Baum wächst direkt unter der zentrierten Wurzel über die gesamte Inhaltsbreite; die Schließen-Schaltfläche stellt das Raster wieder her. Die Auswahl einer Transformation hebt den vollständigen Pfad zurück zur Wurzel hervor und animiert ihn fortlaufend, während Transformationsbezeichnungen über den Werten stehen, um Überläufe in schmalen Karten zu vermeiden.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -115,3 +119,4 @@ Die Platzierung von Kindkarten schließt nun jede Vorfahrenposition aus und durc
 - [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)
 - [8e60e383](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e60e383)
 - [5f098e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f098e37)
+- [4d32a72e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4d32a72e)

@@ -90,6 +90,10 @@ Verb and adverb transformations now support extended branching chains, transform
 
 Child-card placement now excludes every ancestor slot and searches diagonal and cardinal positions at progressively greater distances. Blocked children move outward by additional slots instead of covering an ancestor or being withheld.
 
+## Interactive full-width transformation trees
+
+Transform-tree views now begin as a dense, full-width card grid. Cards without available transformations remain inert. Opening an expandable card moves it to the top, animates the remaining cards away, and grows the tree directly beneath the centered root across the full content width; its close control restores the grid. Selecting a transformation highlights and continuously animates its complete route back to the root, while transformation labels stack above values to avoid narrow-card overflow.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -115,3 +119,4 @@ Child-card placement now excludes every ancestor slot and searches diagonal and 
 - [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)
 - [8e60e383](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e60e383)
 - [5f098e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f098e37)
+- [4d32a72e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4d32a72e)

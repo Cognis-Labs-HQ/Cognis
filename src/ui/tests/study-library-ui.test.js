@@ -699,7 +699,7 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /function variantDirectionCandidates/);
     assert.match(source, /DIRECTION_ALTERNATIVES/);
     assert.match(source, /grid\.querySelectorAll/);
-    assert.match(source, /overflow === 0 && collision === 0/);
+    assert.match(source, /collision === 0 && overflow === 0/);
     assert.match(source, /data-library-preferred-direction/);
     assert.match(source, /--library-variant-card-span/);
     assert.match(source, /distance: placement\.distance \?\? 1/);
@@ -860,6 +860,16 @@ test("Study Library provides tag-filtered transform tree views", () => {
     assert.match(source, /view\.includeTags\.some/);
     assert.match(stylesheet, /library-entry-grid--transform-tree/);
     assert.match(stylesheet, /library-transform-tech-tree li::before/);
+    assert.match(source, /nodes\.length > 1/);
+    assert.match(source, /data-library-transform-close/);
+    assert.match(
+        stylesheet,
+        /grid-template-columns:\s*repeat\(auto-fill, minmax\(min\(100%, 14rem\), 1fr\)\)/,
+    );
+    assert.match(stylesheet, /library-transform-card--open/);
+    assert.match(stylesheet, /library-transform-card-away/);
+    assert.match(stylesheet, /library-transform-path-flow/);
+    assert.match(stylesheet, /prefers-reduced-motion:\s*reduce/);
 });
 test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(source, /function renderAudio/);

@@ -17,7 +17,7 @@ function renderTransformationNodes(nodes, schema, selectedNode) {
     const branch = (parentIndex) => {
         const items = children.get(parentIndex) ?? [];
         if (!items.length) return "";
-        return `<ol>${items.map(({ node, index }) => `<li><button class="btn-neutral${node === selectedNode ? " active" : ""}" type="button" data-library-transform-index="${index}"><span>${escapeHtml(localizedLabel(node.rule.metadata, schema.language) || node.rule.id)}</span><strong>${escapeHtml(node.value)}</strong></button>${branch(index)}</li>`).join("")}</ol>`;
+        return `<ol>${items.map(({ node, index }) => `<li data-library-transform-node="${index}" data-library-transform-parent="${parentIndex}"><button class="btn-neutral${node === selectedNode ? " active" : ""}" type="button" data-library-transform-index="${index}" data-library-transform-pronunciation-value="${escapeHtml(node.pronunciation)}" data-library-transform-definition-value="${escapeHtml(localizedLabel(node.definition, schema.language))}"><span>${escapeHtml(localizedLabel(node.rule.metadata, schema.language) || node.rule.id)}</span><strong>${escapeHtml(node.value)}</strong></button>${branch(index)}</li>`).join("")}</ol>`;
     };
     return branch(0);
 }

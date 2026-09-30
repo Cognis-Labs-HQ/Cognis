@@ -90,6 +90,10 @@ Transformasi kata kerja dan kata keterangan kini mendukung rantai bercabang yang
 
 Penempatan kartu anak kini mengecualikan setiap slot leluhur dan mencari posisi diagonal serta kardinal pada jarak yang makin besar. Kartu anak yang terhalang dipindahkan ke luar melalui slot tambahan, bukan menutupi leluhur atau ditahan.
 
+## Pohon transformasi interaktif selebar halaman
+
+Tampilan pohon transformasi kini dimulai sebagai kisi kartu padat selebar halaman. Kartu tanpa transformasi yang tersedia tetap tidak aktif. Membuka kartu yang dapat diperluas memindahkannya ke atas, menganimasikan kartu lainnya hingga menghilang, dan mengembangkan pohon tepat di bawah akar yang dipusatkan sepanjang lebar konten; kontrol tutup mengembalikan kisi. Memilih transformasi menyorot dan terus menganimasikan seluruh jalurnya kembali ke akar, sedangkan label transformasi ditumpuk di atas nilai agar tidak meluber pada kartu sempit.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -115,3 +119,4 @@ Penempatan kartu anak kini mengecualikan setiap slot leluhur dan mencari posisi 
 - [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)
 - [8e60e383](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e60e383)
 - [5f098e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f098e37)
+- [4d32a72e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4d32a72e)
