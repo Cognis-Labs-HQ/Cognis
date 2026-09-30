@@ -63,3 +63,14 @@ export function matchingTransformation(entry, schema, text) {
             (left, right) => right.node.value.length - left.node.value.length,
         )[0];
 }
+
+export function transformedDefinition(baseDefinition, node, language) {
+    const localized = (metadata) =>
+        metadata?.labels?.[language] ??
+        Object.values(metadata?.labels ?? {})[0];
+    const override = localized(node.definition);
+    if (override) return override;
+    const marker = localized(node.rule?.marker);
+    if (!marker || !baseDefinition) return baseDefinition;
+    return baseDefinition.replaceAll("{{ marker }}", `(${marker})`);
+}

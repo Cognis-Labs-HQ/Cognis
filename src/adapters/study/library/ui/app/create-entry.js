@@ -384,6 +384,7 @@ export async function openCreateEntryPopup({
                             i18n,
                         );
                         if (!transformation) return false;
+                        if (transformation.base) return;
                         item.dataset.carouselBaseValue = candidate.id;
                         return {
                             value: transformationCompositionToken(
@@ -899,7 +900,9 @@ function bindTextComposition(
                 .map((entry) => ({
                     ...entry,
                     relationshipId: relationship.id,
-                    preview: entryDefinition(entry, entries, schema),
+                    preview: transformationPathways(entry, schema).length
+                        ? i18n.t("gateway.study.library_transforms_available")
+                        : entryDefinition(entry, entries, schema),
                 })),
         )
         .sort(

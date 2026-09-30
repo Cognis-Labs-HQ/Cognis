@@ -98,6 +98,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 変換ツリーでは、元の動詞または副詞カードを変更しない視覚的なルートとして維持し、その下にあった選択形の重複表示を削除しました。接続線は途切れずにつながり、ツリー全体で常にアニメーションしながら、選択した経路は明確に強調されます。展開済みの元カードをクリックすると、標準の詳細表示が開くようになりました。
 
+## 語彙に統合された変換選択
+
+動詞・副詞の項目は語彙ページに戻り、プロバイダーが宣言した変換タグは個別のナビゲーション先ではなくフィルターとして表示されます。変換規則はローカライズ済みの `marker` メタデータを宣言でき、Cognis は参照先定義の `{{ marker }}` スロットへ挿入します（例: `to {{ marker }} watch` は `to (want to) watch` になります）。活用形名は各ノードの情報ツールチップへ移動しました。標準の詳細ポップアップには専用グラフ選択を開く「Variants」操作が追加され、ノードを選ぶと基本項目が変換後のタイトル・発音・定義・描画入力で再表示され、編集は無効になります。Composer のカルーセルは変換可能な項目を示し、2 列の選択画面で変換形を 1 つ選ぶか基本形をそのまま利用できます。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -125,3 +129,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [5f098e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f098e37)
 - [4d32a72e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4d32a72e)
 - [7dea5c6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dea5c6c)
+- [e356a233](https://github.com/Cognis-Labs-HQ/Cognis/commit/e356a233)

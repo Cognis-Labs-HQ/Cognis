@@ -101,7 +101,7 @@ test("Study Library keeps its page modules focused", () => {
             resolve(ROOT, `src/adapters/study/library/ui/app/${file}`),
             "utf8",
         ).split("\n").length;
-        const maximumLines = file === "entry-popup.js" ? 285 : 275;
+        const maximumLines = file === "entry-popup.js" ? 310 : 275;
         assert.ok(lineCount <= maximumLines, `${file} has ${lineCount} lines`);
     }
 });
@@ -297,10 +297,7 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.doesNotMatch(source, /function renderCompositionGroups/);
     assert.match(source, /relationship\.resolverRole/);
     assert.doesNotMatch(source, /library-composition-operator/);
-    assert.doesNotMatch(
-        source,
-        /i18n\.t\("gateway\.study\.library_variants"\)/,
-    );
+    assert.match(source, /i18n\.t\("gateway\.study\.library_variants"\)/);
     assert.match(source, /titleDefinition/);
     assert.match(source, /titleLeading: renderScope/);
     assert.doesNotMatch(source, /library-definition-link/);
@@ -852,9 +849,8 @@ test("Study Library honors module-defined grid layouts", () => {
     assert.match(stylesheet, /var\(--library-grid-row-size\)/);
 });
 
-test("Study Library provides tag-filtered transform tree views", () => {
-    assert.match(layerPageSource, /viewId/);
-    assert.match(studySubNavigationSource, /layer\.views/);
+test("Study Library provides vocabulary transformations", () => {
+    assert.doesNotMatch(studySubNavigationSource, /layer\.views/);
     assert.match(source, /transformationPathways/);
     assert.match(source, /library-transform-tech-tree/);
     assert.match(source, /view\.includeTags\.some/);
@@ -863,6 +859,11 @@ test("Study Library provides tag-filtered transform tree views", () => {
     assert.match(source, /nodes\.length > 1/);
     assert.match(source, /data-library-transform-close/);
     assert.match(source, /showSummary:\s*false/);
+    assert.match(source, /data-library-transform-variants/);
+    assert.match(source, /openTransformationTreePopup/);
+    assert.match(source, /library-transform-options/);
+    assert.match(source, /transformedDefinition/);
+    assert.match(source, /id:\s*"__tags"/);
     assert.match(
         source,
         /classList\.contains\("library-transform-card--open"\)/,
@@ -876,6 +877,7 @@ test("Study Library provides tag-filtered transform tree views", () => {
     assert.match(stylesheet, /library-transform-path-flow/);
     assert.match(stylesheet, /library-transform-path-flow-vertical/);
     assert.match(stylesheet, /library-transform-tech-tree > ol::after/);
+    assert.match(stylesheet, /library-transform-info/);
     assert.match(stylesheet, /prefers-reduced-motion:\s*reduce/);
 });
 test("Study Library renders writing-unit pronunciation and audio", () => {

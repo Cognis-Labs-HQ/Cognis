@@ -110,4 +110,9 @@
   <string name="gateway.study.library_delete_saved_value_confirm">カード保存時にこの保存済み項目を完全に削除しますか？</string>
   <string name="gateway.study.library_select_suggestion">一致するカード候補を選択してください。自由入力テキストは保存できません。</string>
   <string name="gateway.study.library_pronunciation_stage_empty">発音を保存する前に、少なくとも1枚のカードを選択してください。</string>
+  <string name="gateway.study.library_word_type">語彙の種類</string>
+  <string name="gateway.study.library_select_transform">選択</string>
+  <string name="gateway.study.library_transform_prompt">{{ verb }} を選択しました。次の変換形から選べます。</string>
+  <string name="gateway.study.library_use_base_transform">{{ verb }} をそのまま使う！</string>
+  <string name="gateway.study.library_transforms_available">変換形があります</string>
 </resources>

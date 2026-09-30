@@ -179,11 +179,6 @@ export function renderBrowser(schemas, entries, i18n, requestedLayer = null) {
                     const view = layer.views?.find(
                         ({ id }) => id === requestedLayer?.viewId,
                     );
-                    const viewTags = new Set(
-                        (layer.views ?? []).flatMap(
-                            ({ includeTags }) => includeTags,
-                        ),
-                    );
                     const composerOnlyTags = new Set(
                         schema.layers.flatMap((candidateLayer) =>
                             (
@@ -200,10 +195,8 @@ export function renderBrowser(schemas, entries, i18n, requestedLayer = null) {
                                 ? view.includeTags.some((tag) =>
                                       (entry.tags ?? []).includes(tag),
                                   )
-                                : !(entry.tags ?? []).some(
-                                      (tag) =>
-                                          viewTags.has(tag) ||
-                                          composerOnlyTags.has(tag),
+                                : !(entry.tags ?? []).some((tag) =>
+                                      composerOnlyTags.has(tag),
                                   )),
                     );
                     const cards = renderLayerCards(

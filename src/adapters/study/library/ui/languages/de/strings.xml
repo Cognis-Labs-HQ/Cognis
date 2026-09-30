@@ -110,4 +110,9 @@
   <string name="gateway.study.library_delete_saved_value_confirm">Diesen gespeicherten Eintrag beim Speichern der Karte dauerhaft löschen?</string>
   <string name="gateway.study.library_select_suggestion">Wählen Sie einen passenden Kartenvorschlag; freier Text kann nicht gespeichert werden.</string>
   <string name="gateway.study.library_pronunciation_stage_empty">Wähle vor dem Speichern der Aussprache mindestens eine Karte aus.</string>
+  <string name="gateway.study.library_word_type">Wortschatztyp</string>
+  <string name="gateway.study.library_select_transform">Auswählen</string>
+  <string name="gateway.study.library_transform_prompt">Du hast {{ verb }} ausgewählt. Folgende Transformationen stehen zur Auswahl.</string>
+  <string name="gateway.study.library_use_base_transform">Einfach {{ verb }} verwenden!</string>
+  <string name="gateway.study.library_transforms_available">Transformation(en) verfügbar</string>
 </resources>

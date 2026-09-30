@@ -42,6 +42,7 @@ import {
 
 export { inputForField } from "./field-input.js";
 import { inputForField, renderStrokePatternPreviews } from "./field-input.js";
+import { transformationPathways } from "./transformations.js";
 
 function showComposerLimitViolation(form, layer, schema, i18n) {
     const violation = composerLimitViolation(form, layer, schema);
@@ -175,6 +176,7 @@ function relationshipEditor(
         allowAdd = true,
         ordersPronunciation = false,
         excludedTags = new Set(),
+        transformsAvailableLabel = "",
     } = {},
 ) {
     const targetLayer = schema.layers.find(
@@ -230,6 +232,13 @@ function relationshipEditor(
             !(candidate.tags ?? []).some((tag) => excludedTags.has(tag)),
     );
     const previewFor = (target) => {
+        if (
+            transformsAvailableLabel &&
+            transformationPathways(target, schema).some(
+                ({ nodes }) => nodes.length > 1,
+            )
+        )
+            return transformsAvailableLabel;
         const definition = (target.references ?? [])
             .map(({ entryId }) => entries.find(({ id }) => id === entryId))
             .find((candidate) => {
@@ -402,6 +411,9 @@ export function editorBody(
                             )
                             .map(({ tag }) => tag),
                     ),
+                    transformsAvailableLabel: i18n.t(
+                        "gateway.study.library_transforms_available",
+                    ),
                 },
             ),
         )
@@ -422,6 +434,9 @@ export function editorBody(
                               options.relationshipCarouselAdd !== false &&
                               relationshipAllowsCreate(relationship),
                           ordersPronunciation: true,
+                          transformsAvailableLabel: i18n.t(
+                              "gateway.study.library_transforms_available",
+                          ),
                       },
                   ),
               )
@@ -496,6 +511,9 @@ export function editorBody(
                         options.relationshipCarousels === true &&
                         !carouselEligible,
                     addLabel: i18n.t("gateway.study.library_create"),
+                    transformsAvailableLabel: i18n.t(
+                        "gateway.study.library_transforms_available",
+                    ),
                     allowAdd:
                         options.relationshipCarouselAdd !== false &&
                         relationshipAllowsCreate(relationship),

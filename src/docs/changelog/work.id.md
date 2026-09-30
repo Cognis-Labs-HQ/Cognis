@@ -98,6 +98,10 @@ Tampilan pohon transformasi kini dimulai sebagai kisi kartu padat selebar halama
 
 Pohon transformasi kini mempertahankan kartu kata kerja atau kata keterangan sumber sebagai akar visual yang tidak berubah dan menghapus ringkasan bentuk terpilih yang berulang di bawahnya. Segmen penghubung bertemu tanpa celah dan beranimasi terus-menerus di seluruh pohon, sementara jalur asal yang dipilih tetap ditonjolkan. Mengklik kartu sumber yang sudah terbuka kini membuka tampilan detail standarnya.
 
+## Pemilihan transformasi terintegrasi kosakata
+
+Entri verba dan adverbia kini tetap berada di halaman Kosakata, tempat tag transformasi yang dideklarasikan penyedia tampil sebagai filter, bukan tujuan navigasi terpisah. Aturan transformasi dapat mendeklarasikan metadata `marker` terlokalisasi dan Cognis menyisipkannya ke slot `{{ marker }}` pada definisi yang dirujuk (misalnya `to {{ marker }} watch` menjadi `to (want to) watch`). Nama bentuk dipindahkan ke tooltip informasi pada setiap simpul. Popup detail standar menyediakan tindakan Varian yang membuka pemilih graf khusus; memilih simpul menggambar ulang entri dasar dengan judul, pelafalan, definisi, dan masukan gambar yang telah ditransformasi sambil menonaktifkan penyuntingan. Karusel penyusun menandai entri yang dapat ditransformasi dan memakai pemilih dua kolom untuk memilih satu transformasi atau mempertahankan bentuk dasar.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -125,3 +129,4 @@ Pohon transformasi kini mempertahankan kartu kata kerja atau kata keterangan sum
 - [5f098e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f098e37)
 - [4d32a72e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4d32a72e)
 - [7dea5c6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dea5c6c)
+- [e356a233](https://github.com/Cognis-Labs-HQ/Cognis/commit/e356a233)

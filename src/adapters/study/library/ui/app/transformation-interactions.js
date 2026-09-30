@@ -1,4 +1,4 @@
-function highlightTransformationPath(tree, selected) {
+export function highlightTransformationPath(tree, selected) {
     tree.querySelectorAll("[data-library-transform-node]").forEach((node) =>
         node.classList.remove("library-transform-path-active"),
     );

@@ -110,4 +110,9 @@
   <string name="gateway.study.library_delete_saved_value_confirm">Hapus permanen entri tersimpan ini saat kartu disimpan?</string>
   <string name="gateway.study.library_select_suggestion">Pilih saran kartu yang cocok; teks bebas tidak dapat disimpan.</string>
   <string name="gateway.study.library_pronunciation_stage_empty">Pilih setidaknya satu kartu sebelum menyimpan pelafalan.</string>
+  <string name="gateway.study.library_word_type">Jenis kosakata</string>
+  <string name="gateway.study.library_select_transform">Pilih</string>
+  <string name="gateway.study.library_transform_prompt">Anda memilih {{ verb }}. Transformasi berikut tersedia untuk dipilih.</string>
+  <string name="gateway.study.library_use_base_transform">Gunakan {{ verb }} saja!</string>
+  <string name="gateway.study.library_transforms_available">Transformasi tersedia</string>
 </resources>

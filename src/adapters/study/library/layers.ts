@@ -627,6 +627,11 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
                     rule.definition,
                     "transform_definition_metadata_required",
                 );
+            if (rule.marker)
+                validateMetadata(
+                    rule.marker,
+                    "transform_marker_metadata_required",
+                );
             transitions.add(transition);
         }
     }

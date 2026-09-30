@@ -98,6 +98,10 @@ Transform-tree views now begin as a dense, full-width card grid. Cards without a
 
 Transformation trees now keep the source verb or adverb card as the unchanged visual root and omit the redundant selected-form summary beneath it. Connector segments meet without gaps and animate continuously throughout the tree, while the selected ancestry remains visibly emphasized. Clicking the already-open source card now opens its standard detail view.
 
+## Vocabulary-integrated transformation selection
+
+Verb and adverb entries now remain on the Vocabulary page, where provider-declared transformation tags appear as filters instead of separate navigation destinations. A transform rule may declare localized `marker` metadata, and Cognis inserts it into a referenced definition’s `{{ marker }}` slot (for example, `to {{ marker }} watch` becomes `to (want to) watch`). Form names moved into per-node information tooltips. The standard detail popup exposes a Variants action that opens a dedicated graph selector; selecting a node redraws the base entry with transformed title, pronunciation, definition, and drawing input while suppressing editing. Composer carousels identify transformable entries and use a two-column chooser that can select one transform or retain the base form.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -125,3 +129,4 @@ Transformation trees now keep the source verb or adverb card as the unchanged vi
 - [5f098e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f098e37)
 - [4d32a72e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4d32a72e)
 - [7dea5c6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dea5c6c)
+- [e356a233](https://github.com/Cognis-Labs-HQ/Cognis/commit/e356a233)

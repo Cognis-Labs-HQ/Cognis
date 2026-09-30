@@ -24,6 +24,10 @@ import {
     transformedPopupPresentation as transformPresentation,
 } from "./transformation-popup.js";
 import {
+    selectDetailTransformation,
+    transformedDetailEntry,
+} from "./transformation-detail.js";
+import {
     canDraw,
     drawingHeaderActions,
     resolveDraw,
@@ -128,7 +132,11 @@ export async function openEntryPopup(
             composed.titleDefinition,
             sourceDefinition,
         );
-        const strokePattern = resolveDraw(detail.entry, layer, {
+        const displayedEntry = transformedDetailEntry(
+            detail.entry,
+            selectedTransformation,
+        );
+        const strokePattern = resolveDraw(displayedEntry, layer, {
             entries,
             schemas,
         });
@@ -155,7 +163,7 @@ export async function openEntryPopup(
             titleDetailItems,
             headerActions: [
                 ...drawingHeaderActions(strokePattern, i18n),
-                ...(editMode
+                ...(editMode && !selectedTransformation
                     ? [
                           {
                               id: "edit",
@@ -212,6 +220,20 @@ export async function openEntryPopup(
                     i18n.t("gateway.study.library_audio_load_error"),
                 );
                 overlay.addEventListener("click", (event) => {
+                    if (
+                        selectDetailTransformation(event, {
+                            entry: detail.entry,
+                            schema,
+                            i18n,
+                            definition: composed.titleDefinition,
+                            onSelected: (transformation) => {
+                                selectedTransformation = transformation;
+                                relatedEntry = detail.entry;
+                                void dismiss();
+                            },
+                        })
+                    )
+                        return;
                     const control = event.target.closest(
                         "button[data-library-entry]",
                     );
@@ -225,7 +247,7 @@ export async function openEntryPopup(
             onAction: async (actionId, overlay, popupApi) => {
                 if (actionId === "draw" && canDraw(strokePattern)) {
                     openDrawing(
-                        detail.entry,
+                        displayedEntry,
                         strokePattern,
                         displayedDefinition,
                     );

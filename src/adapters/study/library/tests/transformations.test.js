@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { transformationPathways } from "../ui/app/transformations.js";
+import {
+    transformedDefinition,
+    transformationPathways,
+} from "../ui/app/transformations.js";
 import {
     compositionTokenLabel,
     restoreCompositionTokens,
@@ -173,4 +176,19 @@ test("transform pathways support branching chains with dynamic readings and defi
         "negative-desire",
         "continuous-negative-desire",
     ]);
+});
+
+test("transform markers are inserted into provider definition slots", () => {
+    assert.equal(
+        transformedDefinition(
+            "to {{ marker }} watch",
+            {
+                rule: {
+                    marker: { labels: { en: "want to" } },
+                },
+            },
+            "en",
+        ),
+        "to (want to) watch",
+    );
 });

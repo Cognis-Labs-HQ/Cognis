@@ -90,6 +90,7 @@ export function renderEntryCard(
                 .map(({ value }) => value),
         ]),
     );
+    filterValues.__tags = entry.tags ?? [];
     const variants = entries.flatMap((candidate) => {
         const placement = placements.get(candidate.id);
         return placement?.parentId === entry.id &&
