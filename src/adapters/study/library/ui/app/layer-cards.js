@@ -8,6 +8,7 @@ import { renderLayerFilters } from "./filters.js";
 import { isDirectlyVisible, renderEntryCard } from "./cards.js";
 import { assignVariantPlacements } from "./variant-placement.js";
 import { transformationPathways } from "./transformations.js";
+import { renderTransformationTree } from "./transformation-popup.js";
 
 function meaningReferenceIds(entry, schema) {
     const meaningLayers = new Set(
@@ -73,14 +74,12 @@ export function renderLayerCards(
         return baseEntries
             .map((entry) => {
                 const pathways = transformationPathways(entry, schema);
-                const nodes = pathways
-                    .flatMap(({ nodes: pathwayNodes }) => pathwayNodes.slice(1))
-                    .map(
-                        (node) =>
-                            `<li style="--library-transform-depth: ${node.depth}"><button class="btn-neutral" type="button" data-library-transform-value="${escapeHtml(node.value)}"><span>${escapeHtml(localizedLabel(node.rule.metadata, schema.language) || node.rule.id)}</span><strong>${escapeHtml(node.value)}</strong></button></li>`,
+                const trees = pathways
+                    .map((pathway) =>
+                        renderTransformationTree(entry, schema, pathway),
                     )
                     .join("");
-                return `<article class="library-transform-card">${renderEntryCard(entry, layer, allEntries, schema, placements, i18n)}<section class="library-transform-pathway" hidden data-library-transform-tree><output>${escapeHtml(entry.label)}</output><ol class="library-transform-tree">${nodes}</ol></section></article>`;
+                return `<article class="library-transform-card">${renderEntryCard(entry, layer, allEntries, schema, placements, i18n)}<section class="library-transform-pathway" hidden>${trees}</section></article>`;
             })
             .join("");
     }

@@ -35,6 +35,7 @@ import {
 } from "./composer-limits.js";
 import { bindComposerExtras, renderComposerExtras } from "./composer-extras.js";
 import {
+    compositionTokenEntryId,
     compositionTokenLabel,
     restoreCompositionTokens,
 } from "./composition-tokens.js";
@@ -693,7 +694,10 @@ export function readFields(form, layer, entry) {
 
 export function readReferences(form, layer, compositionOrder = []) {
     const authoredPositions = new Map(
-        compositionOrder.map((entryId, position) => [entryId, position]),
+        compositionOrder.map((token, position) => [
+            compositionTokenEntryId(token),
+            position,
+        ]),
     );
     return (layer?.relationships ?? [])
         .filter((relationship) => !relationship.grouped)
@@ -894,6 +898,7 @@ export async function openLibraryEntryEditor({
                 entries,
                 composer.constructor,
                 composer.inputCarouselIds,
+                schema,
             );
             form.referenceGroups = structuredClone(entry.referenceGroups ?? {});
             bindComposerExtras(form, () =>
@@ -1203,6 +1208,7 @@ export function bindAdminLibraryInteractions(
                             entries,
                             composer.constructor,
                             composer.inputCarouselIds,
+                            schema,
                         );
                         form.referenceGroups = structuredClone(
                             entry.referenceGroups ?? {},

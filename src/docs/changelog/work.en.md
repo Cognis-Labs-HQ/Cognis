@@ -82,6 +82,10 @@ Parent attribution now stays grouped in the reading row before the definition. C
 
 Content-pack tags now survive validation and ingestion into Library entry records. Provider-declared Verbs and Adverbs views can therefore match and render their tagged vocabulary instead of reporting an empty layer.
 
+## Composable Transformation Trees
+
+Verb and adverb transformations now support extended branching chains, transformation-specific readings and definitions, and a connected technology-tree layout. Sentence composers can select transformed carousel forms while preserving canonical references, and transformed references reopen with their authored form and complete pathway.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -104,3 +108,4 @@ Content-pack tags now survive validation and ingestion into Library entry record
 - [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)
 - [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)
 - [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)
+- [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)

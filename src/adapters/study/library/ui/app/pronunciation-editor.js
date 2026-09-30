@@ -3,7 +3,10 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { renderCompositionItems } from "/static/reuse/composition-input.js";
-import { compositionTokenLabel } from "./composition-tokens.js";
+import {
+    compositionTokenEntryId,
+    compositionTokenLabel,
+} from "./composition-tokens.js";
 
 export function mountEditableRelationshipCarousels(
     form,
@@ -14,6 +17,7 @@ export function mountEditableRelationshipCarousels(
     {
         onChange = () => {},
         onAdd = () => {},
+        onActivate = () => {},
         selectionOrder,
         inputCarouselIds = new Set(),
         pronunciationCarouselLayers = new Set(),
@@ -174,6 +178,7 @@ export function mountEditableRelationshipCarousels(
     mountHorizontalCarousels(form, {
         signal: controller.signal,
         selectionOrder,
+        onActivate,
         onChange: ({ id, values }) => {
             const select = form.elements[`relationship:${id}`];
             if (!select) return;
@@ -186,13 +191,14 @@ export function mountEditableRelationshipCarousels(
             onChange({ id, values });
             if (pronunciationRelationshipIds.has(id))
                 draftValues.set(id, values);
-            const selected = new Set(values);
+            const selected = new Set(values.map(compositionTokenEntryId));
             Array.from(select.options).forEach((option) => {
                 option.selected = selected.has(option.value);
             });
             values.forEach((value) => {
                 const option = Array.from(select.options).find(
-                    (candidate) => candidate.value === value,
+                    (candidate) =>
+                        candidate.value === compositionTokenEntryId(value),
                 );
                 if (option) select.append(option);
             });

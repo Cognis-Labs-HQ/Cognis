@@ -3,13 +3,13 @@ export function bindTransformationInteractions(root, { signal }) {
         "click",
         (event) => {
             const transform = event.target.closest(
-                "[data-library-transform-value]",
+                "[data-library-transform-index]",
             );
             if (transform) {
-                const card = transform.closest(".library-transform-card");
-                card.querySelector("output").value =
-                    transform.dataset.libraryTransformValue;
-                card.querySelectorAll("[data-library-transform-value]").forEach(
+                const tree = transform.closest("[data-library-transform-tree]");
+                tree.querySelector("output").value =
+                    transform.querySelector("strong").textContent;
+                tree.querySelectorAll("[data-library-transform-index]").forEach(
                     (candidate) =>
                         candidate.classList.toggle(
                             "active",
@@ -24,7 +24,7 @@ export function bindTransformationInteractions(root, { signal }) {
             if (!control) return;
             const tree = control
                 .closest(".library-transform-card")
-                .querySelector("[data-library-transform-tree]");
+                .querySelector(".library-transform-pathway");
             tree.hidden = !tree.hidden;
         },
         { capture: true, signal },

@@ -616,6 +616,17 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
                 (rule.removeSuffix === "" && rule.append === "")
             )
                 throw new Error("invalid_transform_rule");
+            if (
+                rule.pronunciation &&
+                (typeof rule.pronunciation.removeSuffix !== "string" ||
+                    typeof rule.pronunciation.append !== "string")
+            )
+                throw new Error("invalid_transform_pronunciation");
+            if (rule.definition)
+                validateMetadata(
+                    rule.definition,
+                    "transform_definition_metadata_required",
+                );
             transitions.add(transition);
         }
     }

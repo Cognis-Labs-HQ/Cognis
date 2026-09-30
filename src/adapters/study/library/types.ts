@@ -183,6 +183,11 @@ export interface LibraryTransformSet {
         toState: string;
         removeSuffix: string;
         append: string;
+        pronunciation?: {
+            removeSuffix: string;
+            append: string;
+        };
+        definition?: LibraryMetadata;
     }[];
 }
 

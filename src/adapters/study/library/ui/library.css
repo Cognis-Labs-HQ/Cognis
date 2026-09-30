@@ -198,14 +198,21 @@ body[data-theme="light"] .library-browser {
     grid-template-columns: minmax(0, 1fr);
 }
 .library-transform-pathway,
-.library-transform-tree {
+.library-transform-tech-tree {
     display: grid;
     gap: 0.45rem;
 }
 .library-transform-pathway[hidden] {
     display: none;
 }
-.library-transform-pathway output {
+.library-transform-tech-tree > header {
+    display: grid;
+    grid-template-columns: minmax(8rem, auto) minmax(0, 1fr);
+    gap: 0.25rem 0.75rem;
+    align-items: center;
+}
+.library-transform-tech-tree output {
+    grid-row: 1 / 3;
     padding: 0.65rem;
     border: 1px solid var(--accent-2);
     border-radius: 8px;
@@ -213,16 +220,39 @@ body[data-theme="light"] .library-browser {
     font-size: 1.15rem;
     font-weight: 700;
 }
-.library-transform-tree {
+.library-transform-tech-tree ol {
+    display: flex;
+    position: relative;
+    gap: 1rem;
     margin: 0;
-    padding: 0;
+    padding: 1.25rem 0 0;
     list-style: none;
 }
-.library-transform-tree li {
-    margin-inline-start: calc(var(--library-transform-depth) * 1.25rem);
-    border-inline-start: 2px solid var(--accent-2);
+.library-transform-tech-tree li {
+    display: grid;
+    position: relative;
+    flex: 1 1 10rem;
+    align-content: start;
+    gap: 0.75rem;
 }
-.library-transform-tree button {
+.library-transform-tech-tree li::before {
+    position: absolute;
+    inset-block-start: -1.25rem;
+    inset-inline-start: 50%;
+    width: 1px;
+    height: 1.25rem;
+    background: var(--accent-2);
+    content: "";
+}
+.library-transform-tech-tree li > ol::before {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 10% 10%;
+    height: 1px;
+    background: var(--accent-2);
+    content: "";
+}
+.library-transform-tech-tree button {
     display: flex;
     width: 100%;
     align-items: baseline;
@@ -230,11 +260,13 @@ body[data-theme="light"] .library-browser {
     padding: 0.45rem 0.65rem;
     text-align: start;
 }
-.library-transform-tree button.active {
+.library-transform-tech-tree button.active {
     border-color: var(--accent-2);
     background: color-mix(in srgb, var(--accent-2) 16%, var(--surface-2));
 }
-.library-transform-tree li span {
+.library-transform-tech-tree li span,
+.library-transform-tech-tree [data-library-transform-pronunciation],
+.library-transform-tech-tree [data-library-transform-definition] {
     color: var(--text-muted);
 }
 .library-entry-grid--minimal .library-entry-card {

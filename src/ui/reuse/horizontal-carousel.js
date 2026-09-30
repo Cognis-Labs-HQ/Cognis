@@ -65,7 +65,7 @@ export function appendHorizontalCarouselItem(
 /**
  * Bind every horizontal carousel below a root element.
  * @param {ParentNode} root Carousel container.
- * @param {{signal?: AbortSignal, onChange?: (detail: {id: string, values: string[]}) => void, onAdd?: (detail: {id: string, carousel: HTMLElement}) => void, selectionOrder?: (detail: {id: string, value: string, localIndex: number}) => number | undefined}} options Event callbacks and optional shared selection ordering.
+ * @param {{signal?: AbortSignal, onChange?: (detail: {id: string, values: string[]}) => void, onAdd?: (detail: {id: string, carousel: HTMLElement}) => void, onActivate?: (detail: {id: string, item: HTMLElement, selected: boolean}) => Promise<{value?: string, label?: string} | false | void> | {value?: string, label?: string} | false | void, selectionOrder?: (detail: {id: string, value: string, localIndex: number}) => number | undefined}} options Event callbacks and optional shared selection ordering.
  * @returns {void}
  */
 export function mountHorizontalCarousels(
@@ -74,6 +74,7 @@ export function mountHorizontalCarousels(
         signal,
         onChange = () => {},
         onAdd = () => {},
+        onActivate = () => {},
         selectionOrder = ({ localIndex }) => localIndex,
     } = {},
 ) {
@@ -161,7 +162,7 @@ export function mountHorizontalCarousels(
     });
     root.addEventListener(
         "click",
-        (event) => {
+        async (event) => {
             const carousel = event.target.closest("[data-horizontal-carousel]");
             if (!carousel || !root.contains(carousel)) return;
             if (event.target.closest("[data-carousel-add]")) {
@@ -170,6 +171,17 @@ export function mountHorizontalCarousels(
             }
             const item = event.target.closest("[data-carousel-value]");
             if (!item) return;
+            const activation = await onActivate({
+                id: carousel.dataset.horizontalCarousel,
+                item,
+                selected: item.classList.contains("is-selected"),
+            });
+            if (activation === false) return;
+            if (activation?.value)
+                item.dataset.carouselValue = activation.value;
+            if (activation?.label)
+                item.querySelector(":scope > span").textContent =
+                    activation.label;
             if (!item.classList.contains("is-selected"))
                 item.querySelector("[data-carousel-order]").textContent =
                     String(selectedItems(carousel).length + 1);

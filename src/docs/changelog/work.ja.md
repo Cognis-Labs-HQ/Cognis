@@ -82,6 +82,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 コンテンツパックのタグが、検証と取り込みを経てもライブラリエントリに保持されるようになりました。プロバイダー定義の動詞ビューと副詞ビューは、空のレイヤーを表示する代わりに、タグ付き語彙を検出して表示できます。
 
+## 構成可能な変形ツリー
+
+動詞と副詞の変形は、拡張された分岐連鎖、変形固有の読みと定義、接続されたテックツリーレイアウトに対応しました。文のコンポーザーは正規の参照を保ったまま変形形を選択でき、変形された参照は作成時の形と完全なパスで再度開かれます。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -104,3 +108,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)
 - [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)
 - [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)
+- [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)

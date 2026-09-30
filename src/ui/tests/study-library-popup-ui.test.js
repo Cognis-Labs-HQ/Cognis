@@ -23,10 +23,7 @@ const stylesheet = ["library.css", "library-admin.css", "library-selection.css"]
     )
     .join("\n");
 const popupTitleSource = readFileSync(
-    resolve(
-        ROOT,
-        "src/adapters/study/library/ui/app/popup-title.js",
-    ),
+    resolve(ROOT, "src/adapters/study/library/ui/app/popup-title.js"),
     "utf8",
 );
 
@@ -136,7 +133,7 @@ test("Study Library serializes popup opening and identifies child parents", () =
         /if \(suppressEntryClick\)[\s\S]*closeUnrelatedVariantViews/,
     );
     assert.match(source, /gateway\.study\.library_from_parent/);
-    assert.match(source, /variantPlacement\(detail\.entry, schemas, entries\)/);
+    assert.match(source, /withParentTitleAttribution\(/);
     assert.match(source, /let titleDetailItems = popupTitleDetailItems\(/);
     assert.match(
         source,

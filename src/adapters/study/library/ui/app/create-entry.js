@@ -41,7 +41,14 @@ import {
     LIBRARY_COMPOSER_LIMITS,
 } from "./composer-limits.js";
 import { bindComposerExtras, renderComposerExtras } from "./composer-extras.js";
-import { compositionTokenLabel } from "./composition-tokens.js";
+import {
+    compositionTokenEntryId,
+    compositionTokenLabel,
+    transformationCompositionToken,
+    transformationTokenDetails,
+} from "./composition-tokens.js";
+import { transformationPathways } from "./transformations.js";
+import { openTransformationPopup } from "./transformation-popup.js";
 import { renderStrokePatternPreviews } from "./field-input.js";
 
 export async function chooseCreateLayer({
@@ -358,11 +365,42 @@ export async function openCreateEntryPopup({
                         const index = form.compositionOrder.indexOf(value);
                         return index < 0 ? localIndex : index + 1;
                     },
+                    onActivate: async ({ item, selected }) => {
+                        if (selected) return;
+                        const entryId =
+                            item.dataset.carouselBaseValue ??
+                            compositionTokenEntryId(item.dataset.carouselValue);
+                        const candidate = entries.find(
+                            ({ id }) => id === entryId,
+                        );
+                        if (
+                            !candidate ||
+                            !transformationPathways(candidate, schema).length
+                        )
+                            return;
+                        const transformation = await openTransformationPopup(
+                            candidate,
+                            schema,
+                            i18n,
+                        );
+                        if (!transformation) return false;
+                        item.dataset.carouselBaseValue = candidate.id;
+                        return {
+                            value: transformationCompositionToken(
+                                candidate.id,
+                                transformation.set.id,
+                                transformation.node,
+                            ),
+                            label: transformation.node.value,
+                        };
+                    },
                     onChange: ({ id, values }) => {
                         const select = form.elements[`relationship:${id}`];
                         if (!select) return;
                         if (pronunciationRelationshipIds.has(id)) return;
-                        const selected = new Set(values);
+                        const selected = new Set(
+                            values.map(compositionTokenEntryId),
+                        );
                         const previous = new Set(
                             Array.from(
                                 select.selectedOptions,
@@ -371,10 +409,11 @@ export async function openCreateEntryPopup({
                         );
                         form.compositionOrder = form.compositionOrder.filter(
                             (value) =>
-                                selected.has(value) || !previous.has(value),
+                                selected.has(compositionTokenEntryId(value)) ||
+                                !previous.has(compositionTokenEntryId(value)),
                         );
                         values.forEach((value) => {
-                            if (!previous.has(value))
+                            if (!previous.has(compositionTokenEntryId(value)))
                                 form.compositionOrder.push(value);
                         });
                         Array.from(select.options).forEach((option) => {
@@ -382,7 +421,9 @@ export async function openCreateEntryPopup({
                         });
                         values.forEach((value) => {
                             const option = Array.from(select.options).find(
-                                (candidate) => candidate.value === value,
+                                (candidate) =>
+                                    candidate.value ===
+                                    compositionTokenEntryId(value),
                             );
                             if (option) select.append(option);
                         });
@@ -892,9 +933,17 @@ function bindTextComposition(
         const control = form.elements["field:pronunciation"];
         if (!control) return;
         const selectedPronunciation = (form.compositionOrder ?? [])
-            .map((id) => entries.find((entry) => entry.id === id))
-            .filter(Boolean)
-            .map((entry) => derivedPronunciation(entry, entries, schema))
+            .map((token) => {
+                const transformation = transformationTokenDetails(token);
+                if (transformation?.pronunciation)
+                    return transformation.pronunciation;
+                const entry = entries.find(
+                    ({ id }) => id === compositionTokenEntryId(token),
+                );
+                return entry
+                    ? derivedPronunciation(entry, entries, schema)
+                    : "";
+            })
             .join("");
         const normalizedInput = input.value.trim().normalize("NFKC");
         const exactInput = candidates.find(
@@ -909,7 +958,8 @@ function bindTextComposition(
     const syncLabel = () => {
         for (const relationship of relationships) {
             const select = form.elements[`relationship:${relationship.id}`];
-            for (const id of form.compositionOrder ?? []) {
+            for (const token of form.compositionOrder ?? []) {
+                const id = compositionTokenEntryId(token);
                 const option = select
                     ? Array.from(select.options).find(
                           ({ value }) => value === id,

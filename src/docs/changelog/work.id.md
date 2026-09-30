@@ -82,6 +82,10 @@ Atribusi induk kini tetap dikelompokkan pada baris bacaan sebelum definisi. Kart
 
 Tag paket konten kini dipertahankan selama validasi dan penyerapan ke dalam rekaman entri Pustaka. Tampilan Kata Kerja dan Kata Keterangan yang dideklarasikan penyedia kini dapat mencocokkan serta merender kosakata bertag, bukan melaporkan lapisan kosong.
 
+## Pohon Transformasi Tersusun
+
+Transformasi kata kerja dan kata keterangan kini mendukung rantai bercabang yang diperluas, bacaan dan definisi khusus transformasi, serta tata letak pohon teknologi yang terhubung. Penyusun kalimat dapat memilih bentuk korsel yang ditransformasi sambil mempertahankan referensi kanonis, dan referensi tersebut dibuka kembali dengan bentuk yang ditulis beserta jalur lengkapnya.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -104,3 +108,4 @@ Tag paket konten kini dipertahankan selama validasi dan penyerapan ke dalam reka
 - [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)
 - [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)
 - [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)
+- [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)

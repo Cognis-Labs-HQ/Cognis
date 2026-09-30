@@ -10,6 +10,7 @@ import {
     resolveReferenceAliasComposition,
 } from "./composition-links.js";
 import { visibleTitleDefinition } from "./title-definition.js";
+import { variantPlacement } from "./variant-placement.js";
 
 function linkedItems(entries) {
     return entries.map((entry) => ({
@@ -48,6 +49,22 @@ export function withParentAttribution(items, parentEntry, parentLabel) {
         ...parentItems,
         ...items.slice(insertionIndex),
     ];
+}
+
+export function withParentTitleAttribution(
+    items,
+    entry,
+    layer,
+    schemas,
+    entries,
+    parentLabel,
+) {
+    if (layer?.semanticRole === "lexicalUnit") return items;
+    const parentId = variantPlacement(entry, schemas, entries)?.parentId;
+    const parentEntry = entries.find(({ id }) => id === parentId);
+    return parentEntry
+        ? withParentAttribution(items, parentEntry, parentLabel)
+        : items;
 }
 
 export function secondarySpellingGroups(detail, schemas) {

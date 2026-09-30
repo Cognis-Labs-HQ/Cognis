@@ -82,6 +82,10 @@ Die Elternzuordnung bleibt nun geschlossen in der Lesungszeile vor der Definitio
 
 Tags aus Content-Packs bleiben nun bei Validierung und Import in Bibliothekseinträgen erhalten. Vom Anbieter deklarierte Ansichten für Verben und Adverbien können ihr markiertes Vokabular dadurch finden und anzeigen, statt eine leere Ebene zu melden.
 
+## Komponierbare Transformationsbäume
+
+Verb- und Adverbtransformationen unterstützen nun erweiterte verzweigte Ketten, transformationsspezifische Lesungen und Definitionen sowie ein verbundenes Technologiebaum-Layout. Satz-Composer können transformierte Karussellformen auswählen und dabei kanonische Verweise bewahren; transformierte Verweise werden mit ihrer verfassten Form und dem vollständigen Pfad erneut geöffnet.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -104,3 +108,4 @@ Tags aus Content-Packs bleiben nun bei Validierung und Import in Bibliothekseint
 - [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)
 - [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)
 - [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)
+- [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)

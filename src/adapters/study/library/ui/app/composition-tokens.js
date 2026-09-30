@@ -1,12 +1,36 @@
+import { transformationPathways } from "./transformations.js";
+
 const LITERAL_PREFIX = "literal:";
+const TRANSFORMATION_PREFIX = "transformation:";
 
 export function literalCompositionToken(value) {
     return `${LITERAL_PREFIX}${encodeURIComponent(value)}`;
 }
 
+export function transformationCompositionToken(entryId, setId, node) {
+    return `${TRANSFORMATION_PREFIX}${encodeURIComponent(JSON.stringify({ entryId, setId, state: node.state, value: node.value, pronunciation: node.pronunciation, definition: node.definition, path: node.path }))}`;
+}
+
+export function transformationTokenDetails(token) {
+    if (!token.startsWith(TRANSFORMATION_PREFIX)) return null;
+    try {
+        return JSON.parse(
+            decodeURIComponent(token.slice(TRANSFORMATION_PREFIX.length)),
+        );
+    } catch {
+        return null;
+    }
+}
+
+export function compositionTokenEntryId(token) {
+    return transformationTokenDetails(token)?.entryId ?? token;
+}
+
 export function compositionTokenLabel(token, entries) {
     if (token.startsWith(LITERAL_PREFIX))
         return decodeURIComponent(token.slice(LITERAL_PREFIX.length));
+    const transformation = transformationTokenDetails(token);
+    if (transformation) return transformation.value;
     return entries.find(({ id }) => id === token)?.label ?? "";
 }
 
@@ -15,6 +39,7 @@ export function restoreCompositionTokens(
     entries,
     constructor,
     inputRelationshipIds,
+    schema,
 ) {
     const references = (entry.references ?? [])
         .filter(({ relation }) => inputRelationshipIds.has(relation))
@@ -33,9 +58,30 @@ export function restoreCompositionTokens(
     let referenceIndex = 0;
     for (let cursor = 0; cursor < entry.label.length;) {
         const reference = references[referenceIndex];
-        if (reference && entry.label.startsWith(reference.label, cursor)) {
-            tokens.push(reference.id);
-            cursor += reference.label.length;
+        const transformation = reference
+            ? transformationPathways(reference, schema)
+                  .flatMap(({ set, nodes }) =>
+                      nodes.slice(1).map((node) => ({ set, node })),
+                  )
+                  .find(({ node }) =>
+                      entry.label.startsWith(node.value, cursor),
+                  )
+            : null;
+        if (
+            reference &&
+            (entry.label.startsWith(reference.label, cursor) || transformation)
+        ) {
+            tokens.push(
+                transformation
+                    ? transformationCompositionToken(
+                          reference.id,
+                          transformation.set.id,
+                          transformation.node,
+                      )
+                    : reference.id,
+            );
+            cursor +=
+                transformation?.node.value.length ?? reference.label.length;
             referenceIndex += 1;
             continue;
         }

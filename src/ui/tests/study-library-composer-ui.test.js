@@ -301,3 +301,10 @@ test("Study Library exposes tagged sentence components and repeatable literals",
     assert.match(adminInteractionsSource, /bindComposerExtras\(form,/);
     assert.match(adminStylesheet, /library-composer-extra-row--literal/);
 });
+
+test("Study Library composes transformed carousel cards into sentences", () => {
+    assert.match(createEntrySource, /openTransformationPopup/);
+    assert.match(createEntrySource, /transformationCompositionToken/);
+    assert.match(createEntrySource, /transformationTokenDetails/);
+    assert.match(adminInteractionsSource, /compositionTokenEntryId/);
+});

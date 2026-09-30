@@ -324,9 +324,10 @@ export class LibraryStore {
                         protected: manifest.protected === true,
                         editable: record.editable !== false,
                         fields_json: JSON.stringify(fields),
-                        search_text: `${record.label} ${(record.tags ?? []).join(" ")} ${JSON.stringify(fields)}`
-                            .normalize()
-                            .toLocaleLowerCase(),
+                        search_text:
+                            `${record.label} ${(record.tags ?? []).join(" ")} ${JSON.stringify(fields)}`
+                                .normalize()
+                                .toLocaleLowerCase(),
                         created_by: `content-pack:${manifest.publisher}:${manifest.id}`,
                     },
                     manifest,
@@ -351,9 +352,10 @@ export class LibraryStore {
                     protected: manifest.protected === true,
                     editable: record.editable !== false,
                     fields_json: JSON.stringify(fields),
-                    search_text: `${record.label} ${(record.tags ?? []).join(" ")} ${JSON.stringify(fields)}`
-                        .normalize()
-                        .toLocaleLowerCase(),
+                    search_text:
+                        `${record.label} ${(record.tags ?? []).join(" ")} ${JSON.stringify(fields)}`
+                            .normalize()
+                            .toLocaleLowerCase(),
                     content_hash: contentHash,
                     created_by: `content-pack:${manifest.publisher}:${manifest.id}`,
                     updated_at: new Date().toISOString(),

@@ -11,17 +11,18 @@ import {
 import {
     hasReadingDetails,
     popupTitleDetailItems,
-    withParentAttribution,
+    withParentTitleAttribution,
 } from "./popup-title.js";
 import { resolvePopupNavigation } from "./popup-navigation.js";
 import { titleDefinitionForRole } from "./title-definition.js";
-import {
-    assignVariantPlacements,
-    variantPlacement,
-} from "./variant-placement.js";
+import { assignVariantPlacements } from "./variant-placement.js";
 import { isDirectlyVisible } from "./cards.js";
 import { openLibraryEntryEditor } from "./admin-interactions.js";
 import { entryEditMode } from "./editability.js";
+import {
+    sourceTransformation as sourceTransform,
+    transformedPopupPresentation as transformPresentation,
+} from "./transformation-popup.js";
 import {
     canDraw,
     drawingHeaderActions,
@@ -42,6 +43,7 @@ export async function openEntryPopup(
     if (isMeaningLayer(layerForEntry(schemas, initialEntry))) return;
     let selectedEntry = initialEntry;
     let sourceDefinition = "";
+    let selectedTransformation = null;
     while (selectedEntry && !signal?.aborted) {
         const detail = await fetchLibraryEntry(selectedEntry.id);
         const explicitTitleReferences = headingCompositionReferences(
@@ -56,11 +58,6 @@ export async function openEntryPopup(
                   schemas,
                   entries,
               );
-        const parentEntry = entries.find(
-            (entry) =>
-                entry.id ===
-                variantPlacement(detail.entry, schemas, entries)?.parentId,
-        );
         const layer = layerForEntry(schemas, selectedEntry);
         const editMode = options.readOnly ? null : entryEditMode(selectedEntry);
         const handleSaved = (updated) => {
@@ -117,6 +114,15 @@ export async function openEntryPopup(
             sourceDefinition,
             titleReferences,
         );
+        const transformed = transformPresentation(
+            selectedTransformation,
+            detail.entry,
+            schema,
+            titleDetailItems,
+            composed.body,
+        );
+        titleDetailItems = transformed.titleDetailItems;
+        composed.body = transformed.body;
         const displayedDefinition = titleDefinitionForRole(
             layer?.semanticRole,
             composed.titleDefinition,
@@ -126,20 +132,21 @@ export async function openEntryPopup(
             entries,
             schemas,
         });
-        if (parentEntry && layer?.semanticRole !== "lexicalUnit") {
-            titleDetailItems = withParentAttribution(
-                titleDetailItems,
-                parentEntry,
-                i18n.t("gateway.study.library_from_parent"),
-            );
-        }
+        titleDetailItems = withParentTitleAttribution(
+            titleDetailItems,
+            detail.entry,
+            layer,
+            schemas,
+            entries,
+            i18n.t("gateway.study.library_from_parent"),
+        );
         let dismissPopup, relatedEntry;
         const audioObjectUrls = new Set();
         const audioController = new AbortController();
         const abortPopup = () => dismissPopup?.();
         signal?.addEventListener("abort", abortPopup, { once: true });
         const result = await openPopup({
-            title: detail.entry.label,
+            title: transformed.title,
             titleLeading: composed.titleLeading,
             titleItems: titleReferences.map((entry) => ({
                 label: entry.label,
@@ -266,5 +273,10 @@ export async function openEntryPopup(
         });
         selectedEntry = navigation.entry;
         sourceDefinition = navigation.sourceDefinition;
+        selectedTransformation = sourceTransform(
+            selectedEntry,
+            schema,
+            detail.entry.label,
+        );
     }
 }
