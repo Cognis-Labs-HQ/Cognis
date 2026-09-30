@@ -307,3 +307,5 @@ Definitionen in Pop-ups belegen jetzt die zweite Rasterzeile direkt unter dem Ka
 Die Ausspracheauflösung für Partikeln endet wie bei atomaren Zeichen: Zuerst wird eine explizite Partikelaussprache verwendet, andernfalls die Partikelbeschriftung. Der Resolver steigt nicht mehr in die Zeichenreferenzen einer Partikel ab, sodass kontextabhängige Partikeln wie は und が wie verfasst ausgesprochen bleiben.
 
 Beim Speichern einer leeren Aussprache-Stufe erscheint jetzt eine Fehlermeldung. Gespeicherte Aussprachekarten behalten ihre Entfernen-Schaltfläche innerhalb der Karte; die Auswahl einer gespeicherten Karte verschiebt ihre gruppierten Komponentenreferenzen zurück in die Stufe und wählt die zugehörigen Karussellkarten zur Bearbeitung erneut aus.
+
+Die Option „Definition(en) immer in der Kartenvorschau anzeigen“ befindet sich jetzt im Tab Definitionen neben den Definitionsübersichten. Editoren vorhandener Karten bieten außerdem die Aktion zum Hinzufügen einer Definition; eine neu erstellte Definition wird sofort ausgewählt und der sichtbaren Übersicht hinzugefügt.

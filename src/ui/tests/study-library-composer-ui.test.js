@@ -87,6 +87,19 @@ test("Study Library separates stroke lookup and renders a compact preview", () =
         assert.match(content, pattern);
 });
 
+test("Study Library keeps definition controls in the Definitions tab", () => {
+    assert.match(
+        adminInteractionsSource,
+        /const definitionsPanel = `[\s\S]*alwaysShowDefinitionControl/,
+    );
+    assert.match(
+        adminInteractionsSource,
+        /allowDefinitionCreate: layer\?\.semanticRole !== "definition"/,
+    );
+    assert.match(adminInteractionsSource, /data-library-add-definition/);
+    assert.match(adminInteractionsSource, /openCreateEntryPopup/);
+});
+
 test("Study Library validation reveals invalid fields across editor tabs", () => {
     for (const pattern of [
         /revealFirstInvalid/,

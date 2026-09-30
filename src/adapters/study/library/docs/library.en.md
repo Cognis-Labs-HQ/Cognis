@@ -319,3 +319,5 @@ Popup definitions now occupy the second grid row beginning directly beneath the 
 Particle pronunciation resolution is terminal, like atomic characters: an explicit particle pronunciation is used first, and otherwise the particle label is used. The resolver no longer descends through a particle’s character references, so context-sensitive particles such as は and が remain pronounced as authored.
 
 Saving an empty pronunciation stage now shows an error toast. Saved pronunciation cards keep their remove control inside the card; selecting a saved card moves its grouped component references back into the stage and reselects the corresponding carousel cards for editing.
+
+The “Always show definition(s) in card preview” control now lives in the Definitions tab beside definition summaries. Existing-card editors also expose the add-definition action; a newly created definition is selected immediately and added to the visible definition summary.

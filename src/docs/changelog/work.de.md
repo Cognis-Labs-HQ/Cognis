@@ -70,6 +70,10 @@ Die Ausspracheauflösung endet jetzt bei der Partikel selbst, sodass Zeichenrefe
 
 Leere Aussprache-Stufen erzeugen jetzt eine Fehlermeldung. Gespeicherte Aussprachekarten enthalten ihre Entfernen-Schaltfläche; ihre Auswahl stellt die Komponentenkarten in Stufe und Karussells zur Bearbeitung wieder her.
 
+## Definitionsbearbeitung vervollständigt
+
+Die Vorschau-Definitionsoption befindet sich jetzt unter Definitionen; Editoren vorhandener Karten können zusätzliche Definitionen erstellen und sofort auswählen.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -89,3 +93,4 @@ Leere Aussprache-Stufen erzeugen jetzt eine Fehlermeldung. Gespeicherte Aussprac
 - [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)
 - [492cf08](https://github.com/Cognis-Labs-HQ/Cognis/commit/492cf08)
 - [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)
+- [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)

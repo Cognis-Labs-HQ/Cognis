@@ -552,7 +552,12 @@ export function editorBody(
             .join("") ||
         `<p>${escapeHtml(i18n.t("gateway.study.library_editor_no_relationships"))}</p>`
     }</div></section></div>`;
-    const definitionsPanel = `${definitionSummary}${options.allowDefinitionCreate ? `<button class="btn-neutral library-definition-add" type="button" data-library-add-definition aria-label="${escapeHtml(i18n.t("gateway.study.library_add_definition"))}">+</button>` : ""}`;
+    const isDefinition = layer?.semanticRole === "definition";
+    const alwaysShowDefinitionControl =
+        isDefinition || options.includeAlwaysShowDefinition === false
+            ? '<input name="alwaysShowDefinition" type="hidden" value="">'
+            : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox" class="choice-checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`;
+    const definitionsPanel = `${definitionSummary}${options.allowDefinitionCreate ? `<button class="btn-neutral library-definition-add" type="button" data-library-add-definition aria-label="${escapeHtml(i18n.t("gateway.study.library_add_definition"))}">+</button>` : ""}${alwaysShowDefinitionControl}`;
     const contentClass = entry.class ?? layer?.id ?? "";
     const generatedLabel = options.generatedLabel
         ? `<input name="label" type="hidden" required maxlength="500" value="${escapeHtml(entry.label)}">`
@@ -561,7 +566,6 @@ export function editorBody(
     const inputSelectionField = options.inputCarouselIds?.size
         ? `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</legend>${selectedReferenceField("input", options.inputCarouselIds, { fieldLabel: i18n.t("gateway.study.library_composer_text"), inputValue: entry.id ? "" : entry.label, required: !entry.id })}${inlineInputCarousel}</fieldset>`
         : "";
-    const isDefinition = layer?.semanticRole === "definition";
     const tags = Array.isArray(entry.tags) ? entry.tags : [];
     const tagsField = `<div class="library-tag-field" data-library-entry-tags><span>${escapeHtml(i18n.t("gateway.study.library_tags"))}</span><div class="library-tag-list">${tags.map((tag) => `<button type="button" class="btn-neutral" data-library-tag="${escapeHtml(tag)}">${escapeHtml(tag)} ×</button>`).join("")}</div><input data-library-tag-input aria-label="${escapeHtml(i18n.t("gateway.study.library_tags"))}"><input name="tags" type="hidden" value="${escapeHtml(tags.join("\u001f"))}"></div>`;
     const relationshipTab = options.showRelationshipTab
@@ -611,7 +615,7 @@ export function editorBody(
                           value: entry.label,
                       },
                   ],
-            trustedContentHtml: `${options.persistentExtra ? "" : preservedRelationships}<nav class="library-editor-tabs" role="tablist" data-library-editor-tabs><button class="btn-neutral active" type="button" role="tab" aria-selected="true" data-library-editor-tab="content" data-form-tab="content">${escapeHtml(i18n.t("gateway.study.library_editor_content"))}</button>${relationshipTab}<button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="definitions" data-form-tab="definitions">${escapeHtml(i18n.t("gateway.study.library_definitions"))}</button></nav><section class="library-editor-panel" data-library-editor-panel="content" data-form-panel="content">${generatedLabel}${classField}${extraHtml}${inputSelectionField}${fields}${options.persistentExtra ? relationships : ""}${isDefinition || options.includeAlwaysShowDefinition === false ? '<input name="alwaysShowDefinition" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox" class="choice-checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`}${isDefinition ? '<input name="hidden" type="hidden" value="true">' : options.includeHidden === false ? '<input name="hidden" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="hidden" type="checkbox" class="choice-checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}${tagsField}</section>${relationshipPanel}<section class="library-editor-panel" data-library-editor-panel="definitions" data-form-panel="definitions" hidden>${definitionsPanel}</section>`,
+            trustedContentHtml: `${options.persistentExtra ? "" : preservedRelationships}<nav class="library-editor-tabs" role="tablist" data-library-editor-tabs><button class="btn-neutral active" type="button" role="tab" aria-selected="true" data-library-editor-tab="content" data-form-tab="content">${escapeHtml(i18n.t("gateway.study.library_editor_content"))}</button>${relationshipTab}<button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="definitions" data-form-tab="definitions">${escapeHtml(i18n.t("gateway.study.library_definitions"))}</button></nav><section class="library-editor-panel" data-library-editor-panel="content" data-form-panel="content">${generatedLabel}${classField}${extraHtml}${inputSelectionField}${fields}${options.persistentExtra ? relationships : ""}${isDefinition ? '<input name="hidden" type="hidden" value="true">' : options.includeHidden === false ? '<input name="hidden" type="hidden" value="">' : `<label class="library-admin-hidden"><input name="hidden" type="checkbox" class="choice-checkbox"${entry.hidden ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_admin_hidden"))}</span></label>`}${tagsField}</section>${relationshipPanel}<section class="library-editor-panel" data-library-editor-panel="definitions" data-form-panel="definitions" hidden>${definitionsPanel}</section>`,
         },
     );
     return { html: builder.render(), builder };
@@ -853,6 +857,7 @@ export async function openLibraryEntryEditor({
             tagCarousels: composer.constructor.tag_carousels,
             editingLayer: composer.layer,
             persistentExtra: true,
+            allowDefinitionCreate: layer?.semanticRole !== "definition",
         },
     );
     let formController;
@@ -946,6 +951,43 @@ export async function openLibraryEntryEditor({
             );
             syncGeneratedCardLabel(form, composer.inputCarouselIds, entries);
             form.addEventListener("click", (event) => {
+                const addDefinition = event.target.closest(
+                    "[data-library-add-definition]",
+                );
+                if (addDefinition) {
+                    const relationship = composer.layer.relationships.find(
+                        ({ targetLayer }) =>
+                            schema.layers.find(({ id }) => id === targetLayer)
+                                ?.semanticRole === "definition",
+                    );
+                    if (!relationship) return;
+                    void (async () => {
+                        const { openCreateEntryPopup } =
+                            await import("./create-entry.js");
+                        const created = await openCreateEntryPopup({
+                            schemas,
+                            entries,
+                            schemaId: schema.id,
+                            layerId: relationship.targetLayer,
+                            i18n,
+                        });
+                        if (!created) return;
+                        entries.push(created);
+                        form.elements[
+                            `relationship:${relationship.id}`
+                        ]?.append(
+                            new Option(created.label, created.id, true, true),
+                        );
+                        addDefinition.insertAdjacentHTML(
+                            "beforebegin",
+                            `<article class="library-editor-aggregate library-definition-summary"><header><strong>${escapeHtml(created.label)}</strong></header></article>`,
+                        );
+                        form.querySelector(
+                            "[data-library-definition-empty]",
+                        )?.remove();
+                    })();
+                    return;
+                }
                 const button = event.target.closest(
                     "[data-library-edit-related]",
                 );

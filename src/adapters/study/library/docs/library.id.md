@@ -307,3 +307,5 @@ Definisi popup kini menempati baris grid kedua yang dimulai tepat di bawah judul
 Resolusi pelafalan partikel kini bersifat terminal seperti karakter atomik: pelafalan partikel eksplisit dipakai terlebih dahulu, dan jika tidak ada, label partikel dipakai. Resolver tidak lagi menelusuri referensi karakter partikel, sehingga partikel peka konteks seperti は dan が tetap dilafalkan sesuai penulisan.
 
 Menyimpan tahap pelafalan kosong kini menampilkan toast kesalahan. Kartu pelafalan tersimpan menempatkan kontrol hapus di dalam kartu; memilih kartu tersimpan memindahkan referensi komponen berkelompok kembali ke tahap dan memilih ulang kartu carousel terkait untuk diedit.
+
+Kontrol “Selalu tampilkan definisi dalam pratinjau kartu” kini berada di tab Definisi di samping ringkasan definisi. Editor kartu yang sudah ada juga menyediakan aksi tambah definisi; definisi baru langsung dipilih dan ditambahkan ke ringkasan yang terlihat.

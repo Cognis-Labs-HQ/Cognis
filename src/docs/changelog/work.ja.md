@@ -70,6 +70,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 空の発音ステージではエラートーストを表示します。保存済み発音カード内に削除操作を収め、選択時に構成カードをステージとカルーセルへ復元して編集できます。
 
+## 定義編集を完成
+
+プレビュー定義チェックボックスを「定義」へ移動し、既存カードの編集画面でも追加の定義を作成して直ちに選択できます。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -89,3 +93,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)
 - [492cf08](https://github.com/Cognis-Labs-HQ/Cognis/commit/492cf08)
 - [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)
+- [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)

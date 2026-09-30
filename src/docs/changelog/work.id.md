@@ -70,6 +70,10 @@ Resolusi pelafalan kini berhenti pada partikel itu sendiri sehingga referensi ka
 
 Tahap pelafalan kosong kini menghasilkan toast kesalahan. Kartu pelafalan tersimpan memuat kontrol hapusnya, dan memilihnya memulihkan kartu komponen ke tahap serta carousel untuk diedit.
 
+## Penyuntingan Definisi Lengkap
+
+Kotak centang definisi pratinjau kini berada di Definisi, dan editor kartu yang sudah ada dapat membuat serta langsung memilih definisi tambahan.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -89,3 +93,4 @@ Tahap pelafalan kosong kini menghasilkan toast kesalahan. Kartu pelafalan tersim
 - [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)
 - [492cf08](https://github.com/Cognis-Labs-HQ/Cognis/commit/492cf08)
 - [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)
+- [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)

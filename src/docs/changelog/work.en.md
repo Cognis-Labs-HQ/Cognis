@@ -70,6 +70,10 @@ Particle pronunciation now terminates resolution at the particle itself, prevent
 
 Empty pronunciation stages now produce an error toast. Saved pronunciation cards contain their remove control, and selecting one restores its component cards to the stage and carousels for editing.
 
+## Complete Definition Editing
+
+The preview-definition checkbox now lives in Definitions, and existing-card editors can create and immediately select additional definitions.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -89,3 +93,4 @@ Empty pronunciation stages now produce an error toast. Saved pronunciation cards
 - [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)
 - [492cf08](https://github.com/Cognis-Labs-HQ/Cognis/commit/492cf08)
 - [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)
+- [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)
