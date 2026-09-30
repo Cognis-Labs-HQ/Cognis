@@ -58,6 +58,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 単語と文の明示的な発音で文字への再帰的な導出を停止します。表示可能な重複入力を拒否し、続行時は既存カードを選択します。要求の保存は update と merge を認識します。
 
+## 定義をタイトル下に配置
+
+ポップアップの定義はカードタイトルの下から始まり、右端へ押し込まれず利用可能なタイトル領域で折り返されます。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -74,3 +78,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)
 - [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)
 - [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)
+- [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)

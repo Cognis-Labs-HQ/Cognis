@@ -58,6 +58,10 @@ Alternate-character form alignment now replaces both the Vocabulary pronunciatio
 
 Explicit word and sentence pronunciations now stop recursive character derivation. Visible duplicate inputs are blocked and continuing selects the existing card, while request persistence recognizes update and merge kinds.
 
+## Keep Definitions Beneath Titles
+
+Popup definitions now begin beneath the card title and wrap across the available title area instead of being forced into the right-hand edge.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -74,3 +78,4 @@ Explicit word and sentence pronunciations now stop recursive character derivatio
 - [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)
 - [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)
 - [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)
+- [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)

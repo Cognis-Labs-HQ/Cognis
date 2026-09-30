@@ -58,6 +58,10 @@ Die Formularangleichung für alternative Zeichen ersetzt jetzt sowohl das Wortsc
 
 Explizite Wort- und Satzaussprachen beenden nun die rekursive Zeichenableitung. Sichtbare doppelte Eingaben werden blockiert und beim Fortfahren wird die vorhandene Karte ausgewählt; Anfragen erkennen die Typen update und merge.
 
+## Definitionen unter Titeln
+
+Definitionen in Pop-ups beginnen jetzt unter dem Kartentitel und umbrechen im verfügbaren Titelbereich, statt an den rechten Rand gedrängt zu werden.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -74,3 +78,4 @@ Explizite Wort- und Satzaussprachen beenden nun die rekursive Zeichenableitung. 
 - [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)
 - [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)
 - [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)
+- [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)

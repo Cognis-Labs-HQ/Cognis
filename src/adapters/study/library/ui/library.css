@@ -835,8 +835,9 @@ body[data-theme="dark"] .library-audio {
     grid-row: 1;
 }
 .library-entry-popup--composite [data-popup-title-placement="definition"] {
-    grid-column: 4;
-    grid-row: 1;
+    grid-column: 2 / 4;
+    grid-row: 2;
+    justify-self: start;
 }
 .library-entry-popup--composite [data-popup-title-placement="reading"],
 .library-entry-popup--composite [data-popup-title-placement="definition"] {

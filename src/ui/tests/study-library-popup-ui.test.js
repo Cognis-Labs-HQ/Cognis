@@ -82,7 +82,7 @@ test("Study Library centers popup readings and definitions without a dash", () =
     );
     assert.match(
         stylesheet,
-        /\[data-popup-title-placement="definition"\][\s\S]*grid-row:\s*1;/,
+        /\[data-popup-title-placement="definition"\][\s\S]*grid-column:\s*2\s*\/\s*4;[\s\S]*grid-row:\s*2;[\s\S]*justify-self:\s*start;/,
     );
     assert.match(
         stylesheet,

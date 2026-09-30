@@ -58,6 +58,10 @@ Penyelarasan formulir karakter alternatif kini mengganti target pelafalan Kosaka
 
 Pelafalan kata dan kalimat eksplisit kini menghentikan penurunan karakter rekursif. Input duplikat yang terlihat diblokir dan melanjutkan akan memilih kartu yang ada; penyimpanan permintaan mengenali jenis update dan merge.
 
+## Definisi Tetap di Bawah Judul
+
+Definisi popup kini dimulai di bawah judul kartu dan membungkus pada area judul yang tersedia, bukan dipaksa ke sisi kanan.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -74,3 +78,4 @@ Pelafalan kata dan kalimat eksplisit kini menghentikan penurunan karakter rekurs
 - [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)
 - [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)
 - [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)
+- [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)
