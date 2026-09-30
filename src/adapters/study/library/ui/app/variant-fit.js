@@ -100,11 +100,18 @@ function cardBounds(slot) {
     return (card ?? slot).getBoundingClientRect();
 }
 
-function parentCardBounds(slot) {
-    const card = slot.parentElement?.querySelector(
-        ":scope > .library-entry-card",
-    );
-    return card ? collisionBounds(card.getBoundingClientRect()) : null;
+function ancestorCardBounds(slot) {
+    const bounds = [];
+    let shell = slot.parentElement;
+    while (shell?.classList.contains("library-entry-card-shell")) {
+        const card = shell.querySelector(":scope > .library-entry-card");
+        if (card) bounds.push(collisionBounds(card.getBoundingClientRect()));
+        const parentSlot = shell.parentElement;
+        shell = parentSlot?.classList.contains("library-entry-variant-shell")
+            ? parentSlot.parentElement
+            : null;
+    }
+    return bounds;
 }
 
 function overflowScore(rect, boundary) {
@@ -140,8 +147,11 @@ export function overlapArea(rect, occupiedRect) {
     return width * height;
 }
 
-export function isParentSafe(rect, parentRect) {
-    return !parentRect || overlapArea(collisionBounds(rect), parentRect) === 0;
+export function isAncestorSafe(rect, ancestorRects) {
+    const bounds = collisionBounds(rect);
+    return ancestorRects.every(
+        (ancestorRect) => overlapArea(bounds, ancestorRect) === 0,
+    );
 }
 
 function collisionScore(rect, occupiedRects) {
@@ -160,6 +170,14 @@ function setVariantDirection(slot, direction) {
             candidate === direction,
         );
     }
+}
+
+function setVariantDistance(slot, distance) {
+    slot.style.setProperty("--library-variant-card-span", `${distance * 100}%`);
+    slot.style.setProperty(
+        "--library-variant-gap-span",
+        `${distance * 0.75}rem`,
+    );
 }
 
 function visibleVariantSlots(rootShell) {
@@ -185,11 +203,12 @@ export function restorePreferredVariantDirections(rootShell) {
         .querySelectorAll("[data-library-preferred-direction]")
         .forEach((slot) => {
             setVariantDirection(slot, slot.dataset.libraryPreferredDirection);
+            setVariantDistance(
+                slot,
+                Number(slot.dataset.libraryPreferredDistance ?? 1),
+            );
             delete slot.dataset.libraryFittedDirection;
-            if (slot.dataset.libraryParentCollisionHidden) {
-                slot.hidden = false;
-                delete slot.dataset.libraryParentCollisionHidden;
-            }
+            delete slot.dataset.libraryFittedDistance;
         });
 }
 
@@ -197,12 +216,6 @@ export function fitVariantBranchWithinGrid(rootShell) {
     window.requestAnimationFrame(() => {
         const grid = rootShell.closest(".library-entry-grid");
         if (!grid) return;
-        rootShell
-            .querySelectorAll("[data-library-parent-collision-hidden]")
-            .forEach((slot) => {
-                slot.hidden = false;
-                delete slot.dataset.libraryParentCollisionHidden;
-            });
         const gridRect = grid.getBoundingClientRect();
         const boundary = {
             top: gridRect.top + 2,
@@ -226,38 +239,41 @@ export function fitVariantBranchWithinGrid(rootShell) {
             if (slot.dataset.libraryFittedDirection) continue;
             const preferred = slot.dataset.libraryPreferredDirection;
             const candidates = variantDirectionCandidates(preferred);
-            const parentRect = parentCardBounds(slot);
+            const ancestorRects = ancestorCardBounds(slot);
+            const preferredDistance = Number(
+                slot.dataset.libraryPreferredDistance ?? 1,
+            );
+            const maximumDistance =
+                slots.length + ancestorRects.length + preferredDistance + 1;
             let best = null;
-            for (const direction of candidates) {
-                setVariantDirection(slot, direction);
-                const rect = cardBounds(slot);
-                if (!isParentSafe(rect, parentRect)) continue;
-                const overflow = overflowScore(rect, boundary);
-                const collision = collisionScore(rect, occupiedRects);
-                if (
-                    direction === preferred &&
-                    overflow === 0 &&
-                    collision === 0
-                ) {
-                    best = { direction, overflow, collision };
-                    break;
+            for (
+                let distance = preferredDistance;
+                distance <= maximumDistance;
+                distance += 1
+            ) {
+                for (const direction of candidates) {
+                    setVariantDirection(slot, direction);
+                    setVariantDistance(slot, distance);
+                    const rect = cardBounds(slot);
+                    if (!isAncestorSafe(rect, ancestorRects)) continue;
+                    const overflow = overflowScore(rect, boundary);
+                    const collision = collisionScore(rect, occupiedRects);
+                    if (
+                        !best ||
+                        collision < best.collision ||
+                        (collision === best.collision &&
+                            overflow < best.overflow)
+                    ) {
+                        best = { direction, distance, overflow, collision };
+                    }
+                    if (collision === 0 && overflow === 0) break;
                 }
-                if (
-                    !best ||
-                    overflow < best.overflow ||
-                    (overflow === best.overflow && collision < best.collision)
-                ) {
-                    best = { direction, overflow, collision };
-                }
-                if (overflow === 0 && collision === 0) break;
-            }
-            if (!best) {
-                slot.hidden = true;
-                slot.dataset.libraryParentCollisionHidden = "true";
-                continue;
+                if (best?.collision === 0) break;
             }
             setVariantDirection(slot, best.direction);
+            setVariantDistance(slot, best.distance);
             slot.dataset.libraryFittedDirection = best.direction;
+            slot.dataset.libraryFittedDistance = String(best.distance);
             occupiedRects.push(collisionBounds(cardBounds(slot)));
         }
     });

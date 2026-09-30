@@ -88,7 +88,7 @@ Transformasi kata kerja dan kata keterangan kini mendukung rantai bercabang yang
 
 ## Kartu Anak Aman dari Induk
 
-Penempatan kartu anak kini menolak setiap kandidat yang bersinggungan dengan induk langsungnya. Bila tidak ada alokasi yang aman, kartu anak ditahan dan dipertimbangkan kembali nanti, bukan pernah menutupi kartu induk.
+Penempatan kartu anak kini mengecualikan setiap slot leluhur dan mencari posisi diagonal serta kardinal pada jarak yang makin besar. Kartu anak yang terhalang dipindahkan ke luar melalui slot tambahan, bukan menutupi leluhur atau ditahan.
 
 ## Commit
 
@@ -114,3 +114,4 @@ Penempatan kartu anak kini menolak setiap kandidat yang bersinggungan dengan ind
 - [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)
 - [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)
 - [8e60e383](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e60e383)
+- [5f098e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f098e37)

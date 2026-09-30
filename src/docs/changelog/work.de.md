@@ -88,7 +88,7 @@ Verb- und Adverbtransformationen unterstützen nun erweiterte verzweigte Ketten,
 
 ## Elternsichere Kindkarten
 
-Die Platzierung von Kindkarten verwirft nun jeden Kandidaten, der die unmittelbare Elternkarte schneidet. Wenn keine sichere Zuweisung existiert, wird das Kind zurückgehalten und später erneut geprüft, anstatt jemals die Elternkarte zu überdecken.
+Die Platzierung von Kindkarten schließt nun jede Vorfahrenposition aus und durchsucht diagonale sowie kardinale Positionen in zunehmend größeren Abständen. Blockierte Kinder rücken um weitere Positionen nach außen, statt einen Vorfahren zu überdecken oder zurückgehalten zu werden.
 
 ## Commits
 
@@ -114,3 +114,4 @@ Die Platzierung von Kindkarten verwirft nun jeden Kandidaten, der die unmittelba
 - [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)
 - [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)
 - [8e60e383](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e60e383)
+- [5f098e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f098e37)

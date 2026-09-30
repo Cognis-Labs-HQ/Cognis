@@ -88,7 +88,7 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 ## 親と重ならない子カード
 
-子カードの配置は、直接の親カードと交差する候補をすべて却下するようになりました。安全な配置がない場合は、親カードを覆うことなく子カードを保留し、後で再評価します。
+子カードの配置は、すべての先祖スロットを除外し、斜め方向と上下左右を段階的に大きな距離で検索します。塞がれた子カードは、先祖を覆ったり保留されたりせず、追加のスロット分だけ外側に移動します。
 
 ## コミット
 
@@ -114,3 +114,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)
 - [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)
 - [8e60e383](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e60e383)
+- [5f098e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f098e37)

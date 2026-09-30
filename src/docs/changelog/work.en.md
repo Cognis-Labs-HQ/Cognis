@@ -88,7 +88,7 @@ Verb and adverb transformations now support extended branching chains, transform
 
 ## Parent-Safe Child Cards
 
-Child-card placement now rejects every candidate that intersects its immediate parent. When no safe allocation exists, the child is withheld and reconsidered later instead of ever covering the parent card.
+Child-card placement now excludes every ancestor slot and searches diagonal and cardinal positions at progressively greater distances. Blocked children move outward by additional slots instead of covering an ancestor or being withheld.
 
 ## Commits
 
@@ -114,3 +114,4 @@ Child-card placement now rejects every candidate that intersects its immediate p
 - [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)
 - [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)
 - [8e60e383](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e60e383)
+- [5f098e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f098e37)

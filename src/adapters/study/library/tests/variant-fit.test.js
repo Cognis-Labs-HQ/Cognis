@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { isParentSafe, overlapArea } from "../ui/app/variant-fit.js";
+import { isAncestorSafe, overlapArea } from "../ui/app/variant-fit.js";
 
 const source = readFileSync(
     new URL("../ui/app/variant-fit.js", import.meta.url),
@@ -36,18 +36,29 @@ test("edge-adjacent card slots do not count as collisions", () => {
     );
 });
 
-test("child cards can never occupy their parent card bounds", () => {
+test("child cards can never occupy any ancestor card bounds", () => {
     const parent = { top: 0, right: 100, bottom: 80, left: 0 };
+    const grandparent = { top: 82, right: 100, bottom: 162, left: 0 };
     assert.equal(
-        isParentSafe({ top: 20, right: 120, bottom: 100, left: 20 }, parent),
+        isAncestorSafe({ top: 20, right: 120, bottom: 100, left: 20 }, [
+            parent,
+            grandparent,
+        ]),
         false,
     );
     assert.equal(
-        isParentSafe({ top: 82, right: 100, bottom: 162, left: 0 }, parent),
+        isAncestorSafe({ top: 164, right: 100, bottom: 244, left: 0 }, [
+            parent,
+            grandparent,
+        ]),
         true,
     );
-    assert.match(source, /if \(!isParentSafe\(rect, parentRect\)\) continue/);
-    assert.match(source, /slot\.dataset\.libraryParentCollisionHidden/);
+    assert.match(
+        source,
+        /if \(!isAncestorSafe\(rect, ancestorRects\)\) continue/,
+    );
+    assert.match(source, /setVariantDistance\(slot, distance\)/);
+    assert.doesNotMatch(source, /slot\.hidden = true/);
 });
 
 test("fitted child cards keep their position while deeper branches open", () => {
