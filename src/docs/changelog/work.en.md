@@ -78,6 +78,10 @@ The preview-definition checkbox now lives in Definitions, and existing-card edit
 
 Parent attribution now stays grouped in the reading row before the definition. Cards that inherit a parent definition therefore preserve the definition beneath the title without splitting the localized parent label across the popup heading.
 
+## Restore Tagged Views
+
+Content-pack tags now survive validation and ingestion into Library entry records. Provider-declared Verbs and Adverbs views can therefore match and render their tagged vocabulary instead of reporting an empty layer.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -99,3 +103,4 @@ Parent attribution now stays grouped in the reading row before the definition. C
 - [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)
 - [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)
 - [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)
+- [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)

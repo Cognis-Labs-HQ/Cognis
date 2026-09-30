@@ -315,6 +315,7 @@ export class LibraryStore {
                         language: schema.language,
                         label: record.label.trim(),
                         class: record.class ?? null,
+                        tags_json: JSON.stringify(record.tags ?? []),
                         source_record_id: record.id,
                         display_id: record.displayId ?? null,
                         hidden: record.hidden === true,
@@ -323,7 +324,7 @@ export class LibraryStore {
                         protected: manifest.protected === true,
                         editable: record.editable !== false,
                         fields_json: JSON.stringify(fields),
-                        search_text: `${record.label} ${JSON.stringify(fields)}`
+                        search_text: `${record.label} ${(record.tags ?? []).join(" ")} ${JSON.stringify(fields)}`
                             .normalize()
                             .toLocaleLowerCase(),
                         created_by: `content-pack:${manifest.publisher}:${manifest.id}`,
@@ -341,6 +342,7 @@ export class LibraryStore {
                     language: schema.language,
                     label: record.label.trim(),
                     class: record.class ?? null,
+                    tags_json: JSON.stringify(record.tags ?? []),
                     source_record_id: record.id,
                     display_id: record.displayId ?? null,
                     hidden: record.hidden === true,
@@ -349,7 +351,7 @@ export class LibraryStore {
                     protected: manifest.protected === true,
                     editable: record.editable !== false,
                     fields_json: JSON.stringify(fields),
-                    search_text: `${record.label} ${JSON.stringify(fields)}`
+                    search_text: `${record.label} ${(record.tags ?? []).join(" ")} ${JSON.stringify(fields)}`
                         .normalize()
                         .toLocaleLowerCase(),
                     content_hash: contentHash,

@@ -311,3 +311,5 @@ Menyimpan tahap pelafalan kosong kini menampilkan toast kesalahan. Kartu pelafal
 Kontrol “Selalu tampilkan definisi dalam pratinjau kartu” kini berada di tab Definisi di samping ringkasan definisi. Editor kartu yang sudah ada juga menyediakan aksi tambah definisi; definisi baru langsung dipilih dan ditambahkan ke ringkasan yang terlihat.
 
 Atribusi induk pada judul popup kartu kini menggunakan penempatan bacaan dan disisipkan sebelum penempatan definisi. Kartu yang mewarisi definisi induk mempertahankan atribusi secara utuh pada baris judul, sementara definisi tetap utuh di bawah judul.
+
+Tag entri paket konten kini divalidasi, disertakan dalam identitas konten, serta disimpan pada kolom tag entri Pustaka dan teks pencarian. Kosakata bertag dari penyedia karena itu tetap tersedia bagi tampilan yang dideklarasikan seperti Kata Kerja dan Kata Keterangan setelah penyerapan.

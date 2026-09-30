@@ -323,3 +323,5 @@ Saving an empty pronunciation stage now shows an error toast. Saved pronunciatio
 The “Always show definition(s) in card preview” control now lives in the Definitions tab beside definition summaries. Existing-card editors also expose the add-definition action; a newly created definition is selected immediately and added to the visible definition summary.
 
 Parent attribution in card popup headings now shares the reading placement and is inserted before the definition placement. Cards that inherit a parent definition therefore keep the attribution together on the title row while the definition remains intact beneath the title.
+
+Content-pack entry tags are now validated, included in content identity, and persisted in the Library entry tag column and search text. Provider-tagged vocabulary therefore remains available to declared views such as Verbs and Adverbs after ingestion.

@@ -78,6 +78,10 @@ Kotak centang definisi pratinjau kini berada di Definisi, dan editor kartu yang 
 
 Atribusi induk kini tetap dikelompokkan pada baris bacaan sebelum definisi. Kartu yang mewarisi definisi induk mempertahankan definisi di bawah judul tanpa memecah label induk yang dilokalkan pada judul popup.
 
+## Pulihkan Tampilan Bertag
+
+Tag paket konten kini dipertahankan selama validasi dan penyerapan ke dalam rekaman entri Pustaka. Tampilan Kata Kerja dan Kata Keterangan yang dideklarasikan penyedia kini dapat mencocokkan serta merender kosakata bertag, bukan melaporkan lapisan kosong.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -99,3 +103,4 @@ Atribusi induk kini tetap dikelompokkan pada baris bacaan sebelum definisi. Kart
 - [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)
 - [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)
 - [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)
+- [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)

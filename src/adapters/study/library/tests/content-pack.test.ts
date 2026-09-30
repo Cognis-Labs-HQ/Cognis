@@ -26,6 +26,10 @@ test("external-package compatibility fixture preserves validated contract metada
         plan.records.find(({ layer }) => layer === "words")?.class,
         "lexical:noun",
     );
+    assert.deepEqual(
+        plan.records.find(({ layer }) => layer === "words")?.tags,
+        ["fixture"],
+    );
     assert.deepEqual(plan.manifest.metadata, {
         catalog: { featured: true, rank: 1 },
         tags: ["fixture"],

@@ -78,6 +78,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 親カードの表示は、定義より前の読み行にまとめて配置されます。親カードの定義を継承するカードでは、ローカライズされた親ラベルがポップアップ見出し内で分断されず、定義がタイトルの下に保持されます。
 
+## タグ付きビューの復元
+
+コンテンツパックのタグが、検証と取り込みを経てもライブラリエントリに保持されるようになりました。プロバイダー定義の動詞ビューと副詞ビューは、空のレイヤーを表示する代わりに、タグ付き語彙を検出して表示できます。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -99,3 +103,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)
 - [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)
 - [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)
+- [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)

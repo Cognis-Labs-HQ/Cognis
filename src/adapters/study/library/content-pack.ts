@@ -150,6 +150,7 @@ export function contentRecordHash(
                 layer: record.layer,
                 label: record.label.trim(),
                 ...(record.class ? { class: record.class } : {}),
+                tags: record.tags ?? [],
                 ...(record.editable === false ? { editable: false } : {}),
                 ...(record.hidden === true ? { hidden: true } : {}),
                 ...(manifest.protected === true ? { protected: true } : {}),
@@ -259,6 +260,18 @@ async function validateContentRecords(
             throw new Error("invalid_content_record");
         if (record.class !== undefined && !ROLE_PATTERN.test(record.class))
             throw new Error("invalid_content_class");
+        if (
+            record.tags !== undefined &&
+            (!Array.isArray(record.tags) ||
+                record.tags.length > 25 ||
+                record.tags.some(
+                    (tag) =>
+                        typeof tag !== "string" ||
+                        !tag.trim() ||
+                        tag.length > 100,
+                ))
+        )
+            throw new Error("invalid_content_tags");
         if (
             record.editable !== undefined &&
             typeof record.editable !== "boolean"

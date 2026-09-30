@@ -391,6 +391,8 @@ export interface LibraryContentRecord {
     label: string;
     /** Provider-neutral lexical/content classification, such as noun or verb. */
     class?: string;
+    /** Searchable provider classifications used by declared layer views and carousels. */
+    tags?: string[];
     /** Prevent UI and API modification while keeping the record visible. */
     editable?: boolean;
     fields?: Record<string, unknown>;

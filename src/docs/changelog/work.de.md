@@ -78,6 +78,10 @@ Die Vorschau-Definitionsoption befindet sich jetzt unter Definitionen; Editoren 
 
 Die Elternzuordnung bleibt nun geschlossen in der Lesungszeile vor der Definition. Karten, die eine Definition vom Elterneintrag übernehmen, bewahren die Definition dadurch unter dem Titel, ohne die lokalisierte Elternbezeichnung in der Popup-Überschrift aufzuteilen.
 
+## Getaggte Ansichten wiederhergestellt
+
+Tags aus Content-Packs bleiben nun bei Validierung und Import in Bibliothekseinträgen erhalten. Vom Anbieter deklarierte Ansichten für Verben und Adverbien können ihr markiertes Vokabular dadurch finden und anzeigen, statt eine leere Ebene zu melden.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -99,3 +103,4 @@ Die Elternzuordnung bleibt nun geschlossen in der Lesungszeile vor der Definitio
 - [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)
 - [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)
 - [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)
+- [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)

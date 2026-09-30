@@ -3,6 +3,7 @@
         "id": "synthetic:word:lo",
         "label": "◇",
         "class": "lexical:noun",
+        "tags": ["fixture"],
         "fields": {
             "examples": ["audio/lo.mp3"],
             "illustrations": ["strokes/lo.svg"]

@@ -131,6 +131,7 @@ test("content pack import ignores duplicate all-key references", async () => {
                 layer: "characters",
                 label: "A",
                 hidden: true,
+                tags: ["verb", "godan"],
                 references: [
                     { entryId: "i", relation: "related", position: 0 },
                 ],
@@ -169,6 +170,12 @@ test("content pack import ignores duplicate all-key references", async () => {
             ? entryInsert.values.hidden
             : undefined,
         true,
+    );
+    assert.equal(
+        entryInsert?.option === "INSERT"
+            ? entryInsert.values.tags_json
+            : undefined,
+        '["verb","godan"]',
     );
     assert.deepEqual(
         entryInsert?.option === "INSERT"

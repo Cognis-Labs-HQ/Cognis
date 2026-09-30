@@ -311,3 +311,5 @@ Beim Speichern einer leeren Aussprache-Stufe erscheint jetzt eine Fehlermeldung.
 Die Option „Definition(en) immer in der Kartenvorschau anzeigen“ befindet sich jetzt im Tab Definitionen neben den Definitionsübersichten. Editoren vorhandener Karten bieten außerdem die Aktion zum Hinzufügen einer Definition; eine neu erstellte Definition wird sofort ausgewählt und der sichtbaren Übersicht hinzugefügt.
 
 Die Elternzuordnung in Karten-Popup-Überschriften verwendet nun dieselbe Platzierung wie die Lesung und wird vor der Definition eingefügt. Karten, die eine Definition vom Elterneintrag übernehmen, behalten dadurch die Zuordnung geschlossen in der Titelzeile, während die Definition unverändert unter dem Titel bleibt.
+
+Tags von Content-Pack-Einträgen werden nun validiert, in die Inhaltsidentität aufgenommen und in der Tag-Spalte sowie im Suchtext des Bibliothekseintrags gespeichert. Vom Anbieter markiertes Vokabular bleibt dadurch nach dem Import für deklarierte Ansichten wie Verben und Adverbien verfügbar.
