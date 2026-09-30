@@ -886,7 +886,7 @@ export class LibraryStore {
         sourceEntryId: string,
         destination: LibraryLocation,
         accountId: string,
-        kind: "promotion" | "update" = "promotion",
+        kind: "promotion" | "update" | "merge" = "promotion",
         proposedEntry?: LibraryEntryInput,
     ): Promise<LibraryPushRequest> {
         return createPushRequest(

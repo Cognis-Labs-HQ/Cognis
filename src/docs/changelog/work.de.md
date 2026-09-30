@@ -54,6 +54,10 @@ Formularnutzlasten für alternative Zeichen kopieren ihre Liste der Ausspracheka
 
 Die Formularangleichung für alternative Zeichen ersetzt jetzt sowohl das Wortschatz-Ausspracheziel als auch dessen Darstellungsbeziehung durch die Zeichenbeziehung der Wortschatzkarten. Beim Erstellen einer Kanji-Aussprache erscheint daher das Zeichenkarussell statt Wortschatz.
 
+## Aussprache und Duplikate korrigiert
+
+Explizite Wort- und Satzaussprachen beenden nun die rekursive Zeichenableitung. Sichtbare doppelte Eingaben werden blockiert und beim Fortfahren wird die vorhandene Karte ausgewählt; Anfragen erkennen die Typen update und merge.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -69,3 +73,4 @@ Die Formularangleichung für alternative Zeichen ersetzt jetzt sowohl das Wortsc
 - [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)
 - [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)
 - [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)
+- [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)

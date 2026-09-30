@@ -13,8 +13,8 @@
   <string name="gateway.study.library_visibility">Visibility</string>
   <string name="gateway.study.library_always_show_definition">Always show definition in card preview</string>
   <string name="gateway.study.library_conflict_title">Matching global card</string>
-  <string name="gateway.study.library_conflict_body">A global card in this layer has the same content. Review it before creating a duplicate.</string>
-  <string name="gateway.study.library_create_anyway">Create anyway</string>
+  <string name="gateway.study.library_conflict_body">A visible card already has this input. Continuing will merge this card with the existing card.</string>
+  <string name="gateway.study.library_create_anyway">Merge with existing</string>
   <string name="gateway.study.library_new">New</string>
   <string name="gateway.study.library_layer_empty">This layer has no entries yet.</string>
   <string name="gateway.study.library_previous">Previous</string>

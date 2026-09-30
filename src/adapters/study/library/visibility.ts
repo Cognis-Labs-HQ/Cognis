@@ -122,7 +122,10 @@ export class LibraryVisibilityService {
             const source = await this.store.get(request.sourceEntryId);
             if (!source) throw new Error("reference_not_found");
             if (source.protected) throw new Error("protected_content");
-            if (request.kind === "update" && request.proposedEntry) {
+            if (
+                ["update", "merge"].includes(request.kind ?? "") &&
+                request.proposedEntry
+            ) {
                 await this.applyUpdate?.(
                     actor,
                     request.sourceEntryId,

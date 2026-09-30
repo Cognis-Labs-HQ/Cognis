@@ -350,7 +350,7 @@ export interface LibraryPushRequest {
     destination: LibraryLocation;
     requestedBy: string;
     status: "pending" | "approved" | "rejected" | "withdrawn";
-    kind?: "promotion" | "update";
+    kind?: "promotion" | "update" | "merge";
     proposedEntry?: LibraryEntryInput;
     /** Included only in authorized review listings. */
     source?: LibraryEntry;

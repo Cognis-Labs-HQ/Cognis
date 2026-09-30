@@ -13,8 +13,8 @@
   <string name="gateway.study.library_visibility">Visibilitas</string>
   <string name="gateway.study.library_always_show_definition">Selalu tampilkan definisi di pratinjau kartu</string>
   <string name="gateway.study.library_conflict_title">Kartu global yang cocok</string>
-  <string name="gateway.study.library_conflict_body">Kartu global pada lapisan ini memiliki konten yang sama. Tinjau sebelum membuat duplikat.</string>
-  <string name="gateway.study.library_create_anyway">Tetap buat</string>
+  <string name="gateway.study.library_conflict_body">Kartu yang terlihat sudah memiliki input ini. Jika dilanjutkan, kartu ini akan digabungkan dengan kartu yang sudah ada.</string>
+  <string name="gateway.study.library_create_anyway">Gabungkan dengan yang ada</string>
   <string name="gateway.study.library_new">Baru</string>
   <string name="gateway.study.library_layer_empty">Lapisan ini belum memiliki entri.</string>
   <string name="gateway.study.library_previous">Sebelumnya</string>

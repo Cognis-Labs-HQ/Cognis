@@ -685,21 +685,31 @@ export class LibraryService implements LibraryCapability {
             input.class = layer.id;
         }
         const fields = structuredClone(input.fields ?? {});
-        if (!input.allowConflict && location.scope !== "global") {
-            const conflict = (
-                await this.store.list(
-                    { scope: "global", scopeId: "global" },
-                    { schemaId: schema.id, layer: input.layer },
-                )
-            ).find(
-                (candidate) =>
-                    candidate.label.trim().normalize().toLocaleLowerCase() ===
-                        input.label.trim().normalize().toLocaleLowerCase() &&
-                    JSON.stringify(candidate.fields ?? {}) ===
-                        JSON.stringify(fields),
-            );
-            if (conflict) throw new Error(`content_conflict:${conflict.id}`);
-        }
+        const candidateLocations = [
+            location,
+            { scope: "global", scopeId: "global" } as const,
+        ];
+        const visibleCandidates = (
+            await Promise.all(
+                candidateLocations.map(
+                    (candidateLocation) =>
+                        this.store.list?.(candidateLocation, {
+                            schemaId: schema.id,
+                            layer: input.layer,
+                        }) ?? Promise.resolve([]),
+                ),
+            )
+        ).flat();
+        const normalizedInput = input.label
+            .trim()
+            .normalize("NFKC")
+            .toLocaleLowerCase();
+        const conflict = visibleCandidates.find(
+            (candidate) =>
+                candidate.label.trim().normalize("NFKC").toLocaleLowerCase() ===
+                normalizedInput,
+        );
+        if (conflict) throw new Error(`content_conflict:${conflict.id}`);
         let entryId: string | undefined;
         if (layer.semanticRole === "definition") {
             const localization = layer.definitionLocalization!;

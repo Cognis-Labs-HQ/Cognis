@@ -8,6 +8,7 @@ import {
     createLibraryEntry,
     deleteLibraryEntries,
     fetchLibraryForms,
+    fetchLibraryEntry,
     fetchLibraryLookupProviders,
     fetchLibraryLookupSuggestions,
     fetchLibraryLocations,
@@ -600,10 +601,9 @@ export async function openCreateEntryPopup({
             return null;
         }
         try {
-            const created = await createAndRequestPublication({
-                ...entry,
-                allowConflict: true,
-            });
+            const created = await fetchLibraryEntry(
+                error.details?.conflictEntryId,
+            );
             nestedDefinitionIds.length = 0;
             return created;
         } catch (retryError) {

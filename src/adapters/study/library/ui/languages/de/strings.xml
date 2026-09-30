@@ -13,8 +13,8 @@
   <string name="gateway.study.library_visibility">Sichtbarkeit</string>
   <string name="gateway.study.library_always_show_definition">Definition immer in der Kartenvorschau zeigen</string>
   <string name="gateway.study.library_conflict_title">Übereinstimmende globale Karte</string>
-  <string name="gateway.study.library_conflict_body">Eine globale Karte in dieser Ebene hat denselben Inhalt. Prüfe sie, bevor du ein Duplikat erstellst.</string>
-  <string name="gateway.study.library_create_anyway">Trotzdem erstellen</string>
+  <string name="gateway.study.library_conflict_body">Eine sichtbare Karte hat bereits diese Eingabe. Beim Fortfahren wird diese Karte mit der vorhandenen Karte zusammengeführt.</string>
+  <string name="gateway.study.library_create_anyway">Mit vorhandener zusammenführen</string>
   <string name="gateway.study.library_new">Neu</string>
   <string name="gateway.study.library_layer_empty">Diese Ebene enthält noch keine Einträge.</string>
   <string name="gateway.study.library_previous">Zurück</string>

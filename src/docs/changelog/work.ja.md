@@ -54,6 +54,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 代替文字フォームの整合処理は、語彙の発音対象とその描画関係の両方を、語彙カードが使う文字関係に置き換えます。これにより、漢字の発音作成には語彙ではなく文字カルーセルが表示されます。
 
+## 発音と重複を修正
+
+単語と文の明示的な発音で文字への再帰的な導出を停止します。表示可能な重複入力を拒否し、続行時は既存カードを選択します。要求の保存は update と merge を認識します。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -69,3 +73,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)
 - [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)
 - [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)
+- [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)

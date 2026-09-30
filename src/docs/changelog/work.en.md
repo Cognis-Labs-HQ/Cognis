@@ -54,6 +54,10 @@ Alternate-character form payloads now copy their pronunciation carousel list dir
 
 Alternate-character form alignment now replaces both the Vocabulary pronunciation target and its rendering relationship with the character relationship used by Vocabulary cards. Kanji pronunciation creation therefore shows the character carousel instead of Vocabulary.
 
+## Correct Pronunciation and Duplicates
+
+Explicit word and sentence pronunciations now stop recursive character derivation. Visible duplicate inputs are blocked and continuing selects the existing card, while request persistence recognizes update and merge kinds.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -69,3 +73,4 @@ Alternate-character form alignment now replaces both the Vocabulary pronunciatio
 - [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)
 - [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)
 - [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)
+- [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)

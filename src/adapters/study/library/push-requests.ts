@@ -41,7 +41,7 @@ export async function createPushRequest(
     sourceEntryId: string,
     destination: LibraryLocation,
     accountId: string,
-    kind: "promotion" | "update" = "promotion",
+    kind: "promotion" | "update" | "merge" = "promotion",
     proposedEntry?: LibraryPushRequest["proposedEntry"],
 ): Promise<LibraryPushRequest> {
     const id = randomUUID();
@@ -91,10 +91,11 @@ export async function getPushRequest(
         },
         requestedBy: String(row.requested_by),
         status: String(row.status) as LibraryPushRequest["status"],
-        kind:
-            String(row.request_kind ?? "promotion") === "update"
-                ? "update"
-                : "promotion",
+        kind: ["update", "merge"].includes(
+            String(row.request_kind ?? "promotion"),
+        )
+            ? (String(row.request_kind) as "update" | "merge")
+            : "promotion",
         proposedEntry: row.proposed_entry_json
             ? (JSON.parse(
                   String(row.proposed_entry_json),

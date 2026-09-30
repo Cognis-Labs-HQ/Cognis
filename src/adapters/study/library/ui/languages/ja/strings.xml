@@ -13,7 +13,7 @@
   <string name="gateway.study.library_visibility">公開範囲</string>
   <string name="gateway.study.library_always_show_definition">カードのプレビューに定義を常に表示</string>
   <string name="gateway.study.library_conflict_title">一致するグローバルカード</string>
-  <string name="gateway.study.library_conflict_body">このレイヤーには同じ内容のグローバルカードがあります。重複を作成する前に確認してください。</string>
+  <string name="gateway.study.library_conflict_body">表示可能なカードに同じ入力があります。続行すると、このカードは既存のカードに統合されます。</string>
   <string name="gateway.study.library_create_anyway">作成を続行</string>
   <string name="gateway.study.library_new">新着</string>
   <string name="gateway.study.library_layer_empty">このレイヤーにはまだ項目がありません。</string>

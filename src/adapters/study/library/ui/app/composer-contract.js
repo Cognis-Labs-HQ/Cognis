@@ -142,8 +142,8 @@ export function derivedPronunciation(
     path.add(entry.id);
     const direct = pronunciationValues(entry).find(Boolean);
     const entryLayer = layerForEntry([schema], entry);
-    if (entryLayer?.semanticRole === "atomicWritingUnit")
-        return direct || entry.label;
+    if (direct) return direct;
+    if (entryLayer?.semanticRole === "atomicWritingUnit") return entry.label;
     const parts = (entry.references ?? [])
         .slice()
         .sort(
@@ -162,7 +162,7 @@ export function derivedPronunciation(
             derivedPronunciation(candidate, entries, schema, path),
         )
         .filter(Boolean);
-    return parts.join("") || direct || "";
+    return parts.join("");
 }
 
 export function applyDerivedPronunciation(

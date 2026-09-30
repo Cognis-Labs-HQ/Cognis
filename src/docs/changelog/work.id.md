@@ -54,6 +54,10 @@ Payload formulir karakter alternatif kini menyalin daftar carousel pelafalannya 
 
 Penyelarasan formulir karakter alternatif kini mengganti target pelafalan Kosakata beserta relasi perendernya dengan relasi karakter yang digunakan kartu Kosakata. Pembuatan pelafalan Kanji kini menampilkan carousel karakter, bukan Kosakata.
 
+## Perbaikan Pelafalan dan Duplikat
+
+Pelafalan kata dan kalimat eksplisit kini menghentikan penurunan karakter rekursif. Input duplikat yang terlihat diblokir dan melanjutkan akan memilih kartu yang ada; penyimpanan permintaan mengenali jenis update dan merge.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -69,3 +73,4 @@ Penyelarasan formulir karakter alternatif kini mengganti target pelafalan Kosaka
 - [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)
 - [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)
 - [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)
+- [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)
