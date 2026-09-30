@@ -94,6 +94,10 @@ Die Platzierung von Kindkarten schließt nun jede Vorfahrenposition aus und durc
 
 Transformationsbaum-Ansichten beginnen jetzt als dichtes Kartenraster über die gesamte Breite. Karten ohne verfügbare Transformationen bleiben inaktiv. Beim Öffnen wird eine erweiterbare Karte nach oben verschoben, die übrigen Karten werden animiert ausgeblendet und der Baum wächst direkt unter der zentrierten Wurzel über die gesamte Inhaltsbreite; die Schließen-Schaltfläche stellt das Raster wieder her. Die Auswahl einer Transformation hebt den vollständigen Pfad zurück zur Wurzel hervor und animiert ihn fortlaufend, während Transformationsbezeichnungen über den Werten stehen, um Überläufe in schmalen Karten zu vermeiden.
 
+## Durchgehende Transformationspfade und stabile Wurzeln
+
+Transformationsbäume behalten jetzt die Karte des Ausgangsverbs oder -adverbs als unveränderte visuelle Wurzel bei und lassen die redundante Zusammenfassung der ausgewählten Form darunter weg. Verbindungslinien schließen lückenlos aneinander an und werden im gesamten Baum kontinuierlich animiert, während der ausgewählte Herkunftspfad deutlich hervorgehoben bleibt. Ein Klick auf die bereits geöffnete Ausgangskarte öffnet nun ihre Standarddetailansicht.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -120,3 +124,4 @@ Transformationsbaum-Ansichten beginnen jetzt als dichtes Kartenraster über die 
 - [8e60e383](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e60e383)
 - [5f098e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f098e37)
 - [4d32a72e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4d32a72e)
+- [7dea5c6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dea5c6c)

@@ -862,6 +862,11 @@ test("Study Library provides tag-filtered transform tree views", () => {
     assert.match(stylesheet, /library-transform-tech-tree li::before/);
     assert.match(source, /nodes\.length > 1/);
     assert.match(source, /data-library-transform-close/);
+    assert.match(source, /showSummary:\s*false/);
+    assert.match(
+        source,
+        /classList\.contains\("library-transform-card--open"\)/,
+    );
     assert.match(
         stylesheet,
         /grid-template-columns:\s*repeat\(auto-fill, minmax\(min\(100%, 14rem\), 1fr\)\)/,
@@ -869,6 +874,8 @@ test("Study Library provides tag-filtered transform tree views", () => {
     assert.match(stylesheet, /library-transform-card--open/);
     assert.match(stylesheet, /library-transform-card-away/);
     assert.match(stylesheet, /library-transform-path-flow/);
+    assert.match(stylesheet, /library-transform-path-flow-vertical/);
+    assert.match(stylesheet, /library-transform-tech-tree > ol::after/);
     assert.match(stylesheet, /prefers-reduced-motion:\s*reduce/);
 });
 test("Study Library renders writing-unit pronunciation and audio", () => {

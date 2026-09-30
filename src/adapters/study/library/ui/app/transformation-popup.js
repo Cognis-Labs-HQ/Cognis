@@ -27,8 +27,12 @@ export function renderTransformationTree(
     schema,
     pathway,
     selectedNode = pathway.nodes[0],
+    { showSummary = true } = {},
 ) {
-    return `<div class="library-transform-tech-tree" data-library-transform-tree data-library-transform-entry="${escapeHtml(entry.id)}"><header><output data-library-transform-output>${escapeHtml(selectedNode.value)}</output><span data-library-transform-pronunciation>${escapeHtml(selectedNode.pronunciation)}</span><span data-library-transform-definition>${escapeHtml(localizedLabel(selectedNode.definition, schema.language))}</span></header>${renderTransformationNodes(pathway.nodes, schema, selectedNode)}</div>`;
+    const summary = showSummary
+        ? `<header><output data-library-transform-output>${escapeHtml(selectedNode.value)}</output><span data-library-transform-pronunciation>${escapeHtml(selectedNode.pronunciation)}</span><span data-library-transform-definition>${escapeHtml(localizedLabel(selectedNode.definition, schema.language))}</span></header>`
+        : "";
+    return `<div class="library-transform-tech-tree" data-library-transform-tree data-library-transform-entry="${escapeHtml(entry.id)}">${summary}${renderTransformationNodes(pathway.nodes, schema, selectedNode)}</div>`;
 }
 
 export function sourceTransformation(entry, schema, sourceLabel) {

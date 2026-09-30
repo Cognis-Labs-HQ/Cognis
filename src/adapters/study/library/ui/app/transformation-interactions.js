@@ -35,16 +35,22 @@ export function bindTransformationInteractions(root, { signal }) {
             );
             if (transform) {
                 const tree = transform.closest("[data-library-transform-tree]");
-                tree.querySelector("output").value =
-                    transform.querySelector("strong").textContent;
-                tree.querySelector(
+                const output = tree.querySelector("output");
+                if (output)
+                    output.value =
+                        transform.querySelector("strong").textContent;
+                const pronunciation = tree.querySelector(
                     "[data-library-transform-pronunciation]",
-                ).textContent =
-                    transform.dataset.libraryTransformPronunciationValue;
-                tree.querySelector(
+                );
+                if (pronunciation)
+                    pronunciation.textContent =
+                        transform.dataset.libraryTransformPronunciationValue;
+                const definition = tree.querySelector(
                     "[data-library-transform-definition]",
-                ).textContent =
-                    transform.dataset.libraryTransformDefinitionValue;
+                );
+                if (definition)
+                    definition.textContent =
+                        transform.dataset.libraryTransformDefinitionValue;
                 tree.querySelectorAll("[data-library-transform-index]").forEach(
                     (candidate) =>
                         candidate.classList.toggle(
@@ -69,6 +75,7 @@ export function bindTransformationInteractions(root, { signal }) {
             );
             if (!control) return;
             const card = control.closest(".library-transform-card");
+            if (card.classList.contains("library-transform-card--open")) return;
             const tree = card.querySelector(".library-transform-pathway");
             const grid = card.closest(".library-entry-grid--transform-tree");
             grid.querySelectorAll(".library-transform-card--open").forEach(

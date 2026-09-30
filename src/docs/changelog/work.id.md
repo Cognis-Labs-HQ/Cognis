@@ -94,6 +94,10 @@ Penempatan kartu anak kini mengecualikan setiap slot leluhur dan mencari posisi 
 
 Tampilan pohon transformasi kini dimulai sebagai kisi kartu padat selebar halaman. Kartu tanpa transformasi yang tersedia tetap tidak aktif. Membuka kartu yang dapat diperluas memindahkannya ke atas, menganimasikan kartu lainnya hingga menghilang, dan mengembangkan pohon tepat di bawah akar yang dipusatkan sepanjang lebar konten; kontrol tutup mengembalikan kisi. Memilih transformasi menyorot dan terus menganimasikan seluruh jalurnya kembali ke akar, sedangkan label transformasi ditumpuk di atas nilai agar tidak meluber pada kartu sempit.
 
+## Jalur transformasi berkelanjutan dan akar stabil
+
+Pohon transformasi kini mempertahankan kartu kata kerja atau kata keterangan sumber sebagai akar visual yang tidak berubah dan menghapus ringkasan bentuk terpilih yang berulang di bawahnya. Segmen penghubung bertemu tanpa celah dan beranimasi terus-menerus di seluruh pohon, sementara jalur asal yang dipilih tetap ditonjolkan. Mengklik kartu sumber yang sudah terbuka kini membuka tampilan detail standarnya.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -120,3 +124,4 @@ Tampilan pohon transformasi kini dimulai sebagai kisi kartu padat selebar halama
 - [8e60e383](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e60e383)
 - [5f098e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f098e37)
 - [4d32a72e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4d32a72e)
+- [7dea5c6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dea5c6c)

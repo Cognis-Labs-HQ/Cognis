@@ -78,7 +78,15 @@ export function renderLayerCards(
                 );
                 const trees = pathways
                     .map((pathway) =>
-                        renderTransformationTree(entry, schema, pathway),
+                        renderTransformationTree(
+                            entry,
+                            schema,
+                            pathway,
+                            undefined,
+                            {
+                                showSummary: false,
+                            },
+                        ),
                     )
                     .join("");
                 return `<article class="library-transform-card${pathways.length ? " library-transform-card--expandable" : ""}">${renderEntryCard(entry, layer, allEntries, schema, placements, i18n)}${pathways.length ? `<section class="library-transform-pathway" hidden><button class="library-transform-close btn-neutral" type="button" data-library-transform-close aria-label="${escapeHtml(i18n.t("ui.reuse.close"))}">&times;</button>${trees}</section>` : ""}</article>`;

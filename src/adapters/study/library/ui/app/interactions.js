@@ -181,7 +181,10 @@ export function bindLibraryInteractions(root, context) {
             }
             const control = event.target.closest("[data-library-entry]");
             if (!control) return;
-            if (control.closest(".library-transform-card")) return;
+            const closedTransformCard = control.closest(
+                ".library-transform-card:not(.library-transform-card--open)",
+            );
+            if (closedTransformCard) return;
             const openedAsNew = entries.some(
                 ({ id, isNew }) =>
                     id === control.dataset.libraryEntry && isNew === true,

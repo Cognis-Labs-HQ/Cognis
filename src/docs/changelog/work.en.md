@@ -94,6 +94,10 @@ Child-card placement now excludes every ancestor slot and searches diagonal and 
 
 Transform-tree views now begin as a dense, full-width card grid. Cards without available transformations remain inert. Opening an expandable card moves it to the top, animates the remaining cards away, and grows the tree directly beneath the centered root across the full content width; its close control restores the grid. Selecting a transformation highlights and continuously animates its complete route back to the root, while transformation labels stack above values to avoid narrow-card overflow.
 
+## Continuous transformation paths and stable roots
+
+Transformation trees now keep the source verb or adverb card as the unchanged visual root and omit the redundant selected-form summary beneath it. Connector segments meet without gaps and animate continuously throughout the tree, while the selected ancestry remains visibly emphasized. Clicking the already-open source card now opens its standard detail view.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -120,3 +124,4 @@ Transform-tree views now begin as a dense, full-width card grid. Cards without a
 - [8e60e383](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e60e383)
 - [5f098e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f098e37)
 - [4d32a72e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4d32a72e)
+- [7dea5c6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dea5c6c)
