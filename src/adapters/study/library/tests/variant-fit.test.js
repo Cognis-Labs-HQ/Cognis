@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { overlapArea } from "../ui/app/variant-fit.js";
+import { isParentSafe, overlapArea } from "../ui/app/variant-fit.js";
 
 const source = readFileSync(
     new URL("../ui/app/variant-fit.js", import.meta.url),
@@ -34,6 +34,20 @@ test("edge-adjacent card slots do not count as collisions", () => {
         ),
         0,
     );
+});
+
+test("child cards can never occupy their parent card bounds", () => {
+    const parent = { top: 0, right: 100, bottom: 80, left: 0 };
+    assert.equal(
+        isParentSafe({ top: 20, right: 120, bottom: 100, left: 20 }, parent),
+        false,
+    );
+    assert.equal(
+        isParentSafe({ top: 82, right: 100, bottom: 162, left: 0 }, parent),
+        true,
+    );
+    assert.match(source, /if \(!isParentSafe\(rect, parentRect\)\) continue/);
+    assert.match(source, /slot\.dataset\.libraryParentCollisionHidden/);
 });
 
 test("fitted child cards keep their position while deeper branches open", () => {

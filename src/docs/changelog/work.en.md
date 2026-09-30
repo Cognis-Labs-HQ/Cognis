@@ -86,6 +86,10 @@ Content-pack tags now survive validation and ingestion into Library entry record
 
 Verb and adverb transformations now support extended branching chains, transformation-specific readings and definitions, and a connected technology-tree layout. Sentence composers can select transformed carousel forms while preserving canonical references, and transformed references reopen with their authored form and complete pathway.
 
+## Parent-Safe Child Cards
+
+Child-card placement now rejects every candidate that intersects its immediate parent. When no safe allocation exists, the child is withheld and reconsidered later instead of ever covering the parent card.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -109,3 +113,4 @@ Verb and adverb transformations now support extended branching chains, transform
 - [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)
 - [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)
 - [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)
+- [8e60e383](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e60e383)

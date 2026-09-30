@@ -100,6 +100,13 @@ function cardBounds(slot) {
     return (card ?? slot).getBoundingClientRect();
 }
 
+function parentCardBounds(slot) {
+    const card = slot.parentElement?.querySelector(
+        ":scope > .library-entry-card",
+    );
+    return card ? collisionBounds(card.getBoundingClientRect()) : null;
+}
+
 function overflowScore(rect, boundary) {
     return (
         Math.max(0, boundary.left - rect.left) +
@@ -131,6 +138,10 @@ export function overlapArea(rect, occupiedRect) {
             Math.max(rect.top, occupiedRect.top),
     );
     return width * height;
+}
+
+export function isParentSafe(rect, parentRect) {
+    return !parentRect || overlapArea(collisionBounds(rect), parentRect) === 0;
 }
 
 function collisionScore(rect, occupiedRects) {
@@ -175,6 +186,10 @@ export function restorePreferredVariantDirections(rootShell) {
         .forEach((slot) => {
             setVariantDirection(slot, slot.dataset.libraryPreferredDirection);
             delete slot.dataset.libraryFittedDirection;
+            if (slot.dataset.libraryParentCollisionHidden) {
+                slot.hidden = false;
+                delete slot.dataset.libraryParentCollisionHidden;
+            }
         });
 }
 
@@ -182,6 +197,12 @@ export function fitVariantBranchWithinGrid(rootShell) {
     window.requestAnimationFrame(() => {
         const grid = rootShell.closest(".library-entry-grid");
         if (!grid) return;
+        rootShell
+            .querySelectorAll("[data-library-parent-collision-hidden]")
+            .forEach((slot) => {
+                slot.hidden = false;
+                delete slot.dataset.libraryParentCollisionHidden;
+            });
         const gridRect = grid.getBoundingClientRect();
         const boundary = {
             top: gridRect.top + 2,
@@ -205,14 +226,12 @@ export function fitVariantBranchWithinGrid(rootShell) {
             if (slot.dataset.libraryFittedDirection) continue;
             const preferred = slot.dataset.libraryPreferredDirection;
             const candidates = variantDirectionCandidates(preferred);
-            let best = {
-                direction: preferred,
-                overflow: Number.POSITIVE_INFINITY,
-                collision: Number.POSITIVE_INFINITY,
-            };
+            const parentRect = parentCardBounds(slot);
+            let best = null;
             for (const direction of candidates) {
                 setVariantDirection(slot, direction);
                 const rect = cardBounds(slot);
+                if (!isParentSafe(rect, parentRect)) continue;
                 const overflow = overflowScore(rect, boundary);
                 const collision = collisionScore(rect, occupiedRects);
                 if (
@@ -224,12 +243,18 @@ export function fitVariantBranchWithinGrid(rootShell) {
                     break;
                 }
                 if (
+                    !best ||
                     overflow < best.overflow ||
                     (overflow === best.overflow && collision < best.collision)
                 ) {
                     best = { direction, overflow, collision };
                 }
                 if (overflow === 0 && collision === 0) break;
+            }
+            if (!best) {
+                slot.hidden = true;
+                slot.dataset.libraryParentCollisionHidden = "true";
+                continue;
             }
             setVariantDirection(slot, best.direction);
             slot.dataset.libraryFittedDirection = best.direction;

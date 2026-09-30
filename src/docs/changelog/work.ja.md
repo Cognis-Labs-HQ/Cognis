@@ -86,6 +86,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 動詞と副詞の変形は、拡張された分岐連鎖、変形固有の読みと定義、接続されたテックツリーレイアウトに対応しました。文のコンポーザーは正規の参照を保ったまま変形形を選択でき、変形された参照は作成時の形と完全なパスで再度開かれます。
 
+## 親と重ならない子カード
+
+子カードの配置は、直接の親カードと交差する候補をすべて却下するようになりました。安全な配置がない場合は、親カードを覆うことなく子カードを保留し、後で再評価します。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -109,3 +113,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)
 - [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)
 - [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)
+- [8e60e383](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e60e383)

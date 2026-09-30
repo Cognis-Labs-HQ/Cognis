@@ -86,6 +86,10 @@ Tags aus Content-Packs bleiben nun bei Validierung und Import in Bibliothekseint
 
 Verb- und Adverbtransformationen unterstützen nun erweiterte verzweigte Ketten, transformationsspezifische Lesungen und Definitionen sowie ein verbundenes Technologiebaum-Layout. Satz-Composer können transformierte Karussellformen auswählen und dabei kanonische Verweise bewahren; transformierte Verweise werden mit ihrer verfassten Form und dem vollständigen Pfad erneut geöffnet.
 
+## Elternsichere Kindkarten
+
+Die Platzierung von Kindkarten verwirft nun jeden Kandidaten, der die unmittelbare Elternkarte schneidet. Wenn keine sichere Zuweisung existiert, wird das Kind zurückgehalten und später erneut geprüft, anstatt jemals die Elternkarte zu überdecken.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -109,3 +113,4 @@ Verb- und Adverbtransformationen unterstützen nun erweiterte verzweigte Ketten,
 - [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)
 - [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)
 - [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)
+- [8e60e383](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e60e383)

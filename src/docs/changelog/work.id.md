@@ -86,6 +86,10 @@ Tag paket konten kini dipertahankan selama validasi dan penyerapan ke dalam reka
 
 Transformasi kata kerja dan kata keterangan kini mendukung rantai bercabang yang diperluas, bacaan dan definisi khusus transformasi, serta tata letak pohon teknologi yang terhubung. Penyusun kalimat dapat memilih bentuk korsel yang ditransformasi sambil mempertahankan referensi kanonis, dan referensi tersebut dibuka kembali dengan bentuk yang ditulis beserta jalur lengkapnya.
 
+## Kartu Anak Aman dari Induk
+
+Penempatan kartu anak kini menolak setiap kandidat yang bersinggungan dengan induk langsungnya. Bila tidak ada alokasi yang aman, kartu anak ditahan dan dipertimbangkan kembali nanti, bukan pernah menutupi kartu induk.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -109,3 +113,4 @@ Transformasi kata kerja dan kata keterangan kini mendukung rantai bercabang yang
 - [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)
 - [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)
 - [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)
+- [8e60e383](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e60e383)
