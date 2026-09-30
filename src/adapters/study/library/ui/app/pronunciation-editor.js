@@ -327,7 +327,19 @@ export function mountEditableRelationshipCarousels(
                     ],
                 });
                 if (confirmed !== "delete") return;
-            } else return;
+            } else if (!event.target.closest("[data-library-edit-saved-value]"))
+                return;
+            const editingGroups = new Map();
+            for (const relationshipId of relationshipIdsForKind(
+                compositionField.dataset.libraryCompositionField,
+            )) {
+                editingGroups.set(
+                    relationshipId,
+                    (form.referenceGroups?.[relationshipId]?.[index] ?? []).map(
+                        ({ entryId }) => entryId,
+                    ),
+                );
+            }
             values.splice(index, 1);
             for (const relationshipId of relationshipIdsForKind(
                 compositionField.dataset.libraryCompositionField,
@@ -339,6 +351,17 @@ export function mountEditableRelationshipCarousels(
             }
             field.value = values.join("\n");
             renderSavedValues(compositionField);
+            if (event.target.closest("[data-library-edit-saved-value]")) {
+                for (const [relationshipId, entryIds] of editingGroups) {
+                    stagedValues.set(relationshipId, []);
+                    for (const entryId of entryIds)
+                        carouselItem(
+                            compositionField.dataset.libraryCompositionField,
+                            entryId,
+                        )?.click();
+                }
+                renderSelectedReferences();
+            }
         },
         { signal: controller.signal },
     );
@@ -396,7 +419,13 @@ export function mountEditableRelationshipCarousels(
                 .map((id) => entries.find((entry) => entry.id === id)?.label)
                 .filter(Boolean)
                 .join("");
-            if (!value) return;
+            if (!value) {
+                showToast(
+                    i18n.t("gateway.study.library_pronunciation_stage_empty"),
+                    { variant: "error" },
+                );
+                return;
+            }
             const field = form.elements["field:pronunciation"];
             const values = valuesForField(field);
             if (

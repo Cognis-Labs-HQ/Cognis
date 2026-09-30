@@ -66,6 +66,10 @@ Definisi popup kini dimulai di bawah judul kartu dan membungkus pada area judul 
 
 Resolusi pelafalan kini berhenti pada partikel itu sendiri sehingga referensi karakter tidak menggantikan bacaan kontekstual yang telah ditulis.
 
+## Edit Pelafalan Tersimpan
+
+Tahap pelafalan kosong kini menghasilkan toast kesalahan. Kartu pelafalan tersimpan memuat kontrol hapusnya, dan memilihnya memulihkan kartu komponen ke tahap serta carousel untuk diedit.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -84,3 +88,4 @@ Resolusi pelafalan kini berhenti pada partikel itu sendiri sehingga referensi ka
 - [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)
 - [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)
 - [492cf08](https://github.com/Cognis-Labs-HQ/Cognis/commit/492cf08)
+- [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)

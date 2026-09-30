@@ -66,6 +66,10 @@ Definitionen in Pop-ups beginnen jetzt unter dem Kartentitel und umbrechen im ve
 
 Die Ausspracheauflösung endet jetzt bei der Partikel selbst, sodass Zeichenreferenzen kontextabhängige verfasste Lesungen nicht ersetzen.
 
+## Gespeicherte Aussprachen bearbeiten
+
+Leere Aussprache-Stufen erzeugen jetzt eine Fehlermeldung. Gespeicherte Aussprachekarten enthalten ihre Entfernen-Schaltfläche; ihre Auswahl stellt die Komponentenkarten in Stufe und Karussells zur Bearbeitung wieder her.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -84,3 +88,4 @@ Die Ausspracheauflösung endet jetzt bei der Partikel selbst, sodass Zeichenrefe
 - [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)
 - [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)
 - [492cf08](https://github.com/Cognis-Labs-HQ/Cognis/commit/492cf08)
+- [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)

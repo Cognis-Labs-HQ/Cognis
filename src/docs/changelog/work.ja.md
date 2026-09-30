@@ -66,6 +66,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 助詞の発音解決は助詞自体で終了し、文字参照が文脈依存の作成済み読みを置き換えないようになりました。
 
+## 保存済み発音を編集
+
+空の発音ステージではエラートーストを表示します。保存済み発音カード内に削除操作を収め、選択時に構成カードをステージとカルーセルへ復元して編集できます。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -84,3 +88,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)
 - [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)
 - [492cf08](https://github.com/Cognis-Labs-HQ/Cognis/commit/492cf08)
+- [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)

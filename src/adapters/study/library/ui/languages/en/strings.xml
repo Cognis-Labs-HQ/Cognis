@@ -109,4 +109,5 @@
   <string name="gateway.study.library_delete_saved_value_title">Delete saved entry</string>
   <string name="gateway.study.library_delete_saved_value_confirm">Permanently delete this saved entry when the card is saved?</string>
   <string name="gateway.study.library_select_suggestion">Select a matching card suggestion; free text cannot be saved.</string>
+  <string name="gateway.study.library_pronunciation_stage_empty">Select at least one card before saving the pronunciation.</string>
 </resources>

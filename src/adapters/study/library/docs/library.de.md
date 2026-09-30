@@ -305,3 +305,5 @@ Die Ausspracheableitung endet jetzt bei der ersten expliziten Aussprache und ver
 Definitionen in Pop-ups belegen jetzt die zweite Rasterzeile direkt unter dem Kartentitel statt einer eigenen rechten Spalte. Lesungen bleiben in der Titelzeile zentriert, während lange Definitionen unter dem Titel natürlich umbrechen.
 
 Die Ausspracheauflösung für Partikeln endet wie bei atomaren Zeichen: Zuerst wird eine explizite Partikelaussprache verwendet, andernfalls die Partikelbeschriftung. Der Resolver steigt nicht mehr in die Zeichenreferenzen einer Partikel ab, sodass kontextabhängige Partikeln wie は und が wie verfasst ausgesprochen bleiben.
+
+Beim Speichern einer leeren Aussprache-Stufe erscheint jetzt eine Fehlermeldung. Gespeicherte Aussprachekarten behalten ihre Entfernen-Schaltfläche innerhalb der Karte; die Auswahl einer gespeicherten Karte verschiebt ihre gruppierten Komponentenreferenzen zurück in die Stufe und wählt die zugehörigen Karussellkarten zur Bearbeitung erneut aus.

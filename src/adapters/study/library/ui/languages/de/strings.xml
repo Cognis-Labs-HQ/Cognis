@@ -109,4 +109,5 @@
   <string name="gateway.study.library_delete_saved_value_title">Gespeicherten Eintrag löschen</string>
   <string name="gateway.study.library_delete_saved_value_confirm">Diesen gespeicherten Eintrag beim Speichern der Karte dauerhaft löschen?</string>
   <string name="gateway.study.library_select_suggestion">Wählen Sie einen passenden Kartenvorschlag; freier Text kann nicht gespeichert werden.</string>
+  <string name="gateway.study.library_pronunciation_stage_empty">Wähle vor dem Speichern der Aussprache mindestens eine Karte aus.</string>
 </resources>

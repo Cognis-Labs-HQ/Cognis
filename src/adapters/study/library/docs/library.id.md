@@ -305,3 +305,5 @@ Penurunan pelafalan kini berhenti pada pelafalan eksplisit pertama dan hanya mem
 Definisi popup kini menempati baris grid kedua yang dimulai tepat di bawah judul kartu, bukan kolom khusus di sisi kanan. Bacaan tetap berada di tengah baris judul, sedangkan definisi panjang membungkus secara alami di bawah judul.
 
 Resolusi pelafalan partikel kini bersifat terminal seperti karakter atomik: pelafalan partikel eksplisit dipakai terlebih dahulu, dan jika tidak ada, label partikel dipakai. Resolver tidak lagi menelusuri referensi karakter partikel, sehingga partikel peka konteks seperti は dan が tetap dilafalkan sesuai penulisan.
+
+Menyimpan tahap pelafalan kosong kini menampilkan toast kesalahan. Kartu pelafalan tersimpan menempatkan kontrol hapus di dalam kartu; memilih kartu tersimpan memindahkan referensi komponen berkelompok kembali ke tahap dan memilih ulang kartu carousel terkait untuk diedit.

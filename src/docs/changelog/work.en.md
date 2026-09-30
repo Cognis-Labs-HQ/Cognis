@@ -66,6 +66,10 @@ Popup definitions now begin beneath the card title and wrap across the available
 
 Particle pronunciation now terminates resolution at the particle itself, preventing character references from replacing context-sensitive authored readings.
 
+## Edit Saved Pronunciations
+
+Empty pronunciation stages now produce an error toast. Saved pronunciation cards contain their remove control, and selecting one restores its component cards to the stage and carousels for editing.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -84,3 +88,4 @@ Particle pronunciation now terminates resolution at the particle itself, prevent
 - [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)
 - [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)
 - [492cf08](https://github.com/Cognis-Labs-HQ/Cognis/commit/492cf08)
+- [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)

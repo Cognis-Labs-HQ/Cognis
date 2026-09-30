@@ -192,6 +192,14 @@ test("Study Library keeps selected-card fields beside configured carousels", () 
     assert.match(adminInteractionsSource, /createRelationshipDependency/);
 });
 
+test("Study Library edits saved pronunciations and rejects an empty stage", () => {
+    assert.match(adminInteractionsSource, /library_pronunciation_stage_empty/);
+    assert.match(adminInteractionsSource, /editingGroups/);
+    assert.match(adminInteractionsSource, /data-library-edit-saved-value/);
+    assert.match(adminStylesheet, /data-library-edit-saved-value/);
+    assert.match(adminStylesheet, /position:\s*absolute/);
+});
+
 test("Study Library preserves each multi-value pronunciation reference group", () => {
     assert.match(adminInteractionsSource, /form\.referenceGroups/);
     assert.match(adminInteractionsSource, /groups\[groupIndex\]/);

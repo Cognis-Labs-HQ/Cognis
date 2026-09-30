@@ -109,4 +109,5 @@
   <string name="gateway.study.library_delete_saved_value_title">Hapus entri tersimpan</string>
   <string name="gateway.study.library_delete_saved_value_confirm">Hapus permanen entri tersimpan ini saat kartu disimpan?</string>
   <string name="gateway.study.library_select_suggestion">Pilih saran kartu yang cocok; teks bebas tidak dapat disimpan.</string>
+  <string name="gateway.study.library_pronunciation_stage_empty">Pilih setidaknya satu kartu sebelum menyimpan pelafalan.</string>
 </resources>

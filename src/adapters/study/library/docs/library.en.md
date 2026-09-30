@@ -317,3 +317,5 @@ Pronunciation derivation now stops at the first explicit pronunciation and only 
 Popup definitions now occupy the second grid row beginning directly beneath the card title instead of a dedicated right-hand column. Readings remain centered in the title row, while long definitions wrap naturally under the title.
 
 Particle pronunciation resolution is terminal, like atomic characters: an explicit particle pronunciation is used first, and otherwise the particle label is used. The resolver no longer descends through a particle’s character references, so context-sensitive particles such as は and が remain pronounced as authored.
+
+Saving an empty pronunciation stage now shows an error toast. Saved pronunciation cards keep their remove control inside the card; selecting a saved card moves its grouped component references back into the stage and reselects the corresponding carousel cards for editing.
