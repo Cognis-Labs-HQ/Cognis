@@ -8,7 +8,11 @@ import {
     layerForEntry,
     loadLibraryAudio,
 } from "./presentation.js";
-import { hasReadingDetails, popupTitleDetailItems } from "./popup-title.js";
+import {
+    hasReadingDetails,
+    popupTitleDetailItems,
+    withParentAttribution,
+} from "./popup-title.js";
 import { resolvePopupNavigation } from "./popup-navigation.js";
 import { titleDefinitionForRole } from "./title-definition.js";
 import {
@@ -106,7 +110,7 @@ export async function openEntryPopup(
             options.showNew = false;
         }
         signal?.throwIfAborted();
-        const titleDetailItems = popupTitleDetailItems(
+        let titleDetailItems = popupTitleDetailItems(
             detail,
             schemas,
             composed.titleDefinition,
@@ -123,17 +127,10 @@ export async function openEntryPopup(
             schemas,
         });
         if (parentEntry && layer?.semanticRole !== "lexicalUnit") {
-            const [parentPrefix, parentSuffix = ""] = i18n
-                .t("gateway.study.library_from_parent")
-                .split("{{ parent }}");
-            titleDetailItems.push(
-                ...(titleDetailItems.length ? [{ label: " · " }] : []),
-                { label: parentPrefix },
-                {
-                    label: parentEntry.label,
-                    actionId: `open-title-reference:${parentEntry.id}`,
-                },
-                { label: parentSuffix },
+            titleDetailItems = withParentAttribution(
+                titleDetailItems,
+                parentEntry,
+                i18n.t("gateway.study.library_from_parent"),
             );
         }
         let dismissPopup, relatedEntry;

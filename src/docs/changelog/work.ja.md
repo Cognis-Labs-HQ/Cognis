@@ -74,6 +74,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 プレビュー定義チェックボックスを「定義」へ移動し、既存カードの編集画面でも追加の定義を作成して直ちに選択できます。
 
+## 親カード定義の安定表示
+
+親カードの表示は、定義より前の読み行にまとめて配置されます。親カードの定義を継承するカードでは、ローカライズされた親ラベルがポップアップ見出し内で分断されず、定義がタイトルの下に保持されます。
+
 ## コミット
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -94,3 +98,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [492cf08](https://github.com/Cognis-Labs-HQ/Cognis/commit/492cf08)
 - [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)
 - [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)
+- [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)

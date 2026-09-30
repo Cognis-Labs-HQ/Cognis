@@ -25,6 +25,31 @@ function normalizedTitleText(value) {
 export const hasReadingDetails = (items) =>
     items.some(({ placement }) => placement === "reading");
 
+export function withParentAttribution(items, parentEntry, parentLabel) {
+    const [prefix, suffix = ""] = parentLabel.split("{{ parent }}");
+    const parentItems = [
+        ...(hasReadingDetails(items)
+            ? [{ label: " · ", placement: "reading" }]
+            : []),
+        { label: prefix, placement: "reading" },
+        {
+            label: parentEntry.label,
+            actionId: `open-title-reference:${parentEntry.id}`,
+            placement: "reading",
+        },
+        { label: suffix, placement: "reading" },
+    ];
+    const definitionIndex = items.findIndex(
+        ({ placement }) => placement === "definition",
+    );
+    const insertionIndex = definitionIndex < 0 ? items.length : definitionIndex;
+    return [
+        ...items.slice(0, insertionIndex),
+        ...parentItems,
+        ...items.slice(insertionIndex),
+    ];
+}
+
 export function secondarySpellingGroups(detail, schemas) {
     const semanticRole = layerForEntry(schemas, detail.entry)?.semanticRole;
     if (

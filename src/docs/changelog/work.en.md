@@ -74,6 +74,10 @@ Empty pronunciation stages now produce an error toast. Saved pronunciation cards
 
 The preview-definition checkbox now lives in Definitions, and existing-card editors can create and immediately select additional definitions.
 
+## Stable Parent Definitions
+
+Parent attribution now stays grouped in the reading row before the definition. Cards that inherit a parent definition therefore preserve the definition beneath the title without splitting the localized parent label across the popup heading.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -94,3 +98,4 @@ The preview-definition checkbox now lives in Definitions, and existing-card edit
 - [492cf08](https://github.com/Cognis-Labs-HQ/Cognis/commit/492cf08)
 - [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)
 - [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)
+- [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)

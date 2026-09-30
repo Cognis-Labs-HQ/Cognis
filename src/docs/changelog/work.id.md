@@ -74,6 +74,10 @@ Tahap pelafalan kosong kini menghasilkan toast kesalahan. Kartu pelafalan tersim
 
 Kotak centang definisi pratinjau kini berada di Definisi, dan editor kartu yang sudah ada dapat membuat serta langsung memilih definisi tambahan.
 
+## Definisi Induk yang Stabil
+
+Atribusi induk kini tetap dikelompokkan pada baris bacaan sebelum definisi. Kartu yang mewarisi definisi induk mempertahankan definisi di bawah judul tanpa memecah label induk yang dilokalkan pada judul popup.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -94,3 +98,4 @@ Kotak centang definisi pratinjau kini berada di Definisi, dan editor kartu yang 
 - [492cf08](https://github.com/Cognis-Labs-HQ/Cognis/commit/492cf08)
 - [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)
 - [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)
+- [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)

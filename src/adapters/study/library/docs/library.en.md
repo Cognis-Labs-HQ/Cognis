@@ -321,3 +321,5 @@ Particle pronunciation resolution is terminal, like atomic characters: an explic
 Saving an empty pronunciation stage now shows an error toast. Saved pronunciation cards keep their remove control inside the card; selecting a saved card moves its grouped component references back into the stage and reselects the corresponding carousel cards for editing.
 
 The “Always show definition(s) in card preview” control now lives in the Definitions tab beside definition summaries. Existing-card editors also expose the add-definition action; a newly created definition is selected immediately and added to the visible definition summary.
+
+Parent attribution in card popup headings now shares the reading placement and is inserted before the definition placement. Cards that inherit a parent definition therefore keep the attribution together on the title row while the definition remains intact beneath the title.

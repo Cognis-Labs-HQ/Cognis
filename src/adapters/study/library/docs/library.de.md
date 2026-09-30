@@ -309,3 +309,5 @@ Die Ausspracheauflösung für Partikeln endet wie bei atomaren Zeichen: Zuerst w
 Beim Speichern einer leeren Aussprache-Stufe erscheint jetzt eine Fehlermeldung. Gespeicherte Aussprachekarten behalten ihre Entfernen-Schaltfläche innerhalb der Karte; die Auswahl einer gespeicherten Karte verschiebt ihre gruppierten Komponentenreferenzen zurück in die Stufe und wählt die zugehörigen Karussellkarten zur Bearbeitung erneut aus.
 
 Die Option „Definition(en) immer in der Kartenvorschau anzeigen“ befindet sich jetzt im Tab Definitionen neben den Definitionsübersichten. Editoren vorhandener Karten bieten außerdem die Aktion zum Hinzufügen einer Definition; eine neu erstellte Definition wird sofort ausgewählt und der sichtbaren Übersicht hinzugefügt.
+
+Die Elternzuordnung in Karten-Popup-Überschriften verwendet nun dieselbe Platzierung wie die Lesung und wird vor der Definition eingefügt. Karten, die eine Definition vom Elterneintrag übernehmen, behalten dadurch die Zuordnung geschlossen in der Titelzeile, während die Definition unverändert unter dem Titel bleibt.

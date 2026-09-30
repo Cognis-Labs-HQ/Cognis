@@ -309,3 +309,5 @@ Resolusi pelafalan partikel kini bersifat terminal seperti karakter atomik: pela
 Menyimpan tahap pelafalan kosong kini menampilkan toast kesalahan. Kartu pelafalan tersimpan menempatkan kontrol hapus di dalam kartu; memilih kartu tersimpan memindahkan referensi komponen berkelompok kembali ke tahap dan memilih ulang kartu carousel terkait untuk diedit.
 
 Kontrol “Selalu tampilkan definisi dalam pratinjau kartu” kini berada di tab Definisi di samping ringkasan definisi. Editor kartu yang sudah ada juga menyediakan aksi tambah definisi; definisi baru langsung dipilih dan ditambahkan ke ringkasan yang terlihat.
+
+Atribusi induk pada judul popup kartu kini menggunakan penempatan bacaan dan disisipkan sebelum penempatan definisi. Kartu yang mewarisi definisi induk mempertahankan atribusi secara utuh pada baris judul, sementara definisi tetap utuh di bawah judul.
