@@ -126,7 +126,13 @@ Transformation trees now render the untransformed entry as the centered root car
 
 A transformed card now replaces its Variants control with a localized “Return to {card}” action. Returning restores the canonical card within the same detail-navigation context, including its title, pronunciation, definitions, drawing target, edit capability, and Variants control.
 
+## Undistorted Drawing Resize
+
+The Drawing Practice canvas now fits its logical stroke coordinate space into a centered, aspect-preserving viewport derived from the actual rendered canvas size. Resizing can add horizontal or vertical breathing room but no longer stretches characters, guides, annotations, accepted strokes, or live pointer input.
+
 ## Commits
+
+- [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
 
 - [54c47947](https://github.com/Cognis-Labs-HQ/Cognis/commit/54c479475d86915fff94aff089b9670f887d4c7d)
 

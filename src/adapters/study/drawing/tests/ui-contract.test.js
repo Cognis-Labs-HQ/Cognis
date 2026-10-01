@@ -11,6 +11,10 @@ const stylesheet = readFileSync(
     resolve("src/adapters/study/drawing/ui/drawing.css"),
     "utf8",
 );
+const viewportSource = readFileSync(
+    resolve("src/adapters/study/drawing/ui/viewport.js"),
+    "utf8",
+);
 
 test("drawing practice uses the PiP capability and requires card stroke data", () => {
     assert.match(source, /study:drawing:open/);
@@ -32,8 +36,15 @@ test("drawing practice tracks ordered strokes and progressive guidance", () => {
     assert.match(source, /distanceToSegment\([\s\S]*?\)\s*-\s*12/);
     assert.match(
         source,
-        /Math\.atan2\([\s\S]*\* canvas\.height,[\s\S]*\* canvas\.width/,
+        /Math\.atan2\([\s\S]*\* viewport\.height,[\s\S]*\* viewport\.width/,
     );
+    assert.match(source, /import \{ drawingViewport \}/);
+    assert.match(
+        viewportSource,
+        /Math\.min\(canvas\.height, canvas\.width \/ aspect\)/,
+    );
+    assert.match(source, /viewport\.x \+ point\.x \* viewport\.width/);
+    assert.match(source, /viewport\.y \+ point\.y \* viewport\.height/);
     assert.match(source, /fillText\(String\(index \+ 1\)/);
     assert.match(source, /successiveMistakes >= 10/);
     assert.match(source, /adapter\.study\.drawing\.loser/);

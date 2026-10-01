@@ -29,3 +29,5 @@ Das Fragezeichen für eine ausgeblendete Führung erscheint erst, wenn Lernende 
 Beim Wechsel eines geöffneten Zeichenübungsfensters zu einer Karte mit einer anderen Spaltenzahl wird nun das Seitenverhältnis der Zeichenfläche erneut angewendet und die Canvas-Bitmap nach dem Layout synchronisiert. Mehrteilige Zeichenmuster werden beim Neuzeichnen des schwebenden Fensters nicht mehr vertikal gestreckt.
 
 Durch Drücken der Escape-Taste wird das aktive Zeichenübungsfenster über denselben animierten und vollständig bereinigten Schließpfad wie bei den Schaltflächen geschlossen.
+
+Die Zeichenfläche leitet nun aus ihrer tatsächlich gerenderten Breite und Höhe einen zentrierten, seitenverhältnistreuen Darstellungsbereich ab. Beim Ändern der Größe des schwebenden Fensters wird der logische Strichbereich daher bei Bedarf mit Freiräumen eingepasst, statt die Zeichengeometrie zu strecken. Zeigerkoordinaten, Hilfslinien, Anmerkungen, abgeschlossene Striche und aktive Tinte verwenden denselben eingepassten Bereich.

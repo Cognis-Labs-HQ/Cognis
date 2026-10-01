@@ -126,7 +126,13 @@ Pohon transformasi kini menampilkan entri tanpa transformasi sebagai kartu akar 
 
 Kartu hasil transformasi kini mengganti kontrol Varian dengan tindakan terlokalisasi “Kembali ke {kartu}”. Tindakan tersebut memulihkan kartu kanonik dalam konteks navigasi detail yang sama, termasuk judul, pelafalan, definisi, sasaran gambar, kemampuan penyuntingan, dan kontrol Varian.
 
+## Ubah Ukuran Gambar Tanpa Distorsi
+
+Kanvas Latihan Menggambar kini menyesuaikan ruang koordinat goresan logis ke viewport terpusat yang mempertahankan rasio aspek berdasarkan ukuran kanvas hasil render sebenarnya. Perubahan ukuran dapat menambahkan ruang horizontal atau vertikal, tetapi tidak lagi meregangkan karakter, panduan, anotasi, goresan yang diterima, maupun masukan penunjuk aktif.
+
 ## Commit
+
+- [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
 
 - [54c47947](https://github.com/Cognis-Labs-HQ/Cognis/commit/54c479475d86915fff94aff089b9670f887d4c7d)
 

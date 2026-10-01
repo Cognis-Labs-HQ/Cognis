@@ -29,3 +29,5 @@ The hidden-guide question mark appears only when the learner reaches a stroke wh
 Switching an open Drawing Practice window to a card with a different column count now reapplies the stage aspect ratio and synchronizes the canvas bitmap after layout. Multi-character patterns no longer stretch vertically while the floating window redraws.
 
 Pressing Escape closes the active Drawing Practice window through the same animated and fully cleaned-up close path as its close controls.
+
+The drawing surface now derives a centered, aspect-preserving viewport from its actual rendered width and height. Resizing the floating pad therefore letterboxes the logical stroke area when necessary instead of stretching character geometry, while pointer coordinates, guides, annotations, completed strokes, and live ink all use the same fitted viewport.

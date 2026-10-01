@@ -1,5 +1,6 @@
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n } from "/static/reuse/i18n.js";
+import { drawingViewport } from "./viewport.js";
 
 const i18n = await createI18n({
     componentStringBaseUrls: ["/static/adapters/study/drawing/languages"],
@@ -260,11 +261,8 @@ function openDrawingPad({
     };
     const resize = () => {
         const bounds = canvas.getBoundingClientRect();
-        const width = Math.max(240, Math.round(bounds.width));
-        const height = Math.max(
-            240,
-            Math.round(bounds.width / (currentPattern.columns ?? 1)),
-        );
+        const width = Math.max(1, Math.round(bounds.width));
+        const height = Math.max(1, Math.round(bounds.height));
         header.style.width = `${Math.round(bounds.width)}px`;
         const styles = getComputedStyle(pad);
         colors.guide = styles.getPropertyValue("--drawing-guide").trim();
@@ -278,42 +276,65 @@ function openDrawingPad({
     };
     const normalized = (event) => {
         const bounds = canvas.getBoundingClientRect();
+        const viewport = drawingViewport(
+            { width: bounds.width, height: bounds.height },
+            currentPattern.columns,
+        );
         return {
-            x: (event.clientX - bounds.left) / bounds.width,
-            y: (event.clientY - bounds.top) / bounds.height,
+            x: Math.max(
+                0,
+                Math.min(
+                    1,
+                    (event.clientX - bounds.left - viewport.x) / viewport.width,
+                ),
+            ),
+            y: Math.max(
+                0,
+                Math.min(
+                    1,
+                    (event.clientY - bounds.top - viewport.y) / viewport.height,
+                ),
+            ),
             pressure: event.pressure || 0.5,
         };
     };
     const drawPath = (points, color, width = 3) => {
         if (!points.length) return;
+        const viewport = drawingViewport(canvas, currentPattern.columns);
+        const plotted = (point) => ({
+            x: viewport.x + point.x * viewport.width,
+            y: viewport.y + point.y * viewport.height,
+        });
         context.beginPath();
         context.strokeStyle = color;
         context.lineWidth = width;
         context.lineCap = "round";
         context.lineJoin = "round";
-        context.moveTo(points[0].x * canvas.width, points[0].y * canvas.height);
+        const first = plotted(points[0]);
+        context.moveTo(first.x, first.y);
         for (let index = 1; index < points.length - 1; index += 1) {
-            const point = points[index];
-            const next = points[index + 1];
+            const point = plotted(points[index]);
+            const next = plotted(points[index + 1]);
             context.quadraticCurveTo(
-                point.x * canvas.width,
-                point.y * canvas.height,
-                ((point.x + next.x) / 2) * canvas.width,
-                ((point.y + next.y) / 2) * canvas.height,
+                point.x,
+                point.y,
+                (point.x + next.x) / 2,
+                (point.y + next.y) / 2,
             );
         }
-        const last = points.at(-1);
-        context.lineTo(last.x * canvas.width, last.y * canvas.height);
+        const last = plotted(points.at(-1));
+        context.lineTo(last.x, last.y);
         context.stroke();
     };
     const drawStrokeOrder = (stroke, index, occupiedAnnotations, paths) => {
         const [start, next] = stroke.points;
         if (!start || !next) return;
-        const startX = start.x * canvas.width;
-        const startY = start.y * canvas.height;
+        const viewport = drawingViewport(canvas, currentPattern.columns);
+        const startX = viewport.x + start.x * viewport.width;
+        const startY = viewport.y + start.y * viewport.height;
         const angle = Math.atan2(
-            (next.y - start.y) * canvas.height,
-            (next.x - start.x) * canvas.width,
+            (next.y - start.y) * viewport.height,
+            (next.x - start.x) * viewport.width,
         );
         const label = annotationPosition(
             { x: startX, y: startY },
@@ -360,10 +381,11 @@ function openDrawingPad({
     };
     const draw = () => {
         context.clearRect(0, 0, canvas.width, canvas.height);
+        const viewport = drawingViewport(canvas, currentPattern.columns);
         const annotationPaths = currentPattern.strokes.map(({ points }) =>
             points.map(({ x, y }) => ({
-                x: x * canvas.width,
-                y: y * canvas.height,
+                x: viewport.x + x * viewport.width,
+                y: viewport.y + y * viewport.height,
             })),
         );
         const hasHiddenGuide =

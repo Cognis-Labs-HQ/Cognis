@@ -126,7 +126,13 @@ Transformationsbäume zeigen den unveränderten Eintrag nun als zentrierte Stamm
 
 Eine transformierte Karte ersetzt ihre Variantensteuerung nun durch die lokalisierte Aktion „Zurück zu {Karte}“. Die Rückkehr stellt die kanonische Karte im selben Detail-Navigationskontext wieder her – einschließlich Titel, Aussprache, Definitionen, Zeichenziel, Bearbeitungsmöglichkeit und Variantensteuerung.
 
+## Verzerrungsfreie Zeichengröße
+
+Die Zeichenübungsfläche passt ihren logischen Strichkoordinatenraum nun in einen zentrierten, seitenverhältnistreuen Darstellungsbereich ein, der aus der tatsächlichen Canvas-Größe abgeleitet wird. Größenänderungen können horizontalen oder vertikalen Freiraum ergänzen, verzerren jedoch Zeichen, Hilfslinien, Anmerkungen, angenommene Striche und aktive Zeigereingaben nicht mehr.
+
 ## Commits
+
+- [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
 
 - [54c47947](https://github.com/Cognis-Labs-HQ/Cognis/commit/54c479475d86915fff94aff089b9670f887d4c7d)
 
