@@ -18,20 +18,9 @@ import {
 import { definitionDisplay } from "./definition-display.js";
 import { similarEntries } from "./similar-items.js";
 import { uniqueRelatedEntries } from "./related-entries.js";
+import { transformationPathways } from "./transformations.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
-
-export function contentClassLabel(contentClass) {
-    const value =
-        String(contentClass ?? "")
-            .split(":")
-            .at(-1)
-            ?.trim() ?? "";
-    return value
-        .replaceAll(/([\p{Ll}\d])(\p{Lu})/gu, "$1 $2")
-        .replaceAll(/[-_]+/g, " ")
-        .replaceAll(/\b\p{L}/gu, (letter) => letter.toLocaleUpperCase());
-}
 
 function relationTree(references, usedBy, i18n) {
     const branch = (label, related) =>
@@ -120,20 +109,31 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
                       ];
             }),
     );
-    const displayedClass =
-        entry.class ||
-        (layer?.semanticRole === "orderedLexicalSequence" ? "composite" : "");
-    const classPill = displayedClass
-        ? `<span class="library-metadata-pill library-content-class-pill">${escapeHtml(contentClassLabel(displayedClass))}</span>`
-        : "";
+    const layerLabel = localizedLabel(layer?.metadata, entry.language);
+    const providerIdentifiesVocabulary =
+        layer?.semanticRole === "lexicalUnit" &&
+        (entry.tags ?? []).some((tag) => tag.toLocaleLowerCase() === "vocab");
+    const classPill =
+        layerLabel && !providerIdentifiesVocabulary
+            ? `<span class="library-metadata-pill library-content-class-pill">${escapeHtml(layerLabel)}</span>`
+            : "";
     const tagPills = (entry.tags ?? [])
         .map(
             (tag) =>
                 `<span class="library-metadata-pill">${escapeHtml(tag)}</span>`,
         )
         .join("");
+    const schema = schemas.find(({ id }) => id === entry.schemaId);
+    const hasVariants = transformationPathways(entry, schema).some(
+        ({ nodes }) => nodes.length > 1,
+    );
+    const variants = options.transformation
+        ? `<button class="library-detail-variants btn-neutral" type="button" data-library-transform-return>${escapeHtml(i18n.t("gateway.study.library_return_to_card").replace("{{ card }}", entry.label))}</button>`
+        : hasVariants
+          ? `<button class="library-detail-variants btn-neutral" type="button" data-library-transform-variants>${escapeHtml(i18n.t("gateway.study.library_variants"))}</button>`
+          : "";
     return [
-        `<header class="library-detail-summary">${renderAudio(entry, layer, entries, schemas, i18n.t("gateway.study.library_play_audio"))}<div class="library-entry-indicators">${classPill}${tagPills}${renderMetadataPills(entry, layer)}</div></header>`,
+        `<header class="library-detail-summary">${renderAudio(entry, layer, entries, schemas, i18n.t("gateway.study.library_play_audio"), i18n.t("gateway.study.library_dependencies_missing_audio"))}<div class="library-entry-indicators">${classPill}${tagPills}${renderMetadataPills(entry, layer)}</div>${variants}</header>`,
         options.showReferenceTree ? relationTree(references, usedBy, i18n) : "",
         renderDetailFields(genericFields),
         !options.showReferenceTree && relatedDependants.length
@@ -194,18 +194,27 @@ export async function composeDetail(
                       ? contribution.actions
                       : [],
               );
-    const sections = [
+    const core = [
         ...sectionsFor("beforeCore"),
         ...coreSections(detail, schemas, entries, i18n, options),
-        section(
-            i18n.t("gateway.study.library_additional_definitions"),
-            additionalDefinitions,
-        ),
-        ...sectionsFor("core"),
-        ...sectionsFor("afterCore"),
     ];
+    const tail = [...sectionsFor("core"), ...sectionsFor("afterCore")];
+    const renderBody = (definitions) =>
+        `<div class="library-detail">${[
+            ...core,
+            section(
+                i18n.t("gateway.study.library_additional_definitions"),
+                definitions.slice(1),
+            ),
+            ...tail,
+        ].join("")}</div>`;
+    const definitions = [titleDefinition, ...additionalDefinitions].filter(
+        Boolean,
+    );
     return {
-        body: `<div class="library-detail">${sections.join("")}</div>`,
+        body: renderBody(definitions),
+        definitions,
+        renderBody,
         titleDefinition,
         titleLeading: renderScope(detail.entry, i18n),
         actions,

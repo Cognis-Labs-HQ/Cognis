@@ -71,6 +71,8 @@ export interface LibraryFieldSchema {
         | { kind: "list"; items: "string" | "number" | "boolean" }
         | { kind: "localizedText" };
     required?: boolean;
+    /** Commit multiple carousel-composed values independently. */
+    multi_value?: boolean;
     /** Provider-owned editing and linking semantics. Labels remain in metadata. */
     input?: {
         control:
@@ -122,6 +124,8 @@ export interface LibraryRelationshipSchema {
     onDelete: "restrict" | "detach" | "cascade";
     resolverRole?: "grapheme" | "token" | "longestMatch" | "explicit";
     presentationRole?: "composition" | "alternateSpelling" | "pronunciation";
+    /** Preserve references as distinct ordered values instead of one flat edge list. */
+    grouped?: boolean;
     variant?: boolean;
     /** Unfold this relationship as a spatial parent/child card hierarchy. */
     child?: boolean;
@@ -138,12 +142,66 @@ export interface LibraryCardConstructor {
     input_carousels: readonly string[];
     /** Target layer IDs rendered inside the staged pronunciation composer. */
     pronunciation_carousels: readonly string[];
+    /** Entry carousels filtered by provider-owned tags, such as sentence transitions. */
+    tag_carousels?: readonly {
+        id: string;
+        metadata: LibraryMetadata;
+        relationship: string;
+        tag: string;
+    }[];
+    /** Repeatable provider-owned literals, such as sentence punctuation. */
+    literal_carousels?: readonly {
+        id: string;
+        metadata: LibraryMetadata;
+        values: readonly string[];
+    }[];
     /** Initial provider-owned field values for a new card. */
     defaults?: Record<string, unknown>;
     /** Expose Cognis' preview-definition switch for this layer. */
     allowAlwaysShowDefinition?: boolean;
     /** Expose Cognis' hidden-card switch for this layer. */
     allowHidden?: boolean;
+}
+
+export interface LibraryLayerView {
+    id: string;
+    metadata: LibraryMetadata;
+    /** Include entries matching any of these provider-owned tags. */
+    includeTags: readonly string[];
+    layout: "cards" | "transformTree";
+}
+
+export interface LibraryTransformSet {
+    id: string;
+    metadata: LibraryMetadata;
+    matchTags: readonly string[];
+    baseState: string;
+    rules: readonly {
+        id: string;
+        metadata: LibraryMetadata;
+        fromState: string;
+        toState: string;
+        removeSuffix: string;
+        append: string;
+        pronunciation?: {
+            removeSuffix: string;
+            append: string;
+        };
+        definitionTransform?: {
+            /** Optional localized boundary removed from the definition before templating. */
+            matchPrefix?: LibraryMetadata | string;
+            /** Optional localized boundary removed from the definition before templating. */
+            matchSuffix?: LibraryMetadata | string;
+            /** Ordered localized substitutions applied before the fallback template. */
+            replacements?: readonly {
+                match: LibraryMetadata | string;
+                replacement: LibraryMetadata | string;
+            }[];
+            /** Localized fallback supporting definition, stem, prefix, and suffix slots. */
+            template?: LibraryMetadata | string;
+        };
+        definition?: LibraryMetadata;
+    }[];
 }
 
 export interface LibraryLayerSchema {
@@ -154,6 +212,8 @@ export interface LibraryLayerSchema {
     displayDefinition?: boolean;
     /** Render entry cards using only their primary display content. */
     minimal?: boolean;
+    /** Suppress lookup providers that advertise dictionary capability. */
+    dictionary_lookup?: boolean;
     definitionLocalization?: {
         /** Module-owned prefix used to generate a stable key for each definition. */
         stringKeyPrefix: string;
@@ -164,6 +224,8 @@ export interface LibraryLayerSchema {
     relationships?: readonly LibraryRelationshipSchema[];
     /** Provider-owned specification for composing new cards in this layer. */
     cardConstructor?: LibraryCardConstructor;
+    /** Provider-declared, tag-filtered learner views of this layer. */
+    views?: readonly LibraryLayerView[];
     detail?: { titleField?: string; fieldOrder?: readonly string[] };
     grid?: {
         rowSize: number;
@@ -185,6 +247,8 @@ export interface LibrarySchema {
     language: string;
     metadata: LibraryMetadata;
     layers: readonly LibraryLayerSchema[];
+    /** Declarative transformations applied to base-form entries at presentation time. */
+    transformSets?: readonly LibraryTransformSet[];
 }
 
 export interface LibraryReferenceInput {
@@ -192,6 +256,8 @@ export interface LibraryReferenceInput {
     relation: string;
     position?: number;
 }
+
+export type LibraryReferenceGroups = Record<string, LibraryReferenceInput[][]>;
 
 export interface LibraryEntryInput {
     schemaId: string;
@@ -210,6 +276,8 @@ export interface LibraryEntryInput {
     alwaysShowDefinition?: boolean;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
+    /** Relationship-keyed ordered groups aligned with multi-value fields. */
+    referenceGroups?: LibraryReferenceGroups;
     /** Languages requested by a definition form; used by an optional localization provider. */
     definitionLanguages?: string[];
     /** Explicit confirmation after the API reports matching global content. */
@@ -255,6 +323,7 @@ export interface LibraryLookupSuggestion {
     label?: string;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
+    referenceGroups?: LibraryReferenceGroups;
     provenance: string;
     confidence: number;
 }
@@ -264,6 +333,7 @@ export interface LibraryLookupProposal {
     label?: string;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
+    referenceGroups?: LibraryReferenceGroups;
     provenance?: string;
     confidence?: number;
 }
@@ -271,6 +341,9 @@ export interface LibraryLookupProposal {
 export interface LibraryLookupProvider {
     id: string;
     metadata: LibraryMetadata;
+    /** Field IDs this provider can populate, used to place focused lookup actions. */
+    fields?: readonly string[];
+    capabilities?: readonly ("dictionary" | "strokePattern")[];
     supports(schema: LibrarySchema, layer: LibraryLayerSchema): boolean;
     lookup(input: {
         schema: LibrarySchema;
@@ -295,7 +368,7 @@ export interface LibraryPushRequest {
     destination: LibraryLocation;
     requestedBy: string;
     status: "pending" | "approved" | "rejected" | "withdrawn";
-    kind?: "promotion" | "update";
+    kind?: "promotion" | "update" | "merge";
     proposedEntry?: LibraryEntryInput;
     /** Included only in authorized review listings. */
     source?: LibraryEntry;
@@ -336,10 +409,13 @@ export interface LibraryContentRecord {
     label: string;
     /** Provider-neutral lexical/content classification, such as noun or verb. */
     class?: string;
+    /** Searchable provider classifications used by declared layer views and carousels. */
+    tags?: string[];
     /** Prevent UI and API modification while keeping the record visible. */
     editable?: boolean;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
+    referenceGroups?: LibraryReferenceGroups;
 }
 
 export interface LibraryContentPackPlan {

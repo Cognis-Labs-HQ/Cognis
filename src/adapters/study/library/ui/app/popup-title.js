@@ -1,6 +1,7 @@
 import {
     compositionReferenceGroups,
     layerForEntry,
+    pronunciationValues,
     relationshipPresentationRole,
 } from "./presentation.js";
 import {
@@ -9,12 +10,61 @@ import {
     resolveReferenceAliasComposition,
 } from "./composition-links.js";
 import { visibleTitleDefinition } from "./title-definition.js";
+import { variantPlacement } from "./variant-placement.js";
 
 function linkedItems(entries) {
     return entries.map((entry) => ({
         label: entry.label,
         actionId: `open-title-reference:${entry.id}`,
     }));
+}
+
+function normalizedTitleText(value) {
+    return String(value).trim().normalize("NFKC").replaceAll(/\s+/g, "");
+}
+
+export const hasReadingDetails = (items) =>
+    items.some(({ placement }) => placement === "reading");
+
+export function withParentAttribution(items, parentEntry, parentLabel) {
+    const [prefix, suffix = ""] = parentLabel.split("{{ parent }}");
+    const parentItems = [
+        ...(hasReadingDetails(items)
+            ? [{ label: " · ", placement: "reading" }]
+            : []),
+        { label: prefix, placement: "reading" },
+        {
+            label: parentEntry.label,
+            actionId: `open-title-reference:${parentEntry.id}`,
+            placement: "reading",
+        },
+        { label: suffix, placement: "reading" },
+    ];
+    const definitionIndex = items.findIndex(
+        ({ placement }) => placement === "definition",
+    );
+    const insertionIndex = definitionIndex < 0 ? items.length : definitionIndex;
+    return [
+        ...items.slice(0, insertionIndex),
+        ...parentItems,
+        ...items.slice(insertionIndex),
+    ];
+}
+
+export function withParentTitleAttribution(
+    items,
+    entry,
+    layer,
+    schemas,
+    entries,
+    parentLabel,
+) {
+    if (layer?.semanticRole === "lexicalUnit") return items;
+    const parentId = variantPlacement(entry, schemas, entries)?.parentId;
+    const parentEntry = entries.find(({ id }) => id === parentId);
+    return parentEntry
+        ? withParentAttribution(items, parentEntry, parentLabel)
+        : items;
 }
 
 export function secondarySpellingGroups(detail, schemas) {
@@ -82,10 +132,21 @@ export function popupTitleDetailItems(
             group.map((entry) => entry.label).join(""),
         ),
     );
-    const spellingItems = spellingGroups.flatMap((group, groupIndex) => [
-        ...(groupIndex ? [{ label: " · " }] : []),
-        ...linkedItems(group),
-    ]);
+    const displayedSpellingGroups = spellingGroups.map((group) =>
+        normalizedTitleText(group.map((entry) => entry.label).join("")) ===
+        normalizedTitleText(detail.entry.label)
+            ? group.map((entry) => ({
+                  ...entry,
+                  label: pronunciationValues(entry)[0] ?? entry.label,
+              }))
+            : group,
+    );
+    const spellingItems = displayedSpellingGroups.flatMap(
+        (group, groupIndex) => [
+            ...(groupIndex ? [{ label: " · " }] : []),
+            ...linkedItems(group),
+        ],
+    );
     const pronunciationField = (layer?.fields ?? []).find(
         ({ id }) => id === "pronunciation",
     );
@@ -113,25 +174,67 @@ export function popupTitleDetailItems(
               )
               .map(({ entry }) => entry)
         : [];
-    const pronunciationItems = distinctPronunciationLabels(
+    const linkedPronunciationGroups = Array.from(linkRelationships).flatMap(
+        (relation) =>
+            (detail.entry.referenceGroups?.[relation] ?? []).map((group) =>
+                group
+                    .slice()
+                    .sort(
+                        (left, right) =>
+                            (left.position ?? 0) - (right.position ?? 0),
+                    )
+                    .map(({ entryId }) =>
+                        (detail.references ?? []).find(
+                            ({ id }) => id === entryId,
+                        ),
+                    )
+                    .filter(Boolean),
+            ),
+    );
+    const pronunciationGroups = distinctPronunciationLabels(
         detail.entry,
         spellingLabels,
-    ).flatMap((label, pronunciationIndex) => {
-        const linked = linkRelationships.size
-            ? resolveReferenceAliasComposition(
-                  label,
-                  linkedPronunciationEntries,
-              )
-            : [];
-        return [
+    )
+        .map((label, pronunciationIndex) => {
+            const linked = linkRelationships.size
+                ? resolveReferenceAliasComposition(
+                      label,
+                      linkedPronunciationGroups.length
+                          ? (linkedPronunciationGroups[pronunciationIndex] ??
+                                [])
+                          : linkedPronunciationEntries,
+                  )
+                : [];
+            const linkedLabel = linked.map((entry) => entry.label).join("");
+            const displayedLinked =
+                linked.length &&
+                normalizedTitleText(linkedLabel) ===
+                    normalizedTitleText(detail.entry.label)
+                    ? linked.map((entry) => ({
+                          ...entry,
+                          label: pronunciationValues(entry)[0] ?? entry.label,
+                      }))
+                    : linked;
+            return { label, linked: displayedLinked };
+        })
+        .filter(({ label, linked }) => {
+            const displayedPronunciation = linked.length
+                ? linked.map((entry) => entry.label).join("")
+                : label;
+            return (
+                normalizedTitleText(displayedPronunciation) !==
+                normalizedTitleText(detail.entry.label)
+            );
+        });
+    const pronunciationItems = pronunciationGroups.flatMap(
+        ({ label, linked }, pronunciationIndex) => [
             ...(pronunciationIndex || spellingItems.length
                 ? [{ label: " · " }]
                 : []),
             ...(linked.length ? linkedItems(linked) : [{ label }]),
-        ];
-    });
-    const placement =
-        detail.entry.class === "composite" ? "reading" : undefined;
+        ],
+    );
+    const placement = "reading";
     const items = [...spellingItems, ...pronunciationItems].map((item) => ({
         ...item,
         placement,
@@ -143,18 +246,18 @@ export function popupTitleDetailItems(
         sourceDefinition,
     );
     if (visibleDefinition) {
-        items.push(
-            ...(items.length && detail.entry.class !== "composite"
-                ? [{ label: " · " }]
-                : []),
-            {
-                label: visibleDefinition,
-                placement:
-                    detail.entry.class === "composite"
-                        ? "definition"
-                        : undefined,
-            },
-        );
+        items.push({
+            label: visibleDefinition,
+            placement: "definition",
+        });
     }
     return items;
+}
+
+export function popupTitleItems(references, transformed) {
+    if (transformed) return [];
+    return references.map((entry) => ({
+        label: entry.label,
+        actionId: `open-title-reference:${entry.id}`,
+    }));
 }

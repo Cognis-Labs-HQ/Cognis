@@ -5,6 +5,9 @@
   <string name="gateway.study.library_search_clear">検索をクリア</string>
   <string name="gateway.study.library_create">カードを作成</string>
   <string name="gateway.study.library_create_typed">{type}カードを作成</string>
+  <string name="gateway.study.library_create_error_code">ライブラリカードを作成できませんでした（{{ code }}）。このフォームを開いたまま、示された内容を修正してください。</string>
+  <string name="gateway.study.library_pronunciation_group_mismatch">カードを作成する前に、ステージした文字カードから各発音を保存してください。</string>
+  <string name="gateway.study.library_pronunciation_saved">発音を保存しました。</string>
   <string name="gateway.study.library_requests">リクエスト</string>
   <string name="gateway.study.library_requests_subtitle">Library の公開リクエストを確認・管理します</string>
   <string name="gateway.study.library_approve">承認</string>
@@ -13,7 +16,7 @@
   <string name="gateway.study.library_visibility">公開範囲</string>
   <string name="gateway.study.library_always_show_definition">カードのプレビューに定義を常に表示</string>
   <string name="gateway.study.library_conflict_title">一致するグローバルカード</string>
-  <string name="gateway.study.library_conflict_body">このレイヤーには同じ内容のグローバルカードがあります。重複を作成する前に確認してください。</string>
+  <string name="gateway.study.library_conflict_body">表示可能なカードに同じ入力があります。続行すると、このカードは既存のカードに統合されます。</string>
   <string name="gateway.study.library_create_anyway">作成を続行</string>
   <string name="gateway.study.library_new">新着</string>
   <string name="gateway.study.library_layer_empty">このレイヤーにはまだ項目がありません。</string>
@@ -23,6 +26,7 @@
   <string name="gateway.study.library_filter_empty">選択した絞り込み条件に一致する項目はありません。</string>
   <string name="gateway.study.library_variant_hint">長押しして他のカードを表示</string>
   <string name="gateway.study.library_variants">バリエーション</string>
+  <string name="gateway.study.library_return_to_card">{{ card }} に戻る</string>
   <string name="gateway.study.library_scope_global">範囲: グローバル</string>
   <string name="gateway.study.library_scope_class">範囲: クラス {{ class name }}</string>
   <string name="gateway.study.library_scope_user">範囲: ユーザー</string>
@@ -37,14 +41,12 @@
   <string name="gateway.study.library_relationship_composition">構成</string>
   <string name="gateway.study.library_relationship_alternateSpelling">別表記</string>
   <string name="gateway.study.library_relationship_pronunciation">読み方</string>
-  <string name="gateway.study.library_commit_pronunciation">読み方を確定</string>
   <string name="gateway.study.library_definitions">定義</string>
   <string name="gateway.study.library_from_parent">（元: {{ parent }}）</string>
   <string name="gateway.study.library_usage_examples">使用例</string>
   <string name="gateway.study.library_similar_items">類似項目</string>
   <string name="gateway.study.library_no_similar_items">類似項目はありません。</string>
   <string name="gateway.study.library_admin_label">ラベル</string>
-  <string name="gateway.study.library_content_class">コンテンツクラス</string>
   <string name="gateway.study.library_admin_fields">フィールド (JSON)</string>
   <string name="gateway.study.library_admin_references">関係 (JSON)</string>
   <string name="gateway.study.library_admin_hidden">非表示</string>
@@ -59,6 +61,9 @@
   <string name="gateway.study.library_select_all">すべて選択</string>
   <string name="gateway.study.library_delete_selected">選択項目を削除</string>
   <string name="gateway.study.library_validation_error">保存する前に必須項目を確認してください。</string>
+  <string name="gateway.study.library_tag_limit">カードに追加できるタグは最大 {{ count }} 件です。</string>
+  <string name="gateway.study.library_definition_limit">カードに追加できる定義は最大 {{ count }} 件です。</string>
+  <string name="gateway.study.library_pronunciation_limit">カードに追加できる発音は最大 {{ count }} 件です。</string>
   <string name="gateway.study.library_audio_list_error">音声ファイルを読み込めませんでした。</string>
   <string name="gateway.study.library_audio_upload_success">音声をアップロードしました。</string>
   <string name="gateway.study.library_audio_upload_error">音声ファイルをアップロードできませんでした。</string>
@@ -94,9 +99,24 @@
   <string name="gateway.study.library_publish_class_option">クラスに公開</string>
   <string name="gateway.study.library_practice_writing">書き取り練習</string>
   <string name="gateway.study.library_play_audio">音声を再生</string>
+  <string name="gateway.study.library_dependencies_missing_audio">このカードの依存項目に音声がありません</string>
   <string name="gateway.study.library_tags">タグ</string>
   <string name="gateway.study.library_lookup_with">検索サービス: {{ service }}</string>
   <string name="gateway.study.library_lookup_empty">一致するカードデータが見つかりませんでした。</string>
   <string name="gateway.study.library_lookup_applied">検索サービスからカードデータを入力しました。</string>
   <string name="gateway.study.library_lookup_error">検索サービスはこの入力を処理できませんでした。</string>
+  <string name="gateway.study.library_save_field">{{ field }}を保存</string>
+  <string name="gateway.study.library_delete_saved_value">保存済みの{{ field }}を削除</string>
+  <string name="gateway.study.library_remove_selected_card">{{ card }}を削除</string>
+  <string name="gateway.study.library_remove_selection">選択済みカードを削除</string>
+  <string name="gateway.study.library_remove_selection_confirm">このカードを構成から削除しますか？</string>
+  <string name="gateway.study.library_delete_saved_value_title">保存済み項目を削除</string>
+  <string name="gateway.study.library_delete_saved_value_confirm">カード保存時にこの保存済み項目を完全に削除しますか？</string>
+  <string name="gateway.study.library_select_suggestion">一致するカード候補を選択してください。自由入力テキストは保存できません。</string>
+  <string name="gateway.study.library_pronunciation_stage_empty">発音を保存する前に、少なくとも1枚のカードを選択してください。</string>
+  <string name="gateway.study.library_word_type">語彙の種類</string>
+  <string name="gateway.study.library_select_transform">選択</string>
+  <string name="gateway.study.library_transform_prompt">{{ verb }} を選択しました。次の変換形から選べます。</string>
+  <string name="gateway.study.library_use_base_transform">{{ verb }} をそのまま使う！</string>
+  <string name="gateway.study.library_transforms_available">変換形があります</string>
 </resources>

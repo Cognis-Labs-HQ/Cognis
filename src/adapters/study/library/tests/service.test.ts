@@ -124,6 +124,99 @@ test("schema registrations are versioned, persisted, and immutable", async () =>
     );
 });
 
+test("character and particle layers are immutable through service mutations", async () => {
+    const immutableSchema: LibrarySchema = {
+        ...schema(1),
+        layers: [
+            {
+                id: "characters",
+                metadata: { labels: { en: "Characters" } },
+                semanticRole: "atomicWritingUnit",
+                fields: [
+                    {
+                        id: "pronunciation",
+                        metadata: { labels: { en: "Pronunciation" } },
+                        type: "stringList",
+                        required: true,
+                    },
+                    {
+                        id: "audio",
+                        metadata: { labels: { en: "Audio" } },
+                        type: "audio",
+                    },
+                ],
+            },
+            {
+                id: "particles",
+                metadata: { labels: { en: "Particles" } },
+                semanticRole: "particle",
+            },
+        ],
+    };
+    const entries = immutableSchema.layers.map((layer) => ({
+        id: layer.id,
+        schemaId: immutableSchema.id,
+        schemaVersion: immutableSchema.version,
+        language: immutableSchema.language,
+        layer: layer.id,
+        label: layer.id,
+        scope: "global" as const,
+        scopeId: "global",
+        createdBy: "owner",
+        createdAt: "2026-01-01",
+        updatedAt: "2026-01-01",
+        fields: {},
+    }));
+    const store = {
+        saveSchema: async () => {},
+        list: async () => entries,
+        get: async (id: string) =>
+            entries.find((entry) => entry.id === id) ?? null,
+        listPushRequests: async () => [],
+        deleteEntries: async (
+            _ids: readonly string[],
+            _accountId: string,
+            _blacklist: boolean,
+            authorize: (selected: typeof entries) => Promise<void>,
+        ) => authorize(entries),
+    };
+    const library = new LibraryService(store as never);
+    await library.registerSchema(immutableSchema);
+    const actor = { accountId: "owner", role: "owner" as const };
+
+    const listed = await library.list(actor, { scope: "global" });
+    assert.ok(listed.every((entry) => !entry.canEdit && !entry.canDelete));
+    for (const entry of entries) {
+        const input = {
+            schemaId: immutableSchema.id,
+            schemaVersion: immutableSchema.version,
+            layer: entry.layer,
+            label: entry.label,
+            fields: {},
+        };
+        await assert.rejects(
+            library.create(actor, { scope: "global" }, input),
+            /immutable_layer/,
+        );
+        await assert.rejects(
+            library.update(actor, entry.id, input),
+            /immutable_layer/,
+        );
+        await assert.rejects(
+            library.requestUpdate(actor, entry.id, input),
+            /immutable_layer/,
+        );
+    }
+    await assert.rejects(
+        library.deleteEntries(
+            actor,
+            entries.map(({ id }) => id),
+            false,
+        ),
+        /immutable_layer/,
+    );
+});
+
 test("entry updates migrate stored records to the current schema version", async () => {
     const current = {
         id: "entry-1",
@@ -160,6 +253,11 @@ test("entry updates migrate stored records to the current schema version", async
 });
 
 test("entry traces retain edit permission metadata", async () => {
+    const character = {
+        id: "character-a",
+        scope: "global",
+        scopeId: "global",
+    };
     const entry = {
         id: "entry-1",
         schemaId: "test-language",
@@ -168,12 +266,23 @@ test("entry traces retain edit permission metadata", async () => {
         label: "editable",
         fields: {},
         references: [],
+        referenceGroups: {
+            pronunciation: [
+                [
+                    {
+                        entryId: character.id,
+                        relation: "pronunciation",
+                        position: 0,
+                    },
+                ],
+            ],
+        },
         scope: "user",
         scopeId: "alice",
         createdBy: "alice",
     };
     const library = new LibraryService({
-        get: async () => entry,
+        get: async (id: string) => (id === entry.id ? entry : character),
         referencesFor: async () => [],
     } as never);
 
@@ -184,6 +293,7 @@ test("entry traces retain edit permission metadata", async () => {
 
     assert.equal(detail.entry.canEdit, true);
     assert.equal(detail.entry.editRequiresReview, false);
+    assert.deepEqual(detail.references, [character]);
 });
 
 test("provider metadata survives store and capability round trips", async () => {
@@ -277,6 +387,13 @@ test("language providers can contribute a complete card constructor", async () =
         id: "test-language:unit-constructor",
         schemaId: "test-language",
         layerId: "units",
+        fields: [
+            {
+                id: "reading",
+                metadata: { labels: { en: "Provider Reading" } },
+                type: "string",
+            },
+        ],
         cardConstructor: {
             label: { labels: { en: "Written form" } },
             fields: ["reading"],
@@ -287,13 +404,17 @@ test("language providers can contribute a complete card constructor", async () =
         },
     });
 
-    assert.deepEqual(library.listSchemas()[0].layers[0].cardConstructor, {
+    const contributedLayer = library.listSchemas()[0].layers[0];
+    assert.deepEqual(contributedLayer.cardConstructor, {
         label: { labels: { en: "Written form" } },
         fields: ["reading"],
         input_carousels: [],
         pronunciation_carousels: [],
         defaults: { reading: "default" },
         allowAlwaysShowDefinition: true,
+    });
+    assert.deepEqual(contributedLayer.fields?.[0].metadata.labels, {
+        en: "Provider Reading",
     });
     remove();
     assert.equal(library.listSchemas()[0].layers[0].cardConstructor, undefined);
@@ -319,6 +440,97 @@ test("card constructors reject unknown provider fields", async () => {
     );
 });
 
+test("alternate-character forms copy vocabulary pronunciation carousels", async () => {
+    const { library } = service();
+    await library.registerSchema({
+        ...schema(1),
+        layers: [
+            {
+                id: "characters",
+                metadata: { labels: { en: "Characters" } },
+            },
+            {
+                id: "alternates",
+                metadata: { labels: { en: "Alternate characters" } },
+                semanticRole: "compoundWritingUnit",
+                fields: [
+                    {
+                        id: "pronunciation",
+                        metadata: { labels: { en: "Pronunciation" } },
+                        type: "stringList",
+                        required: true,
+                    },
+                    {
+                        id: "audio",
+                        metadata: { labels: { en: "Audio" } },
+                        type: "audio",
+                    },
+                ],
+                relationships: [
+                    {
+                        id: "characters",
+                        metadata: { labels: { en: "Characters" } },
+                        targetLayer: "characters",
+                        onDelete: "restrict",
+                        presentationRole: "pronunciation",
+                    },
+                    {
+                        id: "vocabulary",
+                        metadata: { labels: { en: "Vocabulary" } },
+                        targetLayer: "vocabulary",
+                        onDelete: "restrict",
+                        presentationRole: "pronunciation",
+                    },
+                ],
+            },
+            {
+                id: "vocabulary",
+                metadata: { labels: { en: "Vocabulary" } },
+                semanticRole: "lexicalUnit",
+                relationships: [
+                    {
+                        id: "characters",
+                        metadata: { labels: { en: "Characters" } },
+                        targetLayer: "characters",
+                        onDelete: "restrict",
+                        presentationRole: "pronunciation",
+                    },
+                ],
+            },
+        ],
+    });
+    library.registerFormContribution({
+        id: "vocabulary-form",
+        schemaId: "test-language",
+        layerId: "vocabulary",
+        cardConstructor: {
+            label: { labels: { en: "Vocabulary" } },
+            relationships: ["characters"],
+            input_carousels: [],
+            pronunciation_carousels: ["characters"],
+        },
+    });
+    library.registerFormContribution({
+        id: "alternate-form",
+        schemaId: "test-language",
+        layerId: "alternates",
+        cardConstructor: {
+            label: { labels: { en: "Alternate character" } },
+            relationships: ["characters", "vocabulary"],
+            input_carousels: [],
+            pronunciation_carousels: ["vocabulary"],
+        },
+    });
+
+    const alternate = library
+        .listFormContributions()
+        .find(({ layerId }) => layerId === "alternates");
+    assert.deepEqual(alternate?.cardConstructor?.pronunciation_carousels, [
+        "characters",
+    ]);
+    assert.deepEqual(alternate?.cardConstructor?.relationships, ["characters"]);
+});
+
 test("lookup providers are ranked and cleanly removable", async () => {
     const { library } = service();
     await library.registerSchema(schema(1));
@@ -326,6 +538,8 @@ test("lookup providers are ranked and cleanly removable", async () => {
     const remove = library.registerLookupProvider({
         id: "dictionary",
         metadata: { labels: { en: "Test Dictionary" } },
+        fields: ["gloss"],
+        capabilities: ["dictionary"],
         supports: () => true,
         lookup: async ({ label }) => {
             lookupLabel = label;
@@ -349,6 +563,8 @@ test("lookup providers are ranked and cleanly removable", async () => {
             {
                 id: "dictionary",
                 metadata: { labels: { en: "Test Dictionary" } },
+                fields: ["gloss"],
+                capabilities: ["dictionary"],
             },
         ],
     );

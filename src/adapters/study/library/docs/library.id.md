@@ -178,3 +178,155 @@ Komposisi pelafalan mengikuti komposisi input: ketik teks bebas pada input berta
 Setiap payload `cardConstructor` menyediakan `input_carousels` dan `pronunciation_carousels`. Kedua larik berisi ID lapisan target milik constructor tersebut: karusel input menyusun nilai primer, sedangkan karusel pelafalan memenuhi setiap relasi bacaan terdeklarasi yang menargetkan lapisan itu. Untuk karakter alternatif, hanya batas minimum karusel pelafalan yang wajib; referensi primer yang belum terselesaikan tidak menghalangi pembuatan. Penyedia lookup boleh tidak mengirim metadata asal dan peringkat milik penyedia karena Library menormalisasi nilainya dari penyedia yang terdaftar.
 
 Larik karusel constructor kartu wajib tersedia; larik yang hilang ditolak dan tidak disimpulkan. Kontribusi formulir runtime diterapkan pada validasi relasi sisi server serta penyajian skema. Formulir edit memakai karusel pelafalan terdeklarasi yang sama dengan formulir pembuatan. Unggahan audio memakai label kartu yang dinormalisasi dan ID bidang sebagai nama berkas penyimpanan sehingga unggahan pengganti menimpa objek yang sama.
+
+Konstruktor kartu menjadi satu-satunya kontrak formulir untuk pembuatan dan penyuntingan. Daftar `fields` menentukan bidang skalar yang terlihat, sedangkan `relationships`, `input_carousels`, dan `pronunciation_carousels` menentukan carousel relasi yang tersedia. Konstruktor karakter alternatif dapat membiarkan Input tanpa batasan dan menempatkan relasi karakter di Pelafalan. Konstruktor kosakata dapat menempatkan relasi karakter, karakter alternatif, dan kosakata di Input; konstruktor kalimat dan gabungan dapat menempatkan relasi partikel, karakter alternatif, dan kosakata di sana. Pelafalan kosakata, kalimat, dan gabungan diturunkan secara rekursif dari bagian-bagian terurutnya, sehingga konstruktornya menghilangkan bidang pelafalan.
+
+Setiap kali bidang pelafalan terlihat dalam formulir pembuatan atau penyuntingan, Library merender composer pelafalan alih-alih textarea daftar generik. `pronunciation_carousels` milik konstruktor tetap menentukan carousel relasi khusus lapisan yang muncul di dalamnya.
+
+Aturan konstruktor saat ini menggantikan pemilih pelafalan kosakata sebelumnya: kosakata memakai carousel karakter, karakter alternatif, dan kosakata hanya di Input. Kalimat dan gabungan memakai carousel partikel, karakter alternatif, dan kosakata di Input. Hanya karakter alternatif yang memakai carousel karakter di Pelafalan sementara Input tetap bebas. Pelafalan kosakata, kalimat, dan gabungan dihitung ulang saat penyimpanan dari seluruh grafik relasi terurut.
+
+Formulir kosakata, kalimat, dan gabungan tidak pernah merender penyunting nilai daftar generik untuk pelafalan, meskipun payload penyedia menyertakan bidang turunan tersebut. Bidang penyedia bernilai daftar lainnya memakai area teks biasa yang dipisahkan per baris, bukan chip tag yang dapat dihapus; tag klasifikasi entri tetap memakai kontrol metadata khususnya.
+
+Kartu kosakata dan kalimat memutar audio dependensi terurutnya sebagai satu rangkaian ketika tidak memiliki audio unggahan sendiri. Unggahan audio opsional pada kartu menggantikan rangkaian turunan tersebut. Jika salah satu dependensi tidak memiliki audio, ikon pengeras suara yang dinonaktifkan menjelaskannya saat penunjuk diarahkan.
+
+Carousel pelafalan kini memuat setiap relasi yang tersirat oleh deklarasi lapisan carousel milik konstruktor, meskipun kontribusi formulir runtime menghilangkan relasi itu dari daftar relasi skalarnya. Memilih item carousel langsung memperbarui nilai pelafalan; input teks bebas dan tombol commit pelafalan yang berlebihan telah dihapus dari formulir pembuatan dan penyuntingan.
+
+Ketika konstruktor menyediakan bidang pelafalan tetapi membiarkan `pronunciation_carousels` kosong, composer kini menurunkan lapisan carousel dari relasi pelafalan yang dideklarasikan skema. Hal ini menjaga kontribusi formulir runtime lama atau tidak lengkap tetap berfungsi, sementara deklarasi carousel eksplisit tetap menjadi acuan utama.
+
+Profil composer semantik bawaan kini menerapkan kontrak carousel yang diminta secara langsung: karakter alternatif memakai Input bebas dan carousel Pelafalan karakter atomik; kosakata memakai carousel Input karakter atomik, karakter alternatif, dan kosakata serta carousel Pelafalan karakter atomik; kalimat memakai carousel Input partikel, karakter alternatif, dan kosakata tanpa pelafalan yang dapat disunting. Pelafalan kosakata dipraisi secara rekursif dari nilai lapisan karakter, sedangkan pelafalan kalimat tetap sepenuhnya diturunkan.
+
+Lapisan karakter atomik dan partikel adalah data katalog yang tidak dapat diubah. API Library kini menolak pembuatan, pembaruan, permintaan pembaruan, dan penghapusan untuk lapisan tersebut bagi semua peran, termasuk administrator dan pemilik. Respons kemampuan UI menyembunyikan kontrol sunting dan hapus sambil mempertahankan penjelajahan hanya-baca.
+
+Pilihan berurutan kini memakai satu urutan posisi komposisi yang sama di seluruh karosel Input. Lencana posisi menggambarkan urutan kartu yang disimpan dan tidak lagi dimulai ulang dari satu pada setiap karosel relasi.
+
+Formulir penulisan tidak lagi menampilkan pemilih kelas konten internal Cognis. Nama lapisan penyedia yang dilokalkan mengidentifikasi kartu dalam tampilan detail, dan rekaman urutan teratur memakai ID lapisan penyedia, bukan label semantik `sentence` atau `composite`. Pelafalan turunan diserialkan sesuai kontrak bidang yang dideklarasikan penyedia, termasuk bidang pelafalan bernilai daftar.
+
+Serialisasi bidang turunan mengambil kontraknya dari skema penyedia, bukan dari lapisan editor yang telah difilter konstruktor. Karena itu bidang pelafalan wajib tetap dapat ditemukan walaupun composer sengaja menghilangkan kontrol input langsungnya.
+
+Setiap kali konstruktor mendeklarasikan lapisan karosel Input atau Pelafalan, judul terkait menyertakan bidang kartu terpilih yang persisten di atas karosel tersebut. Bidang ini diinisialisasi untuk entri yang sudah ada, langsung diperbarui bersama pilihan karosel, mempertahankan urutan komposisi, dan memungkinkan penulis menghapus kartu terpilih secara langsung.
+
+Bidang berbasis karosel menerima boolean `multi_value` milik penyedia pada tingkat bidang. Bidang multi-nilai menambahkan tindakan **Simpan {bidang}** yang eksplisit, mempertahankan nilai yang telah disimpan sebagai pil yang dapat dihapus di atas komposisi aktif, serta memungkinkan nilai tersimpan dibuka kembali untuk diganti. Setiap bidang komposisi karosel hanya menerima teks yang diselesaikan menjadi kartu yang ditawarkan karosel terkonfigurasinya; teks yang tidak terselesaikan membuat formulir tidak valid. Penghapusan kartu terpilih atau nilai tersimpan harus memakai kontrol × khusus dan konfirmasi. Editor kartu yang sudah ada memasang karosel relasi yang sama dengan formulir pembuatan.
+
+Boolean `multi_value` pada tingkat bidang adalah satu-satunya deklarasi multi-nilai. Pil tersimpan tidak lagi mengisi kembali komposisi sementara saat diklik. Area sementara multi-nilai dimulai kosong, kontrol × ringkasnya hanya menghapus kartu sementara tanpa konfirmasi, dan referensi baru disimpan melalui tindakan Simpan khusus bidang yang terlihat. Nilai tersimpan tidak berubah ketika kartu sementaranya dihapus. Label kartu dibuat dari komposisi Input utama yang berurutan, bukan ditampilkan sebagai nilai terpisah yang dapat diedit, dan pratinjau kartu yang terlihat langsung diperbarui setelah penyimpanan berhasil.
+
+Kartu karosel kembali menampilkan pratinjau saat diarahkan atau difokuskan dengan papan ketik untuk setiap item, termasuk entri tanpa definisi. Pratinjau karosel dan tooltip audio yang tidak tersedia dirender dalam portal berjangkar pada tingkat body sehingga luapan kartu, karosel, dan popup tidak memotongnya.
+
+Relasi berkelompok mempertahankan larik referensi bertingkat untuk bidang multi-nilai. Dengan demikian, setiap pelafalan dapat memiliki urutan karakter terurut tersendiri yang tetap berkelompok selama pemeriksaan paket konten, validasi, penyimpanan, pengeditan API, dan penyajian judul tertaut, bukan diratakan menjadi satu daftar ambigu.
+
+Kartu tersembunyi dikecualikan dari setiap karosel dan daftar kandidat saran ketik. Dependensi tersembunyi yang sudah ada tetap dipertahankan dalam kontrol relasi dasar saat kartu diedit, tetapi tidak pernah ditawarkan sebagai pilihan karosel yang dapat dipilih penulis.
+
+Relasi berkelompok yang dimuat dari penyimpanan dipadatkan sebelum entri diurutkan berdasarkan posisi. Dengan demikian, indeks grup yang hilang tidak dapat menggagalkan endpoint entri Pustaka, sedangkan urutan setiap grup pelafalan tersimpan tetap deterministik.
+
+Pratinjau kartu Pustaka menampilkan paling banyak dua pelafalan berbeda pertama. Tampilan detail entri tetap menyediakan seluruh rangkaian pelafalan tanpa membuat kartu penjelajahan terlalu tinggi atau padat.
+
+Tampilan pelafalan menyatukan setiap urutan karakter bertingkat menjadi bacaan lengkap sebelum membandingkannya dengan label kartu. Pelafalan berkelompok seperti `["さ", "き"]` karena itu ditampilkan sebagai `さき` dan dihilangkan ketika kartu sudah memakai nilai yang sama.
+
+Judul pelafalan tertaut juga dideduplikasi berdasarkan tampilan UI yang sebenarnya: label karakter tertaut digabungkan, spasi dan bentuk Unicode dinormalisasi, lalu bacaan hasilnya dibandingkan dengan nilai kartu. Dengan demikian, urutan tertaut `さ` + `き` tidak mengulang judul `さき` meskipun representasi pelafalan yang tersimpan berbeda.
+
+Satu grup bidang multinilai dapat mencakup beberapa relasi tautan yang dideklarasikan. Indeks grup sejajar di seluruh relasi tersebut, sehingga validasi membandingkan jumlah nilai bidang dengan jumlah grup relasi tertaut terbesar, bukan menjumlahkan semuanya. Ini mendukung pelafalan yang disusun bersama dari segmen bacaan bermakna dan akhiran karakter langsung.
+
+Ketika pelafalan tertaut mengeja nilai utama kartu secara tepat, detail judul turun satu tingkat presentasi dan menampilkan nilai pelafalan milik kartu tertaut. Ejaan Kana seperti `さ` + `き` karena itu dapat menampilkan bacaan lapisan karakternya alih-alih mengulang `さき`.
+
+Deduplikasi referensi judul kini memperlakukan ejaan terurut sebagai satu kesatuan, bukan menghapus karakter yang cocok satu per satu. Ketika ejaan lengkap itu sama dengan nilai utama, kartu karakter tertaut menampilkan nilai pelafalannya; fragmen parsial tidak lagi dapat menghasilkan judul dengan pelafalan tampak yang berbeda dari nilai utama. Tampilan detail Kanji tetap menampilkan daftar bacaan lengkap yang ditulis penyedia, bukan bacaan yang disimpulkan dari kartu tetangga.
+
+Menghapus kartu composer yang sedang disiapkan mengharuskan klik tepat pada tombol × yang ringkas; pil kartu terpilih di sekitarnya dan area komposisi kosong tidak memicu penghapusan. Sebelum popup pembuatan ditutup, composer juga memeriksa setiap jumlah minimum relasi yang diwajibkan penyedia. Definisi yang kurang kini menampilkan toast validasi standar dan membiarkan popup, kartu terpilih, teks masukan, serta definisi bertingkat tetap utuh untuk diperbaiki.
+
+Rincian pelafalan dan definisi yang panjang pada judul entri mempertahankan posisi awalnya, tetapi menggunakan paling banyak 40% lebar judul dan membungkus ke baris tambahan. Tanda pisah kini memisahkan definisi dari pelafalan dengan lebih jelas. Komposer pembuatan menerima maksimal 8 tag, 10 definisi, dan 16 pelafalan serta menampilkan toast yang dilokalkan saat batas tercapai.
+
+Judul dengan banyak pelafalan kini memakai susunan empat kolom hanya ketika bacaan tersedia: pengeras suara berada di bawah ikon cakupan, kelompok pelafalan menggunakan hingga 40% judul, dan definisi membungkus secara mandiri di sebelah kanannya. Batas 8 tag, 10 definisi, dan 16 pelafalan kini berlaku sama pada komposer pembuatan dan pengeditan.
+
+Saat cabang anak karakter yang diperluas akan melewati kisi Pustaka yang terlihat, penyesuaian waktu proses kini memeriksa semua slot diagonal sebelum beralih ke arah utama yang berlawanan. Semua kartu akar yang terlihat juga dianggap terisi, sehingga diagonal pertama yang berada dalam batas dan bebas tabrakan dipilih agar kartu anak beserta penghubungnya tetap berada di kanvas.
+
+## Komposisi kalimat dan transformasi
+
+Penyedia menandai kosakata akhir kalimat atau transisi dengan tag stabil seperti `sentence-transition`, lalu mendeklarasikan item `tag_carousels` pada konstruktor kartu kalimat. Entri tersebut dikeluarkan dari tampilan kosakata biasa dan muncul dalam karusel khusus yang hanya tersedia saat menyusun kalimat. `literal_carousels` menyediakan satu baris tanda baca berulang yang hanya dapat dibaca; penyedia mencantumkan tanda baca bahasanya, misalnya `, . ? !` untuk bahasa Inggris atau `？！。、` untuk bahasa Jepang.
+
+Penyedia menandai bentuk dasar verba dan adverbia dengan `verb` atau `adverb`, lalu mendeklarasikan tampilan lapisan `views` dengan `layout: transformTree`. Entri yang dimiliki tampilan ini dipindahkan dari halaman kosakata biasa ke halaman terpisah yang dinamai penyedia. Paket konten hanya boleh mengirim entri leksikal bentuk dasar (misalnya `歩く`), bukan satu kartu untuk setiap infleksi. Deklarasi `transformSets` tingkat skema memasok transisi keadaan deterministik. Setiap aturan menentukan keadaan asal dan tujuan serta mengganti satu sufiks melalui `removeSuffix` dan `append`; beberapa aturan dapat keluar dari keadaan yang sama dan aturan lanjutan dapat bekerja pada keadaan hasil. `matchTags` memilih kelas bentuk dasar yang sesuai agar keluarga konjugasi dapat dibedakan dengan tag seperti `godan-ku`.
+
+```json
+{
+    "transformSets": [
+        {
+            "id": "godan-ku",
+            "matchTags": ["verb", "godan-ku"],
+            "baseState": "base",
+            "rules": [
+                {
+                    "id": "potential",
+                    "fromState": "base",
+                    "toState": "potential",
+                    "removeSuffix": "く",
+                    "append": "ける"
+                },
+                {
+                    "id": "negative",
+                    "fromState": "base",
+                    "toState": "negative",
+                    "removeSuffix": "く",
+                    "append": "かない"
+                },
+                {
+                    "id": "desiderative",
+                    "fromState": "base",
+                    "toState": "desiderative",
+                    "removeSuffix": "く",
+                    "append": "きたい"
+                }
+            ]
+        }
+    ]
+}
+```
+
+Tag transisi kalimat kini dikeluarkan dari karusel masukan biasa sekaligus halaman kosakata, sehingga karusel komposer terfilternya benar-benar terpisah. Komposer pengeditan merekonstruksi token tanda baca berulang dari label kalimat tersimpan dan referensi berurutan. Pohon transformasi kini memiliki simpul yang dapat dijalankan: memilih bentuk hasil memperbarui pratinjau jalur, sementara kartu bentuk dasar tetap menjadi entri kanonis yang disimpan. Validasi kontrak menolak literal tanda baca duplikat, set transformasi kosong, transisi keadaan duplikat, dan aturan tanpa perubahan.
+
+Cabang kartu anak kini mempertahankan setiap posisi kartu yang telah disesuaikan saat turunan yang lebih dalam dibuka. Turunan yang baru ditampilkan diukur berdasarkan kedalaman dan hanya diarahkan ke slot kanvas yang terlihat serta bebas tabrakan, sehingga mencegah lompatan leluhur, tumpang tindih kartu, dan konektor yang berdesakan selama navigasi pohon alami.
+
+Jalur kartu anak diagonal kini menyediakan koridor penunjuk berkelanjutan yang lebih besar, perubahan cabang menunggu sejenak untuk memastikan niat arah penunjuk, dan kartu aktif memakai cincin fokus stabil alih-alih animasi berdenyut. Arah alternatif tetap dekat dengan sumbu pilihan sebelum mempertimbangkan slot jauh, sehingga tata letak awal lebih rapat dan konsisten.
+
+Komposisi input dan pelafalan kini memakai perender input token yang dapat digunakan kembali serta implementasi karosel relasi yang sama. Karosel input tampil tepat di bawah bidang tokennya, memakai kontrol hapus ringkas dan status pilihan yang sama, serta hanya menawarkan pembuatan dependensi jika lapisan tujuan mendukung kartu buatan pengguna. Dependensi baru dimasukkan melalui perender item karosel kanonis yang dapat digunakan kembali pada komposer buat maupun edit.
+
+Dependensi baru yang dibuat dari carousel relasi dimasukkan melalui alur pemilihan normal carousel tersebut, sehingga kartu yang dikembalikan langsung dipilih dan ditambahkan ke tahap komposisi aktif. Composer pelafalan karakter alternatif juga memperlakukan setiap relasi karakter atomik sebagai sumber pelafalan, meskipun penyedia memakai peran presentasi relasi yang lebih umum.
+
+Composer kartu yang mendukung guratan menampilkan bagian khusus **Pola Guratan**. Penyedia pencarian mendeklarasikan ID bidang yang dapat mereka isi; penyedia yang mengiklankan bidang guratan ditampilkan di sana sebagai tindakan ringkas **Cari**, dan data guratan ternormalisasi yang dimuat digambar dalam pratinjau persegi kecil berukuran empat rem. Validasi editor bertab menandai setiap tab yang memuat data wajib tidak valid, membuka tab yang berisi bidang tidak valid paling awal, lalu memindahkan fokus ke bidang tersebut atau ke tindakan pembuatan definisi ketika definisi wajib belum ada.
+
+Definisi pada judul popup kini ditampilkan tanpa awalan tanda pisah panjang. Kelompok pelafalan dan definisi menempati baris judul dan disejajarkan secara vertikal dengan judul utama kartu.
+
+Skema lapisan dapat menetapkan `dictionary_lookup: false` untuk menyembunyikan penyedia pencarian yang mendeklarasikan kapabilitas `dictionary`. Penyedia pencarian mendeklarasikan kapabilitas netral dan ID bidang yang diisinya agar tindakan pencarian guratan hanya ditempatkan di bagian Pola Guratan. Composer karakter alternatif memperlakukan relasi non-definisi sebagai sumber pelafalan dan tidak mewajibkan definisi. Tag ditampilkan terakhir pada setiap formulir Konten. Tab wajib mempertahankan gaya normal dan hanya menampilkan tanda bintang merah; definisi wajib yang belum ada juga menandai tindakan tambahnya.
+
+Editor Library mendelegasikan aktivasi tab, penanda tab tidak valid, dan fokus ke bidang tidak valid pertama kepada pengontrol `bindTabbedFormValidation` milik composer formulir pakai ulang. Kode Library hanya menyediakan target fokus definisi dan kelas penanda wajib yang khusus domain.
+
+Payload formulir karakter alternatif menyalin `pronunciation_carousels` langsung dari payload formulir kosakata pada skema yang sama. Composer memakai payload yang sudah selaras itu tanpa inferensi carousel atau penyaringan relasi khusus karakter alternatif. Perutean pencarian guratan tetap menempatkan aksi **Cari** milik penyedia di dalam Pola Guratan. Rute lapisan Library menerima segmen tampilan opsional untuk tampilan Kata Kerja dan Kata Keterangan dari penyedia.
+
+Penyelarasan payload formulir karakter alternatif kini memperbarui `pronunciation_carousels` beserta ID relasi yang merender carousel tersebut. Relasi milik carousel pelafalan Kosakata yang diganti dihapus, lalu relasi karakter yang digunakan carousel pelafalan kartu Kosakata dimasukkan. Karena itu formulir karakter alternatif menampilkan carousel karakter dan tidak lagi menampilkan Kosakata di bawah Pelafalan.
+
+Penurunan pelafalan kini berhenti pada pelafalan eksplisit pertama dan hanya memakai label sebagai cadangan untuk kartu karakter atomik, sehingga kata dan kalimat baru tidak lagi diratakan menjadi bacaan karakter. Pembuatan menolak duplikat yang terlihat berdasarkan input ternormalisasi saja; konfirmasi menjelaskan bahwa melanjutkan akan memilih kartu yang ada, bukan membuat baris lain. Penyimpanan dan peninjauan permintaan push mengenali jenis `update` dan `merge`.
+
+Definisi popup kini menempati baris grid kedua yang dimulai tepat di bawah judul kartu, bukan kolom khusus di sisi kanan. Bacaan tetap berada di tengah baris judul, sedangkan definisi panjang membungkus secara alami di bawah judul.
+
+Resolusi pelafalan partikel kini bersifat terminal seperti karakter atomik: pelafalan partikel eksplisit dipakai terlebih dahulu, dan jika tidak ada, label partikel dipakai. Resolver tidak lagi menelusuri referensi karakter partikel, sehingga partikel peka konteks seperti は dan が tetap dilafalkan sesuai penulisan.
+
+Menyimpan tahap pelafalan kosong kini menampilkan toast kesalahan. Kartu pelafalan tersimpan menempatkan kontrol hapus di dalam kartu; memilih kartu tersimpan memindahkan referensi komponen berkelompok kembali ke tahap dan memilih ulang kartu carousel terkait untuk diedit.
+
+Kontrol “Selalu tampilkan definisi dalam pratinjau kartu” kini berada di tab Definisi di samping ringkasan definisi. Editor kartu yang sudah ada juga menyediakan aksi tambah definisi; definisi baru langsung dipilih dan ditambahkan ke ringkasan yang terlihat.
+
+Atribusi induk pada judul popup kartu kini menggunakan penempatan bacaan dan disisipkan sebelum penempatan definisi. Kartu yang mewarisi definisi induk mempertahankan atribusi secara utuh pada baris judul, sementara definisi tetap utuh di bawah judul.
+
+Tag entri paket konten kini divalidasi, disertakan dalam identitas konten, serta disimpan pada kolom tag entri Pustaka dan teks pencarian. Kosakata bertag dari penyedia karena itu tetap tersedia bagi tampilan yang dideklarasikan seperti Kata Kerja dan Kata Keterangan setelah penyerapan.
+
+Set transformasi mendukung aturan berantai dan bercabang tanpa batas, termasuk operasi sufiks pelafalan opsional serta penggantian definisi yang dilokalkan. Tampilan kata kerja dan kata keterangan merender jalur ini sebagai pohon teknologi yang terhubung. Memilih kartu korsel yang dapat ditransformasi membuka pohon yang sama dan menyisipkan bentuk terpilih ke dalam kalimat tersusun sambil mempertahankan referensi ke kartu dasar kanonis. Saat referensi yang ditransformasi dibuka kembali, bentuk yang ditulis akan dikenali, kartu dasar dibuka dengan bentuk tersebut, dan seluruh jalur ditampilkan bersama pelafalan serta definisi khusus transformasi.
+
+Penyesuaian kartu anak memperlakukan setiap kartu leluhur sebagai zona terlarang mutlak. Arah diagonal dan kardinal diperiksa pada jarak yang makin besar, sehingga kartu anak yang terhalang dipindahkan dua slot atau lebih ke luar bila diperlukan, bukan melintasi atau menghilang di belakang kartu mana pun dalam rantai induknya.
+
+Tampilan pohon transformasi kini dimulai sebagai kisi kartu padat selebar halaman. Kartu tanpa transformasi yang tersedia tetap tidak aktif. Membuka kartu yang dapat diperluas memindahkannya ke atas, menganimasikan kartu lainnya hingga menghilang, dan mengembangkan pohon tepat di bawah akar yang dipusatkan sepanjang lebar konten; kontrol tutup mengembalikan kisi. Memilih transformasi menyorot dan terus menganimasikan seluruh jalurnya kembali ke akar, sedangkan label transformasi ditumpuk di atas nilai agar tidak meluber pada kartu sempit.
+
+Pohon transformasi kini mempertahankan kartu kata kerja atau kata keterangan sumber sebagai akar visual yang tidak berubah dan menghapus ringkasan bentuk terpilih yang berulang di bawahnya. Segmen penghubung bertemu tanpa celah dan beranimasi terus-menerus di seluruh pohon, sementara jalur asal yang dipilih tetap ditonjolkan. Mengklik kartu sumber yang sudah terbuka kini membuka tampilan detail standarnya.
+
+Entri verba dan adverbia tetap berada di halaman Kosakata, dengan tag transformasi penyedia sebagai filter. Setiap aturan dapat mendeklarasikan `definitionTransform` terlokalisasi dengan batas opsional `matchPrefix` dan `matchSuffix` serta `template` wajib. Templat disusun sepanjang jalur yang dipilih dan mendukung `{{ definition }}`, `{{ stem }}`, `{{ prefix }}`, serta `{{ suffix }}`, sehingga penyedia dapat menyatakan perubahan tata bahasa alih-alih penanda tetap. Setelah Varian dipilih, tampilan detail menggambar ulang judul, pelafalan, definisi, dan masukan gambar hasil transformasi sambil menonaktifkan penyuntingan.
+
+Graf transformasi menempatkan setiap kedalaman pada satu baris horizontal, menaruh definisi di bawah kartu, menyediakan kolom definisi selebar empat belas rem, serta membatasi luapan horizontal dan vertikal pada area graf. Kontrol popup tetap terlihat sementara konjugasi yang dalam atau sangat bercabang tetap mudah dibaca.
+
+Transformasi definisi juga dapat mendeklarasikan `replacements` terlokalisasi yang berurutan. Substitusi pertama yang cocok menulis ulang transformasi sebelumnya sebelum templat cadangan digunakan, sehingga mendukung rantai kontekstual seperti `to (want to) exist` → `to (have wanted to) exist`; templat dengan `{{ definition }}` dapat menambahkan makna, misalnya `to (want to) exist (and then)`. Entri tanpa transformasi ditampilkan sebagai kartu akar yang terpusat di atas baris transformasi pertama.
+
+Saat entri hasil transformasi ditampilkan, tindakan Varian diganti dengan **Kembali ke {kartu}**. Tindakan kembali memulihkan judul, pelafalan, definisi, masukan gambar, dan tindakan Varian standar tanpa menutup konteks navigasi detail.
+Komposisi judul cadangan mengikuti hierarki pustaka: kalimat dapat menaut ke kata, kata dapat menaut ke unit tulisan majemuk dan atomik, serta unit tulisan majemuk dapat menaut ke unit tulisan atomik. Entri kosakata homograf tidak pernah dianggap sebagai komponen ejaan entri kosakata lain; entri seperti bacaan bahasa Jepang untuk bunga dan hidung `はな` masing-masing menaut secara mandiri ke `は` dan `な`.

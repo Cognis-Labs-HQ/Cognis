@@ -1,221 +1,180 @@
-# Pilihan, filter permintaan, dan penulisan audio Study Library
+# Navigasi Kartu Anak Stabil
 
 **Cabang Fitur:** work
 
-## Pilihan jamak yang dapat diprediksi
+## Posisi Kartu Anak Stabil
 
-Ketika semua kartu yang terlihat dipilih, tindakan mengambang berubah menjadi “Batalkan Semua Pilihan”. Membatalkan pilihan atau berpindah halaman SPA kini selalu keluar dari mode pilihan jamak.
+Kartu anak mempertahankan posisi yang telah disesuaikan saat cabang yang lebih dalam dibuka. Turunan baru ditempatkan berdasarkan kedalaman pada slot bebas yang terlihat dengan jarak antartabrakan, sehingga kartu dan konektor tidak melompat atau bertumpang tindih.
 
-## Penelusuran permintaan yang terarah
+## Navigasi Penunjuk Andal
 
-Halaman Permintaan kini menyediakan filter status dan kepemilikan, sedangkan antrean peninjauan hanya ditampilkan kepada administrator dan pengajar.
+Rute diagonal kini memiliki koridor sasaran berkelanjutan yang lebih besar, perubahan cabang memakai jeda singkat untuk mengenali niat penunjuk, dan kartu aktif tidak lagi berdenyut. Urutan arah alternatif juga menjaga tata letak awal kartu anak tetap rapat di sekitar sumbu pilihan.
 
-## Penulisan kartu yang lebih aman
+## Karosel Komposisi Terpadu
 
-Audio bersifat opsional dan disimpan dengan kunci deterministik yang berasal dari kartu. Enter pada masukan tag tidak lagi mengirim formulir, kotak centang memakai gaya Cognis, tindakan batal memakai gaya pembatalan, dan catatan lapisan karakter tidak dapat dibuat atau disunting.
+Input dan pelafalan kini memakai input token serta perenderan karosel yang sama dan dapat digunakan kembali. Karosel input berada tepat di bawah bidangnya, token terpilih memakai tombol hapus ringkas yang sama, dan kontrol pembuatan dependensi hanya tampil untuk lapisan yang biasanya dapat dibuat pengguna.
 
-## Pengguliran Library alami
+## Komposisi Dependensi Langsung
 
-Tampilan Library kini menggunakan perilaku pengguliran alami dari penyusun halaman.
+Kartu yang dibuat melalui kontrol tambah carousel kini kembali melalui alur pemilihan yang sama seperti kartu yang sudah ada, sehingga langsung ditambahkan ke tahap aktif. Bidang pelafalan karakter alternatif kini menyertakan carousel karakter atomiknya meskipun relasi penyedia menggunakan peran presentasi yang lebih umum.
 
-## Perancang kartu komposit terpandu
+## Pencarian Guratan dan Validasi Terpandu
 
-Kartu komposit kini memakai carousel horizontal berurutan untuk setiap lapisan relasi. Tindakan buat selalu terlihat dan dapat membuka penyusun kartu bertingkat, sehingga komponen yang belum ada dapat dibuat tanpa menghilangkan draf induk. Komposisi teks bebas menampilkan komponen yang cocok dan menandai teks yang belum cocok.
+Composer yang mendukung guratan kini menempatkan tindakan pencarian berbasis bidang di bawah judul khusus Pola Guratan dan menggambar data yang dimuat dalam pratinjau ringkas. Validasi relasi wajib kini menandai tab yang terdampak, membuka tab dengan bidang tidak valid paling awal, lalu memfokuskan bidang atau tindakan definisi yang perlu diperbaiki.
 
-## Visibilitas komposisi dan pemutaran audio yang aman
+## Detail Judul Popup Selaras
 
-Layanan kini menolak komposit bila bagian yang dirujuk tidak terlihat pada tujuan komposit. Placeholder audio lama yang tidak valid tidak lagi memicu permintaan audio yang gagal.
+Definisi popup tidak lagi memakai awalan tanda pisah panjang. Kelompok pelafalan dan definisi kini berbagi baris judul utama dan disejajarkan secara vertikal dengan judul kartu.
 
-## Tombol Pilih Semua yang andal
+## Persyaratan Composer Akurat
 
-Pilih Semua kini memiliki status tindakan eksplisit dan tidak lagi menyimpulkan perilaku klik dari status kotak centang. Aktivasi pertama memilih semua kartu yang terlihat dan mengubah tindakan menjadi Batalkan Semua Pilihan; hanya tindakan tersebut yang keluar dari mode pilihan jamak. Deteksi kartu terlihat kini berlaku untuk kartu pelajar maupun baris administrasi.
+Persyaratan definisi kini menandai tab Definisi dan tindakan tambah, sedangkan bidang pelafalan yang tidak valid menandai dirinya langsung. Tab mempertahankan warna normal dan hanya menampilkan tanda bintang merah. Karakter alternatif boleh tanpa definisi dan kini memuat semua relasi pelafalan non-definisi. Penyedia pencarian guratan dan kamus mendeklarasikan kapabilitas netral untuk penempatan yang tepat serta pilihan keluar kamus per lapisan. Tag kini tampil terakhir pada formulir Konten.
 
-## Pembuatan lapisan dan teks tak cocok terpandu
+## Validasi Formulir Bertab Pakai Ulang
 
-Alur pembuatan kini dimulai dengan pemilih jenis kartu yang diizinkan. Teks bebas yang belum cocok dapat langsung dipilih untuk membuka penyusun bertingkat yang sesuai, dengan teks tersebut sudah disalin ke label kartu.
+Validasi multi-tab Library kini menggunakan pengontrol validasi tab milik composer formulir bersama, bukan implementasi khusus adapter. Pengontrol pakai ulang mengelola aktivasi tab, penanda tidak valid, dan fokus ke bidang tidak valid pertama; Library hanya menyediakan target fokus khusus definisi dan kelas gayanya.
 
-## Penyuntingan berbasis cakupan dan tinjauan pembaruan
+## Perutean Composer Karakter Alternatif
 
-Baris administrasi kini hanya membuka penyunting administrasi dan tetap memiliki kontrol sunting independen. Dialog detail pengguna menampilkan tindakan sunting di kanan atas hanya untuk catatan yang memenuhi syarat: pemilik dapat menyunting kartu sendiri, administrator dapat menyunting kartu global, dan konten penyedia yang dilindungi tetap tidak dapat diubah. Perubahan penulis pada kartu global disimpan sebagai permintaan pembaruan dan baru diterapkan setelah disetujui. Halaman Permintaan membedakannya dan menyimpan riwayat status selesai.
+Composer karakter alternatif kini mempertahankan karusel pelafalan karakter yang dinyatakan penyedia dan hanya menggunakan relasi karakter atomik sebagai cadangan, sehingga kartu kosakata tidak lagi muncul di bawah Pelafalan. Penyedia pola guratan diklasifikasikan melalui metadata kontrak netral atau label bidang yang dilokalkan, sehingga aksinya dipindahkan dari baris pencarian umum dan ditampilkan sebagai “Cari” di dalam Pola Guratan.
 
-## Ketersediaan tindakan buat
+## Pembatasan Pelafalan Karakter Alternatif
 
-Setiap lapisan pengguna selain karakter kini menyediakan tindakan buat. Konstruktor generik berbasis skema digunakan bila penyedia tidak memasok konstruktor khusus.
+Carousel pelafalan karakter alternatif kini ditentukan hanya dari relasi yang menargetkan unit tulisan atomik. Daftar carousel konstruktor tetap menjadi referensi payload formulir dan tidak lagi dapat memunculkan carousel kosakata dalam editor pelafalan karakter alternatif.
 
-## Penyedia bahasa yang dinonaktifkan langsung disembunyikan
+## Pemulihan Tampilan Library dan Carousel Karakter
 
-Study kini mencocokkan preferensi bahasa belajar yang tersimpan dengan registri penyedia aktif milik gateway sebelum merender pengaturan, kartu dasbor, grup pencarian, atau subhalaman. Penyedia yang dinonaktifkan hilang dari Bahasa Aktif dan dasbor Study tanpa menghapus preferensi tersimpan, sehingga muncul kembali secara alami ketika administrator mengaktifkannya lagi.
+Tampilan Kata Kerja dan Kata Keterangan yang dideklarasikan penyedia kini diselesaikan melalui rute SPA lapisan Library, bukan menghasilkan 404. Composer karakter alternatif kini mengisi pelafalan dari lapisan karakter atomik di seluruh skema dan menghilangkan relasi kosakata yang tidak terkait sambil tetap mempertahankan definisi.
 
-## Kontrol kelas dan penyuntingan yang terlihat
+## Penyelarasan Payload Karakter Alternatif
 
-Detail komposit dan kalimat berurutan kini selalu menampilkan pil kelas yang mudah dipahami, termasuk fallback Composite untuk catatan lama tanpa kelas tersimpan. Administrasi Library kembali menampilkan kontrol sunting untuk setiap catatan yang terlihat dan mengizinkan administrator menyunting catatan yang dikelola penyedia dari sana. Kartu pelajar menampilkan tindakan sunting ketika server memberikan izin, dan popup detail yang memenuhi syarat menyediakan tindakan sama di kanan atas. Petunjuk izin dari server menjaga penyuntingan global administrator, penyuntingan pemilik, dan pembaruan penulis yang memerlukan tinjauan tetap konsisten tanpa bergantung pada status peran browser yang usang.
+Payload formulir karakter alternatif kini menyalin daftar carousel pelafalannya langsung dari payload formulir kosakata pada skema yang sama. Kode inferensi dan penyaringan carousel khusus karakter alternatif sebelumnya telah dihapus.
 
-## Kapasitas payload keyring diperluas
+## Mengganti Carousel Kosakata
 
-Kapasitas bawaan brankas keyring terenkripsi kini menjadi 2.000 MiB, seribu kali lipat dari batas lama 2 MiB, sehingga rahasia terenkripsi berukuran besar yang memuat audio dapat disimpan tanpa respons 413.
+Penyelarasan formulir karakter alternatif kini mengganti target pelafalan Kosakata beserta relasi perendernya dengan relasi karakter yang digunakan kartu Kosakata. Pembuatan pelafalan Kanji kini menampilkan carousel karakter, bukan Kosakata.
 
-## Penulisan dan penyuntingan kartu terstruktur
+## Perbaikan Pelafalan dan Duplikat
 
-Kontrol sunting kartu kini hanya muncul di dialog detail dan memakai aset sunting yang mengikuti tema. Editor yang lebih lebar memisahkan konten, hubungan, dan definisi agregat ke dalam tab; definisi terlokalisasi menyediakan semua bahasa antarmuka yang didukung dan definisi tertaut dapat disunting langsung. Pembuatan kini menghasilkan label dari bagian komposisi yang telah diselesaikan, mewajibkan teks yang belum cocok untuk diselesaikan atau dibuat, memulihkan gaya karosel horizontal, dan memperbesar tindakan buat yang mengikuti tema.
+Pelafalan kata dan kalimat eksplisit kini menghentikan penurunan karakter rekursif. Input duplikat yang terlihat diblokir dan melanjutkan akan memilih kartu yang ada; penyimpanan permintaan mengenali jenis update dan merge.
 
-## Kontrol pembuatan disempurnakan
+## Definisi Tetap di Bawah Judul
 
-Tindakan buat Library mempertahankan ukuran tombol normal dan hanya menggandakan ukuran tanda tambah. Tab pembuatan kini diinisialisasi dengan benar, cakupan pengguna menjadi bawaan, administrator yang berhak dapat memilih publikasi global, dan pengajar hanya melihat opsi publikasi kelas untuk kelas yang dapat ditulis dalam bahasa aktif. Kelas konten memakai dropdown sesuai peran hanya saat relevan, bidang komposisi bernama Input, dan memfokuskannya menampilkan karosel hubungan.
+Definisi popup kini dimulai di bawah judul kartu dan membungkus pada area judul yang tersedia, bukan dipaksa ke sisi kanan.
 
-## Komposisi permanen yang lebih cerdas
+## Pelafalan Partikel Dipertahankan
 
-Koleksi hubungan kini menampilkan semua item tanpa bilah gulir atau panah arah. Pratinjau hover menampilkan kartu minimal beserta definisi dalam bahasa antarmuka saat ini, sedangkan pilihan karosel dan saran teks bebas langsung menjadi blok Input yang dapat diseret. Mengurutkan ulang blok memperbarui urutan hubungan, konten terpilih menyimpulkan referensi terkait, pelafalan menelusuri unit tulisan yang dirujuk, dan pembuatan definisi meminta setiap bahasa antarmuka yang didukung.
+Resolusi pelafalan kini berhenti pada partikel itu sendiri sehingga referensi karakter tidak menggantikan bacaan kontekstual yang telah ditulis.
 
-## Alur komposisi terpadu
+## Edit Pelafalan Tersimpan
 
-Kartu yang telah diselesaikan kini berada di dalam Input, pelafalan diperbarui saat mengetik, label karusel duplikat disatukan, dan pratinjau tidak lagi terpotong oleh dialog. Hubungan menggunakan hierarki hanya-baca, definisi dapat dibuat sebagai set semua bahasa yang dapat diulang, penerbitan memberikan panduan peninjauan yang lebih jelas, dan penulis pengguna tidak lagi melihat kontrol administratif Tersembunyi.
+Tahap pelafalan kosong kini menghasilkan toast kesalahan. Kartu pelafalan tersimpan memuat kontrol hapusnya, dan memilihnya memulihkan kartu komponen ke tahap serta carousel untuk diedit.
 
-## Kartu dengan gambar dan definisi aman
+## Penyuntingan Definisi Lengkap
 
-Rekaman definisi kini hanya dapat dibuat sebagai anak tertaut dari kartu lain, dan penutupan penyusun memakai perlindungan kehilangan data bersama. Kontrol pengeras suara ringkas hanya memutar rangkaian audio komposit lengkap jika setiap komponen tersedia. Kontrak pola goresan tervalidasi baru mendukung adapter menggambar PiP dengan penilaian urutan goresan, progres langsung, urungkan/atur ulang, dan panduan yang dapat disesuaikan.
+Kotak centang definisi pratinjau kini berada di Definisi, dan editor kartu yang sudah ada dapat membuat serta langsung memilih definisi tambahan.
 
-## Adapter Drawing siap diterapkan
+## Definisi Induk yang Stabil
 
-Adapter Drawing kini mendeklarasikan titik masuk paket TypeScript dan dependensi gateway Study yang telah diuji, sehingga validasi build server produksi dapat mengimpornya dengan berhasil.
+Atribusi induk kini tetap dikelompokkan pada baris bacaan sebelum definisi. Kartu yang mewarisi definisi induk mempertahankan definisi di bawah judul tanpa memecah label induk yang dilokalkan pada judul popup.
 
-## Komposisi kartu ringkas yang tepat
+## Pulihkan Tampilan Bertag
 
-Karusel hubungan kini menempati tepat dua baris yang bergulir vertikal dan pratinjau hover memakai popup tertambat yang sadar area pandang. Pencocokan tepat seluruh Input menggantikan inferensi per karakter sehingga node hubungan yang tidak terkait tidak muncul. Definisi memakai dialog khusus semua bahasa, bukan karusel atau penyusun kartu bertingkat; kontrol terbitkan/buat, audio sesuai tema, tindakan gambar/edit, dan tooltip juga disempurnakan.
+Tag paket konten kini dipertahankan selama validasi dan penyerapan ke dalam rekaman entri Pustaka. Tampilan Kata Kerja dan Kata Keterangan yang dideklarasikan penyedia kini dapat mencocokkan serta merender kosakata bertag, bukan melaporkan lapisan kosong.
 
-## Gambar adaptif dan karusel horizontal
+## Pohon Transformasi Tersusun
 
-Karusel dua baris kini bergulir horizontal, data goresan tidak tampil dalam detail kartu, dan mode menggambar menutup dialog asal. Aset gambar serta warna papan yang sesuai tema meningkatkan kontras. PiP yang diskalakan memuat seluruh kanvas dan kontrol, sedangkan penilaian jalur dengan sampel ulang seragam mendukung karakter kompleks dan menyesuaikan panduan otomatis dari tingkat keberhasilan serta umpan balik kesulitan.
+Transformasi kata kerja dan kata keterangan kini mendukung rantai bercabang yang diperluas, bacaan dan definisi khusus transformasi, serta tata letak pohon teknologi yang terhubung. Penyusun kalimat dapat memilih bentuk korsel yang ditransformasi sambil mempertahankan referensi kanonis, dan referensi tersebut dibuka kembali dengan bentuk yang ditulis beserta jalur lengkapnya.
 
-## Pengguliran Library dan pembuatan bersarang
+## Kartu Anak Aman dari Induk
 
-Halaman Study Library kini menggunakan pengguliran dokumen alami dan ukuran pratinjau kartu yang konsisten. Pratinjau karusel tetap mengikuti ukuran konten dan menghilang dengan benar, sementara setiap kontrol tambah membuka komposer bersarang yang bertumpuk dengan benar, bertipe terkunci, dan menampilkan tipe kartu pada judulnya. Tindakan buat utama kini memakai gaya standar pengalih tema dan pemilih bahasa.
+Penempatan kartu anak kini mengecualikan setiap slot leluhur dan mencari posisi diagonal serta kardinal pada jarak yang makin besar. Kartu anak yang terhalang dipindahkan ke luar melalui slot tambahan, bukan menutupi leluhur atau ditahan.
 
-## Tautan pelafalan lintas relasi
+## Pohon transformasi interaktif selebar halaman
 
-Tautan detail pelafalan kini menggunakan larik `input.linkRelationships` yang dideklarasikan penyedia. Referensi dari relasi kosakata dan partikel digabungkan berdasarkan posisi yang ditulis, lalu setiap segmen yang ditampilkan dicocokkan dengan label dan alias pelafalan kartu referensi sambil mempertahankan kartu asli sebagai tujuan navigasi.
+Tampilan pohon transformasi kini dimulai sebagai kisi kartu padat selebar halaman. Kartu tanpa transformasi yang tersedia tetap tidak aktif. Membuka kartu yang dapat diperluas memindahkannya ke atas, menganimasikan kartu lainnya hingga menghilang, dan mengembangkan pohon tepat di bawah akar yang dipusatkan sepanjang lebar konten; kontrol tutup mengembalikan kisi. Memilih transformasi menyorot dan terus menganimasikan seluruh jalurnya kembali ke akar, sedangkan label transformasi ditumpuk di atas nilai agar tidak meluber pada kartu sempit.
 
-## Umpan balik menggambar otomatis
+## Jalur transformasi berkelanjutan dan akar stabil
 
-Pad menggambar kini menyembunyikan penghitung goresan dan kontrol panduan. Pad dimulai dengan panduan lengkap, secara bertahap memulihkan panduan dari goresan saat ini hingga goresan terakhir setelah kesalahan berulang, berguncang merah untuk goresan salah, dan merayakan karakter yang selesai dengan guncangan hijau serta bunyi keberhasilan yang dibuat aplikasi.
+Pohon transformasi kini mempertahankan kartu kata kerja atau kata keterangan sumber sebagai akar visual yang tidak berubah dan menghapus ringkasan bentuk terpilih yang berulang di bawahnya. Segmen penghubung bertemu tanpa celah dan beranimasi terus-menerus di seluruh pohon, sementara jalur asal yang dipilih tetap ditonjolkan. Mengklik kartu sumber yang sudah terbuka kini membuka tampilan detail standarnya.
 
-## Panduan menggambar terfokus dan kontrol bertema
+## Pemilihan transformasi terintegrasi kosakata
 
-Latihan menulis kini hanya memandu goresan saat ini, memperpendek panduan setelah keberhasilan, dan memperpanjang goresan yang sama setelah kesalahan; Atur ulang mempertahankan panduan yang berkurang dan Urungkan dihapus. Pad menyejajarkan teks kartu dengan definisinya, menyesuaikan ukuran Tutup dengan konten, serta menganimasikan pembukaan dan penutupan. Pembuatan Library memakai tanda tambah dua rem sesuai tema, judul serta isi karusel lapisan tujuan penyedia, dan aset pengeras suara yang mengikuti tema aplikasi.
+Entri verba dan adverbia kini tetap berada di halaman Kosakata, tempat tag transformasi yang dideklarasikan penyedia tampil sebagai filter, bukan tujuan navigasi terpisah. Aturan transformasi dapat mendeklarasikan metadata `marker` terlokalisasi dan Cognis menyisipkannya ke slot `{{ marker }}` pada definisi yang dirujuk (misalnya `to {{ marker }} watch` menjadi `to (want to) watch`). Nama bentuk dipindahkan ke tooltip informasi pada setiap simpul. Popup detail standar menyediakan tindakan Varian yang membuka pemilih graf khusus; memilih simpul menggambar ulang entri dasar dengan judul, pelafalan, definisi, dan masukan gambar yang telah ditransformasi sambil menonaktifkan penyuntingan. Karusel penyusun menandai entri yang dapat ditransformasi dan memakai pemilih dua kolom untuk memilih satu transformasi atau mempertahankan bentuk dasar.
 
-## Hasil gambar sejajar dan kanonis
+## Graf transformasi seimbang dan penanda andal
 
-Judul Drawing kini mengikuti lebar kanvas dan berada tepat di atasnya. Guncangan umpan balik dibuat lebih lembut, dan goresan pengguna yang diterima diganti dengan jalur kanonis penyedia agar karakter akhir dirender dengan benar.
+Graf transformasi kini mengukur setiap cabang berdasarkan seluruh subpohon turunannya, mempertahankan lebar minimum dua belas rem untuk setiap simpul, menyebarkan cabang sepanjang lebar intrinsik graf, dan menggulir secara horizontal saat graf melebihi dialog. Hal ini mencegah keluarga konjugasi yang dalam atau sangat bercabang menghimpit kartu menjadi kolom sempit. Resolusi penanda definisi kini menerima metadata terlokalisasi atau string langsung, mencocokkan `{{ marker }}` maupun `{{marker}}`, menggunakan lokal antarmuka aktif, mengganti setiap penanda dalam teks multidefinisi, dan memprioritaskan templat penanda yang ditulis penyedia daripada penggantian definisi penuh lama.
 
-## Menggambar stabil dan penyusunan kartu
+## Graf Transformasi dan Ketepatan Definisi
 
-Panduan menggambar kini hanya menampilkan goresan kanonis yang lengkap, menjadwalkan pembaruan kanvas per bingkai animasi, dan mempertahankan keluaran yang diterima dalam bentuk kanonis. Tab tampilan Library tetap interaktif, penyusun bertingkat mengikuti tipe target relasi, karakter gabungan menerima label bebas dengan relasi pelafalan atomis, karusel target ganda dihapus, tag dapat diedit, dan bilah gulir karusel disembunyikan.
+Pohon transformasi kini memakai garis graf SVG melengkung, membatasi pengguliran pada graf, dan menjaga tindakan popup tetap terlihat. Varian yang dipilih kini dipertahankan pada tampilan detail, memperbarui setiap definisi yang dirujuk dengan penanda penyedia, dan menempatkan kontrol Varian di sebelah kiri.
 
-## Pencarian penyusun berbantuan penyedia
+## Tautan Homograf yang Benar
 
-Penyedia konten yang kompatibel kini dapat mendaftarkan layanan pencarian terlokalisasi melalui kapabilitas ctx Library publik. Penyusun kartu menampilkan satu tindakan per layanan, mengirim masukan mentah ke layanan tersebut, lalu menerapkan label kanonis, bidang, dan referensi berurutan dengan tingkat keyakinan tertinggi.
+Komposisi judul cadangan kini mengikuti urutan lapisan semantik. Entri kosakata dengan bentuk tulisan yang sama menaut ke unit tulisan atomik atau majemuknya, bukan ke satu sama lain, sementara komposisi kalimat tetap mengenali entri kosakata.
 
-## Pengaktifan kapabilitas publik
+## Graf Transformasi Ringkas
 
-Pengaktifan modul kini mengenali kapabilitas server publik yang dikontribusikan melalui ctx sistem. Modul bahasa Jepang dan bahasa lainnya dapat memerlukan `study:library:provider` tanpa menerima konflik palsu bahwa kapabilitas tidak tersedia, sementara kapabilitas privat tetap tersembunyi.
+Graf transformasi kini memakai satu baris horizontal untuk setiap kedalaman, menempatkan definisi yang lapang di bawah setiap kartu, dan menahan luapan kedua sumbu di area graf setinggi viewport agar tindakan popup tetap terlihat. Transformasi terpilih menggantikan tautan judul dasar hasil komposisi sehingga judul transformasi muncul pada detail. Aturan penyedia kini memakai templat definisi terlokalisasi yang dapat disusun dengan pencocokan prefiks dan sufiks eksplisit, bukan penanda tetap.
 
-## Formulir Library yang andal
+## Rantai Definisi Kontekstual
 
-Pembaruan kartu kini mempertahankan referensi tak berurutan tanpa posisi yang tidak valid. Tab relasi hanya tersedia dalam tampilan, karakter gabungan memakai bidang Masukan bebas dan karusel pelafalan, tindakan pencarian muncul sebaris setelah mengetik, pola goresan tetap dimiliki penyedia dan tersembunyi, kontrol tambah definisi lebih besar dan netral, serta pratinjau mengelilingi seluruh isinya.
+Pohon transformasi kini menampilkan entri tanpa transformasi sebagai kartu akar terpusat dan memulai garis penghubung di bawah area definisi setiap simpul. Transformasi definisi mendukung substitusi terlokalisasi berurutan sebelum templat cadangan, sehingga aturan berikutnya dapat menulis ulang makna sebelumnya—misalnya “want to” menjadi “have wanted to”—atau menambahkan urutan setelah definisi hasil transformasi lengkap.
 
-## Penyuntingan kartu bawaan yang andal dan audio dalam paket
+## Kembali dari Kartu Transformasi
 
-Pembaruan Pustaka kini memakai kontrak pembaruan terstruktur milik gateway basis data sehingga penyuntingan kartu bawaan tidak lagi gagal di PostgreSQL. Pemutaran audio hanya tersedia untuk berkas yang dikirim melalui paket konten dan disimpan oleh gateway Berkas; URL placeholder eksternal tidak ditampilkan maupun diambil. Ringkasan definisi menampilkan terjemahan yang dilokalkan dalam tata letak ringkas berlabel bahasa, bukan mengekspos kunci penyedia dan JSON mentah.
+Kartu hasil transformasi kini mengganti kontrol Varian dengan tindakan terlokalisasi “Kembali ke {kartu}”. Tindakan tersebut memulihkan kartu kanonik dalam konteks navigasi detail yang sama, termasuk judul, pelafalan, definisi, sasaran gambar, kemampuan penyuntingan, dan kontrol Varian.
 
-## Penyelesaian latihan menggambar yang stabil
+## Ubah Ukuran Gambar Tanpa Distorsi
 
-Umpan balik menggambar kini hanya menganimasikan area kanvas sehingga akhir animasi tidak dapat mengulang transisi pembukaan papan atau membuat jendela berkedip. Percobaan baru dimulai dengan panduan karakter lengkap, lalu maju satu goresan utuh setiap kali setelah goresan pertama diterima. Penyelesaian menampilkan tanda centang, pesan Bagus Sekali, jumlah kesalahan percobaan, serta tindakan Tutup atau Coba Lagi.
+Kanvas Latihan Menggambar kini menyesuaikan ruang koordinat goresan logis ke viewport terpusat yang mempertahankan rasio aspek berdasarkan ukuran kanvas hasil render sebenarnya. Perubahan ukuran dapat menambahkan ruang horizontal atau vertikal, tetapi tidak lagi meregangkan karakter, panduan, anotasi, goresan yang diterima, maupun masukan penunjuk aktif.
 
-## Pemutaran audio dan penyuntingan pelafalan
+## Komposisi Kosakata yang Andal
 
-Halaman terautentikasi mengizinkan URL media yang dibuat peramban sehingga audio kartu yang baru diunggah dapat diputar tanpa melanggar Kebijakan Keamanan Konten. Penyunting audio menampilkan nama berkas saat ini dan ikon pengeras suara mengikuti tema aplikasi. Karusel pelafalan karakter gabungan menggantikan kontrol masukan tag di dalam bidang Pelafalan, memakai nama lapisan tujuan dari penyedia, dan memberi nomor karakter menurut urutannya dalam teks kartu, bukan posisi relasi yang usang.
+Formulir buat dan edit kosakata kini menampilkan carousel karakter meskipun penyedia hanya mendeklarasikan hubungan pelafalan. Grup pelafalan tersimpan terlihat berpindah dari baris penampungan, tag penyedia tidak lagi memperoleh kelas lapisan yang redundan, dan pembuatan yang gagal menampilkan galat sambil mempertahankan formulir tetap terbuka.
 
-## Pelafalan tertaut penyedia dan perubahan kartu yang bertahan
+## Penyimpanan Pelafalan yang Jelas
 
-Kolom pelafalan yang ditautkan ke relasi penyedia kini menampilkan pemilih berurutannya langsung di dalam kolom, bukan mempertahankan masukan tag bebas. Setelah pengguna mengubah kartu yang dipasang penyedia, rekonsiliasi penyedia berikutnya mempertahankan kartu beserta relasinya.
-
-## Komposisi pelafalan dua langkah dan audio stabil
-
-Penyunting pelafalan kini memilih kartu komponen yang sesuai secara semantik, menampilkan pelafalan kartu, dan menyimpan setiap bacaan turunan sebelum menyusun bacaan berikutnya. Pratinjau karusel membungkus seluruh teksnya, kontrol audio tetap terlihat pada semua tema, dan unggahan audio pengganti memakai kembali kunci khusus kartu yang stabil.
-
-## Urutan goresan terpandu dan Latihan Menggambar adaptif
-
-Panduan awal kini memberi nomor pada setiap goresan dan menggambar panah arah. Sepuluh kesalahan berturut-turut menghasilkan pesan “Kalah!” dengan tanda X, sedangkan penyelesaian kartu dengan nol atau satu kesalahan menaikkan kesulitan dalam memori. Memilih kartu Pustaka lain yang dapat digambar saat pad terbuka langsung memuatnya ke pad yang sama.
-
-## Panduan sekali, latihan gabungan, dan audio bersama
-
-Panduan menggambar lengkap kini hanya muncul pada percobaan pertama atau setelah reset ? secara eksplisit. Coba lagi mempertahankan panduan progresif, sedangkan kartu gabungan menurunkan kelompok goresan karakter berurutan dan menampilkan setiap bagian baru secara lengkap. Kartu leksikal dan kalimat tidak boleh memiliki pola goresan sendiri. Karakter alternatif penyedia memakai ulang audio karakter terkait, unggahan pengguna tetap utama, dan pengeras suara memakai SVG inline yang aman untuk tema.
-
-## Tulisan gabungan dan pembuatan andal
-
-Gambar kosakata kini mengikuti bentuk tulisan utama dan menyusun setiap karakter yang ditemukan secara berdampingan, sementara judul papan menampilkan bacaan dan arti. Komposisi formulir bersama kini menandai bidang wajib secara konsisten, mempertahankan pola goresan dari penyedia, memvalidasi karakter alternatif melalui pencarian kamus, menyematkan pemilih pelafalan karakter, dan membersihkan pratinjau karusel saat dialog ditutup.
-
-## Penyuntingan, gambar, dan komposisi andal
-
-Pembaruan kartu dan pemutaran audio kini dimigrasikan melalui skema penyedia terkini, dan dialog detail mempertahankan tindakan sunting setelah penyuntingan. Latihan gambar tetap terbatas di area pandang, dapat diubah ukurannya dengan tepat, memberi anotasi pada panduan satu goresan, memakai ejaan kosakata alih-alih pelafalan, serta mengecualikan kalimat dan gabungan. Pembuatan kartu mengecualikan kartu partikel, memulihkan semua karusel komposisi untuk kalimat dan gabungan, serta menyediakan pemilih pelafalan berbasis karakter dengan tahap persiapan untuk kosakata dan karakter alternatif.
-
-## Komposisi bertingkat yang tepat
-
-Cabang kartu anak bertingkat kini mempertahankan sisi yang ditetapkan penyedia saat ruangnya mencukupi, dialog pembuatan bertingkat selalu berada di atas dialog induknya, dan komposisi pelafalan kini sama dengan composer input dengan bidang teks bertahap serta karusel karakter atomik.
-
-## Karusel composer arahan penyedia
-
-Constructor kartu kini memisahkan ID relasi karusel input primer dan pelafalan secara eksplisit. Karakter alternatif memerlukan relasi pelafalan yang terselesaikan tanpa mewajibkan referensi primer, hasil lookup memperoleh nilai bawaan metadata penyedia yang aman, dan penempatan kartu anak tidak lagi menghilangkan cabang ketika kapasitas grid yang dideklarasikan habis.
-
-## Deklarasi composer yang ketat
-
-Perilaku karusel hasil inferensi dihapus: setiap constructor kartu wajib mendeklarasikan kedua larik karusel. Validasi server kini memakai constructor formulir runtime, formulir edit merender karusel pelafalan terdeklarasi, kunci pengganti audio memakai nama kartu ternormalisasi, dan kartu anak diagonal mempertahankan penempatannya.
-
-## Pemulihan karusel berbasis penyedia
-
-Constructor kartu kini mengenali sumber karusel input dan pelafalan berdasarkan lapisan target. Cognis memetakan deklarasi tersebut hanya ke relasi dengan peran presentasi yang sesuai, sehingga karusel pelafalan tampil kembali sementara referensi primer karakter alternatif tetap opsional.
+Penyimpanan pelafalan kini mengikat grup karakter yang ditampung sebelum memperbarui bidang, mengosongkan kontrol carousel tanpa lencana urutan dengan aman, dan mengonfirmasi penyimpanan. Galat pembuatan membedakan grup pelafalan yang belum disimpan serta menyertakan kode galat server untuk kegagalan lain sambil mempertahankan formulir tetap terbuka.
 
 ## Commit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/0c9c4e376ffde5af485772367430d3122b589b0e
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/32ca0df41b363566394ac0d4026ec73ed53ce9ae
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a66d08376445e937ea0e57d64c5975c9c02ed504
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/800b1809b0378fcf6aaa480461d0e22b703c2ca4
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/ea81a944257040a042c1d0c0c9b2447768390221
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/3b51abc17cc6ed3a75921bfa242d16c33aae2ce0
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/2e2d092813312978c2f69640389f6401ec0230f5
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/cff7223cd64c36372e64484c362ba9b1a1f4e2f7
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/bbb6bb8bd8e2d70a6ec571c2a69e58665a90ca04
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e1e564bf66580e7a1e8eaf24080c646f686d982c
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/344ccb5b
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/40da0c7a
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/584fb0b46ebb77bd43e585b3b41a279a0e6e9bfa
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/7d597603b3b1faf6df9d5c7a98973362312236d9
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/61002cd2578510ff6d823b8ebb454364e2c930cd
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e8dac803472e1dfc8a5bb2acf3082da88dad8a05
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a6aa6fe85403331903570c9cd20f115ea48576be
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/1337d0a332a5ccb2d1081816d55e453f90a0c0bc
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/eda8cb2ab208b458f73e79f5b89fd6413ccbab77
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/337b23512bb9fd25e0ffce0d94058e4dcc959e84
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/67b413b535c0a8662cfe92c1170ccfc4742e6eae
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/c8893689
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/79cbfa05a5409f780bb42f4ea5ac7c0f8ec67f01
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e4daa661ee08b05a48ecba33182c490d4352e660
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/274fc626dbea45d3c8d66c82b98f1a0ba87a8052
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/024d7dfe05f713f390d7b9fb00410591018c9bf6
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/281d2ac4dca994692513c8069ad21fe9affebedc
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f5214c148cab6eac78e3f8ee8aed3847ffba2201
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/bec24655948ca3a64ea6ab4f95f7897aecee68ac
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/1501e390dce637fb660c5b540a4235e3e7c98f29
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/71c842e2
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/3f72cfb6
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f2afaa13
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e894f166
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/64d1ac04
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/23587bd7
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/c8c8deb9
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/48d14c1ba63d887a04305306f8c9de7565361dfa
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/872484294f2d3b777c6123286db62c78dc08f7f8
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/452e3eb3fc5b9e2ca86464904e7f6477992b7c32
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/039dc5c1
+- [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
+- [54c47947](https://github.com/Cognis-Labs-HQ/Cognis/commit/54c479475d86915fff94aff089b9670f887d4c7d)
+
+- [44891fa5](https://github.com/Cognis-Labs-HQ/Cognis/commit/44891fa5705fc417cf0fbd75b96599a6fac21895)
+- [3e86f4e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e86f4e5c83828d0101fbacb4354381048de5290)
+
+- [03268e5b](https://github.com/Cognis-Labs-HQ/Cognis/commit/03268e5bb34d94a46146b0ec6ba9f3e678752481)
+- [8862690a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8862690a835650a677efa6a5404ad55491b6a778)
+
+- [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
+- [db0728af](https://github.com/Cognis-Labs-HQ/Cognis/commit/db0728af)
+- [9c77e48f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c77e48f)
+- [41d895c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/41d895c6)
+- [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)
+- [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)
+- [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)
+- [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)
+- [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)
+- [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)
+- [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)
+- [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)
+- [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)
+- [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)
+- [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)
+- [492cf08](https://github.com/Cognis-Labs-HQ/Cognis/commit/492cf08)
+- [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)
+- [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)
+- [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)
+- [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)
+- [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)
+- [8e60e383](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e60e383)
+- [5f098e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f098e37)
+- [4d32a72e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4d32a72e)
+- [7dea5c6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dea5c6c)
+- [e356a233](https://github.com/Cognis-Labs-HQ/Cognis/commit/e356a233)
+- [6c0ba3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c0ba3ed)
+- [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)
+- [80471e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/80471e37)

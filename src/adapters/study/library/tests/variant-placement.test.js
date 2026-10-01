@@ -5,6 +5,7 @@ import {
     isSameLibraryRecord,
     variantPlacement,
 } from "../ui/app/variant-placement.js";
+import { variantDirectionCandidates } from "../ui/app/variant-fit.js";
 
 const layer = {
     id: "characters",
@@ -18,6 +19,19 @@ const layer = {
     ],
 };
 const schema = { id: "japanese", layers: [layer] };
+
+test("overflow fitting tries diagonal free slots before opposite cardinals", () => {
+    assert.deepEqual(variantDirectionCandidates("left"), [
+        "left",
+        "up-left",
+        "down-left",
+        "up",
+        "down",
+        "up-right",
+        "down-right",
+        "right",
+    ]);
+});
 
 function entry(id, overrides = {}) {
     return {

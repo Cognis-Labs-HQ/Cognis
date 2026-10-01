@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+    appendHorizontalCarouselItem,
     mountHorizontalCarousels,
     renderHorizontalCarousel,
 } from "../horizontal-carousel.js";
@@ -43,6 +44,8 @@ test("horizontal carousels support selection-only editors", () => {
 
     assert.match(html, /data-horizontal-carousel="pronunciation"/);
     assert.doesNotMatch(html, /data-carousel-add/);
+    assert.match(html, /horizontal-carousel-preview/);
+    assert.match(html, /<strong>あ<\/strong>/);
 });
 
 test("horizontal carousel mounting uses a body-level preview portal", () => {
@@ -55,4 +58,14 @@ test("horizontal carousel mounting uses a body-level preview portal", () => {
     assert.match(stylesheet, /max-inline-size:/);
     assert.match(mountHorizontalCarousels.toString(), /selectedItems/);
     assert.match(mountHorizontalCarousels.toString(), /data-carousel-order/);
+    assert.match(mountHorizontalCarousels.toString(), /selectionOrder/);
+    assert.match(
+        mountHorizontalCarousels.toString(),
+        /root\.querySelectorAll\("\[data-horizontal-carousel\]"\)\.forEach\(refresh\)/,
+    );
+});
+
+test("new dependency cards reuse canonical carousel item markup", () => {
+    assert.match(appendHorizontalCarouselItem.toString(), /carouselItemMarkup/);
+    assert.match(appendHorizontalCarouselItem.toString(), /lastElementChild/);
 });

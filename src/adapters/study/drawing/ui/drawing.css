@@ -95,10 +95,13 @@ body[data-theme="dark"] .study-drawing-pad {
 }
 
 .study-drawing-stage {
+    align-self: start;
+    aspect-ratio: var(--drawing-columns, 1);
     display: grid;
-    height: 100%;
+    height: auto;
     min-height: 0;
     position: relative;
+    width: 100%;
 }
 
 .study-drawing-stage canvas {

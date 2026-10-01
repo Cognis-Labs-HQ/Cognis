@@ -5,6 +5,7 @@ import {
 
 const LONG_PRESS_DURATION_MS = 550;
 const LONG_PRESS_MOVE_TOLERANCE_PX = 8;
+const BRANCH_HOVER_INTENT_MS = 100;
 
 export function closeUnrelatedVariantViews(root, control) {
     let closed = false;
@@ -68,11 +69,22 @@ export function activateVariantBranch(root, card) {
 export function bindVariantInteractions(root, { signal, suppressNextClick }) {
     let longPressTimer = null;
     let longPressOrigin = null;
+    let branchHoverTimer = null;
+    let pendingBranchShell = null;
     const cancelLongPress = () => {
         if (longPressTimer !== null) window.clearTimeout(longPressTimer);
         longPressTimer = null;
         longPressOrigin = null;
     };
+    signal?.addEventListener(
+        "abort",
+        () => {
+            cancelLongPress();
+            if (branchHoverTimer !== null)
+                window.clearTimeout(branchHoverTimer);
+        },
+        { once: true },
+    );
     root.addEventListener(
         "pointerdown",
         (event) => {
@@ -123,7 +135,29 @@ export function bindVariantInteractions(root, { signal, suppressNextClick }) {
         (event) => {
             const card = event.target.closest("button[data-library-entry]");
             if (!card || card.contains(event.relatedTarget)) return;
-            activateVariantBranch(root, card);
+            const shell = card.closest(".library-entry-card-shell");
+            if (branchHoverTimer !== null)
+                window.clearTimeout(branchHoverTimer);
+            pendingBranchShell = shell;
+            branchHoverTimer = window.setTimeout(() => {
+                activateVariantBranch(root, card);
+                branchHoverTimer = null;
+                pendingBranchShell = null;
+            }, BRANCH_HOVER_INTENT_MS);
+        },
+        { signal },
+    );
+    root.addEventListener(
+        "pointerout",
+        (event) => {
+            if (
+                branchHoverTimer === null ||
+                pendingBranchShell?.contains(event.relatedTarget)
+            )
+                return;
+            window.clearTimeout(branchHoverTimer);
+            branchHoverTimer = null;
+            pendingBranchShell = null;
         },
         { signal },
     );

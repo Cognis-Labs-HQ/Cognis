@@ -14,8 +14,20 @@ The heading is measured to the rendered canvas and centered directly above it. T
 
 The first guide view labels every stroke and shows its direction. Ten consecutive misses end the attempt with a failure result. Successful attempts with at most one mistake raise that card's in-memory difficulty for later attempts, and an open pad can switch directly to another Library card.
 
-Full guidance appears only before a card's first attempt or after the user explicitly presses the **?** reset action. Retrying keeps progressive guidance. Composite patterns carry piece boundaries so each newly reached character receives one complete annotated preview.
+The **?** guidance action preserves accepted strokes and attempt results while revealing annotations only for unfinished strokes. Retrying keeps progressive guidance. Composite patterns carry piece boundaries so each newly reached character receives one complete annotated preview. Annotation direction is calculated in rendered canvas coordinates, keeping arrows accurate across extended multi-character patterns.
 
 Composite cards now arrange every writing-unit pattern from the primary written value side by side at a consistent scale with minimal spacing. The pad expands to preserve character size, and its compact heading includes available pronunciations and the localized definition.
 
 The pad remains inside the viewport, uses a compact content-derived height, and caps its width at forty percent of the viewport so longer words scale rather than producing an oversized window. Resizing no longer swaps the pad's minimum dimensions, and every single-stroke guide retains its order and direction annotation.
+
+Annotation labels evaluate nearby placements around each stroke start and choose the first position that clears other labels and every rendered stroke path. This keeps numbered bubbles readable and close to their strokes without covering completed user work.
+
+Successful attempts with no more than one mistake now increase card-specific recall difficulty by hiding one additional randomly selected stroke guide. Hidden strokes are represented by a question mark in the canvas corner and are still validated normally. The top-right guidance action reveals hidden strokes for the current attempt without clearing accepted input or reducing the card’s learned difficulty. Annotation placement prefers the first nearby collision-free position instead of maximizing empty distance, keeping labels closer to their stroke starts.
+
+The hidden-guide question mark appears only when the learner reaches a stroke whose guide is hidden; it no longer warns early about hidden strokes later in the pattern.
+
+Switching an open Drawing Practice window to a card with a different column count now reapplies the stage aspect ratio and synchronizes the canvas bitmap after layout. Multi-character patterns no longer stretch vertically while the floating window redraws.
+
+Pressing Escape closes the active Drawing Practice window through the same animated and fully cleaned-up close path as its close controls.
+
+The drawing surface now derives a centered, aspect-preserving viewport from its actual rendered width and height. Resizing the floating pad therefore letterboxes the logical stroke area when necessary instead of stretching character geometry, while pointer coordinates, guides, annotations, completed strokes, and live ink all use the same fitted viewport.

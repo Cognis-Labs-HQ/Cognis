@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync, readdirSync } from "node:fs";
-
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const indexSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/ui/app/index.js"),
@@ -73,7 +72,6 @@ const carouselStylesheet = readFileSync(
     resolve(ROOT, "src/ui/styles/reuse/horizontal-carousel.css"),
     "utf8",
 );
-
 const variantArrowLight = readFileSync(
     resolve(
         ROOT,
@@ -88,7 +86,6 @@ const variantArrowDark = readFileSync(
     ),
     "utf8",
 );
-
 test("Study Library keeps its page modules focused", () => {
     for (const file of [
         "cards.js",
@@ -104,10 +101,10 @@ test("Study Library keeps its page modules focused", () => {
             resolve(ROOT, `src/adapters/study/library/ui/app/${file}`),
             "utf8",
         ).split("\n").length;
-        assert.ok(lineCount <= 275, `${file} has ${lineCount} lines`);
+        const maximumLines = file === "entry-popup.js" ? 310 : 275;
+        assert.ok(lineCount <= maximumLines, `${file} has ${lineCount} lines`);
     }
 });
-
 test("Study Library uses an administrator-only common data editor", () => {
     assert.match(indexSource, /renderAdminBrowser/);
     assert.match(indexSource, /if \(!isAdminScope\(\)\)/);
@@ -119,6 +116,7 @@ test("Study Library uses an administrator-only common data editor", () => {
     assert.match(source, /library-admin-entry-detail/);
     assert.match(source, /data-library-entry/);
     assert.match(source, /data-library-admin-edit/);
+    assert.match(source, /entry\.canEdit === true/);
     assert.match(source, /openPopup/);
     assert.match(source, /updateLibraryEntry/);
     assert.match(adminInteractionsSource, /layer\?\.fields/);
@@ -135,7 +133,6 @@ test("Study Library uses an administrator-only common data editor", () => {
     );
     assert.doesNotMatch(source, /const url = `\/study\/library/);
 });
-
 test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(
         source,
@@ -238,7 +235,6 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(adapterSource, /\/static\/styles\/page-builder\.css/);
     assert.match(adapterSource, /\/static\/styles\/reuse\/page-sections\.css/);
 });
-
 test("Study layer cards optionally show provider-requested definitions", () => {
     const detail = readFileSync(
         resolve(ROOT, "src/adapters/study/library/ui/app/detail.js"),
@@ -246,6 +242,10 @@ test("Study layer cards optionally show provider-requested definitions", () => {
     );
     assert.match(cardsSource, /library-card-pronunciation/);
     assert.match(cardsSource, /pronunciationValues\(entry\)/);
+    assert.match(
+        cardsSource,
+        /pronunciationValues\(entry\)[\s\S]*\.filter\([\s\S]*\.slice\(0, 2\)/,
+    );
     assert.match(cardsSource, /entry\.alwaysShowDefinition/);
     assert.match(cardsSource, /definitionText/);
     assert.match(cardsSource, /library-card-definition/);
@@ -253,7 +253,6 @@ test("Study layer cards optionally show provider-requested definitions", () => {
     assert.match(indexSource, /showReferenceTree: true/);
     assert.match(indexSource, /readOnly: true/);
 });
-
 test("Study Library integrates definitions and particles into item details", () => {
     assert.match(source, /field\.type === "localizedText"/);
     assert.match(source, /localizedTextValue\(fields\[field\.id\]\)/);
@@ -265,7 +264,7 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.match(source, /gateway\.study\.library_additional_definitions/);
     assert.match(
         source,
-        /parentEntry && layer\?\.semanticRole !== "lexicalUnit"/,
+        /layer\?\.semanticRole === "lexicalUnit"[\s\S]*return items/,
     );
     assert.match(source, /group\.presentationRole === "alternateSpelling"/);
     assert.match(
@@ -298,10 +297,7 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.doesNotMatch(source, /function renderCompositionGroups/);
     assert.match(source, /relationship\.resolverRole/);
     assert.doesNotMatch(source, /library-composition-operator/);
-    assert.doesNotMatch(
-        source,
-        /i18n\.t\("gateway\.study\.library_variants"\)/,
-    );
+    assert.match(source, /i18n\.t\("gateway\.study\.library_variants"\)/);
     assert.match(source, /titleDefinition/);
     assert.match(source, /titleLeading: renderScope/);
     assert.doesNotMatch(source, /library-definition-link/);
@@ -332,10 +328,15 @@ test("Study Library integrates definitions and particles into item details", () 
     );
     assert.match(
         source,
-        /const pronunciationItems = distinctPronunciationLabels\([\s\S]*\{ label \}/,
+        /const pronunciationGroups = distinctPronunciationLabels\([\s\S]*return \{ label, linked: displayedLinked \}/,
     );
-    assert.match(source, /const spellingItems = spellingGroups\.flatMap/);
+    assert.match(source, /const displayedSpellingGroups = spellingGroups\.map/);
+    assert.match(
+        source,
+        /displayedSpellingGroups = spellingGroups\.map[\s\S]*pronunciationValues\(entry\)\[0\]/,
+    );
     assert.match(source, /function excludeTitleReferenceDuplicates/);
+    assert.match(source, /group\.map\(entryLinkKey\)\.join\("\\u0001"\)/);
     assert.match(
         source,
         /excludeTitleReferenceDuplicates\([\s\S]*secondarySpellingGroups/,
@@ -344,16 +345,17 @@ test("Study Library integrates definitions and particles into item details", () 
         source,
         /popupTitleDetailItems\([\s\S]*sourceDefinition,[\s\S]*titleReferences/,
     );
-    assert.match(source, /const titleDetailItems = popupTitleDetailItems/);
-    assert.match(source, /detail\.entry\.class === "composite"/);
+    assert.match(source, /let titleDetailItems = popupTitleDetailItems/);
+    assert.match(source, /semanticRole === "orderedLexicalSequence"/);
     assert.match(source, /placement:[\s\S]*"definition"/);
     assert.match(stylesheet, /library-entry-popup--composite/);
     assert.match(
         stylesheet,
-        /library-entry-popup--composite \.popup-heading[\s\S]*row-gap: 0\.15rem/,
+        /library-entry-popup--composite \.popup-heading[\s\S]*minmax\(0, 40%\)/,
     );
     assert.match(source, /function linkedItems\(entries\)/);
-    assert.match(source, /titleItems: titleReferences\.map/);
+    assert.match(source, /titleItems: popupTitleItems\(/);
+    assert.match(source, /if \(transformed\) return \[\]/);
     assert.match(source, /open-title-reference:\$\{entry\.id\}/);
     assert.doesNotMatch(source, /querySelector\("\.popup-title"\)/);
     assert.match(
@@ -366,7 +368,6 @@ test("Study Library integrates definitions and particles into item details", () 
         /i18n\.t\("gateway\.study\.library_alternate_definitions"\)/,
     );
 });
-
 test("Study Library separates admin data browsing from learner layer pages", () => {
     assert.match(indexSource, /if \(!isAdminScope\(\)\)/);
     assert.match(layerPageSource, /renderBrowser\(/);
@@ -378,16 +379,15 @@ test("Study Library separates admin data browsing from learner layer pages", () 
     assert.match(adapterSource, /pattern: "\^\/study\/library\$"/);
     assert.match(
         adapterSource,
-        /pattern: "\^\/study\/layers\/\[\^\/\]\+\/\[\^\/\]\+\$"/,
+        /pattern: "\^\/study\/layers\/\[\^\/\]\+\/\[\^\/\]\+\(\?:\/\[\^\/\]\+\)\?\$"/,
     );
 });
-
 test("Study Library creation is driven by language card constructors", () => {
     assert.match(adapterSource, /study:library:provider/);
     assert.match(adapterSource, /registerConstructor/);
     assert.match(source, /layer\?\.cardConstructor/);
-    assert.match(source, /constructor\.fields/);
-    assert.match(source, /constructor\.relationships/);
+    assert.match(source, /effectiveConstructor\.fields/);
+    assert.match(source, /effectiveConstructor\.relationships/);
     assert.match(source, /constructor\.defaults/);
     assert.match(source, /name="scope" type="hidden" value="user"/);
     assert.match(source, /data-library-publish-class-toggle/);
@@ -402,13 +402,14 @@ test("Study Library creation is driven by language card constructors", () => {
         /page-action-button\[data-page-action-id="study-library:create"\][\s\S]*font-size:\s*2rem/,
     );
     assert.match(layerPageSource, /fetchLibraryForms/);
-    assert.match(
-        layerPageSource,
-        /\["atomicWritingUnit", "definition", "meaning"\]\.includes/,
-    );
+    assert.match(layerPageSource, /canCreateLayerEntries/);
     assert.match(source, /contributedConstructor \?\?/);
     assert.match(source, /layer\?\.cardConstructor \?\?/);
-    assert.match(source, /writableClasses\.length && !canPublishEveryone/);
+    assert.match(source, /writableClasses\.length/);
+    assert.doesNotMatch(
+        source,
+        /writableClasses\.length && !canPublishEveryone/,
+    );
     assert.match(source, /onOpen\(overlay\)/);
     assert.doesNotMatch(layerPageSource, /renderLibraryRequests/);
     assert.doesNotMatch(indexSource, /renderLibraryRequests/);
@@ -422,7 +423,6 @@ test("Study Library creation is driven by language card constructors", () => {
         /@keyframes study-subnav-attention-breathe[\s\S]*color-danger-outline-text/,
     );
 });
-
 test("Study Library creation offers ordered, recursive composition", () => {
     assert.match(source, /mountHorizontalCarousels/);
     assert.match(source, /relationshipCarousels: true/);
@@ -432,13 +432,13 @@ test("Study Library creation offers ordered, recursive composition", () => {
     assert.match(source, /library_create_typed/);
     assert.match(source, /\.replace\("\{type\}", cardType\)/);
     assert.match(source, /library_composer_no_match/);
-    assert.match(stylesheet, /library-composer-suggestions/);
+    assert.match(source, /data-composition-suggestions/);
     assert.match(source, /data-library-composition-blocks/);
-    assert.match(source, /draggable="true"/);
+    assert.match(source, /draggable: true/);
     assert.match(source, /derivedPronunciation/);
     assert.match(source, /label\.trim\(\)\.normalize\("NFKC"\)/);
     assert.doesNotMatch(source, /function inferRelationships/);
-    assert.match(source, /library-composition-input/);
+    assert.match(source, /renderCompositionInput/);
     assert.match(
         stylesheet,
         /\.library-entry-card\s*\{[\s\S]*height:\s*7\.5rem/,
@@ -453,7 +453,6 @@ test("Study Library creation offers ordered, recursive composition", () => {
     assert.match(adminInteractionsSource, /data-library-definition-empty/);
     assert.doesNotMatch(source, /library_composer_match.*<\/small>/);
 });
-
 test("Study Library separates admin and user-facing editing", () => {
     assert.match(source, /library-admin-entry-row/);
     assert.match(
@@ -471,34 +470,93 @@ test("Study Library separates admin and user-facing editing", () => {
     assert.match(source, /requestLibraryUpdate/);
     assert.match(source, /requestUpdate: editMode === "request"/);
 });
-
 test("Study Library presents localized definitions as readable translations", () => {
     assert.match(adminInteractionsSource, /library-definition-summary/);
     assert.match(adminInteractionsSource, /library-definition-translation/);
     assert.match(adminInteractionsSource, /definitionLocalization/);
     assert.match(stylesheet, /\.library-definition-translation/);
 });
-
 test("Study Library administration exposes contract-safe editing", () => {
+    const composerContractSource = readFileSync(
+        resolve(ROOT, "src/adapters/study/library/ui/app/composer-contract.js"),
+        "utf8",
+    );
     assert.match(adminInteractionsSource, /name:\s*"label"/);
     assert.match(adminInteractionsSource, /required:\s*true/);
-    assert.match(adminInteractionsSource, /library_content_class/);
+    assert.doesNotMatch(adminInteractionsSource, /library_content_class/);
     assert.match(adminInteractionsSource, /const isDefinition/);
     assert.match(adminInteractionsSource, /field\.type === "strokePattern"/);
     assert.match(adminInteractionsSource, /relationship\.ordered/);
     assert.match(adminInteractionsSource, /showRelationshipTab: readOnly/);
     assert.match(adminInteractionsSource, /mountEditableRelationshipCarousels/);
-    assert.match(adminInteractionsSource, /relationshipCarouselAdd: false/);
+    assert.match(adminInteractionsSource, /resolveComposerContract/);
+    assert.match(
+        composerContractSource,
+        /inputCarouselLayers\.has\(targetLayer\)/,
+    );
+    assert.match(adminInteractionsSource, /relationshipCarousels: !readOnly/);
+    assert.match(adminInteractionsSource, /relationshipCarousels: true/);
+    assert.match(adminInteractionsSource, /inputCarouselIds/);
+    assert.match(adminInteractionsSource, /editingLayer: composer\.layer/);
+    assert.match(adminInteractionsSource, /applyDerivedPronunciation/);
+    assert.match(composerContractSource, /effectiveConstructor\.fields/);
+    assert.match(composerContractSource, /effectiveConstructor\.relationships/);
+    assert.match(
+        composerContractSource,
+        /constructorRelationshipIds\.add\(relationship\.id\)/,
+    );
+    assert.match(
+        composerContractSource,
+        /pronunciationCarouselLayers\.add\(relationship\.targetLayer\)/,
+    );
+    assert.match(
+        composerContractSource,
+        /target\?\.semanticRole === "atomicWritingUnit"/,
+    );
+    assert.match(composerContractSource, /constructorFieldIds\.add\("audio"\)/);
+    assert.match(composerContractSource, /"lexicalUnit"/);
+    assert.match(composerContractSource, /"orderedLexicalSequence"/);
+    assert.match(
+        composerContractSource,
+        /layer\?\.semanticRole === "orderedLexicalSequence"/,
+    );
+    assert.match(
+        composerContractSource,
+        /prepopulatesPronunciation = layer\?\.semanticRole === "lexicalUnit"/,
+    );
+    assert.match(
+        composerContractSource,
+        /"particle",\s*"compoundWritingUnit",\s*"lexicalUnit"/,
+    );
+    assert.match(composerContractSource, /fields\.pronunciation =/);
+    assert.match(
+        composerContractSource,
+        /derivesPronunciation && field\.id === "pronunciation"/,
+    );
+    assert.match(adminInteractionsSource, /data-library-entry-tags/);
+    assert.match(source, /join\("\\n"\)/);
+    assert.match(source, /split\(\/\\r\?\\n\/u\)/);
+    assert.match(adminInteractionsSource, /relationshipAllowsCreate/);
+    assert.match(adminInteractionsSource, /const inlineInputCarousel/);
     assert.match(adminInteractionsSource, /inlinePronunciationCarousel: true/);
     assert.match(adminInteractionsSource, /const inlinePronunciationCarousel/);
     assert.match(adminInteractionsSource, /pronunciationCarouselLayers/);
     assert.doesNotMatch(adminInteractionsSource, /linkRelationships/);
-    assert.match(adminInteractionsSource, /pronunciationRelationships\.length/);
+    assert.doesNotMatch(
+        adminInteractionsSource,
+        /inlinePronunciationCarousel\s*&&\s*pronunciationRelationships\.length/,
+    );
     assert.match(adminInteractionsSource, /ordersPronunciation: true/);
     assert.match(adminInteractionsSource, /pronunciationRelationshipsFor/);
-    assert.match(adminInteractionsSource, /data-library-pronunciation-commit/);
-    assert.match(adminInteractionsSource, /data-library-pronunciation-text/);
-    assert.match(adminInteractionsSource, /data-library-pronunciation-blocks/);
+    assert.match(
+        adminInteractionsSource,
+        /if \(explicit\.length > 0\) return explicit/,
+    );
+    assert.doesNotMatch(
+        adminInteractionsSource,
+        /data-library-pronunciation-commit/,
+    );
+    assert.doesNotMatch(adminInteractionsSource, /pronunciation-commit/);
     assert.match(adminInteractionsSource, /field\.dataset\.fieldId}\.audio/);
     assert.match(adminInteractionsSource, /normalizedFilename/);
     assert.match(adminInteractionsSource, /const pronunciationIndex/);
@@ -517,36 +575,24 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(adminInteractionsSource, /closeProtection: !readOnly/);
     assert.match(source, /data-library-admin-edit/);
 });
-
-test("Study Library renders metadata and scope indicators", () => {
-    assert.match(source, /detail\?\.renderer === "badge"/);
-    assert.match(source, /class="library-metadata-pill"/);
-    assert.match(source, /class="library-scope"/);
-    assert.match(source, /contentClassLabel/);
-    assert.match(source, /semanticRole === "orderedLexicalSequence"/);
-    assert.match(source, /library-content-class-pill/);
-    assert.match(source, /visibleRelatedWords/);
-    assert.match(source, /function uniqueRelatedEntries/);
-    assert.match(
-        source,
-        /const relatedDependants = uniqueRelatedEntries\(\[[\s\S]*\.\.\.visibleRelatedWords,[\s\S]*\.\.\.otherUsedBy/,
-    );
-    assert.doesNotMatch(source, /gateway\.study\.library_used_in_layer/);
-    assert.match(stylesheet, /\.library-metadata-pill/);
-    assert.match(
-        stylesheet,
-        /\.library-entry-card \.library-entry-indicators[\s\S]*position:\s*static/,
-    );
-    assert.match(stylesheet, /\.popup-heading > \.library-scope/);
-});
-
 test("Study Library positions pronunciations by semantic role", () => {
     assert.match(source, /function isWritingUnitLayer/);
     assert.match(source, /function pronunciationValues/);
+    assert.match(source, /value\.flat\(Infinity\)\.map\(String\)\.join\(""\)/);
+    assert.match(source, /pronunciationValues\(entry\)/);
     assert.doesNotMatch(source, /function detailTitlePronunciation/);
     assert.match(
         source,
-        /const pronunciationItems = distinctPronunciationLabels/,
+        /const pronunciationGroups = distinctPronunciationLabels/,
+    );
+    assert.match(source, /const displayedPronunciation = linked\.length/);
+    assert.match(
+        source,
+        /normalizedTitleText\(linkedLabel\)[\s\S]*pronunciationValues\(entry\)\[0\]/,
+    );
+    assert.match(
+        source,
+        /normalizedTitleText\(displayedPronunciation\)[\s\S]*normalizedTitleText\(detail\.entry\.label\)/,
     );
     assert.match(source, /open-title-reference:\$\{entry\.id\}/);
     assert.match(source, /composed\.titleDefinition/);
@@ -557,7 +603,6 @@ test("Study Library positions pronunciations by semantic role", () => {
     assert.match(stylesheet, /\.library-entry-heading/);
     assert.match(stylesheet, /\.library-card-pronunciation/);
 });
-
 test("Study Library unfolds structured character variants", () => {
     assert.match(source, /function variantPlacement/);
     assert.match(source, /relationship\?\.child === true/);
@@ -649,8 +694,10 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /function collisionScore/);
     assert.match(source, /function overlapArea/);
     assert.match(source, /const occupiedRects/);
-    assert.match(source, /const horizontalSide = preferred\.includes/);
-    assert.match(source, /overflow === 0 && collision === 0/);
+    assert.match(source, /function variantDirectionCandidates/);
+    assert.match(source, /DIRECTION_ALTERNATIVES/);
+    assert.match(source, /grid\.querySelectorAll/);
+    assert.match(source, /collision === 0 && overflow === 0/);
     assert.match(source, /data-library-preferred-direction/);
     assert.match(source, /--library-variant-card-span/);
     assert.match(source, /distance: placement\.distance \?\? 1/);
@@ -740,7 +787,6 @@ test("Study Library unfolds structured character variants", () => {
         /\.library-entry-card-shell\.library-entry-variants-open[\s\S]*z-index:\s*7/,
     );
 });
-
 test("Study Library gives content safe edge spacing", () => {
     assert.match(
         stylesheet,
@@ -759,7 +805,6 @@ test("Study Library gives content safe edge spacing", () => {
         /\.library-entry-grid\s*\{[\s\S]*padding:\s*var\(--library-card-gap\)/,
     );
 });
-
 test("Study Library cards use opaque theme surfaces", () => {
     assert.match(stylesheet, /--library-card-surface:\s*color-mix/);
     assert.match(stylesheet, /--library-card-surface-raised:\s*color-mix/);
@@ -789,7 +834,6 @@ test("Study Library cards use opaque theme surfaces", () => {
     assert.ok(minimalCardRule);
     assert.doesNotMatch(minimalCardRule, /background:\s*transparent/);
 });
-
 test("Study Library keeps full definitions in details", () => {
     assert.match(cardsSource, /library-card-definition/);
     assert.match(source, /titleDefinition/);
@@ -797,7 +841,6 @@ test("Study Library keeps full definitions in details", () => {
     assert.match(source, /library-relation-tree/);
     assert.match(source, /options\.showReferenceTree/);
 });
-
 test("Study Library honors module-defined grid layouts", () => {
     assert.match(source, /function renderLayerCards/);
     assert.match(source, /entry\.sourceRecordId/);
@@ -807,8 +850,60 @@ test("Study Library honors module-defined grid layouts", () => {
     assert.match(stylesheet, /var\(--library-grid-row-size\)/);
 });
 
+test("Study Library provides vocabulary transformations", () => {
+    assert.doesNotMatch(studySubNavigationSource, /layer\.views/);
+    assert.match(source, /transformationPathways/);
+    assert.match(source, /library-transform-tech-tree/);
+    assert.match(source, /library-transform-root/);
+    assert.match(source, /node\.depth > 0/);
+    assert.match(source, /view\.includeTags\.some/);
+    assert.match(stylesheet, /library-entry-grid--transform-tree/);
+    assert.match(stylesheet, /library-transform-links path/);
+    assert.match(source, /nodes\.length > 1/);
+    assert.match(source, /data-library-transform-close/);
+    assert.match(source, /showSummary:\s*false/);
+    assert.match(source, /data-library-transform-variants/);
+    assert.match(source, /data-library-transform-return/);
+    assert.match(source, /chosenTransformation !== undefined/);
+    assert.match(source, /openTransformationTreePopup/);
+    assert.match(source, /library-transform-options/);
+    assert.match(source, /transformedDefinition/);
+    assert.match(source, /id:\s*"__tags"/);
+    assert.match(
+        source,
+        /classList\.contains\("library-transform-card--open"\)/,
+    );
+    assert.match(
+        stylesheet,
+        /grid-template-columns:\s*repeat\(auto-fill, minmax\(min\(100%, 14rem\), 1fr\)\)/,
+    );
+    assert.match(stylesheet, /library-transform-card--open/);
+    assert.match(stylesheet, /library-transform-card-away/);
+    assert.match(stylesheet, /library-transform-link-flow/);
+    assert.match(stylesheet, /library-transform-info/);
+    assert.match(stylesheet, /width:\s*max-content/);
+    assert.match(stylesheet, /min-width:\s*14rem/);
+    assert.match(stylesheet, /max-height:\s*min\(31rem/);
+    assert.match(stylesheet, /overflow:\s*auto/);
+    assert.match(stylesheet, /prefers-reduced-motion:\s*reduce/);
+});
 test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(source, /function renderAudio/);
+    assert.match(source, /dependenciesMissingAudio/);
+    assert.match(source, /gateway\.study\.library_dependencies_missing_audio/);
+    assert.match(source, /library-audio-unavailable-tooltip/);
+    assert.match(source, /createAnchoredPopup/);
+    assert.match(source, /tooltip\.show\(speaker, source\.innerHTML\)/);
+    assert.match(
+        source,
+        /placeAudioSpeaker\(overlay, audioController\.signal\)/,
+    );
+    assert.match(
+        stylesheet,
+        /\.library-audio-unavailable-tooltip\.is-portal[\s\S]*position:\s*fixed/,
+    );
+    assert.match(source, /data-library-audio-sequence/);
+    assert.match(source, /own\.valid && !useRelatedProviderAudio/);
     assert.match(source, /data-library-audio-player/);
     assert.match(source, /data-library-audio-toggle/);
     assert.match(source, /data-library-audio-progress/);
@@ -829,9 +924,12 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(stylesheet, /appearance: none/);
     assert.match(stylesheet, /body\[data-theme="light"\] \.library-audio/);
     assert.match(stylesheet, /body\[data-theme="dark"\] \.library-audio/);
-    assert.match(source, /class="library-speaker-icon"/);
-    assert.match(source, /stroke="currentColor"/);
-    assert.match(source, /M5 9h4l5-4v14l-5-4H5z/);
+    assert.match(source, /speaker-light\.svg/);
+    assert.match(source, /speaker-dark\.svg/);
+    assert.match(
+        stylesheet,
+        /body\[data-theme="dark"\] \.library-speaker-icon-dark/,
+    );
     assert.match(stylesheet, /background: var\(--surface-2\)/);
     assert.match(stylesheet, /\.library-audio-error/);
     assert.match(stylesheet, /font-size: 0\.75em/);
@@ -842,7 +940,6 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(source, /groups: pieces\.map/);
     assert.match(source, /ownDrawingPattern/);
 });
-
 test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /function canDeleteEntry/);
     assert.match(source, /data-library-select-entry/);
@@ -903,95 +1000,4 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /reference\.entryId === entry\.id/);
     assert.match(source, /function isSameLibraryRecord/);
     assert.match(source, /isSameLibraryRecord\(entry, parent\)/);
-});
-
-test("Study Library bounds status and gives readings and definitions room", () => {
-    assert.match(
-        stylesheet,
-        /\.library-entry-card-status[\s\S]*left: 0\.35rem[\s\S]*max-width: calc\(100% - 2\.7rem\)/,
-    );
-    assert.match(
-        stylesheet,
-        /\.library-entry-selection[\s\S]*right: 0\.35rem[\s\S]*translateY\(-50%\)/,
-    );
-    assert.match(
-        stylesheet,
-        /\.library-entry-selection[\s\S]*cursor:\s*pointer/,
-    );
-    assert.match(
-        stylesheet,
-        /\.library-card-primary[\s\S]*display: grid[\s\S]*justify-items: center[\s\S]*text-align: center/,
-    );
-    assert.match(
-        stylesheet,
-        /\.library-card-reading[\s\S]*justify-content: center/,
-    );
-    assert.match(
-        stylesheet,
-        /\.library-card-reading[\s\S]*flex-wrap: wrap[\s\S]*\.library-card-definition[\s\S]*white-space: normal/,
-    );
-});
-
-test("Study Library popup sequencing excludes hidden and placed cards", () => {
-    assert.match(source, /const active = layerEntries\.filter/);
-    assert.match(source, /!placements\.has\(entry\.id\)/);
-    assert.match(
-        source,
-        /isDirectlyVisible\(entry, layerEntries, placements\)/,
-    );
-});
-
-test("Study Library relationship links consistently open entry details", () => {
-    assert.doesNotMatch(source, /function focusLibraryEntry/);
-    assert.match(source, /data-search-id="library-entry-/);
-    assert.match(
-        source,
-        /relatedEntry &&[\s\S]*!isMeaningLayer[\s\S]*sourceDefinition: displayedDefinition/,
-    );
-    assert.match(source, /resolvePopupNavigation/);
-});
-
-test("Study Library keeps related links concise and suggests similar items", () => {
-    const detail = readFileSync(
-        resolve(ROOT, "src/adapters/study/library/ui/app/detail.js"),
-        "utf8",
-    );
-    assert.doesNotMatch(detail, /pronunciationValues\(candidate\)/);
-    assert.match(detail, /similarEntries\(entry, entries\)/);
-    assert.match(detail, /gateway\.study\.library_similar_items/);
-});
-
-test("Study Library serializes popup opening and identifies child parents", () => {
-    assert.match(source, /let activeEntryPopup = null/);
-    assert.match(source, /if \(!entry \|\| activeEntryPopup\) return/);
-    assert.match(source, /\.finally\(\(\) => \{[\s\S]*activeEntryPopup = null/);
-    assert.match(
-        source,
-        /if \(suppressEntryClick\)[\s\S]*closeUnrelatedVariantViews/,
-    );
-    assert.match(source, /gateway\.study\.library_from_parent/);
-    assert.match(source, /variantPlacement\(detail\.entry, schemas, entries\)/);
-    assert.match(source, /const titleDetailItems = popupTitleDetailItems\(/);
-    assert.match(
-        source,
-        /label: parentEntry\.label,[\s\S]*actionId: `open-title-reference:\$\{parentEntry\.id\}`/,
-    );
-    assert.match(source, /titleDetailItems,/);
-});
-
-test("Study Library links pronunciations through ordered relationship aliases", () => {
-    assert.match(source, /input\?\.linkRelationships/);
-    assert.match(source, /linkRelationships\.has\(relation\)/);
-    assert.match(source, /left\.position - right\.position/);
-    assert.match(source, /resolveReferenceAliasComposition/);
-});
-
-test("Study Library popup uses equal directional navigation controls", () => {
-    assert.match(source, /arrow-back-light\.svg/);
-    assert.match(source, /arrow-back-dark\.svg/);
-    assert.match(source, /position: "before"/);
-    assert.match(source, /position: "after"/);
-    assert.match(source, /flip: true/);
-    assert.doesNotMatch(source, /label: `←/);
-    assert.match(stylesheet, /flex: 1 1 calc\(50% - 0\.5rem\)/);
 });

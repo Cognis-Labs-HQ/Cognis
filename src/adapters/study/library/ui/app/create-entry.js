@@ -3,9 +3,12 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { showToast } from "/static/reuse/toast.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
+import { appendHorizontalCarouselItem } from "/static/reuse/horizontal-carousel.js";
 import {
     createLibraryEntry,
+    deleteLibraryEntries,
     fetchLibraryForms,
+    fetchLibraryEntry,
     fetchLibraryLookupProviders,
     fetchLibraryLookupSuggestions,
     fetchLibraryLocations,
@@ -15,18 +18,38 @@ import {
     bindLibraryEditorControls,
     editorBody,
     readFields,
+    readReferenceGroups,
     readReferences,
+    validateRequiredRelationships,
 } from "./admin-interactions.js";
 import {
     definitionText,
     layerForEntry,
     localizedLabel,
-    pronunciationValues,
 } from "./presentation.js";
 import {
     mountEditableRelationshipCarousels,
     pronunciationRelationshipsFor,
 } from "./pronunciation-editor.js";
+import {
+    applyDerivedPronunciation,
+    derivedPronunciation,
+    resolveComposerContract,
+} from "./composer-contract.js";
+import {
+    composerLimitViolation,
+    LIBRARY_COMPOSER_LIMITS,
+} from "./composer-limits.js";
+import { bindComposerExtras, renderComposerExtras } from "./composer-extras.js";
+import {
+    compositionTokenEntryId,
+    compositionTokenLabel,
+    transformationCompositionToken,
+    transformationTokenDetails,
+} from "./composition-tokens.js";
+import { transformationPathways } from "./transformations.js";
+import { openTransformationPopup } from "./transformation-popup.js";
+import { renderStrokePatternPreviews } from "./field-input.js";
 
 export async function chooseCreateLayer({
     schema,
@@ -106,6 +129,8 @@ export async function openCreateEntryPopup({
                   relationships: (layer.relationships ?? []).map(
                       ({ id }) => id,
                   ),
+                  input_carousels: [],
+                  pronunciation_carousels: [],
                   defaults: {},
               }
             : null);
@@ -115,69 +140,21 @@ export async function openCreateEntryPopup({
             (item) => item.schemaId === schemaId && item.layerId === layerId,
         )
         .flatMap(({ fields }) => fields ?? []);
-    const contributedById = new Map(
+    const contributedFieldsById = new Map(
         contributedFields.map((field) => [field.id, field]),
     );
-    const fieldsById = new Map(
-        (layer.fields ?? []).map((field) => [field.id, field]),
-    );
-    const relationshipsById = new Map(
-        (layer.relationships ?? []).map((relationship) => [
-            relationship.id,
-            relationship,
-        ]),
-    );
-    const constructorRelationshipIds = new Set(constructor.relationships ?? []);
-    if (
-        ["lexicalUnit", "orderedLexicalSequence"].includes(layer.semanticRole)
-    ) {
-        for (const relationship of layer.relationships ?? []) {
-            const targetRole = schema.layers.find(
-                ({ id }) => id === relationship.targetLayer,
-            )?.semanticRole;
-            if (!["definition", "meaning"].includes(targetRole))
-                constructorRelationshipIds.add(relationship.id);
-        }
-    } else if (layer.semanticRole === "compoundWritingUnit") {
-        for (const relationship of layer.relationships ?? []) {
-            const targetRole = schema.layers.find(
-                ({ id }) => id === relationship.targetLayer,
-            )?.semanticRole;
-            if (targetRole === "atomicWritingUnit")
-                constructorRelationshipIds.add(relationship.id);
-        }
-    }
-    const constructorRelationships = Array.from(constructorRelationshipIds)
-        .map((relationshipId) => relationshipsById.get(relationshipId))
-        .filter(Boolean);
-    const constructorFieldIds = new Set(constructor.fields ?? []);
-    if (["compoundWritingUnit", "lexicalUnit"].includes(layer.semanticRole))
-        constructorFieldIds.add("pronunciation");
-    if (layer.semanticRole === "orderedLexicalSequence")
-        constructorFieldIds.delete("pronunciation");
-    const editingLayer = {
+    const composerLayer = {
         ...layer,
-        fields: Array.from(constructorFieldIds)
-            .map((fieldId) => {
-                const field = fieldsById.get(fieldId);
-                return contributedById.get(fieldId) ?? field;
-            })
-            .filter(Boolean),
-        relationships: constructorRelationships,
+        fields: (layer.fields ?? []).map(
+            (field) => contributedFieldsById.get(field.id) ?? field,
+        ),
     };
-    const inputCarouselLayers = new Set(constructor.input_carousels);
-    const pronunciationCarouselLayers = new Set(
-        constructor.pronunciation_carousels,
-    );
-    const inputCarouselIds = new Set(
-        constructorRelationships
-            .filter(
-                ({ targetLayer, presentationRole }) =>
-                    presentationRole !== "pronunciation" &&
-                    inputCarouselLayers.has(targetLayer),
-            )
-            .map(({ id }) => id),
-    );
+    const {
+        layer: editingLayer,
+        inputCarouselIds,
+        pronunciationCarouselLayers,
+        derivesPronunciation,
+    } = resolveComposerContract(schema, composerLayer, constructor);
     const pronunciationRelationshipIds = new Set(
         pronunciationRelationshipsFor(
             editingLayer,
@@ -204,9 +181,45 @@ export async function openCreateEntryPopup({
         "orderedLexicalSequence",
     ].includes(layer.semanticRole);
     const supportsRawInput = layer.semanticRole === "compoundWritingUnit";
-    const lookupActions = `<div class="library-composer-lookups" hidden>${lookupProviders.map((provider) => `<button class="btn-neutral" type="button" data-library-lookup-provider="${escapeHtml(provider.id)}">${escapeHtml(i18n.t("gateway.study.library_lookup_with").replace("{{ service }}", localizedLabel(provider.metadata, document.documentElement.lang) || provider.id))}</button>`).join("")}</div>`;
+    const strokeField = editingLayer.fields?.find(
+        ({ type }) => type === "strokePattern",
+    );
+    const enabledLookupProviders = lookupProviders.filter(
+        ({ capabilities }) =>
+            layer.dictionary_lookup !== false ||
+            !capabilities?.includes("dictionary"),
+    );
+    const normalizedLookupLabels = (metadata) =>
+        Object.values(metadata?.labels ?? {}).map((label) =>
+            label.trim().normalize("NFKC").toLocaleLowerCase(),
+        );
+    const providerMatchesField = (provider, field) => {
+        if (provider.fields?.includes(field.id)) return true;
+        if (provider.capabilities?.includes("strokePattern")) return true;
+        const fieldLabels = normalizedLookupLabels(field.metadata);
+        return normalizedLookupLabels(provider.metadata).some((providerLabel) =>
+            fieldLabels.some(
+                (fieldLabel) =>
+                    fieldLabel.length > 3 && providerLabel.includes(fieldLabel),
+            ),
+        );
+    };
+    const strokeLookupProviders = strokeField
+        ? enabledLookupProviders.filter((provider) =>
+              providerMatchesField(provider, strokeField),
+          )
+        : [];
+    const generalLookupProviders = enabledLookupProviders.filter(
+        (provider) => !strokeLookupProviders.includes(provider),
+    );
+    const lookupButton = (provider, focused = false) =>
+        `<button class="btn-neutral" type="button" data-library-lookup-provider="${escapeHtml(provider.id)}"${focused ? ` aria-label="${escapeHtml(`${i18n.t("ui.reuse.lookup")}: ${localizedLabel(provider.metadata, document.documentElement.lang) || provider.id}`)}"` : ""}>${escapeHtml(focused ? i18n.t("ui.reuse.lookup") : i18n.t("gateway.study.library_lookup_with").replace("{{ service }}", localizedLabel(provider.metadata, document.documentElement.lang) || provider.id))}</button>`;
+    const lookupActions = `<div class="library-composer-lookups" hidden>${generalLookupProviders.map((provider) => lookupButton(provider)).join("")}</div>`;
+    const strokeLookupActions = strokeLookupProviders
+        .map((provider) => lookupButton(provider, true))
+        .join("");
     const compositionInput = supportsTextComposition
-        ? `<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><span class="library-composition-input"><span class="library-composition-blocks" data-library-composition-blocks aria-live="polite"></span><input data-library-composer-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></span></label><div class="library-composer-assistance"><div data-library-composer-suggestions aria-live="polite"></div>${lookupActions}</div></section>`
+        ? lookupActions
         : supportsRawInput
           ? `<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><input data-library-composer-text data-library-free-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></label><div class="library-composer-assistance">${lookupActions}</div></section>`
           : "";
@@ -215,10 +228,10 @@ export async function openCreateEntryPopup({
             ? `<label class="library-admin-checkbox library-publish-choice"><input name="publishEveryone" type="checkbox" class="choice-checkbox"><span>${escapeHtml(i18n.t("gateway.study.library_publish_everyone"))}</span>${renderInfoTooltip(i18n.t("gateway.study.library_publish_everyone_info"), i18n.t("ui.reuse.more_information"))}</label>`
             : ""
     }${
-        writableClasses.length && !canPublishEveryone
+        writableClasses.length
             ? `<label class="library-admin-checkbox"><input name="publishClass" type="checkbox" class="choice-checkbox" data-library-publish-class-toggle> <span>${escapeHtml(i18n.t("gateway.study.library_publish_class_option"))}</span></label><label data-library-class-choice hidden><span>${escapeHtml(i18n.t("gateway.study.library_class"))}</span><select name="classId">${writableClasses.map(({ scopeId }) => `<option value="${escapeHtml(scopeId)}">${escapeHtml(scopeId)}</option>`).join("")}</select></label>`
             : '<input type="hidden" name="classId" value="">'
-    }${compositionInput}`;
+    }${compositionInput}${renderComposerExtras(constructor, editingLayer, entries, schema)}`;
     const { html, builder } = editorBody(
         draft,
         [
@@ -245,6 +258,7 @@ export async function openCreateEntryPopup({
             inlinePronunciationCarousel: true,
             inputCarouselIds,
             pronunciationCarouselLayers,
+            tagCarousels: constructor.tag_carousels,
             generatedLabel: supportsTextComposition || supportsRawInput,
             persistentExtra: true,
             allowDefinitionCreate: layer.semanticRole !== "definition",
@@ -254,6 +268,118 @@ export async function openCreateEntryPopup({
     let carouselController;
     const cardType =
         localizedLabel(layer.metadata, schema.language) || layer.id;
+    const nestedDefinitionIds = [];
+    const rollbackNestedDefinitions = async () => {
+        if (!nestedDefinitionIds.length) return;
+        await deleteLibraryEntries(nestedDefinitionIds);
+        for (let index = entries.length - 1; index >= 0; index -= 1) {
+            if (nestedDefinitionIds.includes(entries[index].id))
+                entries.splice(index, 1);
+        }
+        nestedDefinitionIds.length = 0;
+    };
+    let createdEntry = null;
+    const submitEntry = async () => {
+        const publishEveryone = form.elements.publishEveryone?.checked === true;
+        const scope =
+            publishEveryone && canPublishEveryone
+                ? "global"
+                : form.elements.publishClass?.checked
+                  ? "class"
+                  : "user";
+        const scopeId =
+            scope === "class"
+                ? form.elements.classId.value
+                : scope === "global"
+                  ? "global"
+                  : undefined;
+        const references = readReferences(
+            form,
+            editingLayer,
+            form.compositionOrder ?? [],
+        );
+        const fields = readFields(form, editingLayer, draft);
+        applyDerivedPronunciation(
+            fields,
+            references,
+            entries,
+            schema,
+            editingLayer,
+            derivesPronunciation,
+        );
+        const candidate = {
+            ...draft,
+            label: form.elements.label.value,
+            class: form.elements.class.value || undefined,
+            tags: form.elements.tags.value.split("\u001f").filter(Boolean),
+            fields,
+            references,
+            referenceGroups: readReferenceGroups(form),
+            definitionLanguages:
+                layer.semanticRole === "definition"
+                    ? ["de", "en", "id", "ja"]
+                    : undefined,
+            alwaysShowDefinition:
+                form.elements.alwaysShowDefinition?.checked === true,
+            hidden:
+                form.elements.hidden?.value === "true" ||
+                form.elements.hidden?.checked === true,
+        };
+        try {
+            const created = await createLibraryEntry(
+                { scope, scopeId },
+                candidate,
+            );
+            if (publishEveryone && !canPublishEveryone)
+                await requestLibraryPromotion(created.id, {
+                    scope: "global",
+                    scopeId: "global",
+                });
+            nestedDefinitionIds.length = 0;
+            return created;
+        } catch (error) {
+            if (error.message === "content_conflict") {
+                const conflictId = error.details?.conflictEntryId;
+                if (conflictId) {
+                    const decision = await openPopup({
+                        title: i18n.t("gateway.study.library_conflict_title"),
+                        body: `<p>${escapeHtml(i18n.t("gateway.study.library_conflict_body"))}</p>`,
+                        actions: [
+                            {
+                                id: "continue",
+                                label: i18n.t(
+                                    "gateway.study.library_create_anyway",
+                                ),
+                                variant: "confirm",
+                            },
+                            {
+                                id: "cancel",
+                                label: i18n.t("ui.reuse.cancel"),
+                                variant: "cancel",
+                            },
+                        ],
+                    });
+                    if (decision !== "continue") return null;
+                    try {
+                        const existing = await fetchLibraryEntry(conflictId);
+                        nestedDefinitionIds.length = 0;
+                        return existing;
+                    } catch (fetchError) {
+                        void fetchError;
+                    }
+                }
+            }
+            const message = error.message.startsWith(
+                "field_reference_group_mismatch:",
+            )
+                ? i18n.t("gateway.study.library_pronunciation_group_mismatch")
+                : i18n
+                      .t("gateway.study.library_create_error_code")
+                      .replace("{{ code }}", error.message);
+            showToast(message, { variant: "error" });
+            return null;
+        }
+    };
     const action = await openPopup({
         title: i18n
             .t("gateway.study.library_create_typed")
@@ -273,24 +399,58 @@ export async function openCreateEntryPopup({
                 variant: "cancel",
             },
         ],
-        onAction(actionId, overlay) {
+        async onAction(actionId, overlay) {
             if (actionId !== "create") return true;
             const activeForm = overlay.querySelector(
                 "[data-library-admin-editor]",
             );
             activeForm?.compositionController?.validate();
-            if (
+            validateRequiredRelationships(
+                activeForm,
+                editingLayer,
+                schema,
+                i18n.t("gateway.study.library_validation_error"),
+            );
+            const invalidForm =
                 activeForm?.querySelector('[data-uploading="true"]') ||
-                !activeForm?.reportValidity()
-            )
+                !activeForm?.checkValidity();
+            if (invalidForm) {
+                showToast(i18n.t("gateway.study.library_validation_error"), {
+                    variant: "error",
+                });
+                activeForm?.revealFirstInvalidField?.();
                 return false;
-            return true;
+            }
+            const limitViolation = composerLimitViolation(
+                activeForm,
+                editingLayer,
+                schema,
+            );
+            if (limitViolation) {
+                const [messageKey, limitName] = limitViolation;
+                showToast(
+                    i18n
+                        .t(messageKey)
+                        .replace(
+                            "{{ count }}",
+                            String(LIBRARY_COMPOSER_LIMITS[limitName]),
+                        ),
+                    { variant: "error" },
+                );
+                return false;
+            }
+            createdEntry = await submitEntry();
+            return createdEntry !== null;
         },
         onOpen(overlay) {
             form = overlay.querySelector("[data-library-admin-editor]");
             builder.attach(form);
-            bindLibraryEditorControls(form, draft, i18n);
+            bindLibraryEditorControls(form, draft, i18n, {
+                maxTags: LIBRARY_COMPOSER_LIMITS.tags,
+            });
             form.compositionOrder = [];
+            form.referenceGroups = {};
+            bindComposerExtras(form);
             carouselController = mountEditableRelationshipCarousels(
                 form,
                 overlay,
@@ -298,12 +458,53 @@ export async function openCreateEntryPopup({
                 schema,
                 editingLayer,
                 {
+                    i18n,
+                    inputCarouselIds,
                     pronunciationCarouselLayers,
+                    maxPronunciations: LIBRARY_COMPOSER_LIMITS.pronunciations,
+                    selectionOrder: ({ id, value, localIndex }) => {
+                        if (pronunciationRelationshipIds.has(id))
+                            return localIndex;
+                        const index = form.compositionOrder.indexOf(value);
+                        return index < 0 ? localIndex : index + 1;
+                    },
+                    onActivate: async ({ item, selected }) => {
+                        if (selected) return;
+                        const entryId =
+                            item.dataset.carouselBaseValue ??
+                            compositionTokenEntryId(item.dataset.carouselValue);
+                        const candidate = entries.find(
+                            ({ id }) => id === entryId,
+                        );
+                        if (
+                            !candidate ||
+                            !transformationPathways(candidate, schema).length
+                        )
+                            return;
+                        const transformation = await openTransformationPopup(
+                            candidate,
+                            schema,
+                            i18n,
+                        );
+                        if (!transformation) return false;
+                        if (transformation.base) return;
+                        item.dataset.carouselBaseValue = candidate.id;
+                        return {
+                            value: transformationCompositionToken(
+                                candidate.id,
+                                transformation.set.id,
+                                transformation.node,
+                            ),
+                            label: transformation.node.value,
+                        };
+                    },
                     onChange: ({ id, values }) => {
                         const select = form.elements[`relationship:${id}`];
                         if (!select) return;
                         if (pronunciationRelationshipIds.has(id)) return;
-                        const selected = new Set(values);
+                        const selected = new Set(
+                            values.map(compositionTokenEntryId),
+                        );
                         const previous = new Set(
                             Array.from(
                                 select.selectedOptions,
@@ -312,10 +513,11 @@ export async function openCreateEntryPopup({
                         );
                         form.compositionOrder = form.compositionOrder.filter(
                             (value) =>
-                                selected.has(value) || !previous.has(value),
+                                selected.has(compositionTokenEntryId(value)) ||
+                                !previous.has(compositionTokenEntryId(value)),
                         );
                         values.forEach((value) => {
-                            if (!previous.has(value))
+                            if (!previous.has(compositionTokenEntryId(value)))
                                 form.compositionOrder.push(value);
                         });
                         Array.from(select.options).forEach((option) => {
@@ -323,7 +525,9 @@ export async function openCreateEntryPopup({
                         });
                         values.forEach((value) => {
                             const option = Array.from(select.options).find(
-                                (candidate) => candidate.value === value,
+                                (candidate) =>
+                                    candidate.value ===
+                                    compositionTokenEntryId(value),
                             );
                             if (option) select.append(option);
                         });
@@ -365,22 +569,14 @@ export async function openCreateEntryPopup({
                         const option = new Option(
                             created.label,
                             created.id,
-                            true,
-                            true,
+                            false,
+                            false,
                         );
                         select.append(option);
-                        const item = document.createElement("button");
-                        item.type = "button";
-                        item.className =
-                            "btn-neutral horizontal-carousel-item is-selected";
-                        item.dataset.carouselValue = created.id;
-                        item.setAttribute("aria-pressed", "true");
-                        item.innerHTML = `<span>${escapeHtml(created.label)}</span><small data-carousel-order></small>`;
-                        carousel
-                            .querySelector(".horizontal-carousel-track")
-                            ?.append(item);
-                        item.click();
-                        item.click();
+                        appendHorizontalCarouselItem(carousel, {
+                            value: created.id,
+                            label: created.label,
+                        })?.click();
                     },
                 },
             );
@@ -394,6 +590,11 @@ export async function openCreateEntryPopup({
             );
             if (supportsRawInput) bindRawInput(form, i18n);
             bindLookupProviders(form, draft, i18n);
+            const strokeLookup = form.querySelector(
+                "[data-library-stroke-lookup]",
+            );
+            if (strokeLookup) strokeLookup.innerHTML = strokeLookupActions;
+            renderStrokePatternPreviews(form);
             form.querySelector(
                 "[data-library-add-definition]",
             )?.addEventListener("click", async () => {
@@ -403,6 +604,22 @@ export async function openCreateEntryPopup({
                             ?.semanticRole === "definition",
                 );
                 if (!relationship) return;
+                const select = form.elements[`relationship:${relationship.id}`];
+                if (
+                    Array.from(select?.selectedOptions ?? []).length >=
+                    LIBRARY_COMPOSER_LIMITS.definitions
+                ) {
+                    showToast(
+                        i18n
+                            .t("gateway.study.library_definition_limit")
+                            .replace(
+                                "{{ count }}",
+                                String(LIBRARY_COMPOSER_LIMITS.definitions),
+                            ),
+                        { variant: "error" },
+                    );
+                    return;
+                }
                 const created = await openDefinitionPopup({
                     schema,
                     schemaId,
@@ -410,8 +627,8 @@ export async function openCreateEntryPopup({
                     i18n,
                 });
                 if (!created) return;
+                nestedDefinitionIds.push(created.id);
                 entries.push(created);
-                const select = form.elements[`relationship:${relationship.id}`];
                 select?.append(
                     new Option(created.label, created.id, true, true),
                 );
@@ -436,86 +653,11 @@ export async function openCreateEntryPopup({
         },
     });
     carouselController?.abort();
-    form?.compositionController?.validate();
-    if (
-        action !== "create" ||
-        form?.querySelector('[data-uploading="true"]') ||
-        !form?.reportValidity()
-    )
+    if (action !== "create" || !createdEntry) {
+        await rollbackNestedDefinitions();
         return null;
-    const publishEveryone = form.elements.publishEveryone?.checked === true;
-    const scope =
-        publishEveryone && canPublishEveryone
-            ? "global"
-            : form.elements.publishClass?.checked
-              ? "class"
-              : "user";
-    const scopeId =
-        scope === "class"
-            ? form.elements.classId.value
-            : scope === "global"
-              ? "global"
-              : undefined;
-    const references = readReferences(form, editingLayer);
-    const fields = readFields(form, editingLayer, draft);
-    if (layer.semanticRole === "orderedLexicalSequence") {
-        fields.pronunciation = (form.compositionOrder ?? [])
-            .map((entryId) => entries.find(({ id }) => id === entryId))
-            .map((candidate) =>
-                derivedPronunciation(candidate, entries, schema),
-            )
-            .join("");
     }
-    const entry = {
-        ...draft,
-        label: form.elements.label.value,
-        class: form.elements.class.value || undefined,
-        tags: form.elements.tags.value.split("\u001f").filter(Boolean),
-        fields,
-        references,
-        definitionLanguages:
-            layer.semanticRole === "definition"
-                ? ["de", "en", "id", "ja"]
-                : undefined,
-        alwaysShowDefinition:
-            form.elements.alwaysShowDefinition?.checked === true,
-        hidden:
-            form.elements.hidden?.value === "true" ||
-            form.elements.hidden?.checked === true,
-    };
-    const createAndRequestPublication = async (candidate) => {
-        const created = await createLibraryEntry({ scope, scopeId }, candidate);
-        if (publishEveryone && !canPublishEveryone)
-            await requestLibraryPromotion(created.id, {
-                scope: "global",
-                scopeId: "global",
-            });
-        return created;
-    };
-    try {
-        return await createAndRequestPublication(entry);
-    } catch (error) {
-        if (error.message !== "content_conflict") throw error;
-        const decision = await openPopup({
-            title: i18n.t("gateway.study.library_conflict_title"),
-            body: `<p>${escapeHtml(i18n.t("gateway.study.library_conflict_body"))}</p>`,
-            actions: [
-                {
-                    id: "continue",
-                    label: i18n.t("gateway.study.library_create_anyway"),
-                    variant: "confirm",
-                },
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.cancel"),
-                    variant: "cancel",
-                },
-            ],
-        });
-        return decision === "continue"
-            ? createAndRequestPublication({ ...entry, allowConflict: true })
-            : null;
-    }
+    return createdEntry;
 }
 
 async function openDefinitionPopup({ schema, schemaId, layerId, i18n }) {
@@ -605,22 +747,6 @@ function entryDefinition(entry, entries, schema) {
         : "";
 }
 
-function derivedPronunciation(entry, entries, schema, visited = new Set()) {
-    if (!entry || visited.has(entry.id)) return "";
-    visited.add(entry.id);
-    const direct = pronunciationValues(entry).find(Boolean);
-    const entryLayer = layerForEntry([schema], entry);
-    if (entryLayer?.semanticRole === "atomicWritingUnit")
-        return direct || entry.label;
-    const parts = (entry.references ?? [])
-        .map(({ entryId }) => entries.find(({ id }) => id === entryId))
-        .map((candidate) =>
-            derivedPronunciation(candidate, entries, schema, visited),
-        )
-        .filter(Boolean);
-    return parts.join("") || direct || "";
-}
-
 function applyLookupFields(form, fields, draft) {
     Object.entries(fields ?? {}).forEach(([fieldId, value]) => {
         draft.fields[fieldId] = value;
@@ -628,6 +754,7 @@ function applyLookupFields(form, fields, draft) {
         if (!control) return;
         if (control.hasAttribute("data-library-provider-field")) {
             control.libraryFieldValue = value;
+            renderStrokePatternPreviews(form);
             return;
         }
         if (control instanceof RadioNodeList) {
@@ -655,34 +782,17 @@ function applyLookupFields(form, fields, draft) {
             : value && typeof value === "object"
               ? JSON.stringify(value)
               : value;
-        const tagList = control
-            .closest("[data-library-tag-field]")
-            ?.querySelector(".library-tag-list");
-        if (tagList && Array.isArray(value)) {
-            tagList.replaceChildren(
-                ...value.map((item) => {
-                    const tag = document.createElement("button");
-                    tag.type = "button";
-                    tag.className = "btn-neutral";
-                    tag.dataset.libraryTag = item;
-                    tag.textContent = `${item} ×`;
-                    return tag;
-                }),
-            );
-        }
     });
 }
 
-function bindRawInput(form, i18n) {
+function bindRawInput(form, _i18n) {
     const input = form.querySelector("[data-library-free-text]");
     const lookups = form.querySelector(".library-composer-lookups");
     const sync = () => {
         const value = input.value.trim();
         form.elements.label.value = value;
         input.dataset.lookupApproved = "";
-        input.setCustomValidity(
-            value ? i18n.t("gateway.study.library_lookup_empty") : "",
-        );
+        input.setCustomValidity("");
         if (lookups) lookups.hidden = !value;
     };
     input.addEventListener("input", sync);
@@ -693,62 +803,79 @@ function bindRawInput(form, i18n) {
 }
 
 function bindLookupProviders(form, draft, i18n) {
-    form.querySelector(".library-composer-lookups")?.addEventListener(
-        "click",
-        async (event) => {
-            const button = event.target.closest(
-                "[data-library-lookup-provider]",
+    form.addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-library-lookup-provider]");
+        if (!button) return;
+        const input = form.querySelector("[data-library-composer-text]");
+        const label = input?.value.trim();
+        if (!label) return;
+        button.disabled = true;
+        try {
+            const [suggestion] = await fetchLibraryLookupSuggestions(
+                button.dataset.libraryLookupProvider,
+                { ...draft, label },
             );
-            if (!button) return;
-            const input = form.querySelector("[data-library-composer-text]");
-            const label = input?.value.trim();
-            if (!label) return;
-            button.disabled = true;
-            try {
-                const [suggestion] = await fetchLibraryLookupSuggestions(
-                    button.dataset.libraryLookupProvider,
-                    { ...draft, label },
-                );
-                if (!suggestion) {
-                    showToast(i18n.t("gateway.study.library_lookup_empty"), {
-                        variant: "info",
-                    });
-                    return;
-                }
-                applyLookupFields(form, suggestion.fields, draft);
-                for (const reference of suggestion.references ?? []) {
-                    const item = form.querySelector(
-                        `[data-horizontal-carousel="${CSS.escape(reference.relation)}"] [data-carousel-value="${CSS.escape(reference.entryId)}"]`,
-                    );
-                    if (item && !item.classList.contains("is-selected"))
-                        item.click();
-                }
-                if (!input.hasAttribute("data-library-free-text")) {
-                    input.value = "";
-                    input.dispatchEvent(new Event("input", { bubbles: true }));
-                }
-                if (
-                    input.hasAttribute("data-library-free-text") ||
-                    suggestion.label ||
-                    !(suggestion.references ?? []).length
-                )
-                    form.elements.label.value = suggestion.label ?? label;
-                if (input.hasAttribute("data-library-free-text")) {
-                    input.dataset.lookupApproved = "true";
-                    input.setCustomValidity("");
-                }
-                showToast(i18n.t("gateway.study.library_lookup_applied"), {
-                    variant: "success",
+            if (!suggestion) {
+                showToast(i18n.t("gateway.study.library_lookup_empty"), {
+                    variant: "info",
                 });
-            } catch {
-                showToast(i18n.t("gateway.study.library_lookup_error"), {
-                    variant: "error",
-                });
-            } finally {
-                button.disabled = false;
+                return;
             }
-        },
-    );
+            const suggestedFields = { ...(suggestion.fields ?? {}) };
+            if (Object.keys(suggestion.referenceGroups ?? {}).length)
+                delete suggestedFields.pronunciation;
+            applyLookupFields(form, suggestedFields, draft);
+            for (const reference of suggestion.references ?? []) {
+                const item = form.querySelector(
+                    `[data-horizontal-carousel="${CSS.escape(reference.relation)}"] [data-carousel-value="${CSS.escape(reference.entryId)}"]`,
+                );
+                if (item && !item.classList.contains("is-selected"))
+                    item.click();
+            }
+            for (const [relation, groups] of Object.entries(
+                suggestion.referenceGroups ?? {},
+            )) {
+                for (const group of groups) {
+                    for (const reference of group) {
+                        const item = form.querySelector(
+                            `[data-horizontal-carousel="${CSS.escape(relation)}"] [data-carousel-value="${CSS.escape(reference.entryId)}"]`,
+                        );
+                        if (item && !item.classList.contains("is-selected"))
+                            item.click();
+                    }
+                    form.querySelector(
+                        `[data-library-composer-relationship="${CSS.escape(relation)}"]`,
+                    )
+                        ?.closest("fieldset")
+                        ?.querySelector("[data-library-save-composed-value]")
+                        ?.click();
+                }
+            }
+            if (!input.hasAttribute("data-library-free-text")) {
+                input.value = "";
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+            if (
+                input.hasAttribute("data-library-free-text") ||
+                suggestion.label ||
+                !(suggestion.references ?? []).length
+            )
+                form.elements.label.value = suggestion.label ?? label;
+            if (input.hasAttribute("data-library-free-text")) {
+                input.dataset.lookupApproved = "true";
+                input.setCustomValidity("");
+            }
+            showToast(i18n.t("gateway.study.library_lookup_applied"), {
+                variant: "success",
+            });
+        } catch {
+            showToast(i18n.t("gateway.study.library_lookup_error"), {
+                variant: "error",
+            });
+        } finally {
+            button.disabled = false;
+        }
+    });
 }
 
 function bindTextComposition(
@@ -760,7 +887,7 @@ function bindTextComposition(
     inputCarouselIds,
 ) {
     const input = form.querySelector("[data-library-composer-text]");
-    const output = form.querySelector("[data-library-composer-suggestions]");
+    const output = form.querySelector("[data-composition-suggestions]");
     const blocks = form.querySelector("[data-library-composition-blocks]");
     const lookups = form.querySelector(".library-composer-lookups");
     if (!input || !output || !blocks) return { validate: () => true };
@@ -770,11 +897,17 @@ function bindTextComposition(
     const candidates = relationships
         .flatMap((relationship) =>
             entries
-                .filter((entry) => entry.layer === relationship.targetLayer)
+                .filter(
+                    (entry) =>
+                        entry.layer === relationship.targetLayer &&
+                        entry.hidden !== true,
+                )
                 .map((entry) => ({
                     ...entry,
                     relationshipId: relationship.id,
-                    preview: entryDefinition(entry, entries, schema),
+                    preview: transformationPathways(entry, schema).length
+                        ? i18n.t("gateway.study.library_transforms_available")
+                        : entryDefinition(entry, entries, schema),
                 })),
         )
         .sort(
@@ -800,15 +933,25 @@ function bindTextComposition(
             ),
         );
         return (form.compositionOrder ?? []).map(
-            (value) => labels.get(value) ?? "",
+            (value) =>
+                labels.get(value) ?? compositionTokenLabel(value, entries),
         );
     };
     const syncPronunciation = () => {
         const control = form.elements["field:pronunciation"];
         if (!control) return;
         const selectedPronunciation = (form.compositionOrder ?? [])
-            .map((id) => entries.find((entry) => entry.id === id))
-            .map((entry) => derivedPronunciation(entry, entries, schema))
+            .map((token) => {
+                const transformation = transformationTokenDetails(token);
+                if (transformation?.pronunciation)
+                    return transformation.pronunciation;
+                const entry = entries.find(
+                    ({ id }) => id === compositionTokenEntryId(token),
+                );
+                return entry
+                    ? derivedPronunciation(entry, entries, schema)
+                    : "";
+            })
             .join("");
         const normalizedInput = input.value.trim().normalize("NFKC");
         const exactInput = candidates.find(
@@ -820,20 +963,11 @@ function bindTextComposition(
         const pronunciation = `${selectedPronunciation}${inputPronunciation}`;
         if (pronunciation) control.value = pronunciation;
     };
-    const renderBlocks = () => {
-        blocks.innerHTML = (form.compositionOrder ?? [])
-            .map((id) => entries.find((entry) => entry.id === id))
-            .filter(Boolean)
-            .map(
-                (entry) =>
-                    `<button class="btn-neutral library-composition-block" type="button" draggable="true" data-library-composition-id="${escapeHtml(entry.id)}"><span>${escapeHtml(entry.label)}</span><span aria-hidden="true">×</span></button>`,
-            )
-            .join("");
-    };
     const syncLabel = () => {
         for (const relationship of relationships) {
             const select = form.elements[`relationship:${relationship.id}`];
-            for (const id of form.compositionOrder ?? []) {
+            for (const token of form.compositionOrder ?? []) {
+                const id = compositionTokenEntryId(token);
                 const option = select
                     ? Array.from(select.options).find(
                           ({ value }) => value === id,
@@ -863,7 +997,6 @@ function bindTextComposition(
                 : `<p>${escapeHtml(i18n.t("gateway.study.library_editor_no_relationships"))}</p>`;
         }
         syncPronunciation();
-        renderBlocks();
     };
     const renderSuggestions = () => {
         const text = input.value.trim();
@@ -925,14 +1058,6 @@ function bindTextComposition(
         order.splice(order.indexOf(targetId), 0, draggedId);
         form.compositionOrder = order;
         syncLabel();
-    });
-    blocks.addEventListener("click", (event) => {
-        const block = event.target.closest("[data-library-composition-id]");
-        const id = block?.dataset.libraryCompositionId;
-        if (!id) return;
-        form.querySelector(
-            `[data-carousel-value="${CSS.escape(id)}"].is-selected`,
-        )?.click();
     });
     renderSuggestions();
     return {

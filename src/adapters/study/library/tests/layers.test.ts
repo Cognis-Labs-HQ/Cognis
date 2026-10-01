@@ -73,6 +73,82 @@ test("consumers define arbitrary layers and constrained relationships", () => {
     );
 });
 
+test("providers declare sentence carousels, views, and transform rules", () => {
+    const schema: LibrarySchema = {
+        ...english,
+        transformSets: [
+            {
+                id: "verbs",
+                metadata: { labels: { en: "Verbs" } },
+                matchTags: ["verb"],
+                baseState: "base",
+                rules: [
+                    {
+                        id: "past",
+                        metadata: { labels: { en: "Past" } },
+                        fromState: "base",
+                        toState: "past",
+                        removeSuffix: "",
+                        append: "ed",
+                        definitionTransform: {
+                            matchPrefix: "to ",
+                            template: "{{ prefix }}previously {{ stem }}",
+                            replacements: [
+                                {
+                                    match: "want to",
+                                    replacement: "have wanted to",
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        ],
+        layers: [
+            english.layers[0],
+            {
+                ...english.layers[1],
+                views: [
+                    {
+                        id: "verbs",
+                        metadata: { labels: { en: "Verbs" } },
+                        includeTags: ["verb", "adverb"],
+                        layout: "transformTree",
+                    },
+                ],
+                cardConstructor: {
+                    label: { labels: { en: "Sentence" } },
+                    relationships: ["letters"],
+                    input_carousels: ["letters"],
+                    pronunciation_carousels: [],
+                    tag_carousels: [
+                        {
+                            id: "transitions",
+                            metadata: { labels: { en: "Transitions" } },
+                            relationship: "letters",
+                            tag: "sentence-transition",
+                        },
+                    ],
+                    literal_carousels: [
+                        {
+                            id: "punctuation",
+                            metadata: { labels: { en: "Punctuation" } },
+                            values: [".", ",", "?", "!"],
+                        },
+                    ],
+                },
+            },
+        ],
+    };
+    assert.deepEqual(validateLibrarySchema(schema), schema);
+    const invalid = structuredClone(schema);
+    invalid.transformSets![0].rules[0].definitionTransform!.template = "";
+    assert.throws(
+        () => validateLibrarySchema(invalid),
+        /invalid_transform_definition/,
+    );
+});
+
 test("fields can link values through multiple declared relationships", () => {
     const schema: LibrarySchema = {
         ...english,
@@ -116,6 +192,127 @@ test("fields can link values through multiple declared relationships", () => {
                 ],
             }),
         /field_link_relationship_not_found/,
+    );
+});
+
+test("fields validate multi-value composer declarations", () => {
+    const schema: LibrarySchema = structuredClone(english);
+    schema.layers[1].fields = [
+        {
+            id: "pronunciation",
+            type: "stringList",
+            metadata: { labels: { en: "Pronunciation" } },
+            input: { control: "freeText" },
+            multi_value: true,
+        },
+    ];
+    assert.doesNotThrow(() => validateLibrarySchema(schema));
+    schema.layers[1].fields[0].multi_value = "yes" as never;
+    assert.throws(
+        () => validateLibrarySchema(schema),
+        /invalid_field_multi_value/,
+    );
+});
+
+test("grouped relationships preserve separate pronunciation sequences", () => {
+    const schema: LibrarySchema = structuredClone(english);
+    schema.layers[1].relationships![0].grouped = true;
+    schema.layers[1].fields = [
+        {
+            id: "pronunciation",
+            metadata: { labels: { en: "Pronunciation" } },
+            type: "stringList",
+            multi_value: true,
+            input: {
+                control: "tagList",
+                linkRelationships: ["letters"],
+            },
+        },
+    ];
+    const letterA = entry("letter:a", "a");
+    const y = entry("letter:y", "y");
+    const targets = new Map([
+        [letterA.id, letterA],
+        [y.id, y],
+    ]);
+    const groups = {
+        letters: [
+            [
+                { entryId: letterA.id, relation: "letters", position: 0 },
+                { entryId: y.id, relation: "letters", position: 1 },
+            ],
+            [{ entryId: letterA.id, relation: "letters", position: 0 }],
+        ],
+    };
+
+    assert.deepEqual(validateLibrarySchema(schema), schema);
+    assert.doesNotThrow(() =>
+        validateReferences(schema, "words", [], targets, groups, {
+            pronunciation: ["ay", "a"],
+        }),
+    );
+    assert.throws(
+        () =>
+            validateReferences(
+                schema,
+                "words",
+                [{ entryId: letterA.id, relation: "letters", position: 0 }],
+                targets,
+                groups,
+            ),
+        /relationship_group_required:letters/,
+    );
+});
+
+test("one pronunciation group may span multiple linked relationships", () => {
+    const schema: LibrarySchema = structuredClone(english);
+    const letters = schema.layers[1].relationships![0];
+    letters.grouped = true;
+    schema.layers[1].relationships!.push({
+        ...letters,
+        id: "suffixes",
+    });
+    schema.layers[1].fields = [
+        {
+            id: "pronunciation",
+            metadata: { labels: { en: "Pronunciation" } },
+            type: "stringList",
+            multi_value: true,
+            input: {
+                control: "tagList",
+                linkRelationships: ["letters", "suffixes"],
+            },
+        },
+    ];
+    const letterA = entry("letter:a", "a");
+    const y = entry("letter:y", "y");
+    const targets = new Map([
+        [letterA.id, letterA],
+        [y.id, y],
+    ]);
+
+    assert.doesNotThrow(() =>
+        validateReferences(
+            schema,
+            "words",
+            [],
+            targets,
+            {
+                letters: [
+                    [
+                        {
+                            entryId: letterA.id,
+                            relation: "letters",
+                            position: 0,
+                        },
+                    ],
+                ],
+                suffixes: [
+                    [{ entryId: y.id, relation: "suffixes", position: 0 }],
+                ],
+            },
+            { pronunciation: ["ay"] },
+        ),
     );
 });
 
@@ -908,4 +1105,29 @@ test("lexical and composite layers derive rather than own stroke patterns", () =
             /stroke_pattern_writing_unit_required/,
         );
     }
+});
+
+test("layers accept only boolean dictionary lookup opt-outs", () => {
+    assert.doesNotThrow(() =>
+        validateLibrarySchema({
+            ...english,
+            layers: english.layers.map((layer) => ({
+                ...layer,
+                dictionary_lookup: false,
+            })),
+        }),
+    );
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...english,
+                layers: english.layers.map((layer, index) => ({
+                    ...layer,
+                    ...(index === 0
+                        ? { dictionary_lookup: "false" as never }
+                        : {}),
+                })),
+            }),
+        /invalid_dictionary_lookup/,
+    );
 });

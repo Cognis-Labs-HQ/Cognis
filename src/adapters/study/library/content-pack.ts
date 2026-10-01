@@ -150,11 +150,13 @@ export function contentRecordHash(
                 layer: record.layer,
                 label: record.label.trim(),
                 ...(record.class ? { class: record.class } : {}),
+                tags: record.tags ?? [],
                 ...(record.editable === false ? { editable: false } : {}),
                 ...(record.hidden === true ? { hidden: true } : {}),
                 ...(manifest.protected === true ? { protected: true } : {}),
                 fields: record.fields ?? {},
                 references: record.references ?? [],
+                referenceGroups: record.referenceGroups ?? {},
             }),
         )
         .digest("hex");
@@ -259,6 +261,18 @@ async function validateContentRecords(
         if (record.class !== undefined && !ROLE_PATTERN.test(record.class))
             throw new Error("invalid_content_class");
         if (
+            record.tags !== undefined &&
+            (!Array.isArray(record.tags) ||
+                record.tags.length > 25 ||
+                record.tags.some(
+                    (tag) =>
+                        typeof tag !== "string" ||
+                        !tag.trim() ||
+                        tag.length > 100,
+                ))
+        )
+            throw new Error("invalid_content_tags");
+        if (
             record.editable !== undefined &&
             typeof record.editable !== "boolean"
         )
@@ -278,7 +292,7 @@ async function validateContentRecords(
             record.class = "definition";
             record.hidden = true;
         } else if (layer.semanticRole === "orderedLexicalSequence") {
-            record.class = "composite";
+            record.class = layer.id;
         } else if (layer.semanticRole === "particle") {
             record.editable = false;
             record.class ??= "particle";
@@ -353,7 +367,31 @@ async function validateContentRecords(
             ...reference,
             entryId: contentEntryId(manifest, reference.entryId),
         }));
-        validateReferences(schema, record.layer, references, entries);
+        const referenceGroups = Object.fromEntries(
+            Object.entries(record.referenceGroups ?? {}).map(
+                ([relation, groups]) => [
+                    relation,
+                    groups.map((group) =>
+                        group.map((reference) => ({
+                            ...reference,
+                            relation,
+                            entryId: contentEntryId(
+                                manifest,
+                                reference.entryId,
+                            ),
+                        })),
+                    ),
+                ],
+            ),
+        );
+        validateReferences(
+            schema,
+            record.layer,
+            references,
+            entries,
+            referenceGroups,
+            record.fields,
+        );
         const layer = schema.layers.find(({ id }) => id === record.layer)!;
         if (layer.semanticRole === "orderedLexicalSequence") {
             const constituentRelationships = new Set(

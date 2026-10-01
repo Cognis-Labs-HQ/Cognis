@@ -8,6 +8,8 @@
  * Public exports:
  *   createFormBuilder(ctx, options) — returns a builder that can render form
  *     HTML and attach controllers for validation/value collection.
+ *   bindTabbedFormValidation(form, options) — connects native validity to
+ *     reusable tab/panel navigation and earliest-invalid-field focus.
  *
  * Usage:
  *   const formBuilder = createFormBuilder(
@@ -643,4 +645,78 @@ export function createFormBuilder(ctx, options) {
         render,
         attach,
     };
+}
+
+/**
+ * Connect native form validity to a tabbed form interface.
+ *
+ * @param {HTMLFormElement} formElement Form containing tab and panel elements.
+ * @param {{ tabSelector?: string, panelSelector?: string, invalidClassName?: string, resolveFocusTarget?: (invalid: HTMLElement, panelId?: string) => HTMLElement | null, signal?: AbortSignal }} options Tab behavior options.
+ * @returns {{ activate: (panelId: string) => void, refresh: () => Set<string>, revealFirstInvalid: () => boolean }} Tab validation controller.
+ */
+export function bindTabbedFormValidation(formElement, options = {}) {
+    const tabSelector = options.tabSelector ?? "[data-form-tab]";
+    const panelSelector = options.panelSelector ?? "[data-form-panel]";
+    const invalidClassName =
+        options.invalidClassName ?? "form-builder-tab--required";
+    const tabs = () => Array.from(formElement.querySelectorAll(tabSelector));
+    const panels = () =>
+        Array.from(formElement.querySelectorAll(panelSelector));
+    const activate = (panelId) => {
+        tabs().forEach((tab) => {
+            const active = tab.dataset.formTab === panelId;
+            tab.classList.toggle("active", active);
+            tab.setAttribute("aria-selected", String(active));
+        });
+        panels().forEach((panel) => {
+            panel.hidden = panel.dataset.formPanel !== panelId;
+        });
+    };
+    const panelFor = (field) =>
+        field.dataset.formValidationPanel ??
+        field.closest(panelSelector)?.dataset.formPanel;
+    const refresh = () => {
+        const invalidPanels = new Set(
+            Array.from(
+                formElement.querySelectorAll(":invalid"),
+                panelFor,
+            ).filter(Boolean),
+        );
+        tabs().forEach((tab) => {
+            const invalid = invalidPanels.has(tab.dataset.formTab);
+            tab.classList.toggle(invalidClassName, invalid);
+            tab.toggleAttribute("aria-invalid", invalid);
+        });
+        return invalidPanels;
+    };
+    const revealFirstInvalid = () => {
+        const invalid = formElement.querySelector(":invalid");
+        refresh();
+        if (!invalid) return false;
+        const panelId = panelFor(invalid);
+        if (panelId) activate(panelId);
+        const focusTarget =
+            options.resolveFocusTarget?.(invalid, panelId) ?? invalid;
+        focusTarget?.scrollIntoView({ block: "center", behavior: "smooth" });
+        focusTarget?.focus({ preventScroll: true });
+        if (focusTarget === invalid) invalid.reportValidity();
+        return true;
+    };
+    const listenerOptions = options.signal ? { signal: options.signal } : {};
+    formElement.addEventListener(
+        "click",
+        (event) => {
+            const tab = event.target.closest(tabSelector);
+            if (tab) activate(tab.dataset.formTab);
+        },
+        listenerOptions,
+    );
+    formElement.addEventListener("invalid", refresh, {
+        ...listenerOptions,
+        capture: true,
+    });
+    formElement.addEventListener("input", refresh, listenerOptions);
+    formElement.addEventListener("change", refresh, listenerOptions);
+    refresh();
+    return { activate, refresh, revealFirstInvalid };
 }

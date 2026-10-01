@@ -14,8 +14,20 @@ Judul diukur mengikuti kanvas yang dirender dan dipusatkan tepat di atasnya. Tek
 
 Tampilan panduan pertama memberi nomor pada setiap goresan dan menunjukkan arahnya. Sepuluh kesalahan berturut-turut mengakhiri percobaan dengan hasil gagal. Percobaan berhasil dengan paling banyak satu kesalahan meningkatkan tingkat kesulitan kartu tersebut dalam memori untuk percobaan berikutnya, dan pad yang terbuka dapat langsung beralih ke kartu Pustaka lain.
 
-Panduan lengkap hanya muncul sebelum percobaan pertama sebuah kartu atau setelah pengguna menekan tindakan atur ulang **?**. Mencoba lagi mempertahankan panduan progresif. Pola gabungan membawa batas tiap bagian sehingga setiap karakter yang baru dicapai memperoleh satu pratinjau beranotasi lengkap.
+Tindakan panduan **?** mempertahankan goresan yang diterima dan hasil percobaan sambil menampilkan anotasi hanya untuk goresan yang belum selesai. Mencoba lagi mempertahankan panduan progresif. Pola gabungan membawa batas tiap bagian sehingga setiap karakter yang baru dicapai memperoleh satu pratinjau beranotasi lengkap. Arah anotasi dihitung dalam koordinat kanvas yang dirender agar panah tetap akurat pada pola panjang dengan banyak karakter.
 
 Kartu gabungan kini menyusun semua pola unit tulisan dari nilai tulisan utama secara berdampingan dengan skala konsisten dan jarak minimal. Papan gambar melebar agar ukuran karakter tetap terjaga, sedangkan judul ringkasnya menampilkan pelafalan dan definisi yang tersedia.
 
 Papan gambar tetap berada di dalam area pandang, memakai tinggi ringkas yang mengikuti konten, dan membatasi lebarnya hingga empat puluh persen area pandang agar kata yang lebih panjang diperkecil alih-alih menghasilkan jendela terlalu besar. Pengubahan ukuran tidak lagi menukar ukuran minimum papan, dan setiap panduan satu goresan tetap menampilkan anotasi urutan serta arah.
+
+Label anotasi mengevaluasi posisi terdekat di sekitar awal setiap goresan dan memilih tempat pertama yang bebas dari label lain serta semua jalur goresan yang dirender. Dengan demikian, penanda bernomor tetap terbaca dan dekat dengan goresannya tanpa menutupi goresan pengguna yang sudah selesai.
+
+Percobaan berhasil dengan paling banyak satu kesalahan kini meningkatkan kesulitan ingatan khusus kartu dengan menyembunyikan satu panduan goresan tambahan yang dipilih secara acak. Goresan tersembunyi diwakili tanda tanya di sudut kanvas dan tetap divalidasi seperti biasa. Tindakan panduan kanan atas menampilkan goresan tersembunyi untuk percobaan saat ini tanpa menghapus input yang diterima atau mengurangi kesulitan kartu yang telah dipelajari. Penempatan anotasi memilih posisi dekat pertama yang bebas benturan alih-alih memaksimalkan jarak kosong, sehingga label tetap lebih dekat ke awal goresan.
+
+Tanda tanya panduan tersembunyi hanya muncul saat pelajar mencapai goresan yang panduannya disembunyikan; tanda tersebut tidak lagi muncul terlalu awal untuk goresan tersembunyi berikutnya.
+
+Saat jendela Latihan Menggambar yang terbuka beralih ke kartu dengan jumlah kolom berbeda, rasio aspek area gambar kini diterapkan ulang dan bitmap kanvas diselaraskan setelah tata letak. Pola multikarakter tidak lagi meregang secara vertikal ketika jendela mengambang digambar ulang.
+
+Menekan Escape menutup jendela Latihan Menggambar aktif melalui alur penutupan beranimasi dan pembersihan penuh yang sama seperti kontrol tutupnya.
+
+Permukaan gambar kini membentuk viewport terpusat yang mempertahankan rasio aspek dari lebar dan tinggi hasil render sebenarnya. Saat ukuran panel mengambang diubah, area goresan logis diberi ruang tepi bila diperlukan alih-alih meregangkan geometri karakter; koordinat penunjuk, panduan, anotasi, goresan selesai, dan tinta aktif semuanya memakai viewport yang sama.

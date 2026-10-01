@@ -1,5 +1,6 @@
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n } from "/static/reuse/i18n.js";
+import { drawingViewport } from "./viewport.js";
 
 const i18n = await createI18n({
     componentStringBaseUrls: ["/static/adapters/study/drawing/languages"],
@@ -10,6 +11,7 @@ stylesheet.href = "/static/adapters/study/drawing/drawing.css";
 document.head.append(stylesheet);
 
 const difficultyByCardId = new Map();
+const hiddenGuideIndicesByCardId = new Map();
 const attemptedCardIds = new Set();
 let activeDrawingSession = null;
 
@@ -24,6 +26,97 @@ function pathLength(points) {
             (total, point, index) => total + distance(points[index], point),
             0,
         );
+}
+
+function distanceToSegment(point, start, end) {
+    const deltaX = end.x - start.x;
+    const deltaY = end.y - start.y;
+    const lengthSquared = deltaX ** 2 + deltaY ** 2;
+    if (!lengthSquared) return distance(point, start);
+    const projection = Math.max(
+        0,
+        Math.min(
+            1,
+            ((point.x - start.x) * deltaX + (point.y - start.y) * deltaY) /
+                lengthSquared,
+        ),
+    );
+    return distance(point, {
+        x: start.x + projection * deltaX,
+        y: start.y + projection * deltaY,
+    });
+}
+
+function annotationPosition(start, angle, canvas, occupied, paths) {
+    const directions = [
+        angle - Math.PI / 2,
+        angle + Math.PI / 2,
+        angle + Math.PI,
+        angle - (Math.PI * 3) / 4,
+        angle + (Math.PI * 3) / 4,
+        angle - Math.PI / 4,
+        angle + Math.PI / 4,
+        angle,
+    ];
+    const candidates = [18, 24, 30].flatMap((radius) =>
+        directions.map((direction) => ({
+            x: start.x + Math.cos(direction) * radius,
+            y: start.y + Math.sin(direction) * radius,
+        })),
+    );
+    const clearance = (candidate) =>
+        Math.min(
+            ...occupied.map((position) => distance(candidate, position) - 21),
+            ...paths.flatMap((path) =>
+                path
+                    .slice(1)
+                    .map(
+                        (point, index) =>
+                            distanceToSegment(candidate, path[index], point) -
+                            12,
+                    ),
+            ),
+        );
+    const scoredCandidates = candidates
+        .filter(
+            ({ x, y }) =>
+                x >= 12 &&
+                y >= 12 &&
+                x <= canvas.width - 12 &&
+                y <= canvas.height - 12,
+        )
+        .map((candidate, preference) => ({
+            candidate,
+            preference,
+            clearance: clearance(candidate),
+        }));
+    return (
+        scoredCandidates
+            .filter(
+                ({ clearance: candidateClearance }) => candidateClearance >= 0,
+            )
+            .sort((left, right) => left.preference - right.preference)[0]
+            ?.candidate ??
+        scoredCandidates.sort(
+            (left, right) =>
+                right.clearance - left.clearance ||
+                left.preference - right.preference,
+        )[0]?.candidate
+    );
+}
+
+function addRandomHiddenGuide(cardId, strokeCount) {
+    const hidden = new Set(hiddenGuideIndicesByCardId.get(cardId) ?? []);
+    const available = Array.from(
+        { length: strokeCount },
+        (_, index) => index,
+    ).filter((index) => !hidden.has(index));
+    if (!available.length) return hidden;
+    const randomValue = new Uint32Array(1);
+    window.crypto.getRandomValues(randomValue);
+    hidden.add(available[randomValue[0] % available.length]);
+    hiddenGuideIndicesByCardId.set(cardId, hidden);
+    return hidden;
 }
 
 function resample(points, count = 48) {
@@ -151,6 +244,10 @@ function openDrawingPad({
     let currentPronunciations = pronunciations;
     let currentPattern = strokePattern;
     let difficulty = difficultyByCardId.get(card.id) ?? 0;
+    let hiddenGuideIndices = new Set(
+        hiddenGuideIndicesByCardId.get(card.id) ?? [],
+    );
+    let revealHiddenGuides = false;
     let active = null;
     let mistakes = 0;
     let successiveMistakes = 0;
@@ -164,11 +261,8 @@ function openDrawingPad({
     };
     const resize = () => {
         const bounds = canvas.getBoundingClientRect();
-        const width = Math.max(240, Math.round(bounds.width));
-        const height = Math.max(
-            240,
-            Math.round(bounds.width / (currentPattern.columns ?? 1)),
-        );
+        const width = Math.max(1, Math.round(bounds.width));
+        const height = Math.max(1, Math.round(bounds.height));
         header.style.width = `${Math.round(bounds.width)}px`;
         const styles = getComputedStyle(pad);
         colors.guide = styles.getPropertyValue("--drawing-guide").trim();
@@ -182,42 +276,77 @@ function openDrawingPad({
     };
     const normalized = (event) => {
         const bounds = canvas.getBoundingClientRect();
+        const viewport = drawingViewport(
+            { width: bounds.width, height: bounds.height },
+            currentPattern.columns,
+        );
         return {
-            x: (event.clientX - bounds.left) / bounds.width,
-            y: (event.clientY - bounds.top) / bounds.height,
+            x: Math.max(
+                0,
+                Math.min(
+                    1,
+                    (event.clientX - bounds.left - viewport.x) / viewport.width,
+                ),
+            ),
+            y: Math.max(
+                0,
+                Math.min(
+                    1,
+                    (event.clientY - bounds.top - viewport.y) / viewport.height,
+                ),
+            ),
             pressure: event.pressure || 0.5,
         };
     };
     const drawPath = (points, color, width = 3) => {
         if (!points.length) return;
+        const viewport = drawingViewport(canvas, currentPattern.columns);
+        const plotted = (point) => ({
+            x: viewport.x + point.x * viewport.width,
+            y: viewport.y + point.y * viewport.height,
+        });
         context.beginPath();
         context.strokeStyle = color;
         context.lineWidth = width;
         context.lineCap = "round";
         context.lineJoin = "round";
-        context.moveTo(points[0].x * canvas.width, points[0].y * canvas.height);
+        const first = plotted(points[0]);
+        context.moveTo(first.x, first.y);
         for (let index = 1; index < points.length - 1; index += 1) {
-            const point = points[index];
-            const next = points[index + 1];
+            const point = plotted(points[index]);
+            const next = plotted(points[index + 1]);
             context.quadraticCurveTo(
-                point.x * canvas.width,
-                point.y * canvas.height,
-                ((point.x + next.x) / 2) * canvas.width,
-                ((point.y + next.y) / 2) * canvas.height,
+                point.x,
+                point.y,
+                (point.x + next.x) / 2,
+                (point.y + next.y) / 2,
             );
         }
-        const last = points.at(-1);
-        context.lineTo(last.x * canvas.width, last.y * canvas.height);
+        const last = plotted(points.at(-1));
+        context.lineTo(last.x, last.y);
         context.stroke();
     };
-    const drawStrokeOrder = (stroke, index) => {
+    const drawStrokeOrder = (stroke, index, occupiedAnnotations, paths) => {
         const [start, next] = stroke.points;
         if (!start || !next) return;
-        const startX = start.x * canvas.width;
-        const startY = start.y * canvas.height;
-        const angle = Math.atan2(next.y - start.y, next.x - start.x);
-        const labelX = startX - Math.sin(angle) * 17;
-        const labelY = startY + Math.cos(angle) * 17;
+        const viewport = drawingViewport(canvas, currentPattern.columns);
+        const startX = viewport.x + start.x * viewport.width;
+        const startY = viewport.y + start.y * viewport.height;
+        const angle = Math.atan2(
+            (next.y - start.y) * viewport.height,
+            (next.x - start.x) * viewport.width,
+        );
+        const label = annotationPosition(
+            { x: startX, y: startY },
+            angle,
+            canvas,
+            occupiedAnnotations,
+            paths,
+        );
+        if (!label) return;
+        occupiedAnnotations.push(label);
+        const labelX = label.x;
+        const labelY = label.y;
         const arrowX = startX + Math.cos(angle) * 22;
         const arrowY = startY + Math.sin(angle) * 22;
         context.save();
@@ -252,6 +381,16 @@ function openDrawingPad({
     };
     const draw = () => {
         context.clearRect(0, 0, canvas.width, canvas.height);
+        const viewport = drawingViewport(canvas, currentPattern.columns);
+        const annotationPaths = currentPattern.strokes.map(({ points }) =>
+            points.map(({ x, y }) => ({
+                x: viewport.x + x * viewport.width,
+                y: viewport.y + y * viewport.height,
+            })),
+        );
+        const hasHiddenGuide =
+            !revealHiddenGuides && hiddenGuideIndices.has(completed.length);
+        const occupiedAnnotations = hasHiddenGuide ? [{ x: 20, y: 22 }] : [];
         const guides = (() => {
             const groupLengths = currentPattern.groups?.length
                 ? currentPattern.groups
@@ -261,22 +400,33 @@ function openDrawingPad({
                 const groupEnd = groupStart + length;
                 if (completed.length < groupEnd) {
                     if (completed.length === groupStart && !hasAttemptedPiece)
-                        return currentPattern.strokes.slice(
-                            groupStart,
-                            groupEnd,
-                        );
+                        return currentPattern.strokes
+                            .slice(groupStart, groupEnd)
+                            .map((stroke, index) => ({
+                                stroke,
+                                index: groupStart + index,
+                            }));
                     break;
                 }
                 groupStart = groupEnd;
             }
-            return currentPattern.strokes.slice(
-                completed.length,
-                completed.length + 1,
-            );
+            return currentPattern.strokes
+                .slice(completed.length, completed.length + 1)
+                .map((stroke) => ({ stroke, index: completed.length }));
         })();
-        guides.forEach((stroke) =>
+        const visibleGuides = guides.filter(
+            ({ index }) => revealHiddenGuides || !hiddenGuideIndices.has(index),
+        );
+        visibleGuides.forEach(({ stroke }) =>
             drawPath(stroke.points, colors.guide, Math.max(2, 5 - difficulty)),
         );
+        if (hasHiddenGuide) {
+            context.fillStyle = colors.active;
+            context.font = "700 24px sans-serif";
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+            context.fillText("?", 20, 22);
+        }
         const groupStart = (
             currentPattern.groups ?? [currentPattern.strokes.length]
         )
@@ -298,13 +448,26 @@ function openDrawingPad({
             const groupLength = (currentPattern.groups ?? [
                 currentPattern.strokes.length,
             ])[groupIndex];
-            currentPattern.strokes
-                .slice(groupStart, groupStart + groupLength)
-                .forEach((stroke, index) =>
-                    drawStrokeOrder(stroke, groupStart + index),
+            visibleGuides
+                .filter(
+                    ({ index }) =>
+                        index >= groupStart && index < groupStart + groupLength,
+                )
+                .forEach(({ stroke, index }) =>
+                    drawStrokeOrder(
+                        stroke,
+                        index,
+                        occupiedAnnotations,
+                        annotationPaths,
+                    ),
                 );
-        } else if (guides.length === 1) {
-            drawStrokeOrder(guides[0], completed.length);
+        } else if (visibleGuides.length === 1) {
+            drawStrokeOrder(
+                visibleGuides[0].stroke,
+                visibleGuides[0].index,
+                occupiedAnnotations,
+                annotationPaths,
+            );
         }
         completed.forEach((stroke) => drawPath(stroke, colors.ink, 5));
         if (active) drawPath(active, colors.active, 5);
@@ -320,6 +483,7 @@ function openDrawingPad({
         "pointerdown",
         (event) => {
             active = [normalized(event)];
+            revealHiddenGuides = false;
             hasAttemptedPiece = true;
             attemptedCardIds.add(currentCard.id);
             pad.querySelector("[data-guidance]").hidden = false;
@@ -346,7 +510,10 @@ function openDrawingPad({
             const expected =
                 currentPattern.strokes[completed.length]?.points ?? [];
             const score = scoreStroke(active, expected);
-            if (score >= (currentPattern.tolerance ?? 55) + difficulty * 5) {
+            if (
+                score >=
+                (currentPattern.tolerance ?? 55) + Math.min(difficulty, 3) * 5
+            ) {
                 completed.push(expected);
                 successiveMistakes = 0;
                 const groupEnds = (
@@ -374,7 +541,11 @@ function openDrawingPad({
                     completion.hidden = false;
                     pad.classList.add("is-complete");
                     if (mistakes <= 1) {
-                        difficulty = Math.min(3, difficulty + 1);
+                        hiddenGuideIndices = addRandomHiddenGuide(
+                            currentCard.id,
+                            currentPattern.strokes.length,
+                        );
+                        difficulty = hiddenGuideIndices.size;
                         difficultyByCardId.set(currentCard.id, difficulty);
                     }
                 }
@@ -406,6 +577,7 @@ function openDrawingPad({
             mistakes = 0;
             successiveMistakes = 0;
             hasAttemptedPiece = attemptedCardIds.has(currentCard.id);
+            revealHiddenGuides = false;
             completion.hidden = true;
             pad.classList.remove("is-complete");
             draw();
@@ -447,6 +619,15 @@ function openDrawingPad({
         );
         window.setTimeout(finishClose, 220);
     };
+    window.addEventListener(
+        "keydown",
+        (event) => {
+            if (event.key !== "Escape") return;
+            event.preventDefault();
+            close();
+        },
+        { signal: controller.signal },
+    );
     pad.querySelector("[data-close]").addEventListener("click", close, {
         signal: controller.signal,
     });
@@ -465,6 +646,7 @@ function openDrawingPad({
             mistakes = 0;
             successiveMistakes = 0;
             hasAttemptedPiece = true;
+            revealHiddenGuides = false;
             completion.hidden = true;
             completion.classList.remove("is-failure");
             pad.classList.remove("is-complete");
@@ -484,17 +666,8 @@ function openDrawingPad({
     pad.querySelector("[data-guidance]").addEventListener(
         "click",
         () => {
-            difficultyByCardId.delete(currentCard.id);
-            attemptedCardIds.delete(currentCard.id);
-            difficulty = 0;
-            completed.length = 0;
-            active = null;
-            mistakes = 0;
-            successiveMistakes = 0;
             hasAttemptedPiece = false;
-            completion.hidden = true;
-            completion.classList.remove("is-failure");
-            pad.classList.remove("is-complete");
+            revealHiddenGuides = true;
             pad.querySelector("[data-guidance]").hidden = true;
             draw();
         },
@@ -524,6 +697,10 @@ function openDrawingPad({
         pad.style.height = `${fittedHeight}px`;
         pad.style.setProperty("--drawing-columns", String(columns));
         difficulty = difficultyByCardId.get(nextCard.id) ?? 0;
+        hiddenGuideIndices = new Set(
+            hiddenGuideIndicesByCardId.get(nextCard.id) ?? [],
+        );
+        revealHiddenGuides = false;
         completed.length = 0;
         active = null;
         mistakes = 0;
@@ -540,10 +717,10 @@ function openDrawingPad({
             .filter(Boolean)
             .join(" · ");
         pad.querySelector("[data-definition]").textContent = currentDefinition;
-        pad.querySelector("[data-guidance]").hidden = !attemptedCardIds.has(
-            nextCard.id,
-        );
-        draw();
+        pad.querySelector("[data-guidance]").hidden =
+            !attemptedCardIds.has(nextCard.id) && !hiddenGuideIndices.size;
+        resize();
+        window.requestAnimationFrame(resize);
         return true;
     };
     activeDrawingSession = { close, load };

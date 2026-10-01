@@ -178,3 +178,155 @@ Die Aussprachekomposition entspricht der Eingabekomposition: Geben Sie freien Te
 Jede `cardConstructor`-Nutzlast stellt `input_carousels` und `pronunciation_carousels` bereit. Beide Arrays enthalten Zielschicht-IDs dieses Konstruktors: Eingabekarussells bilden den Primärwert, während Aussprachekarussells jede deklarierte Lesungsbeziehung zu dieser Schicht erfüllen. Bei alternativen Zeichen sind nur die Mindestwerte der Aussprachekarussells erforderlich; nicht aufgelöste Primärbeziehungen verhindern die Erstellung nicht. Lookup-Anbieter können anbietereigene Herkunfts- und Rangmetadaten auslassen, da die Bibliothek diese Werte aus dem registrierten Anbieter normalisiert.
 
 Karussell-Arrays des Kartenkonstruktors sind verpflichtend; fehlende Arrays werden abgelehnt statt abgeleitet. Laufzeit-Formularbeiträge gelten sowohl bei der serverseitigen Beziehungsprüfung als auch bei der Schemadarstellung. Bearbeitungsformulare verwenden dasselbe deklarierte Aussprachekarussell wie Erstellungsformulare. Audio-Uploads verwenden die normalisierte Kartenbezeichnung und Feld-ID als Speicherdateinamen, sodass ein Ersatz-Upload dasselbe Objekt überschreibt.
+
+Kartenkonstruktoren sind der einzige Formularvertrag für Erstellung und Bearbeitung. Ihre Liste `fields` bestimmt die sichtbaren skalaren Felder, während `relationships`, `input_carousels` und `pronunciation_carousels` die verfügbaren Beziehungskarussells festlegen. Konstruktoren für alternative Zeichen können die Eingabe uneingeschränkt lassen und Zeichenbeziehungen unter Aussprache platzieren. Wortschatz-Konstruktoren können Zeichen-, alternative Zeichen- und Wortschatzbeziehungen unter Eingabe platzieren; Satz- und Verbundkonstruktoren können dort Partikel-, alternative Zeichen- und Wortschatzbeziehungen platzieren. Die Aussprache von Wortschatz, Sätzen und Verbünden wird rekursiv aus ihren geordneten Bestandteilen abgeleitet, daher lassen ihre Konstruktoren das Aussprachefeld weg.
+
+Wenn ein Aussprachefeld in einem Erstellungs- oder Bearbeitungsformular sichtbar ist, zeigt Library den Aussprache-Composer statt eines generischen Listen-Textfelds an. Die `pronunciation_carousels` des Konstruktors bestimmen weiterhin, welche schichtspezifischen Beziehungskarussells darin erscheinen.
+
+Die aktuelle Konstruktorregel ersetzt frühere Aussprache-Selektoren für Wortschatz: Wortschatz verwendet Zeichen-, Alternativzeichen- und Wortschatzkarussells ausschließlich in der Eingabe. Sätze und Verbünde verwenden Partikel-, Alternativzeichen- und Wortschatzkarussells in der Eingabe. Nur Alternativzeichen verwenden ein Zeichenkarussell in der Aussprache; ihre Eingabe bleibt frei. Wortschatz-, Satz- und Verbundaussprache wird beim Speichern rekursiv aus dem vollständigen geordneten Beziehungsgraphen neu berechnet.
+
+Formulare für Wortschatz, Sätze und Verbünde zeigen den generischen Listenwert-Editor für Aussprache niemals an, selbst wenn ein Anbieter-Payload dieses abgeleitete Feld enthält. Andere listenwertige Anbieterfelder verwenden statt entfernbarer Tag-Chips ein einfaches, zeilengetrenntes Textfeld; Klassifizierungs-Tags von Einträgen behalten ihre eigene Metadatensteuerung.
+
+Wortschatz- und Satzkarten spielen die Audiodateien ihrer geordneten Abhängigkeiten als eine Sequenz ab, wenn kein eigenes Audio hochgeladen wurde. Ein optionaler Audio-Upload auf der Karte überschreibt diese abgeleitete Sequenz. Fehlt bei einer Abhängigkeit Audio, erklärt der deaktivierte Lautsprecher den fehlenden Inhalt beim Darüberfahren.
+
+Aussprachekarussells laden nun jede Beziehung, die durch die Karussellschicht-Deklarationen des Konstruktors vorgegeben ist, auch wenn ein Laufzeit-Formularbeitrag diese Beziehung in seiner skalaren Beziehungsliste auslässt. Die Auswahl von Karussellelementen aktualisiert den Aussprachewert sofort; das redundante Freitextfeld und die Bestätigungsschaltfläche wurden aus Erstellungs- und Bearbeitungsformularen entfernt.
+
+Wenn ein Konstruktor ein Aussprachefeld bereitstellt, aber `pronunciation_carousels` leer lässt, leitet der Composer die Karussellschichten nun aus den deklarierten Aussprachebeziehungen des Schemas ab. Dadurch bleiben ältere oder unvollständige Laufzeit-Formularbeiträge funktionsfähig, während explizite Karusselldeklarationen weiterhin maßgeblich sind.
+
+Das integrierte semantische Composer-Profil wendet den gewünschten Karussellvertrag nun direkt an: alternative Zeichen verwenden eine freie Eingabe und ein Aussprachekarussell für atomare Zeichen; Wortschatz verwendet Eingabekarussells für atomare Zeichen, alternative Zeichen und Wortschatz sowie ein Aussprachekarussell für atomare Zeichen; Sätze verwenden Eingabekarussells für Partikel, alternative Zeichen und Wortschatz und bieten keine bearbeitbare Aussprache. Die Wortschatzaussprache wird rekursiv aus Werten der Zeichenebene vorbelegt, während die Satzaussprache vollständig abgeleitet bleibt.
+
+Schichten für atomare Zeichen und Partikel sind unveränderliche Katalogdaten. Die Library-API lehnt nun Erstellen, Aktualisieren, Aktualisierungsanfragen und Löschen für diese Schichten bei jeder Rolle ab, einschließlich Administratoren und Eigentümern. UI-Berechtigungsantworten blenden Bearbeitungs- und Löschsteuerungen aus, während die schreibgeschützte Ansicht erhalten bleibt.
+
+Geordnete Auswahlen verwenden nun über alle Eingabe-Karussells hinweg eine gemeinsame Positionsfolge. Positionsmarken beschreiben damit die gespeicherte Kartenreihenfolge, statt bei jedem Beziehungskarussell wieder bei eins zu beginnen.
+
+Autorenformulare zeigen die interne Inhaltsklassenauswahl von Cognis nicht mehr an. In Detailansichten kennzeichnet der lokalisierte Schichtname des Anbieters die Karte, und Datensätze geordneter Folgen verwenden die Schicht-ID des Anbieters statt semantischer Bezeichnungen wie `sentence` oder `composite`. Abgeleitete Aussprachen werden gemäß dem deklarierten Feldvertrag des Anbieters serialisiert, einschließlich listenwertiger Aussprachefelder.
+
+Die Serialisierung abgeleiteter Felder löst ihren Vertrag aus dem Anbieterschema statt aus der vom Konstruktor gefilterten Editorschicht auf. Erforderliche Aussprachefelder bleiben dadurch auffindbar, auch wenn der Composer ihr direktes Eingabefeld absichtlich ausblendet.
+
+Wenn ein Konstruktor Eingabe- oder Aussprache-Karussellschichten deklariert, enthält die entsprechende Überschrift über den Karussells ein dauerhaftes Feld für ausgewählte Karten. Das Feld wird für bestehende Einträge initialisiert, bei der Karussellauswahl sofort aktualisiert, bewahrt die Kompositionsreihenfolge und ermöglicht das direkte Entfernen einer ausgewählten Karte.
+
+Karussellgestützte Felder akzeptieren den anbietereigenen booleschen Wert `multi_value` auf Feldebene. Mehrwertige Felder erhalten eine ausdrückliche Aktion **{Feld} speichern**, zeigen bestätigte Werte als entfernbare Pillen über der aktiven Komposition und ermöglichen das erneute Öffnen eines bestätigten Werts zum Ersetzen. Jedes Karussell-Kompositionsfeld akzeptiert nur Text, der zu Karten aus seinen konfigurierten Karussells aufgelöst wurde; nicht aufgelöster Text macht das Formular ungültig. Das Entfernen einer ausgewählten Karte oder eines bestätigten Werts erfordert das eigene ×-Steuerelement und eine Bestätigung. Editoren bestehender Karten binden dieselben Beziehungskarussells wie Erstellungsformulare ein.
+
+Der boolesche Wert `multi_value` auf Feldebene ist die einzige Mehrwertdeklaration. Bestätigte Pillen füllen die Zwischenkomposition beim Anklicken nicht mehr. Die mehrwertige Zwischenablage beginnt leer, ihre kompakten ×-Steuerelemente entfernen ohne Bestätigung nur vorgemerkte Karten, und Referenzen werden erst durch die sichtbare feldspezifische Speicheraktion bestätigt. Gespeicherte Werte bleiben beim Entfernen ihrer vorgemerkten Karten unverändert. Kartenbezeichnungen werden aus der geordneten primären Input-Komposition erzeugt, statt als eigener editierbarer Wert angezeigt zu werden; nach erfolgreichem Speichern wird die sichtbare Kartenvorschau sofort aktualisiert.
+
+Karussellkarten zeigen wieder für jeden Eintrag eine Vorschau bei Mauszeigerkontakt und Tastaturfokus, auch wenn keine Definition vorhanden ist. Karussellvorschauen und Hinweise auf fehlendes Audio werden in verankerten Portalen auf Body-Ebene gerendert, sodass Überlaufregeln von Karten, Karussells und Pop-ups sie nicht abschneiden.
+
+Gruppierte Beziehungen bewahren verschachtelte Referenzfelder für mehrwertige Felder. Jede Aussprache kann dadurch eine eigene geordnete Zeichenfolge besitzen, die bei Inhaltsprüfung, Validierung, Speicherung, API-Bearbeitung und verlinkter Titeldarstellung gruppiert bleibt, statt zu einer mehrdeutigen Liste abgeflacht zu werden.
+
+Ausgeblendete Karten werden aus allen Karussells und Vorschlagslisten für Texteingaben ausgeschlossen. Bereits vorhandene ausgeblendete Abhängigkeiten bleiben beim Bearbeiten einer Karte in den zugrunde liegenden Beziehungssteuerelementen erhalten, werden aber nie als auswählbare Karusselloptionen angeboten.
+
+Aus dem Speicher geladene gruppierte Beziehungen werden vor der Sortierung ihrer Einträge nach Position komprimiert. Ein fehlender Gruppenindex kann daher den Endpunkt für Bibliothekseinträge nicht mehr fehlschlagen lassen, während die Reihenfolge jeder gespeicherten Aussprachegruppe deterministisch bleibt.
+
+Kartenvorschauen der Bibliothek zeigen höchstens die ersten beiden unterschiedlichen Aussprachen. Die Detailansicht des Eintrags stellt weiterhin alle Aussprachen bereit, ohne die Kartenübersicht unnötig hoch oder dicht zu machen.
+
+Die Ausspracheanzeige setzt jede verschachtelte Zeichenfolge zu ihrer vollständigen Lesung zusammen, bevor sie mit der Kartenbeschriftung verglichen wird. Eine gruppierte Aussprache wie `["さ", "き"]` wird daher als `さき` dargestellt und weggelassen, wenn die Karte bereits denselben Wert verwendet.
+
+Verknüpfte Aussprachetitel werden außerdem anhand der tatsächlichen UI-Darstellung dedupliziert: Die verknüpften Zeichenbeschriftungen werden verbunden, Leerraum und Unicode-Formen normalisiert und die resultierende Lesung mit dem Kartenwert verglichen. Dadurch wiederholt eine verknüpfte Folge `さ` + `き` keinen Titel `さき`, selbst wenn ihre gespeicherte Aussprachedarstellung abweicht.
+
+Eine einzelne Gruppe eines mehrwertigen Feldes kann mehrere deklarierte Verknüpfungsbeziehungen umfassen. Die Gruppenindizes sind über diese Beziehungen hinweg ausgerichtet; daher vergleicht die Validierung die Anzahl der Feldwerte mit der größten Gruppenzahl einer verknüpften Beziehung, statt die Zahlen zu addieren. So können Aussprachen gemeinsam aus bedeutungstragenden Lesesegmenten und direkten Zeichensuffixen zusammengesetzt werden.
+
+Wenn eine verknüpfte Aussprache den primären Kartenwert exakt schreibt, steigt die Titeldarstellung eine Ebene tiefer und zeigt die eigenen Aussprachewerte der verknüpften Karten. Eine Kana-Schreibweise wie `さ` + `き` kann dadurch ihre Lesungen aus der Zeichenebene darstellen, statt `さき` redundant zu wiederholen.
+
+Die Deduplizierung von Titelreferenzen behandelt eine geordnete Schreibweise nun als Einheit, statt einzelne übereinstimmende Zeichen zu entfernen. Wenn die vollständige Schreibweise dem primären Wert entspricht, zeigen die verknüpften Zeichenkarten ihre Aussprachewerte; Teilfragmente können keinen Titel mehr erzeugen, dessen sichtbare Aussprache vom primären Wert abweicht. Kanji-Detailansichten zeigen weiterhin die vollständige, vom Anbieter erfasste Leseliste statt aus benachbarten Karten abgeleiteter Lesungen.
+
+Zum Entfernen einer vorgemerkten Composer-Karte muss exakt auf ihre kompakte ×-Schaltfläche geklickt werden; weder die umgebende Auswahlmarke noch der leere Kompositionsbereich lösen das Löschen aus. Bevor ein Erstellungsdialog geschlossen wird, prüft der Composer außerdem jedes vom Anbieter geforderte Beziehungsminimum. Fehlende Definitionen zeigen nun die übliche Validierungsmeldung an und lassen Dialog, ausgewählte Karten, Texteingaben und verschachtelte Definitionen zur Korrektur unverändert geöffnet.
+
+Lange Aussprache- und Definitionsangaben in Eintragsüberschriften behalten ihre ursprüngliche Startposition bei, nutzen jedoch höchstens 40 % der Überschriftenbreite und werden in weitere Zeilen umgebrochen. Ein Gedankenstrich trennt Definitionen nun deutlicher von Aussprachen. Erstellungsdialoge erlauben höchstens 8 Tags, 10 Definitionen und 16 Aussprachen und zeigen beim Erreichen einer Grenze eine lokalisierte Meldung an.
+
+Dichte Überschriften mit Aussprachen verwenden nun nur bei vorhandenen Lesungen eine vierspaltige Anordnung: Der Lautsprecher befindet sich unter dem Bereichssymbol, der Ausspracheblock belegt bis zu 40 % der Überschrift und Definitionen werden rechts davon unabhängig umgebrochen. Die Grenzen von 8 Tags, 10 Definitionen und 16 Aussprachen gelten nun gleichermaßen für Erstellungs- und Bearbeitungsdialoge.
+
+Wenn ein aufgeklappter Zweig mit untergeordneten Zeichen das sichtbare Bibliotheksraster überschreiten würde, prüft die Laufzeitanpassung nun alle diagonalen Plätze, bevor sie auf die entgegengesetzten Hauptrichtungen zurückfällt. Dabei gelten alle sichtbaren Stammkarten als belegt, sodass die erste innerhalb der Grenzen liegende, kollisionsfreie Diagonale gewählt wird und sowohl die untergeordnete Karte als auch ihre Verbindung auf der Zeichenfläche bleiben.
+
+## Satzaufbau und Transformationen
+
+Anbieter kennzeichnen Wortschatz für Satzenden oder Übergänge mit einem stabilen Tag wie `sentence-transition` und deklarieren anschließend ein `tag_carousels`-Element im Satzkarten-Konstruktor. Diese Einträge werden aus der normalen Wortschatzansicht entfernt und erscheinen in einem eigenen, nur beim Satzbau sichtbaren Karussell. `literal_carousels` stellt eine einzeilige, schreibgeschützte Auswahl wiederholt nutzbarer Satzzeichen bereit; Anbieter führen die Satzzeichen ihrer Sprache auf, etwa `, . ? !` für Englisch oder `？！。、` für Japanisch.
+
+Anbieter markieren Grundformen von Verben und Adverbien mit `verb` oder `adverb` und deklarieren eine Ebenenansicht `views` mit `layout: transformTree`. Solche Einträge werden von der normalen Wortschatzseite auf die separate, vom Anbieter benannte Seite verschoben. Inhaltspakete liefern ausschließlich die lexikalische Grundform (beispielsweise `歩く`) und niemals je eine Karte pro Flexionsform. Eine schemaweite `transformSets`-Deklaration beschreibt deterministische Zustandsübergänge. Jede Regel nennt Ausgangs- und Zielzustand und ersetzt genau ein Suffix über `removeSuffix` und `append`; mehrere Regeln dürfen denselben Zustand verlassen und weitere Regeln auf erzeugten Zuständen aufbauen. `matchTags` wählt die passende Grundformklasse aus, sodass Anbieter Konjugationsfamilien etwa mit `godan-ku` unterscheiden können.
+
+```json
+{
+    "transformSets": [
+        {
+            "id": "godan-ku",
+            "matchTags": ["verb", "godan-ku"],
+            "baseState": "base",
+            "rules": [
+                {
+                    "id": "potential",
+                    "fromState": "base",
+                    "toState": "potential",
+                    "removeSuffix": "く",
+                    "append": "ける"
+                },
+                {
+                    "id": "negative",
+                    "fromState": "base",
+                    "toState": "negative",
+                    "removeSuffix": "く",
+                    "append": "かない"
+                },
+                {
+                    "id": "desiderative",
+                    "fromState": "base",
+                    "toState": "desiderative",
+                    "removeSuffix": "く",
+                    "append": "きたい"
+                }
+            ]
+        }
+    ]
+}
+```
+
+Tags für Satzübergänge werden nun sowohl aus dem normalen Eingabekarussell als auch aus der Wortschatzseite ausgeschlossen, sodass ihr gefiltertes Composer-Karussell tatsächlich getrennt ist. Bearbeitungsdialoge rekonstruieren wiederholbare Satzzeichen aus der gespeicherten Satzbeschriftung und den geordneten Referenzen. Transformationsbäume bieten nun ausführbare Knoten: Die Auswahl einer erzeugten Form aktualisiert die Pfadvorschau, während die Grundformkarte der kanonische gespeicherte Eintrag bleibt. Die Vertragsvalidierung weist doppelte Satzzeichen, leere Transformationssätze, doppelte Zustandsübergänge und wirkungslose Regeln zurück.
+
+Unterkarten-Zweige behalten nun jede bereits eingepasste Kartenposition bei, während tiefere Nachfahren geöffnet werden. Neu eingeblendete Nachfahren werden nach Tiefe vermessen und nur in sichtbare, kollisionsfreie Flächenplätze umgeleitet. Dadurch werden Sprünge von Vorfahren, Kartenüberlappungen und gedrängte Verbindungen bei der natürlichen Baumnavigation verhindert.
+
+Diagonale Unterkartenpfade bieten nun einen größeren, durchgängigen Zeigerkorridor, Zweigwechsel warten kurz auf eine eindeutige Zeigerabsicht, und aktive Karten verwenden statt einer pulsierenden Animation einen ruhigen Fokusring. Ausweichrichtungen bleiben zunächst nahe an der bevorzugten Achse, bevor entfernte Plätze berücksichtigt werden, wodurch dichtere und gleichmäßigere Anfangsanordnungen entstehen.
+
+Eingabe- und Aussprachekomposition verwenden nun denselben wiederverwendbaren Token-Eingabe-Renderer und dieselbe Beziehungskarussell-Implementierung. Eingabekarussells erscheinen unmittelbar unter ihrem Token-Feld, verwenden dieselbe kompakte Entfernen-Schaltfläche und denselben Auswahlzustand und bieten die Erstellung von Abhängigkeiten nur an, wenn die Zielebene benutzerdefinierte Karten unterstützt. Neu erstellte Abhängigkeiten werden in Erstellungs- und Bearbeitungsdialogen über den kanonischen wiederverwendbaren Karussell-Renderer eingefügt.
+
+Neue Abhängigkeiten, die über ein Beziehungskarussell erstellt werden, durchlaufen den normalen Auswahlpfad dieses Karussells. Dadurch wird die zurückgegebene Karte sofort ausgewählt und der aktiven Kompositionsfläche hinzugefügt. Aussprache-Composer für alternative Zeichen behandeln außerdem jede Beziehung zu atomaren Zeichen als Aussprachequelle, selbst wenn ein Anbieter eine allgemeinere Darstellungsrolle für die Beziehung verwendet.
+
+Karten-Composer mit Strichunterstützung zeigen einen eigenen Abschnitt **Strichmuster**. Nachschlageanbieter deklarieren die Feld-IDs, die sie befüllen; Anbieter, die das Strichfeld angeben, erscheinen dort als knappe Aktion **Nachschlagen**, und geladene normalisierte Strichdaten werden in einer kompakten Vorschau mit vier Rem Kantenlänge gezeichnet. Die Validierung von Editoren mit mehreren Reitern kennzeichnet jeden Reiter mit ungültigen Pflichtdaten, öffnet den Reiter mit dem ersten ungültigen Feld und verschiebt den Fokus dorthin oder bei einer fehlenden Pflichtdefinition zur Aktion zum Erstellen einer Definition.
+
+Definitionen in Popup-Titeln werden nun ohne vorangestellten Gedankenstrich dargestellt. Aussprache- und Definitionsgruppen belegen die Titelzeile und sind vertikal am primären Kartentitel ausgerichtet.
+
+Schichtschemas können `dictionary_lookup: false` setzen, um Nachschlageanbieter mit deklarierter `dictionary`-Fähigkeit auszublenden. Nachschlageanbieter deklarieren ihre neutralen Fähigkeiten und befüllten Feld-IDs, damit Aktionen zur Strichsuche ausschließlich im Abschnitt Strichmuster erscheinen. Composer für alternative Zeichen behandeln Beziehungen außerhalb von Definitionen als Aussprachequellen und verlangen keine Definitionen. Schlagwörter erscheinen in jedem Inhaltsformular zuletzt. Pflichtreiter behalten ihren normalen Stil und zeigen nur ein rotes Sternchen; eine fehlende Pflichtdefinition kennzeichnet zusätzlich die Aktion zum Hinzufügen.
+
+Der Library-Editor delegiert Tab-Aktivierung, Markierungen ungültiger Tabs und den Fokus auf das erste ungültige Feld an den Controller `bindTabbedFormValidation` des wiederverwendbaren Formular-Composers. Der Library-Code liefert nur das domänenspezifische Fokusziel für Definitionen und die Klasse der Pflichtmarkierung.
+
+Formularnutzlasten für alternative Zeichen kopieren `pronunciation_carousels` direkt aus der Wortschatz-Formularnutzlast desselben Schemas. Der Composer verwendet diese angeglichene Nutzlast ohne spezielle Karussellableitung oder Beziehungsfilterung für alternative Zeichen. Die Zuordnung der Strichmuster-Suche platziert die Aktion **Nachschlagen** des Anbieters weiterhin im Abschnitt Strichmuster. Bibliotheksschichtrouten akzeptieren das optionale Ansichtssegment für anbieterseitig deklarierte Verben- und Adverbienansichten.
+
+Die Angleichung der Formularnutzlast für alternative Zeichen aktualisiert jetzt sowohl `pronunciation_carousels` als auch die Beziehungs-IDs, die diese Karussells darstellen. Beziehungen des ersetzten Wortschatz-Aussprachekarussells werden entfernt und die Zeichenbeziehungen des Aussprachekarussells der Wortschatzkarte eingefügt. Das Formular für alternative Zeichen zeigt daher das Zeichenkarussell und nicht mehr Wortschatz unter Aussprache.
+
+Die Ausspracheableitung endet jetzt bei der ersten expliziten Aussprache und verwendet nur bei atomaren Zeichenkarten ersatzweise die Beschriftung. Neue Wörter und Sätze werden dadurch nicht mehr zu Zeichenlesungen abgeflacht. Die Erstellung lehnt sichtbare Duplikate allein anhand der normalisierten Eingabe ab; die Bestätigung erklärt, dass beim Fortfahren die vorhandene Karte ausgewählt wird, statt eine weitere Zeile anzulegen. Speicherung und Prüfung von Push-Anfragen erkennen die Typen `update` und `merge`.
+
+Definitionen in Pop-ups belegen jetzt die zweite Rasterzeile direkt unter dem Kartentitel statt einer eigenen rechten Spalte. Lesungen bleiben in der Titelzeile zentriert, während lange Definitionen unter dem Titel natürlich umbrechen.
+
+Die Ausspracheauflösung für Partikeln endet wie bei atomaren Zeichen: Zuerst wird eine explizite Partikelaussprache verwendet, andernfalls die Partikelbeschriftung. Der Resolver steigt nicht mehr in die Zeichenreferenzen einer Partikel ab, sodass kontextabhängige Partikeln wie は und が wie verfasst ausgesprochen bleiben.
+
+Beim Speichern einer leeren Aussprache-Stufe erscheint jetzt eine Fehlermeldung. Gespeicherte Aussprachekarten behalten ihre Entfernen-Schaltfläche innerhalb der Karte; die Auswahl einer gespeicherten Karte verschiebt ihre gruppierten Komponentenreferenzen zurück in die Stufe und wählt die zugehörigen Karussellkarten zur Bearbeitung erneut aus.
+
+Die Option „Definition(en) immer in der Kartenvorschau anzeigen“ befindet sich jetzt im Tab Definitionen neben den Definitionsübersichten. Editoren vorhandener Karten bieten außerdem die Aktion zum Hinzufügen einer Definition; eine neu erstellte Definition wird sofort ausgewählt und der sichtbaren Übersicht hinzugefügt.
+
+Die Elternzuordnung in Karten-Popup-Überschriften verwendet nun dieselbe Platzierung wie die Lesung und wird vor der Definition eingefügt. Karten, die eine Definition vom Elterneintrag übernehmen, behalten dadurch die Zuordnung geschlossen in der Titelzeile, während die Definition unverändert unter dem Titel bleibt.
+
+Tags von Content-Pack-Einträgen werden nun validiert, in die Inhaltsidentität aufgenommen und in der Tag-Spalte sowie im Suchtext des Bibliothekseintrags gespeichert. Vom Anbieter markiertes Vokabular bleibt dadurch nach dem Import für deklarierte Ansichten wie Verben und Adverbien verfügbar.
+
+Transformationssätze unterstützen beliebig verkettete und verzweigte Regeln, einschließlich optionaler Suffixoperationen für die Aussprache und lokalisierter Definitionsüberschreibungen. Verb- und Adverbansichten stellen diese Pfade als verbundene Technologiebäume dar. Die Auswahl einer transformierbaren Karte im Karussell öffnet denselben Baum und fügt die gewählte Form in einen zusammengesetzten Satz ein, während der Verweis auf die kanonische Grundkarte erhalten bleibt. Beim erneuten Öffnen eines transformierten Verweises wird die verfasste Form erkannt, die Grundkarte unter dieser Form geöffnet und der vollständige Pfad mit transformationsspezifischer Aussprache und Definition angezeigt.
+
+Die Einpassung von Kindkarten behandelt jede Vorfahrenkarte als zwingende Ausschlusszone. Diagonale und kardinale Richtungen werden in zunehmend größeren Abständen geprüft, sodass ein blockiertes Kind bei Bedarf zwei oder mehr Positionen nach außen rückt, anstatt eine Karte seiner Elternkette zu kreuzen oder hinter ihr zu verschwinden.
+
+Transformationsbaum-Ansichten beginnen jetzt als dichtes Kartenraster über die gesamte Breite. Karten ohne verfügbare Transformationen bleiben inaktiv. Beim Öffnen wird eine erweiterbare Karte nach oben verschoben, die übrigen Karten werden animiert ausgeblendet und der Baum wächst direkt unter der zentrierten Wurzel über die gesamte Inhaltsbreite; die Schließen-Schaltfläche stellt das Raster wieder her. Die Auswahl einer Transformation hebt den vollständigen Pfad zurück zur Wurzel hervor und animiert ihn fortlaufend, während Transformationsbezeichnungen über den Werten stehen, um Überläufe in schmalen Karten zu vermeiden.
+
+Transformationsbäume behalten jetzt die Karte des Ausgangsverbs oder -adverbs als unveränderte visuelle Wurzel bei und lassen die redundante Zusammenfassung der ausgewählten Form darunter weg. Verbindungslinien schließen lückenlos aneinander an und werden im gesamten Baum kontinuierlich animiert, während der ausgewählte Herkunftspfad deutlich hervorgehoben bleibt. Ein Klick auf die bereits geöffnete Ausgangskarte öffnet nun ihre Standarddetailansicht.
+
+Verb- und Adverbeinträge bleiben auf der Wortschatzseite, auf der vom Anbieter deklarierte Transformations-Tags als Filter erscheinen. Jede Regel kann eine lokalisierte `definitionTransform` mit optionalen Grenzen `matchPrefix` und `matchSuffix` sowie einer erforderlichen `template` deklarieren. Vorlagen werden entlang des ausgewählten Pfads verkettet und unterstützen `{{ definition }}`, `{{ stem }}`, `{{ prefix }}` und `{{ suffix }}`. Anbieter können dadurch grammatische Änderungen statt eines festen Markers ausdrücken. Die Detailansicht zeichnet nach der Variantenauswahl Titel, Aussprache, Definitionen und Zeicheneingabe transformiert neu und deaktiviert die Bearbeitung.
+
+Transformationsgraphen platzieren jede Tiefe in einer horizontalen Reihe, zeigen Definitionen unter den Karten, stellen vierzehn rem breite Definitionsspalten bereit und begrenzen horizontalen sowie vertikalen Überlauf auf den Graphbereich. Popup-Steuerelemente bleiben sichtbar, während tiefe oder stark verzweigte Konjugationen lesbar bleiben.
+
+Definitionstransformationen können außerdem geordnete lokalisierte `replacements` deklarieren. Die erste passende Ersetzung schreibt eine frühere Transformation um, bevor eine Ausweichvorlage verwendet wird. Dadurch sind kontextabhängige Ketten wie `to (want to) exist` → `to (have wanted to) exist` möglich; Vorlagen mit `{{ definition }}` können stattdessen Bedeutungen anhängen, etwa `to (want to) exist (and then)`. Der unveränderte Eintrag wird als zentrierte Stammkarte über der ersten Transformationsreihe angezeigt.
+
+Während ein transformierter Eintrag angezeigt wird, ersetzt **Zurück zu {Karte}** die Varianten-Aktion. Die Rückkehr stellt den kanonischen Titel, die Aussprache, die Definitionen, die Zeicheneingabe und die normale Varianten-Aktion wieder her, ohne den Detail-Navigationskontext zu schließen.
+Die ersatzweise Titelzusammensetzung folgt der Bibliothekshierarchie: Sätze können auf Wörter, Wörter auf zusammengesetzte und atomare Schrifteinheiten und zusammengesetzte Schrifteinheiten auf atomare Schrifteinheiten verweisen. Ein homografischer Wortschatzeintrag wird daher nie als Schreibbestandteil eines anderen Wortschatzeintrags behandelt; Einträge wie die japanischen Lesungen für Blume und Nase `はな` verweisen jeweils unabhängig auf `は` und `な`.

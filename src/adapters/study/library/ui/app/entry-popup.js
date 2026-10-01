@@ -8,23 +8,28 @@ import {
     layerForEntry,
     loadLibraryAudio,
 } from "./presentation.js";
-import { popupTitleDetailItems } from "./popup-title.js";
+import {
+    hasReadingDetails,
+    popupTitleDetailItems,
+    popupTitleItems,
+    withParentTitleAttribution,
+} from "./popup-title.js";
 import { resolvePopupNavigation } from "./popup-navigation.js";
 import { titleDefinitionForRole } from "./title-definition.js";
-import {
-    assignVariantPlacements,
-    variantPlacement,
-} from "./variant-placement.js";
+import { assignVariantPlacements } from "./variant-placement.js";
 import { isDirectlyVisible } from "./cards.js";
 import { openLibraryEntryEditor } from "./admin-interactions.js";
 import { entryEditMode } from "./editability.js";
 import {
-    canDraw,
-    drawingHeaderActions,
-    resolveDraw,
-    openDrawing,
-    placeAudioSpeaker,
-} from "./drawing.js";
+    sourceTransformation as sourceTransform,
+    transformedPopupPresentation as transformPresentation,
+} from "./transformation-popup.js";
+import {
+    selectDetailTransformation,
+    transformedDetailEntry,
+} from "./transformation-detail.js";
+import { canDraw, resolveDraw, openDrawing } from "./drawing.js";
+import { drawingHeaderActions, placeAudioSpeaker } from "./drawing.js";
 export async function openEntryPopup(
     root,
     initialEntry,
@@ -38,6 +43,7 @@ export async function openEntryPopup(
     if (isMeaningLayer(layerForEntry(schemas, initialEntry))) return;
     let selectedEntry = initialEntry;
     let sourceDefinition = "";
+    let selectedTransformation = null;
     while (selectedEntry && !signal?.aborted) {
         const detail = await fetchLibraryEntry(selectedEntry.id);
         const explicitTitleReferences = headingCompositionReferences(
@@ -52,13 +58,13 @@ export async function openEntryPopup(
                   schemas,
                   entries,
               );
-        const parentEntry = entries.find(
-            (entry) =>
-                entry.id ===
-                variantPlacement(detail.entry, schemas, entries)?.parentId,
-        );
         const layer = layerForEntry(schemas, selectedEntry);
         const editMode = options.readOnly ? null : entryEditMode(selectedEntry);
+        const handleSaved = (updated) => {
+            if (editMode !== "direct") return;
+            Object.assign(selectedEntry, updated);
+            options.onEntryUpdated?.(updated);
+        };
         if (options.startEditing && editMode) {
             options.startEditing = false;
             await openLibraryEntryEditor({
@@ -67,10 +73,7 @@ export async function openEntryPopup(
                 schemas,
                 i18n,
                 requestUpdate: editMode === "request",
-                onSaved: () => {
-                    if (editMode === "direct")
-                        Object.assign(selectedEntry, detail.entry);
-                },
+                onSaved: handleSaved,
             });
             continue;
         }
@@ -97,59 +100,69 @@ export async function openEntryPopup(
             entries,
             i18n,
             languageCode,
-            options,
+            { ...options, transformation: selectedTransformation },
         );
         if (options.showNew) {
             composed.body = `<div class="library-popup-new"><span class="library-new-pill">${i18n.t("gateway.study.library_new")}</span></div>${composed.body}`;
             options.showNew = false;
         }
         signal?.throwIfAborted();
-        const titleDetailItems = popupTitleDetailItems(
+        let titleDetailItems = popupTitleDetailItems(
             detail,
             schemas,
             composed.titleDefinition,
             sourceDefinition,
             titleReferences,
         );
+        const transformed = transformPresentation(
+            selectedTransformation,
+            detail.entry,
+            schema,
+            titleDetailItems,
+            composed.body,
+            composed.definitions,
+        );
+        titleDetailItems = transformed.titleDetailItems;
+        composed.body = selectedTransformation
+            ? composed.renderBody(transformed.definitions)
+            : transformed.body;
         const displayedDefinition = titleDefinitionForRole(
             layer?.semanticRole,
-            composed.titleDefinition,
+            transformed.definitions?.[0] ?? composed.titleDefinition,
             sourceDefinition,
         );
-        const strokePattern = resolveDraw(detail.entry, layer, {
+        const displayedEntry = transformedDetailEntry(
+            detail.entry,
+            selectedTransformation,
+        );
+        const strokePattern = resolveDraw(displayedEntry, layer, {
             entries,
             schemas,
         });
-        if (parentEntry && layer?.semanticRole !== "lexicalUnit") {
-            const [parentPrefix, parentSuffix = ""] = i18n
-                .t("gateway.study.library_from_parent")
-                .split("{{ parent }}");
-            titleDetailItems.push(
-                ...(titleDetailItems.length ? [{ label: " · " }] : []),
-                { label: parentPrefix },
-                {
-                    label: parentEntry.label,
-                    actionId: `open-title-reference:${parentEntry.id}`,
-                },
-                { label: parentSuffix },
-            );
-        }
-        let dismissPopup, relatedEntry;
+        titleDetailItems = withParentTitleAttribution(
+            titleDetailItems,
+            detail.entry,
+            layer,
+            schemas,
+            entries,
+            i18n.t("gateway.study.library_from_parent"),
+        );
+        let dismissPopup, relatedEntry, chosenTransformation;
         const audioObjectUrls = new Set();
         const audioController = new AbortController();
         const abortPopup = () => dismissPopup?.();
         signal?.addEventListener("abort", abortPopup, { once: true });
         const result = await openPopup({
-            title: detail.entry.label,
+            title: transformed.title,
             titleLeading: composed.titleLeading,
-            titleItems: titleReferences.map((entry) => ({
-                label: entry.label,
-                actionId: `open-title-reference:${entry.id}`,
-            })),
+            titleItems: popupTitleItems(
+                titleReferences,
+                selectedTransformation,
+            ),
             titleDetailItems,
             headerActions: [
                 ...drawingHeaderActions(strokePattern, i18n),
-                ...(editMode
+                ...(editMode && !selectedTransformation
                     ? [
                           {
                               id: "edit",
@@ -196,9 +209,9 @@ export async function openEntryPopup(
             onOpen: (overlay, dismiss) => {
                 dismissPopup = dismiss;
                 overlay.classList.add("library-entry-popup");
-                if (detail.entry.class === "composite")
+                if (hasReadingDetails(titleDetailItems))
                     overlay.classList.add("library-entry-popup--composite");
-                placeAudioSpeaker(overlay);
+                placeAudioSpeaker(overlay, audioController.signal);
                 void loadLibraryAudio(
                     overlay,
                     audioObjectUrls,
@@ -206,6 +219,19 @@ export async function openEntryPopup(
                     i18n.t("gateway.study.library_audio_load_error"),
                 );
                 overlay.addEventListener("click", (event) => {
+                    if (
+                        selectDetailTransformation(event, {
+                            entry: detail.entry,
+                            schema,
+                            i18n,
+                            definitions: composed.definitions,
+                            onSelected: (transformation) => {
+                                chosenTransformation = transformation;
+                                void dismiss();
+                            },
+                        })
+                    )
+                        return;
                     const control = event.target.closest(
                         "button[data-library-entry]",
                     );
@@ -219,7 +245,7 @@ export async function openEntryPopup(
             onAction: async (actionId, overlay, popupApi) => {
                 if (actionId === "draw" && canDraw(strokePattern)) {
                     openDrawing(
-                        detail.entry,
+                        displayedEntry,
                         strokePattern,
                         displayedDefinition,
                     );
@@ -244,6 +270,12 @@ export async function openEntryPopup(
             URL.revokeObjectURL(objectUrl);
         }
         signal?.removeEventListener("abort", abortPopup);
+        if (chosenTransformation !== undefined) {
+            selectedTransformation = chosenTransformation;
+            selectedEntry = detail.entry;
+            sourceDefinition = "";
+            continue;
+        }
         if (result === "edit" && editMode) {
             await openLibraryEntryEditor({
                 entry: detail.entry,
@@ -251,10 +283,7 @@ export async function openEntryPopup(
                 schemas,
                 i18n,
                 requestUpdate: editMode === "request",
-                onSaved: () => {
-                    if (editMode === "direct")
-                        Object.assign(selectedEntry, detail.entry);
-                },
+                onSaved: handleSaved,
             });
             selectedEntry = detail.entry;
             continue;
@@ -270,5 +299,10 @@ export async function openEntryPopup(
         });
         selectedEntry = navigation.entry;
         sourceDefinition = navigation.sourceDefinition;
+        selectedTransformation = sourceTransform(
+            selectedEntry,
+            schema,
+            detail.entry.label,
+        );
     }
 }

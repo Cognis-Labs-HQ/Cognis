@@ -14,6 +14,7 @@ const schemas = [
             { id: "characters", semanticRole: "atomicWritingUnit" },
             { id: "alt-characters", semanticRole: "compoundWritingUnit" },
             { id: "words", semanticRole: "lexicalUnit" },
+            { id: "sentences", semanticRole: "orderedLexicalSequence" },
         ],
     },
 ];
@@ -60,6 +61,42 @@ test("word spellings resolve every writing-unit component", () => {
             ({ id }) => id,
         ),
         ["hiragana-su", "hiragana-ki"],
+    );
+});
+
+test("homographic words resolve to writing units instead of each other", () => {
+    const flower = { ...word, id: "word-flower", label: "はな" };
+    const nose = { ...word, id: "word-nose", label: "はな" };
+    const hanaEntries = [
+        flower,
+        nose,
+        { ...entries[2], id: "hiragana-ha", label: "は" },
+        { ...entries[3], id: "hiragana-na", label: "な" },
+    ];
+
+    assert.deepEqual(
+        resolveLabelComposition(flower.label, flower, schemas, hanaEntries).map(
+            ({ id }) => id,
+        ),
+        ["hiragana-ha", "hiragana-na"],
+    );
+});
+
+test("sentence spellings continue to resolve vocabulary entries", () => {
+    const sentence = {
+        ...word,
+        id: "sentence-hana",
+        layer: "sentences",
+        label: "はな",
+    };
+    const flower = { ...word, id: "word-flower", label: "はな" };
+
+    assert.deepEqual(
+        resolveLabelComposition(sentence.label, sentence, schemas, [
+            sentence,
+            flower,
+        ]).map(({ id }) => id),
+        ["word-flower"],
     );
 });
 

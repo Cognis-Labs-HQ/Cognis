@@ -165,11 +165,18 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
                 notNull: true,
                 default: 0,
             },
+            {
+                name: "group_index",
+                type: "integer",
+                notNull: true,
+                default: -1,
+            },
         ],
         primaryKey: [
             "source_entry_id",
             "target_entry_id",
             "relation",
+            "group_index",
             "position",
         ],
     });

@@ -184,7 +184,10 @@ export function pronunciationValues(entry) {
     const pronunciation = entry.fields?.pronunciation;
     if (!pronunciation) return [];
     return (Array.isArray(pronunciation) ? pronunciation : [pronunciation]).map(
-        (value) => String(value),
+        (value) =>
+            Array.isArray(value)
+                ? value.flat(Infinity).map(String).join("")
+                : String(value),
     );
 }
 
@@ -213,6 +216,41 @@ export function compositionReferenceGroups(detail, schemas) {
             .filter((relationship) => relationship.resolverRole)
             .map((relationship) => [relationship.id, relationship]),
     );
+    const grouped = Object.entries(detail.entry.referenceGroups ?? {}).flatMap(
+        ([relation, groups]) =>
+            groups.map((references, groupIndex) => ({
+                relation,
+                groupIndex,
+                references,
+            })),
+    );
+    const groupedResults = grouped.flatMap(
+        ({ relation, groupIndex, references }) => {
+            const relationship = relationshipsById.get(relation);
+            if (!relationship) return [];
+            const entries = references
+                .slice()
+                .sort(
+                    (left, right) =>
+                        (left.position ?? 0) - (right.position ?? 0),
+                )
+                .map(({ entryId }) => entriesById.get(entryId))
+                .filter(Boolean);
+            return entries.length
+                ? [
+                      {
+                          id: `${relation}:${groupIndex}`,
+                          presentationRole: relationshipPresentationRole(
+                              relationship,
+                              sourceLayer,
+                              schemas,
+                          ),
+                          entries,
+                      },
+                  ]
+                : [];
+        },
+    );
     const groupsByRole = new Map();
     for (const reference of detail.entry.references ?? []) {
         const relationship = relationshipsById.get(reference.relation);
@@ -236,13 +274,16 @@ export function compositionReferenceGroups(detail, schemas) {
         group.references.push({ entry, position: reference.position ?? 0 });
         groupsByRole.set(presentationRole, group);
     }
-    return Array.from(groupsByRole.values(), (group) => ({
-        id: group.id,
-        presentationRole: group.presentationRole,
-        entries: group.references
-            .sort((left, right) => left.position - right.position)
-            .map(({ entry }) => entry),
-    }));
+    return [
+        ...groupedResults,
+        ...Array.from(groupsByRole.values(), (group) => ({
+            id: group.id,
+            presentationRole: group.presentationRole,
+            entries: group.references
+                .sort((left, right) => left.position - right.position)
+                .map(({ entry }) => entry),
+        })),
+    ];
 }
 
 export function headingCompositionReferences(detail, schemas) {
@@ -268,25 +309,33 @@ function entryAudio(entry, layer) {
     };
 }
 
+function allEntryReferences(entry) {
+    return [
+        ...(entry.references ?? []),
+        ...Object.values(entry.referenceGroups ?? {}).flat(2),
+    ];
+}
+
 export function renderAudio(
     entry,
     layer,
     entries = [],
     schemas = [],
     fallbackLabel = "",
+    missingDependencyLabel = "",
 ) {
     const own = entryAudio(entry, layer);
     const useRelatedProviderAudio =
         own.valid &&
         layer?.semanticRole === "compoundWritingUnit" &&
         entry.createdBy?.startsWith("content-pack:") &&
-        (entry.references ?? []).length > 0;
+        allEntryReferences(entry).length > 0;
     let sources =
         own.valid && !useRelatedProviderAudio
             ? [{ entry, field: own.audioField }]
             : [];
     let complete = sources.length > 0;
-    if (!complete && (entry.references ?? []).length) {
+    if (!complete && allEntryReferences(entry).length) {
         const resolveSources = (candidate, visited = new Set()) => {
             if (!candidate || visited.has(candidate.id)) return null;
             visited.add(candidate.id);
@@ -294,7 +343,7 @@ export function renderAudio(
             const audio = entryAudio(candidate, candidateLayer);
             if (audio.valid)
                 return [{ entry: candidate, field: audio.audioField }];
-            const content = (candidate.references ?? [])
+            const content = allEntryReferences(candidate)
                 .sort(
                     (left, right) =>
                         (left.position ?? 0) - (right.position ?? 0),
@@ -325,8 +374,19 @@ export function renderAudio(
         ? localizedLabel(own.audioField.metadata, entry.language) ||
           own.audioField.id
         : fallbackLabel;
-    if (!complete || !sources.length)
-        return `<button class="library-audio-speaker btn-neutral" type="button" disabled aria-label="${escapeHtml(label)}">${speakerPicture()}</button>`;
+    if (!complete || !sources.length) {
+        const dependenciesMissingAudio =
+            ["lexicalUnit", "orderedLexicalSequence"].includes(
+                layer?.semanticRole,
+            ) && allEntryReferences(entry).length > 0;
+        const unavailableLabel = dependenciesMissingAudio
+            ? missingDependencyLabel
+            : "";
+        const button = `<button class="library-audio-speaker btn-neutral" type="button" disabled aria-label="${escapeHtml(unavailableLabel || label)}">${speakerPicture()}</button>`;
+        return unavailableLabel
+            ? `<span class="library-audio-unavailable">${button}<span class="library-audio-unavailable-tooltip" role="tooltip">${escapeHtml(unavailableLabel)}</span></span>`
+            : button;
+    }
     return `<div class="library-audio-sequence" data-library-audio-sequence>${sources
         .map(
             ({ entry: source, field }) =>
@@ -338,7 +398,7 @@ export function renderAudio(
 }
 
 function speakerPicture() {
-    return '<svg class="library-speaker-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h4l5-4v14l-5-4H5z"></path><path d="M17 9a4 4 0 0 1 0 6"></path><path d="M19.5 6.5a8 8 0 0 1 0 11"></path></svg>';
+    return '<img class="library-speaker-icon library-speaker-icon-light" src="/static/adapters/study/library/assets/speaker-light.svg" alt="" aria-hidden="true"><img class="library-speaker-icon library-speaker-icon-dark" src="/static/adapters/study/library/assets/speaker-dark.svg" alt="" aria-hidden="true">';
 }
 
 export function formatAudioTime(value) {

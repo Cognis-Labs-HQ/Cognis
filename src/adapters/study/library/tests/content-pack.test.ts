@@ -26,6 +26,10 @@ test("external-package compatibility fixture preserves validated contract metada
         plan.records.find(({ layer }) => layer === "words")?.class,
         "lexical:noun",
     );
+    assert.deepEqual(
+        plan.records.find(({ layer }) => layer === "words")?.tags,
+        ["fixture"],
+    );
     assert.deepEqual(plan.manifest.metadata, {
         catalog: { featured: true, rank: 1 },
         tags: ["fixture"],
@@ -412,7 +416,11 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
     await writeJson(sentenceFile, [
         { id: "sentences:sentence:valid", label: "日本語が", references },
     ]);
-    await assert.doesNotReject(inspectContentPack(root));
+    const plan = await inspectContentPack(root);
+    assert.equal(
+        plan.records.find(({ layer }) => layer === "sentences")?.class,
+        "sentences",
+    );
 
     await writeJson(sentenceFile, [
         {

@@ -7,7 +7,7 @@ export function inputForField(field, value, language, i18n) {
     const control = field.input?.control;
     const options = field.input?.options ?? [];
     if (field.type === "strokePattern")
-        return `<input name="${escapeHtml(name)}" type="hidden" data-library-provider-field>`;
+        return `<section class="library-stroke-pattern" data-library-stroke-pattern="${escapeHtml(field.id)}"><h3>${escapeHtml(label)}</h3><canvas class="library-stroke-pattern-preview" width="64" height="64" aria-label="${escapeHtml(label)}" hidden></canvas><div data-library-stroke-lookup></div><input name="${escapeHtml(name)}" type="hidden" data-library-provider-field></section>`;
     if (control === "audioFile") {
         const namespace = field.input?.file?.namespace ?? "";
         const prefix = field.input?.file?.prefix ?? `${language}/`;
@@ -41,7 +41,7 @@ export function inputForField(field, value, language, i18n) {
         field.validation?.kind === "list" ||
         control === "tagList"
     )
-        return `<div class="library-tag-field" data-library-tag-field><span>${escapeHtml(label)}</span><div class="library-tag-list">${(Array.isArray(value) ? value : []).map((item) => `<button type="button" class="btn-neutral" data-library-tag="${escapeHtml(item)}">${escapeHtml(item)} ×</button>`).join("")}</div><input data-library-tag-input aria-label="${escapeHtml(label)}"><input name="${escapeHtml(name)}" type="hidden" value="${escapeHtml((Array.isArray(value) ? value : []).join("\u001f"))}"${field.required ? " required" : ""}></div>`;
+        return `<label><span>${escapeHtml(label)}</span><textarea name="${escapeHtml(name)}"${field.required ? " required" : ""}${field.input?.immutable ? " disabled" : ""}>${escapeHtml((Array.isArray(value) ? value : []).join("\n"))}</textarea></label>`;
     const inputType =
         ["number", "integer"].includes(field.type) ||
         field.validation?.kind === "number" ||
@@ -51,4 +51,41 @@ export function inputForField(field, value, language, i18n) {
     const step =
         field.type === "integer" || field.validation?.integer ? "1" : "any";
     return `<label><span>${escapeHtml(label)}</span><input name="${escapeHtml(name)}" type="${inputType}"${inputType === "number" ? ` step="${step}"` : ""} value="${escapeHtml(value ?? "")}"${field.required ? " required" : ""}${field.input?.immutable ? " disabled" : ""}></label>`;
+}
+
+export function renderStrokePatternPreviews(form) {
+    form.querySelectorAll("[data-library-stroke-pattern]").forEach(
+        (section) => {
+            const fieldId = section.dataset.libraryStrokePattern;
+            const pattern =
+                form.elements[`field:${fieldId}`]?.libraryFieldValue;
+            const canvas = section.querySelector("canvas");
+            const strokes = Array.isArray(pattern?.strokes)
+                ? pattern.strokes
+                : [];
+            canvas.hidden = strokes.length === 0;
+            if (!strokes.length) return;
+            const context = canvas.getContext("2d");
+            if (!context) return;
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.strokeStyle = getComputedStyle(canvas).color;
+            context.lineWidth = 3;
+            context.lineCap = "round";
+            context.lineJoin = "round";
+            for (const stroke of strokes) {
+                const points = Array.isArray(stroke?.points)
+                    ? stroke.points
+                    : [];
+                if (!points.length) continue;
+                context.beginPath();
+                points.forEach((point, index) => {
+                    const x = 6 + Number(point.x) * (canvas.width - 12);
+                    const y = 6 + Number(point.y) * (canvas.height - 12);
+                    if (index === 0) context.moveTo(x, y);
+                    else context.lineTo(x, y);
+                });
+                context.stroke();
+            }
+        },
+    );
 }

@@ -131,6 +131,7 @@ test("content pack import ignores duplicate all-key references", async () => {
                 layer: "characters",
                 label: "A",
                 hidden: true,
+                tags: ["verb", "godan"],
                 references: [
                     { entryId: "i", relation: "related", position: 0 },
                 ],
@@ -169,6 +170,12 @@ test("content pack import ignores duplicate all-key references", async () => {
             ? entryInsert.values.hidden
             : undefined,
         true,
+    );
+    assert.equal(
+        entryInsert?.option === "INSERT"
+            ? entryInsert.values.tags_json
+            : undefined,
+        '["verb","godan"]',
     );
     assert.deepEqual(
         entryInsert?.option === "INSERT"
@@ -221,6 +228,73 @@ test("content pack import ignores duplicate all-key references", async () => {
         JSON.stringify({ catalog: { featured: true } }),
     );
     assert.deepEqual(receipt.metadata, { catalog: { featured: true } });
+});
+
+test("entry reads compact sparse grouped references before sorting", async () => {
+    const db: DbExecutor = {
+        ensureTable: async () => {},
+        transaction: async (callback) => callback(db),
+        executeCommand: async (command) => {
+            if (command.table === "study_library_entries") {
+                return {
+                    rows: [
+                        {
+                            id: "entry-1",
+                            scope: "global",
+                            scope_id: "global",
+                            schema_id: "japanese",
+                            schema_version: 1,
+                            layer: "words",
+                            language: "ja",
+                            label: "word",
+                            fields_json: "{}",
+                            created_by: "admin",
+                            created_at: "2026-01-01T00:00:00Z",
+                            updated_at: "2026-01-01T00:00:00Z",
+                        },
+                    ],
+                };
+            }
+            if (command.table === "study_library_references") {
+                return {
+                    rows: [
+                        {
+                            target_entry_id: "character-2",
+                            relation: "readings",
+                            position: 1,
+                            group_index: 1,
+                        },
+                        {
+                            target_entry_id: "character-1",
+                            relation: "readings",
+                            position: 0,
+                            group_index: 1,
+                        },
+                    ],
+                };
+            }
+            return { rows: [] };
+        },
+    };
+
+    const entry = await new LibraryStore(db).get("entry-1");
+
+    assert.deepEqual(entry?.referenceGroups, {
+        readings: [
+            [
+                {
+                    entryId: "character-1",
+                    relation: "readings",
+                    position: 0,
+                },
+                {
+                    entryId: "character-2",
+                    relation: "readings",
+                    position: 1,
+                },
+            ],
+        ],
+    });
 });
 
 test("authoritative content packs prune omitted records by default", async () => {
@@ -896,6 +970,22 @@ test("entry updates replace editable fields and relationships atomically", async
             label: "updated",
             fields: {},
             references: [{ entryId: "definition-1", relation: "means" }],
+            referenceGroups: {
+                readings: [
+                    [
+                        {
+                            entryId: "character-1",
+                            relation: "readings",
+                            position: 0,
+                        },
+                        {
+                            entryId: "character-2",
+                            relation: "readings",
+                            position: 1,
+                        },
+                    ],
+                ],
+            },
         },
         true,
     );
@@ -927,5 +1017,23 @@ test("entry updates replace editable fields and relationships atomically", async
                 command.option === "INSERT" &&
                 command.table === "study_library_references",
         ),
+    );
+    assert.deepEqual(
+        commands
+            .filter(
+                (command) =>
+                    command.option === "INSERT" &&
+                    command.table === "study_library_references" &&
+                    command.values.relation === "readings",
+            )
+            .map((command) => ({
+                target: command.values.target_entry_id,
+                group: command.values.group_index,
+                position: command.values.position,
+            })),
+        [
+            { target: "character-1", group: 0, position: 0 },
+            { target: "character-2", group: 0, position: 1 },
+        ],
     );
 });
