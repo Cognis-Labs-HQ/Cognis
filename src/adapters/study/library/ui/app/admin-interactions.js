@@ -577,7 +577,7 @@ export function editorBody(
             ? '<input name="alwaysShowDefinition" type="hidden" value="">'
             : `<label class="library-admin-hidden"><input name="alwaysShowDefinition" type="checkbox" class="choice-checkbox"${entry.alwaysShowDefinition ? " checked" : ""}> <span>${escapeHtml(i18n.t("gateway.study.library_always_show_definition"))}</span></label>`;
     const definitionsPanel = `${definitionSummary}${options.allowDefinitionCreate ? `<button class="btn-neutral library-definition-add" type="button" data-library-add-definition aria-label="${escapeHtml(i18n.t("gateway.study.library_add_definition"))}">+</button>` : ""}${alwaysShowDefinitionControl}`;
-    const contentClass = entry.class ?? layer?.id ?? "";
+    const contentClass = entry.class ?? "";
     const generatedLabel = options.generatedLabel
         ? `<input name="label" type="hidden" required maxlength="500" value="${escapeHtml(entry.label)}">`
         : "";

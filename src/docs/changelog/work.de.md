@@ -130,18 +130,19 @@ Eine transformierte Karte ersetzt ihre Variantensteuerung nun durch die lokalisi
 
 Die Zeichenübungsfläche passt ihren logischen Strichkoordinatenraum nun in einen zentrierten, seitenverhältnistreuen Darstellungsbereich ein, der aus der tatsächlichen Canvas-Größe abgeleitet wird. Größenänderungen können horizontalen oder vertikalen Freiraum ergänzen, verzerren jedoch Zeichen, Hilfslinien, Anmerkungen, angenommene Striche und aktive Zeigereingaben nicht mehr.
 
+## Zuverlässige Vokabelzusammenstellung
+
+Formulare zum Erstellen und Bearbeiten von Vokabeln zeigen nun auch dann ein Zeichenkarussell, wenn ein Anbieter nur eine Aussprachebeziehung deklariert. Gespeicherte Aussprachegruppen werden sichtbar aus der Bereitstellungszeile verschoben, Anbieter-Tags erhalten keine redundante Ebenenklasse mehr und fehlgeschlagene Erstellungen zeigen einen Fehler, während das Formular geöffnet bleibt.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
-
 - [54c47947](https://github.com/Cognis-Labs-HQ/Cognis/commit/54c479475d86915fff94aff089b9670f887d4c7d)
 
 - [44891fa5](https://github.com/Cognis-Labs-HQ/Cognis/commit/44891fa5705fc417cf0fbd75b96599a6fac21895)
-
 - [3e86f4e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e86f4e5c83828d0101fbacb4354381048de5290)
 
 - [03268e5b](https://github.com/Cognis-Labs-HQ/Cognis/commit/03268e5bb34d94a46146b0ec6ba9f3e678752481)
-
 - [8862690a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8862690a835650a677efa6a5404ad55491b6a778)
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -171,3 +172,4 @@ Die Zeichenübungsfläche passt ihren logischen Strichkoordinatenraum nun in ein
 - [7dea5c6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dea5c6c)
 - [e356a233](https://github.com/Cognis-Labs-HQ/Cognis/commit/e356a233)
 - [6c0ba3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c0ba3ed)
+- [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)

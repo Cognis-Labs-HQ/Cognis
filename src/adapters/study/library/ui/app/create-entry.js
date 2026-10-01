@@ -278,6 +278,103 @@ export async function openCreateEntryPopup({
         }
         nestedDefinitionIds.length = 0;
     };
+    let createdEntry = null;
+    const submitEntry = async () => {
+        const publishEveryone = form.elements.publishEveryone?.checked === true;
+        const scope =
+            publishEveryone && canPublishEveryone
+                ? "global"
+                : form.elements.publishClass?.checked
+                  ? "class"
+                  : "user";
+        const scopeId =
+            scope === "class"
+                ? form.elements.classId.value
+                : scope === "global"
+                  ? "global"
+                  : undefined;
+        const references = readReferences(
+            form,
+            editingLayer,
+            form.compositionOrder ?? [],
+        );
+        const fields = readFields(form, editingLayer, draft);
+        applyDerivedPronunciation(
+            fields,
+            references,
+            entries,
+            schema,
+            editingLayer,
+            derivesPronunciation,
+        );
+        const candidate = {
+            ...draft,
+            label: form.elements.label.value,
+            class: form.elements.class.value || undefined,
+            tags: form.elements.tags.value.split("\u001f").filter(Boolean),
+            fields,
+            references,
+            referenceGroups: readReferenceGroups(form),
+            definitionLanguages:
+                layer.semanticRole === "definition"
+                    ? ["de", "en", "id", "ja"]
+                    : undefined,
+            alwaysShowDefinition:
+                form.elements.alwaysShowDefinition?.checked === true,
+            hidden:
+                form.elements.hidden?.value === "true" ||
+                form.elements.hidden?.checked === true,
+        };
+        try {
+            const created = await createLibraryEntry(
+                { scope, scopeId },
+                candidate,
+            );
+            if (publishEveryone && !canPublishEveryone)
+                await requestLibraryPromotion(created.id, {
+                    scope: "global",
+                    scopeId: "global",
+                });
+            nestedDefinitionIds.length = 0;
+            return created;
+        } catch (error) {
+            if (error.message === "content_conflict") {
+                const conflictId = error.details?.conflictEntryId;
+                if (conflictId) {
+                    const decision = await openPopup({
+                        title: i18n.t("gateway.study.library_conflict_title"),
+                        body: `<p>${escapeHtml(i18n.t("gateway.study.library_conflict_body"))}</p>`,
+                        actions: [
+                            {
+                                id: "continue",
+                                label: i18n.t(
+                                    "gateway.study.library_create_anyway",
+                                ),
+                                variant: "confirm",
+                            },
+                            {
+                                id: "cancel",
+                                label: i18n.t("ui.reuse.cancel"),
+                                variant: "cancel",
+                            },
+                        ],
+                    });
+                    if (decision !== "continue") return null;
+                    try {
+                        const existing = await fetchLibraryEntry(conflictId);
+                        nestedDefinitionIds.length = 0;
+                        return existing;
+                    } catch (fetchError) {
+                        void fetchError;
+                    }
+                }
+            }
+            showToast(i18n.t("gateway.study.library_create_error"), {
+                variant: "error",
+            });
+            return null;
+        }
+    };
     const action = await openPopup({
         title: i18n
             .t("gateway.study.library_create_typed")
@@ -297,7 +394,7 @@ export async function openCreateEntryPopup({
                 variant: "cancel",
             },
         ],
-        onAction(actionId, overlay) {
+        async onAction(actionId, overlay) {
             if (actionId !== "create") return true;
             const activeForm = overlay.querySelector(
                 "[data-library-admin-editor]",
@@ -337,7 +434,8 @@ export async function openCreateEntryPopup({
                 );
                 return false;
             }
-            return true;
+            createdEntry = await submitEntry();
+            return createdEntry !== null;
         },
         onOpen(overlay) {
             form = overlay.querySelector("[data-library-admin-editor]");
@@ -550,109 +648,11 @@ export async function openCreateEntryPopup({
         },
     });
     carouselController?.abort();
-    form?.compositionController?.validate();
-    if (
-        action !== "create" ||
-        form?.querySelector('[data-uploading="true"]') ||
-        !form?.reportValidity()
-    ) {
+    if (action !== "create" || !createdEntry) {
         await rollbackNestedDefinitions();
         return null;
     }
-    const publishEveryone = form.elements.publishEveryone?.checked === true;
-    const scope =
-        publishEveryone && canPublishEveryone
-            ? "global"
-            : form.elements.publishClass?.checked
-              ? "class"
-              : "user";
-    const scopeId =
-        scope === "class"
-            ? form.elements.classId.value
-            : scope === "global"
-              ? "global"
-              : undefined;
-    const references = readReferences(
-        form,
-        editingLayer,
-        form.compositionOrder ?? [],
-    );
-    const fields = readFields(form, editingLayer, draft);
-    applyDerivedPronunciation(
-        fields,
-        references,
-        entries,
-        schema,
-        editingLayer,
-        derivesPronunciation,
-    );
-    const entry = {
-        ...draft,
-        label: form.elements.label.value,
-        class: form.elements.class.value || undefined,
-        tags: form.elements.tags.value.split("\u001f").filter(Boolean),
-        fields,
-        references,
-        referenceGroups: readReferenceGroups(form),
-        definitionLanguages:
-            layer.semanticRole === "definition"
-                ? ["de", "en", "id", "ja"]
-                : undefined,
-        alwaysShowDefinition:
-            form.elements.alwaysShowDefinition?.checked === true,
-        hidden:
-            form.elements.hidden?.value === "true" ||
-            form.elements.hidden?.checked === true,
-    };
-    const createAndRequestPublication = async (candidate) => {
-        const created = await createLibraryEntry({ scope, scopeId }, candidate);
-        if (publishEveryone && !canPublishEveryone)
-            await requestLibraryPromotion(created.id, {
-                scope: "global",
-                scopeId: "global",
-            });
-        return created;
-    };
-    try {
-        const created = await createAndRequestPublication(entry);
-        nestedDefinitionIds.length = 0;
-        return created;
-    } catch (error) {
-        if (error.message !== "content_conflict") {
-            await rollbackNestedDefinitions();
-            throw error;
-        }
-        const decision = await openPopup({
-            title: i18n.t("gateway.study.library_conflict_title"),
-            body: `<p>${escapeHtml(i18n.t("gateway.study.library_conflict_body"))}</p>`,
-            actions: [
-                {
-                    id: "continue",
-                    label: i18n.t("gateway.study.library_create_anyway"),
-                    variant: "confirm",
-                },
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.cancel"),
-                    variant: "cancel",
-                },
-            ],
-        });
-        if (decision !== "continue") {
-            await rollbackNestedDefinitions();
-            return null;
-        }
-        try {
-            const created = await fetchLibraryEntry(
-                error.details?.conflictEntryId,
-            );
-            nestedDefinitionIds.length = 0;
-            return created;
-        } catch (retryError) {
-            await rollbackNestedDefinitions();
-            throw retryError;
-        }
-    }
+    return createdEntry;
 }
 
 async function openDefinitionPopup({ schema, schemaId, layerId, i18n }) {

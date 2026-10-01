@@ -110,9 +110,13 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
             }),
     );
     const layerLabel = localizedLabel(layer?.metadata, entry.language);
-    const classPill = layerLabel
-        ? `<span class="library-metadata-pill library-content-class-pill">${escapeHtml(layerLabel)}</span>`
-        : "";
+    const providerIdentifiesVocabulary =
+        layer?.semanticRole === "lexicalUnit" &&
+        (entry.tags ?? []).some((tag) => tag.toLocaleLowerCase() === "vocab");
+    const classPill =
+        layerLabel && !providerIdentifiesVocabulary
+            ? `<span class="library-metadata-pill library-content-class-pill">${escapeHtml(layerLabel)}</span>`
+            : "";
     const tagPills = (entry.tags ?? [])
         .map(
             (tag) =>

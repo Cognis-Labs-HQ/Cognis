@@ -130,18 +130,19 @@ Kartu hasil transformasi kini mengganti kontrol Varian dengan tindakan terlokali
 
 Kanvas Latihan Menggambar kini menyesuaikan ruang koordinat goresan logis ke viewport terpusat yang mempertahankan rasio aspek berdasarkan ukuran kanvas hasil render sebenarnya. Perubahan ukuran dapat menambahkan ruang horizontal atau vertikal, tetapi tidak lagi meregangkan karakter, panduan, anotasi, goresan yang diterima, maupun masukan penunjuk aktif.
 
+## Komposisi Kosakata yang Andal
+
+Formulir buat dan edit kosakata kini menampilkan carousel karakter meskipun penyedia hanya mendeklarasikan hubungan pelafalan. Grup pelafalan tersimpan terlihat berpindah dari baris penampungan, tag penyedia tidak lagi memperoleh kelas lapisan yang redundan, dan pembuatan yang gagal menampilkan galat sambil mempertahankan formulir tetap terbuka.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
-
 - [54c47947](https://github.com/Cognis-Labs-HQ/Cognis/commit/54c479475d86915fff94aff089b9670f887d4c7d)
 
 - [44891fa5](https://github.com/Cognis-Labs-HQ/Cognis/commit/44891fa5705fc417cf0fbd75b96599a6fac21895)
-
 - [3e86f4e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e86f4e5c83828d0101fbacb4354381048de5290)
 
 - [03268e5b](https://github.com/Cognis-Labs-HQ/Cognis/commit/03268e5bb34d94a46146b0ec6ba9f3e678752481)
-
 - [8862690a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8862690a835650a677efa6a5404ad55491b6a778)
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -171,3 +172,4 @@ Kanvas Latihan Menggambar kini menyesuaikan ruang koordinat goresan logis ke vie
 - [7dea5c6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dea5c6c)
 - [e356a233](https://github.com/Cognis-Labs-HQ/Cognis/commit/e356a233)
 - [6c0ba3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c0ba3ed)
+- [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)

@@ -468,16 +468,22 @@ export function mountEditableRelationshipCarousels(
                         );
                     }
                     stagedValues.set(relationshipId, []);
-                    continue;
+                } else {
+                    const committed = new Set(
+                        Array.from(
+                            select.selectedOptions,
+                            ({ value }) => value,
+                        ),
+                    );
+                    staged.forEach((entryId) => committed.add(entryId));
+                    for (const option of select.options)
+                        option.selected = committed.has(option.value);
+                    onChange({
+                        id: relationshipId,
+                        values: Array.from(committed),
+                    });
+                    stagedValues.set(relationshipId, []);
                 }
-                const committed = new Set(
-                    Array.from(select.selectedOptions, ({ value }) => value),
-                );
-                staged.forEach((entryId) => committed.add(entryId));
-                for (const option of select.options)
-                    option.selected = committed.has(option.value);
-                onChange({ id: relationshipId, values: Array.from(committed) });
-                stagedValues.set(relationshipId, []);
                 form.querySelectorAll(
                     `[data-horizontal-carousel="${CSS.escape(relationshipId)}"] [data-carousel-value].is-selected`,
                 ).forEach((item) => {

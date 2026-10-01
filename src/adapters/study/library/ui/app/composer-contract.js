@@ -121,6 +121,21 @@ export function resolveComposerContract(schema, layer, constructor) {
             )
             .map(({ id }) => id),
     );
+    if (layer?.semanticRole === "lexicalUnit") {
+        for (const targetLayer of inputCarouselLayers) {
+            const hasInputCarousel = Array.from(inputCarouselIds).some(
+                (id) => relationshipsById.get(id)?.targetLayer === targetLayer,
+            );
+            if (hasInputCarousel) continue;
+            const target = schema?.layers?.find(({ id }) => id === targetLayer);
+            if (target?.semanticRole !== "atomicWritingUnit") continue;
+            const characterRelationship = relationships.find(
+                (relationship) => relationship.targetLayer === targetLayer,
+            );
+            if (characterRelationship)
+                inputCarouselIds.add(characterRelationship.id);
+        }
+    }
     return {
         constructor: effectiveConstructor,
         layer: { ...layer, fields, relationships },

@@ -130,18 +130,19 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 描画練習キャンバスは、実際の表示サイズから算出した中央配置・アスペクト比維持の表示領域へ、論理ストローク座標を収めるようになりました。サイズ変更時に横または縦の余白が加わることはありますが、文字・ガイド・注釈・確定ストローク・描画中のポインター入力は引き伸ばされません。
 
+## 信頼性の高い語彙構成
+
+プロバイダーが発音関係のみを宣言している場合でも、語彙の作成・編集フォームに文字カルーセルが表示されるようになりました。保存した発音グループはステージ行から項目へ移動し、プロバイダーのタグに重複したレイヤークラスは追加されず、作成に失敗した場合はフォームを開いたままエラーを表示します。
+
 ## コミット
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
-
 - [54c47947](https://github.com/Cognis-Labs-HQ/Cognis/commit/54c479475d86915fff94aff089b9670f887d4c7d)
 
 - [44891fa5](https://github.com/Cognis-Labs-HQ/Cognis/commit/44891fa5705fc417cf0fbd75b96599a6fac21895)
-
 - [3e86f4e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e86f4e5c83828d0101fbacb4354381048de5290)
 
 - [03268e5b](https://github.com/Cognis-Labs-HQ/Cognis/commit/03268e5bb34d94a46146b0ec6ba9f3e678752481)
-
 - [8862690a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8862690a835650a677efa6a5404ad55491b6a778)
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -171,3 +172,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [7dea5c6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dea5c6c)
 - [e356a233](https://github.com/Cognis-Labs-HQ/Cognis/commit/e356a233)
 - [6c0ba3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c0ba3ed)
+- [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)
