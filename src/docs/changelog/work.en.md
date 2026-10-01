@@ -134,6 +134,10 @@ The Drawing Practice canvas now fits its logical stroke coordinate space into a 
 
 Vocabulary create and edit forms now expose a character carousel even when a provider only declares a pronunciation relationship. Saved pronunciation groups visibly move out of the staging row, provider tags no longer gain a redundant layer class, and failed creates show an error while preserving the open form.
 
+## Reliable Multi-value Pronunciations
+
+Saving a pronunciation now commits its carousel selection, preserves authored multi-value pronunciations during card creation, and reports a specific corrective message if pronunciation groups are invalid.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -173,3 +177,4 @@ Vocabulary create and edit forms now expose a character carousel even when a pro
 - [e356a233](https://github.com/Cognis-Labs-HQ/Cognis/commit/e356a233)
 - [6c0ba3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c0ba3ed)
 - [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)
+- [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)

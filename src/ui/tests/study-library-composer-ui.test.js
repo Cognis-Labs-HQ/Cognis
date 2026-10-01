@@ -167,6 +167,10 @@ test("Study Library derives pronunciation using the provider field type", () => 
         /pronunciationField\.validation\?\.kind === "list"/,
     );
     assert.match(composerContractSource, /\? \[pronunciation\]/);
+    assert.match(
+        composerContractSource,
+        /pronunciationField\.multi_value === true[\s\S]*fields\.pronunciation\.some/,
+    );
     assert.match(adminInteractionsSource, /name="class" type="hidden"/);
     assert.doesNotMatch(adminInteractionsSource, /<select name="class">/);
 });

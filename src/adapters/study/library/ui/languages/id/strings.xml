@@ -6,6 +6,7 @@
   <string name="gateway.study.library_create">Buat kartu</string>
   <string name="gateway.study.library_create_typed">Buat kartu {type}</string>
   <string name="gateway.study.library_create_error">Kartu Perpustakaan tidak dapat dibuat. Periksa konten yang dimasukkan lalu coba lagi.</string>
+  <string name="gateway.study.library_pronunciation_group_error">Grup pelafalan tidak dapat disimpan. Simpan setiap pelafalan di korsel, lalu coba buat kartu lagi.</string>
   <string name="gateway.study.library_requests">Permintaan</string>
   <string name="gateway.study.library_requests_subtitle">Tinjau dan kelola permintaan penerbitan Pustaka</string>
   <string name="gateway.study.library_approve">Setujui</string>

@@ -790,7 +790,7 @@ export function validateReferences(
                 (relation) => referenceGroups[relation]?.length ?? 0,
             ),
         );
-        if (groupCount !== values.length)
+        if (groupCount > values.length)
             throw new Error(`field_reference_group_mismatch:${field.id}`);
     }
     const requiredPronunciationRelationships = new Set(

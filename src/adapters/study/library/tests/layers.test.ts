@@ -316,6 +316,49 @@ test("one pronunciation group may span multiple linked relationships", () => {
     );
 });
 
+test("multi-value fields may include authored values without reference groups", () => {
+    const schema: LibrarySchema = structuredClone(english);
+    schema.layers[1].relationships![0].grouped = true;
+    schema.layers[1].relationships![0].minimum = 0;
+    schema.layers[1].fields = [
+        {
+            id: "pronunciation",
+            metadata: { labels: { en: "Pronunciation" } },
+            type: "stringList",
+            multi_value: true,
+            input: {
+                control: "tagList",
+                linkRelationships: ["letters"],
+            },
+        },
+    ];
+
+    assert.doesNotThrow(() =>
+        validateReferences(
+            schema,
+            "words",
+            [],
+            new Map(),
+            {},
+            {
+                pronunciation: ["authored"],
+            },
+        ),
+    );
+    assert.throws(
+        () =>
+            validateReferences(
+                schema,
+                "words",
+                [],
+                new Map(),
+                { letters: [[], []] },
+                { pronunciation: ["authored"] },
+            ),
+        /field_reference_group_mismatch:pronunciation/,
+    );
+});
+
 test("layers can explicitly reference other entries in the same layer", () => {
     const schema: LibrarySchema = {
         ...english,

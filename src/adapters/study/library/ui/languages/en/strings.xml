@@ -6,6 +6,7 @@
   <string name="gateway.study.library_create">Create card</string>
   <string name="gateway.study.library_create_typed">Create {type} card</string>
   <string name="gateway.study.library_create_error">Could not create the Library card. Check the entered content and try again.</string>
+  <string name="gateway.study.library_pronunciation_group_error">Could not save the pronunciation groups. Save each pronunciation in the carousel, then try creating the card again.</string>
   <string name="gateway.study.library_requests">Requests</string>
   <string name="gateway.study.library_requests_subtitle">Review and manage Library publishing requests</string>
   <string name="gateway.study.library_approve">Approve</string>

@@ -134,6 +134,10 @@ Kanvas Latihan Menggambar kini menyesuaikan ruang koordinat goresan logis ke vie
 
 Formulir buat dan edit kosakata kini menampilkan carousel karakter meskipun penyedia hanya mendeklarasikan hubungan pelafalan. Grup pelafalan tersimpan terlihat berpindah dari baris penampungan, tag penyedia tidak lagi memperoleh kelas lapisan yang redundan, dan pembuatan yang gagal menampilkan galat sambil mempertahankan formulir tetap terbuka.
 
+## Pelafalan Multi-nilai yang Andal
+
+Penyimpanan pelafalan kini menerapkan pilihan korsel, mempertahankan pelafalan multi-nilai yang dibuat pengguna selama pembuatan kartu, dan menampilkan pesan korektif khusus jika grup pelafalan tidak valid.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -173,3 +177,4 @@ Formulir buat dan edit kosakata kini menampilkan carousel karakter meskipun peny
 - [e356a233](https://github.com/Cognis-Labs-HQ/Cognis/commit/e356a233)
 - [6c0ba3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c0ba3ed)
 - [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)
+- [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)

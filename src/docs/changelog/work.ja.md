@@ -134,6 +134,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 プロバイダーが発音関係のみを宣言している場合でも、語彙の作成・編集フォームに文字カルーセルが表示されるようになりました。保存した発音グループはステージ行から項目へ移動し、プロバイダーのタグに重複したレイヤークラスは追加されず、作成に失敗した場合はフォームを開いたままエラーを表示します。
 
+## 信頼性の高い複数値の発音
+
+発音の保存時にカルーセルの選択が確定され、カード作成中も手動で作成した複数値の発音が保持されます。発音グループが無効な場合は、具体的な修正メッセージが表示されます。
+
 ## コミット
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -173,3 +177,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [e356a233](https://github.com/Cognis-Labs-HQ/Cognis/commit/e356a233)
 - [6c0ba3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c0ba3ed)
 - [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)
+- [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)

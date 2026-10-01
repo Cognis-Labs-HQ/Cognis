@@ -369,7 +369,12 @@ export async function openCreateEntryPopup({
                     }
                 }
             }
-            showToast(i18n.t("gateway.study.library_create_error"), {
+            const message = error.message.startsWith(
+                "field_reference_group_mismatch:",
+            )
+                ? i18n.t("gateway.study.library_pronunciation_group_error")
+                : i18n.t("gateway.study.library_create_error");
+            showToast(message, {
                 variant: "error",
             });
             return null;

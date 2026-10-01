@@ -134,6 +134,10 @@ Die Zeichenübungsfläche passt ihren logischen Strichkoordinatenraum nun in ein
 
 Formulare zum Erstellen und Bearbeiten von Vokabeln zeigen nun auch dann ein Zeichenkarussell, wenn ein Anbieter nur eine Aussprachebeziehung deklariert. Gespeicherte Aussprachegruppen werden sichtbar aus der Bereitstellungszeile verschoben, Anbieter-Tags erhalten keine redundante Ebenenklasse mehr und fehlgeschlagene Erstellungen zeigen einen Fehler, während das Formular geöffnet bleibt.
 
+## Zuverlässige mehrwertige Aussprachen
+
+Beim Speichern einer Aussprache wird nun die Karussellauswahl übernommen, manuell erstellte mehrwertige Aussprachen bleiben bei der Kartenerstellung erhalten und bei ungültigen Aussprachegruppen erscheint eine konkrete Korrekturmeldung.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -173,3 +177,4 @@ Formulare zum Erstellen und Bearbeiten von Vokabeln zeigen nun auch dann ein Zei
 - [e356a233](https://github.com/Cognis-Labs-HQ/Cognis/commit/e356a233)
 - [6c0ba3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c0ba3ed)
 - [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)
+- [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)

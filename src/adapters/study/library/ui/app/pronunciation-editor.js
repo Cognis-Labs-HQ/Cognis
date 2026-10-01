@@ -409,6 +409,7 @@ export function mountEditableRelationshipCarousels(
                 "[data-library-save-composed-value]",
             );
             if (!save) return;
+            event.preventDefault();
             const compositionField = save.closest(
                 "[data-library-composition-field]",
             );
@@ -495,6 +496,7 @@ export function mountEditableRelationshipCarousels(
             }
             renderSelectedReferences();
             renderSavedValues(compositionField);
+            form.dispatchEvent(new CustomEvent("library-composition-change"));
         },
         { signal: controller.signal },
     );

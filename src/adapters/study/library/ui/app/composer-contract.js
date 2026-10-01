@@ -197,6 +197,12 @@ export function applyDerivedPronunciation(
         ({ id }) => id === "pronunciation",
     );
     if (!pronunciationField) return fields;
+    if (
+        pronunciationField.multi_value === true &&
+        Array.isArray(fields.pronunciation) &&
+        fields.pronunciation.some((value) => String(value).trim())
+    )
+        return fields;
     fields.pronunciation =
         pronunciationField.type === "stringList" ||
         pronunciationField.validation?.kind === "list"
