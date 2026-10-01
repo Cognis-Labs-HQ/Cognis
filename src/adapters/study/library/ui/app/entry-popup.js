@@ -100,7 +100,7 @@ export async function openEntryPopup(
             entries,
             i18n,
             languageCode,
-            options,
+            { ...options, transformation: selectedTransformation },
         );
         if (options.showNew) {
             composed.body = `<div class="library-popup-new"><span class="library-new-pill">${i18n.t("gateway.study.library_new")}</span></div>${composed.body}`;
@@ -270,7 +270,7 @@ export async function openEntryPopup(
             URL.revokeObjectURL(objectUrl);
         }
         signal?.removeEventListener("abort", abortPopup);
-        if (chosenTransformation) {
+        if (chosenTransformation !== undefined) {
             selectedTransformation = chosenTransformation;
             selectedEntry = detail.entry;
             sourceDefinition = "";

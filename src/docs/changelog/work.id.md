@@ -122,7 +122,13 @@ Graf transformasi kini memakai satu baris horizontal untuk setiap kedalaman, men
 
 Pohon transformasi kini menampilkan entri tanpa transformasi sebagai kartu akar terpusat dan memulai garis penghubung di bawah area definisi setiap simpul. Transformasi definisi mendukung substitusi terlokalisasi berurutan sebelum templat cadangan, sehingga aturan berikutnya dapat menulis ulang makna sebelumnya—misalnya “want to” menjadi “have wanted to”—atau menambahkan urutan setelah definisi hasil transformasi lengkap.
 
+## Kembali dari Kartu Transformasi
+
+Kartu hasil transformasi kini mengganti kontrol Varian dengan tindakan terlokalisasi “Kembali ke {kartu}”. Tindakan tersebut memulihkan kartu kanonik dalam konteks navigasi detail yang sama, termasuk judul, pelafalan, definisi, sasaran gambar, kemampuan penyuntingan, dan kontrol Varian.
+
 ## Commit
+
+- [54c47947](https://github.com/Cognis-Labs-HQ/Cognis/commit/54c479475d86915fff94aff089b9670f887d4c7d)
 
 - [44891fa5](https://github.com/Cognis-Labs-HQ/Cognis/commit/44891fa5705fc417cf0fbd75b96599a6fac21895)
 

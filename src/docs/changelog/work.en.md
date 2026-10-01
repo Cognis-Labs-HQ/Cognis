@@ -122,7 +122,13 @@ Transformation graphs now use one horizontal row per depth, place spacious defin
 
 Transformation trees now render the untransformed entry as the centered root card and start links below each node’s definition area. Definition transforms support ordered localized substitutions before fallback templates, enabling later rules to rewrite prior meanings—such as “want to” into “have wanted to”—or append sequencing after the complete transformed definition.
 
+## Return from Transformed Cards
+
+A transformed card now replaces its Variants control with a localized “Return to {card}” action. Returning restores the canonical card within the same detail-navigation context, including its title, pronunciation, definitions, drawing target, edit capability, and Variants control.
+
 ## Commits
+
+- [54c47947](https://github.com/Cognis-Labs-HQ/Cognis/commit/54c479475d86915fff94aff089b9670f887d4c7d)
 
 - [44891fa5](https://github.com/Cognis-Labs-HQ/Cognis/commit/44891fa5705fc417cf0fbd75b96599a6fac21895)
 

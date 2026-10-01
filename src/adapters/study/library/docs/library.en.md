@@ -341,3 +341,5 @@ Verb and adverb entries remain on the Vocabulary page, where provider-declared t
 Transformation graphs place every depth on one horizontal row, keep definitions below cards, provide fourteen-rem definition columns, and constrain both horizontal and vertical overflow to the graph viewport. Popup controls therefore remain visible while deep or highly branched conjugation families retain readable cards and definitions.
 
 Definition transforms may also declare ordered localized `replacements`. The first matching substitution rewrites an earlier transformation before any fallback template is used, enabling context-sensitive chains such as `to (want to) exist` → `to (have wanted to) exist`; templates using `{{ definition }}` can instead append semantics, such as `to (want to) exist (and then)`. The untransformed entry is rendered as the centered root card above the first transformation row.
+
+While a transformed entry is displayed, the Variants action is replaced by **Return to {card}**. Returning restores the canonical title, pronunciation, definitions, drawing input, and normal Variants action without closing the detail-navigation context.

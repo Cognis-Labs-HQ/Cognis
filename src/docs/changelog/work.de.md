@@ -122,7 +122,13 @@ Transformationsgraphen verwenden jetzt pro Tiefe eine horizontale Reihe, platzie
 
 Transformationsbäume zeigen den unveränderten Eintrag nun als zentrierte Stammkarte und beginnen Verbindungen unter dem Definitionsbereich jedes Knotens. Definitionstransformationen unterstützen geordnete lokalisierte Ersetzungen vor Ausweichvorlagen. Spätere Regeln können damit frühere Bedeutungen umschreiben – etwa „want to“ zu „have wanted to“ – oder eine Abfolge an die vollständig transformierte Definition anhängen.
 
+## Rückkehr von transformierten Karten
+
+Eine transformierte Karte ersetzt ihre Variantensteuerung nun durch die lokalisierte Aktion „Zurück zu {Karte}“. Die Rückkehr stellt die kanonische Karte im selben Detail-Navigationskontext wieder her – einschließlich Titel, Aussprache, Definitionen, Zeichenziel, Bearbeitungsmöglichkeit und Variantensteuerung.
+
 ## Commits
+
+- [54c47947](https://github.com/Cognis-Labs-HQ/Cognis/commit/54c479475d86915fff94aff089b9670f887d4c7d)
 
 - [44891fa5](https://github.com/Cognis-Labs-HQ/Cognis/commit/44891fa5705fc417cf0fbd75b96599a6fac21895)
 

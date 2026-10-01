@@ -23,6 +23,7 @@
   <string name="gateway.study.library_filter_empty">Keine Einträge entsprechen den ausgewählten Filtern.</string>
   <string name="gateway.study.library_variant_hint">Gedrückt halten, um weitere Karten anzuzeigen</string>
   <string name="gateway.study.library_variants">Varianten</string>
+  <string name="gateway.study.library_return_to_card">Zurück zu {{ card }}</string>
   <string name="gateway.study.library_scope_global">Bereich: Global</string>
   <string name="gateway.study.library_scope_class">Bereich: Klasse {{ class name }}</string>
   <string name="gateway.study.library_scope_user">Bereich: Benutzer</string>

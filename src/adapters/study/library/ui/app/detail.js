@@ -120,11 +120,14 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
         )
         .join("");
     const schema = schemas.find(({ id }) => id === entry.schemaId);
-    const variants = transformationPathways(entry, schema).some(
+    const hasVariants = transformationPathways(entry, schema).some(
         ({ nodes }) => nodes.length > 1,
-    )
-        ? `<button class="library-detail-variants btn-neutral" type="button" data-library-transform-variants>${escapeHtml(i18n.t("gateway.study.library_variants"))}</button>`
-        : "";
+    );
+    const variants = options.transformation
+        ? `<button class="library-detail-variants btn-neutral" type="button" data-library-transform-return>${escapeHtml(i18n.t("gateway.study.library_return_to_card").replace("{{ card }}", entry.label))}</button>`
+        : hasVariants
+          ? `<button class="library-detail-variants btn-neutral" type="button" data-library-transform-variants>${escapeHtml(i18n.t("gateway.study.library_variants"))}</button>`
+          : "";
     return [
         `<header class="library-detail-summary">${renderAudio(entry, layer, entries, schemas, i18n.t("gateway.study.library_play_audio"), i18n.t("gateway.study.library_dependencies_missing_audio"))}<div class="library-entry-indicators">${classPill}${tagPills}${renderMetadataPills(entry, layer)}</div>${variants}</header>`,
         options.showReferenceTree ? relationTree(references, usedBy, i18n) : "",

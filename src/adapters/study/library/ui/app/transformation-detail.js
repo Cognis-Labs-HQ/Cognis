@@ -13,6 +13,10 @@ export function transformedDetailEntry(entry, transformation) {
 }
 
 export function selectDetailTransformation(event, context) {
+    if (event.target.closest("[data-library-transform-return]")) {
+        context.onSelected(null);
+        return true;
+    }
     if (!event.target.closest("[data-library-transform-variants]"))
         return false;
     void openTransformationTreePopup(
