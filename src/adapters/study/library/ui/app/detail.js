@@ -187,18 +187,27 @@ export async function composeDetail(
                       ? contribution.actions
                       : [],
               );
-    const sections = [
+    const core = [
         ...sectionsFor("beforeCore"),
         ...coreSections(detail, schemas, entries, i18n, options),
-        section(
-            i18n.t("gateway.study.library_additional_definitions"),
-            additionalDefinitions,
-        ),
-        ...sectionsFor("core"),
-        ...sectionsFor("afterCore"),
     ];
+    const tail = [...sectionsFor("core"), ...sectionsFor("afterCore")];
+    const renderBody = (definitions) =>
+        `<div class="library-detail">${[
+            ...core,
+            section(
+                i18n.t("gateway.study.library_additional_definitions"),
+                definitions.slice(1),
+            ),
+            ...tail,
+        ].join("")}</div>`;
+    const definitions = [titleDefinition, ...additionalDefinitions].filter(
+        Boolean,
+    );
     return {
-        body: `<div class="library-detail">${sections.join("")}</div>`,
+        body: renderBody(definitions),
+        definitions,
+        renderBody,
         titleDefinition,
         titleLeading: renderScope(detail.entry, i18n),
         actions,

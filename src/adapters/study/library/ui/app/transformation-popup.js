@@ -3,7 +3,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { localizedLabel } from "./presentation.js";
 import {
     matchingTransformation,
-    transformedDefinition,
+    transformedDefinitions,
     transformationPathways,
 } from "./transformations.js";
 import { highlightTransformationPath } from "./transformation-interactions.js";
@@ -12,7 +12,7 @@ function renderTransformationNodes(
     nodes,
     schema,
     selectedNode,
-    baseDefinition,
+    baseDefinitions,
 ) {
     const children = new Map();
     nodes.forEach((node, index) => {
@@ -29,12 +29,12 @@ function renderTransformationNodes(
                 const descriptor =
                     localizedLabel(node.rule.metadata, schema.language) ||
                     node.rule.id;
-                const definition = transformedDefinition(
-                    baseDefinition,
+                const definitions = transformedDefinitions(
+                    baseDefinitions,
                     node,
                     schema.language,
                 );
-                return `<li data-library-transform-node="${index}" data-library-transform-parent="${parentIndex}">${definition ? `<p class="library-transform-definition">${escapeHtml(definition)}</p>` : ""}<button class="btn-neutral${node === selectedNode ? " active" : ""}" type="button" data-library-transform-index="${index}" data-library-transform-pronunciation-value="${escapeHtml(node.pronunciation)}" data-library-transform-definition-value="${escapeHtml(definition)}"><strong>${escapeHtml(node.value)}</strong><span class="library-transform-info" aria-label="${escapeHtml(descriptor)}">i<span role="tooltip">${escapeHtml(descriptor)}</span></span></button>${branch(index)}</li>`;
+                return `<li data-library-transform-node="${index}" data-library-transform-parent="${parentIndex}">${definitions.map((definition) => `<p class="library-transform-definition">${escapeHtml(definition)}</p>`).join("")}<button class="btn-neutral${node === selectedNode ? " active" : ""}" type="button" data-library-transform-index="${index}"><strong>${escapeHtml(node.value)}</strong><span class="library-transform-info" aria-label="${escapeHtml(descriptor)}">i<span role="tooltip">${escapeHtml(descriptor)}</span></span></button>${branch(index)}</li>`;
             })
             .join("")}</ol>`;
     };
@@ -46,12 +46,12 @@ export function renderTransformationTree(
     schema,
     pathway,
     selectedNode = pathway.nodes[0],
-    { showSummary = true, baseDefinition = "" } = {},
+    { showSummary = true, baseDefinitions = [] } = {},
 ) {
     const summary = showSummary
         ? `<header><output data-library-transform-output>${escapeHtml(selectedNode.value)}</output><span data-library-transform-pronunciation>${escapeHtml(selectedNode.pronunciation)}</span><span data-library-transform-definition>${escapeHtml(localizedLabel(selectedNode.definition, schema.language))}</span></header>`
         : "";
-    return `<div class="library-transform-tech-tree" data-library-transform-tree data-library-transform-entry="${escapeHtml(entry.id)}">${summary}${renderTransformationNodes(pathway.nodes, schema, selectedNode, baseDefinition)}</div>`;
+    return `<div class="library-transform-tech-tree"><div class="library-transform-graph" data-library-transform-tree data-library-transform-entry="${escapeHtml(entry.id)}">${summary}<svg class="library-transform-links" aria-hidden="true"></svg>${renderTransformationNodes(pathway.nodes, schema, selectedNode, baseDefinitions)}</div></div>`;
 }
 
 export function sourceTransformation(entry, schema, sourceLabel) {
@@ -70,11 +70,10 @@ export function transformedPopupPresentation(
     schema,
     titleDetailItems,
     body,
+    definitions = [],
 ) {
-    if (!transformation) return { title: entry.label, titleDetailItems, body };
-    const baseDefinition = titleDetailItems.find(
-        ({ placement }) => placement === "definition",
-    )?.label;
+    if (!transformation)
+        return { title: entry.label, titleDetailItems, body, definitions };
     const details = titleDetailItems.filter(
         ({ placement }) =>
             placement !== "reading" && placement !== "definition",
@@ -83,18 +82,53 @@ export function transformedPopupPresentation(
         label: transformation.node.pronunciation,
         placement: "reading",
     });
-    const definition = transformedDefinition(
-        baseDefinition,
+    const changedDefinitions = transformedDefinitions(
+        definitions,
         transformation.node,
         schema.language,
     );
-    if (definition)
-        details.push({ label: definition, placement: "definition" });
+    if (changedDefinitions[0])
+        details.push({ label: changedDefinitions[0], placement: "definition" });
     return {
         title: transformation.node.value,
         titleDetailItems: details,
         body,
+        definitions: changedDefinitions,
     };
+}
+
+function drawTransformationLinks(tree) {
+    const svg = tree.querySelector(".library-transform-links");
+    if (!svg) return;
+    const bounds = tree.getBoundingClientRect();
+    svg.setAttribute("viewBox", `0 0 ${tree.scrollWidth} ${tree.scrollHeight}`);
+    svg.innerHTML = "";
+    for (const item of tree.querySelectorAll("[data-library-transform-node]")) {
+        const target = item.querySelector(":scope > button");
+        const parent = tree.querySelector(
+            `[data-library-transform-node="${item.dataset.libraryTransformParent}"] > button`,
+        );
+        const end = target.getBoundingClientRect();
+        const start = parent?.getBoundingClientRect();
+        const sx = start
+            ? start.left + start.width / 2 - bounds.left
+            : tree.scrollWidth / 2;
+        const sy = start ? start.bottom - bounds.top : 0;
+        const ex = end.left + end.width / 2 - bounds.left;
+        const ey = end.top - bounds.top;
+        const mid = sy + (ey - sy) / 2;
+        const path = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path",
+        );
+        path.setAttribute(
+            "d",
+            `M ${sx} ${sy} C ${sx} ${mid}, ${ex} ${mid}, ${ex} ${ey}`,
+        );
+        if (item.classList.contains("library-transform-path-active"))
+            path.classList.add("active");
+        svg.append(path);
+    }
 }
 
 function selectedTransformation(overlay, pathways) {
@@ -121,7 +155,10 @@ function bindTransformationSelection(overlay) {
                 candidate.classList.toggle("active", candidate === control),
             );
         const tree = control.closest("[data-library-transform-tree]");
-        if (tree) highlightTransformationPath(tree, control);
+        if (tree) {
+            highlightTransformationPath(tree, control);
+            drawTransformationLinks(tree);
+        }
         const select = overlay.querySelector('[data-popup-action="select"]');
         if (select) select.disabled = false;
     });
@@ -131,7 +168,7 @@ export async function openTransformationTreePopup(
     entry,
     schema,
     i18n,
-    baseDefinition,
+    baseDefinitions,
 ) {
     const pathways = transformationPathways(entry, schema);
     if (!pathways.length) return null;
@@ -141,7 +178,7 @@ export async function openTransformationTreePopup(
         body: pathways
             .map(
                 (pathway, index) =>
-                    `<section data-library-transform-set="${index}">${renderTransformationTree(entry, schema, pathway, undefined, { showSummary: false, baseDefinition })}</section>`,
+                    `<section data-library-transform-set="${index}">${renderTransformationTree(entry, schema, pathway, undefined, { showSummary: false, baseDefinitions })}</section>`,
             )
             .join(""),
         maxWidth: "min(94rem, 96vw)",
@@ -156,6 +193,11 @@ export async function openTransformationTreePopup(
         onOpen(value) {
             overlay = value;
             bindTransformationSelection(overlay);
+            requestAnimationFrame(() => {
+                overlay
+                    .querySelectorAll("[data-library-transform-tree]")
+                    .forEach(drawTransformationLinks);
+            });
         },
         onAction: (action) =>
             action !== "select" ||

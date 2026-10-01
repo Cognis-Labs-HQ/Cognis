@@ -211,10 +211,36 @@ body[data-theme="light"] .library-browser {
     gap: 0.45rem;
 }
 .library-transform-tech-tree {
-    overflow-x: auto;
-    overflow-y: visible;
+    overflow: auto;
+    max-width: 100%;
     width: 100%;
     padding: 0.5rem 0.75rem 1rem;
+}
+.library-transform-graph {
+    position: relative;
+    width: max-content;
+    min-width: 100%;
+}
+.library-transform-links {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+}
+.library-transform-links path {
+    fill: none;
+    stroke: color-mix(in srgb, var(--accent-2) 55%, var(--border));
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+}
+.library-transform-links path.active {
+    stroke: var(--accent-2);
+    stroke-width: 2.5;
+    stroke-dasharray: 7 5;
+    animation: library-transform-link-flow 0.8s linear infinite;
 }
 .library-transform-pathway[hidden] {
     display: none;
@@ -236,7 +262,7 @@ body[data-theme="light"] .library-browser {
     padding: 0;
     font-size: 1.35rem;
 }
-.library-transform-tech-tree > header {
+.library-transform-graph > header {
     display: grid;
     grid-template-columns: minmax(0, 28rem);
     justify-content: center;
@@ -271,50 +297,6 @@ body[data-theme="light"] .library-browser {
     min-width: 12rem;
     align-content: start;
     gap: 0;
-}
-.library-transform-tech-tree li::before {
-    position: absolute;
-    inset-block-start: -2rem;
-    inset-inline-start: 50%;
-    width: 1px;
-    height: 2rem;
-    background: linear-gradient(
-        180deg,
-        var(--accent-2),
-        color-mix(in srgb, var(--accent-2) 35%, transparent),
-        var(--accent-2)
-    );
-    background-size: 100% 200%;
-    content: "";
-}
-.library-transform-tech-tree li > ol::before {
-    position: absolute;
-    inset-block-start: 0;
-    inset-inline: 0;
-    height: 1px;
-    background: linear-gradient(
-        90deg,
-        var(--accent-2),
-        color-mix(in srgb, var(--accent-2) 35%, transparent),
-        var(--accent-2)
-    );
-    background-size: 200% 100%;
-    content: "";
-}
-.library-transform-tech-tree > ol::after {
-    position: absolute;
-    inset-block-start: -1.75rem;
-    inset-inline-start: 50%;
-    width: 1px;
-    height: 1.75rem;
-    background: linear-gradient(
-        180deg,
-        var(--accent-2),
-        color-mix(in srgb, var(--accent-2) 35%, transparent),
-        var(--accent-2)
-    );
-    background-size: 100% 200%;
-    content: "";
 }
 .library-transform-tech-tree button {
     position: relative;
@@ -992,7 +974,13 @@ body[data-theme="dark"] .library-audio {
 }
 .library-detail-variants {
     grid-column: 1 / -1;
-    justify-self: end;
+    justify-self: start;
+}
+
+@keyframes library-transform-link-flow {
+    to {
+        stroke-dashoffset: -12;
+    }
 }
 .library-detail-summary p {
     margin: 0;

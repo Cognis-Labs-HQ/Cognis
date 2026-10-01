@@ -79,11 +79,21 @@ export function transformedDefinition(baseDefinition, node, language) {
         );
     };
     const marker = localized(node.rule?.marker);
-    if (
-        marker &&
-        baseDefinition &&
-        /\{\{\s*marker\s*\}\}/iu.test(baseDefinition)
-    )
-        return baseDefinition.replace(/\{\{\s*marker\s*\}\}/giu, `(${marker})`);
+    if (marker && baseDefinition) {
+        if (/\{\{\s*marker\s*\}\}/iu.test(baseDefinition))
+            return baseDefinition.replace(
+                /\{\{\s*marker\s*\}\}/giu,
+                `(${marker})`,
+            );
+        if (/^to\s+/iu.test(baseDefinition))
+            return baseDefinition.replace(/^to\s+/iu, `to (${marker}) `);
+        return `(${marker}) ${baseDefinition}`;
+    }
     return localized(node.definition) || baseDefinition;
+}
+
+export function transformedDefinitions(definitions, node, language) {
+    return (definitions ?? [])
+        .map((definition) => transformedDefinition(definition, node, language))
+        .filter(Boolean);
 }

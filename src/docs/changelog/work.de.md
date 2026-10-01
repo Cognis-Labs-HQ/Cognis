@@ -106,7 +106,13 @@ Verb- und Adverbeinträge bleiben jetzt auf der Wortschatzseite, wo vom Anbieter
 
 Transformationsgraphen bemessen jetzt jeden Zweig anhand seines vollständigen Nachkommenbaums, bewahren eine Mindestbreite von zwölf rem pro Knoten, verteilen Zweige über die intrinsische Graphbreite und scrollen horizontal, wenn der Graph den Dialog überschreitet. Dadurch werden Karten in tiefen oder stark verzweigten Konjugationsfamilien nicht mehr zu schmalen Spalten zusammengedrückt. Die Auflösung von Definitionsmarkern akzeptiert nun lokalisierte Metadaten oder eine direkte Zeichenfolge, erkennt sowohl `{{ marker }}` als auch `{{marker}}`, verwendet die aktive Oberflächensprache, ersetzt jeden Marker in Texten mit mehreren Definitionen und gibt einer vom Anbieter erstellten Markervorlage Vorrang vor einer älteren vollständigen Definitionsüberschreibung.
 
+## Transformationsgraph und definitionsgetreue Darstellung
+
+Transformationsbäume verwenden nun gebogene SVG-Graphkanten, beschränken das Scrollen auf den Graphen und halten Popup-Aktionen sichtbar. Eine ausgewählte Variante bleibt jetzt in der zurückgegebenen Detailansicht erhalten, aktualisiert jede referenzierte Definition mit der Anbieter-Markierung und platziert die Variantensteuerung links.
+
 ## Commits
+
+- [8862690a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8862690a835650a677efa6a5404ad55491b6a778)
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
 - [db0728af](https://github.com/Cognis-Labs-HQ/Cognis/commit/db0728af)

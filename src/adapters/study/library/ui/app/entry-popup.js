@@ -27,13 +27,7 @@ import {
     selectDetailTransformation,
     transformedDetailEntry,
 } from "./transformation-detail.js";
-import {
-    canDraw,
-    drawingHeaderActions,
-    resolveDraw,
-    openDrawing,
-    placeAudioSpeaker,
-} from "./drawing.js";
+import { canDraw, drawingHeaderActions, resolveDraw, openDrawing, placeAudioSpeaker } from "./drawing.js";
 export async function openEntryPopup(
     root,
     initialEntry,
@@ -124,12 +118,15 @@ export async function openEntryPopup(
             schema,
             titleDetailItems,
             composed.body,
+            composed.definitions,
         );
         titleDetailItems = transformed.titleDetailItems;
-        composed.body = transformed.body;
+        composed.body = selectedTransformation
+            ? composed.renderBody(transformed.definitions)
+            : transformed.body;
         const displayedDefinition = titleDefinitionForRole(
             layer?.semanticRole,
-            composed.titleDefinition,
+            transformed.definitions?.[0] ?? composed.titleDefinition,
             sourceDefinition,
         );
         const displayedEntry = transformedDetailEntry(
@@ -148,7 +145,7 @@ export async function openEntryPopup(
             entries,
             i18n.t("gateway.study.library_from_parent"),
         );
-        let dismissPopup, relatedEntry;
+        let dismissPopup, relatedEntry, chosenTransformation;
         const audioObjectUrls = new Set();
         const audioController = new AbortController();
         const abortPopup = () => dismissPopup?.();
@@ -225,10 +222,9 @@ export async function openEntryPopup(
                             entry: detail.entry,
                             schema,
                             i18n,
-                            definition: composed.titleDefinition,
+                            definitions: composed.definitions,
                             onSelected: (transformation) => {
-                                selectedTransformation = transformation;
-                                relatedEntry = detail.entry;
+                                chosenTransformation = transformation;
                                 void dismiss();
                             },
                         })
@@ -272,6 +268,12 @@ export async function openEntryPopup(
             URL.revokeObjectURL(objectUrl);
         }
         signal?.removeEventListener("abort", abortPopup);
+        if (chosenTransformation) {
+            selectedTransformation = chosenTransformation;
+            selectedEntry = detail.entry;
+            sourceDefinition = "";
+            continue;
+        }
         if (result === "edit" && editMode) {
             await openLibraryEntryEditor({
                 entry: detail.entry,

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
     transformedDefinition,
+    transformedDefinitions,
     transformationPathways,
 } from "../ui/app/transformations.js";
 import {
@@ -201,5 +202,16 @@ test("transform markers are inserted into provider definition slots", () => {
             "en",
         ),
         "to (want to) see; to (want to) watch",
+    );
+});
+
+test("transform markers preserve every referenced definition", () => {
+    assert.deepEqual(
+        transformedDefinitions(
+            ["to see", "to watch"],
+            { rule: { marker: { labels: { en: "want to" } } } },
+            "en",
+        ),
+        ["to (want to) see", "to (want to) watch"],
     );
 });

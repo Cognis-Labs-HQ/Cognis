@@ -106,7 +106,13 @@ Verb and adverb entries now remain on the Vocabulary page, where provider-declar
 
 Transformation graphs now size each branch from its complete descendant subtree, preserve a twelve-rem minimum node width, distribute branches across intrinsic graph width, and scroll horizontally when the graph exceeds the dialog. This prevents deep or highly branched conjugation families from crushing cards into narrow columns. Definition-marker resolution now accepts localized metadata or a direct string, matches both `{{ marker }}` and `{{marker}}`, resolves against the active interface locale, replaces every marker in multi-definition text, and gives an authored marker template precedence over a legacy full-definition override.
 
+## Transformation Graph and Definition Fidelity
+
+Transformation trees now use curved SVG graph edges, keep scrolling inside the graph, and leave popup actions visible. Selecting a variant now persists into the returned detail view, updates every referenced definition with the provider marker, and places the Variants control on the left.
+
 ## Commits
+
+- [8862690a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8862690a835650a677efa6a5404ad55491b6a778)
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
 - [db0728af](https://github.com/Cognis-Labs-HQ/Cognis/commit/db0728af)

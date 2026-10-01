@@ -106,7 +106,13 @@ Entri verba dan adverbia kini tetap berada di halaman Kosakata, tempat tag trans
 
 Graf transformasi kini mengukur setiap cabang berdasarkan seluruh subpohon turunannya, mempertahankan lebar minimum dua belas rem untuk setiap simpul, menyebarkan cabang sepanjang lebar intrinsik graf, dan menggulir secara horizontal saat graf melebihi dialog. Hal ini mencegah keluarga konjugasi yang dalam atau sangat bercabang menghimpit kartu menjadi kolom sempit. Resolusi penanda definisi kini menerima metadata terlokalisasi atau string langsung, mencocokkan `{{ marker }}` maupun `{{marker}}`, menggunakan lokal antarmuka aktif, mengganti setiap penanda dalam teks multidefinisi, dan memprioritaskan templat penanda yang ditulis penyedia daripada penggantian definisi penuh lama.
 
+## Graf Transformasi dan Ketepatan Definisi
+
+Pohon transformasi kini memakai garis graf SVG melengkung, membatasi pengguliran pada graf, dan menjaga tindakan popup tetap terlihat. Varian yang dipilih kini dipertahankan pada tampilan detail, memperbarui setiap definisi yang dirujuk dengan penanda penyedia, dan menempatkan kontrol Varian di sebelah kiri.
+
 ## Commit
+
+- [8862690a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8862690a835650a677efa6a5404ad55491b6a778)
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
 - [db0728af](https://github.com/Cognis-Labs-HQ/Cognis/commit/db0728af)

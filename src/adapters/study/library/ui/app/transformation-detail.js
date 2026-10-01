@@ -19,7 +19,7 @@ export function selectDetailTransformation(event, context) {
         context.entry,
         context.schema,
         context.i18n,
-        context.definition,
+        context.definitions,
     ).then((transformation) => {
         if (transformation) context.onSelected(transformation);
     });
