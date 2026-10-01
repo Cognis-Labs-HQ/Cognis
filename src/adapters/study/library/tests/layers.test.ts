@@ -93,6 +93,12 @@ test("providers declare sentence carousels, views, and transform rules", () => {
                         definitionTransform: {
                             matchPrefix: "to ",
                             template: "{{ prefix }}previously {{ stem }}",
+                            replacements: [
+                                {
+                                    match: "want to",
+                                    replacement: "have wanted to",
+                                },
+                            ],
                         },
                     },
                 ],

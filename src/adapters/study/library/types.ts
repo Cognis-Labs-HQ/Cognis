@@ -192,8 +192,13 @@ export interface LibraryTransformSet {
             matchPrefix?: LibraryMetadata | string;
             /** Optional localized boundary removed from the definition before templating. */
             matchSuffix?: LibraryMetadata | string;
-            /** Localized template supporting definition, stem, prefix, and suffix slots. */
-            template: LibraryMetadata | string;
+            /** Ordered localized substitutions applied before the fallback template. */
+            replacements?: readonly {
+                match: LibraryMetadata | string;
+                replacement: LibraryMetadata | string;
+            }[];
+            /** Localized fallback supporting definition, stem, prefix, and suffix slots. */
+            template?: LibraryMetadata | string;
         };
         definition?: LibraryMetadata;
     }[];

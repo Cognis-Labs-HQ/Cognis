@@ -638,7 +638,22 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
                 if (value && typeof value !== "string")
                     validateMetadata(value, "invalid_transform_definition");
             }
-            if (definitionTransform && !definitionTransform.template)
+            for (const replacement of definitionTransform?.replacements ?? []) {
+                for (const value of [
+                    replacement.match,
+                    replacement.replacement,
+                ]) {
+                    if (typeof value === "string" && !value)
+                        throw new Error("invalid_transform_definition");
+                    if (value && typeof value !== "string")
+                        validateMetadata(value, "invalid_transform_definition");
+                }
+            }
+            if (
+                definitionTransform &&
+                !definitionTransform.template &&
+                !definitionTransform.replacements?.length
+            )
                 throw new Error("invalid_transform_definition");
             transitions.add(transition);
         }

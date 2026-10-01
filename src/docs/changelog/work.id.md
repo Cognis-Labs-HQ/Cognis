@@ -118,7 +118,13 @@ Komposisi judul cadangan kini mengikuti urutan lapisan semantik. Entri kosakata 
 
 Graf transformasi kini memakai satu baris horizontal untuk setiap kedalaman, menempatkan definisi yang lapang di bawah setiap kartu, dan menahan luapan kedua sumbu di area graf setinggi viewport agar tindakan popup tetap terlihat. Transformasi terpilih menggantikan tautan judul dasar hasil komposisi sehingga judul transformasi muncul pada detail. Aturan penyedia kini memakai templat definisi terlokalisasi yang dapat disusun dengan pencocokan prefiks dan sufiks eksplisit, bukan penanda tetap.
 
+## Rantai Definisi Kontekstual
+
+Pohon transformasi kini menampilkan entri tanpa transformasi sebagai kartu akar terpusat dan memulai garis penghubung di bawah area definisi setiap simpul. Transformasi definisi mendukung substitusi terlokalisasi berurutan sebelum templat cadangan, sehingga aturan berikutnya dapat menulis ulang makna sebelumnya—misalnya “want to” menjadi “have wanted to”—atau menambahkan urutan setelah definisi hasil transformasi lengkap.
+
 ## Commit
+
+- [44891fa5](https://github.com/Cognis-Labs-HQ/Cognis/commit/44891fa5705fc417cf0fbd75b96599a6fac21895)
 
 - [3e86f4e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e86f4e5c83828d0101fbacb4354381048de5290)
 

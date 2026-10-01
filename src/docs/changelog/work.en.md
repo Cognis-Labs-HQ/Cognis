@@ -118,7 +118,13 @@ Fallback title composition now follows semantic layer order. Vocabulary entries 
 
 Transformation graphs now use one horizontal row per depth, place spacious definitions below each card, and keep both axes of overflow inside a viewport-height graph region so popup actions remain visible. Selected transforms replace composed base-title links, ensuring the transformed title appears in detail views. Provider rules now use composable localized definition templates with explicit prefix and suffix matching instead of fixed markers.
 
+## Contextual Definition Chains
+
+Transformation trees now render the untransformed entry as the centered root card and start links below each node’s definition area. Definition transforms support ordered localized substitutions before fallback templates, enabling later rules to rewrite prior meanings—such as “want to” into “have wanted to”—or append sequencing after the complete transformed definition.
+
 ## Commits
+
+- [44891fa5](https://github.com/Cognis-Labs-HQ/Cognis/commit/44891fa5705fc417cf0fbd75b96599a6fac21895)
 
 - [3e86f4e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e86f4e5c83828d0101fbacb4354381048de5290)
 

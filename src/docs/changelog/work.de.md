@@ -118,7 +118,13 @@ Die ersatzweise Titelzusammensetzung folgt jetzt der Reihenfolge der semantische
 
 Transformationsgraphen verwenden jetzt pro Tiefe eine horizontale Reihe, platzieren großzügige Definitionen unter jeder Karte und halten den Überlauf beider Achsen in einem an die Ansichtsfensterhöhe gebundenen Graphbereich, sodass Popup-Aktionen sichtbar bleiben. Ausgewählte Transformationen ersetzen zusammengesetzte Grundtitel-Links, damit der transformierte Titel in Detailansichten erscheint. Anbieterregeln verwenden nun verkettbare lokalisierte Definitionsvorlagen mit expliziter Präfix- und Suffixerkennung statt fester Marker.
 
+## Kontextabhängige Definitionsketten
+
+Transformationsbäume zeigen den unveränderten Eintrag nun als zentrierte Stammkarte und beginnen Verbindungen unter dem Definitionsbereich jedes Knotens. Definitionstransformationen unterstützen geordnete lokalisierte Ersetzungen vor Ausweichvorlagen. Spätere Regeln können damit frühere Bedeutungen umschreiben – etwa „want to“ zu „have wanted to“ – oder eine Abfolge an die vollständig transformierte Definition anhängen.
+
 ## Commits
+
+- [44891fa5](https://github.com/Cognis-Labs-HQ/Cognis/commit/44891fa5705fc417cf0fbd75b96599a6fac21895)
 
 - [3e86f4e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e86f4e5c83828d0101fbacb4354381048de5290)
 

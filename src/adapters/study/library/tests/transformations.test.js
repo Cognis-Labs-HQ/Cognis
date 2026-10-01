@@ -257,3 +257,51 @@ test("definition templates compose across a transformation path", () => {
         "to want to make someone drink",
     );
 });
+
+test("definition substitutions correct earlier transformations in context", () => {
+    const desire = {
+        definitionTransform: {
+            matchPrefix: "to ",
+            template: "{{ prefix }}(want to) {{ stem }}",
+        },
+    };
+    assert.equal(
+        transformedDefinition(
+            "to exist",
+            {
+                definitionRules: [
+                    desire,
+                    {
+                        definitionTransform: {
+                            replacements: [
+                                {
+                                    match: "(want to)",
+                                    replacement: "(have wanted to)",
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+            "en",
+        ),
+        "to (have wanted to) exist",
+    );
+    assert.equal(
+        transformedDefinition(
+            "to exist",
+            {
+                definitionRules: [
+                    desire,
+                    {
+                        definitionTransform: {
+                            template: "{{ definition }} (and then)",
+                        },
+                    },
+                ],
+            },
+            "en",
+        ),
+        "to (want to) exist (and then)",
+    );
+});

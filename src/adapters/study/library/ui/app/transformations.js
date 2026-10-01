@@ -82,6 +82,14 @@ export function transformedDefinition(baseDefinition, node, language) {
     return (node.definitionRules ?? [node.rule]).reduce((definition, rule) => {
         const transform = rule?.definitionTransform;
         if (!transform) return localized(rule?.definition) || definition;
+        for (const replacement of transform.replacements ?? []) {
+            const match = localized(replacement.match);
+            if (!match || !definition.includes(match)) continue;
+            return definition.replaceAll(
+                match,
+                localized(replacement.replacement),
+            );
+        }
         const prefix = localized(transform.matchPrefix) ?? "";
         const suffix = localized(transform.matchSuffix) ?? "";
         if (
@@ -93,6 +101,7 @@ export function transformedDefinition(baseDefinition, node, language) {
             prefix.length,
             suffix ? -suffix.length : undefined,
         );
+        if (!transform.template) return definition;
         return localized(transform.template)
             .replace(/\{\{\s*definition\s*\}\}/giu, definition)
             .replace(/\{\{\s*stem\s*\}\}/giu, stem)

@@ -15,9 +15,9 @@ function renderTransformationNodes(
     baseDefinitions,
 ) {
     const levels = new Map();
-    nodes.slice(1).forEach((node, offset) => {
+    nodes.forEach((node, index) => {
         const level = levels.get(node.depth) ?? [];
-        level.push({ node, index: offset + 1 });
+        level.push({ node, index });
         levels.set(node.depth, level);
     });
     return [...levels.values()]
@@ -25,17 +25,19 @@ function renderTransformationNodes(
             (items) =>
                 `<ol>${items
                     .map(({ node, index }) => {
-                        const descriptor =
-                            localizedLabel(
-                                node.rule.metadata,
-                                schema.language,
-                            ) || node.rule.id;
+                        const descriptor = node.rule
+                            ? localizedLabel(
+                                  node.rule.metadata,
+                                  schema.language,
+                              ) || node.rule.id
+                            : "";
                         const definitions = transformedDefinitions(
                             baseDefinitions,
                             node,
                             schema.language,
                         );
-                        return `<li data-library-transform-node="${index}" data-library-transform-parent="${node.parent}"><button class="btn-neutral${node === selectedNode ? " active" : ""}" type="button" data-library-transform-index="${index}"><strong>${escapeHtml(node.value)}</strong><span class="library-transform-info" aria-label="${escapeHtml(descriptor)}">i<span role="tooltip">${escapeHtml(descriptor)}</span></span></button><div class="library-transform-definitions">${definitions.map((definition) => `<p class="library-transform-definition">${escapeHtml(definition)}</p>`).join("")}</div></li>`;
+                        const selectable = node.depth > 0;
+                        return `<li class="${selectable ? "" : "library-transform-root"}" data-library-transform-node="${index}"${node.parent === undefined ? "" : ` data-library-transform-parent="${node.parent}"`}><button class="btn-neutral${node === selectedNode ? " active" : ""}" type="button"${selectable ? ` data-library-transform-index="${index}"` : ""}><strong>${escapeHtml(node.value)}</strong>${descriptor ? `<span class="library-transform-info" aria-label="${escapeHtml(descriptor)}">i<span role="tooltip">${escapeHtml(descriptor)}</span></span>` : ""}</button><div class="library-transform-definitions">${definitions.map((definition) => `<p class="library-transform-definition">${escapeHtml(definition)}</p>`).join("")}</div></li>`;
                     })
                     .join("")}</ol>`,
         )
@@ -105,16 +107,20 @@ function drawTransformationLinks(tree) {
     svg.setAttribute("viewBox", `0 0 ${tree.scrollWidth} ${tree.scrollHeight}`);
     svg.innerHTML = "";
     for (const item of tree.querySelectorAll("[data-library-transform-node]")) {
+        if (!item.hasAttribute("data-library-transform-parent")) continue;
         const target = item.querySelector(":scope > button");
         const parent = tree.querySelector(
             `[data-library-transform-node="${item.dataset.libraryTransformParent}"] > button`,
         );
         const end = target.getBoundingClientRect();
         const start = parent?.getBoundingClientRect();
+        const startItem = parent
+            ?.closest("[data-library-transform-node]")
+            ?.getBoundingClientRect();
         const sx = start
             ? start.left + start.width / 2 - bounds.left
             : tree.scrollWidth / 2;
-        const sy = start ? start.bottom - bounds.top : 0;
+        const sy = startItem ? startItem.bottom - bounds.top : 0;
         const ex = end.left + end.width / 2 - bounds.left;
         const ey = end.top - bounds.top;
         const mid = sy + (ey - sy) / 2;

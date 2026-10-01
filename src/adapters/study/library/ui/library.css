@@ -313,6 +313,9 @@ body[data-theme="light"] .library-browser {
     border-color: var(--accent-2);
     background: color-mix(in srgb, var(--accent-2) 16%, var(--surface-2));
 }
+.library-transform-root > button {
+    cursor: default;
+}
 .library-transform-tech-tree li span,
 .library-transform-tech-tree [data-library-transform-pronunciation],
 .library-transform-tech-tree [data-library-transform-definition] {

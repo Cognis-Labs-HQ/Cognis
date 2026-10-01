@@ -854,6 +854,8 @@ test("Study Library provides vocabulary transformations", () => {
     assert.doesNotMatch(studySubNavigationSource, /layer\.views/);
     assert.match(source, /transformationPathways/);
     assert.match(source, /library-transform-tech-tree/);
+    assert.match(source, /library-transform-root/);
+    assert.match(source, /node\.depth > 0/);
     assert.match(source, /view\.includeTags\.some/);
     assert.match(stylesheet, /library-entry-grid--transform-tree/);
     assert.match(stylesheet, /library-transform-links path/);
