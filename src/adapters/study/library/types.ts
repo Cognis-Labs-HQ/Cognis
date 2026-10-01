@@ -187,8 +187,14 @@ export interface LibraryTransformSet {
             removeSuffix: string;
             append: string;
         };
-        /** Localized phrase inserted into definition `{{ marker }}` slots. */
-        marker?: LibraryMetadata | string;
+        definitionTransform?: {
+            /** Optional localized boundary removed from the definition before templating. */
+            matchPrefix?: LibraryMetadata | string;
+            /** Optional localized boundary removed from the definition before templating. */
+            matchSuffix?: LibraryMetadata | string;
+            /** Localized template supporting definition, stem, prefix, and suffix slots. */
+            template: LibraryMetadata | string;
+        };
         definition?: LibraryMetadata;
     }[];
 }

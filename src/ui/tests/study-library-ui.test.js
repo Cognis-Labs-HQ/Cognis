@@ -354,7 +354,8 @@ test("Study Library integrates definitions and particles into item details", () 
         /library-entry-popup--composite \.popup-heading[\s\S]*minmax\(0, 40%\)/,
     );
     assert.match(source, /function linkedItems\(entries\)/);
-    assert.match(source, /titleItems: titleReferences\.map/);
+    assert.match(source, /titleItems: popupTitleItems\(/);
+    assert.match(source, /if \(transformed\) return \[\]/);
     assert.match(source, /open-title-reference:\$\{entry\.id\}/);
     assert.doesNotMatch(source, /querySelector\("\.popup-title"\)/);
     assert.match(
@@ -855,7 +856,7 @@ test("Study Library provides vocabulary transformations", () => {
     assert.match(source, /library-transform-tech-tree/);
     assert.match(source, /view\.includeTags\.some/);
     assert.match(stylesheet, /library-entry-grid--transform-tree/);
-    assert.match(stylesheet, /library-transform-tech-tree li::before/);
+    assert.match(stylesheet, /library-transform-links path/);
     assert.match(source, /nodes\.length > 1/);
     assert.match(source, /data-library-transform-close/);
     assert.match(source, /showSummary:\s*false/);
@@ -874,13 +875,12 @@ test("Study Library provides vocabulary transformations", () => {
     );
     assert.match(stylesheet, /library-transform-card--open/);
     assert.match(stylesheet, /library-transform-card-away/);
-    assert.match(stylesheet, /library-transform-path-flow/);
-    assert.match(stylesheet, /library-transform-path-flow-vertical/);
-    assert.match(stylesheet, /library-transform-tech-tree > ol::after/);
+    assert.match(stylesheet, /library-transform-link-flow/);
     assert.match(stylesheet, /library-transform-info/);
     assert.match(stylesheet, /width:\s*max-content/);
-    assert.match(stylesheet, /min-width:\s*12rem/);
-    assert.match(stylesheet, /overflow-x:\s*auto/);
+    assert.match(stylesheet, /min-width:\s*14rem/);
+    assert.match(stylesheet, /max-height:\s*min\(31rem/);
+    assert.match(stylesheet, /overflow:\s*auto/);
     assert.match(stylesheet, /prefers-reduced-motion:\s*reduce/);
 });
 test("Study Library renders writing-unit pronunciation and audio", () => {

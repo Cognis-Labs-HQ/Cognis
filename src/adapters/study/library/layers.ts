@@ -627,13 +627,19 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
                     rule.definition,
                     "transform_definition_metadata_required",
                 );
-            if (typeof rule.marker === "string" && !rule.marker.trim())
-                throw new Error("transform_marker_metadata_required");
-            if (rule.marker && typeof rule.marker !== "string")
-                validateMetadata(
-                    rule.marker,
-                    "transform_marker_metadata_required",
-                );
+            const definitionTransform = rule.definitionTransform;
+            for (const value of [
+                definitionTransform?.matchPrefix,
+                definitionTransform?.matchSuffix,
+                definitionTransform?.template,
+            ]) {
+                if (typeof value === "string" && !value)
+                    throw new Error("invalid_transform_definition");
+                if (value && typeof value !== "string")
+                    validateMetadata(value, "invalid_transform_definition");
+            }
+            if (definitionTransform && !definitionTransform.template)
+                throw new Error("invalid_transform_definition");
             transitions.add(transition);
         }
     }

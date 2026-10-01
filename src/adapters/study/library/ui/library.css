@@ -213,6 +213,7 @@ body[data-theme="light"] .library-browser {
 .library-transform-tech-tree {
     overflow: auto;
     max-width: 100%;
+    max-height: min(31rem, calc(100vh - 14rem));
     width: 100%;
     padding: 0.5rem 0.75rem 1rem;
 }
@@ -282,11 +283,11 @@ body[data-theme="light"] .library-browser {
     display: flex;
     position: relative;
     gap: 1rem;
-    justify-content: space-around;
+    justify-content: center;
     width: max-content;
     min-width: 100%;
     margin: 0;
-    padding: 2rem 0 0;
+    padding: 1.4rem 0 0;
     list-style: none;
 }
 .library-transform-tech-tree li {
@@ -294,14 +295,14 @@ body[data-theme="light"] .library-browser {
     position: relative;
     flex: 0 0 auto;
     justify-items: center;
-    min-width: 12rem;
+    min-width: 14rem;
     align-content: start;
     gap: 0;
 }
 .library-transform-tech-tree button {
     position: relative;
     display: grid;
-    width: 12rem;
+    width: 13rem;
     min-height: 3.25rem;
     justify-items: center;
     gap: 0.25rem;
@@ -317,26 +318,20 @@ body[data-theme="light"] .library-browser {
 .library-transform-tech-tree [data-library-transform-definition] {
     color: var(--text-muted);
 }
-.library-transform-tech-tree li.library-transform-path-active::before,
-.library-transform-tech-tree li.library-transform-path-active > ol::before {
-    box-shadow: 0 0 0.45rem color-mix(in srgb, var(--accent-2) 55%, transparent);
-}
-.library-transform-tech-tree li.library-transform-path-active::before {
-    animation: library-transform-path-flow-vertical 1.15s linear infinite;
-}
-.library-transform-tech-tree li.library-transform-path-active > ol::before {
-    animation: library-transform-path-flow 1.15s linear infinite;
-}
 .library-transform-tech-tree li.library-transform-path-active > button {
     border-color: var(--accent-2);
     box-shadow: 0 0 0.55rem color-mix(in srgb, var(--accent-2) 28%, transparent);
 }
 .library-transform-definition {
-    width: 12rem;
-    min-height: 2.5em;
-    margin: 0 0 0.35rem;
+    width: 14rem;
+    margin: 0.5rem 0 0;
     color: var(--text-muted);
     text-align: center;
+}
+.library-transform-definitions {
+    display: grid;
+    justify-items: center;
+    min-height: 2.5rem;
 }
 .library-transform-info {
     position: absolute;
@@ -383,16 +378,6 @@ body[data-theme="light"] .library-browser {
     border-color: var(--accent-2);
     background: color-mix(in srgb, var(--accent-2) 16%, var(--surface-2));
 }
-@keyframes library-transform-path-flow {
-    to {
-        background-position: -200% 0;
-    }
-}
-@keyframes library-transform-path-flow-vertical {
-    to {
-        background-position: 0 -200%;
-    }
-}
 @keyframes library-transform-tree-enter {
     from {
         opacity: 0;
@@ -406,11 +391,7 @@ body[data-theme="light"] .library-browser {
     }
 }
 @media (prefers-reduced-motion: reduce) {
-    .library-transform-tech-tree li.library-transform-path-active::before,
-    .library-transform-tech-tree li.library-transform-path-active > ol::before,
-    .library-transform-tech-tree li::before,
-    .library-transform-tech-tree li > ol::before,
-    .library-transform-tech-tree > ol::after,
+    .library-transform-links path.active,
     .library-transform-pathway,
     .library-transform-card--leaving {
         animation: none;

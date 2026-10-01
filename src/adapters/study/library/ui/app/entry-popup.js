@@ -11,6 +11,7 @@ import {
 import {
     hasReadingDetails,
     popupTitleDetailItems,
+    popupTitleItems,
     withParentTitleAttribution,
 } from "./popup-title.js";
 import { resolvePopupNavigation } from "./popup-navigation.js";
@@ -27,7 +28,8 @@ import {
     selectDetailTransformation,
     transformedDetailEntry,
 } from "./transformation-detail.js";
-import { canDraw, drawingHeaderActions, resolveDraw, openDrawing, placeAudioSpeaker } from "./drawing.js";
+import { canDraw, resolveDraw, openDrawing } from "./drawing.js";
+import { drawingHeaderActions, placeAudioSpeaker } from "./drawing.js";
 export async function openEntryPopup(
     root,
     initialEntry,
@@ -153,10 +155,10 @@ export async function openEntryPopup(
         const result = await openPopup({
             title: transformed.title,
             titleLeading: composed.titleLeading,
-            titleItems: titleReferences.map((entry) => ({
-                label: entry.label,
-                actionId: `open-title-reference:${entry.id}`,
-            })),
+            titleItems: popupTitleItems(
+                titleReferences,
+                selectedTransformation,
+            ),
             titleDetailItems,
             headerActions: [
                 ...drawingHeaderActions(strokePattern, i18n),

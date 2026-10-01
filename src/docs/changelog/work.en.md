@@ -114,7 +114,13 @@ Transformation trees now use curved SVG graph edges, keep scrolling inside the g
 
 Fallback title composition now follows semantic layer order. Vocabulary entries with identical written forms link to their atomic or compound writing units instead of linking to one another, while sentence composition continues to resolve vocabulary entries.
 
+## Compact Transformation Graphs
+
+Transformation graphs now use one horizontal row per depth, place spacious definitions below each card, and keep both axes of overflow inside a viewport-height graph region so popup actions remain visible. Selected transforms replace composed base-title links, ensuring the transformed title appears in detail views. Provider rules now use composable localized definition templates with explicit prefix and suffix matching instead of fixed markers.
+
 ## Commits
+
+- [3e86f4e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e86f4e5c83828d0101fbacb4354381048de5290)
 
 - [03268e5b](https://github.com/Cognis-Labs-HQ/Cognis/commit/03268e5bb34d94a46146b0ec6ba9f3e678752481)
 

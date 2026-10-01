@@ -114,7 +114,13 @@ Transformationsbäume verwenden nun gebogene SVG-Graphkanten, beschränken das S
 
 Die ersatzweise Titelzusammensetzung folgt jetzt der Reihenfolge der semantischen Ebenen. Wortschatzeinträge mit identischer Schreibweise verweisen auf ihre atomaren oder zusammengesetzten Schrifteinheiten statt aufeinander, während die Satzzusammensetzung weiterhin Wortschatzeinträge auflöst.
 
+## Kompakte Transformationsgraphen
+
+Transformationsgraphen verwenden jetzt pro Tiefe eine horizontale Reihe, platzieren großzügige Definitionen unter jeder Karte und halten den Überlauf beider Achsen in einem an die Ansichtsfensterhöhe gebundenen Graphbereich, sodass Popup-Aktionen sichtbar bleiben. Ausgewählte Transformationen ersetzen zusammengesetzte Grundtitel-Links, damit der transformierte Titel in Detailansichten erscheint. Anbieterregeln verwenden nun verkettbare lokalisierte Definitionsvorlagen mit expliziter Präfix- und Suffixerkennung statt fester Marker.
+
 ## Commits
+
+- [3e86f4e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e86f4e5c83828d0101fbacb4354381048de5290)
 
 - [03268e5b](https://github.com/Cognis-Labs-HQ/Cognis/commit/03268e5bb34d94a46146b0ec6ba9f3e678752481)
 

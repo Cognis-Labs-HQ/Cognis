@@ -90,6 +90,10 @@ test("providers declare sentence carousels, views, and transform rules", () => {
                         toState: "past",
                         removeSuffix: "",
                         append: "ed",
+                        definitionTransform: {
+                            matchPrefix: "to ",
+                            template: "{{ prefix }}previously {{ stem }}",
+                        },
                     },
                 ],
             },
@@ -131,6 +135,12 @@ test("providers declare sentence carousels, views, and transform rules", () => {
         ],
     };
     assert.deepEqual(validateLibrarySchema(schema), schema);
+    const invalid = structuredClone(schema);
+    invalid.transformSets![0].rules[0].definitionTransform!.template = "";
+    assert.throws(
+        () => validateLibrarySchema(invalid),
+        /invalid_transform_definition/,
+    );
 });
 
 test("fields can link values through multiple declared relationships", () => {

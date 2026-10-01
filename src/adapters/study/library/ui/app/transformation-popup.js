@@ -14,31 +14,32 @@ function renderTransformationNodes(
     selectedNode,
     baseDefinitions,
 ) {
-    const children = new Map();
-    nodes.forEach((node, index) => {
-        if (node.parent === undefined) return;
-        const siblings = children.get(node.parent) ?? [];
-        siblings.push({ node, index });
-        children.set(node.parent, siblings);
+    const levels = new Map();
+    nodes.slice(1).forEach((node, offset) => {
+        const level = levels.get(node.depth) ?? [];
+        level.push({ node, index: offset + 1 });
+        levels.set(node.depth, level);
     });
-    const branch = (parentIndex) => {
-        const items = children.get(parentIndex) ?? [];
-        if (!items.length) return "";
-        return `<ol>${items
-            .map(({ node, index }) => {
-                const descriptor =
-                    localizedLabel(node.rule.metadata, schema.language) ||
-                    node.rule.id;
-                const definitions = transformedDefinitions(
-                    baseDefinitions,
-                    node,
-                    schema.language,
-                );
-                return `<li data-library-transform-node="${index}" data-library-transform-parent="${parentIndex}">${definitions.map((definition) => `<p class="library-transform-definition">${escapeHtml(definition)}</p>`).join("")}<button class="btn-neutral${node === selectedNode ? " active" : ""}" type="button" data-library-transform-index="${index}"><strong>${escapeHtml(node.value)}</strong><span class="library-transform-info" aria-label="${escapeHtml(descriptor)}">i<span role="tooltip">${escapeHtml(descriptor)}</span></span></button>${branch(index)}</li>`;
-            })
-            .join("")}</ol>`;
-    };
-    return branch(0);
+    return [...levels.values()]
+        .map(
+            (items) =>
+                `<ol>${items
+                    .map(({ node, index }) => {
+                        const descriptor =
+                            localizedLabel(
+                                node.rule.metadata,
+                                schema.language,
+                            ) || node.rule.id;
+                        const definitions = transformedDefinitions(
+                            baseDefinitions,
+                            node,
+                            schema.language,
+                        );
+                        return `<li data-library-transform-node="${index}" data-library-transform-parent="${node.parent}"><button class="btn-neutral${node === selectedNode ? " active" : ""}" type="button" data-library-transform-index="${index}"><strong>${escapeHtml(node.value)}</strong><span class="library-transform-info" aria-label="${escapeHtml(descriptor)}">i<span role="tooltip">${escapeHtml(descriptor)}</span></span></button><div class="library-transform-definitions">${definitions.map((definition) => `<p class="library-transform-definition">${escapeHtml(definition)}</p>`).join("")}</div></li>`;
+                    })
+                    .join("")}</ol>`,
+        )
+        .join("");
 }
 
 export function renderTransformationTree(

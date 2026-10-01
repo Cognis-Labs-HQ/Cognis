@@ -46,6 +46,7 @@ export function transformationPathways(entry, schema) {
                     definition: rule.definition,
                     depth: node.depth + 1,
                     rule,
+                    definitionRules: [...(node.definitionRules ?? []), rule],
                     parent: index,
                     path: [...node.path, rule.id],
                 });
@@ -78,18 +79,26 @@ export function transformedDefinition(baseDefinition, node, language) {
             Object.values(labels)[0]
         );
     };
-    const marker = localized(node.rule?.marker);
-    if (marker && baseDefinition) {
-        if (/\{\{\s*marker\s*\}\}/iu.test(baseDefinition))
-            return baseDefinition.replace(
-                /\{\{\s*marker\s*\}\}/giu,
-                `(${marker})`,
-            );
-        if (/^to\s+/iu.test(baseDefinition))
-            return baseDefinition.replace(/^to\s+/iu, `to (${marker}) `);
-        return `(${marker}) ${baseDefinition}`;
-    }
-    return localized(node.definition) || baseDefinition;
+    return (node.definitionRules ?? [node.rule]).reduce((definition, rule) => {
+        const transform = rule?.definitionTransform;
+        if (!transform) return localized(rule?.definition) || definition;
+        const prefix = localized(transform.matchPrefix) ?? "";
+        const suffix = localized(transform.matchSuffix) ?? "";
+        if (
+            (prefix && !definition.startsWith(prefix)) ||
+            (suffix && !definition.endsWith(suffix))
+        )
+            return definition;
+        const stem = definition.slice(
+            prefix.length,
+            suffix ? -suffix.length : undefined,
+        );
+        return localized(transform.template)
+            .replace(/\{\{\s*definition\s*\}\}/giu, definition)
+            .replace(/\{\{\s*stem\s*\}\}/giu, stem)
+            .replace(/\{\{\s*prefix\s*\}\}/giu, prefix)
+            .replace(/\{\{\s*suffix\s*\}\}/giu, suffix);
+    }, baseDefinition);
 }
 
 export function transformedDefinitions(definitions, node, language) {

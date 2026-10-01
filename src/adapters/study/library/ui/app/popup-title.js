@@ -253,3 +253,11 @@ export function popupTitleDetailItems(
     }
     return items;
 }
+
+export function popupTitleItems(references, transformed) {
+    if (transformed) return [];
+    return references.map((entry) => ({
+        label: entry.label,
+        actionId: `open-title-reference:${entry.id}`,
+    }));
+}

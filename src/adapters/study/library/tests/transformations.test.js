@@ -179,13 +179,18 @@ test("transform pathways support branching chains with dynamic readings and defi
     ]);
 });
 
-test("transform markers are inserted into provider definition slots", () => {
+test("definition templates transform localized definition boundaries", () => {
     assert.equal(
         transformedDefinition(
-            "to {{ marker }} watch",
+            "to watch",
             {
                 rule: {
-                    marker: { labels: { en: "want to" } },
+                    definitionTransform: {
+                        matchPrefix: { labels: { en: "to " } },
+                        template: {
+                            labels: { en: "{{ prefix }}(want to) {{ stem }}" },
+                        },
+                    },
                 },
             },
             "en",
@@ -194,24 +199,61 @@ test("transform markers are inserted into provider definition slots", () => {
     );
     assert.equal(
         transformedDefinition(
-            "to {{marker}} see; to {{ marker }} watch",
+            "to see",
             {
-                definition: { labels: { en: "desire" } },
-                rule: { marker: "want to" },
+                rule: {
+                    definitionTransform: {
+                        matchPrefix: "to ",
+                        template: "{{ prefix }}be able to {{ stem }}",
+                    },
+                },
             },
             "en",
         ),
-        "to (want to) see; to (want to) watch",
+        "to be able to see",
     );
 });
 
-test("transform markers preserve every referenced definition", () => {
+test("definition templates preserve every referenced definition", () => {
     assert.deepEqual(
         transformedDefinitions(
             ["to see", "to watch"],
-            { rule: { marker: { labels: { en: "want to" } } } },
+            {
+                rule: {
+                    definitionTransform: {
+                        matchPrefix: "to ",
+                        template: "{{ prefix }}(want to) {{ stem }}",
+                    },
+                },
+            },
             "en",
         ),
         ["to (want to) see", "to (want to) watch"],
+    );
+});
+
+test("definition templates compose across a transformation path", () => {
+    assert.equal(
+        transformedDefinition(
+            "to drink",
+            {
+                definitionRules: [
+                    {
+                        definitionTransform: {
+                            matchPrefix: "to ",
+                            template: "{{ prefix }}make someone {{ stem }}",
+                        },
+                    },
+                    {
+                        definitionTransform: {
+                            matchPrefix: "to ",
+                            template: "{{ prefix }}want to {{ stem }}",
+                        },
+                    },
+                ],
+            },
+            "en",
+        ),
+        "to want to make someone drink",
     );
 });

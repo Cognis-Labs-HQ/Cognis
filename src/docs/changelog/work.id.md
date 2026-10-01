@@ -114,7 +114,13 @@ Pohon transformasi kini memakai garis graf SVG melengkung, membatasi pengguliran
 
 Komposisi judul cadangan kini mengikuti urutan lapisan semantik. Entri kosakata dengan bentuk tulisan yang sama menaut ke unit tulisan atomik atau majemuknya, bukan ke satu sama lain, sementara komposisi kalimat tetap mengenali entri kosakata.
 
+## Graf Transformasi Ringkas
+
+Graf transformasi kini memakai satu baris horizontal untuk setiap kedalaman, menempatkan definisi yang lapang di bawah setiap kartu, dan menahan luapan kedua sumbu di area graf setinggi viewport agar tindakan popup tetap terlihat. Transformasi terpilih menggantikan tautan judul dasar hasil komposisi sehingga judul transformasi muncul pada detail. Aturan penyedia kini memakai templat definisi terlokalisasi yang dapat disusun dengan pencocokan prefiks dan sufiks eksplisit, bukan penanda tetap.
+
 ## Commit
+
+- [3e86f4e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e86f4e5c83828d0101fbacb4354381048de5290)
 
 - [03268e5b](https://github.com/Cognis-Labs-HQ/Cognis/commit/03268e5bb34d94a46146b0ec6ba9f3e678752481)
 
