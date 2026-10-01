@@ -249,6 +249,8 @@ Dense pronunciation headings now use a four-column arrangement only when reading
 
 When an expanded character-child branch would cross the visible Library grid, runtime fitting now evaluates every diagonal slot before falling back to the opposite cardinal directions. It also treats all visible root cards as occupied, selecting the first in-bounds, collision-free diagonal and keeping both the child card and its connector on the canvas.
 
+Fallback title composition follows the library hierarchy: sentences may link to words, words may link to compound and atomic writing units, and compound writing units may link to atomic writing units. A homographic vocabulary entry is therefore never treated as the spelling component of another vocabulary entry; entries such as the Japanese flower and nose readings `はな` both link independently to `は` and `な`.
+
 ## Sentence composition and transformations
 
 Providers mark sentence-ending or transition vocabulary with a stable tag such as `sentence-transition`, then declare a `tag_carousels` item on the sentence card constructor. Those entries are removed from the ordinary vocabulary view and appear in their own sentence-only carousel. `literal_carousels` supplies a one-line, read-only set of repeatable punctuation literals; providers should list the punctuation used by their language, such as `, . ? !` for English or `？！。、` for Japanese.

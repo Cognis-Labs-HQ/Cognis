@@ -110,7 +110,13 @@ Transformationsgraphen bemessen jetzt jeden Zweig anhand seines vollständigen N
 
 Transformationsbäume verwenden nun gebogene SVG-Graphkanten, beschränken das Scrollen auf den Graphen und halten Popup-Aktionen sichtbar. Eine ausgewählte Variante bleibt jetzt in der zurückgegebenen Detailansicht erhalten, aktualisiert jede referenzierte Definition mit der Anbieter-Markierung und platziert die Variantensteuerung links.
 
+## Korrekte Homografen-Verknüpfung
+
+Die ersatzweise Titelzusammensetzung folgt jetzt der Reihenfolge der semantischen Ebenen. Wortschatzeinträge mit identischer Schreibweise verweisen auf ihre atomaren oder zusammengesetzten Schrifteinheiten statt aufeinander, während die Satzzusammensetzung weiterhin Wortschatzeinträge auflöst.
+
 ## Commits
+
+- [03268e5b](https://github.com/Cognis-Labs-HQ/Cognis/commit/03268e5bb34d94a46146b0ec6ba9f3e678752481)
 
 - [8862690a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8862690a835650a677efa6a5404ad55491b6a778)
 

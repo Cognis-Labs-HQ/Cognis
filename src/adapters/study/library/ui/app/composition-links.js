@@ -1,14 +1,26 @@
 /** Resolve complete labels into links to their canonical Library writing units. */
 
+function layerRank(layer) {
+    return {
+        atomicWritingUnit: 1,
+        compoundWritingUnit: 2,
+        lexicalUnit: 3,
+        orderedLexicalSequence: 4,
+    }[layer?.semanticRole];
+}
+
 function composableLayerIds(entry, schemas) {
     const schema = schemas.find(({ id }) => id === entry.schemaId);
+    const sourceRank = layerRank(
+        schema?.layers.find(({ id }) => id === entry.layer),
+    );
     return new Set(
         (schema?.layers ?? [])
             .filter(
-                ({ semanticRole }) =>
-                    semanticRole === "atomicWritingUnit" ||
-                    semanticRole === "compoundWritingUnit" ||
-                    semanticRole === "lexicalUnit",
+                (layer) =>
+                    layerRank(layer) &&
+                    sourceRank &&
+                    layerRank(layer) < sourceRank,
             )
             .map(({ id }) => id),
     );
@@ -40,15 +52,10 @@ export function resolveLabelComposition(label, entry, schemas, entries) {
         )
         .sort((left, right) => {
             const schema = schemas.find(({ id }) => id === entry.schemaId);
-            const role = (candidate) =>
-                schema?.layers.find(({ id }) => id === candidate.layer)
-                    ?.semanticRole;
             const rank = (candidate) =>
-                role(candidate) === "lexicalUnit"
-                    ? 3
-                    : role(candidate) === "compoundWritingUnit"
-                      ? 2
-                      : 1;
+                layerRank(
+                    schema?.layers.find(({ id }) => id === candidate.layer),
+                );
             return (
                 right.label.length - left.label.length ||
                 rank(right) - rank(left)

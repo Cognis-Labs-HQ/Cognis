@@ -110,7 +110,13 @@ Graf transformasi kini mengukur setiap cabang berdasarkan seluruh subpohon turun
 
 Pohon transformasi kini memakai garis graf SVG melengkung, membatasi pengguliran pada graf, dan menjaga tindakan popup tetap terlihat. Varian yang dipilih kini dipertahankan pada tampilan detail, memperbarui setiap definisi yang dirujuk dengan penanda penyedia, dan menempatkan kontrol Varian di sebelah kiri.
 
+## Tautan Homograf yang Benar
+
+Komposisi judul cadangan kini mengikuti urutan lapisan semantik. Entri kosakata dengan bentuk tulisan yang sama menaut ke unit tulisan atomik atau majemuknya, bukan ke satu sama lain, sementara komposisi kalimat tetap mengenali entri kosakata.
+
 ## Commit
+
+- [03268e5b](https://github.com/Cognis-Labs-HQ/Cognis/commit/03268e5bb34d94a46146b0ec6ba9f3e678752481)
 
 - [8862690a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8862690a835650a677efa6a5404ad55491b6a778)
 

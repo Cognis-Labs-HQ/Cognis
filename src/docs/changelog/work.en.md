@@ -110,7 +110,13 @@ Transformation graphs now size each branch from its complete descendant subtree,
 
 Transformation trees now use curved SVG graph edges, keep scrolling inside the graph, and leave popup actions visible. Selecting a variant now persists into the returned detail view, updates every referenced definition with the provider marker, and places the Variants control on the left.
 
+## Correct Homograph Links
+
+Fallback title composition now follows semantic layer order. Vocabulary entries with identical written forms link to their atomic or compound writing units instead of linking to one another, while sentence composition continues to resolve vocabulary entries.
+
 ## Commits
+
+- [03268e5b](https://github.com/Cognis-Labs-HQ/Cognis/commit/03268e5bb34d94a46146b0ec6ba9f3e678752481)
 
 - [8862690a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8862690a835650a677efa6a5404ad55491b6a778)
 
