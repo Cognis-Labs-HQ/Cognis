@@ -107,7 +107,12 @@ export async function requestLibraryUpdate(entryId, proposedEntry) {
             proposedEntry,
         }),
     });
-    if (!response.ok) throw new Error("request_failed");
+    if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const error = new Error(payload.error?.code ?? "request_failed");
+        error.details = payload.error;
+        throw error;
+    }
     return (await response.json()).data;
 }
 
@@ -151,7 +156,12 @@ export async function updateLibraryEntry(entryId, entry) {
             body: JSON.stringify({ entry }),
         },
     );
-    if (!response.ok) throw new Error("update_failed");
+    if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const error = new Error(payload.error?.code ?? "update_failed");
+        error.details = payload.error;
+        throw error;
+    }
     return (await response.json()).data;
 }
 

@@ -138,6 +138,10 @@ Vocabulary create and edit forms now expose a character carousel even when a pro
 
 Saving a pronunciation now commits its carousel selection, preserves authored multi-value pronunciations during card creation, and reports a specific corrective message if pronunciation groups are invalid.
 
+## Reliable Pronunciation Saves
+
+Pronunciation staging now completes even when carousel cards do not render counters, moves the committed value into the saved-values list, and reports clear success or actionable submission errors.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -178,3 +182,4 @@ Saving a pronunciation now commits its carousel selection, preserves authored mu
 - [6c0ba3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c0ba3ed)
 - [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)
 - [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)
+- [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)

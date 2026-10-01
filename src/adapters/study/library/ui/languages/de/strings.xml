@@ -7,6 +7,8 @@
   <string name="gateway.study.library_create_typed">{type}-Karte erstellen</string>
   <string name="gateway.study.library_create_error">Die Bibliothekskarte konnte nicht erstellt werden. Prüfe den eingegebenen Inhalt und versuche es erneut.</string>
   <string name="gateway.study.library_pronunciation_group_error">Die Aussprachegruppen konnten nicht gespeichert werden. Speichere jede Aussprache im Karussell und versuche dann erneut, die Karte zu erstellen.</string>
+  <string name="gateway.study.library_pronunciation_saved">Aussprache gespeichert.</string>
+  <string name="gateway.study.library_relationship_error">Die ausgewählten Karten erfüllen die Beziehungsanforderungen dieser Karte nicht. Prüfe die Karussellauswahl und versuche es erneut.</string>
   <string name="gateway.study.library_requests">Anfragen</string>
   <string name="gateway.study.library_requests_subtitle">Veröffentlichungsanfragen der Bibliothek prüfen und verwalten</string>
   <string name="gateway.study.library_approve">Genehmigen</string>

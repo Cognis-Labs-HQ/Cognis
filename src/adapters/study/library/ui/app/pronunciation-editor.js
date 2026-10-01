@@ -143,6 +143,12 @@ export function mountEditableRelationshipCarousels(
             .split(/\r?\n/u)
             .map((value) => value.trim())
             .filter(Boolean);
+    const clearCarouselItemSelection = (item) => {
+        item.classList.remove("is-selected");
+        item.setAttribute("aria-pressed", "false");
+        const counter = item.querySelector("[data-carousel-order]");
+        if (counter) counter.textContent = "";
+    };
     const renderSavedValues = (compositionField) => {
         const container = compositionField.previousElementSibling;
         const field = form.elements["field:pronunciation"];
@@ -168,11 +174,7 @@ export function mountEditableRelationshipCarousels(
             stagedValues.set(relationshipId, []);
             form.querySelectorAll(
                 `[data-horizontal-carousel="${CSS.escape(relationshipId)}"] [data-carousel-value].is-selected`,
-            ).forEach((item) => {
-                item.classList.remove("is-selected");
-                item.setAttribute("aria-pressed", "false");
-                item.querySelector("[data-carousel-order]").textContent = "";
-            });
+            ).forEach(clearCarouselItemSelection);
         }
     }
     mountHorizontalCarousels(form, {
@@ -487,16 +489,14 @@ export function mountEditableRelationshipCarousels(
                 }
                 form.querySelectorAll(
                     `[data-horizontal-carousel="${CSS.escape(relationshipId)}"] [data-carousel-value].is-selected`,
-                ).forEach((item) => {
-                    item.classList.remove("is-selected");
-                    item.setAttribute("aria-pressed", "false");
-                    item.querySelector("[data-carousel-order]").textContent =
-                        "";
-                });
+                ).forEach(clearCarouselItemSelection);
             }
             renderSelectedReferences();
             renderSavedValues(compositionField);
             form.dispatchEvent(new CustomEvent("library-composition-change"));
+            showToast(i18n.t("gateway.study.library_pronunciation_saved"), {
+                variant: "success",
+            });
         },
         { signal: controller.signal },
     );

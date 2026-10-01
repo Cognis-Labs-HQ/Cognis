@@ -57,6 +57,18 @@ function showComposerLimitViolation(form, layer, schema, i18n) {
     return true;
 }
 
+function showLibraryMutationError(error, i18n) {
+    const code = error instanceof Error ? error.message : "update_failed";
+    const messageKey = code.startsWith("field_reference_group_mismatch:")
+        ? "gateway.study.library_pronunciation_group_error"
+        : code.startsWith("relationship_") ||
+            code === "reference_not_found" ||
+            code === "invalid_relationship_target"
+          ? "gateway.study.library_relationship_error"
+          : "gateway.study.library_update_error";
+    showToast(i18n.t(messageKey), { variant: "error" });
+}
+
 export function bindLibraryEditorControls(
     form,
     entry,
@@ -1079,20 +1091,25 @@ export async function openLibraryEntryEditor({
                 references,
                 referenceGroups: readReferenceGroups(form),
             };
-            const updated = requestUpdate
-                ? await requestLibraryUpdate(entry.id, proposedEntry)
-                : await updateLibraryEntry(entry.id, proposedEntry);
-            if (!requestUpdate) Object.assign(entry, updated);
-            onSaved(updated);
-            showToast(
-                i18n.t(
-                    requestUpdate
-                        ? "gateway.study.library_update_requested"
-                        : "gateway.study.library_update_success",
-                ),
-                { variant: "success" },
-            );
-            return true;
+            try {
+                const updated = requestUpdate
+                    ? await requestLibraryUpdate(entry.id, proposedEntry)
+                    : await updateLibraryEntry(entry.id, proposedEntry);
+                if (!requestUpdate) Object.assign(entry, updated);
+                onSaved(updated);
+                showToast(
+                    i18n.t(
+                        requestUpdate
+                            ? "gateway.study.library_update_requested"
+                            : "gateway.study.library_update_success",
+                    ),
+                    { variant: "success" },
+                );
+                return true;
+            } catch (error) {
+                showLibraryMutationError(error, i18n);
+                return false;
+            }
         },
     });
 }
@@ -1368,11 +1385,8 @@ export function bindAdminLibraryInteractions(
                             { variant: "success" },
                         );
                         return true;
-                    } catch {
-                        showToast(
-                            i18n.t("gateway.study.library_update_error"),
-                            { variant: "error" },
-                        );
+                    } catch (error) {
+                        showLibraryMutationError(error, i18n);
                         return false;
                     }
                 },

@@ -138,6 +138,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 発音の保存時にカルーセルの選択が確定され、カード作成中も手動で作成した複数値の発音が保持されます。発音グループが無効な場合は、具体的な修正メッセージが表示されます。
 
+## 信頼性の高い発音保存
+
+カルーセルカードにカウンターが表示されない場合でも発音のステージングが完了し、確定した値が保存済み値の一覧へ移動します。また、明確な成功通知または対処可能な送信エラーが表示されます。
+
 ## コミット
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -178,3 +182,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [6c0ba3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c0ba3ed)
 - [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)
 - [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)
+- [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)

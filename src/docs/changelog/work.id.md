@@ -138,6 +138,10 @@ Formulir buat dan edit kosakata kini menampilkan carousel karakter meskipun peny
 
 Penyimpanan pelafalan kini menerapkan pilihan korsel, mempertahankan pelafalan multi-nilai yang dibuat pengguna selama pembuatan kartu, dan menampilkan pesan korektif khusus jika grup pelafalan tidak valid.
 
+## Penyimpanan Pelafalan yang Andal
+
+Tahap pelafalan kini selesai meskipun kartu korsel tidak menampilkan penghitung, memindahkan nilai yang diterapkan ke daftar nilai tersimpan, dan menampilkan keberhasilan yang jelas atau kesalahan pengiriman yang dapat ditindaklanjuti.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -178,3 +182,4 @@ Penyimpanan pelafalan kini menerapkan pilihan korsel, mempertahankan pelafalan m
 - [6c0ba3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c0ba3ed)
 - [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)
 - [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)
+- [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)

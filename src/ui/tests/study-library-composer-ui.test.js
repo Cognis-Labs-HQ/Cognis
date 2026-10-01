@@ -211,10 +211,23 @@ test("Study Library keeps selected-card fields beside configured carousels", () 
 
 test("Study Library edits saved pronunciations and rejects an empty stage", () => {
     assert.match(adminInteractionsSource, /library_pronunciation_stage_empty/);
+    assert.match(adminInteractionsSource, /library_pronunciation_saved/);
+    assert.match(
+        adminInteractionsSource,
+        /const counter = item\.querySelector\("\[data-carousel-order\]"\);[\s\S]*if \(counter\) counter\.textContent = ""/,
+    );
     assert.match(adminInteractionsSource, /editingGroups/);
     assert.match(adminInteractionsSource, /data-library-edit-saved-value/);
     assert.match(adminStylesheet, /data-library-edit-saved-value/);
     assert.match(adminStylesheet, /position:\s*absolute/);
+});
+
+test("Study Library edit failures retain server error codes for useful toasts", () => {
+    assert.match(clientSource, /payload\.error\?\.code \?\? "update_failed"/);
+    assert.match(clientSource, /payload\.error\?\.code \?\? "request_failed"/);
+    assert.match(adminInteractionsSource, /showLibraryMutationError/);
+    assert.match(adminInteractionsSource, /library_relationship_error/);
+    assert.match(adminInteractionsSource, /library_pronunciation_group_error/);
 });
 
 test("Study Library preserves each multi-value pronunciation reference group", () => {

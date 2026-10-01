@@ -7,6 +7,8 @@
   <string name="gateway.study.library_create_typed">{type}カードを作成</string>
   <string name="gateway.study.library_create_error">ライブラリカードを作成できませんでした。入力内容を確認して、もう一度お試しください。</string>
   <string name="gateway.study.library_pronunciation_group_error">発音グループを保存できませんでした。カルーセルで各発音を保存してから、もう一度カードを作成してください。</string>
+  <string name="gateway.study.library_pronunciation_saved">発音を保存しました。</string>
+  <string name="gateway.study.library_relationship_error">選択したカードは、このカードの関連付け要件を満たしていません。カルーセルの選択を確認して、もう一度お試しください。</string>
   <string name="gateway.study.library_requests">リクエスト</string>
   <string name="gateway.study.library_requests_subtitle">Library の公開リクエストを確認・管理します</string>
   <string name="gateway.study.library_approve">承認</string>

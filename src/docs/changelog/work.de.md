@@ -138,6 +138,10 @@ Formulare zum Erstellen und Bearbeiten von Vokabeln zeigen nun auch dann ein Zei
 
 Beim Speichern einer Aussprache wird nun die Karussellauswahl übernommen, manuell erstellte mehrwertige Aussprachen bleiben bei der Kartenerstellung erhalten und bei ungültigen Aussprachegruppen erscheint eine konkrete Korrekturmeldung.
 
+## Zuverlässiges Speichern der Aussprache
+
+Die Aussprache-Vorbereitung wird nun auch abgeschlossen, wenn Karussellkarten keine Zähler anzeigen. Der bestätigte Wert wird in die Liste der gespeicherten Werte verschoben und klare Erfolgs- oder hilfreiche Übermittlungsfehler werden angezeigt.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -178,3 +182,4 @@ Beim Speichern einer Aussprache wird nun die Karussellauswahl übernommen, manue
 - [6c0ba3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c0ba3ed)
 - [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)
 - [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)
+- [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)
