@@ -102,6 +102,10 @@ Transformation trees now keep the source verb or adverb card as the unchanged vi
 
 Verb and adverb entries now remain on the Vocabulary page, where provider-declared transformation tags appear as filters instead of separate navigation destinations. A transform rule may declare localized `marker` metadata, and Cognis inserts it into a referenced definition’s `{{ marker }}` slot (for example, `to {{ marker }} watch` becomes `to (want to) watch`). Form names moved into per-node information tooltips. The standard detail popup exposes a Variants action that opens a dedicated graph selector; selecting a node redraws the base entry with transformed title, pronunciation, definition, and drawing input while suppressing editing. Composer carousels identify transformable entries and use a two-column chooser that can select one transform or retain the base form.
 
+## Balanced transformation graphs and reliable markers
+
+Transformation graphs now size each branch from its complete descendant subtree, preserve a twelve-rem minimum node width, distribute branches across intrinsic graph width, and scroll horizontally when the graph exceeds the dialog. This prevents deep or highly branched conjugation families from crushing cards into narrow columns. Definition-marker resolution now accepts localized metadata or a direct string, matches both `{{ marker }}` and `{{marker}}`, resolves against the active interface locale, replaces every marker in multi-definition text, and gives an authored marker template precedence over a legacy full-definition override.
+
 ## Commits
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -130,3 +134,4 @@ Verb and adverb entries now remain on the Vocabulary page, where provider-declar
 - [4d32a72e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4d32a72e)
 - [7dea5c6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dea5c6c)
 - [e356a233](https://github.com/Cognis-Labs-HQ/Cognis/commit/e356a233)
+- [6c0ba3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c0ba3ed)

@@ -210,6 +210,12 @@ body[data-theme="light"] .library-browser {
     display: grid;
     gap: 0.45rem;
 }
+.library-transform-tech-tree {
+    overflow-x: auto;
+    overflow-y: visible;
+    width: 100%;
+    padding: 0.5rem 0.75rem 1rem;
+}
 .library-transform-pathway[hidden] {
     display: none;
 }
@@ -250,6 +256,9 @@ body[data-theme="light"] .library-browser {
     display: flex;
     position: relative;
     gap: 1rem;
+    justify-content: space-around;
+    width: max-content;
+    min-width: 100%;
     margin: 0;
     padding: 2rem 0 0;
     list-style: none;
@@ -257,7 +266,9 @@ body[data-theme="light"] .library-browser {
 .library-transform-tech-tree li {
     display: grid;
     position: relative;
-    flex: 1 1 10rem;
+    flex: 0 0 auto;
+    justify-items: center;
+    min-width: 12rem;
     align-content: start;
     gap: 0;
 }
@@ -308,7 +319,8 @@ body[data-theme="light"] .library-browser {
 .library-transform-tech-tree button {
     position: relative;
     display: grid;
-    width: 100%;
+    width: 12rem;
+    min-height: 3.25rem;
     justify-items: center;
     gap: 0.25rem;
     padding: 0.45rem 0.65rem;
@@ -338,6 +350,7 @@ body[data-theme="light"] .library-browser {
     box-shadow: 0 0 0.55rem color-mix(in srgb, var(--accent-2) 28%, transparent);
 }
 .library-transform-definition {
+    width: 12rem;
     min-height: 2.5em;
     margin: 0 0 0.35rem;
     color: var(--text-muted);

@@ -188,7 +188,7 @@ export interface LibraryTransformSet {
             append: string;
         };
         /** Localized phrase inserted into definition `{{ marker }}` slots. */
-        marker?: LibraryMetadata;
+        marker?: LibraryMetadata | string;
         definition?: LibraryMetadata;
     }[];
 }

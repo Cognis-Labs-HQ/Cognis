@@ -102,6 +102,10 @@ Pohon transformasi kini mempertahankan kartu kata kerja atau kata keterangan sum
 
 Entri verba dan adverbia kini tetap berada di halaman Kosakata, tempat tag transformasi yang dideklarasikan penyedia tampil sebagai filter, bukan tujuan navigasi terpisah. Aturan transformasi dapat mendeklarasikan metadata `marker` terlokalisasi dan Cognis menyisipkannya ke slot `{{ marker }}` pada definisi yang dirujuk (misalnya `to {{ marker }} watch` menjadi `to (want to) watch`). Nama bentuk dipindahkan ke tooltip informasi pada setiap simpul. Popup detail standar menyediakan tindakan Varian yang membuka pemilih graf khusus; memilih simpul menggambar ulang entri dasar dengan judul, pelafalan, definisi, dan masukan gambar yang telah ditransformasi sambil menonaktifkan penyuntingan. Karusel penyusun menandai entri yang dapat ditransformasi dan memakai pemilih dua kolom untuk memilih satu transformasi atau mempertahankan bentuk dasar.
 
+## Graf transformasi seimbang dan penanda andal
+
+Graf transformasi kini mengukur setiap cabang berdasarkan seluruh subpohon turunannya, mempertahankan lebar minimum dua belas rem untuk setiap simpul, menyebarkan cabang sepanjang lebar intrinsik graf, dan menggulir secara horizontal saat graf melebihi dialog. Hal ini mencegah keluarga konjugasi yang dalam atau sangat bercabang menghimpit kartu menjadi kolom sempit. Resolusi penanda definisi kini menerima metadata terlokalisasi atau string langsung, mencocokkan `{{ marker }}` maupun `{{marker}}`, menggunakan lokal antarmuka aktif, mengganti setiap penanda dalam teks multidefinisi, dan memprioritaskan templat penanda yang ditulis penyedia daripada penggantian definisi penuh lama.
+
 ## Commit
 
 - [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
@@ -130,3 +134,4 @@ Entri verba dan adverbia kini tetap berada di halaman Kosakata, tempat tag trans
 - [4d32a72e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4d32a72e)
 - [7dea5c6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dea5c6c)
 - [e356a233](https://github.com/Cognis-Labs-HQ/Cognis/commit/e356a233)
+- [6c0ba3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c0ba3ed)

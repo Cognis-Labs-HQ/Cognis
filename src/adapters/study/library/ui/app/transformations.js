@@ -65,12 +65,25 @@ export function matchingTransformation(entry, schema, text) {
 }
 
 export function transformedDefinition(baseDefinition, node, language) {
-    const localized = (metadata) =>
-        metadata?.labels?.[language] ??
-        Object.values(metadata?.labels ?? {})[0];
-    const override = localized(node.definition);
-    if (override) return override;
+    const localized = (metadata) => {
+        if (typeof metadata === "string") return metadata;
+        const labels = metadata?.labels ?? {};
+        const activeLanguage =
+            globalThis.document?.documentElement?.lang || language;
+        return (
+            labels[activeLanguage] ??
+            labels[activeLanguage?.split("-")[0]] ??
+            labels[language] ??
+            labels[language?.split("-")[0]] ??
+            Object.values(labels)[0]
+        );
+    };
     const marker = localized(node.rule?.marker);
-    if (!marker || !baseDefinition) return baseDefinition;
-    return baseDefinition.replaceAll("{{ marker }}", `(${marker})`);
+    if (
+        marker &&
+        baseDefinition &&
+        /\{\{\s*marker\s*\}\}/iu.test(baseDefinition)
+    )
+        return baseDefinition.replace(/\{\{\s*marker\s*\}\}/giu, `(${marker})`);
+    return localized(node.definition) || baseDefinition;
 }

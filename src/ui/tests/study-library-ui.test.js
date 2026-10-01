@@ -878,6 +878,9 @@ test("Study Library provides vocabulary transformations", () => {
     assert.match(stylesheet, /library-transform-path-flow-vertical/);
     assert.match(stylesheet, /library-transform-tech-tree > ol::after/);
     assert.match(stylesheet, /library-transform-info/);
+    assert.match(stylesheet, /width:\s*max-content/);
+    assert.match(stylesheet, /min-width:\s*12rem/);
+    assert.match(stylesheet, /overflow-x:\s*auto/);
     assert.match(stylesheet, /prefers-reduced-motion:\s*reduce/);
 });
 test("Study Library renders writing-unit pronunciation and audio", () => {

@@ -191,4 +191,15 @@ test("transform markers are inserted into provider definition slots", () => {
         ),
         "to (want to) watch",
     );
+    assert.equal(
+        transformedDefinition(
+            "to {{marker}} see; to {{ marker }} watch",
+            {
+                definition: { labels: { en: "desire" } },
+                rule: { marker: "want to" },
+            },
+            "en",
+        ),
+        "to (want to) see; to (want to) watch",
+    );
 });
