@@ -158,6 +158,10 @@ Kartu kalimat kini mengabaikan pelafalan yang tersimpan sebelumnya saat dikirim 
 
 Korsel tag yang dideklarasikan penyedia kini berfungsi sebagai korsel input kalimat mandiri dan tidak lagi bergantung pada entri yang dihapus dari korsel umum. Kata struktur dapat dipilih, diurutkan, dihapus, dan dipulihkan saat penyuntingan. Pohon transformasi juga menyediakan jarak vertikal yang lebih luas antarbaris kedalaman.
 
+## Penyegaran Entri Stabil
+
+Satu entri yang dikembalikan oleh penyuntingan popup yang berhasil kini digabungkan ke koleksi entri Pustaka sebelum dirender. Halaman tidak lagi mengganti lariknya dengan satu entri sehingga penyegaran setelah penyimpanan selesai tanpa galat runtime filter.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -203,3 +207,4 @@ Korsel tag yang dideklarasikan penyedia kini berfungsi sebagai korsel input kali
 - [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)
 - [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)
 - [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)
+- [35a54a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/35a54a21)

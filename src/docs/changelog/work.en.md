@@ -158,6 +158,10 @@ Sentence cards now discard a previously stored pronunciation during submission a
 
 Provider-declared tag carousels now operate as independent sentence-input carousels instead of relying on entries removed from the general carousel. Structure words can be selected, ordered, removed, and restored during editing. Transformation trees also provide more vertical space between depth rows.
 
+## Stable Entry Refresh
+
+A single entry returned by a successful popup edit is now merged into the existing Library entry collection before rendering. The page no longer replaces its array with one entry, so post-save refreshes complete without a filter runtime error.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -203,3 +207,4 @@ Provider-declared tag carousels now operate as independent sentence-input carous
 - [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)
 - [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)
 - [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)
+- [35a54a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/35a54a21)

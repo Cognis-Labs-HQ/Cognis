@@ -23,6 +23,7 @@ import {
 } from "./variants.js";
 import { createLibraryVisibilityActions } from "./visibility-actions.js";
 import { bindTransformationInteractions } from "./transformation-interactions.js";
+import { mergeEntryCollectionUpdate } from "./entry-collection.js";
 let activeEntryPopup = null;
 
 export function bindLibraryInteractions(root, context) {
@@ -39,10 +40,11 @@ export function bindLibraryInteractions(root, context) {
     let entries = context.entries;
     const requests = context.requests ?? [];
     let locations;
-    const renderEntries = (updated = entries) => {
+    const renderEntries = (update = entries) => {
+        entries = mergeEntryCollectionUpdate(entries, update);
         root.querySelector(".library-browser").innerHTML =
-            context.renderContent?.(updated) ??
-            renderBrowser(schemas, updated, i18n, requestedLayer);
+            context.renderContent?.(entries) ??
+            renderBrowser(schemas, entries, i18n, requestedLayer);
     };
     void fetchLibraryLocations().then((value) => {
         locations = value;

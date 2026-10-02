@@ -158,6 +158,10 @@ Satzkarten verwerfen beim Speichern eine zuvor gespeicherte Aussprache und leite
 
 Vom Anbieter deklarierte Tag-Karussells funktionieren jetzt als eigenständige Karussells für die Satzeingabe, statt von Einträgen im allgemeinen Karussell abhängig zu sein, die dort ausgeblendet werden. Strukturwörter können beim Bearbeiten ausgewählt, angeordnet, entfernt und wiederhergestellt werden. Transformationsbäume bieten außerdem mehr vertikalen Abstand zwischen den Tiefenebenen.
 
+## Stabile Eintragsaktualisierung
+
+Ein einzelner Eintrag aus einer erfolgreichen Popup-Bearbeitung wird nun vor dem Rendern in die vorhandene Bibliothekseintragssammlung übernommen. Die Seite ersetzt ihr Array nicht mehr durch einen einzelnen Eintrag, sodass Aktualisierungen nach dem Speichern ohne Filter-Laufzeitfehler abgeschlossen werden.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -203,3 +207,4 @@ Vom Anbieter deklarierte Tag-Karussells funktionieren jetzt als eigenständige K
 - [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)
 - [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)
 - [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)
+- [35a54a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/35a54a21)

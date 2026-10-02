@@ -158,6 +158,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 プロバイダーが宣言したタグカルーセルが、一般カルーセルから除外された項目に依存せず、独立した文入力カルーセルとして動作するようになりました。編集時に構造語を選択、並べ替え、削除、復元できます。変換ツリーの深さごとの行間にも、より広い縦方向の余白を設けました。
 
+## 安定したエントリ更新
+
+ポップアップ編集の成功時に返された単一エントリを、描画前に既存のライブラリエントリ一覧へ統合するようになりました。配列が単一エントリで置き換えられないため、保存後の更新が filter の実行時エラーなしで完了します。
+
 ## コミット
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -203,3 +207,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)
 - [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)
 - [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)
+- [35a54a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/35a54a21)

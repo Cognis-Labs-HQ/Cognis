@@ -149,6 +149,7 @@ test("Study Library serializes popup opening and identifies child parents", () =
 test("Study Library refreshes card previews after direct popup edits", () => {
     assert.match(source, /options\.onEntryUpdated\?\.\(updated\)/);
     assert.match(source, /onEntryUpdated: renderEntries/);
+    assert.match(source, /mergeEntryCollectionUpdate\(entries, update\)/);
     assert.match(
         source,
         /root\.querySelector\("\.library-browser"\)\.innerHTML/,
