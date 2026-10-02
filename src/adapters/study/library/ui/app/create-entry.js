@@ -1017,6 +1017,7 @@ function bindTextComposition(
                   .join("");
         const pronunciation = `${selectedPronunciation}${inputPronunciation}`;
         control.value = pronunciation;
+        control.dispatchEvent(new Event("input", { bubbles: true }));
     };
     const syncLabel = () => {
         for (const relationship of relationships) {
@@ -1063,10 +1064,17 @@ function bindTextComposition(
         const prefixMatches = resolveCompositionPrefix(
             normalizedText,
             candidates,
-        ).matches.slice(0, 1);
-        const matches = exactMatches.length ? exactMatches : prefixMatches;
+        );
+        const sequenceMatch =
+            !prefixMatches.remainder && prefixMatches.matches.length > 1
+                ? `<button class="btn-confirm library-composer-suggestion" type="button" data-library-suggestion-sequence="${escapeHtml(JSON.stringify(prefixMatches.matches.map(({ id, relationshipId }) => ({ id, relationshipId }))))}">${escapeHtml(text)}</button>`
+                : "";
+        const matches = exactMatches.length
+            ? exactMatches
+            : prefixMatches.matches;
         const fallbackRelationship = relationships[0]?.id;
-        output.innerHTML = `${matches
+        output.innerHTML = `${sequenceMatch}${matches
+            .slice(0, 1)
             .map(
                 (match) =>
                     `<button class="btn-neutral library-composer-suggestion" type="button" data-library-suggestion="${escapeHtml(match.id)}" data-relationship="${escapeHtml(match.relationshipId)}" data-suggestion-label="${escapeHtml(match.label)}">${escapeHtml(match.label)}${match.preview ? `<span class="horizontal-carousel-preview" role="tooltip"><strong>${escapeHtml(match.label)}</strong><span>${escapeHtml(match.preview)}</span></span>` : ""}</button>`,
@@ -1080,6 +1088,21 @@ function bindTextComposition(
     form.addEventListener("change", syncLabel);
     form.addEventListener("library-composition-change", syncLabel);
     output.addEventListener("click", (event) => {
+        const sequence = event.target.closest(
+            "[data-library-suggestion-sequence]",
+        );
+        if (sequence) {
+            const suggestions = JSON.parse(
+                sequence.dataset.librarySuggestionSequence,
+            );
+            for (const suggestion of suggestions)
+                form.querySelector(
+                    `[data-horizontal-carousel="${CSS.escape(suggestion.relationshipId)}"] [data-carousel-value="${CSS.escape(suggestion.id)}"]`,
+                )?.click();
+            input.value = "";
+            renderSuggestions();
+            return;
+        }
         const suggestion = event.target.closest("[data-library-suggestion]");
         if (suggestion) {
             form.querySelector(

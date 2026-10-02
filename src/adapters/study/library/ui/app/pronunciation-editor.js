@@ -383,6 +383,12 @@ export function mountEditableRelationshipCarousels(
     form.addEventListener(
         "input",
         (event) => {
+            if (event.target === form.elements["field:pronunciation"]) {
+                form.querySelectorAll(
+                    '[data-library-composition-field="pronunciation"]',
+                ).forEach(renderSavedValues);
+                return;
+            }
             const input = event.target.closest("[data-library-carousel-text]");
             if (!input) return;
             const compositionField = input.closest(

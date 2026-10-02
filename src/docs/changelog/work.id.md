@@ -194,6 +194,10 @@ Penyusun kalimat kini mempertahankan bidang pelafalan penyedia di formulir, mena
 
 Grup pelafalan kini ditambahkan tanpa slot null yang renggang, masukan penyedia yang rusak menghasilkan galat kontrak yang stabil alih-alih berhenti mendadak, dan definisi bertingkat yang ada digunakan kembali sebelum permintaan yang berkonflik dikirim.
 
+## Komposisi ketikan multi-kartu
+
+Urutan lengkap yang diketik dan dapat diuraikan menjadi beberapa kartu kini dapat diterapkan dalam satu tindakan. Pelafalan yang diturunkan otomatis langsung digambar ulang sebagai nilai tersimpan sehingga penyunting kosong tidak lagi menyiratkan bahwa pengguna harus memasukkan duplikat secara manual.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)

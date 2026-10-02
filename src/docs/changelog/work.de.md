@@ -194,6 +194,10 @@ Satzeditoren behalten nun das Aussprachefeld des Anbieters im Formular, zeigen e
 
 Aussprachegruppen werden nun ohne leere Nullstellen angehängt, fehlerhafte Anbietereingaben liefern einen stabilen Vertragsfehler statt eines Absturzes, und vorhandene verschachtelte Definitionen werden vor einer kollidierenden Anfrage wiederverwendet.
 
+## Getippte Komposition aus mehreren Karten
+
+Eine vollständig eingegebene Folge, die mehreren Karten entspricht, kann nun in einer Aktion übernommen werden. Automatisch abgeleitete Aussprache wird sofort als übernommener Wert neu dargestellt, sodass ein leeres Eingabefeld nicht mehr zur doppelten manuellen Eingabe verleitet.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
