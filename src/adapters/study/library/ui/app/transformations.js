@@ -65,6 +65,20 @@ export function matchingTransformation(entry, schema, text) {
         )[0];
 }
 
+export function referencedTransformation(entry, schema, transformation) {
+    if (!transformation) return null;
+    return (
+        transformationPathways(entry, schema)
+            .filter(({ set }) => set.id === transformation.setId)
+            .flatMap(({ set, nodes }) => nodes.map((node) => ({ set, node })))
+            .find(
+                ({ node }) =>
+                    JSON.stringify(node.path) ===
+                    JSON.stringify(transformation.path),
+            ) ?? null
+    );
+}
+
 export function transformedDefinition(baseDefinition, node, language) {
     const localized = (metadata) => {
         if (typeof metadata === "string") return metadata;

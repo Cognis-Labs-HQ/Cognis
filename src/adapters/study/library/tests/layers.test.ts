@@ -149,6 +149,59 @@ test("providers declare sentence carousels, views, and transform rules", () => {
     );
 });
 
+test("references validate provider-declared transformation paths", () => {
+    const schema: LibrarySchema = {
+        ...english,
+        transformSets: [
+            {
+                id: "verbs",
+                metadata: { labels: { en: "Verbs" } },
+                matchTags: ["verb"],
+                baseState: "base",
+                rules: [
+                    {
+                        id: "past",
+                        metadata: { labels: { en: "Past" } },
+                        fromState: "base",
+                        toState: "past",
+                        removeSuffix: "k",
+                        append: "ked",
+                    },
+                ],
+            },
+        ],
+    };
+    const target = { ...entry("talk", "talk"), tags: ["verb"] };
+    const targets = new Map([[target.id, target]]);
+    const reference = {
+        entryId: target.id,
+        relation: "letters",
+        position: 0,
+        transformation: { setId: "verbs", path: ["past"] },
+    };
+    assert.doesNotThrow(() =>
+        validateReferences(schema, "words", [reference], targets),
+    );
+    assert.throws(
+        () =>
+            validateReferences(
+                schema,
+                "words",
+                [
+                    {
+                        ...reference,
+                        transformation: {
+                            setId: "verbs",
+                            path: ["missing"],
+                        },
+                    },
+                ],
+                targets,
+            ),
+        /invalid_reference_transformation/,
+    );
+});
+
 test("fields can link values through multiple declared relationships", () => {
     const schema: LibrarySchema = {
         ...english,

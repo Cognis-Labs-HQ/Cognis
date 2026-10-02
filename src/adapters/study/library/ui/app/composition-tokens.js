@@ -1,4 +1,7 @@
-import { transformationPathways } from "./transformations.js";
+import {
+    referencedTransformation,
+    transformationPathways,
+} from "./transformations.js";
 
 const LITERAL_PREFIX = "literal:";
 const TRANSFORMATION_PREFIX = "transformation:";
@@ -49,23 +52,32 @@ export function restoreCompositionTokens(
                 (left.position ?? Number.MAX_SAFE_INTEGER) -
                 (right.position ?? Number.MAX_SAFE_INTEGER),
         )
-        .map(({ entryId }) => entries.find(({ id }) => id === entryId))
-        .filter(Boolean);
+        .map((reference) => ({
+            entry: entries.find(({ id }) => id === reference.entryId),
+            transformation: reference.transformation,
+        }))
+        .filter(({ entry }) => Boolean(entry));
     const literals = (constructor.literal_carousels ?? [])
         .flatMap(({ values }) => values)
         .toSorted((left, right) => right.length - left.length);
     const tokens = [];
     let referenceIndex = 0;
     for (let cursor = 0; cursor < entry.label.length;) {
-        const reference = references[referenceIndex];
+        const referenceItem = references[referenceIndex];
+        const reference = referenceItem?.entry;
         const transformation = reference
-            ? transformationPathways(reference, schema)
+            ? (referencedTransformation(
+                  reference,
+                  schema,
+                  referenceItem.transformation,
+              ) ??
+              transformationPathways(reference, schema)
                   .flatMap(({ set, nodes }) =>
                       nodes.slice(1).map((node) => ({ set, node })),
                   )
                   .find(({ node }) =>
                       entry.label.startsWith(node.value, cursor),
-                  )
+                  ))
             : null;
         if (
             reference &&

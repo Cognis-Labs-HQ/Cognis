@@ -39,6 +39,7 @@ import {
     compositionTokenEntryId,
     compositionTokenLabel,
     restoreCompositionTokens,
+    transformationTokenDetails,
 } from "./composition-tokens.js";
 
 export { inputForField } from "./field-input.js";
@@ -756,6 +757,22 @@ export function readReferences(form, layer, compositionOrder = []) {
             position,
         ]),
     );
+    const authoredTransformations = new Map(
+        compositionOrder.flatMap((token) => {
+            const transformation = transformationTokenDetails(token);
+            return transformation
+                ? [
+                      [
+                          transformation.entryId,
+                          {
+                              setId: transformation.setId,
+                              path: transformation.path,
+                          },
+                      ],
+                  ]
+                : [];
+        }),
+    );
     return (layer?.relationships ?? [])
         .filter((relationship) => !relationship.grouped)
         .flatMap((relationship) =>
@@ -765,6 +782,13 @@ export function readReferences(form, layer, compositionOrder = []) {
                 (option, position) => ({
                     entryId: option.value,
                     relation: relationship.id,
+                    ...(authoredTransformations.has(option.value)
+                        ? {
+                              transformation: authoredTransformations.get(
+                                  option.value,
+                              ),
+                          }
+                        : {}),
                     ...(relationship.ordered
                         ? {
                               position:

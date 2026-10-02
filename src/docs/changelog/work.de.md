@@ -166,6 +166,10 @@ Ein einzelner Eintrag aus einer erfolgreichen Popup-Bearbeitung wird nun vor dem
 
 Bei der Auswahl eines transformierbaren Verbs im Karten-Composer erscheint jetzt ein Dialog „Wird hinzugefügt“ mit einer zweispaltigen Liste der verfügbaren Formen und ihrer angepassten Definitionen. Die ausgewählte Form wird als Transformationstoken vorgemerkt, sodass Links in gespeicherten Sätzen wieder die passende transformierte Verb- oder Adverbansicht öffnen.
 
+## Vom Anbieter verfasste transformierte Satzverweise
+
+Inhaltsanbieter können Satzverweisen jetzt eine geprüfte Transformationssatz-ID und einen Regelpfad hinzufügen. Cognis speichert die Auswahl, stellt das genaue transformierte Composer-Token wieder her und öffnet aus dem Satz dieselbe transformierte Verb- oder Adverbansicht. Transformierte Details verwenden nun die übliche Kindzuordnung „Von: übergeordnet“ als Link zur kanonischen Grundkarte statt einer separaten Zurück-Schaltfläche.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -213,3 +217,4 @@ Bei der Auswahl eines transformierbaren Verbs im Karten-Composer erscheint jetzt
 - [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)
 - [35a54a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/35a54a21)
 - [6a48472b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a48472bfb28deb7094af36fc7fab7defa597b65)
+- [f4640403](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4640403af8c1a228844cde3f784fa45650299cd)

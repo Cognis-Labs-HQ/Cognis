@@ -166,6 +166,10 @@ Satu entri yang dikembalikan oleh penyuntingan popup yang berhasil kini digabung
 
 Memilih verba yang dapat ditransformasi di penyusun kartu kini membuka dialog “Akan ditambahkan” dengan daftar dua kolom berisi bentuk yang tersedia dan definisi yang telah disesuaikan. Bentuk terpilih ditempatkan sebagai token transformasi sehingga tautan pada kalimat tersimpan membuka kembali detail verba atau adverbia hasil transformasi yang sesuai.
 
+## Referensi kalimat transformasi buatan penyedia
+
+Penyedia konten kini dapat melampirkan ID set transformasi dan jalur aturan yang divalidasi pada referensi kalimat. Cognis menyimpan pilihan tersebut, memulihkan token penyusun hasil transformasi yang tepat, dan membuka detail verba atau adverbia hasil transformasi yang sama dari kalimat. Detail hasil transformasi kini memakai anotasi anak standar “Dari: induk” sebagai tautan ke kartu dasar kanonis, bukan tombol kembali terpisah.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -213,3 +217,4 @@ Memilih verba yang dapat ditransformasi di penyusun kartu kini membuka dialog �
 - [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)
 - [35a54a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/35a54a21)
 - [6a48472b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a48472bfb28deb7094af36fc7fab7defa597b65)
+- [f4640403](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4640403af8c1a228844cde3f784fa45650299cd)

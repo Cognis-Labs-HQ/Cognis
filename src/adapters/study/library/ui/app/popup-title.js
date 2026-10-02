@@ -258,6 +258,11 @@ export function popupTitleItems(references, transformed) {
     if (transformed) return [];
     return references.map((entry) => ({
         label: entry.label,
-        actionId: `open-title-reference:${entry.id}`,
+        actionId: `open-title-reference:${encodeURIComponent(
+            JSON.stringify({
+                entryId: entry.id,
+                transformation: entry.referenceTransformation,
+            }),
+        )}`,
     }));
 }

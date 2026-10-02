@@ -2,6 +2,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { groupByToMap } from "/static/reuse/group-by.js";
 import { fetchLibraryAudioUrl } from "/static/gateways/study/ui/library-client.js";
 import { parseLanguageCode } from "/static/gateways/study/ui/language.js";
+import { referencedTransformation } from "./transformations.js";
 
 export function entryAttributes(entry) {
     return `data-library-schema="${escapeHtml(entry.schemaId)}" data-library-layer="${escapeHtml(entry.layer)}" data-library-entry="${escapeHtml(entry.id)}"`;
@@ -234,7 +235,15 @@ export function compositionReferenceGroups(detail, schemas) {
                     (left, right) =>
                         (left.position ?? 0) - (right.position ?? 0),
                 )
-                .map(({ entryId }) => entriesById.get(entryId))
+                .map((reference) => {
+                    const entry = entriesById.get(reference.entryId);
+                    return entry
+                        ? {
+                              ...entry,
+                              referenceTransformation: reference.transformation,
+                          }
+                        : null;
+                })
                 .filter(Boolean);
             return entries.length
                 ? [
@@ -271,7 +280,13 @@ export function compositionReferenceGroups(detail, schemas) {
             presentationRole,
             references: [],
         };
-        group.references.push({ entry, position: reference.position ?? 0 });
+        group.references.push({
+            entry: {
+                ...entry,
+                referenceTransformation: reference.transformation,
+            },
+            position: reference.position ?? 0,
+        });
         groupsByRole.set(presentationRole, group);
     }
     return [
@@ -287,15 +302,32 @@ export function compositionReferenceGroups(detail, schemas) {
 }
 
 export function headingCompositionReferences(detail, schemas) {
-    return (
-        compositionReferenceGroups(detail, schemas).find(
-            (group) =>
-                group.presentationRole === "composition" &&
-                group.entries.length > 0 &&
-                group.entries.map(({ label }) => label).join("") ===
-                    detail.entry.label,
-        )?.entries ?? []
+    const schema = schemas.find(({ id }) => id === detail.entry.schemaId);
+    const group = compositionReferenceGroups(detail, schemas).find(
+        (candidate) =>
+            candidate.presentationRole === "composition" &&
+            candidate.entries.length > 0 &&
+            candidate.entries
+                .map(
+                    (entry) =>
+                        referencedTransformation(
+                            entry,
+                            schema,
+                            entry.referenceTransformation,
+                        )?.node.value ?? entry.label,
+                )
+                .join("") === detail.entry.label,
     );
+    return (group?.entries ?? []).map((entry) => {
+        const transformation = referencedTransformation(
+            entry,
+            schema,
+            entry.referenceTransformation,
+        );
+        return transformation
+            ? { ...entry, label: transformation.node.value }
+            : entry;
+    });
 }
 
 function entryAudio(entry, layer) {

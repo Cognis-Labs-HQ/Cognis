@@ -14,19 +14,19 @@ import {
     popupTitleItems,
     withParentTitleAttribution,
 } from "./popup-title.js";
-import { resolvePopupNavigation } from "./popup-navigation.js";
+import {
+    popupEntryNavigationState,
+    resolvePopupNavigation,
+} from "./popup-navigation.js";
 import { titleDefinitionForRole } from "./title-definition.js";
-import { assignVariantPlacements } from "./variant-placement.js";
-import { isDirectlyVisible } from "./cards.js";
 import { openLibraryEntryEditor } from "./admin-interactions.js";
 import { entryEditMode } from "./editability.js";
+import { transformedPopupPresentation as transformPresentation } from "./transformation-popup.js";
 import {
-    sourceTransformation as sourceTransform,
-    transformedPopupPresentation as transformPresentation,
-} from "./transformation-popup.js";
-import {
+    resolveDetailTransformation,
     selectDetailTransformation,
     transformedDetailEntry,
+    transformedParentAttribution,
 } from "./transformation-detail.js";
 import { canDraw, resolveDraw, openDrawing } from "./drawing.js";
 import { drawingHeaderActions, placeAudioSpeaker } from "./drawing.js";
@@ -77,22 +77,14 @@ export async function openEntryPopup(
             });
             continue;
         }
-        const layerEntries = entries.filter(
-            (entry) =>
-                entry.schemaId === selectedEntry.schemaId &&
-                entry.layer === selectedEntry.layer,
-        );
         const schema = schemas.find(
             (candidate) => candidate.id === selectedEntry.schemaId,
         );
-        const placements = assignVariantPlacements(layerEntries, schema, layer);
-        const active = layerEntries.filter(
-            (entry) =>
-                !placements.has(entry.id) &&
-                isDirectlyVisible(entry, layerEntries, placements),
-        );
-        const index = active.findIndex(
-            (entry) => entry.id === selectedEntry.id,
+        const { active, index } = popupEntryNavigationState(
+            entries,
+            selectedEntry,
+            schema,
+            layer,
         );
         const composed = await composeDetail(
             detail,
@@ -123,6 +115,12 @@ export async function openEntryPopup(
             composed.definitions,
         );
         titleDetailItems = transformed.titleDetailItems;
+        titleDetailItems = transformedParentAttribution(
+            titleDetailItems,
+            detail.entry,
+            selectedTransformation,
+            i18n.t("gateway.study.library_from_parent"),
+        );
         composed.body = selectedTransformation
             ? composed.renderBody(transformed.definitions)
             : transformed.body;
@@ -299,9 +297,10 @@ export async function openEntryPopup(
         });
         selectedEntry = navigation.entry;
         sourceDefinition = navigation.sourceDefinition;
-        selectedTransformation = sourceTransform(
+        selectedTransformation = resolveDetailTransformation(
             selectedEntry,
             schema,
+            navigation.transformation,
             detail.entry.label,
         );
     }

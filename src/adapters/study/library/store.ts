@@ -44,6 +44,14 @@ function entryReferenceRows(input: LibraryEntryInput) {
         ),
     ];
 }
+
+function referenceTransformationValue(reference: {
+    transformation?: { setId: string; path: string[] };
+}) {
+    return reference.transformation
+        ? JSON.stringify(reference.transformation)
+        : null;
+}
 export class LibraryStore {
     constructor(private readonly db: DbExecutor) {}
     private async upsert(
@@ -395,6 +403,9 @@ export class LibraryStore {
                         relation: row.reference.relation,
                         group_index: row.groupIndex,
                         position: row.position,
+                        transformation_json: referenceTransformationValue(
+                            row.reference,
+                        ),
                     };
                     await db.executeCommand({
                         option: "INSERT",
@@ -639,6 +650,8 @@ export class LibraryStore {
                                     : reference.target_entry_id,
                             relation: reference.relation,
                             position: reference.position,
+                            group_index: reference.group_index,
+                            transformation_json: reference.transformation_json,
                         },
                         conflict: { action: "ignore" },
                     });
@@ -737,6 +750,13 @@ export class LibraryStore {
                 entryId: String(reference.target_entry_id),
                 relation: String(reference.relation),
                 position: Number(reference.position),
+                ...(reference.transformation_json
+                    ? {
+                          transformation: JSON.parse(
+                              String(reference.transformation_json),
+                          ),
+                      }
+                    : {}),
             };
             const groupIndex = Number(reference.group_index);
             if (groupIndex < 0) {
@@ -826,6 +846,9 @@ export class LibraryStore {
                         relation: row.reference.relation,
                         group_index: row.groupIndex,
                         position: row.position,
+                        transformation_json: referenceTransformationValue(
+                            row.reference,
+                        ),
                     },
                 });
             }
@@ -873,6 +896,9 @@ export class LibraryStore {
                         relation: row.reference.relation,
                         group_index: row.groupIndex,
                         position: row.position,
+                        transformation_json: referenceTransformationValue(
+                            row.reference,
+                        ),
                     },
                 });
             }

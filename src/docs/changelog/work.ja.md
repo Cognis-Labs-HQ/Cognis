@@ -166,6 +166,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 カードコンポーザーで変換可能な動詞を選ぶと、「追加予定」ダイアログに利用可能な変換形と変換後の定義が2列で表示されるようになりました。選択した形は変換トークンとしてステージに追加されるため、保存した文のリンクから対応する変換後の動詞または副詞の詳細を再表示できます。
 
+## プロバイダーが記述する文の変換参照
+
+コンテンツプロバイダーは、検証済みの変換セット ID と規則経路を文の参照に付与できるようになりました。Cognis は選択内容を保存し、正確な変換済みコンポーザートークンを復元して、文から同じ変換後の動詞・副詞の詳細を開きます。変換後の詳細では、独立した戻るボタンの代わりに、標準の「元: 親」子注釈を標準形カードへのリンクとして使用します。
+
 ## コミット
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -213,3 +217,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)
 - [35a54a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/35a54a21)
 - [6a48472b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a48472bfb28deb7094af36fc7fab7defa597b65)
+- [f4640403](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4640403af8c1a228844cde3f784fa45650299cd)

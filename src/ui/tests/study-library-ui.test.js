@@ -863,9 +863,10 @@ test("Study Library provides vocabulary transformations", () => {
     assert.match(source, /data-library-transform-close/);
     assert.match(source, /showSummary:\s*false/);
     assert.match(source, /data-library-transform-variants/);
-    assert.match(source, /data-library-transform-return/);
+    assert.doesNotMatch(source, /data-library-transform-return/);
+    assert.match(source, /withParentAttribution/);
     assert.match(source, /chosenTransformation !== undefined/);
-    assert.match(source, /sourceTransform\([\s\S]*detail\.entry\.label/);
+    assert.match(source, /resolveDetailTransformation/);
     assert.match(source, /openTransformationTreePopup/);
     assert.match(source, /library-transform-options/);
     assert.match(source, /transformedDefinition/);

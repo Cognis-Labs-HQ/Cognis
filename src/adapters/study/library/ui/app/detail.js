@@ -128,7 +128,7 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
         ({ nodes }) => nodes.length > 1,
     );
     const variants = options.transformation
-        ? `<button class="library-detail-variants btn-neutral" type="button" data-library-transform-return>${escapeHtml(i18n.t("gateway.study.library_return_to_card").replace("{{ card }}", entry.label))}</button>`
+        ? ""
         : hasVariants
           ? `<button class="library-detail-variants btn-neutral" type="button" data-library-transform-variants>${escapeHtml(i18n.t("gateway.study.library_variants"))}</button>`
           : "";

@@ -3,6 +3,7 @@ import test from "node:test";
 import {
     transformedDefinition,
     transformedDefinitions,
+    referencedTransformation,
     transformationPathways,
 } from "../ui/app/transformations.js";
 import {
@@ -77,6 +78,51 @@ test("provider transform sets derive pathways without materialized cards", () =>
         pathway.nodes.map(({ value }) => value),
         ["talk", "talked", "talk-not", "talking"],
     );
+});
+
+test("provider-authored references resolve an exact transformation path", () => {
+    const schema = {
+        transformSets: [
+            {
+                id: "verb",
+                matchTags: ["verb"],
+                baseState: "base",
+                rules: [
+                    {
+                        id: "past",
+                        fromState: "base",
+                        toState: "past",
+                        removeSuffix: "k",
+                        append: "ked",
+                    },
+                ],
+            },
+        ],
+    };
+    const entry = { id: "talk", label: "talk", tags: ["verb"] };
+    const transformation = { setId: "verb", path: ["past"] };
+    assert.equal(
+        referencedTransformation(entry, schema, transformation).node.value,
+        "talked",
+    );
+    const [token] = restoreCompositionTokens(
+        {
+            label: "talked",
+            references: [
+                {
+                    entryId: "talk",
+                    relation: "words",
+                    position: 0,
+                    transformation,
+                },
+            ],
+        },
+        [entry],
+        { literal_carousels: [] },
+        new Set(["words"]),
+        schema,
+    );
+    assert.deepEqual(transformationTokenDetails(token).path, ["past"]);
 });
 
 test("transform sets ignore entries without every matching tag", () => {

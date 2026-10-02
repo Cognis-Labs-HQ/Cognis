@@ -255,6 +255,11 @@ export interface LibraryReferenceInput {
     entryId: string;
     relation: string;
     position?: number;
+    /** Provider-declared presentation transform for this reference target. */
+    transformation?: {
+        setId: string;
+        path: string[];
+    };
 }
 
 export type LibraryReferenceGroups = Record<string, LibraryReferenceInput[][]>;

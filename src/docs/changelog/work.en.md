@@ -166,6 +166,10 @@ A single entry returned by a successful popup edit is now merged into the existi
 
 Selecting a transformable verb in the card composer now opens an “About to add” dialog with a two-column list of available forms and their transformed definitions. The selected form is staged as a transformation token, so saved sentence links reopen the matching transformed verb or adverb detail.
 
+## Provider-authored transformed sentence references
+
+Content providers can now attach a validated transform-set ID and rule path to sentence references. Cognis persists the selection, restores the exact transformed composer token, and opens that same transformed verb or adverb detail from the sentence. Transformed details now use the standard “From: parent” child annotation as the link to the canonical base card instead of a separate return button.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -213,3 +217,4 @@ Selecting a transformable verb in the card composer now opens an “About to add
 - [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)
 - [35a54a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/35a54a21)
 - [6a48472b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a48472bfb28deb7094af36fc7fab7defa597b65)
+- [f4640403](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4640403af8c1a228844cde3f784fa45650299cd)

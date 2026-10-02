@@ -171,6 +171,7 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
                 notNull: true,
                 default: -1,
             },
+            { name: "transformation_json", type: "text" },
         ],
         primaryKey: [
             "source_entry_id",
