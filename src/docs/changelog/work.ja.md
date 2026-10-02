@@ -170,6 +170,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 コンテンツプロバイダーは、検証済みの変換セット ID と規則経路を文の参照に付与できるようになりました。Cognis は選択内容を保存し、正確な変換済みコンポーザートークンを復元して、文から同じ変換後の動詞・副詞の詳細を開きます。変換後の詳細では、独立した戻るボタンの代わりに、標準の「元: 親」子注釈を標準形カードへのリンクとして使用します。
 
+## 日本語モジュールのライフサイクル互換性
+
+モジュール保証境界が、`study-language-<code>` モジュールに属する標準 API・ケイパビリティ名前空間を認識するようになりました。最新の日本語学習モジュールは、無制限のモジュール権限を要求せずに、有効化時に `study:language:ja`、ライブラリケイパビリティ、`/api/v1/study/languages/ja/*` ルートを登録できます。他言語の名前空間は引き続き拒否されます。
+
 ## コミット
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -218,3 +222,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [35a54a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/35a54a21)
 - [6a48472b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a48472bfb28deb7094af36fc7fab7defa597b65)
 - [f4640403](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4640403af8c1a228844cde3f784fa45650299cd)
+- [42cf60f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/42cf60f01cbc42b765aaa71bdbcd84999c605a4a)

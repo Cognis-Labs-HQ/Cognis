@@ -170,6 +170,10 @@ Memilih verba yang dapat ditransformasi di penyusun kartu kini membuka dialog �
 
 Penyedia konten kini dapat melampirkan ID set transformasi dan jalur aturan yang divalidasi pada referensi kalimat. Cognis menyimpan pilihan tersebut, memulihkan token penyusun hasil transformasi yang tepat, dan membuka detail verba atau adverbia hasil transformasi yang sama dari kalimat. Detail hasil transformasi kini memakai anotasi anak standar “Dari: induk” sebagai tautan ke kartu dasar kanonis, bukan tombol kembali terpisah.
 
+## Kompatibilitas siklus hidup modul bahasa Jepang
+
+Batas jaminan modul kini mengenali ruang nama API dan kapabilitas kanonis yang dimiliki modul `study-language-<code>`. Modul pembelajaran bahasa Jepang terbaru dapat mendaftarkan `study:language:ja`, kapabilitas pustakanya, dan rute `/api/v1/study/languages/ja/*` saat diaktifkan tanpa meminta hak istimewa modul tanpa batas; ruang nama bahasa lain tetap ditolak.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -218,3 +222,4 @@ Penyedia konten kini dapat melampirkan ID set transformasi dan jalur aturan yang
 - [35a54a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/35a54a21)
 - [6a48472b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a48472bfb28deb7094af36fc7fab7defa597b65)
 - [f4640403](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4640403af8c1a228844cde3f784fa45650299cd)
+- [42cf60f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/42cf60f01cbc42b765aaa71bdbcd84999c605a4a)
