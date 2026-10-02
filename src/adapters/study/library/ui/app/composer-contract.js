@@ -22,7 +22,11 @@ export function resolveComposerContract(schema, layer, constructor) {
     const prepopulatesPronunciation = layer?.semanticRole === "lexicalUnit";
     const constructorFieldIds = new Set(effectiveConstructor.fields ?? []);
     if (
-        ["compoundWritingUnit", "lexicalUnit"].includes(layer?.semanticRole) &&
+        [
+            "compoundWritingUnit",
+            "lexicalUnit",
+            "orderedLexicalSequence",
+        ].includes(layer?.semanticRole) &&
         fieldsById.has("pronunciation")
     )
         constructorFieldIds.add("pronunciation");
@@ -33,11 +37,7 @@ export function resolveComposerContract(schema, layer, constructor) {
         constructorFieldIds.add("audio");
     const fields = Array.from(constructorFieldIds)
         .map((fieldId) => fieldsById.get(fieldId))
-        .filter(
-            (field) =>
-                field &&
-                !(derivesPronunciation && field.id === "pronunciation"),
-        );
+        .filter(Boolean);
     const inputCarouselLayers = new Set(
         effectiveConstructor.input_carousels ?? [],
     );
@@ -144,6 +144,28 @@ export function resolveComposerContract(schema, layer, constructor) {
         derivesPronunciation,
         prepopulatesPronunciation,
     };
+}
+
+export function resolveCompositionPrefix(text, candidates) {
+    let remainder = text.trim().normalize("NFKC");
+    const matches = [];
+    while (remainder) {
+        const match = candidates
+            .filter(({ label }) =>
+                remainder.startsWith(label.trim().normalize("NFKC")),
+            )
+            .toSorted(
+                (left, right) =>
+                    right.label.trim().normalize("NFKC").length -
+                    left.label.trim().normalize("NFKC").length,
+            )[0];
+        if (!match) break;
+        matches.push(match);
+        remainder = remainder.slice(
+            match.label.trim().normalize("NFKC").length,
+        );
+    }
+    return { matches, remainder };
 }
 
 export function derivedPronunciation(

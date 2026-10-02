@@ -34,6 +34,7 @@ import {
 import {
     applyDerivedPronunciation,
     derivedPronunciation,
+    resolveCompositionPrefix,
     resolveComposerContract,
 } from "./composer-contract.js";
 import {
@@ -990,14 +991,17 @@ function bindTextComposition(
             })
             .join("");
         const normalizedInput = input.value.trim().normalize("NFKC");
-        const exactInput = candidates.find(
-            ({ label }) => label.trim().normalize("NFKC") === normalizedInput,
+        const resolution = resolveCompositionPrefix(
+            normalizedInput,
+            candidates,
         );
-        const inputPronunciation = exactInput
-            ? derivedPronunciation(exactInput, entries, schema)
-            : "";
+        const inputPronunciation = resolution.remainder
+            ? ""
+            : resolution.matches
+                  .map((entry) => derivedPronunciation(entry, entries, schema))
+                  .join("");
         const pronunciation = `${selectedPronunciation}${inputPronunciation}`;
-        if (pronunciation) control.value = pronunciation;
+        control.value = pronunciation;
     };
     const syncLabel = () => {
         for (const relationship of relationships) {
@@ -1041,11 +1045,10 @@ function bindTextComposition(
         const exactMatches = candidates.filter(
             ({ label }) => label.trim().normalize("NFKC") === normalizedText,
         );
-        const prefixMatches = candidates
-            .filter(({ label }) =>
-                normalizedText.startsWith(label.trim().normalize("NFKC")),
-            )
-            .toSorted((left, right) => right.label.length - left.label.length);
+        const prefixMatches = resolveCompositionPrefix(
+            normalizedText,
+            candidates,
+        ).matches.slice(0, 1);
         const matches = exactMatches.length ? exactMatches : prefixMatches;
         const fallbackRelationship = relationships[0]?.id;
         output.innerHTML = `${matches

@@ -341,7 +341,7 @@ test("Study Library commits multi-value fields and resolves typed prefixes", () 
         /"data-multi-value": multiValue \? "true" : "false"/,
     );
     assert.match(adminInteractionsSource, /definitionsRequired/);
-    assert.match(createEntrySource, /normalizedText\.startsWith/);
+    assert.match(createEntrySource, /resolveCompositionPrefix/);
     assert.match(createEntrySource, /return existing\.entry/);
 });
 

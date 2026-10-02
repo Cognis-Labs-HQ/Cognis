@@ -499,6 +499,8 @@ export function editorBody(
                     : value
                       ? [value]
                       : [];
+                if (layer?.semanticRole === "orderedLexicalSequence")
+                    return `<label><span>${escapeHtml(fieldLabel)}</span><input name="field:pronunciation" value="${escapeHtml(pronunciations.join(""))}" readonly></label>`;
                 return `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(fieldLabel)}</legend><input name="field:pronunciation" type="hidden" value="${escapeHtml(pronunciations.join("\n"))}">${pronunciationRelationshipIds.size ? selectedReferenceField("pronunciation", pronunciationRelationshipIds, { fieldLabel, multiValue: field.multi_value === true, values: pronunciations }) : ""}${inlinePronunciationCarousel}</fieldset>`;
             }
             if (

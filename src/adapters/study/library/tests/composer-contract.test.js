@@ -14,7 +14,11 @@ const pronunciationValues = (entry) => {
     return value ? (Array.isArray(value) ? value : [value]) : [];
 };`,
 );
-const { applyDerivedPronunciation, derivedPronunciation } = await import(
+const {
+    applyDerivedPronunciation,
+    derivedPronunciation,
+    resolveCompositionPrefix,
+} = await import(
     `data:text/javascript;base64,${Buffer.from(executableSource).toString("base64")}`
 );
 
@@ -74,4 +78,21 @@ test("sentence pronunciation follows the current ordered input", () => {
     );
     applyDerivedPronunciation(fields, references, entries, schema, layer, true);
     assert.deepEqual(fields.pronunciation, ["betaalpha"]);
+});
+
+test("compound input resolves the longest available cards in sequence", () => {
+    const candidates = [
+        { id: "a", label: "ka" },
+        { id: "b", label: "kana" },
+        { id: "c", label: "ji" },
+    ];
+
+    assert.deepEqual(resolveCompositionPrefix("kanaji", candidates), {
+        matches: [candidates[1], candidates[2]],
+        remainder: "",
+    });
+    assert.deepEqual(resolveCompositionPrefix("kanax", candidates), {
+        matches: [candidates[1]],
+        remainder: "x",
+    });
 });

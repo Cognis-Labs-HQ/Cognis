@@ -182,10 +182,13 @@ Library detail popups now measure title and pronunciation pressure after applyin
 
 Creating a definition from inside a card composer now reuses an existing matching definition instead of leaking an unhandled content-conflict rejection, and only newly created nested definitions participate in cancellation rollback. Saving a composed pronunciation now redraws its saved card and clears the selected carousel cards, order badges, and selection summary together.
 
-
 ## Reliable nested card composition
 
 Multi-value pronunciation saves now redraw committed values and clear carousel selections. Required definitions are visibly marked and validated before submission, duplicate nested cards reuse the existing entry, and typed compound input offers longest-prefix card matches.
+
+## Visible derived sentence pronunciation
+
+Sentence composers now keep the provider pronunciation field in the form, display it read-only, and derive it from every resolvable input card. Compound text is segmented with deterministic longest-prefix matching so authors can resolve multi-card input progressively.
 
 ## Commits
 

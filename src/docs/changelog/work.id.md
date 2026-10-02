@@ -182,10 +182,13 @@ Popup detail Pustaka kini mengukur tekanan ruang judul dan pelafalan setelah men
 
 Pembuatan definisi dari dalam penyusun kartu kini menggunakan kembali definisi serupa yang sudah ada, bukan memunculkan penolakan konflik konten yang tidak ditangani. Hanya definisi bertingkat yang benar-benar baru yang ikut dibatalkan. Menyimpan pelafalan tersusun kini menggambar ulang kartu tersimpan serta membersihkan kartu korsel terpilih, nomor urutan, dan ringkasan pilihan secara bersamaan.
 
-
 ## Komposisi kartu bertingkat yang andal
 
 Penyimpanan pelafalan bernilai jamak kini menggambar ulang nilai yang disimpan dan mengosongkan pilihan karusel. Definisi wajib ditandai dengan jelas dan divalidasi sebelum pengiriman, kartu bertingkat duplikat memakai kembali entri yang ada, dan masukan gabungan menawarkan kecocokan kartu berdasarkan prefiks terpanjang.
+
+## Pelafalan turunan kalimat yang terlihat
+
+Penyusun kalimat kini mempertahankan bidang pelafalan penyedia di formulir, menampilkannya hanya-baca, dan menurunkannya dari setiap kartu masukan yang dapat diuraikan. Teks gabungan disegmentasikan dengan pencocokan prefiks terpanjang yang deterministik agar masukan dapat diuraikan secara bertahap.
 
 ## Commit
 

@@ -182,10 +182,13 @@ Bibliotheks-Detailfenster messen jetzt den Platzbedarf von Titel und Aussprache,
 
 Beim Erstellen einer Definition innerhalb des Karten-Composers wird jetzt eine bereits vorhandene passende Definition wiederverwendet, statt einen unbehandelten Inhaltskonflikt auszulösen. Nur neu erstellte verschachtelte Definitionen werden beim Abbrechen zurückgesetzt. Beim Speichern einer zusammengesetzten Aussprache wird ihre gespeicherte Karte neu gezeichnet; ausgewählte Karussellkarten, Reihenfolgenummern und Auswahlzusammenfassung werden gemeinsam geleert.
 
-
 ## Zuverlässige Komposition verschachtelter Karten
 
 Beim Speichern mehrwertiger Aussprachen werden nun die übernommenen Werte neu dargestellt und die Karussellauswahl geleert. Erforderliche Definitionen sind sichtbar markiert und werden vor dem Absenden geprüft, doppelte verschachtelte Karten verwenden den vorhandenen Eintrag, und zusammengesetzte Eingaben bieten Kartenübereinstimmungen für das längste Präfix an.
+
+## Sichtbare abgeleitete Satzaussprache
+
+Satzeditoren behalten nun das Aussprachefeld des Anbieters im Formular, zeigen es schreibgeschützt an und leiten es aus allen auflösbaren Eingabekarten ab. Zusammengesetzter Text wird durch deterministische Übereinstimmung mit dem längsten Präfix segmentiert, damit Eingaben schrittweise aufgelöst werden können.
 
 ## Commits
 
