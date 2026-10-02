@@ -146,6 +146,10 @@ Pronunciation staging now completes even when carousel cards do not render count
 
 A current provider-neutral mock schema now exercises card creation and editing with compound writing units, ordered components, multi-value pronunciations, and grouped reading references. Library tests no longer embed content from a specific language module.
 
+## Accurate Edit Confirmation
+
+Successful server updates are no longer reported as failures when a later list refresh fails. The editor closes after the confirmed update and shows either the normal success toast or a clear warning to reload the page when local synchronization fails.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -188,3 +192,4 @@ A current provider-neutral mock schema now exercises card creation and editing w
 - [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)
 - [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)
 - [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)
+- [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)

@@ -53,6 +53,7 @@
   <string name="gateway.study.library_admin_hidden">Ausgeblendet</string>
   <string name="gateway.study.library_update_success">Der Bibliothekseintrag wurde aktualisiert.</string>
   <string name="gateway.study.library_update_error">Der Bibliothekseintrag konnte nicht aktualisiert werden. Prüfe die eingegebenen Daten.</string>
+  <string name="gateway.study.library_update_refresh_warning">Der Eintrag wurde gespeichert, aber die Bibliotheksliste konnte nicht aktualisiert werden. Lade die Seite neu, um die neuesten Daten zu sehen.</string>
   <string name="gateway.study.library_admin_edit">{{ entry }} bearbeiten</string>
   <string name="gateway.study.library_admin_edit_title">{{ entry }} bearbeiten</string>
   <string name="gateway.study.library_admin_list_placeholder">Ein Wert pro Zeile</string>

@@ -53,6 +53,7 @@
   <string name="gateway.study.library_admin_hidden">Hidden</string>
   <string name="gateway.study.library_update_success">The Library entry was updated.</string>
   <string name="gateway.study.library_update_error">Could not update the Library entry. Check the entered data.</string>
+  <string name="gateway.study.library_update_refresh_warning">The entry was saved, but the Library list could not refresh. Reload the page to see the latest data.</string>
   <string name="gateway.study.library_admin_edit">Edit {{ entry }}</string>
   <string name="gateway.study.library_admin_edit_title">Edit {{ entry }}</string>
   <string name="gateway.study.library_admin_list_placeholder">One value per line</string>

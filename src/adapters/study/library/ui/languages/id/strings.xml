@@ -53,6 +53,7 @@
   <string name="gateway.study.library_admin_hidden">Disembunyikan</string>
   <string name="gateway.study.library_update_success">Entri Pustaka telah diperbarui.</string>
   <string name="gateway.study.library_update_error">Entri Pustaka tidak dapat diperbarui. Periksa data yang dimasukkan.</string>
+  <string name="gateway.study.library_update_refresh_warning">Entri telah disimpan, tetapi daftar Pustaka tidak dapat dimuat ulang. Muat ulang halaman untuk melihat data terbaru.</string>
   <string name="gateway.study.library_admin_edit">Edit {{ entry }}</string>
   <string name="gateway.study.library_admin_edit_title">Edit {{ entry }}</string>
   <string name="gateway.study.library_admin_list_placeholder">Satu nilai per baris</string>

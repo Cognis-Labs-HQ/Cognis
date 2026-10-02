@@ -11,6 +11,7 @@ import {
 } from "/static/reuse/horizontal-carousel.js";
 import { renderCompositionInput } from "/static/reuse/composition-input.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { reportClientError } from "/static/reuse/error-reporting.js";
 import {
     requestLibraryUpdate,
     updateLibraryEntry,
@@ -67,6 +68,32 @@ function showLibraryMutationError(error, i18n) {
           ? "gateway.study.library_relationship_error"
           : "gateway.study.library_update_error";
     showToast(i18n.t(messageKey), { variant: "error" });
+}
+
+async function completeLibraryMutation({
+    entry,
+    updated,
+    synchronize,
+    successKey,
+    i18n,
+    assignUpdated = true,
+}) {
+    if (assignUpdated) Object.assign(entry, updated);
+    try {
+        await synchronize(updated);
+    } catch (error) {
+        reportClientError({
+            component: "study-library",
+            operation: "synchronize-entry-update",
+            entryId: entry.id,
+            error: error instanceof Error ? error.message : String(error),
+        });
+        showToast(i18n.t("gateway.study.library_update_refresh_warning"), {
+            variant: "warning",
+        });
+        return;
+    }
+    showToast(i18n.t(successKey), { variant: "success" });
 }
 
 export function bindLibraryEditorControls(
@@ -1091,25 +1118,26 @@ export async function openLibraryEntryEditor({
                 references,
                 referenceGroups: readReferenceGroups(form),
             };
+            let updated;
             try {
-                const updated = requestUpdate
+                updated = requestUpdate
                     ? await requestLibraryUpdate(entry.id, proposedEntry)
                     : await updateLibraryEntry(entry.id, proposedEntry);
-                if (!requestUpdate) Object.assign(entry, updated);
-                onSaved(updated);
-                showToast(
-                    i18n.t(
-                        requestUpdate
-                            ? "gateway.study.library_update_requested"
-                            : "gateway.study.library_update_success",
-                    ),
-                    { variant: "success" },
-                );
-                return true;
             } catch (error) {
                 showLibraryMutationError(error, i18n);
                 return false;
             }
+            await completeLibraryMutation({
+                entry,
+                updated,
+                synchronize: onSaved,
+                successKey: requestUpdate
+                    ? "gateway.study.library_update_requested"
+                    : "gateway.study.library_update_success",
+                i18n,
+                assignUpdated: !requestUpdate,
+            });
+            return true;
         },
     });
 }
@@ -1345,6 +1373,7 @@ export function bindAdminLibraryInteractions(
                         )
                     )
                         return false;
+                    let updated;
                     try {
                         const references = readReferences(
                             form,
@@ -1360,7 +1389,7 @@ export function bindAdminLibraryInteractions(
                             composer.layer,
                             composer.derivesPronunciation,
                         );
-                        const updated = await updateLibraryEntry(entry.id, {
+                        updated = await updateLibraryEntry(entry.id, {
                             schemaId: entry.schemaId,
                             schemaVersion: entry.schemaVersion,
                             layer: entry.layer,
@@ -1378,17 +1407,18 @@ export function bindAdminLibraryInteractions(
                             references,
                             referenceGroups: readReferenceGroups(form),
                         });
-                        Object.assign(entry, updated);
-                        render();
-                        showToast(
-                            i18n.t("gateway.study.library_update_success"),
-                            { variant: "success" },
-                        );
-                        return true;
                     } catch (error) {
                         showLibraryMutationError(error, i18n);
                         return false;
                     }
+                    await completeLibraryMutation({
+                        entry,
+                        updated,
+                        synchronize: render,
+                        successKey: "gateway.study.library_update_success",
+                        i18n,
+                    });
+                    return true;
                 },
             }).finally(() => {
                 editorOpen = false;

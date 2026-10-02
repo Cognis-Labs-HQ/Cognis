@@ -230,6 +230,17 @@ test("Study Library edit failures retain server error codes for useful toasts", 
     assert.match(adminInteractionsSource, /library_pronunciation_group_error/);
 });
 
+test("Study Library distinguishes persisted updates from refresh failures", () => {
+    assert.match(adminInteractionsSource, /completeLibraryMutation/);
+    assert.match(adminInteractionsSource, /synchronize-entry-update/);
+    assert.match(adminInteractionsSource, /library_update_refresh_warning/);
+    assert.match(
+        adminInteractionsSource,
+        /updated = await updateLibraryEntry[\s\S]*catch \(error\) \{[\s\S]*showLibraryMutationError[\s\S]*completeLibraryMutation/,
+    );
+    assert.match(adminInteractionsSource, /assignUpdated: !requestUpdate/);
+});
+
 test("Study Library preserves each multi-value pronunciation reference group", () => {
     assert.match(adminInteractionsSource, /form\.referenceGroups/);
     assert.match(adminInteractionsSource, /groups\[groupIndex\]/);

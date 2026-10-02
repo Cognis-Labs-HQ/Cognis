@@ -146,6 +146,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 最新のプロバイダー中立モックスキーマで、複合文字単位、順序付き構成要素、複数値の発音、グループ化された読み参照を含むカードの作成と編集を検証するようになりました。ライブラリのテストには、特定の言語モジュールの内容を埋め込みません。
 
+## 正確な編集完了通知
+
+サーバー側の更新成功後に一覧の更新が失敗しても、更新自体を失敗として表示しなくなりました。確認済みの更新後はエディターを閉じ、通常の成功通知、またはローカル同期に失敗した場合はページの再読み込みを促す明確な警告を表示します。
+
 ## コミット
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -188,3 +192,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)
 - [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)
 - [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)
+- [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)

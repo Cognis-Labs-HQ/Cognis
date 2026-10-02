@@ -146,6 +146,10 @@ Die Aussprache-Vorbereitung wird nun auch abgeschlossen, wenn Karussellkarten ke
 
 Ein aktuelles anbieterneutrales Testschema prüft jetzt das Erstellen und Bearbeiten von Karten mit zusammengesetzten Schrifteinheiten, geordneten Bestandteilen, mehrwertigen Aussprachen und gruppierten Lesereferenzen. Bibliothekstests enthalten keine Inhalte eines bestimmten Sprachmoduls mehr.
 
+## Korrekte Bearbeitungsbestätigung
+
+Erfolgreiche Serveraktualisierungen werden nicht mehr als Fehler gemeldet, wenn eine spätere Listenaktualisierung fehlschlägt. Der Editor schließt nach der bestätigten Aktualisierung und zeigt entweder die normale Erfolgsmeldung oder einen klaren Hinweis zum Neuladen der Seite, wenn die lokale Synchronisierung fehlschlägt.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -188,3 +192,4 @@ Ein aktuelles anbieterneutrales Testschema prüft jetzt das Erstellen und Bearbe
 - [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)
 - [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)
 - [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)
+- [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)

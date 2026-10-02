@@ -53,6 +53,7 @@
   <string name="gateway.study.library_admin_hidden">非表示</string>
   <string name="gateway.study.library_update_success">ライブラリエントリを更新しました。</string>
   <string name="gateway.study.library_update_error">ライブラリエントリを更新できませんでした。入力データを確認してください。</string>
+  <string name="gateway.study.library_update_refresh_warning">エントリは保存されましたが、ライブラリ一覧を更新できませんでした。最新のデータを表示するには、ページを再読み込みしてください。</string>
   <string name="gateway.study.library_admin_edit">{{ entry }} を編集</string>
   <string name="gateway.study.library_admin_edit_title">{{ entry }} を編集</string>
   <string name="gateway.study.library_admin_list_placeholder">1 行に 1 つの値</string>

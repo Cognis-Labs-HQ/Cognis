@@ -146,6 +146,10 @@ Tahap pelafalan kini selesai meskipun kartu korsel tidak menampilkan penghitung,
 
 Skema tiruan netral penyedia yang mutakhir kini menguji pembuatan dan penyuntingan kartu dengan unit tulisan majemuk, komponen berurutan, pelafalan multi-nilai, dan referensi bacaan berkelompok. Pengujian Pustaka tidak lagi menyematkan konten dari modul bahasa tertentu.
 
+## Konfirmasi Penyuntingan Akurat
+
+Pembaruan server yang berhasil tidak lagi dilaporkan sebagai kegagalan saat pemuatan ulang daftar berikutnya gagal. Editor ditutup setelah pembaruan dikonfirmasi dan menampilkan pemberitahuan berhasil biasa atau peringatan jelas untuk memuat ulang halaman ketika sinkronisasi lokal gagal.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -188,3 +192,4 @@ Skema tiruan netral penyedia yang mutakhir kini menguji pembuatan dan penyunting
 - [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)
 - [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)
 - [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)
+- [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)
