@@ -174,6 +174,10 @@ Inhaltsanbieter können Satzverweisen jetzt eine geprüfte Transformationssatz-I
 
 Die Sicherheitsgrenze für Module erkennt nun die kanonischen API- und Capability-Namensräume, die Modulen nach dem Muster `study-language-<code>` gehören. Das aktuelle Japanisch-Lernmodul kann beim Aktivieren `study:language:ja`, seine Bibliotheks-Capability und Routen unter `/api/v1/study/languages/ja/*` registrieren, ohne uneingeschränkte Modulrechte anzufordern; benachbarte Sprachnamensräume bleiben gesperrt.
 
+## Titelumbruch im Popup nur als letzte Möglichkeit
+
+Bibliotheks-Detailfenster messen jetzt den Platzbedarf von Titel und Aussprache, nachdem die normale kompakte Skalierung angewendet wurde. Nur wenn der Titel abgeschnitten oder die Aussprache umgebrochen würde, wird die Aussprache unter den Titel verschoben; in allen passenden Fällen bleibt die einzeilige Anordnung erhalten.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -223,3 +227,4 @@ Die Sicherheitsgrenze für Module erkennt nun die kanonischen API- und Capabilit
 - [6a48472b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a48472bfb28deb7094af36fc7fab7defa597b65)
 - [f4640403](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4640403af8c1a228844cde3f784fa45650299cd)
 - [42cf60f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/42cf60f01cbc42b765aaa71bdbcd84999c605a4a)
+- [dfe0b9fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfe0b9fbd48b84bd50dd3e346b65a825fb259f05)

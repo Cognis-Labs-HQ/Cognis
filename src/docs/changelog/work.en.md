@@ -174,6 +174,10 @@ Content providers can now attach a validated transform-set ID and rule path to s
 
 The module assurance boundary now recognizes the canonical API and capability namespaces owned by `study-language-<code>` modules. The latest Japanese learning module can register `study:language:ja`, its library capability, and `/api/v1/study/languages/ja/*` routes during enablement without requesting unrestricted module privileges; neighboring language namespaces remain denied.
 
+## Last-resort popup title reflow
+
+Library detail popups now measure title and pronunciation pressure after applying their normal compact scaling. Only when the title would truncate or the pronunciation would wrap does the header move the pronunciation beneath the title, preserving the single-row layout in every case where it still fits.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -223,3 +227,4 @@ The module assurance boundary now recognizes the canonical API and capability na
 - [6a48472b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a48472bfb28deb7094af36fc7fab7defa597b65)
 - [f4640403](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4640403af8c1a228844cde3f784fa45650299cd)
 - [42cf60f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/42cf60f01cbc42b765aaa71bdbcd84999c605a4a)
+- [dfe0b9fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfe0b9fbd48b84bd50dd3e346b65a825fb259f05)

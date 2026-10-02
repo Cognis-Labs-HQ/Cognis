@@ -158,6 +158,7 @@ export async function openEntryPopup(
                 selectedTransformation,
             ),
             titleDetailItems,
+            stackTitleDetailOnOverflow: true,
             headerActions: [
                 ...drawingHeaderActions(strokePattern, i18n),
                 ...(editMode && !selectedTransformation

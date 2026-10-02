@@ -174,6 +174,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 モジュール保証境界が、`study-language-<code>` モジュールに属する標準 API・ケイパビリティ名前空間を認識するようになりました。最新の日本語学習モジュールは、無制限のモジュール権限を要求せずに、有効化時に `study:language:ja`、ライブラリケイパビリティ、`/api/v1/study/languages/ja/*` ルートを登録できます。他言語の名前空間は引き続き拒否されます。
 
+## 最終手段としてのポップアップタイトル再配置
+
+ライブラリ詳細ポップアップは、通常のコンパクトな縮小を適用した後に、タイトルと発音のスペース不足を測定するようになりました。タイトルが切れる、または発音が折り返される場合に限って発音をタイトルの下へ移動し、収まる場合は常に1行配置を維持します。
+
 ## コミット
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -223,3 +227,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [6a48472b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a48472bfb28deb7094af36fc7fab7defa597b65)
 - [f4640403](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4640403af8c1a228844cde3f784fa45650299cd)
 - [42cf60f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/42cf60f01cbc42b765aaa71bdbcd84999c605a4a)
+- [dfe0b9fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfe0b9fbd48b84bd50dd3e346b65a825fb259f05)

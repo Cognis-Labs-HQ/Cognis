@@ -84,6 +84,7 @@
  *   titleLeading?: string,
  *   titleAction?: { id: string, label: string },
  *   titleItems?: Array<{ label: string, actionId?: string }>,
+ *   stackTitleDetailOnOverflow?: boolean,
  *   headerActions?: Array<{ id: string, label: string, icon?: string | { light: string, dark?: string } }>,
  *   body: string | (() => string),
  *   variant?: 'info' | 'warning' | 'danger' | 'confirm',
@@ -406,6 +407,7 @@ export async function openPopup({
     titleLeading,
     titleAction,
     titleItems,
+    stackTitleDetailOnOverflow = false,
     headerActions = [],
     body,
     variant = "info",
@@ -742,6 +744,7 @@ export async function openPopup({
             const titleElement = heading?.querySelector(".popup-title");
             const detailElement = heading?.querySelector(".popup-title-detail");
             if (!heading || !titleElement) return;
+            heading.classList.remove("popup-heading--stacked-detail");
             heading.style.setProperty("--popup-title-scale", "1");
             heading.style.setProperty("--popup-title-detail-scale", "1");
             const style = window.getComputedStyle(heading);
@@ -770,6 +773,26 @@ export async function openPopup({
                     "--popup-title-scale",
                     String(titleScale),
                 );
+            }
+            const detailIsStressed = Array.from(
+                detailElement?.children ?? [],
+            ).some((element) => {
+                const elementStyle = window.getComputedStyle(element);
+                const lineHeight = Number.parseFloat(elementStyle.lineHeight);
+                return (
+                    element.scrollWidth > element.clientWidth + 1 ||
+                    (Number.isFinite(lineHeight) &&
+                        element.scrollHeight > lineHeight * 1.5)
+                );
+            });
+            if (
+                stackTitleDetailOnOverflow &&
+                (titleElement.scrollWidth > titleElement.clientWidth + 1 ||
+                    detailIsStressed)
+            ) {
+                heading.classList.add("popup-heading--stacked-detail");
+                heading.style.setProperty("--popup-title-scale", "1");
+                heading.style.setProperty("--popup-title-detail-scale", "1");
             }
         }
         bindActionButtons(overlay);

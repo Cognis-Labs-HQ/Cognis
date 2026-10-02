@@ -1024,6 +1024,31 @@ body[data-theme="dark"] .library-audio {
     grid-row: 2;
     justify-self: start;
 }
+.library-entry-popup--composite .popup-heading--stacked-detail {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+}
+.library-entry-popup--composite
+    .popup-heading--stacked-detail
+    [data-popup-title-placement="reading"] {
+    grid-column: 2;
+    grid-row: 2;
+}
+.library-entry-popup--composite
+    .popup-heading--stacked-detail
+    > :is(
+        .library-audio-sequence,
+        .library-audio-speaker,
+        .library-audio-unavailable
+    ) {
+    grid-row: 3;
+}
+.library-entry-popup--composite
+    .popup-heading--stacked-detail
+    [data-popup-title-placement="definition"] {
+    grid-column: 2;
+    grid-row: 3;
+}
 .library-entry-popup--composite [data-popup-title-placement="reading"],
 .library-entry-popup--composite [data-popup-title-placement="definition"] {
     align-self: center;

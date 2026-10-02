@@ -174,6 +174,10 @@ Penyedia konten kini dapat melampirkan ID set transformasi dan jalur aturan yang
 
 Batas jaminan modul kini mengenali ruang nama API dan kapabilitas kanonis yang dimiliki modul `study-language-<code>`. Modul pembelajaran bahasa Jepang terbaru dapat mendaftarkan `study:language:ja`, kapabilitas pustakanya, dan rute `/api/v1/study/languages/ja/*` saat diaktifkan tanpa meminta hak istimewa modul tanpa batas; ruang nama bahasa lain tetap ditolak.
 
+## Pengaliran ulang judul popup sebagai upaya terakhir
+
+Popup detail Pustaka kini mengukur tekanan ruang judul dan pelafalan setelah menerapkan penskalaan ringkas normal. Hanya jika judul akan terpotong atau pelafalan akan membungkus, header memindahkan pelafalan ke bawah judul; tata letak satu baris tetap dipertahankan dalam semua keadaan yang masih muat.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -223,3 +227,4 @@ Batas jaminan modul kini mengenali ruang nama API dan kapabilitas kanonis yang d
 - [6a48472b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a48472bfb28deb7094af36fc7fab7defa597b65)
 - [f4640403](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4640403af8c1a228844cde3f784fa45650299cd)
 - [42cf60f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/42cf60f01cbc42b765aaa71bdbcd84999c605a4a)
+- [dfe0b9fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfe0b9fbd48b84bd50dd3e346b65a825fb259f05)

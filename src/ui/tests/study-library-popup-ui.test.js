@@ -53,6 +53,11 @@ test("Study Library renders metadata and scope indicators", () => {
 });
 
 test("Study Library bounds status and gives readings and definitions room", () => {
+    assert.match(source, /stackTitleDetailOnOverflow: true/);
+    assert.match(
+        stylesheet,
+        /popup-heading--stacked-detail[\s\S]*data-popup-title-placement="reading"[\s\S]*grid-row:\s*2/,
+    );
     assert.match(
         stylesheet,
         /\.library-entry-card-status[\s\S]*left: 0\.35rem[\s\S]*max-width: calc\(100% - 2\.7rem\)/,
