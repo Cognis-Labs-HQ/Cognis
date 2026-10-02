@@ -9,7 +9,7 @@ import {
 
 const schemas = [
     {
-        id: "japanese",
+        id: "mock-language",
         layers: [
             { id: "characters", semanticRole: "atomicWritingUnit" },
             { id: "alt-characters", semanticRole: "compoundWritingUnit" },
@@ -19,77 +19,80 @@ const schemas = [
     },
 ];
 const word = {
-    id: "word-suki",
-    schemaId: "japanese",
+    id: "word-example",
+    schemaId: "mock-language",
     layer: "words",
-    language: "ja",
+    language: "x-mock",
 };
 const entries = [
     word,
     {
-        id: "kanji-suki",
-        schemaId: "japanese",
+        id: "symbol-example",
+        schemaId: "mock-language",
         layer: "alt-characters",
-        language: "ja",
-        label: "好",
+        language: "x-mock",
+        label: "like",
     },
     {
-        id: "hiragana-su",
-        schemaId: "japanese",
+        id: "character-s",
+        schemaId: "mock-language",
         layer: "characters",
-        language: "ja",
-        label: "す",
+        language: "x-mock",
+        label: "s",
     },
     {
-        id: "hiragana-ki",
-        schemaId: "japanese",
+        id: "character-k",
+        schemaId: "mock-language",
         layer: "characters",
-        language: "ja",
-        label: "き",
+        language: "x-mock",
+        label: "k",
     },
 ];
 
 test("word spellings resolve every writing-unit component", () => {
     assert.deepEqual(
-        resolveLabelComposition("好き", word, schemas, entries).map(
+        resolveLabelComposition("likek", word, schemas, entries).map(
             ({ id }) => id,
         ),
-        ["kanji-suki", "hiragana-ki"],
+        ["symbol-example", "character-k"],
     );
     assert.deepEqual(
-        resolveLabelComposition("すき", word, schemas, entries).map(
+        resolveLabelComposition("sk", word, schemas, entries).map(
             ({ id }) => id,
         ),
-        ["hiragana-su", "hiragana-ki"],
+        ["character-s", "character-k"],
     );
 });
 
 test("homographic words resolve to writing units instead of each other", () => {
-    const flower = { ...word, id: "word-flower", label: "はな" };
-    const nose = { ...word, id: "word-nose", label: "はな" };
-    const hanaEntries = [
+    const flower = { ...word, id: "word-flower", label: "hn" };
+    const nose = { ...word, id: "word-nose", label: "hn" };
+    const homographEntries = [
         flower,
         nose,
-        { ...entries[2], id: "hiragana-ha", label: "は" },
-        { ...entries[3], id: "hiragana-na", label: "な" },
+        { ...entries[2], id: "character-ha", label: "h" },
+        { ...entries[3], id: "character-na", label: "n" },
     ];
 
     assert.deepEqual(
-        resolveLabelComposition(flower.label, flower, schemas, hanaEntries).map(
-            ({ id }) => id,
-        ),
-        ["hiragana-ha", "hiragana-na"],
+        resolveLabelComposition(
+            flower.label,
+            flower,
+            schemas,
+            homographEntries,
+        ).map(({ id }) => id),
+        ["character-ha", "character-na"],
     );
 });
 
 test("sentence spellings continue to resolve vocabulary entries", () => {
     const sentence = {
         ...word,
-        id: "sentence-hana",
+        id: "sentence-homograph",
         layer: "sentences",
-        label: "はな",
+        label: "hn",
     };
-    const flower = { ...word, id: "word-flower", label: "はな" };
+    const flower = { ...word, id: "word-flower", label: "hn" };
 
     assert.deepEqual(
         resolveLabelComposition(sentence.label, sentence, schemas, [
@@ -102,36 +105,36 @@ test("sentence spellings continue to resolve vocabulary entries", () => {
 
 test("partially resolvable spellings do not produce misleading links", () => {
     assert.deepEqual(
-        resolveLabelComposition("未知", word, schemas, entries),
+        resolveLabelComposition("unmatched", word, schemas, entries),
         [],
     );
 });
 
 test("ordered relationship targets resolve pronunciation aliases", () => {
     const mountain = {
-        id: "word-yama",
-        label: "山",
-        fields: { pronunciation: ["やま"] },
+        id: "word-peak",
+        label: "peak",
+        fields: { pronunciation: ["mount"] },
     };
-    const from = { id: "particle-kara", label: "から" };
+    const from = { id: "particle-from", label: "from" };
     const river = {
-        id: "word-kawa",
-        label: "川",
-        fields: { pronunciation: "かわ" },
+        id: "word-stream",
+        label: "river",
+        fields: { pronunciation: "stream" },
     };
-    const until = { id: "particle-made", label: "まで" };
+    const until = { id: "particle-until", label: "until" };
 
     assert.deepEqual(
-        resolveReferenceAliasComposition("やまからかわまで", [
+        resolveReferenceAliasComposition("mountfromstreamuntil", [
             mountain,
             from,
             river,
             until,
         ]).map(({ id }) => id),
-        ["word-yama", "particle-kara", "word-kawa", "particle-made"],
+        ["word-peak", "particle-from", "word-stream", "particle-until"],
     );
     assert.deepEqual(
-        resolveReferenceAliasComposition("やまから海まで", [
+        resolveReferenceAliasComposition("mountfromoceanuntil", [
             mountain,
             from,
             river,
@@ -144,39 +147,39 @@ test("ordered relationship targets resolve pronunciation aliases", () => {
 test("title pronunciations do not duplicate primary or secondary spellings", () => {
     assert.deepEqual(
         distinctPronunciationLabels({
-            label: "じん",
-            fields: { pronunciation: ["じん"] },
+            label: "person",
+            fields: { pronunciation: ["person"] },
         }),
         [],
     );
     assert.deepEqual(
         distinctPronunciationLabels(
             {
-                label: "人",
-                fields: { pronunciation: ["じん", "にん", "ひと"] },
+                label: "person-symbol",
+                fields: { pronunciation: ["person", "human", "individual"] },
             },
-            ["ひと"],
+            ["individual"],
         ),
-        ["じん", "にん"],
+        ["person", "human"],
     );
 });
 
 test("title detail omits links already composing the primary title", () => {
-    const kana = { id: "kana-ka", label: "か" };
-    const otherKana = { id: "kana-ga", label: "が" };
+    const character = { id: "character-k", label: "k" };
+    const otherCharacter = { id: "character-g", label: "g" };
 
     assert.deepEqual(
         excludeTitleReferenceDuplicates(
-            [[kana], [otherKana]],
-            [{ id: "kana-ka", label: " か " }],
+            [[character], [otherCharacter]],
+            [{ id: "character-k", label: " k " }],
         ),
-        [[otherKana]],
+        [[otherCharacter]],
     );
     assert.deepEqual(
         excludeTitleReferenceDuplicates(
-            [[kana]],
-            [{ id: "different-target", label: "か" }],
+            [[character]],
+            [{ id: "different-target", label: "k" }],
         ),
-        [[kana]],
+        [[character]],
     );
 });

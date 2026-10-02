@@ -142,6 +142,10 @@ Beim Speichern einer Aussprache wird nun die Karussellauswahl übernommen, manue
 
 Die Aussprache-Vorbereitung wird nun auch abgeschlossen, wenn Karussellkarten keine Zähler anzeigen. Der bestätigte Wert wird in die Liste der gespeicherten Werte verschoben und klare Erfolgs- oder hilfreiche Übermittlungsfehler werden angezeigt.
 
+## Anbieterneutrale Kartentests
+
+Ein aktuelles anbieterneutrales Testschema prüft jetzt das Erstellen und Bearbeiten von Karten mit zusammengesetzten Schrifteinheiten, geordneten Bestandteilen, mehrwertigen Aussprachen und gruppierten Lesereferenzen. Bibliothekstests enthalten keine Inhalte eines bestimmten Sprachmoduls mehr.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -183,3 +187,4 @@ Die Aussprache-Vorbereitung wird nun auch abgeschlossen, wenn Karussellkarten ke
 - [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)
 - [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)
 - [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)
+- [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)

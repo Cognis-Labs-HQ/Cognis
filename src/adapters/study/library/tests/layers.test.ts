@@ -380,7 +380,7 @@ test("layers can explicitly reference other entries in the same layer", () => {
         ],
     };
     const validated = validateLibrarySchema(schema);
-    const target = entry("compound:japan", "日本", "compound_characters");
+    const target = entry("compound:example", "compound", "compound_characters");
 
     assert.deepEqual(validated, schema);
     assert.doesNotThrow(() =>
@@ -449,7 +449,7 @@ test("metadata filter groups declare consistent selection exclusivity", () => {
                 group: "character-class",
                 exclusive: true,
                 required: true,
-                defaultTag: "hiragana",
+                defaultTag: "character",
             },
         },
         {
@@ -560,7 +560,7 @@ test("definition layers declare module-owned localization fields", () => {
             },
         ],
         definitionLocalization: {
-            stringKeyPrefix: "japanese:definitions",
+            stringKeyPrefix: "mock:definitions",
             stringKeyField: "string_key",
             translationsField: "translations",
         },
@@ -987,7 +987,7 @@ test("sentences can include ordered word and particle references", () => {
     };
     const targets = new Map([
         ["word", entry("word", "learn", "words")],
-        ["particle", entry("particle", "は", "particles")],
+        ["particle", entry("particle", "h", "particles")],
     ]);
     assert.doesNotThrow(() =>
         validateReferences(

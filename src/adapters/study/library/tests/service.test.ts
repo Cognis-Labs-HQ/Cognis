@@ -3,6 +3,11 @@ import test from "node:test";
 import path from "node:path";
 import { LibraryService } from "../service.js";
 import type { LibrarySchema } from "../types.js";
+import {
+    mockCharacter,
+    mockLanguageSchema,
+    mockSymbolInput,
+} from "./fixtures/mock-language.js";
 
 const schema = (version: number): LibrarySchema => ({
     id: "test-language",
@@ -25,6 +30,66 @@ function service() {
         saved,
     };
 }
+
+test("schema-driven cards retain grouped pronunciations through create and edit", async () => {
+    const first = mockCharacter("character:first", "a");
+    const second = mockCharacter("character:second", "b");
+    const records = new Map([first, second].map((entry) => [entry.id, entry]));
+    const store = {
+        saveSchema: async () => {},
+        list: async () => Array.from(records.values()),
+        get: async (id: string) => records.get(id) ?? null,
+        create: async (
+            _location: unknown,
+            input: Record<string, unknown>,
+            language: string,
+            accountId: string,
+        ) => {
+            const created = {
+                ...input,
+                id: "symbol:created",
+                language,
+                scope: "user" as const,
+                scopeId: accountId,
+                createdBy: accountId,
+                createdAt: "2026-01-01T00:00:00.000Z",
+                updatedAt: "2026-01-01T00:00:00.000Z",
+                protected: false,
+            };
+            records.set(created.id, created as never);
+            return created;
+        },
+        update: async (id: string, input: Record<string, unknown>) => {
+            const updated = { ...records.get(id), ...input };
+            records.set(id, updated as never);
+            return updated;
+        },
+    };
+    const library = new LibraryService(store as never);
+    await library.registerSchema(mockLanguageSchema);
+    const actor = { accountId: "author", role: "user" as const };
+    const input = mockSymbolInput(first, second);
+
+    const created = await library.create(actor, { scope: "user" }, input);
+    assert.deepEqual(created.fields.pronunciation, ["a", "b"]);
+    assert.deepEqual(created.referenceGroups, input.referenceGroups);
+
+    const editedInput = {
+        ...input,
+        label: "ba",
+        fields: { pronunciation: ["b", "authored"] },
+        references: input.references?.toReversed(),
+        referenceGroups: {
+            readings: [
+                [{ entryId: second.id, relation: "readings", position: 0 }],
+            ],
+        },
+    };
+    const updated = await library.update(actor, created.id, editedInput);
+    assert.equal(updated.label, "ba");
+    assert.deepEqual(updated.fields.pronunciation, ["b", "authored"]);
+    assert.deepEqual(updated.referenceGroups, editedInput.referenceGroups);
+});
 
 test("content-pack notifications report only newly introduced records", async () => {
     const root = path.resolve(
@@ -87,19 +152,19 @@ test("class publishing locations are filtered by the selected language", async (
         },
         async listWritable(_accountId, _role, language) {
             requestedLanguages.push(language);
-            return ["class-japanese"];
+            return ["class-mock-language"];
         },
     });
 
     const locations = await library.locations(
         { accountId: "teacher-1", role: "teacher" },
-        "ja",
+        "x-mock",
     );
 
-    assert.deepEqual(requestedLanguages, ["ja"]);
+    assert.deepEqual(requestedLanguages, ["x-mock"]);
     assert.deepEqual(locations.writable, [
         { scope: "user", scopeId: "teacher-1" },
-        { scope: "class", scopeId: "class-japanese" },
+        { scope: "class", scopeId: "class-mock-language" },
     ]);
 });
 
@@ -878,7 +943,7 @@ test("provider cards cannot be sent to a personal namespace", async () => {
         id: "provider-card",
         scope: "global",
         scopeId: "global",
-        createdBy: "content-pack:japanese-core",
+        createdBy: "content-pack:mock-language-core",
         protected: false,
     };
     const store = { get: async () => entry };

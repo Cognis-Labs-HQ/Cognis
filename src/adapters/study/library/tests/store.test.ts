@@ -9,11 +9,11 @@ import type { LibraryContentPackPlan } from "../types.js";
 test("new releases may replace a schema owned only by the same content pack", async () => {
     const commands: StructuredDbCommand[] = [];
     const previousSchema = {
-        id: "japanese",
+        id: "mock-language",
         version: 45,
-        namespace: "ja",
-        language: "ja",
-        metadata: { labels: { en: "Japanese" } },
+        namespace: "x-mock",
+        language: "x-mock",
+        metadata: { labels: { en: "Mock Language" } },
         layers: [{ id: "words", metadata: { labels: { en: "Words" } } }],
     };
     const nextSchema = {
@@ -45,7 +45,10 @@ test("new releases may replace a schema owned only by the same content pack", as
             ) {
                 return {
                     rows: [
-                        { publisher: "Cognis Labs HQ", pack_id: "japanese" },
+                        {
+                            publisher: "Cognis Labs HQ",
+                            pack_id: "mock-language",
+                        },
                     ],
                 };
             }
@@ -56,11 +59,11 @@ test("new releases may replace a schema owned only by the same content pack", as
     await new LibraryStore(db).ingestContentPack({
         root: "/content",
         manifest: {
-            id: "japanese",
+            id: "mock-language",
             publisher: "Cognis Labs HQ",
             version: "2.2.16",
             contentRevision: "12",
-            namespace: "ja",
+            namespace: "x-mock",
             schema: "schema.json",
             content: "content",
             license: { id: "AGPL-3.0-or-later" },
@@ -83,11 +86,11 @@ test("new releases may replace a schema owned only by the same content pack", as
 test("content pack import ignores duplicate all-key references", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
-        id: "japanese",
+        id: "mock-language",
         version: 1,
-        namespace: "ja",
-        language: "ja",
-        metadata: { labels: { en: "Japanese" } },
+        namespace: "x-mock",
+        language: "x-mock",
+        metadata: { labels: { en: "Mock Language" } },
         layers: [
             {
                 id: "characters",
@@ -117,7 +120,7 @@ test("content pack import ignores duplicate all-key references", async () => {
             publisher: "Cognis Labs HQ",
             version: "1.0.0",
             contentRevision: "1",
-            namespace: "ja",
+            namespace: "x-mock",
             schema: "schema.json",
             content: "data",
             metadata: { catalog: { featured: true } },
@@ -242,10 +245,10 @@ test("entry reads compact sparse grouped references before sorting", async () =>
                             id: "entry-1",
                             scope: "global",
                             scope_id: "global",
-                            schema_id: "japanese",
+                            schema_id: "mock-language",
                             schema_version: 1,
                             layer: "words",
-                            language: "ja",
+                            language: "x-mock",
                             label: "word",
                             fields_json: "{}",
                             created_by: "admin",
@@ -300,11 +303,11 @@ test("entry reads compact sparse grouped references before sorting", async () =>
 test("authoritative content packs prune omitted records by default", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
-        id: "japanese",
+        id: "mock-language",
         version: 1,
-        namespace: "ja",
-        language: "ja",
-        metadata: { labels: { en: "Japanese" } },
+        namespace: "x-mock",
+        language: "x-mock",
+        metadata: { labels: { en: "Mock Language" } },
         layers: [
             { id: "characters", metadata: { labels: { en: "Characters" } } },
         ],
@@ -339,7 +342,7 @@ test("authoritative content packs prune omitted records by default", async () =>
             publisher: "Cognis Labs HQ",
             version: "2.0.0",
             contentRevision: "2",
-            namespace: "ja",
+            namespace: "x-mock",
             schema: "schema.json",
             content: "data",
             license: { id: "CC-BY-4.0" },
@@ -384,17 +387,17 @@ test("content packs preserve provider records after a user modifies them", async
         publisher: "Cognis Labs HQ",
         version: "2.0.0",
         contentRevision: "2",
-        namespace: "ja",
+        namespace: "x-mock",
         schema: "schema.json",
         content: "data",
         license: { id: "CC-BY-4.0" },
     };
     const schema = {
-        id: "japanese",
+        id: "mock-language",
         version: 1,
-        namespace: "ja",
-        language: "ja",
-        metadata: { labels: { en: "Japanese" } },
+        namespace: "x-mock",
+        language: "x-mock",
+        metadata: { labels: { en: "Mock Language" } },
         layers: [
             { id: "characters", metadata: { labels: { en: "Characters" } } },
         ],
@@ -458,11 +461,11 @@ test("content packs preserve provider records after a user modifies them", async
 test("content packs retain omitted records only when explicitly requested", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
-        id: "japanese",
+        id: "mock-language",
         version: 1,
-        namespace: "ja",
-        language: "ja",
-        metadata: { labels: { en: "Japanese" } },
+        namespace: "x-mock",
+        language: "x-mock",
+        metadata: { labels: { en: "Mock Language" } },
         layers: [],
     };
     const db: DbExecutor = {
@@ -481,7 +484,7 @@ test("content packs retain omitted records only when explicitly requested", asyn
             publisher: "Cognis Labs HQ",
             version: "2.0.0",
             contentRevision: "2",
-            namespace: "ja",
+            namespace: "x-mock",
             schema: "schema.json",
             content: "data",
             pruneOmittedRecords: false,
@@ -506,11 +509,11 @@ test("content packs retain omitted records only when explicitly requested", asyn
 test("content pack import removes duplicate hashes and preserves references", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
-        id: "japanese",
+        id: "mock-language",
         version: 1,
-        namespace: "ja",
-        language: "ja",
-        metadata: { labels: { en: "Japanese" } },
+        namespace: "x-mock",
+        language: "x-mock",
+        metadata: { labels: { en: "Mock Language" } },
         layers: [
             {
                 id: "characters",
@@ -558,7 +561,7 @@ test("content pack import removes duplicate hashes and preserves references", as
             publisher: "Cognis Labs HQ",
             version: "2.0.0",
             contentRevision: "2",
-            namespace: "ja",
+            namespace: "x-mock",
             schema: "schema.json",
             content: "data",
             license: { id: "CC-BY-4.0" },
@@ -566,8 +569,8 @@ test("content pack import removes duplicate hashes and preserves references", as
         schema,
         digest: "digest-two",
         records: [
-            { id: "ja:a", layer: "characters", label: "あ" },
-            { id: "ja:a-copy", layer: "characters", label: "あ" },
+            { id: "ja:a", layer: "characters", label: "a" },
+            { id: "ja:a-copy", layer: "characters", label: "a" },
         ],
         assets: [],
     };
@@ -621,7 +624,7 @@ test("permanent deletion blacklists content hashes and removes relationships", a
                     return {
                         rows: [
                             {
-                                schema_id: "japanese",
+                                schema_id: "mock-language",
                                 schema_version: 1,
                                 layer: "words",
                             },
@@ -636,10 +639,10 @@ test("permanent deletion blacklists content hashes and removes relationships", a
                                 id,
                                 scope: "global",
                                 scope_id: "global",
-                                schema_id: "japanese",
+                                schema_id: "mock-language",
                                 schema_version: 1,
                                 layer: "words",
-                                language: "ja",
+                                language: "x-mock",
                                 label: id,
                                 fields_json: "{}",
                                 created_by: "admin",
@@ -762,7 +765,7 @@ test("deletion traversal honors restrict and detach relationship policies", asyn
                 return {
                     rows: [
                         {
-                            schema_id: "japanese",
+                            schema_id: "mock-language",
                             schema_version: 1,
                             layer: "words",
                         },
@@ -807,11 +810,11 @@ test("deletion traversal honors restrict and detach relationship policies", asyn
 test("content pack reconciliation skips blacklisted hashes", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
-        id: "japanese",
+        id: "mock-language",
         version: 1,
-        namespace: "ja",
-        language: "ja",
-        metadata: { labels: { en: "Japanese" } },
+        namespace: "x-mock",
+        language: "x-mock",
+        metadata: { labels: { en: "Mock Language" } },
         layers: [
             {
                 id: "characters",
@@ -826,7 +829,7 @@ test("content pack reconciliation skips blacklisted hashes", async () => {
             publisher: "Cognis Labs HQ",
             version: "1.0.0",
             contentRevision: "1",
-            namespace: "ja",
+            namespace: "x-mock",
             schema: "schema.json",
             content: "data",
             license: { id: "CC-BY-4.0" },
@@ -870,11 +873,11 @@ test("content pack reconciliation skips blacklisted hashes", async () => {
 test("unchanged content packs restore entries removed after installation", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
-        id: "japanese",
+        id: "mock-language",
         version: 1,
-        namespace: "ja",
-        language: "ja",
-        metadata: { labels: { en: "Japanese" } },
+        namespace: "x-mock",
+        language: "x-mock",
+        metadata: { labels: { en: "Mock Language" } },
         layers: [
             {
                 id: "characters",
@@ -889,7 +892,7 @@ test("unchanged content packs restore entries removed after installation", async
             publisher: "Cognis Labs HQ",
             version: "1.0.0",
             contentRevision: "1",
-            namespace: "ja",
+            namespace: "x-mock",
             schema: "schema.json",
             content: "data",
             license: { id: "CC-BY-4.0" },
@@ -944,10 +947,10 @@ test("entry updates replace editable fields and relationships atomically", async
                             id: "entry-1",
                             scope: "global",
                             scope_id: "global",
-                            schema_id: "japanese",
+                            schema_id: "mock-language",
                             schema_version: 1,
                             layer: "words",
-                            language: "ja",
+                            language: "x-mock",
                             label: "updated",
                             fields_json: "{}",
                             created_by: "ada",
@@ -964,7 +967,7 @@ test("entry updates replace editable fields and relationships atomically", async
     await new LibraryStore(db).update(
         "entry-1",
         {
-            schemaId: "japanese",
+            schemaId: "mock-language",
             schemaVersion: 2,
             layer: "words",
             label: "updated",

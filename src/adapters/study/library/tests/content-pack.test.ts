@@ -340,7 +340,7 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
         id: "sentences",
         version: 1,
         namespace: "sentences",
-        language: "ja",
+        language: "x-mock",
         metadata: { labels: { en: "Sentences" } },
         layers: [
             {
@@ -385,10 +385,10 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
         ],
     });
     await writeJson(path.join(root, "content", "words", "words.json"), [
-        { id: "sentences:word:japanese", label: "日本語" },
+        { id: "sentences:word:language-name", label: "language" },
     ]);
     await writeJson(path.join(root, "content", "particles", "particles.json"), [
-        { id: "sentences:particle:ga", label: "が" },
+        { id: "sentences:particle:ga", label: "g" },
     ]);
     const sentenceFile = path.join(
         root,
@@ -398,7 +398,7 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
     );
     const references = [
         {
-            entryId: "sentences:word:japanese",
+            entryId: "sentences:word:language-name",
             relation: "words",
             position: 0,
         },
@@ -408,13 +408,13 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
             position: 1,
         },
         {
-            entryId: "sentences:word:japanese",
+            entryId: "sentences:word:language-name",
             relation: "pronunciation-readings",
             position: 0,
         },
     ];
     await writeJson(sentenceFile, [
-        { id: "sentences:sentence:valid", label: "日本語が", references },
+        { id: "sentences:sentence:valid", label: "languageg", references },
     ]);
     const plan = await inspectContentPack(root);
     assert.equal(
@@ -425,7 +425,7 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
     await writeJson(sentenceFile, [
         {
             id: "sentences:sentence:invalid",
-            label: "日本語が好き",
+            label: "languageglikek",
             references,
         },
     ]);

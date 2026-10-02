@@ -142,6 +142,10 @@ Saving a pronunciation now commits its carousel selection, preserves authored mu
 
 Pronunciation staging now completes even when carousel cards do not render counters, moves the committed value into the saved-values list, and reports clear success or actionable submission errors.
 
+## Provider-neutral Card Tests
+
+A current provider-neutral mock schema now exercises card creation and editing with compound writing units, ordered components, multi-value pronunciations, and grouped reading references. Library tests no longer embed content from a specific language module.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -183,3 +187,4 @@ Pronunciation staging now completes even when carousel cards do not render count
 - [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)
 - [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)
 - [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)
+- [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)

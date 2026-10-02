@@ -13,12 +13,12 @@ import {
 
 test("sentence edits restore repeated punctuation in authored order", () => {
     const entries = [
-        { id: "one", label: "それでも" },
-        { id: "two", label: "歩く" },
+        { id: "one", label: "transition" },
+        { id: "two", label: "talk" },
     ];
     const tokens = restoreCompositionTokens(
         {
-            label: "それでも、歩く？！",
+            label: "transition,talk?!",
             references: [
                 { entryId: "one", relation: "tokens", position: 0 },
                 { entryId: "two", relation: "tokens", position: 1 },
@@ -26,13 +26,13 @@ test("sentence edits restore repeated punctuation in authored order", () => {
         },
         entries,
         {
-            literal_carousels: [{ values: ["、", "？", "！"] }],
+            literal_carousels: [{ values: [",", "?", "!"] }],
         },
         new Set(["tokens"]),
     );
     assert.equal(
         tokens.map((token) => compositionTokenLabel(token, entries)).join(""),
-        "それでも、歩く？！",
+        "transition,talk?!",
     );
 });
 
@@ -48,34 +48,34 @@ test("provider transform sets derive pathways without materialized cards", () =>
                         id: "potential",
                         fromState: "base",
                         toState: "potential",
-                        removeSuffix: "く",
-                        append: "ける",
+                        removeSuffix: "k",
+                        append: "ked",
                     },
                     {
                         id: "negative",
                         fromState: "base",
                         toState: "negative",
-                        removeSuffix: "く",
-                        append: "かない",
+                        removeSuffix: "k",
+                        append: "k-not",
                     },
                     {
                         id: "desiderative",
                         fromState: "base",
                         toState: "desiderative",
-                        removeSuffix: "く",
-                        append: "きたい",
+                        removeSuffix: "k",
+                        append: "king",
                     },
                 ],
             },
         ],
     };
     const [pathway] = transformationPathways(
-        { label: "歩く", tags: ["verb"] },
+        { label: "talk", tags: ["verb"] },
         schema,
     );
     assert.deepEqual(
         pathway.nodes.map(({ value }) => value),
-        ["歩く", "歩ける", "歩かない", "歩きたい"],
+        ["talk", "talked", "talk-not", "talking"],
     );
 });
 
@@ -83,14 +83,14 @@ test("transform sets ignore entries without every matching tag", () => {
     const schema = {
         transformSets: [
             {
-                matchTags: ["verb", "godan-ku"],
+                matchTags: ["verb", "verb-group-a"],
                 baseState: "base",
                 rules: [],
             },
         ],
     };
     assert.deepEqual(
-        transformationPathways({ label: "歩く", tags: ["verb"] }, schema),
+        transformationPathways({ label: "talk", tags: ["verb"] }, schema),
         [],
     );
 });
@@ -100,8 +100,8 @@ test("transform pathways support branching chains with dynamic readings and defi
         language: "en",
         transformSets: [
             {
-                id: "ichidan",
-                matchTags: ["verb", "ichidan"],
+                id: "verb-group-b",
+                matchTags: ["verb", "verb-group-b"],
                 baseState: "base",
                 rules: [
                     {
@@ -109,8 +109,8 @@ test("transform pathways support branching chains with dynamic readings and defi
                         metadata: { labels: { en: "Causative" } },
                         fromState: "base",
                         toState: "causative",
-                        removeSuffix: "る",
-                        append: "させる",
+                        removeSuffix: "a",
+                        append: "ax",
                     },
                     {
                         id: "desire",
@@ -118,16 +118,16 @@ test("transform pathways support branching chains with dynamic readings and defi
                         definition: { labels: { en: "want to make eat" } },
                         fromState: "causative",
                         toState: "causative-desire",
-                        removeSuffix: "る",
-                        append: "たい",
+                        removeSuffix: "x",
+                        append: "ying",
                     },
                     {
                         id: "negative-desire",
                         metadata: { labels: { en: "Negative desire" } },
                         fromState: "causative-desire",
                         toState: "causative-negative-desire",
-                        removeSuffix: "たい",
-                        append: "たくない",
+                        removeSuffix: "ing",
+                        append: "ed",
                     },
                     {
                         id: "continuous-negative-desire",
@@ -136,8 +136,8 @@ test("transform pathways support branching chains with dynamic readings and defi
                         },
                         fromState: "causative-negative-desire",
                         toState: "causative-continuous-negative-desire",
-                        removeSuffix: "ない",
-                        append: "なくて",
+                        removeSuffix: "yed",
+                        append: "yously",
                     },
                 ],
             },
@@ -145,24 +145,18 @@ test("transform pathways support branching chains with dynamic readings and defi
     };
     const entry = {
         id: "eat",
-        label: "食べる",
-        tags: ["verb", "ichidan"],
-        fields: { pronunciation: ["たべる"] },
+        label: "mora",
+        tags: ["verb", "verb-group-b"],
+        fields: { pronunciation: ["mora"] },
     };
     const [pathway] = transformationPathways(entry, schema);
     assert.deepEqual(
         pathway.nodes.map(({ value }) => value),
-        [
-            "食べる",
-            "食べさせる",
-            "食べさせたい",
-            "食べさせたくない",
-            "食べさせたくなくて",
-        ],
+        ["mora", "morax", "moraying", "morayed", "morayously"],
     );
     const [token] = restoreCompositionTokens(
         {
-            label: "食べさせたくなくて",
+            label: "morayously",
             references: [{ entryId: "eat", relation: "words", position: 0 }],
         },
         [entry],
@@ -170,7 +164,7 @@ test("transform pathways support branching chains with dynamic readings and defi
         new Set(["words"]),
         schema,
     );
-    assert.equal(compositionTokenLabel(token, [entry]), "食べさせたくなくて");
+    assert.equal(compositionTokenLabel(token, [entry]), "morayously");
     assert.deepEqual(transformationTokenDetails(token).path, [
         "causative",
         "desire",

@@ -142,6 +142,10 @@ Penyimpanan pelafalan kini menerapkan pilihan korsel, mempertahankan pelafalan m
 
 Tahap pelafalan kini selesai meskipun kartu korsel tidak menampilkan penghitung, memindahkan nilai yang diterapkan ke daftar nilai tersimpan, dan menampilkan keberhasilan yang jelas atau kesalahan pengiriman yang dapat ditindaklanjuti.
 
+## Pengujian Kartu Netral Penyedia
+
+Skema tiruan netral penyedia yang mutakhir kini menguji pembuatan dan penyuntingan kartu dengan unit tulisan majemuk, komponen berurutan, pelafalan multi-nilai, dan referensi bacaan berkelompok. Pengujian Pustaka tidak lagi menyematkan konten dari modul bahasa tertentu.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -183,3 +187,4 @@ Tahap pelafalan kini selesai meskipun kartu korsel tidak menampilkan penghitung,
 - [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)
 - [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)
 - [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)
+- [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)

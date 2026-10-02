@@ -142,6 +142,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 カルーセルカードにカウンターが表示されない場合でも発音のステージングが完了し、確定した値が保存済み値の一覧へ移動します。また、明確な成功通知または対処可能な送信エラーが表示されます。
 
+## プロバイダー中立のカードテスト
+
+最新のプロバイダー中立モックスキーマで、複合文字単位、順序付き構成要素、複数値の発音、グループ化された読み参照を含むカードの作成と編集を検証するようになりました。ライブラリのテストには、特定の言語モジュールの内容を埋め込みません。
+
 ## コミット
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -183,3 +187,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)
 - [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)
 - [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)
+- [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)
