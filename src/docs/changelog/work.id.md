@@ -162,6 +162,10 @@ Korsel tag yang dideklarasikan penyedia kini berfungsi sebagai korsel input kali
 
 Satu entri yang dikembalikan oleh penyuntingan popup yang berhasil kini digabungkan ke koleksi entri Pustaka sebelum dirender. Halaman tidak lagi mengganti lariknya dengan satu entri sehingga penyegaran setelah penyimpanan selesai tanpa galat runtime filter.
 
+## Pemilihan Transformasi di Penyusun Kartu
+
+Memilih verba yang dapat ditransformasi di penyusun kartu kini membuka dialog “Akan ditambahkan” dengan daftar dua kolom berisi bentuk yang tersedia dan definisi yang telah disesuaikan. Bentuk terpilih ditempatkan sebagai token transformasi sehingga tautan pada kalimat tersimpan membuka kembali detail verba atau adverbia hasil transformasi yang sesuai.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -208,3 +212,4 @@ Satu entri yang dikembalikan oleh penyuntingan popup yang berhasil kini digabung
 - [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)
 - [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)
 - [35a54a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/35a54a21)
+- [6a48472b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a48472bfb28deb7094af36fc7fab7defa597b65)

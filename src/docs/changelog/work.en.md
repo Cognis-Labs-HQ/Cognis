@@ -162,6 +162,10 @@ Provider-declared tag carousels now operate as independent sentence-input carous
 
 A single entry returned by a successful popup edit is now merged into the existing Library entry collection before rendering. The page no longer replaces its array with one entry, so post-save refreshes complete without a filter runtime error.
 
+## Transformation Selection in the Card Composer
+
+Selecting a transformable verb in the card composer now opens an “About to add” dialog with a two-column list of available forms and their transformed definitions. The selected form is staged as a transformation token, so saved sentence links reopen the matching transformed verb or adverb detail.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -208,3 +212,4 @@ A single entry returned by a successful popup edit is now merged into the existi
 - [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)
 - [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)
 - [35a54a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/35a54a21)
+- [6a48472b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a48472bfb28deb7094af36fc7fab7defa597b65)

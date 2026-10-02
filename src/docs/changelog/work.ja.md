@@ -162,6 +162,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 ポップアップ編集の成功時に返された単一エントリを、描画前に既存のライブラリエントリ一覧へ統合するようになりました。配列が単一エントリで置き換えられないため、保存後の更新が filter の実行時エラーなしで完了します。
 
+## カードコンポーザーでの変換形選択
+
+カードコンポーザーで変換可能な動詞を選ぶと、「追加予定」ダイアログに利用可能な変換形と変換後の定義が2列で表示されるようになりました。選択した形は変換トークンとしてステージに追加されるため、保存した文のリンクから対応する変換後の動詞または副詞の詳細を再表示できます。
+
 ## コミット
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -208,3 +212,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)
 - [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)
 - [35a54a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/35a54a21)
+- [6a48472b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a48472bfb28deb7094af36fc7fab7defa597b65)

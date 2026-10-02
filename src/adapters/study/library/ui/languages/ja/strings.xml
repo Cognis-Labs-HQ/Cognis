@@ -118,7 +118,8 @@
   <string name="gateway.study.library_pronunciation_stage_empty">発音を保存する前に、少なくとも1枚のカードを選択してください。</string>
   <string name="gateway.study.library_word_type">語彙の種類</string>
   <string name="gateway.study.library_select_transform">選択</string>
-  <string name="gateway.study.library_transform_prompt">{{ verb }} を選択しました。次の変換形から選べます。</string>
+  <string name="gateway.study.library_transform_title">追加予定: {{ verb }}</string>
+  <string name="gateway.study.library_transform_prompt">{{ verb }} には次の変換形があります:</string>
   <string name="gateway.study.library_use_base_transform">{{ verb }} をそのまま使う！</string>
   <string name="gateway.study.library_transforms_available">変換形があります</string>
 </resources>

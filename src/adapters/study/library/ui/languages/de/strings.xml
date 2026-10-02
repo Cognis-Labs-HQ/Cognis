@@ -118,7 +118,8 @@
   <string name="gateway.study.library_pronunciation_stage_empty">Wähle vor dem Speichern der Aussprache mindestens eine Karte aus.</string>
   <string name="gateway.study.library_word_type">Wortschatztyp</string>
   <string name="gateway.study.library_select_transform">Auswählen</string>
-  <string name="gateway.study.library_transform_prompt">Du hast {{ verb }} ausgewählt. Folgende Transformationen stehen zur Auswahl.</string>
+  <string name="gateway.study.library_transform_title">Wird hinzugefügt: {{ verb }}</string>
+  <string name="gateway.study.library_transform_prompt">Für {{ verb }} sind folgende Transformationen verfügbar:</string>
   <string name="gateway.study.library_use_base_transform">Einfach {{ verb }} verwenden!</string>
   <string name="gateway.study.library_transforms_available">Transformation(en) verfügbar</string>
 </resources>

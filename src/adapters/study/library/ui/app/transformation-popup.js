@@ -215,25 +215,46 @@ export async function openTransformationTreePopup(
         : null;
 }
 
-export async function openTransformationPopup(entry, schema, i18n) {
+export function renderTransformationOptions(
+    pathways,
+    schema,
+    baseDefinitions = [],
+) {
+    return pathways
+        .map((pathway, pathwayIndex) =>
+            pathway.nodes
+                .slice(1)
+                .map((node, nodeOffset) => {
+                    const definitions = transformedDefinitions(
+                        baseDefinitions,
+                        node,
+                        schema.language,
+                    );
+                    return `<button class="library-transform-option btn-neutral" type="button" data-library-transform-set="${pathwayIndex}" data-library-transform-index="${nodeOffset + 1}"><strong>${escapeHtml(node.value)}</strong>${node.pronunciation && node.pronunciation !== node.value ? `<span>${escapeHtml(node.pronunciation)}</span>` : ""}<span class="library-transform-option-definitions">${definitions.map((definition) => `<span>${escapeHtml(definition)}</span>`).join("")}</span></button>`;
+                })
+                .join(""),
+        )
+        .join("");
+}
+
+export async function openTransformationPopup(
+    entry,
+    schema,
+    i18n,
+    baseDefinitions = [],
+) {
     const pathways = transformationPathways(entry, schema);
     if (!pathways.length) return null;
     let overlay;
     const result = await openPopup({
         title: i18n
-            .t("gateway.study.library_transform_prompt")
+            .t("gateway.study.library_transform_title")
             .replace("{{ verb }}", entry.label),
-        body: `<hr><div class="library-transform-options">${pathways
-            .map((pathway, pathwayIndex) =>
-                pathway.nodes
-                    .slice(1)
-                    .map(
-                        (node, nodeOffset) =>
-                            `<button class="library-transform-option btn-neutral" type="button" data-library-transform-set="${pathwayIndex}" data-library-transform-index="${nodeOffset + 1}"><strong>${escapeHtml(node.value)}</strong><span>${escapeHtml(node.pronunciation)}</span></button>`,
-                    )
-                    .join(""),
-            )
-            .join("")}</div>`,
+        body: `<p class="library-transform-prompt">${escapeHtml(
+            i18n
+                .t("gateway.study.library_transform_prompt")
+                .replace("{{ verb }}", entry.label),
+        )}</p><div class="library-transform-options">${renderTransformationOptions(pathways, schema, baseDefinitions)}</div>`,
         actions: [
             {
                 id: "select",

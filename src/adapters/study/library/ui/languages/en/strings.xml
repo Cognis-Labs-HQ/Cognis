@@ -118,7 +118,8 @@
   <string name="gateway.study.library_pronunciation_stage_empty">Select at least one card before saving the pronunciation.</string>
   <string name="gateway.study.library_word_type">Vocabulary type</string>
   <string name="gateway.study.library_select_transform">Select</string>
-  <string name="gateway.study.library_transform_prompt">You selected {{ verb }}. It has the following transformations available to select from.</string>
+  <string name="gateway.study.library_transform_title">About to add: {{ verb }}</string>
+  <string name="gateway.study.library_transform_prompt">{{ verb }} has the following available transformations:</string>
   <string name="gateway.study.library_use_base_transform">Just use {{ verb }}!</string>
   <string name="gateway.study.library_transforms_available">Transform(s) available</string>
 </resources>

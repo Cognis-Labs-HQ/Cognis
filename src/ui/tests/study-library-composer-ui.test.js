@@ -32,6 +32,9 @@ const composerLimitsSource = read(
 const composerExtrasSource = read(
     "src/adapters/study/library/ui/app/composer-extras.js",
 );
+const transformationPopupSource = read(
+    "src/adapters/study/library/ui/app/transformation-popup.js",
+);
 
 test("Study Library keeps editor tabs active and nested card types precise", () => {
     for (const [content, pattern] of [
@@ -347,4 +350,14 @@ test("Study Library composes transformed carousel cards into sentences", () => {
     assert.match(createEntrySource, /transformationCompositionToken/);
     assert.match(createEntrySource, /transformationTokenDetails/);
     assert.match(adminInteractionsSource, /compositionTokenEntryId/);
+    assert.match(
+        transformationPopupSource,
+        /gateway\.study\.library_transform_title/,
+    );
+    assert.match(transformationPopupSource, /transformedDefinitions/);
+    assert.match(
+        transformationPopupSource,
+        /library-transform-option-definitions/,
+    );
+    assert.match(libraryStylesheet, /grid-template-columns:\s*repeat\(2,/);
 });

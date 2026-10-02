@@ -374,11 +374,20 @@ body[data-theme="light"] .library-browser {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.65rem;
 }
+.library-transform-prompt {
+    margin-block: 0 1rem;
+}
 .library-transform-option {
     display: grid;
     justify-items: start;
     gap: 0.25rem;
     text-align: start;
+}
+.library-transform-option-definitions {
+    display: grid;
+    gap: 0.2rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
 }
 .library-transform-option.active {
     border-color: var(--accent-2);

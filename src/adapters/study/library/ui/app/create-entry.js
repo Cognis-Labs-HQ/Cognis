@@ -485,6 +485,7 @@ export async function openCreateEntryPopup({
                             candidate,
                             schema,
                             i18n,
+                            entryDefinitions(candidate, entries, schema),
                         );
                         if (!transformation) return false;
                         if (transformation.base) return;
@@ -727,24 +728,29 @@ async function openDefinitionPopup({ schema, schemaId, layerId, i18n }) {
     );
 }
 
-function entryDefinition(entry, entries, schema) {
-    const definition = (entry.references ?? [])
+function entryDefinitions(entry, entries, schema) {
+    return (entry.references ?? [])
         .map(({ entryId }) => entries.find(({ id }) => id === entryId))
-        .find((candidate) => {
+        .filter((candidate) => {
             const candidateLayer = candidate
                 ? layerForEntry([schema], candidate)
                 : null;
             return ["definition", "meaning"].includes(
                 candidateLayer?.semanticRole,
             );
-        });
-    return definition
-        ? definitionText(
-              definition,
-              layerForEntry([schema], definition),
-              document.documentElement.lang,
-          )
-        : "";
+        })
+        .map((definition) =>
+            definitionText(
+                definition,
+                layerForEntry([schema], definition),
+                document.documentElement.lang,
+            ),
+        )
+        .filter(Boolean);
+}
+
+function entryDefinition(entry, entries, schema) {
+    return entryDefinitions(entry, entries, schema)[0] ?? "";
 }
 
 function applyLookupFields(form, fields, draft) {

@@ -162,6 +162,10 @@ Vom Anbieter deklarierte Tag-Karussells funktionieren jetzt als eigenständige K
 
 Ein einzelner Eintrag aus einer erfolgreichen Popup-Bearbeitung wird nun vor dem Rendern in die vorhandene Bibliothekseintragssammlung übernommen. Die Seite ersetzt ihr Array nicht mehr durch einen einzelnen Eintrag, sodass Aktualisierungen nach dem Speichern ohne Filter-Laufzeitfehler abgeschlossen werden.
 
+## Transformationsauswahl im Karten-Composer
+
+Bei der Auswahl eines transformierbaren Verbs im Karten-Composer erscheint jetzt ein Dialog „Wird hinzugefügt“ mit einer zweispaltigen Liste der verfügbaren Formen und ihrer angepassten Definitionen. Die ausgewählte Form wird als Transformationstoken vorgemerkt, sodass Links in gespeicherten Sätzen wieder die passende transformierte Verb- oder Adverbansicht öffnen.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -208,3 +212,4 @@ Ein einzelner Eintrag aus einer erfolgreichen Popup-Bearbeitung wird nun vor dem
 - [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)
 - [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)
 - [35a54a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/35a54a21)
+- [6a48472b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a48472bfb28deb7094af36fc7fab7defa597b65)
