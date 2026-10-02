@@ -456,7 +456,6 @@ export function mountEditableRelationshipCarousels(
                 );
                 return;
             }
-            const groupIndex = values.length;
             values.push(value);
             field.value = values.join("\n");
             for (const relationshipId of relationshipIds) {
@@ -469,12 +468,12 @@ export function mountEditableRelationshipCarousels(
                     if (staged.length) {
                         const groups = (form.referenceGroups[relationshipId] ??=
                             []);
-                        groups[groupIndex] = staged.map(
-                            (entryId, position) => ({
+                        groups.push(
+                            staged.map((entryId, position) => ({
                                 entryId,
                                 relation: relationshipId,
                                 position,
-                            }),
+                            })),
                         );
                     }
                     stagedValues.set(relationshipId, []);

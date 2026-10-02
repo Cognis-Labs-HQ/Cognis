@@ -259,7 +259,7 @@ test("Study Library distinguishes persisted updates from refresh failures", () =
 
 test("Study Library preserves each multi-value pronunciation reference group", () => {
     assert.match(adminInteractionsSource, /form\.referenceGroups/);
-    assert.match(adminInteractionsSource, /groups\[groupIndex\]/);
+    assert.match(adminInteractionsSource, /groups\.push\(/);
     assert.match(adminInteractionsSource, /readReferenceGroups/);
     assert.match(createEntrySource, /referenceGroups: readReferenceGroups/);
     assert.match(popupTitleSource, /linkedPronunciationGroups/);

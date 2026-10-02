@@ -190,6 +190,10 @@ Beim Speichern mehrwertiger Aussprachen werden nun die übernommenen Werte neu d
 
 Satzeditoren behalten nun das Aussprachefeld des Anbieters im Formular, zeigen es schreibgeschützt an und leiten es aus allen auflösbaren Eingabekarten ab. Zusammengesetzter Text wird durch deterministische Übereinstimmung mit dem längsten Präfix segmentiert, damit Eingaben schrittweise aufgelöst werden können.
 
+## Gültige gruppierte Vokabeleinreichungen
+
+Aussprachegruppen werden nun ohne leere Nullstellen angehängt, fehlerhafte Anbietereingaben liefern einen stabilen Vertragsfehler statt eines Absturzes, und vorhandene verschachtelte Definitionen werden vor einer kollidierenden Anfrage wiederverwendet.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)

@@ -190,6 +190,10 @@ Penyimpanan pelafalan bernilai jamak kini menggambar ulang nilai yang disimpan d
 
 Penyusun kalimat kini mempertahankan bidang pelafalan penyedia di formulir, menampilkannya hanya-baca, dan menurunkannya dari setiap kartu masukan yang dapat diuraikan. Teks gabungan disegmentasikan dengan pencocokan prefiks terpanjang yang deterministik agar masukan dapat diuraikan secara bertahap.
 
+## Pengiriman kosakata berkelompok yang valid
+
+Grup pelafalan kini ditambahkan tanpa slot null yang renggang, masukan penyedia yang rusak menghasilkan galat kontrak yang stabil alih-alih berhenti mendadak, dan definisi bertingkat yang ada digunakan kembali sebelum permintaan yang berkonflik dikirim.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)

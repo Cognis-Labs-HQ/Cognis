@@ -190,6 +190,10 @@ Multi-value pronunciation saves now redraw committed values and clear carousel s
 
 Sentence composers now keep the provider pronunciation field in the form, display it read-only, and derive it from every resolvable input card. Compound text is segmented with deterministic longest-prefix matching so authors can resolve multi-card input progressively.
 
+## Valid grouped vocabulary submissions
+
+Pronunciation groups are now appended without sparse null slots, malformed provider input returns a stable contract error instead of crashing, and existing nested definitions are reused before issuing a conflicting request.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)

@@ -628,6 +628,7 @@ export async function openCreateEntryPopup({
                         schema,
                         schemaId,
                         layerId: relationship.targetLayer,
+                        entries,
                         i18n,
                     });
                 } catch {
@@ -684,7 +685,13 @@ export async function openCreateEntryPopup({
     return createdEntry;
 }
 
-async function openDefinitionPopup({ schema, schemaId, layerId, i18n }) {
+async function openDefinitionPopup({
+    schema,
+    schemaId,
+    layerId,
+    entries,
+    i18n,
+}) {
     const layer = schema.layers.find(({ id }) => id === layerId);
     const localization = layer?.definitionLocalization;
     if (!layer || !localization) return null;
@@ -733,6 +740,14 @@ async function openDefinitionPopup({ schema, schemaId, layerId, i18n }) {
     const translations = Object.fromEntries(
         languages.map((language) => [language, form.elements[language].value]),
     );
+    const normalizedLabel = translations.en.trim().normalize("NFKC");
+    const existing = entries.find(
+        (entry) =>
+            entry.schemaId === schemaId &&
+            entry.layer === layerId &&
+            entry.label.trim().normalize("NFKC") === normalizedLabel,
+    );
+    if (existing) return { entry: existing, created: false };
     try {
         const entry = await createLibraryEntry(
             { scope: "user" },

@@ -38,9 +38,16 @@ function allInputReferences(input: LibraryEntryInput) {
         ...(input.references ?? []),
         ...Object.entries(input.referenceGroups ?? {}).flatMap(
             ([relation, groups]) =>
-                groups.flatMap((group) =>
-                    group.map((reference) => ({ ...reference, relation })),
-                ),
+                Array.isArray(groups)
+                    ? groups.flatMap((group) =>
+                          Array.isArray(group)
+                              ? group.map((reference) => ({
+                                    ...reference,
+                                    relation,
+                                }))
+                              : [],
+                      )
+                    : [],
         ),
     ];
 }

@@ -91,6 +91,29 @@ test("schema-driven cards retain grouped pronunciations through create and edit"
     assert.deepEqual(updated.referenceGroups, editedInput.referenceGroups);
 });
 
+test("malformed grouped references return a contract error instead of crashing", async () => {
+    const first = mockCharacter("character:first", "a");
+    const records = new Map([[first.id, first]]);
+    const store = {
+        saveSchema: async () => {},
+        list: async () => Array.from(records.values()),
+        get: async (id: string) => records.get(id) ?? null,
+    };
+    const library = new LibraryService(store as never);
+    await library.registerSchema(mockLanguageSchema);
+    const input = mockSymbolInput(first, first);
+    input.referenceGroups = { readings: [null] } as never;
+
+    await assert.rejects(
+        library.create(
+            { accountId: "author", role: "user" },
+            { scope: "user" },
+            input,
+        ),
+        /relationship_group_empty:readings/,
+    );
+});
+
 test("content-pack notifications report only newly introduced records", async () => {
     const root = path.resolve(
         process.cwd(),
