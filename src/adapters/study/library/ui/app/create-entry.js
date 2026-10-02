@@ -621,18 +621,35 @@ export async function openCreateEntryPopup({
                     );
                     return;
                 }
-                const created = await openDefinitionPopup({
-                    schema,
-                    schemaId,
-                    layerId: relationship.targetLayer,
-                    i18n,
-                });
-                if (!created) return;
-                nestedDefinitionIds.push(created.id);
-                entries.push(created);
-                select?.append(
-                    new Option(created.label, created.id, true, true),
+                let result;
+                try {
+                    result = await openDefinitionPopup({
+                        schema,
+                        schemaId,
+                        layerId: relationship.targetLayer,
+                        i18n,
+                    });
+                } catch {
+                    showToast(i18n.t("gateway.study.library_create_error"), {
+                        variant: "error",
+                    });
+                    return;
+                }
+                if (!result) return;
+                const { entry: definition, created } = result;
+                if (created) nestedDefinitionIds.push(definition.id);
+                if (!entries.some(({ id }) => id === definition.id))
+                    entries.push(definition);
+                const existingOption = Array.from(select?.options ?? []).find(
+                    ({ value }) => value === definition.id,
                 );
+                if (existingOption) {
+                    existingOption.selected = true;
+                } else {
+                    select?.append(
+                        new Option(definition.label, definition.id, true, true),
+                    );
+                }
                 const panel = form.querySelector(
                     '[data-library-editor-panel="definitions"]',
                 );
@@ -641,8 +658,13 @@ export async function openCreateEntryPopup({
                     ?.remove();
                 panel?.insertAdjacentHTML(
                     "afterbegin",
-                    `<article class="library-editor-aggregate"><header><strong>${escapeHtml(created.label)}</strong></header></article>`,
+                    `<article class="library-editor-aggregate"><header><strong>${escapeHtml(definition.label)}</strong></header></article>`,
                 );
+                if (!created)
+                    showToast(
+                        i18n.t("gateway.study.library_definition_reused"),
+                        { variant: "success" },
+                    );
             });
             const publishClass = form.elements.publishClass;
             const classChoice = form.querySelector(
@@ -710,22 +732,30 @@ async function openDefinitionPopup({ schema, schemaId, layerId, i18n }) {
     const translations = Object.fromEntries(
         languages.map((language) => [language, form.elements[language].value]),
     );
-    return createLibraryEntry(
-        { scope: "user" },
-        {
-            schemaId,
-            schemaVersion: schema.version,
-            layer: layerId,
-            label: translations.en,
-            class: "definition",
-            hidden: true,
-            definitionLanguages: languages,
-            fields: {
-                [localization.translationsField]: translations,
+    try {
+        const entry = await createLibraryEntry(
+            { scope: "user" },
+            {
+                schemaId,
+                schemaVersion: schema.version,
+                layer: layerId,
+                label: translations.en,
+                class: "definition",
+                hidden: true,
+                definitionLanguages: languages,
+                fields: {
+                    [localization.translationsField]: translations,
+                },
+                references: [],
             },
-            references: [],
-        },
-    );
+        );
+        return { entry, created: true };
+    } catch (error) {
+        const conflictId = error.details?.conflictEntryId;
+        if (error.message !== "content_conflict" || !conflictId) throw error;
+        const detail = await fetchLibraryEntry(conflictId);
+        return { entry: detail.entry, created: false };
+    }
 }
 
 function entryDefinitions(entry, entries, schema) {

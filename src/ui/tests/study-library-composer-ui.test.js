@@ -16,6 +16,7 @@ const createEntrySource = read(
 const clientSource = read("src/gateways/study/ui/library-client.js");
 const adapterSource = read("src/adapters/study/library/index.ts");
 const carouselStylesheet = read("src/ui/styles/reuse/horizontal-carousel.css");
+const carouselSource = read("src/ui/reuse/horizontal-carousel.js");
 const compositionStylesheet = read("src/ui/styles/reuse/composition-input.css");
 const adminStylesheet = read("src/adapters/study/library/ui/library-admin.css");
 const libraryStylesheet = read("src/adapters/study/library/ui/library.css");
@@ -100,6 +101,12 @@ test("Study Library keeps definition controls in the Definitions tab", () => {
         /allowDefinitionCreate: layer\?\.semanticRole !== "definition"/,
     );
     assert.match(adminInteractionsSource, /data-library-add-definition/);
+    assert.match(createEntrySource, /error\.message !== "content_conflict"/);
+    assert.match(
+        createEntrySource,
+        /return \{ entry: detail\.entry, created: false \}/,
+    );
+    assert.match(createEntrySource, /library_definition_reused/);
     assert.match(adminInteractionsSource, /openCreateEntryPopup/);
 });
 
@@ -215,6 +222,12 @@ test("Study Library keeps selected-card fields beside configured carousels", () 
 test("Study Library edits saved pronunciations and rejects an empty stage", () => {
     assert.match(adminInteractionsSource, /library_pronunciation_stage_empty/);
     assert.match(adminInteractionsSource, /library_pronunciation_saved/);
+    assert.match(
+        adminInteractionsSource,
+        /closest\("fieldset"\)[\s\S]*data-library-saved-values/,
+    );
+    assert.match(adminInteractionsSource, /clearHorizontalCarouselSelection/);
+    assert.match(carouselSource, /output\.textContent = ""/);
     assert.match(
         adminInteractionsSource,
         /const counter = item\.querySelector\("\[data-carousel-order\]"\);[\s\S]*if \(counter\) counter\.textContent = ""/,

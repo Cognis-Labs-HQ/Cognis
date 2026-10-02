@@ -178,6 +178,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 ライブラリ詳細ポップアップは、通常のコンパクトな縮小を適用した後に、タイトルと発音のスペース不足を測定するようになりました。タイトルが切れる、または発音が折り返される場合に限って発音をタイトルの下へ移動し、収まる場合は常に1行配置を維持します。
 
+## 入れ子定義と発音確定の信頼性向上
+
+カードコンポーザー内で定義を作成するとき、一致する既存の定義があれば再利用し、未処理のコンテンツ競合を発生させないようになりました。キャンセル時にロールバックされるのは新規作成した入れ子定義だけです。構成した発音を保存すると、保存済みカードを再描画し、選択中のカルーセルカード・順序番号・選択数をまとめて消去します。
+
 ## コミット
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -228,3 +232,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [f4640403](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4640403af8c1a228844cde3f784fa45650299cd)
 - [42cf60f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/42cf60f01cbc42b765aaa71bdbcd84999c605a4a)
 - [dfe0b9fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfe0b9fbd48b84bd50dd3e346b65a825fb259f05)
+- [51bf12a7](https://github.com/Cognis-Labs-HQ/Cognis/commit/51bf12a7b71ee520065eca1e02a8cf34e91c8fa9)

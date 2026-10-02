@@ -7,7 +7,7 @@
   <string name="gateway.study.library_create_typed">Create {type} card</string>
   <string name="gateway.study.library_create_error">Could not create the Library card. Check the entered content and try again.</string>
   <string name="gateway.study.library_pronunciation_group_error">Could not save the pronunciation groups. Save each pronunciation in the carousel, then try creating the card again.</string>
-  <string name="gateway.study.library_pronunciation_saved">Pronunciation saved.</string>
+  <string name="gateway.study.library_pronunciation_saved">Pronunciation added to this card.</string>
   <string name="gateway.study.library_relationship_error">The selected cards do not satisfy this card’s relationship requirements. Review the carousel selections and try again.</string>
   <string name="gateway.study.library_requests">Requests</string>
   <string name="gateway.study.library_requests_subtitle">Review and manage Library publishing requests</string>
@@ -96,6 +96,7 @@
   <string name="gateway.study.library_composer_resolve_input">Resolve or create every text segment before creating the card.</string>
   <string name="gateway.study.library_publish_everyone">Publish</string>
   <string name="gateway.study.library_publish_everyone_info">Publishing sends a request to administrators to make this card visible to everyone.</string>
+  <string name="gateway.study.library_definition_reused">The existing matching definition was added to this card.</string>
   <string name="gateway.study.library_add_definition">Add definition</string>
   <string name="gateway.study.library_publish_class_option">Publish to class</string>
   <string name="gateway.study.library_practice_writing">Practice writing</string>

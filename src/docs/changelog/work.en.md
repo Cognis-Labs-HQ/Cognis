@@ -178,6 +178,10 @@ The module assurance boundary now recognizes the canonical API and capability na
 
 Library detail popups now measure title and pronunciation pressure after applying their normal compact scaling. Only when the title would truncate or the pronunciation would wrap does the header move the pronunciation beneath the title, preserving the single-row layout in every case where it still fits.
 
+## Reliable nested definitions and pronunciation commits
+
+Creating a definition from inside a card composer now reuses an existing matching definition instead of leaking an unhandled content-conflict rejection, and only newly created nested definitions participate in cancellation rollback. Saving a composed pronunciation now redraws its saved card and clears the selected carousel cards, order badges, and selection summary together.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -228,3 +232,4 @@ Library detail popups now measure title and pronunciation pressure after applyin
 - [f4640403](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4640403af8c1a228844cde3f784fa45650299cd)
 - [42cf60f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/42cf60f01cbc42b765aaa71bdbcd84999c605a4a)
 - [dfe0b9fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfe0b9fbd48b84bd50dd3e346b65a825fb259f05)
+- [51bf12a7](https://github.com/Cognis-Labs-HQ/Cognis/commit/51bf12a7b71ee520065eca1e02a8cf34e91c8fa9)

@@ -7,7 +7,7 @@
   <string name="gateway.study.library_create_typed">Buat kartu {type}</string>
   <string name="gateway.study.library_create_error">Kartu Perpustakaan tidak dapat dibuat. Periksa konten yang dimasukkan lalu coba lagi.</string>
   <string name="gateway.study.library_pronunciation_group_error">Grup pelafalan tidak dapat disimpan. Simpan setiap pelafalan di korsel, lalu coba buat kartu lagi.</string>
-  <string name="gateway.study.library_pronunciation_saved">Pelafalan disimpan.</string>
+  <string name="gateway.study.library_pronunciation_saved">Pelafalan ditambahkan ke kartu ini.</string>
   <string name="gateway.study.library_relationship_error">Kartu yang dipilih tidak memenuhi persyaratan hubungan kartu ini. Periksa pilihan korsel lalu coba lagi.</string>
   <string name="gateway.study.library_requests">Permintaan</string>
   <string name="gateway.study.library_requests_subtitle">Tinjau dan kelola permintaan penerbitan Pustaka</string>
@@ -96,6 +96,7 @@
   <string name="gateway.study.library_composer_resolve_input">Selesaikan atau buat setiap segmen teks sebelum membuat kartu.</string>
   <string name="gateway.study.library_publish_everyone">Terbitkan</string>
   <string name="gateway.study.library_publish_everyone_info">Penerbitan mengirimkan permintaan kepada administrator agar kartu ini terlihat oleh semua orang.</string>
+  <string name="gateway.study.library_definition_reused">Definisi serupa yang sudah ada ditambahkan ke kartu ini.</string>
   <string name="gateway.study.library_add_definition">Tambahkan definisi</string>
   <string name="gateway.study.library_publish_class_option">Terbitkan untuk kelas</string>
   <string name="gateway.study.library_practice_writing">Latihan menulis</string>

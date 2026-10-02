@@ -63,6 +63,22 @@ export function appendHorizontalCarouselItem(
 }
 
 /**
+ * Clear every selected item and selection counter in one carousel.
+ * @param {HTMLElement} carousel Carousel root.
+ * @returns {void}
+ */
+export function clearHorizontalCarouselSelection(carousel) {
+    carousel.querySelectorAll("[data-carousel-value]").forEach((item) => {
+        item.classList.remove("is-selected");
+        item.setAttribute("aria-pressed", "false");
+        const order = item.querySelector("[data-carousel-order]");
+        if (order) order.textContent = "";
+    });
+    const output = carousel.querySelector("[data-carousel-selection]");
+    if (output) output.textContent = "";
+}
+
+/**
  * Bind every horizontal carousel below a root element.
  * @param {ParentNode} root Carousel container.
  * @param {{signal?: AbortSignal, onChange?: (detail: {id: string, values: string[]}) => void, onAdd?: (detail: {id: string, carousel: HTMLElement}) => void, onActivate?: (detail: {id: string, item: HTMLElement, selected: boolean}) => Promise<{value?: string, label?: string} | false | void> | {value?: string, label?: string} | false | void, selectionOrder?: (detail: {id: string, value: string, localIndex: number}) => number | undefined}} options Event callbacks and optional shared selection ordering.

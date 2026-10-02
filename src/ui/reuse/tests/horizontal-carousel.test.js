@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
     appendHorizontalCarouselItem,
+    clearHorizontalCarouselSelection,
     mountHorizontalCarousels,
     renderHorizontalCarousel,
 } from "../horizontal-carousel.js";
@@ -68,4 +69,12 @@ test("horizontal carousel mounting uses a body-level preview portal", () => {
 test("new dependency cards reuse canonical carousel item markup", () => {
     assert.match(appendHorizontalCarouselItem.toString(), /carouselItemMarkup/);
     assert.match(appendHorizontalCarouselItem.toString(), /lastElementChild/);
+});
+
+test("horizontal carousels clear cards, counters, and their summary together", () => {
+    const source = clearHorizontalCarouselSelection.toString();
+    assert.match(source, /classList\.remove\("is-selected"\)/);
+    assert.match(source, /setAttribute\("aria-pressed", "false"\)/);
+    assert.match(source, /order\.textContent = ""/);
+    assert.match(source, /output\.textContent = ""/);
 });

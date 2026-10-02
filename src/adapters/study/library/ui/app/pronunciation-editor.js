@@ -1,4 +1,7 @@
-import { mountHorizontalCarousels } from "/static/reuse/horizontal-carousel.js";
+import {
+    clearHorizontalCarouselSelection,
+    mountHorizontalCarousels,
+} from "/static/reuse/horizontal-carousel.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -150,7 +153,11 @@ export function mountEditableRelationshipCarousels(
         if (counter) counter.textContent = "";
     };
     const renderSavedValues = (compositionField) => {
-        const container = compositionField.previousElementSibling;
+        const container =
+            compositionField
+                .closest("fieldset")
+                ?.querySelector("[data-library-saved-values]") ??
+            compositionField.previousElementSibling;
         const field = form.elements["field:pronunciation"];
         if (
             !container?.matches("[data-library-saved-values]") ||
@@ -487,9 +494,10 @@ export function mountEditableRelationshipCarousels(
                     });
                     stagedValues.set(relationshipId, []);
                 }
-                form.querySelectorAll(
-                    `[data-horizontal-carousel="${CSS.escape(relationshipId)}"] [data-carousel-value].is-selected`,
-                ).forEach(clearCarouselItemSelection);
+                const carousel = form.querySelector(
+                    `[data-horizontal-carousel="${CSS.escape(relationshipId)}"]`,
+                );
+                if (carousel) clearHorizontalCarouselSelection(carousel);
             }
             renderSelectedReferences();
             renderSavedValues(compositionField);

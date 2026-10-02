@@ -7,7 +7,7 @@
   <string name="gateway.study.library_create_typed">{type}-Karte erstellen</string>
   <string name="gateway.study.library_create_error">Die Bibliothekskarte konnte nicht erstellt werden. Prüfe den eingegebenen Inhalt und versuche es erneut.</string>
   <string name="gateway.study.library_pronunciation_group_error">Die Aussprachegruppen konnten nicht gespeichert werden. Speichere jede Aussprache im Karussell und versuche dann erneut, die Karte zu erstellen.</string>
-  <string name="gateway.study.library_pronunciation_saved">Aussprache gespeichert.</string>
+  <string name="gateway.study.library_pronunciation_saved">Aussprache zu dieser Karte hinzugefügt.</string>
   <string name="gateway.study.library_relationship_error">Die ausgewählten Karten erfüllen die Beziehungsanforderungen dieser Karte nicht. Prüfe die Karussellauswahl und versuche es erneut.</string>
   <string name="gateway.study.library_requests">Anfragen</string>
   <string name="gateway.study.library_requests_subtitle">Veröffentlichungsanfragen der Bibliothek prüfen und verwalten</string>
@@ -96,6 +96,7 @@
   <string name="gateway.study.library_composer_resolve_input">Lösen oder erstellen Sie jedes Textsegment auf, bevor Sie die Karte erstellen.</string>
   <string name="gateway.study.library_publish_everyone">Veröffentlichen</string>
   <string name="gateway.study.library_publish_everyone_info">Beim Veröffentlichen wird eine Anfrage an die Administration gesendet, diese Karte für alle sichtbar zu machen.</string>
+  <string name="gateway.study.library_definition_reused">Die bereits vorhandene passende Definition wurde dieser Karte hinzugefügt.</string>
   <string name="gateway.study.library_add_definition">Definition hinzufügen</string>
   <string name="gateway.study.library_publish_class_option">Für Klasse veröffentlichen</string>
   <string name="gateway.study.library_practice_writing">Schreiben üben</string>

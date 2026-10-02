@@ -7,7 +7,7 @@
   <string name="gateway.study.library_create_typed">{type}カードを作成</string>
   <string name="gateway.study.library_create_error">ライブラリカードを作成できませんでした。入力内容を確認して、もう一度お試しください。</string>
   <string name="gateway.study.library_pronunciation_group_error">発音グループを保存できませんでした。カルーセルで各発音を保存してから、もう一度カードを作成してください。</string>
-  <string name="gateway.study.library_pronunciation_saved">発音を保存しました。</string>
+  <string name="gateway.study.library_pronunciation_saved">このカードに発音を追加しました。</string>
   <string name="gateway.study.library_relationship_error">選択したカードは、このカードの関連付け要件を満たしていません。カルーセルの選択を確認して、もう一度お試しください。</string>
   <string name="gateway.study.library_requests">リクエスト</string>
   <string name="gateway.study.library_requests_subtitle">Library の公開リクエストを確認・管理します</string>
@@ -96,6 +96,7 @@
   <string name="gateway.study.library_composer_resolve_input">カードを作成する前に、すべてのテキスト部分を既存項目に解決するか新規作成してください。</string>
   <string name="gateway.study.library_publish_everyone">公開</string>
   <string name="gateway.study.library_publish_everyone_info">公開すると、このカードを全員に表示するためのリクエストが管理者へ送信されます。</string>
+  <string name="gateway.study.library_definition_reused">既存の一致する定義をこのカードに追加しました。</string>
   <string name="gateway.study.library_add_definition">定義を追加</string>
   <string name="gateway.study.library_publish_class_option">クラスに公開</string>
   <string name="gateway.study.library_practice_writing">書き取り練習</string>

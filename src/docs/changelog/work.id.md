@@ -178,6 +178,10 @@ Batas jaminan modul kini mengenali ruang nama API dan kapabilitas kanonis yang d
 
 Popup detail Pustaka kini mengukur tekanan ruang judul dan pelafalan setelah menerapkan penskalaan ringkas normal. Hanya jika judul akan terpotong atau pelafalan akan membungkus, header memindahkan pelafalan ke bawah judul; tata letak satu baris tetap dipertahankan dalam semua keadaan yang masih muat.
 
+## Definisi bertingkat dan penyimpanan pelafalan yang andal
+
+Pembuatan definisi dari dalam penyusun kartu kini menggunakan kembali definisi serupa yang sudah ada, bukan memunculkan penolakan konflik konten yang tidak ditangani. Hanya definisi bertingkat yang benar-benar baru yang ikut dibatalkan. Menyimpan pelafalan tersusun kini menggambar ulang kartu tersimpan serta membersihkan kartu korsel terpilih, nomor urutan, dan ringkasan pilihan secara bersamaan.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -228,3 +232,4 @@ Popup detail Pustaka kini mengukur tekanan ruang judul dan pelafalan setelah men
 - [f4640403](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4640403af8c1a228844cde3f784fa45650299cd)
 - [42cf60f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/42cf60f01cbc42b765aaa71bdbcd84999c605a4a)
 - [dfe0b9fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfe0b9fbd48b84bd50dd3e346b65a825fb259f05)
+- [51bf12a7](https://github.com/Cognis-Labs-HQ/Cognis/commit/51bf12a7b71ee520065eca1e02a8cf34e91c8fa9)
