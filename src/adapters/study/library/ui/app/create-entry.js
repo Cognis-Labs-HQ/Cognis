@@ -363,7 +363,7 @@ export async function openCreateEntryPopup({
                     try {
                         const existing = await fetchLibraryEntry(conflictId);
                         nestedDefinitionIds.length = 0;
-                        return existing;
+                        return existing.entry;
                     } catch (fetchError) {
                         void fetchError;
                     }
@@ -1038,9 +1038,15 @@ function bindTextComposition(
         const text = input.value.trim();
         if (lookups) lookups.hidden = !text;
         const normalizedText = text.normalize("NFKC");
-        const matches = candidates.filter(
+        const exactMatches = candidates.filter(
             ({ label }) => label.trim().normalize("NFKC") === normalizedText,
         );
+        const prefixMatches = candidates
+            .filter(({ label }) =>
+                normalizedText.startsWith(label.trim().normalize("NFKC")),
+            )
+            .toSorted((left, right) => right.label.length - left.label.length);
+        const matches = exactMatches.length ? exactMatches : prefixMatches;
         const fallbackRelationship = relationships[0]?.id;
         output.innerHTML = `${matches
             .map(

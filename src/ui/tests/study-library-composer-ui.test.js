@@ -335,6 +335,16 @@ test("Study Library arranges dense title details and limits composer collections
     );
 });
 
+test("Study Library commits multi-value fields and resolves typed prefixes", () => {
+    assert.match(
+        adminInteractionsSource,
+        /"data-multi-value": multiValue \? "true" : "false"/,
+    );
+    assert.match(adminInteractionsSource, /definitionsRequired/);
+    assert.match(createEntrySource, /normalizedText\.startsWith/);
+    assert.match(createEntrySource, /return existing\.entry/);
+});
+
 test("Study Library exposes tagged sentence components and repeatable literals", () => {
     assert.match(composerExtrasSource, /constructor\.tag_carousels/);
     assert.match(composerExtrasSource, /entry\.tags \?\? \[\]/);

@@ -182,6 +182,11 @@ Bibliotheks-Detailfenster messen jetzt den Platzbedarf von Titel und Aussprache,
 
 Beim Erstellen einer Definition innerhalb des Karten-Composers wird jetzt eine bereits vorhandene passende Definition wiederverwendet, statt einen unbehandelten Inhaltskonflikt auszulösen. Nur neu erstellte verschachtelte Definitionen werden beim Abbrechen zurückgesetzt. Beim Speichern einer zusammengesetzten Aussprache wird ihre gespeicherte Karte neu gezeichnet; ausgewählte Karussellkarten, Reihenfolgenummern und Auswahlzusammenfassung werden gemeinsam geleert.
 
+
+## Zuverlässige Komposition verschachtelter Karten
+
+Beim Speichern mehrwertiger Aussprachen werden nun die übernommenen Werte neu dargestellt und die Karussellauswahl geleert. Erforderliche Definitionen sind sichtbar markiert und werden vor dem Absenden geprüft, doppelte verschachtelte Karten verwenden den vorhandenen Eintrag, und zusammengesetzte Eingaben bieten Kartenübereinstimmungen für das längste Präfix an.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)

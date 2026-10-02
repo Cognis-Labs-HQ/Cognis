@@ -182,6 +182,11 @@ Library detail popups now measure title and pronunciation pressure after applyin
 
 Creating a definition from inside a card composer now reuses an existing matching definition instead of leaking an unhandled content-conflict rejection, and only newly created nested definitions participate in cancellation rollback. Saving a composed pronunciation now redraws its saved card and clears the selected carousel cards, order badges, and selection summary together.
 
+
+## Reliable nested card composition
+
+Multi-value pronunciation saves now redraw committed values and clear carousel selections. Required definitions are visibly marked and validated before submission, duplicate nested cards reuse the existing entry, and typed compound input offers longest-prefix card matches.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)

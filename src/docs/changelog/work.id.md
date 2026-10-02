@@ -182,6 +182,11 @@ Popup detail Pustaka kini mengukur tekanan ruang judul dan pelafalan setelah men
 
 Pembuatan definisi dari dalam penyusun kartu kini menggunakan kembali definisi serupa yang sudah ada, bukan memunculkan penolakan konflik konten yang tidak ditangani. Hanya definisi bertingkat yang benar-benar baru yang ikut dibatalkan. Menyimpan pelafalan tersusun kini menggambar ulang kartu tersimpan serta membersihkan kartu korsel terpilih, nomor urutan, dan ringkasan pilihan secara bersamaan.
 
+
+## Komposisi kartu bertingkat yang andal
+
+Penyimpanan pelafalan bernilai jamak kini menggambar ulang nilai yang disimpan dan mengosongkan pilihan karusel. Definisi wajib ditandai dengan jelas dan divalidasi sebelum pengiriman, kartu bertingkat duplikat memakai kembali entri yang ada, dan masukan gabungan menawarkan kecocokan kartu berdasarkan prefiks terpanjang.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
