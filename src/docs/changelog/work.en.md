@@ -154,6 +154,10 @@ Successful server updates are no longer reported as failures when a later list r
 
 Sentence cards now discard a previously stored pronunciation during submission and derive a fresh value from the current ordered input references. Reordering or replacing sentence components therefore updates the saved pronunciation.
 
+## Sentence Structure Carousel
+
+Provider-declared tag carousels now operate as independent sentence-input carousels instead of relying on entries removed from the general carousel. Structure words can be selected, ordered, removed, and restored during editing. Transformation trees also provide more vertical space between depth rows.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -198,3 +202,4 @@ Sentence cards now discard a previously stored pronunciation during submission a
 - [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)
 - [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)
 - [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)
+- [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)

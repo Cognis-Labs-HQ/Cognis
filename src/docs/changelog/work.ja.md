@@ -154,6 +154,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 文カードの送信時に以前保存された発音を破棄し、現在の順序付き入力参照から新しい値を導出するようになりました。文の構成要素を並べ替えたり置き換えたりすると、保存される発音も更新されます。
 
+## 文構造カルーセル
+
+プロバイダーが宣言したタグカルーセルが、一般カルーセルから除外された項目に依存せず、独立した文入力カルーセルとして動作するようになりました。編集時に構造語を選択、並べ替え、削除、復元できます。変換ツリーの深さごとの行間にも、より広い縦方向の余白を設けました。
+
 ## コミット
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -198,3 +202,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)
 - [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)
 - [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)
+- [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)

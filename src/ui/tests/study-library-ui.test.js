@@ -883,6 +883,10 @@ test("Study Library provides vocabulary transformations", () => {
     assert.match(stylesheet, /library-transform-info/);
     assert.match(stylesheet, /width:\s*max-content/);
     assert.match(stylesheet, /min-width:\s*14rem/);
+    assert.match(
+        stylesheet,
+        /library-transform-tech-tree ol \+ ol[\s\S]*margin-top:\s*1\.5rem/,
+    );
     assert.match(stylesheet, /max-height:\s*min\(31rem/);
     assert.match(stylesheet, /overflow:\s*auto/);
     assert.match(stylesheet, /prefers-reduced-motion:\s*reduce/);

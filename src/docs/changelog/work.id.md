@@ -154,6 +154,10 @@ Pembaruan server yang berhasil tidak lagi dilaporkan sebagai kegagalan saat pemu
 
 Kartu kalimat kini mengabaikan pelafalan yang tersimpan sebelumnya saat dikirim dan menurunkan nilai baru dari referensi input berurutan saat ini. Mengurutkan ulang atau mengganti komponen kalimat akan memperbarui pelafalan yang tersimpan.
 
+## Korsel Struktur Kalimat
+
+Korsel tag yang dideklarasikan penyedia kini berfungsi sebagai korsel input kalimat mandiri dan tidak lagi bergantung pada entri yang dihapus dari korsel umum. Kata struktur dapat dipilih, diurutkan, dihapus, dan dipulihkan saat penyuntingan. Pohon transformasi juga menyediakan jarak vertikal yang lebih luas antarbaris kedalaman.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -198,3 +202,4 @@ Kartu kalimat kini mengabaikan pelafalan yang tersimpan sebelumnya saat dikirim 
 - [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)
 - [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)
 - [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)
+- [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)

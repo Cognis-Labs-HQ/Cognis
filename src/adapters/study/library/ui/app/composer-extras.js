@@ -1,6 +1,9 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { localizedLabel } from "./presentation.js";
-import { literalCompositionToken } from "./composition-tokens.js";
+import {
+    compositionTokenEntryId,
+    literalCompositionToken,
+} from "./composition-tokens.js";
 
 export function renderComposerExtras(constructor, layer, entries, schema) {
     const tagCarousels = (constructor.tag_carousels ?? []).map((carousel) => {
@@ -14,7 +17,7 @@ export function renderComposerExtras(constructor, layer, entries, schema) {
                 entry.hidden !== true &&
                 (entry.tags ?? []).includes(carousel.tag),
         );
-        return `<fieldset class="library-composer-extra"><legend>${escapeHtml(localizedLabel(carousel.metadata, schema.language) || carousel.id)}</legend><div class="library-composer-extra-row">${items.map((entry) => `<button class="btn-neutral" type="button" data-library-tag-carousel-entry="${escapeHtml(entry.id)}" data-library-tag-carousel-relationship="${escapeHtml(carousel.relationship)}">${escapeHtml(entry.label)}</button>`).join("")}</div></fieldset>`;
+        return `<fieldset class="library-composer-extra"><legend>${escapeHtml(localizedLabel(carousel.metadata, schema.language) || carousel.id)}</legend><div class="library-composer-extra-row" role="group">${items.map((entry) => `<button class="btn-neutral" type="button" aria-pressed="false" data-library-tag-carousel-entry="${escapeHtml(entry.id)}" data-library-tag-carousel-relationship="${escapeHtml(carousel.relationship)}">${escapeHtml(entry.label)}</button>`).join("")}</div></fieldset>`;
     });
     const literalCarousels = (constructor.literal_carousels ?? []).map(
         (carousel) =>
@@ -24,14 +27,46 @@ export function renderComposerExtras(constructor, layer, entries, schema) {
 }
 
 export function bindComposerExtras(form, onChange = () => {}) {
+    form.querySelectorAll("[data-library-tag-carousel-entry]").forEach(
+        (control) => {
+            const select =
+                form.elements[
+                    `relationship:${control.dataset.libraryTagCarouselRelationship}`
+                ];
+            const selected = Array.from(select?.selectedOptions ?? []).some(
+                ({ value }) =>
+                    value === control.dataset.libraryTagCarouselEntry,
+            );
+            control.classList.toggle("is-selected", selected);
+            control.setAttribute("aria-pressed", String(selected));
+        },
+    );
     form.addEventListener("click", (event) => {
         const tagged = event.target.closest(
             "[data-library-tag-carousel-entry]",
         );
         if (tagged) {
-            form.querySelector(
-                `[data-horizontal-carousel="${CSS.escape(tagged.dataset.libraryTagCarouselRelationship)}"] [data-carousel-value="${CSS.escape(tagged.dataset.libraryTagCarouselEntry)}"]`,
-            )?.click();
+            const entryId = tagged.dataset.libraryTagCarouselEntry;
+            const relationshipId =
+                tagged.dataset.libraryTagCarouselRelationship;
+            const select = form.elements[`relationship:${relationshipId}`];
+            const option = Array.from(select?.options ?? []).find(
+                ({ value }) => value === entryId,
+            );
+            if (!option) return;
+            const selected = !option.selected;
+            option.selected = selected;
+            if (selected) select.append(option);
+            form.compositionOrder ??= [];
+            form.compositionOrder = selected
+                ? [...form.compositionOrder, entryId]
+                : form.compositionOrder.filter(
+                      (value) => compositionTokenEntryId(value) !== entryId,
+                  );
+            tagged.classList.toggle("is-selected", selected);
+            tagged.setAttribute("aria-pressed", String(selected));
+            onChange();
+            form.dispatchEvent(new CustomEvent("library-composition-change"));
             return;
         }
         const literal = event.target.closest("[data-library-literal]");

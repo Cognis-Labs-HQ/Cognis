@@ -154,6 +154,10 @@ Erfolgreiche Serveraktualisierungen werden nicht mehr als Fehler gemeldet, wenn 
 
 Satzkarten verwerfen beim Speichern eine zuvor gespeicherte Aussprache und leiten einen neuen Wert aus den aktuell geordneten Eingabereferenzen ab. Das Umordnen oder Ersetzen von Satzbestandteilen aktualisiert dadurch die gespeicherte Aussprache.
 
+## Karussell für Satzstrukturen
+
+Vom Anbieter deklarierte Tag-Karussells funktionieren jetzt als eigenständige Karussells für die Satzeingabe, statt von Einträgen im allgemeinen Karussell abhängig zu sein, die dort ausgeblendet werden. Strukturwörter können beim Bearbeiten ausgewählt, angeordnet, entfernt und wiederhergestellt werden. Transformationsbäume bieten außerdem mehr vertikalen Abstand zwischen den Tiefenebenen.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -198,3 +202,4 @@ Satzkarten verwerfen beim Speichern eine zuvor gespeicherte Aussprache und leite
 - [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)
 - [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)
 - [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)
+- [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)

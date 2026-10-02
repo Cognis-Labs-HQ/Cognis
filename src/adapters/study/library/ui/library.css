@@ -290,6 +290,9 @@ body[data-theme="light"] .library-browser {
     padding: 1.4rem 0 0;
     list-style: none;
 }
+.library-transform-tech-tree ol + ol {
+    margin-top: 1.5rem;
+}
 .library-transform-tech-tree li {
     display: grid;
     position: relative;

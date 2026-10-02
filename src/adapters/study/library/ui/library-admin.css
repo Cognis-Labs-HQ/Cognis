@@ -245,6 +245,10 @@ body[data-theme="dark"] .library-quick-search-control img {
 .library-composer-extra-row > button {
     flex: 0 0 auto;
 }
+.library-composer-extra-row > button.is-selected {
+    border-color: var(--accent-2);
+    background: color-mix(in srgb, var(--accent-2) 18%, var(--surface-2));
+}
 .library-composer-extra-row--literal {
     flex-wrap: nowrap;
 }

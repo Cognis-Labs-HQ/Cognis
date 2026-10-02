@@ -81,6 +81,68 @@ export const mockLanguageSchema: LibrarySchema = {
             },
         },
         {
+            id: "words",
+            semanticRole: "lexicalUnit",
+            metadata: { labels: { en: "Words" } },
+            fields: [
+                {
+                    id: "pronunciation",
+                    type: "stringList",
+                    metadata: { labels: { en: "Pronunciation" } },
+                },
+            ],
+            relationships: [
+                {
+                    id: "spelling",
+                    targetLayer: "characters",
+                    metadata: { labels: { en: "Spelling" } },
+                    minimum: 1,
+                    ordered: true,
+                    resolverRole: "grapheme",
+                    presentationRole: "composition",
+                    onDelete: "restrict",
+                },
+            ],
+        },
+        {
+            id: "sentences",
+            semanticRole: "orderedLexicalSequence",
+            metadata: { labels: { en: "Sentences" } },
+            fields: [
+                {
+                    id: "pronunciation",
+                    type: "stringList",
+                    metadata: { labels: { en: "Pronunciation" } },
+                },
+            ],
+            relationships: [
+                {
+                    id: "words",
+                    targetLayer: "words",
+                    metadata: { labels: { en: "Words" } },
+                    minimum: 1,
+                    ordered: true,
+                    resolverRole: "token",
+                    presentationRole: "composition",
+                    onDelete: "restrict",
+                },
+            ],
+            cardConstructor: {
+                label: { labels: { en: "Sentence" } },
+                relationships: ["words"],
+                input_carousels: ["words"],
+                pronunciation_carousels: [],
+                tag_carousels: [
+                    {
+                        id: "sentence-structure",
+                        metadata: { labels: { en: "Sentence structure" } },
+                        relationship: "words",
+                        tag: "sentence-structure",
+                    },
+                ],
+            },
+        },
+        {
             id: "definitions",
             semanticRole: "definition",
             metadata: { labels: { en: "Definitions" } },
