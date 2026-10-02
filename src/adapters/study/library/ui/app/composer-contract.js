@@ -190,7 +190,12 @@ export function applyDerivedPronunciation(
     derivesPronunciation,
 ) {
     if (!derivesPronunciation) return fields;
-    const draft = { fields, references };
+    const draft = {
+        schemaId: schema?.id,
+        layer: layer?.id,
+        fields: { ...fields, pronunciation: undefined },
+        references,
+    };
     const pronunciation = derivedPronunciation(draft, entries, schema);
     const providerLayer = schema?.layers?.find(({ id }) => id === layer?.id);
     const pronunciationField = (providerLayer ?? layer)?.fields?.find(
@@ -198,6 +203,7 @@ export function applyDerivedPronunciation(
     );
     if (!pronunciationField) return fields;
     if (
+        layer?.semanticRole !== "orderedLexicalSequence" &&
         pronunciationField.multi_value === true &&
         Array.isArray(fields.pronunciation) &&
         fields.pronunciation.some((value) => String(value).trim())

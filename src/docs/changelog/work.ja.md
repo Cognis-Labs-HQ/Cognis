@@ -150,6 +150,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 サーバー側の更新成功後に一覧の更新が失敗しても、更新自体を失敗として表示しなくなりました。確認済みの更新後はエディターを閉じ、通常の成功通知、またはローカル同期に失敗した場合はページの再読み込みを促す明確な警告を表示します。
 
+## 最新の文の発音
+
+文カードの送信時に以前保存された発音を破棄し、現在の順序付き入力参照から新しい値を導出するようになりました。文の構成要素を並べ替えたり置き換えたりすると、保存される発音も更新されます。
+
 ## コミット
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -193,3 +197,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)
 - [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)
 - [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)
+- [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)

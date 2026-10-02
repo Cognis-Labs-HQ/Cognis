@@ -150,6 +150,10 @@ Ein aktuelles anbieterneutrales Testschema prüft jetzt das Erstellen und Bearbe
 
 Erfolgreiche Serveraktualisierungen werden nicht mehr als Fehler gemeldet, wenn eine spätere Listenaktualisierung fehlschlägt. Der Editor schließt nach der bestätigten Aktualisierung und zeigt entweder die normale Erfolgsmeldung oder einen klaren Hinweis zum Neuladen der Seite, wenn die lokale Synchronisierung fehlschlägt.
 
+## Aktuelle Satzaussprache
+
+Satzkarten verwerfen beim Speichern eine zuvor gespeicherte Aussprache und leiten einen neuen Wert aus den aktuell geordneten Eingabereferenzen ab. Das Umordnen oder Ersetzen von Satzbestandteilen aktualisiert dadurch die gespeicherte Aussprache.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -193,3 +197,4 @@ Erfolgreiche Serveraktualisierungen werden nicht mehr als Fehler gemeldet, wenn 
 - [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)
 - [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)
 - [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)
+- [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)

@@ -150,6 +150,10 @@ A current provider-neutral mock schema now exercises card creation and editing w
 
 Successful server updates are no longer reported as failures when a later list refresh fails. The editor closes after the confirmed update and shows either the normal success toast or a clear warning to reload the page when local synchronization fails.
 
+## Current Sentence Pronunciation
+
+Sentence cards now discard a previously stored pronunciation during submission and derive a fresh value from the current ordered input references. Reordering or replacing sentence components therefore updates the saved pronunciation.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -193,3 +197,4 @@ Successful server updates are no longer reported as failures when a later list r
 - [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)
 - [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)
 - [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)
+- [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)

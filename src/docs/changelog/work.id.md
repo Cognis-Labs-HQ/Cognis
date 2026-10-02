@@ -150,6 +150,10 @@ Skema tiruan netral penyedia yang mutakhir kini menguji pembuatan dan penyunting
 
 Pembaruan server yang berhasil tidak lagi dilaporkan sebagai kegagalan saat pemuatan ulang daftar berikutnya gagal. Editor ditutup setelah pembaruan dikonfirmasi dan menampilkan pemberitahuan berhasil biasa atau peringatan jelas untuk memuat ulang halaman ketika sinkronisasi lokal gagal.
 
+## Pelafalan Kalimat Terkini
+
+Kartu kalimat kini mengabaikan pelafalan yang tersimpan sebelumnya saat dikirim dan menurunkan nilai baru dari referensi input berurutan saat ini. Mengurutkan ulang atau mengganti komponen kalimat akan memperbarui pelafalan yang tersimpan.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -193,3 +197,4 @@ Pembaruan server yang berhasil tidak lagi dilaporkan sebagai kegagalan saat pemu
 - [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)
 - [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)
 - [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)
+- [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)
