@@ -206,6 +206,10 @@ Karusel pelafalan tidak lagi menangani peristiwa teks milik penyusun masukan. De
 
 Kandidat komposisi ketikan kini dibangun ulang dari koleksi entri terkini, dan pembuatan karusel bertingkat menambahkan entri baru sebelum menyegarkan saran. Karena itu, kartu yang baru dibuat dapat langsung menguraikan teks yang tertunda.
 
+## Bentuk transformasi dalam saran ketikan
+
+Komposisi ketikan kini mengindeks simpul transformasi penyedia sebagai kandidat. Memilih ejaan yang ditransformasikan menempatkan token transformasi yang tepat tanpa membuka kembali dialog pilihan. Kartu transformasi juga memakai ukuran baris internal dan tinggi minimum yang konsisten untuk tata letak dua kolom yang seimbang.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)

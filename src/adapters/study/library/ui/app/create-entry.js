@@ -471,6 +471,19 @@ export async function openCreateEntryPopup({
                     },
                     onActivate: async ({ item, selected }) => {
                         if (selected) return;
+                        const suggestedTransformation =
+                            item.dataset.carouselSuggestedTransformation;
+                        if (suggestedTransformation) {
+                            delete item.dataset.carouselSuggestedTransformation;
+                            const suggestion = JSON.parse(
+                                suggestedTransformation,
+                            );
+                            item.dataset.carouselBaseValue = suggestion.entryId;
+                            return {
+                                value: suggestion.value,
+                                label: suggestion.label,
+                            };
+                        }
                         const entryId =
                             item.dataset.carouselBaseValue ??
                             compositionTokenEntryId(item.dataset.carouselValue);
@@ -955,15 +968,35 @@ function bindTextComposition(
                             entry.layer === relationship.targetLayer &&
                             entry.hidden !== true,
                     )
-                    .map((entry) => ({
-                        ...entry,
-                        relationshipId: relationship.id,
-                        preview: transformationPathways(entry, schema).length
-                            ? i18n.t(
-                                  "gateway.study.library_transforms_available",
-                              )
-                            : entryDefinition(entry, entries, schema),
-                    })),
+                    .flatMap((entry) => {
+                        const pathways = transformationPathways(entry, schema);
+                        const base = {
+                            ...entry,
+                            relationshipId: relationship.id,
+                            preview: pathways.length
+                                ? i18n.t(
+                                      "gateway.study.library_transforms_available",
+                                  )
+                                : entryDefinition(entry, entries, schema),
+                        };
+                        return [
+                            base,
+                            ...pathways.flatMap(({ set, nodes }) =>
+                                nodes.slice(1).map((node) => ({
+                                    ...base,
+                                    label: node.value,
+                                    pronunciation: node.pronunciation,
+                                    transformationValue:
+                                        transformationCompositionToken(
+                                            entry.id,
+                                            set.id,
+                                            node,
+                                        ),
+                                    baseEntryId: entry.id,
+                                })),
+                            ),
+                        ];
+                    }),
             )
             .sort(
                 (left, right) =>
@@ -1073,7 +1106,7 @@ function bindTextComposition(
         );
         const sequenceMatch =
             !prefixMatches.remainder && prefixMatches.matches.length > 1
-                ? `<button class="btn-confirm library-composer-suggestion" type="button" data-library-suggestion-sequence="${escapeHtml(JSON.stringify(prefixMatches.matches.map(({ id, relationshipId }) => ({ id, relationshipId }))))}">${escapeHtml(text)}</button>`
+                ? `<button class="btn-confirm library-composer-suggestion" type="button" data-library-suggestion-sequence="${escapeHtml(JSON.stringify(prefixMatches.matches.map(({ id, relationshipId, label, transformationValue }) => ({ id, relationshipId, label, transformationValue }))))}">${escapeHtml(text)}</button>`
                 : "";
         const matches = exactMatches.length
             ? exactMatches
@@ -1083,7 +1116,7 @@ function bindTextComposition(
             .slice(0, 1)
             .map(
                 (match) =>
-                    `<button class="btn-neutral library-composer-suggestion" type="button" data-library-suggestion="${escapeHtml(match.id)}" data-relationship="${escapeHtml(match.relationshipId)}" data-suggestion-label="${escapeHtml(match.label)}">${escapeHtml(match.label)}${match.preview ? `<span class="horizontal-carousel-preview" role="tooltip"><strong>${escapeHtml(match.label)}</strong><span>${escapeHtml(match.preview)}</span></span>` : ""}</button>`,
+                    `<button class="btn-neutral library-composer-suggestion" type="button" data-library-suggestion="${escapeHtml(match.id)}" data-relationship="${escapeHtml(match.relationshipId)}" data-suggestion-label="${escapeHtml(match.label)}"${match.transformationValue ? ` data-transformation-value="${escapeHtml(match.transformationValue)}"` : ""}>${escapeHtml(match.label)}${match.preview ? `<span class="horizontal-carousel-preview" role="tooltip"><strong>${escapeHtml(match.label)}</strong><span>${escapeHtml(match.preview)}</span></span>` : ""}</button>`,
             )
             .join(
                 "",
@@ -1101,19 +1134,35 @@ function bindTextComposition(
             const suggestions = JSON.parse(
                 sequence.dataset.librarySuggestionSequence,
             );
-            for (const suggestion of suggestions)
-                form.querySelector(
+            for (const suggestion of suggestions) {
+                const item = form.querySelector(
                     `[data-horizontal-carousel="${CSS.escape(suggestion.relationshipId)}"] [data-carousel-value="${CSS.escape(suggestion.id)}"]`,
-                )?.click();
+                );
+                if (item && suggestion.transformationValue)
+                    item.dataset.carouselSuggestedTransformation =
+                        JSON.stringify({
+                            entryId: suggestion.id,
+                            value: suggestion.transformationValue,
+                            label: suggestion.label,
+                        });
+                item?.click();
+            }
             input.value = "";
             renderSuggestions();
             return;
         }
         const suggestion = event.target.closest("[data-library-suggestion]");
         if (suggestion) {
-            form.querySelector(
+            const item = form.querySelector(
                 `[data-horizontal-carousel="${CSS.escape(suggestion.dataset.relationship)}"] [data-carousel-value="${CSS.escape(suggestion.dataset.librarySuggestion)}"]`,
-            )?.click();
+            );
+            if (item && suggestion.dataset.transformationValue)
+                item.dataset.carouselSuggestedTransformation = JSON.stringify({
+                    entryId: suggestion.dataset.librarySuggestion,
+                    value: suggestion.dataset.transformationValue,
+                    label: suggestion.dataset.suggestionLabel,
+                });
+            item?.click();
             input.value = input.value
                 .replace(suggestion.dataset.suggestionLabel, "")
                 .trim();

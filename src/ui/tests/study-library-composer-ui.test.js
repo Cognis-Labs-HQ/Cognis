@@ -391,6 +391,8 @@ test("Study Library composes transformed carousel cards into sentences", () => {
     assert.match(createEntrySource, /openTransformationPopup/);
     assert.match(createEntrySource, /transformationCompositionToken/);
     assert.match(createEntrySource, /transformationTokenDetails/);
+    assert.match(createEntrySource, /transformationValue/);
+    assert.match(createEntrySource, /carouselSuggestedTransformation/);
     assert.match(adminInteractionsSource, /compositionTokenEntryId/);
     assert.match(
         transformationPopupSource,
@@ -402,4 +404,8 @@ test("Study Library composes transformed carousel cards into sentences", () => {
         /library-transform-option-definitions/,
     );
     assert.match(libraryStylesheet, /grid-template-columns:\s*repeat\(2,/);
+    assert.match(
+        libraryStylesheet,
+        /library-transform-option[\s\S]*min-height:\s*7rem[\s\S]*grid-template-rows:\s*auto auto 1fr/,
+    );
 });

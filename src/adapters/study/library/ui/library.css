@@ -379,6 +379,9 @@ body[data-theme="light"] .library-browser {
 }
 .library-transform-option {
     display: grid;
+    min-height: 7rem;
+    grid-template-rows: auto auto 1fr;
+    align-content: start;
     justify-items: start;
     gap: 0.25rem;
     text-align: start;
